@@ -76,10 +76,10 @@ CREATE TABLE fact_rendimiento_academico (
     id_usuario_carga                    INT REFERENCES users(id),
     nota_final                          NUMERIC(5,2),
     porcentaje_asistencia               NUMERIC(5,2),
-    porcentaje_inasistencia_actividades NUMERIC(5,2), 
-    promedio_acumulado                  NUMERIC(5,2),   
+    porcentaje_inasistencia_actividades NUMERIC(5,2),
+    promedio_acumulado                  NUMERIC(5,2),
     nivel_confianza_ia                  NUMERIC(5,4),
     requiere_revision                   BOOLEAN DEFAULT FALSE,
-    tipo_alerta                         VARCHAR(20),    
+    tipo_alerta                         VARCHAR(20),
     created_at                          TIMESTAMP DEFAULT NOW()
 );
