@@ -41,6 +41,15 @@ CREATE TABLE dim_origen_documental (
     fecha_procesamiento TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE dim_financiero (
+    id_financiero    SERIAL PRIMARY KEY,
+    id_estudiante    INT REFERENCES dim_estudiante(id_estudiante),
+    cuotas_impagas   INT,
+    monto_deuda      NUMERIC(10,2),
+    estado_cartera   VARCHAR(20),
+    fecha_registro   TIMESTAMP DEFAULT NOW()
+);
+
 -- ─────────────────────────────────────────
 -- TABLA TRANSACCIONAL (3FN) — para auth
 -- ─────────────────────────────────────────
@@ -58,16 +67,19 @@ CREATE TABLE users (
 -- ─────────────────────────────────────────
 
 CREATE TABLE fact_rendimiento_academico (
-    id_hecho              SERIAL PRIMARY KEY,
-    id_estudiante         INT REFERENCES dim_estudiante(id_estudiante),
-    id_docente            INT REFERENCES dim_docente(id_docente),
-    id_modulo             INT REFERENCES dim_modulo(id_modulo),
-    id_tiempo             INT REFERENCES dim_tiempo(id_tiempo),
-    id_documento          INT REFERENCES dim_origen_documental(id_documento),
-    id_usuario_carga      INT REFERENCES users(id),    -- auditoría GIRA-20
-    nota_final            NUMERIC(5,2),
-    porcentaje_asistencia NUMERIC(5,2),
-    nivel_confianza_ia    NUMERIC(5,4),                -- 4 decimales: 0.8523
-    requiere_revision     BOOLEAN DEFAULT FALSE,       -- GIRA-22: confianza < 0.60
-    created_at            TIMESTAMP DEFAULT NOW()
+    id_hecho                            SERIAL PRIMARY KEY,
+    id_estudiante                       INT REFERENCES dim_estudiante(id_estudiante),
+    id_docente                          INT REFERENCES dim_docente(id_docente),
+    id_modulo                           INT REFERENCES dim_modulo(id_modulo),
+    id_tiempo                           INT REFERENCES dim_tiempo(id_tiempo),
+    id_documento                        INT REFERENCES dim_origen_documental(id_documento),
+    id_usuario_carga                    INT REFERENCES users(id),
+    nota_final                          NUMERIC(5,2),
+    porcentaje_asistencia               NUMERIC(5,2),
+    porcentaje_inasistencia_actividades NUMERIC(5,2), 
+    promedio_acumulado                  NUMERIC(5,2),   
+    nivel_confianza_ia                  NUMERIC(5,4),
+    requiere_revision                   BOOLEAN DEFAULT FALSE,
+    tipo_alerta                         VARCHAR(20),    
+    created_at                          TIMESTAMP DEFAULT NOW()
 );

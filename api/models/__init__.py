@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from api.database import Base
+from .dim_financiero import DimFinanciero
 
 class DimInstitucion(Base):
     __tablename__ = "dim_institucion"

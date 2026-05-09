@@ -1,5 +1,41 @@
+# ---------------------------------------------------
+# SEGURIDAD Y SECRETOS
+# ---------------------------------------------------
 .env
+*.pem
+*.key
+
+# ---------------------------------------------------
+# ENTORNOS VIRTUALES
+# ---------------------------------------------------
 .venv/
+venv/
+env/
+
+# ---------------------------------------------------
+# CACHÉ Y COMPILADOS DE PYTHON
+# ---------------------------------------------------
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# ---------------------------------------------------
+# CARPETAS DEL PROYECTO (Datos Dinámicos)
+# ---------------------------------------------------
+# No subir documentos de GiraGroup ni archivos temporales
+uploads/*
+!uploads/.gitkeep
+
+# No subir logs pesados de la IA o el sistema
+logs/*.log
+!logs/.gitkeep
+
+# ---------------------------------------------------
+# SISTEMA OPERATIVO Y HERRAMIENTAS
+# ---------------------------------------------------
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.docker/

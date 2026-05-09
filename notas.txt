@@ -1,0 +1,28 @@
+
+apagar 
+docker-compose down
+encender
+docker-compose up -d
+
+para cambiar de sitio
+
+docker-compose down
+Eliminar la carpeta .venv
+
+Asegúrarse que tenga instalado Python y Docker Desktop.
+
+py -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+
+docker-compose up -d --build
+
+si quieres quitar de un dispositivo
+
+docker-compose down -v
+
+docker rmi giragroup_bi_system-api
+
+docker rmi postgres:16-alpine
+
+la carpeta fisica
