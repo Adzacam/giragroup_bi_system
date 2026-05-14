@@ -161,7 +161,7 @@ giragroup_bi_system/
 ## 4. Levantar el entorno Docker
 
 ```bash
-# Levantar todo (Python 3.11 + PostgreSQL + pgAdmin)
+# Levantar todo (Python 3.11 + PostgreSQL)
 docker-compose up -d --build
 ```
 
@@ -174,10 +174,10 @@ docker ps
 ```
 
 Deben aparecer:
-- `giragroup_postgres`
-- `giragroup_pgadmin`
-- `giragroup_laravel`
-- `giragroup_vite`
+- `giragroup_db`
+- `giragroup_api`
+- `giragroup_web`
+- `giragroup_pipeline`
 
 ---
 
@@ -186,7 +186,7 @@ Deben aparecer:
 | Servicio | URL |
 |---|---|
 | Documentación API (Swagger) | http://localhost:8000/docs |
-| Interfaz Web (Capa 4 - React) | http://localhost:5173 |
+| Interfaz Web (Capa 4 - React) | http://localhost:3000 |
 | Health Check BD | http://localhost:8000/health |
 
 ---
