@@ -1,5 +1,4 @@
 from .dim_tiempo import DimTiempo
-from .dim_institucion import DimInstitucion
 from .dim_estudiante import DimEstudiante
 from .dim_docente import DimDocente
 from .dim_modulo import DimModulo
