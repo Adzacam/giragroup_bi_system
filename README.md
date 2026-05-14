@@ -1,97 +1,173 @@
-# Proyectos Académicos — Universidad Privada del Valle
+# Sistema de Inteligencia de Negocios y PLN — GiraGroup S.R.L.
 
-Sistema web académico para la gestión y seguimiento de proyectos estudiantiles, desarrollado con **Laravel**, **React**, **Inertia.js**, **Vite**, **Docker** y **PostgreSQL**.
+Sistema de Inteligencia de Negocios basado en Procesamiento de Lenguaje Natural (PLN) y Cuadro de Mando Integral (CMI) para la mitigación de la fragmentación informacional. 
 
-> **El entorno está completamente dockerizado.** No se necesita PHP, Composer ni Node instalados localmente. Solo se necesita **Git** y **Docker Desktop**.
+Desarrollado bajo una **Arquitectura Monolítica Modular Orientada a Datos** con **Python**, **FastAPI**, **React**, modelo **BETO**, **Docker** y **PostgreSQL**.
 
----
-
-## Stack tecnológico
-
-| Capa | Tecnología |
-|---|---|
-| Backend | Laravel 13 (PHP 8.4) |
-| Frontend | React + Inertia.js + Vite |
-| Base de datos | PostgreSQL 16 |
-| Administración BD | pgAdmin 4 |
-| Estilos | Tailwind CSS |
-| Entorno | Docker + Docker Compose |
+> **El entorno está completamente dockerizado.** No se necesita Python, Node ni PostgreSQL instalados localmente. Solo se necesita **Git** y **Docker Desktop**.
 
 ---
 
-## Requisitos previos
+## 🏗️ Stack Tecnológico y Arquitectura (5 Capas)
 
-Cada integrante solo necesita:
+| Capa | Componente | Tecnología |
+|---|---|---|
+| 1 y 2. Pipeline de Datos | Ingestión y PLN | Python, Pandas, Rapidfuzz, BETO (HuggingFace) |
+| 3. Persistencia | Data Warehouse | PostgreSQL 16 (Esquema Estrella) |
+| 4. Backend (API) | Exposición de Datos | FastAPI, SQLAlchemy, Pydantic |
+| 5A. Frontend Web | Auditoría y DataOps | React + Vite + Tailwind |
+| 5B. Visualización | Cuadro de Mando | Power BI Desktop |
+| Infraestructura | Orquestación | Docker + Docker Compose |
+
+---
+
+## ⚙️ Requisitos previos
 
 - [Git](https://git-scm.com/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) — con WSL2 habilitado en Windows
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) — con WSL2 habilitado en Windows.
 
 Verificar instalaciones:
 
 ```bash
 git --version
 docker --version
-docker compose version
+docker-compose version
 ```
 
 ---
 
-## 1. Clonar el proyecto
+## 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/feli2710/giragroup-bi-system.git
-cd giragroup-bi-system
+git clone [https://github.com/Adzacam/giragroup_bi_system.git](https://github.com/Adzacam/giragroup_bi_system.git)
+cd giragroup_bi_system
 git checkout main
-git pull origin main
+  ```
+
+## 2. Crear `.env` a partir del `.env.example`
+
+
+**Windows PowerShell:**
+
+```powershell
+Copy-Item .env.example.env
 ```
 
----
-
-## 2. Crear el archivo `.env`
-
-**Linux / macOS / Git Bash:**
+**Linux / Git Bash:**
 ```bash
 cp .env.example .env
 ```
 
-**Windows CMD:**
-```cmd
-copy .env.example .env
-```
+Configurar variables en `.env`:
 
-Abrir `.env` y configurar las siguientes variables:
-
-```env
-APP_NAME="GiraGroup BI System"
+```bash
 APP_ENV=local
 APP_DEBUG=true
-APP_URL=http://localhost:8000
 
-APP_LOCALE=es
-APP_FALLBACK_LOCALE=es
-APP_FAKER_LOCALE=es_ES
-
-DB_CONNECTION=pgsql
-DB_HOST=giragroup_db
+DB_HOST=pg_database
 DB_PORT=5432
 DB_DATABASE=giragroup_db
 DB_USERNAME=giragroup_user
 DB_PASSWORD=giragroup_secret_2026
+
+# Configuración de BERT local (sin HuggingFace)
+USE_LOCAL_BETO=true
+LOCAL_BETO_PATH=./local_beto_model
 ```
 
-> **Importante:** `DB_HOST` debe ser `giragroup_db` (nombre del contenedor), no `127.0.0.1`. El puerto es `5432` interno de Docker, no `5433`.
+**Importante**: Asegúrate de que la cadena de conexión a la base de datos en `.env` apunte al contenedor Docker interno, **NO** a tu host local. Debe verse así:
+
+```bash
+DATABASE_URL=postgresql://giragroup_user:giragroup_secret_2026@giragroup_db:5432/giragroup_db
+```
 
 ---
 
-## 3. Levantar todo el entorno
+## 3. Estructura del Proyecto
+
+```text
+giragroup_bi_system/
+│
+├── pipeline/                        # CAPAS 1 y 2: Ingestión y Procesamiento NLP
+│   ├── ingestion/                   # sheets/, moodle/, excel/, forms/
+│   ├── normalization/               # entities/, fuzzy_matching/, validation/
+│   ├── semantic/                    # models/, inference/, embeddings/, confidence/
+│   ├── analytics/                   # indicators/, scoring/, projections/, alerts/
+│   ├── load/                        # Carga batch al Data Warehouse
+│   ├── jobs/                        # scheduler.py, sync_moodle.py, process_semantic.py
+│   ├── logs/                        # Logs de ejecución del pipeline
+│   └── requirements.txt             # Dependencias de IA (Transformers, Torch, Pandas)
+│
+├── db/                              # CAPA 3: Persistencia Analítica
+│   ├── warehouse/                   # facts/, dimensions/, materialized_views/
+│   ├── migrations/                  # Control de versiones de BD (Alembic o SQL)
+│   ├── seeds/                       # Datos iniciales estáticos (ej. dim_tiempo)
+│   └── snapshots/                   # Respaldos de datasets versionados
+│
+├── backend/                         # CAPA 4: Exposición (API REST)
+│   ├── core/                        # security/, config/, middleware/
+│   ├── models/                      # Mapeo ORM (SQLAlchemy)
+│   ├── schemas/                     # DTOs y validación (Pydantic)
+│   ├── routers/                     # Endpoints expuestos (FastAPI)
+│   ├── services/                    # Lógica de lectura y reglas de negocio
+│   │   ├── academic_service.py
+│   │   ├── finance_service.py
+│   │   └── risk_service.py
+│   ├── shared/                      # utils/, constants/, exceptions/
+│   ├── tests/                       # Pruebas unitarias de la API
+│   ├── main.py                      # Entrypoint Uvicorn
+│   └── requirements.txt             # Dependencias ligeras (FastAPI, Pydantic, SQLAlchemy)
+│
+├── frontend/                        # CAPA 5A: Interfaz Web (DataOps y Auditoría)
+│   ├── src/
+│   │   ├── components/              # UI reutilizable
+│   │   ├── modules/                 # dashboard/, risks/, indicators/, validation/, audit/
+│   │   ├── pages/                   # Vistas principales por rol
+│   │   ├── services/                # Cliente API (Axios/Fetch)
+│   │   ├── hooks/                   # Custom React hooks
+│   │   ├── store/                   # Manejo de estado global (Zustand/Redux)
+│   │   └── layouts/                 # Estructuras de página (Sidebar, Navbar)
+│   ├── package.json
+│   └── vite.config.js
+│
+├── powerbi/                         # CAPA 5B: Visualización Estratégica (CMI)
+│   ├── dashboards/                  # giragroup_cmi.pbix
+│   ├── templates/                   # Plantillas base corporativas
+│   └── exports/                     # Reportes exportados (PDF/PPTX)
+│
+├── infrastructure/                  # DevOps y Despliegue
+│   ├── docker/                      # api.Dockerfile, pipeline.Dockerfile, web.Dockerfile
+│   ├── nginx/                       # Configuración de proxy inverso
+│   ├── scripts/                     # Scripts de inicialización (init_db.sh)
+│   └── monitoring/                  # Configuraciones de monitoreo de contenedores
+│
+├── docs/                            # Documentación del Proyecto
+│   ├── architecture/                # Diagramas C4 o Mermaid
+│   ├── api/                         # Colecciones de Postman o Swagger estático
+│   ├── database/                    # Diccionario de datos
+│   └── thesis/                      # Borradores o respaldos del documento Word
+│
+├── .github/                         # CI/CD Workflows
+│   └── workflows/                   # Acciones de GitHub para testing automático
+│
+├── .env.example                     # Plantilla de variables de entorno
+├── .gitignore                       # Reglas de exclusión unificadas
+├── docker-compose.yml               # Orquestador local principal
+└── README.md                        # Documentación técnica de entrada
+
+```
+---
+
+## 4. Levantar el entorno Docker
 
 ```bash
-docker compose up -d
+# Levantar todo (Python 3.11 + PostgreSQL + pgAdmin)
+docker-compose up -d --build
 ```
 
-La primera vez tarda varios minutos porque construye las imágenes de PHP y Node. Las siguientes veces es inmediato.
+**La primera vez:** tardará varios minutos mientras descarga las imágenes de Python, Node y PostgreSQL. y ejecuta `init.sql` para crear la base de datos.
 
-Verificar que los 4 contenedores estén corriendo:
+**Verificar:**
 
 ```bash
 docker ps
@@ -105,414 +181,230 @@ Deben aparecer:
 
 ---
 
-## 4. Acceder al sistema
+## 5. Acceder al sistema
 
 | Servicio | URL |
 |---|---|
-| Aplicación Laravel | http://localhost:8000 |
-| Vite / React HMR | http://localhost:5173 |
-| pgAdmin | http://localhost:5051 |
+| Documentación API (Swagger) | http://localhost:8000/docs |
+| Interfaz Web (Capa 4 - React) | http://localhost:5173 |
+| Health Check BD | http://localhost:8000/health |
 
 ---
+###  **Redenciales de PostgreSQL (Para DBeaver o Power BI)**
 
-## 5. Credenciales de PostgreSQL
+Para conectar herramientas externas desde tu máquina local a la base de datos de Docker:
 
 | Campo | Valor |
 |---|---|
 | Motor | PostgreSQL 16 |
-| Host (desde Laravel/Docker) | `giragroup_db` |
-| Host (desde tu máquina) | `127.0.0.1` |
-| Puerto (desde tu máquina) | `5433` |
-| Base de datos | `giragroup_db` |
-| Usuario | `giragroup_user` |
-| Contraseña | `giragroup_secret_2026` |
+| Host | localhost o 127.0.0.1 |
+| Puerto | 5432 |
+| Base de datos | giragroup_db |
+| Usuario | giragroup_user |
+| Contraseña | giragroup_secret_2026 |
+
+### Base de datos inicial
+
+El archivo db/schema.sql se ejecuta automáticamente al crear el contenedor de PostgreSQL por primera vez, levantando el esquema estrella, dimensiones financieras y transaccionales.
+
+**Para reiniciar la base de datos desde cero (Reset Total)**:
+
+```bash
+docker-compose down -v
+docker-compose up -d
+```
+
+## 6. Descargar el modelo BETO Local
+
+Ejecutar **una sola vez** dentro del contenedor Python (no en host):
+
+```bash
+# Entrar al contenedor
+docker-compose exec python_env bash
+
+# Ejecutar el script de descarga
+python data_pipelines/scripts/descargar_beto.py
+```
+
+Dentro de Python:
+
+```python
+from transformers import AutoTokenizer, AutoModel
+import os
+
+# Crear directorio local
+os.makedirs("beto_local", exist_ok=True)
+
+# Descargar BETO
+tokenizer = AutoTokenizer.from_pretrained("dccuchile/bert-base-spanish-wwm-cased")
+model = AutoModel.from_pretrained("dccuchile/bert-base-spanish-wwm-cased")
+
+tokenizer.save_pretrained("beto_local")
+model.save_pretrained("beto_local")
+
+exit()
+```
+
+Ahora el modelo está en `data_pipelines/models/beto_local/`.
 
 ---
 
-## 6. Acceder a pgAdmin
+## 7. Ejecutar Pipeline de Datos
 
-Abrir: [http://localhost:5051](http://localhost:5051)
+```bash
+# Entrar al contenedor
+docker-compose exec python_env bash
 
-| Campo | Valor |
-|---|---|
-| Correo | `admin@giragroup.dev` |
-| Contraseña | `giragroup_secret_2026` |
+# Ejecutar ETL
+python data_pipelines/scripts/etl_pipeline.py
+```
 
-**Registrar el servidor:**
-
-1. Click derecho en **Servers** → **Register** → **Server**
-2. Pestaña **General** → Name: `GiraGroup PostgreSQL`
-3. Pestaña **Connection:**
-   - Host: `giragroup_db`
-   - Port: `5432`
-   - Database: `giragroup_db`
-   - Username: `giragroup_user`
-   - Password: `giragroup_secret_2026`
-   - Activar **Save password**
-4. Click **Save**
+Genera:
+- `data_pipelines/data/dataset_final_limpio.csv`
+- `data_pipelines/data/clustering_summary.csv`
+- `data_pipelines/data/similarity_matrix.csv`
 
 ---
 
-## 7. Base de datos inicial
-
-El archivo `init.sql` se ejecuta automáticamente la primera vez que Docker crea el contenedor de PostgreSQL. No se necesita correr migraciones manualmente.
-
-Para reiniciar la base de datos desde cero:
+## 8. Cargar Datos al Data Warehouse (PostgreSQL)
 
 ```bash
-docker compose down -v
-docker compose up -d
+docker-compose exec python_env bash
+
+# Ejecutar script de carga
+python data_pipelines/scripts/cargar_a_bd.py
 ```
 
-> ⚠️ Este comando borra todos los datos locales de PostgreSQL.
+Crea las tablas:
+- `dim_proyecto`
+- `dim_fecha`
+- `dim_area`
+- `fact_proyectos`
 
 ---
 
-## 8. Comandos del día a día
-
-Cada integrante ejecuta al iniciar el día:
+## 9. Probar la API REST (FastAPI)
 
 ```bash
-git checkout main
-git pull origin main
-docker compose up -d
-```
+# Listar endpoints
+docker-compose exec python_env curl -X GET "http://localhost:8000/docs" -s | grep "http://localhost:8000"
 
-Para apagar todo:
+# Listar proyectos
+docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos?page=1&limit=10" -s | python -m json.tool
 
-```bash
-docker compose down
-```
+# Buscar proyectos similares
+docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos/similares?titulo=Finanzas&top_k=5" -s | python -m json.tool
 
----
+# Carga de proyectos del año 2024
+docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos?anio=2024" -s | python -m json.tool
 
-## 9. Ejecutar comandos de Laravel (Artisan)
-
-Como Laravel corre dentro de Docker, todos los comandos de Artisan se ejecutan así:
-
-```bash
-docker exec -it giragroup_laravel php artisan <comando>
-```
-
-Ejemplos:
-
-```bash
-# Limpiar caché
-docker exec -it giragroup_laravel php artisan optimize:clear
-
-# Ver rutas
-docker exec -it giragroup_laravel php artisan route:list
-
-# Estado de migraciones
-docker exec -it giragroup_laravel php artisan migrate:status
-
-# Limpiar configuración
-docker exec -it giragroup_laravel php artisan config:clear
-```
-
----
-
-## 10. Usar Tinker
-
-```bash
-docker exec -it giragroup_laravel php artisan tinker
-```
-
-Dentro de Tinker, crear un usuario coordinador:
-
-```php
-use App\Models\User;
-
-User::create([
-    'name' => 'Nombre Apellido',
-    'email' => 'correo@gmail.com',
-    'password' => bcrypt('Contrasena123!'),
-    'rol' => 'coordinador',
-    'activo' => true,
-]);
-```
-
-Asignar rol coordinador a un usuario existente:
-
-```php
-use App\Models\User;
-
-User::where('email', 'correo@gmail.com')->update([
-    'rol' => 'coordinador',
-    'activo' => true,
-]);
-```
-
-Salir de Tinker:
-
-```php
-exit
+# Carga de proyectos con fecha límite en 2026
+docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos?fecha_limite_inicio=2026-01-01&fecha_limite_fin=2026-12-31" -s | python -m json.tool
 ```
 
 ---
 
-## 11. Ejecutar npm (frontend)
+## 10. Conectar Power BI al Data Warehouse
 
-El contenedor `giragroup_vite` ya corre `npm run dev` automáticamente al levantar Docker. No es necesario ejecutarlo manualmente.
+1. Abrir **Power BI Desktop**
+2. Click **Obtener datos** → **Base de datos** → **PostgreSQL**
+3. Ingresar:
+   - Servidor: `localhost`
+   - Puerto: `5432`
+   - Base de datos: `giragroup_db`
+   - Autenticación: Usuario `giragroup_user`, Contraseña `giragroup_secret_2026`
+4. Seleccionar tablas:
+   - `fact_proyectos`
+   - `dim_proyecto`
+   - `dim_fecha`
+   - `dim_area`
 
-Si necesitas correr un comando npm puntual:
+---
 
+## 11. Comandos Útiles y Mantenimiento
+
+### Apagar y encender el sistema
 ```bash
-docker exec -it giragroup_vite npm <comando>
+# Apagar
+docker-compose down
+
+# Encender
+docker-compose up -d
+
+# Reconstruir imágenes y levantar
+docker-compose up -d --build
 ```
 
-Ejemplo:
-
+### Reiniciar base de datos
 ```bash
-docker exec -it giragroup_vite npm install
+# Reiniciar BD (borra datos)
+docker-compose down -v
+docker-compose up -d
+```
+
+### Ver logs de los servicios
+```bash
+docker-compose logs -f
+docker-compose logs python_env
+docker-compose logs pg_database
+```
+
+### Mover el proyecto de sitio
+Si necesitas cambiar la carpeta del proyecto de ubicación o de computadora:
+1. Apaga los contenedores: `docker-compose down`
+2. **Elimina la carpeta `.venv`** (si la creaste).
+3. Mueve la carpeta física.
+
+### Quitar el proyecto de un dispositivo (Limpieza Total)
+Si quieres eliminar por completo el proyecto de una computadora:
+```bash
+# 1. Detener y borrar volúmenes (datos)
+docker-compose down -v
+
+# 2. Eliminar imágenes de Docker asociadas
+docker rmi giragroup_bi_system-api
+docker rmi postgres:16-alpine
+
+# 3. Eliminar la carpeta física del proyecto manualmente
 ```
 
 ---
 
-## 12. Ejecutar Composer
+## 11.5. (Opcional) Entorno Virtual de Python Local
+Aunque el entorno está **completamente dockerizado**, si necesitas instalar las dependencias localmente en tu host para que tu IDE (ej. VSCode) reconozca las librerías:
 
-El contenedor `giragroup_laravel` ya corre `composer install` automáticamente al arrancar. Si necesitas un comando específico:
-
+1. Asegúrate de tener instalado **Python**.
+2. Ejecuta en la terminal del proyecto:
 ```bash
-docker exec -it giragroup_laravel composer <comando>
-```
-
-Ejemplo:
-
-```bash
-docker exec -it giragroup_laravel composer dump-autoload
+py -m venv .venv
+.venv\Scripts\activate
+pip install -r backend/requirements.txt
 ```
 
 ---
 
-## 13. Usuarios y roles
-(cambios hay aca con mas areas administrativas y financieross, estrategica,gerencial)
-Los roles se almacenan en `users.rol`:
+## 12. Solución de Errores Comunes
 
-| Rol | Descripción |
-|---|---|
-| `estudiante` | Usuario por defecto al registrarse |
-| `tutor` | Supervisa proyectos asignados |
-| `revisor` | Evalúa proyectos en fase final |
-| `coordinador` | Administra el sistema completo |
-
-El estado del usuario se almacena en `users.activo`. Un usuario con `activo = false` no puede iniciar sesión.
-
----
-
-## 14. Módulo de gestión de usuarios
-
-Solo accesible con rol `coordinador`.
-
-| Ruta | Descripción |
-|---|---|
-| `/usuarios` | Directorio de usuarios |
-| `/usuarios/crear` | Crear usuario |
-| `/usuarios/{id}/editar` | Editar usuario |
-| `/usuarios/papelera` | Usuarios inactivos |
-
-**Restricciones:**
-- No se puede desactivar al último coordinador activo.
-- No se puede quitar el rol al último coordinador activo.
-- Un coordinador no puede modificar su propio rol.
-
----
-
-## 15. Autenticación y seguridad
-
-- Inicio de sesión y registro
-- Recuperación de contraseña
-- Bloqueo temporal tras 5 intentos fallidos consecutivos
-- Validación de cuenta activa/inactiva
-- Control de acceso basado en roles (RBAC) mediante middleware
-
----
-
-## 16. Flujo de trabajo con Git
-
-No trabajar directamente en `main`.
-
-**Crear una rama nueva:**
-```bash
-git checkout main
-git pull origin main
-git checkout -b nombre-de-la-rama
-```
-
-**Guardar y subir cambios:**
-```bash
-git status
-git add .
-git commit -m "Descripción del cambio"
-git push origin nombre-de-la-rama
-```
-
-Luego crear un **Pull Request** hacia `main`.
-
-**Fusionar con main:**
-```bash
-git checkout main
-git pull origin main
-git merge nombre-de-la-rama
-git push origin main
-```
-
-**Actualizar una rama con cambios de main:**
-```bash
-git checkout nombre-de-la-rama
-git merge main
-```
-
----
-
-## 17. Comandos útiles de Docker
-
-```bash
-# Levantar todos los contenedores
-docker compose up -d
-
-# Ver contenedores activos
-docker ps
-
-# Detener contenedores (sin borrar datos)
-docker compose down
-
-# Detener y borrar volúmenes (reset total de BD)
-docker compose down -v
-
-# Reconstruir imágenes después de cambiar un Dockerfile
-docker compose up -d --build
-
-# Ver logs en tiempo real de todos los servicios
-docker compose logs -f
-
-# Ver logs de un servicio específico
-docker logs giragroup_laravel
-docker logs giragroup_vite
-docker logs giragroup_postgres
-
-# Entrar al contenedor de Laravel
-docker exec -it giragroup_laravel sh
-
-# Entrar al contenedor de Vite
-docker exec -it giragroup_vite sh
-```
-
----
-
-## 18. Solución de errores comunes
-
-**Error de conexión a PostgreSQL desde Laravel**
-
-Verificar que el `.env` tenga:
+**Error de conexión a BD:**
+Verificar `.env`:
 ```env
-DB_HOST=sudosquad_db
+DB_HOST=pg_database
 DB_PORT=5432
 ```
 No usar `127.0.0.1` ni `5433` — esos son para conexiones desde fuera de Docker.
 
----
+**Modelo BETO no encontrado:**
+Re-ejecutar paso 6.
 
-**pgAdmin no abre en localhost:5051**
-
+**FastAPI no responde:**
 ```bash
-docker ps | grep giragroup_pgadmin
-docker logs giragroup_pgadmin
+docker-compose logs python_env
 ```
 
-Si el volumen está corrupto:
-```bash
-docker compose down
-docker volume rm giragroup_pgadmin_data
-docker compose up -d
-```
-
----
-
-**Laravel no responde en localhost:8000**
-
-```bash
-docker logs giragroup_laravel
-```
-
-Si el servidor no arrancó:
-```bash
-docker compose down
-docker compose up -d
-```
-
----
-
-**Vite no compila / wayfinder falla**
-
-```bash
-docker logs giragroup_vite
-```
-
-Si hay error de PHP no encontrado, reconstruir la imagen de Vite:
-```bash
-docker compose up -d --build giragroup_vite
-```
-
----
-
-**Caché de Laravel desactualizada**
-
-```bash
-docker exec -it sudosquad_laravel php artisan optimize:clear
-```
-
----
-
-**Puerto 5433 o 5051 ya ocupado**
-
-Cambiar el puerto externo en `docker-compose.yml`:
+**Power BI no conecta:**
+Verificar puertos en `docker-compose.yml`:
 ```yaml
 ports:
-  - "5434:5432"   # para postgres
-  - "5052:80"     # para pgadmin
+  - "5433:5432"   # PostgreSQL
+  - "5051:80"     # pgAdmin
 ```
-
-Y actualizar `.env` si cambiaste el puerto de postgres (solo aplica para conexiones externas, no desde Laravel).
-
----
-
-## 19. Archivos importantes
-
-| Archivo / Carpeta | Descripción |
-|---|---|
-| `docker-compose.yml` | Configuración de los 4 contenedores |
-| `docker/laravel/Dockerfile` | Imagen PHP 8.4 + Composer para Laravel |
-| `docker/vite/Dockerfile` | Imagen Node 20 + PHP84 para Vite/wayfinder |
-| `init.sql` | Script inicial de base de datos |
-| `.env` | Variables locales del entorno |
-| `routes/web.php` | Rutas principales |
-| `app/Models/User.php` | Modelo de usuario |
-| `app/Http/Controllers/` | Controladores Laravel |
-| `app/Providers/FortifyServiceProvider.php` | Autenticación y seguridad |
-| `resources/js/pages/` | Vistas React + Inertia |
-| `resources/js/components/` | Componentes React reutilizables |
-
----
-
-## 20. Reglas del equipo
-
-- No subir `.env` ni `node_modules`.
-- No modificar `main` directamente — siempre trabajar en una rama.
-- Crear una rama por módulo o funcionalidad.
-- Hacer `git pull origin main` antes de empezar cualquier sesión.
-- Avisar al equipo si se modifica `init.sql`, `docker-compose.yml`, `Dockerfile`, rutas o autenticación.
-- Usar mensajes de commit claros y descriptivos en inglés.
-
----
-
-## Equipo — GiraGroup
-
-| Nombre | Rol |
-|---|---|
-| Adriano Leandro Daza Campero | Coach / Líder técnico |
-| Adriano Leandro Daza Campero | Frontend |
-| Adriano Leandro Daza Campero | Backend |
-| Adriano Leandro Daza Campero | QA / Calidad |
-
-**Universidad Privada del Valle — Sede La Paz · 2026**
