@@ -1,5 +1,8 @@
 {
   "name": "giragroup-frontend",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Contenedor Frontend activo. Esperando instalación de React/Vite en el futuro...' && tail -f /dev/null"
+  }
 }
