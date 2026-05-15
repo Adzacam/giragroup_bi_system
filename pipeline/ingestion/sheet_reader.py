@@ -34,16 +34,15 @@ def leer_excel_academico(file_path: str) -> list[dict]:
 
 # --- Prueba rápida local ---
 if __name__ == "__main__":
-    # Simulación de ruta de archivo. 
-    # Asegúrate de crear la carpeta 'uploads' en la raíz y poner un excel de prueba ahí.
-    ruta_prueba = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../uploads/plantilla_prueba.xlsx"))
+    # Cambiar 'plantilla_prueba.xlsx' por el nombre real de tu archivo
+    ruta_prueba = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../uploads/Hoja prueba.xlsx"))
     
     print(f"Buscando archivo en: {ruta_prueba}")
     if os.path.exists(ruta_prueba):
         resultados = leer_excel_academico(ruta_prueba)
         print(f"\nÉxito: Se extrajeron {len(resultados)} filas.")
         if resultados:
-            print("Muestra de la primera fila leída:")
+            print("\nMuestra de la primera fila leída:")
             print(resultados[0])
     else:
-        print("Crea un archivo Excel de prueba en la carpeta 'uploads' para probar el script.")
+        print("No se encontró el archivo en la ruta especificada.")

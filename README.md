@@ -186,7 +186,7 @@ Deben aparecer:
 | Servicio | URL |
 |---|---|
 | Documentación API (Swagger) | http://localhost:8000/docs |
-| Interfaz Web (Capa 4 - React) | http://localhost:3000 |
+| Interfaz Web (Capa 5A - React + Vite) | http://localhost:5173 |
 | Health Check BD | http://localhost:8000/health |
 
 ---
@@ -298,6 +298,9 @@ docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos/simi
 # Carga de proyectos del año 2024
 docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos?anio=2024" -s | python -m json.tool
 
+# Carga de proyectos del año 2025
+docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos?anio=2025" -s | python -m json.tool
+
 # Carga de proyectos con fecha límite en 2026
 docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos?fecha_limite_inicio=2026-01-01&fecha_limite_fin=2026-12-31" -s | python -m json.tool
 ```
@@ -321,33 +324,47 @@ docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos?fech
 
 ---
 
-## 11. Comandos Útiles y Mantenimiento
+## 11. Guía de Referencia y Flujos de Trabajo Diarios
 
-### Apagar y encender el sistema
-```bash
-# Apagar
-docker-compose down
+A continuación, se detallan los comandos más utilizados para el desarrollo diario y control de versiones.
 
-# Encender
-docker-compose up -d
+### 1. Gestión del Entorno Virtual Local (Windows)
+Comandos utilizados para configurar el analizador del IDE y ejecutar scripts fuera de los contenedores.
 
-# Reconstruir imágenes y levantar
-docker-compose up -d --build
-```
+* **Crear entorno:** `py -m venv .venv`
+* **Activar entorno:** `.\.venv\Scripts\activate`
+* **Instalar dependencias API:** `pip install -r backend/requirements.txt`
+* **Instalar dependencias Pipeline:** `pip install -r pipeline/requirements.txt`
+* **Ejecutar script local:** `python pipeline/ingestion/sheet_reader.py`
+* **Desactivar entorno:** `deactivate`
 
-### Reiniciar base de datos
-```bash
-# Reiniciar BD (borra datos)
-docker-compose down -v
-docker-compose up -d
-```
+### 2. Orquestación de Infraestructura (Docker)
+Comandos para controlar el ciclo de vida de las 5 capas de la arquitectura.
 
-### Ver logs de los servicios
-```bash
-docker-compose logs -f
-docker-compose logs python_env
-docker-compose logs pg_database
-```
+* **Encender servicios:** `docker-compose up -d`
+* **Reconstruir y encender (aplicar cambios en Dockerfile/schema):** `docker-compose up -d --build`
+* **Apagar servicios (mantiene los datos):** `docker-compose down`
+* **Reset total (borra la base de datos de PostgreSQL):** `docker-compose down -v`
+* **Verificar contenedores activos:** `docker ps`
+* **Ver logs en tiempo real (ej. de la API):** `docker-compose logs -f api`
+
+### 3. Ejecución Interna (Docker Exec)
+Comando para lanzar procesos directamente sobre el entorno Linux del contenedor, aprovechando las librerías nativas preinstaladas.
+
+* **Ejecutar extracción de Excel:** `docker exec -it giragroup_pipeline python pipeline/ingestion/sheet_reader.py`
+
+### 4. Control de Versiones (Git - Cierre de Sprint)
+Flujo estándar utilizado para consolidar la rama de desarrollo con la rama principal.
+
+* **Preparar archivos:** `git add .`
+* **Crear punto de restauración:** `git commit -m "mensaje descriptivo"`
+* **Subir a la rama activa:** `git push origin nombre-rama`
+* **Cambiar de rama:** `git checkout main`
+* **Fusionar cambios:** `git merge nombre-rama`
+
+---
+
+## 11.5. Mantenimiento del Proyecto
 
 ### Mover el proyecto de sitio
 Si necesitas cambiar la carpeta del proyecto de ubicación o de computadora:
@@ -366,19 +383,6 @@ docker rmi giragroup_bi_system-api
 docker rmi postgres:16-alpine
 
 # 3. Eliminar la carpeta física del proyecto manualmente
-```
-
----
-
-## 11.5. (Opcional) Entorno Virtual de Python Local
-Aunque el entorno está **completamente dockerizado**, si necesitas instalar las dependencias localmente en tu host para que tu IDE (ej. VSCode) reconozca las librerías:
-
-1. Asegúrate de tener instalado **Python**.
-2. Ejecuta en la terminal del proyecto:
-```bash
-py -m venv .venv
-.venv\Scripts\activate
-pip install -r backend/requirements.txt
 ```
 
 ---
