@@ -30,7 +30,7 @@ CREATE TABLE dim_modulo (
 
 CREATE TABLE dim_origen_documental (
     id_documento     SERIAL PRIMARY KEY,
-    tipo_documento   VARCHAR(10) CHECK (tipo_documento IN ('PDF','SHEET','FORM','DOCX','XLSX')),
+    tipo_documento   VARCHAR(10) CHECK (tipo_documento IN ('SHEET', 'FORM', 'MOODLE', 'XLSX')),
     nombre_archivo   VARCHAR(500),
     fecha_procesamiento TIMESTAMP DEFAULT NOW()
 );
@@ -43,7 +43,7 @@ CREATE TABLE users (
     id               SERIAL PRIMARY KEY,
     username         VARCHAR(100) UNIQUE NOT NULL,
     hashed_password  VARCHAR(255) NOT NULL,
-    role             VARCHAR(20) CHECK (role IN ('coordinador','administrativo')),
+    role             VARCHAR(20) CHECK (role IN ('coordinador', 'administrativo', 'marketing', 'admin')),
     created_at       TIMESTAMP DEFAULT NOW()
 );
 
