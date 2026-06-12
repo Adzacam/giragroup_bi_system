@@ -6,8 +6,35 @@ Devuelve el contrato de salida estándar del pipeline.
 
 import pandas as pd
 import os
+import unicodedata
 from datetime import datetime
 from typing import Union
+
+
+def _validar_columnas_identificadoras(df: pd.DataFrame) -> None:
+    """Valida que el DataFrame contenga al menos una columna identificadora primaria."""
+    # Términos clave a buscar en las columnas normalizadas
+    terminos_clave = ["id", "cod", "alumno", "estudiante", "email", "correo"]
+    
+    def normalizar(c):
+        c_str = str(c).strip().lower()
+        return "".join(ch for ch in unicodedata.normalize("NFD", c_str) if unicodedata.category(ch) != "Mn")
+    
+    columnas_norm = [normalizar(col) for col in df.columns]
+    
+    # Comprobar si al menos una columna contiene alguno de los términos clave (coincidencia parcial)
+    encontrado = False
+    for col in columnas_norm:
+        if any(tk in col for tk in terminos_clave):
+            encontrado = True
+            break
+            
+    if not encontrado:
+        raise ValueError(
+            "Fallo de validacion estructural: No se encontro ninguna columna identificadora primaria "
+            f"(ej. que contenga 'id', 'cod', 'alumno', 'estudiante', 'email', 'correo'). "
+            f"Columnas encontradas: {list(df.columns)}"
+        )
 
 
 def leer_xlsx(file_path: str) -> dict:
@@ -28,6 +55,9 @@ def leer_xlsx(file_path: str) -> dict:
     df.dropna(axis=1, how="all", inplace=True)
     df.columns = [str(c).strip().lower().replace(" ", "_") for c in df.columns]
     df = df.fillna("")
+
+    # Validación estructural
+    _validar_columnas_identificadoras(df)
 
     filas = df.to_dict(orient="records")
     texto_plano = _dataframe_a_texto(df)
@@ -69,6 +99,10 @@ def leer_google_sheet(sheet_id: str, rango: str = "Sheet1") -> dict:
     df = pd.DataFrame(data)
     df.columns = [str(c).strip().lower().replace(" ", "_") for c in df.columns]
     df = df.fillna("")
+
+    # Validación estructural
+    _validar_columnas_identificadoras(df)
+
     texto_plano = _dataframe_a_texto(df)
 
     return {

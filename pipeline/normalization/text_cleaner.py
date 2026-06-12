@@ -56,3 +56,47 @@ def normalizar_nombre(nombre: str) -> str:
     nombre = re.sub(r"\s+", " ", nombre)
 
     return nombre
+
+
+def preparar_payload_beto(df, fuente_tipo: str, nombre_archivo: str, columnas_texto: list = None) -> list:
+    """
+    Normaliza y limpia comentarios de texto libre en un DataFrame,
+    generando una lista de payloads estructurados para la inferencia con BETO.
+    """
+    import pandas as pd
+    
+    payload = []
+    
+    # Aplicar la heurística si no hay columnas explícitas
+    if not columnas_texto:
+        columnas_texto = []
+        for col in df.columns:
+            # Exigir que sea de tipo object o string
+            if df[col].dtype in ['object', 'string'] or str(df[col].dtype) in ['object', 'string']:
+                non_null_series = df[col].dropna().astype(str)
+                if not non_null_series.empty:
+                    longitud_promedio = non_null_series.str.len().mean()
+                    # Al menos el 70% de las celdas no nulas deben cumplir con el umbral > 15
+                    porcentaje_cumple = (non_null_series.str.len() > 15).mean()
+                    
+                    if longitud_promedio > 15 and porcentaje_cumple >= 0.7:
+                        columnas_texto.append(col)
+                    
+    # Recorrer las columnas identificadas para extraer y limpiar los strings
+    for col in columnas_texto:
+        if col not in df.columns:
+            continue
+        for idx, valor in df[col].items():
+            if valor is not None and str(valor).strip():
+                # Invocar la función de limpieza base
+                texto_procesado = limpiar_texto(str(valor))
+                if texto_procesado:
+                    payload.append({
+                        "texto_limpio": texto_procesado,
+                        "fuente_tipo": fuente_tipo,
+                        "nombre_archivo": nombre_archivo,
+                        "id_fila": idx,
+                        "columna_origen": col
+                    })
+    return payload
+
