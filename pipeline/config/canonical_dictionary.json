@@ -1,0 +1,211 @@
+{
+  "version": "1.1.0",
+  "description": "Diccionario canónico de mapeo: etiquetas semánticas unificadas → aliases conocidos y anti-aliases.",
+
+  "config": {
+    "matching_threshold": 88.0,
+    "profiler_sample_size": 300,
+    "text_libre_word_threshold": 3,
+    "text_libre_char_threshold": 30,
+    "text_libre_cell_pct_threshold": 0.40
+  },
+
+  "anti_aliases": {
+    "nombre_programa": ["nombres", "nombre", "nombres y apellidos", "apellido paterno", "apellido materno", "estado_programa", "estado programa", "estado_del_programa", "estado del programa", "estado_academico", "estado_arca", "estado_tutoria", "estado"],
+    "identificador_persona": ["n°", "nro", "respuesta n°", "n° pos", "nº", "respuesta nº", "pos", "materia", "modulo"],
+    "pos": ["grupos", "grupo", "modalidad", "escuela", "sede", "comentarios", "observaciones"],
+    "docente": ["n°", "respuesta n°", "estudiante", "alumno", "participante"]
+  },
+
+  "campos_estructurales": {
+    "identificador_persona": {
+      "descripcion": "Cédula de identidad o código único del encuestado/estudiante",
+      "aliases": [
+        "ci", "cédula de identidad", "cedula de identidad", "ci inscritos",
+        "pos-ci", "codigo_estudiante", "código estudiante", "numero de id",
+        "número de id", "ci del estudiante", "carnet", "carnet de identidad",
+        "nro. ci", "nro ci", "documento de identidad"
+      ]
+    },
+    "nombre_persona": {
+      "descripcion": "Nombre completo del encuestado/estudiante",
+      "aliases": [
+        "nombre completo", "nombre completo del usuario", "nombre_completo",
+        "nombre y apellido", "nombres y apellidos", "alumno", "estudiante",
+        "nombre del estudiante", "nombre del alumno", "participante", "nombres"
+      ]
+    },
+    "correo_persona": {
+      "descripcion": "Correo electrónico del encuestado",
+      "aliases": [
+        "correo", "email", "correo electrónico", "correo electronico",
+        "dirección de correo", "direccion de correo", "e-mail",
+        "correo institucional", "dirección de correo electrónico"
+      ]
+    },
+    "nombre_programa": {
+      "descripcion": "Nombre del programa académico",
+      "aliases": [
+        "nombre del programa", "programa académico", "programa academico",
+        "carrera", "nombre del pos", "pos nombre", "nombre programa", "programa de estudio"
+      ]
+    },
+    "pos": {
+      "descripcion": "Código identificador del programa (POS)",
+      "aliases": [
+        "pos", "código pos", "codigo pos", "cod pos", "cod. pos",
+        "código programa", "codigo programa", "id programa", "id_programa",
+        "programa pos", "pos - actas", "pos - modulo", "pos - ibp", "pos + ibp"
+      ]
+    },
+    "modulo": {
+      "descripcion": "Nombre o código del módulo/materia en encuestas (llave de cruce)",
+      "aliases": [
+        "módulo", "modulo", "nombre del módulo", "nombre del modulo",
+        "materia", "asignatura", "nombre módulo", "nombre modulo",
+        "nombre de la materia", "cod módulo", "cod modulo",
+        "modulo n°", "modulo n", "modulo nro", "módulo n°", "n° modulo"
+      ]
+    },
+    "modulo_acta_1": { "descripcion": "Nota/Módulo 1 en Actas", "aliases": ["módulo 1", "modulo 1", "módulo_1", "modulo_1"] },
+    "modulo_acta_2": { "descripcion": "Nota/Módulo 2 en Actas", "aliases": ["módulo 2", "modulo 2", "módulo_2", "modulo_2"] },
+    "modulo_acta_3": { "descripcion": "Nota/Módulo 3 en Actas", "aliases": ["módulo 3", "modulo 3", "módulo_3", "modulo_3"] },
+    "modulo_acta_4": { "descripcion": "Nota/Módulo 4 en Actas", "aliases": ["módulo 4", "modulo 4", "módulo_4", "modulo_4"] },
+    "modulo_acta_5": { "descripcion": "Nota/Módulo 5 en Actas", "aliases": ["módulo 5", "modulo 5", "módulo_5", "modulo_5"] },
+    "modulo_acta_6": { "descripcion": "Nota/Módulo 6 en Actas", "aliases": ["módulo 6", "modulo 6", "módulo_6", "modulo_6"] },
+    "modulo_acta_7": { "descripcion": "Nota/Módulo 7 en Actas", "aliases": ["módulo 7", "modulo 7", "módulo_7", "modulo_7"] },
+    "modulo_acta_8": { "descripcion": "Nota/Módulo 8 en Actas", "aliases": ["módulo 8", "modulo 8", "módulo_8", "modulo_8"] },
+    "modulo_acta_9": { "descripcion": "Nota/Módulo 9 en Actas", "aliases": ["módulo 9", "modulo 9", "módulo_9", "modulo_9"] },
+    "modulo_acta_10": { "descripcion": "Nota/Módulo 10 en Actas", "aliases": ["módulo 10", "modulo 10", "módulo_10", "modulo_10"] },
+    "modulo_acta_11": { "descripcion": "Nota/Módulo 11 en Actas", "aliases": ["módulo 11", "modulo 11", "módulo_11", "modulo_11"] },
+    "modulo_acta_12": { "descripcion": "Nota/Módulo 12 en Actas", "aliases": ["módulo 12", "modulo 12", "módulo_12", "modulo_12"] },
+
+    "docente": {
+      "descripcion": "Nombre del docente/instructor (en hojas maestras MODULOS)",
+      "aliases": [
+        "docente", "nombre del docente", "instructor", "profesor",
+        "nombre docente", "facilitador", "nombre del instructor",
+        "tutor", "catedrático", "catedratico"
+      ]
+    },
+    "fecha_evento": {
+      "descripcion": "Fecha del evento, respuesta o registro",
+      "aliases": [
+        "fecha", "fecha inicio", "marca temporal", "marca_temporal",
+        "timestamp", "fecha_respuesta", "fecha de respuesta",
+        "fecha registro", "fecha de registro", "fecha de inicio",
+        "fecha evento", "fecha encuesta"
+      ]
+    },
+    "nota_likert": {
+      "descripcion": "Calificación en escala numérica (1-5, 1-10, 0-100)",
+      "aliases": [
+        "nota", "nota_final", "calificación", "calificacion",
+        "puntaje", "puntuación", "puntuacion", "score",
+        "evaluación", "evaluacion", "total del curso",
+        "calificación final del curso", "calificacion final del curso"
+      ]
+    },
+    "grupo": {
+      "descripcion": "Grupo o sección del estudiante/encuestado",
+      "aliases": [
+        "grupos", "grupo", "sección", "seccion", "paralelo",
+        "grupo de clase", "sección académica"
+      ]
+    }
+  },
+
+  "preguntas_abiertas": {
+    "sugerencia_estilo_docente": {
+      "especifica": true,
+      "descripcion": "Opinión sobre el estilo de enseñanza del docente y aspectos a mejorar",
+      "aliases": [
+        "¿qué aspectos del estilo de enseñanza podrían mejorarse?",
+        "qué aspectos del estilo de enseñanza podrían mejorarse",
+        "que aspectos del estilo de enseñanza podrian mejorarse",
+        "aspectos del estilo de enseñanza",
+        "¿qué aspectos del estilo de enseñanza del docente podrían mejorarse?",
+        "aspectos a mejorar del docente",
+        "sugerencias sobre el estilo de enseñanza",
+        "aspectos a mejorar del estilo docente (abierta)",
+        "10: aspectos a mejorar del estilo docente (abierta)",
+        "8_aspectos_del_estilo_docente_a_mejorar_abierta"
+      ]
+    },
+    "comentario_general": {
+      "especifica": false,
+      "descripcion": "Comentarios o sugerencias generales del encuestado",
+      "aliases": [
+        "por favor, deje un comentario o sugerencia",
+        "deje un comentario o sugerencia",
+        "comentario o sugerencia",
+        "comentarios adicionales",
+        "observaciones",
+        "comentarios generales",
+        "sugerencias",
+        "por favor, deje un comentario",
+        "deje un comentario",
+        "comentario",
+        "¿tiene algún comentario adicional?",
+        "tiene algún comentario adicional",
+        "comentario o sugerencia libre (abierta)",
+        "17: comentario o sugerencia libre (abierta)"
+      ]
+    },
+    "contenido_a_explorar": {
+      "especifica": true,
+      "descripcion": "Contenido adicional que el encuestado desea explorar o aprender",
+      "aliases": [
+        "¿qué otro contenido le gustaría explorar?",
+        "qué otro contenido le gustaría explorar",
+        "que otro contenido le gustaria explorar",
+        "contenido adicional a explorar",
+        "qué contenido le gustaría",
+        "temas adicionales",
+        "otros temas de interés",
+        "contenido adicional deseado (abierta)",
+        "13: contenido adicional deseado (abierta)",
+        "15: contenido adicional deseado (abierta)",
+        "4_contenido_adicional_deseado_abierta"
+      ]
+    },
+    "valoracion_positiva_docente": {
+      "especifica": true,
+      "descripcion": "Aspectos positivos del docente o la experiencia",
+      "aliases": [
+        "¿qué es lo que más valora del docente?",
+        "qué es lo que más valora",
+        "que es lo que mas valora del docente",
+        "aspectos positivos del docente",
+        "lo que más le gustó",
+        "fortalezas del docente"
+      ]
+    },
+    "valoracion_contenido": {
+      "especifica": true,
+      "descripcion": "Opinión sobre el contenido del módulo/programa",
+      "aliases": [
+        "¿cómo calificaría el contenido del módulo?",
+        "cómo calificaría el contenido",
+        "valoración del contenido",
+        "opinión sobre el contenido",
+        "opinion sobre el contenido"
+      ]
+    }
+  },
+
+  "hojas_descartables": {
+    "patrones_nombre": [
+      "copia de", "borrador", "boor", "tabla dinámica", "tabla dinamica",
+      "dashboard", "pivot", "pivote", "hoja de cálculo", "hoja de calculo",
+      "resumen", "tmp", "temp", "test", "prueba"
+    ],
+    "razones_descarte": {
+      "HOJA_VACIA": "Hoja sin filas de datos (completamente vacía o solo encabezados)",
+      "TABLA_DINAMICA": "Hoja que contiene una tabla dinámica de Excel, no datos crudos",
+      "HOJA_DUPLICADA_BORRADOR": "Hoja duplicada o borrador (prefijo 'Copia de', 'borrador', etc.)",
+      "DASHBOARD_SIN_DATOS": "Hoja tipo dashboard/resumen sin datos crudos ingestables",
+      "ENCABEZADO_CORRUPTO": "Hoja con encabezados irrecuperables (correos, fragmentos aleatorios como nombres de columna)"
+    }
+  }
+}
