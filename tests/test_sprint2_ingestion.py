@@ -579,3 +579,83 @@ class TestSprint2Regression:
         campo, metodo, _ = mapper.resolver_columna("Programa", df=df_names)
         assert campo == "nombre_programa"
 
+    def test_pos_utils_weird_formats_and_length_fallback(self):
+        """Verifica que se extraigan POS con formatos 'raros' y longitudes variables."""
+        from pipeline.normalization.pos_utils import extraer_codigo_pos
+        # POS con 5+ caracteres (debería extraerse completo bajo la regex expandida)
+        assert extraer_codigo_pos("POS-12345") == "POS-12345"
+        # POS puro numérico corto o largo
+        assert extraer_codigo_pos("12") == "POS-12"
+        assert extraer_codigo_pos("123") == "POS-123"
+        assert extraer_codigo_pos("1234") == "POS-1234"
+        # POS con letras y números mezclados
+        assert extraer_codigo_pos("POS-AB12") == "POS-AB12"
+
+    def test_dynamic_programa_routing_ambiguous(self):
+        """Verifica el routing dinámico con contenido ambiguo o mezclado."""
+        from pipeline.ingestion.canonical_mapper import CanonicalMapper
+        mapper = CanonicalMapper()
+        
+        # Mezclado con algunos POS y algunos NaN/vacíos -> debe preferir 'pos'
+        df_ambiguous = pd.DataFrame({
+            "Programa": ["5381", None, "", "POS-033"]
+        })
+        campo, _, _ = mapper.resolver_columna("Programa", df=df_ambiguous)
+        assert campo == "pos"
+
+    def test_pos_valido_dado_de_baja_state(self):
+        """Verifica que un POS dado de baja en una hoja 'baja' reciba el estado pos_valido_dado_de_baja."""
+        from pipeline.normalization.fk_checker import ForeignKeyChecker
+        
+        checker = ForeignKeyChecker()
+        df_activos = pd.DataFrame({"POS - ACTAS": ["POS-1111", "POS-2222"]})
+        df_baja = pd.DataFrame({"POS - IBP": ["POS-3333", "POS-4403"]})
+        
+        checker.cargar_pos_maestros([
+            {"nombre_hoja": "Maestro Activo", "data": df_activos, "mapeo_columnas": {"POS - ACTAS": "pos"}},
+            {"nombre_hoja": "PROGRMAS  DE BAJA", "data": df_baja, "mapeo_columnas": {"POS - IBP": "pos"}}
+        ])
+        
+        assert checker.verificar_pos("POS-1111") is True
+        assert checker.verificar_pos("POS-3333") is True
+        assert checker.verificar_pos("POS-9999") is False
+        
+        doc_activo = {"llaves_relacion": {"POS": "POS-1111"}, "estado": "ok"}
+        checker.verificar_documentos([doc_activo])
+        assert doc_activo["estado"] == "ok"
+        
+        doc_baja = {"llaves_relacion": {"POS": "POS-3333"}, "estado": "ok"}
+        checker.verificar_documentos([doc_baja])
+        assert doc_baja["estado"] == "pos_valido_dado_de_baja"
+        
+        doc_invalido = {"llaves_relacion": {"POS": "POS-9999"}, "estado": "ok"}
+        checker.verificar_documentos([doc_invalido])
+        assert doc_invalido["estado"] == "sin_llave_valida"
+
+    def test_column_collision_safeguard_intento_2(self):
+        """Verifica que Intento 2 (búsqueda parcial) no robe una columna ya mapeada canónicamente."""
+        from pipeline.normalization.document_builder import construir_documentos_minimos
+        
+        df_datos = pd.DataFrame({
+            "Programa": ["POS-1111"],
+            "Pregunta Abierta": ["Excelente clase."]
+        })
+        
+        hoja = {
+            "nombre_archivo": "test.xlsx",
+            "nombre_hoja": "Encuesta",
+            "data": df_datos,
+            "columnas_texto_libre": ["Pregunta Abierta"],
+            "mapeo_columnas": {
+                "Programa": "pos",
+                "Pregunta Abierta": "pregunta_abierta"
+            }
+        }
+        
+        docs = construir_documentos_minimos(hoja)
+        assert len(docs) == 1
+        doc = docs[0]
+        assert doc["llaves_relacion"]["POS"] == "POS-1111"
+        assert doc["llaves_relacion"]["NOMBRE_PROGRAMA"] == ""
+        assert doc["estado"] == "ok"
+

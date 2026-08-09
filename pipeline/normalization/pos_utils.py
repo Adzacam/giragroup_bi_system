@@ -8,12 +8,12 @@ import re
 import unicodedata
 from typing import Union
 
-# Regex standard: matches 'POS-' followed by 2 to 4 alphanumeric characters.
+# Regex standard: matches 'POS-' followed by 2 to 6 alphanumeric characters.
 # Includes word boundary/start anchor to prevent matching large numbers.
-POS_STANDARD_REGEX = re.compile(r"\b(POS-[a-zA-Z0-9]{2,4})\b", re.IGNORECASE)
+POS_STANDARD_REGEX = re.compile(r"\b(POS-[a-zA-Z0-9]{2,6})\b", re.IGNORECASE)
 
-# Suffix matching for raw digits (2 to 4 digits) optionally followed by a hyphen/CI
-POS_NUMERIC_PREFIX_REGEX = re.compile(r"^(\d{2,4})(?:\b|-)")
+# Suffix matching for raw digits (2 to 6 digits) optionally followed by a hyphen/CI
+POS_NUMERIC_PREFIX_REGEX = re.compile(r"^(\d{2,6})(?:\b|-)")
 
 def extraer_codigo_pos(valor: Union[str, int, float]) -> str:
     """

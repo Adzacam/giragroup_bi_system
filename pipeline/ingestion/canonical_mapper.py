@@ -137,15 +137,17 @@ class CanonicalMapper:
         # Regla especial dinámica: si el nombre es exactamente 'programa'
         if norm == "programa":
             if df is not None and nombre_columna in df.columns:
-                series = df[nombre_columna].dropna().astype(str)
-                # Contar coincidencias con formato POS (ej: POS-XXXX o puro numérico de 4 dígitos)
-                pos_matches = sum(1 for v in series if re.search(r"\b(POS-[a-zA-Z0-9]{2,4})\b", v, re.IGNORECASE))
-                numeric_matches = sum(1 for v in series if v.isdigit() and len(v) == 4)
-                total_non_empty = len(series)
-                if total_non_empty > 0 and (pos_matches / total_non_empty > 0.5 or numeric_matches / total_non_empty > 0.5):
-                    return "pos", "EXACTO", 100.0
-                else:
-                    return "nombre_programa", "EXACTO", 100.0
+                series_raw = df[nombre_columna].dropna().astype(str)
+                series = [v.strip() for v in series_raw if v.strip() and v.strip().lower() not in ("nan", "none", "n/a")]
+                if series:
+                    # Contar coincidencias con formato POS (ej: POS-XXXX o puro numérico de 4 dígitos)
+                    pos_matches = sum(1 for v in series if re.search(r"\b(POS-[a-zA-Z0-9]{2,6})\b", v, re.IGNORECASE))
+                    numeric_matches = sum(1 for v in series if v.isdigit() and len(v) == 4)
+                    total = len(series)
+                    avg_len = sum(len(v) for v in series) / total
+                    if (pos_matches + numeric_matches) > 0 and (avg_len < 15 or (pos_matches / total >= 0.3 or numeric_matches / total >= 0.3)):
+                        return "pos", "EXACTO", 100.0
+                return "nombre_programa", "EXACTO", 100.0
 
         # REGLA DURA 1: docente NUNCA se mapea desde columnas directas en encuestas
         if es_encuesta:
