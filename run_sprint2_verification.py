@@ -22,57 +22,53 @@ from pipeline.normalization.fk_checker import ForeignKeyChecker
 from pipeline.normalization.audit_logger import AuditLogger
 from pipeline.normalization.text_cleaner import deduplicar_respuestas
 
-def verificar_sprint2():
+import sys
+import glob
+
+def verificar_sprint2(corpus_dir: str = "uploads/test"):
     print("=" * 70)
-    print(" INICIANDO VERIFICACIÓN MULTITAREA SOBRE LOS 10 ARCHIVOS DE UPLOADS")
+    print(f" INICIANDO VERIFICACIÓN MULTITAREA SOBRE CORPUS: {corpus_dir}")
     print("=" * 70)
+
+    if not os.path.exists(corpus_dir):
+        print(f"Error: El directorio '{corpus_dir}' no existe.")
+        return
 
     # Inicializar componentes
     enricher = EntityEnricher()
     fk_checker = ForeignKeyChecker()
     audit_logger = AuditLogger("ejecucion_verificacion_multitarea.xlsx")
 
-    # Archivos maestros académicos a cargar primero
-    archivos_maestros = [
-        "uploads/Base_Academica_ARCA_TEST.xlsx",
-        "uploads/TBL_INSCRITOS_TEST.xlsx",
-        "uploads/Planificacion_Ejecucion_TEST.xlsx"
-    ]
+    # Escanear todos los archivos .xlsx
+    all_files = sorted(glob.glob(os.path.join(corpus_dir, "*.xlsx")))
+    if not all_files:
+        print(f"No se encontraron archivos .xlsx en '{corpus_dir}'.")
+        return
+
+    # Identificar maestros académicos (ARCA, TBL_INSCRITOS, Planificacion)
+    archivos_maestros = []
+    for f in all_files:
+        fn = os.path.basename(f).lower()
+        if "arca" in fn or "inscrit" in fn or "planific" in fn:
+            archivos_maestros.append(f)
 
     print("\n[1] Cargando catálogos académicos y llaves relacionales...")
     for arca_path in archivos_maestros:
-        if os.path.exists(arca_path):
-            res = procesar_documento_completo(arca_path)
-            for hd in res["hojas_descartadas"]:
-                audit_logger.registrar_hoja_descartada(hd["nombre_hoja"], hd["razon"])
-            enricher.cargar_desde_dataframes(res["hojas_estructuradas"])
-            fk_checker.cargar_pos_maestros(res["hojas_estructuradas"])
+        print(f"  -> Cargando maestro: {os.path.basename(arca_path)}")
+        res = procesar_documento_completo(arca_path)
+        for hd in res["hojas_descartadas"]:
+            audit_logger.registrar_hoja_descartada(hd["nombre_hoja"], hd["razon"])
+        enricher.cargar_desde_dataframes(res["hojas_estructuradas"])
+        fk_checker.cargar_pos_maestros(res["hojas_estructuradas"])
 
-    # Archivos de la carpeta uploads a verificar
-    todos_archivos = [
-        "uploads/Base_Academica_ARCA_TEST.xlsx",
-        "uploads/BD_Cobranzas_giraGroup.xlsx",
-        "uploads/BD_Egresos_TEST.xlsx",
-        "uploads/BD_Techos_TEST.xlsx",
-        "uploads/EJECUTADO_VS_META_TEST.xlsx",
-        "uploads/Evaluacion_Docente_GiraGroup_TEST.xlsx",
-        "uploads/Experiencia_Docente_TEST.xlsx",
-        "uploads/Planificacion_Ejecucion_TEST.xlsx",
-        "uploads/TBL_INSCRITOS_TEST.xlsx",
-        "uploads/BBDD_Evaluacion_Docente_GiraGroup_TEST.xlsx"
-    ]
-
-    print("\n[2] Procesando los 10 archivos de uploads/...")
+    print("\n[2] Procesando todos los archivos del corpus...")
     
     resumen_clasificacion = []
     all_docs = []
 
-    for file_path in todos_archivos:
-        if not os.path.exists(file_path):
-            continue
-        
+    for file_path in all_files:
+        nombre_file = os.path.basename(file_path)
         res = procesar_documento_completo(file_path)
-        nombre_file = res["nombre_archivo"]
 
         resumen_clasificacion.append({
             "archivo": nombre_file,
@@ -107,7 +103,7 @@ def verificar_sprint2():
 
     # 3. Mostrar Resumen de Clasificación por Archivo
     print("\n" + "=" * 70)
-    print(" CLASIFICACIÓN DE HOJAS POR ARCHIVO (CORPUS DE 10 ARCHIVOS)")
+    print(f" CLASIFICACIÓN DE HOJAS POR ARCHIVO (CORPUS DE {len(all_files)} ARCHIVOS)")
     print("=" * 70)
     for r in resumen_clasificacion:
         print(f" {r['archivo']:<45} | TL: {r['texto_libre']} | EST: {r['estructuradas']} | FIN: {r['financieras']} | DESC: {r['descartadas']}")
@@ -118,22 +114,26 @@ def verificar_sprint2():
     print("=" * 70)
     print(f"Total Documentos Mínimos Generados: {len(all_docs)}")
     print(f"  -> Estado 'ok': {sum(1 for d in all_docs if d['estado'] == 'ok')}")
+    print(f"  -> Estado 'pos_valido_dado_de_baja': {sum(1 for d in all_docs if d['estado'] == 'pos_valido_dado_de_baja')}")
     print(f"  -> Estado 'sin_llave_valida': {sum(1 for d in all_docs if d['estado'] == 'sin_llave_valida')}")
     print(f"  -> Estado 'vacio_descartado': {sum(1 for d in all_docs if d['estado'] == 'vacio_descartado')}")
 
     # Mostrar Muestras de Documentos
     ok_docs_with_docente = [d for d in all_docs if d["estado"] == "ok" and d["llaves_relacion"]["DOCENTE"]]
     if ok_docs_with_docente:
-        print("\n[MUESTRA 1] Documento Mínimo 'ok' Enriquecido con DOCENTE (DIP. EXP DOC. X MODULO):")
+        print("\n[MUESTRA 1] Documento Mínimo 'ok' Enriquecido con DOCENTE:")
         pprint(ok_docs_with_docente[0])
 
-    inscritos_docs = [d for d in all_docs if d["fuente"]["hoja"] == "TBL_INSCRITOS"]
+    inscritos_docs = [d for d in all_docs if "inscritos" in d["fuente"]["hoja"].lower()]
     if inscritos_docs:
-        print("\n[MUESTRA 2] Documento Mínimo con POS Compuesto Recortado (TBL_INSCRITOS):")
+        print("\n[MUESTRA 2] Documento Mínimo con POS Compuesto Recortado:")
         pprint(inscritos_docs[0])
 
     reporte = audit_logger.exportar_reporte()
     print(f"\n[REPORT] Log de auditoría exportado a: pipeline/logs/ingestion_audit.json")
 
 if __name__ == "__main__":
-    verificar_sprint2()
+    target_dir = "uploads/test"
+    if len(sys.argv) > 1:
+        target_dir = sys.argv[1]
+    verificar_sprint2(target_dir)

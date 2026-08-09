@@ -88,7 +88,8 @@ class CanonicalMapper:
     def _normalizar(texto: str) -> str:
         """Minúsculas, sin tildes, sin caracteres especiales, sin espacios extra."""
         t = str(texto).strip().lower()
-        t = re.sub(r"^\d+[\.\)\-]\s*", "", t)
+        # Normalizar prefijos numéricos de preguntas (ej: '6. ', 'a 7. ', '10. n°', etc.)
+        t = re.sub(r"^(?:[a-z]\s*)?\d+(?:[\.\)\-\:]|\s+)(?:\s*(?:n[°º]|nro)\.?)?\s*", "", t, flags=re.IGNORECASE)
         t = "".join(
             ch for ch in unicodedata.normalize("NFD", t)
             if unicodedata.category(ch) != "Mn"
@@ -116,6 +117,7 @@ class CanonicalMapper:
         nombre_columna: str,
         perfil_columna: Optional[Any] = None,
         es_encuesta: bool = False,
+        df: Optional[Any] = None,
     ) -> tuple[Optional[str], str, float]:
         """
         Resuelve un nombre de columna a su etiqueta canónica con
@@ -125,11 +127,25 @@ class CanonicalMapper:
             nombre_columna: Nombre de la columna fuente.
             perfil_columna: Objeto ColumnProfile opcional de profiler.py.
             es_encuesta: True si la hoja es de tipo encuesta / texto_libre.
+            df: DataFrame de origen opcional para resolución dinámica por contenido.
 
         Returns:
             (campo_canonico | None, metodo_match, score)
         """
         norm = self._normalizar(nombre_columna)
+
+        # Regla especial dinámica: si el nombre es exactamente 'programa'
+        if norm == "programa":
+            if df is not None and nombre_columna in df.columns:
+                series = df[nombre_columna].dropna().astype(str)
+                # Contar coincidencias con formato POS (ej: POS-XXXX o puro numérico de 4 dígitos)
+                pos_matches = sum(1 for v in series if re.search(r"\b(POS-[a-zA-Z0-9]{2,4})\b", v, re.IGNORECASE))
+                numeric_matches = sum(1 for v in series if v.isdigit() and len(v) == 4)
+                total_non_empty = len(series)
+                if total_non_empty > 0 and (pos_matches / total_non_empty > 0.5 or numeric_matches / total_non_empty > 0.5):
+                    return "pos", "EXACTO", 100.0
+                else:
+                    return "nombre_programa", "EXACTO", 100.0
 
         # REGLA DURA 1: docente NUNCA se mapea desde columnas directas en encuestas
         if es_encuesta:
@@ -213,6 +229,7 @@ class CanonicalMapper:
         columnas: list[str],
         perfiles_map: Optional[dict[str, Any]] = None,
         es_encuesta: bool = False,
+        df: Optional[Any] = None,
     ) -> dict:
         """
         Resuelve una lista de columnas usando perfil de contenido opcional.
@@ -226,7 +243,7 @@ class CanonicalMapper:
         for col in columnas:
             perfil = perfiles_map.get(col)
             campo, metodo, score = self.resolver_columna(
-                col, perfil_columna=perfil, es_encuesta=es_encuesta
+                col, perfil_columna=perfil, es_encuesta=es_encuesta, df=df
             )
             mapeo[col] = campo
 

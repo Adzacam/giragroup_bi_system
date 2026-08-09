@@ -23,9 +23,11 @@ __pycache__/
 # ---------------------------------------------------
 # CARPETAS DEL PROYECTO (Datos Dinámicos)
 # ---------------------------------------------------
-# No subir documentos de GiraGroup ni archivos temporales
-uploads/*
+# No subir documentos de GiraGroup reales (carpeta data)
+uploads/data/*
 !uploads/.gitkeep
+!uploads/test/
+!uploads/test/*
 
 # No subir logs pesados de la IA o el sistema
 logs/*.log

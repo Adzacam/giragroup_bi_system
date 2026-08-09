@@ -522,3 +522,60 @@ class TestFKCheckerAndAudit:
         )
         assert has_pregunta_especifica is False
         assert resultado["familia"] == "estructurado_relacional"
+
+
+class TestSprint2Regression:
+    """Nuevos tests de regresión para las correcciones del cierre de Sprint 2."""
+
+    def test_pos_utils_extraction_cases(self):
+        """Verifica que pos_utils extraiga y normalice todos los formatos reales."""
+        from pipeline.normalization.pos_utils import extraer_codigo_pos, normalizar_pos
+        
+        # Formatos estándar
+        assert extraer_codigo_pos("POS-5381") == "POS-5381"
+        assert extraer_codigo_pos("POS-033-5160091") == "POS-033"
+        assert extraer_codigo_pos("Maestría en Finanzas / POS-028") == "POS-028"
+        
+        # Formatos puramente numéricos de maestros
+        assert extraer_codigo_pos("5381") == "POS-5381"
+        assert extraer_codigo_pos(5381) == "POS-5381"
+        
+        # Formatos compuestos de inscritos
+        assert extraer_codigo_pos("4403-1114709") == "POS-4403"
+        
+        # Normalización
+        assert normalizar_pos("POS-5381") == "pos-5381"
+        assert normalizar_pos("4403-1114709") == "pos-4403"
+        assert normalizar_pos("") == ""
+        assert normalizar_pos(None) == ""
+
+    def test_canonical_mapper_prefix_normalization(self):
+        """Verifica que el normalizador elimine prefijos numéricos complejos antes del match."""
+        from pipeline.ingestion.canonical_mapper import CanonicalMapper
+        mapper = CanonicalMapper()
+        
+        # Prefijos complejos
+        assert mapper._normalizar("a 7. ¿La/El docente explica...") == "¿la/el docente explica..."
+        assert mapper._normalizar("10. n°¿Qué aspectos...") == "¿que aspectos..."
+        assert mapper._normalizar("17. N° Por favor, deje un comentario...") == "por favor, deje un comentario..."
+        assert mapper._normalizar("6. ¿La/El docente...") == "¿la/el docente..."
+
+    def test_canonical_mapper_dynamic_programa_routing(self):
+        """Verifica que la columna 'programa' se mapee dinámicamente según su contenido."""
+        from pipeline.ingestion.canonical_mapper import CanonicalMapper
+        mapper = CanonicalMapper()
+        
+        # Caso 1: Columna 'programa' con POS codes -> debe resolverse a 'pos'
+        df_pos = pd.DataFrame({
+            "Programa": ["POS-5375", "POS-5275", "5381"]
+        })
+        campo, metodo, _ = mapper.resolver_columna("Programa", df=df_pos)
+        assert campo == "pos"
+        
+        # Caso 2: Columna 'programa' con nombres de programa -> debe resolverse a 'nombre_programa'
+        df_names = pd.DataFrame({
+            "Programa": ["Diplomado en Marketing", "MBA Ejecutivo", "Maestría en Finanzas"]
+        })
+        campo, metodo, _ = mapper.resolver_columna("Programa", df=df_names)
+        assert campo == "nombre_programa"
+

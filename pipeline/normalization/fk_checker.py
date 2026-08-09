@@ -16,31 +16,10 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def extraer_codigo_pos(valor: str) -> str:
-    """
-    Extrae el patrón POS-XXXX de un string.
-    Ej: 'Maestría en Finanzas / POS-028' -> 'POS-028'
-    """
-    if not valor:
-        return ""
-    import re
-    match = re.search(r"\b(POS-[a-zA-Z0-9_-]+)\b", str(valor), re.IGNORECASE)
-    if match:
-        return match.group(1).upper()
-    return str(valor).strip().upper()
+from pipeline.normalization.pos_utils import extraer_codigo_pos, normalizar_pos
 
-
-def _normalizar_pos(valor) -> str:
-    """Normaliza un valor de POS para comparación."""
-    if valor is None or (isinstance(valor, float) and pd.isna(valor)):
-        return ""
-    pos_extracted = extraer_codigo_pos(valor)
-    t = pos_extracted.strip().lower()
-    t = "".join(
-        ch for ch in unicodedata.normalize("NFD", t)
-        if unicodedata.category(ch) != "Mn"
-    )
-    return t
+# Usar alias local para mantener compatibilidad con cualquier otra parte que llame a _normalizar_pos
+_normalizar_pos = normalizar_pos
 
 
 class ForeignKeyChecker:
@@ -50,7 +29,9 @@ class ForeignKeyChecker:
     """
 
     def __init__(self):
-        self._pos_validos: set[str] = set()
+        self._pos_activos: set[str] = set()
+        self._pos_validos = self._pos_activos
+        self._pos_de_baja: set[str] = set()
         self._cargado = False
 
     @property
@@ -59,7 +40,7 @@ class ForeignKeyChecker:
 
     @property
     def total_pos_registrados(self) -> int:
-        return len(self._pos_validos)
+        return len(self._pos_activos) + len(self._pos_de_baja)
 
     def cargar_pos_maestros(self, hojas_estructuradas: list[dict]) -> None:
         """
@@ -97,35 +78,43 @@ class ForeignKeyChecker:
             if col_pos is None:
                 continue
 
-            n_antes = len(self._pos_validos)
-            for val in df[col_pos].dropna().unique():
+            is_baja = "baja" in nombre_hoja.lower()
+            n_antes = self.total_pos_registrados
+            col_series = df[col_pos]
+            if isinstance(col_series, pd.DataFrame):
+                col_series = col_series.iloc[:, 0]
+            for val in col_series.dropna().unique():
                 pos_norm = _normalizar_pos(val)
                 if pos_norm:
-                    self._pos_validos.add(pos_norm)
+                    if is_baja:
+                        self._pos_de_baja.add(pos_norm)
+                    else:
+                        self._pos_activos.add(pos_norm)
 
-            n_nuevos = len(self._pos_validos) - n_antes
+            n_nuevos = self.total_pos_registrados - n_antes
             if n_nuevos > 0:
                 logger.info(
-                    "FKChecker: %d POS cargados desde hoja '%s'.",
-                    n_nuevos, nombre_hoja,
+                    "FKChecker: %d POS cargados desde hoja '%s' (Baja: %s).",
+                    n_nuevos, nombre_hoja, is_baja,
                 )
 
         self._cargado = True
         logger.info(
-            "FKChecker listo: %d POS válidos registrados.",
-            self.total_pos_registrados,
+            "FKChecker listo: %d POS válidos registrados (%d activos, %d de baja).",
+            self.total_pos_registrados, len(self._pos_activos), len(self._pos_de_baja)
         )
 
     def verificar_pos(self, pos: str) -> bool:
         """
-        Verifica si un POS existe en los registros maestros.
+        Verifica si un POS existe en los registros maestros (activos o de baja).
 
         Returns:
             True si el POS es válido, False si no se encuentra.
         """
         if not pos or not pos.strip():
             return False
-        return _normalizar_pos(pos) in self._pos_validos
+        pos_norm = _normalizar_pos(pos)
+        return pos_norm in self._pos_activos or pos_norm in self._pos_de_baja or pos_norm in self._pos_validos
 
     def verificar_documentos(self, documentos: list[dict]) -> dict:
         """
@@ -139,6 +128,7 @@ class ForeignKeyChecker:
             {
                 "documentos_actualizados": list[dict],
                 "pos_validos": int,
+                "pos_de_baja": int,
                 "pos_invalidos": int,
                 "pos_vacios": int,
                 "pos_no_encontrados": list[str],  # POS únicos que no cruzaron
@@ -152,6 +142,7 @@ class ForeignKeyChecker:
             return {
                 "documentos_actualizados": documentos,
                 "pos_validos": 0,
+                "pos_de_baja": 0,
                 "pos_invalidos": 0,
                 "pos_vacios": 0,
                 "pos_no_encontrados": [],
@@ -159,6 +150,7 @@ class ForeignKeyChecker:
 
         pos_invalidos_set = set()
         n_validos = 0
+        n_baja = 0
         n_invalidos = 0
         n_vacios = 0
 
@@ -175,8 +167,14 @@ class ForeignKeyChecker:
                     doc["estado"] = "sin_llave_valida"
                 continue
 
-            if self.verificar_pos(pos):
+            pos_norm = _normalizar_pos(pos)
+
+            if pos_norm in self._pos_activos or pos_norm in self._pos_validos:
                 n_validos += 1
+                doc["estado"] = "ok"
+            elif pos_norm in self._pos_de_baja:
+                n_baja += 1
+                doc["estado"] = "pos_valido_dado_de_baja"
             else:
                 n_invalidos += 1
                 pos_invalidos_set.add(pos)
@@ -192,6 +190,7 @@ class ForeignKeyChecker:
         return {
             "documentos_actualizados": documentos,
             "pos_validos": n_validos,
+            "pos_de_baja": n_baja,
             "pos_invalidos": n_invalidos,
             "pos_vacios": n_vacios,
             "pos_no_encontrados": sorted(pos_invalidos_set),

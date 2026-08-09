@@ -20,18 +20,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def extraer_codigo_pos(valor: str) -> str:
-    """
-    Extrae el patrón POS-XXXX de un string.
-    Ej: 'Maestría en Finanzas / POS-028' -> 'POS-028'
-    """
-    if not valor:
-        return ""
-    import re
-    match = re.search(r"\b(POS-[a-zA-Z0-9_-]+)\b", str(valor), re.IGNORECASE)
-    if match:
-        return match.group(1).upper()
-    return str(valor).strip()
+from pipeline.normalization.pos_utils import extraer_codigo_pos, normalizar_pos
 
 
 def _normalizar_clave(valor) -> str:
@@ -39,12 +28,12 @@ def _normalizar_clave(valor) -> str:
     if valor is None or (isinstance(valor, float) and pd.isna(valor)):
         return ""
     
-    val_str = str(valor)
-    # Extraer POS si corresponde
-    if "pos" in val_str.lower():
-        val_str = extraer_codigo_pos(val_str)
+    val_str = str(valor).strip()
+    # Extraer POS si corresponde (o si es código numérico de 4 dígitos)
+    if "pos" in val_str.lower() or (val_str.isdigit() and len(val_str) == 4):
+        return normalizar_pos(val_str)
         
-    t = val_str.strip().lower()
+    t = val_str.lower()
     # Remover tildes para comparación robusta
     t = "".join(
         ch for ch in unicodedata.normalize("NFD", t)

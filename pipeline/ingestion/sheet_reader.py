@@ -174,6 +174,7 @@ def leer_xlsx_multihoja(file_path: str, mapper: Optional[CanonicalMapper] = None
                 df_limpio.columns.tolist(),
                 perfiles_map=perfiles_map,
                 es_encuesta=es_encuesta,
+                df=df_limpio,
             )
             columnas_no_mapeadas = mapeo_resultado.get("no_mapeadas", [])
 

@@ -25,15 +25,9 @@ from pipeline.normalization.text_cleaner import (
     es_respuesta_vacia,
 )
 from pipeline.normalization.entity_enricher import EntityEnricher
+from pipeline.normalization.pos_utils import extraer_codigo_pos
 
 logger = logging.getLogger(__name__)
-
-
-def _normalizar_clave(valor) -> str:
-    """Normaliza un valor para usarlo como clave."""
-    if valor is None or (isinstance(valor, float) and pd.isna(valor)):
-        return ""
-    return str(valor).strip()
 
 
 def _generar_id_documento(
@@ -48,140 +42,6 @@ def _generar_id_documento(
     """
     contenido = f"{archivo}|{hoja}|{fila}|{pregunta}|{texto}"
     return hashlib.sha256(contenido.encode("utf-8")).hexdigest()
-
-
-def construir_documentos_minimos(
-    hoja_info: dict,
-    enricher: Optional[EntityEnricher] = None,
-) -> list[dict]:
-    """
-    Genera los Documentos Mínimos a partir de una hoja clasificada
-    como texto_libre por el dispatcher.
-
-    Args:
-        hoja_info: Dict de una hoja del dispatcher con claves:
-            - nombre_hoja: str
-            - data: pd.DataFrame
-            - columnas_texto_libre: list[str]
-            - mapeo_columnas: dict {col_original: campo_canonico}
-            - nombre_archivo (inyectado por el caller)
-        enricher: Instancia de EntityEnricher para resolver DOCENTE.
-
-    Returns:
-        Lista de Documentos Mínimos:
-        [
-            {
-                "id_documento": str (SHA-256),
-                "texto_plano": str,
-                "fuente": {"archivo": str, "hoja": str},
-                "fila_original": int,
-                "pregunta_canonica": str,
-                "llaves_relacion": {
-                    "POS": str|"",
-                    "CI": str|"",
-                    "NOMBRE_PROGRAMA": str|"",
-                    "DOCENTE": str|"",
-                    "MODULO": str|"",
-                    "FECHA": str|"",
-                },
-                "es_respuesta_vacia": bool,
-                "estado": "ok" | "sin_llave_valida" | "vacio_descartado",
-            }
-        ]
-    """
-    df = hoja_info.get("data")
-    if df is None or df.empty:
-        return []
-
-    nombre_archivo = hoja_info.get("nombre_archivo", "desconocido")
-    nombre_hoja = hoja_info.get("nombre_hoja", "Hoja1")
-    columnas_texto = hoja_info.get("columnas_texto_libre", [])
-    mapeo = hoja_info.get("mapeo_columnas", {})
-
-    if not columnas_texto:
-        logger.warning(
-            "Hoja '%s' marcada como texto_libre pero sin columnas "
-            "de texto libre detectadas.",
-            nombre_hoja,
-        )
-        return []
-
-    # Invertir mapeo: canónico → columna original
-    inv_mapeo = {}
-    for col_orig, campo_can in mapeo.items():
-        if campo_can:
-            inv_mapeo.setdefault(campo_can, col_orig)
-
-    documentos = []
-
-    for idx, row in df.iterrows():
-        # Extraer llaves de relación disponibles
-        llaves = _extraer_llaves_relacion(row, inv_mapeo, enricher, mapeo)
-
-        # Procesar cada columna de texto libre
-        for col_texto in columnas_texto:
-            if col_texto not in df.columns:
-                continue
-
-            valor_raw = row.get(col_texto)
-            if valor_raw is None:
-                continue
-
-            texto_str = str(valor_raw)
-
-            # Limpieza NER completa
-            texto_limpio = limpiar_texto_para_ner(texto_str)
-
-            # Determinar pregunta canónica
-            pregunta_canonica = mapeo.get(col_texto, col_texto)
-            if pregunta_canonica is None:
-                pregunta_canonica = col_texto
-
-            # Verificar si es respuesta vacía
-            vacia = es_respuesta_vacia(texto_limpio)
-
-            # Determinar estado
-            if vacia:
-                estado = "vacio_descartado"
-            elif not llaves["POS"]:
-                estado = "sin_llave_valida"
-            else:
-                estado = "ok"
-
-            # Generar ID idempotente
-            id_doc = _generar_id_documento(
-                nombre_archivo, nombre_hoja,
-                int(idx) if not isinstance(idx, int) else idx,
-                pregunta_canonica, texto_limpio,
-            )
-
-            doc = {
-                "id_documento": id_doc,
-                "texto_plano": texto_limpio,
-                "fuente": {
-                    "archivo": nombre_archivo,
-                    "hoja": nombre_hoja,
-                },
-                "fila_original": int(idx) if not isinstance(idx, int) else idx,
-                "pregunta_canonica": pregunta_canonica,
-                "llaves_relacion": llaves,
-                "es_respuesta_vacia": vacia,
-                "estado": estado,
-            }
-
-            documentos.append(doc)
-
-    # Estadísticas
-    n_ok = sum(1 for d in documentos if d["estado"] == "ok")
-    n_sin_llave = sum(1 for d in documentos if d["estado"] == "sin_llave_valida")
-    n_vacios = sum(1 for d in documentos if d["estado"] == "vacio_descartado")
-
-    logger.info(
-        "DocumentBuilder: hoja '%s' → %d docs (%d ok, %d sin_llave, %d vacíos)",
-        nombre_hoja, len(documentos), n_ok, n_sin_llave, n_vacios,
-    )
-
-    return documentos
 
 
 # Etiquetas canónicas de metadatos/relación que NUNCA deben enviarse como texto libre a BETO
@@ -219,18 +79,8 @@ def _validar_modulo(valor: str) -> str:
     return v
 
 
-def extraer_codigo_pos(valor: str) -> str:
-    """
-    Extrae únicamente el código de programa POS-XXX (2-4 caracteres) de un string.
-    Recorta sufijos compuestos como POS-033-5160091 -> POS-033.
-    """
-    if not valor:
-        return ""
-    v_str = str(valor).strip()
-    match = re.search(r"\b(POS-[a-zA-Z0-9]{2,4})\b", v_str, re.IGNORECASE)
-    if match:
-        return match.group(1).upper()
-    return ""
+# Importado de pos_utils.py
+# extraer_codigo_pos ya no se define localmente
 
 
 def construir_documentos_minimos(
@@ -298,6 +148,10 @@ def construir_documentos_minimos(
                 estado = "vacio_descartado"
             elif not llaves["POS"]:
                 estado = "sin_llave_valida"
+                logger.warning(
+                    "[Auditoria] Registro sin llave POS valida. Archivo: '%s', Hoja: '%s', Fila: %s, Pregunta: '%s'",
+                    nombre_archivo, nombre_hoja, idx, pregunta_canonica
+                )
             else:
                 estado = "ok"
 
@@ -438,6 +292,15 @@ def _buscar_valor_con_columna(
     # Intento 2: búsqueda directa por nombre parcial
     campo_norm = campo_canonico.lower().replace("_", "")
     for col in row.index:
+        # Si esta columna ya está mapeada explícitamente a otro campo canónico en inv_mapeo, no robarla
+        col_already_mapped = False
+        for c_canonico, c_orig in inv_mapeo.items():
+            if c_orig == col and c_canonico != campo_canonico:
+                col_already_mapped = True
+                break
+        if col_already_mapped:
+            continue
+
         col_norm = str(col).lower().replace("_", "").replace(" ", "")
         col_norm = "".join(
             ch for ch in unicodedata.normalize("NFD", col_norm)

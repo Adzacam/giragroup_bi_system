@@ -217,25 +217,31 @@ def preparar_payload_beto(df, fuente_tipo: str, nombre_archivo: str, columnas_te
     payload = []
     
     # Aplicar la heurística si no hay columnas explícitas
+    columnas_series = [] # Lista de (nombre_columna, serie)
+    
     if not columnas_texto:
-        columnas_texto = []
-        for col in df.columns:
+        for i, col in enumerate(df.columns):
+            serie_col = df.iloc[:, i]
             # Exigir que sea de tipo object o string
-            if df[col].dtype in ['object', 'string'] or str(df[col].dtype) in ['object', 'string']:
-                non_null_series = df[col].dropna().astype(str)
+            if serie_col.dtype in ['object', 'string'] or str(serie_col.dtype) in ['object', 'string']:
+                non_null_series = serie_col.dropna().astype(str)
                 if not non_null_series.empty:
                     longitud_promedio = non_null_series.str.len().mean()
                     # Al menos el 70% de las celdas no nulas deben cumplir con el umbral > 15
                     porcentaje_cumple = (non_null_series.str.len() > 15).mean()
                     
                     if longitud_promedio > 15 and porcentaje_cumple >= 0.7:
-                        columnas_texto.append(col)
+                        columnas_series.append((str(col), serie_col))
+    else:
+        for col in columnas_texto:
+            # En caso de duplicados, procesar todas las columnas con ese nombre
+            for i, c_name in enumerate(df.columns):
+                if c_name == col:
+                    columnas_series.append((str(col), df.iloc[:, i]))
                     
     # Recorrer las columnas identificadas para extraer y limpiar los strings
-    for col in columnas_texto:
-        if col not in df.columns:
-            continue
-        for idx, valor in df[col].items():
+    for col_name, col_series in columnas_series:
+        for idx, valor in col_series.items():
             if valor is not None and str(valor).strip():
                 # Invocar la función de limpieza con corrección de mojibake
                 texto_procesado = limpiar_texto_para_ner(str(valor))
@@ -245,6 +251,6 @@ def preparar_payload_beto(df, fuente_tipo: str, nombre_archivo: str, columnas_te
                         "fuente_tipo": fuente_tipo,
                         "nombre_archivo": nombre_archivo,
                         "id_fila": idx,
-                        "columna_origen": col
+                        "columna_origen": col_name
                     })
     return payload

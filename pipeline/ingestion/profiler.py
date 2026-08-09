@@ -185,46 +185,7 @@ def perfilar_columna(
     )
 
 
-def _inferir_rol(
-    pct_nulos: float,
-    cardinalidad: int,
-    n_no_vacio: int,
-    longitud_promedio: float,
-    pct_texto_largo: float,
-    palabras_promedio: float,
-    pct_numerico: float,
-    pct_email: float,
-    pct_fecha: float,
-    pct_ci: float,
-    pct_monto: float,
-    text_cell_pct: float,
-) -> str:
-    """Infiere el rol semántico de una columna basándose en su perfil."""
-
-    # Email
-    if pct_email > 0.5:
-        return "correo"
-
-    # Fecha
-    if pct_fecha > 0.5:
-        return "fecha_evento"
-
-    # CI/Identificador
-    if pct_ci > 0.5:
-        return "identificador"
-
-    # Escala Likert / categórica: pocos valores únicos, mayormente numéricos
-    # Verificar ANTES de financiero para que escalas 1-5 no se confundan con montos.
-    if pct_numerico > 0.7 and cardinalidad <= 11:
-        return "categorico_likert"
-
-    # Montos financieros (requiere patrón de monto, no solo numéricos)
-    if pct_monto > 0.5:
-        return "financiero"
-
-    # Numérico general (notas, porcentajes)
-    if pct_numerico > 0.7:
-        return "numerico"
+# Eliminada primera definición duplicada de _inferir_rol (código muerto)
 
 _PATRON_PREGUNTA_ABIERTA = re.compile(
     r"\(abierta\)|sugerencia|aspectos|deseado|explorar|didáctica|didactica|enseñanza|profesor|docente.*mejorar|otro contenido",
@@ -346,11 +307,11 @@ def perfilar_hoja(
             "n_columnas": 0,
         }
 
-    # Perfilar cada columna
+    # Perfilar cada columna (utilizar iloc para garantizar que se obtiene una Series, incluso si hay columnas duplicadas)
     perfiles = []
-    for col in df_sample.columns:
+    for i, col in enumerate(df_sample.columns):
         perfil = perfilar_columna(
-            df_sample[col], str(col),
+            df_sample.iloc[:, i], str(col),
             text_char_threshold=text_char_thresh,
             text_word_threshold=text_word_thresh,
             text_cell_pct=text_cell_pct,

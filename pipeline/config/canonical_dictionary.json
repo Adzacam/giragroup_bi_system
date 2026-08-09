@@ -198,7 +198,7 @@
     "patrones_nombre": [
       "copia de", "borrador", "boor", "tabla dinámica", "tabla dinamica",
       "dashboard", "pivot", "pivote", "hoja de cálculo", "hoja de calculo",
-      "resumen", "tmp", "temp", "test", "prueba"
+      "resumen", "tmp", "temp", "test", "prueba", "analisis", "análisis"
     ],
     "razones_descarte": {
       "HOJA_VACIA": "Hoja sin filas de datos (completamente vacía o solo encabezados)",
