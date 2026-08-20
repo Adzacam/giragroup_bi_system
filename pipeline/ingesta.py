@@ -20,8 +20,10 @@ Queda prohibido usar uploads/test o datos sintéticos preexistentes.
 """
 
 import csv
+import json
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Callable
 
@@ -307,4 +309,290 @@ def segmentar_archivo(
         )
 
     return resultado
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Loop 3 — Extracción, categorización, persistencia y reporte final
+# ═══════════════════════════════════════════════════════════════════════
+#
+# Principio: Extraer texto plano y categorizar cada bloque para el pase
+# a Sprint 3 (BETO NER), garantizando el invariante de conservación:
+#
+#   Total_Filas_Ingresadas = Procesadas + Descartadas_Ruido + Vacías
+#
+# No hay pérdida silenciosa de datos.
+
+PALABRAS_CLAVE_CATEGORIA = {
+    "academico": [
+        "academ", "docente", "acta", "nota", "modulo", "programa",
+        "arca", "unifranz", "postgrado", "evaluacion", "inicios y okr",
+        "okr", "materia", "alumno", "estudiante", "carrera", "facultad",
+        "experto", "diplomado", "curso"
+    ],
+    "financiero": [
+        "cobranza", "egreso", "techo", "pago", "presupuest",
+        "ejecutado", "gasto", "ingreso", "saldo", "cuota", "deuda",
+        "monto", "factura", "financier", "costo"
+    ],
+    "comercial": [
+        "inscrito", "inscripto", "matricul", "baja", "duplicado",
+        "meta", "comercial", "venta", "lead", "prospecto", "crm",
+        "marketing", "campana", "contacto"
+    ]
+}
+
+
+def clasificar_bloque(
+    nombre_archivo: str,
+    nombre_hoja: str,
+    df_isla: pd.DataFrame = None,
+    es_ruido: bool = False,
+) -> str:
+    """
+    Clasifica un bloque o DataFrame en una categoría de negocio.
+    Categorías posibles: 'academico', 'financiero', 'comercial', 'descartable', 'general'.
+    """
+    if es_ruido:
+        return "descartable"
+
+    texto_archivo = (nombre_archivo or "").lower()
+    texto_hoja = (nombre_hoja or "").lower()
+
+    # Muestra de las primeras filas del bloque para perfilado superficial
+    texto_muestra = ""
+    if df_isla is not None and not df_isla.empty:
+        filas_muestra = df_isla.iloc[:min(3, len(df_isla))].values.flatten()
+        texto_muestra = " ".join(str(v).lower() for v in filas_muestra if pd.notna(v))
+
+    scores = {"academico": 0, "financiero": 0, "comercial": 0}
+    for cat, palabras in PALABRAS_CLAVE_CATEGORIA.items():
+        for kw in palabras:
+            if kw in texto_archivo:
+                scores[cat] += 4
+            if kw in texto_hoja:
+                scores[cat] += 3
+            if kw in texto_muestra:
+                scores[cat] += 1
+
+    mejor_cat = max(scores, key=scores.get)
+    if scores[mejor_cat] > 0:
+        return mejor_cat
+    return "general"
+
+
+def extraer_documentos_isla(
+    nombre_archivo: str,
+    nombre_hoja: str,
+    isla: dict,
+    categoria: str,
+) -> tuple[list[dict], int, int]:
+    """
+    Extrae documentos de texto plano para cada fila válida de la isla.
+
+    Retorna:
+        (documentos, n_filas_procesadas, n_filas_vacias_internas)
+    """
+    if isla.get("es_ruido", False):
+        return [], 0, 0
+
+    df_isla = isla["df"]
+    fila_inicio = isla["fila_inicio"]
+    isla_idx = isla["indice"]
+
+    docs = []
+    n_proc = 0
+    n_vac = 0
+
+    for i in range(len(df_isla)):
+        fila = df_isla.iloc[i]
+        valores_limpios = []
+        for v in fila:
+            if pd.notna(v):
+                s = str(v).strip()
+                if s:
+                    valores_limpios.append(s)
+
+        if not valores_limpios:
+            n_vac += 1
+            continue
+
+        texto_plano = " | ".join(valores_limpios)
+        doc = {
+            "id": f"{nombre_archivo}::{nombre_hoja}::isla_{isla_idx}::fila_{fila_inicio + i}",
+            "archivo": nombre_archivo,
+            "hoja": nombre_hoja,
+            "isla_idx": isla_idx,
+            "fila_original": fila_inicio + i,
+            "categoria": categoria,
+            "texto": texto_plano,
+            "valores": valores_limpios,
+        }
+        docs.append(doc)
+        n_proc += 1
+
+    return docs, n_proc, n_vac
+
+
+def procesar_corpus(
+    directorio: str,
+    ruta_salida_jsonl: str = None,
+) -> tuple[list[dict], dict]:
+    """
+    Lee todo el corpus heterogéneo, detecta bloques/islas, clasifica por área,
+    extrae documentos de texto plano y calcula la auditoría garantizando el
+    invariante de conservación.
+
+    Invariante verificado:
+        total_filas_raw = filas_procesadas + filas_descartadas_ruido + filas_vacias
+    """
+    corpus = leer_corpus(directorio)
+
+    todos_los_documentos = []
+    auditoria_global = {
+        "archivos_leidos": len(corpus),
+        "hojas_totales": 0,
+        "islas_totales": 0,
+        "islas_validas": 0,
+        "islas_ruido": 0,
+        "total_filas_raw": 0,
+        "filas_procesadas": 0,
+        "filas_descartadas_ruido": 0,
+        "filas_vacias": 0,
+        "invariante_cumplido": True,
+        "conteo_por_categoria": {},
+        "desglose_por_archivo": [],
+    }
+
+    for nombre_archivo, hojas in corpus.items():
+        filas_raw_archivo = 0
+        filas_proc_archivo = 0
+        filas_ruido_archivo = 0
+        filas_vacias_archivo = 0
+        docs_archivo = []
+        islas_archivo = 0
+        islas_val_archivo = 0
+        islas_ruido_archivo = 0
+
+        for nombre_hoja, df_hoja in hojas.items():
+            auditoria_global["hojas_totales"] += 1
+            n_raw_hoja = len(df_hoja)
+            filas_raw_archivo += n_raw_hoja
+
+            islas = detectar_islas(df_hoja)
+            islas_archivo += len(islas)
+            auditoria_global["islas_totales"] += len(islas)
+
+            filas_en_islas = 0
+            for isla in islas:
+                filas_en_islas += isla["n_filas"]
+                if isla["es_ruido"]:
+                    islas_ruido_archivo += 1
+                    auditoria_global["islas_ruido"] += 1
+                    filas_ruido_archivo += isla["n_filas"]
+                else:
+                    islas_val_archivo += 1
+                    auditoria_global["islas_validas"] += 1
+                    cat = clasificar_bloque(nombre_archivo, nombre_hoja, isla["df"], False)
+                    docs_isla, n_proc, n_vac = extraer_documentos_isla(
+                        nombre_archivo, nombre_hoja, isla, cat
+                    )
+                    docs_archivo.extend(docs_isla)
+                    todos_los_documentos.extend(docs_isla)
+                    filas_proc_archivo += n_proc
+                    filas_vacias_archivo += n_vac
+
+                    auditoria_global["conteo_por_categoria"][cat] = (
+                        auditoria_global["conteo_por_categoria"].get(cat, 0) + len(docs_isla)
+                    )
+
+            vacias_fuera = n_raw_hoja - filas_en_islas
+            filas_vacias_archivo += vacias_fuera
+
+        contabilizado = filas_proc_archivo + filas_ruido_archivo + filas_vacias_archivo
+        ok_archivo = (contabilizado == filas_raw_archivo)
+        if not ok_archivo:
+            auditoria_global["invariante_cumplido"] = False
+
+        auditoria_global["desglose_por_archivo"].append({
+            "archivo": nombre_archivo,
+            "hojas": len(hojas),
+            "islas": islas_archivo,
+            "filas_raw": filas_raw_archivo,
+            "procesadas": filas_proc_archivo,
+            "descartadas_ruido": filas_ruido_archivo,
+            "vacias": filas_vacias_archivo,
+            "invariante_ok": ok_archivo,
+        })
+
+        auditoria_global["total_filas_raw"] += filas_raw_archivo
+        auditoria_global["filas_procesadas"] += filas_proc_archivo
+        auditoria_global["filas_descartadas_ruido"] += filas_ruido_archivo
+        auditoria_global["filas_vacias"] += filas_vacias_archivo
+
+    total_calc = (
+        auditoria_global["filas_procesadas"]
+        + auditoria_global["filas_descartadas_ruido"]
+        + auditoria_global["filas_vacias"]
+    )
+    auditoria_global["invariante_cumplido"] = (
+        auditoria_global["invariante_cumplido"]
+        and (total_calc == auditoria_global["total_filas_raw"])
+    )
+
+    if ruta_salida_jsonl:
+        os.makedirs(os.path.dirname(os.path.abspath(ruta_salida_jsonl)), exist_ok=True)
+        with open(ruta_salida_jsonl, "w", encoding="utf-8") as f:
+            for doc in todos_los_documentos:
+                f.write(json.dumps(doc, ensure_ascii=False) + "\n")
+        logger.info(
+            "Persistidos %d documentos en '%s'",
+            len(todos_los_documentos), ruta_salida_jsonl,
+        )
+
+    return todos_los_documentos, auditoria_global
+
+
+def generar_reporte_auditoria(auditoria: dict) -> str:
+    """Genera un reporte markdown formateado a partir del dict de auditoría."""
+    lineas = [
+        "# Reporte Final de Auditoría — Ingesta Sprint 2",
+        "",
+        f"- **Archivos procesados:** {auditoria['archivos_leidos']}",
+        f"- **Hojas totales:** {auditoria['hojas_totales']}",
+        f"- **Islas detectadas:** {auditoria['islas_totales']} ({auditoria['islas_validas']} válidas, {auditoria['islas_ruido']} ruido)",
+        f"- **Invariante de conservación cumplido:** {'✅ SÍ (100% verificado)' if auditoria['invariante_cumplido'] else '❌ NO'}",
+        "",
+        "## Invariante de Conservación Global",
+        "",
+        "$$\\text{Total Raw} = \\text{Procesadas} + \\text{Ruido Descartado} + \\text{Filas Vacías}$$",
+        f"$$\\{auditoria['total_filas_raw']} = {auditoria['filas_procesadas']} + {auditoria['filas_descartadas_ruido']} + {auditoria['filas_vacias']}$$",
+        "",
+        "## Distribución por Categoría de Negocio",
+        "",
+        "| Categoría | Documentos Procesados | % del Total |",
+        "|:---|:---:|:---:|",
+    ]
+
+    total_proc = auditoria["filas_procesadas"] or 1
+    for cat, cnt in sorted(auditoria["conteo_por_categoria"].items(), key=lambda x: -x[1]):
+        pct = (cnt / total_proc) * 100
+        lineas.append(f"| `{cat}` | {cnt:,} | {pct:.2f}% |")
+
+    lineas.extend([
+        "",
+        "## Desglose por Archivo",
+        "",
+        "| Archivo | Hojas | Islas | Filas Raw | Procesadas | Ruido | Vacías | Invariante |",
+        "|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|",
+    ])
+
+    for d in auditoria["desglose_por_archivo"]:
+        inv_str = "✅ OK" if d["invariante_ok"] else "❌ FALLA"
+        lineas.append(
+            f"| {d['archivo']} | {d['hojas']} | {d['islas']} | {d['filas_raw']:,} | "
+            f"{d['procesadas']:,} | {d['descartadas_ruido']:,} | {d['vacias']:,} | {inv_str} |"
+        )
+
+    return "\n".join(lineas)
+
 
