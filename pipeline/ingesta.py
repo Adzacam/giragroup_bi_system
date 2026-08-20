@@ -352,45 +352,67 @@ def segmentar_archivo(
 
 PALABRAS_CLAVE_CATEGORIA = {
     "academico": [
-        "academ", "docente", "acta", "nota", "modulo", "programa",
-        "arca", "unifranz", "postgrado", "evaluacion", "inicios y okr",
-        "okr", "materia", "alumno", "estudiante", "carrera", "facultad",
-        "experto", "diplomado", "curso"
+        "nota", "asistencia", "módulo", "modulo", "docente", "acta",
+        "evaluacion", "evaluación", "postgrado", "unifranz", "programa",
+        "alumno", "estudiante", "carrera", "arca", "academ", "inicios y okr",
+        "okr", "materia", "experto", "diplomado", "curso"
     ],
     "financiero": [
-        "cobranza", "egreso", "techo", "pago", "presupuest",
-        "ejecutado", "gasto", "ingreso", "saldo", "cuota", "deuda",
-        "monto", "factura", "financier", "costo"
+        "cuota", "monto", "factura", "ingreso", "egreso", "techo",
+        "cobranza", "saldo", "deuda", "presupuest", "ejecutado", "costo",
+        "gasto", "pago", "financier"
     ],
     "comercial": [
-        "inscrito", "inscripto", "matricul", "baja", "duplicado",
-        "meta", "comercial", "venta", "lead", "prospecto", "crm",
-        "marketing", "campana", "contacto"
+        "lead", "interesado", "inscripción", "inscripcion", "inscrito",
+        "inscripto", "meta", "venta", "prospecto", "crm", "marketing",
+        "campana", "contacto", "baja", "duplicado", "matricul"
     ]
 }
 
 
-def clasificar_bloque(
-    nombre_archivo: str,
-    nombre_hoja: str,
-    df_isla: pd.DataFrame = None,
-    es_ruido: bool = False,
+def a_texto_plano(bloque: pd.DataFrame) -> str:
+    """
+    Serializa un bloque tabular (DataFrame) a texto plano legible.
+    Cada fila de datos se une con ' | ', y las filas se separan con saltos de línea '\\n'.
+    Las celdas vacías o nulas se omiten.
+    """
+    if bloque is None or bloque.empty:
+        return ""
+
+    lineas = []
+    for i in range(len(bloque)):
+        fila = bloque.iloc[i]
+        celdas = [str(v).strip() for v in fila if pd.notna(v) and str(v).strip() != ""]
+        if celdas:
+            lineas.append(" | ".join(celdas))
+
+    return "\n".join(lineas)
+
+
+def clasificar_categoria(
+    bloque: pd.DataFrame = None,
+    nombre_archivo: str = "",
+    nombre_hoja: str = "",
 ) -> str:
     """
-    Clasifica un bloque o DataFrame en una categoría de negocio.
-    Categorías posibles: 'academico', 'financiero', 'comercial', 'descartable', 'general'.
+    Clasifica un bloque en una categoría de negocio mediante heurística de palabras clave.
+    Categorías: 'academico', 'financiero', 'comercial', 'generico'.
+
+    Si el bloque está marcado como ruido en sus atributos o tiene < 2 filas,
+    se marca como 'ruido' (baja confianza).
+    Si no hay match claro de palabras clave, retorna 'generico'.
     """
-    if es_ruido:
-        return "descartable"
+    if bloque is not None:
+        if getattr(bloque, "attrs", {}).get("es_ruido", False) or len(bloque) < MIN_FILAS_ISLA:
+            return "ruido"
 
     texto_archivo = (nombre_archivo or "").lower()
     texto_hoja = (nombre_hoja or "").lower()
 
-    # Muestra de las primeras filas del bloque para perfilado superficial
-    texto_muestra = ""
-    if df_isla is not None and not df_isla.empty:
-        filas_muestra = df_isla.iloc[:min(3, len(df_isla))].values.flatten()
-        texto_muestra = " ".join(str(v).lower() for v in filas_muestra if pd.notna(v))
+    texto_contenido = ""
+    if bloque is not None and not bloque.empty:
+        filas_muestra = bloque.iloc[:min(3, len(bloque))].values.flatten()
+        texto_contenido = " ".join(str(v).lower() for v in filas_muestra if pd.notna(v))
 
     scores = {"academico": 0, "financiero": 0, "comercial": 0}
     for cat, palabras in PALABRAS_CLAVE_CATEGORIA.items():
@@ -399,13 +421,28 @@ def clasificar_bloque(
                 scores[cat] += 4
             if kw in texto_hoja:
                 scores[cat] += 3
-            if kw in texto_muestra:
+            if kw in texto_contenido:
                 scores[cat] += 1
 
     mejor_cat = max(scores, key=scores.get)
     if scores[mejor_cat] > 0:
         return mejor_cat
-    return "general"
+    return "generico"
+
+
+def clasificar_bloque(
+    nombre_archivo: str,
+    nombre_hoja: str,
+    df_isla: pd.DataFrame = None,
+    es_ruido: bool = False,
+) -> str:
+    """Compatibilidad con Loop 2/3 previo."""
+    if es_ruido:
+        return "descartable"
+    cat = clasificar_categoria(df_isla, nombre_archivo, nombre_hoja)
+    if cat == "ruido":
+        return "descartable"
+    return cat
 
 
 def extraer_documentos_isla(
