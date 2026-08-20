@@ -168,3 +168,143 @@ def leer_corpus(directorio: str) -> dict[str, dict[str, pd.DataFrame]]:
         resultados[archivo.name] = hojas
 
     return resultados
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Loop 2 — Detección aislada de bloques de datos (Islas Tabulares)
+# ═══════════════════════════════════════════════════════════════════════
+#
+# Dentro de una sola hoja de Excel pueden coexistir varias tablas
+# apiladas verticalmente, separadas por filas vacías. Este módulo
+# detecta esos "bloques" (islas) de forma independiente a cualquier
+# lógica de categorización o extracción semántica.
+#
+# Heurística:
+#   - Una fila se considera vacía si TODAS sus celdas son NaN o cadena
+#     vacía (después de strip).
+#   - Un gap de ≥ GAP_THRESHOLD filas vacías consecutivas marca el
+#     límite entre dos islas.
+#   - Un bloque con < MIN_FILAS_ISLA filas de datos se marca como
+#     ruido (no se descarta, se etiqueta — la decisión de qué hacer
+#     con él es de la capa de extracción, Loop 3).
+
+GAP_THRESHOLD = 2   # filas vacías consecutivas para cortar
+MIN_FILAS_ISLA = 2  # mínimo de filas de datos para no ser ruido
+
+
+def _fila_esta_vacia(fila: pd.Series) -> bool:
+    """True si todos los valores de la fila son NaN o cadena vacía/whitespace."""
+    for v in fila:
+        if pd.notna(v) and str(v).strip() != "":
+            return False
+    return True
+
+
+def detectar_islas(
+    df: pd.DataFrame,
+    gap_threshold: int = GAP_THRESHOLD,
+    min_filas: int = MIN_FILAS_ISLA,
+) -> list[dict]:
+    """
+    Detecta bloques de datos (islas) dentro de un DataFrame crudo.
+
+    Retorna una lista de dicts, uno por isla encontrada:
+        {
+            "indice":      int,           # número secuencial de isla (0-based)
+            "fila_inicio": int,           # fila original donde empieza
+            "fila_fin":    int,           # fila original donde termina (inclusive)
+            "n_filas":     int,           # cantidad de filas de datos
+            "es_ruido":    bool,          # True si n_filas < min_filas
+            "df":          pd.DataFrame,  # sub-DataFrame con los datos de la isla
+        }
+
+    Si el DataFrame está completamente vacío, retorna lista vacía.
+    """
+    if df.empty or len(df) == 0:
+        return []
+
+    # Marcar cada fila como vacía o no
+    vacias = [_fila_esta_vacia(df.iloc[i]) for i in range(len(df))]
+
+    # Encontrar los rangos de filas NO vacías agrupadas
+    islas = []
+    en_isla = False
+    gap_count = 0
+    inicio_isla = 0
+
+    for i, es_vacia in enumerate(vacias):
+        if not es_vacia:
+            if not en_isla:
+                # Empezamos una nueva isla
+                inicio_isla = i
+                en_isla = True
+            gap_count = 0
+        else:
+            if en_isla:
+                gap_count += 1
+                if gap_count >= gap_threshold:
+                    # Cerramos la isla anterior (el fin real es antes del gap)
+                    fin_isla = i - gap_count
+                    islas.append((inicio_isla, fin_isla))
+                    en_isla = False
+                    gap_count = 0
+
+    # Si terminamos dentro de una isla, cerrarla
+    if en_isla:
+        # Encontrar la última fila no vacía
+        fin_isla = len(vacias) - 1
+        while fin_isla >= inicio_isla and vacias[fin_isla]:
+            fin_isla -= 1
+        if fin_isla >= inicio_isla:
+            islas.append((inicio_isla, fin_isla))
+
+    # Construir resultado
+    resultado = []
+    for idx, (inicio, fin) in enumerate(islas):
+        sub_df = df.iloc[inicio:fin + 1].reset_index(drop=True)
+        n_filas = len(sub_df)
+        resultado.append({
+            "indice": idx,
+            "fila_inicio": inicio,
+            "fila_fin": fin,
+            "n_filas": n_filas,
+            "es_ruido": n_filas < min_filas,
+            "df": sub_df,
+        })
+
+    return resultado
+
+
+def segmentar_archivo(
+    hojas: dict[str, pd.DataFrame],
+    gap_threshold: int = GAP_THRESHOLD,
+    min_filas: int = MIN_FILAS_ISLA,
+) -> dict[str, list[dict]]:
+    """
+    Aplica la detección de islas a todas las hojas de un archivo.
+
+    Recibe el dict {nombre_hoja: DataFrame} que devuelve leer_archivo().
+    Retorna {nombre_hoja: [lista_de_islas]}.
+
+    Ejemplo de uso:
+        hojas = leer_archivo("mi_archivo.xlsx")
+        bloques = segmentar_archivo(hojas)
+        for hoja, islas in bloques.items():
+            print(f"{hoja}: {len(islas)} isla(s)")
+            for isla in islas:
+                print(f"  Isla {isla['indice']}: filas {isla['fila_inicio']}-{isla['fila_fin']}, ruido={isla['es_ruido']}")
+    """
+    resultado = {}
+    for nombre_hoja, df in hojas.items():
+        islas = detectar_islas(df, gap_threshold=gap_threshold, min_filas=min_filas)
+        resultado[nombre_hoja] = islas
+
+        n_ruido = sum(1 for i in islas if i["es_ruido"])
+        n_validas = len(islas) - n_ruido
+        logger.info(
+            "Hoja '%s': %d isla(s) detectada(s) (%d válida(s), %d ruido).",
+            nombre_hoja, len(islas), n_validas, n_ruido,
+        )
+
+    return resultado
+
