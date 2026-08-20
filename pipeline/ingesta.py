@@ -277,6 +277,34 @@ def detectar_islas(
     return resultado
 
 
+def detectar_bloques(
+    df: pd.DataFrame,
+    gap_threshold: int = GAP_THRESHOLD,
+    min_filas: int = MIN_FILAS_ISLA,
+) -> list[pd.DataFrame]:
+    """
+    Función directa de Loop 2: detecta tablas dentro de un DataFrame y retorna
+    la lista de sub-DataFrames de cada bloque rectangular detectado.
+
+    Cada DataFrame incluye los atributos en .attrs:
+        - df.attrs['indice']
+        - df.attrs['fila_inicio']
+        - df.attrs['fila_fin']
+        - df.attrs['es_ruido']
+    """
+    islas = detectar_islas(df, gap_threshold=gap_threshold, min_filas=min_filas)
+    bloques = []
+    for isla in islas:
+        sub_df = isla["df"].copy()
+        sub_df.attrs["indice"] = isla["indice"]
+        sub_df.attrs["fila_inicio"] = isla["fila_inicio"]
+        sub_df.attrs["fila_fin"] = isla["fila_fin"]
+        sub_df.attrs["n_filas"] = isla["n_filas"]
+        sub_df.attrs["es_ruido"] = isla["es_ruido"]
+        bloques.append(sub_df)
+    return bloques
+
+
 def segmentar_archivo(
     hojas: dict[str, pd.DataFrame],
     gap_threshold: int = GAP_THRESHOLD,
