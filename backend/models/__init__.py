@@ -12,3 +12,16 @@ from .fact_cobranzas import FactCobranzasProyectadas
 from .fact_evaluacion import FactEvaluacionDocente
 from .fact_marketing import FactMarketing
 from .fact_rentabilidad import FactRentabilidad
+from .catalogos import (
+    CatEscuela,
+    CatTipoPrograma,
+    CatModalidad,
+    CatPrograma,
+    CatDocente,
+    CatModulo,
+    CatEstadoAcademico,
+    CatEstadoReprobado,
+    CatEstadoArca,
+    CatTipoCartera,
+    RefMetasGestion,
+)

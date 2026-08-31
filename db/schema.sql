@@ -29,11 +29,22 @@ CREATE TABLE public.users (
 -- 2. DIMENSIONES (DIM)
 -- ==========================================
 CREATE TABLE public.dim_tiempo (
-    id_tiempo SERIAL PRIMARY KEY,
-    gestion INTEGER NOT NULL DEFAULT 2026,
-    semestre INTEGER DEFAULT 1,
-    mes VARCHAR(20) DEFAULT 'Mayo'
+    id_tiempo       INTEGER PRIMARY KEY,         -- YYYYMMDD (ej: 20250315)
+    fecha           DATE NOT NULL UNIQUE,
+    gestion         INT NOT NULL,                -- 2022 .. 2027
+    semestre        INT NOT NULL,                -- 1, 2
+    trimestre       INT NOT NULL,                -- 1 .. 4
+    mes             INT NOT NULL,                -- 1 .. 12
+    nombre_mes      VARCHAR(20) NOT NULL,        -- 'Enero', 'Febrero'...
+    semana_iso      INT NOT NULL,                -- 1 .. 53
+    dia_mes         INT NOT NULL,                -- 1 .. 31
+    dia_semana      INT NOT NULL,                -- 1=Lunes .. 7=Domingo
+    nombre_dia      VARCHAR(20) NOT NULL,        -- 'Lunes', 'Martes'...
+    es_fin_semana   BOOLEAN NOT NULL,            -- TRUE si sábado o domingo
+    periodo_mes     VARCHAR(7) NOT NULL          -- '2026-01'
 );
+CREATE INDEX idx_dim_tiempo_fecha ON public.dim_tiempo(fecha);
+CREATE INDEX idx_dim_tiempo_periodo ON public.dim_tiempo(periodo_mes);
 
 CREATE TABLE public.dim_estudiante (
     id_estudiante SERIAL PRIMARY KEY,
@@ -71,7 +82,7 @@ CREATE TABLE public.dim_origen_documental (
 
 CREATE TABLE public.dim_categoria_financiera (
     id_categoria SERIAL PRIMARY KEY,
-    nombre_categoria VARCHAR(200) NOT NULL,
+    nombre_categoria VARCHAR(200) NOT NULL UNIQUE,
     tipo VARCHAR(50) -- 'INGRESO', 'EGRESO', 'RENTABILIDAD', 'EBITDA'
 );
 
