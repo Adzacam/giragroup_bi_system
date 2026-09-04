@@ -98,3 +98,26 @@ CREATE TABLE IF NOT EXISTS public.ref_metas_gestion (
     ebitda_ejecutado_pct NUMERIC(6, 4),
     CONSTRAINT uq_ref_metas_gestion_mes_cat UNIQUE (gestion, mes, categoria)
 );
+
+-- 10. Catálogo Financiero Estándar (Ingresos y Egresos)
+CREATE TABLE IF NOT EXISTS public.cat_categoria_financiera (
+    id_categoria_fin SERIAL PRIMARY KEY,
+    codigo VARCHAR(50) NOT NULL UNIQUE,
+    nombre_categoria VARCHAR(100) NOT NULL,
+    tipo_flujo VARCHAR(20) NOT NULL -- 'INGRESO' o 'EGRESO'
+);
+
+-- 11. Staging de Entidades No Resueltas (NLP / Normalización)
+CREATE TABLE IF NOT EXISTS public.stg_entidad_no_resuelta (
+    id_pendiente     SERIAL PRIMARY KEY,
+    tipo_entidad     VARCHAR(30) NOT NULL,   -- 'programa','docente','escuela','estudiante_sin_ci'
+    texto_original   VARCHAR(300) NOT NULL,
+    mejor_match_cat  VARCHAR(300),
+    score_similitud  NUMERIC(5,4),
+    archivo_origen   VARCHAR(500),
+    estado           VARCHAR(20) DEFAULT 'PENDIENTE',
+    fecha_deteccion  TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_stg_estado ON public.stg_entidad_no_resuelta(estado);
+CREATE INDEX IF NOT EXISTS idx_stg_tipo ON public.stg_entidad_no_resuelta(tipo_entidad);
+

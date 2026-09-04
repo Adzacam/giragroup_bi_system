@@ -60,6 +60,16 @@ def extraer_datos_catalogos(dir_datos: str = "uploads/data") -> dict:
             {"nombre": "Cartera Incobrable", "min": 361, "max": 99999, "desc": "Sin posibilidades operativas (>360 días)"},
             {"nombre": "Cartera Cerrada", "min": -1, "max": -1, "desc": "Caso cerrado satisfactoriamente (sin pendientes)"},
         ],
+        "categorias_financieras": [
+            {"codigo": "MATRICULA", "nombre_categoria": "Matrícula de Inscripción", "tipo_flujo": "INGRESO"},
+            {"codigo": "CUOTA_MENSUAL", "nombre_categoria": "Cuota Mensual del Programa", "tipo_flujo": "INGRESO"},
+            {"codigo": "PAGO_AL_CONTADO", "nombre_categoria": "Pago al Contado con Descuento", "tipo_flujo": "INGRESO"},
+            {"codigo": "CERTIFICACION", "nombre_categoria": "Derechos de Certificación / Titulación", "tipo_flujo": "INGRESO"},
+            {"codigo": "HONORARIOS_DOCENTES", "nombre_categoria": "Pago de Honorarios a Docentes", "tipo_flujo": "EGRESO"},
+            {"codigo": "MARKETING_DIGITAL", "nombre_categoria": "Inversión en Pauta y Marketing Digital", "tipo_flujo": "EGRESO"},
+            {"codigo": "PLATAFORMAS_TIC", "nombre_categoria": "Licencias, Zoom, Moodle y Servidores", "tipo_flujo": "EGRESO"},
+            {"codigo": "ADMINISTRATIVO", "nombre_categoria": "Costos Operativos y Administrativos", "tipo_flujo": "EGRESO"},
+        ],
         "metas": [],          # list of dicts
     }
 
@@ -281,6 +291,51 @@ def extraer_datos_catalogos(dir_datos: str = "uploads/data") -> dict:
                     "ebitda_meta": 0.0, "ebitda_ejec": 0.0
                 })
 
+    # ──────────────────────────────────────────────────────────────────────────
+    # 3. BD Cobranzas.xlsx (Hoja 12: Metas de Cobranzas y EBITDA 30%)
+    # ──────────────────────────────────────────────────────────────────────────
+    ruta_cobranzas = os.path.join(dir_datos, "BD Cobranzas.xlsx")
+    if os.path.exists(ruta_cobranzas):
+        try:
+            print(f"Leyendo '{ruta_cobranzas}' (Hoja 12)...")
+            wb_c = openpyxl.load_workbook(ruta_cobranzas, data_only=True)
+            if "Hoja 12" in wb_c.sheetnames:
+                ws_12 = wb_c["Hoja 12"]
+                meses_map = {
+                    "ENERO": 1, "FEBRERO": 2, "MARZO": 3, "ABRIL": 4, "MAYO": 5, "JUNIO": 6,
+                    "JULIO": 7, "AGOSTO": 8, "SEPTIEMBRE": 9, "OCTUBRE": 10, "NOVIEMBRE": 11, "DICIEMBRE": 12
+                }
+                for r in list(ws_12.iter_rows(values_only=True))[15:30]:
+                    if r and len(r) >= 3 and r[0]:
+                        mes_nom = str(r[0]).strip().upper()
+                        if mes_nom in meses_map:
+                            m_idx = meses_map[mes_nom]
+                            try:
+                                meta_cob = float(r[1]) if r[1] is not None else 0.0
+                            except (ValueError, TypeError):
+                                continue
+
+                            catalogos["metas"].append({
+                                "gestion": 2025,
+                                "mes": m_idx,
+                                "categoria": "COBRANZAS",
+                                "meta": meta_cob,
+                                "ejecutado": 0.0,
+                                "ebitda_meta": 0.3000,
+                                "ebitda_ejec": 0.0
+                            })
+                            catalogos["metas"].append({
+                                "gestion": 2026,
+                                "mes": m_idx,
+                                "categoria": "COBRANZAS",
+                                "meta": meta_cob,
+                                "ejecutado": 0.0,
+                                "ebitda_meta": 0.3000,
+                                "ebitda_ejec": 0.0
+                            })
+        except Exception as e:
+            print(f"Nota: No se pudo leer metas de BD Cobranzas ({e})")
+
     return catalogos
 
 
@@ -412,6 +467,16 @@ def generar_script_sql(catalogos: dict, ruta_salida: str):
             f"ebitda_meta_pct = EXCLUDED.ebitda_meta_pct, ebitda_ejecutado_pct = EXCLUDED.ebitda_ejecutado_pct;"
         )
         lineas.append(sql)
+    lineas.append("")
+
+    # 10. Categorías Financieras Estándar
+    lineas.append("-- 10. Catálogo Financiero Estándar")
+    for cf in catalogos["categorias_financieras"]:
+        lineas.append(
+            f"INSERT INTO public.cat_categoria_financiera (codigo, nombre_categoria, tipo_flujo) "
+            f"VALUES ({escapar_sql(cf['codigo'])}, {escapar_sql(cf['nombre_categoria'])}, {escapar_sql(cf['tipo_flujo'])}) "
+            f"ON CONFLICT (codigo) DO NOTHING;"
+        )
     lineas.append("")
 
     os.makedirs(os.path.dirname(ruta_salida), exist_ok=True)
