@@ -333,10 +333,51 @@ Comandos utilizados para configurar el analizador del IDE y ejecutar scripts fue
 
 * **Crear entorno:** `py -m venv .venv`
 * **Activar entorno:** `.\.venv\Scripts\activate`
-* **Instalar dependencias API:** `pip install -r backend/requirements.txt`
-* **Ejecutar tests del pipeline:** `pytest tests/ -v`
-* **Ejecutar extracción e ingesta:** `python run_sprint2.py`
+* **Instalar dependencias:** `pip install -r pipeline/requirements.txt`
 * **Desactivar entorno:** `deactivate`
+
+### 2. Ejecución Independiente por Sprints
+
+#### 📦 Sprint 2: Ingesta Universal y Detección de Bloques Tabulares
+* **Objetivo:** Ingesta de hojas heterogéneas, segmentación de islas tabulares sin cabeceras fijas y categorización automática.
+* **Componentes:** `pipeline/ingesta.py`, `pipeline/categorizer.py`, `pipeline/extractor.py`.
+* **Ejecutar Ingesta Sprint 2:**
+  ```powershell
+  python run_sprint2.py
+  ```
+* **Ejecutar Tests de Sprint 2 (32 tests):**
+  ```powershell
+  pytest tests/sprint2/ -v
+  ```
+* **Entregables:** `output/sprint2_documentos.jsonl`, `output/sprint2_documentos.csv`.
+
+#### 🧠 Sprint 3: Procesamiento de Lenguaje Natural (PLN), Normalización y Calidad
+* **Objetivo:** Motor de inferencia NER con BETO, matching semántico contra catálogos canónicos 3NF, resolución difusa RapidFuzz, control de calidad determinista y auditoría de inconsistencias.
+* **Matriz de Historias Cubiertas (Épica GIRA-22):**
+  - **GIRA-40:** Formateo a oraciones semánticas estructuradas con offsets y attention masks.
+  - **GIRA-9 & GIRA-10:** Extractor NER con BETO (`mrm8488/bert-spanish-cased-finetuned-ner`), agregación de subpalabras y desambiguación.
+  - **GIRA-11:** Normalización léxica y difusa con RapidFuzz optimizada en C.
+  - **GIRA-12:** Telemetría de rendimiento y persistencia en `output/telemetria_ner.jsonl`.
+  - **GIRA-27:** Evaluador de reglas de calidad y flag `requiere_revision`.
+  - **GIRA-41:** Matching semántico contra catálogos maestros (`CatalogRepository`).
+  - **GIRA-42:** Clasificación de confianza probabilística (ALTA $\ge 0.85$, MEDIA $[0.60, 0.85)$, BAJA $< 0.60$).
+  - **GIRA-43:** Registro y trazabilidad de inconsistencias en `output/inconsistencias_sprint3.jsonl`.
+  - **GIRA-50:** Resolución inteligente de llaves foráneas (Máquina de estados A/B/C en padrón).
+* **Ejecutar Pipeline Completo Sprint 3:**
+  ```powershell
+  python pipeline/ejecutar_sprint3.py --cpu-only
+  # Para pruebas rápidas o muestreos:
+  python pipeline/ejecutar_sprint3.py --limite-docs 50 --cpu-only
+  ```
+* **Ejecutar Tests de Sprint 3 (53 tests):**
+  ```powershell
+  pytest tests/sprint3/ -v
+  ```
+* **Ejecutar Suite Completa de Pruebas (85 tests):**
+  ```powershell
+  pytest tests/ -v
+  ```
+* **Entregables:** `output/sprint3_entidades_procesadas.jsonl`, `output/inconsistencias_sprint3.jsonl`, `output/telemetria_ner.jsonl`.
 
 ### 2. Orquestación de Infraestructura (Docker)
 Comandos para controlar el ciclo de vida de las 5 capas de la arquitectura.

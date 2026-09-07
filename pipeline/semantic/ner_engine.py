@@ -504,3 +504,7 @@ class BetoNEREngine:
                     ent.metadata["pos_canonico"] = info_prog.get("pos")
 
         return entidades
+
+
+# Alias canónico
+NEREngine = BetoNEREngine
