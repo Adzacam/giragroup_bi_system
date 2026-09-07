@@ -93,6 +93,36 @@ class CatalogoGazetteer:
             return (norm, self.programas[norm]["nombre_programa"])
         return (norm, norm)
 
+    def buscar_por_pos(self, pos_code: Optional[str]) -> Optional[Dict[str, Any]]:
+        """Busca y retorna la información de un programa por su código POS."""
+        if not pos_code:
+            return None
+        norm = self.normalizar_pos(pos_code) or str(pos_code).strip().upper()
+        return self.programas.get(norm)
+
+    def buscar_por_alias(self, texto: Optional[str]) -> Optional[Dict[str, Any]]:
+        """Busca un programa en el catálogo por coincidencia de subcadena o título."""
+        if not texto or len(str(texto).strip()) < 4:
+            return None
+        t_norm = str(texto).strip().lower()
+        for prog in self.programas.values():
+            nom = prog.get("nombre_programa", "").lower()
+            if t_norm in nom or nom in t_norm:
+                return {
+                    "id": prog.get("pos_code"),
+                    "pos": prog.get("pos_code"),
+                    "nombre": prog.get("nombre_programa")
+                }
+        return None
+
+    def es_docente_conocido(self, nombre: Optional[str]) -> bool:
+        """Verifica si el nombre de docente coincide con la semilla de catálogo."""
+        if not nombre:
+            return False
+        n = str(nombre).strip().upper()
+        return n in self.docentes
+
+
 
 _GAZETTEER_GLOBAL: Optional[CatalogoGazetteer] = None
 
