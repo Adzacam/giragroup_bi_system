@@ -36,6 +36,19 @@ class TipoEntidad(str, Enum):
     OTRO = "OTRO"
 
 
+class NivelConfianza(str, Enum):
+    """
+    Niveles probabilísticos estandarizados para GiraGroup BI (GIRA-42).
+    ALTA: >= 0.85 (Aceptación directa)
+    MEDIA: [0.60, 0.85) (Requiere revisión humana)
+    BAJA: < 0.60 (Descarte o staging no resuelto)
+    """
+    ALTA = "ALTA"
+    MEDIA = "MEDIA"
+    BAJA = "BAJA"
+
+
+
 @dataclass
 class EntidadExtraida:
     """
@@ -70,6 +83,16 @@ class EntidadExtraida:
     def longitud(self) -> int:
         return self.end_char - self.start_char
 
+    @property
+    def nivel_confianza(self) -> NivelConfianza:
+        """Determina el nivel de confianza probabilístico formal según los umbrales de GiraGroup."""
+        if self.score >= UMBRAL_CONFIANZA_ALTO:
+            return NivelConfianza.ALTA
+        elif self.score >= UMBRAL_CONFIANZA_MEDIO:
+            return NivelConfianza.MEDIA
+        else:
+            return NivelConfianza.BAJA
+
     def es_confiable(self, umbral: float = UMBRAL_CONFIANZA_ALTO) -> bool:
         """Determina si la entidad supera el umbral de aceptación automática."""
         return self.score >= umbral
@@ -79,7 +102,7 @@ class EntidadExtraida:
         return umbral_medio <= self.score < umbral_alto
 
     def to_dict(self) -> Dict[str, Any]:
-        """Serializa a diccionario estándar."""
+        """Serializa a diccionario estándar con niveles de confianza y flag de revisión."""
         return {
             "entidad": self.valor,
             "tipo": self.tipo,
@@ -87,6 +110,8 @@ class EntidadExtraida:
             "start_char": self.start_char,
             "end_char": self.end_char,
             "score": round(self.score, 4),
+            "nivel_confianza": self.nivel_confianza.value,
+            "requiere_revision": self.requiere_revision(),
             "origen": self.origen,
             "metadata": self.metadata
         }
@@ -124,6 +149,16 @@ class ResultadoInferenciaNER:
     def entidades_confiables(self, umbral: float = UMBRAL_CONFIANZA_ALTO) -> List[EntidadExtraida]:
         """Filtra solo las entidades con alta confianza probabilística."""
         return [e for e in self.entidades if e.es_confiable(umbral)]
+
+    def entidades_por_nivel(self, nivel: Union[NivelConfianza, str]) -> List[EntidadExtraida]:
+        """Filtra entidades que pertenezcan a un nivel específico (ALTA, MEDIA, BAJA)."""
+        target = nivel.value if isinstance(nivel, NivelConfianza) else str(nivel).strip().upper()
+        return [e for e in self.entidades if e.nivel_confianza.value == target]
+
+    def entidades_que_requieren_revision(self) -> List[EntidadExtraida]:
+        """Retorna las entidades con nivel de confianza MEDIA que ameritan verificación humana."""
+        return [e for e in self.entidades if e.requiere_revision()]
+
 
     def to_dict(self) -> Dict[str, Any]:
         return {

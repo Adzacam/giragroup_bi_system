@@ -77,6 +77,8 @@ class BetoNEREngine:
     ):
         self.model_name = model_name or MODELO_BETO_NOMBRE
         self.gazetteer = gazetteer or CatalogoGazetteer()
+        from pipeline.semantic.performance_logger import PerformanceLogger
+        self.telemetria = PerformanceLogger()
         
         if device is None:
             self.device_id = 0 if torch.cuda.is_available() else -1
@@ -95,6 +97,7 @@ class BetoNEREngine:
         self._nlp_pipeline = None
         if auto_load:
             self._inicializar_modelo()
+
 
     def _inicializar_modelo(self):
         """Carga perezosa del pipeline de transformers en memoria."""
@@ -180,17 +183,26 @@ class BetoNEREngine:
     ) -> List[ResultadoInferenciaNER]:
         """
         Procesa un lote de oraciones aprovechando procesamiento optimizado en pipeline.
+        Registra automáticamente telemetría de rendimiento (latencia, tokens/s, entidades).
         """
         if not textos:
             return []
 
+        t_inicio = time.perf_counter()
         resultados: List[ResultadoInferenciaNER] = []
         for i in range(0, len(textos), batch_size):
             chunk = textos[i : i + batch_size]
             for t in chunk:
                 resultados.append(self.extraer_entidades(t))
 
+        t_total_ms = (time.perf_counter() - t_inicio) * 1000.0
+        try:
+            self.telemetria.registrar_lote(resultados, tiempo_total_ms=t_total_ms)
+        except Exception as e_tel:
+            logger.warning(f"No se pudo registrar telemetría del lote: {e_tel}")
+
         return resultados
+
 
     def _procesar_predicciones_beto(
         self,
