@@ -6,7 +6,6 @@ abreviaciones y versiones numéricas en las planillas crudas de uploads/data/ co
 los catálogos canónicos de referencia institucional (sin sobreingeniería de LLMs).
 """
 
-import json
 import os
 import re
 from dataclasses import dataclass
@@ -45,32 +44,19 @@ class CatalogMatcher:
         self._docentes = self.catalogos.get("docentes", {})
 
     def _cargar_catalogos_defecto(self) -> Dict[str, Any]:
-        """Carga los catálogos canónicos directamente desde el extractor."""
-        from db.seeds.populate_catalogos import extraer_datos_catalogos
-        dir_datos = "uploads/data"
-        if os.path.exists(dir_datos):
-            try:
-                return extraer_datos_catalogos(dir_datos)
-            except Exception as e:
-                print(f"Aviso: no se pudo cargar uploads/data dinámicamente ({e}). Usando estáticos.")
-
-        # Fallback estático institucional base
+        """Carga los catálogos canónicos delegando en CatalogRepository."""
+        from pipeline.normalization.catalog_repository import obtener_catalogo_repositorio
+        repo = obtener_catalogo_repositorio()
         return {
-            "escuelas": ["Salud", "Negocios", "Leyes", "Ciencias Sociales", "Tecnología/Ingeniería"],
-            "tipos_programa": ["DIPLOMADO", "CURSO", "MAESTRÍA"],
-            "modalidades": ["VIRTUAL SINCRÓNICO", "SEMIPRESENCIAL", "PRESENCIAL SINCRÓNICO"],
-            "estados_academicos": ["Aprobado", "Reprobado", "Deserción", "En curso", "Participó"],
-            "estados_reprobados": ["Insuficiencia académica", "Abandono", "Congelamiento", "Tutoría"],
-            "estados_arca": ["Titulado", "No Titulado"],
-            "programas": {},
-            "docentes": {},
-            "carteras": [
-                {"nombre": "Cartera Vigente", "min": 0, "max": 90},
-                {"nombre": "Cartera en Mora", "min": 91, "max": 180},
-                {"nombre": "Cartera Previsionable", "min": 181, "max": 360},
-                {"nombre": "Cartera Incobrable", "min": 361, "max": 99999},
-                {"nombre": "Cartera Cerrada", "min": -1, "max": -1},
-            ],
+            "escuelas": repo.escuelas,
+            "tipos_programa": repo.tipos_programa or ["DIPLOMADO", "CURSO", "MAESTRÍA"],
+            "modalidades": repo.modalidades,
+            "estados_academicos": repo.estados_academicos,
+            "estados_reprobados": repo.estados_reprobados or ["Insuficiencia académica", "Abandono", "Congelamiento", "Tutoría"],
+            "estados_arca": repo.estados_arca or ["Titulado", "No Titulado"],
+            "programas": repo.programas_meta,
+            "docentes": repo.docentes,
+            "carteras": repo.carteras,
         }
 
     # ──────────────────────────────────────────────────────────────────────────

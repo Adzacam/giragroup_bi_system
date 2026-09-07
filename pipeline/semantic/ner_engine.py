@@ -10,17 +10,19 @@ y desambiguación de entidades académicas y financieras con agregación de subt
 import re
 import time
 import logging
-from typing import List, Dict, Any, Optional, Tuple, Union
+from typing import List, Dict, Any, Optional, Union
 
 import torch
-from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
+from transformers import pipeline
 
 from pipeline.config import (
     MODELO_BETO_NOMBRE,
     MODELO_BETO_BASE,
     DEFAULT_BATCH_SIZE,
     UMBRAL_CONFIANZA_ALTO,
-    UMBRAL_CONFIANZA_MEDIO
+    UMBRAL_CONFIANZA_MEDIO,
+    PATRON_POS_STRICT,
+    TITULOS_PERSONA_TUPLA
 )
 from pipeline.semantic.ner_schema import (
     TipoEntidad,
@@ -28,11 +30,12 @@ from pipeline.semantic.ner_schema import (
     ResultadoInferenciaNER
 )
 from pipeline.semantic.formatter import CatalogoGazetteer
+from pipeline.semantic.performance_logger import PerformanceLogger
 
 logger = logging.getLogger("ner_engine")
 
 # Patrones regex semánticos de dominio para entidades de valor y formato
-PATRON_POS = re.compile(r'\bPOS-(\d{4,5})\b', re.IGNORECASE)
+PATRON_POS = PATRON_POS_STRICT
 PATRON_NOTA = re.compile(
     r'\b(?:con\s+la\s+nota|nota|calificaci[oó]n|puntaje)\s*(?:de|:)?\s*([0-9]{1,3}(?:[.,][0-9]{1,2})?)\b',
     re.IGNORECASE
@@ -77,7 +80,6 @@ class BetoNEREngine:
     ):
         self.model_name = model_name or MODELO_BETO_NOMBRE
         self.gazetteer = gazetteer or CatalogoGazetteer()
-        from pipeline.semantic.performance_logger import PerformanceLogger
         self.telemetria = PerformanceLogger()
         
         if device is None:
@@ -289,7 +291,7 @@ class BetoNEREngine:
         if penultimo_token_izq in ("estudiante", "alumno") and ultimo_token_izq in ("de", "del", "al"):
             return TipoEntidad.ESTUDIANTE
 
-        if ultimo_token_izq in ("docente", "profesor", "facilitador", "lic.", "lic", "ing.", "ing", "dr.", "dr", "msc.", "msc", "magister"):
+        if ultimo_token_izq in TITULOS_PERSONA_TUPLA:
             return TipoEntidad.DOCENTE
         if penultimo_token_izq in ("docente", "profesor") and ultimo_token_izq in ("de", "del", "el"):
             return TipoEntidad.DOCENTE
@@ -299,7 +301,7 @@ class BetoNEREngine:
         for tok in reversed(tokens_izq):
             if tok in ("estudiante", "alumno", "postulante", "inscrito"):
                 return TipoEntidad.ESTUDIANTE
-            if tok in ("docente", "profesor", "facilitador", "lic", "ing", "dr"):
+            if tok in TITULOS_PERSONA_TUPLA:
                 return TipoEntidad.DOCENTE
 
         # 3. Posición respecto a verbos evaluativos ("evaluó", "calificó")

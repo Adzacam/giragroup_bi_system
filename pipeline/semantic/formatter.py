@@ -1,94 +1,38 @@
-"""
-pipeline/semantic/formatter.py — GIRA-40 Conversión a Texto Plano Estructurado para BETO
-
-Convierte el contenido tabulado de output/sprint2_documentos.jsonl en oraciones semánticas
-estructuradas con contexto sintáctico para que el modelo BETO mantenga atención contextual
-(attention masks).
-
-Incluye:
-1. CatalogoGazetteer: Inyección de pistas léxicas y resolución de códigos POS a nombres oficiales.
-2. Identificación de subtipos documentales (actas de notas, evaluación docente, cobranzas, etc.).
-3. Generación de oraciones semánticas con límites estrictos de tokens (< 512 tokens BETO).
-4. Trazabilidad exacta de spans con character offsets [start, end].
-"""
-
 import os
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
+from pipeline.config import SEED_CATALOGOS_SQL_PATH
+from pipeline.normalization.catalog_repository import obtener_catalogo_repositorio, CatalogRepository
+
 
 class CatalogoGazetteer:
-    """Carga y mantiene en memoria los catálogos canónicos para resolver códigos y nombres."""
+    """
+    Fachada y gazetteer para resolución léxica de catálogos canónicos.
+    Delega en CatalogRepository (singleton) para garantizar una única fuente de verdad.
+    """
 
-    def __init__(self, ruta_seed_sql: str = "db/seeds/seed_catalogos.sql"):
-        self.programas: Dict[str, Dict[str, Any]] = {}
-        self.docentes: set = set()
-        self._cargar_desde_seed(ruta_seed_sql)
-
-    def _cargar_desde_seed(self, ruta_sql: str) -> None:
-        if not os.path.exists(ruta_sql):
-            return
-
-        with open(ruta_sql, "r", encoding="utf-8", errors="ignore") as f:
-            for line in f:
-                # 1. Programas: INSERT INTO public.cat_programa ... VALUES ('POS-XXXX', 'NOMBRE', ...)
-                if "INSERT INTO public.cat_programa" in line:
-                    m = re.search(
-                        r"VALUES\s*\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*(\d+)",
-                        line,
-                        re.IGNORECASE,
-                    )
-                    if m:
-                        pos_code = m.group(1).strip().upper()
-                        nombre = m.group(2).strip()
-                        version = int(m.group(3))
-                        self.programas[pos_code] = {
-                            "pos_code": pos_code,
-                            "nombre_programa": nombre,
-                            "version": version,
-                        }
-
-                # 2. Docentes: INSERT INTO public.cat_docente ... VALUES ('NOMBRE', ...)
-                elif "INSERT INTO public.cat_docente" in line:
-                    m = re.search(
-                        r"VALUES\s*\(\s*'([^']+)'",
-                        line,
-                        re.IGNORECASE,
-                    )
-                    if m:
-                        doc_nom = m.group(1).strip()
-                        self.docentes.add(doc_nom)
+    def __init__(self, ruta_seed_sql: Optional[Any] = None):
+        self.repo: CatalogRepository = obtener_catalogo_repositorio(ruta_seed_sql or SEED_CATALOGOS_SQL_PATH)
+        self.programas: Dict[str, Dict[str, Any]] = {
+            pos: {
+                "pos_code": pos,
+                "nombre_programa": meta["nombre"],
+                "version": meta.get("version", 1),
+            }
+            for pos, meta in self.repo.programas_meta.items()
+        }
+        self.docentes: set = self.repo.docentes_set
 
     def normalizar_pos(self, val: Any) -> Optional[str]:
         """Convierte valores como '5308', 'POS 5308', 'POS-5308', 5308.0 a 'POS-5308'."""
-        if val is None:
-            return None
-        txt = str(val).strip()
-        if not txt or txt.lower() in ("nan", "null", "none"):
-            return None
-
-        # Si termina en .0 (flotante convertido a str)
-        if txt.endswith(".0"):
-            txt = txt[:-2]
-
-        m = re.search(r"(\d{4,5})", txt)
-        if m:
-            return f"POS-{m.group(1)}"
-
-        m_pos = re.search(r"(POS[-\s]?[A-Za-z0-9\-]+)", txt, re.IGNORECASE)
-        if m_pos:
-            cod = m_pos.group(1).upper().replace(" ", "-")
-            if not cod.startswith("POS-"):
-                cod = "POS-" + cod[3:].lstrip("-")
-            return cod
-
-        return None
+        return self.repo.normalizar_pos(val)
 
     def resolver_programa(self, pos_code: Optional[str]) -> Tuple[str, str]:
         """Retorna (codigo_pos_limpio, nombre_oficial_o_fallback)."""
         if not pos_code:
             return ("", "")
-        norm = self.normalizar_pos(pos_code) or pos_code.upper()
+        norm = self.normalizar_pos(pos_code) or str(pos_code).upper()
         if norm in self.programas:
             return (norm, self.programas[norm]["nombre_programa"])
         return (norm, norm)
@@ -117,11 +61,7 @@ class CatalogoGazetteer:
 
     def es_docente_conocido(self, nombre: Optional[str]) -> bool:
         """Verifica si el nombre de docente coincide con la semilla de catálogo."""
-        if not nombre:
-            return False
-        n = str(nombre).strip().upper()
-        return n in self.docentes
-
+        return self.repo.es_docente_conocido(nombre)
 
 
 _GAZETTEER_GLOBAL: Optional[CatalogoGazetteer] = None

@@ -41,6 +41,30 @@ UMBRAL_CONFIANZA_BAJO = 0.40     # Descarte o staging no resuelto
 DEFAULT_BATCH_SIZE = 16
 MAX_TOKEN_LENGTH = 512
 
+# ── Constantes y Expresiones Regulares de Dominio Centralizadas ──────
+import re
+
+# Códigos POS (4000 a 7000 en GiraGroup)
+PATRON_POS_GENERAL = re.compile(r'\b(?:POS[-_ ]?)?(\d{4,5})\b', re.IGNORECASE)
+PATRON_POS_STRICT = re.compile(r'\bPOS-(\d{4,5})\b', re.IGNORECASE)
+
+# Cédula de Identidad boliviana
+PATRON_CI_BOLIVIA = re.compile(r'^\d{5,9}(?:-[0-9A-Za-z]{1,3})?$', re.IGNORECASE)
+
+# Prefijos y títulos profesionales para desambiguación y normalización
+PREFIJOS_TITULOS = re.compile(
+    r'\b(?:lic(?:\.|enciad[oa])?|dr(?:\.|a\.)?|ing(?:\.|enier[oa])?|msc(?:\.)?|'
+    r'mag[ií]ster|mtr(?:\.)?|ph\.?d\.?|prof(?:\.|esor[a]?)?|docente)\b',
+    re.IGNORECASE
+)
+TITULOS_PERSONA_TUPLA = (
+    "docente", "profesor", "profesora", "facilitador", "facilitadora",
+    "lic.", "lic", "licenciado", "licenciada",
+    "ing.", "ing", "ingeniero", "ingeniera",
+    "dr.", "dr", "dra.", "dra", "doctor", "doctora",
+    "msc.", "msc", "magister", "máster", "master", "phd", "ph.d."
+)
+
 # Asegurar directorios requeridos
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 MODELO_BETO_CACHE_DIR.mkdir(parents=True, exist_ok=True)

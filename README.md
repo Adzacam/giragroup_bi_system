@@ -334,8 +334,8 @@ Comandos utilizados para configurar el analizador del IDE y ejecutar scripts fue
 * **Crear entorno:** `py -m venv .venv`
 * **Activar entorno:** `.\.venv\Scripts\activate`
 * **Instalar dependencias API:** `pip install -r backend/requirements.txt`
-* **Instalar dependencias Pipeline:** `pip install -r pipeline/requirements.txt`
-* **Ejecutar script local:** `python pipeline/ingestion/sheet_reader.py`
+* **Ejecutar tests del pipeline:** `pytest tests/ -v`
+* **Ejecutar extracción e ingesta:** `python run_sprint2.py`
 * **Desactivar entorno:** `deactivate`
 
 ### 2. Orquestación de Infraestructura (Docker)
@@ -351,7 +351,7 @@ Comandos para controlar el ciclo de vida de las 5 capas de la arquitectura.
 ### 3. Ejecución Interna (Docker Exec)
 Comando para lanzar procesos directamente sobre el entorno Linux del contenedor, aprovechando las librerías nativas preinstaladas.
 
-* **Ejecutar extracción de Excel:** `docker exec -it giragroup_pipeline python pipeline/ingestion/sheet_reader.py`
+* **Ejecutar extracción de Excel:** `docker exec -it giragroup_pipeline python run_sprint2.py`
 
 ### 4. Control de Versiones (Git - Cierre de Sprint)
 Flujo estándar utilizado para consolidar la rama de desarrollo con la rama principal.

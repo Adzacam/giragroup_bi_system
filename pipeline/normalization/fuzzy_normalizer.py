@@ -10,15 +10,8 @@ import re
 import unicodedata
 from typing import List, Tuple, Optional, Dict, Any, Union
 
-from rapidfuzz import fuzz, process, utils
-from pipeline.config import UMBRAL_CONFIANZA_ALTO
-
-# Prefijos académicos y títulos profesionales a remover para matching canónico
-PREFIJOS_TITULOS = re.compile(
-    r'\b(?:lic(?:\.|enciad[oa])?|dr(?:\.|a\.)?|ing(?:\.|enier[oa])?|msc(?:\.)?|'
-    r'mag[ií]ster|mtr(?:\.)?|ph\.?d\.?|prof(?:\.|esor[a]?)?|docente)\b',
-    re.IGNORECASE
-)
+from rapidfuzz import fuzz, process
+from pipeline.config import UMBRAL_CONFIANZA_ALTO, PREFIJOS_TITULOS
 
 
 def remover_diacriticos(texto: str) -> str:

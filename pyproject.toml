@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "giragroup-bi-system"
+version = "0.3.0"
+description = "GiraGroup BI System - Pipeline Inteligente de Extracción, Normalización y Analítica"
+readme = "README.md"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
+filterwarnings = [
+    "ignore::UserWarning:openpyxl",
+    "ignore::DeprecationWarning:transformers"
+]

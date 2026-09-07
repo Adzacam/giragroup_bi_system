@@ -16,10 +16,10 @@ Cumple con el estándar de contrato:
 }
 """
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Dict, Any, Optional
-from pipeline.config import UMBRAL_CONFIANZA_ALTO, UMBRAL_CONFIANZA_MEDIO
+from typing import List, Dict, Any
+from pipeline.config import UMBRAL_CONFIANZA_ALTO, UMBRAL_CONFIANZA_MEDIO, MODELO_BETO_BASE
 
 
 class TipoEntidad(str, Enum):
@@ -137,7 +137,7 @@ class ResultadoInferenciaNER:
     texto: str
     entidades: List[EntidadExtraida] = field(default_factory=list)
     tiempo_inferencia_ms: float = 0.0
-    modelo: str = "dccuchile/bert-base-spanish-wwm-cased"
+    modelo: str = MODELO_BETO_BASE
     dispositivo: str = "cpu"
     metadata: Dict[str, Any] = field(default_factory=dict)
 

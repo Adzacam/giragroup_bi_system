@@ -8,14 +8,13 @@ Persiste eventos estructurados en output/telemetria_ner.jsonl.
 """
 
 import json
-import time
 import uuid
 from dataclasses import dataclass, asdict, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-from pipeline.config import OUTPUT_DIR
+from pipeline.config import OUTPUT_DIR, MODELO_BETO_BASE
 from pipeline.semantic.ner_schema import ResultadoInferenciaNER, NivelConfianza
 
 
@@ -99,7 +98,7 @@ class PerformanceLogger:
         latencia_prom = t_efectivo / total_oraciones if total_oraciones > 0 else 0.0
 
         dispositivo = resultados[0].dispositivo if resultados else "cpu"
-        modelo = resultados[0].modelo if resultados else "dccuchile/bert-base-spanish-wwm-cased"
+        modelo = resultados[0].modelo if resultados else MODELO_BETO_BASE
 
         metricas = MetricasTelemetria(
             id_ejecucion=str(uuid.uuid4()),

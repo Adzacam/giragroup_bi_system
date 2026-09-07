@@ -11,14 +11,11 @@ Implementa la máquina de estados A/B/C:
 import hashlib
 import re
 from pathlib import Path
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional
 
 import pandas as pd
-from pipeline.config import DATA_DIR, UMBRAL_CONFIANZA_ALTO
+from pipeline.config import DATA_DIR, UMBRAL_CONFIANZA_ALTO, UMBRAL_CONFIANZA_BAJO, PATRON_CI_BOLIVIA
 from pipeline.normalization.fuzzy_normalizer import FuzzyNormalizer
-
-# Regex para validación estricta de Cédula de Identidad en Bolivia
-PATRON_CI_BOLIVIA = re.compile(r'^\d{5,9}(?:-[0-9A-Za-z]{1,3})?$', re.IGNORECASE)
 
 
 class FKResolver:
@@ -169,7 +166,7 @@ class FKResolver:
         return {
             "ci": ci_sintetico,
             "estado_resolucion": "ESTADO_C_NO_RESUELTO_SINTETICO",
-            "score": 0.40,
+            "score": UMBRAL_CONFIANZA_BAJO,
             "es_sintetico": True,
             "requiere_auditoria": True,
             "nombre_resuelto": nombre_str

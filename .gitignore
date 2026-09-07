@@ -41,3 +41,19 @@ Thumbs.db
 .vscode/
 .idea/
 .docker/
+
+# ---------------------------------------------------
+# ARCHIVOS GENERADOS Y PESADOS DEL PIPELINE
+# ---------------------------------------------------
+output/*.jsonl
+output/*.csv
+pipeline/semantic/beto_local/
+*.pbix
+
+# ---------------------------------------------------
+# DEPENDENCIAS FRONTEND Y ENTORNOS ANIDADOS
+# ---------------------------------------------------
+node_modules/
+frontend/node_modules/
+backend/.venv/
+frontend/.venv/
