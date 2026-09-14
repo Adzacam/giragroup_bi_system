@@ -86,6 +86,16 @@ CREATE TABLE public.dim_categoria_financiera (
     tipo VARCHAR(50) -- 'INGRESO', 'EGRESO', 'RENTABILIDAD', 'EBITDA'
 );
 
+CREATE TABLE public.dim_meta (
+    id_meta SERIAL PRIMARY KEY,
+    categoria VARCHAR(50) NOT NULL,
+    id_tiempo INT REFERENCES public.dim_tiempo(id_tiempo) ON DELETE CASCADE,
+    monto_meta NUMERIC(14, 2),
+    tipo_programa VARCHAR(50)
+);
+CREATE INDEX idx_dim_meta_tiempo ON public.dim_meta(id_tiempo);
+CREATE INDEX idx_dim_meta_cat ON public.dim_meta(categoria);
+
 -- ==========================================
 -- 3. AUDITORÍA Y CALIDAD DE DATOS NLP
 -- ==========================================
@@ -177,6 +187,21 @@ CREATE TABLE public.fact_rentabilidad (
     monto_ejecutado NUMERIC(14, 2),
     monto_meta NUMERIC(14, 2)
 );
+
+-- F. Pronósticos de Negocio (Forecasting)
+CREATE TABLE public.fact_forecast (
+    id_forecast SERIAL PRIMARY KEY,
+    caso_uso VARCHAR(50) NOT NULL,
+    id_tiempo INT REFERENCES public.dim_tiempo(id_tiempo) ON DELETE CASCADE,
+    valor_forecast NUMERIC(14, 2) NOT NULL,
+    ic_lower NUMERIC(14, 2),
+    ic_upper NUMERIC(14, 2),
+    metodo VARCHAR(30) NOT NULL DEFAULT 'HoltWinters',
+    horizonte_meses INT NOT NULL,
+    generado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_forecast_caso_tiempo UNIQUE (caso_uso, id_tiempo)
+);
+CREATE INDEX idx_fact_forecast_caso ON public.fact_forecast(caso_uso);
 
 -- ==========================================
 -- 5. HABILITAR SEGURIDAD (RLS)
