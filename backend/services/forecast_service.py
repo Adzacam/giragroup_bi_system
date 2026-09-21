@@ -9,10 +9,22 @@ si aún no se ha ejecutado el batch de persistencia.
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+import sys
+from pathlib import Path
 
-from pipeline.analytics.time_series_extractor import extraer_serie_temporal
-from pipeline.analytics.forecasting_holtwinters import entrenar_y_proyectar_hw
-from pipeline.analytics.forecasting_ols import estimar_tendencia_anual_ols
+# Asegurar que el directorio raíz del proyecto esté en sys.path
+_project_root = str(Path(__file__).resolve().parent.parent.parent)
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
+
+try:
+    from pipeline.analytics.time_series_extractor import extraer_serie_temporal
+    from pipeline.analytics.forecasting_holtwinters import entrenar_y_proyectar_hw
+    from pipeline.analytics.forecasting_ols import estimar_tendencia_anual_ols
+except ImportError:
+    extraer_serie_temporal = None
+    entrenar_y_proyectar_hw = None
+    estimar_tendencia_anual_ols = None
 
 
 def obtener_pronostico_alumnos(

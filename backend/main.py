@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from core.database import get_db
-from routers import riesgos, forecast
+from routers import riesgos, forecast, auth, users, notifications
 
 logger = logging.getLogger("api_main")
 
@@ -43,13 +43,16 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],  # Frontend React Vite
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
 # ── Registro de Routers Modulares ─────────────────────────────────────────────
 app.include_router(riesgos.router)
 app.include_router(forecast.router)
+app.include_router(auth.router)
+app.include_router(users.router)
+app.include_router(notifications.router)
 
 
 @app.get(

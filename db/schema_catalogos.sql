@@ -121,3 +121,35 @@ CREATE TABLE IF NOT EXISTS public.stg_entidad_no_resuelta (
 CREATE INDEX IF NOT EXISTS idx_stg_estado ON public.stg_entidad_no_resuelta(estado);
 CREATE INDEX IF NOT EXISTS idx_stg_tipo ON public.stg_entidad_no_resuelta(tipo_entidad);
 
+-- 12. Etiquetas y Reglas de Clasificación de Documentos / Texto
+CREATE TABLE IF NOT EXISTS public.cat_etiqueta_clasificacion (
+    id_etiqueta SERIAL PRIMARY KEY,
+    categoria VARCHAR(50) NOT NULL,            -- 'academico', 'financiero', 'comercial'
+    subtipo VARCHAR(50),                       -- 'ACTAS_NOTAS', 'COBRANZAS', 'EVALUACION_DOCENTE', etc.
+    palabra_clave VARCHAR(100) NOT NULL UNIQUE,
+    ambito VARCHAR(30) DEFAULT 'AMBOS',        -- 'ARCHIVO', 'HOJA', 'CONTENIDO', 'AMBOS'
+    peso INT DEFAULT 1
+);
+CREATE INDEX IF NOT EXISTS idx_cat_etiq_cat ON public.cat_etiqueta_clasificacion(categoria);
+CREATE INDEX IF NOT EXISTS idx_cat_etiq_sub ON public.cat_etiqueta_clasificacion(subtipo);
+
+-- 13. Mapeo Canónico de Columnas Tabulares
+CREATE TABLE IF NOT EXISTS public.cat_mapeo_columna (
+    id_mapeo SERIAL PRIMARY KEY,
+    campo_canonico VARCHAR(50) NOT NULL,       -- 'ESTUDIANTE', 'CI', 'MONTO', 'NOTA', etc.
+    alias_columna VARCHAR(100) NOT NULL UNIQUE,
+    tipo_entidad VARCHAR(50) NOT NULL          -- Corresponde a TipoEntidad (NER)
+);
+CREATE INDEX IF NOT EXISTS idx_cat_map_campo ON public.cat_mapeo_columna(campo_canonico);
+
+-- 14. Guías y Plantillas Dinámicas para Serialización a Texto Plano
+CREATE TABLE IF NOT EXISTS public.cat_guia_texto_plano (
+    id_guia SERIAL PRIMARY KEY,
+    subtipo VARCHAR(50) NOT NULL UNIQUE,       -- 'ACTAS_NOTAS', 'COBRANZAS', etc.
+    descripcion VARCHAR(255),
+    plantilla_texto TEXT NOT NULL,
+    campos_requeridos TEXT,                    -- Campos separados por coma: 'ESTUDIANTE,PROGRAMA'
+    prioridad INT DEFAULT 1
+);
+
+

@@ -57,77 +57,116 @@ class CatalogRepository:
         self.estados_arca: List[str] = []
         self.carteras: List[Dict[str, Any]] = []
 
+        # Estructuras dinámicas para clasificación y guías de texto plano
+        self.etiquetas_clasificacion: List[Dict[str, Any]] = []
+        self.mapeos_columna: Dict[str, Dict[str, str]] = {}
+        self.guias_texto_plano: Dict[str, Dict[str, Any]] = {}
+
         self._cargar_desde_seed()
         self._inicializar_mapeos_rapidos()
         self._initialized = True
 
     def _cargar_desde_seed(self) -> None:
-        """Parsea seed_catalogos.sql una sola vez para poblar todas las dimensiones."""
+        """Parsea seed_catalogos.sql una sola vez para poblar todas las dimensiones y guías."""
         if not self.ruta_seed.exists():
             return
 
         with open(self.ruta_seed, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("--"):
-                    continue
+            contenido_sql = f.read()
 
-                if "INSERT INTO public.cat_programa" in line:
-                    m = re.search(
-                        r"VALUES\s*\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*(\d+)",
-                        line,
-                        re.IGNORECASE
-                    )
-                    if m:
-                        pos = m.group(1).strip()
-                        nombre = m.group(2).strip()
-                        version = int(m.group(3))
-                        self.programas[pos] = nombre
-                        self.programas_meta[pos] = {
-                            "pos": pos,
-                            "nombre": nombre,
-                            "version": version
-                        }
+        for line in contenido_sql.splitlines():
+            line = line.strip()
+            if not line or line.startswith("--"):
+                continue
 
-                elif "INSERT INTO public.cat_docente" in line:
-                    m = re.search(r"VALUES\s*\(\s*'([^']+)'", line, re.IGNORECASE)
-                    if m:
-                        nom_orig = m.group(1).strip()
-                        self.docentes_set.add(nom_orig.upper())
-                        nom_limpio = FuzzyNormalizer.limpiar_nombre(nom_orig)
-                        self.docentes[nom_limpio] = {
-                            "nombre_original": nom_orig,
-                            "nombre_canonico": nom_orig
-                        }
+            if "INSERT INTO public.cat_programa" in line:
+                m = re.search(
+                    r"VALUES\s*\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*(\d+)",
+                    line,
+                    re.IGNORECASE
+                )
+                if m:
+                    pos = m.group(1).strip()
+                    nombre = m.group(2).strip()
+                    version = int(m.group(3))
+                    self.programas[pos] = nombre
+                    self.programas_meta[pos] = {
+                        "pos": pos,
+                        "nombre": nombre,
+                        "version": version
+                    }
 
-                elif "INSERT INTO public.cat_modulo" in line:
-                    m = re.search(
-                        r"(?:SELECT\s+id_programa\s*,\s*\d+\s*,\s*|VALUES\s*\(\s*)'([^']+)'",
-                        line,
-                        re.IGNORECASE
-                    )
-                    if m:
-                        mod_orig = m.group(1).strip()
-                        mod_limpio = FuzzyNormalizer.limpiar_nombre(mod_orig)
-                        self.modulos[mod_limpio] = {
-                            "nombre_original": mod_orig,
-                            "nombre_canonico": mod_orig
-                        }
+            elif "INSERT INTO public.cat_docente" in line:
+                m = re.search(r"VALUES\s*\(\s*'([^']+)'", line, re.IGNORECASE)
+                if m:
+                    nom_orig = m.group(1).strip()
+                    self.docentes_set.add(nom_orig.upper())
+                    nom_limpio = FuzzyNormalizer.limpiar_nombre(nom_orig)
+                    self.docentes[nom_limpio] = {
+                        "nombre_original": nom_orig,
+                        "nombre_canonico": nom_orig
+                    }
 
-                elif "INSERT INTO public.cat_escuela" in line:
-                    m = re.search(r"VALUES\s*\(\s*'([^']+)'", line, re.IGNORECASE)
-                    if m:
-                        self.escuelas.append(m.group(1).strip())
+            elif "INSERT INTO public.cat_modulo" in line:
+                m = re.search(
+                    r"(?:SELECT\s+id_programa\s*,\s*\d+\s*,\s*|VALUES\s*\(\s*)'([^']+)'",
+                    line,
+                    re.IGNORECASE
+                )
+                if m:
+                    mod_orig = m.group(1).strip()
+                    mod_limpio = FuzzyNormalizer.limpiar_nombre(mod_orig)
+                    self.modulos[mod_limpio] = {
+                        "nombre_original": mod_orig,
+                        "nombre_canonico": mod_orig
+                    }
 
-                elif "INSERT INTO public.cat_modalidad" in line:
-                    m = re.search(r"VALUES\s*\(\s*'([^']+)'", line, re.IGNORECASE)
-                    if m:
-                        self.modalidades.append(m.group(1).strip())
+            elif "INSERT INTO public.cat_escuela" in line:
+                m = re.search(r"VALUES\s*\(\s*'([^']+)'", line, re.IGNORECASE)
+                if m:
+                    self.escuelas.append(m.group(1).strip())
 
-                elif "INSERT INTO public.cat_estado_academico" in line:
-                    m = re.search(r"VALUES\s*\(\s*'([^']+)'", line, re.IGNORECASE)
-                    if m:
-                        self.estados_academicos.append(m.group(1).strip())
+            elif "INSERT INTO public.cat_modalidad" in line:
+                m = re.search(r"VALUES\s*\(\s*'([^']+)'", line, re.IGNORECASE)
+                if m:
+                    self.modalidades.append(m.group(1).strip())
+
+            elif "INSERT INTO public.cat_estado_academico" in line:
+                m = re.search(r"VALUES\s*\(\s*'([^']+)'", line, re.IGNORECASE)
+                if m:
+                    self.estados_academicos.append(m.group(1).strip())
+
+        # Parsear bloques relacionales de clasificación y plantillas
+        m_etiq = re.search(r"INSERT INTO public\.cat_etiqueta_clasificacion.*?VALUES\s*(.*?)(?:ON CONFLICT|;)", contenido_sql, re.DOTALL | re.IGNORECASE)
+        if m_etiq:
+            for item in re.finditer(r"\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*(\d+)\s*\)", m_etiq.group(1)):
+                self.etiquetas_clasificacion.append({
+                    "categoria": item.group(1).strip().lower(),
+                    "subtipo": item.group(2).strip(),
+                    "palabra_clave": item.group(3).strip().lower(),
+                    "ambito": item.group(4).strip().upper(),
+                    "peso": int(item.group(5))
+                })
+
+        m_map = re.search(r"INSERT INTO public\.cat_mapeo_columna.*?VALUES\s*(.*?)(?:ON CONFLICT|;)", contenido_sql, re.DOTALL | re.IGNORECASE)
+        if m_map:
+            for item in re.finditer(r"\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*\)", m_map.group(1)):
+                self.mapeos_columna[item.group(2).strip().lower()] = {
+                    "campo_canonico": item.group(1).strip().upper(),
+                    "tipo_entidad": item.group(3).strip().upper()
+                }
+
+        m_guia = re.search(r"INSERT INTO public\.cat_guia_texto_plano.*?VALUES\s*(.*?)(?:ON CONFLICT|;)", contenido_sql, re.DOTALL | re.IGNORECASE)
+        if m_guia:
+            for item in re.finditer(r"\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']*)'\s*,\s*(\d+)\s*\)", m_guia.group(1)):
+                subtipo = item.group(1).strip()
+                self.guias_texto_plano[subtipo] = {
+                    "subtipo": subtipo,
+                    "descripcion": item.group(2).strip(),
+                    "plantilla_texto": item.group(3).strip(),
+                    "campos_requeridos": [c.strip() for c in item.group(4).split(",") if c.strip()],
+                    "prioridad": int(item.group(5))
+                }
 
         # Fallbacks institucionales si no estaban en el seed
         if not self.escuelas:
@@ -154,6 +193,15 @@ class CatalogRepository:
             FuzzyNormalizer.limpiar_nombre(nom): pos
             for pos, nom in self.programas.items()
         }
+        # Agrupación de etiquetas por categoría y subtipo
+        self._palabras_por_categoria: Dict[str, List[Tuple[str, str, int]]] = {}
+        for etiq in self.etiquetas_clasificacion:
+            cat = etiq["categoria"]
+            if cat not in self._palabras_por_categoria:
+                self._palabras_por_categoria[cat] = []
+            self._palabras_por_categoria[cat].append(
+                (etiq["palabra_clave"], etiq["ambito"], etiq["peso"])
+            )
 
     # ── MÉTODOS DE PROGRAMA Y POS ───────────────────────────────────────
 
@@ -449,6 +497,115 @@ class CatalogRepository:
             if c["min"] <= dias <= c["max"]:
                 return c["nombre"]
         return "Cartera No Clasificada"
+
+    # ── MÉTODOS DINÁMICOS DE CLASIFICACIÓN Y GUÍAS DE TEXTO PLANO ─────
+
+    def clasificar_bloque_con_catalogo(
+        self,
+        texto_archivo: str = "",
+        texto_hoja: str = "",
+        texto_contenido: str = "",
+        es_ruido: bool = False
+    ) -> Tuple[str, str]:
+        """
+        Clasifica dinámicamente un bloque tabular en (categoría, subtipo) usando
+        las etiquetas y ponderaciones cargadas de la base de datos de catálogos.
+        """
+        if es_ruido:
+            return "ruido", "descartable"
+
+        t_arch = (texto_archivo or "").lower()
+        t_hoja = (texto_hoja or "").lower()
+        t_cont = (texto_contenido or "").lower()
+
+        cat_scores: Dict[str, float] = {"academico": 0.0, "financiero": 0.0, "comercial": 0.0}
+        sub_scores: Dict[str, float] = {}
+
+        for etiq in self.etiquetas_clasificacion:
+            kw = etiq["palabra_clave"]
+            cat = etiq["categoria"]
+            sub = etiq["subtipo"]
+            amb = etiq["ambito"]
+            peso = float(etiq["peso"])
+
+            puntos = 0.0
+            if amb in ("ARCHIVO", "AMBOS") and kw in t_arch:
+                puntos += peso * 2.0
+            if amb in ("HOJA", "AMBOS") and kw in t_hoja:
+                puntos += peso * 1.5
+            if amb in ("CONTENIDO", "AMBOS") and kw in t_cont:
+                puntos += peso * 1.0
+
+            if puntos > 0:
+                cat_scores[cat] = cat_scores.get(cat, 0.0) + puntos
+                if sub:
+                    sub_scores[sub] = sub_scores.get(sub, 0.0) + puntos
+
+        mejor_cat = max(cat_scores, key=cat_scores.get)
+        if cat_scores[mejor_cat] > 0.0:
+            mejor_sub = max(sub_scores, key=sub_scores.get) if sub_scores else f"{mejor_cat.upper()}_GENERICO"
+            return mejor_cat, mejor_sub
+
+        return "generico", "GENERICO"
+
+    def detectar_subtipo_con_catalogo(self, header_cols: List[str], categoria: str = "generico") -> str:
+        """
+        Determina el subtipo semántico del bloque analizando los encabezados
+        contra las etiquetas del catálogo institucional.
+        """
+        hdr_norm = " ".join([c.lower() for c in header_cols])
+        sub_scores: Dict[str, int] = {}
+
+        for etiq in self.etiquetas_clasificacion:
+            kw = etiq["palabra_clave"]
+            sub = etiq["subtipo"]
+            if sub and kw in hdr_norm:
+                sub_scores[sub] = sub_scores.get(sub, 0) + etiq["peso"]
+
+        if sub_scores:
+            return max(sub_scores, key=sub_scores.get)
+
+        if categoria == "financiero":
+            return "COBRANZAS"
+        if categoria == "academico":
+            return "ACTAS_NOTAS"
+        if categoria == "comercial":
+            return "INSCRIPCIONES"
+        return "GENERICO"
+
+    def identificar_columna(self, col_name: str) -> Optional[Dict[str, str]]:
+        """
+        Mapea el nombre de una columna a su campo canónico y tipo de entidad
+        usando el diccionario de cat_mapeo_columna.
+        """
+        if not col_name:
+            return None
+        clean = col_name.strip().lower()
+
+        # 1. Búsqueda exacta
+        if clean in self.mapeos_columna:
+            return self.mapeos_columna[clean]
+
+        # 2. Búsqueda por subcadena / contención
+        for alias, mapeo in self.mapeos_columna.items():
+            if alias in clean or clean in alias:
+                return mapeo
+
+        return None
+
+    def obtener_guia_texto_plano(self, subtipo: str) -> Dict[str, Any]:
+        """
+        Retorna la plantilla y metadatos de serialización para un subtipo dado.
+        """
+        if subtipo in self.guias_texto_plano:
+            return self.guias_texto_plano[subtipo]
+        return self.guias_texto_plano.get("GENERICO", {
+            "subtipo": "GENERICO",
+            "descripcion": "Plantilla genérica",
+            "plantilla_texto": "Registro en hoja {HOJA}: {DETALLES}.",
+            "campos_requeridos": ["HOJA", "DETALLES"],
+            "prioridad": 99
+        })
 
 
 _repositorio_singleton: Optional[CatalogRepository] = None

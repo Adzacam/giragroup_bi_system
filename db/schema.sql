@@ -22,7 +22,29 @@ CREATE TABLE public.users (
     username VARCHAR(100) UNIQUE NOT NULL DEFAULT 'sistema',
     hashed_password VARCHAR(255) NOT NULL DEFAULT '$placeholder$',
     role VARCHAR(50) DEFAULT 'admin',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    email VARCHAR(150) UNIQUE NOT NULL DEFAULT 'admin@giragroup.com',
+    phone VARCHAR(30),
+    is_active BOOLEAN DEFAULT TRUE,
+    is_mfa_enabled BOOLEAN DEFAULT TRUE,
+    otp_code_hash VARCHAR(255),
+    otp_expires_at TIMESTAMP WITH TIME ZONE,
+    failed_login_attempts INTEGER DEFAULT 0,
+    locked_until TIMESTAMP WITH TIME ZONE,
+    created_by_id INTEGER REFERENCES public.users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE public.notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES public.users(id),
+    role_target VARCHAR(50),
+    title VARCHAR(200) NOT NULL,
+    message TEXT NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    severity VARCHAR(20) NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    link VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ==========================================

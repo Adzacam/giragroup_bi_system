@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Numeric, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Numeric, ForeignKey, UniqueConstraint, Text
 from sqlalchemy.orm import relationship
 from core.database import CatalogBase
 
@@ -126,3 +126,35 @@ class RefMetasGestion(CatalogBase):
     __table_args__ = (
         UniqueConstraint("gestion", "mes", "categoria", name="uq_ref_metas_gestion_mes_cat"),
     )
+
+
+class CatEtiquetaClasificacion(CatalogBase):
+    __tablename__ = "cat_etiqueta_clasificacion"
+
+    id_etiqueta = Column(Integer, primary_key=True, index=True)
+    categoria = Column(String(50), nullable=False, index=True)
+    subtipo = Column(String(50), index=True)
+    palabra_clave = Column(String(100), nullable=False, unique=True)
+    ambito = Column(String(30), default="AMBOS")
+    peso = Column(Integer, default=1)
+
+
+class CatMapeoColumna(CatalogBase):
+    __tablename__ = "cat_mapeo_columna"
+
+    id_mapeo = Column(Integer, primary_key=True, index=True)
+    campo_canonico = Column(String(50), nullable=False, index=True)
+    alias_columna = Column(String(100), nullable=False, unique=True)
+    tipo_entidad = Column(String(50), nullable=False)
+
+
+class CatGuiaTextoPlano(CatalogBase):
+    __tablename__ = "cat_guia_texto_plano"
+
+    id_guia = Column(Integer, primary_key=True, index=True)
+    subtipo = Column(String(50), nullable=False, unique=True)
+    descripcion = Column(String(255))
+    plantilla_texto = Column(Text, nullable=False)
+    campos_requeridos = Column(Text)
+    prioridad = Column(Integer, default=1)
+

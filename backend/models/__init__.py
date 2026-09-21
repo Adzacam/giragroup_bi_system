@@ -26,4 +26,7 @@ from .catalogos import (
     CatEstadoArca,
     CatTipoCartera,
     RefMetasGestion,
+    CatEtiquetaClasificacion,
+    CatMapeoColumna,
+    CatGuiaTextoPlano,
 )

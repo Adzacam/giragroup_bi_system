@@ -101,9 +101,7 @@ def _leer_csv(ruta: str) -> dict[str, pd.DataFrame]:
 
 
 # ── Registro de lectores por extensión ──────────────────────────────
-# Para agregar un nuevo formato:
-#   from pipeline.ingesta import LECTORES
-#   LECTORES[".json"] = mi_funcion_lectora_json
+
 LECTORES: dict[str, LectorFn] = {
     ".xlsx": _leer_xlsx,
     ".xls":  _leer_xlsx,
@@ -394,39 +392,32 @@ def clasificar_categoria(
     nombre_hoja: str = "",
 ) -> str:
     """
-    Clasifica un bloque en una categoría de negocio mediante heurística de palabras clave.
-    Categorías: 'academico', 'financiero', 'comercial', 'generico'.
-
-    Si el bloque está marcado como ruido en sus atributos o tiene < 2 filas,
-    se marca como 'ruido' (baja confianza).
-    Si no hay match claro de palabras clave, retorna 'generico'.
+    Clasifica un bloque en una categoría de negocio ('academico', 'financiero', 'comercial', 'generico')
+    delegando de forma dinámica en las etiquetas y reglas cargadas de la base de datos de catálogos
+    (CatalogRepository), eliminando heurísticas manuales en código.
     """
     if bloque is not None:
         if getattr(bloque, "attrs", {}).get("es_ruido", False) or len(bloque) < MIN_FILAS_ISLA:
             return "ruido"
 
-    texto_archivo = (nombre_archivo or "").lower()
-    texto_hoja = (nombre_hoja or "").lower()
-
     texto_contenido = ""
     if bloque is not None and not bloque.empty:
         filas_muestra = bloque.iloc[:min(3, len(bloque))].values.flatten()
-        texto_contenido = " ".join(str(v).lower() for v in filas_muestra if pd.notna(v))
+        texto_contenido = " ".join(str(v) for v in filas_muestra if pd.notna(v))
 
-    scores = {"academico": 0, "financiero": 0, "comercial": 0}
-    for cat, palabras in PALABRAS_CLAVE_CATEGORIA.items():
-        for kw in palabras:
-            if kw in texto_archivo:
-                scores[cat] += 4
-            if kw in texto_hoja:
-                scores[cat] += 3
-            if kw in texto_contenido:
-                scores[cat] += 1
-
-    mejor_cat = max(scores, key=scores.get)
-    if scores[mejor_cat] > 0:
-        return mejor_cat
-    return "generico"
+    try:
+        from pipeline.normalization.catalog_repository import obtener_catalogo_repositorio
+        repo = obtener_catalogo_repositorio()
+        cat, _ = repo.clasificar_bloque_con_catalogo(
+            texto_archivo=nombre_archivo,
+            texto_hoja=nombre_hoja,
+            texto_contenido=texto_contenido,
+            es_ruido=False
+        )
+        return cat
+    except Exception as e:
+        logger.warning("Fallo al clasificar con catálogos dinámicos (%s), retornando 'generico'", e)
+        return "generico"
 
 
 def clasificar_bloque(

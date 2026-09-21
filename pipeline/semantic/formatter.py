@@ -106,35 +106,11 @@ def registrar_span(oracion: str, tipo: str, valor: str, entidades: List[Dict[str
         })
 
 
-def detectar_subtipo_bloque(header_cols: List[str], categoria: str) -> str:
-    """Determina la semántica interna de la hoja a partir de las columnas del encabezado."""
-    hdr_norm = " ".join([c.lower() for c in header_cols])
-
-    # 1. Evaluación Docente
-    if any(k in hdr_norm for k in ("explica", "docente mostró", "estilo de enseñanza", "evaluación docente", "1. ¿la/el", "recomiende el presente")):
-        return "EVALUACION_DOCENTE"
-
-    # 2. Actas de Notas
-    if any(k in hdr_norm for k in ("actas", "acta de notas")) or (("módulo 1" in hdr_norm or "modulo 1" in hdr_norm) and ("aprobado" in hdr_norm or "paterno" in hdr_norm or "cédula" in hdr_norm)):
-        return "ACTAS_NOTAS"
-
-    # 3. Inscripciones (Comercial)
-    if categoria == "comercial" or any(k in hdr_norm for k in ("marca temporal", "numeroproyecto", "inscrito", "tbl_inscritos")):
-        return "INSCRIPCIONES"
-
-    # 4. Cobranzas / Facturación
-    if any(k in hdr_norm for k in ("fecha de facturación", "n° de factura", "razón social", "cuota postgrado", "monto cobrado", "cobranzas", "factura")):
-        return "COBRANZAS"
-
-    # 5. Docente / Módulo
-    if any(k in hdr_norm for k in ("tipo de docente", "fecha inicio", "pago docente", "pos - modulo")):
-        return "DOCENTE_MODULO"
-
-    if categoria == "financiero":
-        return "FINANCIERO_GENERICO"
-    if categoria == "academico":
-        return "ACADEMICO_GENERICO"
-    return "GENERICO"
+def detectar_subtipo_bloque(header_cols: List[str], categoria: str = "generico", gazetteer: Optional[CatalogoGazetteer] = None) -> str:
+    """Determina la semántica interna de la hoja a partir de las etiquetas y reglas de cat_etiqueta_clasificacion."""
+    if gazetteer is None:
+        gazetteer = obtener_gazetteer()
+    return gazetteer.repo.detectar_subtipo_con_catalogo(header_cols, categoria)
 
 
 def extraer_pos_de_fila(row_dict: Dict[str, str], gazetteer: CatalogoGazetteer) -> Tuple[str, str]:
@@ -153,7 +129,6 @@ def extraer_pos_de_fila(row_dict: Dict[str, str], gazetteer: CatalogoGazetteer) 
         if any(x in k.lower() for x in ("pos", "proyecto")) and "@" not in v and ":" not in v:
             digits = re.findall(r"\b(\d{4,5})\b", v)
             for d in digits:
-                # Excluir años típicos (2020-2035)
                 if not (2020 <= int(d) <= 2035):
                     cod = f"POS-{d}"
                     return gazetteer.resolver_programa(cod)
@@ -172,322 +147,170 @@ def extraer_ci_de_fila(row_dict: Dict[str, str]) -> str:
     return ""
 
 
-def formatear_fila_actas_notas(
+def formatear_fila_dinamica(
     row_dict: Dict[str, str],
+    subtipo: str,
     gazetteer: CatalogoGazetteer,
     metadatos: Dict[str, Any]
 ) -> Tuple[str, List[Dict[str, Any]]]:
-    """Genera oración contextual para actas de notas académicas."""
-    cod_pos, nom_prog = extraer_pos_de_fila(row_dict, gazetteer)
-    ci = extraer_ci_de_fila(row_dict)
+    """
+    Serializa una fila a texto plano estructurado basándose en las plantillas y mapeos
+    almacenados en la base de datos de catálogos (cat_guia_texto_plano y cat_mapeo_columna).
+    Elimina la necesidad de codificar funciones manuales para cada subtipo de reporte.
+    """
+    guia = gazetteer.repo.obtener_guia_texto_plano(subtipo)
+    plantilla = guia.get("plantilla_texto", "Registro en hoja {HOJA}: {DETALLES}.")
 
-    paterno = ""
-    materno = ""
-    nombres = ""
-    estado = ""
-    notas: List[Tuple[str, str]] = []
-
-    for k, v in row_dict.items():
-        kl = k.lower()
-        if "paterno" in kl and "@" not in v:
-            paterno = v
-        elif "materno" in kl and "@" not in v:
-            materno = v
-        elif "nombre" in kl and "programa" not in kl and "@" not in v:
-            nombres = v
-        elif "estado" in kl and v:
-            if not estado:
-                estado = v
-        elif any(m in kl for m in ("módulo", "modulo", "nota")) and v:
-            val_limpio = v.split(".")[0] if v.replace(".", "", 1).isdigit() else v
-            if val_limpio.isdigit() or val_limpio in ("Aprobado", "Reprobado", "Abandono"):
-                notas.append((k, val_limpio))
-
-    partes_nombre = [p for p in (nombres, paterno, materno) if p]
-    nombre_completo = " ".join(partes_nombre).strip()
-    if not nombre_completo:
-        nombre_completo = "Estudiante no especificado"
-
-    partes_oracion = []
-    if nom_prog and cod_pos and nom_prog != cod_pos:
-        partes_oracion.append(f"En el programa {nom_prog} (código {cod_pos})")
-    elif cod_pos:
-        partes_oracion.append(f"En el programa con código {cod_pos}")
-    else:
-        partes_oracion.append("En el programa académico")
-
-    partes_oracion.append(f", el estudiante {nombre_completo}")
-
-    if ci:
-        partes_oracion.append(f" (CI {ci})")
-
-    if notas:
-        notas_str = ", ".join([f"{n[0]}: {n[1]}" for n in notas[:5]])
-        partes_oracion.append(f" registró las calificaciones {notas_str}")
-
-    if estado:
-        partes_oracion.append(f", con estado académico {estado}")
-
-    partes_oracion.append(".")
-    oracion = "".join(partes_oracion)
-
-    entidades: List[Dict[str, Any]] = []
-    if nom_prog and nom_prog != cod_pos:
-        registrar_span(oracion, "PROGRAMA", nom_prog, entidades)
-    if cod_pos:
-        registrar_span(oracion, "POS", cod_pos, entidades)
-    if nombre_completo and nombre_completo != "Estudiante no especificado":
-        registrar_span(oracion, "ESTUDIANTE", nombre_completo, entidades)
-    if ci:
-        registrar_span(oracion, "CI", ci, entidades)
-    if estado:
-        registrar_span(oracion, "ESTADO", estado, entidades)
-
-    for _, n_val in notas[:5]:
-        registrar_span(oracion, "NOTA", n_val, entidades)
-
-    return oracion, entidades
-
-
-def formatear_fila_evaluacion_docente(
-    row_dict: Dict[str, str],
-    gazetteer: CatalogoGazetteer,
-    metadatos: Dict[str, Any]
-) -> Tuple[str, List[Dict[str, Any]]]:
-    """Genera oración para respuestas de evaluación docente."""
+    # 1. Extraer POS y Programa
     cod_pos, nom_prog = extraer_pos_de_fila(row_dict, gazetteer)
 
-    estudiante = ""
-    modulo = ""
-    fecha = ""
-    calificaciones = []
+    # 2. Clasificar campos de la fila usando cat_mapeo_columna
+    datos_extraidos: Dict[str, Any] = {
+        "POS": cod_pos,
+        "PROGRAMA": nom_prog if nom_prog and nom_prog != cod_pos else (cod_pos or "programa académico"),
+        "HOJA": metadatos.get("hoja", "Datos"),
+        "NOTAS": [],
+        "RESPUESTAS": [],
+        "DETALLES": []
+    }
 
-    for k, v in row_dict.items():
-        kl = k.lower()
-        if ("nombre completo" in kl or "estudiante" in kl) and "@" not in v and not estudiante:
-            estudiante = v
-        elif ("módulo" in kl or "modulo" in kl) and v.isdigit():
-            modulo = v
-        elif "fecha" in kl and ":" in v:
-            fecha = v
-        elif ("1." in kl or "2." in kl or "docente" in kl) and v:
-            calificaciones.append(v)
+    nombres_partes = {"paterno": "", "materno": "", "nombres": ""}
 
-    if not estudiante:
-        estudiante = "Participante"
-
-    partes = ["En la evaluación docente"]
-    if nom_prog and cod_pos and nom_prog != cod_pos:
-        partes.append(f" del programa {nom_prog} (código {cod_pos})")
-    elif cod_pos:
-        partes.append(f" del código {cod_pos}")
-
-    if modulo:
-        partes.append(f", módulo {modulo}")
-
-    partes.append(f", el estudiante {estudiante}")
-
-    if fecha:
-        partes.append(f" emitió su evaluación en fecha {fecha}")
-
-    if calificaciones:
-        resumen_calif = "; ".join(calificaciones[:3])
-        partes.append(f" con respuestas: {resumen_calif}")
-
-    partes.append(".")
-    oracion = "".join(partes)
-
-    entidades: List[Dict[str, Any]] = []
-    if nom_prog and nom_prog != cod_pos:
-        registrar_span(oracion, "PROGRAMA", nom_prog, entidades)
-    if cod_pos:
-        registrar_span(oracion, "POS", cod_pos, entidades)
-    if estudiante and estudiante != "Participante":
-        registrar_span(oracion, "ESTUDIANTE", estudiante, entidades)
-    if modulo:
-        registrar_span(oracion, "MODULO", modulo, entidades)
-    if fecha:
-        registrar_span(oracion, "FECHA", fecha, entidades)
-
-    return oracion, entidades
-
-
-def formatear_fila_cobranzas(
-    row_dict: Dict[str, str],
-    gazetteer: CatalogoGazetteer,
-    metadatos: Dict[str, Any]
-) -> Tuple[str, List[Dict[str, Any]]]:
-    """Genera oración para transacciones financieras, cobranzas y facturación."""
-    cod_pos, nom_prog = extraer_pos_de_fila(row_dict, gazetteer)
-    ci = extraer_ci_de_fila(row_dict)
-
-    estudiante = ""
-    fecha = ""
-    factura = ""
-    monto = ""
-    concepto = ""
-
-    for k, v in row_dict.items():
-        kl = k.lower()
-        if any(x in kl for x in ("razón social", "cliente")):
-            if not estudiante and "@" not in v: estudiante = v
-        elif "nombre" in kl and "programa" not in kl:
-            if not estudiante and "@" not in v: estudiante = v
-        elif "fecha" in kl and not fecha:
-            fecha = v
-        elif "factura" in kl and v.replace(".", "").isdigit():
-            factura = v
-        elif any(x in kl for x in ("monto", "total", "saldo", "pago")) and not monto:
-            # Debe ser numérico
-            clean_num = v.replace(".", "").replace(",", "").strip()
-            if clean_num.isdigit():
-                monto = v
-        elif "concepto" in kl and not concepto:
-            concepto = v
-
-    partes = ["Se registró cobranza"]
-    if monto:
-        partes.append(f" por un monto de {monto} Bs")
-
-    if fecha:
-        partes.append(f" en fecha {fecha}")
-
-    if estudiante:
-        partes.append(f" para el cliente {estudiante}")
-
-    if ci:
-        partes.append(f" (CI/NIT {ci})")
-
-    if nom_prog and cod_pos and nom_prog != cod_pos:
-        partes.append(f" correspondiente al programa {nom_prog} (código {cod_pos})")
-    elif cod_pos:
-        partes.append(f" en el programa {cod_pos}")
-
-    if factura:
-        partes.append(f" bajo factura N° {factura}")
-
-    if concepto:
-        partes.append(f" por concepto de {concepto}")
-
-    partes.append(".")
-    oracion = "".join(partes)
-
-    entidades: List[Dict[str, Any]] = []
-    if monto:
-        registrar_span(oracion, "MONTO", monto, entidades)
-    if fecha:
-        registrar_span(oracion, "FECHA", fecha, entidades)
-    if estudiante:
-        registrar_span(oracion, "CLIENTE", estudiante, entidades)
-    if ci:
-        registrar_span(oracion, "CI", ci, entidades)
-    if nom_prog and nom_prog != cod_pos:
-        registrar_span(oracion, "PROGRAMA", nom_prog, entidades)
-    if cod_pos:
-        registrar_span(oracion, "POS", cod_pos, entidades)
-    if factura:
-        registrar_span(oracion, "FACTURA", factura, entidades)
-
-    return oracion, entidades
-
-
-def formatear_fila_inscripciones(
-    row_dict: Dict[str, str],
-    gazetteer: CatalogoGazetteer,
-    metadatos: Dict[str, Any]
-) -> Tuple[str, List[Dict[str, Any]]]:
-    """Genera oración para registros comerciales de inscripción."""
-    cod_pos, nom_prog = extraer_pos_de_fila(row_dict, gazetteer)
-    ci = extraer_ci_de_fila(row_dict)
-
-    nombres = ""
-    paterno = ""
-    materno = ""
-    fecha = ""
-    asesor = ""
-
-    for k, v in row_dict.items():
-        kl = k.lower()
-        if "paterno" in kl and "@" not in v:
-            paterno = v
-        elif "materno" in kl and "@" not in v:
-            materno = v
-        elif "nombre" in kl and "programa" not in kl and "@" not in v:
-            nombres = v
-        elif any(x in kl for x in ("marca temporal", "fecha")):
-            if not fecha: fecha = v
-        elif "asesor" in kl:
-            asesor = v
-
-    partes_nom = [p for p in (nombres, paterno, materno) if p]
-    postulante = " ".join(partes_nom).strip() if partes_nom else "Postulante"
-
-    partes = []
-    if fecha:
-        partes.append(f"En fecha {fecha}, se registró la inscripción del postulante {postulante}")
-    else:
-        partes.append(f"Se registró la inscripción del postulante {postulante}")
-
-    if ci:
-        partes.append(f" (CI {ci})")
-
-    if nom_prog and cod_pos and nom_prog != cod_pos:
-        partes.append(f" en el programa {nom_prog} (código {cod_pos})")
-    elif cod_pos:
-        partes.append(f" en el programa con código {cod_pos}")
-
-    if asesor:
-        partes.append(f" asesorado por {asesor}")
-
-    partes.append(".")
-    oracion = "".join(partes)
-
-    entidades: List[Dict[str, Any]] = []
-    if fecha:
-        registrar_span(oracion, "FECHA", fecha, entidades)
-    if postulante and postulante != "Postulante":
-        registrar_span(oracion, "ESTUDIANTE", postulante, entidades)
-    if ci:
-        registrar_span(oracion, "CI", ci, entidades)
-    if nom_prog and nom_prog != cod_pos:
-        registrar_span(oracion, "PROGRAMA", nom_prog, entidades)
-    if cod_pos:
-        registrar_span(oracion, "POS", cod_pos, entidades)
-    if asesor:
-        registrar_span(oracion, "ASESOR", asesor, entidades)
-
-    return oracion, entidades
-
-
-def formatear_fila_generica(
-    row_dict: Dict[str, str],
-    gazetteer: CatalogoGazetteer,
-    metadatos: Dict[str, Any]
-) -> Tuple[str, List[Dict[str, Any]]]:
-    """Fallback estructurado para cualquier fila que no encaje en un subtipo exacto."""
-    hoja = metadatos.get("hoja", "Datos")
-    elementos = []
-    entidades: List[Dict[str, Any]] = []
-
-    pos_encontrado = None
-    for k, v in row_dict.items():
-        if not v:
+    for col_orig, val_orig in row_dict.items():
+        if not val_orig or not str(val_orig).strip():
             continue
-        # Check POS
-        if any(x in k.lower() for x in ("pos", "proyecto")):
-            pos_norm = gazetteer.normalizar_pos(v)
-            if pos_norm:
-                pos_encontrado = pos_norm
+        val_clean = str(val_orig).strip()
+        col_clean = str(col_orig).strip()
 
-        elementos.append(f"{k}: {v}")
+        mapeo = gazetteer.repo.identificar_columna(col_clean)
+        campo = mapeo["campo_canonico"] if mapeo else None
 
-    resumen = ", ".join(elementos[:8])
-    oracion = f"Registro en hoja {hoja}: {resumen}."
+        if campo == "PATERNO":
+            nombres_partes["paterno"] = val_clean
+        elif campo == "MATERNO":
+            nombres_partes["materno"] = val_clean
+        elif campo == "ESTUDIANTE":
+            if not datos_extraidos.get("ESTUDIANTE"):
+                datos_extraidos["ESTUDIANTE"] = val_clean
+            else:
+                nombres_partes["nombres"] = val_clean
+        elif campo == "CI":
+            if not datos_extraidos.get("CI"):
+                if "@" not in val_clean and ":" not in val_clean:
+                    datos_extraidos["CI"] = val_clean.split(".")[0] if val_clean.replace(".", "", 1).isdigit() else val_clean
+        elif campo == "MONTO":
+            if not datos_extraidos.get("MONTO"):
+                clean_num = val_clean.replace(".", "").replace(",", "").strip()
+                if clean_num.isdigit():
+                    datos_extraidos["MONTO"] = val_clean
+        elif campo == "FACTURA":
+            if not datos_extraidos.get("FACTURA"):
+                datos_extraidos["FACTURA"] = val_clean
+        elif campo == "FECHA":
+            if not datos_extraidos.get("FECHA"):
+                datos_extraidos["FECHA"] = val_clean
+        elif campo == "DOCENTE":
+            if not datos_extraidos.get("DOCENTE"):
+                datos_extraidos["DOCENTE"] = val_clean
+        elif campo == "MODULO":
+            if not datos_extraidos.get("MODULO"):
+                datos_extraidos["MODULO"] = val_clean
+        elif campo == "ESTADO":
+            if not datos_extraidos.get("ESTADO"):
+                datos_extraidos["ESTADO"] = val_clean
+        elif campo == "NOTA":
+            datos_extraidos["NOTAS"].append((col_clean, val_clean))
+        elif campo == "ASESOR":
+            datos_extraidos["ASESOR"] = val_clean
+        else:
+            if any(k in col_clean.lower() for k in ("1.", "2.", "docente", "explica", "recomiende")):
+                datos_extraidos["RESPUESTAS"].append(val_clean)
+            datos_extraidos["DETALLES"].append(f"{col_clean}: {val_clean}")
 
-    if pos_encontrado:
-        registrar_span(oracion, "POS", pos_encontrado, entidades)
+    # Consolidar estudiante
+    if not datos_extraidos.get("ESTUDIANTE"):
+        nom_comp = " ".join([p for p in (nombres_partes["nombres"], nombres_partes["paterno"], nombres_partes["materno"]) if p]).strip()
+        datos_extraidos["ESTUDIANTE"] = nom_comp or ("Cliente" if subtipo == "COBRANZAS" else "Estudiante")
+
+    # Formatear listas
+    if datos_extraidos["NOTAS"]:
+        datos_extraidos["NOTAS"] = ", ".join([f"{n[0]}: {n[1]}" for n in datos_extraidos["NOTAS"][:5]])
+    else:
+        datos_extraidos["NOTAS"] = "pendientes"
+
+    if datos_extraidos["RESPUESTAS"]:
+        datos_extraidos["RESPUESTAS"] = "; ".join(datos_extraidos["RESPUESTAS"][:3])
+    else:
+        datos_extraidos["RESPUESTAS"] = "sin observaciones"
+
+    if datos_extraidos["DETALLES"]:
+        datos_extraidos["DETALLES"] = ", ".join(datos_extraidos["DETALLES"][:8])
+    else:
+        datos_extraidos["DETALLES"] = "sin datos adicionales"
+
+    for k in ("POS", "PROGRAMA", "CI", "MONTO", "FACTURA", "FECHA", "DOCENTE", "MODULO", "ESTADO", "ASESOR", "CONCEPTO"):
+        if k not in datos_extraidos or not datos_extraidos[k]:
+            datos_extraidos[k] = ""
+
+    # Reemplazar placeholders de la plantilla
+    oracion = plantilla
+    for k, v in datos_extraidos.items():
+        if isinstance(v, str):
+            oracion = oracion.replace(f"{{{k}}}", v)
+
+    # Limpiar posibles artefactos vacíos
+    oracion = re.sub(r"\s*\(\s*(?:código|c\.i\.|ci/nit|ci)?\s*\)", "", oracion, flags=re.IGNORECASE)
+    oracion = re.sub(r"\s+bajo factura N°\s*(?:por|$)", " por", oracion)
+    oracion = re.sub(r"\s+por concepto de\s*\.", ".", oracion)
+    oracion = re.sub(r"\s+asesorado por\s*\.", ".", oracion)
+    oracion = re.sub(r"\s*,\s*\.", ".", oracion)
+    oracion = re.sub(r"\s+", " ", oracion).strip()
+    if not oracion.endswith("."):
+        oracion += "."
+
+    # 3. Registrar spans de entidades extraídas
+    entidades: List[Dict[str, Any]] = []
+    if datos_extraidos.get("PROGRAMA") and datos_extraidos["PROGRAMA"] != cod_pos:
+        registrar_span(oracion, "PROGRAMA", datos_extraidos["PROGRAMA"], entidades)
+    if cod_pos:
+        registrar_span(oracion, "POS", cod_pos, entidades)
+    if datos_extraidos.get("ESTUDIANTE") and datos_extraidos["ESTUDIANTE"] not in ("Estudiante", "Cliente", "Postulante"):
+        tipo_ent = "CLIENTE" if subtipo == "COBRANZAS" else "ESTUDIANTE"
+        registrar_span(oracion, tipo_ent, datos_extraidos["ESTUDIANTE"], entidades)
+    if datos_extraidos.get("DOCENTE"):
+        registrar_span(oracion, "DOCENTE", datos_extraidos["DOCENTE"], entidades)
+    if datos_extraidos.get("CI"):
+        registrar_span(oracion, "CI", datos_extraidos["CI"], entidades)
+    if datos_extraidos.get("MONTO"):
+        registrar_span(oracion, "MONTO", datos_extraidos["MONTO"], entidades)
+    if datos_extraidos.get("FACTURA"):
+        registrar_span(oracion, "FACTURA", datos_extraidos["FACTURA"], entidades)
+    if datos_extraidos.get("FECHA"):
+        registrar_span(oracion, "FECHA", datos_extraidos["FECHA"], entidades)
+    if datos_extraidos.get("MODULO"):
+        registrar_span(oracion, "MODULO", datos_extraidos["MODULO"], entidades)
+    if datos_extraidos.get("ESTADO"):
+        registrar_span(oracion, "ESTADO", datos_extraidos["ESTADO"], entidades)
 
     return oracion, entidades
+
+
+# ── Funciones de compatibilidad directa delegando en formatear_fila_dinamica ──
+
+def formatear_fila_actas_notas(row_dict: Dict[str, str], gazetteer: CatalogoGazetteer, metadatos: Dict[str, Any]) -> Tuple[str, List[Dict[str, Any]]]:
+    return formatear_fila_dinamica(row_dict, "ACTAS_NOTAS", gazetteer, metadatos)
+
+def formatear_fila_evaluacion_docente(row_dict: Dict[str, str], gazetteer: CatalogoGazetteer, metadatos: Dict[str, Any]) -> Tuple[str, List[Dict[str, Any]]]:
+    return formatear_fila_dinamica(row_dict, "EVALUACION_DOCENTE", gazetteer, metadatos)
+
+def formatear_fila_cobranzas(row_dict: Dict[str, str], gazetteer: CatalogoGazetteer, metadatos: Dict[str, Any]) -> Tuple[str, List[Dict[str, Any]]]:
+    return formatear_fila_dinamica(row_dict, "COBRANZAS", gazetteer, metadatos)
+
+def formatear_fila_inscripciones(row_dict: Dict[str, str], gazetteer: CatalogoGazetteer, metadatos: Dict[str, Any]) -> Tuple[str, List[Dict[str, Any]]]:
+    return formatear_fila_dinamica(row_dict, "INSCRIPCIONES", gazetteer, metadatos)
+
+def formatear_fila_generica(row_dict: Dict[str, str], gazetteer: CatalogoGazetteer, metadatos: Dict[str, Any]) -> Tuple[str, List[Dict[str, Any]]]:
+    return formatear_fila_dinamica(row_dict, "GENERICO", gazetteer, metadatos)
 
 
 def formatear_documento(
@@ -555,17 +378,8 @@ def formatear_documento(
             "fila_idx": idx + 1
         }
 
-        # Seleccionar serializador
-        if subtipo == "ACTAS_NOTAS":
-            oracion, entidades = formatear_fila_actas_notas(row_dict, gazetteer, metadatos_fila)
-        elif subtipo == "EVALUACION_DOCENTE":
-            oracion, entidades = formatear_fila_evaluacion_docente(row_dict, gazetteer, metadatos_fila)
-        elif subtipo == "COBRANZAS":
-            oracion, entidades = formatear_fila_cobranzas(row_dict, gazetteer, metadatos_fila)
-        elif subtipo == "INSCRIPCIONES":
-            oracion, entidades = formatear_fila_inscripciones(row_dict, gazetteer, metadatos_fila)
-        else:
-            oracion, entidades = formatear_fila_generica(row_dict, gazetteer, metadatos_fila)
+        # Serialización dinámica guiada por catálogo
+        oracion, entidades = formatear_fila_dinamica(row_dict, subtipo, gazetteer, metadatos_fila)
 
         # Garantizar límite seguro de longitud (< 512 tokens)
         # Si la oración excede 1500 caracteres, truncarla ordenadamente en el último punto o coma

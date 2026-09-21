@@ -21,9 +21,9 @@ SQLALCHEMY_DATABASE_URL = os.getenv(
 
 # Ajuste dinámico de host: si estamos dentro de Docker o si giragroup_db es resoluble
 if os.getenv("DOCKER_ENV") and _can_resolve("giragroup_db"):
-    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("localhost", "giragroup_db")
-elif "giragroup_db" in SQLALCHEMY_DATABASE_URL and not _can_resolve("giragroup_db"):
-    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("giragroup_db", "localhost")
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("@localhost:", "@giragroup_db:")
+elif "@giragroup_db:" in SQLALCHEMY_DATABASE_URL and not _can_resolve("giragroup_db"):
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("@giragroup_db:", "@localhost:")
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
@@ -48,9 +48,9 @@ CATALOG_DATABASE_URL = os.getenv(
 )
 
 if os.getenv("DOCKER_ENV") and _can_resolve("catalog_db"):
-    CATALOG_DATABASE_URL = CATALOG_DATABASE_URL.replace("localhost:5433", "catalog_db:5432").replace("localhost:5432", "catalog_db:5432")
-elif "catalog_db" in CATALOG_DATABASE_URL and not _can_resolve("catalog_db"):
-    CATALOG_DATABASE_URL = CATALOG_DATABASE_URL.replace("catalog_db:5432", "localhost:5433").replace("catalog_db", "localhost")
+    CATALOG_DATABASE_URL = CATALOG_DATABASE_URL.replace("@localhost:5433", "@catalog_db:5432").replace("@localhost:5432", "@catalog_db:5432")
+elif "@catalog_db:" in CATALOG_DATABASE_URL and not _can_resolve("catalog_db"):
+    CATALOG_DATABASE_URL = CATALOG_DATABASE_URL.replace("@catalog_db:5432", "@localhost:5433").replace("@catalog_db:", "@localhost:")
 
 catalog_engine = create_engine(
     CATALOG_DATABASE_URL,
