@@ -4,8 +4,19 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem('gira_user');
-    return stored ? JSON.parse(stored) : null;
+    try {
+      const stored = localStorage.getItem('gira_user');
+      if (!stored) return null;
+      const parsed = JSON.parse(stored);
+      // Auto-migración si el navegador tenía la sesión previa del mock inicial
+      if (parsed?.role === 'Demo User' || parsed?.role === 'DEMO USER') {
+        parsed.role = 'ADMIN';
+        localStorage.setItem('gira_user', JSON.stringify(parsed));
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
   });
   const [token, setToken] = useState(() => localStorage.getItem('gira_token'));
 

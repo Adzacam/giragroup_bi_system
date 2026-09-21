@@ -63,6 +63,19 @@ app.include_router(users.router)
 app.include_router(notifications.router)
 
 
+@app.get("/", summary="Portal API Root", tags=["Monitoreo"])
+def root():
+    """Ruta raíz de la API para orientar accesos directos desde navegador."""
+    return {
+        "status": "online",
+        "service": "GIRAGROUP BI System API",
+        "message": "API REST operativa. Para acceder a la aplicación web interactiva, visite http://localhost:5173",
+        "frontend_url": "http://localhost:5173",
+        "docs_url": "http://localhost:8000/docs",
+        "health_url": "http://localhost:8000/health"
+    }
+
+
 @app.get(
     "/health",
     summary="Verificación de estado y salud del sistema",
