@@ -73,7 +73,7 @@ const ADMIN_CLUSTERS = [
 ];
 
 export default function Sidebar({ collapsed, onToggle }) {
-  const { role } = useAuth();
+  const { role, logout } = useAuth();
   const location = useLocation();
 
   const [expandedGroups, setExpandedGroups] = useState(() => {
