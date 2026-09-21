@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ShieldCheck, FileUp, Wand2, CheckSquare,
   GitMerge, AlertTriangle, Cpu, GraduationCap, Star, BookOpen,
   TrendingUp, DollarSign, PieChart, Target, LineChart,
-  Users, Settings, ChevronDown, ChevronRight, Activity, SlidersHorizontal, LogOut
+  Users, Settings, ChevronDown, ChevronRight, Activity, SlidersHorizontal, LogOut, X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -72,7 +72,7 @@ const ADMIN_CLUSTERS = [
   },
 ];
 
-export default function Sidebar({ collapsed, onToggle }) {
+export default function Sidebar({ collapsed, isOpen, onClose, onToggle }) {
   const { role, logout } = useAuth();
   const location = useLocation();
 
@@ -90,7 +90,8 @@ export default function Sidebar({ collapsed, onToggle }) {
   };
 
   const handleLinkClick = () => {
-    if (window.innerWidth <= 960 && onToggle) {
+    if (onClose) onClose();
+    if (window.innerWidth <= 960 && onToggle && !onClose) {
       onToggle();
     }
   };
@@ -99,7 +100,21 @@ export default function Sidebar({ collapsed, onToggle }) {
   const menuItems = !isAdmin ? (ROLE_MENUS[role] || []) : [];
 
   return (
-    <aside className={`app-sidebar ${collapsed ? 'collapsed' : ''}`}>
+    <aside className={`app-sidebar ${collapsed ? 'collapsed' : ''} ${isOpen ? 'open' : ''}`}>
+      {/* ─── Mobile drawer close header ─── */}
+      {isOpen && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 18px 8px', borderBottom: '1px solid var(--color-border)' }}>
+          <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.6px', color: 'var(--color-ink-black)' }}>Módulos del Sistema</span>
+          <button
+            onClick={onClose}
+            type="button"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-slate-gray)', padding: '4px', display: 'flex', alignItems: 'center' }}
+            title="Cerrar menú"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
       {/* ─── Top: Main dashboard link ─── */}
       <div style={{ padding: collapsed ? '20px 8px 8px' : '20px 16px 8px' }}>
         <NavLink

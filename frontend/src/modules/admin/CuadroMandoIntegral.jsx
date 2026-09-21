@@ -18,14 +18,7 @@ export default function CuadroMandoIntegral() {
       />
 
       {/* ── 3 Pilares Principales (KPI Cards) ────────────────────────── */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '24px',
-          marginBottom: '36px',
-        }}
-      >
+      <div className="cmi-kpi-grid">
         <KpiCard
           label="1. FINANCIERA"
           numberPrefix="$ "
@@ -59,14 +52,7 @@ export default function CuadroMandoIntegral() {
       </div>
 
       {/* ── Desglose Ejecutivo por Perspectiva ───────────────────────── */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-          gap: '24px',
-          marginBottom: '36px',
-        }}
-      >
+      <div className="cmi-perspective-grid">
         {/* Perspectiva Clientes & Alumnos */}
         <div className="card-mist kinetic-card" style={{ padding: '28px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>

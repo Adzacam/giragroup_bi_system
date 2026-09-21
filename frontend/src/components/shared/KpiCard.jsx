@@ -14,15 +14,15 @@ export default function KpiCard({
   const getBadgeStyle = () => {
     switch (badgeType) {
       case 'success':
-        return { bg: '#dcfce7', color: 'var(--color-alert-green)' };
+        return { bg: 'rgba(27, 135, 84, 0.16)', color: 'var(--color-alert-green)', border: '1px solid rgba(27, 135, 84, 0.28)' };
       case 'danger':
-        return { bg: '#fee2e2', color: 'var(--color-alert-red)' };
+        return { bg: 'rgba(217, 56, 58, 0.16)', color: 'var(--color-alert-red)', border: '1px solid rgba(217, 56, 58, 0.28)' };
       case 'warning':
-        return { bg: '#fef3c7', color: 'var(--color-alert-amber)' };
+        return { bg: 'rgba(180, 83, 9, 0.16)', color: 'var(--color-alert-amber)', border: '1px solid rgba(180, 83, 9, 0.28)' };
       case 'peach':
-        return { bg: 'var(--color-blush-peach)', color: 'var(--color-sienna-brown)' };
+        return { bg: 'rgba(251, 225, 209, 0.25)', color: 'var(--color-sienna-brown)', border: '1px solid rgba(251, 225, 209, 0.35)' };
       default:
-        return { bg: 'var(--color-mist-gray)', color: 'var(--color-ink-black)' };
+        return { bg: 'var(--color-mist-gray)', color: 'var(--color-ink-black)', border: '1px solid var(--color-border)' };
     }
   };
 
@@ -61,6 +61,7 @@ export default function KpiCard({
               borderRadius: '9999px',
               backgroundColor: badgeStyle.bg,
               color: badgeStyle.color,
+              border: badgeStyle.border || 'none',
             }}
           >
             {badgeText}

@@ -63,7 +63,7 @@ export default function UserProfileDropdown() {
         aria-label="Perfil de Usuario"
         title="Perfil de Usuario"
       >
-        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column' }}>
+        <div className="user-profile-info" style={{ textAlign: 'right', display: 'flex', flexDirection: 'column' }}>
           <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-ink-black)', lineHeight: 1.2 }}>
             {displayName}
           </span>

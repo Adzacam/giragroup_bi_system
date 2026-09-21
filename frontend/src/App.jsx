@@ -97,14 +97,35 @@ function DashboardRedirect() {
 /* ─── Main Layout (navbar + sidebar + content) ─── */
 function MainLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    if (window.innerWidth <= 960) {
+      setIsMobileOpen(prev => !prev);
+    } else {
+      setSidebarCollapsed(prev => !prev);
+    }
+  };
 
   return (
     <>
       <div className="floating-header-container">
-        <Navbar onToggleSidebar={() => setSidebarCollapsed(prev => !prev)} />
+        <Navbar onToggleSidebar={toggleSidebar} />
       </div>
       <div className="app-layout">
-        <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(prev => !prev)} />
+        {isMobileOpen && (
+          <div
+            className="sidebar-backdrop"
+            onClick={() => setIsMobileOpen(false)}
+            aria-label="Cerrar menú lateral"
+          />
+        )}
+        <Sidebar
+          collapsed={sidebarCollapsed}
+          isOpen={isMobileOpen}
+          onClose={() => setIsMobileOpen(false)}
+          onToggle={toggleSidebar}
+        />
         <main className="app-content view-content-layer">
           <Suspense fallback={<LoadingFallback />}>
             <Outlet />

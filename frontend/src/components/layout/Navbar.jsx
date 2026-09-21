@@ -30,7 +30,7 @@ export default function Navbar({ onToggleSidebar }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         <button
           onClick={onToggleSidebar}
-          className="btn-pill-ghost"
+          className="btn-pill-ghost navbar-hamburger-btn"
           style={{ padding: '7px 11px', borderRadius: '50%', cursor: 'pointer' }}
           title="Ocultar / Expandir menú"
           type="button"
@@ -56,7 +56,7 @@ export default function Navbar({ onToggleSidebar }) {
             <div style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.8px', lineHeight: 1.1 }}>
               GIRAGROUP BI
             </div>
-            <div style={{ fontSize: '10px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>
+            <div className="brand-subtext" style={{ fontSize: '10px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>
               Intelligence Platform
             </div>
           </div>

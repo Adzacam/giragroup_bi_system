@@ -9,7 +9,7 @@ export default function ResponsiveTable({ children, className = '', style = {} }
         overflow: 'hidden',
         border: '1px solid var(--color-border)',
         boxShadow: 'var(--shadow-subtle)',
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backgroundColor: 'var(--color-paper-white)',
         ...style,
       }}
     >

@@ -306,14 +306,12 @@ export default function LoginPage() {
     <div className="view-content-layer">
       <section className="login-split-grid">
         {/* ── Panel Izquierdo: Formulario Institucional ──────────────── */}
-        <div style={{
+        <div className="login-left-pane" style={{
           padding: 'clamp(32px, 6vw, 80px)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           zIndex: 2,
-          background: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(12px)',
         }}>
           <GiraLogo />
 
@@ -350,8 +348,8 @@ export default function LoginPage() {
                 marginBottom: '20px',
                 padding: '14px 18px',
                 borderRadius: 'var(--radius-inputs)',
-                backgroundColor: '#fef2f2',
-                border: '1px solid #fecaca',
+                backgroundColor: 'rgba(217, 56, 58, 0.12)',
+                border: '1px solid rgba(217, 56, 58, 0.28)',
                 color: 'var(--color-alert-red)',
                 fontSize: '13.5px',
               }}>
@@ -569,8 +567,6 @@ export default function LoginPage() {
           onMouseLeave={handleHeroMouseLeave}
           className="login-hero-pane" 
           style={{
-            background: 'rgba(250, 250, 251, 0.65)',
-            borderLeft: '1px solid var(--color-border)',
             padding: '60px 48px',
             display: 'flex',
             flexDirection: 'column',
@@ -581,14 +577,14 @@ export default function LoginPage() {
           }}
         >
           {/* Radial Peach Gradient Ambient Glow sensible al movimiento del mouse */}
-          <div style={{
+          <div className="login-hero-glow" style={{
             position: 'absolute',
             left: `${mousePos.x - 300}px`,
             top: `${mousePos.y - 300}px`,
             width: '600px',
             height: '600px',
-            background: 'radial-gradient(circle, rgba(251, 225, 209, 0.75) 0%, rgba(254, 238, 227, 0.4) 40%, rgba(250, 250, 251, 0) 75%)',
             pointerEvents: 'none',
+            borderRadius: '50%',
             transition: 'left 0.12s ease-out, top 0.12s ease-out',
           }} />
 
