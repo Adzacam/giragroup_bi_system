@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import IsometricCanvasBackground from './components/canvas3d/IsometricCanvasBackground';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
+import MobileBottomNav from './components/layout/MobileBottomNav';
 
 /* ─── Lazy-loaded modules ─── */
 const LoginPage           = lazy(() => import('./modules/auth/LoginPage'));
@@ -92,7 +93,7 @@ function DashboardRedirect() {
   };
   return <Navigate to={redirectMap[role] || '/dashboard'} replace />;
 }
-
+ 
 /* ─── Main Layout (navbar + sidebar + content) ─── */
 function MainLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -110,6 +111,7 @@ function MainLayout() {
           </Suspense>
         </main>
       </div>
+      <MobileBottomNav />
     </>
   );
 }

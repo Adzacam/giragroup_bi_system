@@ -13,7 +13,7 @@ export default function BetoDrawer({ isOpen, onClose }) {
         "2. Tokenización BPE → 8 tokens generados",
         "3. BETO inferencia:\n   - Entidad: Estudiante (Confianza: 0.94)\n   - Entidad: Módulo (Confianza: 0.88)\n   - Entidad: Nota (Confianza: 0.97)",
         "4. RapidFuzz Cross-Source:\n   - Nombre: Homonimia 88%\n   - Módulo: Match asignatura 92%",
-        "5. Disparador GIRA-50 Activado:\n   [ERROR] CI dudoso detectado ('?').\n   [ACCIÓN] requiere_revision = True"
+        "5. Disparador de Integridad de CI Activado:\n   [ERROR] CI dudoso detectado ('?').\n   [ACCIÓN] requiere_revision = True"
       ];
 
       delays.forEach((delay, index) => {

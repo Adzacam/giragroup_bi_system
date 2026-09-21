@@ -104,7 +104,7 @@ export default function CuadroMandoIntegral() {
             Auditoría automatizada de fuentes externas, concordancia difusa y preservación dimensional.
           </p>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--color-border)' }}>
-            <span style={{ fontSize: '13px', color: 'var(--color-slate-gray)' }}>Regla GIRA-50 (CI Requerido)</span>
+            <span style={{ fontSize: '13px', color: 'var(--color-slate-gray)' }}>Regla de Integridad de CI (Requerido)</span>
             <span style={{ fontSize: '13px', fontWeight: 600, fontFamily: 'var(--font-mono)', color: 'var(--color-alert-green)' }}>0 bypass activo</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--color-border)' }}>

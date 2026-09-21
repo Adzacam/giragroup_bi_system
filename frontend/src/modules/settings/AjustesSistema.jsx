@@ -228,7 +228,7 @@ export default function AjustesSistema() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <strong style={{ fontSize: '13.5px', display: 'block' }}>Sonido de Alerta de Campo Crítico</strong>
-                <span style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>Aviso auditivo en disparadores GIRA-50</span>
+                <span style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>Aviso auditivo en disparadores de inconsistencias de CI</span>
               </div>
               <button
                 onClick={handleSoundToggle}
@@ -253,7 +253,7 @@ export default function AjustesSistema() {
               >
                 <option value="ALL">Todas las notificaciones (Info, Warning, Critical)</option>
                 <option value="WARNING">Solo Advertencias y Críticas</option>
-                <option value="CRITICAL">Solo Alertas Críticas (GIRA-50 y Fallas)</option>
+                <option value="CRITICAL">Solo Alertas Críticas (Inconsistencias de CI y Fallas de Pipeline)</option>
               </select>
             </div>
           </div>

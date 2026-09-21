@@ -7,17 +7,17 @@ import useKineticScroll from '../../hooks/useKineticScroll';
 
 const MOCK_INCONSISTENCIAS = [
   {
-    id: 'GIRA-43-01',
+    id: 'INC-2026-01',
     archivo: 'Acta_POS_2026_Modulo3.xlsx',
     codigoError: 'ERR_CI_NULL',
-    descripcion: 'Disparador GIRA-50: 3 cédulas de identidad ausentes o con formato dudoso ("4892019 LP?").',
+    descripcion: 'Disparador de Integridad de CI: 3 cédulas de identidad ausentes o con formato dudoso ("4892019 LP?").',
     severidad: 'CRITICAL',
     registros: 3,
     estado: 'En Revisión Humana',
     fecha: '15 Sep 2026, 11:42',
   },
   {
-    id: 'GIRA-43-02',
+    id: 'INC-2026-02',
     archivo: 'Acta_POS_2026_Modulo3.xlsx',
     codigoError: 'ERR_VAL_04',
     descripcion: 'Columna "FECHA_EVAL" contiene cadenas no ISO ("12 de Septiembre"). Se aplicó cast defensivo.',
@@ -27,7 +27,7 @@ const MOCK_INCONSISTENCIAS = [
     fecha: '15 Sep 2026, 11:42',
   },
   {
-    id: 'GIRA-43-03',
+    id: 'INC-2026-03',
     archivo: 'Moodle_Export_Diplomado_Agosto.csv',
     codigoError: 'ERR_HOMONIMIA',
     descripcion: 'Homonimia detectada: "Adriano Daza Meneses" vs "Daza Adriano". Score RapidFuzz 88%.',
@@ -37,7 +37,7 @@ const MOCK_INCONSISTENCIAS = [
     fecha: '14 Sep 2026, 18:20',
   },
   {
-    id: 'GIRA-43-04',
+    id: 'INC-2026-04',
     archivo: 'Forms_Admisiones_2026_Cohorte2.xlsx',
     codigoError: 'ERR_NOTA_OUT_OF_RANGE',
     descripcion: 'Registro con calificación = 105.0. Acotado por validador a 100.0 con advertencia.',
@@ -61,8 +61,8 @@ export default function RegistroInconsistencias() {
       <PageHeader
         category="FASE 5: GOBERNANZA &amp; AUDITORÍA"
         title="Registro de Inconsistencias"
-        italicWord="GIRA-43"
-        subtitle="Bitácora histórica de excepciones de validación estructural, discrepancias cross-source y disparadores GIRA-50 derivados a secretaría académica."
+        italicWord="Auditoría"
+        subtitle="Bitácora histórica de excepciones de validación estructural, discrepancias cross-source y disparadores de integridad de identidad derivados a secretaría académica."
       />
 
       {/* ── KPI Summary ──────────────────────────────────────── */}
@@ -82,7 +82,7 @@ export default function RegistroInconsistencias() {
           badgeType="neutral"
         />
         <KpiCard
-          label="Críticas (GIRA-50)"
+          label="Críticas (Identidad CI)"
           number="3"
           sublabel="Cédula ausente o ambigua"
           badgeText="Atención Prioritaria"

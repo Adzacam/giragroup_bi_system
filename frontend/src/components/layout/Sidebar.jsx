@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ShieldCheck, FileUp, Wand2, CheckSquare,
   GitMerge, AlertTriangle, Cpu, GraduationCap, Star, BookOpen,
   TrendingUp, DollarSign, PieChart, Target, LineChart,
-  Users, Settings, ChevronDown, ChevronRight, Activity, SlidersHorizontal
+  Users, Settings, ChevronDown, ChevronRight, Activity, SlidersHorizontal, LogOut
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -201,7 +201,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       })}
 
       {/* ─── Settings Link (All roles) ─── */}
-      <div style={{ padding: collapsed ? '8px 8px 12px' : '8px 16px 12px', marginTop: '12px' }}>
+      <div style={{ padding: collapsed ? '8px 8px 4px' : '8px 16px 4px', marginTop: '12px' }}>
         <NavLink
           to="/ajustes"
           onClick={handleLinkClick}
@@ -216,6 +216,33 @@ export default function Sidebar({ collapsed, onToggle }) {
             </span>
           )}
         </NavLink>
+      </div>
+
+      {/* ─── Logout Link (Obs 6) ─── */}
+      <div style={{ padding: collapsed ? '4px 8px 12px' : '4px 16px 12px' }}>
+        <button
+          onClick={logout}
+          className="sidebar-nav-item"
+          title="Cerrar sesión"
+          type="button"
+          style={{
+            width: '100%',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            textAlign: 'left',
+            color: 'var(--color-alert-red)',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            padding: collapsed ? '10px 0' : '10px 16px',
+          }}
+        >
+          <LogOut size={18} />
+          {!collapsed && (
+            <span className="sidebar-text" style={{ marginLeft: '10px' }}>
+              Cerrar Sesión
+            </span>
+          )}
+        </button>
       </div>
 
       {/* ─── Footer: PostgreSQL status ─── */}

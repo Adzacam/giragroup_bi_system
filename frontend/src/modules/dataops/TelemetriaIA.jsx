@@ -20,7 +20,7 @@ export default function TelemetriaIA() {
       <PageHeader
         category="FASE 6: INFRAESTRUCTURA &amp; INFERENCIA"
         title="Telemetría y Rendimiento IA"
-        italicWord="GIRA-12"
+        italicWord="BETO v2.4"
         subtitle="Monitoreo de throughput, latencia de inferencia NLP en streaming (BETO v2.4) y aceleración de hardware en contenedor Docker."
       />
 
@@ -114,7 +114,7 @@ export default function TelemetriaIA() {
             </h3>
           </div>
           <p style={{ fontSize: '13.5px', lineHeight: 1.5, opacity: 0.95, marginBottom: '18px' }}>
-            Si el score del modelo no alcanza el 85% de certidumbre o si la regla GIRA-50 detecta una cédula incompleta, la inferencia se suspende automáticamente y el registro se desvía a la <strong>Bandeja de Revisión Humana</strong>.
+            Si el score del modelo no alcanza el 85% de certidumbre o si la regla de integridad de identidad detecta una cédula incompleta, la inferencia se suspende automáticamente y el registro se desvía a la <strong>Bandeja de Revisión Humana</strong>.
           </p>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', fontWeight: 600 }}>
             <CheckCircle2 size={16} />

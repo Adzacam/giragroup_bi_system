@@ -23,7 +23,7 @@ export default function Fase3RevisionHumana() {
               <span style={{ backgroundColor: '#e53e3e', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <AlertTriangle size={14} /> REQUIERE REVISIÓN
               </span>
-              <span style={{ fontSize: '14px', fontWeight: '500', color: '#4a5568' }}>Disparador GIRA-27 / GIRA-50 Activado</span>
+              <span style={{ fontSize: '14px', fontWeight: '500', color: '#4a5568' }}>Disparador de Validación de Matrícula y CI Activado</span>
             </div>
             <div style={{ fontSize: '14px', color: '#c53030', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
               ▲ Campo Crítico Dudoso: Cédula de Identidad (CI) incompleta

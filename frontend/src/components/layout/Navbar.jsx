@@ -5,8 +5,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import NotificationBell from '../notifications/NotificationBell';
 
+import UserProfileDropdown from './UserProfileDropdown';
+
 export default function Navbar({ onToggleSidebar }) {
-  const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -22,15 +23,6 @@ export default function Navbar({ onToggleSidebar }) {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const displayName = user?.name || user?.username || 'Usuario Conectado';
-  const displayRole = user?.role || 'ROL ACTIVO';
-  const avatarInitials = (user?.name || user?.username || 'US')
-    .split(' ')
-    .map(p => p[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase();
 
   return (
     <header className="floating-navbar">
@@ -71,31 +63,8 @@ export default function Navbar({ onToggleSidebar }) {
         </div>
       </div>
 
-      {/* User, Notifications & Logout */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '13.5px', fontWeight: 500 }}>{displayName}</div>
-          <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>{displayRole}</div>
-        </div>
-
-        <div
-          style={{
-            width: '34px',
-            height: '34px',
-            borderRadius: '50%',
-            background: 'var(--color-ink-black)',
-            color: '#ffffff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '12px',
-            fontWeight: 600,
-          }}
-          title={displayName}
-        >
-          {avatarInitials}
-        </div>
-
+      {/* Notifications, Theme & Profile Dropdown */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <NotificationBell />
 
         {/* Quick Dark/Light Theme Toggle */}
@@ -120,15 +89,8 @@ export default function Navbar({ onToggleSidebar }) {
           <Settings size={15} />
         </button>
 
-        <button
-          className="btn-pill-ghost"
-          style={{ padding: '7px 14px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
-          onClick={logout}
-          title="Cerrar sesión"
-          type="button"
-        >
-          <LogOut size={14} /> Salir
-        </button>
+        {/* Interactive User Profile Dropdown (Obs 4 & Obs 6) */}
+        <UserProfileDropdown />
       </div>
 
       {/* Dynamic Scroll Progress Bar */}

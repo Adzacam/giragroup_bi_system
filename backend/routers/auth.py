@@ -44,7 +44,41 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
         
     user.failed_login_attempts = 0
     user.locked_until = None
-    
+
+    # Verificar si el dispositivo ya fue validado para este usuario previamente
+    trusted_device = False
+    if req.device_token:
+        try:
+            d_payload = jwt.decode(req.device_token, SECRET_KEY, algorithms=[ALGORITHM])
+            if d_payload.get("type") == "device_trust" and int(d_payload.get("sub")) == user.id:
+                trusted_device = True
+        except JWTError:
+            trusted_device = False
+
+    if trusted_device:
+        db.commit()
+        access_token = create_access_token({"sub": str(user.id), "role": user.role})
+        refresh_token = create_refresh_token({"sub": str(user.id)})
+        new_device_token = jwt.encode(
+            {"sub": str(user.id), "type": "device_trust", "exp": datetime.now(timezone.utc) + timedelta(days=30)},
+            SECRET_KEY,
+            algorithm=ALGORITHM
+        )
+        return LoginStepOneResponse(
+            mfa_required=False,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type="bearer",
+            device_token=new_device_token,
+            user=UserPublic(
+                id=user.id,
+                username=user.username,
+                email=user.email,
+                role=user.role,
+                is_active=user.is_active
+            )
+        )
+
     otp = generate_otp()
     user.otp_code_hash = get_password_hash(otp)
     user.otp_expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
@@ -87,10 +121,19 @@ def verify_otp(req: OTPVerifyRequest, db: Session = Depends(get_db)):
     access_token = create_access_token({"sub": str(user.id), "role": user.role})
     refresh_token = create_refresh_token({"sub": str(user.id)})
     
+    device_token = None
+    if req.remember_device:
+        device_token = jwt.encode(
+            {"sub": str(user.id), "type": "device_trust", "exp": datetime.now(timezone.utc) + timedelta(days=30)},
+            SECRET_KEY,
+            algorithm=ALGORITHM
+        )
+    
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
         token_type="bearer",
+        device_token=device_token,
         user=UserPublic(
             id=user.id,
             username=user.username,

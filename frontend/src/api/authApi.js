@@ -1,12 +1,12 @@
 import client from './client';
 
-export const loginStep1 = async (email, password) => {
-  const response = await client.post('/api/v1/auth/login', { email, password });
+export const loginStep1 = async (email, password, device_token = null, remember_device = false) => {
+  const response = await client.post('/api/v1/auth/login', { email, password, device_token, remember_device });
   return response.data;
 };
 
-export const verifyOTP = async (temp_token, code) => {
-  const response = await client.post('/api/v1/auth/verify-otp', { temp_token, code });
+export const verifyOTP = async (temp_token, code, remember_device = false) => {
+  const response = await client.post('/api/v1/auth/verify-otp', { temp_token, code, remember_device });
   return response.data;
 };
 

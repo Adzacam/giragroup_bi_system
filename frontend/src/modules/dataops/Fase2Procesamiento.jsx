@@ -4,7 +4,7 @@ import { Play, FileUp, Split, Wand2, TableProperties, ShieldCheck, Database, Ter
 export default function Fase2Procesamiento() {
   const [activeStep, setActiveStep] = useState(-1);
   const [logs, setLogs] = useState([]);
-  const logsEndRef = useRef(null);
+  const terminalContainerRef = useRef(null);
 
   const initialLogs = [
     { time: '10:15:02', type: 'INFO', module: 'dispatcher.py', msg: 'Iniciando pipeline para lote POS-2026-B_M3' },
@@ -21,9 +21,9 @@ export default function Fase2Procesamiento() {
     if (activeStep === -1) {
       setLogs(initialLogs);
     }
-    // Scroll to bottom of logs
-    if (logsEndRef.current) {
-      logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    // Desplazar únicamente el contenedor interno de la terminal sin mover el scroll global de la página
+    if (terminalContainerRef.current) {
+      terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight;
     }
   }, [logs, activeStep]);
 
@@ -157,7 +157,11 @@ export default function Fase2Procesamiento() {
               <Trash2 size={14} /> Limpiar Consola
             </button>
           </div>
-          <div className="terminal-container" style={{ backgroundColor: '#0f1113', borderRadius: '16px', padding: '16px', fontFamily: 'JetBrains Mono, monospace', fontSize: '13px', height: '290px', overflowY: 'auto', color: '#e2e8f0' }}>
+          <div 
+            ref={terminalContainerRef}
+            className="terminal-container" 
+            style={{ backgroundColor: '#0f1113', borderRadius: '16px', padding: '16px', fontFamily: 'JetBrains Mono, monospace', fontSize: '13px', height: '290px', overflowY: 'auto', color: '#e2e8f0' }}
+          >
             {logs.map((log, i) => (
               <div key={i} style={{ marginBottom: '8px', display: 'flex', gap: '12px' }}>
                 <span style={{ color: '#718096' }}>[{log.time}]</span>
@@ -171,7 +175,6 @@ export default function Fase2Procesamiento() {
                 <span>{log.msg}</span>
               </div>
             ))}
-            <div ref={logsEndRef} />
           </div>
         </div>
 

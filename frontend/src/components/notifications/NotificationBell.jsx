@@ -23,7 +23,7 @@ export default function NotificationBell() {
         const mockData = [
           {
             id: 1,
-            title: 'Disparador GIRA-50 Activo',
+            title: 'Disparador de Integridad de CI',
             message: 'Inconsistencia en Cédula de Identidad en módulo POS-101. Requiere revisión.',
             severity: 'CRITICAL',
             is_read: false,
@@ -55,7 +55,20 @@ export default function NotificationBell() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const togglePopover = () => setIsOpen((prev) => !prev);
+  const requestBrowserPermission = async () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      try {
+        await Notification.requestPermission();
+      } catch (err) {
+        console.warn('Permiso de notificaciones omitido:', err);
+      }
+    }
+  };
+
+  const togglePopover = () => {
+    requestBrowserPermission();
+    setIsOpen((prev) => !prev);
+  };
 
   const handleMarkAllRead = async () => {
     try {
