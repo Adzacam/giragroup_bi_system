@@ -30,6 +30,22 @@
   --sidebar-width-collapsed: 78px;
 }
 
+[data-theme="dark"] {
+  --color-ink-black: #f5f5f7;
+  --color-paper-white: #16181d;
+  --color-mist-gray: #20242b;
+  --color-fog-white: #0c0e12;
+  --color-slate-gray: #9ba1ad;
+  --color-ash-gray: #6b7280;
+  --color-smoke-gray: #4b5563;
+  --color-blush-peach: #361f18;
+  --color-sienna-brown: #e09843;
+  --color-border: #282d36;
+  --shadow-subtle: 0 4px 12px rgba(0,0,0,0.35);
+  --shadow-artifact: 0 16px 40px rgba(0,0,0,0.45);
+  --shadow-modal: 0 24px 60px rgba(0,0,0,0.6);
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;

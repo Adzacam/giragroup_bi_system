@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Menu, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Menu, LogOut, Sun, Moon, Settings } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import NotificationBell from '../notifications/NotificationBell';
 
 export default function Navbar({ onToggleSidebar }) {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
@@ -93,6 +97,28 @@ export default function Navbar({ onToggleSidebar }) {
         </div>
 
         <NotificationBell />
+
+        {/* Quick Dark/Light Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="btn-pill-ghost"
+          style={{ padding: '7px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          title={theme === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+          type="button"
+        >
+          {theme === 'dark' ? <Sun size={15} color="var(--color-sienna-brown)" /> : <Moon size={15} />}
+        </button>
+
+        {/* Settings button */}
+        <button
+          onClick={() => navigate('/ajustes')}
+          className="btn-pill-ghost"
+          style={{ padding: '7px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          title="Ajustes del Sistema"
+          type="button"
+        >
+          <Settings size={15} />
+        </button>
 
         <button
           className="btn-pill-ghost"

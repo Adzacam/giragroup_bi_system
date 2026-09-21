@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ShieldCheck, FileUp, Wand2, CheckSquare,
   GitMerge, AlertTriangle, Cpu, GraduationCap, Star, BookOpen,
   TrendingUp, DollarSign, PieChart, Target, LineChart,
-  Users, Settings, ChevronDown, ChevronRight, Activity
+  Users, Settings, ChevronDown, ChevronRight, Activity, SlidersHorizontal
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -199,6 +199,24 @@ export default function Sidebar({ collapsed, onToggle }) {
           </div>
         );
       })}
+
+      {/* ─── Settings Link (All roles) ─── */}
+      <div style={{ padding: collapsed ? '8px 8px 12px' : '8px 16px 12px', marginTop: '12px' }}>
+        <NavLink
+          to="/ajustes"
+          onClick={handleLinkClick}
+          className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+          title="Ajustes del Sistema"
+          style={collapsed ? { justifyContent: 'center', padding: '10px 0' } : {}}
+        >
+          <SlidersHorizontal size={18} />
+          {!collapsed && (
+            <span className="sidebar-text" style={{ marginLeft: '10px' }}>
+              Ajustes del Sistema
+            </span>
+          )}
+        </NavLink>
+      </div>
 
       {/* ─── Footer: PostgreSQL status ─── */}
       <div style={{ marginTop: 'auto', padding: collapsed ? '16px 8px' : '16px 20px', borderTop: '1px solid var(--color-border)' }}>

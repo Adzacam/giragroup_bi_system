@@ -34,6 +34,9 @@ const ProyeccionFinanciera = lazy(() => import('./modules/finance/ProyeccionFina
 const CuadroMandoIntegral = lazy(() => import('./modules/admin/CuadroMandoIntegral'));
 const GestionUsuarios     = lazy(() => import('./modules/admin/GestionUsuarios'));
 const CatalogosMaestros   = lazy(() => import('./modules/admin/CatalogosMaestros'));
+const AjustesSistema      = lazy(() => import('./modules/settings/AjustesSistema'));
+
+import { ThemeProvider } from './context/ThemeContext';
 
 /* ─── React Query Client ─── */
 const queryClient = new QueryClient({
@@ -117,26 +120,30 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <IsometricCanvasBackground />
-          <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              {/* Public */}
-              <Route path="/login" element={<LoginPage />} />
+          <ThemeProvider>
+            <IsometricCanvasBackground />
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                {/* Public */}
+                <Route path="/login" element={<LoginPage />} />
 
-              {/* Protected shell */}
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <MainLayout />
-                </ProtectedRoute>
-              }>
-                {/* Default redirect */}
-                <Route index element={<DashboardRedirect />} />
+                {/* Protected shell */}
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <MainLayout />
+                  </ProtectedRoute>
+                }>
+                  {/* Default redirect */}
+                  <Route index element={<DashboardRedirect />} />
 
-                {/* Admin dashboard (also accessible to all roles as overview) */}
-                <Route path="dashboard" element={<CuadroMandoIntegral />} />
+                  {/* Admin dashboard (also accessible to all roles as overview) */}
+                  <Route path="dashboard" element={<CuadroMandoIntegral />} />
 
-                {/* Notifications (all roles) */}
-                <Route path="notificaciones" element={<NotificationsPage />} />
+                  {/* Notifications (all roles) */}
+                  <Route path="notificaciones" element={<NotificationsPage />} />
+
+                  {/* System Settings (all roles) */}
+                  <Route path="ajustes" element={<AjustesSistema />} />
 
                 {/* ─── DataOps routes (AUDITOR_CALIDAD + ADMIN) ─── */}
                 <Route path="dataops/fuentes" element={
@@ -231,6 +238,7 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
+          </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

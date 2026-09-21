@@ -1,9 +1,13 @@
 import React, { useEffect, useRef } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function IsometricCanvasBackground() {
   const canvasRef = useRef(null);
+  const { theme, canvasEnabled } = useTheme();
 
   useEffect(() => {
+    if (!canvasEnabled) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -38,6 +42,8 @@ export default function IsometricCanvasBackground() {
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('resize', handleResize);
 
+    const isDark = theme === 'dark';
+
     const render = () => {
       ctx.clearRect(0, 0, width, height);
       
@@ -70,15 +76,15 @@ export default function IsometricCanvasBackground() {
           ctx.beginPath();
           ctx.arc(isoX, isoY, 1.8, 0, Math.PI * 2);
           if ((i + j) % 3 === 0) {
-            ctx.fillStyle = 'rgba(93, 42, 26, 0.4)'; 
+            ctx.fillStyle = isDark ? 'rgba(224, 152, 67, 0.65)' : 'rgba(93, 42, 26, 0.4)'; 
           } else {
-            ctx.fillStyle = 'rgba(23, 25, 28, 0.15)'; 
+            ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(23, 25, 28, 0.15)'; 
           }
           ctx.fill();
         }
       }
 
-      ctx.strokeStyle = 'rgba(23, 25, 28, 0.05)';
+      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(23, 25, 28, 0.05)';
       ctx.lineWidth = 1;
       
       for (let p = 0; p < points.length; p++) {
@@ -103,7 +109,9 @@ export default function IsometricCanvasBackground() {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
     };
-  }, []);
+  }, [canvasEnabled, theme]);
+
+  if (!canvasEnabled) return null;
 
   return <canvas id="bg-3d-canvas" ref={canvasRef} />;
 }
