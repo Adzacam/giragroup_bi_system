@@ -90,13 +90,12 @@ function DashboardRedirect() {
   return <Navigate to={redirectMap[role] || '/dashboard'} replace />;
 }
 
-/* ─── Main Layout (3D canvas + navbar + sidebar + content) ─── */
+/* ─── Main Layout (navbar + sidebar + content) ─── */
 function MainLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <>
-      <IsometricCanvasBackground />
       <div className="floating-header-container">
         <Navbar onToggleSidebar={() => setSidebarCollapsed(prev => !prev)} />
       </div>
@@ -118,6 +117,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
+          <IsometricCanvasBackground />
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               {/* Public */}

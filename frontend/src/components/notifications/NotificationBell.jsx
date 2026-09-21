@@ -3,7 +3,7 @@ import { Bell } from 'lucide-react';
 import NotificationPopover from './NotificationPopover';
 import { notificationsApi } from '../../api/notificationsApi';
 
-const NotificationBell = () => {
+export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
@@ -12,15 +12,31 @@ const NotificationBell = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const data = await notificationsApi.getNotifications();
-        const fetchedNotifications = data || [];
+        const res = await notificationsApi.getNotifications();
+        // Handle list or NotificationListResponse
+        const fetchedNotifications = res?.data || (Array.isArray(res) ? res : []);
         setNotifications(fetchedNotifications);
-        setUnreadCount(fetchedNotifications.filter(n => !n.is_read).length);
+        setUnreadCount(fetchedNotifications.filter((n) => !n.is_read).length);
       } catch (error) {
-        console.error("Failed to fetch notifications", error);
-        // Fallback for demo
+        console.error('Failed to fetch notifications', error);
+        // Fallback demo notifications
         const mockData = [
-          { id: 1, title: "Alerta", message: "Fallo de extracción", severity: "CRITICAL", is_read: false, timeAgo: "5 min" }
+          {
+            id: 1,
+            title: 'Disparador GIRA-50 Activo',
+            message: 'Inconsistencia en Cédula de Identidad en módulo POS-101. Requiere revisión.',
+            severity: 'CRITICAL',
+            is_read: false,
+            timeAgo: 'Hace 5 min',
+          },
+          {
+            id: 2,
+            title: 'DataOps Ingesta Completada',
+            message: 'Se procesaron 1,248 registros con 95.8% de tasa de limpieza.',
+            severity: 'INFO',
+            is_read: true,
+            timeAgo: 'Hace 2 horas',
+          },
         ];
         setNotifications(mockData);
         setUnreadCount(1);
@@ -35,48 +51,86 @@ const NotificationBell = () => {
         setIsOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [wrapperRef]);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  const togglePopover = () => setIsOpen(!isOpen);
+  const togglePopover = () => setIsOpen((prev) => !prev);
 
   const handleMarkAllRead = async () => {
     try {
       await notificationsApi.markAllRead();
-      setNotifications(notifications.map(n => ({ ...n, is_read: true })));
-      setUnreadCount(0);
     } catch (error) {
-      console.error("Failed to mark all as read", error);
-      setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+      console.error('Failed to mark all as read', error);
+    } finally {
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
       setUnreadCount(0);
     }
   };
 
   return (
-    <div className="relative inline-block text-left" ref={wrapperRef}>
+    <div style={{ position: 'relative', display: 'inline-block' }} ref={wrapperRef}>
       <button
         onClick={togglePopover}
-        className="relative p-2 text-slate-gray hover:text-ink-black focus:outline-none transition-colors"
-        aria-label="Notifications"
+        type="button"
+        style={{
+          position: 'relative',
+          padding: '8px',
+          background: 'none',
+          border: 'none',
+          color: 'var(--color-slate-gray)',
+          cursor: 'pointer',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'color 0.2s, background-color 0.2s',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = 'var(--color-ink-black)';
+          e.currentTarget.style.backgroundColor = 'var(--color-mist-gray)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = 'var(--color-slate-gray)';
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }}
+        aria-label="Notificaciones"
+        title="Notificaciones"
       >
-        <Bell size={24} />
+        <Bell size={20} />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 items-center justify-center">{unreadCount > 9 ? '9+' : unreadCount}</span>
+          <span
+            style={{
+              position: 'absolute',
+              top: '4px',
+              right: '4px',
+              minWidth: '17px',
+              height: '17px',
+              padding: '0 4px',
+              borderRadius: '9999px',
+              backgroundColor: 'var(--color-alert-red)',
+              color: '#ffffff',
+              fontSize: '10px',
+              fontWeight: 700,
+              fontFamily: 'var(--font-mono)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 0 2px #ffffff',
+            }}
+          >
+            {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
+
       {isOpen && (
-        <NotificationPopover 
-          notifications={notifications} 
-          onMarkAllRead={handleMarkAllRead} 
+        <NotificationPopover
+          notifications={notifications}
+          onMarkAllRead={handleMarkAllRead}
           onClose={() => setIsOpen(false)}
         />
       )}
     </div>
   );
-};
-
-export default NotificationBell;
+}

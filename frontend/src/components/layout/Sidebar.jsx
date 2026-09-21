@@ -4,11 +4,11 @@ import {
   LayoutDashboard, ShieldCheck, FileUp, Wand2, CheckSquare,
   GitMerge, AlertTriangle, Cpu, GraduationCap, Star, BookOpen,
   TrendingUp, DollarSign, PieChart, Target, LineChart,
-  Users, Settings, ChevronDown, ChevronRight, Activity, Menu
+  Users, Settings, ChevronDown, ChevronRight, Activity
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-/* ─── Role-based menu definitions (matches v3/v4 HTML exactly) ─── */
+/* ─── Role-based menu definitions (matches v3/v4 HTML) ─── */
 const ROLE_MENUS = {
   AUDITOR_CALIDAD: [
     { id: 'fuentes',          path: '/dataops/fuentes',          label: '1. Fuentes de Datos (Ingesta)',     icon: FileUp },
@@ -37,37 +37,37 @@ const ADMIN_CLUSTERS = [
   {
     id: 'dataops', label: 'DataOps & Procesamiento', icon: ShieldCheck, defaultOpen: true,
     items: [
-      { path: '/dataops/fuentes',       label: 'Fase 1: Fuentes de Datos',   icon: FileUp },
-      { path: '/dataops/procesamiento', label: 'Fase 2: Procesamiento',      icon: Wand2 },
-      { path: '/dataops/revision',      label: 'Fase 3: Revisión Humana',    icon: CheckSquare },
-      { path: '/dataops/entidades',     label: 'Entidades No Resueltas',     icon: GitMerge },
-      { path: '/dataops/inconsistencias', label: 'Inconsistencias',          icon: AlertTriangle },
-      { path: '/dataops/telemetria',    label: 'Telemetría IA',              icon: Cpu },
+      { path: '/dataops/fuentes',         label: 'Fase 1: Fuentes de Datos',   icon: FileUp },
+      { path: '/dataops/procesamiento',   label: 'Fase 2: Procesamiento',      icon: Wand2 },
+      { path: '/dataops/revision',        label: 'Fase 3: Revisión Humana',    icon: CheckSquare },
+      { path: '/dataops/entidades',       label: 'Entidades No Resueltas',     icon: GitMerge },
+      { path: '/dataops/inconsistencias', label: 'Inconsistencias',            icon: AlertTriangle },
+      { path: '/dataops/telemetria',      label: 'Telemetría IA',              icon: Cpu },
     ],
   },
   {
     id: 'acad', label: 'Área Académica', icon: GraduationCap, defaultOpen: false,
     items: [
-      { path: '/academico/rendimiento', label: 'Rendimiento y Alertas',      icon: GraduationCap },
-      { path: '/academico/docente',     label: 'Desempeño Docente',          icon: Star },
-      { path: '/academico/catalogo',    label: 'Catálogo Curricular',        icon: BookOpen },
-      { path: '/academico/proyeccion',  label: 'Proyección de Alumnos',      icon: TrendingUp },
+      { path: '/academico/rendimiento',   label: 'Rendimiento y Alertas',      icon: GraduationCap },
+      { path: '/academico/docente',       label: 'Desempeño Docente',          icon: Star },
+      { path: '/academico/catalogo',      label: 'Catálogo Curricular',        icon: BookOpen },
+      { path: '/academico/proyeccion',    label: 'Proyección de Alumnos',      icon: TrendingUp },
     ],
   },
   {
     id: 'fin', label: 'Área Financiera', icon: DollarSign, defaultOpen: false,
     items: [
-      { path: '/financiero/recaudacion', label: 'Recaudación',               icon: DollarSign },
-      { path: '/financiero/cartera',     label: 'Cartera y Mora',            icon: PieChart },
-      { path: '/financiero/metas',       label: 'Metas de Gestión',          icon: Target },
-      { path: '/financiero/proyeccion',  label: 'Proyección Financiera',     icon: LineChart },
+      { path: '/financiero/recaudacion',  label: 'Recaudación',               icon: DollarSign },
+      { path: '/financiero/cartera',      label: 'Cartera y Mora',            icon: PieChart },
+      { path: '/financiero/metas',        label: 'Metas de Gestión',          icon: Target },
+      { path: '/financiero/proyeccion',   label: 'Proyección Financiera',     icon: LineChart },
     ],
   },
   {
     id: 'admin', label: 'Administración', icon: Settings, defaultOpen: false,
     items: [
-      { path: '/admin/usuarios',   label: 'Gestión de Usuarios',   icon: Users },
-      { path: '/admin/catalogos',  label: 'Catálogos Maestros',    icon: Settings },
+      { path: '/admin/usuarios',          label: 'Gestión de Usuarios',        icon: Users },
+      { path: '/admin/catalogos',         label: 'Catálogos Maestros',         icon: Settings },
     ],
   },
 ];
@@ -83,7 +83,16 @@ export default function Sidebar({ collapsed, onToggle }) {
   });
 
   const toggleGroup = (id) => {
+    if (collapsed && onToggle) {
+      onToggle(); // expand on click if collapsed
+    }
     setExpandedGroups(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleLinkClick = () => {
+    if (window.innerWidth <= 960 && onToggle) {
+      onToggle();
+    }
   };
 
   const isAdmin = role === 'ADMIN';
@@ -92,46 +101,69 @@ export default function Sidebar({ collapsed, onToggle }) {
   return (
     <aside className={`app-sidebar ${collapsed ? 'collapsed' : ''}`}>
       {/* ─── Top: Main dashboard link ─── */}
-      <div style={{ padding: '20px 16px 8px' }}>
+      <div style={{ padding: collapsed ? '20px 8px 8px' : '20px 16px 8px' }}>
         <NavLink
           to="/dashboard"
+          onClick={handleLinkClick}
           className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+          title={isAdmin ? 'Cuadro de Mando Integral' : 'Vista General'}
+          style={collapsed ? { justifyContent: 'center', padding: '10px 0' } : {}}
         >
-          <LayoutDashboard size={16} />
-          {!collapsed && <span className="sidebar-text">
-            {isAdmin ? 'Cuadro de Mando Integral' : 'Vista General'}
-          </span>}
+          <LayoutDashboard size={18} />
+          {!collapsed && (
+            <span className="sidebar-text" style={{ marginLeft: '10px' }}>
+              {isAdmin ? 'Cuadro de Mando Integral' : 'Vista General'}
+            </span>
+          )}
         </NavLink>
       </div>
 
       {/* ─── Section title ─── */}
       {!collapsed && (
         <div className="sidebar-section-title">
-          {isAdmin ? 'Administración Total' : 'Módulos'}
+          {isAdmin ? 'Administración Total' : 'Módulos Operativos'}
         </div>
       )}
 
       {/* ─── Non-admin: flat role menu ─── */}
-      {!isAdmin && !collapsed && menuItems.map((item) => {
+      {!isAdmin && menuItems.map((item) => {
         const Icon = item.icon;
         return (
           <NavLink
             key={item.id}
             to={item.path}
+            onClick={handleLinkClick}
             className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
-            style={{ padding: '10px 20px' }}
+            title={item.label}
+            style={collapsed ? { justifyContent: 'center', padding: '10px 0' } : { padding: '10px 16px' }}
           >
-            <Icon size={16} />
-            <span className="sidebar-text">{item.label}</span>
+            <Icon size={18} />
+            {!collapsed && <span className="sidebar-text" style={{ marginLeft: '10px' }}>{item.label}</span>}
           </NavLink>
         );
       })}
 
       {/* ─── Admin: cluster groups ─── */}
-      {isAdmin && !collapsed && ADMIN_CLUSTERS.map((cluster) => {
+      {isAdmin && ADMIN_CLUSTERS.map((cluster) => {
         const ClusterIcon = cluster.icon;
         const isExpanded = expandedGroups[cluster.id];
         const hasActiveChild = cluster.items.some(i => location.pathname === i.path);
+
+        if (collapsed) {
+          // Render only the cluster icon linking or showing tooltip
+          return (
+            <div key={cluster.id} style={{ padding: '6px 8px' }}>
+              <div
+                className={`sidebar-nav-item ${hasActiveChild ? 'active' : ''}`}
+                onClick={() => toggleGroup(cluster.id)}
+                title={cluster.label}
+                style={{ justifyContent: 'center', padding: '10px 0', cursor: 'pointer' }}
+              >
+                <ClusterIcon size={18} />
+              </div>
+            </div>
+          );
+        }
 
         return (
           <div key={cluster.id} className={`admin-cluster-group ${isExpanded ? 'open' : ''}`}>
@@ -154,10 +186,11 @@ export default function Sidebar({ collapsed, onToggle }) {
                     <NavLink
                       key={item.path}
                       to={item.path}
+                      onClick={handleLinkClick}
                       className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
                     >
                       <ItemIcon size={14} />
-                      <span className="sidebar-text">{item.label}</span>
+                      <span className="sidebar-text" style={{ marginLeft: '8px' }}>{item.label}</span>
                     </NavLink>
                   );
                 })}
@@ -168,17 +201,17 @@ export default function Sidebar({ collapsed, onToggle }) {
       })}
 
       {/* ─── Footer: PostgreSQL status ─── */}
-      <div style={{ marginTop: 'auto', padding: '16px 20px', borderTop: '1px solid var(--color-border)' }}>
+      <div style={{ marginTop: 'auto', padding: collapsed ? '16px 8px' : '16px 20px', borderTop: '1px solid var(--color-border)' }}>
         {!collapsed ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', color: 'var(--color-slate-gray)' }}>
             <Activity size={14} color="var(--color-alert-green)" />
             <div>
               <div>PostgreSQL: <strong style={{ color: 'var(--color-alert-green)' }}>Conectado</strong></div>
-              <div style={{ marginTop: '2px' }}>Latencia: 12ms · Pool: 5/10</div>
+              <div style={{ marginTop: '2px' }}>PoLP Enforced · JWT Secure</div>
             </div>
           </div>
         ) : (
-          <Activity size={16} color="var(--color-alert-green)" style={{ margin: '0 auto', display: 'block' }} />
+          <Activity size={16} color="var(--color-alert-green)" style={{ margin: '0 auto', display: 'block' }} title="PostgreSQL Conectado (PoLP Enforced)" />
         )}
       </div>
     </aside>

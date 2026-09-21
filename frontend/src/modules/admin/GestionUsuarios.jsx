@@ -1,102 +1,411 @@
-import React, { useState } from 'react';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Trash2, Shield, UserCheck, AlertTriangle, X } from 'lucide-react';
+import PageHeader from '../../components/shared/PageHeader';
+import ResponsiveTable from '../../components/shared/ResponsiveTable';
+import { usersApi } from '../../api/usersApi';
+import { useAuth } from '../../context/AuthContext';
+import useKineticScroll from '../../hooks/useKineticScroll';
+
+const FALLBACK_USERS = [
+  { id: 1, username: 'admin_general', email: 'admin.general@giragroup.bo', role: 'ADMIN', is_active: true },
+  { id: 2, username: 'auditor_dataops', email: 'auditor.dataops@giragroup.bo', role: 'AUDITOR_CALIDAD', is_active: true },
+  { id: 3, username: 'dir_academica', email: 'direccion.academica@giragroup.bo', role: 'DIRECTOR_ACADEMICO', is_active: true },
+  { id: 4, username: 'analista_fin', email: 'analista.finanzas@giragroup.bo', role: 'ANALISTA_FINANCIERO', is_active: true },
+];
 
 export default function GestionUsuarios() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const currentAdminId = 1;
+  useKineticScroll();
+  const { user: currentUser } = useAuth();
 
-  const users = [
-    { id: 1, nombre: 'Admin User', email: 'admin@gira.edu', rol: 'ADMIN', estado: 'Activo' },
-    { id: 2, nombre: 'Ana Calidad', email: 'ana@gira.edu', rol: 'AUDITOR_CALIDAD', estado: 'Activo' },
-    { id: 3, nombre: 'Carlos Academico', email: 'carlos@gira.edu', rol: 'DIRECTOR_ACADEMICO', estado: 'Activo' },
-    { id: 4, nombre: 'Laura Finanzas', email: 'laura@gira.edu', rol: 'ANALISTA_FINANCIERO', estado: 'Inactivo' },
-  ];
+  const [users, setUsers] = useState(FALLBACK_USERS);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Form State
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    phone: '',
+    password: '',
+    role: 'AUDITOR_CALIDAD',
+  });
+
+  const loadUsers = async () => {
+    setIsLoading(true);
+    try {
+      const data = await usersApi.getUsers();
+      if (Array.isArray(data) && data.length > 0) {
+        setUsers(data);
+      }
+    } catch (err) {
+      console.warn('Backend users unavailable, keeping local seeded data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const created = await usersApi.createUser(formData);
+      setSuccessMsg(`Usuario ${created.username || formData.username} creado exitosamente.`);
+      setIsModalOpen(false);
+      setFormData({ username: '', email: '', phone: '', password: '', role: 'AUDITOR_CALIDAD' });
+      loadUsers();
+    } catch (err) {
+      setErrorMsg(err.response?.data?.detail || 'Error al crear el usuario en la base de datos.');
+    }
+  };
+
+  const handleDeleteUser = async (userToDelete) => {
+    // Anti-orphan client-side checks
+    if (userToDelete.id === currentUser?.id || userToDelete.email === currentUser?.email) {
+      setErrorMsg('No puedes auto-eliminar tu propia cuenta de administrador.');
+      return;
+    }
+
+    const adminCount = users.filter((u) => u.role === 'ADMIN').length;
+    if (userToDelete.role === 'ADMIN' && adminCount <= 1) {
+      setErrorMsg('Acción denegada: No se puede dejar el sistema sin al menos un Administrador activo.');
+      return;
+    }
+
+    if (!window.confirm(`¿Estás seguro de revocar y eliminar a ${userToDelete.username} (${userToDelete.email})?`)) {
+      return;
+    }
+
+    try {
+      await usersApi.deleteUser(userToDelete.id);
+      setSuccessMsg(`Usuario ${userToDelete.username} eliminado correctamente.`);
+      loadUsers();
+    } catch (err) {
+      setErrorMsg(err.response?.data?.detail || 'Error al eliminar usuario.');
+    }
+  };
+
+  const getRoleBadge = (role) => {
+    switch (role) {
+      case 'ADMIN':
+        return { bg: '#fee2e2', color: 'var(--color-alert-red)', label: 'Administrador' };
+      case 'AUDITOR_CALIDAD':
+        return { bg: 'var(--color-blush-peach)', color: 'var(--color-sienna-brown)', label: 'Auditor DataOps' };
+      case 'DIRECTOR_ACADEMICO':
+        return { bg: '#e0f2fe', color: '#0369a1', label: 'Director Académico' };
+      case 'ANALISTA_FINANCIERO':
+        return { bg: '#dcfce7', color: 'var(--color-alert-green)', label: 'Analista Finanzas' };
+      default:
+        return { bg: 'var(--color-mist-gray)', color: 'var(--color-ink-black)', label: role };
+    }
+  };
 
   return (
-    <div className="module-container">
-      <header className="mb-6 flex justify-between items-center">
-        <h2 className="serif-heading text-ink-black" style={{ fontSize: '34px' }}>Gestión de Usuarios y Control RBAC</h2>
-        <button 
-          className="btn-pill-dark px-6 py-2 bg-ink-black text-paper-white rounded-full flex items-center gap-2 hover:opacity-90 transition-opacity"
-          onClick={() => setIsModalOpen(true)}
-        >
-          <Plus size={16} /> Crear Nuevo Usuario
-        </button>
-      </header>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
+      <PageHeader
+        category="GOBERNANZA &amp; SEGURIDAD"
+        title="Gestión de Usuarios y Control"
+        italicWord="RBAC"
+        subtitle="Administración de credenciales de acceso institucional bajo el Principio de Mínimo Privilegio (PoLP) con salvaguardas anti-huérfano."
+        action={
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="btn-pill-dark"
+            type="button"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Plus size={16} /> Crear Nuevo Usuario
+          </button>
+        }
+      />
 
-      <div className="floating-artifact bg-paper-white rounded-[24px] shadow-sm overflow-hidden mb-4">
-        <table className="steep-table w-full text-left border-collapse">
+      {errorMsg && (
+        <div
+          style={{
+            padding: '14px 18px',
+            marginBottom: '20px',
+            backgroundColor: '#fef2f2',
+            border: '1px solid #fecaca',
+            color: 'var(--color-alert-red)',
+            borderRadius: 'var(--radius-inputs)',
+            fontSize: '13.5px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+          }}
+        >
+          <AlertTriangle size={16} />
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
+      {successMsg && (
+        <div
+          style={{
+            padding: '14px 18px',
+            marginBottom: '20px',
+            backgroundColor: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            color: 'var(--color-alert-green)',
+            borderRadius: 'var(--radius-inputs)',
+            fontSize: '13.5px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+          }}
+        >
+          <UserCheck size={16} />
+          <span>{successMsg}</span>
+        </div>
+      )}
+
+      {/* ── Tabla Principal RBAC ────────────────────────────── */}
+      <ResponsiveTable>
+        <table className="steep-table">
           <thead>
-            <tr className="bg-gray-50 border-b">
-              <th className="p-4 font-medium text-sm text-gray-500">Nombre</th>
-              <th className="p-4 font-medium text-sm text-gray-500">Email</th>
-              <th className="p-4 font-medium text-sm text-gray-500">Rol</th>
-              <th className="p-4 font-medium text-sm text-gray-500">Estado</th>
-              <th className="p-4 font-medium text-sm text-gray-500">Acciones</th>
+            <tr>
+              <th>ID</th>
+              <th>Nombre de Usuario</th>
+              <th>Correo Institucional</th>
+              <th>Rol del Sistema</th>
+              <th>Estado</th>
+              <th style={{ textAlign: 'right' }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {users.map(u => (
-              <tr key={u.id} className="border-b hover:bg-gray-50">
-                <td className="p-4">{u.nombre}</td>
-                <td className="p-4">{u.email}</td>
-                <td className="p-4">
-                  <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800 font-medium">{u.rol}</span>
-                </td>
-                <td className="p-4">{u.estado}</td>
-                <td className="p-4 flex gap-2">
-                  <button className="btn-pill-ghost p-2 text-gray-600 hover:bg-gray-200 rounded-full"><Edit2 size={16}/></button>
-                  <button 
-                    className="btn-pill-ghost text-red-600 p-2 hover:bg-red-50 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={u.id === currentAdminId}
-                    title={u.id === currentAdminId ? "No puede auto-eliminarse" : "Eliminar"}
-                  >
-                    <Trash2 size={16}/>
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {users.map((u) => {
+              const badge = getRoleBadge(u.role);
+              const isSelf = u.id === currentUser?.id || u.email === currentUser?.email;
+              return (
+                <tr key={u.id}>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-slate-gray)' }}>
+                    #{u.id}
+                  </td>
+                  <td>
+                    <strong>{u.username}</strong>
+                    {isSelf && (
+                      <span
+                        style={{
+                          marginLeft: '8px',
+                          fontSize: '10.5px',
+                          padding: '1px 6px',
+                          backgroundColor: 'var(--color-mist-gray)',
+                          borderRadius: '4px',
+                          color: 'var(--color-slate-gray)',
+                        }}
+                      >
+                        (Tu sesión)
+                      </span>
+                    )}
+                  </td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>{u.email}</td>
+                  <td>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        padding: '3px 10px',
+                        borderRadius: '9999px',
+                        fontSize: '11.5px',
+                        fontWeight: 600,
+                        backgroundColor: badge.bg,
+                        color: badge.color,
+                      }}
+                    >
+                      {badge.label}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '12.5px',
+                        color: u.is_active !== false ? 'var(--color-alert-green)' : 'var(--color-slate-gray)',
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: '7px',
+                          height: '7px',
+                          borderRadius: '50%',
+                          backgroundColor: u.is_active !== false ? 'var(--color-alert-green)' : '#9ca3af',
+                        }}
+                      />
+                      {u.is_active !== false ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    <button
+                      onClick={() => handleDeleteUser(u)}
+                      disabled={isSelf}
+                      className="btn-pill-ghost"
+                      style={{
+                        padding: '6px 10px',
+                        color: isSelf ? '#d1d5db' : 'var(--color-alert-red)',
+                        borderColor: isSelf ? '#f3f4f6' : '#fee2e2',
+                        cursor: isSelf ? 'not-allowed' : 'pointer',
+                      }}
+                      title={isSelf ? 'No puedes auto-eliminar tu propia cuenta' : 'Revocar usuario'}
+                      type="button"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
-      </div>
-      
-      <p className="text-sm text-amber-700 font-medium">⚠ El sistema debe mantener al menos un administrador activo</p>
+      </ResponsiveTable>
 
+      <div
+        style={{
+          marginTop: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '12.5px',
+          color: 'var(--color-slate-gray)',
+        }}
+      >
+        <Shield size={14} color="var(--color-sienna-brown)" />
+        <span>Salvaguarda anti-huérfano activa: El sistema prohíbe eliminar al último administrador registrado.</span>
+      </div>
+
+      {/* ── Modal de Creación de Usuario ────────────────────── */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-paper-white p-6 rounded-[24px] w-full max-w-md shadow-xl">
-            <h3 className="text-xl font-bold mb-4">Crear Nuevo Usuario</h3>
-            <div className="space-y-4">
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(23, 25, 28, 0.45)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+        >
+          <div
+            className="floating-artifact"
+            style={{
+              width: '100%',
+              maxWidth: '480px',
+              padding: '32px',
+              borderRadius: 'var(--radius-cards)',
+              backgroundColor: 'var(--color-paper-white)',
+              boxShadow: 'var(--shadow-modal)',
+              animation: 'modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 className="serif-heading" style={{ fontSize: '22px', margin: 0 }}>
+                Crear Nuevo Usuario
+              </h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                type="button"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-slate-gray)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUser} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label className="block text-sm mb-1">Nombre de usuario</label>
-                <input type="text" className="form-input w-full p-2 border rounded-[16px]" />
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
+                  Nombre de usuario
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  placeholder="ej. auditor_secundario"
+                  className="form-input"
+                />
               </div>
+
               <div>
-                <label className="block text-sm mb-1">Correo</label>
-                <input type="email" className="form-input w-full p-2 border rounded-[16px]" />
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
+                  Correo Institucional
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="usuario@giragroup.bo"
+                  className="form-input"
+                />
               </div>
+
               <div>
-                <label className="block text-sm mb-1">Teléfono</label>
-                <input type="tel" className="form-input w-full p-2 border rounded-[16px]" />
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
+                  Teléfono (Opcional para SMS 2FA)
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="+591 70000000"
+                  className="form-input"
+                />
               </div>
+
               <div>
-                <label className="block text-sm mb-1">Contraseña inicial</label>
-                <input type="password" className="form-input w-full p-2 border rounded-[16px]" />
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
+                  Contraseña Inicial
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="Mínimo 8 caracteres"
+                  className="form-input"
+                />
               </div>
+
               <div>
-                <label className="block text-sm mb-1">Rol</label>
-                <select className="form-input w-full p-2 border rounded-[16px]">
-                  <option>ADMIN</option>
-                  <option>AUDITOR_CALIDAD</option>
-                  <option>DIRECTOR_ACADEMICO</option>
-                  <option>ANALISTA_FINANCIERO</option>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
+                  Rol del Sistema (PoLP)
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="form-input"
+                  style={{ cursor: 'pointer' }}
+                >
+                  <option value="AUDITOR_CALIDAD">AUDITOR_CALIDAD (DataOps &amp; Pipeline)</option>
+                  <option value="DIRECTOR_ACADEMICO">DIRECTOR_ACADEMICO (Retención &amp; Curricular)</option>
+                  <option value="ANALISTA_FINANCIERO">ANALISTA_FINANCIERO (Cobranzas &amp; Flujo)</option>
+                  <option value="ADMIN">ADMIN (Acceso Total)</option>
                 </select>
               </div>
-            </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <button className="btn-pill-ghost px-4 py-2 text-gray-600 rounded-full hover:bg-gray-100" onClick={() => setIsModalOpen(false)}>Cancelar</button>
-              <button className="btn-pill-dark px-4 py-2 bg-ink-black text-paper-white rounded-full">Crear Usuario</button>
-            </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="btn-pill-ghost"
+                >
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-pill-dark">
+                  Guardar Usuario
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

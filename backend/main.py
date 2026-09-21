@@ -14,6 +14,7 @@ from sqlalchemy import text
 
 from core.database import get_db
 from routers import riesgos, forecast, auth, users, notifications
+from seed_users import seed_default_users
 
 logger = logging.getLogger("api_main")
 
@@ -24,6 +25,13 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+@app.on_event("startup")
+def on_startup():
+    try:
+        seed_default_users()
+    except Exception as e:
+        logger.error(f"Error seeding default users: {e}")
 
 # ── Middleware de Seguridad OWASP (Cabeceras de Protección HTTP) ─────────────
 @app.middleware("http")

@@ -1,0 +1,10 @@
+# Frontend specific ignores
+node_modules/
+dist/
+dist-ssr/
+*.local
+.pnpm-store/
+.vite/
+.env
+.env.local
+*.log

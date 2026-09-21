@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CheckCheck, ExternalLink, Bell } from 'lucide-react';
 
-const NotificationPopover = ({ notifications, onMarkAllRead, onClose }) => {
+export default function NotificationPopover({ notifications, onMarkAllRead, onClose }) {
   const navigate = useNavigate();
 
   const handleViewAll = () => {
@@ -9,71 +10,203 @@ const NotificationPopover = ({ notifications, onMarkAllRead, onClose }) => {
     navigate('/notificaciones');
   };
 
-  const getSeverityColor = (severity) => {
+  const getSeverityStyle = (severity) => {
     switch (severity) {
-      case 'CRITICAL': return 'bg-red-500';
-      case 'WARNING': return 'bg-amber-500';
-      case 'INFO': return 'bg-blue-500';
-      default: return 'bg-slate-400';
+      case 'CRITICAL':
+        return { bg: '#fee2e2', dot: '#d9383a', border: '#fca5a5' };
+      case 'WARNING':
+        return { bg: '#fef3c7', dot: '#b45309', border: '#fcd34d' };
+      case 'INFO':
+        return { bg: '#e0f2fe', dot: '#0369a1', border: '#bae6fd' };
+      default:
+        return { bg: '#f3f4f6', dot: '#777b86', border: '#e5e7eb' };
     }
   };
 
   return (
-    <div className="absolute right-0 mt-2 w-[380px] origin-top-right rounded-[24px] bg-paper-white shadow-modal ring-1 ring-black ring-opacity-5 focus:outline-none z-50 floating-artifact">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-mist-gray">
-        <h3 className="text-lg font-bold text-ink-black serif-display">Notificaciones</h3>
-        <button 
+    <div
+      className="floating-artifact"
+      style={{
+        position: 'absolute',
+        right: 0,
+        top: 'calc(100% + 14px)',
+        width: '380px',
+        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+        backdropFilter: 'blur(16px)',
+        borderRadius: 'var(--radius-cards)',
+        boxShadow: 'var(--shadow-modal)',
+        border: '1px solid var(--color-border)',
+        zIndex: 1000,
+        overflow: 'hidden',
+        animation: 'modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+      }}
+    >
+      {/* ── Popover Header ──────────────────────── */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px 20px',
+          borderBottom: '1px solid var(--color-border)',
+          backgroundColor: 'var(--color-paper-white)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Bell size={16} style={{ color: 'var(--color-ink-black)' }} />
+          <h3 className="serif-heading" style={{ fontSize: '17px', margin: 0, color: 'var(--color-ink-black)' }}>
+            Notificaciones
+          </h3>
+        </div>
+        <button
           onClick={onMarkAllRead}
-          className="text-xs font-medium text-slate-gray hover:text-ink-black transition-colors"
+          type="button"
+          style={{
+            background: 'none',
+            border: 'none',
+            fontSize: '12px',
+            color: 'var(--color-slate-gray)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontWeight: 500,
+            transition: 'color 0.2s',
+          }}
+          onMouseEnter={(e) => (e.target.style.color = 'var(--color-ink-black)')}
+          onMouseLeave={(e) => (e.target.style.color = 'var(--color-slate-gray)')}
         >
-          Marcar todas como leídas
+          <CheckCheck size={14} /> Marcar leídas
         </button>
       </div>
-      
-      <div className="max-h-[400px] overflow-y-auto">
+
+      {/* ── Notification List ───────────────────── */}
+      <div style={{ maxHeight: '340px', overflowY: 'auto' }}>
         {notifications.length === 0 ? (
-          <div className="px-4 py-6 text-center text-sm text-slate-gray">
-            No tienes notificaciones
+          <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--color-slate-gray)', fontSize: '13.5px' }}>
+            No tienes notificaciones pendientes
           </div>
         ) : (
-          <ul className="divide-y divide-mist-gray">
-            {notifications.map((notification) => (
-              <li 
-                key={notification.id} 
-                className={`p-4 hover:bg-mist-gray/50 transition-colors cursor-pointer ${!notification.is_read ? 'bg-blue-50/30' : ''}`}
-              >
-                <div className="flex gap-3">
-                  <div className="mt-1 flex-shrink-0">
-                    <div className={`h-2.5 w-2.5 rounded-full ${getSeverityColor(notification.severity)}`}></div>
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            {notifications.map((notification) => {
+              const badge = getSeverityStyle(notification.severity);
+              return (
+                <li
+                  key={notification.id}
+                  style={{
+                    padding: '14px 20px',
+                    borderBottom: '1px solid rgba(236, 236, 236, 0.7)',
+                    backgroundColor: !notification.is_read ? 'rgba(251, 225, 209, 0.18)' : 'transparent',
+                    display: 'flex',
+                    gap: '12px',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-mist-gray)')}
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = !notification.is_read
+                      ? 'rgba(251, 225, 209, 0.18)'
+                      : 'transparent')
+                  }
+                  onClick={handleViewAll}
+                >
+                  <div style={{ marginTop: '3px', flexShrink: 0 }}>
+                    <div
+                      style={{
+                        width: '9px',
+                        height: '9px',
+                        borderRadius: '50%',
+                        backgroundColor: badge.dot,
+                        boxShadow: `0 0 0 2px ${badge.border}`,
+                      }}
+                    />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm ${!notification.is_read ? 'font-bold text-ink-black' : 'font-medium text-slate-gray'}`}>
-                      {notification.title}
-                    </p>
-                    <p className="text-sm text-slate-gray truncate mt-0.5">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: '13px',
+                        fontWeight: !notification.is_read ? 600 : 500,
+                        color: 'var(--color-ink-black)',
+                        marginBottom: '3px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <span>{notification.title}</span>
+                      <span
+                        style={{
+                          fontSize: '10px',
+                          padding: '1px 6px',
+                          borderRadius: '9999px',
+                          backgroundColor: badge.bg,
+                          color: badge.dot,
+                          fontWeight: 600,
+                          fontFamily: 'var(--font-mono)',
+                        }}
+                      >
+                        {notification.severity}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '12.5px',
+                        color: 'var(--color-slate-gray)',
+                        lineHeight: 1.4,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
                       {notification.message}
-                    </p>
-                    <p className="text-xs text-slate-gray mt-1 font-mono">
-                      {notification.timeAgo || 'Hace un momento'}
-                    </p>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        color: 'var(--color-ash-gray)',
+                        marginTop: '4px',
+                        fontFamily: 'var(--font-mono)',
+                      }}
+                    >
+                      {notification.timeAgo || 'Reciente'}
+                    </div>
                   </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
-      
-      <div className="px-4 py-3 border-t border-mist-gray bg-mist-gray/20 rounded-b-[24px]">
-        <button 
+
+      {/* ── Popover Footer ──────────────────────── */}
+      <div
+        style={{
+          padding: '12px 20px',
+          borderTop: '1px solid var(--color-border)',
+          backgroundColor: 'var(--color-fog-white)',
+          textAlign: 'center',
+        }}
+      >
+        <button
           onClick={handleViewAll}
-          className="w-full text-center text-sm font-medium text-ink-black hover:underline"
+          type="button"
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--color-ink-black)',
+            fontSize: '13px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+          onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
         >
-          Ver todas las notificaciones
+          <span>Ver todas las notificaciones</span>
+          <ExternalLink size={13} />
         </button>
       </div>
     </div>
   );
-};
-
-export default NotificationPopover;
+}

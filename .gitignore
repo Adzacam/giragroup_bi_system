@@ -6,11 +6,27 @@
 *.key
 
 # ---------------------------------------------------
-# ENTORNOS VIRTUALES
+# ENTORNOS VIRTUALES Y DEPENDENCIAS
 # ---------------------------------------------------
 .venv/
 venv/
 env/
+backend/.venv/
+frontend/.venv/
+node_modules/
+frontend/node_modules/
+.pnpm-store/
+frontend/.pnpm-store/
+**/.pnpm-store/
+
+# ---------------------------------------------------
+# COMPILADOS Y BUILD ARTIFACTS
+# ---------------------------------------------------
+dist/
+frontend/dist/
+build/
+.vite/
+frontend/.vite/
 
 # ---------------------------------------------------
 # CACHÉ Y COMPILADOS DE PYTHON
@@ -19,6 +35,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
+.coverage
+htmlcov/
+backend/tests/
 
 # ---------------------------------------------------
 # CARPETAS DEL PROYECTO (Datos Dinámicos)
@@ -31,6 +50,7 @@ uploads/data/*
 
 # No subir logs pesados de la IA o el sistema
 logs/*.log
+*.log
 !logs/.gitkeep
 
 # ---------------------------------------------------
@@ -41,6 +61,9 @@ Thumbs.db
 .vscode/
 .idea/
 .docker/
+.gemini/
+*borrador*/
+frontend/borrador web/
 
 # ---------------------------------------------------
 # ARCHIVOS GENERADOS Y PESADOS DEL PIPELINE
@@ -49,11 +72,3 @@ output/*.jsonl
 output/*.csv
 pipeline/semantic/beto_local/
 *.pbix
-
-# ---------------------------------------------------
-# DEPENDENCIAS FRONTEND Y ENTORNOS ANIDADOS
-# ---------------------------------------------------
-node_modules/
-frontend/node_modules/
-backend/.venv/
-frontend/.venv/
