@@ -3,6 +3,7 @@ import { Play } from 'lucide-react';
 import PipelineStepper from './components/PipelineStepper';
 import TerminalConsole from './components/TerminalConsole';
 import NormalizationMatrix from './components/NormalizationMatrix';
+import PageHeader from '../../components/shared/PageHeader';
 import { dataopsApi } from '../../api/dataopsApi';
 import { useNotifications } from '../../context/NotificationContext';
 import { NOTIFICATION_CATEGORIES, NOTIFICATION_SEVERITIES } from '../../constants/systemConstants';
@@ -83,24 +84,23 @@ export default function Fase2Procesamiento() {
 
   return (
     <div className="module-container" style={{ padding: '8px 0', maxWidth: '1200px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '32px' }}>
-        <p className="subtitle" style={{ textTransform: 'uppercase', fontSize: '11.5px', fontWeight: '600', letterSpacing: '0.08em', color: 'var(--color-slate-gray)', margin: '0 0 8px 0' }}>
-          Fase 2: Procesamiento y Normalización
-        </p>
-        <h2 className="serif-display" style={{ fontSize: 'clamp(28px, 3.5vw, 36px)', margin: '0 0 16px 0', color: 'var(--color-ink-black)' }}>
-          Pipeline de Homologación Estructural
-        </h2>
-        <button 
-          className="btn-pill-dark" 
-          onClick={simulateProcessing}
-          disabled={isProcessing}
-          type="button"
-          style={{ padding: '10px 24px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px', opacity: isProcessing ? 0.6 : 1 }}
-        >
-          <Play size={16} fill="currentColor" />
-          {isProcessing ? 'Procesando pipeline...' : 'Simular Nuevo Procesamiento'}
-        </button>
-      </header>
+      <PageHeader
+        category="Fase 2: Procesamiento y Normalización"
+        title="Pipeline de Homologación Estructural"
+        subtitle="Flujo automatizado de 6 etapas para detección de esquemas, limpieza sintáctica y normalización a tablas staging."
+        action={
+          <button 
+            className="btn-pill-dark" 
+            onClick={simulateProcessing}
+            disabled={isProcessing}
+            type="button"
+            style={{ padding: '10px 24px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px', opacity: isProcessing ? 0.6 : 1 }}
+          >
+            <Play size={16} fill="currentColor" />
+            {isProcessing ? 'Procesando pipeline...' : 'Simular Nuevo Procesamiento'}
+          </button>
+        }
+      />
 
       {/* ── Workflow Stepper (6 nodos con animación) ── */}
       <PipelineStepper

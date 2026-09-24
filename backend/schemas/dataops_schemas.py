@@ -64,3 +64,23 @@ class FileUploadResponse(BaseModel):
     tipo_fuente: str
     registros_detectados: int
     pipeline_result: Optional[PipelineResult] = None
+
+class BatchUploadItem(BaseModel):
+    id_documento: Optional[int] = None
+    nombre_archivo: str
+    tipo_fuente: str
+    registros_detectados: int = 0
+    status: str
+    mensaje: Optional[str] = None
+    pipeline_result: Optional[PipelineResult] = None
+
+class BatchUploadResponse(BaseModel):
+    status: str
+    message: str
+    total_archivos: int
+    archivos_exitosos: int
+    archivos_fallidos: int
+    total_registros_detectados: int
+    resultados: List[BatchUploadItem]
+    errores: List[Dict[str, Any]] = []
+

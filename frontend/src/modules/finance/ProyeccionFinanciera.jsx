@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { Play } from 'lucide-react';
+import PageHeader from '../../components/shared/PageHeader';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -73,10 +74,11 @@ export default function ProyeccionFinanciera() {
 
   return (
     <div className="module-container space-y-6">
-      <header>
-        <span className="subtitle text-xs uppercase tracking-widest text-mist-gray">statsmodels · Proyección Financiera</span>
-        <h2 className="serif-display text-ink-black mt-2" style={{ fontSize: '38px' }}>Proyección Financiera y Metas</h2>
-      </header>
+      <PageHeader
+        category="STATSMODELS · PROYECCIÓN FINANCIERA"
+        title="Proyección Financiera y Metas"
+        subtitle="Proyección estocástica de flujos de caja y cobranzas mediante Holt-Winters y modelos econométricos OLS."
+      />
 
       <div className="card-mist kinetic-card p-6 rounded-[24px] space-y-4">
         <div>

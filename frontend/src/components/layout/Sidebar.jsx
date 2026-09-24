@@ -17,6 +17,7 @@ const ROLE_MENUS = {
     { id: 'entidades',        path: '/dataops/entidades',        label: '4. Entidades No Resueltas',        icon: GitMerge },
     { id: 'inconsistencias',  path: '/dataops/inconsistencias',  label: '5. Registro de Inconsistencias',   icon: AlertTriangle },
     { id: 'telemetria',       path: '/dataops/telemetria',       label: '6. Telemetría y Rendimiento IA',   icon: Cpu },
+    { id: 'auditoria',        path: '/admin/auditoria',          label: '7. Auditoría del Sistema',          icon: ShieldCheck },
   ],
   DIRECTOR_ACADEMICO: [
     { id: 'rendimiento',   path: '/academico/rendimiento',   label: 'Rendimiento y Alertas de Riesgo',   icon: GraduationCap },
@@ -71,6 +72,7 @@ const AJUSTES_CLUSTER = {
   items: [
     { path: '/admin/usuarios',          label: 'Gestión de Usuarios',        icon: Users },
     { path: '/admin/catalogos',         label: 'Catálogos Maestros',         icon: Settings },
+    { path: '/admin/auditoria',         label: 'Auditoría del Sistema',      icon: ShieldCheck },
     { path: '/ajustes',                 label: 'Ajustes del Sistema',        icon: SlidersHorizontal },
   ],
 };

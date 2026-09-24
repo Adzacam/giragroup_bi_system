@@ -2,20 +2,18 @@ import React, { useState } from 'react';
 import { AlertTriangle, ShieldAlert, CheckCircle, Terminal, Unlink, Activity } from 'lucide-react';
 import BetoDrawer from './BetoDrawer';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
+import PageHeader from '../../components/shared/PageHeader';
 
 export default function Fase3RevisionHumana() {
   const [isBetoOpen, setIsBetoOpen] = useState(false);
 
   return (
     <div className="module-container" style={{ padding: '8px 0', maxWidth: '1200px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '32px' }}>
-        <p className="subtitle" style={{ textTransform: 'uppercase', fontSize: '11.5px', fontWeight: '600', letterSpacing: '0.08em', color: 'var(--color-slate-gray)', margin: '0 0 8px 0' }}>
-          DataOps · Revisión de Integridad
-        </p>
-        <h2 className="serif-display" style={{ fontSize: 'clamp(28px, 3.5vw, 36px)', margin: '0 0 16px 0', color: 'var(--color-ink-black)' }}>
-          Ensamblaje de Registro y Doble Confianza
-        </h2>
-      </header>
+      <PageHeader
+        category="DataOps · Revisión de Integridad"
+        title="Ensamblaje de Registro y Doble Confianza"
+        subtitle="Verificación y reconciliación cruzada de registros crudos multi-fuente mediante NER BETO y similitud difusa."
+      />
 
       {/* ── Critical Alert Banner ── */}
       <div className="floating-artifact" style={{ borderRadius: 'var(--radius-cards)', padding: '24px', marginBottom: '32px', borderLeft: '4px solid var(--color-alert-red)' }}>

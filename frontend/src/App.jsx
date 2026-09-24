@@ -36,6 +36,7 @@ const ProyeccionFinanciera = lazy(() => import('./modules/finance/ProyeccionFina
 const CuadroMandoIntegral = lazy(() => import('./modules/admin/CuadroMandoIntegral'));
 const GestionUsuarios     = lazy(() => import('./modules/admin/GestionUsuarios'));
 const CatalogosMaestros   = lazy(() => import('./modules/admin/CatalogosMaestros'));
+const AuditoriaSistema    = lazy(() => import('./modules/admin/AuditoriaSistema'));
 const AjustesSistema      = lazy(() => import('./modules/settings/AjustesSistema'));
 
 import { ThemeProvider } from './context/ThemeContext';
@@ -246,7 +247,7 @@ function App() {
                   </RoleRoute>
                 } />
 
-                {/* ─── Admin-only routes ─── */}
+                {/* ─── Admin & Auditoría routes ─── */}
                 <Route path="admin/usuarios" element={
                   <RoleRoute allowedRoles={['ADMIN']}>
                     <GestionUsuarios />
@@ -255,6 +256,11 @@ function App() {
                 <Route path="admin/catalogos" element={
                   <RoleRoute allowedRoles={['ADMIN']}>
                     <CatalogosMaestros />
+                  </RoleRoute>
+                } />
+                <Route path="admin/auditoria" element={
+                  <RoleRoute allowedRoles={['ADMIN', 'AUDITOR_CALIDAD']}>
+                    <AuditoriaSistema />
                   </RoleRoute>
                 } />
               </Route>

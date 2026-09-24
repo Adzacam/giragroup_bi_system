@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from core.database import get_db
-from routers import riesgos, forecast, auth, users, notifications, dataops
+from routers import riesgos, forecast, auth, users, notifications, dataops, audit
 from seed_users import seed_default_users
 
 logger = logging.getLogger("api_main")
@@ -28,6 +28,13 @@ app = FastAPI(
 
 @app.on_event("startup")
 def on_startup():
+    try:
+        from core.database import Base, engine
+        import models
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        logger.error(f"Error creating DB tables: {e}")
+
     try:
         seed_default_users()
     except Exception as e:
@@ -62,6 +69,8 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(notifications.router)
 app.include_router(dataops.router)
+app.include_router(audit.router)
+
 
 
 

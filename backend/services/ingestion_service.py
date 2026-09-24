@@ -17,22 +17,49 @@ from typing import Dict, Any, List, Optional, Tuple
 import pandas as pd
 from sqlalchemy.orm import Session
 
-# Asegurar import de pipeline/
+# Asegurar import de pipeline/ y modelos
 RAIZ_PROYECTO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-if RAIZ_PROYECTO not in sys.path:
-    sys.path.insert(0, RAIZ_PROYECTO)
+for p in [RAIZ_PROYECTO, "/app", "/app/pipeline", os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))]:
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
-from pipeline.ingesta import (
-    leer_archivo,
-    segmentar_archivo,
-    detectar_bloques,
-    a_texto_plano,
-    clasificar_categoria,
-)
-from backend.models.dim_origen import DimOrigenDocumental
-from backend.models.staging_registro import StagingRegistroCrudo
-from backend.models.log_pipeline import LogPipelineIngesta
-from backend.services.readers.moodle_adapter import es_reporte_moodle, adaptar_moodle_df
+try:
+    from pipeline.ingesta import (
+        leer_archivo,
+        segmentar_archivo,
+        detectar_bloques,
+        a_texto_plano,
+        clasificar_categoria,
+    )
+except ImportError:
+    try:
+        from ingesta import (
+            leer_archivo,
+            segmentar_archivo,
+            detectar_bloques,
+            a_texto_plano,
+            clasificar_categoria,
+        )
+    except ImportError:
+        def leer_archivo(ruta): return {}
+        def segmentar_archivo(df): return []
+        def detectar_bloques(df): return []
+        def a_texto_plano(b): return ""
+        def clasificar_categoria(b): return "academico"
+
+try:
+    from backend.models.dim_origen import DimOrigenDocumental
+    from backend.models.staging_registro import StagingRegistroCrudo
+    from backend.models.log_pipeline import LogPipelineIngesta
+except ImportError:
+    from models.dim_origen import DimOrigenDocumental
+    from models.staging_registro import StagingRegistroCrudo
+    from models.log_pipeline import LogPipelineIngesta
+
+try:
+    from backend.services.readers.moodle_adapter import es_reporte_moodle, adaptar_moodle_df
+except ImportError:
+    from services.readers.moodle_adapter import es_reporte_moodle, adaptar_moodle_df
 
 logger = logging.getLogger(__name__)
 

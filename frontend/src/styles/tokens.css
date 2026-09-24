@@ -41,6 +41,7 @@
 }
 
 [data-theme="dark"] {
+  --color-gira-gold: #F1B844;
   --color-ink-black: #FAF9F6;
   --color-paper-white: #161920;
   --color-mist-gray: #20252e;
@@ -67,6 +68,11 @@ body {
   background-color: var(--color-fog-white);
   color: var(--color-ink-black);
   -webkit-font-smoothing: antialiased;
+}
+
+h1, h2 {
+  font-family: var(--font-signifier);
+  font-weight: 400 !important;
 }
 
 .serif-display {
@@ -194,16 +200,25 @@ body {
 .badge-status { background: #e6f4ea; color: var(--color-alert-green); }
 
 .row-critical-alert {
-  background-color: #fef2f2 !important;
+  background-color: rgba(217, 56, 58, 0.08) !important;
+  color: var(--color-ink-black) !important;
+}
+
+.row-critical-alert td {
+  color: inherit;
 }
 
 .tag-critical-field {
   background-color: var(--color-alert-red);
-  color: var(--color-paper-white);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.7rem;
+  color: #ffffff !important;
+  white-space: nowrap;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 11px;
   font-family: var(--font-mono);
+  line-height: 1.2;
 }
 
 /* Kinetic Animation Classes */
@@ -800,6 +815,19 @@ body {
 [data-theme="dark"] .badge-kimball-na {
   background: #20252e !important;
   color: #9ca3af !important;
+}
+
+[data-theme="dark"] .row-critical-alert {
+  background-color: rgba(217, 56, 58, 0.22) !important;
+  color: #fca5a5 !important;
+}
+
+[data-theme="dark"] .row-critical-alert td {
+  color: #fca5a5 !important;
+}
+
+[data-theme="dark"] .row-critical-alert td:first-child {
+  color: #f87171 !important;
 }
 
 [data-theme="dark"] .modal-panel {

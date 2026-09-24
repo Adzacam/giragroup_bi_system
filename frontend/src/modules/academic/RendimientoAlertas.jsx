@@ -2,6 +2,7 @@ import React from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { AlertCircle, CheckCircle } from 'lucide-react';
+import PageHeader from '../../components/shared/PageHeader';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -40,10 +41,11 @@ export default function RendimientoAlertas() {
 
   return (
     <div className="module-container space-y-6">
-      <header>
-        <span className="subtitle text-xs uppercase tracking-widest text-mist-gray">DIRECTOR_ACADEMICO · Retención</span>
-        <h2 className="serif-display text-ink-black mt-2" style={{ fontSize: '40px' }}>Rendimiento y Alertas de Riesgo</h2>
-      </header>
+      <PageHeader
+        category="DIRECTOR_ACADEMICO · RETENCIÓN"
+        title="Rendimiento y Alertas de Riesgo"
+        subtitle="Monitoreo de notas por cuartiles, tasas de aprobación y detección oportuna de alumnos en riesgo académico."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="card-mist kinetic-card p-6 rounded-[24px]">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, CheckCheck } from 'lucide-react';
+import PageHeader from '../../components/shared/PageHeader';
 import { useNotifications } from '../../context/NotificationContext';
 import { notificationService } from '../../services/notificationService';
 
@@ -22,25 +23,23 @@ export default function NotificationsPage() {
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '32px 20px' }}>
       {/* ── Header ────────────────────────────────────────── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
-        <div>
-          <h1 className="serif-display" style={{ fontSize: '32px', margin: '0 0 6px 0', color: 'var(--color-ink-black)' }}>
-            Centro de Notificaciones
-          </h1>
-          <p style={{ margin: 0, fontSize: '14px', color: 'var(--color-slate-gray)' }}>
-            {unreadCount > 0 ? `Tienes ${unreadCount} notificación(es) no leída(s)` : 'No tienes notificaciones pendientes'}
-          </p>
-        </div>
-        {unreadCount > 0 && (
-          <button 
-            onClick={markAllRead}
-            className="btn-pill-dark"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '13px' }}
-          >
-            <CheckCheck size={16} /> Marcar todas como leídas
-          </button>
-        )}
-      </div>
+      <PageHeader
+        category="SISTEMA INSTITUCIONAL"
+        title="Centro de Notificaciones"
+        subtitle={unreadCount > 0 ? `Tienes ${unreadCount} notificación(es) no leída(s)` : 'No tienes notificaciones pendientes'}
+        action={
+          unreadCount > 0 ? (
+            <button 
+              onClick={markAllRead}
+              className="btn-pill-dark"
+              type="button"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '13px' }}
+            >
+              <CheckCheck size={16} /> Marcar todas como leídas
+            </button>
+          ) : null
+        }
+      />
 
       {/* ── Filters ───────────────────────────────────────── */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '28px', overflowX: 'auto', paddingBottom: '4px' }}>

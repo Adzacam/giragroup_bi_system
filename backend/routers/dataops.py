@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
+import json
 
 from core.database import get_db
 from schemas.dataops_schemas import (
     SourceListResponse,
     FileUploadResponse,
+    BatchUploadResponse,
+    BatchUploadItem,
     PipelineResult,
     PipelineStageLog,
     NormalizationEntry
@@ -67,6 +70,114 @@ async def upload_file(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Falla durante el procesamiento del archivo: {str(e)}"
         )
+
+@router.post("/upload-batch", response_model=BatchUploadResponse)
+async def upload_batch(
+    files: List[UploadFile] = File(...),
+    source_types: Optional[List[str]] = Form(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Sube y procesa un lote de 1 a N archivos simultáneos con auto-detección
+    inteligente y enrutamiento automatizado a través del pipeline DataOps.
+    """
+    if not files:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No se enviaron archivos para procesamiento por lote."
+        )
+
+    # Si source_types vino como un solo string con JSON serializado
+    parsed_types = []
+    if source_types:
+        if len(source_types) == 1 and (source_types[0].startswith("[") or "," in source_types[0]):
+            try:
+                parsed_types = json.loads(source_types[0])
+            except Exception:
+                parsed_types = [s.strip() for s in source_types[0].split(",")]
+        else:
+            parsed_types = source_types
+
+    resultados: List[BatchUploadItem] = []
+    errores: List[dict] = []
+    total_registros = 0
+
+    for idx, f in enumerate(files):
+        try:
+            content = await f.read()
+            if not content:
+                err_msg = f"El archivo '{f.filename}' está vacío."
+                errores.append({"filename": f.filename, "error": err_msg})
+                resultados.append(BatchUploadItem(
+                    nombre_archivo=f.filename,
+                    tipo_fuente="Desconocido",
+                    registros_detectados=0,
+                    status="error",
+                    mensaje=err_msg
+                ))
+                continue
+
+            # Determinar tipo documental (suministrado o inferido)
+            st = None
+            if parsed_types and idx < len(parsed_types) and parsed_types[idx]:
+                st = parsed_types[idx]
+
+            if not st:
+                fname_lower = (f.filename or "").lower()
+                if "moodle" in fname_lower or "grades" in fname_lower or fname_lower.endswith(".xml"):
+                    st = "Reporte de Aula Virtual (Moodle)"
+                elif any(k in fname_lower for k in ["cobranza", "cartera", "cuotas", "pagos", "mora"]):
+                    st = "Cartera de Cobranza (Sheets)"
+                elif any(k in fname_lower for k in ["form", "encuesta", "respuestas", "inscrip"]) or fname_lower.endswith(".csv"):
+                    st = "Inscripciones (Google Forms)"
+                else:
+                    st = "Acta de Calificaciones (Excel)"
+
+            # Procesar archivo a través del Pipeline
+            resultado = IngestionService.procesar_archivo_ingesta(
+                db=db,
+                file_bytes=content,
+                filename=f.filename,
+                source_type=st
+            )
+
+            n_regs = resultado.get("kpis", {}).get("total_registros_procesados", 0)
+            total_registros += n_regs
+
+            resultados.append(BatchUploadItem(
+                id_documento=resultado.get("id_documento"),
+                nombre_archivo=f.filename,
+                tipo_fuente=st,
+                registros_detectados=n_regs,
+                status="success",
+                mensaje=f"Archivo '{f.filename}' procesado y normalizado con éxito.",
+                pipeline_result=resultado
+            ))
+
+        except Exception as e:
+            err_str = str(e)
+            errores.append({"filename": f.filename, "error": err_str})
+            resultados.append(BatchUploadItem(
+                nombre_archivo=f.filename,
+                tipo_fuente="Desconocido",
+                registros_detectados=0,
+                status="error",
+                mensaje=f"Falla al procesar: {err_str}"
+            ))
+
+    exitosos = [r for r in resultados if r.status == "success"]
+
+    return BatchUploadResponse(
+        status="success" if exitosos else "error",
+        message=f"{len(exitosos)} de {len(files)} archivo(s) procesados exitosamente.",
+        total_archivos=len(files),
+        archivos_exitosos=len(exitosos),
+        archivos_fallidos=len(errores),
+        total_registros_detectados=total_registros,
+        resultados=resultados,
+        errores=errores
+    )
+
 
 @router.post("/process-batch", response_model=PipelineResult)
 def process_batch(

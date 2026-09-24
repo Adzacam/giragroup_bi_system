@@ -4,6 +4,7 @@ import { dataopsApi } from '../../api/dataopsApi';
 import SourceKpiCards from './components/SourceKpiCards';
 import SourcesTable from './components/SourcesTable';
 import UploadModal from './components/UploadModal';
+import PageHeader from '../../components/shared/PageHeader';
 import { useNotifications } from '../../context/NotificationContext';
 import { NOTIFICATION_CATEGORIES, NOTIFICATION_SEVERITIES } from '../../constants/systemConstants';
 
@@ -61,26 +62,22 @@ export default function Fase1Fuentes() {
   return (
     <div className="module-container" style={{ padding: '8px 0', maxWidth: '1200px', margin: '0 auto' }}>
       {/* ── Encabezado Institucional ── */}
-      <header style={{ marginBottom: '32px' }}>
-        <p className="subtitle" style={{ textTransform: 'uppercase', fontSize: '11.5px', fontWeight: '600', letterSpacing: '0.08em', color: 'var(--color-slate-gray)', margin: '0 0 8px 0' }}>
-          Fase 1: Ingesta y Fuentes de Datos
-        </p>
-        <h2 className="serif-display" style={{ fontSize: 'clamp(28px, 3.5vw, 36px)', margin: '0 0 16px 0', color: 'var(--color-ink-black)' }}>
-          Ingesta y Gestión de Fuentes Documentales
-        </h2>
-        <p style={{ color: 'var(--color-slate-gray)', maxWidth: '800px', lineHeight: '1.6', fontSize: '14.5px' }}>
-          Plataforma centralizada para la carga, validación preliminar y catalogación de archivos crudos (Excel, CSV, Moodle, Forms) antes de su procesamiento y normalización hacia el Data Warehouse.
-        </p>
-        <button 
-          className="btn-pill-dark" 
-          onClick={() => setIsModalOpen(true)}
-          type="button"
-          style={{ marginTop: '20px', padding: '10px 24px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}
-        >
-          <UploadCloud size={18} />
-          + Nueva Carga de Archivo
-        </button>
-      </header>
+      <PageHeader
+        category="Fase 1: Ingesta y Fuentes de Datos"
+        title="Ingesta y Gestión de Fuentes Documentales"
+        subtitle="Plataforma centralizada para la carga, validación preliminar y catalogación de archivos crudos (Excel, CSV, Moodle, Forms) antes de su procesamiento y normalización hacia el Data Warehouse."
+        action={
+          <button 
+            className="btn-pill-dark" 
+            onClick={() => setIsModalOpen(true)}
+            type="button"
+            style={{ padding: '10px 24px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}
+          >
+            <UploadCloud size={18} />
+            + Nueva Carga de Archivo
+          </button>
+        }
+      />
 
       {/* ── Summary KPI Cards ── */}
       <SourceKpiCards kpis={kpis} />

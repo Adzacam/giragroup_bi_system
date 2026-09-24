@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { Play } from 'lucide-react';
+import PageHeader from '../../components/shared/PageHeader';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -71,11 +72,11 @@ export default function ProyeccionAlumnos() {
 
   return (
     <div className="module-container space-y-6">
-      <header>
-        <span className="subtitle text-xs uppercase tracking-widest text-mist-gray">statsmodels · Series Temporales (Holt-Winters)</span>
-        <h2 className="serif-display text-ink-black mt-2" style={{ fontSize: '38px' }}>Proyección de Alumnos</h2>
-        <p className="text-gray-600 mt-2">Modelo predictivo de matrícula académica utilizando suavizado exponencial.</p>
-      </header>
+      <PageHeader
+        category="STATSMODELS · SERIES TEMPORALES (HOLT-WINTERS)"
+        title="Proyección de Alumnos"
+        subtitle="Modelo predictivo de matrícula académica utilizando suavizado exponencial y estimaciones estadísticas continuas."
+      />
 
       <div className="card-mist kinetic-card p-6 rounded-[24px]">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

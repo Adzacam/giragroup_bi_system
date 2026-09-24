@@ -54,7 +54,7 @@ export default function Navbar({ onToggleSidebar }) {
               GIRA <span style={{ color: 'var(--color-gira-gold)', fontWeight: 700 }}>Group</span>
             </div>
             <div className="brand-subtext" style={{ fontSize: '9.5px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', letterSpacing: '0.9px', fontWeight: 600 }}>
-              BI &amp; DATAOPS SUITE
+              BI &amp; Intelligence System
             </div>
           </div>
         </div>
