@@ -1,20 +1,30 @@
 :root {
-  --color-ink-black: #17191c;
-  --color-paper-white: #ffffff;
-  --color-mist-gray: #f2f2f3;
-  --color-fog-white: #fafafb;
+  /* ── Paleta Institucional Oficial GIRA Group ── */
+  --color-gira-navy: #0C1E33;
+  --color-gira-gold: #D99B26;
+  --color-gira-gold-light: #F1B844;
+  --color-ink-black: #17191C;
+  --color-alabaster: #FAF9F6;
+  --color-mist-gray: #F2F2F3;
+  --color-blush-peach: #FBE1D1;
+  --color-pure-white: #FFFFFF;
+
+  --color-paper-white: #FFFFFF;
+  --color-fog-white: #FAF9F6;
   --color-slate-gray: #777b86;
   --color-ash-gray: #979799;
   --color-smoke-gray: #a3a6af;
-  --color-blush-peach: #fbe1d1;
   --color-sienna-brown: #5d2a1a;
   --color-border: #ececec;
   --color-alert-red: #d9383a;
   --color-alert-green: #1b8754;
   --color-alert-amber: #b45309;
   
-  --font-signifier: 'Newsreader', 'Signifier', Georgia, serif;
-  --font-sohne: 'Inter', 'Söhne', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* ── Tipografía Institucional Oficial ── */
+  /* Display & Títulos H1/H2: Newsreader Serif (peso regular 400 constante) */
+  --font-signifier: 'Newsreader', Georgia, serif;
+  /* Cuerpo, UI & Navegación: Plus Jakarta Sans (pesos 400, 500, 600) */
+  --font-sohne: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   
   --radius-cards: 24px;
@@ -31,7 +41,7 @@
 }
 
 [data-theme="dark"] {
-  --color-ink-black: #f8fafc;
+  --color-ink-black: #FAF9F6;
   --color-paper-white: #161920;
   --color-mist-gray: #20252e;
   --color-fog-white: #0c0e12;
@@ -39,7 +49,7 @@
   --color-ash-gray: #6b7280;
   --color-smoke-gray: #4b5563;
   --color-blush-peach: #2c1a14;
-  --color-sienna-brown: #fbbf24;
+  --color-sienna-brown: #F1B844;
   --color-border: #29303c;
   --shadow-subtle: 0 4px 12px rgba(0,0,0,0.45);
   --shadow-artifact: 0 16px 40px rgba(0,0,0,0.55);
@@ -61,13 +71,13 @@ body {
 
 .serif-display {
   font-family: var(--font-signifier);
-  font-weight: 300;
-  letter-spacing: -0.02em;
+  font-weight: 400 !important;
+  letter-spacing: -0.015em;
 }
 
 .serif-heading {
   font-family: var(--font-signifier);
-  font-weight: 400;
+  font-weight: 400 !important;
   letter-spacing: -0.01em;
 }
 
@@ -239,29 +249,40 @@ body {
 .ambient-float-a { animation: floatAmbientA 6.5s ease-in-out infinite; }
 .ambient-float-b { animation: floatAmbientB 7.5s ease-in-out infinite; }
 
-/* Navbar */
+/* ── Navbar Extremo a Extremo (Full-Width Header) ────────────────── */
 .floating-header-container {
   position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 32px);
-  max-width: 1280px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-width: 100%;
+  transform: none;
   z-index: 1000;
+  height: 64px;
 }
 
 .floating-navbar {
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(18px);
-  border-radius: 9999px;
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-subtle);
+  border-radius: 0;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
+  padding: 0 28px;
+  height: 64px;
   position: relative;
   overflow: visible;
+  width: 100%;
+}
+
+[data-theme="dark"] .floating-navbar {
+  background-color: rgba(16, 19, 25, 0.95);
+  border-bottom-color: var(--color-border);
 }
 
 .navbar-scroll-progress {
@@ -269,30 +290,37 @@ body {
   bottom: 0;
   left: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--color-ink-black), var(--color-sienna-brown));
+  background: linear-gradient(90deg, var(--color-gira-gold), var(--color-gira-gold-light));
   width: 0%;
-  border-radius: 9999px;
+  border-radius: 0;
   transition: width 0.1s ease-out;
   pointer-events: none;
 }
 
-/* App Layout */
+/* ── App Layout & Sidebar Direct Seamless Attachment ─────────────── */
 .app-layout {
   display: flex;
   min-height: 100vh;
-  padding-top: 90px;
+  padding-top: 64px;
 }
 
 .app-sidebar {
   width: var(--sidebar-width);
-  background-color: rgba(255, 255, 255, 0.6);
+  background-color: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(16px);
   border-right: 1px solid var(--color-border);
-  height: calc(100vh - 90px);
+  height: calc(100vh - 64px);
   position: sticky;
-  top: 90px;
+  top: 64px;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   transition: width 0.3s ease;
+  z-index: 900;
+}
+
+[data-theme="dark"] .app-sidebar {
+  background-color: rgba(16, 19, 25, 0.8);
 }
 
 .app-sidebar.collapsed {
@@ -814,11 +842,13 @@ body {
 }
 @media (max-width: 768px) {
   .floating-header-container {
-    top: 8px;
-    width: calc(100% - 16px);
+    top: 0;
+    width: 100%;
+    height: 58px;
   }
   .floating-navbar {
-    padding: 8px 16px;
+    padding: 0 16px;
+    height: 58px;
   }
   .mobile-bottom-nav {
     display: flex;

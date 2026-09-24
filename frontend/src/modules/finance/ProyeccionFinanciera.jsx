@@ -23,19 +23,19 @@ export default function ProyeccionFinanciera() {
       {
         label: 'Cobrado Real ($k)',
         data: [280, 310, 340, 360, 380, ejecutado ? null : null],
-        borderColor: '#17191c',
-        backgroundColor: '#17191c',
-        borderWidth: 2,
-        tension: 0.1,
+        borderColor: '#0C1E33',
+        backgroundColor: '#0C1E33',
+        borderWidth: 2.5,
+        tension: 0.15,
       },
       {
         label: 'Pronóstico Flujo ($k)',
         data: [null, null, null, null, 380, ejecutado ? 412 : null],
-        borderColor: '#1b8754',
-        backgroundColor: '#1b8754',
-        borderWidth: 2,
-        borderDash: [5, 5],
-        tension: 0.1,
+        borderColor: '#D99B26',
+        backgroundColor: '#D99B26',
+        borderWidth: 2.5,
+        borderDash: [6, 4],
+        tension: 0.15,
       }
     ]
   };
@@ -43,7 +43,25 @@ export default function ProyeccionFinanciera() {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom' } }
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: 'var(--color-slate-gray)',
+          font: { family: 'var(--font-sohne)', size: 12 }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(119, 123, 134, 0.1)' },
+        ticks: { color: 'var(--color-slate-gray)', font: { family: 'var(--font-sohne)' } }
+      },
+      y: {
+        grid: { color: 'rgba(119, 123, 134, 0.1)' },
+        ticks: { color: 'var(--color-slate-gray)', font: { family: 'var(--font-sohne)' } }
+      }
+    }
   };
 
   const getModeText = () => {

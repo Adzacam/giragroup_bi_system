@@ -11,8 +11,8 @@ export default function RendimientoAlertas() {
     datasets: [
       {
         data: [6, 24, 98, 210, 142],
-        backgroundColor: ['#d9383a', '#eab308', '#979799', '#17191c', '#1b8754'],
-        borderRadius: 6,
+        backgroundColor: ['#d9383a', '#D99B26', '#F1B844', '#0C1E33', '#1b8754'],
+        borderRadius: 8,
       },
     ],
   };
@@ -26,8 +26,14 @@ export default function RendimientoAlertas() {
       },
     },
     scales: {
+      x: {
+        grid: { color: 'rgba(119, 123, 134, 0.1)' },
+        ticks: { color: 'var(--color-slate-gray)', font: { family: 'var(--font-sohne)' } }
+      },
       y: {
         beginAtZero: true,
+        grid: { color: 'rgba(119, 123, 134, 0.1)' },
+        ticks: { color: 'var(--color-slate-gray)', font: { family: 'var(--font-sohne)' } }
       },
     },
   };

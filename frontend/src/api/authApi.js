@@ -15,10 +15,21 @@ export const resendOTP = async (temp_token) => {
   return response.data;
 };
 
+export const changePassword = async (current_password, new_password, confirm_password) => {
+  const response = await client.post('/api/v1/auth/change-password', {
+    current_password,
+    new_password,
+    confirm_password
+  });
+  return response.data;
+};
+
 export const authApi = {
   loginStep1,
   verifyOTP,
   resendOTP,
+  changePassword,
 };
 
 export default authApi;
+

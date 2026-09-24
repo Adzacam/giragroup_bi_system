@@ -6,8 +6,8 @@ from jose import jwt, JWTError
 
 from core.database import get_db
 from models.user import User
-from schemas.auth_schemas import LoginRequest, LoginStepOneResponse, OTPVerifyRequest, TokenResponse, UserPublic
-from core.security import verify_password, generate_otp, get_password_hash, create_access_token, create_refresh_token, SECRET_KEY, ALGORITHM
+from schemas.auth_schemas import LoginRequest, LoginStepOneResponse, OTPVerifyRequest, TokenResponse, UserPublic, ChangePasswordRequest
+from core.security import verify_password, generate_otp, get_password_hash, create_access_token, create_refresh_token, get_current_user, SECRET_KEY, ALGORITHM
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Autenticacion"])
 
@@ -173,6 +173,39 @@ def resend_otp(req: dict = Body(...), db: Session = Depends(get_db)):
     print(f"DEV OTP RESEND para {user.email}: {otp}")
     return {"message": "OTP reenviado"}
 
+@router.post("/change-password")
+def change_password(
+    req: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not verify_password(req.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña actual ingresada es incorrecta."
+        )
+
+    if len(req.new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La nueva contraseña debe tener al menos 6 caracteres."
+        )
+
+    if req.new_password != req.confirm_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La confirmación no coincide con la nueva contraseña."
+        )
+
+    current_user.hashed_password = get_password_hash(req.new_password)
+    db.commit()
+
+    return {
+        "status": "success",
+        "message": "Contraseña actualizada exitosamente."
+    }
+
 @router.post("/logout")
 def logout():
     return {"message": "Cierre de sesión exitoso. Limpie su token en el cliente."}
+

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Shield, UserCheck, AlertTriangle, X } from 'lucide-react';
+import { Plus, Trash2, Shield, UserCheck, AlertTriangle, X, User } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import { usersApi } from '../../api/usersApi';
 import { useAuth } from '../../context/AuthContext';
 import useKineticScroll from '../../hooks/useKineticScroll';
+import ProfileModal from '../../components/profile/ProfileModal';
 
 const FALLBACK_USERS = [
   { id: 1, username: 'admin_general', email: 'admin.general@giragroup.bo', role: 'ADMIN', is_active: true },
@@ -22,6 +23,7 @@ export default function GestionUsuarios() {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -243,21 +245,41 @@ export default function GestionUsuarios() {
                     </span>
                   </td>
                   <td style={{ textAlign: 'right' }}>
-                    <button
-                      onClick={() => handleDeleteUser(u)}
-                      disabled={isSelf}
-                      className="btn-pill-ghost"
-                      style={{
-                        padding: '6px 10px',
-                        color: isSelf ? '#d1d5db' : 'var(--color-alert-red)',
-                        borderColor: isSelf ? '#f3f4f6' : '#fee2e2',
-                        cursor: isSelf ? 'not-allowed' : 'pointer',
-                      }}
-                      title={isSelf ? 'No puedes auto-eliminar tu propia cuenta' : 'Revocar usuario'}
-                      type="button"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                      <button
+                        onClick={() => setIsProfileModalOpen(true)}
+                        className="btn-pill-ghost"
+                        style={{
+                          padding: '6px 12px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '12px',
+                          color: 'var(--color-ink-black)',
+                        }}
+                        title="Ver Perfil y Gestión de Credenciales"
+                        type="button"
+                      >
+                        <User size={13} style={{ color: 'var(--color-gira-gold)' }} />
+                        <span>Perfil</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteUser(u)}
+                        disabled={isSelf}
+                        className="btn-pill-ghost"
+                        style={{
+                          padding: '6px 10px',
+                          color: isSelf ? '#d1d5db' : 'var(--color-alert-red)',
+                          borderColor: isSelf ? '#f3f4f6' : '#fee2e2',
+                          cursor: isSelf ? 'not-allowed' : 'pointer',
+                        }}
+                        title={isSelf ? 'No puedes auto-eliminar tu propia cuenta' : 'Revocar usuario'}
+                        type="button"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -409,6 +431,12 @@ export default function GestionUsuarios() {
           </div>
         </div>
       )}
+
+      {/* Profile & Password Management Modal */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </div>
   );
 }

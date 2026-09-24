@@ -36,3 +36,8 @@ class TokenResponse(BaseModel):
     device_token: Optional[str] = None
     user: UserPublic
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+    confirm_password: str
+

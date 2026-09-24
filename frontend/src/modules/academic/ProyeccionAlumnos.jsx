@@ -28,19 +28,19 @@ export default function ProyeccionAlumnos() {
       {
         label: 'Alumnos Matriculados (Histórico)',
         data: [130, 148, 155, 160, ejecutado ? null : null],
-        borderColor: '#17191c',
-        backgroundColor: '#17191c',
-        borderWidth: 2,
-        tension: 0.1,
+        borderColor: '#0C1E33',
+        backgroundColor: '#0C1E33',
+        borderWidth: 2.5,
+        tension: 0.15,
       },
       {
         label: 'Proyección (Holt-Winters)',
         data: [null, null, null, 160, ejecutado ? 184 : null],
-        borderColor: '#5d2a1a',
-        backgroundColor: '#5d2a1a',
-        borderWidth: 2,
-        borderDash: [5, 5],
-        tension: 0.1,
+        borderColor: '#D99B26',
+        backgroundColor: '#D99B26',
+        borderWidth: 2.5,
+        borderDash: [6, 4],
+        tension: 0.15,
       }
     ],
   };
@@ -49,7 +49,23 @@ export default function ProyeccionAlumnos() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'bottom' }
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: 'var(--color-slate-gray)',
+          font: { family: 'var(--font-sohne)', size: 12 }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(119, 123, 134, 0.1)' },
+        ticks: { color: 'var(--color-slate-gray)', font: { family: 'var(--font-sohne)' } }
+      },
+      y: {
+        grid: { color: 'rgba(119, 123, 134, 0.1)' },
+        ticks: { color: 'var(--color-slate-gray)', font: { family: 'var(--font-sohne)' } }
+      }
     }
   };
 
