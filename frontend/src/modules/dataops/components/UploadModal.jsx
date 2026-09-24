@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   UploadCloud, CheckCircle, AlertCircle, X,
-  FileSpreadsheet, FileText, Trash2, Plus, Sparkles
+  FileSpreadsheet, FileText, Trash2, Plus, Sparkles, ArrowRight
 } from 'lucide-react';
 import { dataopsApi } from '../../../api/dataopsApi';
 import { useNotifications } from '../../../context/NotificationContext';
@@ -14,6 +15,7 @@ import {
 } from '../../../utils/fileTypeDetector';
 
 export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
+  const navigate = useNavigate();
   // filesList holds: [ { file: File, id: string, sourceType: string, isAutoDetected: boolean } ]
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -21,6 +23,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   const [stageText, setStageText] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState('');
+  const [uploadResult, setUploadResult] = useState(null);
 
   const fileInputRef = useRef(null);
   const { notify } = useNotifications();
@@ -99,6 +102,41 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
     );
   };
 
+  const resetState = () => {
+    setSelectedFiles([]);
+    setIsUploading(false);
+    setProgress(0);
+    setStageText('');
+    setError('');
+    setUploadResult(null);
+  };
+
+  const handleClose = () => {
+    if (uploadResult && onUploadSuccess) {
+      onUploadSuccess(uploadResult);
+    }
+    resetState();
+    onClose();
+  };
+
+  const handleStayInSources = () => {
+    if (onUploadSuccess) {
+      onUploadSuccess(uploadResult);
+    }
+    resetState();
+    onClose();
+  };
+
+  const handleGoToPhase2 = () => {
+    const result = uploadResult;
+    if (onUploadSuccess) {
+      onUploadSuccess(result);
+    }
+    resetState();
+    onClose();
+    navigate('/dataops/procesamiento?autoRun=true');
+  };
+
   const startUpload = async () => {
     if (selectedFiles.length === 0) {
       setError('Por favor seleccione al menos un archivo para continuar.');
@@ -144,13 +182,8 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
         link: '/dataops/fuentes',
       });
 
-      setTimeout(() => {
-        setIsUploading(false);
-        setProgress(0);
-        setSelectedFiles([]);
-        if (onUploadSuccess) onUploadSuccess(res);
-        onClose();
-      }, 800);
+      setIsUploading(false);
+      setUploadResult(res || { status: 'success' });
     } catch (err) {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -240,7 +273,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
             </h3>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isUploading}
             type="button"
             style={{
@@ -257,15 +290,152 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
           </button>
         </div>
 
-        {/* Hidden Multi-file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept=".xlsx,.csv,.xls,.xml"
-          onChange={handleFileChange}
-          style={{ display: 'none' }}
-        />
+        {uploadResult ? (
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <div style={{ textAlign: 'center', padding: '16px 0 20px' }}>
+              <div
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(34, 197, 94, 0.12)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 12px',
+                }}
+              >
+                <CheckCircle size={32} color="var(--color-alert-green)" />
+              </div>
+              <h4
+                className="serif-heading"
+                style={{ fontSize: '20px', margin: '0 0 6px', color: 'var(--color-ink-black)' }}
+              >
+                ¡Archivos Ingeridos y Catalogados con Éxito!
+              </h4>
+              <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', margin: 0 }}>
+                {uploadResult.message || `${selectedFiles.length} fuente(s) procesada(s) y listas para homologación en el pipeline.`}
+              </p>
+            </div>
+
+            {/* Resumen de archivos procesados */}
+            <div
+              style={{
+                backgroundColor: 'var(--color-fog-white)',
+                border: '1px solid var(--color-border)',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                marginBottom: '20px',
+                maxHeight: '190px',
+                overflowY: 'auto',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  color: 'var(--color-slate-gray)',
+                  letterSpacing: '0.6px',
+                  marginBottom: '10px',
+                }}
+              >
+                Fuentes Listas para Fase 2 ({selectedFiles.length})
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {selectedFiles.map((item) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      fontSize: '13px',
+                      color: 'var(--color-ink-black)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                      {getFileIcon(item.file.name)}
+                      <span
+                        style={{
+                          fontWeight: 500,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          maxWidth: '320px',
+                        }}
+                      >
+                        {item.file.name}
+                      </span>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        padding: '2px 8px',
+                        borderRadius: '9999px',
+                        backgroundColor: 'rgba(34, 197, 94, 0.12)',
+                        color: 'var(--color-alert-green)',
+                        fontWeight: 600,
+                        flexShrink: 0,
+                      }}
+                    >
+                      Listo
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Acciones de la pantalla de éxito */}
+            <div
+              style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'flex-end',
+                alignItems: 'center',
+                marginTop: 'auto',
+                paddingTop: '16px',
+                borderTop: '1px solid var(--color-border)',
+              }}
+            >
+              <button
+                type="button"
+                className="btn-pill-ghost"
+                onClick={handleStayInSources}
+                style={{ padding: '9px 20px', fontSize: '13px' }}
+              >
+                Permanecer en Fuentes
+              </button>
+              <button
+                type="button"
+                className="btn-pill-dark"
+                onClick={handleGoToPhase2}
+                style={{
+                  padding: '10px 24px',
+                  fontSize: '13.5px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontWeight: 600,
+                  backgroundColor: 'var(--color-ink-black)',
+                  color: '#ffffff',
+                }}
+              >
+                Procesar en Fase 2 →
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Hidden Multi-file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".xlsx,.csv,.xls,.xml"
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
 
         {/* Drag and Drop Zone */}
         <div
@@ -600,7 +770,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
           <button
             type="button"
             className="btn-pill-ghost"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isUploading}
             style={{ padding: '9px 20px', fontSize: '13px' }}
           >
@@ -632,6 +802,8 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
             )}
           </button>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

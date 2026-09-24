@@ -1,8 +1,10 @@
 import React from 'react';
-import { FileSpreadsheet, FileText, Database, CheckCircle, AlertCircle, RefreshCw, Eye, AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { FileSpreadsheet, FileText, Database, CheckCircle, AlertCircle, RefreshCw, Eye, AlertTriangle, Play } from 'lucide-react';
 import ResponsiveTable from '../../../components/shared/ResponsiveTable';
 
 export default function SourcesTable({ sources, onReprocess, onSelectDetail, isReprocessingId }) {
+  const navigate = useNavigate();
   const getSourceIcon = (type) => {
     const t = (type || '').toLowerCase();
     if (t.includes('excel') || t.includes('acta')) return <FileSpreadsheet size={18} color="#3b82f6" />;
@@ -144,6 +146,31 @@ export default function SourcesTable({ sources, onReprocess, onSelectDetail, isR
                       >
                         <RefreshCw size={12} className={isReprocessing ? 'spin' : ''} />
                         {isReprocessing ? 'Reprocesando...' : 'Reprocesar'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/dataops/procesamiento?autoRun=true&docId=${item.id}`)}
+                        style={{
+                          backgroundColor: 'var(--color-ink-black)',
+                          border: 'none',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          padding: '4px 12px',
+                          borderRadius: '9999px',
+                          transition: 'opacity 0.15s ease',
+                          whiteSpace: 'nowrap'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.85')}
+                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                        title="Procesar inmediatamente en Fase 2"
+                      >
+                        <Play size={11} fill="currentColor" /> Procesar en Fase 2
                       </button>
                     </div>
                   </td>

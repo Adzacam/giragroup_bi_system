@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Play } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Play, Terminal } from 'lucide-react';
 import PipelineStepper from './components/PipelineStepper';
-import TerminalConsole from './components/TerminalConsole';
+import PipelineTelemetryDrawer from './components/PipelineTelemetryDrawer';
 import NormalizationMatrix from './components/NormalizationMatrix';
 import PageHeader from '../../components/shared/PageHeader';
 import { dataopsApi } from '../../api/dataopsApi';
@@ -10,8 +11,10 @@ import { NOTIFICATION_CATEGORIES, NOTIFICATION_SEVERITIES } from '../../constant
 import { MOCK_INITIAL_LOGS } from '../../constants/mockData';
 
 export default function Fase2Procesamiento() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeStep, setActiveStep] = useState(-1);
   const [logs, setLogs] = useState(MOCK_INITIAL_LOGS);
+  const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
   const [kpis, setKpis] = useState({
     total_registros_procesados: 1248,
     registros_normalizados: 1196,
@@ -20,14 +23,23 @@ export default function Fase2Procesamiento() {
   });
   const [matrix, setMatrix] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [activeDocId, setActiveDocId] = useState(() => {
+    const d = searchParams.get('docId');
+    return d ? Number(d) : null;
+  });
 
+  const autoRunProcessedRef = useRef(false);
   const { notify } = useNotifications();
 
-  const simulateProcessing = async () => {
+  const startPipelineExecution = async (docId = null) => {
     if (isProcessing) return;
     setIsProcessing(true);
+    setIsTelemetryOpen(true);
     setActiveStep(0);
     setLogs([]);
+    if (docId) {
+      setActiveDocId(docId);
+    }
 
     const delays = [300, 800, 1500, 2200, 2900, 3600];
     const logMessages = [
@@ -47,36 +59,65 @@ export default function Fase2Procesamiento() {
     });
 
     try {
-      // Invocación a backend
-      const res = await dataopsApi.processBatch();
-      if (res && res.kpis) {
-        setKpis(res.kpis);
-      }
-      if (res && res.normalization_matrix) {
-        setMatrix(res.normalization_matrix);
+      // Invocación a endpoint real del backend
+      const targetId = docId || activeDocId;
+      const res = await dataopsApi.processBatch(targetId);
+      if (res) {
+        if (res.kpis) {
+          setKpis(res.kpis);
+        }
+        if (res.normalization_matrix) {
+          setMatrix(res.normalization_matrix);
+        }
+        if (res.logs && Array.isArray(res.logs) && res.logs.length > 0) {
+          setTimeout(() => {
+            setLogs(res.logs);
+          }, 3800);
+        }
       }
     } catch (err) {
-      console.warn('Ejecutando en modo simulación:', err);
+      console.error('Error al procesar el pipeline en backend:', err);
     }
 
     setTimeout(() => {
+      const targetId = docId || activeDocId;
       setLogs(prev => [
         ...prev,
-        { time: new Date().toLocaleTimeString('en-US', { hour12: false }), type: 'SUCCESS', module: 'pipeline.py', msg: 'Pipeline ejecutado con éxito en 4.2s.' }
+        {
+          time: new Date().toLocaleTimeString('en-US', { hour12: false }),
+          type: 'SUCCESS',
+          module: 'pipeline.py',
+          msg: `Pipeline ejecutado con éxito ${targetId ? `para documento #${targetId}` : 'para el lote institucional'} en 4.2s.`
+        }
       ]);
       setActiveStep(-1);
       setIsProcessing(false);
 
       // Desacoplar y emitir notificación global
       notify({
-        title: 'Pipeline Lote POS-2026-B_M3 Procesado',
-        message: 'Normalización estructural completada con 1,196 registros homologados listos para staging.',
+        title: targetId ? `Documento #${targetId} Procesado` : 'Pipeline de Datos Procesado',
+        message: 'Normalización estructural completada con registros homologados listos para staging.',
         category: NOTIFICATION_CATEGORIES.CALIDAD_DATAOPS,
         severity: NOTIFICATION_SEVERITIES.INFO,
         link: '/dataops/revision'
       });
     }, 4200);
   };
+
+  useEffect(() => {
+    const isAutoRun = searchParams.get('autoRun') === 'true';
+    if (isAutoRun && !autoRunProcessedRef.current) {
+      autoRunProcessedRef.current = true;
+      const docIdParam = searchParams.get('docId');
+      const targetDocId = docIdParam ? Number(docIdParam) : null;
+      if (targetDocId) {
+        setActiveDocId(targetDocId);
+      }
+      // Limpiar autoRun de la URL para que al recargar no se re-dispare
+      setSearchParams({}, { replace: true });
+      startPipelineExecution(targetDocId);
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleClearLogs = () => {
     setLogs([]);
@@ -89,23 +130,33 @@ export default function Fase2Procesamiento() {
         title="Pipeline de Homologación Estructural"
         subtitle="Flujo automatizado de 6 etapas para detección de esquemas, limpieza sintáctica y normalización a tablas staging."
         action={
-          <button 
-            className="btn-pill-dark" 
-            onClick={simulateProcessing}
-            disabled={isProcessing}
-            type="button"
-            style={{ padding: '10px 24px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px', opacity: isProcessing ? 0.6 : 1 }}
-          >
-            <Play size={16} fill="currentColor" />
-            {isProcessing ? 'Procesando pipeline...' : 'Simular Nuevo Procesamiento'}
-          </button>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button 
+              className="btn-pill-ghost" 
+              onClick={() => setIsTelemetryOpen(true)}
+              type="button"
+              style={{ padding: '10px 18px', fontSize: '13.5px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+            >
+              <Terminal size={15} /> Ver Telemetría en Vivo
+            </button>
+            <button 
+              className="btn-pill-dark" 
+              onClick={() => startPipelineExecution(activeDocId)}
+              disabled={isProcessing}
+              type="button"
+              style={{ padding: '10px 24px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px', opacity: isProcessing ? 0.6 : 1 }}
+            >
+              <Play size={16} fill="currentColor" />
+              {isProcessing ? 'Procesando pipeline...' : 'Iniciar Procesamiento de Pipeline'}
+            </button>
+          </div>
         }
       />
 
       {/* ── Workflow Stepper (6 nodos con animación) ── */}
       <PipelineStepper
         activeStep={activeStep}
-        lotName="Lote: POS-2026-B_M3"
+        lotName={activeDocId ? `Documento: #${activeDocId}` : "Lote: POS-2026-B_M3"}
       />
 
       {/* ── KPI Summary Cards ── */}
@@ -148,18 +199,54 @@ export default function Fase2Procesamiento() {
         </div>
       </div>
 
-      {/* ── Console & Normalization Matrix ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
-        <TerminalConsole
-          logs={logs}
-          onClear={handleClearLogs}
-          isStreaming={isProcessing}
-        />
+      {/* ── Matriz de Normalización de Cabeceras ── */}
+      <NormalizationMatrix
+        matrix={matrix}
+      />
 
-        <NormalizationMatrix
-          matrix={matrix}
-        />
+      {/* ── Action Box Telemetría en Vivo (idéntica a Fase 3) ── */}
+      <div 
+        className="card-mist" 
+        style={{ 
+          marginTop: '28px', 
+          padding: '24px', 
+          borderRadius: 'var(--radius-cards)', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          flexWrap: 'wrap', 
+          gap: '16px' 
+        }}
+      >
+        <div>
+          <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: 600, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Terminal size={16} color="var(--color-sienna-brown)" /> Telemetría de Ejecución en Tiempo Real (pipeline.py)
+          </h4>
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-slate-gray)', maxWidth: '680px', lineHeight: 1.5 }}>
+            Consola técnica HUD en tiempo real con trazas de parseo UTF-8, enrutamiento por firmas binarias, sanitizado de celdas fusionadas, validación canónica e inserción por lotes a PostgreSQL Staging.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <button 
+            type="button"
+            className="btn-pill-dark" 
+            onClick={() => setIsTelemetryOpen(true)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px', fontSize: '13px', fontWeight: 600 }}
+          >
+            <Terminal size={15} /> Ver Telemetría en Vivo
+          </button>
+        </div>
       </div>
+
+      {/* ── Drawer Lateral de Telemetría (Estilo Fase 3 HUD) ── */}
+      <PipelineTelemetryDrawer
+        isOpen={isTelemetryOpen}
+        onClose={() => setIsTelemetryOpen(false)}
+        logs={logs}
+        onClearLogs={handleClearLogs}
+        isProcessing={isProcessing}
+        lotName={activeDocId ? `Documento #${activeDocId}` : "Lote: POS-2026-B_M3"}
+      />
     </div>
   );
 }
