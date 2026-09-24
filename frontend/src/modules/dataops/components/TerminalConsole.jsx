@@ -70,7 +70,7 @@ export default function TerminalConsole({ logs, onClear, isStreaming }) {
         }}
       >
         {(!logs || logs.length === 0) ? (
-          <div style={{ color: '#64748b', fontStyle: 'italic', padding: '36px 0', textAlign: 'center' }}>
+          <div style={{ color: '#64748b', fontStyle: 'normal', padding: '36px 0', textAlign: 'center' }}>
             Consola en espera. Presione "Simular Nuevo Procesamiento" para ejecutar el pipeline.
           </div>
         ) : (

@@ -6,11 +6,11 @@ import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import useKineticScroll from '../../hooks/useKineticScroll';
 
 const MOCK_MORA = [
-  { id: 1, ci: '4892019 LP', estudiante: 'Daza Meneses Adriano', programa: 'POS-101: Maestría en Big Data', cuotas: 2, monto: '$ 1,200 USD', dias: 45, riesgo: 'Moderado', gestion: 'Notificado WhatsApp' },
-  { id: 2, ci: '3948102 SC', estudiante: 'Flores Choque Maribel', programa: 'DIP-201: Diplomado en BI & CMI', cuotas: 3, monto: '$ 1,850 USD', dias: 72, riesgo: 'Alto', gestion: 'Carta Notarial' },
-  { id: 3, ci: '5829104 CB', estudiante: 'Vargas Alarcón Javier', programa: 'POS-102: Maestría en Dirección', cuotas: 1, monto: '$ 650 USD', dias: 18, riesgo: 'Bajo', gestion: 'Recordatorio Correo' },
-  { id: 4, ci: '7482910 LP', estudiante: 'Mamani Quispe Gonzalo', programa: 'EXP-301: Experto en Python Analytics', cuotas: 1, monto: '$ 450 USD', dias: 24, riesgo: 'Bajo', gestion: 'Compromiso 20 Sep' },
-  { id: 5, ci: '6192830 SC', estudiante: 'Salazar Cortez Gabriela', programa: 'POS-101: Maestría en Big Data', cuotas: 4, monto: '$ 2,400 USD', dias: 94, riesgo: 'Alto', gestion: 'En Bloqueo Plataforma' },
+  { id: 1, ci: '4892019 LP', estudiante: 'Daza Meneses Adriano', programa: 'POS-101: Maestría en Big Data', cuotas: 2, monto: 'Bs. 1,200', dias: 45, riesgo: 'Moderado', gestion: 'Notificado WhatsApp' },
+  { id: 2, ci: '3948102 SC', estudiante: 'Flores Choque Maribel', programa: 'DIP-201: Diplomado en BI & CMI', cuotas: 3, monto: 'Bs. 1,850', dias: 72, riesgo: 'Alto', gestion: 'Carta Notarial' },
+  { id: 3, ci: '5829104 CB', estudiante: 'Vargas Alarcón Javier', programa: 'POS-102: Maestría en Dirección', cuotas: 1, monto: 'Bs. 650', dias: 18, riesgo: 'Bajo', gestion: 'Recordatorio Correo' },
+  { id: 4, ci: '7482910 LP', estudiante: 'Mamani Quispe Gonzalo', programa: 'EXP-301: Experto en Python Analytics', cuotas: 1, monto: 'Bs. 450', dias: 24, riesgo: 'Bajo', gestion: 'Compromiso 20 Sep' },
+  { id: 5, ci: '6192830 SC', estudiante: 'Salazar Cortez Gabriela', programa: 'POS-101: Maestría en Big Data', cuotas: 4, monto: 'Bs. 2,400', dias: 94, riesgo: 'Alto', gestion: 'En Bloqueo Plataforma' },
 ];
 
 export default function CarteraMora() {
@@ -51,27 +51,27 @@ export default function CarteraMora() {
         />
         <KpiCard
           label="Saldo Exigible Vencido"
-          numberPrefix="$ "
+          numberPrefix="Bs. "
           number="58,400"
-          numberSuffix=" USD"
+          numberSuffix=""
           sublabel="Total cuotas acumuladas vencidas"
           badgeText="A recuperar"
           badgeType="warning"
         />
         <KpiCard
           label="Cartera Vigente al Día"
-          numberPrefix="$ "
+          numberPrefix="Bs. "
           number="1,640,000"
-          numberSuffix=" USD"
+          numberSuffix=""
           sublabel="96.7% de solvencia institucional"
           badgeText="Sana"
           badgeType="success"
         />
         <KpiCard
           label="Cobranza Recuperada"
-          numberPrefix="$ "
+          numberPrefix="Bs. "
           number="18,200"
-          numberSuffix=" USD"
+          numberSuffix=""
           sublabel="Recaudado en primeros 15 días"
           badgeText="En Meta"
           badgeType="peach"

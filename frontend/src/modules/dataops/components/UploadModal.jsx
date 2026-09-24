@@ -18,6 +18,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   const navigate = useNavigate();
   // filesList holds: [ { file: File, id: string, sourceType: string, isAutoDetected: boolean } ]
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedToProcess, setSelectedToProcess] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [stageText, setStageText] = useState('');
@@ -104,11 +105,28 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
 
   const resetState = () => {
     setSelectedFiles([]);
+    setSelectedToProcess([]);
     setIsUploading(false);
     setProgress(0);
     setStageText('');
     setError('');
     setUploadResult(null);
+  };
+
+  const handleToggleSelectToProcess = (fileName) => {
+    setSelectedToProcess((prev) =>
+      prev.includes(fileName)
+        ? prev.filter((name) => name !== fileName)
+        : [...prev, fileName]
+    );
+  };
+
+  const handleSelectAllToProcess = () => {
+    if (selectedToProcess.length === selectedFiles.length) {
+      setSelectedToProcess([]);
+    } else {
+      setSelectedToProcess(selectedFiles.map((item) => item.file.name));
+    }
   };
 
   const handleClose = () => {
@@ -128,13 +146,15 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   };
 
   const handleGoToPhase2 = () => {
+    if (selectedToProcess.length === 0) return;
     const result = uploadResult;
     if (onUploadSuccess) {
       onUploadSuccess(result);
     }
+    const filesParam = encodeURIComponent(selectedToProcess.join(','));
     resetState();
     onClose();
-    navigate('/dataops/procesamiento?autoRun=true');
+    navigate(`/dataops/procesamiento?autoRun=true&files=${filesParam}`);
   };
 
   const startUpload = async () => {
@@ -184,6 +204,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
 
       setIsUploading(false);
       setUploadResult(res || { status: 'success' });
+      setSelectedToProcess(selectedFiles.map((item) => item.file.name));
     } catch (err) {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -318,73 +339,160 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
               </p>
             </div>
 
-            {/* Resumen de archivos procesados */}
+            {/* Resumen de archivos procesados con selección interactiva para Fase 2 */}
             <div
               style={{
                 backgroundColor: 'var(--color-fog-white)',
                 border: '1px solid var(--color-border)',
                 borderRadius: '12px',
                 padding: '14px 16px',
-                marginBottom: '20px',
-                maxHeight: '190px',
+                marginBottom: '16px',
+                maxHeight: '220px',
                 overflowY: 'auto',
               }}
             >
               <div
                 style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  color: 'var(--color-slate-gray)',
-                  letterSpacing: '0.6px',
-                  marginBottom: '10px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '12px',
+                  paddingBottom: '8px',
+                  borderBottom: '1px solid var(--color-border)',
                 }}
               >
-                Fuentes Listas para Fase 2 ({selectedFiles.length})
+                <div
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    color: 'var(--color-slate-gray)',
+                    letterSpacing: '0.6px',
+                  }}
+                >
+                  Seleccionar Fuentes para Fase 2 ({selectedToProcess.length} de {selectedFiles.length})
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSelectAllToProcess}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '11.5px',
+                    color: 'var(--color-sienna-brown)',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  {selectedToProcess.length === selectedFiles.length
+                    ? 'Deseleccionar todos'
+                    : 'Seleccionar todos'}
+                </button>
               </div>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {selectedFiles.map((item) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      fontSize: '13px',
-                      color: 'var(--color-ink-black)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                      {getFileIcon(item.file.name)}
-                      <span
-                        style={{
-                          fontWeight: 500,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          maxWidth: '320px',
-                        }}
-                      >
-                        {item.file.name}
-                      </span>
-                    </div>
-                    <span
+                {selectedFiles.map((item) => {
+                  const isChecked = selectedToProcess.includes(item.file.name);
+                  return (
+                    <label
+                      key={item.id}
                       style={{
-                        fontSize: '11px',
-                        padding: '2px 8px',
-                        borderRadius: '9999px',
-                        backgroundColor: 'rgba(34, 197, 94, 0.12)',
-                        color: 'var(--color-alert-green)',
-                        fontWeight: 600,
-                        flexShrink: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        fontSize: '13px',
+                        color: 'var(--color-ink-black)',
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        backgroundColor: isChecked ? '#ffffff' : 'transparent',
+                        border: isChecked ? '1px solid rgba(180, 83, 9, 0.25)' : '1px solid transparent',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        transition: 'all 0.15s ease',
                       }}
                     >
-                      Listo
-                    </span>
-                  </div>
-                ))}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          minWidth: 0,
+                          flex: 1,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleToggleSelectToProcess(item.file.name)}
+                          style={{
+                            accentColor: 'var(--color-sienna-brown)',
+                            width: '16px',
+                            height: '16px',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                          }}
+                        />
+                        <div style={{ flexShrink: 0 }}>
+                          {getFileIcon(item.file.name)}
+                        </div>
+                        <span
+                          style={{
+                            fontWeight: isChecked ? 600 : 400,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            maxWidth: '300px',
+                            color: isChecked ? 'var(--color-ink-black)' : 'var(--color-slate-gray)',
+                          }}
+                        >
+                          {item.file.name}
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          padding: '2px 8px',
+                          borderRadius: '9999px',
+                          backgroundColor: isChecked
+                            ? 'rgba(34, 197, 94, 0.12)'
+                            : 'rgba(100, 116, 139, 0.1)',
+                          color: isChecked
+                            ? 'var(--color-alert-green)'
+                            : 'var(--color-slate-gray)',
+                          fontWeight: 600,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {isChecked ? 'Listo' : 'Omitido'}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
+
+            {/* Aviso si no hay ninguno seleccionado */}
+            {selectedToProcess.length === 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: 'var(--color-alert-amber)',
+                  backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                  border: '1px solid rgba(245, 158, 11, 0.25)',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  marginBottom: '14px',
+                }}
+              >
+                <AlertCircle size={15} style={{ flexShrink: 0 }} />
+                <span>Debe seleccionar al menos un archivo para procesar en Fase 2.</span>
+              </div>
+            )}
 
             {/* Acciones de la pantalla de éxito */}
             <div
@@ -410,6 +518,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
                 type="button"
                 className="btn-pill-dark"
                 onClick={handleGoToPhase2}
+                disabled={selectedToProcess.length === 0}
                 style={{
                   padding: '10px 24px',
                   fontSize: '13.5px',
@@ -419,9 +528,17 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
                   fontWeight: 600,
                   backgroundColor: 'var(--color-ink-black)',
                   color: '#ffffff',
+                  opacity: selectedToProcess.length === 0 ? 0.45 : 1,
+                  cursor: selectedToProcess.length === 0 ? 'not-allowed' : 'pointer',
+                  transition: 'opacity 0.2s ease',
                 }}
+                title={
+                  selectedToProcess.length === 0
+                    ? 'Seleccione al menos un archivo para continuar'
+                    : 'Enviar seleccionados a Fase 2'
+                }
               >
-                Procesar en Fase 2 →
+                Procesar en Fase 2 ({selectedToProcess.length} seleccionados) →
               </button>
             </div>
           </div>

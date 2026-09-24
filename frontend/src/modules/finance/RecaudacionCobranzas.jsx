@@ -6,11 +6,11 @@ import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import useKineticScroll from '../../hooks/useKineticScroll';
 
 const MOCK_HISTORICO_COBROS = [
-  { periodo: 'Septiembre 2026', meta: '$ 310,000 USD', real: '$ 348,290 USD', variacion: '+$ 38,290 (+12.4%)', cuotas: 812, estado: 'Superada' },
-  { periodo: 'Agosto 2026', meta: '$ 295,000 USD', real: '$ 312,450 USD', variacion: '+$ 17,450 (+5.9%)', cuotas: 780, estado: 'Superada' },
-  { periodo: 'Julio 2026', meta: '$ 280,000 USD', real: '$ 278,900 USD', variacion: '-$ 1,100 (-0.4%)', cuotas: 742, estado: 'En Rango' },
-  { periodo: 'Junio 2026', meta: '$ 290,000 USD', real: '$ 304,120 USD', variacion: '+$ 14,120 (+4.8%)', cuotas: 795, estado: 'Superada' },
-  { periodo: 'Mayo 2026', meta: '$ 275,000 USD', real: '$ 282,300 USD', variacion: '+$ 7,300 (+2.6%)', cuotas: 730, estado: 'Superada' },
+  { periodo: 'Septiembre 2026', meta: 'Bs. 310,000', real: 'Bs. 348,290', variacion: '+Bs. 38,290 (+12.4%)', cuotas: 812, estado: 'Superada' },
+  { periodo: 'Agosto 2026', meta: 'Bs. 295,000', real: 'Bs. 312,450', variacion: '+Bs. 17,450 (+5.9%)', cuotas: 780, estado: 'Superada' },
+  { periodo: 'Julio 2026', meta: 'Bs. 280,000', real: 'Bs. 278,900', variacion: '-Bs. 1,100 (-0.4%)', cuotas: 742, estado: 'En Rango' },
+  { periodo: 'Junio 2026', meta: 'Bs. 290,000', real: 'Bs. 304,120', variacion: '+Bs. 14,120 (+4.8%)', cuotas: 795, estado: 'Superada' },
+  { periodo: 'Mayo 2026', meta: 'Bs. 275,000', real: 'Bs. 282,300', variacion: '+Bs. 7,300 (+2.6%)', cuotas: 730, estado: 'Superada' },
 ];
 
 export default function RecaudacionCobranzas() {
@@ -36,9 +36,9 @@ export default function RecaudacionCobranzas() {
       >
         <KpiCard
           label="Recaudación Neta Mensual"
-          numberPrefix="$ "
+          numberPrefix="Bs. "
           number="348,290"
-          numberSuffix=" USD"
+          numberSuffix=""
           sublabel="Cierre parcial septiembre 2026"
           badgeText="↑ 12.4% vs meta"
           badgeType="success"
@@ -52,9 +52,9 @@ export default function RecaudacionCobranzas() {
         />
         <KpiCard
           label="Ticket Promedio"
-          numberPrefix="$ "
+          numberPrefix="Bs. "
           number="1,420"
-          numberSuffix=" USD"
+          numberSuffix=""
           sublabel="Valor medio por estudiante/mes"
           badgeText="104% Meta"
           badgeType="peach"
@@ -88,15 +88,15 @@ export default function RecaudacionCobranzas() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
               <span style={{ color: 'var(--color-slate-gray)' }}>Transferencia Bancaria ACH:</span>
-              <strong>58.4% ($ 203,400 USD)</strong>
+              <strong>58.4% (Bs. 203,400)</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
               <span style={{ color: 'var(--color-slate-gray)' }}>Pasarela QR / Débito:</span>
-              <strong>32.6% ($ 113,540 USD)</strong>
+              <strong>32.6% (Bs. 113,540)</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
               <span style={{ color: 'var(--color-slate-gray)' }}>Caja Central / Depósito:</span>
-              <strong>9.0% ($ 31,350 USD)</strong>
+              <strong>9.0% (Bs. 31,350)</strong>
             </div>
           </div>
         </div>
@@ -112,10 +112,10 @@ export default function RecaudacionCobranzas() {
             Con el 88% de las cuotas ya cobradas a mitad de ciclo, el modelo prevé un cierre estimado de:
           </p>
           <div className="serif-display" style={{ fontSize: '28px', color: 'var(--color-ink-black)', marginBottom: '4px' }}>
-            $ 362,000 &plusmn; 8,500 USD
+            Bs. 362,000 &plusmn; 8,500
           </div>
           <span style={{ fontSize: '12px', color: 'var(--color-alert-green)', fontWeight: 500 }}>
-            Superará la meta asignada por $ 52,000 USD
+            Superará la meta asignada por Bs. 52,000
           </span>
         </div>
       </div>

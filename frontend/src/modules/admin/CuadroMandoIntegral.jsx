@@ -21,9 +21,9 @@ export default function CuadroMandoIntegral() {
       <div className="cmi-kpi-grid">
         <KpiCard
           label="1. FINANCIERA"
-          numberPrefix="$ "
+          numberPrefix="Bs. "
           number="1,420"
-          numberSuffix=" USD"
+          numberSuffix=""
           sublabel="Ticket promedio (104% meta)"
           badgeText="Superávit"
           badgeType="success"
@@ -126,8 +126,8 @@ export default function CuadroMandoIntegral() {
                 <td><strong>Financiera</strong></td>
                 <td>Sostenibilidad y Flujo de Caja</td>
                 <td>Recaudación Neta Mensual</td>
-                <td>$ 310,000 USD</td>
-                <td>$ 348,290 USD</td>
+                <td>Bs. 310,000</td>
+                <td>Bs. 348,290</td>
                 <td><span className="badge-status badge-status-completed">112% Superada</span></td>
               </tr>
               <tr>

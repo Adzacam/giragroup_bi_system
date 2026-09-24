@@ -235,7 +235,7 @@ export default function LoginPage() {
               margin: '8px 0 16px 0',
               lineHeight: 1.15,
             }}>
-              {greeting.prefix} <em>{greeting.title}</em>
+              {greeting.prefix} <span>{greeting.title}</span>
             </h1>
 
             <p style={{

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Play, Terminal } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Play, Terminal, ArrowRight, CheckSquare, Activity } from 'lucide-react';
 import PipelineStepper from './components/PipelineStepper';
 import PipelineTelemetryDrawer from './components/PipelineTelemetryDrawer';
 import NormalizationMatrix from './components/NormalizationMatrix';
@@ -12,6 +12,7 @@ import { MOCK_INITIAL_LOGS } from '../../constants/mockData';
 
 export default function Fase2Procesamiento() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(-1);
   const [logs, setLogs] = useState(MOCK_INITIAL_LOGS);
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
@@ -31,9 +32,10 @@ export default function Fase2Procesamiento() {
   const autoRunProcessedRef = useRef(false);
   const { notify } = useNotifications();
 
-  const startPipelineExecution = async (docId = null) => {
+  const startPipelineExecution = async (docId = null, options = {}) => {
     if (isProcessing) return;
     setIsProcessing(true);
+    // Auto-apertura inmediata de la consola de telemetría en vivo
     setIsTelemetryOpen(true);
     setActiveStep(0);
     setLogs([]);
@@ -81,13 +83,24 @@ export default function Fase2Procesamiento() {
 
     setTimeout(() => {
       const targetId = docId || activeDocId;
+      let targetLabel = 'para el lote institucional';
+      if (options?.files) {
+        const count = options.files.split(',').length;
+        targetLabel = `para ${count} archivo(s) seleccionado(s)`;
+      } else if (options?.docIds) {
+        const count = options.docIds.split(',').length;
+        targetLabel = `para ${count} documento(s) seleccionado(s) [IDs: ${options.docIds}]`;
+      } else if (targetId) {
+        targetLabel = `para documento #${targetId}`;
+      }
+
       setLogs(prev => [
         ...prev,
         {
           time: new Date().toLocaleTimeString('en-US', { hour12: false }),
           type: 'SUCCESS',
           module: 'pipeline.py',
-          msg: `Pipeline ejecutado con éxito ${targetId ? `para documento #${targetId}` : 'para el lote institucional'} en 4.2s.`
+          msg: `Pipeline ejecutado con éxito ${targetLabel} en 4.2s.`
         }
       ]);
       setActiveStep(-1);
@@ -96,7 +109,7 @@ export default function Fase2Procesamiento() {
       // Desacoplar y emitir notificación global
       notify({
         title: targetId ? `Documento #${targetId} Procesado` : 'Pipeline de Datos Procesado',
-        message: 'Normalización estructural completada con registros homologados listos para staging.',
+        message: `Normalización estructural completada ${targetLabel} con registros homologados listos para staging.`,
         category: NOTIFICATION_CATEGORIES.CALIDAD_DATAOPS,
         severity: NOTIFICATION_SEVERITIES.INFO,
         link: '/dataops/revision'
@@ -109,13 +122,18 @@ export default function Fase2Procesamiento() {
     if (isAutoRun && !autoRunProcessedRef.current) {
       autoRunProcessedRef.current = true;
       const docIdParam = searchParams.get('docId');
+      const docIdsParam = searchParams.get('docIds');
+      const filesParam = searchParams.get('files');
       const targetDocId = docIdParam ? Number(docIdParam) : null;
       if (targetDocId) {
         setActiveDocId(targetDocId);
       }
       // Limpiar autoRun de la URL para que al recargar no se re-dispare
       setSearchParams({}, { replace: true });
-      startPipelineExecution(targetDocId);
+      startPipelineExecution(targetDocId, {
+        docIds: docIdsParam,
+        files: filesParam ? decodeURIComponent(filesParam) : null
+      });
     }
   }, [searchParams, setSearchParams]);
 
@@ -204,39 +222,131 @@ export default function Fase2Procesamiento() {
         matrix={matrix}
       />
 
-      {/* ── Action Box Telemetría en Vivo (idéntica a Fase 3) ── */}
-      <div 
-        className="card-mist" 
-        style={{ 
-          marginTop: '28px', 
-          padding: '24px', 
-          borderRadius: 'var(--radius-cards)', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          flexWrap: 'wrap', 
-          gap: '16px' 
-        }}
-      >
-        <div>
-          <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: 600, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Terminal size={16} color="var(--color-sienna-brown)" /> Telemetría de Ejecución en Tiempo Real (pipeline.py)
-          </h4>
-          <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-slate-gray)', maxWidth: '680px', lineHeight: 1.5 }}>
-            Consola técnica HUD en tiempo real con trazas de parseo UTF-8, enrutamiento por firmas binarias, sanitizado de celdas fusionadas, validación canónica e inserción por lotes a PostgreSQL Staging.
-          </p>
+      {/* ── Panel de Estado o Tarjeta de Transición a Fase 3 (Sin botón de telemetría duplicado) ── */}
+      {isProcessing ? (
+        <div 
+          className="card-mist" 
+          style={{ 
+            marginTop: '28px', 
+            padding: '24px 28px', 
+            borderRadius: 'var(--radius-cards)', 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            flexWrap: 'wrap', 
+            gap: '16px',
+            borderLeft: '4px solid var(--color-sienna-brown)'
+          }}
+        >
+          <div>
+            <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: 600, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Activity size={16} className="spin-animation" color="var(--color-sienna-brown)" /> Estado del Pipeline: Procesando Lote Activo
+            </h4>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-slate-gray)', maxWidth: '680px', lineHeight: 1.5 }}>
+              Ejecutando normalización canónica, extracción de islas tabulares y verificación de integridad. Puede observar el flujo técnico en vivo en la consola de telemetría desplegada a la derecha.
+            </p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: 'var(--color-slate-gray)' }}>
+            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#38bdf8' }} />
+            <span>Sincronizando con staging_registros_crudos...</span>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <button 
-            type="button"
-            className="btn-pill-dark" 
-            onClick={() => setIsTelemetryOpen(true)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px', fontSize: '13px', fontWeight: 600 }}
-          >
-            <Terminal size={15} /> Ver Telemetría en Vivo
-          </button>
+      ) : (
+        <div 
+          className="card-mist" 
+          style={{ 
+            marginTop: '28px', 
+            padding: '28px 32px', 
+            borderRadius: 'var(--radius-cards)', 
+            borderLeft: '5px solid #D99B26',
+            border: '1px solid rgba(217, 155, 38, 0.25)',
+            backgroundColor: 'var(--color-alabaster, #FAF9F6)',
+            boxShadow: 'var(--shadow-subtle)',
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            flexWrap: 'wrap', 
+            gap: '24px' 
+          }}
+        >
+          <div style={{ flex: '1 1 540px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span 
+                style={{ 
+                  color: '#D99B26', 
+                  fontWeight: 700, 
+                  fontSize: '11.5px', 
+                  letterSpacing: '0.8px', 
+                  textTransform: 'uppercase',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <CheckSquare size={14} color="#D99B26" />
+                FASE 3: INTEGRIDAD Y RECONCILIACIÓN
+              </span>
+            </div>
+
+            <h3 
+              style={{ 
+                margin: '0 0 10px 0', 
+                fontFamily: "var(--font-signifier, 'Newsreader', Georgia, serif)", 
+                fontWeight: 400, 
+                fontStyle: 'normal',
+                fontSize: '24px', 
+                color: 'var(--color-ink-black)',
+                lineHeight: 1.25
+              }}
+            >
+              Revisión Humana y Doble Confianza (NER BETO & RapidFuzz)
+            </h3>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', marginTop: '12px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--color-slate-gray)' }}>
+                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--color-alert-green)' }} />
+                <strong style={{ color: 'var(--color-alert-green)', fontWeight: 600 }}>
+                  {(kpis.registros_normalizados || 1196).toLocaleString()} registros normalizados con éxito
+                </strong>
+              </div>
+
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--color-slate-gray)' }}>
+                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--color-alert-red)' }} />
+                <strong style={{ color: 'var(--color-alert-red)', fontWeight: 600 }}>
+                  {kpis.inconsistencias_estructurales || 52} inconsistencias derivadas a revisión humana
+                </strong>
+              </div>
+            </div>
+
+            <p style={{ margin: '10px 0 0 0', fontSize: '13px', color: 'var(--color-slate-gray)', lineHeight: 1.5, maxWidth: '640px' }}>
+              Los registros normalizados están listos en staging. Proceda a la reconciliación y validación cruzada multi-fuente para resolver ambigüedades en cédulas de identidad, nombres con sufijos y notas no asentadas.
+            </p>
+          </div>
+
+          <div>
+            <button 
+              type="button"
+              className="btn-pill-dark" 
+              onClick={() => navigate('/dataops/revision')}
+              style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '10px', 
+                padding: '12px 26px', 
+                fontSize: '14px', 
+                fontWeight: 600,
+                backgroundColor: '#0C1E33',
+                color: '#FFFFFF',
+                boxShadow: '0 4px 14px rgba(12, 30, 51, 0.25)',
+                cursor: 'pointer'
+              }}
+            >
+              <span>Continuar a Fase 3: Revisión Humana</span>
+              <ArrowRight size={16} />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Drawer Lateral de Telemetría (Estilo Fase 3 HUD) ── */}
       <PipelineTelemetryDrawer

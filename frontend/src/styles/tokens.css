@@ -73,18 +73,30 @@ body {
 h1, h2 {
   font-family: var(--font-signifier);
   font-weight: 400 !important;
+  font-style: normal !important;
+}
+
+em, i, cite, .serif-heading em, .serif-display em {
+  font-style: normal !important;
 }
 
 .serif-display {
   font-family: var(--font-signifier);
   font-weight: 400 !important;
+  font-style: normal !important;
   letter-spacing: -0.015em;
 }
 
 .serif-heading {
   font-family: var(--font-signifier);
   font-weight: 400 !important;
+  font-style: normal !important;
   letter-spacing: -0.01em;
+}
+
+.serif-signifier {
+  font-family: var(--font-signifier);
+  font-style: normal !important;
 }
 
 .btn-pill-dark {

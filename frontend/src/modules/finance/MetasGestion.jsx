@@ -6,12 +6,12 @@ import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import useKineticScroll from '../../hooks/useKineticScroll';
 
 const MOCK_METAS = [
-  { id: 1, codigo: 'POS-101', programa: 'Maestría en Big Data & DataOps', meta: '$ 500,000 USD', ejecutado: '$ 470,000 USD', porcentaje: 94.0, estado: 'En Meta' },
-  { id: 2, codigo: 'POS-102', programa: 'Maestría en Dirección y Gestión', meta: '$ 480,000 USD', ejecutado: '$ 512,000 USD', porcentaje: 106.7, estado: 'Superada' },
-  { id: 3, codigo: 'DIP-201', programa: 'Diplomado en BI & CMI Estratégico', meta: '$ 320,000 USD', ejecutado: '$ 345,000 USD', porcentaje: 107.8, estado: 'Superada' },
-  { id: 4, codigo: 'DIP-202', programa: 'Diplomado en Finanzas Corporativas', meta: '$ 280,000 USD', ejecutado: '$ 240,000 USD', porcentaje: 85.7, estado: 'En Riesgo' },
-  { id: 5, codigo: 'EXP-301', programa: 'Programa Experto en Python Analytics', meta: '$ 190,000 USD', ejecutado: '$ 188,000 USD', porcentaje: 98.9, estado: 'En Meta' },
-  { id: 6, codigo: 'CUR-401', programa: 'Curso Modelado Dimensional Kimball', meta: '$ 95,000 USD', ejecutado: '$ 102,000 USD', porcentaje: 107.4, estado: 'Superada' },
+  { id: 1, codigo: 'POS-101', programa: 'Maestría en Big Data & DataOps', meta: 'Bs. 500,000', ejecutado: 'Bs. 470,000', porcentaje: 94.0, estado: 'En Meta' },
+  { id: 2, codigo: 'POS-102', programa: 'Maestría en Dirección y Gestión', meta: 'Bs. 480,000', ejecutado: 'Bs. 512,000', porcentaje: 106.7, estado: 'Superada' },
+  { id: 3, codigo: 'DIP-201', programa: 'Diplomado en BI & CMI Estratégico', meta: 'Bs. 320,000', ejecutado: 'Bs. 345,000', porcentaje: 107.8, estado: 'Superada' },
+  { id: 4, codigo: 'DIP-202', programa: 'Diplomado en Finanzas Corporativas', meta: 'Bs. 280,000', ejecutado: 'Bs. 240,000', porcentaje: 85.7, estado: 'En Riesgo' },
+  { id: 5, codigo: 'EXP-301', programa: 'Programa Experto en Python Analytics', meta: 'Bs. 190,000', ejecutado: 'Bs. 188,000', porcentaje: 98.9, estado: 'En Meta' },
+  { id: 6, codigo: 'CUR-401', programa: 'Curso Modelado Dimensional Kimball', meta: 'Bs. 95,000', ejecutado: 'Bs. 102,000', porcentaje: 107.4, estado: 'Superada' },
 ];
 
 export default function MetasGestion() {
@@ -37,27 +37,27 @@ export default function MetasGestion() {
       >
         <KpiCard
           label="Meta Global Gestión 2026"
-          numberPrefix="$ "
+          numberPrefix="Bs. "
           number="3,800,000"
-          numberSuffix=" USD"
+          numberSuffix=""
           sublabel="Techo presupuestario institucional"
           badgeText="Presupuesto"
           badgeType="neutral"
         />
         <KpiCard
           label="Recaudación Acumulada"
-          numberPrefix="$ "
+          numberPrefix="Bs. "
           number="3,480,000"
-          numberSuffix=" USD"
+          numberSuffix=""
           sublabel="91.6% de la meta anual a septiembre"
           badgeText="En Trayectoria"
           badgeType="success"
         />
         <KpiCard
           label="Desviación Favorable"
-          numberPrefix="+$ "
+          numberPrefix="+Bs. "
           number="140,000"
-          numberSuffix=" USD"
+          numberSuffix=""
           sublabel="Superávit sobre proyección lineal"
           badgeText="Positivo"
           badgeType="peach"

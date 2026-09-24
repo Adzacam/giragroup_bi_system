@@ -3,7 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { FileSpreadsheet, FileText, Database, CheckCircle, AlertCircle, RefreshCw, Eye, AlertTriangle, Play } from 'lucide-react';
 import ResponsiveTable from '../../../components/shared/ResponsiveTable';
 
-export default function SourcesTable({ sources, onReprocess, onSelectDetail, isReprocessingId }) {
+export default function SourcesTable({
+  sources = [],
+  selectedIds = [],
+  onToggleSelect,
+  onSelectAll,
+  onClearSelection,
+  onProcessSelected,
+  onReprocess,
+  onSelectDetail,
+  isReprocessingId,
+}) {
   const navigate = useNavigate();
   const getSourceIcon = (type) => {
     const t = (type || '').toLowerCase();
@@ -43,15 +53,126 @@ export default function SourcesTable({ sources, onReprocess, onSelectDetail, isR
     );
   };
 
+  const isAllSelected = sources.length > 0 && sources.every((item) => selectedIds.includes(item.id));
+
   return (
     <div style={{ marginTop: '32px' }}>
-      <h3 className="serif-heading" style={{ fontSize: '20px', marginBottom: '16px', color: 'var(--color-ink-black)' }}>
-        Archivos Procesados Recientemente
-      </h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+        <h3 className="serif-heading" style={{ fontSize: '20px', margin: 0, color: 'var(--color-ink-black)' }}>
+          Archivos Procesados Recientemente
+        </h3>
+      </div>
+
+      {/* Barra de Acciones en Lote */}
+      {selectedIds.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 18px',
+            backgroundColor: '#f8fafc',
+            border: '1px solid #cbd5e1',
+            borderLeft: '4px solid var(--color-sienna-brown)',
+            borderRadius: '10px',
+            marginBottom: '16px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+            flexWrap: 'wrap',
+            gap: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'var(--color-ink-black)',
+                color: '#ffffff',
+                fontWeight: 700,
+                fontSize: '12px',
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+              }}
+            >
+              {selectedIds.length}
+            </span>
+            <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--color-ink-black)' }}>
+              {selectedIds.length === 1
+                ? '1 archivo seleccionado para procesar'
+                : `${selectedIds.length} archivos seleccionados para procesar`}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              type="button"
+              onClick={() => (onClearSelection ? onClearSelection() : onSelectAll && onSelectAll(false))}
+              className="btn-pill-ghost"
+              style={{
+                padding: '6px 14px',
+                fontSize: '12.5px',
+                color: 'var(--color-slate-gray)',
+                backgroundColor: '#ffffff',
+                border: '1px solid var(--color-border)',
+              }}
+            >
+              Limpiar Seleccionados
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (onProcessSelected) {
+                  onProcessSelected(selectedIds);
+                } else {
+                  navigate(`/dataops/procesamiento?autoRun=true&docIds=${selectedIds.join(',')}`);
+                }
+              }}
+              className="btn-pill-dark"
+              style={{
+                padding: '7px 20px',
+                fontSize: '13px',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '7px',
+                backgroundColor: 'var(--color-ink-black)',
+                color: '#ffffff',
+                borderRadius: '9999px',
+              }}
+            >
+              <Play size={12} fill="currentColor" />
+              Procesar Seleccionados en Fase 2 ({selectedIds.length}) →
+            </button>
+          </div>
+        </div>
+      )}
+
       <ResponsiveTable>
         <table className="steep-table">
           <thead>
             <tr>
+              <th style={{ width: '42px', textAlign: 'center' }}>
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  ref={(el) => {
+                    if (el) {
+                      el.indeterminate = selectedIds.length > 0 && selectedIds.length < sources.length;
+                    }
+                  }}
+                  onChange={(e) => onSelectAll && onSelectAll(e.target.checked)}
+                  aria-label="Seleccionar o deseleccionar todos los archivos"
+                  style={{
+                    accentColor: 'var(--color-sienna-brown)',
+                    width: '16px',
+                    height: '16px',
+                    cursor: 'pointer',
+                  }}
+                />
+              </th>
               <th>Nombre del Archivo</th>
               <th>Tipo de Fuente</th>
               <th>Registros Detectados</th>
@@ -63,9 +184,30 @@ export default function SourcesTable({ sources, onReprocess, onSelectDetail, isR
           <tbody>
             {sources.map((item) => {
               const isReprocessing = isReprocessingId === item.id;
+              const isSelected = selectedIds.includes(item.id);
 
               return (
-                <tr key={item.id}>
+                <tr
+                  key={item.id}
+                  style={{
+                    backgroundColor: isSelected ? 'rgba(180, 83, 9, 0.04)' : undefined,
+                    transition: 'background-color 0.15s ease',
+                  }}
+                >
+                  <td style={{ textAlign: 'center', width: '42px' }}>
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => onToggleSelect && onToggleSelect(item.id)}
+                      aria-label={`Seleccionar ${item.name}`}
+                      style={{
+                        accentColor: 'var(--color-sienna-brown)',
+                        width: '16px',
+                        height: '16px',
+                        cursor: 'pointer',
+                      }}
+                    />
+                  </td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       {getSourceIcon(item.type)}

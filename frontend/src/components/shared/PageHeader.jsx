@@ -34,7 +34,7 @@ export default function PageHeader({ category, title, italicWord, subtitle, desc
               lineHeight: 1.2,
             }}
           >
-            {title} {italicWord && <em>{italicWord}</em>}
+            {title} {italicWord && <span style={{ fontStyle: 'normal' }}>{italicWord}</span>}
           </h1>
           {displaySubtitle && (
             <p

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { UploadCloud } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { UploadCloud, Trash2 } from 'lucide-react';
 import { dataopsApi } from '../../api/dataopsApi';
 import SourceKpiCards from './components/SourceKpiCards';
 import SourcesTable from './components/SourcesTable';
@@ -9,8 +10,10 @@ import { useNotifications } from '../../context/NotificationContext';
 import { NOTIFICATION_CATEGORIES, NOTIFICATION_SEVERITIES } from '../../constants/systemConstants';
 
 export default function Fase1Fuentes() {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sources, setSources] = useState([]);
+  const [selectedSourceIds, setSelectedSourceIds] = useState([]);
   const [kpis, setKpis] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [reprocessingId, setReprocessingId] = useState(null);
@@ -22,8 +25,13 @@ export default function Fase1Fuentes() {
     setIsLoading(true);
     try {
       const res = await dataopsApi.getSources();
-      setSources(res.data || []);
+      const loadedSources = res.data || [];
+      setSources(loadedSources);
       setKpis(res.kpis || null);
+      // Mantener seleccionados solo los IDs que aún existan
+      setSelectedSourceIds((prev) =>
+        prev.filter((id) => loadedSources.some((s) => s.id === id))
+      );
     } catch (err) {
       console.error('Error al cargar fuentes:', err);
     } finally {
@@ -34,6 +42,78 @@ export default function Fase1Fuentes() {
   useEffect(() => {
     loadSources();
   }, []);
+
+  const handleToggleSelect = (id) => {
+    setSelectedSourceIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = (selectAll) => {
+    if (selectAll) {
+      setSelectedSourceIds(sources.map((s) => s.id));
+    } else {
+      setSelectedSourceIds([]);
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedSourceIds([]);
+  };
+
+  const handleProcessSelected = (ids) => {
+    navigate(`/dataops/procesamiento?autoRun=true&docIds=${ids.join(',')}`);
+  };
+
+  const handleClearProcessed = () => {
+    const completedSources = sources.filter((s) => s.status === 'completed');
+    if (completedSources.length === 0) {
+      notify({
+        title: 'Sin fuentes completadas',
+        message: 'No hay archivos en estado completado para limpiar de la cola activa.',
+        category: NOTIFICATION_CATEGORIES.CALIDAD_DATAOPS,
+        severity: NOTIFICATION_SEVERITIES.INFO,
+      });
+      return;
+    }
+
+    const remainingSources = sources.filter((s) => s.status !== 'completed');
+    setSources(remainingSources);
+
+    // Descartar de la selección los que fueron limpiados
+    setSelectedSourceIds((prev) =>
+      prev.filter((id) => remainingSources.some((s) => s.id === id))
+    );
+
+    // Actualizar KPIs de fuentes pendientes
+    setKpis((prev) => {
+      const remainingRecords = remainingSources.reduce(
+        (acc, cur) => acc + (Number(cur.records) || 0),
+        0
+      );
+      const remainingWarnings = remainingSources.filter(
+        (s) => s.status === 'warning' || s.status === 'error'
+      ).length;
+
+      return {
+        ...(prev || {}),
+        total_fuentes: remainingSources.length,
+        registros_detectados: remainingRecords,
+        archivos_advertencias: remainingWarnings,
+        ultima_sincronizacion: 'Cola actualizada',
+      };
+    });
+
+    notify({
+      title: 'Cola de Fuentes Limpia',
+      message: `Se removieron ${completedSources.length} archivo(s) procesados de la cola de trabajo activa.`,
+      category: NOTIFICATION_CATEGORIES.CALIDAD_DATAOPS,
+      severity: NOTIFICATION_SEVERITIES.INFO,
+      link: '/dataops/fuentes',
+    });
+  };
+
+  const completedCount = sources.filter((s) => s.status === 'completed').length;
 
   const handleReprocess = async (id) => {
     setReprocessingId(id);
@@ -67,15 +147,43 @@ export default function Fase1Fuentes() {
         title="Ingesta y Gestión de Fuentes Documentales"
         subtitle="Plataforma centralizada para la carga, validación preliminar y catalogación de archivos crudos (Excel, CSV, Moodle, Forms) antes de su procesamiento y normalización hacia el Data Warehouse."
         action={
-          <button 
-            className="btn-pill-dark" 
-            onClick={() => setIsModalOpen(true)}
-            type="button"
-            style={{ padding: '10px 24px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}
-          >
-            <UploadCloud size={18} />
-            + Nueva Carga de Archivo
-          </button>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              className="btn-pill-ghost"
+              onClick={handleClearProcessed}
+              type="button"
+              disabled={completedCount === 0}
+              style={{
+                padding: '9px 18px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '13.5px',
+                opacity: completedCount === 0 ? 0.45 : 1,
+                cursor: completedCount === 0 ? 'not-allowed' : 'pointer',
+                backgroundColor: '#ffffff',
+                border: '1px solid var(--color-border)',
+              }}
+              title={
+                completedCount === 0
+                  ? 'No hay archivos completados en la cola activa'
+                  : `Limpiar ${completedCount} archivo(s) completados de la lista activa`
+              }
+            >
+              <Trash2 size={15} />
+              Limpiar Procesados ({completedCount})
+            </button>
+
+            <button 
+              className="btn-pill-dark" 
+              onClick={() => setIsModalOpen(true)}
+              type="button"
+              style={{ padding: '10px 24px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}
+            >
+              <UploadCloud size={18} />
+              + Nueva Carga de Archivo
+            </button>
+          </div>
         }
       />
 
@@ -85,6 +193,11 @@ export default function Fase1Fuentes() {
       {/* ── Files Table ── */}
       <SourcesTable
         sources={sources}
+        selectedIds={selectedSourceIds}
+        onToggleSelect={handleToggleSelect}
+        onSelectAll={handleSelectAll}
+        onClearSelection={handleClearSelection}
+        onProcessSelected={handleProcessSelected}
         onReprocess={handleReprocess}
         onSelectDetail={(item) => setSelectedDetail(item)}
         isReprocessingId={reprocessingId}

@@ -22,7 +22,7 @@ export default function ProyeccionFinanciera() {
     labels: ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026', 'Q2 2026 (Proy)'],
     datasets: [
       {
-        label: 'Cobrado Real ($k)',
+        label: 'Cobrado Real (mil Bs.)',
         data: [280, 310, 340, 360, 380, ejecutado ? null : null],
         borderColor: '#0C1E33',
         backgroundColor: '#0C1E33',
@@ -30,7 +30,7 @@ export default function ProyeccionFinanciera() {
         tension: 0.15,
       },
       {
-        label: 'Pronóstico Flujo ($k)',
+        label: 'Pronóstico Flujo (mil Bs.)',
         data: [null, null, null, null, 380, ejecutado ? 412 : null],
         borderColor: '#D99B26',
         backgroundColor: '#D99B26',
