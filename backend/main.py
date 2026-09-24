@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from core.database import get_db
-from routers import riesgos, forecast, auth, users, notifications
+from routers import riesgos, forecast, auth, users, notifications, dataops
 from seed_users import seed_default_users
 
 logger = logging.getLogger("api_main")
@@ -61,6 +61,8 @@ app.include_router(forecast.router)
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(notifications.router)
+app.include_router(dataops.router)
+
 
 
 @app.get("/", summary="Portal API Root", tags=["Monitoreo"])

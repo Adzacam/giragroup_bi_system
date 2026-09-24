@@ -5,6 +5,9 @@ from .dim_modulo import DimModulo
 from .dim_origen import DimOrigenDocumental
 from .dim_categoria_financiera import DimCategoriaFinanciera
 from .user import User
+from .notification import Notification
+from .staging_registro import StagingRegistroCrudo
+from .log_pipeline import LogPipelineIngesta
 from .log_auditoria_nlp import LogAuditoriaNlp
 from .fact_rendimiento import FactRendimientoAcademico
 from .fact_financiero import FactSituacionFinanciera

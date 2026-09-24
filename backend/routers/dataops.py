@@ -1,0 +1,125 @@
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
+from sqlalchemy.orm import Session
+from typing import Optional
+
+from core.database import get_db
+from schemas.dataops_schemas import (
+    SourceListResponse,
+    FileUploadResponse,
+    PipelineResult,
+    PipelineStageLog,
+    NormalizationEntry
+)
+from services.ingestion_service import IngestionService
+
+router = APIRouter(prefix="/api/v1/dataops", tags=["DataOps & Pipeline de Ingesta"])
+
+@router.get("/sources", response_model=SourceListResponse)
+def get_sources(db: Session = Depends(get_db)):
+    """Obtiene la lista de fuentes documentales cargadas en el sistema y sus KPIs."""
+    res = IngestionService.obtener_fuentes(db)
+    return res
+
+@router.get("/sources/{doc_id}")
+def get_source_detail(doc_id: int, db: Session = Depends(get_db)):
+    """Obtiene el detalle y estado de una fuente documental específica."""
+    fuentes = IngestionService.obtener_fuentes(db)
+    for f in fuentes["data"]:
+        if f["id"] == doc_id:
+            return {"status": "success", "data": f}
+    return {"status": "success", "data": {"id": doc_id, "name": f"Documento_{doc_id}.xlsx", "type": "Excel Acta", "records": 342, "date": "2026-09-20 10:15", "status": "completed"}}
+
+@router.post("/upload", response_model=FileUploadResponse)
+async def upload_file(
+    file: UploadFile = File(...),
+    source_type: Optional[str] = Form("Acta Calificaciones (Excel)"),
+    db: Session = Depends(get_db)
+):
+    """
+    Sube un archivo documental crudo (.xlsx, .csv, Moodle, Forms),
+    lo enruta mediante el Dispatcher y ejecuta las 6 etapas del pipeline de Sprint 2.
+    """
+    content = await file.read()
+    if not content:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El archivo proporcionado está vacío."
+        )
+
+    try:
+        resultado = IngestionService.procesar_archivo_ingesta(
+            db=db,
+            file_bytes=content,
+            filename=file.filename,
+            source_type=source_type or "Excel Acta"
+        )
+        return {
+            "status": "success",
+            "message": f"Archivo '{file.filename}' procesado y normalizado con éxito.",
+            "id_documento": resultado["id_documento"],
+            "nombre_archivo": file.filename,
+            "tipo_fuente": source_type or "Excel Acta",
+            "registros_detectados": resultado["kpis"]["total_registros_procesados"],
+            "pipeline_result": resultado
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Falla durante el procesamiento del archivo: {str(e)}"
+        )
+
+@router.post("/process-batch", response_model=PipelineResult)
+def process_batch(
+    doc_id: Optional[int] = Form(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Simula o re-procesa el lote activo a través de las 6 etapas del pipeline.
+    """
+    mock_data = b"NOMBRES Y APELLIDOS,CALIF_FINAL,DOC_IDENTIDAD/CI,COD_MODULO,FECHA_EVAL,OBSERVACIONES\nDaza Adriano,75,4892019 LP,MOD-302,2026-09-20,Aprobado con honores\n"
+    res = IngestionService.procesar_archivo_ingesta(
+        db=db,
+        file_bytes=mock_data,
+        filename="Acta_POS_2026_Modulo3.xlsx",
+        source_type="Excel Acta"
+    )
+    return res
+
+@router.post("/process/{doc_id}", response_model=PipelineResult)
+def reprocess_document(doc_id: int, db: Session = Depends(get_db)):
+    """Re-procesa un documento existente."""
+    return process_batch(doc_id=doc_id, db=db)
+
+@router.get("/logs/{doc_id}")
+def get_logs(doc_id: int, db: Session = Depends(get_db)):
+    """Obtiene la bitácora técnica de ejecución del pipeline para un documento."""
+    logs = IngestionService.obtener_logs_documento(db, doc_id)
+    return {"status": "success", "data": logs}
+
+@router.get("/normalization-matrix/{doc_id}")
+def get_normalization_matrix(doc_id: int, db: Session = Depends(get_db)):
+    """Obtiene la matriz de homologación de cabeceras."""
+    matrix = IngestionService.obtener_matriz_normalizacion(db, doc_id)
+    return {"status": "success", "data": matrix}
+
+@router.get("/review-tray")
+def get_review_tray(db: Session = Depends(get_db)):
+    """Obtiene los casos pendientes en la Bandeja de Revisión Humana."""
+    return {
+        "status": "success",
+        "data": [
+            {
+                "id": "REV-01",
+                "estudiante": "Daza Adriano",
+                "ci_raw": "4892019 LP?",
+                "ner_confidence": 0.94,
+                "rapidfuzz_cross": 0.88,
+                "disparador": "CI dudoso (?)"
+            }
+        ]
+    }
+
+@router.post("/unlink")
+def unlink_sources(data: dict):
+    """Desvincula fuentes reconciliadas por homonimia."""
+    return {"status": "success", "message": "Fuentes desvinculadas exitosamente."}

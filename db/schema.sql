@@ -280,3 +280,34 @@ ALTER TABLE public.fact_rentabilidad ADD CONSTRAINT uq_fact_rentabilidad_categor
 ALTER TABLE public.fact_rendimiento_academico ADD CONSTRAINT uq_fact_rendimiento_estudiante_modulo UNIQUE (id_estudiante, id_modulo);
 ALTER TABLE public.fact_situacion_financiera ADD CONSTRAINT uq_fact_situacion_financiera_estudiante_tiempo UNIQUE (id_estudiante, id_tiempo);
 ALTER TABLE public.fact_cobranzas_proyectadas ADD CONSTRAINT uq_fact_cobranzas_proyectadas_estudiante_tiempo UNIQUE (id_estudiante, id_tiempo);
+
+-- ==========================================
+-- 8. TABLAS DE STAGING Y TRAZABILIDAD (DATAOPS SPRINT 2)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS public.staging_registros_crudos (
+    id SERIAL PRIMARY KEY,
+    id_documento INTEGER REFERENCES public.dim_origen_documental(id_documento) ON DELETE CASCADE,
+    hoja VARCHAR(200),
+    bloque_id INTEGER,
+    categoria VARCHAR(50),
+    texto_plano TEXT,
+    n_filas INTEGER,
+    fila_inicio INTEGER,
+    fila_fin INTEGER,
+    es_ruido BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_staging_doc_id ON public.staging_registros_crudos(id_documento);
+
+CREATE TABLE IF NOT EXISTS public.log_pipeline_ingesta (
+    id SERIAL PRIMARY KEY,
+    id_documento INTEGER REFERENCES public.dim_origen_documental(id_documento) ON DELETE CASCADE,
+    etapa VARCHAR(50) NOT NULL,
+    nivel VARCHAR(10) NOT NULL,
+    modulo VARCHAR(100),
+    mensaje TEXT NOT NULL,
+    tiempo_ms INTEGER,
+    metadata JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_log_pipeline_doc ON public.log_pipeline_ingesta(id_documento);
