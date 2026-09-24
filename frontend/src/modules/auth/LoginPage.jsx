@@ -1,60 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { authApi } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-
-const GiraLogo = () => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-    <svg 
-      width="46" 
-      height="46" 
-      viewBox="0 0 100 100" 
-      fill="none" 
-      style={{
-        borderRadius: '12px',
-        background: '#0c2340',
-        padding: '6px',
-        boxShadow: '0 4px 12px rgba(12, 35, 64, 0.2)'
-      }}
-    >
-      <path 
-        d="M 50 18 L 74 42 C 77 45, 77 51, 74 54 L 54 74 C 51 77, 45 77, 42 74 L 26 58 C 23 55, 23 49, 26 46 L 44 28 C 46 26, 49 26, 51 28 L 56 33 C 57 34, 57 36, 56 37 L 42 51 C 41 52, 41 54, 42 55 L 48 61 C 49 62, 51 62, 52 61 L 63 50 C 64 49, 64 47, 63 46 L 46 29" 
-        stroke="#ffffff" 
-        strokeWidth="9" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"
-      />
-      <text 
-        x="50" 
-        y="93" 
-        textAnchor="middle" 
-        fill="#d99b26" 
-        fontFamily="'Inter', sans-serif" 
-        fontSize="14" 
-        fontWeight="700" 
-        letterSpacing="1.5"
-      >
-        Group
-      </text>
-    </svg>
-    <div>
-      <div style={{ fontWeight: 700, letterSpacing: '1.5px', fontSize: '15px', color: 'var(--color-ink-black)' }}>
-        GIRAGROUP
-      </div>
-      <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-        BI &amp; Analytics Governance
-      </div>
-    </div>
-  </div>
-);
-
-const DEMO_ACCOUNTS = [
-  { label: 'Administrador del Sistema', email: 'admin.general@giragroup.bo', role: 'ADMIN' },
-  { label: 'Auditor de Calidad (DataOps)', email: 'auditor.dataops@giragroup.bo', role: 'AUDITOR_CALIDAD' },
-  { label: 'Director Académico', email: 'direccion.academica@giragroup.bo', role: 'DIRECTOR_ACADEMICO' },
-  { label: 'Analista Financiero', email: 'analista.finanzas@giragroup.bo', role: 'ANALISTA_FINANCIERO' },
-];
+import GiraLogo from '../../components/common/GiraLogo';
+import DemoAccountsSelector from './components/DemoAccountsSelector';
+import OtpInputForm from './components/OtpInputForm';
+import LoginHeroPane from './components/LoginHeroPane';
 
 export default function LoginPage() {
   const [step, setStep] = useState(1);
@@ -75,14 +27,6 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const otpRefs = useRef([]);
-
-  // Hero card repulsion and interactive background
-  const heroRef = useRef(null);
-  const card1Ref = useRef(null);
-  const card2Ref = useRef(null);
-  const [card1Offset, setCard1Offset] = useState({ x: 0, y: 0 });
-  const [card2Offset, setCard2Offset] = useState({ x: 0, y: 0 });
-  const [mousePos, setMousePos] = useState({ x: 340, y: 260 });
 
   // Dynamic greeting based on time of day and returning status
   const getGreetingData = () => {
@@ -116,52 +60,6 @@ export default function LoginPage() {
   };
 
   const greeting = getGreetingData();
-
-  // Mouse repulsion physics
-  const handleHeroMouseMove = (e) => {
-    if (!heroRef.current) return;
-    const rect = heroRef.current.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    setMousePos({ x: mx, y: my });
-
-    if (card1Ref.current) {
-      const c1Rect = card1Ref.current.getBoundingClientRect();
-      const c1x = c1Rect.left - rect.left + c1Rect.width / 2;
-      const c1y = c1Rect.top - rect.top + c1Rect.height / 2;
-      const dist1 = Math.hypot(mx - c1x, my - c1y);
-      if (dist1 < 160) {
-        const force = (160 - dist1) / 160;
-        const angle = Math.atan2(c1y - my, c1x - mx);
-        const ox = Math.max(-30, Math.min(30, Math.cos(angle) * force * 35));
-        const oy = Math.max(-25, Math.min(25, Math.sin(angle) * force * 30));
-        setCard1Offset({ x: ox, y: oy });
-      } else {
-        setCard1Offset({ x: 0, y: 0 });
-      }
-    }
-
-    if (card2Ref.current) {
-      const c2Rect = card2Ref.current.getBoundingClientRect();
-      const c2x = c2Rect.left - rect.left + c2Rect.width / 2;
-      const c2y = c2Rect.top - rect.top + c2Rect.height / 2;
-      const dist2 = Math.hypot(mx - c2x, my - c2y);
-      if (dist2 < 160) {
-        const force = (160 - dist2) / 160;
-        const angle = Math.atan2(c2y - my, c2x - mx);
-        const ox = Math.max(-30, Math.min(30, Math.cos(angle) * force * 35));
-        const oy = Math.max(-25, Math.min(25, Math.sin(angle) * force * 30));
-        setCard2Offset({ x: ox, y: oy });
-      } else {
-        setCard2Offset({ x: 0, y: 0 });
-      }
-    }
-  };
-
-  const handleHeroMouseLeave = () => {
-    setCard1Offset({ x: 0, y: 0 });
-    setCard2Offset({ x: 0, y: 0 });
-  };
 
   // Lockout timer
   useEffect(() => {
@@ -302,6 +200,12 @@ export default function LoginPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleSelectAccount = (selectedEmail, selectedPassword) => {
+    setEmail(selectedEmail);
+    setPassword(selectedPassword);
+    setError('');
+  };
+
   return (
     <div className="view-content-layer">
       <section className="login-split-grid">
@@ -435,120 +339,27 @@ export default function LoginPage() {
                 </button>
               </form>
             ) : (
-              <form onSubmit={handleStep2Submit} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', color: 'var(--color-slate-gray)' }}>
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      color: 'var(--color-ink-black)',
-                    }}
-                  >
-                    <ArrowLeft size={16} />
-                  </button>
-                  <span>Verificación 2FA para <strong>{email}</strong></span>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
-                  {otp.map((digit, i) => (
-                    <input
-                      key={i}
-                      ref={(el) => (otpRefs.current[i] = el)}
-                      type="text"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(i, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                      style={{
-                        width: '52px',
-                        height: '60px',
-                        textAlign: 'center',
-                        fontSize: '26px',
-                        fontFamily: 'var(--font-mono)',
-                        borderRadius: 'var(--radius-inputs)',
-                        border: '1px solid var(--color-border)',
-                        background: 'var(--color-fog-white)',
-                        outline: 'none',
-                      }}
-                      disabled={isLoading || otpTimeLeft <= 0}
-                    />
-                  ))}
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12.5px', color: 'var(--color-slate-gray)' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)' }}>
-                    {otpTimeLeft > 0 ? `Válido por: ${formatTime(otpTimeLeft)}` : 'Código expirado'}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleResend}
-                    disabled={resendCooldown > 0 || isLoading}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: resendCooldown > 0 ? 'var(--color-ash-gray)' : 'var(--color-ink-black)',
-                      cursor: resendCooldown > 0 ? 'not-allowed' : 'pointer',
-                      textDecoration: 'underline',
-                      fontSize: '12.5px',
-                    }}
-                  >
-                    {resendCooldown > 0 ? `Reenviar en ${resendCooldown}s` : 'Reenviar código'}
-                  </button>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading || otp.some((d) => !d) || otpTimeLeft <= 0}
-                  className="btn-pill-dark"
-                  style={{
-                    justifyContent: 'center',
-                    padding: '13px 24px',
-                    fontSize: '15px',
-                    opacity: isLoading || otp.some((d) => !d) || otpTimeLeft <= 0 ? 0.6 : 1,
-                  }}
-                >
-                  {isLoading ? 'Comprobando OTP...' : 'Verificar y Acceder'}
-                  {!isLoading && <ArrowRight size={16} />}
-                </button>
-              </form>
+              <OtpInputForm
+                email={email}
+                otp={otp}
+                onOtpChange={handleOtpChange}
+                onOtpKeyDown={handleOtpKeyDown}
+                otpRefs={otpRefs}
+                onSubmit={handleStep2Submit}
+                onBack={() => setStep(1)}
+                otpTimeLeft={otpTimeLeft}
+                resendCooldown={resendCooldown}
+                onResend={handleResend}
+                isLoading={isLoading}
+                formatTime={formatTime}
+              />
             )}
 
-            {/* ── Demo Accounts Quick Selector (Collapsible) ── */}
-            <div style={{ marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--color-border)' }}>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--color-slate-gray)', fontWeight: 600, marginBottom: '10px' }}>
-                Acceso Rápido de Demostración
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                {DEMO_ACCOUNTS.map((account) => (
-                  <button
-                    key={account.email}
-                    type="button"
-                    onClick={() => {
-                      setEmail(account.email);
-                      setPassword('giragroup2026');
-                      setError('');
-                    }}
-                    style={{
-                      padding: '8px 10px',
-                      borderRadius: '10px',
-                      border: email === account.email ? '1px solid var(--color-ink-black)' : '1px solid var(--color-border)',
-                      background: email === account.email ? 'var(--color-mist-gray)' : 'var(--color-paper-white)',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    <div style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--color-ink-black)' }}>{account.label}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--color-slate-gray)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{account.email}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* ── Demo Accounts Quick Selector (Modular) ── */}
+            <DemoAccountsSelector 
+              currentEmail={email}
+              onSelectAccount={handleSelectAccount}
+            />
           </div>
 
           <div style={{ fontSize: '12px', color: 'var(--color-ash-gray)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -560,119 +371,8 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* ── Panel Derecho Hero con Cards Animadas y Repulsión Confinada ──────────────── */}
-        <div 
-          ref={heroRef}
-          onMouseMove={handleHeroMouseMove}
-          onMouseLeave={handleHeroMouseLeave}
-          className="login-hero-pane" 
-          style={{
-            padding: '60px 48px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            position: 'relative',
-            overflow: 'hidden',
-            backdropFilter: 'blur(10px)',
-          }}
-        >
-          {/* Radial Peach Gradient Ambient Glow sensible al movimiento del mouse */}
-          <div className="login-hero-glow" style={{
-            position: 'absolute',
-            left: `${mousePos.x - 300}px`,
-            top: `${mousePos.y - 300}px`,
-            width: '600px',
-            height: '600px',
-            pointerEvents: 'none',
-            borderRadius: '50%',
-            transition: 'left 0.12s ease-out, top 0.12s ease-out',
-          }} />
-
-          {/* Floating Card 1: Inferencia NLP */}
-          <div 
-            ref={card1Ref}
-            className="floating-artifact kinetic-card in-view ambient-float-a"
-            style={{
-              padding: '24px 28px',
-              maxWidth: '440px',
-              marginBottom: '24px',
-              zIndex: 2,
-              boxShadow: 'var(--shadow-artifact)',
-              transform: `translate3d(${card1Offset.x}px, ${card1Offset.y}px, 0)`,
-              transition: 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <span style={{
-                fontSize: '11px',
-                textTransform: 'uppercase',
-                fontWeight: 600,
-                color: 'var(--color-ash-gray)',
-                letterSpacing: '0.8px',
-              }}>
-                Inferencia NLP en Tiempo Real
-              </span>
-              <span style={{
-                fontSize: '12px',
-                color: 'var(--color-sienna-brown)',
-                background: 'var(--color-blush-peach)',
-                padding: '3px 10px',
-                borderRadius: '9999px',
-                fontWeight: 600,
-              }}>
-                BETO v2.4
-              </span>
-            </div>
-            <div style={{
-              fontFamily: 'var(--font-signifier)',
-              fontSize: '22px',
-              lineHeight: 1.3,
-              color: 'var(--color-ink-black)',
-            }}>
-              "Doble validación de confianza: Extracción NER + RapidFuzz Cross-Source."
-            </div>
-            <div style={{
-              marginTop: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontSize: '13px',
-              color: 'var(--color-alert-green)',
-            }}>
-              <CheckCircle2 size={16} />
-              <span>Alineado a Doctrina Kimball (Sin ambigüedades)</span>
-            </div>
-          </div>
-
-          {/* Floating Card 2: Disparador Campo Crítico */}
-          <div 
-            ref={card2Ref}
-            className="card-peach-accent kinetic-card in-view ambient-float-b"
-            style={{
-              maxWidth: '460px',
-              marginLeft: '28px',
-              boxShadow: '0 18px 40px rgba(93, 42, 26, 0.08)',
-              zIndex: 3,
-              transform: `translate3d(${card2Offset.x}px, ${card2Offset.y}px, 0)`,
-              transition: 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease',
-            }}
-          >
-            <span style={{
-              fontSize: '11px',
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.9px',
-            }}>
-              Disparador de Integridad de Datos
-            </span>
-            <h3 className="serif-heading" style={{ fontSize: '24px', margin: '8px 0 12px 0' }}>
-              Si falta la Cédula de Identidad en cualquier fuente, la regla de validación fuerza revisión visual inmediata.
-            </h3>
-            <p style={{ fontSize: '13.5px', opacity: 0.9, lineHeight: 1.5 }}>
-              Garantía de integridad referencial para las dimensiones de alumnos y docentes en PostgreSQL.
-            </p>
-          </div>
-        </div>
+        {/* ── Panel Derecho Hero con Cards Animadas y Repulsión Confinada (Modular) ─────── */}
+        <LoginHeroPane />
       </section>
     </div>
   );

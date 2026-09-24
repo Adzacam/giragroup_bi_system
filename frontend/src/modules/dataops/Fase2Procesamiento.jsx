@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, FileUp, Split, Wand2, TableProperties, ShieldCheck, Database, Terminal, Trash2, CheckCircle2 } from 'lucide-react';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
+import { useNotifications } from '../../context/NotificationContext';
+import { NOTIFICATION_CATEGORIES, NOTIFICATION_SEVERITIES } from '../../constants/systemConstants';
 
 const INITIAL_LOGS = [
   { time: '10:15:02', type: 'INFO', module: 'dispatcher.py', msg: 'Iniciando pipeline para lote POS-2026-B_M3' },
@@ -25,6 +27,7 @@ const STEPS = [
 export default function Fase2Procesamiento() {
   const [activeStep, setActiveStep] = useState(-1);
   const [logs, setLogs] = useState(INITIAL_LOGS);
+  const { notify } = useNotifications();
   const terminalContainerRef = useRef(null);
 
   // Auto-scroll the terminal only during active simulation steps
@@ -60,6 +63,15 @@ export default function Fase2Procesamiento() {
         { time: new Date().toLocaleTimeString('en-US', { hour12: false }), type: 'SUCCESS', module: 'pipeline.py', msg: 'Simulación de pipeline finalizada.' }
       ]);
       setActiveStep(-1);
+
+      // Dispatch decoupled notification across system
+      notify({
+        title: 'Pipeline Lote POS-2026-B_M3 Procesado',
+        message: 'Normalización estructural completada con 1,196 registros homologados listos para staging.',
+        category: NOTIFICATION_CATEGORIES.CALIDAD_DATAOPS,
+        severity: NOTIFICATION_SEVERITIES.INFO,
+        link: '/dataops/revision'
+      });
     }, 4200);
   };
 

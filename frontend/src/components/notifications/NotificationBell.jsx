@@ -1,49 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import NotificationPopover from './NotificationPopover';
-import { notificationsApi } from '../../api/notificationsApi';
+import { useNotifications } from '../../context/NotificationContext';
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [notifications, setNotifications] = useState([]);
   const wrapperRef = useRef(null);
-
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await notificationsApi.getNotifications();
-        // Handle list or NotificationListResponse
-        const fetchedNotifications = res?.data || (Array.isArray(res) ? res : []);
-        setNotifications(fetchedNotifications);
-        setUnreadCount(fetchedNotifications.filter((n) => !n.is_read).length);
-      } catch (error) {
-        console.error('Failed to fetch notifications', error);
-        // Fallback demo notifications
-        const mockData = [
-          {
-            id: 1,
-            title: 'Disparador de Integridad de CI',
-            message: 'Inconsistencia en Cédula de Identidad en módulo POS-101. Requiere revisión.',
-            severity: 'CRITICAL',
-            is_read: false,
-            timeAgo: 'Hace 5 min',
-          },
-          {
-            id: 2,
-            title: 'DataOps Ingesta Completada',
-            message: 'Se procesaron 1,248 registros con 95.8% de tasa de limpieza.',
-            severity: 'INFO',
-            is_read: true,
-            timeAgo: 'Hace 2 horas',
-          },
-        ];
-        setNotifications(mockData);
-        setUnreadCount(1);
-      }
-    };
-    fetchNotifications();
-  }, []);
+  const { notifications, unreadCount, markAllRead } = useNotifications();
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -68,17 +31,6 @@ export default function NotificationBell() {
   const togglePopover = () => {
     requestBrowserPermission();
     setIsOpen((prev) => !prev);
-  };
-
-  const handleMarkAllRead = async () => {
-    try {
-      await notificationsApi.markAllRead();
-    } catch (error) {
-      console.error('Failed to mark all as read', error);
-    } finally {
-      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-      setUnreadCount(0);
-    }
   };
 
   return (
@@ -129,7 +81,7 @@ export default function NotificationBell() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 0 2px #ffffff',
+              boxShadow: '0 0 0 2px var(--color-paper-white)',
             }}
           >
             {unreadCount > 9 ? '9+' : unreadCount}
@@ -140,7 +92,7 @@ export default function NotificationBell() {
       {isOpen && (
         <NotificationPopover
           notifications={notifications}
-          onMarkAllRead={handleMarkAllRead}
+          onMarkAllRead={markAllRead}
           onClose={() => setIsOpen(false)}
         />
       )}

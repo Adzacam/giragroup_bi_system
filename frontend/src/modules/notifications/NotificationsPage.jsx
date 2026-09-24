@@ -1,54 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, CheckCheck } from 'lucide-react';
-import { notificationsApi } from '../../api/notificationsApi';
+import { useNotifications } from '../../context/NotificationContext';
+import { notificationService } from '../../services/notificationService';
 
-const NotificationsPage = () => {
-  const [notifications, setNotifications] = useState([]);
+export default function NotificationsPage() {
   const [filter, setFilter] = useState('ALL');
-  const [loading, setLoading] = useState(true);
-
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      const res = await notificationsApi.getNotifications();
-      const list = Array.isArray(res) ? res : (res?.data || []);
-      setNotifications(list);
-    } catch (error) {
-      console.error("Failed to fetch notifications", error);
-      // Mock fallback data for demo
-      setNotifications([
-        { id: 1, title: "Alerta de Integridad de Datos", message: "Inconsistencia detectada en validación de Cédula de Identidad en módulo POS-101.", severity: "CRITICAL", category: "Sistema", is_read: false, created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString() },
-        { id: 2, title: "Procesamiento de Ingesta Completo", message: "El pipeline DataOps finalizó exitosamente con 95.8% de tasa de limpieza.", severity: "INFO", category: "DataOps", is_read: true, created_at: new Date(Date.now() - 1000 * 60 * 120).toISOString() },
-        { id: 3, title: "Uso de Recursos en Docker", message: "El servicio PostgreSQL reporta 82% de utilización de memoria.", severity: "WARNING", category: "Infraestructura", is_read: false, created_at: new Date(Date.now() - 1000 * 60 * 360).toISOString() }
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  const handleMarkAllRead = async () => {
-    try {
-      await notificationsApi.markAllRead();
-      setNotifications(prev => (Array.isArray(prev) ? prev : []).map(n => ({ ...n, is_read: true })));
-    } catch (error) {
-      console.error("Failed to mark all as read", error);
-      setNotifications(prev => (Array.isArray(prev) ? prev : []).map(n => ({ ...n, is_read: true })));
-    }
-  };
-
-  const handleMarkAsRead = async (id) => {
-    try {
-      await notificationsApi.markAsRead(id);
-      setNotifications(prev => (Array.isArray(prev) ? prev : []).map(n => n.id === id ? { ...n, is_read: true } : n));
-    } catch (error) {
-      console.error("Failed to mark as read", error);
-      setNotifications(prev => (Array.isArray(prev) ? prev : []).map(n => n.id === id ? { ...n, is_read: true } : n));
-    }
-  };
+  const { notifications, unreadCount, loading, markAsRead, markAllRead } = useNotifications();
 
   const getSeverityIcon = (severity) => {
     switch (severity) {
@@ -59,22 +16,8 @@ const NotificationsPage = () => {
     }
   };
 
-  const notifsList = Array.isArray(notifications) ? notifications : [];
-
-  const filteredNotifications = filter === 'ALL' 
-    ? notifsList 
-    : notifsList.filter(n => n.severity === filter);
-
-  const groupedNotifications = filteredNotifications.reduce((acc, notif) => {
-    const rawDate = notif.created_at || notif.timestamp || new Date().toISOString();
-    const dateObj = new Date(rawDate);
-    const date = !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString() : 'Recientes';
-    if (!acc[date]) acc[date] = [];
-    acc[date].push(notif);
-    return acc;
-  }, {});
-
-  const unreadCount = notifsList.filter(n => !n.is_read).length;
+  const filteredNotifications = notificationService.filterNotifications(notifications, filter);
+  const groupedNotifications = notificationService.groupByDate(filteredNotifications);
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '32px 20px' }}>
@@ -90,7 +33,7 @@ const NotificationsPage = () => {
         </div>
         {unreadCount > 0 && (
           <button 
-            onClick={handleMarkAllRead}
+            onClick={markAllRead}
             className="btn-pill-dark"
             style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '13px' }}
           >
@@ -205,7 +148,7 @@ const NotificationsPage = () => {
                         {!notification.is_read && (
                           <button
                             type="button"
-                            onClick={() => handleMarkAsRead(notification.id)}
+                            onClick={() => markAsRead(notification.id)}
                             style={{
                               background: 'none',
                               border: 'none',
@@ -230,6 +173,4 @@ const NotificationsPage = () => {
       )}
     </div>
   );
-};
-
-export default NotificationsPage;
+}

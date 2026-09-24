@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useState } from 'react';
 import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import IsometricCanvasBackground from './components/canvas3d/IsometricCanvasBackground';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
@@ -144,7 +145,8 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <ThemeProvider>
-            <IsometricCanvasBackground />
+            <NotificationProvider>
+              <IsometricCanvasBackground />
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
                 {/* Public */}
@@ -261,6 +263,7 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
+            </NotificationProvider>
           </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>
