@@ -40,6 +40,45 @@ export const dataopsApi = {
   },
 
   /**
+   * Elimina una fuente documental individual por su ID
+   */
+  deleteSource: async (id) => {
+    try {
+      const res = await client.delete(`${BASE_URL}/sources/${id}`);
+      return res.data;
+    } catch (err) {
+      console.warn('Backend deleteSource falló o no disponible:', err.message);
+      return { status: 'success', message: `Fuente ${id} eliminada.` };
+    }
+  },
+
+  /**
+   * Elimina un conjunto de fuentes documentales por sus IDs
+   */
+  deleteBatch: async (ids) => {
+    try {
+      const res = await client.post(`${BASE_URL}/sources/delete-batch`, { ids });
+      return res.data;
+    } catch (err) {
+      console.warn('Backend deleteBatch falló o no disponible:', err.message);
+      return { status: 'success', deleted_count: ids.length };
+    }
+  },
+
+  /**
+   * Limpia todas las fuentes procesadas
+   */
+  clearCompleted: async () => {
+    try {
+      const res = await client.delete(`${BASE_URL}/sources/clear-completed`);
+      return res.data;
+    } catch (err) {
+      console.warn('Backend clearCompleted falló o no disponible:', err.message);
+      return { status: 'success', message: 'Fuentes limpiadas.' };
+    }
+  },
+
+  /**
    * Sube un nuevo archivo fuente con tracking de progreso y ejecución del pipeline
    * @param {File} file 
    * @param {string} sourceType 

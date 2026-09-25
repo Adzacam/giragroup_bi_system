@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileSpreadsheet, FileText, Database, CheckCircle, AlertCircle, RefreshCw, Eye, AlertTriangle, Play } from 'lucide-react';
+import { FileSpreadsheet, FileText, Database, CheckCircle, AlertCircle, RefreshCw, Eye, AlertTriangle, Play, Trash2 } from 'lucide-react';
 import ResponsiveTable from '../../../components/shared/ResponsiveTable';
 import { sileoToast } from '../../../services/sileoToast';
 
@@ -13,6 +13,8 @@ export default function SourcesTable({
   onProcessSelected,
   onReprocess,
   onSelectDetail,
+  onDeleteSource,
+  onDeleteSelected,
   isReprocessingId,
 }) {
   const navigate = useNavigate();
@@ -145,6 +147,26 @@ export default function SourcesTable({
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
               type="button"
+              onClick={() => onDeleteSelected && onDeleteSelected(selectedIds)}
+              className="btn-pill-ghost"
+              style={{
+                padding: '6px 14px',
+                fontSize: '12.5px',
+                color: 'var(--color-alert-red)',
+                backgroundColor: 'rgba(217, 56, 58, 0.08)',
+                border: '1px solid rgba(217, 56, 58, 0.25)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+              }}
+              title="Eliminar permanentemente los archivos seleccionados"
+            >
+              <Trash2 size={13} />
+              Eliminar Seleccionados ({selectedIds.length})
+            </button>
+
+            <button
+              type="button"
               onClick={() => (onClearSelection ? onClearSelection() : onSelectAll && onSelectAll(false))}
               className="btn-pill-ghost"
               style={{
@@ -155,7 +177,7 @@ export default function SourcesTable({
                 border: '1px solid var(--color-border)',
               }}
             >
-              Limpiar Seleccionados
+              Deseleccionar
             </button>
 
             <button
@@ -344,6 +366,36 @@ export default function SourcesTable({
                         title="Procesar inmediatamente en Fase 2"
                       >
                         <Play size={11} fill="currentColor" /> Procesar en Fase 2
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => onDeleteSource && onDeleteSource(item.id, item.name)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--color-slate-gray)',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '50%',
+                          transition: 'all 0.15s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = 'var(--color-alert-red)';
+                          e.currentTarget.style.backgroundColor = 'rgba(217, 56, 58, 0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = 'var(--color-slate-gray)';
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                        title={`Eliminar '${item.name}'`}
+                        aria-label={`Eliminar '${item.name}'`}
+                      >
+                        <Trash2 size={13} />
                       </button>
                     </div>
                   </td>

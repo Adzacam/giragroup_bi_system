@@ -66,57 +66,67 @@ export default function Fase1Fuentes() {
     navigate(`/dataops/procesamiento?autoRun=true&docIds=${ids.join(',')}`);
   };
 
-  const handleClearProcessed = () => {
+  const handleDeleteSource = async (id, name) => {
+    try {
+      await dataopsApi.deleteSource(id);
+      sileoToast.success({
+        title: 'Archivo Eliminado',
+        description: `El archivo '${name}' fue eliminado exitosamente del sistema.`,
+      });
+      await loadSources();
+    } catch (err) {
+      sileoToast.error({
+        title: 'Error al Eliminar',
+        description: `No se pudo eliminar el archivo: ${err.message}`,
+      });
+    }
+  };
+
+  const handleDeleteSelected = async (ids) => {
+    if (!ids || ids.length === 0) return;
+    try {
+      await dataopsApi.deleteBatch(ids);
+      sileoToast.success({
+        title: 'Lote Eliminado',
+        description: `Se eliminaron ${ids.length} archivo(s) seleccionados del sistema.`,
+      });
+      setSelectedSourceIds([]);
+      await loadSources();
+    } catch (err) {
+      sileoToast.error({
+        title: 'Error al Eliminar Lote',
+        description: `No se pudo completar la eliminación: ${err.message}`,
+      });
+    }
+  };
+
+  const handleClearProcessed = async () => {
     const completedSources = sources.filter((s) => s.status === 'completed');
     if (completedSources.length === 0) {
-      notify({
+      sileoToast.info({
         title: 'Sin fuentes completadas',
-        message: 'No hay archivos en estado completado para limpiar de la cola activa.',
-        category: NOTIFICATION_CATEGORIES.CALIDAD_DATAOPS,
-        severity: NOTIFICATION_SEVERITIES.INFO,
+        description: 'No hay archivos en estado completado para limpiar de la cola activa.',
       });
       return;
     }
 
-    sileoToast.success({
-      title: 'Cola de Fuentes Depurada',
-      description: `${completedSources.length} archivo(s) completados fueron retirados de la vista activa.`
-    });
+    try {
+      const ids = completedSources.map((s) => s.id);
+      await dataopsApi.deleteBatch(ids);
 
-    const remainingSources = sources.filter((s) => s.status !== 'completed');
-    setSources(remainingSources);
+      sileoToast.success({
+        title: 'Cola de Fuentes Depurada',
+        description: `${ids.length} archivo(s) completados fueron eliminados de la base de datos y la cola activa.`
+      });
 
-    // Descartar de la selección los que fueron limpiados
-    setSelectedSourceIds((prev) =>
-      prev.filter((id) => remainingSources.some((s) => s.id === id))
-    );
-
-    // Actualizar KPIs de fuentes pendientes
-    setKpis((prev) => {
-      const remainingRecords = remainingSources.reduce(
-        (acc, cur) => acc + (Number(cur.records) || 0),
-        0
-      );
-      const remainingWarnings = remainingSources.filter(
-        (s) => s.status === 'warning' || s.status === 'error'
-      ).length;
-
-      return {
-        ...(prev || {}),
-        total_fuentes: remainingSources.length,
-        registros_detectados: remainingRecords,
-        archivos_advertencias: remainingWarnings,
-        ultima_sincronizacion: 'Cola actualizada',
-      };
-    });
-
-    notify({
-      title: 'Cola de Fuentes Limpia',
-      message: `Se removieron ${completedSources.length} archivo(s) procesados de la cola de trabajo activa.`,
-      category: NOTIFICATION_CATEGORIES.CALIDAD_DATAOPS,
-      severity: NOTIFICATION_SEVERITIES.INFO,
-      link: '/dataops/fuentes',
-    });
+      setSelectedSourceIds((prev) => prev.filter((id) => !ids.includes(id)));
+      await loadSources();
+    } catch (err) {
+      sileoToast.error({
+        title: 'Error al Depurar Cola',
+        description: `Ocurrió un error al limpiar los archivos completados.`,
+      });
+    }
   };
 
   const completedCount = sources.filter((s) => s.status === 'completed').length;
@@ -206,6 +216,8 @@ export default function Fase1Fuentes() {
         onProcessSelected={handleProcessSelected}
         onReprocess={handleReprocess}
         onSelectDetail={(item) => setSelectedDetail(item)}
+        onDeleteSource={handleDeleteSource}
+        onDeleteSelected={handleDeleteSelected}
         isReprocessingId={reprocessingId}
       />
 
@@ -214,6 +226,7 @@ export default function Fase1Fuentes() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onUploadSuccess={() => loadSources()}
+        existingSources={sources}
       />
 
       {/* ── Detalle de Archivo Modal ── */}

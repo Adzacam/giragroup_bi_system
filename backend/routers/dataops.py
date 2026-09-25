@@ -15,6 +15,11 @@ from schemas.dataops_schemas import (
 )
 from services.ingestion_service import IngestionService
 
+from pydantic import BaseModel
+
+class DeleteBatchRequest(BaseModel):
+    ids: List[int]
+
 router = APIRouter(prefix="/api/v1/dataops", tags=["DataOps & Pipeline de Ingesta"])
 
 @router.get("/sources", response_model=SourceListResponse)
@@ -22,6 +27,29 @@ def get_sources(db: Session = Depends(get_db)):
     """Obtiene la lista de fuentes documentales cargadas en el sistema y sus KPIs."""
     res = IngestionService.obtener_fuentes(db)
     return res
+
+@router.delete("/sources/clear-completed")
+def clear_all_sources(db: Session = Depends(get_db)):
+    """Elimina todas las fuentes procesadas de la cola activa."""
+    deleted = IngestionService.limpiar_todas_las_fuentes(db)
+    return {"status": "success", "message": f"{deleted} fuente(s) eliminada(s) exitosamente.", "deleted_count": deleted}
+
+@router.post("/sources/delete-batch")
+def delete_batch_sources(payload: DeleteBatchRequest, db: Session = Depends(get_db)):
+    """Elimina un lote de fuentes documentales por sus IDs."""
+    deleted = IngestionService.eliminar_lote_fuentes(db, payload.ids)
+    return {"status": "success", "message": f"{deleted} fuente(s) eliminada(s) con éxito.", "deleted_count": deleted}
+
+@router.delete("/sources/{doc_id}")
+def delete_source(doc_id: int, db: Session = Depends(get_db)):
+    """Elimina una fuente documental individual por su ID."""
+    ok = IngestionService.eliminar_fuente(db, doc_id)
+    if not ok:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Fuente documental con ID {doc_id} no encontrada."
+        )
+    return {"status": "success", "message": f"Fuente {doc_id} eliminada exitosamente."}
 
 @router.get("/sources/{doc_id}")
 def get_source_detail(doc_id: int, db: Session = Depends(get_db)):

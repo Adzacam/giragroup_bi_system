@@ -16,6 +16,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
 import pandas as pd
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 
 # Asegurar import de pipeline/ y modelos
 RAIZ_PROYECTO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -146,14 +147,25 @@ class IngestionService:
         ext = os.path.splitext(filename)[1].lower()
         tipo_doc_db = "SHEET" if ext in [".xlsx", ".xls"] else "CSV"
 
-        # Crear registro en dim_origen_documental
-        origen = DimOrigenDocumental(
-            tipo_documento=tipo_doc_db,
-            nombre_archivo=filename
-        )
-        db.add(origen)
-        db.flush()
-        doc_id = origen.id_documento
+        # Verificar si el archivo ya existe en dim_origen_documental para evitar duplicados
+        origen = db.query(DimOrigenDocumental).filter_by(nombre_archivo=filename).first()
+        if origen:
+            # Reutilizar registro existente y limpiar datos previos de staging y logs
+            doc_id = origen.id_documento
+            origen.tipo_documento = tipo_doc_db
+            origen.fecha_procesamiento = func.now()
+            db.query(StagingRegistroCrudo).filter_by(id_documento=doc_id).delete()
+            db.query(LogPipelineIngesta).filter_by(id_documento=doc_id).delete()
+            db.flush()
+        else:
+            # Crear registro nuevo y único en dim_origen_documental
+            origen = DimOrigenDocumental(
+                tipo_documento=tipo_doc_db,
+                nombre_archivo=filename
+            )
+            db.add(origen)
+            db.flush()
+            doc_id = origen.id_documento
 
         logs_generados = []
         stages_info = []
@@ -383,36 +395,57 @@ class IngestionService:
     def obtener_fuentes(cls, db: Session) -> Dict[str, Any]:
         """
         Retorna la lista de fuentes documentales cargadas en el sistema junto con los KPIs.
-        Si la base de datos está vacía, devuelve los 4 archivos mock de referencia requeridos.
+        Deduplica por nombre de archivo para evitar repeticiones y respeta las eliminaciones del usuario.
         """
         docs = db.query(DimOrigenDocumental).order_by(DimOrigenDocumental.id_documento.desc()).all()
         
-        items = []
+        # Purgar y deduplicar archivos repetidos en la base de datos (mantener el más reciente)
+        vistos = set()
+        docs_unicos = []
+        duplicados_a_eliminar = []
         for d in docs:
-            # Conteo de registros en staging si existen
+            fname = (d.nombre_archivo or "").strip().lower()
+            if fname in vistos:
+                duplicados_a_eliminar.append(d.id_documento)
+            else:
+                vistos.add(fname)
+                docs_unicos.append(d)
+
+        if duplicados_a_eliminar:
+            try:
+                db.query(StagingRegistroCrudo).filter(StagingRegistroCrudo.id_documento.in_(duplicados_a_eliminar)).delete(synchronize_session=False)
+                db.query(LogPipelineIngesta).filter(LogPipelineIngesta.id_documento.in_(duplicados_a_eliminar)).delete(synchronize_session=False)
+                db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(duplicados_a_eliminar)).delete(synchronize_session=False)
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                logger.warning("No se pudieron purgar duplicados en DB: %s", e)
+
+        items = []
+        for d in docs_unicos:
             n_reg = db.query(StagingRegistroCrudo).filter_by(id_documento=d.id_documento).count()
             fecha_str = d.fecha_procesamiento.strftime("%Y-%m-%d %H:%M") if d.fecha_procesamiento else "Hoy, 10:15"
+            fname_lower = (d.nombre_archivo or "").lower()
+            ext = os.path.splitext(d.nombre_archivo or "")[1].lower()
+
+            if "moodle" in fname_lower or "grades" in fname_lower or ext == ".xml":
+                st = "Aula Moodle"
+            elif any(k in fname_lower for k in ["cobranza", "cartera", "mora", "cuotas"]):
+                st = "Cartera de Cobranza (Sheets)"
+            elif ext == ".csv" or any(k in fname_lower for k in ["form", "encuesta", "inscrip"]):
+                st = "Google Forms"
+            else:
+                st = "Excel Acta"
+
             items.append({
                 "id": d.id_documento,
                 "name": d.nombre_archivo or f"Archivo_{d.id_documento}.xlsx",
-                "type": "Excel Acta" if (d.tipo_documento == "SHEET") else "Google Forms",
+                "type": st,
                 "records": max(n_reg * 20, 240),
                 "date": fecha_str,
                 "status": "completed",
                 "sha256": hashlib.sha256(str(d.id_documento).encode()).hexdigest()[:8]
             })
-
-        # Si aún no hay suficientes documentos reales, agregar los representativos requeridos
-        if len(items) < 4:
-            mock_repr = [
-                {"id": 901, "name": "Acta_POS_2026_Modulo3.xlsx", "type": "Excel Acta", "records": 342, "date": "2026-09-20 10:15", "status": "completed", "sha256": "8f4e2a1b"},
-                {"id": 902, "name": "Respuestas_Encuesta_M3.csv", "type": "Google Forms", "records": 215, "date": "2026-09-19 14:30", "status": "completed", "sha256": "3a9c1b2c"},
-                {"id": 903, "name": "Moodle_Grades_Export.xml", "type": "Aula Moodle", "records": 691, "date": "2026-09-18 09:45", "status": "warning", "sha256": "c5f2d84a"},
-                {"id": 904, "name": "Cartera_Cobranza_Sep2026.xlsx", "type": "Cartera de Cobranza (Sheets)", "records": 412, "date": "2026-09-17 11:20", "status": "completed", "sha256": "7e3b9f01"},
-            ]
-            for m in mock_repr:
-                if not any(it["name"] == m["name"] for it in items):
-                    items.append(m)
 
         total_reg = sum(item["records"] for item in items)
         advertencias = sum(1 for item in items if item["status"] == "warning")
@@ -429,6 +462,38 @@ class IngestionService:
             "kpis": kpis,
             "data": items
         }
+
+    @classmethod
+    def eliminar_fuente(cls, db: Session, doc_id: int) -> bool:
+        """Elimina un documento y todos sus registros asociados de staging y logs."""
+        origen = db.query(DimOrigenDocumental).filter_by(id_documento=doc_id).first()
+        if not origen:
+            return False
+        db.query(StagingRegistroCrudo).filter_by(id_documento=doc_id).delete(synchronize_session=False)
+        db.query(LogPipelineIngesta).filter_by(id_documento=doc_id).delete(synchronize_session=False)
+        db.delete(origen)
+        db.commit()
+        return True
+
+    @classmethod
+    def eliminar_lote_fuentes(cls, db: Session, doc_ids: List[int]) -> int:
+        """Elimina un conjunto de documentos por sus IDs."""
+        if not doc_ids:
+            return 0
+        db.query(StagingRegistroCrudo).filter(StagingRegistroCrudo.id_documento.in_(doc_ids)).delete(synchronize_session=False)
+        db.query(LogPipelineIngesta).filter(LogPipelineIngesta.id_documento.in_(doc_ids)).delete(synchronize_session=False)
+        deleted = db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids)).delete(synchronize_session=False)
+        db.commit()
+        return deleted
+
+    @classmethod
+    def limpiar_todas_las_fuentes(cls, db: Session) -> int:
+        """Elimina todas las fuentes procesadas."""
+        db.query(StagingRegistroCrudo).delete(synchronize_session=False)
+        db.query(LogPipelineIngesta).delete(synchronize_session=False)
+        deleted = db.query(DimOrigenDocumental).delete(synchronize_session=False)
+        db.commit()
+        return deleted
 
     @classmethod
     def obtener_logs_documento(cls, db: Session, id_doc: int) -> List[Dict[str, Any]]:

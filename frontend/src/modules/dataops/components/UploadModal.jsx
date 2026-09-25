@@ -15,9 +15,9 @@ import {
   getSourceTypeMeta
 } from '../../../utils/fileTypeDetector';
 
-export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
+export default function UploadModal({ isOpen, onClose, onUploadSuccess, existingSources = [] }) {
   const navigate = useNavigate();
-  // filesList holds: [ { file: File, id: string, sourceType: string, isAutoDetected: boolean } ]
+  // filesList holds: [ { file: File, id: string, sourceType: string, isAutoDetected: boolean, isExistingInPhase1: boolean } ]
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [selectedToProcess, setSelectedToProcess] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -59,16 +59,39 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
     }
 
     setError('');
+    const existingInPhase1 = new Set((existingSources || []).map((s) => s.name?.toLowerCase()));
+
     setSelectedFiles((prev) => {
-      const existingNames = new Set(prev.map((item) => item.file.name));
-      const newItems = validFiles
-        .filter((file) => !existingNames.has(file.name))
-        .map((file) => ({
+      const existingNames = new Set(prev.map((item) => item.file.name.toLowerCase()));
+      const alreadyInPhase1 = [];
+      const newItems = [];
+
+      for (const file of validFiles) {
+        const lower = file.name.toLowerCase();
+        if (existingNames.has(lower)) {
+          continue; // Evitar duplicar el mismo archivo dos veces en el modal
+        }
+        existingNames.add(lower);
+        const exists = existingInPhase1.has(lower);
+        if (exists) {
+          alreadyInPhase1.push(file.name);
+        }
+        newItems.push({
           file,
           id: `${file.name}-${Date.now()}-${Math.random()}`,
           sourceType: detectSourceType(file),
           isAutoDetected: true,
-        }));
+          isExistingInPhase1: exists,
+        });
+      }
+
+      if (alreadyInPhase1.length > 0) {
+        sileoToast.info({
+          title: 'Archivo ya existente detectado',
+          description: `${alreadyInPhase1.length === 1 ? `El archivo '${alreadyInPhase1[0]}'` : `${alreadyInPhase1.length} archivos`} ya existe(n) en Fase 1. Al cargar se actualizará la versión existente sin crear duplicados.`,
+        });
+      }
+
       return [...prev, ...newItems];
     });
   };
@@ -720,24 +743,44 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
                         {getFileIcon(item.file.name)}
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
-                        <div
-                          style={{
-                            fontSize: '13.5px',
-                            fontWeight: 600,
-                            color: 'var(--color-ink-black)',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                          title={item.file.name}
-                        >
-                          {item.file.name}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span
+                            style={{
+                              fontSize: '13.5px',
+                              fontWeight: 600,
+                              color: 'var(--color-ink-black)',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              maxWidth: '220px',
+                            }}
+                            title={item.file.name}
+                          >
+                            {item.file.name}
+                          </span>
+                          {item.isExistingInPhase1 && (
+                            <span
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: 700,
+                                padding: '1px 7px',
+                                borderRadius: '9999px',
+                                backgroundColor: 'rgba(217, 155, 38, 0.15)',
+                                color: '#b45309',
+                                border: '1px solid rgba(217, 155, 38, 0.3)',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              Actualizará existente
+                            </span>
+                          )}
                         </div>
                         <div
                           style={{
                             fontSize: '11px',
                             color: 'var(--color-slate-gray)',
                             fontFamily: 'var(--font-mono)',
+                            marginTop: '2px',
                           }}
                         >
                           {formatFileSize(item.file.size)}
