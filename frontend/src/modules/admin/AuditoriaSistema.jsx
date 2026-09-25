@@ -8,6 +8,7 @@ import PageHeader from '../../components/shared/PageHeader';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import { auditApi } from '../../api/auditApi';
 import useKineticScroll from '../../hooks/useKineticScroll';
+import { sileoToast } from '../../services/sileoToast';
 
 export default function AuditoriaSistema() {
   useKineticScroll();
@@ -157,6 +158,12 @@ export default function AuditoriaSistema() {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+
+      sileoToast.icon({
+        title: 'Auditoría Exportada',
+        description: 'Archivo CSV descargado con firma criptográfica inmutable.',
+        icon: <Download size={16} color="#34d399" />
+      });
     } catch (err) {
       console.error('Error al exportar CSV:', err);
     } finally {

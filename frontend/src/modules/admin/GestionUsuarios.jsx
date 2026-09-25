@@ -6,6 +6,7 @@ import { usersApi } from '../../api/usersApi';
 import { useAuth } from '../../context/AuthContext';
 import useKineticScroll from '../../hooks/useKineticScroll';
 import ProfileModal from '../../components/profile/ProfileModal';
+import { sileoToast } from '../../services/sileoToast';
 
 const FALLBACK_USERS = [
   { id: 1, username: 'admin_general', email: 'admin.general@giragroup.bo', role: 'ADMIN', is_active: true },
@@ -71,12 +72,20 @@ export default function GestionUsuarios() {
   const handleDeleteUser = async (userToDelete) => {
     // Anti-orphan client-side checks
     if (userToDelete.id === currentUser?.id || userToDelete.email === currentUser?.email) {
+      sileoToast.error({
+        title: 'Violación de Política RBAC',
+        description: 'No se puede eliminar el único administrador activo del sistema.'
+      });
       setErrorMsg('No puedes auto-eliminar tu propia cuenta de administrador.');
       return;
     }
 
     const adminCount = users.filter((u) => u.role === 'ADMIN').length;
     if (userToDelete.role === 'ADMIN' && adminCount <= 1) {
+      sileoToast.error({
+        title: 'Violación de Política RBAC',
+        description: 'No se puede eliminar el único administrador activo del sistema.'
+      });
       setErrorMsg('Acción denegada: No se puede dejar el sistema sin al menos un Administrador activo.');
       return;
     }
@@ -266,13 +275,12 @@ export default function GestionUsuarios() {
 
                       <button
                         onClick={() => handleDeleteUser(u)}
-                        disabled={isSelf}
                         className="btn-pill-ghost"
                         style={{
                           padding: '6px 10px',
-                          color: isSelf ? '#d1d5db' : 'var(--color-alert-red)',
-                          borderColor: isSelf ? '#f3f4f6' : '#fee2e2',
-                          cursor: isSelf ? 'not-allowed' : 'pointer',
+                          color: isSelf ? '#9ca3af' : 'var(--color-alert-red)',
+                          borderColor: isSelf ? '#e5e7eb' : '#fee2e2',
+                          cursor: 'pointer',
                         }}
                         title={isSelf ? 'No puedes auto-eliminar tu propia cuenta' : 'Revocar usuario'}
                         type="button"

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { notificationService } from '../services/notificationService';
+import { sileoToast } from '../services/sileoToast';
 
 const NotificationContext = createContext({
   notifications: [],
@@ -48,6 +49,17 @@ export function NotificationProvider({ children }) {
   }, []);
 
   const notify = useCallback(({ title, message, category = 'Sistema', severity = 'INFO', link = null }) => {
+    const sev = (severity || 'INFO').toUpperCase();
+    if (sev === 'CRITICAL' || sev === 'ERROR') {
+      sileoToast.error({ title, description: message, position: 'top-center' });
+    } else if (sev === 'WARNING') {
+      sileoToast.warning({ title, description: message, position: 'top-center' });
+    } else if (sev === 'SUCCESS') {
+      sileoToast.success({ title, description: message, position: 'top-center' });
+    } else {
+      sileoToast.info({ title, description: message, position: 'top-center' });
+    }
+
     setNotifications((prev) => {
       const { updatedList } = notificationService.createNotification(
         { title, message, category, severity, link },

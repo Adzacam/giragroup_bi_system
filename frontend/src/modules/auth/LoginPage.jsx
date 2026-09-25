@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { authApi } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { sileoToast } from '../../services/sileoToast';
 import GiraLogo from '../../components/common/GiraLogo';
 import DemoAccountsSelector from './components/DemoAccountsSelector';
 import OtpInputForm from './components/OtpInputForm';
@@ -118,6 +119,10 @@ export default function LoginPage() {
       setOtpTimeLeft(300);
       setResendCooldown(60);
     } catch (err) {
+      sileoToast.error({
+        title: 'Acceso Denegado',
+        description: 'Credenciales inválidas o cuenta bloqueada por exceso de intentos.'
+      });
       if (err.response?.status === 423) {
         setIsLocked(true);
         setLockTimeLeft(300);
@@ -163,6 +168,11 @@ export default function LoginPage() {
 
     try {
       const res = await authApi.verifyOTP(tempToken, code, rememberDevice);
+      sileoToast.icon({
+        title: 'Identidad Verificada',
+        description: 'Código 2FA validado mediante canal seguro.',
+        icon: <ShieldCheck size={16} color="#60a5fa" />
+      });
       if (res.device_token && rememberDevice) {
         localStorage.setItem(`gira_trusted_device_${email}`, res.device_token);
       }

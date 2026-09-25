@@ -5,6 +5,7 @@ import {
   FileSpreadsheet, FileText, Trash2, Plus, Sparkles, ArrowRight
 } from 'lucide-react';
 import { dataopsApi } from '../../../api/dataopsApi';
+import { sileoToast } from '../../../services/sileoToast';
 import { useNotifications } from '../../../context/NotificationContext';
 import { NOTIFICATION_CATEGORIES, NOTIFICATION_SEVERITIES } from '../../../constants/systemConstants';
 import {
@@ -146,7 +147,13 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   };
 
   const handleGoToPhase2 = () => {
-    if (selectedToProcess.length === 0) return;
+    if (selectedToProcess.length === 0) {
+      sileoToast.warning({
+        title: 'Selección Requerida',
+        description: 'Debe marcar al menos un archivo para procesar en Fase 2.'
+      });
+      return;
+    }
     const result = uploadResult;
     if (onUploadSuccess) {
       onUploadSuccess(result);
@@ -184,9 +191,17 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
         sourceType: item.sourceType,
       }));
 
-      const res = await dataopsApi.uploadBatch(filesWithTypes, (pct) => {
+      const uploadBatchPromise = dataopsApi.uploadBatch(filesWithTypes, (pct) => {
         if (pct > 20 && pct < 90) setProgress(pct);
       });
+
+      sileoToast.promise(uploadBatchPromise, {
+        loading: { title: 'Ingestando Fuentes Documentales...', description: 'Calculando firmas SHA-256 y clasificando archivos' },
+        success: (res) => ({ title: 'Lote Ingerido con Éxito', description: `${res?.total_archivos || selectedFiles.length} archivo(s) catalogados y validados.` }),
+        error: (err) => ({ title: 'Falla de Ingesta', description: 'Error al procesar el lote documental en el servidor.' })
+      });
+
+      const res = await uploadBatchPromise;
 
       clearTimeout(t1);
       clearTimeout(t2);
@@ -204,7 +219,20 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
 
       setIsUploading(false);
       setUploadResult(res || { status: 'success' });
-      setSelectedToProcess(selectedFiles.map((item) => item.file.name));
+      const filesToProcess = selectedFiles.map((item) => item.file.name);
+      setSelectedToProcess(filesToProcess);
+
+      sileoToast.action({
+        title: 'Fuentes Listas para Pipeline',
+        description: `${filesToProcess.length} archivo(s) seleccionados. ¿Desea iniciar la normalización ahora?`,
+        button: {
+          title: 'Ir a Fase 2',
+          onClick: () => {
+            onClose();
+            navigate(`/dataops/procesamiento?autoRun=true&files=${encodeURIComponent(filesToProcess.join(','))}`);
+          }
+        }
+      });
     } catch (err) {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -518,7 +546,6 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
                 type="button"
                 className="btn-pill-dark"
                 onClick={handleGoToPhase2}
-                disabled={selectedToProcess.length === 0}
                 style={{
                   padding: '10px 24px',
                   fontSize: '13.5px',

@@ -6,6 +6,7 @@ import SourceKpiCards from './components/SourceKpiCards';
 import SourcesTable from './components/SourcesTable';
 import UploadModal from './components/UploadModal';
 import PageHeader from '../../components/shared/PageHeader';
+import { sileoToast } from '../../services/sileoToast';
 import { useNotifications } from '../../context/NotificationContext';
 import { NOTIFICATION_CATEGORIES, NOTIFICATION_SEVERITIES } from '../../constants/systemConstants';
 
@@ -76,6 +77,11 @@ export default function Fase1Fuentes() {
       });
       return;
     }
+
+    sileoToast.success({
+      title: 'Cola de Fuentes Depurada',
+      description: `${completedSources.length} archivo(s) completados fueron retirados de la vista activa.`
+    });
 
     const remainingSources = sources.filter((s) => s.status !== 'completed');
     setSources(remainingSources);

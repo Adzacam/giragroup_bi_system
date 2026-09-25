@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { Toaster } from 'sileo';
 import IsometricCanvasBackground from './components/canvas3d/IsometricCanvasBackground';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
@@ -147,6 +148,19 @@ function App() {
         <AuthProvider>
           <ThemeProvider>
             <NotificationProvider>
+              <Toaster
+                position="top-center"
+                options={{
+                  fill: "#17191c",
+                  roundness: 16,
+                  styles: {
+                    title: "text-white font-sans text-sm font-semibold",
+                    description: "text-slate-300 font-sans text-xs",
+                    badge: "bg-white/10",
+                    button: "bg-white/15 hover:bg-white/20 text-white font-medium text-xs rounded-full px-3 py-1",
+                  },
+                }}
+              />
               <IsometricCanvasBackground />
             <Suspense fallback={<LoadingFallback />}>
               <Routes>

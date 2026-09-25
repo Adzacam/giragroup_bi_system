@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, KeyRound, ShieldCheck, User, Check, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { authApi } from '../../api/authApi';
+import { sileoToast } from '../../services/sileoToast';
 import { useNotifications } from '../../context/NotificationContext';
 import { NOTIFICATION_CATEGORIES, NOTIFICATION_SEVERITIES } from '../../constants/systemConstants';
 
@@ -54,6 +55,10 @@ export default function ProfileModal({ isOpen, onClose }) {
     setLoading(true);
     try {
       await authApi.changePassword(currentPassword, newPassword, confirmPassword);
+      sileoToast.success({
+        title: 'Contraseña Actualizada',
+        description: 'Su contraseña institucional ha sido modificada con éxito.'
+      });
       setSuccess('¡Contraseña actualizada exitosamente!');
       setCurrentPassword('');
       setNewPassword('');

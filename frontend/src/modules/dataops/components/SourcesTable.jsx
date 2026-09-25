@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileSpreadsheet, FileText, Database, CheckCircle, AlertCircle, RefreshCw, Eye, AlertTriangle, Play } from 'lucide-react';
 import ResponsiveTable from '../../../components/shared/ResponsiveTable';
+import { sileoToast } from '../../../services/sileoToast';
 
 export default function SourcesTable({
   sources = [],
@@ -55,12 +56,47 @@ export default function SourcesTable({
 
   const isAllSelected = sources.length > 0 && sources.every((item) => selectedIds.includes(item.id));
 
+  const handleProcessSelectedClick = () => {
+    if (selectedIds.length === 0) {
+      sileoToast.warning({
+        title: 'Selección Requerida',
+        description: 'Debe marcar al menos un archivo de la tabla para continuar.'
+      });
+      return;
+    }
+    if (onProcessSelected) {
+      onProcessSelected(selectedIds);
+    } else {
+      navigate(`/dataops/procesamiento?autoRun=true&docIds=${selectedIds.join(',')}`);
+    }
+  };
+
   return (
     <div style={{ marginTop: '32px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
         <h3 className="serif-heading" style={{ fontSize: '20px', margin: 0, color: 'var(--color-ink-black)' }}>
           Archivos Procesados Recientemente
         </h3>
+        {selectedIds.length === 0 && (
+          <button
+            type="button"
+            onClick={handleProcessSelectedClick}
+            className="btn-pill-ghost"
+            style={{
+              padding: '6px 14px',
+              fontSize: '12.5px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: 'var(--color-slate-gray)',
+              border: '1px solid var(--color-border)',
+              backgroundColor: '#ffffff'
+            }}
+            title="Debe marcar al menos un archivo de la tabla para continuar"
+          >
+            <Play size={12} fill="currentColor" /> Procesar Seleccionados (0)
+          </button>
+        )}
       </div>
 
       {/* Barra de Acciones en Lote */}
@@ -123,13 +159,7 @@ export default function SourcesTable({
 
             <button
               type="button"
-              onClick={() => {
-                if (onProcessSelected) {
-                  onProcessSelected(selectedIds);
-                } else {
-                  navigate(`/dataops/procesamiento?autoRun=true&docIds=${selectedIds.join(',')}`);
-                }
-              }}
+              onClick={handleProcessSelectedClick}
               className="btn-pill-dark"
               style={{
                 padding: '7px 20px',

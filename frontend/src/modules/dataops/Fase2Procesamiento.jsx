@@ -6,6 +6,7 @@ import PipelineTelemetryDrawer from './components/PipelineTelemetryDrawer';
 import NormalizationMatrix from './components/NormalizationMatrix';
 import PageHeader from '../../components/shared/PageHeader';
 import { dataopsApi } from '../../api/dataopsApi';
+import { sileoToast } from '../../services/sileoToast';
 import { useNotifications } from '../../context/NotificationContext';
 import { NOTIFICATION_CATEGORIES, NOTIFICATION_SEVERITIES } from '../../constants/systemConstants';
 import { MOCK_INITIAL_LOGS } from '../../constants/mockData';
@@ -35,6 +36,10 @@ export default function Fase2Procesamiento() {
   const startPipelineExecution = async (docId = null, options = {}) => {
     if (isProcessing) return;
     setIsProcessing(true);
+    sileoToast.info({
+      title: 'Pipeline en Ejecución Automática',
+      description: 'Lote enrutado por Dispatcher hacia las 6 etapas de normalización.'
+    });
     // Auto-apertura inmediata de la consola de telemetría en vivo
     setIsTelemetryOpen(true);
     setActiveStep(0);
@@ -63,7 +68,13 @@ export default function Fase2Procesamiento() {
     try {
       // Invocación a endpoint real del backend
       const targetId = docId || activeDocId;
-      const res = await dataopsApi.processBatch(targetId);
+      const processPromise = dataopsApi.processBatch(targetId);
+      sileoToast.promise(processPromise, {
+        loading: { title: 'Ejecutando Pipeline DataOps...', description: 'Normalizando cabeceras canónicas e insertando a Staging' },
+        success: (res) => ({ title: 'Pipeline Completado con Éxito', description: 'Registros normalizados y confirmados en base de datos.' }),
+        error: (err) => ({ title: 'Falla en Pipeline', description: 'Error durante la normalización de registros.' })
+      });
+      const res = await processPromise;
       if (res) {
         if (res.kpis) {
           setKpis(res.kpis);
@@ -105,6 +116,15 @@ export default function Fase2Procesamiento() {
       ]);
       setActiveStep(-1);
       setIsProcessing(false);
+
+      sileoToast.action({
+        title: 'Normalización Finalizada',
+        description: '1,196 registros homologados y 52 casos para revisión humana.',
+        button: {
+          title: 'Ir a Fase 3',
+          onClick: () => navigate('/dataops/revision')
+        }
+      });
 
       // Desacoplar y emitir notificación global
       notify({

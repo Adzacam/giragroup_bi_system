@@ -19,6 +19,13 @@
   --color-alert-red: #d9383a;
   --color-alert-green: #1b8754;
   --color-alert-amber: #b45309;
+
+  /* ── Variables de Estado Sileo ── */
+  --sileo-state-success: #1b8754;
+  --sileo-state-error: #d9383a;
+  --sileo-state-warning: #d99b26;
+  --sileo-state-info: #0284c7;
+  --sileo-state-action: #5d2a1a;
   
   /* ── Tipografía Institucional Oficial ── */
   /* Display & Títulos H1/H2: Newsreader Serif (peso regular 400 constante) */

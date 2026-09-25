@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AlertTriangle, ShieldAlert, CheckCircle, Terminal, Unlink, Activity } from 'lucide-react';
 import BetoDrawer from './BetoDrawer';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import PageHeader from '../../components/shared/PageHeader';
+import { sileoToast } from '../../services/sileoToast';
 
 export default function Fase3RevisionHumana() {
   const [isBetoOpen, setIsBetoOpen] = useState(false);
+
+  useEffect(() => {
+    sileoToast.warning({
+      title: 'Revisión Humana Requerida',
+      description: 'Disparador GIRA-50: Cédula de Identidad con sufijo dudoso detectada.'
+    });
+  }, []);
 
   return (
     <div className="module-container" style={{ padding: '8px 0', maxWidth: '1200px', margin: '0 auto' }}>
