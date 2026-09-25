@@ -141,31 +141,120 @@ em, i, cite, .serif-heading em, .serif-display em {
   background-color: var(--color-mist-gray);
 }
 
-/* ── Sileo Toast Action Button Contrast ── */
-[data-sileo-button] {
-  font-family: var(--font-sohne) !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.2px;
+/* ── Sileo Toast Global Theming & Contrast Fix (Modo Claro y Oscuro) ── */
+[data-sileo-viewport] {
+  z-index: 99999 !important;
 }
 
-[data-sileo-button][data-state="action"] {
-  --sileo-btn-color: #0C1E33 !important;
-  --sileo-btn-bg: #D99B26 !important;
-  --sileo-btn-bg-hover: #F1B844 !important;
-  background-color: #D99B26 !important;
-  color: #0C1E33 !important;
-  padding: 4px 14px !important;
+[data-sileo-toast] {
+  font-family: var(--font-sohne) !important;
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.4)) !important;
+  overflow: visible !important;
+}
+
+/* Modo Claro: Fondo Ink Black refinado y borde */
+[data-sileo-pill],
+[data-sileo-body] {
+  fill: #17191C !important;
+  stroke: rgba(255, 255, 255, 0.12) !important;
+  stroke-width: 1px !important;
+}
+
+/* Modo Oscuro: Fondo Ink Black refinado y borde */
+[data-theme="dark"] [data-sileo-pill],
+[data-theme="dark"] [data-sileo-body] {
+  fill: #161920 !important;
+  stroke: rgba(255, 255, 255, 0.18) !important;
+  stroke-width: 1px !important;
+}
+
+/* Título de Sileo: Visible, brillante y legible en cualquier modo */
+[data-sileo-title] {
+  font-family: var(--font-sohne) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #FFFFFF !important;
+  letter-spacing: 0.2px !important;
+}
+
+[data-sileo-title][data-state="action"] {
+  color: #F1B844 !important;
+}
+
+[data-sileo-title][data-state="success"] {
+  color: #4ade80 !important;
+}
+
+[data-sileo-title][data-state="error"] {
+  color: #f87171 !important;
+}
+
+[data-sileo-title][data-state="warning"] {
+  color: #fbbf24 !important;
+}
+
+[data-sileo-title][data-state="info"] {
+  color: #60a5fa !important;
+}
+
+/* Badge de Icono de Sileo */
+[data-sileo-badge] {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Descripción de Sileo: NUNCA hereda color oscuro, SIEMPRE blanco/gris claro nítido */
+[data-sileo-description] {
+  font-family: var(--font-sohne) !important;
+  font-size: 12.5px !important;
+  line-height: 1.45 !important;
+  color: #E2E8F0 !important;
+  padding: 10px 14px 14px !important;
+}
+
+/* Botón de Acción Sileo: Botón dorado institucional visible y táctil */
+[data-sileo-button] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  margin-top: 10px !important;
+  padding: 6px 18px !important;
   border-radius: 9999px !important;
+  font-family: var(--font-sohne) !important;
   font-size: 12px !important;
   font-weight: 700 !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-  transition: all 0.15s ease-in-out;
+  letter-spacing: 0.3px !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  transition: all 0.15s ease-in-out !important;
+  border: none !important;
+  background-color: #D99B26 !important;
+  color: #0C1E33 !important;
+  box-shadow: 0 2px 8px rgba(217, 155, 38, 0.4) !important;
 }
 
-[data-sileo-button][data-state="action"]:hover {
+[data-sileo-button]:hover {
   background-color: #F1B844 !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(217, 155, 38, 0.35);
+  color: #0C1E33 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px rgba(217, 155, 38, 0.6) !important;
+}
+
+/* Clases utilitarias de fallback */
+.sileo-title,
+.text-white {
+  color: #FFFFFF !important;
+}
+
+.sileo-desc,
+.text-slate-300 {
+  color: #E2E8F0 !important;
+}
+
+.sileo-btn {
+  background-color: #D99B26 !important;
+  color: #0C1E33 !important;
+  font-weight: 700 !important;
 }
 
 .card-mist {

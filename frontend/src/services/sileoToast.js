@@ -5,10 +5,10 @@ const DEFAULT_OPTIONS = {
   fill: '#17191c',
   roundness: 16,
   styles: {
-    title: 'text-white font-sans text-sm font-semibold',
-    description: 'text-slate-300 font-sans text-xs',
-    badge: 'bg-white/10',
-    button: 'bg-white/15 hover:bg-white/20 text-white font-medium text-xs rounded-full px-3 py-1',
+    title: 'sileo-title',
+    description: 'sileo-desc',
+    badge: 'sileo-badge',
+    button: 'sileo-btn',
   },
 };
 
