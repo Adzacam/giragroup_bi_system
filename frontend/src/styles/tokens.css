@@ -257,6 +257,125 @@ em, i, cite, .serif-heading em, .serif-display em {
   font-weight: 700 !important;
 }
 
+/* ── Notification Popover Badges & Items (Light & Dark) ───────────── */
+.notif-popover-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 18px !important;
+  max-height: 18px !important;
+  padding: 0 8px !important;
+  border-radius: 9999px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.04em !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  align-self: flex-start !important;
+  margin-top: 1px !important;
+  box-sizing: border-box !important;
+}
+
+.notif-popover-badge.critical {
+  background-color: rgba(217, 56, 58, 0.1) !important;
+  color: #d9383a !important;
+  border: 1px solid rgba(217, 56, 58, 0.3) !important;
+}
+
+.notif-popover-badge.warning {
+  background-color: rgba(217, 155, 38, 0.12) !important;
+  color: #b45309 !important;
+  border: 1px solid rgba(217, 155, 38, 0.3) !important;
+}
+
+.notif-popover-badge.info {
+  background-color: rgba(2, 132, 199, 0.1) !important;
+  color: #0284c7 !important;
+  border: 1px solid rgba(2, 132, 199, 0.3) !important;
+}
+
+[data-theme="dark"] .notif-popover-badge.critical {
+  background-color: rgba(217, 56, 58, 0.22) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(248, 113, 113, 0.35) !important;
+}
+
+[data-theme="dark"] .notif-popover-badge.warning {
+  background-color: rgba(217, 155, 38, 0.22) !important;
+  color: #fde047 !important;
+  border-color: rgba(253, 224, 71, 0.35) !important;
+}
+
+[data-theme="dark"] .notif-popover-badge.info {
+  background-color: rgba(2, 132, 199, 0.22) !important;
+  color: #7dd3fc !important;
+  border-color: rgba(125, 211, 252, 0.35) !important;
+}
+
+.notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.notif-dot.critical {
+  background-color: #d9383a;
+  box-shadow: 0 0 0 2px rgba(217, 56, 58, 0.2);
+}
+
+.notif-dot.warning {
+  background-color: #d99b26;
+  box-shadow: 0 0 0 2px rgba(217, 155, 38, 0.2);
+}
+
+.notif-dot.info {
+  background-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+}
+
+[data-theme="dark"] .notif-dot.critical {
+  background-color: #f87171;
+  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.3);
+}
+
+[data-theme="dark"] .notif-dot.warning {
+  background-color: #fbbf24;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.3);
+}
+
+[data-theme="dark"] .notif-dot.info {
+  background-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
+}
+
+.notif-popover-item {
+  padding: 13px 18px !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  display: flex !important;
+  gap: 12px !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease !important;
+}
+
+.notif-popover-item.unread {
+  background-color: rgba(251, 225, 209, 0.2) !important;
+}
+
+[data-theme="dark"] .notif-popover-item.unread {
+  background-color: rgba(44, 26, 20, 0.35) !important;
+}
+
+.notif-popover-item:hover {
+  background-color: var(--color-mist-gray) !important;
+}
+
+[data-theme="dark"] .notif-popover-item:hover {
+  background-color: #1f242d !important;
+}
+
 .card-mist {
   background-color: rgba(242, 242, 243, 0.7);
   backdrop-filter: blur(8px);

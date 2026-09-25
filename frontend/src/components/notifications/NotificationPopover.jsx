@@ -10,19 +10,6 @@ export default function NotificationPopover({ notifications, onMarkAllRead, onCl
     navigate('/notificaciones');
   };
 
-  const getSeverityStyle = (severity) => {
-    switch (severity) {
-      case 'CRITICAL':
-        return { bg: '#fee2e2', dot: '#d9383a', border: '#fca5a5' };
-      case 'WARNING':
-        return { bg: '#fef3c7', dot: '#b45309', border: '#fcd34d' };
-      case 'INFO':
-        return { bg: '#e0f2fe', dot: '#0369a1', border: '#bae6fd' };
-      default:
-        return { bg: '#f3f4f6', dot: '#777b86', border: '#e5e7eb' };
-    }
-  };
-
   return (
     <div
       className="floating-artifact"
@@ -30,7 +17,7 @@ export default function NotificationPopover({ notifications, onMarkAllRead, onCl
         position: 'absolute',
         right: 0,
         top: 'calc(100% + 14px)',
-        width: '380px',
+        width: 'min(410px, calc(100vw - 32px))',
         backgroundColor: 'var(--color-paper-white)',
         backdropFilter: 'blur(16px)',
         borderRadius: 'var(--radius-cards)',
@@ -89,62 +76,41 @@ export default function NotificationPopover({ notifications, onMarkAllRead, onCl
         ) : (
           <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {notifications.map((notification) => {
-              const badge = getSeverityStyle(notification.severity);
+              const sev = (notification.severity || 'INFO').toLowerCase();
               return (
                 <li
                   key={notification.id}
-                  style={{
-                    padding: '14px 20px',
-                    borderBottom: '1px solid rgba(236, 236, 236, 0.7)',
-                    backgroundColor: !notification.is_read ? 'rgba(251, 225, 209, 0.18)' : 'transparent',
-                    display: 'flex',
-                    gap: '12px',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-mist-gray)')}
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor = !notification.is_read
-                      ? 'rgba(251, 225, 209, 0.18)'
-                      : 'transparent')
-                  }
+                  className={`notif-popover-item ${!notification.is_read ? 'unread' : ''}`}
                   onClick={handleViewAll}
                 >
-                  <div style={{ marginTop: '3px', flexShrink: 0 }}>
-                    <div
-                      style={{
-                        width: '9px',
-                        height: '9px',
-                        borderRadius: '50%',
-                        backgroundColor: badge.dot,
-                        boxShadow: `0 0 0 2px ${badge.border}`,
-                      }}
-                    />
+                  <div style={{ marginTop: '5px', flexShrink: 0 }}>
+                    <div className={`notif-dot ${sev}`} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: '13px',
-                        fontWeight: !notification.is_read ? 600 : 500,
-                        color: 'var(--color-ink-black)',
-                        marginBottom: '3px',
                         display: 'flex',
+                        alignItems: 'flex-start',
                         justifyContent: 'space-between',
+                        gap: '10px',
+                        marginBottom: '3px',
                       }}
                     >
-                      <span>{notification.title}</span>
                       <span
                         style={{
-                          fontSize: '10px',
-                          padding: '1px 6px',
-                          borderRadius: '9999px',
-                          backgroundColor: badge.bg,
-                          color: badge.dot,
-                          fontWeight: 600,
-                          fontFamily: 'var(--font-mono)',
+                          fontSize: '13px',
+                          fontWeight: !notification.is_read ? 600 : 500,
+                          color: 'var(--color-ink-black)',
+                          lineHeight: 1.35,
+                          flex: 1,
+                          minWidth: 0,
+                          wordBreak: 'break-word',
                         }}
                       >
-                        {notification.severity}
+                        {notification.title}
+                      </span>
+                      <span className={`notif-popover-badge ${sev}`}>
+                        {notification.severity || 'INFO'}
                       </span>
                     </div>
                     <div
