@@ -25,7 +25,7 @@
   --sileo-state-error: #d9383a;
   --sileo-state-warning: #d99b26;
   --sileo-state-info: #0284c7;
-  --sileo-state-action: #5d2a1a;
+  --sileo-state-action: #F1B844;
   
   /* ── Tipografía Institucional Oficial ── */
   /* Display & Títulos H1/H2: Newsreader Serif (peso regular 400 constante) */
@@ -49,7 +49,10 @@
 
 [data-theme="dark"] {
   --color-gira-gold: #F1B844;
+  --color-gira-gold-light: #F6C866;
   --color-ink-black: #FAF9F6;
+  --color-alabaster: #161920;
+  --color-pure-white: #161920;
   --color-paper-white: #161920;
   --color-mist-gray: #20252e;
   --color-fog-white: #0c0e12;
@@ -136,6 +139,33 @@ em, i, cite, .serif-heading em, .serif-display em {
 
 .btn-pill-ghost:hover {
   background-color: var(--color-mist-gray);
+}
+
+/* ── Sileo Toast Action Button Contrast ── */
+[data-sileo-button] {
+  font-family: var(--font-sohne) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.2px;
+}
+
+[data-sileo-button][data-state="action"] {
+  --sileo-btn-color: #0C1E33 !important;
+  --sileo-btn-bg: #D99B26 !important;
+  --sileo-btn-bg-hover: #F1B844 !important;
+  background-color: #D99B26 !important;
+  color: #0C1E33 !important;
+  padding: 4px 14px !important;
+  border-radius: 9999px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: all 0.15s ease-in-out;
+}
+
+[data-sileo-button][data-state="action"]:hover {
+  background-color: #F1B844 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(217, 155, 38, 0.35);
 }
 
 .card-mist {

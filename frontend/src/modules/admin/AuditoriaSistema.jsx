@@ -234,7 +234,7 @@ export default function AuditoriaSistema() {
             padding: '24px',
             borderRadius: 'var(--radius-cards)',
             border: '1px solid var(--color-border)',
-            backgroundColor: '#ffffff',
+            backgroundColor: 'var(--color-paper-white)',
           }}
         >
           <div
@@ -294,7 +294,7 @@ export default function AuditoriaSistema() {
             padding: '24px',
             borderRadius: 'var(--radius-cards)',
             border: '1px solid var(--color-border)',
-            backgroundColor: '#ffffff',
+            backgroundColor: 'var(--color-paper-white)',
           }}
         >
           <div
@@ -354,7 +354,7 @@ export default function AuditoriaSistema() {
             padding: '24px',
             borderRadius: 'var(--radius-cards)',
             border: '1px solid var(--color-border)',
-            backgroundColor: '#ffffff',
+            backgroundColor: 'var(--color-paper-white)',
           }}
         >
           <div
@@ -414,7 +414,7 @@ export default function AuditoriaSistema() {
             padding: '24px',
             borderRadius: 'var(--radius-cards)',
             border: '1px solid var(--color-border)',
-            backgroundColor: '#ffffff',
+            backgroundColor: 'var(--color-paper-white)',
           }}
         >
           <div
@@ -475,7 +475,7 @@ export default function AuditoriaSistema() {
           padding: '18px 24px',
           borderRadius: 'var(--radius-cards)',
           border: '1px solid var(--color-border)',
-          backgroundColor: '#ffffff',
+          backgroundColor: 'var(--color-paper-white)',
           marginBottom: '24px',
         }}
       >
@@ -630,7 +630,7 @@ export default function AuditoriaSistema() {
         style={{
           borderRadius: 'var(--radius-cards)',
           border: '1px solid var(--color-border)',
-          backgroundColor: '#ffffff',
+          backgroundColor: 'var(--color-paper-white)',
           overflow: 'hidden',
         }}
       >

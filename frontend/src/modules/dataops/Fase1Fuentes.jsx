@@ -166,8 +166,8 @@ export default function Fase1Fuentes() {
                 gap: '8px',
                 fontSize: '13.5px',
                 opacity: completedCount === 0 ? 0.45 : 1,
-                cursor: completedCount === 0 ? 'not-allowed' : 'pointer',
-                backgroundColor: '#ffffff',
+                backgroundColor: 'var(--color-paper-white)',
+                color: 'var(--color-ink-black)',
                 border: '1px solid var(--color-border)',
               }}
               title={

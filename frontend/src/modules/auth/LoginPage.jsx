@@ -4,6 +4,7 @@ import { authApi } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { sileoToast } from '../../services/sileoToast';
+import { notificationService } from '../../services/notificationService';
 import GiraLogo from '../../components/common/GiraLogo';
 import DemoAccountsSelector from './components/DemoAccountsSelector';
 import OtpInputForm from './components/OtpInputForm';
@@ -108,6 +109,7 @@ export default function LoginPage() {
         }
         const todayStr = new Date().toISOString().split('T')[0];
         localStorage.setItem('gira_last_login_date', todayStr);
+        notificationService.notifyPendingOnLogin(res.user.role, navigate);
         login(res.user, res.access_token);
         navigate('/');
         return;
@@ -180,6 +182,7 @@ export default function LoginPage() {
       localStorage.setItem('gira_last_login_date', todayStr);
 
       const token = res.access_token || res.token;
+      notificationService.notifyPendingOnLogin(res.user.role, navigate);
       login(res.user, token);
       navigate('/');
     } catch (err) {

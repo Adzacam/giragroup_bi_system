@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Play, Terminal, ArrowRight, CheckSquare, Activity } from 'lucide-react';
+import { Play, Terminal, ArrowRight, CheckSquare, Activity, FileSpreadsheet, FileText, FileCode, CheckCircle2, Clock, Layers } from 'lucide-react';
 import PipelineStepper from './components/PipelineStepper';
 import PipelineTelemetryDrawer from './components/PipelineTelemetryDrawer';
 import NormalizationMatrix from './components/NormalizationMatrix';
@@ -25,9 +25,51 @@ export default function Fase2Procesamiento() {
   });
   const [matrix, setMatrix] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [pipelineFinished, setPipelineFinished] = useState(false);
   const [activeDocId, setActiveDocId] = useState(() => {
     const d = searchParams.get('docId');
     return d ? Number(d) : null;
+  });
+
+  const [incomingFiles, setIncomingFiles] = useState(() => {
+    const rawFiles = searchParams.get('files');
+    if (rawFiles) {
+      const decoded = decodeURIComponent(rawFiles);
+      return decoded.split(',').filter(Boolean).map((name, i) => {
+        const lower = name.toLowerCase();
+        let format = 'Excel';
+        let size = '165 KB';
+        if (lower.endsWith('.csv')) format = 'Google Forms CSV';
+        else if (lower.endsWith('.xml')) format = 'Moodle XML';
+        else if (lower.includes('cobranza') || lower.includes('egresos')) format = 'Sheets Contable';
+        return {
+          id: i + 1,
+          name,
+          format,
+          size,
+          status: 'ready'
+        };
+      });
+    }
+    const docIds = searchParams.get('docIds');
+    if (docIds) {
+      return docIds.split(',').filter(Boolean).map((id, i) => ({
+        id: Number(id),
+        name: `Documento_Fuente_#${id}.xlsx`,
+        format: 'Excel Acta',
+        size: '184 KB',
+        status: 'ready'
+      }));
+    }
+    return [
+      { id: 1, name: 'Base_Academica_ARCA_TEST.xlsx', format: 'Excel Acta', size: '245 KB', status: 'ready' },
+      { id: 2, name: 'BBDD_Evaluacion_Docente_GiraGroup_TEST.xlsx', format: 'Excel Encuesta', size: '182 KB', status: 'ready' },
+      { id: 3, name: 'BD_Cobranzas_giraGroup.xlsx', format: 'Sheets Contable', size: '315 KB', status: 'ready' },
+      { id: 4, name: 'BD_Egresos_TEST.xlsx', format: 'Sheets Contable', size: '158 KB', status: 'ready' },
+      { id: 5, name: 'Reporte_Inscripciones_Forms.csv', format: 'Google Forms CSV', size: '94 KB', status: 'ready' },
+      { id: 6, name: 'Calificaciones_Aula_Moodle.xml', format: 'Moodle XML', size: '120 KB', status: 'ready' },
+      { id: 7, name: 'Acta_POS_2026_Modulo3.xlsx', format: 'Excel Acta', size: '198 KB', status: 'ready' }
+    ];
   });
 
   const autoRunProcessedRef = useRef(false);
@@ -36,6 +78,9 @@ export default function Fase2Procesamiento() {
   const startPipelineExecution = async (docId = null, options = {}) => {
     if (isProcessing) return;
     setIsProcessing(true);
+    setPipelineFinished(false);
+    setIncomingFiles(prev => prev.map(f => ({ ...f, status: 'processing' })));
+
     sileoToast.info({
       title: 'Pipeline en Ejecución Automática',
       description: 'Lote enrutado por Dispatcher hacia las 6 etapas de normalización.'
@@ -116,6 +161,8 @@ export default function Fase2Procesamiento() {
       ]);
       setActiveStep(-1);
       setIsProcessing(false);
+      setPipelineFinished(true);
+      setIncomingFiles(prev => prev.map(f => ({ ...f, status: 'completed' })));
 
       sileoToast.action({
         title: 'Normalización Finalizada',
@@ -191,10 +238,219 @@ export default function Fase2Procesamiento() {
         }
       />
 
+      {/* ── Panel de Lote Documental Activo para Homologación ── */}
+      <div 
+        className="floating-artifact"
+        style={{
+          padding: '20px 24px',
+          borderRadius: 'var(--radius-cards)',
+          marginBottom: '28px',
+          border: '1px solid var(--color-border)',
+          backgroundColor: 'var(--color-paper-white)',
+          boxShadow: 'var(--shadow-subtle)'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(217, 155, 38, 0.12)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--color-gira-gold)'
+            }}>
+              <Layers size={22} />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h3 className="serif-heading" style={{ fontSize: '18px', margin: 0, color: 'var(--color-ink-black)' }}>
+                  Lote Documental para Procesamiento
+                </h3>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  padding: '2px 8px',
+                  borderRadius: '9999px',
+                  backgroundColor: 'rgba(217, 155, 38, 0.15)',
+                  color: 'var(--color-gira-gold)',
+                  letterSpacing: '0.4px'
+                }}>
+                  {incomingFiles.length} ARCHIVO{incomingFiles.length === 1 ? '' : 'S'}
+                </span>
+              </div>
+              <p style={{ margin: '3px 0 0', fontSize: '12.5px', color: 'var(--color-slate-gray)' }}>
+                Fuentes documentales seleccionadas para parseo UTF-8, clasificación por dispatcher, sanitizado y homologación canónica.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {isProcessing ? (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'var(--color-alert-amber)',
+                backgroundColor: 'rgba(245, 158, 11, 0.12)',
+                padding: '5px 14px',
+                borderRadius: '9999px'
+              }}>
+                <Activity size={13} className="spin" /> Pipeline en Ejecución ({incomingFiles.length} archivos)...
+              </span>
+            ) : pipelineFinished ? (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'var(--color-alert-green)',
+                backgroundColor: 'rgba(34, 197, 94, 0.12)',
+                padding: '5px 14px',
+                borderRadius: '9999px'
+              }}>
+                <CheckCircle2 size={13} /> {incomingFiles.length} Archivos Homologados con Éxito
+              </span>
+            ) : (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'var(--color-slate-gray)',
+                backgroundColor: 'var(--color-mist-gray)',
+                padding: '5px 14px',
+                borderRadius: '9999px'
+              }}>
+                <Clock size={13} /> Preparado para Iniciar
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Rejilla de archivos del lote */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: '12px',
+          maxHeight: '260px',
+          overflowY: 'auto',
+          paddingRight: '4px'
+        }}>
+          {incomingFiles.map((file) => {
+            const isXlsx = file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls');
+            const isCsv = file.name.toLowerCase().endsWith('.csv');
+            const isXml = file.name.toLowerCase().endsWith('.xml');
+
+            return (
+              <div
+                key={file.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '10px 14px',
+                  backgroundColor: 'var(--color-fog-white)',
+                  border: file.status === 'processing' 
+                    ? '1px solid var(--color-gira-gold)' 
+                    : file.status === 'completed'
+                    ? '1px solid rgba(34, 197, 94, 0.3)'
+                    : '1px solid var(--color-border)',
+                  borderRadius: '10px',
+                  gap: '10px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+                  <div style={{ flexShrink: 0 }}>
+                    {isXlsx ? (
+                      <FileSpreadsheet size={18} color="var(--color-alert-green)" />
+                    ) : isCsv ? (
+                      <FileText size={18} color="#0284c7" />
+                    ) : isXml ? (
+                      <FileCode size={18} color="#9333ea" />
+                    ) : (
+                      <FileText size={18} color="var(--color-slate-gray)" />
+                    )}
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{
+                      fontSize: '12.5px',
+                      fontWeight: 600,
+                      color: 'var(--color-ink-black)',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }} title={file.name}>
+                      {file.name}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>
+                      {file.format} · <span style={{ fontFamily: 'var(--font-mono)' }}>{file.size}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ flexShrink: 0 }}>
+                  {file.status === 'processing' ? (
+                    <span style={{
+                      fontSize: '10.5px',
+                      fontWeight: 600,
+                      color: 'var(--color-gira-gold)',
+                      backgroundColor: 'rgba(217, 155, 38, 0.12)',
+                      padding: '3px 8px',
+                      borderRadius: '9999px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <Activity size={10} className="spin" /> Normalizando
+                    </span>
+                  ) : file.status === 'completed' ? (
+                    <span style={{
+                      fontSize: '10.5px',
+                      fontWeight: 600,
+                      color: 'var(--color-alert-green)',
+                      backgroundColor: 'rgba(34, 197, 94, 0.12)',
+                      padding: '3px 8px',
+                      borderRadius: '9999px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <CheckCircle2 size={10} /> Homologado
+                    </span>
+                  ) : (
+                    <span style={{
+                      fontSize: '10.5px',
+                      fontWeight: 600,
+                      color: 'var(--color-slate-gray)',
+                      backgroundColor: 'var(--color-mist-gray)',
+                      padding: '3px 8px',
+                      borderRadius: '9999px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <Clock size={10} /> En cola
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* ── Workflow Stepper (6 nodos con animación) ── */}
       <PipelineStepper
         activeStep={activeStep}
-        lotName={activeDocId ? `Documento: #${activeDocId}` : "Lote: POS-2026-B_M3"}
+        lotName={incomingFiles.length > 0 ? `Lote: ${incomingFiles.length} archivos activos` : (activeDocId ? `Documento: #${activeDocId}` : "Lote: POS-2026-B_M3")}
       />
 
       {/* ── KPI Summary Cards ── */}
@@ -278,9 +534,9 @@ export default function Fase2Procesamiento() {
             marginTop: '28px', 
             padding: '28px 32px', 
             borderRadius: 'var(--radius-cards)', 
-            borderLeft: '5px solid #D99B26',
+            borderLeft: '5px solid var(--color-gira-gold)',
             border: '1px solid rgba(217, 155, 38, 0.25)',
-            backgroundColor: 'var(--color-alabaster, #FAF9F6)',
+            backgroundColor: 'var(--color-paper-white)',
             boxShadow: 'var(--shadow-subtle)',
             display: 'flex', 
             justifyContent: 'space-between', 
@@ -293,7 +549,7 @@ export default function Fase2Procesamiento() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <span 
                 style={{ 
-                  color: '#D99B26', 
+                  color: 'var(--color-gira-gold)', 
                   fontWeight: 700, 
                   fontSize: '11.5px', 
                   letterSpacing: '0.8px', 
@@ -303,7 +559,7 @@ export default function Fase2Procesamiento() {
                   gap: '6px'
                 }}
               >
-                <CheckSquare size={14} color="#D99B26" />
+                <CheckSquare size={14} color="var(--color-gira-gold)" />
                 FASE 3: INTEGRIDAD Y RECONCILIACIÓN
               </span>
             </div>
@@ -355,9 +611,9 @@ export default function Fase2Procesamiento() {
                 padding: '12px 26px', 
                 fontSize: '14px', 
                 fontWeight: 600,
-                backgroundColor: '#0C1E33',
-                color: '#FFFFFF',
-                boxShadow: '0 4px 14px rgba(12, 30, 51, 0.25)',
+                backgroundColor: 'var(--color-ink-black)',
+                color: 'var(--color-paper-white)',
+                boxShadow: 'var(--shadow-subtle)',
                 cursor: 'pointer'
               }}
             >

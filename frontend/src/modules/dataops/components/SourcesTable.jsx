@@ -90,7 +90,7 @@ export default function SourcesTable({
               gap: '6px',
               color: 'var(--color-slate-gray)',
               border: '1px solid var(--color-border)',
-              backgroundColor: '#ffffff'
+              backgroundColor: 'var(--color-paper-white)'
             }}
             title="Debe marcar al menos un archivo de la tabla para continuar"
           >
@@ -107,12 +107,12 @@ export default function SourcesTable({
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '12px 18px',
-            backgroundColor: '#f8fafc',
-            border: '1px solid #cbd5e1',
-            borderLeft: '4px solid var(--color-sienna-brown)',
-            borderRadius: '10px',
+            backgroundColor: 'var(--color-paper-white)',
+            border: '1px solid var(--color-border)',
+            borderLeft: '4px solid var(--color-gira-gold)',
+            borderRadius: '12px',
             marginBottom: '16px',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+            boxShadow: 'var(--shadow-subtle)',
             flexWrap: 'wrap',
             gap: '12px',
           }}
@@ -123,13 +123,14 @@ export default function SourcesTable({
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: 'var(--color-ink-black)',
-                color: '#ffffff',
+                backgroundColor: 'var(--color-gira-gold)',
+                color: '#0C1E33',
                 fontWeight: 700,
                 fontSize: '12px',
-                width: '24px',
-                height: '24px',
+                width: '26px',
+                height: '26px',
                 borderRadius: '50%',
+                boxShadow: '0 2px 6px rgba(217, 155, 38, 0.35)',
               }}
             >
               {selectedIds.length}
@@ -150,7 +151,7 @@ export default function SourcesTable({
                 padding: '6px 14px',
                 fontSize: '12.5px',
                 color: 'var(--color-slate-gray)',
-                backgroundColor: '#ffffff',
+                backgroundColor: 'var(--color-mist-gray)',
                 border: '1px solid var(--color-border)',
               }}
             >
@@ -169,7 +170,7 @@ export default function SourcesTable({
                 alignItems: 'center',
                 gap: '7px',
                 backgroundColor: 'var(--color-ink-black)',
-                color: '#ffffff',
+                color: 'var(--color-paper-white)',
                 borderRadius: '9999px',
               }}
             >
