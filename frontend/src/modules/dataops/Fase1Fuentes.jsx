@@ -28,7 +28,15 @@ export default function Fase1Fuentes() {
       const res = await dataopsApi.getSources();
       const loadedSources = res.data || [];
       setSources(loadedSources);
-      setKpis(res.kpis || null);
+      
+      const realKpis = res.kpis || {
+        total_fuentes: loadedSources.length,
+        registros_detectados: loadedSources.reduce((sum, s) => sum + (s.records || 0), 0),
+        archivos_advertencias: loadedSources.filter(s => s.status === 'warning').length,
+        ultima_sincronizacion: loadedSources.length > 0 ? 'Hoy, sincronizado' : 'Sin registros'
+      };
+      setKpis(realKpis);
+
       // Mantener seleccionados solo los IDs que aún existan
       setSelectedSourceIds((prev) =>
         prev.filter((id) => loadedSources.some((s) => s.id === id))

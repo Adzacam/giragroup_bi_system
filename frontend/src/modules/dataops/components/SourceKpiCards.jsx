@@ -2,12 +2,10 @@ import React from 'react';
 import { FileSpreadsheet, ListTree, AlertCircle, Clock } from 'lucide-react';
 
 export default function SourceKpiCards({ kpis }) {
-  const {
-    total_fuentes = 14,
-    registros_detectados = 1248,
-    archivos_advertencias = 2,
-    ultima_sincronizacion = 'Hoy, 08:30 AM'
-  } = kpis || {};
+  const total_fuentes = kpis?.total_fuentes ?? 0;
+  const registros_detectados = kpis?.registros_detectados ?? 0;
+  const archivos_advertencias = kpis?.archivos_advertencias ?? 0;
+  const ultima_sincronizacion = kpis?.ultima_sincronizacion || (total_fuentes > 0 ? 'Hoy, sincronizado' : 'Sin registros');
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' }}>
