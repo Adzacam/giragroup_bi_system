@@ -99,6 +99,10 @@ def obtener_pronostico_alumnos(
             "ic_upper": u
         })
 
+    # Persistir en fact_forecast para acelerar subsecuentes lecturas
+    if db is not None:
+        _persistir_en_fact_forecast(db, caso_uso, proyecciones, res["metodo"], res["horizonte_meses"])
+
     return {
         "caso_uso": caso_uso,
         "tipo_solicitado": tipo_upper,
@@ -109,6 +113,49 @@ def obtener_pronostico_alumnos(
         "aic": res["aic"],
         "proyecciones": proyecciones
     }
+
+
+def _persistir_en_fact_forecast(db: Session, caso_uso: str, proyecciones: list, metodo: str, horizonte: int):
+    try:
+        from models.fact_forecast import FactForecast
+        from models.dim_tiempo import DimTiempo
+        for item in proyecciones:
+            periodo = item.get("periodo")
+            if not periodo:
+                continue
+            # Buscar id_tiempo
+            t = db.query(DimTiempo).filter(DimTiempo.periodo_mes == periodo).first()
+            id_t = t.id_tiempo if t else int(f"{periodo.replace('-', '')[:6]}01")
+
+            val = item.get("valor_forecast") or item.get("monto_proyectado_bs")
+            if val is None:
+                continue
+
+            existente = db.query(FactForecast).filter(
+                FactForecast.caso_uso == caso_uso,
+                FactForecast.id_tiempo == id_t
+            ).first()
+
+            if existente:
+                existente.valor_forecast = val
+                existente.ic_lower = item.get("ic_lower")
+                existente.ic_upper = item.get("ic_upper")
+                existente.metodo = metodo
+                existente.horizonte_meses = horizonte
+            else:
+                nuevo = FactForecast(
+                    caso_uso=caso_uso,
+                    id_tiempo=id_t,
+                    valor_forecast=val,
+                    ic_lower=item.get("ic_lower"),
+                    ic_upper=item.get("ic_upper"),
+                    metodo=metodo,
+                    horizonte_meses=horizonte
+                )
+                db.add(nuevo)
+        db.commit()
+    except Exception:
+        db.rollback()
 
 
 def obtener_pronostico_metas(

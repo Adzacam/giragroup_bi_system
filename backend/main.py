@@ -13,7 +13,18 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from core.database import get_db
-from routers import riesgos, forecast, auth, users, notifications, dataops, audit
+from routers import (
+    riesgos,
+    forecast,
+    auth,
+    users,
+    notifications,
+    dataops,
+    audit,
+    catalogs,
+    kpis,
+    pipeline
+)
 from seed_users import seed_default_users
 
 logger = logging.getLogger("api_main")
@@ -70,6 +81,9 @@ app.include_router(users.router)
 app.include_router(notifications.router)
 app.include_router(dataops.router)
 app.include_router(audit.router)
+app.include_router(catalogs.router)
+app.include_router(kpis.router)
+app.include_router(pipeline.router)
 
 
 

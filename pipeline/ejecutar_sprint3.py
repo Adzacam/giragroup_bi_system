@@ -49,13 +49,20 @@ from pipeline.normalization.fuzzy_normalizer import FuzzyNormalizer
 from pipeline.normalization.fk_resolver import FKResolver
 from pipeline.normalization.quality_rules import QualityEvaluator
 from pipeline.analytics.audit_logger import AuditLogger, SeveridadInconsistencia
+from pipeline.pipeline_logger import registrar_log_ejecucion
 
 # Importes tolerantes para persistencia en Postgres
 try:
-    from backend.core.database import SessionLocal
-    from backend.models.fact_rendimiento import FactRendimientoAcademico
-    from backend.models.fact_financiero import FactSituacionFinanciera
-    from backend.models.log_auditoria_nlp import LogAuditoriaNlp
+    try:
+        from core.database import SessionLocal
+        from models.fact_rendimiento import FactRendimientoAcademico
+        from models.fact_financiero import FactSituacionFinanciera
+        from models.log_auditoria_nlp import LogAuditoriaNlp
+    except ImportError:
+        from backend.core.database import SessionLocal
+        from backend.models.fact_rendimiento import FactRendimientoAcademico
+        from backend.models.fact_financiero import FactSituacionFinanciera
+        from backend.models.log_auditoria_nlp import LogAuditoriaNlp
     DB_MODELS_DISPONIBLES = True
 except Exception:
     DB_MODELS_DISPONIBLES = False
@@ -559,8 +566,19 @@ class OrquestadorSprint3:
                     continue
 
                 res_doc = self.procesar_documento(doc, doc_id=idx + 1)
-                if res_doc["calidad"]["requiere_revision"]:
+                req_rev = res_doc["calidad"]["requiere_revision"]
+                if req_rev:
                     total_flagged += 1
+
+                registrar_log_ejecucion(
+                    archivo=res_doc.get("archivo", "desconocido"),
+                    hoja=res_doc.get("hoja"),
+                    bloque_id=res_doc.get("bloque_id"),
+                    total_entidades=res_doc.get("total_entidades_ner", 0),
+                    nivel_confianza=res_doc.get("resoluciones", {}).get("nivel_confianza_ia", 0.85),
+                    requiere_revision=req_rev,
+                    tiempo_ms=res_doc.get("tiempo_inferencia_ms", 0.0)
+                )
 
                 f_out.write(json.dumps(res_doc, ensure_ascii=False) + "\n")
                 todos_registros.append(res_doc)

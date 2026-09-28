@@ -12,10 +12,15 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 
 from core.database import get_db
+from core.security import require_roles
 from models.user import User
 from models.log_pipeline import LogPipelineIngesta
 
-router = APIRouter(prefix="/api/v1/audit", tags=["Auditoría del Sistema"])
+router = APIRouter(
+    prefix="/api/v1/audit",
+    tags=["Auditoría del Sistema"],
+    dependencies=[Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"]))]
+)
 
 # ==============================================================================
 # GENERADOR Y LEDGER BASE DE REGISTROS DE AUDITORÍA INSTITUCIONAL (148 eventos)

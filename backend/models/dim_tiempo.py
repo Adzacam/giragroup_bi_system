@@ -4,6 +4,7 @@ from core.database import Base
 
 class DimTiempo(Base):
     __tablename__ = "dim_tiempo"
+    __table_args__ = {"extend_existing": True}
 
     id_tiempo = Column(Integer, primary_key=True)  # YYYYMMDD (ej: 20250315)
     fecha = Column(Date, nullable=False, unique=True, index=True)

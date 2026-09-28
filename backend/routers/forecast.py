@@ -10,6 +10,8 @@ from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.orm import Session
 
 from core.database import get_db
+from core.security import require_roles
+from models.user import User
 from services.forecast_service import obtener_pronostico_alumnos, obtener_pronostico_metas
 from schemas.forecast_schemas import ForecastAlumnosResponse, ForecastMetasResponse
 
@@ -45,7 +47,8 @@ def get_forecast_alumnos(
         le=6, 
         description="Horizonte de predicción en meses (acotado formalmente a máximo 6 meses)"
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["DIRECTOR_ACADEMICO", "ADMIN"]))
 ):
     """
     Retorna la proyección mensual de alumnos inscritos para el segmento solicitado
@@ -97,7 +100,8 @@ def get_forecast_metas(
         le=6, 
         description="Horizonte a proyectar (meses para MENSUAL, años para ANUAL)"
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ANALISTA_FINANCIERO", "ADMIN"]))
 ):
     """
     Retorna la proyección de recaudación y metas financieras:

@@ -1,7 +1,10 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 import secrets
-from passlib.context import CryptContext
+try:
+    from passlib.context import CryptContext
+except ImportError:
+    CryptContext = None
 from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer

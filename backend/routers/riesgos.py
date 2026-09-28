@@ -9,6 +9,8 @@ import logging
 from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.orm import Session
 from core.database import get_db
+from core.security import require_roles
+from models.user import User
 from services.risk_service import get_riesgo_cruzado
 from schemas.risk_schemas import RiesgoCruzadoResponse
 
@@ -42,7 +44,8 @@ def obtener_riesgo_academico_financiero(
         le=100, 
         description="Cantidad mínima de cuotas en mora (>= 0)"
     ), 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO"]))
 ):
     """
     Retorna el cruce de estudiantes con bajo rendimiento académico y alta morosidad.

@@ -17,6 +17,7 @@ from .fact_marketing import FactMarketing
 from .fact_rentabilidad import FactRentabilidad
 from .dim_meta import DimMeta
 from .fact_forecast import FactForecast
+from .staging_entidad import StagingEntidadNoResuelta
 from .catalogos import (
     CatEscuela,
     CatTipoPrograma,

@@ -4,6 +4,7 @@ from typing import Optional, List
 import json
 
 from core.database import get_db
+from core.security import require_roles
 from schemas.dataops_schemas import (
     SourceListResponse,
     FileUploadResponse,
@@ -20,7 +21,11 @@ from pydantic import BaseModel
 class DeleteBatchRequest(BaseModel):
     ids: List[int]
 
-router = APIRouter(prefix="/api/v1/dataops", tags=["DataOps & Pipeline de Ingesta"])
+router = APIRouter(
+    prefix="/api/v1/dataops",
+    tags=["DataOps & Pipeline de Ingesta"],
+    dependencies=[Depends(require_roles(["AUDITOR_CALIDAD", "ADMIN"]))]
+)
 
 @router.get("/sources", response_model=SourceListResponse)
 def get_sources(db: Session = Depends(get_db)):

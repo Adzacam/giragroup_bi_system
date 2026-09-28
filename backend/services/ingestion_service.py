@@ -49,13 +49,13 @@ except ImportError:
         def clasificar_categoria(b): return "academico"
 
 try:
-    from backend.models.dim_origen import DimOrigenDocumental
-    from backend.models.staging_registro import StagingRegistroCrudo
-    from backend.models.log_pipeline import LogPipelineIngesta
-except ImportError:
     from models.dim_origen import DimOrigenDocumental
     from models.staging_registro import StagingRegistroCrudo
     from models.log_pipeline import LogPipelineIngesta
+except ImportError:
+    from backend.models.dim_origen import DimOrigenDocumental
+    from backend.models.staging_registro import StagingRegistroCrudo
+    from backend.models.log_pipeline import LogPipelineIngesta
 
 try:
     from backend.services.readers.moodle_adapter import es_reporte_moodle, adaptar_moodle_df
