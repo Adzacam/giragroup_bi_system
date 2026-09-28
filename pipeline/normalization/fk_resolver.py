@@ -121,6 +121,7 @@ class FKResolver:
         if ci_limpio:
             return {
                 "ci": ci_limpio,
+                "fk_estado": "A",
                 "estado_resolucion": "ESTADO_A_CI_VALIDO",
                 "score": 1.0,
                 "es_sintetico": False,
@@ -136,6 +137,7 @@ class FKResolver:
             if n_limpio in self.padron_nombres:
                 return {
                     "ci": self.padron_nombres[n_limpio],
+                    "fk_estado": "B",
                     "estado_resolucion": "ESTADO_B_CI_HEREDADO_EXACTO",
                     "score": 1.0,
                     "es_sintetico": False,
@@ -154,6 +156,7 @@ class FKResolver:
                 nom_padron_match, score = mejor
                 return {
                     "ci": self.padron_nombres[nom_padron_match],
+                    "fk_estado": "B",
                     "estado_resolucion": "ESTADO_B_CI_HEREDADO_FUZZY",
                     "score": score,
                     "es_sintetico": False,
@@ -165,6 +168,7 @@ class FKResolver:
         ci_sintetico = self.generar_ci_sintetico(nombre_str)
         return {
             "ci": ci_sintetico,
+            "fk_estado": "C",
             "estado_resolucion": "ESTADO_C_NO_RESUELTO_SINTETICO",
             "score": UMBRAL_CONFIANZA_BAJO,
             "es_sintetico": True,

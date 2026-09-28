@@ -37,14 +37,23 @@ UMBRAL_CONFIANZA = UMBRAL_CONFIANZA_ALTO  # Alias canónico
 UMBRAL_CONFIANZA_MEDIO = 0.60    # Requiere revisión / flag activo
 UMBRAL_CONFIANZA_BAJO = 0.40     # Descarte o staging no resuelto
 
-# Umbrales de activación de revisión humana y calidad (GIRA-27)
-UMBRAL_REVISION_BETO = 0.65      # Inferencia BETO < 0.65 activa requiere_revision
+# Umbrales de activación de revisión humana y calidad (GIRA-27: corte estricto en 0.85)
+UMBRAL_REVISION_BETO = 0.85      # Inferencia BETO < 0.85 activa requiere_revision (Nivel MEDIA o BAJA)
 UMBRAL_REVISION_FUZZY = 0.80     # Similitud RapidFuzz < 80% activa requiere_revision
+RAPIDFUZZ_HIGH = 85.0
+RAPIDFUZZ_LOW = 60.0
 
 # Rangos y umbrales de dominio académico
 NOTA_MINIMA_VALIDA = 0.0
 NOTA_MAXIMA_VALIDA = 100.0
 NOTA_APROBACION_MINIMA = 51.0
+ASISTENCIA_MINIMA_VALIDA = 0.0
+ASISTENCIA_MAXIMA_VALIDA = 100.0
+UMBRAL_DESERCION_INCUMPLIMIENTO_PCT = 30.0
+
+# Rangos y umbrales de dominio financiero
+UMBRAL_RIESGO_CUOTAS_IMPAGAS = 2
+ESTADOS_CARTERA_VALIDOS = ("Vigente", "Mora", "Previsionable")
 
 # Parámetros de inferencia
 DEFAULT_BATCH_SIZE = 16

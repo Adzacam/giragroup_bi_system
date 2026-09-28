@@ -339,13 +339,17 @@ class BetoNEREngine:
                 )
             )
 
-        # 2. Notas / Calificaciones
+        # 2. Notas / Calificaciones (con soporte para unificación de escala 0-10 -> 0-100)
+        encontro_nota = False
         for m in PATRON_NOTA.finditer(texto):
             valor_nota = m.group(1)
             start_val = m.start(1)
             end_val = m.end(1)
             try:
                 num = float(valor_nota.replace(",", "."))
+                if 0.0 < num <= 10.0:
+                    num = round(num * 10.0, 2)
+                    valor_nota = str(num)
                 if 0.0 <= num <= 100.0:
                     entidades.append(
                         EntidadExtraida(
@@ -358,8 +362,32 @@ class BetoNEREngine:
                             metadata={"valor_numerico": num}
                         )
                     )
+                    encontro_nota = True
             except ValueError:
                 pass
+
+        # Fallback sobre texto libre con regex de 1-2 dígitos si el texto menciona 'nota' o 'calificacion'
+        if not encontro_nota and any(w in texto.lower() for w in ("nota", "calificaci", "puntaje")):
+            m_fb = re.search(r'\b([0-9]{1,2}(?:\.[0-9])?)\b', texto)
+            if m_fb:
+                try:
+                    num_fb = float(m_fb.group(1))
+                    if 0.0 < num_fb <= 10.0:
+                        num_fb = round(num_fb * 10.0, 2)
+                    if 0.0 <= num_fb <= 100.0:
+                        entidades.append(
+                            EntidadExtraida(
+                                tipo=TipoEntidad.NOTA,
+                                valor=str(num_fb),
+                                start_char=m_fb.start(1),
+                                end_char=m_fb.end(1),
+                                score=0.85,
+                                origen="REGEX_FALLBACK",
+                                metadata={"valor_numerico": num_fb}
+                            )
+                        )
+                except ValueError:
+                    pass
 
         # 3. Montos monetarios (Bs)
         for m in PATRON_MONTO.finditer(texto):

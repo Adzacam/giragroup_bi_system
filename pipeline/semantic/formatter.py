@@ -218,8 +218,32 @@ def formatear_fila_dinamica(
         elif campo == "ESTADO":
             if not datos_extraidos.get("ESTADO"):
                 datos_extraidos["ESTADO"] = val_clean
+        elif campo == "ASISTENCIA_PCT":
+            if not datos_extraidos.get("ASISTENCIA_PCT"):
+                datos_extraidos["ASISTENCIA_PCT"] = val_clean
+        elif campo == "INCUMPLIMIENTO_ACTIVIDADES_PCT":
+            if not datos_extraidos.get("INCUMPLIMIENTO_ACTIVIDADES_PCT"):
+                datos_extraidos["INCUMPLIMIENTO_ACTIVIDADES_PCT"] = val_clean
+        elif campo == "MONTO_DEUDA":
+            if not datos_extraidos.get("MONTO_DEUDA"):
+                datos_extraidos["MONTO_DEUDA"] = val_clean
+        elif campo == "CUOTAS_IMPAGAS":
+            if not datos_extraidos.get("CUOTAS_IMPAGAS"):
+                datos_extraidos["CUOTAS_IMPAGAS"] = val_clean
+        elif campo == "ESTADO_CARTERA":
+            if not datos_extraidos.get("ESTADO_CARTERA"):
+                datos_extraidos["ESTADO_CARTERA"] = val_clean
         elif campo == "NOTA":
-            datos_extraidos["NOTAS"].append((col_clean, val_clean))
+            val_unif = val_clean
+            try:
+                num_n = float(val_clean.replace(",", "."))
+                if 0.0 < num_n <= 10.0:
+                    val_unif = str(round(num_n * 10.0, 2))
+            except ValueError:
+                pass
+            datos_extraidos["NOTAS"].append((col_clean, val_unif))
+            if not datos_extraidos.get("NOTA_FINAL"):
+                datos_extraidos["NOTA_FINAL"] = val_unif
         elif campo == "ASESOR":
             datos_extraidos["ASESOR"] = val_clean
         else:
@@ -375,7 +399,8 @@ def formatear_documento(
             "archivo": archivo,
             "hoja": hoja,
             "bloque_id": bloque_id,
-            "fila_idx": idx + 1
+            "fila_idx": idx + 1,
+            "row_dict": dict(row_dict)
         }
 
         # Serialización dinámica guiada por catálogo

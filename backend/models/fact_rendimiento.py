@@ -22,5 +22,6 @@ class FactRendimientoAcademico(Base):
     incumplimiento_actividades_pct = Column(Numeric(5, 2), server_default="0.00")
     nivel_confianza_ia = Column(Numeric(5, 4))
     requiere_revision = Column(Boolean, default=False)
+    fk_estado = Column(String(1), default="A")
     estado_academico = Column(String(50))
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -25,6 +25,11 @@ from pipeline.config import (
     NOTA_MAXIMA_VALIDA,
     NOTA_APROBACION_MINIMA,
     PATRON_CI_BOLIVIA,
+    ASISTENCIA_MINIMA_VALIDA,
+    ASISTENCIA_MAXIMA_VALIDA,
+    UMBRAL_DESERCION_INCUMPLIMIENTO_PCT,
+    UMBRAL_RIESGO_CUOTAS_IMPAGAS,
+    ESTADOS_CARTERA_VALIDOS,
 )
 from pipeline.semantic.ner_schema import ResultadoInferenciaNER, EntidadExtraida
 
@@ -113,6 +118,8 @@ class QualityEvaluator:
     def validar_rango_nota(self, nota: Any) -> Tuple[bool, Optional[str], Optional[float]]:
         """
         Verifica que la nota sea convertible a numérico y esté en el rango [nota_min, nota_max].
+        Aplica unificación de escala institucional: si la nota se encuentra en escala 0-10
+        (Apéndice D ítem 7 y Apéndice E ítem 10), se unifica a escala 0-100 multiplicando por 10.
         Retorna: (es_valido, motivo_error_o_none, nota_numerica_o_none)
         """
         if nota is None or str(nota).strip() == "" or str(nota).strip().lower() in ("nan", "none", "null", "-"):
@@ -124,10 +131,98 @@ class QualityEvaluator:
         except (ValueError, TypeError):
             return False, f"NOTA_NO_NUMERICA: '{nota}'", None
 
+        # Unificación de escala (si viene en rango 0 < num <= 10.0, escalar a 0-100)
+        if 0.0 < num <= 10.0:
+            num = round(num * 10.0, 2)
+
         if num < self.nota_min or num > self.nota_max:
             return False, f"NOTA_FUERA_DE_RANGO: {num} (Rango válido [{self.nota_min}, {self.nota_max}])", num
 
         return True, None, num
+
+    def validar_asistencia(self, asistencia: Any) -> Tuple[bool, Optional[str], Optional[float]]:
+        """Valida que el porcentaje de asistencia se ubique en [0, 100]."""
+        if asistencia is None or str(asistencia).strip() in ("", "nan", "none", "null", "-"):
+            return True, None, None
+
+        try:
+            val_txt = str(asistencia).strip().replace(",", ".").replace("%", "")
+            num = float(val_txt)
+        except (ValueError, TypeError):
+            return False, f"ASISTENCIA_NO_NUMERICA: '{asistencia}'", None
+
+        if num < ASISTENCIA_MINIMA_VALIDA or num > ASISTENCIA_MAXIMA_VALIDA:
+            return False, f"ASISTENCIA_FUERA_DE_RANGO: {num}% (Rango válido [0, 100])", num
+
+        return True, None, num
+
+    def validar_incumplimiento(self, incumplimiento: Any) -> Tuple[bool, Optional[str], Optional[float], bool]:
+        """
+        Valida que el incumplimiento esté en [0, 100] y evalúa umbral de deserción (> 30%).
+        Retorna: (es_valido, motivo_error_o_none, num, es_alerta_desercion)
+        """
+        if incumplimiento is None or str(incumplimiento).strip() in ("", "nan", "none", "null", "-"):
+            return True, None, None, False
+
+        try:
+            val_txt = str(incumplimiento).strip().replace(",", ".").replace("%", "")
+            num = float(val_txt)
+        except (ValueError, TypeError):
+            return False, f"INCUMPLIMIENTO_NO_NUMERICO: '{incumplimiento}'", None, False
+
+        if num < 0.0 or num > 100.0:
+            return False, f"INCUMPLIMIENTO_FUERA_DE_RANGO: {num}% (Rango válido [0, 100])", num, False
+
+        es_alerta = (num > UMBRAL_DESERCION_INCUMPLIMIENTO_PCT)
+        return True, None, num, es_alerta
+
+    def validar_monto_deuda(self, monto: Any) -> Tuple[bool, Optional[str], Optional[float]]:
+        """Valida que el monto de deuda sea numérico y >= 0."""
+        if monto is None or str(monto).strip() in ("", "nan", "none", "null", "-"):
+            return True, None, None
+
+        try:
+            val_txt = str(monto).strip().replace(",", ".").replace("Bs", "").replace("bs", "").strip()
+            num = float(val_txt)
+        except (ValueError, TypeError):
+            return False, f"MONTO_NO_NUMERICO: '{monto}'", None
+
+        if num < 0.0:
+            return False, f"MONTO_NEGATIVO: {num:.2f} Bs (posible reversión o error)", num
+
+        return True, None, num
+
+    def validar_cuotas_impagas(self, cuotas: Any) -> Tuple[bool, Optional[str], Optional[int], bool]:
+        """
+        Valida que las cuotas impagas sean enteras >= 0 y evalúa umbral de riesgo (>= 2).
+        Retorna: (es_valido, motivo_error_o_none, num, es_alerta_riesgo)
+        """
+        if cuotas is None or str(cuotas).strip() in ("", "nan", "none", "null", "-"):
+            return True, None, None, False
+
+        try:
+            val_txt = str(cuotas).strip().split(".")[0]
+            num = int(val_txt)
+        except (ValueError, TypeError):
+            return False, f"CUOTAS_NO_ENTERO: '{cuotas}'", None, False
+
+        if num < 0:
+            return False, f"CUOTAS_NEGATIVAS: {num} (Debe ser >= 0)", num, False
+
+        es_riesgo = (num >= UMBRAL_RIESGO_CUOTAS_IMPAGAS)
+        return True, None, num, es_riesgo
+
+    def validar_estado_cartera(self, estado: Any) -> Tuple[bool, Optional[str], Optional[str]]:
+        """Valida que el estado de cartera pertenezca a: Vigente, Mora, Previsionable."""
+        if estado is None or str(estado).strip() in ("", "nan", "none", "null", "-"):
+            return True, None, None
+
+        est_txt = str(estado).strip().title()
+        validos_dict = {v.lower(): v for v in ESTADOS_CARTERA_VALIDOS}
+        if est_txt.lower() in validos_dict:
+            return True, None, validos_dict[est_txt.lower()]
+
+        return False, f"ESTADO_CARTERA_INVALIDO: '{estado}' (Valores válidos: {', '.join(ESTADOS_CARTERA_VALIDOS)})", est_txt
 
     def validar_ci_boliviano(self, ci: Any) -> Tuple[bool, Optional[str]]:
         """Verifica la sintaxis del carnet de identidad boliviano o detección de sintético."""
@@ -205,6 +300,36 @@ class QualityEvaluator:
             else:
                 nota_num = num
 
+        # 1.b Validación de Asistencia e Incumplimiento
+        asist_raw = registro.get("asistencia_pct") or registro.get("asistencia")
+        if asist_raw is not None:
+            es_asist_ok, motivo_asist, num_asist = self.validar_asistencia(asist_raw)
+            if not es_asist_ok:
+                resultado.agregar_motivo(
+                    motivo=motivo_asist,
+                    severidad=SeveridadRegla.WARNING,
+                    campo="asistencia_pct",
+                    valor=asist_raw
+                )
+
+        incump_raw = registro.get("incumplimiento_actividades_pct") or registro.get("incumplimiento")
+        if incump_raw is not None:
+            es_inc_ok, motivo_inc, num_inc, es_alerta_des = self.validar_incumplimiento(incump_raw)
+            if not es_inc_ok:
+                resultado.agregar_motivo(
+                    motivo=motivo_inc,
+                    severidad=SeveridadRegla.WARNING,
+                    campo="incumplimiento_actividades_pct",
+                    valor=incump_raw
+                )
+            elif es_alerta_des:
+                resultado.agregar_motivo(
+                    motivo=f"ALERTA_DESERCION_INCUMPLIMIENTO: Incumplimiento {num_inc:.2f}% supera umbral crítico del 30%",
+                    severidad=SeveridadRegla.WARNING,
+                    campo="incumplimiento_actividades_pct",
+                    valor=num_inc
+                )
+
         # 2. Validación de CI y Resolución FK (Criterio 3)
         ci_val = registro.get("ci") or registro.get("carnet") or registro.get("documento")
         fk_res = registro.get("fk_estudiante_resolucion") or {}
@@ -217,6 +342,7 @@ class QualityEvaluator:
             registro.get("requiere_auditoria")
             or fk_res.get("requiere_auditoria")
             or fk_res.get("estado_resolucion") == "ESTADO_C_NO_RESUELTO_SINTETICO"
+            or fk_res.get("fk_estado") == "C"
         )
 
         if es_sintetico or requiere_auditoria_fk:
@@ -263,13 +389,15 @@ class QualityEvaluator:
                     valor=f"{estado_aca} (nota={nota_num})"
                 )
 
-        # 5. Validación de Inferencia BETO NER (Criterio 1)
+        # 5. Validación de Inferencia BETO NER (Corte institucional en 0.85)
         if inferencia_ner and inferencia_ner.entidades:
             for ent in inferencia_ner.entidades:
                 if ent.score < self.umbral_beto:
+                    nivel_str = "BAJA" if ent.score < 0.60 else "MEDIA"
+                    sev = SeveridadRegla.ERROR if ent.score < 0.60 else SeveridadRegla.WARNING
                     resultado.agregar_motivo(
-                        motivo=f"BETO_CONF_BAJA: Entidad {ent.tipo} ('{ent.valor}') score {ent.score:.4f} < {self.umbral_beto:.2f}",
-                        severidad=SeveridadRegla.WARNING,
+                        motivo=f"BETO_CONF_{nivel_str}: Entidad {ent.tipo} ('{ent.valor}') score {ent.score:.4f} < {self.umbral_beto:.2f}",
+                        severidad=sev,
                         campo=ent.tipo.lower(),
                         valor=ent.valor
                     )
@@ -278,9 +406,11 @@ class QualityEvaluator:
             try:
                 c_num = float(conf_ia)
                 if c_num < self.umbral_beto:
+                    nivel_str = "BAJA" if c_num < 0.60 else "MEDIA"
+                    sev = SeveridadRegla.ERROR if c_num < 0.60 else SeveridadRegla.WARNING
                     resultado.agregar_motivo(
-                        motivo=f"BETO_CONF_BAJA: Inferencia general score {c_num:.4f} < {self.umbral_beto:.2f}",
-                        severidad=SeveridadRegla.WARNING,
+                        motivo=f"BETO_CONF_{nivel_str}: Inferencia general score {c_num:.4f} < {self.umbral_beto:.2f}",
+                        severidad=sev,
                         campo="confianza_ia",
                         valor=c_num
                     )
@@ -298,31 +428,59 @@ class QualityEvaluator:
         inferencia_ner: Optional[ResultadoInferenciaNER] = None
     ) -> ResultadoCalidad:
         """
-        Evalúa la integridad de un registro financiero (cobranzas, pagos, moras).
+        Evalúa la integridad de un registro financiero (cobranzas, pagos, moras, deuda, cartera).
         """
         resultado = ResultadoCalidad(valores_auditados=dict(registro))
 
-        monto_raw = registro.get("monto") or registro.get("importe") or registro.get("saldo")
+        # 1. Validación de Monto / Monto Deuda
+        monto_raw = (
+            registro.get("monto_deuda")
+            or registro.get("monto")
+            or registro.get("importe")
+            or registro.get("saldo")
+        )
         if monto_raw is not None and str(monto_raw).strip() != "":
-            try:
-                monto_txt = str(monto_raw).strip().replace(",", ".")
-                m_num = float(monto_txt)
-                if m_num < 0:
-                    resultado.agregar_motivo(
-                        motivo=f"MONTO_NEGATIVO: {m_num:.2f} Bs (posible reversión o error)",
-                        severidad=SeveridadRegla.WARNING,
-                        campo="monto",
-                        valor=m_num
-                    )
-            except (ValueError, TypeError):
+            es_monto_ok, motivo_monto, num_monto = self.validar_monto_deuda(monto_raw)
+            if not es_monto_ok:
                 resultado.agregar_motivo(
-                    motivo=f"MONTO_NO_NUMERICO: '{monto_raw}'",
-                    severidad=SeveridadRegla.ERROR,
-                    campo="monto",
+                    motivo=motivo_monto,
+                    severidad=SeveridadRegla.WARNING,
+                    campo="monto_deuda",
                     valor=monto_raw
                 )
 
-        # Validación de Identificador de Transacción o Estudiante
+        # 2. Validación de Cuotas Impagas (Umbral de riesgo >= 2)
+        cuotas_raw = registro.get("cuotas_impagas") or registro.get("cuotas")
+        if cuotas_raw is not None and str(cuotas_raw).strip() != "":
+            es_cuotas_ok, motivo_cuotas, num_cuotas, es_riesgo = self.validar_cuotas_impagas(cuotas_raw)
+            if not es_cuotas_ok:
+                resultado.agregar_motivo(
+                    motivo=motivo_cuotas,
+                    severidad=SeveridadRegla.WARNING,
+                    campo="cuotas_impagas",
+                    valor=cuotas_raw
+                )
+            elif es_riesgo:
+                resultado.agregar_motivo(
+                    motivo=f"ALERTA_RIESGO_CUOTAS_IMPAGAS: Registra {num_cuotas} cuotas impagas (umbral de riesgo >= 2)",
+                    severidad=SeveridadRegla.WARNING,
+                    campo="cuotas_impagas",
+                    valor=num_cuotas
+                )
+
+        # 3. Validación de Estado de Cartera (Vigente / Mora / Previsionable)
+        cartera_raw = registro.get("estado_cartera") or registro.get("cartera")
+        if cartera_raw is not None and str(cartera_raw).strip() != "":
+            es_cart_ok, motivo_cart, cart_norm = self.validar_estado_cartera(cartera_raw)
+            if not es_cart_ok:
+                resultado.agregar_motivo(
+                    motivo=motivo_cart,
+                    severidad=SeveridadRegla.ERROR,
+                    campo="estado_cartera",
+                    valor=cartera_raw
+                )
+
+        # 4. Validación de Identificador de Transacción o Estudiante
         ci_val = registro.get("ci") or registro.get("codigo_alumno")
         if ci_val and str(ci_val).upper().startswith("TEMP-CI-"):
             resultado.agregar_motivo(
@@ -332,15 +490,32 @@ class QualityEvaluator:
                 valor=ci_val
             )
 
-        # Validación NER si existe
+        # 5. Validación NER si existe (Corte institucional en 0.85)
         if inferencia_ner and inferencia_ner.entidades:
             for ent in inferencia_ner.entidades:
                 if ent.score < self.umbral_beto:
+                    nivel_str = "BAJA" if ent.score < 0.60 else "MEDIA"
+                    sev = SeveridadRegla.ERROR if ent.score < 0.60 else SeveridadRegla.WARNING
                     resultado.agregar_motivo(
-                        motivo=f"BETO_CONF_BAJA_FIN: {ent.tipo} ('{ent.valor}') score {ent.score:.4f} < {self.umbral_beto:.2f}",
-                        severidad=SeveridadRegla.WARNING,
+                        motivo=f"BETO_CONF_{nivel_str}_FIN: {ent.tipo} ('{ent.valor}') score {ent.score:.4f} < {self.umbral_beto:.2f}",
+                        severidad=sev,
                         campo=ent.tipo.lower(),
                         valor=ent.valor
                     )
+        elif "confianza_ia" in registro or "score_beto" in registro:
+            conf_ia = registro.get("confianza_ia") or registro.get("score_beto")
+            try:
+                c_num = float(conf_ia)
+                if c_num < self.umbral_beto:
+                    nivel_str = "BAJA" if c_num < 0.60 else "MEDIA"
+                    sev = SeveridadRegla.ERROR if c_num < 0.60 else SeveridadRegla.WARNING
+                    resultado.agregar_motivo(
+                        motivo=f"BETO_CONF_{nivel_str}_FIN: Inferencia general score {c_num:.4f} < {self.umbral_beto:.2f}",
+                        severidad=sev,
+                        campo="confianza_ia",
+                        valor=c_num
+                    )
+            except (ValueError, TypeError):
+                pass
 
         return resultado

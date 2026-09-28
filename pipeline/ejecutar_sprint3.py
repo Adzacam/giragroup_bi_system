@@ -50,6 +50,16 @@ from pipeline.normalization.fk_resolver import FKResolver
 from pipeline.normalization.quality_rules import QualityEvaluator
 from pipeline.analytics.audit_logger import AuditLogger, SeveridadInconsistencia
 
+# Importes tolerantes para persistencia en Postgres
+try:
+    from backend.core.database import SessionLocal
+    from backend.models.fact_rendimiento import FactRendimientoAcademico
+    from backend.models.fact_financiero import FactSituacionFinanciera
+    from backend.models.log_auditoria_nlp import LogAuditoriaNlp
+    DB_MODELS_DISPONIBLES = True
+except Exception:
+    DB_MODELS_DISPONIBLES = False
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Orquestador Sprint 3 - Pipeline NLP, Normalización y Calidad")
@@ -151,7 +161,7 @@ class OrquestadorSprint3:
             "monto": None
         }
 
-        # Extraer candidatos por tipo de entidad
+        # Extraer candidatos por tipo de entidad desde inferencia NER
         for ent in resultado_ner.entidades:
             tipo = ent.tipo.upper()
             val = ent.valor
@@ -197,6 +207,114 @@ class OrquestadorSprint3:
             elif tipo == TipoEntidad.MONTO.value and not resoluciones["monto"]:
                 resoluciones["monto"] = {"valor_extraido": val, "score_ner": ent.score}
 
+        # Extraer valores tabulares de cabecera normalizada entregados por sheet_reader
+        cols_fila: Dict[str, str] = {}
+        for o in oraciones_info:
+            meta_orig = o.get("metadatos_origen", {})
+            if "row_dict" in meta_orig and isinstance(meta_orig["row_dict"], dict):
+                cols_fila.update(meta_orig["row_dict"])
+
+        def _buscar_en_cols(claves: List[str]) -> Optional[str]:
+            for k, v in cols_fila.items():
+                k_clean = str(k).strip().lower()
+                for c in claves:
+                    if c in k_clean:
+                        v_str = str(v).strip()
+                        if v_str and v_str.lower() not in ("nan", "none", "null", "-", ""):
+                            return v_str
+            return None
+
+        # 1. Nota final con unificación de escala institucional (0-10 -> 0-100)
+        nota_col = _buscar_en_cols(["nota final", "calificacion final", "nota", "calificacion", "puntaje"])
+        nota_final = None
+        if nota_col:
+            try:
+                num_n = float(nota_col.replace(",", "."))
+                if 0.0 < num_n <= 10.0:
+                    num_n = round(num_n * 10.0, 2)
+                if 0.0 <= num_n <= 100.0:
+                    nota_final = num_n
+            except ValueError:
+                pass
+
+        # Fallback a regex sobre texto libre solo si no vino en cabecera
+        if nota_final is None and resoluciones.get("nota"):
+            try:
+                val_n = float(str(resoluciones["nota"]["valor_extraido"]).replace(",", "."))
+                if 0.0 < val_n <= 10.0:
+                    val_n = round(val_n * 10.0, 2)
+                if 0.0 <= val_n <= 100.0:
+                    nota_final = val_n
+            except (ValueError, TypeError):
+                pass
+
+        # 2. Asistencia % (0-100)
+        asist_col = _buscar_en_cols(["asistencia", "% asistencia", "asistencia_pct"])
+        asistencia_pct = None
+        if asist_col:
+            try:
+                asistencia_pct = float(asist_col.replace(",", ".").replace("%", ""))
+            except ValueError:
+                pass
+
+        # 3. Incumplimiento de actividades % (0-100)
+        incump_col = _buscar_en_cols(["incumplimiento", "% incumplimiento", "incumplimiento_actividades_pct"])
+        incumplimiento_pct = None
+        if incump_col:
+            try:
+                incumplimiento_pct = float(incump_col.replace(",", ".").replace("%", ""))
+            except ValueError:
+                pass
+
+        # 4. Monto de deuda (>= 0)
+        deuda_col = _buscar_en_cols(["monto_deuda", "deuda", "saldo deudor", "saldo"])
+        monto_deuda = None
+        if deuda_col:
+            try:
+                monto_deuda = float(deuda_col.replace(",", ".").replace("Bs", "").replace("bs", "").strip())
+            except ValueError:
+                pass
+        if monto_deuda is None and resoluciones.get("monto"):
+            try:
+                monto_deuda = float(str(resoluciones["monto"]["valor_extraido"]).replace(",", ".").replace("Bs", "").replace("bs", "").strip())
+            except (ValueError, TypeError):
+                pass
+
+        # 5. Cuotas impagas (entero >= 0)
+        cuotas_col = _buscar_en_cols(["cuotas_impagas", "cuotas impagas", "cuotas"])
+        cuotas_impagas = None
+        if cuotas_col:
+            try:
+                cuotas_impagas = int(cuotas_col.split(".")[0])
+            except ValueError:
+                pass
+
+        # 6. Estado de cartera ('Vigente', 'Mora', 'Previsionable')
+        cartera_col = _buscar_en_cols(["estado_cartera", "cartera"])
+        estado_cartera = cartera_col.strip().title() if cartera_col else None
+
+        # GIRA-42: Cálculo formal de nivel_confianza_ia
+        if resultado_ner.entidades:
+            confianzas = [e.score for e in resultado_ner.entidades]
+            nivel_confianza_ia = round(sum(confianzas) / len(confianzas), 4)
+        else:
+            nivel_confianza_ia = 0.95
+
+        # Estado de resolución FK (A: CI directo, B: difuso padrón, C: sintético temporal)
+        fk_est = "A"
+        if resoluciones.get("estudiante") and resoluciones["estudiante"].get("fk_resolucion"):
+            fk_est = resoluciones["estudiante"]["fk_resolucion"].get("fk_estado", "A")
+
+        # Consolidar campos reales en resoluciones
+        resoluciones["nota_final"] = nota_final
+        resoluciones["asistencia_pct"] = asistencia_pct
+        resoluciones["incumplimiento_actividades_pct"] = incumplimiento_pct
+        resoluciones["monto_deuda"] = monto_deuda
+        resoluciones["cuotas_impagas"] = cuotas_impagas
+        resoluciones["estado_cartera"] = estado_cartera
+        resoluciones["nivel_confianza_ia"] = nivel_confianza_ia
+        resoluciones["fk_estado"] = fk_est
+
         # GIRA-27: Evaluación de Reglas de Calidad e Integridad
         registro_para_calidad = {
             "archivo": archivo,
@@ -213,8 +331,14 @@ class OrquestadorSprint3:
                 if resoluciones["estudiante"]
                 else None
             ),
-            "nota": resoluciones["nota"]["valor_extraido"] if resoluciones["nota"] else None,
-            "monto": resoluciones["monto"]["valor_extraido"] if resoluciones["monto"] else None,
+            "nota": nota_final if nota_final is not None else (resoluciones["nota"]["valor_extraido"] if resoluciones["nota"] else None),
+            "asistencia_pct": asistencia_pct,
+            "incumplimiento_actividades_pct": incumplimiento_pct,
+            "monto": monto_deuda if monto_deuda is not None else (resoluciones["monto"]["valor_extraido"] if resoluciones["monto"] else None),
+            "monto_deuda": monto_deuda,
+            "cuotas_impagas": cuotas_impagas,
+            "estado_cartera": estado_cartera,
+            "confianza_ia": nivel_confianza_ia,
             "score_matching": (
                 resoluciones["programa"]["catalogo_match"]["score"]
                 if resoluciones["programa"] and resoluciones["programa"].get("catalogo_match")
@@ -222,7 +346,7 @@ class OrquestadorSprint3:
             ),
         }
 
-        if categoria == "FINANCIERO" or resoluciones["monto"]:
+        if categoria.upper() == "FINANCIERO" or resoluciones["monto_deuda"] is not None:
             resultado_calidad = self.quality_evaluator.evaluar_registro_financiero(
                 registro_para_calidad,
                 inferencia_ner=resultado_ner
@@ -257,9 +381,155 @@ class OrquestadorSprint3:
             "calidad": resultado_calidad.to_dict(),
         }
 
+    # ──────────────────────────────────────────────────────────────────────────
+    # POST-PASOS SÍNCRONOS INSTITUCIONALES (Sprint 3)
+    # ──────────────────────────────────────────────────────────────────────────
+    def persistir_telemetria(self, registros: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Post-paso 1: Persiste telemetría de rendimiento y registros de hechos en Postgres
+        (fact_rendimiento_academico y fact_situacion_financiera), incluyendo nivel_confianza_ia,
+        requiere_revision y fk_estado ('A', 'B', 'C').
+        Garantiza fallback graceful persistiendo simultáneamente en JSONL local.
+        """
+        ruta_facts_jsonl = OUTPUT_DIR / "sprint3_fact_persistidos.jsonl"
+        total_persistidos_archivo = 0
+        total_persistidos_db = 0
+        db_disponible = False
+
+        db = None
+        if DB_MODELS_DISPONIBLES:
+            try:
+                db = SessionLocal()
+                # Test de conectividad rápido
+                db.execute("SELECT 1")
+                db_disponible = True
+            except Exception:
+                db_disponible = False
+                if db:
+                    db.close()
+                    db = None
+
+        with open(ruta_facts_jsonl, "w", encoding="utf-8") as f_facts:
+            for reg in registros:
+                res = reg.get("resoluciones", {})
+                cal = reg.get("calidad", {})
+                cat = str(reg.get("categoria", "")).lower()
+
+                fact_data = {
+                    "doc_id": reg.get("doc_id"),
+                    "archivo": reg.get("archivo"),
+                    "categoria": cat,
+                    "estudiante_ci": res.get("estudiante", {}).get("fk_resolucion", {}).get("ci") if res.get("estudiante") else None,
+                    "fk_estado": res.get("fk_estado", "A"),
+                    "nivel_confianza_ia": res.get("nivel_confianza_ia", 0.95),
+                    "requiere_revision": cal.get("requiere_revision", False),
+                    "nota_final": res.get("nota_final"),
+                    "asistencia_pct": res.get("asistencia_pct"),
+                    "incumplimiento_actividades_pct": res.get("incumplimiento_actividades_pct"),
+                    "monto_deuda": res.get("monto_deuda"),
+                    "cuotas_impagas": res.get("cuotas_impagas"),
+                    "estado_cartera": res.get("estado_cartera")
+                }
+                f_facts.write(json.dumps(fact_data, ensure_ascii=False) + "\n")
+                total_persistidos_archivo += 1
+
+                # Si Postgres está conectado, persistir en la tabla correspondiente
+                if db_disponible and db:
+                    try:
+                        if cat == "financiero":
+                            fact_obj = FactSituacionFinanciera(
+                                monto_deuda=fact_data["monto_deuda"],
+                                cuotas_impagas=fact_data["cuotas_impagas"],
+                                estado_cartera=fact_data["estado_cartera"],
+                                nivel_confianza_ia=fact_data["nivel_confianza_ia"],
+                                requiere_revision=fact_data["requiere_revision"],
+                                fk_estado=fact_data["fk_estado"]
+                            )
+                        else:
+                            fact_obj = FactRendimientoAcademico(
+                                nota_final=fact_data["nota_final"],
+                                asistencia_pct=fact_data["asistencia_pct"],
+                                incumplimiento_actividades_pct=fact_data["incumplimiento_actividades_pct"] or 0.00,
+                                nivel_confianza_ia=fact_data["nivel_confianza_ia"],
+                                requiere_revision=fact_data["requiere_revision"],
+                                fk_estado=fact_data["fk_estado"]
+                            )
+                        db.add(fact_obj)
+                        db.commit()
+                        total_persistidos_db += 1
+                    except Exception:
+                        if db:
+                            db.rollback()
+
+        if db:
+            db.close()
+
+        modo = "postgres_y_jsonl" if db_disponible else "jsonl_local"
+        print(f"[Post-Paso 1] Telemetría y Hechos persistidos: {total_persistidos_archivo} registros ({modo}).")
+
+        return {
+            "persistidos_archivo": total_persistidos_archivo,
+            "persistidos_db": total_persistidos_db,
+            "modo": modo,
+            "ruta_archivo": str(ruta_facts_jsonl)
+        }
+
+    def volcar_inconsistencias(self, registros: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Post-paso 2: Consolida el volcado de inconsistencias detectadas en
+        output/inconsistencias_sprint3.jsonl y en log_auditoria_nlp (Postgres)
+        si la base de datos está disponible.
+        """
+        flagged = [r for r in registros if r.get("calidad", {}).get("requiere_revision")]
+        db = None
+        db_disponible = False
+        inconsistencias_guardadas_db = 0
+
+        if DB_MODELS_DISPONIBLES:
+            try:
+                db = SessionLocal()
+                db.execute("SELECT 1")
+                db_disponible = True
+            except Exception:
+                db_disponible = False
+                if db:
+                    db.close()
+                    db = None
+
+        if db_disponible and db:
+            for r in flagged:
+                try:
+                    cal = r.get("calidad", {})
+                    res = r.get("resoluciones", {})
+                    log_entry = LogAuditoriaNlp(
+                        texto_original=str(r.get("archivo", ""))[:450],
+                        prediccion_beto=", ".join(cal.get("motivos", []))[:180],
+                        confianza_ia=res.get("nivel_confianza_ia", 0.50),
+                        correccion_humana="PENDIENTE_REVISION"
+                    )
+                    db.add(log_entry)
+                    db.commit()
+                    inconsistencias_guardadas_db += 1
+                except Exception:
+                    if db:
+                        db.rollback()
+            db.close()
+
+        total_inconsistencias = len(flagged)
+        modo = "postgres_y_jsonl" if db_disponible else "jsonl_local"
+        print(f"[Post-Paso 2] Inconsistencias volcadas: {total_inconsistencias} eventos ({modo}).")
+
+        return {
+            "total_inconsistencias": total_inconsistencias,
+            "inconsistencias_db": inconsistencias_guardadas_db,
+            "modo": modo,
+            "ruta_log": str(self.audit_logger.ruta_log)
+        }
+
     def ejecutar(self, ruta_entrada: Path, ruta_salida: Path, limite_docs: Optional[int] = None) -> Dict[str, Any]:
         """
-        Ejecuta el procesamiento en batch sobre el archivo de documentos de Sprint 2.
+        Ejecuta el procesamiento en batch sobre el archivo de documentos de Sprint 2,
+        seguido de la ejecución directa de los dos post-pasos institucionales.
         """
         if not ruta_entrada.exists():
             raise FileNotFoundError(f"Archivo de entrada no encontrado: {ruta_entrada}")
@@ -270,8 +540,10 @@ class OrquestadorSprint3:
         docs_procesados = 0
         total_flagged = 0
         t_inicio_total = time.perf_counter()
+        todos_registros: List[Dict[str, Any]] = []
 
-        with open(ruta_entrada, "r", encoding="utf-8") as f_in,              open(ruta_salida, "w", encoding="utf-8") as f_out:
+        with open(ruta_entrada, "r", encoding="utf-8") as f_in, \
+             open(ruta_salida, "w", encoding="utf-8") as f_out:
 
             for idx, linea in enumerate(f_in):
                 if limite_docs is not None and idx >= limite_docs:
@@ -291,12 +563,18 @@ class OrquestadorSprint3:
                     total_flagged += 1
 
                 f_out.write(json.dumps(res_doc, ensure_ascii=False) + "\n")
+                todos_registros.append(res_doc)
                 docs_procesados += 1
 
                 if docs_procesados % 25 == 0:
                     print(f"  Procesados: {docs_procesados} documentos (Flagged: {total_flagged})...")
 
         duracion_seg = time.perf_counter() - t_inicio_total
+
+        # Ejecución directa y síncrona de los dos post-pasos
+        resultado_telemetria = self.persistir_telemetria(todos_registros)
+        resultado_inconsistencias = self.volcar_inconsistencias(todos_registros)
+
         metricas_auditoria = self.audit_logger.obtener_resumen_metricas()
         metricas_telemetria = self.perf_logger.obtener_resumen()
 
@@ -307,7 +585,9 @@ class OrquestadorSprint3:
             "duracion_total_seg": round(duracion_seg, 2),
             "ruta_salida": str(ruta_salida),
             "metricas_auditoria": metricas_auditoria,
-            "metricas_telemetria": metricas_telemetria
+            "metricas_telemetria": metricas_telemetria,
+            "post_paso_telemetria": resultado_telemetria,
+            "post_paso_inconsistencias": resultado_inconsistencias
         }
 
         print("")
@@ -318,6 +598,8 @@ class OrquestadorSprint3:
         print(f"* Registros que requieren revision: {total_flagged} ({resumen['tasa_revision_pct']}%)")
         print(f"* Inconsistencias auditadas: {metricas_auditoria.get('total_inconsistencias', 0)}")
         print(f"* Latencia promedio NER: {metricas_telemetria.get('latencia_promedio_ms', 0)} ms")
+        print(f"* Persistencia telemetría hechos: {resultado_telemetria['persistidos_archivo']} regs ({resultado_telemetria['modo']})")
+        print(f"* Volcado inconsistencias: {resultado_inconsistencias['total_inconsistencias']} eventos")
         print(f"* Tiempo total: {resumen['duracion_total_seg']} s")
         print(f"* Archivo generado: {ruta_salida}")
         print("==========================================================")

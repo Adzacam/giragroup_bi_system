@@ -18,7 +18,7 @@ Cumple con el estándar de contrato:
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Union
 from pipeline.config import UMBRAL_CONFIANZA_ALTO, UMBRAL_CONFIANZA_MEDIO, MODELO_BETO_BASE
 
 
@@ -29,6 +29,11 @@ class TipoEntidad(str, Enum):
     POS = "POS"
     MODULO = "MODULO"
     NOTA = "NOTA"
+    ASISTENCIA_PCT = "ASISTENCIA_PCT"
+    INCUMPLIMIENTO_ACTIVIDADES_PCT = "INCUMPLIMIENTO_ACTIVIDADES_PCT"
+    MONTO_DEUDA = "MONTO_DEUDA"
+    CUOTAS_IMPAGAS = "CUOTAS_IMPAGAS"
+    ESTADO_CARTERA = "ESTADO_CARTERA"
     MONTO = "MONTO"
     CI = "CI"
     FECHA = "FECHA"

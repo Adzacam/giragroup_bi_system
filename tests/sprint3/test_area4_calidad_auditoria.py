@@ -108,7 +108,7 @@ def test_evaluador_score_beto_bajo(evaluador):
         valor="Dr. Posible Docente",
         start_char=0,
         end_char=18,
-        score=0.62  # < 0.65
+        score=0.55  # < 0.60 (Corte Cap. 3 Nivel BAJA)
     )
     ner_res = ResultadoInferenciaNER(
         texto="Texto de prueba",

@@ -184,6 +184,27 @@ class CatalogRepository:
                 {"nombre": "Cartera Cerrada", "min": -1, "max": -1},
             ]
 
+        # Mapeos institucionales complementarios para rendimiento académico y situación financiera
+        mapeos_adicionales = {
+            "asistencia": {"campo_canonico": "ASISTENCIA_PCT", "tipo_entidad": "ASISTENCIA_PCT"},
+            "asistencia_pct": {"campo_canonico": "ASISTENCIA_PCT", "tipo_entidad": "ASISTENCIA_PCT"},
+            "% asistencia": {"campo_canonico": "ASISTENCIA_PCT", "tipo_entidad": "ASISTENCIA_PCT"},
+            "incumplimiento": {"campo_canonico": "INCUMPLIMIENTO_ACTIVIDADES_PCT", "tipo_entidad": "INCUMPLIMIENTO_ACTIVIDADES_PCT"},
+            "incumplimiento_actividades_pct": {"campo_canonico": "INCUMPLIMIENTO_ACTIVIDADES_PCT", "tipo_entidad": "INCUMPLIMIENTO_ACTIVIDADES_PCT"},
+            "% incumplimiento": {"campo_canonico": "INCUMPLIMIENTO_ACTIVIDADES_PCT", "tipo_entidad": "INCUMPLIMIENTO_ACTIVIDADES_PCT"},
+            "monto_deuda": {"campo_canonico": "MONTO_DEUDA", "tipo_entidad": "MONTO_DEUDA"},
+            "deuda": {"campo_canonico": "MONTO_DEUDA", "tipo_entidad": "MONTO_DEUDA"},
+            "cuotas_impagas": {"campo_canonico": "CUOTAS_IMPAGAS", "tipo_entidad": "CUOTAS_IMPAGAS"},
+            "cuotas impagas": {"campo_canonico": "CUOTAS_IMPAGAS", "tipo_entidad": "CUOTAS_IMPAGAS"},
+            "estado_cartera": {"campo_canonico": "ESTADO_CARTERA", "tipo_entidad": "ESTADO_CARTERA"},
+            "cartera": {"campo_canonico": "ESTADO_CARTERA", "tipo_entidad": "ESTADO_CARTERA"},
+            "nota_final": {"campo_canonico": "NOTA", "tipo_entidad": "NOTA"},
+            "calificacion_final": {"campo_canonico": "NOTA", "tipo_entidad": "NOTA"},
+        }
+        for k, v in mapeos_adicionales.items():
+            if k not in self.mapeos_columna:
+                self.mapeos_columna[k] = v
+
     def _inicializar_mapeos_rapidos(self) -> None:
         """Precomputa diccionarios en minúsculas para matching léxico veloz."""
         self._escuelas_map = {e.lower(): e for e in self.escuelas}
