@@ -378,18 +378,9 @@ export default function BetoReadingFlowView() {
       </div>
 
       {/* ─── Texto de ayuda de la vista ─── */}
-      <div style={{
-        backgroundColor: 'rgba(59, 130, 246, 0.06)',
-        borderRadius: '12px',
-        padding: '14px 18px',
-        marginBottom: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        border: '1px solid rgba(59, 130, 246, 0.15)'
-      }}>
-        <HelpCircle size={20} color="#2563eb" style={{ flexShrink: 0 }} />
-        <div style={{ fontSize: '13px', color: '#1e40af', lineHeight: '1.4' }}>
+      <div className="dataops-banner-info" style={{ marginBottom: '24px' }}>
+        <HelpCircle size={20} color="var(--dataops-info-text)" style={{ flexShrink: 0 }} />
+        <div>
           <strong>Cómo funciona BETO:</strong> BETO lee cada línea, identifica estudiantes, módulos y docentes, y mide cuán seguro está. Si el elemento más débil queda bajo 85, un humano lo revisa.
         </div>
       </div>
@@ -421,9 +412,9 @@ export default function BetoReadingFlowView() {
                   fontSize: '11px',
                   fontWeight: '600',
                   border: '1px solid',
-                  borderColor: filterState === mode ? '#2563eb' : 'var(--color-border)',
-                  backgroundColor: filterState === mode ? '#eff6ff' : 'var(--color-paper-white)',
-                  color: filterState === mode ? '#2563eb' : 'var(--color-slate-gray)',
+                  borderColor: filterState === mode ? 'var(--color-accent-blue)' : 'var(--color-border)',
+                  backgroundColor: filterState === mode ? 'var(--dataops-info-bg)' : 'var(--color-paper-white)',
+                  color: filterState === mode ? 'var(--dataops-info-text)' : 'var(--color-slate-gray)',
                   cursor: 'pointer'
                 }}
               >
@@ -448,8 +439,8 @@ export default function BetoReadingFlowView() {
                     padding: '12px',
                     borderRadius: '10px',
                     border: '1px solid',
-                    borderColor: isSelected ? '#2563eb' : 'var(--color-border)',
-                    backgroundColor: isSelected ? '#f8fafc' : 'var(--color-paper-white)',
+                    borderColor: isSelected ? 'var(--color-accent-blue)' : 'var(--color-border)',
+                    backgroundColor: isSelected ? 'var(--dataops-row-selected)' : 'var(--color-paper-white)',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease'
                   }}
@@ -514,7 +505,7 @@ export default function BetoReadingFlowView() {
 
               {/* 1 LECTURA */}
               <div>
-                <div style={{ fontSize: '12px', fontWeight: '700', color: '#2563eb', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--dataops-info-text)', letterSpacing: '0.5px', marginBottom: '8px' }}>
                   1 · LECTURA (CHIPS CON COLOR E ÍCONO/ETIQUETA)
                 </div>
                 <div style={{
@@ -531,7 +522,7 @@ export default function BetoReadingFlowView() {
                         margin: '0 4px',
                         padding: '4px 10px',
                         borderRadius: '6px',
-                        backgroundColor: '#ffffff',
+                        backgroundColor: 'var(--dataops-chip-bg)',
                         border: `1.5px solid ${tok.color}`,
                         color: 'var(--color-ink-black)',
                         fontWeight: '600',
@@ -564,13 +555,13 @@ export default function BetoReadingFlowView() {
               {/* 2 CONFIANZA POR ELEMENTO */}
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '700', color: '#2563eb', letterSpacing: '0.5px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--dataops-info-text)', letterSpacing: '0.5px' }}>
                     2 · CONFIANZA POR ELEMENTO
                   </div>
                   <button
                     onClick={() => setShowHowScoreWorks(!showHowScoreWorks)}
                     style={{
-                      background: 'none', border: 'none', color: '#2563eb', fontSize: '12px',
+                      background: 'none', border: 'none', color: 'var(--dataops-info-text)', fontSize: '12px',
                       cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
                     }}
                   >
@@ -580,15 +571,7 @@ export default function BetoReadingFlowView() {
 
                 {/* Desplegable: fórmula de cálculo */}
                 {showHowScoreWorks && (
-                  <div style={{
-                    padding: '12px 14px',
-                    borderRadius: '8px',
-                    backgroundColor: '#eff6ff',
-                    fontSize: '12px',
-                    color: '#1e40af',
-                    marginBottom: '12px',
-                    lineHeight: '1.4'
-                  }}>
+                  <div className="dataops-banner-info" style={{ marginBottom: '12px', fontSize: '12px', display: 'block' }}>
                     Fórmula de confianza: <code>lectura del modelo + coincide con catálogo + aparece repetido = índice (máx. 99)</code>.
                     <br />
                     <strong>Aclaración:</strong> <em>El catálogo suma, nunca resta.</em>
@@ -601,7 +584,7 @@ export default function BetoReadingFlowView() {
                       <span style={{ width: '90px', fontSize: '13px', fontWeight: '600', color: 'var(--color-ink-black)' }}>
                         {elem.elemento}
                       </span>
-                      <div style={{ flex: 1, height: '8px', backgroundColor: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ flex: 1, height: '8px', backgroundColor: 'var(--color-border)', borderRadius: '4px', overflow: 'hidden' }}>
                         <div style={{
                           width: `${elem.indice}%`,
                           height: '100%',
@@ -621,7 +604,7 @@ export default function BetoReadingFlowView() {
 
               {/* 3 VERIFICACIÓN DE REGLAS */}
               <div>
-                <div style={{ fontSize: '12px', fontWeight: '700', color: '#2563eb', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--dataops-info-text)', letterSpacing: '0.5px', marginBottom: '8px' }}>
                   3 · VERIFICACIÓN DE REGLAS FIJAS (APRUEBAN O DETIENEN, NO SUMAN CONFIANZA)
                 </div>
                 <div style={{
@@ -646,7 +629,7 @@ export default function BetoReadingFlowView() {
                     </strong>
                     <button
                       onClick={() => toggleCiReveal(selectedRecord.id)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', padding: '0 2px' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--dataops-info-text)', padding: '0 2px' }}
                       title="Revelar CI (auditado)"
                     >
                       {revealedCis[selectedRecord.id] ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -674,19 +657,14 @@ export default function BetoReadingFlowView() {
               </div>
 
               {/* 4 DECISIÓN */}
-              <div style={{
-                padding: '16px',
-                borderRadius: '12px',
-                backgroundColor: selectedRecord.estado === 'AUTOMATICO' ? '#f0fdf4' : '#fffbeb',
-                border: selectedRecord.estado === 'AUTOMATICO' ? '1px solid #bbf7d0' : '1px solid #fde68a'
-              }}>
-                <div style={{ fontSize: '12px', fontWeight: '700', color: selectedRecord.estado === 'AUTOMATICO' ? '#166534' : '#92400e', marginBottom: '4px' }}>
+              <div className={selectedRecord.estado === 'AUTOMATICO' ? 'dataops-banner-success' : 'dataops-banner-warning'} style={{ display: 'block' }}>
+                <div style={{ fontSize: '12px', fontWeight: '700', marginBottom: '4px' }}>
                   4 · DECISIÓN EN LENGUAJE LLANO
                 </div>
-                <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-ink-black)' }}>
+                <div style={{ fontSize: '14px', fontWeight: '600' }}>
                   Índice del registro = el más bajo: <strong>{selectedRecord.decision?.indice_mas_bajo}</strong>
                 </div>
-                <div style={{ fontSize: '13px', color: selectedRecord.estado === 'AUTOMATICO' ? '#15803d' : '#b45309', marginTop: '4px' }}>
+                <div style={{ fontSize: '13px', marginTop: '4px' }}>
                   → {selectedRecord.estado === 'AUTOMATICO' ? 'Directo al DW' : 'A revisión humana'}: "{selectedRecord.decision?.motivo_llano}"
                 </div>
               </div>
@@ -708,13 +686,13 @@ export default function BetoReadingFlowView() {
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '16px',
-        backgroundColor: '#f8fafc',
-        border: '1.5px solid #bfdbfe',
+        backgroundColor: 'var(--color-mist-gray)',
+        border: '1.5px solid var(--dataops-info-border)',
         borderRadius: '14px'
       }}>
         <div>
           <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Database size={18} color="#2563eb" /> Inserción de Registros Automáticos al Data Warehouse
+            <Database size={18} color="var(--dataops-info-text)" /> Inserción de Registros Automáticos al Data Warehouse
           </div>
           <div style={{ fontSize: '13px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>
             {insertedSuccess
@@ -759,7 +737,7 @@ export default function BetoReadingFlowView() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '14px' }}>
           <div>
             <h3 className="serif-heading" style={{ fontSize: '17px', margin: 0, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <TableProperties size={18} color="#2563eb" /> Capa C · Tabla de todos los registros del lote
+              <TableProperties size={18} color="var(--dataops-info-text)" /> Capa C · Tabla de todos los registros del lote
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--color-slate-gray)', margin: '4px 0 0 0' }}>
               Inspección tabular completa: haz click en cualquier fila para cargarla en el detalle de BETO
@@ -775,12 +753,11 @@ export default function BetoReadingFlowView() {
                 placeholder="Buscar por estudiante..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                className="dataops-input"
                 style={{
                   padding: '7px 12px 7px 30px',
                   borderRadius: '8px',
-                  border: '1px solid var(--color-border)',
-                  fontSize: '12px',
-                  backgroundColor: 'var(--color-paper-white)'
+                  fontSize: '12px'
                 }}
               />
             </div>
@@ -797,9 +774,9 @@ export default function BetoReadingFlowView() {
                     fontSize: '12px',
                     fontWeight: '600',
                     border: '1px solid',
-                    borderColor: tableFilter === mode ? '#2563eb' : 'var(--color-border)',
-                    backgroundColor: tableFilter === mode ? '#eff6ff' : 'var(--color-paper-white)',
-                    color: tableFilter === mode ? '#2563eb' : 'var(--color-slate-gray)',
+                    borderColor: tableFilter === mode ? 'var(--color-accent-blue)' : 'var(--color-border)',
+                    backgroundColor: tableFilter === mode ? 'var(--dataops-info-bg)' : 'var(--color-paper-white)',
+                    color: tableFilter === mode ? 'var(--dataops-info-text)' : 'var(--color-slate-gray)',
                     cursor: 'pointer'
                   }}
                 >
@@ -834,7 +811,7 @@ export default function BetoReadingFlowView() {
                     onClick={() => setSelectedRecord(row)}
                     style={{
                       borderBottom: '1px solid var(--color-border)',
-                      backgroundColor: isSelected ? '#eff6ff' : 'transparent',
+                      backgroundColor: isSelected ? 'var(--dataops-row-selected)' : 'transparent',
                       cursor: 'pointer'
                     }}
                   >
@@ -854,7 +831,7 @@ export default function BetoReadingFlowView() {
                     <td style={{ padding: '12px 14px', color: 'var(--color-slate-gray)' }}>
                       {row.modulo}
                     </td>
-                    <td style={{ padding: '12px 14px', fontFamily: 'var(--font-mono)', fontWeight: '600', color: '#2563eb' }}>
+                    <td style={{ padding: '12px 14px', fontFamily: 'var(--font-mono)', fontWeight: '600', color: 'var(--dataops-info-text)' }}>
                       {row.nota_normalizada}
                     </td>
                     <td style={{ padding: '12px 14px', textAlign: 'center', fontWeight: '800', color: isAuto ? '#059669' : '#b45309' }}>

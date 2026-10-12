@@ -144,7 +144,7 @@ export default function PlainTextTransformationView() {
           <div style={{ fontSize: '26px', fontWeight: '800', color: 'var(--color-ink-black)', marginTop: '4px' }}>
             {kpis.columnas_detectadas}
           </div>
-          <div style={{ fontSize: '11px', color: '#2563eb', marginTop: '4px' }}>
+          <div style={{ fontSize: '11px', color: 'var(--dataops-info-text)', marginTop: '4px' }}>
             Nombre · CI · Módulo · Nota
           </div>
         </div>
@@ -154,36 +154,27 @@ export default function PlainTextTransformationView() {
           <div style={{ fontSize: '26px', fontWeight: '800', color: kpis.total_alertas > 0 ? '#f59e0b' : 'var(--color-ink-black)', marginTop: '4px' }}>
             {kpis.total_alertas}
           </div>
-          <div style={{ fontSize: '11px', color: kpis.total_alertas > 0 ? '#b45309' : 'var(--color-ash-gray)', marginTop: '4px' }}>
+          <div style={{ fontSize: '11px', color: kpis.total_alertas > 0 ? 'var(--dataops-warning-text)' : 'var(--color-ash-gray)', marginTop: '4px' }}>
             {kpis.total_alertas > 0 ? 'Accionables antes de BETO' : 'Sin inconsistencias'}
           </div>
         </div>
       </div>
 
       {/* ─── Mensaje de Ayuda ─── */}
-      <div style={{
-        backgroundColor: 'rgba(59, 130, 246, 0.06)',
-        borderRadius: '12px',
-        padding: '14px 18px',
-        marginBottom: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        border: '1px solid rgba(59, 130, 246, 0.15)'
-      }}>
-        <HelpCircle size={20} color="#2563eb" style={{ flexShrink: 0 }} />
-        <div style={{ fontSize: '13px', color: '#1e40af', lineHeight: '1.4' }}>
+      <div className="dataops-banner-info" style={{ marginBottom: '24px' }}>
+        <HelpCircle size={20} color="var(--dataops-info-text)" style={{ flexShrink: 0 }} />
+        <div>
           <strong>¿Qué hace esta vista?</strong> Cada fila de tu archivo original se convierte en una oración de texto continuo para que el modelo de lenguaje BETO pueda leerla. Es una copia de trabajo que preserva intacto tu archivo original.
         </div>
       </div>
 
       {/* ─── Alertas Accionables (si existen) ─── */}
       {data?.alertas && data.alertas.length > 0 && (
-        <div className="floating-artifact" style={{ padding: '16px 20px', marginBottom: '24px', borderLeft: '4px solid #f59e0b' }}>
-          <div style={{ fontSize: '13px', fontWeight: '700', color: '#b45309', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="dataops-banner-warning" style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--dataops-warning-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <AlertTriangle size={16} /> Alertas de formato en el lote ({data.alertas.length})
           </div>
-          <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {data.alertas.map((alt, i) => (
               <div key={i} style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>
                 • Fila #{alt.line}: <strong>{alt.motivo}</strong>
@@ -231,14 +222,14 @@ export default function PlainTextTransformationView() {
                     onMouseLeave={() => setHoveredLine(null)}
                     style={{
                       borderBottom: '1px solid var(--color-border)',
-                      backgroundColor: isHovered ? 'rgba(37, 99, 235, 0.05)' : 'transparent',
+                      backgroundColor: isHovered ? 'var(--dataops-row-hover)' : 'transparent',
                       transition: 'background-color 0.15s ease'
                     }}
                   >
                     {/* Número de fila */}
                     <td style={{
                       padding: '12px 14px',
-                      color: isHovered ? '#2563eb' : 'var(--color-ash-gray)',
+                      color: isHovered ? 'var(--dataops-info-text)' : 'var(--color-ash-gray)',
                       fontFamily: 'var(--font-mono)',
                       fontWeight: isHovered ? '700' : '400'
                     }}>
@@ -258,11 +249,11 @@ export default function PlainTextTransformationView() {
                           <span
                             key={idx}
                             style={{
-                              backgroundColor: isHovered ? '#ffffff' : 'var(--color-mist-gray)',
+                              backgroundColor: isHovered ? 'var(--dataops-chip-bg)' : 'var(--color-mist-gray)',
                               padding: '2px 8px',
                               borderRadius: '4px',
-                              border: isHovered ? '1px solid #bfdbfe' : '1px solid var(--color-border)',
-                              color: val.includes('?') ? '#b45309' : 'var(--color-ink-black)'
+                              border: isHovered ? '1px solid var(--dataops-info-border)' : '1px solid var(--color-border)',
+                              color: val.includes('?') ? 'var(--dataops-warning-text)' : 'var(--color-ink-black)'
                             }}
                           >
                             {val}
@@ -280,7 +271,7 @@ export default function PlainTextTransformationView() {
                     {/* Oración de texto BETO */}
                     <td style={{
                       padding: '12px 16px',
-                      color: isHovered ? '#1e40af' : 'var(--color-ink-black)',
+                      color: isHovered ? 'var(--dataops-info-text)' : 'var(--color-ink-black)',
                       fontWeight: isHovered ? '600' : '400',
                       lineHeight: '1.5'
                     }}>

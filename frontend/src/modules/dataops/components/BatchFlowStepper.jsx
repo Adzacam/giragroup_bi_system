@@ -132,7 +132,7 @@ export default function BatchFlowStepper({ currentStep = 1, batchId = null, pend
                     borderRadius: '9999px',
                     padding: '2px 6px',
                     lineHeight: '1',
-                    border: '2px solid #ffffff'
+                    border: '2px solid var(--color-paper-white)'
                   }}>
                     {step.badge}
                   </span>
@@ -144,7 +144,7 @@ export default function BatchFlowStepper({ currentStep = 1, batchId = null, pend
                 <div style={{
                   fontSize: '13px',
                   fontWeight: isCurrent ? '700' : '600',
-                  color: isCurrent ? '#2563eb' : isCompleted ? 'var(--color-ink-black)' : 'var(--color-slate-gray)'
+                  color: isCurrent ? 'var(--dataops-info-text)' : isCompleted ? 'var(--color-ink-black)' : 'var(--color-slate-gray)'
                 }}>
                   {step.num === 1 ? '①' : step.num === 2 ? '②' : step.num === 3 ? '③' : '④'} {step.title}
                 </div>

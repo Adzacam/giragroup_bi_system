@@ -51,9 +51,9 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
         <div style={{
           width: '40px', height: '40px', borderRadius: '10px',
-          backgroundColor: '#eff6ff', color: '#2563eb',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 2px 8px rgba(37, 99, 235, 0.15)'
+          backgroundColor: 'var(--dataops-info-bg)', color: 'var(--dataops-info-text)',
+          border: '1px solid var(--dataops-info-border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
           <FileSpreadsheet size={20} />
         </div>
@@ -76,8 +76,9 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
               fontSize: '12px',
               padding: '2px 8px',
               borderRadius: '6px',
-              backgroundColor: 'rgba(245, 158, 11, 0.1)',
-              color: '#b45309',
+              backgroundColor: 'var(--dataops-warning-bg)',
+              color: 'var(--dataops-warning-text)',
+              border: '1px solid var(--dataops-warning-border)',
               fontWeight: '600',
               display: 'inline-flex',
               alignItems: 'center',
@@ -91,7 +92,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
             <span>ID Doc: #{id_documento}</span>
             <span>Registros: <strong>{total_registros}</strong></span>
             {pendientes_revision > 0 && (
-              <span style={{ color: '#d97706', fontWeight: '600' }}>
+              <span style={{ color: 'var(--dataops-warning-text)', fontWeight: '600' }}>
                 En revisión: <strong>{pendientes_revision}</strong>
               </span>
             )}

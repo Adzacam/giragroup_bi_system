@@ -225,15 +225,7 @@ export default function IngestView() {
               <select
                 value={institucion}
                 onChange={(e) => setInstitucion(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--color-border)',
-                  backgroundColor: 'var(--color-paper-white)',
-                  fontSize: '13px',
-                  color: 'var(--color-ink-black)'
-                }}
+                className="dataops-select"
               >
                 <option value="">-- Seleccionar Institución --</option>
                 <option value="Unifranz">Universidad Franz Tamayo (Unifranz)</option>
@@ -251,15 +243,7 @@ export default function IngestView() {
               <select
                 value={tipoFuente}
                 onChange={(e) => setTipoFuente(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--color-border)',
-                  backgroundColor: 'var(--color-paper-white)',
-                  fontSize: '13px',
-                  color: 'var(--color-ink-black)'
-                }}
+                className="dataops-select"
               >
                 <option value="">-- Seleccionar Tipo de Fuente --</option>
                 <option value="Acta de calificaciones">Acta de calificaciones</option>
@@ -271,19 +255,14 @@ export default function IngestView() {
             {/* Escala de notas (SIN DEFAULT) */}
             <div>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--color-ink-black)', marginBottom: '6px' }}>
-                Escala de notas * <span style={{ fontWeight: '400', color: '#b45309', fontSize: '12px' }}>(Obligatorio elegir)</span>
+                Escala de notas * <span style={{ fontWeight: '400', color: 'var(--dataops-warning-text)', fontSize: '12px' }}>(Obligatorio elegir)</span>
               </label>
               <select
                 value={escalaNotas}
                 onChange={(e) => setEscalaNotas(e.target.value)}
+                className="dataops-select"
                 style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  border: !escalaNotas ? '1px solid #f59e0b' : '1px solid var(--color-border)',
-                  backgroundColor: 'var(--color-paper-white)',
-                  fontSize: '13px',
-                  color: 'var(--color-ink-black)'
+                  border: !escalaNotas ? '1px solid #f59e0b' : undefined
                 }}
               >
                 <option value="">-- Seleccionar Escala de Calificación --</option>
@@ -301,15 +280,7 @@ export default function IngestView() {
               <select
                 value={periodo}
                 onChange={(e) => setPeriodo(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--color-border)',
-                  backgroundColor: 'var(--color-paper-white)',
-                  fontSize: '13px',
-                  color: 'var(--color-ink-black)'
-                }}
+                className="dataops-select"
               >
                 <option value="2026-1">Gestión 2026 - Periodo 1</option>
                 <option value="2025-2">Gestión 2025 - Periodo 2</option>
@@ -318,17 +289,9 @@ export default function IngestView() {
             </div>
 
             {/* Texto de ayuda explicativo */}
-            <div style={{
-              backgroundColor: 'rgba(59, 130, 246, 0.06)',
-              borderRadius: '10px',
-              padding: '12px 14px',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '10px',
-              marginTop: '4px'
-            }}>
-              <HelpCircle size={18} color="#2563eb" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <div style={{ fontSize: '12px', color: '#1e40af', lineHeight: '1.4' }}>
+            <div className="dataops-banner-info" style={{ marginTop: '4px' }}>
+              <HelpCircle size={18} color="var(--dataops-info-text)" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>
                 <strong>Regla de negocio:</strong> Sube tu archivo tal cual. No se modifica. Indica la escala de notas: el sistema nunca la adivina.
               </div>
             </div>
@@ -514,7 +477,7 @@ export default function IngestView() {
                           className="sileo-btn"
                           style={{
                             padding: '4px 10px', fontSize: '11px', borderRadius: '6px',
-                            backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe',
+                            backgroundColor: 'var(--dataops-info-bg)', color: 'var(--dataops-info-text)', border: '1px solid var(--dataops-info-border)',
                             fontWeight: '600', cursor: 'pointer'
                           }}
                         >

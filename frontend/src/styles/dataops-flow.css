@@ -1,0 +1,186 @@
+/* =============================================================================
+   DATAOPS FLOW - ESTILOS SEMÁNTICOS INSTITUCIONALES (GIRA GROUP BI)
+   Soporte completo para Modo Claro (default) y Modo Oscuro ([data-theme="dark"])
+   ============================================================================= */
+
+:root {
+  /* Tokens de acento adaptativos para DataOps */
+  --dataops-info-bg: rgba(37, 99, 235, 0.08);
+  --dataops-info-border: rgba(37, 99, 235, 0.22);
+  --dataops-info-text: #1d4ed8;
+
+  --dataops-warning-bg: rgba(245, 158, 11, 0.09);
+  --dataops-warning-border: rgba(245, 158, 11, 0.28);
+  --dataops-warning-text: #b45309;
+
+  --dataops-success-bg: rgba(16, 185, 129, 0.09);
+  --dataops-success-border: rgba(16, 185, 129, 0.28);
+  --dataops-success-text: #059669;
+
+  --dataops-chip-bg: var(--color-paper-white);
+  --dataops-row-hover: rgba(37, 99, 235, 0.05);
+  --dataops-row-selected: rgba(37, 99, 235, 0.12);
+  --dataops-input-bg: var(--color-paper-white);
+}
+
+[data-theme="dark"] {
+  --dataops-info-bg: rgba(59, 130, 246, 0.16);
+  --dataops-info-border: rgba(59, 130, 246, 0.38);
+  --dataops-info-text: #93c5fd;
+
+  --dataops-warning-bg: rgba(245, 158, 11, 0.18);
+  --dataops-warning-border: rgba(245, 158, 11, 0.38);
+  --dataops-warning-text: #fbbf24;
+
+  --dataops-success-bg: rgba(16, 185, 129, 0.18);
+  --dataops-success-border: rgba(16, 185, 129, 0.38);
+  --dataops-success-text: #34d399;
+
+  --dataops-chip-bg: #20252e;
+  --dataops-row-hover: rgba(59, 130, 246, 0.15);
+  --dataops-row-selected: rgba(59, 130, 246, 0.25);
+  --dataops-input-bg: #11141a;
+}
+
+/* ── Banners Informativos y de Regla de Negocio ── */
+.dataops-banner-info {
+  background-color: var(--dataops-info-bg);
+  border: 1px solid var(--dataops-info-border);
+  color: var(--dataops-info-text);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-sohne);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.dataops-banner-warning {
+  background-color: var(--dataops-warning-bg);
+  border: 1px solid var(--dataops-warning-border);
+  border-left: 4px solid #f59e0b;
+  color: var(--dataops-warning-text);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-family: var(--font-sohne);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.dataops-banner-success {
+  background-color: var(--dataops-success-bg);
+  border: 1px solid var(--dataops-success-border);
+  border-left: 4px solid #10b981;
+  color: var(--dataops-success-text);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-family: var(--font-sohne);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* ── Chips de Entidad NLU adaptativos ── */
+.dataops-entity-chip {
+  margin: 0 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background-color: var(--dataops-chip-bg);
+  color: var(--color-ink-black);
+  font-family: var(--font-sohne);
+  font-weight: 600;
+  font-size: 12.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid currentColor;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.dataops-entity-tag {
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* ── Selects e Inputs Adaptativos para DataOps ── */
+.dataops-select,
+.dataops-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background-color: var(--dataops-input-bg);
+  color: var(--color-ink-black);
+  font-family: var(--font-sohne);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.dataops-select:focus,
+.dataops-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* ── Tablas de Flujo y Filas Interactivas ── */
+.dataops-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+  font-family: var(--font-sohne);
+}
+
+.dataops-table th {
+  padding: 12px 14px;
+  background-color: var(--color-mist-gray);
+  color: var(--color-slate-gray);
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dataops-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-ink-black);
+}
+
+.dataops-table-row {
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.dataops-table-row:hover {
+  background-color: var(--dataops-row-hover) !important;
+}
+
+.dataops-table-row.selected {
+  background-color: var(--dataops-row-selected) !important;
+}
+
+/* ── Tarjetas y Resumen ── */
+.dataops-kpi-card {
+  padding: 20px 24px;
+  border-radius: var(--radius-cards);
+  background-color: var(--color-paper-white);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-subtle);
+}
+
+/* ── Teclas KBD Accesibles ── */
+.dataops-kbd {
+  padding: 2px 6px;
+  background-color: var(--color-paper-white);
+  color: var(--color-ink-black);
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+}

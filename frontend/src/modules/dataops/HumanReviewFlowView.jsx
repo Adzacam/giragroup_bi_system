@@ -320,14 +320,14 @@ export default function HumanReviewFlowView() {
             backgroundColor: 'var(--color-mist-gray)', padding: '8px 14px', borderRadius: '10px', fontSize: '12px'
           }}>
             <Keyboard size={16} color="var(--color-slate-gray)" />
-            <span><kbd style={{ padding: '2px 6px', backgroundColor: '#fff', borderRadius: '4px', border: '1px solid #ccc' }}>A</kbd> Confirmar</span>
-            <span><kbd style={{ padding: '2px 6px', backgroundColor: '#fff', borderRadius: '4px', border: '1px solid #ccc' }}>E</kbd> Corregir</span>
-            <span><kbd style={{ padding: '2px 6px', backgroundColor: '#fff', borderRadius: '4px', border: '1px solid #ccc' }}>J</kbd>/<kbd style={{ padding: '2px 6px', backgroundColor: '#fff', borderRadius: '4px', border: '1px solid #ccc' }}>K</kbd> Navegar</span>
+            <span><kbd style={{ padding: '2px 6px', backgroundColor: 'var(--color-paper-white)', color: 'var(--color-ink-black)', borderRadius: '4px', border: '1px solid var(--color-border)' }}>A</kbd> Confirmar</span>
+            <span><kbd style={{ padding: '2px 6px', backgroundColor: 'var(--color-paper-white)', color: 'var(--color-ink-black)', borderRadius: '4px', border: '1px solid var(--color-border)' }}>E</kbd> Corregir</span>
+            <span><kbd style={{ padding: '2px 6px', backgroundColor: 'var(--color-paper-white)', color: 'var(--color-ink-black)', borderRadius: '4px', border: '1px solid var(--color-border)' }}>J</kbd>/<kbd style={{ padding: '2px 6px', backgroundColor: 'var(--color-paper-white)', color: 'var(--color-ink-black)', borderRadius: '4px', border: '1px solid var(--color-border)' }}>K</kbd> Navegar</span>
           </div>
         </div>
 
         {/* Barra de Progreso */}
-        <div style={{ height: '8px', backgroundColor: '#e5e7eb', borderRadius: '4px', marginTop: '16px', overflow: 'hidden' }}>
+        <div style={{ height: '8px', backgroundColor: 'var(--color-border)', borderRadius: '4px', marginTop: '16px', overflow: 'hidden' }}>
           <div style={{ width: `${progresoPorcentaje}%`, height: '100%', backgroundColor: '#10b981', transition: 'width 0.3s ease' }} />
         </div>
       </div>
@@ -376,8 +376,8 @@ export default function HumanReviewFlowView() {
                 style={{
                   display: 'flex', justifyContent: 'space-between', padding: '8px 10px', borderRadius: '6px',
                   fontSize: '12px', border: 'none', cursor: 'pointer', textAlign: 'left',
-                  backgroundColor: selectedReason === 'ALL' ? '#eff6ff' : 'transparent',
-                  color: selectedReason === 'ALL' ? '#2563eb' : 'var(--color-slate-gray)',
+                  backgroundColor: selectedReason === 'ALL' ? 'var(--dataops-info-bg)' : 'transparent',
+                  color: selectedReason === 'ALL' ? 'var(--dataops-info-text)' : 'var(--color-slate-gray)',
                   fontWeight: selectedReason === 'ALL' ? '700' : '500'
                 }}
               >
@@ -391,15 +391,15 @@ export default function HumanReviewFlowView() {
                   style={{
                     display: 'flex', justifyContent: 'space-between', padding: '6px 10px', borderRadius: '6px',
                     fontSize: '12px', border: 'none', cursor: 'pointer', textAlign: 'left',
-                    backgroundColor: selectedReason === motivo ? '#eff6ff' : 'transparent',
-                    color: selectedReason === motivo ? '#2563eb' : 'var(--color-slate-gray)',
+                    backgroundColor: selectedReason === motivo ? 'var(--dataops-info-bg)' : 'transparent',
+                    color: selectedReason === motivo ? 'var(--dataops-info-text)' : 'var(--color-slate-gray)',
                     fontWeight: selectedReason === motivo ? '700' : '500'
                   }}
                 >
                   <span>{motivo.replace(/_/g, ' ')}</span>
                   <span style={{
                     fontSize: '11px', padding: '1px 6px', borderRadius: '4px',
-                    backgroundColor: selectedReason === motivo ? '#bfdbfe' : 'var(--color-mist-gray)'
+                    backgroundColor: selectedReason === motivo ? 'var(--dataops-info-border)' : 'var(--color-mist-gray)'
                   }}>
                     {count}
                   </span>
@@ -420,8 +420,8 @@ export default function HumanReviewFlowView() {
                       padding: '12px',
                       borderRadius: '8px',
                       border: '1px solid',
-                      borderColor: isSelected ? '#2563eb' : 'var(--color-border)',
-                      backgroundColor: isSelected ? '#f8fafc' : 'var(--color-paper-white)',
+                      borderColor: isSelected ? 'var(--color-accent-blue)' : 'var(--color-border)',
+                      backgroundColor: isSelected ? 'var(--dataops-row-selected)' : 'var(--color-paper-white)',
                       cursor: 'pointer'
                     }}
                   >
@@ -447,7 +447,7 @@ export default function HumanReviewFlowView() {
               <>
                 {/* 1. QUÉ VIO EL SISTEMA */}
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#2563eb', letterSpacing: '0.5px', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--dataops-info-text)', letterSpacing: '0.5px', marginBottom: '6px' }}>
                     QUÉ VIO EL SISTEMA (TEXTO CRUDO)
                   </div>
                   <div style={{
@@ -460,31 +460,27 @@ export default function HumanReviewFlowView() {
 
                 {/* 2. POR QUÉ SE DETUVO */}
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#b45309', letterSpacing: '0.5px', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--dataops-warning-text)', letterSpacing: '0.5px', marginBottom: '6px' }}>
                     POR QUÉ SE DETUVO (DIAGNÓSTICO EN LENGUAJE LLANO)
                   </div>
-                  <div style={{
-                    padding: '14px', backgroundColor: '#fffbeb', borderRadius: '8px', borderLeft: '4px solid #f59e0b',
-                    fontSize: '13.5px', color: '#92400e', fontWeight: '600'
-                  }}>
+                  <div className="dataops-banner-warning" style={{ fontSize: '13.5px', fontWeight: '600', display: 'block' }}>
                     {selectedItem.por_que_detuvo}
                   </div>
                 </div>
 
                 {/* 3. SUGERENCIA DEL CATÁLOGO */}
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#166534', letterSpacing: '0.5px', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--dataops-success-text)', letterSpacing: '0.5px', marginBottom: '6px' }}>
                     SUGERENCIA DEL CATÁLOGO CANÓNICO
                   </div>
-                  <div style={{
-                    padding: '14px', backgroundColor: '#f0fdf4', borderRadius: '8px', borderLeft: '4px solid #10b981',
+                  <div className="dataops-banner-success" style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                   }}>
                     <div>
-                      <div style={{ fontSize: '14px', fontWeight: '700', color: '#15803d' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '700' }}>
                         {selectedItem.sugerencia}
                       </div>
-                      <div style={{ fontSize: '12px', color: '#166534', marginTop: '2px' }}>
+                      <div style={{ fontSize: '12px', marginTop: '2px', opacity: 0.9 }}>
                         Similitud fonética / fuzzy: {selectedItem.similitud}%
                       </div>
                     </div>
@@ -493,8 +489,8 @@ export default function HumanReviewFlowView() {
                       className="sileo-btn"
                       style={{
                         padding: '4px 10px', fontSize: '11px', borderRadius: '6px',
-                        backgroundColor: '#ffffff', border: '1px solid #a7f3d0', cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: '4px'
+                        backgroundColor: 'var(--color-paper-white)', border: '1px solid var(--dataops-success-border)', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--dataops-success-text)'
                       }}
                     >
                       {revealedCis[selectedItem.id] ? <EyeOff size={13} /> : <Eye size={13} />}
@@ -609,7 +605,7 @@ export default function HumanReviewFlowView() {
 
                 {/* 5. VISTA PREVIA DE DESTINO */}
                 <div style={{
-                  padding: '12px 16px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid var(--color-border)',
+                  padding: '12px 16px', backgroundColor: 'var(--color-mist-gray)', borderRadius: '8px', border: '1px solid var(--color-border)',
                   fontSize: '12.5px', color: 'var(--color-slate-gray)'
                 }}>
                   <span>Vista previa de impacto: </span>
@@ -651,7 +647,7 @@ export default function HumanReviewFlowView() {
                     <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>{res.antes}</td>
                     <td style={{ padding: '10px 14px', fontWeight: '700', color: '#10b981' }}>{res.despues}</td>
                     <td style={{ padding: '10px 14px' }}>{res.motivo}</td>
-                    <td style={{ padding: '10px 14px', color: '#2563eb' }}>{res.accion}</td>
+                    <td style={{ padding: '10px 14px', color: 'var(--dataops-info-text)' }}>{res.accion}</td>
                   </tr>
                 ))}
               </tbody>
@@ -680,9 +676,9 @@ export default function HumanReviewFlowView() {
               value={discardNote}
               onChange={(e) => setDiscardNote(e.target.value)}
               placeholder="Ej: Fila corrupta no pertenece a la carrera de Gestión de Riesgos..."
+              className="dataops-textarea"
               style={{
-                width: '100%', padding: '10px 12px', borderRadius: '8px',
-                border: '1px solid var(--color-border)', fontSize: '13px', boxSizing: 'border-box'
+                width: '100%', boxSizing: 'border-box'
               }}
             />
 
@@ -690,7 +686,7 @@ export default function HumanReviewFlowView() {
               <button
                 onClick={() => setIsDiscardModalOpen(false)}
                 className="sileo-btn"
-                style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'transparent' }}
+                style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-ink-black)' }}
               >
                 Cancelar
               </button>
@@ -728,9 +724,9 @@ export default function HumanReviewFlowView() {
               type="text"
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
+              className="dataops-input"
               style={{
-                width: '100%', padding: '10px 12px', borderRadius: '8px',
-                border: '1px solid var(--color-border)', fontSize: '13px', boxSizing: 'border-box'
+                width: '100%', boxSizing: 'border-box'
               }}
             />
 
@@ -738,7 +734,7 @@ export default function HumanReviewFlowView() {
               <button
                 onClick={() => setIsEditModalOpen(false)}
                 className="sileo-btn"
-                style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'transparent' }}
+                style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-ink-black)' }}
               >
                 Cancelar
               </button>
