@@ -1,5 +1,5 @@
 import client from './client';
-import { MOCK_SOURCES, MOCK_NORMALIZATION_MATRIX, MOCK_INITIAL_LOGS } from '../constants/mockData';
+import { UMBRAL_INDICE_REGISTRO_DEC } from '../constants/dataopsConfig';
 
 const BASE_URL = '/api/v1/dataops';
 
@@ -60,15 +60,13 @@ export const dataopsApi = {
   },
 
   /**
-   * Sube un nuevo archivo fuente con tracking de progreso y ejecución del pipeline
-   * @param {File} file 
-   * @param {string} sourceType 
-   * @param {Function} onProgress 
+   * Sube un nuevo archivo fuente individual con tracking de progreso
    */
-  uploadFile: async (file, sourceType = 'Acta Calificaciones (Excel)', onProgress = null) => {
+  uploadFile: async (file, sourceType = 'ACTA', tipoEscala = null, onProgress = null) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('source_type', sourceType);
+    if (sourceType) formData.append('source_type', sourceType);
+    if (tipoEscala) formData.append('tipo_escala', tipoEscala);
 
     const res = await client.post(`${BASE_URL}/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -83,16 +81,24 @@ export const dataopsApi = {
   },
 
   /**
-   * Sube un lote de 1 a N archivos simultáneos con tipos documentales y seguimiento de progreso
-   * @param {Array<{ file: File, sourceType: string }>} filesWithTypes 
-   * @param {Function} onProgress 
+   * Sube un lote de 1 a 10 archivos simultáneos con tipos documentales y escala por archivo (#16, #17, #18)
+   * @param {Array<{ file: File, sourceType: string, tipoEscala?: string|null }>} filesWithTypes
+   * @param {Function} onProgress
    */
-  uploadBatch: async (filesWithTypes, onProgress = null) => {
+  uploadBatch: async (filesWithTypes, onProgress = null, batchMeta = {}) => {
     const formData = new FormData();
-    filesWithTypes.forEach(({ file, sourceType }) => {
+    filesWithTypes.forEach(({ file, sourceType, tipoEscala }) => {
       formData.append('files', file);
-      formData.append('source_types', sourceType);
+      formData.append('source_types', sourceType || '');
+      formData.append('tipos_fuente', sourceType || '');
+      formData.append('tipos_escala', tipoEscala || '');
     });
+    if (batchMeta?.institucion) {
+      formData.append('institucion', batchMeta.institucion);
+    }
+    if (batchMeta?.periodo) {
+      formData.append('periodo', batchMeta.periodo);
+    }
 
     const res = await client.post(`${BASE_URL}/upload-batch`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -110,7 +116,7 @@ export const dataopsApi = {
    * Ejecuta o re-procesa el pipeline sobre un lote
    */
   processBatch: async (docId = null) => {
-    const res = docId 
+    const res = docId
       ? await client.post(`${BASE_URL}/process/${docId}`)
       : await client.post(`${BASE_URL}/process-batch`);
     return res.data;
@@ -120,6 +126,19 @@ export const dataopsApi = {
    * Obtiene la bitácora técnica de logs para un documento
    */
   getLogs: async (docId) => {
+    try {
+      const res = await client.get(`${BASE_URL}/logs/${docId}`);
+      return res.data;
+    } catch (err) {
+      console.warn('Backend dataops/logs no disponible:', err.message);
+      return { status: 'success', data: [] };
+    }
+  },
+
+  /**
+   * Alias de getLogs para obtener la bitácora técnica y reporte Markdown de un documento
+   */
+  getDocumentLogs: async (docId) => {
     try {
       const res = await client.get(`${BASE_URL}/logs/${docId}`);
       return res.data;
@@ -143,56 +162,121 @@ export const dataopsApi = {
   },
 
   /**
-   * Obtiene la bandeja de revisión humana
+   * Obtiene resumen agregado y KPIs server-side de un lote (#1, #2)
    */
-  getReviewTray: async () => {
-    try {
-      const res = await client.get(`${BASE_URL}/review-tray`);
-      return res.data;
-    } catch (err) {
-      return { status: 'success', data: [] };
+  getLoteResumen: async (idLote = 'latest') => {
+    const res = await client.get(`${BASE_URL}/lote/${idLote}/resumen`);
+    return res.data;
+  },
+
+  /**
+   * Obtiene la cabecera contextual y lista de archivos de un lote (#17)
+   */
+  getLoteContext: async (idLote) => {
+    const res = await client.get(`${BASE_URL}/lote/${idLote}/context`);
+    return res.data;
+  },
+
+  /**
+   * Paso ②: Obtiene el mapeo fila origen vs oración que lee BETO (#17)
+   */
+  getLoteRawVsText: async (idLote, docId = null) => {
+    const params = docId ? { doc_id: docId } : {};
+    const res = await client.get(`${BASE_URL}/lote/${idLote}/raw-vs-text`, { params });
+    return res.data;
+  },
+
+  /**
+   * Paso ③: Obtiene la lectura estructurada de BETO (Capas A, B y C) con filtro opcional por archivo y paginación (#13, #17)
+   */
+  getLoteBetoReading: async (idLote, options = {}) => {
+    const params = {};
+    if (options.docId) params.doc_id = options.docId;
+    if (options.page) params.page = options.page;
+    if (options.pageSize) params.page_size = options.pageSize;
+    if (options.search) params.search = options.search;
+    const estadoVal = options.estado || options.filtroEstado;
+    if (estadoVal && estadoVal !== 'ALL') params.estado = estadoVal;
+    if (options.motivo && options.motivo !== 'ALL') params.motivo = options.motivo;
+    const res = await client.get(`${BASE_URL}/lote/${idLote}/beto-reading`, { params });
+    return res.data;
+  },
+
+  /**
+   * Paso ④: Obtiene los casos derivados a la bandeja de revisión humana (#12, #17)
+   */
+  getReviewTray: async (idLote = null, options = {}) => {
+    const params = {};
+    if (idLote) {
+      params.id_lote = idLote;
     }
+    if (options.docId) {
+      params.doc_id = options.docId;
+    }
+    if (options.motivo && options.motivo !== 'ALL') params.motivo = options.motivo;
+    if (options.estado && options.estado !== 'ALL') params.estado = options.estado;
+    if (options.page) params.page = options.page;
+    if (options.pageSize) params.page_size = options.pageSize;
+    const res = await client.get(`${BASE_URL}/review-tray`, { params });
+    return res.data;
+  },
+
+  /**
+   * Revela el CI completo de un registro bajo demanda con auditoría (#13)
+   */
+  revelarCi: async (registroId) => {
+    const res = await client.get(`${BASE_URL}/registro/${registroId}/revelar-ci`);
+    return res.data;
+  },
+
+  /**
+   * Compara texto libre contra catálogo oficial con RapidFuzz real en backend (#7)
+   */
+  compareRapidFuzz: async (inputText, catalogType = 'MODULO', threshold = 85.0) => {
+    const safeText = String(inputText || '').slice(0, 200);
+    const res = await client.post(`${BASE_URL}/rapidfuzz-compare`, {
+      input_text: safeText,
+      string_a: safeText,
+      catalog_type: catalogType,
+      threshold
+    });
+    return res.data;
   },
 
   /**
    * Desvincula fuentes conciliadas
    */
   unlinkSources: async (data) => {
-    try {
-      const res = await client.post(`${BASE_URL}/unlink`, data);
-      return res.data;
-    } catch (err) {
-      return { status: 'success', message: 'Fuentes desvinculadas exitosamente.' };
-    }
+    const res = await client.post(`${BASE_URL}/unlink`, data);
+    return res.data;
   },
 
   /**
-   * Aprueba y consolida un registro de la bandeja de revisión humana
+   * Resuelve y confirma un registro individual de la bandeja de revisión humana
    */
-  resolveReviewItem: async (id, payload = {}) => {
-    try {
-      const res = await client.post(`${BASE_URL}/review-tray/${id}/resolve`, payload);
-      return res.data;
-    } catch (err) {
-      return { status: 'success', message: `Registro ${id} consolidado exitosamente.`, id };
-    }
+  resolveReviewItem: async (itemId, payload = {}) => {
+    const res = await client.post(`${BASE_URL}/review-tray/${itemId}/resolve`, payload);
+    return res.data;
   },
 
   /**
-   * Resuelve y consolida en lote múltiples casos de la bandeja de revisión humana
+   * Desvincula / rechaza un registro de la bandeja de revisión
+   */
+  unlinkReviewItem: async (itemId) => {
+    const res = await client.post(`${BASE_URL}/review-tray/${itemId}/unlink`);
+    return res.data;
+  },
+
+  /**
+   * Resuelve en lote múltiples registros de revisión humana
    */
   batchResolveReviewItems: async (payload = {}) => {
-    try {
-      const res = await client.post(`${BASE_URL}/review-tray/batch-resolve`, payload);
-      return res.data;
-    } catch (err) {
-      console.error('Error al resolver lote:', err);
-      throw err;
-    }
+    const res = await client.post(`${BASE_URL}/review-tray/batch-resolve`, payload);
+    return res.data;
   },
 
   /**
-   * Obtiene entidades no resueltas (score < 0.85)
+   * Obtiene entidades no resueltas
    */
   getUnresolvedEntities: async () => {
     try {
@@ -207,44 +291,20 @@ export const dataopsApi = {
    * Vincula una entidad detectada con el catálogo maestro
    */
   linkEntity: async (id, payload = {}) => {
-    try {
-      const res = await client.post(`${BASE_URL}/entities/${id}/link`, payload);
-      return res.data;
-    } catch (err) {
-      return { status: 'success', message: `Entidad #${id} vinculada.`, id };
-    }
+    const res = await client.post(`${BASE_URL}/entities/${id}/link`, payload);
+    return res.data;
   },
 
   /**
    * Obtiene métricas y rendimiento de telemetría IA (BETO + RapidFuzz)
    */
   getTelemetrySummary: async () => {
-    try {
-      const res = await client.get(`${BASE_URL}/telemetry/summary`);
-      return res.data;
-    } catch (err) {
-      return {
-        status: 'success',
-        kpis: {
-          p95_latency_sec: 1.42,
-          acceleration_device: 'Docker CUDA 12.2 / TensorRT',
-          token_throughput: 482,
-          vram_usage_gb: '1.8 / 6.0 GB',
-          auto_processed_pct: 87.4,
-          human_review_pct: 12.6
-        },
-        model_specs: {
-          architecture: 'BETO v2.4 (Spanish BERT)',
-          confidence_threshold: 0.85,
-          matching_engine: 'RapidFuzz Levenshtein'
-        },
-        recent_runs: []
-      };
-    }
+    const res = await client.get(`${BASE_URL}/telemetry/summary`);
+    return res.data;
   },
 
   /**
-   * Obtiene los registros de texto plano serializados del pipeline (staging_registros_crudos)
+   * Obtiene los registros de texto plano serializados del pipeline (Registros de Ingesta)
    */
   getPlainTextRecords: async (docIds = null) => {
     try {
@@ -252,28 +312,28 @@ export const dataopsApi = {
       const res = await client.get(`${BASE_URL}/plain-text-records`, { params });
       return res.data;
     } catch (err) {
-      console.warn('Backend plain-text-records no disponible, usando fallback:', err.message);
+      console.warn('Backend plain-text-records no disponible:', err.message);
       return { status: 'success', data: [] };
     }
   },
 
   /**
-   * Obtiene los catálogos maestros 3NF (dim_modulo, dim_docente, dim_estudiante) de PostgreSQL
+   * Obtiene los catálogos maestros (Módulos, Docentes, Estudiantes) de PostgreSQL
    */
   getCatalogs: async () => {
     try {
       const res = await client.get(`${BASE_URL}/catalogs`);
       return res.data;
     } catch (err) {
-      console.warn('Backend catalogs no disponible, usando fallback:', err.message);
+      console.warn('Backend catalogs no disponible:', err.message);
       return { status: 'success', data: null };
     }
   },
 
   /**
-   * Ejecuta inferencia BETO NER y matching sobre texto libre
+   * Ejecuta inferencia BETO NER y matching sobre texto libre (#5, #6)
    */
-  inferBeto: async (text, threshold = 0.85) => {
+  inferBeto: async (text, threshold = UMBRAL_INDICE_REGISTRO_DEC) => {
     try {
       const res = await client.post(`${BASE_URL}/infer-beto`, { text, threshold });
       return res.data;
@@ -284,51 +344,19 @@ export const dataopsApi = {
   },
 
   /**
-   * Confirma la inserción de registros en fact_rendimiento_academico y deriva dudosos a HITL
+   * Confirma la inserción de registros al Data Warehouse enrutando por tipo_fuente (#8, #10)
+   * o resuelve un caso individual si se provee resolved_item_id.
    */
   confirmDwInsert: async (payload = {}) => {
+    if (payload && payload.resolved_item_id) {
+      const res = await client.post(`${BASE_URL}/review-tray/${payload.resolved_item_id}/resolve`, {
+        motivo: payload.motivo,
+        accion: payload.accion,
+        texto_editado: payload.nuevo_texto || null
+      });
+      return res.data;
+    }
     const res = await client.post(`${BASE_URL}/confirm-dw-insert`, payload);
-    return res.data;
-  },
-
-  /**
-   * Obtiene la información de contexto y cabecera de un lote específico
-   */
-  getLoteContext: async (docId) => {
-    const res = await client.get(`${BASE_URL}/lote/${docId}/context`);
-    return res.data;
-  },
-
-  /**
-   * Paso ②: Obtiene el mapeo fila Excel vs oración que lee BETO
-   */
-  getLoteRawVsText: async (docId) => {
-    const res = await client.get(`${BASE_URL}/lote/${docId}/raw-vs-text`);
-    return res.data;
-  },
-
-  /**
-   * Paso ③: Obtiene la lectura estructurada de BETO (Capa A, B y C)
-   */
-  getLoteBetoReading: async (docId) => {
-    const res = await client.get(`${BASE_URL}/lote/${docId}/beto-reading`);
-    return res.data;
-  },
-
-  /**
-   * Bloqueo pesimista con TTL de 5 min para un ítem en revisión
-   */
-  lockReviewItem: async (itemId) => {
-    const res = await client.post(`${BASE_URL}/review-tray/${itemId}/lock`);
-    return res.data;
-  },
-
-  /**
-   * Libera el bloqueo pesimista de un ítem
-   */
-  unlockReviewItem: async (itemId) => {
-    const res = await client.post(`${BASE_URL}/review-tray/${itemId}/unlock`);
     return res.data;
   }
 };
-

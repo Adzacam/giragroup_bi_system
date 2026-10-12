@@ -15,6 +15,7 @@ export default function HumanReviewFlowView() {
   const batchId = searchParams.get('lote');
 
   const [activeTab, setActiveTab] = useState('PENDIENTES'); // 'PENDIENTES' | 'RESUELTOS'
+  const [selectedDocId, setSelectedDocId] = useState(null);
   const [selectedReason, setSelectedReason] = useState('ALL');
   const [selectedItem, setSelectedItem] = useState(null);
   const [revealedCis, setRevealedCis] = useState({});
@@ -27,85 +28,44 @@ export default function HumanReviewFlowView() {
   const [editText, setEditText] = useState('');
 
   // Cola y Datos
-  const [queueItems, setQueueItems] = useState([
-    {
-      id: 101,
-      motivo: 'BAJA_CONFIANZA',
-      motivo_label: 'Baja confianza',
-      tipo_entidad: 'ESTUDIANTE',
-      que_vio: 'Peres Mamani Jhuan, CI 4892019 LP, Gestión de Riesgos, nota 8.5',
-      ci_enmascarado: '••••019 LP',
-      ci_real: '4892019 LP',
-      por_que_detuvo: 'El modelo no está seguro del nombre (confianza 62 < 85)',
-      sugerencia: 'Pérez Mamani Juan',
-      similitud: 88,
-      destino_dw: 'DimEstudiante(ID: 412), FactCalificaciones(Nota: 85.0)'
-    },
-    {
-      id: 102,
-      motivo: 'CI_ILEGIBLE',
-      motivo_label: 'CI ilegible',
-      tipo_entidad: 'ESTUDIANTE',
-      que_vio: 'Flores Condori Roberto, CI 5598?24 CB, Gestión de Riesgos, nota 7.4',
-      ci_enmascarado: '••••?24 CB',
-      ci_real: '5598?24 CB',
-      por_que_detuvo: 'La cédula contiene un carácter corrupto o signo de interrogación (?)',
-      sugerencia: 'Flores Condori Roberto (CI en catálogo: 5598124 CB)',
-      similitud: 96,
-      destino_dw: 'DimEstudiante(ID: 709), FactCalificaciones(Nota: 74.0)'
-    },
-    {
-      id: 103,
-      motivo: 'HOMONIMO_POTENCIAL',
-      motivo_label: 'Posible homónimo',
-      tipo_entidad: 'ESTUDIANTE',
-      que_vio: 'Mamani Choque Andrea, CI 7821901 LP, Gestión de Riesgos, nota 6.8',
-      ci_enmascarado: '••••901 LP',
-      ci_real: '7821901 LP',
-      por_que_detuvo: 'Existen dos estudiantes con el mismo nombre y carreras distintas',
-      sugerencia: 'Mamani Choque Andrea (Ing. Comercial) vs Mamani Choque Andrea (Derecho)',
-      similitud: 100,
-      destino_dw: 'Requiere confirmar si es la misma persona o separar identidades'
-    },
-    {
-      id: 104,
-      motivo: 'CI_NOMBRE_DISCORDANTE',
-      motivo_label: 'CI ≠ nombre',
-      tipo_entidad: 'ESTUDIANTE',
-      que_vio: 'Vargas Rios David, CI 4892019 LP, Gestión de Riesgos, nota 9.0',
-      ci_enmascarado: '••••019 LP',
-      ci_real: '4892019 LP',
-      por_que_detuvo: 'El CI 4892019 LP pertenece en catálogo a Pérez Mamani Juan',
-      sugerencia: 'Verificar si hubo error tipográfico en el número de CI',
-      similitud: 45,
-      destino_dw: 'Detenido por regla de integridad cruzada'
-    },
-    {
-      id: 105,
-      motivo: 'ENTIDAD_NUEVA',
-      motivo_label: 'Entidad nueva',
-      tipo_entidad: 'MODULO',
-      que_vio: 'Gutiérrez Soliz Ana, CI 9812401 SC, Inteligencia de Negocios Aplicada, nota 90',
-      ci_enmascarado: '••••401 SC',
-      ci_real: '9812401 SC',
-      por_que_detuvo: 'El módulo no existe en dim_modulo con este nombre exacto',
-      sugerencia: 'Vincular a canónico: "Business Intelligence y Analytics (MOD-302)"',
-      similitud: 82,
-      destino_dw: 'Crear alias o nueva entrada en catálogo dim_modulo'
-    }
-  ]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [queueItems, setQueueItems] = useState([]);
+  const [resolvedHistory, setResolvedHistory] = useState([]);
 
-  const [resolvedHistory, setResolvedHistory] = useState([
-    {
-      id: 99,
-      quien: 'Auditor Calidad (Tú)',
-      cuando: 'Hace 15 min',
-      antes: 'Peres Juan (CI: ••••019 LP)',
-      despues: 'Pérez Mamani Juan (ID: 412) ✓ DW',
-      motivo: 'Baja confianza',
-      accion: 'Confirmó sugerencia'
+  useEffect(() => {
+    loadReviewQueue(selectedDocId);
+  }, [batchId, selectedDocId]);
+
+  const loadReviewQueue = async (docFilter = null) => {
+    try {
+      setIsLoading(true);
+      const effectiveId = batchId || localStorage.getItem('last_active_batch_id') || null;
+      const res = await dataopsApi.getReviewTray(
+        effectiveId ? Number(effectiveId) : null,
+        { docId: docFilter }
+      );
+      if (res && res.data) {
+        setQueueItems(res.data);
+        if (Array.isArray(res.resolved_history)) {
+          setResolvedHistory(res.resolved_history);
+        }
+        if (res.data.length > 0) {
+          setSelectedItem(res.data[0]);
+        } else {
+          setSelectedItem(null);
+        }
+      } else {
+        setQueueItems([]);
+        setSelectedItem(null);
+      }
+    } catch (err) {
+      console.warn('Error cargando bandeja de revisión:', err);
+      setQueueItems([]);
+      setSelectedItem(null);
+    } finally {
+      setIsLoading(false);
     }
-  ]);
+  };
 
   useEffect(() => {
     if (queueItems.length > 0 && !selectedItem) {
@@ -143,8 +103,29 @@ export default function HumanReviewFlowView() {
     }
   };
 
-  const toggleCi = (id) => {
-    setRevealedCis(prev => ({ ...prev, [id]: !prev[id] }));
+  const toggleCi = async (id) => {
+    if (revealedCis[id]) {
+      setRevealedCis(prev => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+      return;
+    }
+
+    try {
+      const res = await dataopsApi.revelarCi(id);
+      const ciRevealed = res?.ci_real || res?.ci;
+      if (ciRevealed) {
+        setRevealedCis(prev => ({ ...prev, [id]: ciRevealed }));
+      }
+    } catch (err) {
+      const status = err.response?.status;
+      sileoToast.error({
+        title: status === 403 ? 'Permiso denegado (RBAC)' : 'No se pudo revelar el CI',
+        description: err.response?.data?.detail || 'Se requiere rol ADMIN o AUDITOR_CALIDAD para revelar datos personales.'
+      });
+    }
   };
 
   // Manejo de Deshacer Diferido (10s)
@@ -160,10 +141,10 @@ export default function HumanReviewFlowView() {
     const timerId = setTimeout(() => {
       // Commit definitivo en backend
       try {
-        dataopsApi.confirmDwInsert({
-          resolved_item_id: itemId,
+        dataopsApi.resolveReviewItem(itemId, {
           motivo: resolvedItem.motivo,
-          accion: actionLabel
+          accion: actionLabel,
+          texto_editado: newText,
         });
       } catch (err) {
         console.warn('Error en commit diferido:', err);
@@ -291,7 +272,11 @@ export default function HumanReviewFlowView() {
   const progresoPorcentaje = totalCasos > 0 ? Math.round((totalResueltos / totalCasos) * 100) : 0;
 
   return (
-    <BatchFlowLayout currentStep={4}>
+    <BatchFlowLayout
+      currentStep={4}
+      selectedDocId={selectedDocId}
+      onSelectDocId={setSelectedDocId}
+    >
       {/* ─── Encabezado y KPIs ─── */}
       <div className="floating-artifact" style={{ padding: '20px 24px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
@@ -360,6 +345,52 @@ export default function HumanReviewFlowView() {
       </div>
 
       {activeTab === 'PENDIENTES' ? (
+        isLoading ? (
+          <div className="floating-artifact" style={{ padding: '64px 24px', textAlign: 'center' }}>
+            <div style={{ fontSize: '15px', color: 'var(--color-slate-gray)', fontWeight: '600' }}>
+              Cargando bandeja de revisión de excepciones...
+            </div>
+          </div>
+        ) : queueItems.length === 0 ? (
+          <div className="floating-artifact" style={{ padding: '56px 24px', textAlign: 'center' }}>
+            <div style={{
+              width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--dataops-success-bg)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto'
+            }}>
+              <CheckCircle2 size={36} color="var(--dataops-success-text)" />
+            </div>
+            <h3 className="serif-heading" style={{ fontSize: '20px', margin: '0 0 10px 0', color: 'var(--color-ink-black)' }}>
+              Bandeja de revisión completamente limpia
+            </h3>
+            <p style={{ fontSize: '14px', color: 'var(--color-slate-gray)', maxWidth: '540px', margin: '0 auto 24px auto', lineHeight: '1.6' }}>
+              No existen casos derivados a revisión humana en este lote. Todas las entidades alcanzaron el umbral de confianza o ya fueron conciliadas de forma directa hacia el Data Warehouse.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => navigate('/dataops/ingesta')}
+                className="sileo-btn"
+                style={{
+                  padding: '10px 20px', backgroundColor: '#2563eb', color: '#fff',
+                  border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '13px', cursor: 'pointer'
+                }}
+              >
+                Ingestar nuevo lote de archivos
+              </button>
+              {resolvedHistory.length > 0 && (
+                <button
+                  onClick={() => setActiveTab('RESUELTOS')}
+                  className="sileo-btn"
+                  style={{
+                    padding: '10px 20px', backgroundColor: 'var(--color-mist-gray)', color: 'var(--color-ink-black)',
+                    border: '1px solid var(--color-border)', borderRadius: '8px', fontWeight: '600', fontSize: '13px', cursor: 'pointer'
+                  }}
+                >
+                  Ver historial de resueltos ({resolvedHistory.length})
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
         /* ─── Vista Principal Maestro-Detalle ─── */
         <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '24px' }}>
           
@@ -433,7 +464,7 @@ export default function HumanReviewFlowView() {
                       {item.sugerencia}
                     </div>
                     <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>
-                      CI: {revealedCis[item.id] ? item.ci_real : item.ci_enmascarado}
+                      CI: {revealedCis[item.id] ? revealedCis[item.id] : item.ci_enmascarado}
                     </div>
                   </div>
                 );
@@ -481,7 +512,7 @@ export default function HumanReviewFlowView() {
                         {selectedItem.sugerencia}
                       </div>
                       <div style={{ fontSize: '12px', marginTop: '2px', opacity: 0.9 }}>
-                        Similitud fonética / fuzzy: {selectedItem.similitud}%
+                        Similitud fonética / fuzzy: {selectedItem.similitud}% · CI: <strong>{revealedCis[selectedItem.id] ? revealedCis[selectedItem.id] : selectedItem.ci_enmascarado}</strong>
                       </div>
                     </div>
                     <button
@@ -621,11 +652,12 @@ export default function HumanReviewFlowView() {
             )}
           </div>
         </div>
-      ) : (
+      )
+    ) : (
         /* ─── Pestaña "Resueltos" (Auditoría) ─── */
         <div className="floating-artifact" style={{ padding: '24px' }}>
           <h3 className="serif-heading" style={{ fontSize: '16px', margin: '0 0 16px 0', color: 'var(--color-ink-black)' }}>
-            Historial de decisiones auditadas (log_auditoria_nlp)
+            Historial de decisiones auditadas (Registro de Auditoría)
           </h3>
           <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>

@@ -16,7 +16,8 @@ import {
   FileCode,
   FileText,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Download
 } from 'lucide-react';
 
 export const FILE_TELEMETRY_DATA = [
@@ -77,7 +78,8 @@ export const FILE_TELEMETRY_DATA = [
       ]
     },
     paso6: {
-      sql: `INSERT INTO public.staging_registros_crudos (
+      sql: `-- Persistencia transaccional en Registros de Ingesta
+INSERT INTO "Registros de Ingesta" (
   lote_id, fuente_archivo, esquema_detectado,
   payload_json, texto_plano, hash_integridad, estado_registro
 )
@@ -86,7 +88,7 @@ VALUES (
   $record_payload, $serializado_texto_plano, '8f4e2a1b', 'LISTO_REVISION'
 );`,
       status: 'Confirmado por lote (BATCH COMMIT: 342 registros)',
-      table: 'public.staging_registros_crudos'
+      table: 'Registros de Ingesta'
     }
   },
   {
@@ -145,7 +147,8 @@ VALUES (
       ]
     },
     paso6: {
-      sql: `INSERT INTO public.staging_registros_crudos (
+      sql: `-- Persistencia transaccional en Registros de Ingesta
+INSERT INTO "Registros de Ingesta" (
   lote_id, fuente_archivo, esquema_detectado,
   payload_json, texto_plano, hash_integridad, estado_registro
 )
@@ -154,7 +157,7 @@ VALUES (
   $record_payload, $serializado_texto_plano, '3a9c1b2c', 'LISTO_REVISION'
 );`,
       status: 'Confirmado por lote (BATCH COMMIT: 215 registros)',
-      table: 'public.staging_registros_crudos'
+      table: 'Registros de Ingesta'
     }
   },
   {
@@ -213,7 +216,8 @@ VALUES (
       ]
     },
     paso6: {
-      sql: `INSERT INTO public.staging_registros_crudos (
+      sql: `-- Persistencia transaccional en Registros de Ingesta
+INSERT INTO "Registros de Ingesta" (
   lote_id, fuente_archivo, esquema_detectado,
   payload_json, texto_plano, hash_integridad, estado_registro
 )
@@ -222,7 +226,7 @@ VALUES (
   $record_payload, $serializado_texto_plano, 'c5f2d84a', 'LISTO_REVISION'
 );`,
       status: 'Confirmado por lote (BATCH COMMIT: 691 registros)',
-      table: 'public.staging_registros_crudos'
+      table: 'Registros de Ingesta'
     }
   },
   {
@@ -281,7 +285,8 @@ VALUES (
       ]
     },
     paso6: {
-      sql: `INSERT INTO public.staging_registros_crudos (
+      sql: `-- Persistencia transaccional en Registros de Ingesta
+INSERT INTO "Registros de Ingesta" (
   lote_id, fuente_archivo, esquema_detectado,
   payload_json, texto_plano, hash_integridad, estado_registro
 )
@@ -290,7 +295,7 @@ VALUES (
   $record_payload, $serializado_texto_plano, '7e3b9f01', 'LISTO_REVISION'
 );`,
       status: 'Confirmado por lote (BATCH COMMIT: 412 registros)',
-      table: 'public.staging_registros_crudos'
+      table: 'Registros de Ingesta'
     }
   }
 ];
@@ -303,7 +308,9 @@ export default function PipelineTelemetryDrawer({
   isProcessing = false,
   lotName = 'Lote: POS-2026-B_M3',
   sources = [],
-  activeDocId = null
+  activeDocId = null,
+  markdownReport = '',
+  summaryMetrics = null
 }) {
   const [selectedTab, setSelectedTab] = useState('global');
   const scrollContainerRef = useRef(null);
@@ -371,7 +378,9 @@ export default function PipelineTelemetryDrawer({
   // Construcción dinámica de la lista de archivos analizados a partir de las fuentes reales
   const dynamicFiles = (sources && sources.length > 0)
     ? sources.map((s, idx) => {
-        const name = s.name || s.nombre_archivo || `Documento_${s.id || idx}`;
+        const docIdVal = s.id || s.id_documento || idx + 1;
+        const name = s.name || s.nombre_archivo || `Documento_${docIdVal}`;
+        const rawType = s.type || s.tipo_fuente || s.tipo_documento || 'Fuente Documental';
         const nameLower = name.toLowerCase();
         let badgeColor = '#10b981';
         let mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -381,7 +390,7 @@ export default function PipelineTelemetryDrawer({
         let detection = `Detección: Acta de Calificaciones (Excel) - Confianza 98.4%`;
         let patterns = ['NOMBRES Y APELLIDOS', 'CALIF_FINAL', 'DOC_IDENTIDAD/CI', 'COD_MODULO'];
 
-        if (nameLower.endsWith('.csv') || (s.type && s.type.toLowerCase().includes('forms'))) {
+        if (nameLower.endsWith('.csv') || rawType.toLowerCase().includes('forms')) {
           badgeColor = '#3b82f6';
           mime = 'text/csv';
           magic = 'EF BB BF 54 69 6D 65 (UTF-8 BOM / CSV)';
@@ -389,7 +398,7 @@ export default function PipelineTelemetryDrawer({
           rule = 'RULE_HEURISTIC_GOOGLE_FORMS_V2';
           detection = `Detección: Google Forms CSV - Confianza 96.2%`;
           patterns = ['Marca temporal', 'Dirección de correo', 'Nombre Completo', 'CI'];
-        } else if (nameLower.endsWith('.xml') || (s.type && s.type.toLowerCase().includes('moodle'))) {
+        } else if (nameLower.endsWith('.xml') || rawType.toLowerCase().includes('moodle')) {
           badgeColor = '#f59e0b';
           mime = 'application/xml';
           magic = '3C 3F 78 6D 6C 20 76 65 (XML UTF-8)';
@@ -397,7 +406,7 @@ export default function PipelineTelemetryDrawer({
           rule = 'RULE_HEURISTIC_MOODLE_XML_SCHEMA_V3';
           detection = `Detección: Reporte Aula Virtual Moodle - Confianza 94.7%`;
           patterns = ['grade_item', 'grade_grades', 'idnumber', 'finalgrade'];
-        } else if (nameLower.includes('cobranza') || nameLower.includes('cartera') || (s.type && s.type.toLowerCase().includes('cartera'))) {
+        } else if (nameLower.includes('cobranza') || nameLower.includes('cartera') || rawType.toLowerCase().includes('cartera')) {
           badgeColor = '#8b5cf6';
           mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
           magic = '50 4B 03 04 14 00 06 00 (ZIP/OOXML)';
@@ -407,15 +416,15 @@ export default function PipelineTelemetryDrawer({
           patterns = ['ESTUDIANTE / CLIENTE', 'NRO_DOCUMENTO', 'NRO_CUOTA', 'SALDO_MORA'];
         }
 
-        const recCount = s.records || s.registros || 35;
+        const recCount = s.records ?? s.registros_detectados ?? s.total_registros ?? s.registros ?? 35;
         const sizeKb = s.size || `${Math.round(recCount * 0.45) || 15} KB`;
-        const sha = s.sha256 || s.hash_integridad || 'f5aa1f65aaaa0064';
+        const sha = s.sha256 || s.hash_sha256 || s.hash_integridad || 'f5aa1f65aaaa0064';
 
         return {
-          id: `file_${s.id || idx}`,
-          docId: s.id || idx,
+          id: `file_${docIdVal}`,
+          docId: docIdVal,
           fileName: name,
-          sourceType: s.type || s.tipo_documento || 'Fuente Documental',
+          sourceType: rawType,
           badgeColor,
           paso1: {
             magicBytes: magic,
@@ -455,22 +464,66 @@ export default function PipelineTelemetryDrawer({
             ]
           },
           paso6: {
-            sql: `INSERT INTO public.staging_registros_crudos (
+            sql: `-- Persistencia transaccional en Registros de Ingesta
+INSERT INTO "Registros de Ingesta" (
   lote_id, fuente_archivo, esquema_detectado,
   payload_json, texto_plano, hash_integridad, estado_registro
 )
 VALUES (
-  'LOTE-ACTIVO', '${name}', '${s.type || "DESCONOCIDO"}',
+  'LOTE-ACTIVO', '${name}', '${rawType}',
   $record_payload, $serializado_texto_plano, '${sha.slice(0, 8)}', 'LISTO_REVISION'
 );`,
-            status: `Confirmado por lote (${recCount} registros cargados a staging)`,
-            table: 'public.staging_registros_crudos'
+            status: `Confirmado por lote (${recCount} registros cargados en Registros de Ingesta)`,
+            table: 'Registros de Ingesta'
           }
         };
       })
     : FILE_TELEMETRY_DATA;
 
-  const currentFileAnalysis = dynamicFiles.find((f) => f.id === selectedTab) || dynamicFiles[0];
+  const currentFileAnalysis = dynamicFiles.find((f) => f.id === selectedTab || String(f.docId) === String(activeDocId)) || dynamicFiles[0];
+
+  const effectiveMarkdownReport = markdownReport || [
+    `# REPORTE TÉCNICO DE AUDITORÍA E INGESTA DATAOPS`,
+    ``,
+    `- **Lote / Fuente:** \`${lotName}\``,
+    `- **ID de Documento:** \`#${activeDocId || currentFileAnalysis?.docId || 1}\``,
+    `- **Archivo Analizado:** \`${currentFileAnalysis?.fileName || 'Fuente Documental'}\``,
+    `- **Tipo Detectado:** \`${currentFileAnalysis?.sourceType || 'ACTA'}\``,
+    `- **Huella Criptográfica SHA-256:** \`${currentFileAnalysis?.paso1?.sha256 || 'Verificada'}\``,
+    ``,
+    `## Resumen de Métricas de Limpieza y Sanitización`,
+    `| Indicador de Calidad | Valor Registrado |`,
+    `| :--- | :--- |`,
+    `| **Filas Tabulares Detectadas** | ${summaryMetrics?.total_filas ?? summaryMetrics?.total_registros ?? currentFileAnalysis?.paso3?.dataEndRow ?? 0} |`,
+    `| **Celdas Combinadas / Metadatos Depurados** | ${summaryMetrics?.celdas_combinadas_desagrupadas ?? currentFileAnalysis?.paso3?.cellsCleared ?? 0} |`,
+    `| **Registros Aprobados para Data Warehouse** | ${summaryMetrics?.registros_aprobados_dw ?? summaryMetrics?.registros_limpios ?? 'Verificados'} |`,
+    `| **Casos Derivados a Cola de Revisión Humana** | ${summaryMetrics?.registros_derivados_hitl ?? summaryMetrics?.registros_observados ?? 0} |`,
+    `| **Trazas Técnicas Registradas** | ${logs?.length || 0} eventos |`,
+    ``,
+    `## Bitácora Cronológica de Transformaciones`,
+    ...(logs && logs.length > 0
+      ? logs.map((rawLog, i) => {
+          const item = formatLogItem(rawLog, i);
+          return `- \`[${item.time}]\` **[${item.level}]** \`${item.module}\` — ${item.message}`;
+        })
+      : [
+          `- \`[PASO 1]\` **[INFO]** \`detector.py\` — Inspección binaria y firma SHA-256 completada.`,
+          `- \`[PASO 2]\` **[INFO]** \`cleaner.py\` — Aislamiento de bloque tabular y remoción de ruido administrativo.`,
+          `- \`[PASO 3]\` **[SUCCESS]** \`serializer.py\` — Conversión a contrato de texto plano e inserción en Registros de Ingesta.`
+        ])
+  ].join('\n');
+
+  const handleDownloadMarkdown = () => {
+    const blob = new Blob([effectiveMarkdownReport], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporte_limpieza_lote_${activeDocId || 'activo'}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <>
@@ -544,11 +597,12 @@ VALUES (
                 alignItems: 'center',
                 gap: '8px',
                 letterSpacing: '0.4px',
-                fontStyle: 'normal'
+                fontStyle: 'normal',
+                flexWrap: 'wrap'
               }}
             >
               <Terminal size={16} color="#38bdf8" />
-              <span>CONSOLA DE CONVERSIÓN A TEXTO PLANO · PIPELINE.PY v2.0</span>
+              <span>CONSOLA DE AUDITORÍA Y CONVERSIÓN A TEXTO PLANO</span>
               <span
                 style={{
                   backgroundColor: 'rgba(217, 155, 38, 0.2)',
@@ -561,7 +615,7 @@ VALUES (
                   border: '1px solid rgba(217, 155, 38, 0.4)',
                 }}
               >
-                Sprint 2 · Tarea 7
+                Auditoría Técnica ETL
               </span>
             </h3>
             {lotName && (
@@ -607,6 +661,31 @@ VALUES (
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={handleDownloadMarkdown}
+              title="Descargar Reporte Técnico (.md)"
+              style={{
+                background: 'rgba(56, 189, 248, 0.12)',
+                border: '1px solid rgba(56, 189, 248, 0.4)',
+                color: '#38bdf8',
+                borderRadius: '6px',
+                padding: '6px 10px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '11px',
+                fontWeight: 600,
+                fontStyle: 'normal',
+                fontFamily: 'inherit',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <Download size={13} />
+              <span>Exportar .MD</span>
+            </button>
+
             {selectedTab === 'global' && onClearLogs && (
               <button
                 type="button"
@@ -705,6 +784,31 @@ VALUES (
             <span>Trazas en Vivo</span>
           </button>
 
+          <button
+            type="button"
+            onClick={() => setSelectedTab('markdown')}
+            style={{
+              padding: '6px 12px',
+              fontSize: '11px',
+              fontWeight: 600,
+              borderRadius: '6px',
+              border: selectedTab === 'markdown' ? '1px solid #f59e0b' : '1px solid #334155',
+              backgroundColor: selectedTab === 'markdown' ? 'rgba(245, 158, 11, 0.18)' : '#161e2e',
+              color: selectedTab === 'markdown' ? '#fcd34d' : '#94a3b8',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              whiteSpace: 'nowrap',
+              fontStyle: 'normal',
+              fontFamily: 'inherit',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <FileText size={13} />
+            <span>Reporte Técnico Markdown (.MD)</span>
+          </button>
+
           {dynamicFiles.map((file) => {
             const isSelected = selectedTab === file.id;
             return (
@@ -745,8 +849,76 @@ VALUES (
           })}
         </div>
 
-        {/* ── CUERPO: Trazas Globales en Vivo ── */}
-        {selectedTab === 'global' ? (
+        {/* ── CUERPO: Trazas Globales en Vivo / Reporte Markdown / Análisis por Archivo ── */}
+        {selectedTab === 'markdown' ? (
+          <div
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              paddingRight: '6px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px'
+            }}
+          >
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              backgroundColor: '#161e2e',
+              border: '1px solid #273549'
+            }}>
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#fcd34d' }}>
+                  Reporte Técnico Estructurado (.MD)
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                  Resumen de filas eliminadas, celdas desagrupadas, normalización y bitácora completa.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleDownloadMarkdown}
+                style={{
+                  backgroundColor: '#f59e0b',
+                  color: '#0f172a',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Download size={13} />
+                <span>Descargar .MD</span>
+              </button>
+            </div>
+
+            <pre
+              style={{
+                margin: 0,
+                padding: '14px',
+                borderRadius: '8px',
+                backgroundColor: '#090d14',
+                border: '1px solid #1e293b',
+                color: '#e2e8f0',
+                fontSize: '11.5px',
+                lineHeight: 1.6,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)"
+              }}
+            >
+              {effectiveMarkdownReport}
+            </pre>
+          </div>
+        ) : selectedTab === 'global' ? (
           <div
             ref={scrollContainerRef}
             className="pipeline-telemetry-body"

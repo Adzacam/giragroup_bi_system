@@ -12,7 +12,7 @@ export default function NotificationPopover({ notifications, onMarkAllRead, onCl
 
   return (
     <div
-      className="floating-artifact"
+      className="floating-artifact notif-popover-dropdown"
       style={{
         position: 'absolute',
         right: 0,

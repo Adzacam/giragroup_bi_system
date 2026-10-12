@@ -1,5 +1,5 @@
-import React, { Suspense, lazy, useState } from 'react';
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import React, { Suspense, lazy, useState, useEffect, useRef, useCallback } from 'react';
+import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -50,24 +50,76 @@ const queryClient = new QueryClient({
   },
 });
 
-/* ─── Loading spinner ─── */
+/* ─── Structured Institutional Section Loading Fallback ─── */
 function LoadingFallback() {
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('gira:suspense-state', { detail: { active: true } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('gira:suspense-state', { detail: { active: false } }));
+    };
+  }, []);
+
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      height: '60vh', fontSize: '14px', color: 'var(--color-slate-gray)',
-      fontFamily: 'var(--font-sohne)',
-    }}>
-      <div style={{ textAlign: 'center' }}>
-        <div className="ambient-float-a" style={{
-          width: '40px', height: '40px', borderRadius: '50%',
-          border: '3px solid var(--color-border)',
-          borderTopColor: 'var(--color-sienna-brown)',
-          animation: 'spin 0.8s linear infinite',
-          margin: '0 auto 16px',
-        }} />
-        Cargando módulo...
+    <div className="section-loading-container" role="status" aria-live="polite">
+      {/* Top animated progress bar inside the loading section */}
+      <div className="section-loading-topbar">
+        <div className="section-loading-topbar-fill" />
       </div>
+
+      {/* Institutional Loading Banner */}
+      <div className="section-loading-banner">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div
+            style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '50%',
+              border: '3px solid var(--color-border)',
+              borderTopColor: 'var(--color-gira-gold)',
+              animation: 'spin 0.75s linear infinite',
+              flexShrink: 0,
+            }}
+          />
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-ink-black)' }}>
+              Cargando sección del sistema...
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>
+              Sincronizando módulo analítico y vistas operativas · GIRA Group BI
+            </div>
+          </div>
+        </div>
+        <span
+          style={{
+            fontSize: '10.5px',
+            fontFamily: 'var(--font-mono)',
+            fontWeight: 700,
+            padding: '4px 10px',
+            borderRadius: '9999px',
+            backgroundColor: 'rgba(217, 155, 38, 0.14)',
+            color: 'var(--color-gira-gold)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          CARGANDO MÓDULO
+        </span>
+      </div>
+
+      {/* Skeleton KPI Row */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '16px',
+        }}
+      >
+        <div className="skeleton-shimmer" style={{ height: '104px' }} />
+        <div className="skeleton-shimmer" style={{ height: '104px' }} />
+        <div className="skeleton-shimmer" style={{ height: '104px' }} />
+      </div>
+
+      {/* Skeleton Main Content Area */}
+      <div className="skeleton-shimmer" style={{ height: '280px', width: '100%' }} />
     </div>
   );
 }
@@ -91,20 +143,139 @@ function DashboardRedirect() {
   const { role } = useAuth();
   const redirectMap = {
     ADMIN: '/dashboard',
-    AUDITOR_CALIDAD: '/dataops/procesamiento',
+    AUDITOR_CALIDAD: '/dataops/ingesta',
     DIRECTOR_ACADEMICO: '/academico/rendimiento',
     ANALISTA_FINANCIERO: '/financiero/recaudacion',
   };
   return <Navigate to={redirectMap[role] || '/dashboard'} replace />;
 }
- 
-/* ─── Main Layout (navbar + sidebar + content) ─── */
+
+/* ─── Main Layout (navbar + top loading bar + sidebar + content) ─── */
 function MainLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [topProgress, setTopProgress] = useState(0);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const location = useLocation();
+  const suspenseActiveRef = useRef(false);
+  const timersRef = useRef([]);
+  const lastClickTriggerRef = useRef(0);
+
+  const clearTimers = useCallback(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+  }, []);
+
+  const finishLoadingAnimation = useCallback(() => {
+    clearTimers();
+    setTopProgress(100);
+    const tDone = setTimeout(() => {
+      setIsNavigating(false);
+      setTopProgress(0);
+    }, 220);
+    timersRef.current.push(tDone);
+  }, [clearTimers]);
+
+  const triggerLoadingAnimation = useCallback(() => {
+    clearTimers();
+    setIsNavigating(true);
+    setTopProgress(15);
+
+    const t1 = setTimeout(() => setTopProgress(65), 75);
+    const t2 = setTimeout(() => setTopProgress(90), 190);
+    const t3 = setTimeout(() => {
+      if (!suspenseActiveRef.current) {
+        finishLoadingAnimation();
+      }
+    }, 340);
+
+    timersRef.current.push(t1, t2, t3);
+  }, [clearTimers, finishLoadingAnimation]);
+
+  // Listen for instant clicks on any internal navigation link (<a href="...">)
+  useEffect(() => {
+    const handleDocumentClick = (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+        return;
+      }
+      const anchor = e.target.closest ? e.target.closest('a[href]') : null;
+      if (!anchor) return;
+      const href = anchor.getAttribute('href');
+      if (
+        !href ||
+        href.startsWith('#') ||
+        href.startsWith('javascript:') ||
+        href.startsWith('mailto:') ||
+        href.startsWith('tel:') ||
+        href.startsWith('blob:') ||
+        anchor.hasAttribute('download') ||
+        anchor.target === '_blank'
+      ) {
+        return;
+      }
+      if (anchor.origin && anchor.origin !== window.location.origin) {
+        return;
+      }
+      lastClickTriggerRef.current = Date.now();
+      triggerLoadingAnimation();
+    };
+
+    document.addEventListener('click', handleDocumentClick, true);
+    return () => document.removeEventListener('click', handleDocumentClick, true);
+  }, [triggerLoadingAnimation]);
+
+  // Trigger top loading bar on route changes (including programmatic navigate())
+  useEffect(() => {
+    const elapsedSinceClick = Date.now() - lastClickTriggerRef.current;
+    if (elapsedSinceClick > 60 && !suspenseActiveRef.current) {
+      triggerLoadingAnimation();
+    }
+    setIsMobileOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [location.pathname, location.search, triggerLoadingAnimation]);
+
+  // Clean up any active timers on unmount
+  useEffect(() => {
+    return () => clearTimers();
+  }, [clearTimers]);
+
+  // Coordinate with React Suspense lazy chunk loading
+  useEffect(() => {
+    const handleSuspenseState = (e) => {
+      const active = Boolean(e.detail?.active);
+      suspenseActiveRef.current = active;
+      if (active) {
+        clearTimers();
+        setIsNavigating(true);
+        setTopProgress(90);
+      } else {
+        finishLoadingAnimation();
+      }
+    };
+
+    window.addEventListener('gira:suspense-state', handleSuspenseState);
+    return () => window.removeEventListener('gira:suspense-state', handleSuspenseState);
+  }, [clearTimers, finishLoadingAnimation]);
+
+  // Synchronize mobile drawer & collapsed state across 960px breakpoint
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 960px)');
+    const syncViewport = (matchesMobile) => {
+      if (matchesMobile) {
+        setSidebarCollapsed(false);
+      } else {
+        setIsMobileOpen(false);
+      }
+    };
+    syncViewport(media.matches);
+
+    const handleMediaChange = (e) => syncViewport(e.matches);
+    media.addEventListener('change', handleMediaChange);
+    return () => media.removeEventListener('change', handleMediaChange);
+  }, []);
 
   const toggleSidebar = () => {
-    if (window.innerWidth <= 960) {
+    if (window.matchMedia('(max-width: 960px)').matches || window.innerWidth <= 960) {
       setIsMobileOpen(prev => !prev);
     } else {
       setSidebarCollapsed(prev => !prev);
@@ -113,9 +284,37 @@ function MainLayout() {
 
   return (
     <>
-      <div className="floating-header-container">
-        <Navbar onToggleSidebar={toggleSidebar} />
+      {/* Fixed Viewport Top Loading Bar when clicking to change page/section */}
+      <div
+        id="top-navigation-loading-bar"
+        className="top-navigation-loading-bar"
+        aria-hidden="true"
+      >
+        <div
+          className="top-navigation-loading-fill"
+          style={{
+            width: `${topProgress}%`,
+            opacity: isNavigating || topProgress > 0 ? 1 : 0,
+          }}
+        />
       </div>
+
+      {/* Floating Loading Section Pill Indicator */}
+      {isNavigating && (
+        <div className="top-loading-pill" role="status" aria-live="polite">
+          <span className="top-loading-pill-spinner" />
+          <span>Cargando sección...</span>
+        </div>
+      )}
+
+      <div className="floating-header-container">
+        <Navbar
+          onToggleSidebar={toggleSidebar}
+          topLoadingProgress={topProgress}
+          isNavigating={isNavigating}
+        />
+      </div>
+
       <div className="app-layout">
         {isMobileOpen && (
           <div
@@ -136,7 +335,12 @@ function MainLayout() {
           </Suspense>
         </main>
       </div>
-      <MobileBottomNav />
+
+      <MobileBottomNav
+        onOpenMenu={() => setIsMobileOpen(prev => !prev)}
+        onCloseMenu={() => setIsMobileOpen(false)}
+        isMenuOpen={isMobileOpen}
+      />
     </>
   );
 }
@@ -168,6 +372,7 @@ function App() {
                 {/* Public */}
                 <Route path="/login" element={<LoginPage />} />
 
+
                 {/* Protected shell */}
                 <Route path="/" element={
                   <ProtectedRoute>
@@ -192,9 +397,19 @@ function App() {
                     <IngestView />
                   </RoleRoute>
                 } />
+                <Route path="dataops/texto" element={
+                  <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
+                    <PlainTextTransformationView />
+                  </RoleRoute>
+                } />
                 <Route path="dataops/lote/:id/texto" element={
                   <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
                     <PlainTextTransformationView />
+                  </RoleRoute>
+                } />
+                <Route path="dataops/beto" element={
+                  <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
+                    <BetoReadingFlowView />
                   </RoleRoute>
                 } />
                 <Route path="dataops/lote/:id/beto" element={

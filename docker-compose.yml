@@ -173,6 +173,9 @@ services:
       - ./uploads:/app/uploads
       - ./db:/app/db
       - ./output:/app/output
+    expose:
+      - "8006"
+    command: python -m pipeline.semantic.inference_server --host 0.0.0.0 --port 8006
 
   # 11. Frontend Web SPA React 18 + Vite
   web:

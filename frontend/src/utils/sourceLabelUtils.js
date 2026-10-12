@@ -1,63 +1,63 @@
 /**
- * GIRAGROUP BI System - Utilidad de Mapeo Canónico de Fuentes y Tablas Dimensionales
- * Mapea nombres de archivos y tipos heterogéneos a sus tablas canónicas Kimball (3NF / Constelación)
- * y proporciona etiquetas de dominio comprensibles para la interfaz de usuario.
+ * GIRAGROUP BI System - Utilidad de Mapeo de Fuentes y Dominios de Negocio
+ * Mapea nombres de archivos y tipos heterogéneos a sus dominios funcionales del modelo Constelación
+ * y proporciona etiquetas de negocio comprensibles para la interfaz de usuario.
  */
 
 export const SOURCE_TABLE_MAPPINGS = {
-  // Dimensiones
+  // Catálogos y Dimensiones
   DIM_ESTUDIANTE: {
-    table: 'dim_estudiante',
-    tableType: 'DIMENSIÓN',
+    table: 'Catálogo de Estudiantes',
+    tableType: 'CATÁLOGO',
     color: '#0284c7',
     bgColor: 'rgba(2, 132, 199, 0.12)',
     borderColor: 'rgba(2, 132, 199, 0.3)',
     category: 'Admisiones & Estudiantes',
   },
   DIM_MODULO: {
-    table: 'dim_modulo',
-    tableType: 'DIMENSIÓN',
+    table: 'Catálogo de Módulos',
+    tableType: 'CATÁLOGO',
     color: '#d97706',
     bgColor: 'rgba(217, 119, 6, 0.12)',
     borderColor: 'rgba(217, 119, 6, 0.3)',
     category: 'Estructura Curricular',
   },
   DIM_DOCENTE: {
-    table: 'dim_docente',
-    tableType: 'DIMENSIÓN',
+    table: 'Catálogo de Docentes',
+    tableType: 'CATÁLOGO',
     color: '#7c3aed',
     bgColor: 'rgba(124, 58, 237, 0.12)',
     borderColor: 'rgba(124, 58, 237, 0.3)',
     category: 'Cuerpo Académico',
   },
   DIM_PROGRAMA: {
-    table: 'dim_programa',
-    tableType: 'DIMENSIÓN',
+    table: 'Catálogo de Programas',
+    tableType: 'CATÁLOGO',
     color: '#059669',
     bgColor: 'rgba(5, 150, 105, 0.12)',
     borderColor: 'rgba(5, 150, 105, 0.3)',
     category: 'Programas de Posgrado',
   },
-  // Hechos (Fact Tables)
+  // Dominios de Hechos
   FACT_RENDIMIENTO: {
-    table: 'fact_rendimiento',
-    tableType: 'HECHOS',
+    table: 'Rendimiento Académico',
+    tableType: 'INDICADORES',
     color: '#1b8754',
     bgColor: 'rgba(27, 135, 84, 0.12)',
     borderColor: 'rgba(27, 135, 84, 0.3)',
     category: 'Rendimiento y Calificaciones',
   },
   FACT_FLUJO_CAJA: {
-    table: 'fact_flujo_caja',
-    tableType: 'HECHOS',
+    table: 'Situación Financiera y Cobranzas',
+    tableType: 'FINANZAS',
     color: '#5d2a1a',
     bgColor: 'rgba(93, 42, 26, 0.12)',
     borderColor: 'rgba(93, 42, 26, 0.3)',
     category: 'Finanzas & Recaudación',
   },
   FACT_ASISTENCIA: {
-    table: 'fact_asistencia',
-    tableType: 'HECHOS',
+    table: 'Control de Asistencia',
+    tableType: 'ACADÉMICO',
     color: '#0891b2',
     bgColor: 'rgba(8, 145, 178, 0.12)',
     borderColor: 'rgba(8, 145, 178, 0.3)',
@@ -66,16 +66,16 @@ export const SOURCE_TABLE_MAPPINGS = {
 };
 
 /**
- * Detecta la tabla canónica y el nombre funcional del dominio a partir del nombre del archivo y tipo.
+ * Detecta el dominio funcional de negocio a partir del nombre del archivo y tipo.
  * @param {string} fileName Nombre del archivo crudo (ej: "Planificacion_Ejecucion_TEST.xlsx")
  * @param {string} fileType Tipo de fuente detectada (ej: "Excel Acta", "Google Forms", "Aula Moodle")
- * @returns {object} Metadatos completos de mapeo a tabla canónica
+ * @returns {object} Metadatos completos de mapeo al dominio funcional
  */
 export function getSourceTableMeta(fileName = '', fileType = '') {
   const nameLower = (fileName || '').toLowerCase();
   const typeLower = (fileType || '').toLowerCase();
 
-  // 1. Finanzas / Flujo de Caja
+  // 1. Finanzas / Situación Financiera y Cobranzas
   if (
     nameLower.includes('cobranza') ||
     nameLower.includes('egreso') ||
@@ -95,7 +95,7 @@ export function getSourceTableMeta(fileName = '', fileType = '') {
       ...SOURCE_TABLE_MAPPINGS.FACT_FLUJO_CAJA,
       domainTitle,
       rawFileName: fileName,
-      description: 'Asignación a Fact Table de Flujo de Caja (Transacciones, cuotas y pagos)',
+      description: 'Asignación a Situación Financiera y Cobranzas (Transacciones, cuotas y pagos)',
     };
   }
 
@@ -108,7 +108,7 @@ export function getSourceTableMeta(fileName = '', fileType = '') {
       ...SOURCE_TABLE_MAPPINGS.DIM_DOCENTE,
       domainTitle,
       rawFileName: fileName,
-      description: 'Asignación a Dimensión Docente (Perfil, experiencia y evaluaciones)',
+      description: 'Asignación a Catálogo de Docentes (Perfil, experiencia y evaluaciones)',
     };
   }
 
@@ -120,7 +120,7 @@ export function getSourceTableMeta(fileName = '', fileType = '') {
     nameLower.includes('forms') ||
     nameLower.includes('formulario') ||
     typeLower.includes('forms') ||
-    nameLower.endsWith('.csv') && (nameLower.includes('inscrip') || nameLower.includes('alumno'))
+    (nameLower.endsWith('.csv') && (nameLower.includes('inscrip') || nameLower.includes('alumno')))
   ) {
     let domainTitle = 'Padrón de Inscritos y Postulantes';
     if (nameLower.includes('forms') || typeLower.includes('forms')) {
@@ -131,7 +131,7 @@ export function getSourceTableMeta(fileName = '', fileType = '') {
       ...SOURCE_TABLE_MAPPINGS.DIM_ESTUDIANTE,
       domainTitle,
       rawFileName: fileName,
-      description: 'Asignación a Dimensión Estudiante (Datos personales, CI, contacto)',
+      description: 'Asignación a Catálogo de Estudiantes (Datos personales, CI, contacto)',
     };
   }
 
@@ -148,7 +148,7 @@ export function getSourceTableMeta(fileName = '', fileType = '') {
       ...SOURCE_TABLE_MAPPINGS.DIM_MODULO,
       domainTitle: 'Planificación Curricular & OKRs',
       rawFileName: fileName,
-      description: 'Asignación a Dimensión Módulo Académico (Estructura de programa y créditos)',
+      description: 'Asignación a Catálogo de Módulos (Estructura de programa y créditos)',
     };
   }
 
@@ -158,7 +158,7 @@ export function getSourceTableMeta(fileName = '', fileType = '') {
       ...SOURCE_TABLE_MAPPINGS.FACT_ASISTENCIA,
       domainTitle: 'Control de Asistencia y Participación',
       rawFileName: fileName,
-      description: 'Asignación a Fact Table de Asistencia por Sesión',
+      description: 'Asignación a Control de Asistencia por Sesión',
     };
   }
 
@@ -173,7 +173,7 @@ export function getSourceTableMeta(fileName = '', fileType = '') {
       ...SOURCE_TABLE_MAPPINGS.FACT_RENDIMIENTO,
       domainTitle: 'Evaluación LMS Aula Virtual (Moodle)',
       rawFileName: fileName,
-      description: 'Asignación a Fact Table de Rendimiento (Libro de calificaciones virtual)',
+      description: 'Asignación a Rendimiento Académico (Libro de calificaciones virtual)',
     };
   }
 
@@ -182,12 +182,12 @@ export function getSourceTableMeta(fileName = '', fileType = '') {
     ...SOURCE_TABLE_MAPPINGS.FACT_RENDIMIENTO,
     domainTitle: 'Acta Oficial de Calificaciones y Notas',
     rawFileName: fileName,
-    description: 'Asignación a Fact Table de Rendimiento Académico (Notas finales de módulo)',
+    description: 'Asignación a Rendimiento Académico (Notas finales de módulo)',
   };
 }
 
 /**
- * Retorna la etiqueta canónica de la entidad según el tipo detectado en HITL
+ * Retorna la etiqueta funcional de la entidad según el tipo detectado en HITL
  * @param {string} tipoEntidad 'ESTUDIANTE' | 'MODULO' | 'DOCENTE' | 'CONCEPTO_FINANCIERO'
  */
 export function getEntityTargetTableBadge(tipoEntidad = '') {
@@ -195,7 +195,7 @@ export function getEntityTargetTableBadge(tipoEntidad = '') {
   switch (norm) {
     case 'MODULO':
       return {
-        table: 'dim_modulo',
+        table: 'Catálogo de Módulos',
         label: 'Módulo Académico',
         color: '#d97706',
         bgColor: 'rgba(217, 119, 6, 0.12)',
@@ -203,15 +203,15 @@ export function getEntityTargetTableBadge(tipoEntidad = '') {
       };
     case 'DOCENTE':
       return {
-        table: 'dim_docente',
-        label: 'Cuerpo Docente',
+        table: 'Catálogo de Docentes',
+        label: 'Plantel Docente',
         color: '#7c3aed',
         bgColor: 'rgba(124, 58, 237, 0.12)',
         borderColor: 'rgba(124, 58, 237, 0.3)',
       };
     case 'CONCEPTO_FINANCIERO':
       return {
-        table: 'fact_flujo_caja',
+        table: 'Situación Financiera y Cobranzas',
         label: 'Concepto Financiero',
         color: '#5d2a1a',
         bgColor: 'rgba(93, 42, 26, 0.12)',
@@ -220,7 +220,7 @@ export function getEntityTargetTableBadge(tipoEntidad = '') {
     case 'ESTUDIANTE':
     default:
       return {
-        table: 'dim_estudiante',
+        table: 'Catálogo de Estudiantes',
         label: 'Estudiante / Postulante',
         color: '#0284c7',
         bgColor: 'rgba(2, 132, 199, 0.12)',

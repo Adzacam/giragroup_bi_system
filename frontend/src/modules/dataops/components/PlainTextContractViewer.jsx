@@ -20,7 +20,7 @@ export default function PlainTextContractViewer({ activeDocId = null, incomingFi
     }
   }, [activeDocId, sources]);
 
-  // Cargar registros de texto plano reales desde staging_registros_crudos
+  // Cargar registros de texto plano reales desde Registros de Ingesta
   useEffect(() => {
     let isMounted = true;
     const loadPlainText = async () => {
@@ -59,7 +59,7 @@ export default function PlainTextContractViewer({ activeDocId = null, incomingFi
   const contractOutput = activeRecord ? [
     '=== GIRAGROUP DATAOPS INGESTION CONTRACT v2.0 ===',
     `METADATA: DOC_ID=${activeRecord.id_documento || selectedDocId || 'N/A'} | ARCHIVO=${activeRecord.nombre_archivo || currentDocMeta?.name || 'Documento'} | TIPO=${activeRecord.tipo_fuente || currentDocMeta?.type || 'Tabular'}`,
-    `TARGET_PG_COLUMN: staging_registros_crudos.texto_plano (TEXT) | SCORE_CONFIANZA=${activeRecord.score_confianza ?? '0.90'}`,
+    `TARGET_CONTRACT: Registros de Ingesta (Texto Plano) | SCORE_CONFIANZA=${activeRecord.score_confianza ?? '0.90'}`,
     `ESTADO_INTEGRIDAD: ${activeRecord.requiere_revision ? 'REQUIERE_REVISION (Dudoso / Incompleto)' : 'VALIDADO_CANONICO'}`,
     '--------------------------------------------------------------------------------',
     activeRecord.texto_plano || 'Sin contenido de texto plano'
@@ -111,7 +111,7 @@ export default function PlainTextContractViewer({ activeDocId = null, incomingFi
                 border: '1px solid rgba(217, 155, 38, 0.3)',
               }}
             >
-              Sprint 2 · Tarea 5
+              Contrato Canónico
             </span>
             <span
               style={{
@@ -132,7 +132,7 @@ export default function PlainTextContractViewer({ activeDocId = null, incomingFi
             Conversión Estandarizada bajo Contrato Canónico
           </h3>
           <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', margin: '4px 0 0 0' }}>
-            Transformación homogénea de filas heterogéneas a texto plano inmutable en <code>staging_registros_crudos.texto_plano</code>.
+            Transformación homogénea de filas heterogéneas a texto plano inmutable en el repositorio de <strong>Registros de Ingesta</strong>.
           </p>
         </div>
 

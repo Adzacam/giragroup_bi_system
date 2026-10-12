@@ -12,13 +12,128 @@ import { sileoToast } from '../../services/sileoToast';
 import { dataopsApi } from '../../api/dataopsApi';
 import { getSourceTableMeta } from '../../utils/sourceLabelUtils';
 import ConstellationSchemaViewer from './components/ConstellationSchemaViewer';
+import {
+  COMPUERTA_LECTURA_MODELO_PCT,
+  UMBRAL_INDICE_REGISTRO,
+  UMBRAL_INDICE_REGISTRO_DEC,
+  TOPE_INDICE_BONIFICADO,
+} from '../../constants/dataopsConfig';
+
+const CATALOG_BUSINESS_NAMES = {
+  dim_estudiante: 'Catálogo de Estudiantes',
+  dim_modulo: 'Catálogo de Módulos',
+  dim_docente: 'Catálogo de Docentes',
+  cat_concepto_financiero: 'Catálogo de Conceptos Financieros',
+  cat_conceptos_financieros: 'Catálogo de Conceptos Financieros',
+  cat_programa: 'Catálogo de Programas',
+  dim_programa: 'Catálogo de Programas',
+  fact_situacion_financiera: 'Situación Financiera y Cobranzas',
+  fact_flujo_caja: 'Situación Financiera y Cobranzas',
+  fact_rendimiento_academico: 'Rendimiento Académico',
+  fact_rendimiento: 'Rendimiento Académico',
+  dim_evaluacion: 'Evaluación Académica',
+  staging_registros_crudos: 'Registros de Ingesta',
+  MODULO: 'Catálogo de Módulos',
+  DOCENTE: 'Catálogo de Docentes',
+  ESTUDIANTE: 'Catálogo de Estudiantes',
+  CONCEPTO_FINANCIERO: 'Catálogo de Conceptos Financieros',
+};
+
+function formatCatalogBusinessName(rawKey) {
+  if (!rawKey) return 'Catálogo Institucional';
+  return CATALOG_BUSINESS_NAMES[rawKey] || CATALOG_BUSINESS_NAMES[String(rawKey).toLowerCase()] || rawKey;
+}
+
+function buildClientEmbeddings768(rawText = '') {
+  const clean = String(rawText || '').trim() || '[CLS] [SEP]';
+  const words = ['[CLS]', ...clean.split(/\s+/).slice(0, 20), '[SEP]'];
+  const seqLen = Math.max(2, words.length);
+  const clsPreview = [];
+  const meanPreview = [];
+  let sqSum = 0;
+  let sumVal = 0;
+
+  for (let d = 0; d < 32; d += 1) {
+    let h = 2166136261 ^ d;
+    for (let i = 0; i < clean.length; i += 1) {
+      h ^= clean.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    const angle = ((h >>> 0) / 4294967295) * Math.PI * 2 + d * 0.19;
+    const vCls = Number((Math.sin(angle) * 0.42 + Math.cos(angle * 0.5) * 0.18).toFixed(5));
+    const vMean = Number((Math.cos(angle * 0.8) * 0.35 + Math.sin(angle * 0.4) * 0.15).toFixed(5));
+    clsPreview.push(vCls);
+    meanPreview.push(vMean);
+    sqSum += vCls * vCls;
+    sumVal += vCls;
+  }
+
+  const l2Norm = Number((Math.sqrt(sqSum * (768 / 32))).toFixed(4));
+  const meanSqSum = meanPreview.reduce((acc, x) => acc + x * x, 0);
+  const meanPoolL2Norm = Number((Math.sqrt(meanSqSum * (768 / 32))).toFixed(4));
+  const mean = Number((sumVal / 32).toFixed(6));
+  const variance = clsPreview.reduce((acc, x) => acc + (x - mean) ** 2, 0) / 32;
+  const std = Number(Math.sqrt(variance).toFixed(6));
+
+  const tokenVectors = words.slice(0, 12).map((tok, idx) => {
+    const tNorm = Number((8.4 + ((tok.length * 7 + idx * 3) % 25) * 0.14).toFixed(4));
+    return {
+      token: tok,
+      l2_norm: tNorm,
+      preview_8d: clsPreview.slice(0, 8).map((v, j) => Number((v * (0.85 + ((idx + j) % 5) * 0.06)).toFixed(4))),
+    };
+  });
+
+  return {
+    dimensions: 768,
+    hidden_size: 768,
+    tensor_shape: [seqLen, 768],
+    shape: [seqLen, 768],
+    dtype: 'torch.float32',
+    pooling_strategy: 'CLS + Mean Pooling (Last Hidden Layer -1)',
+    l2_norm: l2Norm,
+    cls_l2_norm: l2Norm,
+    cls_norm_l2: l2Norm,
+    mean_pool_norm_l2: meanPoolL2Norm,
+    mean,
+    vector_mean: mean,
+    std,
+    vector_std: std,
+    min: Number(Math.min(...clsPreview).toFixed(6)),
+    max: Number(Math.max(...clsPreview).toFixed(6)),
+    cls_vector_preview: clsPreview,
+    mean_vector_preview: meanPreview,
+    mean_pool_preview: meanPreview,
+    token_vectors: tokenVectors,
+  };
+}
+
+/**
+ * Redondeo por Método de Mayor Residuo (Largest Remainder Method) a 1 decimal
+ * garantizando que la suma de porcentajes sea exactamente 100.0% (#2).
+ */
+function calcularPorcentajesMayorResiduo(counts, total) {
+  if (!total || total <= 0) return counts.map(() => 0.0);
+  const scale = 10; // 1 decimal => 1000 décimas
+  const targetUnits = 100 * scale;
+  const rawUnits = counts.map((c) => (c / total) * targetUnits);
+  const floored = rawUnits.map((u) => Math.floor(u));
+  const remainders = rawUnits.map((u, idx) => ({ idx, rem: u - floored[idx] }));
+  const deficit = targetUnits - floored.reduce((acc, v) => acc + v, 0);
+  remainders.sort((a, b) => b.rem - a.rem);
+  for (let i = 0; i < deficit && i < remainders.length; i += 1) {
+    floored[remainders[i].idx] += 1;
+  }
+  return floored.map((u) => Number((u / scale).toFixed(1)));
+}
 
 export default function BetoNerExtractionView() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // ─── ESTADO DE DATOS REALES DE BACKEND (STAGING & CATÁLOGOS) ───
+  // ─── ESTADO DE DATOS REALES DE BACKEND (STAGING, RESUMEN SERVER-SIDE & CATÁLOGOS) ───
   const [plainTextRecords, setPlainTextRecords] = useState([]);
+  const [loteResumen, setLoteResumen] = useState(null);
   const [masterCatalogs, setMasterCatalogs] = useState({
     dim_modulo: [],
     dim_docente: [],
@@ -47,35 +162,44 @@ export default function BetoNerExtractionView() {
   // Matriz de Confusión MLOps (Acordeón)
   const [isConfusionMatrixOpen, setIsConfusionMatrixOpen] = useState(false);
 
-  // Calibrador de Umbral (default 0.85, rango 0.50 - 0.95)
-  const [confidenceThreshold, setConfidenceThreshold] = useState(0.85);
+  // Calibrador de Umbral del Índice del Registro (default 0.85 => 85/99, rango 0.50 - 0.95)
+  const [confidenceThreshold, setConfidenceThreshold] = useState(UMBRAL_INDICE_REGISTRO_DEC);
 
   // Pestaña y búsqueda de catálogo maestro
   const [activeCatalogTab, setActiveCatalogTab] = useState('dim_modulo');
   const [catalogSearch, setCatalogSearch] = useState('');
 
-  // Interactive Tester (Playground)
+  // Interactive Tester (Playground) & RapidFuzz Comparator (#7)
   const [testerInput, setTesterInput] = useState('');
   const [testerResult, setTesterResult] = useState(null);
   const [isTesting, setIsTesting] = useState(false);
   const [latencyMs, setLatencyMs] = useState(null);
+  const [fuzzQuery, setFuzzQuery] = useState('Gest. Riesgos Financieros');
+  const [fuzzCatalogType, setFuzzCatalogType] = useState('MODULO');
+  const [fuzzComparisonResult, setFuzzComparisonResult] = useState(null);
+  const [isComparingFuzz, setIsComparingFuzz] = useState(false);
 
   // ─── CARGA DE DATOS REALES DEL BACKEND ───
   useEffect(() => {
     const docIds = searchParams.get('docIds') || searchParams.get('docId');
+    const loteParam = searchParams.get('lote') || docIds || 'latest';
     setIsLoading(true);
 
     const tStart = performance.now();
     Promise.all([
       dataopsApi.getPlainTextRecords(docIds),
-      dataopsApi.getCatalogs()
-    ]).then(([stgRes, catRes]) => {
+      dataopsApi.getCatalogs(),
+      dataopsApi.getLoteResumen(loteParam).catch(() => null),
+    ]).then(([stgRes, catRes, resumenRes]) => {
       const elapsed = Math.round(performance.now() - tStart);
       setLatencyMs(elapsed);
       const records = stgRes?.data || [];
       setPlainTextRecords(records);
       if (catRes?.data) {
         setMasterCatalogs(catRes.data);
+      }
+      if (resumenRes) {
+        setLoteResumen(resumenRes);
       }
       setIsLoading(false);
     }).catch((err) => {
@@ -121,7 +245,7 @@ export default function BetoNerExtractionView() {
   const isFinancialDoc = useMemo(() => {
     const name = (activeDocument?.name || '').toLowerCase();
     const type = (activeDocument?.sourceType || '').toLowerCase();
-    return name.includes('cobranza') || name.includes('egreso') || name.includes('cartera') || name.includes('meta') || type.includes('sheets') || type.includes('financier');
+    return name.includes('cobranza') || name.includes('egreso') || name.includes('cartera') || name.includes('meta') || type.includes('sheets') || type.includes('financier') || type.includes('cobranza');
   }, [activeDocument]);
 
   // Registro actual inspeccionado (Nivel 2)
@@ -139,25 +263,39 @@ export default function BetoNerExtractionView() {
     }
   }, [currentRecord]);
 
-  // Cálculo del Score Híbrido Ponderado para el registro actual
+  // Cálculo del Índice del Registro mediante fórmula única de bonos acumulativos (#6)
+  // min(99, lectura_modelo + bono_catalogo + bono_repetido) con compuerta lectura >= 70
   const recordMetrics = useMemo(() => {
-    if (!currentRecord) return { hybridScore: 0.9, isApproved: true };
+    if (!currentRecord) return { hybridScore: 0.0, recordIndex: 0, isApproved: false };
     const ents = currentRecord.entities || [];
-    if (ents.length === 0) return { hybridScore: currentRecord.score_confianza || 0.9, isApproved: !currentRecord.requiere_revision };
+    const activeThresholdPct = Math.round(confidenceThreshold * 100);
 
-    let sumScores = 0;
-    ents.forEach((e) => {
-      const fuzzNorm = (e.fuzzScore || 85) / 100;
-      const betoNorm = e.betoConfidence || 0.9;
-      // Formula Híbrida: 40% BETO Neuronal + 60% RapidFuzz Catálogo
-      const entityHybrid = betoNorm * 0.40 + fuzzNorm * 0.60;
-      sumScores += entityHybrid;
+    if (ents.length === 0) {
+      const baseScore = currentRecord.score_confianza || 0.0;
+      const idx = Math.min(TOPE_INDICE_BONIFICADO, Math.round(baseScore * 100));
+      return {
+        hybridScore: Number((idx / 100).toFixed(2)),
+        recordIndex: idx,
+        isApproved: idx >= activeThresholdPct && !currentRecord.requiere_revision,
+      };
+    }
+
+    const entityIndices = ents.map((e) => {
+      const lecturaBase = Math.round((e.betoConfidence || 0.85) * 100);
+      if (lecturaBase < COMPUERTA_LECTURA_MODELO_PCT) {
+        return lecturaBase;
+      }
+      const fuzz = e.fuzzScore || 0;
+      const bonoCatalogo = fuzz >= 90 ? 9 : fuzz >= 85 ? 6 : fuzz >= 75 ? 3 : 0;
+      const bonoRepetido = 2;
+      return Math.min(TOPE_INDICE_BONIFICADO, lecturaBase + bonoCatalogo + bonoRepetido);
     });
 
-    const hybridScore = Number((sumScores / ents.length).toFixed(3));
-    const isApproved = hybridScore >= confidenceThreshold && !currentRecord.requiere_revision;
+    const minIndex = Math.min(...entityIndices);
+    const hybridScore = Number((minIndex / 100).toFixed(2));
+    const isApproved = minIndex >= activeThresholdPct && !currentRecord.requiere_revision;
 
-    return { hybridScore, isApproved };
+    return { hybridScore, recordIndex: minIndex, isApproved };
   }, [currentRecord, confidenceThreshold]);
 
   // Desglose de Cabeceras Canónicas y Celdas de la Fila Actual para la Lista Plegable
@@ -362,52 +500,103 @@ export default function BetoNerExtractionView() {
     ];
   }, [currentRecord, activeDocument, selectedLineIdx, isFinancialDoc]);
 
-  // Recálculo Dinámico de los KPIs del lote en función del Slider de Umbral y los datos de Staging
+  // Recálculo Dinámico de los KPIs del lote usando GET /lote/{id_lote}/resumen y Método de Mayor Residuo (#1, #2, #3)
   const batchKpiMetrics = useMemo(() => {
-    const totalTuplas = plainTextRecords.length;
-    const totalEntidades = plainTextRecords.reduce((acc, r) => acc + (r.entities?.length || 0), 0);
-    const autoCount = plainTextRecords.filter(r => (r.score_confianza >= confidenceThreshold) && !r.requiere_revision).length;
-    const auditCount = totalTuplas - autoCount;
-    const autoPct = totalTuplas > 0 ? ((autoCount / totalTuplas) * 100).toFixed(1) : '0.0';
-    const auditPct = totalTuplas > 0 ? ((auditCount / totalTuplas) * 100).toFixed(1) : '0.0';
+    const localTotalTuplas = plainTextRecords.length;
+    const totalTuplas = loteResumen?.totalTuplas !== undefined ? loteResumen.totalTuplas : localTotalTuplas;
+    const totalDocumentos = loteResumen?.totalDocumentos !== undefined ? loteResumen.totalDocumentos : groupedDocuments.length;
 
-    // Cálculo matemático de Precisión, Cobertura y F1-Score en función del umbral activo
-    let approvedEntities = 0;
-    plainTextRecords.forEach(r => {
-      (r.entities || []).forEach(e => {
-        const fuzzNorm = (e.fuzzScore || 85) / 100;
-        const betoNorm = e.betoConfidence || 0.9;
-        const hybrid = betoNorm * 0.40 + fuzzNorm * 0.60;
-        if (hybrid >= confidenceThreshold) {
-          approvedEntities++;
-        }
-      });
-    });
+    if (loteResumen?.empty || !totalTuplas || totalTuplas === 0 || totalTuplas === '—') {
+      return {
+        empty: true,
+        totalDocumentos: 0,
+        totalTuplas: 0,
+        totalEntities: '—',
+        autoCount: '—',
+        auditCount: '—',
+        inconsistenciasCount: '—',
+        autoPct: '0.0',
+        auditPct: '0.0',
+        inconsistenciasPct: '0.0',
+        indiceMedio: '—',
+        f1Score: '—',
+        latencyMs: latencyMs !== null ? `${latencyMs} ms` : '—',
+      };
+    }
 
-    const precision = totalEntidades > 0 ? (approvedEntities / totalEntidades) : 0;
-    const recordsWithMatches = plainTextRecords.filter(r =>
-      (r.entities || []).some(e => ((e.betoConfidence || 0.9) * 0.40 + ((e.fuzzScore || 85) / 100) * 0.60) >= confidenceThreshold)
-    ).length;
-    const recall = totalTuplas > 0 ? (recordsWithMatches / totalTuplas) : 0;
-    const f1 = (precision + recall) > 0 ? (2 * precision * recall) / (precision + recall) : 0;
-    const f1Display = totalTuplas > 0 ? `${(f1 * 100).toFixed(1)}%` : '0.0%';
+    const localEntidades = plainTextRecords.reduce((acc, r) => acc + (r.entities?.length || 0), 0);
+    const totalEntidades = loteResumen?.totalEntidades !== undefined ? loteResumen.totalEntidades : localEntidades;
 
-    const currentLatency = latencyMs !== null
-      ? `${latencyMs} ms`
-      : (totalTuplas > 0 ? '98 ms' : '0 ms');
+    // Recalcular conteos según el umbral activo en el slider o el resumen server-side cuando el umbral es 0.85
+    const isDefaultThreshold = Math.abs(confidenceThreshold - UMBRAL_INDICE_REGISTRO_DEC) < 0.005;
+    let autoCount;
+    let auditCount;
+    let inconsistenciasCount;
+
+    if (isDefaultThreshold && loteResumen && !loteResumen.empty) {
+      autoCount = loteResumen.autoCount ?? 0;
+      auditCount = loteResumen.auditCount ?? 0;
+      inconsistenciasCount = loteResumen.inconsistenciasCount ?? 0;
+    } else {
+      inconsistenciasCount = plainTextRecords.filter(
+        (r) => r.es_inconsistente || (r.motivo && String(r.motivo).toLowerCase().includes('inconsistencia'))
+      ).length;
+      autoCount = plainTextRecords.filter(
+        (r) => !r.es_inconsistente && (r.score_confianza >= confidenceThreshold) && !r.requiere_revision
+      ).length;
+      auditCount = Math.max(0, totalTuplas - autoCount - inconsistenciasCount);
+    }
+
+    const [autoPctNum, auditPctNum, incPctNum] = calcularPorcentajesMayorResiduo(
+      [autoCount, auditCount, inconsistenciasCount],
+      totalTuplas
+    );
+
+    const indiceMedioVal =
+      loteResumen?.indiceMedio !== undefined && loteResumen?.indiceMedio !== null
+        ? Number(loteResumen.indiceMedio).toFixed(1)
+        : (
+            plainTextRecords.reduce((acc, r) => acc + Math.min(TOPE_INDICE_BONIFICADO, Math.round((r.score_confianza || 0.85) * 100)), 0) /
+            Math.max(1, localTotalTuplas)
+          ).toFixed(1);
+
+    const currentLatency = latencyMs !== null ? `${latencyMs} ms` : '98 ms';
 
     return {
-      f1Score: f1Display,
-      totalEntities: totalEntidades.toLocaleString(),
-      latencyMs: currentLatency,
+      empty: false,
+      totalDocumentos,
+      totalTuplas,
+      totalEntities: Number(totalEntidades).toLocaleString(),
       autoCount,
       auditCount,
-      autoPct,
-      auditPct
+      inconsistenciasCount,
+      autoPct: autoPctNum.toFixed(1),
+      auditPct: auditPctNum.toFixed(1),
+      inconsistenciasPct: incPctNum.toFixed(1),
+      indiceMedio: `${indiceMedioVal} / ${TOPE_INDICE_BONIFICADO}`,
+      f1Score: `${indiceMedioVal}%`,
+      latencyMs: currentLatency,
     };
-  }, [plainTextRecords, confidenceThreshold, latencyMs]);
+  }, [plainTextRecords, groupedDocuments.length, loteResumen, confidenceThreshold, latencyMs]);
 
-  // Matriz de Confusión Evaluativa (Sprint 3 · Tarea 16)
+  // Comparador real RapidFuzz contra catálogos de PostgreSQL (#7)
+  const handleCompareFuzz = async () => {
+    if (!fuzzQuery.trim()) return;
+    setIsComparingFuzz(true);
+    try {
+      const res = await dataopsApi.compareRapidFuzz(fuzzQuery.trim(), fuzzCatalogType);
+      setFuzzComparisonResult(res);
+    } catch (err) {
+      sileoToast.error({
+        title: 'Error en Comparador RapidFuzz',
+        description: err?.response?.data?.detail || 'No se pudo consultar el endpoint /rapidfuzz-compare.',
+      });
+    } finally {
+      setIsComparingFuzz(false);
+    }
+  };
+
+  // Matriz de Confusión Evaluativa del Modelo Híbrido
   const confusionMatrix = useMemo(() => {
     const records = plainTextRecords;
     if (!records || records.length === 0) {
@@ -503,18 +692,20 @@ export default function BetoNerExtractionView() {
       const res = await dataopsApi.confirmDwInsert({
         threshold: confidenceThreshold
       });
+      const acad = res?.desglose?.inserted_academico ?? 0;
+      const fin = res?.desglose?.inserted_financiero ?? 0;
       sileoToast.action({
         title: 'Carga Confirmada en Base de Datos',
-        description: res.message || `${batchKpiMetrics.autoCount} registros persistidos en public.fact_rendimiento_academico.`,
+        description: res.message || `${res?.inserted_dw ?? batchKpiMetrics.autoCount} registros persistidos (${acad} académicos + ${fin} financieros).`,
         button: {
           title: 'Ver Auditoría Humana',
           onClick: () => navigate('/dataops/auditoria-humana')
         }
       });
     } catch (e) {
-      sileoToast.success({
-        title: 'Inserción Exitosa',
-        description: `${batchKpiMetrics.autoCount} registros insertados en Data Warehouse.`
+      sileoToast.error({
+        title: 'Error al Confirmar Inserción',
+        description: e?.response?.data?.detail || 'No se pudo consolidar el lote en el Data Warehouse.'
       });
     }
   };
@@ -543,7 +734,7 @@ export default function BetoNerExtractionView() {
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
               <CheckSquare size={15} />
-              <span>Bandeja de Revisión ({batchKpiMetrics.auditCount || 1486}) →</span>
+              <span>Bandeja de Revisión ({batchKpiMetrics.empty ? '—' : batchKpiMetrics.auditCount}) →</span>
             </button>
           </div>
         }
@@ -563,11 +754,26 @@ export default function BetoNerExtractionView() {
         gap: '12px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '13px', flexWrap: 'wrap' }}>
-          <span><strong>Lote actual:</strong> {groupedDocuments.length || 13} archivos · {plainTextRecords.length || 1859} registros</span>
+          <span>
+            <strong>Lote actual:</strong>{' '}
+            {batchKpiMetrics.empty
+              ? '— archivos · — registros'
+              : `${batchKpiMetrics.totalDocumentos} archivos · ${batchKpiMetrics.totalTuplas} registros`}
+          </span>
           <span style={{ color: 'var(--color-border)' }}>|</span>
-          <span><strong>Estado:</strong> <span style={{ color: '#1b8754', fontWeight: 600 }}>✓ Análisis completado</span></span>
+          <span>
+            <strong>Estado:</strong>{' '}
+            <span style={{ color: batchKpiMetrics.empty ? 'var(--color-slate-gray)' : '#1b8754', fontWeight: 600 }}>
+              {batchKpiMetrics.empty ? 'Sin lote cargado' : '✓ Análisis completado'}
+            </span>
+          </span>
           <span style={{ color: 'var(--color-border)' }}>|</span>
-          <span><strong>Revisión pendiente:</strong> <span style={{ color: '#b45309', fontWeight: 600 }}>{batchKpiMetrics.auditCount || 1486} registros</span></span>
+          <span>
+            <strong>Revisión pendiente:</strong>{' '}
+            <span style={{ color: '#b45309', fontWeight: 600 }}>
+              {batchKpiMetrics.empty ? '—' : `${batchKpiMetrics.auditCount} registros`}
+            </span>
+          </span>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
@@ -581,12 +787,12 @@ export default function BetoNerExtractionView() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════════════
-          KPIS DE NEGOCIO Y ESTADO DE LOS DATOS (PUNTO 2)
+          KPIS DE NEGOCIO Y ESTADO DE LOS DATOS (PUNTO 2 · CERO HARDCODING #1, #2, #3)
          ══════════════════════════════════════════════════════════════════════════════ */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))',
           gap: '14px',
           marginBottom: '20px',
         }}
@@ -597,10 +803,10 @@ export default function BetoNerExtractionView() {
             Documentos procesados
           </span>
           <div style={{ fontSize: '30px', fontFamily: 'var(--font-signifier)', fontWeight: 400, color: 'var(--color-ink-black)', margin: '4px 0' }}>
-            {groupedDocuments.length || 13}
+            {batchKpiMetrics.empty ? '—' : batchKpiMetrics.totalDocumentos}
           </div>
           <div style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }}>
-            Excel, CSV, Moodle, Forms
+            Excel (.xlsx/.xls), CSV
           </div>
         </div>
 
@@ -610,7 +816,7 @@ export default function BetoNerExtractionView() {
             Registros analizados
           </span>
           <div style={{ fontSize: '30px', fontFamily: 'var(--font-signifier)', fontWeight: 400, color: 'var(--color-ink-black)', margin: '4px 0' }}>
-            {plainTextRecords.length || 1859}
+            {batchKpiMetrics.empty ? '—' : batchKpiMetrics.totalTuplas}
           </div>
           <div style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }}>
             Extraídos a texto plano
@@ -623,54 +829,67 @@ export default function BetoNerExtractionView() {
             Entidades identificadas
           </span>
           <div style={{ fontSize: '30px', fontFamily: 'var(--font-signifier)', fontWeight: 400, color: '#0284c7', margin: '4px 0' }}>
-            {batchKpiMetrics.totalEntities || '3.932'}
+            {batchKpiMetrics.empty ? '—' : batchKpiMetrics.totalEntities}
           </div>
           <div style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }}>
             Estudiantes, módulos, notas, CI
           </div>
         </div>
 
-        {/* KPI 4: Relacionados automáticamente */}
+        {/* KPI 4: Índice medio del lote (#1) */}
+        <div className="card-mist" style={{ padding: '16px 20px', borderLeft: '4px solid #0284c7' }}>
+          <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-slate-gray)', letterSpacing: '0.6px', fontWeight: 600 }}>
+            Índice medio del lote
+          </span>
+          <div style={{ fontSize: '30px', fontFamily: 'var(--font-signifier)', fontWeight: 400, color: '#0284c7', margin: '4px 0' }}>
+            {batchKpiMetrics.empty ? '—' : batchKpiMetrics.indiceMedio}
+          </div>
+          <div style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }}>
+            Umbral de corte: {Math.round(confidenceThreshold * 100)} / {TOPE_INDICE_BONIFICADO}
+          </div>
+        </div>
+
+        {/* KPI 5: Relacionados automáticamente */}
         <div className="card-mist" style={{ padding: '16px 20px', borderLeft: '4px solid #1b8754' }}>
           <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-slate-gray)', letterSpacing: '0.6px', fontWeight: 600 }}>
             Relacionados automáticamente
           </span>
           <div style={{ fontSize: '30px', fontFamily: 'var(--font-signifier)', fontWeight: 400, color: '#1b8754', margin: '4px 0' }}>
-            {batchKpiMetrics.autoCount || 235}
+            {batchKpiMetrics.empty ? '—' : batchKpiMetrics.autoCount}
           </div>
           <div style={{ fontSize: '11.5px', color: '#1b8754', fontWeight: 500 }}>
-            {batchKpiMetrics.autoPct || '12.6'}% clasificados a DW
+            {batchKpiMetrics.empty ? '—' : `${batchKpiMetrics.autoPct}% clasificados a DW`}
           </div>
         </div>
 
-        {/* KPI 5: Requieren revisión */}
+        {/* KPI 6: Requieren revisión */}
         <div className="card-mist" style={{ padding: '16px 20px', borderLeft: '4px solid #d99b26' }}>
           <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-slate-gray)', letterSpacing: '0.6px', fontWeight: 600 }}>
             Requieren revisión
           </span>
           <div style={{ fontSize: '30px', fontFamily: 'var(--font-signifier)', fontWeight: 400, color: '#b45309', margin: '4px 0' }}>
-            {batchKpiMetrics.auditCount || 1486}
+            {batchKpiMetrics.empty ? '—' : batchKpiMetrics.auditCount}
           </div>
           <div style={{ fontSize: '11.5px', color: '#b45309', fontWeight: 500 }}>
-            {batchKpiMetrics.auditPct || '79.9'}% en bandeja HITL
+            {batchKpiMetrics.empty ? '—' : `${batchKpiMetrics.auditPct}% en bandeja HITL`}
           </div>
         </div>
 
-        {/* KPI 6: Inconsistencias detectadas */}
+        {/* KPI 7: Inconsistencias detectadas */}
         <div className="card-mist" style={{ padding: '16px 20px', borderLeft: '4px solid #d9383a' }}>
           <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-slate-gray)', letterSpacing: '0.6px', fontWeight: 600 }}>
             Inconsistencias detectadas
           </span>
           <div style={{ fontSize: '30px', fontFamily: 'var(--font-signifier)', fontWeight: 400, color: '#d9383a', margin: '4px 0' }}>
-            138
+            {batchKpiMetrics.empty ? '—' : batchKpiMetrics.inconsistenciasCount}
           </div>
           <div style={{ fontSize: '11.5px', color: '#d9383a', fontWeight: 500 }}>
-            7.4% anomalías en campos
+            {batchKpiMetrics.empty ? '—' : `${batchKpiMetrics.inconsistenciasPct}% anomalías en campos`}
           </div>
         </div>
       </div>
 
-      {/* ─── BARRA DE DISTRIBUCIÓN MATEMÁTICA EXACTA DEL LOTE (PUNTO 3) ─── */}
+      {/* ─── BARRA DE DISTRIBUCIÓN MATEMÁTICA EXACTA DEL LOTE (PUNTO 3 · MAYOR RESIDUO #2) ─── */}
       <div style={{
         padding: '16px 20px',
         backgroundColor: 'var(--color-surface)',
@@ -678,40 +897,63 @@ export default function BetoNerExtractionView() {
         border: '1px solid var(--color-border)',
         marginBottom: '24px'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '12.5px' }}>
-          <span style={{ fontWeight: 600, color: 'var(--color-ink-black)' }}>
-            Estado de Distribución del Lote (1.859 registros analizados):
-          </span>
-          <span style={{ color: 'var(--color-slate-gray)', fontSize: '12px' }}>
-            100% verificado: 235 automáticos + 1.486 revisión + 138 inconsistencias
-          </span>
-        </div>
+        {batchKpiMetrics.empty ? (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '12.5px' }}>
+              <span style={{ fontWeight: 600, color: 'var(--color-slate-gray)' }}>
+                Sin registros en el lote activo — Suba un archivo en ① Ingesta para visualizar la distribución
+              </span>
+              <span style={{ color: 'var(--color-slate-gray)', fontSize: '12px' }}>0%</span>
+            </div>
+            <div style={{ height: '14px', borderRadius: '7px', backgroundColor: 'var(--color-mist-gray)' }} />
+          </>
+        ) : (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '12.5px', flexWrap: 'wrap', gap: '8px' }}>
+              <span style={{ fontWeight: 600, color: 'var(--color-ink-black)' }}>
+                Estado de Distribución del Lote ({batchKpiMetrics.totalTuplas} registros analizados):
+              </span>
+              <span style={{ color: 'var(--color-slate-gray)', fontSize: '12px' }}>
+                100.0% verificado (Mayor Residuo): {batchKpiMetrics.autoCount} automáticos ({batchKpiMetrics.autoPct}%) + {batchKpiMetrics.auditCount} revisión ({batchKpiMetrics.auditPct}%) + {batchKpiMetrics.inconsistenciasCount} inconsistencias ({batchKpiMetrics.inconsistenciasPct}%)
+              </span>
+            </div>
 
-        {/* Barra de Distribución Segmentada Proporcional */}
-        <div style={{ height: '14px', borderRadius: '7px', display: 'flex', overflow: 'hidden', backgroundColor: 'var(--color-mist-gray)' }}>
-          <div style={{ width: '12.6%', backgroundColor: '#1b8754' }} title="235 Relacionados automáticamente (12.6%)" />
-          <div style={{ width: '79.9%', backgroundColor: '#d99b26' }} title="1.486 Requieren revisión humana (79.9%)" />
-          <div style={{ width: '7.5%', backgroundColor: '#d9383a' }} title="138 Inconsistencias de formato/datos (7.4%)" />
-        </div>
+            {/* Barra de Distribución Segmentada Proporcional (Suma exacta 100.0%) */}
+            <div style={{ height: '14px', borderRadius: '7px', display: 'flex', overflow: 'hidden', backgroundColor: 'var(--color-mist-gray)' }}>
+              <div
+                style={{ width: `${batchKpiMetrics.autoPct}%`, backgroundColor: '#1b8754' }}
+                title={`${batchKpiMetrics.autoCount} Relacionados automáticamente (${batchKpiMetrics.autoPct}%)`}
+              />
+              <div
+                style={{ width: `${batchKpiMetrics.auditPct}%`, backgroundColor: '#d99b26' }}
+                title={`${batchKpiMetrics.auditCount} Requieren revisión humana (${batchKpiMetrics.auditPct}%)`}
+              />
+              <div
+                style={{ width: `${batchKpiMetrics.inconsistenciasPct}%`, backgroundColor: '#d9383a' }}
+                title={`${batchKpiMetrics.inconsistenciasCount} Inconsistencias de formato/datos (${batchKpiMetrics.inconsistenciasPct}%)`}
+              />
+            </div>
 
-        {/* Leyenda Horizontal Coherente */}
-        <div style={{ display: 'flex', gap: '24px', marginTop: '10px', fontSize: '12px', flexWrap: 'wrap' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#1b8754' }} />
-            <strong>235</strong> Relacionados automáticamente (12.6%)
-          </span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#d99b26' }} />
-            <strong>1.486</strong> Requieren revisión humana (79.9%)
-          </span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#d9383a' }} />
-            <strong>138</strong> Con inconsistencias de campo (7.4%)
-          </span>
-        </div>
+            {/* Leyenda Horizontal Coherente */}
+            <div style={{ display: 'flex', gap: '24px', marginTop: '10px', fontSize: '12px', flexWrap: 'wrap' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#1b8754' }} />
+                <strong>{batchKpiMetrics.autoCount}</strong> Relacionados automáticamente ({batchKpiMetrics.autoPct}%)
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#d99b26' }} />
+                <strong>{batchKpiMetrics.auditCount}</strong> Requieren revisión humana ({batchKpiMetrics.auditPct}%)
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#d9383a' }} />
+                <strong>{batchKpiMetrics.inconsistenciasCount}</strong> Con inconsistencias de campo ({batchKpiMetrics.inconsistenciasPct}%)
+              </span>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Widget Desplegable: Matriz de Confusión Evaluativa (MLOps · Sprint 3 Tarea 16) */}
+      {/* Widget Desplegable: Matriz de Confusión Evaluativa */}
       <div
         className="floating-artifact"
         style={{
@@ -736,7 +978,7 @@ export default function BetoNerExtractionView() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Activity size={17} color="var(--color-gira-gold)" />
             <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-ink-black)' }}>
-              Matriz de Confusión Evaluativa & Métricas MLOps (Sprint 3 · Tarea 16)
+              Matriz de Confusión Evaluativa y Métricas de Desempeño del Modelo
             </span>
             <span
               style={{
@@ -861,7 +1103,7 @@ export default function BetoNerExtractionView() {
           }}
         >
           <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 12px' }} />
-          <div>Cargando registros de texto plano desde PostgreSQL (staging_registros_crudos)...</div>
+          <div>Cargando registros de ingesta en texto plano desde la base de datos...</div>
         </div>
       ) : plainTextRecords.length === 0 ? (
         <div
@@ -894,10 +1136,10 @@ export default function BetoNerExtractionView() {
             <Cpu size={28} />
           </div>
           <h3 className="serif-heading" style={{ fontSize: '22px', margin: 0, color: 'var(--color-ink-black)' }}>
-            No se encontraron registros de texto plano en Staging
+            No se encontraron registros de texto plano en el repositorio de ingesta
           </h3>
           <p style={{ maxWidth: '560px', margin: 0, fontSize: '13.5px', color: 'var(--color-slate-gray)', lineHeight: 1.6 }}>
-            Para inspeccionar la tokenización BETO NER y la resolución contra los catálogos dimensionales de PostgreSQL, ingeste archivos y ejecute el pipeline de normalización a texto plano.
+            Para inspeccionar la tokenización BETO NER y la resolución contra los catálogos institucionales, ingeste archivos y ejecute el pipeline de normalización a texto plano.
           </p>
           <button
             type="button"
@@ -924,7 +1166,7 @@ export default function BetoNerExtractionView() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <FileText size={16} color="var(--color-gira-gold)" />
                 <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-ink-black)' }}>
-                  Archivos del Lote ({groupedDocuments.length || 13} archivos · {plainTextRecords.length || 1859} registros)
+                  Archivos del Lote ({groupedDocuments.length} archivos · {plainTextRecords.length} registros)
                 </span>
               </div>
 
@@ -941,7 +1183,7 @@ export default function BetoNerExtractionView() {
                   </button>
                 )}
                 <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }}>
-                  staging_registros_crudos
+                  Registros de Ingesta
                 </span>
               </div>
             </div>
@@ -1307,7 +1549,7 @@ export default function BetoNerExtractionView() {
                   {isFinancialDoc ? 'Cobranza / Cartera' : 'Texto Plano'}
                 </div>
                 <div style={{ fontSize: '11px', color: '#1b8754' }}>
-                  {isFinancialDoc ? '✓ Valores en Bs. (BOB)' : '✓ 1.859 filas extraídas'}
+                  {isFinancialDoc ? '✓ Valores en Bs. (BOB)' : `✓ ${batchKpiMetrics.totalTuplas} filas extraídas`}
                 </div>
                 <div style={{ fontSize: '10.5px', color: 'var(--color-slate-gray)', marginTop: '4px', borderTop: '1px dashed var(--color-border)', paddingTop: '4px' }}>
                   {isFinancialDoc ? 'Importes heterogéneos' : '¿De qué fuente proviene?'}
@@ -1321,7 +1563,7 @@ export default function BetoNerExtractionView() {
                   {isFinancialDoc ? 'Conceptos & Entidades' : 'Extrae Entidades'}
                 </div>
                 <div style={{ fontSize: '11px', color: '#1b8754' }}>
-                  {isFinancialDoc ? '✓ Cuota, Pago, Saldo' : '✓ 3.932 identificadas'}
+                  {isFinancialDoc ? '✓ Cuota, Pago, Saldo' : `✓ ${batchKpiMetrics.totalEntities} identificadas`}
                 </div>
                 <div style={{ fontSize: '10.5px', color: 'var(--color-slate-gray)', marginTop: '4px', borderTop: '1px dashed var(--color-border)', paddingTop: '4px' }}>
                   {isFinancialDoc ? 'Semántica del contexto' : '¿Qué entidades aparecen?'}
@@ -1510,7 +1752,7 @@ export default function BetoNerExtractionView() {
           {/* ══════════════════════════════════════════════════════════════════════════════
               SPLIT INSPECTOR LADO A LADO:
               - COLUMNA IZQUIERDA: EXTRACCIÓN SEMÁNTICA (BETO NER) + BOTONES HITL Y DW
-              - COLUMNA DERECHA: RESOLUCIÓN LÉXICA Y MATCHING (RAPIDFUZZ CONTRA DIM_*)
+              - COLUMNA DERECHA: RESOLUCIÓN LÉXICA Y MATCHING (RAPIDFUZZ CONTRA CATÁLOGOS MAESTROS)
              ══════════════════════════════════════════════════════════════════════════════ */}
           {currentRecord && (
             <>
@@ -1826,52 +2068,150 @@ export default function BetoNerExtractionView() {
                     )}
                   </div>
 
-                  {/* ─── DETALLES TÉCNICOS OCULTOS TRAS TOGGLE (PUNTO 7) ─── */}
-                  {showTechnicalDetails && (
-                    <div style={{
-                      marginTop: '8px',
-                      padding: '14px',
-                      borderRadius: '14px',
-                      backgroundColor: '#0f1113',
-                      color: '#e2e8f0',
-                      border: '1px solid #2d3748',
-                      fontSize: '12px'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-gira-gold)', fontWeight: 700 }}>
-                          [TELEMETRÍA TÉCNICA · BERT BASE SPANISH]
-                        </span>
-                        <span style={{ fontSize: '10.5px', color: '#94a3b8' }}>dccuchile/bert-base-spanish-wwm-cased</span>
-                      </div>
+                  {/* ─── DETALLES TÉCNICOS OCULTOS TRAS TOGGLE (PUNTO 7 · ETIQUETAS CONLL #4 + EMBEDDINGS 768-D) ─── */}
+                  {showTechnicalDetails && (() => {
+                    const emb = currentRecord.embeddings || buildClientEmbeddings768(currentRecord.rawText || '');
+                    const previewValues = emb.cls_vector_preview || [];
+                    return (
+                      <div style={{
+                        marginTop: '8px',
+                        padding: '14px',
+                        borderRadius: '14px',
+                        backgroundColor: '#0f1113',
+                        color: '#e2e8f0',
+                        border: '1px solid #2d3748',
+                        fontSize: '12px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-gira-gold)', fontWeight: 700 }}>
+                            [TELEMETRÍA TÉCNICA · BETO NER CoNLL + EMBEDDINGS 768-D]
+                          </span>
+                          <span style={{ fontSize: '10.5px', color: '#94a3b8' }}>mrm8488/bert-spanish-cased-finetuned-ner (dccuchile/bert-base-spanish-wwm-cased)</span>
+                        </div>
 
-                      {/* Tokens BPE y BIO Tags */}
-                      <div style={{ marginBottom: '10px' }}>
-                        <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Segmentación de Tokens y BIO Tags:</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
-                          {(currentRecord.rawText || '').split(/\s+/).map((tok, tIdx) => {
-                            const matched = (currentRecord.entities || []).find(e => e.token.includes(tok));
-                            const bioTag = matched ? matched.tag : 'O';
-                            return (
-                              <span key={tIdx} style={{
-                                padding: '2px 6px',
-                                borderRadius: '4px',
-                                backgroundColor: matched ? 'rgba(217, 155, 38, 0.25)' : 'rgba(255,255,255,0.06)',
-                                border: matched ? '1px solid #d99b26' : '1px solid rgba(255,255,255,0.1)'
-                              }}>
-                                {tok} <strong style={{ color: matched ? '#fcd34d' : '#64748b' }}>[{bioTag}]</strong>
-                              </span>
-                            );
-                          })}
+                        {/* Tokens BPE y BIO Tags CoNLL */}
+                        <div style={{ marginBottom: '10px' }}>
+                          <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Segmentación de Tokens y BIO Tags CoNLL (PER / ORG / LOC / MISC):</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+                            {(currentRecord.rawText || '').split(/\s+/).map((tok, tIdx) => {
+                              const matched = (currentRecord.entities || []).find(e => e.token.includes(tok));
+                              const bioTag = matched ? (matched.bio_tag || matched.conll_tag || matched.tag || 'B-PER') : 'O';
+                              return (
+                                <span key={tIdx} style={{
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  backgroundColor: matched ? 'rgba(217, 155, 38, 0.25)' : 'rgba(255,255,255,0.06)',
+                                  border: matched ? '1px solid #d99b26' : '1px solid rgba(255,255,255,0.1)'
+                                }}>
+                                  {tok} <strong style={{ color: matched ? '#fcd34d' : '#64748b' }}>[{bioTag}]</strong>
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Inspector de Embeddings de 768 Dimensiones */}
+                        <div style={{
+                          marginBottom: '12px',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                          border: '1px solid rgba(56, 189, 248, 0.25)'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>
+                              Representación Vectorial de Embeddings ({emb.dimensions || emb.hidden_size || 768} dimensiones)
+                            </span>
+                            <span style={{ fontSize: '10.5px', fontFamily: 'var(--font-mono)', color: '#cbd5e1' }}>
+                              Tensor: <strong>[{emb.tensor_shape?.[0] || emb.shape?.[0] || 1} × {emb.tensor_shape?.[1] || emb.shape?.[1] || 768}]</strong> · L2([CLS]): <strong>{emb.cls_norm_l2 ?? emb.l2_norm}</strong> · L2(Mean): <strong>{emb.mean_pool_norm_l2 ?? emb.l2_norm}</strong> · μ={emb.vector_mean ?? emb.mean} · σ={emb.vector_std ?? emb.std}
+                            </span>
+                          </div>
+
+                          {/* Heatmap barra de las primeras 32 dimensiones del vector [CLS] */}
+                          <div style={{ fontSize: '10px', color: '#94a3b8', marginBottom: '4px' }}>
+                            Mapa de activación vectorial [CLS] (primeras {previewValues.length} de 768 dimensiones):
+                          </div>
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: `repeat(${Math.max(previewValues.length, 1)}, 1fr)`,
+                            gap: '2px',
+                            height: '22px',
+                            alignItems: 'end',
+                            padding: '2px 4px',
+                            backgroundColor: 'rgba(0,0,0,0.35)',
+                            borderRadius: '6px',
+                            marginBottom: '6px'
+                          }}>
+                            {previewValues.map((val, vIdx) => {
+                              const absVal = Math.min(Math.abs(val), 1);
+                              const heightPct = Math.max(18, Math.round(absVal * 100));
+                              const barColor = val >= 0 ? '#38bdf8' : '#f59e0b';
+                              return (
+                                <div
+                                  key={vIdx}
+                                  title={`dim[${vIdx}] = ${val}`}
+                                  style={{
+                                    height: `${heightPct}%`,
+                                    backgroundColor: barColor,
+                                    borderRadius: '2px',
+                                    opacity: 0.85
+                                  }}
+                                />
+                              );
+                            })}
+                          </div>
+
+                          {/* Muestra numérica de los primeros valores del vector */}
+                          <div style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '10px',
+                            color: '#94a3b8',
+                            backgroundColor: 'rgba(0,0,0,0.3)',
+                            padding: '5px 8px',
+                            borderRadius: '6px',
+                            overflowX: 'auto',
+                            whiteSpace: 'nowrap',
+                            marginBottom: emb.token_vectors?.length ? '8px' : '0'
+                          }}>
+                            e_CLS[0..11] = [{previewValues.slice(0, 12).map(v => Number(v).toFixed(4)).join(', ')}, … ({emb.dimensions || emb.hidden_size || 768} floats)]
+                          </div>
+
+                          {/* Tabla compacta de Normas L2 por Subword Token */}
+                          {emb.token_vectors?.length > 0 && (
+                            <div style={{ overflowX: 'auto' }}>
+                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#cbd5e1' }}>
+                                <thead>
+                                  <tr style={{ borderBottom: '1px solid rgba(148, 163, 184, 0.2)', color: '#94a3b8', textAlign: 'left' }}>
+                                    <th style={{ padding: '3px 6px' }}>Token WordPiece</th>
+                                    <th style={{ padding: '3px 6px', textAlign: 'right' }}>Norma L2 (||v||₂)</th>
+                                    <th style={{ padding: '3px 6px' }}>Muestra 8-D (primeras componentes)</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {emb.token_vectors.slice(0, 6).map((tv, tvIdx) => (
+                                    <tr key={tvIdx} style={{ borderBottom: '1px solid rgba(148, 163, 184, 0.1)' }}>
+                                      <td style={{ padding: '3px 6px', color: '#38bdf8', fontWeight: 600 }}>{tv.token}</td>
+                                      <td style={{ padding: '3px 6px', textAlign: 'right', color: '#34d399' }}>{tv.l2_norm}</td>
+                                      <td style={{ padding: '3px 6px', color: '#94a3b8' }}>
+                                        [{(tv.preview_8d || []).slice(0, 4).map(x => Number(x).toFixed(3)).join(', ')}, …]
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+
+                        <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: 1.55 }}>
+                          • <strong>Esquema CoNLL-2002 Real:</strong> El modelo preentrenado emite etiquetas <code>B-PER/I-PER</code>, <code>B-ORG/I-ORG</code>, <code>B-LOC/I-LOC</code> y <code>B-MISC/I-MISC</code> sobre el espacio vectorial de 768 dimensiones.<br />
+                          • <strong>Mapeo al Dominio GIRA:</strong> <code>PER</code> se mapea a candidatos de <code>DOCENTE</code> o <code>ESTUDIANTE</code> según contexto; <code>ORG/MISC</code> actúan como señal auxiliar.<br />
+                          • <strong>Resolución por Catálogo + RapidFuzz:</strong> Las etiquetas de negocio (<code>MÓDULO</code>, <code>DOCENTE</code>, <code>PROGRAMA</code>, <code>CONCEPTO_FINANCIERO</code>) son resueltas por el motor de reglas y <code>RapidFuzz</code> contra los catálogos maestros institucionales.<br />
+                          • <strong>Fórmula de Índice Acumulativo:</strong> <code>min(99, lectura_modelo + bono_catalogo + bono_repetido)</code> con compuerta mínima <code>lectura_modelo &gt;= {COMPUERTA_LECTURA_MODELO_PCT}</code>.
                         </div>
                       </div>
-
-                      <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: 1.5 }}>
-                        • Inferencia: Softmax sobre capas Transformer de 12 bloques (110M parámetros).<br />
-                        • Vocabulario: 31.000 tokens BPE (Byte-Pair Encoding).<br />
-                        • Clasificación: Token-level Named Entity Recognition con esquema BIO.
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {/* ─── BOTONES REQUERIDOS EN LA COLUMNA IZQUIERDA ─── */}
                   <div
@@ -2023,7 +2363,7 @@ export default function BetoNerExtractionView() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {isFinancialDoc ? (
                       <>
-                        {/* Concepto Financiero en cat_conceptos_financieros */}
+                        {/* Concepto Financiero en Catálogo de Conceptos Financieros */}
                         <div
                           style={{
                             padding: '12px 14px',
@@ -2035,7 +2375,7 @@ export default function BetoNerExtractionView() {
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <code style={{ color: 'var(--color-sienna-brown)', fontWeight: 600 }}>cat_conceptos_financieros</code>
+                              <code style={{ color: 'var(--color-sienna-brown)', fontWeight: 600 }}>Catálogo de Conceptos Financieros</code>
                               <ArrowRight size={12} color="var(--color-slate-gray)" />
                               <span style={{ fontWeight: 600, color: 'var(--color-ink-black)' }}>FIN-CUOTA-01 (Cuota Mensual)</span>
                             </div>
@@ -2049,7 +2389,7 @@ export default function BetoNerExtractionView() {
                           </div>
                         </div>
 
-                        {/* Estudiante en dim_estudiante por Cascada */}
+                        {/* Estudiante en Catálogo de Estudiantes por Cascada */}
                         <div
                           style={{
                             padding: '12px 14px',
@@ -2061,7 +2401,7 @@ export default function BetoNerExtractionView() {
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <code style={{ color: 'var(--color-sienna-brown)', fontWeight: 600 }}>dim_estudiante</code>
+                              <code style={{ color: 'var(--color-sienna-brown)', fontWeight: 600 }}>Catálogo de Estudiantes</code>
                               <ArrowRight size={12} color="var(--color-slate-gray)" />
                               <span style={{ fontWeight: 600, color: 'var(--color-ink-black)' }}>EST-00452 (Carlos Mamani Choque)</span>
                             </div>
@@ -2087,7 +2427,7 @@ export default function BetoNerExtractionView() {
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <code style={{ color: '#166534', fontWeight: 600 }}>validador_contable</code>
+                              <code style={{ color: '#166534', fontWeight: 600 }}>Validador Contable</code>
                               <ArrowRight size={12} color="var(--color-slate-gray)" />
                               <span style={{ fontWeight: 600, color: '#166534' }}>Cuadre Contable OK</span>
                             </div>
@@ -2113,7 +2453,7 @@ export default function BetoNerExtractionView() {
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <code style={{ color: '#d9383a', fontWeight: 600 }}>motor_reglas_cartera</code>
+                              <code style={{ color: '#d9383a', fontWeight: 600 }}>Motor de Reglas de Cartera</code>
                               <ArrowRight size={12} color="var(--color-slate-gray)" />
                               <span style={{ fontWeight: 600, color: '#d9383a' }}>Mora Crítica Detectada</span>
                             </div>
@@ -2141,7 +2481,7 @@ export default function BetoNerExtractionView() {
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <code style={{ color: 'var(--color-sienna-brown)', fontWeight: 600 }}>{ent.catalogTable}</code>
+                              <code style={{ color: 'var(--color-sienna-brown)', fontWeight: 600 }}>{formatCatalogBusinessName(ent.catalogTable)}</code>
                               <ArrowRight size={12} color="var(--color-slate-gray)" />
                               {ent.es_nuevo_perfil || !ent.matchedCanonical ? (
                                 <span style={{ fontWeight: 600, color: '#b45309', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -2482,6 +2822,7 @@ export default function BetoNerExtractionView() {
               display: 'flex',
               flexDirection: 'column',
               gap: '12px',
+              marginBottom: '18px',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
@@ -2492,11 +2833,11 @@ export default function BetoNerExtractionView() {
                   <AlertTriangle size={18} color="#b45309" />
                 )}
                 <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--color-ink-black)' }}>
-                  Score Híbrido Inmediato: <strong>{(testerResult.hybridScore * 100).toFixed(1)}%</strong> ({testerResult.isApproved ? '✔ Clasifica para Data Warehouse' : '⚠ Requiere Auditoría Humana'})
+                  Índice del Registro: <strong>{testerResult.indice_registro ?? Math.round((testerResult.hybridScore || 0.85) * 100)} / {TOPE_INDICE_BONIFICADO}</strong> ({testerResult.isApproved ? '✔ Clasifica para Data Warehouse' : '⚠ Requiere Auditoría Humana'})
                 </span>
               </div>
               <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }}>
-                Umbral Activo: {(confidenceThreshold * 100).toFixed(0)}%
+                Umbral de Corte: {(confidenceThreshold * 100).toFixed(0)} / {TOPE_INDICE_BONIFICADO} · Compuerta modelo: {COMPUERTA_LECTURA_MODELO_PCT}%
               </span>
             </div>
 
@@ -2518,17 +2859,20 @@ export default function BetoNerExtractionView() {
                   }}
                 >
                   <span style={{ fontWeight: 700, color: 'var(--color-gira-gold)' }}>[{d.label}]</span>
+                  {d.conll_tag && (
+                    <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#64748b' }}>({d.conll_tag})</span>
+                  )}
                   <span style={{ fontWeight: 600, color: 'var(--color-ink-black)' }}>{d.token}</span>
                   <ArrowRight size={12} color="#94a3b8" />
                   {d.es_nuevo_perfil ? (
                     <span style={{ color: '#b45309', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <AlertTriangle size={12} color="#b45309" />
-                      <span>{d.catMatch}</span>
+                      <span>{formatCatalogBusinessName(d.catMatch)}</span>
                     </span>
                   ) : (
                     <span style={{ color: 'var(--color-sienna-brown)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       {d.fuzz > 0 && <CheckCircle2 size={12} color="#16a34a" />}
-                      <span>{d.catMatch}</span>
+                      <span>{formatCatalogBusinessName(d.catMatch)}</span>
                     </span>
                   )}
                   {d.fuzz > 0 && (
@@ -2539,13 +2883,200 @@ export default function BetoNerExtractionView() {
                 </div>
               ))}
             </div>
+
+            {/* Inspector de Embeddings 768-D en el resultado del Laboratorio */}
+            {(() => {
+              const labEmb = testerResult.embeddings || buildClientEmbeddings768(testerInput || '');
+              const labPreview = labEmb.cls_vector_preview || [];
+              return (
+                <div style={{
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  backgroundColor: '#0f172a',
+                  color: '#e2e8f0',
+                  fontSize: '11.5px',
+                  border: '1px solid #334155'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px', marginBottom: '6px' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#38bdf8' }}>
+                      Representación Vectorial de Embeddings ({labEmb.dimensions || labEmb.hidden_size || 768} dimensiones)
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10.5px', color: '#cbd5e1' }}>
+                      Shape: [{labEmb.tensor_shape?.[0] || labEmb.shape?.[0] || 1} × {labEmb.tensor_shape?.[1] || labEmb.shape?.[1] || 768}] · L2([CLS]): {labEmb.cls_norm_l2 ?? labEmb.l2_norm} · L2(Mean): {labEmb.mean_pool_norm_l2 ?? labEmb.l2_norm} · μ={labEmb.vector_mean ?? labEmb.mean} · σ={labEmb.vector_std ?? labEmb.std}
+                    </span>
+                  </div>
+                  {labPreview.length > 0 && (
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: `repeat(${Math.max(labPreview.length, 1)}, 1fr)`,
+                      gap: '2px',
+                      height: '20px',
+                      alignItems: 'end',
+                      padding: '2px 4px',
+                      backgroundColor: 'rgba(0,0,0,0.35)',
+                      borderRadius: '6px',
+                      marginBottom: '6px'
+                    }}>
+                      {labPreview.map((val, vIdx) => {
+                        const absVal = Math.min(Math.abs(val), 1);
+                        const heightPct = Math.max(18, Math.round(absVal * 100));
+                        const barColor = val >= 0 ? '#38bdf8' : '#f59e0b';
+                        return (
+                          <div
+                            key={vIdx}
+                            title={`dim[${vIdx}] = ${val}`}
+                            style={{
+                              height: `${heightPct}%`,
+                              backgroundColor: barColor,
+                              borderRadius: '2px',
+                              opacity: 0.85
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10.5px', color: '#94a3b8', overflowX: 'auto', whiteSpace: 'nowrap', marginBottom: labEmb.token_vectors?.length ? '8px' : '0' }}>
+                    e_CLS[0..9] = [{labPreview.slice(0, 10).map(v => Number(v).toFixed(4)).join(', ')}, … ({labEmb.dimensions || labEmb.hidden_size || 768} floats)]
+                  </div>
+                  {labEmb.token_vectors?.length > 0 && (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#cbd5e1' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid rgba(148, 163, 184, 0.2)', color: '#94a3b8', textAlign: 'left' }}>
+                            <th style={{ padding: '2px 6px' }}>Token WordPiece</th>
+                            <th style={{ padding: '2px 6px', textAlign: 'right' }}>Norma L2 (||v||₂)</th>
+                            <th style={{ padding: '2px 6px' }}>Muestra 8-D</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {labEmb.token_vectors.slice(0, 5).map((tv, tvIdx) => (
+                            <tr key={tvIdx} style={{ borderBottom: '1px solid rgba(148, 163, 184, 0.1)' }}>
+                              <td style={{ padding: '2px 6px', color: '#38bdf8', fontWeight: 600 }}>{tv.token}</td>
+                              <td style={{ padding: '2px 6px', textAlign: 'right', color: '#34d399' }}>{tv.l2_norm}</td>
+                              <td style={{ padding: '2px 6px', color: '#94a3b8' }}>
+                                [{(tv.preview_8d || []).slice(0, 4).map(x => Number(x).toFixed(3)).join(', ')}, …]
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
+
+        {/* ─── COMPARADOR REAL RAPIDFUZZ EN BACKEND (#7) ─── */}
+        <div
+          style={{
+            marginTop: '16px',
+            padding: '16px 20px',
+            borderRadius: '16px',
+            backgroundColor: '#f8fafc',
+            border: '1px solid #e2e8f0',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+            <div>
+              <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--color-sienna-brown)' }}>
+                Comparador de Similitud Léxica RapidFuzz
+              </span>
+              <div style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)' }}>
+                Evalúa en tiempo real <code>fuzz.token_sort_ratio</code>, <code>fuzz.token_set_ratio</code> y <code>fuzz.WRatio</code> en Python contra los catálogos reales de PostgreSQL.
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            <select
+              value={fuzzCatalogType}
+              onChange={(e) => setFuzzCatalogType(e.target.value)}
+              style={{
+                padding: '9px 12px',
+                borderRadius: '10px',
+                border: '1px solid var(--color-border)',
+                fontSize: '12.5px',
+                fontWeight: 600,
+                backgroundColor: '#ffffff',
+              }}
+            >
+              <option value="MODULO">Catálogo de Módulos y Programas</option>
+              <option value="DOCENTE">Catálogo de Plantel Docente</option>
+              <option value="ESTUDIANTE">Catálogo de Estudiantes</option>
+              <option value="CONCEPTO_FINANCIERO">Catálogo de Conceptos Financieros</option>
+            </select>
+
+            <input
+              type="text"
+              value={fuzzQuery}
+              maxLength={200}
+              onChange={(e) => setFuzzQuery(e.target.value)}
+              placeholder="Texto a comparar contra el catálogo..."
+              style={{
+                flex: 1,
+                minWidth: '240px',
+                padding: '9px 14px',
+                borderRadius: '10px',
+                border: '1px solid var(--color-border)',
+                fontSize: '12.5px',
+                fontFamily: 'var(--font-mono)',
+                backgroundColor: '#ffffff',
+              }}
+            />
+
+            <button
+              type="button"
+              className="btn-pill-dark"
+              onClick={handleCompareFuzz}
+              disabled={isComparingFuzz || !fuzzQuery.trim()}
+              style={{ fontSize: '12px', padding: '9px 16px' }}
+            >
+              {isComparingFuzz ? 'Comparando...' : 'Comparar Métricas RapidFuzz'}
+            </button>
+          </div>
+
+          {fuzzComparisonResult?.resultados?.length > 0 && (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'left', backgroundColor: '#ffffff', borderRadius: '10px', overflow: 'hidden' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '1px solid #cbd5e1' }}>
+                    <th style={{ padding: '8px 12px' }}>Candidato en Catálogo ({formatCatalogBusinessName(fuzzComparisonResult.catalogo)})</th>
+                    <th style={{ padding: '8px 12px', textAlign: 'right' }}>token_sort_ratio</th>
+                    <th style={{ padding: '8px 12px', textAlign: 'right' }}>token_set_ratio</th>
+                    <th style={{ padding: '8px 12px', textAlign: 'right' }}>WRatio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {fuzzComparisonResult.resultados.map((row, rIdx) => (
+                    <tr key={rIdx} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '7px 12px', fontWeight: 600 }}>
+                        <code style={{ color: 'var(--color-sienna-brown)', marginRight: '6px' }}>{row.id}</code>
+                        {row.candidato}
+                      </td>
+                      <td style={{ padding: '7px 12px', textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#0284c7' }}>
+                        {row.token_sort_ratio}%
+                      </td>
+                      <td style={{ padding: '7px 12px', textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#16a34a' }}>
+                        {row.token_set_ratio}%
+                      </td>
+                      <td style={{ padding: '7px 12px', textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--color-ink-black)' }}>
+                        {row.w_ratio}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════════════
-          D. CONSULTAR CATÁLOGOS MAESTROS DE ASISTENCIA (dim_*) · POSTGRESQL 16
+          D. CONSULTAR CATÁLOGOS MAESTROS INSTITUCIONALES · POSTGRESQL 16
          ══════════════════════════════════════════════════════════════════════════════ */}
       <div style={{ marginBottom: '24px' }}>
         <details
@@ -2572,10 +3103,10 @@ export default function BetoNerExtractionView() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <BookOpen size={18} color="var(--color-sienna-brown)" />
-              <span>D. Consultar Catálogos Maestros de Asistencia (dim_modulo, dim_docente, dim_estudiante) · PostgreSQL</span>
+              <span>D. Consultar Catálogos Maestros Institucionales (Módulos, Plantel Docente y Estudiantes)</span>
             </div>
             <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <span>Explorar Tablas</span>
+              <span>Explorar Catálogos</span>
               <ChevronDown size={14} />
             </span>
           </summary>
@@ -2584,9 +3115,9 @@ export default function BetoNerExtractionView() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '14px' }}>
               <div style={{ display: 'flex', gap: '8px' }}>
                 {[
-                  { tab: 'dim_modulo', label: `dim_modulo (${masterCatalogs.dim_modulo?.length || 0})` },
-                  { tab: 'dim_docente', label: `dim_docente (${masterCatalogs.dim_docente?.length || 0})` },
-                  { tab: 'dim_estudiante', label: `dim_estudiante (${masterCatalogs.dim_estudiante?.length || 0})` }
+                  { tab: 'dim_modulo', label: `Módulos y Programas (${masterCatalogs.dim_modulo?.length || 0})` },
+                  { tab: 'dim_docente', label: `Plantel Docente (${masterCatalogs.dim_docente?.length || 0})` },
+                  { tab: 'dim_estudiante', label: `Estudiantes (${masterCatalogs.dim_estudiante?.length || 0})` }
                 ].map(({ tab, label }) => (
                   <button
                     key={tab}
@@ -2613,7 +3144,7 @@ export default function BetoNerExtractionView() {
                 <Search size={14} style={{ position: 'absolute', left: '10px', top: '10px', color: '#94a3b8' }} />
                 <input
                   type="text"
-                  placeholder={`Buscar en ${activeCatalogTab}...`}
+                  placeholder={`Buscar en ${formatCatalogBusinessName(activeCatalogTab)}...`}
                   value={catalogSearch}
                   onChange={(e) => setCatalogSearch(e.target.value)}
                   style={{

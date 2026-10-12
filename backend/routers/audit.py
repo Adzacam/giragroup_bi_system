@@ -118,8 +118,8 @@ def _generar_ledger_base() -> List[Dict[str, Any]]:
         ("Ingesta multi-archivo recibida", "192.168.1.45 (DataOps)", "INFO", "Lote de 3 archivos subido y despachado al buffer temporal."),
         ("Normalización canónica de cabeceras", "127.0.0.1 (Dispatcher)", "SUCCESS", "Mapeo de 6 columnas de origen a cabeceras estandarizadas de constelación."),
         ("Detección de isla tabular", "127.0.0.1 (Limpiador)", "INFO", "Isla rectangular identificada en rango B5:H180; ruido de celdas fusionadas eliminado."),
-        ("Insert por lote a Staging", "127.0.0.1 (Loader)", "SUCCESS", "342 registros crudos asentados en public.staging_registros_crudos."),
-        ("Cálculo de Hash SHA-256", "127.0.0.1 (Dispatcher)", "INFO", "Firma criptográfica verificada sin duplicados previos en dim_origen_documental."),
+        ("Insert por lote a Staging", "127.0.0.1 (Loader)", "SUCCESS", "342 registros crudos asentados en Registros de Ingesta."),
+        ("Cálculo de Hash SHA-256", "127.0.0.1 (Dispatcher)", "INFO", "Firma criptográfica verificada sin duplicados previos en Origen Documental y Lotes."),
         ("Re-procesamiento de documento solicitado", "192.168.1.45 (Web UI)", "INFO", "Documento #102 re-ejecutado a través de las 6 etapas del pipeline."),
         ("Advertencia de cabecera no estándar", "127.0.0.1 (Dispatcher)", "WARNING", "Columna 'OBS_EXTRA' clasificada como texto complementario no indexado."),
         ("Adaptación de formato Moodle", "127.0.0.1 (MoodleAdapter)", "SUCCESS", "Exportación de aula virtual adaptada a esquema de actas institucionales."),
@@ -148,7 +148,7 @@ def _generar_ledger_base() -> List[Dict[str, Any]]:
         ("Creación de usuario nuevo", "192.168.1.10 (Web UI)", "SUCCESS", "Cuenta creada con rol PoLP asignado y contraseña hasheada."),
         ("Modificación de datos de perfil", "192.168.1.15 (Web UI)", "INFO", "Teléfono de contacto y correo institucional actualizados."),
         ("Verificación de salvaguarda anti-huérfano", "127.0.0.1 (RBAC Guard)", "INFO", "Validación exitosa: existe al menos 1 administrador activo."),
-        ("Consulta de catálogos maestros 3NF", "192.168.1.20 (Web UI)", "INFO", "Consulta a tabla de referencia cat_programas y cat_modulos."),
+        ("Consulta de catálogos maestros 3NF", "192.168.1.20 (Web UI)", "INFO", "Consulta a catálogos de referencia Catálogo de Programas y Catálogo de Módulos."),
         ("Descarga de reporte de auditoría", "192.168.1.10 (Web UI)", "INFO", "Exportación de registros a formato CSV firmado institucional."),
         ("Advertencia de cuenta inactiva detectada", "127.0.0.1 (Cron Daemon)", "WARNING", "Usuario sin actividad en los últimos 90 días marcado para revisión.")
     ]

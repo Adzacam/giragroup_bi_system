@@ -30,8 +30,15 @@ MODELO_BETO_NOMBRE = MODELO_BETO_NER  # Por defecto usar el fine-tuned para NER 
 MODELO_BETO_CACHE_DIR = BASE_DIR / "pipeline" / "semantic" / "beto_local"
 
 
-# Umbrales únicos de confianza probabilística
+# Umbrales únicos de lectura base y de índice del registro (#3, #6)
 # REGLA: No duplicar ni hardcodear estos valores en otros módulos.
+COMPUERTA_LECTURA_MODELO = 0.70        # Compuerta mínima de lectura base por entidad para recibir bonos
+COMPUERTA_LECTURA_MODELO_PCT = 70      # Compuerta en escala 0-100
+UMBRAL_INDICE_REGISTRO = 85            # Umbral de corte del índice final del registro (0-100) para pase directo al DW
+UMBRAL_INDICE_REGISTRO_DEC = 0.85      # Umbral de corte en escala 0-1
+TOPE_INDICE_BONIFICADO = 99            # Tope máximo para índice con bonos acumulativos (0-100)
+TOPE_INDICE_BONIFICADO_DEC = 0.99      # Tope máximo en escala 0-1
+
 UMBRAL_CONFIANZA_ALTO = 0.85     # Aceptación automática directa
 UMBRAL_CONFIANZA = UMBRAL_CONFIANZA_ALTO  # Alias canónico
 UMBRAL_CONFIANZA_MEDIO = 0.60    # Requiere revisión / flag activo

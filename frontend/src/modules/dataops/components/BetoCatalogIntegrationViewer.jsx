@@ -21,7 +21,7 @@ export default function BetoCatalogIntegrationViewer() {
           label: 'ESTUDIANTE',
           tag: 'B-ESTUDIANTE',
           confidence: 0.948,
-          catalogMatch: { table: 'dim_estudiante', id: 'EST-402', canonical: 'Adriano Daza Meneses', ci: '4892019 LP' },
+          catalogMatch: { table: 'Catálogo de Estudiantes', id: 'EST-402', canonical: 'Adriano Daza Meneses', ci: '4892019 LP' },
           status: 'MATCH_EXACTO'
         },
         {
@@ -29,7 +29,7 @@ export default function BetoCatalogIntegrationViewer() {
           label: 'DOCENTE',
           tag: 'B-DOCENTE',
           confidence: 0.892,
-          catalogMatch: { table: 'dim_docente', id: 'DOC-109', canonical: 'Dr. Carlos A. Gómez Murillo', area: 'Ciencia de Datos' },
+          catalogMatch: { table: 'Plantel Docente', id: 'DOC-109', canonical: 'Dr. Carlos A. Gómez Murillo', area: 'Ciencia de Datos' },
           status: 'MATCH_CANONICO'
         },
         {
@@ -37,7 +37,7 @@ export default function BetoCatalogIntegrationViewer() {
           label: 'MODULO',
           tag: 'B-MODULO',
           confidence: 0.915,
-          catalogMatch: { table: 'dim_modulo', id: 'MOD-302', canonical: 'MOD-302: Gestión y Gobernanza de Datos', creditos: 4 },
+          catalogMatch: { table: 'Módulos y Programas', id: 'MOD-302', canonical: 'MOD-302: Gestión y Gobernanza de Datos', creditos: 4 },
           status: 'MATCH_CANONICO'
         },
         {
@@ -70,7 +70,7 @@ export default function BetoCatalogIntegrationViewer() {
           label: 'ESTUDIANTE',
           tag: 'B-ESTUDIANTE',
           confidence: 0.912,
-          catalogMatch: { table: 'dim_estudiante', id: 'EST-514', canonical: 'Carlos A. Gómez Meneses', ci: '4892019 LP' },
+          catalogMatch: { table: 'Catálogo de Estudiantes', id: 'EST-514', canonical: 'Carlos A. Gómez Meneses', ci: '4892019 LP' },
           status: 'HOMONIMIA_DETECTADA'
         },
         {
@@ -78,7 +78,7 @@ export default function BetoCatalogIntegrationViewer() {
           label: 'DOCUMENTO_CI',
           tag: 'B-IDENTIDAD',
           confidence: 0.640,
-          catalogMatch: { table: 'dim_estudiante', id: 'DUDOSO', canonical: 'CI con sufijo de interrogación (?)' },
+          catalogMatch: { table: 'Catálogo de Estudiantes', id: 'DUDOSO', canonical: 'CI con sufijo de interrogación (?)' },
           status: 'REQUIERE_REVISION'
         },
         {
@@ -86,7 +86,7 @@ export default function BetoCatalogIntegrationViewer() {
           label: 'MODULO / PROGRAMA',
           tag: 'B-PROGRAMA',
           confidence: 0.942,
-          catalogMatch: { table: 'dim_modulo', id: 'POS-2026-B', canonical: 'Maestría en Big Data & Business Analytics', creditos: 60 },
+          catalogMatch: { table: 'Módulos y Programas', id: 'POS-2026-B', canonical: 'Maestría en Big Data & Business Analytics', creditos: 60 },
           status: 'MATCH_CANONICO'
         }
       ],
@@ -111,7 +111,7 @@ export default function BetoCatalogIntegrationViewer() {
           label: 'ESTUDIANTE',
           tag: 'B-ESTUDIANTE',
           confidence: 0.965,
-          catalogMatch: { table: 'dim_estudiante', id: 'EST-389', canonical: 'María Elena Quispe Ramos', ci: '6192841 LP' },
+          catalogMatch: { table: 'Catálogo de Estudiantes', id: 'EST-389', canonical: 'María Elena Quispe Ramos', ci: '6192841 LP' },
           status: 'MATCH_EXACTO'
         },
         {
@@ -119,7 +119,7 @@ export default function BetoCatalogIntegrationViewer() {
           label: 'MODULO',
           tag: 'B-MODULO',
           confidence: 0.958,
-          catalogMatch: { table: 'dim_modulo', id: 'MOD-302', canonical: 'MOD-302: Gestión y Gobernanza de Datos', creditos: 4 },
+          catalogMatch: { table: 'Módulos y Programas', id: 'MOD-302', canonical: 'MOD-302: Gestión y Gobernanza de Datos', creditos: 4 },
           status: 'MATCH_CANONICO'
         },
         {
@@ -152,7 +152,7 @@ export default function BetoCatalogIntegrationViewer() {
           label: 'ESTUDIANTE',
           tag: 'B-ESTUDIANTE',
           confidence: 0.920,
-          catalogMatch: { table: 'dim_estudiante', id: 'ALTA_DIMENSIONAL', canonical: 'Alta automática en dim_estudiante (ID generado)' },
+          catalogMatch: { table: 'Catálogo de Estudiantes', id: 'ALTA_DIMENSIONAL', canonical: 'Alta automática en Catálogo de Estudiantes (ID generado)' },
           status: 'NUEVO_PERFIL'
         },
         {
@@ -160,7 +160,7 @@ export default function BetoCatalogIntegrationViewer() {
           label: 'MODULO',
           tag: 'B-MODULO',
           confidence: 0.885,
-          catalogMatch: { table: 'dim_modulo', id: 'MOD-AUTO', canonical: 'Alta o resolución en dim_modulo', creditos: 4 },
+          catalogMatch: { table: 'Módulos y Programas', id: 'MOD-AUTO', canonical: 'Alta o resolución en Módulos y Programas', creditos: 4 },
           status: 'MATCH_CANONICO'
         },
         {
@@ -173,8 +173,8 @@ export default function BetoCatalogIntegrationViewer() {
         }
       ],
       dwFact: {
-        id_estudiante: 'dim_estudiante.NEXTVAL',
-        id_modulo: 'dim_modulo.NEXTVAL',
+        id_estudiante: 'AUTO_ID_EST',
+        id_modulo: 'AUTO_ID_MOD',
         id_docente: null,
         nota_final: 82.00,
         estado: 'APROBADO',
@@ -228,14 +228,14 @@ export default function BetoCatalogIntegrationViewer() {
               <Cpu size={16} />
             </span>
             <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--color-gira-gold)', fontWeight: 700 }}>
-              Análisis Semántico BETO NER & Resolución con Catálogos Maestros (dim_*)
+              Análisis Semántico BETO NER & Resolución con Catálogos Maestros
             </span>
           </div>
           <h3 className="serif-heading" style={{ fontSize: '19px', margin: '4px 0 2px 0', color: 'var(--color-ink-black)' }}>
             Extracción de Entidades & Vinculación a Data Warehouse
           </h3>
           <p style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)', margin: 0, maxWidth: '820px' }}>
-            BETO v2.4 procesa el texto plano canónico, clasifica entidades mediante Named Entity Recognition y consulta los catálogos canónicos de PostgreSQL (<code style={{ color: 'var(--color-sienna-brown)' }}>dim_estudiante</code>, <code style={{ color: 'var(--color-sienna-brown)' }}>dim_modulo</code>, <code style={{ color: 'var(--color-sienna-brown)' }}>dim_docente</code>) para resolver claves foráneas antes de insertar a <code style={{ color: 'var(--color-sienna-brown)' }}>fact_rendimiento_academico</code>.
+            BETO v2.4 procesa el texto plano canónico, clasifica entidades mediante Named Entity Recognition y consulta los catálogos canónicos de PostgreSQL (<strong style={{ color: 'var(--color-sienna-brown)' }}>Estudiantes</strong>, <strong style={{ color: 'var(--color-sienna-brown)' }}>Módulos y Programas</strong>, <strong style={{ color: 'var(--color-sienna-brown)' }}>Plantel Docente</strong>) para resolver claves foráneas antes de insertar en <strong style={{ color: 'var(--color-sienna-brown)' }}>Rendimiento Académico</strong>.
           </p>
         </div>
 
@@ -307,7 +307,7 @@ export default function BetoCatalogIntegrationViewer() {
               1. Entrada en Texto Plano Canónico
             </span>
             <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'var(--color-mist-gray)', fontFamily: 'var(--font-mono)' }}>
-              staging_registros_crudos
+              Registros de Ingesta
             </span>
           </div>
 
@@ -344,7 +344,7 @@ export default function BetoCatalogIntegrationViewer() {
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <span style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, color: 'var(--color-gira-gold)' }}>
-              2. Extracción NER & Cruce con Catálogo (dim_*)
+              2. Extracción NER & Cruce con Catálogo
             </span>
             <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(217, 155, 38, 0.15)', color: 'var(--color-sienna-brown)', fontWeight: 600 }}>
               BETO v2.4 + RapidFuzz
@@ -393,7 +393,7 @@ export default function BetoCatalogIntegrationViewer() {
                     <span style={{ fontWeight: 600 }}>{ent.label}</span>
                     <span>→ Catálogo:</span>
                     <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-sienna-brown)' }}>
-                      {ent.catalogMatch.table || 'dim'} ({ent.catalogMatch.id || ent.catalogMatch.valor})
+                      {ent.catalogMatch.table || 'Valor Validado'} ({ent.catalogMatch.id || ent.catalogMatch.valor})
                     </span>
                   </div>
                 </div>
@@ -416,7 +416,7 @@ export default function BetoCatalogIntegrationViewer() {
               3. Inserción a Data Warehouse
             </span>
             <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(27, 135, 84, 0.12)', color: '#1b8754', fontWeight: 600 }}>
-              fact_rendimiento_academico
+              Rendimiento Académico
             </span>
           </div>
 
@@ -430,12 +430,12 @@ export default function BetoCatalogIntegrationViewer() {
               fontFamily: 'var(--font-mono)',
             }}
           >
-            <div style={{ color: 'var(--color-slate-gray)', marginBottom: '6px' }}>-- Tupla INSERT canónica:</div>
-            <div style={{ color: '#2563eb' }}>INSERT INTO public.fact_rendimiento_academico (</div>
+            <div style={{ color: 'var(--color-slate-gray)', marginBottom: '6px' }}>-- Tupla de Hechos Consolidada:</div>
+            <div style={{ color: '#2563eb' }}>REGISTRO EN RENDIMIENTO ACADÉMICO (</div>
             <div style={{ paddingLeft: '12px', color: 'var(--color-ink-black)' }}>
               id_estudiante, id_modulo, id_docente, nota_final, estado_academico, score_confianza, requiere_revision
             </div>
-            <div style={{ color: '#2563eb' }}>VALUES (</div>
+            <div style={{ color: '#2563eb' }}>VALORES (</div>
             <div style={{ paddingLeft: '12px', color: '#b45309' }}>
               {currentSample.dwFact.id_estudiante}, {currentSample.dwFact.id_modulo}, {currentSample.dwFact.id_docente || 'NULL'}, {currentSample.dwFact.nota_final || 'NULL'}, '{currentSample.dwFact.estado}', {currentSample.dwFact.confianza_global}, {String(currentSample.dwFact.requiere_revision).toUpperCase()}
             </div>

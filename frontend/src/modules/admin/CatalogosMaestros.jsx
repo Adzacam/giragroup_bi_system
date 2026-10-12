@@ -95,7 +95,7 @@ export default function CatalogosMaestros() {
           type="button"
           style={{ padding: '8px 18px', fontSize: '13.5px' }}
         >
-          dim_modulo (Programas)
+          Módulos y Programas
         </button>
         <button
           onClick={() => { setActiveTab('docentes'); setSearchTerm(''); }}
@@ -103,7 +103,7 @@ export default function CatalogosMaestros() {
           type="button"
           style={{ padding: '8px 18px', fontSize: '13.5px' }}
         >
-          dim_docente (Docentes)
+          Plantel Docente
         </button>
         <button
           onClick={() => { setActiveTab('categorias'); setSearchTerm(''); }}
@@ -111,7 +111,7 @@ export default function CatalogosMaestros() {
           type="button"
           style={{ padding: '8px 18px', fontSize: '13.5px' }}
         >
-          dim_categoria_financiera
+          Categorías Financieras
         </button>
       </div>
 

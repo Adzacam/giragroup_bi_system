@@ -16,6 +16,7 @@ export default function BetoReadingFlowView() {
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
+  const [selectedDocId, setSelectedDocId] = useState(null);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [filterState, setFilterState] = useState('ALL'); // 'ALL' | 'AUTOMATICO' | 'REVISION'
   const [tableFilter, setTableFilter] = useState('ALL'); // 'ALL' | 'AUTOMATICO' | 'REVISION'
@@ -29,199 +30,50 @@ export default function BetoReadingFlowView() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isInserting, setIsInserting] = useState(false);
   const [insertedSuccess, setInsertedSuccess] = useState(false);
+  const [dwInsertDesglose, setDwInsertDesglose] = useState(null);
 
   useEffect(() => {
-    loadReadingData();
-  }, [id]);
+    setTablePage(1);
+    loadReadingData(selectedDocId);
+  }, [id, selectedDocId]);
 
-  const loadReadingData = async () => {
+  const loadReadingData = async (docFilter = null) => {
     try {
       setLoading(true);
-      const res = await dataopsApi.getLoteBetoReading(id);
-      if (res && res.registros) {
-        setData(res);
-        if (res.registros.length > 0) {
-          const firstReview = res.registros.find(r => r.estado === 'REVISION') || res.registros[0];
-          setSelectedRecord(firstReview);
+      let batchIdToLoad = id;
+      if (!batchIdToLoad) {
+        batchIdToLoad = localStorage.getItem('last_active_batch_id');
+      }
+      if (!batchIdToLoad) {
+        const sources = await dataopsApi.getSources();
+        if (sources?.data?.length > 0) {
+          batchIdToLoad = sources.data[0].id_lote || sources.data[0].id || sources.data[0].id_documento;
+          if (batchIdToLoad) localStorage.setItem('last_active_batch_id', batchIdToLoad);
         }
+      }
+
+      if (!batchIdToLoad) {
+        setData(null);
+        setSelectedRecord(null);
+        return;
+      }
+
+      const res = await dataopsApi.getLoteBetoReading(batchIdToLoad, { docId: docFilter });
+      if (res && res.registros && res.registros.length > 0) {
+        setData(res);
+        const firstReview = res.registros.find(r => r.estado === 'REVISION') || res.registros[0];
+        setSelectedRecord(firstReview);
       } else {
-        const fallback = generateFallbackBetoData();
-        setData(fallback);
-        setSelectedRecord(fallback.registros[0]);
+        setData(res || null);
+        setSelectedRecord(null);
       }
     } catch (err) {
-      console.warn('Error al cargar beto-reading, usando fallback:', err);
-      const fallback = generateFallbackBetoData();
-      setData(fallback);
-      setSelectedRecord(fallback.registros[0]);
+      console.warn('Error al cargar beto-reading:', err);
+      setData(null);
+      setSelectedRecord(null);
     } finally {
       setLoading(false);
     }
-  };
-
-  const generateFallbackBetoData = () => {
-    const records = [
-      {
-        id: 'REG_1',
-        line_number: 1,
-        raw_text: 'Pérez Mamani Juan, CI 4892019 LP, Gestión de Riesgos, nota 8.5',
-        estado: 'REVISION',
-        indice_registro: 62,
-        estudiante: 'Pérez Mamani Juan',
-        ci_enmascarado: '••••019 LP',
-        ci_real: '4892019 LP',
-        modulo: 'Gestión de Riesgos',
-        nota_normalizada: '85.00 / 100',
-        motivo: 'No estoy seguro del nombre (confianza 62 < 85)',
-        lectura: {
-          texto: 'Pérez Mamani Juan, CI 4892019 LP, Gestión de Riesgos, nota 8.5',
-          tokens: [
-            { text: 'Pérez Mamani Juan', tag: 'ESTUDIANTE', icon: 'user', color: '#3b82f6' },
-            { text: 'CI 4892019 LP', tag: 'DOCUMENTO / CI', icon: 'file', color: '#8b5cf6' },
-            { text: 'Gestión de Riesgos', tag: 'MÓDULO', icon: 'book', color: '#10b981' },
-            { text: 'nota 8.5', tag: 'CALIFICACIÓN', icon: 'award', color: '#f59e0b' }
-          ]
-        },
-        confianza_elementos: [
-          { elemento: 'Estudiante', indice: 62, lectura_modelo: 62, bono_catalogo: 0, explicacion: 'Lectura del modelo 62' },
-          { elemento: 'Módulo', indice: 97, lectura_modelo: 88, bono_catalogo: 9, explicacion: 'Lectura 88 + catálogo +9' }
-        ],
-        verificacion_reglas: {
-          ci: { valido: true, valor_enmascarado: '••••019 LP', valor_real: '4892019 LP', motivo: 'CI ✓ formato' },
-          nota: { valido: true, original: 8.5, normalizada: '85.00 / 100', motivo: 'Nota ✓ 8.5 → 85/100' },
-          monto: { valido: true, motivo: 'Monto —' }
-        },
-        decision: {
-          indice_mas_bajo: 62,
-          motivo_llano: 'No estoy seguro del nombre',
-          motivo_codigo: 'BAJA_CONFIANZA'
-        }
-      },
-      {
-        id: 'REG_2',
-        line_number: 2,
-        raw_text: 'Quispe Laura Maria Elena, CI 6712340 SC, Gestión de Riesgos, nota 9.2',
-        estado: 'AUTOMATICO',
-        indice_registro: 94,
-        estudiante: 'Quispe Laura Maria Elena',
-        ci_enmascarado: '••••340 SC',
-        ci_real: '6712340 SC',
-        modulo: 'Gestión de Riesgos',
-        nota_normalizada: '92.00 / 100',
-        motivo: 'Supera umbral (≥85) y reglas válidas',
-        lectura: {
-          texto: 'Quispe Laura Maria Elena, CI 6712340 SC, Gestión de Riesgos, nota 9.2',
-          tokens: [
-            { text: 'Quispe Laura Maria Elena', tag: 'ESTUDIANTE', icon: 'user', color: '#3b82f6' },
-            { text: 'CI 6712340 SC', tag: 'DOCUMENTO / CI', icon: 'file', color: '#8b5cf6' },
-            { text: 'Gestión de Riesgos', tag: 'MÓDULO', icon: 'book', color: '#10b981' },
-            { text: 'nota 9.2', tag: 'CALIFICACIÓN', icon: 'award', color: '#f59e0b' }
-          ]
-        },
-        confianza_elementos: [
-          { elemento: 'Estudiante', indice: 94, lectura_modelo: 94, bono_catalogo: 0, explicacion: 'Lectura del modelo 94' },
-          { elemento: 'Módulo', indice: 97, lectura_modelo: 88, bono_catalogo: 9, explicacion: 'Lectura 88 + catálogo +9' }
-        ],
-        verificacion_reglas: {
-          ci: { valido: true, valor_enmascarado: '••••340 SC', valor_real: '6712340 SC', motivo: 'CI ✓ formato' },
-          nota: { valido: true, original: 9.2, normalizada: '92.00 / 100', motivo: 'Nota ✓ 9.2 → 92/100' },
-          monto: { valido: true, motivo: 'Monto —' }
-        },
-        decision: {
-          indice_mas_bajo: 94,
-          motivo_llano: 'Directo al DW: todos los elementos seguros',
-          motivo_codigo: 'APROBADO_AUTOMATICO'
-        }
-      },
-      {
-        id: 'REG_3',
-        line_number: 3,
-        raw_text: 'Flores Condori Roberto, CI 5598?24 CB, Gestión de Riesgos, nota 7.4',
-        estado: 'REVISION',
-        indice_registro: 58,
-        estudiante: 'Flores Condori Roberto',
-        ci_enmascarado: '••••?24 CB',
-        ci_real: '5598?24 CB',
-        modulo: 'Gestión de Riesgos',
-        nota_normalizada: '74.00 / 100',
-        motivo: 'CI ilegible con signo de interrogación (?)',
-        lectura: {
-          texto: 'Flores Condori Roberto, CI 5598?24 CB, Gestión de Riesgos, nota 7.4',
-          tokens: [
-            { text: 'Flores Condori Roberto', tag: 'ESTUDIANTE', icon: 'user', color: '#3b82f6' },
-            { text: 'CI 5598?24 CB', tag: 'DOCUMENTO / CI', icon: 'file', color: '#8b5cf6' },
-            { text: 'Gestión de Riesgos', tag: 'MÓDULO', icon: 'book', color: '#10b981' },
-            { text: 'nota 7.4', tag: 'CALIFICACIÓN', icon: 'award', color: '#f59e0b' }
-          ]
-        },
-        confianza_elementos: [
-          { elemento: 'Estudiante', indice: 89, lectura_modelo: 89, bono_catalogo: 0, explicacion: 'Lectura del modelo 89' },
-          { elemento: 'Módulo', indice: 97, lectura_modelo: 88, bono_catalogo: 9, explicacion: 'Lectura 88 + catálogo +9' }
-        ],
-        verificacion_reglas: {
-          ci: { valido: false, valor_enmascarado: '••••?24 CB', valor_real: '5598?24 CB', motivo: 'CI ⚠ carácter corrupto (?)' },
-          nota: { valido: true, original: 7.4, normalizada: '74.00 / 100', motivo: 'Nota ✓ 7.4 → 74/100' },
-          monto: { valido: true, motivo: 'Monto —' }
-        },
-        decision: {
-          indice_mas_bajo: 58,
-          motivo_llano: 'Cédula con formato corrupto o ilegible',
-          motivo_codigo: 'CI_ILEGIBLE'
-        }
-      },
-      {
-        id: 'REG_4',
-        line_number: 4,
-        raw_text: 'Mamani Choque Andrea, CI 7821901 LP, Gestión de Riesgos, nota 6.8',
-        estado: 'AUTOMATICO',
-        indice_registro: 91,
-        estudiante: 'Mamani Choque Andrea',
-        ci_enmascarado: '••••901 LP',
-        ci_real: '7821901 LP',
-        modulo: 'Gestión de Riesgos',
-        nota_normalizada: '68.00 / 100',
-        motivo: 'Supera umbral (≥85) y reglas válidas',
-        lectura: {
-          texto: 'Mamani Choque Andrea, CI 7821901 LP, Gestión de Riesgos, nota 6.8',
-          tokens: [
-            { text: 'Mamani Choque Andrea', tag: 'ESTUDIANTE', icon: 'user', color: '#3b82f6' },
-            { text: 'CI 7821901 LP', tag: 'DOCUMENTO / CI', icon: 'file', color: '#8b5cf6' },
-            { text: 'Gestión de Riesgos', tag: 'MÓDULO', icon: 'book', color: '#10b981' },
-            { text: 'nota 6.8', tag: 'CALIFICACIÓN', icon: 'award', color: '#f59e0b' }
-          ]
-        },
-        confianza_elementos: [
-          { elemento: 'Estudiante', indice: 91, lectura_modelo: 91, bono_catalogo: 0, explicacion: 'Lectura del modelo 91' },
-          { elemento: 'Módulo', indice: 97, lectura_modelo: 88, bono_catalogo: 9, explicacion: 'Lectura 88 + catálogo +9' }
-        ],
-        verificacion_reglas: {
-          ci: { valido: true, valor_enmascarado: '••••901 LP', valor_real: '7821901 LP', motivo: 'CI ✓ formato' },
-          nota: { valido: true, original: 6.8, normalizada: '68.00 / 100', motivo: 'Nota ✓ 6.8 → 68/100' },
-          monto: { valido: true, motivo: 'Monto —' }
-        },
-        decision: {
-          indice_mas_bajo: 91,
-          motivo_llano: 'Directo al DW: todos los elementos seguros',
-          motivo_codigo: 'APROBADO_AUTOMATICO'
-        }
-      }
-    ];
-
-    return {
-      capa_a_resumen: {
-        total_analizados: 480,
-        directo_dw: 457,
-        a_revision: 23,
-        indice_medio: 91.2,
-        porcentaje_automatico: 95.2
-      },
-      registros: records,
-      modelo_info: {
-        nombre: 'BETO Spanish Biomedical & Academic Fine-Tuned v2.1',
-        f1_validacion: 0.942,
-        umbral_vigente: 85
-      }
-    };
   };
 
   const capaA = data?.capa_a_resumen || {
@@ -246,9 +98,10 @@ export default function BetoReadingFlowView() {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       return (
-        r.estudiante.toLowerCase().includes(q) ||
-        r.modulo.toLowerCase().includes(q) ||
-        (r.ci_real && r.ci_real.toLowerCase().includes(q))
+        (r.estudiante || '').toLowerCase().includes(q) ||
+        (r.modulo || '').toLowerCase().includes(q) ||
+        (r.ci_enmascarado && r.ci_enmascarado.toLowerCase().includes(q)) ||
+        (revealedCis[r.id] && String(revealedCis[r.id]).toLowerCase().includes(q))
       );
     }
     return true;
@@ -257,29 +110,59 @@ export default function BetoReadingFlowView() {
   const tableTotalPages = Math.ceil(tableFiltered.length / tablePageSize) || 1;
   const paginatedTableRows = tableFiltered.slice((tablePage - 1) * tablePageSize, tablePage * tablePageSize);
 
-  const toggleCiReveal = (recordId) => {
-    setRevealedCis(prev => ({
-      ...prev,
-      [recordId]: !prev[recordId]
-    }));
+  const toggleCiReveal = async (recordId) => {
+    if (revealedCis[recordId]) {
+      setRevealedCis(prev => {
+        const copy = { ...prev };
+        delete copy[recordId];
+        return copy;
+      });
+      return;
+    }
+
+    try {
+      const res = await dataopsApi.revelarCi(recordId);
+      const ciRevealed = res?.ci_real || res?.ci;
+      if (ciRevealed) {
+        setRevealedCis(prev => ({
+          ...prev,
+          [recordId]: ciRevealed
+        }));
+      }
+    } catch (err) {
+      const status = err.response?.status;
+      sileoToast.error({
+        title: status === 403 ? 'Permiso denegado (RBAC)' : 'No se pudo revelar el CI',
+        description: err.response?.data?.detail || 'Se requiere rol ADMIN o AUDITOR_CALIDAD para revelar datos personales.'
+      });
+    }
   };
 
   const handleConfirmInsertDw = async () => {
     try {
       setIsInserting(true);
-      await dataopsApi.confirmDwInsert({ id_documento: id });
+      const effectiveBatchId = id || localStorage.getItem('last_active_batch_id');
+      const res = await dataopsApi.confirmDwInsert({
+        id_lote: effectiveBatchId ? Number(effectiveBatchId) : undefined,
+        doc_id: selectedDocId ? Number(selectedDocId) : undefined
+      });
       setInsertedSuccess(true);
+      const desglose = res?.desglose || {
+        inserted_academico: res?.inserted_dw ?? capaA.directo_dw,
+        inserted_financiero: 0
+      };
+      setDwInsertDesglose(desglose);
+      const totalInserted = res?.inserted_dw ?? (desglose.inserted_academico + desglose.inserted_financiero);
       sileoToast.success({
-        title: 'Registros insertados al Data Warehouse',
-        description: `${capaA.directo_dw} filas persistidas formalmente en FactCalificaciones`
+        title: `${totalInserted} registros insertados al Data Warehouse`,
+        description: `Académicos: +${desglose.inserted_academico} · Financieros: +${desglose.inserted_financiero}`
       });
       setIsConfirmModalOpen(false);
     } catch (err) {
-      console.warn('Simulando confirmación DW:', err);
-      setInsertedSuccess(true);
-      sileoToast.success({
-        title: 'Inserción completada',
-        description: `${capaA.directo_dw} registros directos al DW persistidos.`
+      console.error('Error en confirmación DW:', err);
+      sileoToast.error({
+        title: 'Error al insertar en Data Warehouse',
+        description: err.response?.data?.detail || err.message || 'Error en la transacción de carga.'
       });
       setIsConfirmModalOpen(false);
     } finally {
@@ -297,9 +180,41 @@ export default function BetoReadingFlowView() {
   };
 
   return (
-    <BatchFlowLayout currentStep={3}>
-      {/* ─── Capa A. Resumen (4 tarjetas + barra apilada) ─── */}
-      <div style={{ marginBottom: '24px' }}>
+    <BatchFlowLayout
+      currentStep={3}
+      selectedDocId={selectedDocId}
+      onSelectDocId={setSelectedDocId}
+    >
+      {loading ? (
+        <div className="floating-artifact" style={{ padding: '64px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '15px', color: 'var(--color-slate-gray)', fontWeight: '600' }}>
+            Cargando inferencias y métricas del modelo BETO...
+          </div>
+        </div>
+      ) : allRecords.length === 0 ? (
+        <div className="floating-artifact" style={{ padding: '64px 24px', textAlign: 'center' }}>
+          <Cpu size={48} color="var(--color-slate-gray)" style={{ margin: '0 auto 16px auto', display: 'block' }} />
+          <h3 className="serif-heading" style={{ fontSize: '20px', margin: '0 0 10px 0', color: 'var(--color-ink-black)' }}>
+            No hay lecturas de BETO registradas para este lote
+          </h3>
+          <p style={{ fontSize: '14px', color: 'var(--color-slate-gray)', maxWidth: '520px', margin: '0 auto 24px auto', lineHeight: '1.5' }}>
+            Selecciona o procesa un archivo fuente en el paso ① Ingesta para que el modelo BETO pueda clasificar los registros y extraer entidades.
+          </p>
+          <button
+            onClick={() => navigate('/dataops/ingesta')}
+            className="sileo-btn"
+            style={{
+              padding: '10px 20px', backgroundColor: '#2563eb', color: '#fff',
+              border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '13px', cursor: 'pointer'
+            }}
+          >
+            Ir al paso ① Ingesta
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* ─── Capa A. Resumen (4 tarjetas + barra apilada) ─── */}
+          <div style={{ marginBottom: '24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px', marginBottom: '16px' }}>
           <div className="floating-artifact" style={{ padding: '20px 24px' }}>
             <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', fontWeight: '600' }}>Analizados</div>
@@ -572,9 +487,9 @@ export default function BetoReadingFlowView() {
                 {/* Desplegable: fórmula de cálculo */}
                 {showHowScoreWorks && (
                   <div className="dataops-banner-info" style={{ marginBottom: '12px', fontSize: '12px', display: 'block' }}>
-                    Fórmula de confianza: <code>lectura del modelo + coincide con catálogo + aparece repetido = índice (máx. 99)</code>.
+                    Fórmula del índice de confianza: <code>min(99, lectura del modelo + bono catálogo + bono aparición repetida)</code>.
                     <br />
-                    <strong>Aclaración:</strong> <em>El catálogo suma, nunca resta.</em>
+                    <strong>Compuerta mínima:</strong> Los bonos solo se aplican si la lectura base del modelo alcanza al menos <strong>70 / 100</strong>. <em>El catálogo suma, nunca resta.</em>
                   </div>
                 )}
 
@@ -624,7 +539,7 @@ export default function BetoReadingFlowView() {
                     <span>CI:</span>
                     <strong style={{ fontFamily: 'var(--font-mono)' }}>
                       {revealedCis[selectedRecord.id]
-                        ? selectedRecord.verificacion_reglas?.ci?.valor_real
+                        ? revealedCis[selectedRecord.id]
                         : selectedRecord.verificacion_reglas?.ci?.valor_enmascarado}
                     </strong>
                     <button
@@ -650,8 +565,8 @@ export default function BetoReadingFlowView() {
                   <span style={{ color: 'var(--color-border)' }}>|</span>
 
                   {/* Monto */}
-                  <div style={{ color: 'var(--color-ash-gray)' }}>
-                    Monto: —
+                  <div style={{ color: selectedRecord.verificacion_reglas?.monto?.valido === false ? '#ef4444' : 'var(--color-slate-gray)' }}>
+                    <strong>{selectedRecord.verificacion_reglas?.monto?.motivo || 'Monto: —'}</strong>
                   </div>
                 </div>
               </div>
@@ -696,8 +611,8 @@ export default function BetoReadingFlowView() {
           </div>
           <div style={{ fontSize: '13px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>
             {insertedSuccess
-              ? '✓ Los registros aprobados ya han sido insertados formalmente en fact_rendimiento_academico.'
-              : `Hay ${capaA.directo_dw} registros con índice ≥ 85 aprobados listos para cargarse al DW.`}
+              ? `✓ Insertados en el DW: +${dwInsertDesglose?.inserted_academico ?? capaA.directo_dw} en Rendimiento Académico · +${dwInsertDesglose?.inserted_financiero ?? 0} en Situación Financiera y Cobranzas.`
+              : `Hay ${capaA.directo_dw} registros con índice del registro ≥ 85 aprobados listos para cargarse al DW según su tipo documental.`}
           </div>
         </div>
 
@@ -890,20 +805,20 @@ export default function BetoReadingFlowView() {
               Confirmar Inserción en Data Warehouse
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', margin: '0 0 20px 0' }}>
-              Se aplicará la transacción de carga sobre las siguientes tablas canónicas:
+              Se aplicará la transacción de carga sobre las entidades de negocio según el dominio documental de cada archivo:
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px', fontSize: '13px' }}>
               <div style={{ padding: '10px 14px', backgroundColor: 'var(--color-mist-gray)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                <span><code>fact_rendimiento_academico</code> (Hechos)</span>
-                <strong>+{capaA.directo_dw} filas</strong>
+                <span><strong>Rendimiento Académico</strong> / <strong>Situación Financiera y Cobranzas</strong></span>
+                <strong>+{capaA.directo_dw} filas aprobadas (≥85)</strong>
               </div>
               <div style={{ padding: '10px 14px', backgroundColor: 'var(--color-mist-gray)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                <span><code>dim_estudiante</code> (Coincidencias / Nuevos)</span>
+                <span><strong>Catálogo de Estudiantes</strong> (Coincidencias / Nuevos)</span>
                 <strong>Verificado ✓</strong>
               </div>
               <div style={{ padding: '10px 14px', backgroundColor: 'var(--color-mist-gray)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                <span><code>stg_entidad_no_resuelta</code> (A revisión ④)</span>
+                <span><strong>Registros de Ingesta</strong> (A revisión ④)</span>
                 <strong>{capaA.a_revision} pendientes</strong>
               </div>
             </div>
@@ -1006,6 +921,8 @@ export default function BetoReadingFlowView() {
           Pasar a Revisión Humana ④ ({capaA.a_revision} pendientes) <ArrowRight size={18} />
         </button>
       </div>
-    </BatchFlowLayout>
+      </>
+    )}
+  </BatchFlowLayout>
   );
 }

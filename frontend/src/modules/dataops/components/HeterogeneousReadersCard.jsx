@@ -10,7 +10,7 @@ export default function HeterogeneousReadersCard() {
   const readers = [
     {
       id: 'excel',
-      sprintTask: 'Sprint 2 · Tarea 1',
+      sprintTask: 'Módulo Lector Excel',
       title: 'Lector Excel / Sheets',
       subtitle: 'Limpieza estructural & cabeceras',
       icon: FileSpreadsheet,
@@ -39,7 +39,7 @@ Fila 5: [ 1  | Daza Adriano        | 4892019 LP?      | 75.0        | APROBADO]`
     },
     {
       id: 'forms',
-      sprintTask: 'Sprint 2 · Tarea 2',
+      sprintTask: 'Módulo Lector CSV',
       title: 'Lector Google Forms (CSV)',
       subtitle: 'Datos de admisión & postulaciones',
       icon: FileText,
@@ -69,7 +69,7 @@ Fila 5: [ 1  | Daza Adriano        | 4892019 LP?      | 75.0        | APROBADO]`
     },
     {
       id: 'moodle',
-      sprintTask: 'Sprint 2 · Tarea 3',
+      sprintTask: 'Módulo Lector LMS',
       title: 'Lector Reportes Moodle',
       subtitle: 'Calificaciones de aula virtual (CSV/XLSX)',
       icon: Database,
@@ -94,7 +94,7 @@ Carlos,Gomez,DOC-109,cgomez@campus.edu.bo,95.00,95.00 / 100.00`,
     },
     {
       id: 'dispatcher',
-      sprintTask: 'Sprint 2 · Tarea 4',
+      sprintTask: 'Enrutador Heurístico',
       title: 'Dispatcher Inteligente',
       subtitle: 'Identificación y enrutamiento dinámico',
       icon: Split,

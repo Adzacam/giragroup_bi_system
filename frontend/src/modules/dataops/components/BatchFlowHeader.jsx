@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, FileSpreadsheet, Scale, Building2, CheckCircle2, Clock, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Layers, FileSpreadsheet, Scale, Building2 } from 'lucide-react';
 
 export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelectBatch }) {
   if (!batchContext) {
@@ -18,7 +18,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
               Flujo de Ingesta & Procesamiento de Lote
             </div>
             <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>
-              Seleccione o suba un archivo para iniciar la transformación guiada
+              Seleccione o suba de 1 a 10 archivos para iniciar la transformación guiada
             </div>
           </div>
         </div>
@@ -27,13 +27,15 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
   }
 
   const {
+    id_lote,
+    id_documento,
     nombre_archivo = 'Lote sin nombre',
-    institucion = 'Universidad Franz Tamayo',
-    tipo_fuente = 'Acta de calificaciones',
-    escala_label = 'Sobre 100',
+    institucion = 'Unifranz',
+    tipo_fuente = 'ACTA',
+    escala_label = 'No aplica',
+    total_archivos = 1,
     total_registros = 0,
     pendientes_revision = 0,
-    id_documento
   } = batchContext;
 
   return (
@@ -61,7 +63,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-ink-black)', fontFamily: 'var(--font-mono)' }}>
-              Lote: {nombre_archivo}
+              {id_lote ? `Lote #${id_lote}: ` : 'Lote: '}{nombre_archivo}
             </span>
             <span style={{ color: 'var(--color-border)' }}>·</span>
             <span style={{ fontSize: '13px', color: 'var(--color-slate-gray)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -88,8 +90,9 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
             </span>
           </div>
 
-          <div style={{ fontSize: '12px', color: 'var(--color-ash-gray)', marginTop: '4px', display: 'flex', gap: '12px' }}>
-            <span>ID Doc: #{id_documento}</span>
+          <div style={{ fontSize: '12px', color: 'var(--color-ash-gray)', marginTop: '4px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <span>Lote ID: <strong>#{id_lote || id_documento}</strong></span>
+            <span>Archivos en lote: <strong>{total_archivos}</strong></span>
             <span>Registros: <strong>{total_registros}</strong></span>
             {pendientes_revision > 0 && (
               <span style={{ color: 'var(--dataops-warning-text)', fontWeight: '600' }}>

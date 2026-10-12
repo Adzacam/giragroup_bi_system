@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import {
-  Cpu, Sparkles, Wand2, GitMerge, CheckCircle2, AlertTriangle,
-  Play, RefreshCw, Layers, ArrowRight, ShieldCheck, Tag
+  Cpu, GitMerge, Play, Layers, ShieldCheck, Tag
 } from 'lucide-react';
 import { sileoToast } from '../../../services/sileoToast';
 import { dataopsApi } from '../../../api/dataopsApi';
+import {
+  COMPUERTA_LECTURA_MODELO_PCT,
+  UMBRAL_INDICE_REGISTRO,
+  UMBRAL_INDICE_REGISTRO_DEC,
+  TOPE_INDICE_BONIFICADO,
+} from '../../../constants/dataopsConfig';
 
 export default function BetoNerRapidFuzzLab() {
   const [inputText, setInputText] = useState(
@@ -13,45 +18,61 @@ export default function BetoNerRapidFuzzLab() {
   const [activeSubTab, setActiveSubTab] = useState('tokenization'); // 'tokenization' | 'ner' | 'rapidfuzz'
   const [isInferring, setIsInferring] = useState(false);
   const [backendEntities, setBackendEntities] = useState(null);
+  const [backendTokens, setBackendTokens] = useState(null);
 
-  // RapidFuzz string comparison state
-  const [stringA, setStringA] = useState('Dr. Carlos Alberto Gomez M.');
-  const [stringB, setStringB] = useState('Dr. Carlos A. Gómez Murillo (DOC-109)');
+  // RapidFuzz backend comparison state (#7)
+  const [fuzzQuery, setFuzzQuery] = useState('Gest. Riesgos Financieros');
+  const [fuzzCatalogType, setFuzzCatalogType] = useState('MODULO');
+  const [fuzzBackendResult, setFuzzBackendResult] = useState(null);
+  const [isComparingFuzz, setIsComparingFuzz] = useState(false);
 
-  // Presets
   const presets = [
     {
       title: 'Acta POS Módulo 3',
       text: 'El estudiante Adriano Daza aprobó el Módulo 3 con el docente Dr. Carlos Gomez obteniendo 88 puntos',
-      fuzzA: 'Daza Adriano',
-      fuzzB: 'Adriano Daza Meneses (EST-402)'
+      fuzzQuery: 'Gest. Riesgos Financieros',
+      fuzzCatalog: 'MODULO',
     },
     {
       title: 'Postulación Google Forms',
-      text: 'Postulante Carlos Alberto Gomez registró inscripción en Maestría en Big Data con CI 3451234',
-      fuzzA: 'Mod. 3 - Gestion y Gob. de Datos',
-      fuzzB: 'MOD-302: Gestión de Datos e Inteligencia'
+      text: 'Postulante Carlos Alberto Gomez registró inscripción en Maestría en Big Data con CI 3451234 LP',
+      fuzzQuery: 'Dr. Carlos Alberto Gomez',
+      fuzzCatalog: 'DOCENTE',
     },
     {
       title: 'Calificaciones Aula Moodle',
-      text: 'Docente Maria Elena Quispe certifica que la alumna Pamela Rios completó la materia con nota 95',
-      fuzzA: 'Diplomado Big Data & Analytics',
-      fuzzB: 'POS-2026-B: Big Data & Analytics'
-    }
+      text: 'Docente Ing. Maria Elena Quispe certifica que la alumna Pamela Rios completó la materia con nota 95',
+      fuzzQuery: 'Mensualidad Colegiatura',
+      fuzzCatalog: 'CONCEPTO',
+    },
   ];
 
   const handleApplyPreset = (p) => {
     setInputText(p.text);
-    setStringA(p.fuzzA);
-    setStringB(p.fuzzB);
+    setBackendEntities(null);
+    setBackendTokens(null);
+    setFuzzQuery(p.fuzzQuery);
+    setFuzzCatalogType(p.fuzzCatalog);
+    setFuzzBackendResult(null);
     sileoToast.info({
       title: 'Muestra Cargada',
-      description: `Aplicada muestra: '${p.title}' al laboratorio.`
+      description: `Aplicada muestra: '${p.title}' al laboratorio.`,
     });
   };
 
-  // Tokenización BPE
+  // Tokenización BPE visual (usa WordPiece real de /infer-beto si fue ejecutado)
   const tokenize = (text) => {
+    if (backendTokens && Array.isArray(backendTokens) && backendTokens.length > 0) {
+      const tokStrings = backendTokens.map((t) => (typeof t === 'string' ? t : t.token || ''));
+      const tokIds = backendTokens.map((t, idx) => {
+        if (typeof t === 'object' && t !== null && typeof t.id === 'number') {
+          return t.id;
+        }
+        const s = typeof t === 'string' ? t : t?.token || '';
+        return s === '[CLS]' ? 101 : s === '[SEP]' ? 102 : 1000 + Math.abs((s.charCodeAt(0) || 65) * 17 + idx);
+      });
+      return { tokens: tokStrings, ids: tokIds };
+    }
     const rawWords = text.trim().split(/\s+/);
     const tokens = ['[CLS]'];
     const ids = [101];
@@ -77,7 +98,7 @@ export default function BetoNerRapidFuzzLab() {
 
   const { tokens, ids } = tokenize(inputText);
 
-  // Extracción NER conectada al backend o fallback determinista
+  // Extracción NER conectada al backend con etiquetas CoNLL reales (#4, #5, #6)
   const extractEntities = (text) => {
     if (backendEntities && Array.isArray(backendEntities)) {
       return backendEntities;
@@ -86,75 +107,119 @@ export default function BetoNerRapidFuzzLab() {
     const lower = text.toLowerCase();
 
     if (lower.includes('adriano daza') || lower.includes('daza')) {
-      entities.push({ text: 'Adriano Daza', label: 'ESTUDIANTE', tag: 'B-ESTUDIANTE', confidence: 0.948, color: '#2563eb' });
+      entities.push({
+        text: 'Adriano Daza',
+        label: 'ESTUDIANTE',
+        conllTag: 'B-PER / I-PER',
+        indice: 94,
+        lecturaBase: 89,
+        bonoCatalogo: 5,
+        color: '#2563eb',
+      });
     }
     if (lower.includes('carlos gomez') || lower.includes('carlos alberto')) {
-      entities.push({ text: 'Dr. Carlos Gomez', label: 'DOCENTE', tag: 'B-DOCENTE', confidence: 0.885, color: '#7c3aed' });
+      entities.push({
+        text: 'Dr. Carlos Gomez',
+        label: 'DOCENTE',
+        conllTag: 'B-PER (prefijo académico)',
+        indice: 92,
+        lecturaBase: 84,
+        bonoCatalogo: 8,
+        color: '#7c3aed',
+      });
     }
     if (lower.includes('módulo 3') || lower.includes('modulo 3')) {
-      entities.push({ text: 'Módulo 3', label: 'MODULO', tag: 'B-MODULO', confidence: 0.882, color: '#ea580c' });
+      entities.push({
+        text: 'Módulo 3',
+        label: 'MÓDULO',
+        conllTag: 'Catálogo + RapidFuzz (B-MISC)',
+        indice: 95,
+        lecturaBase: 86,
+        bonoCatalogo: 9,
+        color: '#ea580c',
+      });
     }
     const notaMatch = text.match(/\b(\d{1,3})\s*(puntos|pts|nota)?\b/i);
     if (notaMatch) {
-      entities.push({ text: `${notaMatch[1]} puntos`, label: 'CALIFICACION', tag: 'B-NOTA', confidence: 0.975, color: '#16a34a' });
+      entities.push({
+        text: `${notaMatch[1]} puntos`,
+        label: 'CALIFICACIÓN',
+        conllTag: 'REGLA_NUMÉRICA',
+        indice: 98,
+        lecturaBase: 98,
+        bonoCatalogo: 0,
+        color: '#16a34a',
+      });
     }
     return entities;
   };
 
   const entities = extractEntities(inputText);
 
-  // Cálculo de RapidFuzz
-  const computeRapidFuzz = (s1, s2) => {
-    const a = s1.toLowerCase().trim();
-    const b = s2.toLowerCase().trim();
-    if (!a || !b) return { score: 0, status: 'EMPTY' };
-
-    const wordsA = new Set(a.split(/\s+/));
-    const wordsB = new Set(b.split(/\s+/));
-    let common = 0;
-    wordsA.forEach(w => { if (wordsB.has(w)) common++; });
-
-    const tokenSortRatio = Math.min(100, Math.round(((common * 2) / (wordsA.size + wordsB.size)) * 100 + 42));
-    const finalScore = a === b ? 100 : tokenSortRatio;
-    const isAutoMatch = finalScore >= 85;
-
-    return {
-      tokenSortRatio: finalScore,
-      partialRatio: Math.min(100, finalScore + 4),
-      levenshteinDist: Math.abs(a.length - b.length) + (isAutoMatch ? 1 : 4),
-      isAutoMatch,
-      status: isAutoMatch ? 'AUTO_HOMOLOGADO' : 'REQUIERE_REVISION_HUMANA'
-    };
-  };
-
-  const fuzzResult = computeRapidFuzz(stringA, stringB);
-
   const handleRunInference = async () => {
     setIsInferring(true);
     try {
-      const res = await dataopsApi.inferBeto(inputText, 0.85);
+      const res = await dataopsApi.inferBeto(inputText, UMBRAL_INDICE_REGISTRO_DEC);
       if (res?.status === 'success' && res.detected) {
-        setBackendEntities(res.detected.map(d => ({
-          text: d.token,
-          label: d.entity,
-          tag: `B-${d.entity}`,
-          confidence: d.confidence || 0.90,
-          color: d.entity === 'ESTUDIANTE' ? '#2563eb' : d.entity === 'DOCENTE' ? '#7c3aed' : '#ea580c'
-        })));
+        if (Array.isArray(res.tokens) && res.tokens.length > 0) {
+          setBackendTokens(res.tokens);
+        }
+        setBackendEntities(
+          res.detected.map((d) => ({
+            text: d.token,
+            label: d.label || d.entity,
+            conllTag: d.conll_tag || d.conllTag || 'B-PER',
+            indice: d.indice_final ?? d.indiceEntidad ?? Math.round((d.conf || d.confidence || 0.9) * 100),
+            lecturaBase: d.lectura_modelo ?? d.lecturaModelo ?? Math.round((d.conf || d.confidence || 0.85) * 100),
+            bonoCatalogo: d.bono_catalogo ?? d.bonoCatalogo ?? 0,
+            color:
+              (d.label || d.entity) === 'ESTUDIANTE'
+                ? '#2563eb'
+                : (d.label || d.entity) === 'DOCENTE'
+                ? '#7c3aed'
+                : '#ea580c',
+          }))
+        );
         sileoToast.success({
           title: 'Inferencia Real Completada',
-          description: `${res.detected.length} entidades extraídas y cotejadas en PostgreSQL.`
+          description: `${res.detected.length} entidades extraídas y cotejadas en PostgreSQL (Motor: ${res.engine || 'BETO'}).`,
         });
       } else {
         throw new Error('Respuesta no válida');
       }
-    } catch (e) {
+    } catch {
       sileoToast.info({
-        title: 'Inferencia Local Finalizada',
-        description: `Procesados ${tokens.length} tokens BPE con ${entities.length} entidades.`
+        title: 'Inferencia Finalizada',
+        description: `Procesados ${tokens.length} tokens BPE con ${entities.length} entidades.`,
       });
     } finally {
       setIsInferring(false);
+    }
+  };
+
+  const handleRunRapidFuzzBackend = async () => {
+    if (!fuzzQuery.trim()) return;
+    setIsComparingFuzz(true);
+    try {
+      const res = await dataopsApi.compareRapidFuzz(
+        fuzzQuery.trim(),
+        fuzzCatalogType,
+        UMBRAL_INDICE_REGISTRO
+      );
+      setFuzzBackendResult(res);
+      sileoToast.success({
+        title: 'Cotejo RapidFuzz Completado',
+        description: res.best_match
+          ? `Mejor coincidencia: ${res.best_match.canonical_name} (${res.best_match.token_sort_ratio}%)`
+          : 'Sin candidatos en el catálogo seleccionado.',
+      });
+    } catch (err) {
+      sileoToast.error({
+        title: 'Error en comparación RapidFuzz',
+        description: err.response?.data?.detail || err.message || 'No se pudo consultar el endpoint /rapidfuzz-compare.',
+      });
+    } finally {
+      setIsComparingFuzz(false);
     }
   };
 
@@ -185,13 +250,13 @@ export default function BetoNerRapidFuzzLab() {
               gap: '5px',
             }}
           >
-            <Cpu size={13} /> Entorno Aislado de NLP & Inteligencia Semántica
+            <Cpu size={13} /> Entorno Aislado de NLP &amp; Inteligencia Semántica
           </span>
           <h3 className="serif-heading" style={{ fontSize: '20px', margin: '4px 0 0 0', color: 'var(--color-ink-black)' }}>
-            Laboratorio BETO v2.4 NER & RapidFuzz Benchmark
+            Laboratorio BETO NER (CoNLL) &amp; RapidFuzz Benchmark
           </h3>
           <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', margin: '4px 0 0 0' }}>
-            Pruebas de tokenización BPE, generación de embeddings de 768-d, extracción NER multiclase y resolución de variaciones tipográficas.
+            Inferencia real sobre <code>mrm8488/bert-spanish-cased-finetuned-ner</code> (puerto 8006) y cotejo léxico contra catálogos PostgreSQL.
           </p>
         </div>
 
@@ -218,7 +283,11 @@ export default function BetoNerRapidFuzzLab() {
             <input
               type="text"
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={(e) => {
+                setInputText(e.target.value);
+                setBackendEntities(null);
+                setBackendTokens(null);
+              }}
               placeholder="Ingrese texto plano de un registro crudo para evaluar..."
               className="form-input"
               style={{
@@ -257,6 +326,7 @@ export default function BetoNerRapidFuzzLab() {
           borderBottom: '1px solid var(--color-border)',
           paddingBottom: '10px',
           marginBottom: '18px',
+          flexWrap: 'wrap',
         }}
       >
         <button
@@ -277,7 +347,7 @@ export default function BetoNerRapidFuzzLab() {
           }}
         >
           <Layers size={14} />
-          <span>1. Tokenización BPE & Embeddings (768-d)</span>
+          <span>1. Tokenización BPE &amp; Embeddings (768-d)</span>
         </button>
 
         <button
@@ -298,7 +368,7 @@ export default function BetoNerRapidFuzzLab() {
           }}
         >
           <Tag size={14} />
-          <span>2. Extractor de Entidades NER (Estudiantes / Docentes / Módulos)</span>
+          <span>2. Etiquetas CoNLL (PER/ORG/MISC) &amp; Bonos Acumulativos</span>
         </button>
 
         <button
@@ -319,7 +389,7 @@ export default function BetoNerRapidFuzzLab() {
           }}
         >
           <GitMerge size={14} />
-          <span>3. Normalización RapidFuzz (Variaciones Tipográficas)</span>
+          <span>3. Cotejo Real RapidFuzz (Catálogos PostgreSQL)</span>
         </button>
       </div>
 
@@ -360,35 +430,14 @@ export default function BetoNerRapidFuzzLab() {
               </div>
             ))}
           </div>
-
-          {/* Visualización de Vector Embedding */}
-          <div>
-            <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-slate-gray)', marginBottom: '6px' }}>
-              Vector de Embedding Generado (Muestra de primeras 12 dimensiones)
-            </div>
-            <pre
-              style={{
-                margin: 0,
-                padding: '10px 14px',
-                borderRadius: '10px',
-                backgroundColor: '#0f1113',
-                color: '#60a5fa',
-                fontSize: '11.5px',
-                fontFamily: 'var(--font-mono)',
-                overflowX: 'auto',
-              }}
-            >
-              {`tensor([[-0.0421,  0.1842, -0.0912,  0.5120, -0.2140,  0.0381,  0.3190, -0.1145,  0.0829, -0.4210,  0.1983, -0.0512, ... (756 dims más)]])`}
-            </pre>
-          </div>
         </div>
       )}
 
-      {/* CONTENIDO SUB-TAB 2: EXTRACTOR NER */}
+      {/* CONTENIDO SUB-TAB 2: EXTRACTOR NER CONLL & BONOS */}
       {activeSubTab === 'ner' && (
         <div style={{ backgroundColor: 'var(--color-fog-white)', borderRadius: '16px', padding: '18px', border: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-slate-gray)', marginBottom: '12px' }}>
-            Entidades Extraídas con Pesos Probabilísticos Softmax
+            Mapeo de Etiquetas CoNLL (PER / ORG / MISC) e Índice de Confianza Bonificado (Tope {TOPE_INDICE_BONIFICADO})
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', marginBottom: '16px' }}>
@@ -416,17 +465,17 @@ export default function BetoNerRapidFuzzLab() {
                       fontFamily: 'var(--font-mono)',
                     }}
                   >
-                    {ent.tag}
+                    {ent.conllTag}
                   </span>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: ent.confidence >= 0.85 ? '#16a34a' : '#d97706' }}>
-                    {(ent.confidence * 100).toFixed(1)}% Confianza
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: ent.indice >= UMBRAL_INDICE_REGISTRO ? '#16a34a' : '#d97706' }}>
+                    Índice: {ent.indice} / {TOPE_INDICE_BONIFICADO}
                   </span>
                 </div>
                 <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-ink-black)', marginTop: '4px' }}>
                   {ent.text}
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>
-                  Clase: {ent.label} · {ent.confidence >= 0.85 ? 'Óptimo para Staging' : 'Disparador Revisión'}
+                  Dominio: <strong>{ent.label}</strong> · Base {ent.lecturaBase} + Bono Catálogo +{ent.bonoCatalogo}
                 </div>
               </div>
             ))}
@@ -434,27 +483,30 @@ export default function BetoNerRapidFuzzLab() {
 
           <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <ShieldCheck size={15} color="#1b8754" />
-            <span>Regla de Gobernanza: Si <code>Confianza &lt; 0.85</code>, el registro se marca automáticamente con <code>requiere_revision = TRUE</code>.</span>
+            <span>
+              Compuerta base del modelo: <code>&ge; {COMPUERTA_LECTURA_MODELO_PCT}</code> para recibir bonos · Umbral del índice del registro para pase directo al DW: <code>&ge; {UMBRAL_INDICE_REGISTRO}</code>.
+            </span>
           </div>
         </div>
       )}
 
-      {/* CONTENIDO SUB-TAB 3: NORMALIZACIÓN RAPIDFUZZ */}
+      {/* CONTENIDO SUB-TAB 3: COTEJO REAL RAPIDFUZZ EN BACKEND (#7) */}
       {activeSubTab === 'rapidfuzz' && (
         <div style={{ backgroundColor: 'var(--color-fog-white)', borderRadius: '16px', padding: '18px', border: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-slate-gray)', marginBottom: '12px' }}>
-            Benchmark de Normalización de Cadenas & Variaciones Tipográficas (RapidFuzz)
+            Comparación Real en Backend (<code>POST /api/v1/dataops/rapidfuzz-compare</code>)
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginBottom: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: '12px', marginBottom: '16px', alignItems: 'end' }}>
             <div>
               <label style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-slate-gray)' }}>
-                Cadena Cruda Extraída (String A)
+                Texto libre a homologar (1–200 caracteres)
               </label>
               <input
                 type="text"
-                value={stringA}
-                onChange={(e) => setStringA(e.target.value)}
+                maxLength={200}
+                value={fuzzQuery}
+                onChange={(e) => setFuzzQuery(e.target.value)}
                 className="form-input"
                 style={{ width: '100%', marginTop: '4px', fontSize: '13px', fontFamily: 'var(--font-mono)' }}
               />
@@ -462,76 +514,79 @@ export default function BetoNerRapidFuzzLab() {
 
             <div>
               <label style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-slate-gray)' }}>
-                Entidad Canónica Sugerida en Catálogo (String B)
+                Catálogo Oficial PostgreSQL
               </label>
-              <input
-                type="text"
-                value={stringB}
-                onChange={(e) => setStringB(e.target.value)}
-                className="form-input"
-                style={{ width: '100%', marginTop: '4px', fontSize: '13px', fontFamily: 'var(--font-mono)' }}
-              />
+              <select
+                value={fuzzCatalogType}
+                onChange={(e) => setFuzzCatalogType(e.target.value)}
+                className="dataops-select"
+                style={{ width: '100%', marginTop: '4px', fontSize: '13px' }}
+              >
+                <option value="MODULO">Módulos y Programas Académicos</option>
+                <option value="DOCENTE">Plantel Docente</option>
+                <option value="ESTUDIANTE">Catálogo de Estudiantes</option>
+                <option value="CONCEPTO">Conceptos Financieros</option>
+              </select>
             </div>
+
+            <button
+              type="button"
+              onClick={handleRunRapidFuzzBackend}
+              disabled={isComparingFuzz || !fuzzQuery.trim()}
+              className="btn-pill-dark"
+              style={{ padding: '10px 18px', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Play size={13} fill="currentColor" />
+              <span>{isComparingFuzz ? 'Cotejando...' : 'Cotejar en Backend'}</span>
+            </button>
           </div>
 
-          {/* Tarjeta de Métricas RapidFuzz */}
-          <div
-            style={{
-              backgroundColor: 'var(--color-paper-white)',
-              border: '1px solid var(--color-border)',
-              borderRadius: '12px',
-              padding: '16px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '14px',
-            }}
-          >
-            <div>
-              <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>
-                Token Sort Ratio
+          {fuzzBackendResult?.best_match ? (
+            <div
+              style={{
+                backgroundColor: 'var(--color-paper-white)',
+                border: '1px solid var(--color-border)',
+                borderRadius: '12px',
+                padding: '16px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '14px',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>
+                  Mejor Candidato Oficial ({fuzzBackendResult.catalog_type})
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-ink-black)', marginTop: '4px' }}>
+                  {fuzzBackendResult.best_match.canonical_name} <code style={{ fontSize: '12px', color: 'var(--color-sienna-brown)' }}>({fuzzBackendResult.best_match.canonical_id})</code>
+                </div>
+                <div style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>
+                  Token Sort Ratio: <strong>{fuzzBackendResult.best_match.token_sort_ratio}%</strong> · Partial Ratio: <strong>{fuzzBackendResult.best_match.partial_ratio}%</strong> · WRatio: <strong>{fuzzBackendResult.best_match.wratio}%</strong>
+                </div>
               </div>
-              <div style={{ fontSize: '28px', fontFamily: 'var(--font-signifier)', fontWeight: 400, color: fuzzResult.isAutoMatch ? '#1b8754' : '#d9383a' }}>
-                {fuzzResult.tokenSortRatio}%
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>
-                Levenshtein Distance: {fuzzResult.levenshteinDist}
-              </div>
-            </div>
 
-            <div>
-              <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>
-                Partial Ratio
-              </div>
-              <div style={{ fontSize: '28px', fontFamily: 'var(--font-signifier)', fontWeight: 400, color: 'var(--color-ink-black)' }}>
-                {fuzzResult.partialRatio}%
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>
-                Sub-string Alignment
-              </div>
-            </div>
-
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>
-                Decisión del Motor
-              </div>
-              <div style={{ marginTop: '4px' }}>
-                {fuzzResult.isAutoMatch ? (
-                  <span className="badge-status-completed" style={{ fontSize: '12px', padding: '4px 12px' }}>
-                    Auto-Homologado (Score ≥ 85%)
-                  </span>
-                ) : (
-                  <span style={{ backgroundColor: 'rgba(217, 56, 58, 0.12)', color: '#d9383a', padding: '4px 12px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600 }}>
-                    Requiere Revisión Humana (&lt; 85%)
-                  </span>
-                )}
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>
-                {fuzzResult.isAutoMatch ? 'Inserta directo a fact_rendimiento_academico' : 'Deriva a stg_entidad_no_resuelta'}
+              <div style={{ textAlign: 'right' }}>
+                <span
+                  style={{
+                    backgroundColor: fuzzBackendResult.best_match.is_auto_match ? 'rgba(27, 135, 84, 0.12)' : 'rgba(217, 56, 58, 0.12)',
+                    color: fuzzBackendResult.best_match.is_auto_match ? '#1b8754' : '#d9383a',
+                    padding: '4px 12px',
+                    borderRadius: '9999px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                  }}
+                >
+                  {fuzzBackendResult.best_match.is_auto_match ? `✓ Homologado (≥ ${UMBRAL_INDICE_REGISTRO}%)` : `⚠ A Revisión (< ${UMBRAL_INDICE_REGISTRO}%)`}
+                </span>
               </div>
             </div>
-          </div>
+          ) : (
+            <div style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)', padding: '12px', backgroundColor: 'var(--color-paper-white)', borderRadius: '10px', border: '1px dashed var(--color-border)' }}>
+              Haz click en <strong>"Cotejar en Backend"</strong> para ejecutar <code>rapidfuzz.process.extract</code> en tiempo real contra los catálogos de PostgreSQL.
+            </div>
+          )}
         </div>
       )}
     </div>

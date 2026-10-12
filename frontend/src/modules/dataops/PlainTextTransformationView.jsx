@@ -13,95 +13,48 @@ export default function PlainTextTransformationView() {
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
+  const [selectedDocId, setSelectedDocId] = useState(null);
   const [hoveredLine, setHoveredLine] = useState(null);
   const [page, setPage] = useState(1);
   const pageSize = 15;
 
   useEffect(() => {
-    loadRawVsText();
-  }, [id]);
+    setPage(1);
+    loadRawVsText(selectedDocId);
+  }, [id, selectedDocId]);
 
-  const loadRawVsText = async () => {
+  const loadRawVsText = async (docFilter = null) => {
     try {
       setLoading(true);
-      const res = await dataopsApi.getLoteRawVsText(id);
+      let batchIdToLoad = id;
+      if (!batchIdToLoad) {
+        batchIdToLoad = localStorage.getItem('last_active_batch_id');
+      }
+      if (!batchIdToLoad) {
+        const sources = await dataopsApi.getSources();
+        if (sources?.data?.length > 0) {
+          batchIdToLoad = sources.data[0].id_lote || sources.data[0].id || sources.data[0].id_documento;
+          if (batchIdToLoad) localStorage.setItem('last_active_batch_id', batchIdToLoad);
+        }
+      }
+
+      if (!batchIdToLoad) {
+        setData(null);
+        return;
+      }
+
+      const res = await dataopsApi.getLoteRawVsText(batchIdToLoad, docFilter);
       if (res && res.registros) {
         setData(res);
       } else {
-        // Fallback enriquecido si no hay datos en BD
-        setData(generateFallbackData());
+        setData(null);
       }
     } catch (err) {
-      console.warn('Error cargando raw-vs-text, usando fallback:', err);
-      setData(generateFallbackData());
+      console.warn('Error cargando raw-vs-text:', err);
+      setData(null);
     } finally {
       setLoading(false);
     }
-  };
-
-  const generateFallbackData = () => {
-    const fallbackItems = [
-      {
-        line_number: 1,
-        fila_original: ['Pérez Mamani Juan', '4892019 LP', 'Gestión de Riesgos', '8.5'],
-        fila_original_raw: 'Pérez Mamani Juan | 4892019 LP | Gestión de Riesgos | 8.5',
-        oracion_beto: 'Pérez Mamani Juan, CI 4892019 LP, Gestión de Riesgos, nota 8.5',
-        alerta: null
-      },
-      {
-        line_number: 2,
-        fila_original: ['Quispe Laura Maria Elena', '6712340 SC', 'Gestión de Riesgos', '9.2'],
-        fila_original_raw: 'Quispe Laura Maria Elena | 6712340 SC | Gestión de Riesgos | 9.2',
-        oracion_beto: 'Quispe Laura Maria Elena, CI 6712340 SC, Gestión de Riesgos, nota 9.2',
-        alerta: null
-      },
-      {
-        line_number: 3,
-        fila_original: ['Flores Condori Roberto', '5598?24 CB', 'Gestión de Riesgos', '7.4'],
-        fila_original_raw: 'Flores Condori Roberto | 5598?24 CB | Gestión de Riesgos | 7.4',
-        oracion_beto: 'Flores Condori Roberto, CI 5598?24 CB, Gestión de Riesgos, nota 7.4',
-        alerta: 'Carácter dudoso (?) en Cédula de Identidad'
-      },
-      {
-        line_number: 4,
-        fila_original: ['Mamani Choque Andrea', '7821901 LP', 'Gestión de Riesgos', '6.8'],
-        fila_original_raw: 'Mamani Choque Andrea | 7821901 LP | Gestión de Riesgos | 6.8',
-        oracion_beto: 'Mamani Choque Andrea, CI 7821901 LP, Gestión de Riesgos, nota 6.8',
-        alerta: null
-      },
-      {
-        line_number: 5,
-        fila_original: ['Vargas Rios David', '8910243 OR', 'Gestión de Riesgos', '9.0'],
-        fila_original_raw: 'Vargas Rios David | 8910243 OR | Gestión de Riesgos | 9.0',
-        oracion_beto: 'Vargas Rios David, CI 8910243 OR, Gestión de Riesgos, nota 9.0',
-        alerta: null
-      },
-      {
-        line_number: 6,
-        fila_original: ['Choquehuanca Carlos', '3412098 LP', 'Gestión de Riesgos', '8.0'],
-        fila_original_raw: 'Choquehuanca Carlos | 3412098 LP | Gestión de Riesgos | 8.0',
-        oracion_beto: 'Choquehuanca Carlos, CI 3412098 LP, Gestión de Riesgos, nota 8.0',
-        alerta: null
-      },
-      {
-        line_number: 7,
-        fila_original: ['Gutiérrez Soliz Ana', '9812401 SC', 'Gestión de Riesgos', '5.5'],
-        fila_original_raw: 'Gutiérrez Soliz Ana | 9812401 SC | Gestión de Riesgos | 5.5',
-        oracion_beto: 'Gutiérrez Soliz Ana, CI 9812401 SC, Gestión de Riesgos, nota 5.5',
-        alerta: null
-      }
-    ];
-
-    return {
-      kpis: {
-        filas_leidas: 480,
-        filas_omitidas: 3,
-        columnas_detectadas: 4,
-        total_alertas: 1
-      },
-      alertas: [{ line: 3, motivo: 'Carácter dudoso (?) en Cédula de Identidad' }],
-      registros: fallbackItems
-    };
   };
 
   const kpis = data?.kpis || {
@@ -116,9 +69,41 @@ export default function PlainTextTransformationView() {
   const paginatedRegistros = registros.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <BatchFlowLayout currentStep={2}>
-      {/* ─── Fila Superior: KPIs y Explicación ─── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+    <BatchFlowLayout
+      currentStep={2}
+      selectedDocId={selectedDocId}
+      onSelectDocId={setSelectedDocId}
+    >
+      {loading ? (
+        <div className="floating-artifact" style={{ padding: '64px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '15px', color: 'var(--color-slate-gray)', fontWeight: '600' }}>
+            Transformando y cargando estructura de texto plano...
+          </div>
+        </div>
+      ) : registros.length === 0 ? (
+        <div className="floating-artifact" style={{ padding: '64px 24px', textAlign: 'center' }}>
+          <FileText size={48} color="var(--color-slate-gray)" style={{ margin: '0 auto 16px auto', display: 'block' }} />
+          <h3 className="serif-heading" style={{ fontSize: '20px', margin: '0 0 10px 0', color: 'var(--color-ink-black)' }}>
+            No hay registros de texto plano para este lote
+          </h3>
+          <p style={{ fontSize: '14px', color: 'var(--color-slate-gray)', maxWidth: '520px', margin: '0 auto 24px auto', lineHeight: '1.5' }}>
+            No se encontraron líneas estructuradas para el identificador seleccionado. Carga un archivo en la pestaña ① Ingesta para iniciar el procesamiento.
+          </p>
+          <button
+            onClick={() => navigate('/dataops/ingesta')}
+            className="sileo-btn"
+            style={{
+              padding: '10px 20px', backgroundColor: '#2563eb', color: '#fff',
+              border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '13px', cursor: 'pointer'
+            }}
+          >
+            Ir a ① Ingesta
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* ─── Fila Superior: KPIs y Explicación ─── */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
         <div className="floating-artifact" style={{ padding: '20px 24px' }}>
           <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', fontWeight: '600' }}>Filas leídas</div>
           <div style={{ fontSize: '26px', fontWeight: '800', color: 'var(--color-ink-black)', marginTop: '4px' }}>
@@ -335,7 +320,10 @@ export default function PlainTextTransformationView() {
         </button>
 
         <button
-          onClick={() => navigate(`/dataops/lote/${id}/beto`)}
+          onClick={() => {
+            const activeId = id || localStorage.getItem('last_active_batch_id');
+            navigate(activeId ? `/dataops/lote/${activeId}/beto` : '/dataops/beto');
+          }}
           className="sileo-btn"
           style={{
             padding: '14px 26px',
@@ -355,6 +343,8 @@ export default function PlainTextTransformationView() {
           Continuar a Lectura de BETO ③ <ArrowRight size={18} />
         </button>
       </div>
-    </BatchFlowLayout>
+      </>
+    )}
+  </BatchFlowLayout>
   );
 }

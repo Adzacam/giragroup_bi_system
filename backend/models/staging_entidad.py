@@ -11,6 +11,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.sql import func
 from core.database import Base
+from models.staging_registro import FlexibleJSONB
 
 
 class StagingEntidadNoResuelta(Base):
@@ -37,11 +38,15 @@ class StagingEntidadNoResuelta(Base):
     )
     resuelto_en = Column(DateTime, nullable=True)
     id_dimension_resuelta = Column(Integer, nullable=True)
-    
-    # Nuevas columnas de contrato de datos HITL (V007)
+
+    # Columnas estructuradas HITL / DataOps
     motivo = Column(String(100), nullable=True)
-    payload_json = Column(Text, nullable=True)
-    registro_origen_id = Column(Integer, nullable=True)
+    payload_json = Column(FlexibleJSONB, nullable=True)
+    registro_origen_id = Column(
+        Integer,
+        ForeignKey("staging_registros_crudos.id", ondelete="CASCADE"),
+        nullable=True,
+    )
     estado_resolucion = Column(String(30), default="PENDIENTE")
     lock_usuario_id = Column(
         Integer,
@@ -50,5 +55,5 @@ class StagingEntidadNoResuelta(Base):
     )
     lock_expira = Column(DateTime, nullable=True)
     version = Column(Integer, default=1)
-    
+
     created_at = Column(DateTime, server_default=func.now())

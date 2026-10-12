@@ -369,7 +369,7 @@ export default function HumanInTheLoopView() {
       setResolutionStatus('resolved');
       sileoToast.success({
         title: currentItem.es_perfil_nuevo ? 'Nuevo Perfil Creado y Consolidado' : 'Registro Aprobado y Consolidado',
-        description: `Caso '${currentItem.id}' persistido en dim_estudiante y fact_rendimiento_academico.`
+        description: `Caso '${currentItem.id}' persistido en el Catálogo de Estudiantes y Rendimiento Académico.`
       });
       await loadReviewTray();
       await loadEntities();
@@ -525,7 +525,7 @@ export default function HumanInTheLoopView() {
   return (
     <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '0 8px 56px' }}>
       <PageHeader
-        category="AUDITOR_CALIDAD · DataOps"
+        category="Auditoría de Calidad · DataOps"
         title="Panel de Auditoría Humana (Human-in-the-Loop)"
         subtitle="Supervisión de registros con Score < 0.85. El Catálogo Maestro funciona como guía de cotejo; si una entidad no existe, BETO permite darla de alta y persistir sus relaciones en las tablas dimensionales correctas."
         actions={
@@ -580,7 +580,7 @@ export default function HumanInTheLoopView() {
                 Bandeja Limpia: Cero Casos Pendientes de Auditoría Humana
               </h3>
               <p style={{ maxWidth: '640px', margin: '0 auto 24px', fontSize: '14px', color: 'var(--color-slate-gray)', lineHeight: 1.6 }}>
-                Todos los registros del lote activo superaron el umbral institucional (&gt;= 85%) o han sido aprobados y consolidados en el Data Warehouse canónico (dim_estudiante, dim_modulo, fact_rendimiento_academico).
+                Todos los registros del lote activo superaron el umbral institucional (&gt;= 85%) o han sido aprobados y consolidados en el Data Warehouse canónico (Estudiantes, Módulos y Rendimiento Académico).
               </p>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <button
@@ -999,7 +999,7 @@ export default function HumanInTheLoopView() {
                         {selectedReviewIds.length} caso(s) seleccionados para resolución conjunta
                       </div>
                       <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.7)' }}>
-                        Se consolidarán en dim_estudiante, dim_modulo y fact_rendimiento_academico en una sola transacción.
+                        Se consolidarán en el Catálogo de Estudiantes, Módulos y Rendimiento Académico en una sola transacción.
                       </div>
                     </div>
                   </div>
@@ -1314,7 +1314,7 @@ export default function HumanInTheLoopView() {
             <div style={{ fontSize: '13px', color: 'var(--color-slate-gray)', lineHeight: 1.6 }}>
               • Modelo Base: <strong>{telemetry.model_specs?.architecture}</strong><br />
               • Umbral de Certidumbre: <strong>Score &gt;= {telemetry.model_specs?.confidence_threshold}</strong> (casos inferiores derivados a Auditoría Humana)<br />
-              • Motor de Relaciones: <strong>RapidFuzz + Validación 3NF (dim_estudiante, dim_modulo, dim_docente)</strong><br />
+              • Motor de Relaciones: <strong>RapidFuzz + Validación Dimensional (Estudiantes, Módulos y Programas, Plantel Docente)</strong><br />
               • Política de Nuevos Perfiles: Inserción automática de llaves canónicas en dimensiones al confirmar en HITL.
             </div>
           </div>
@@ -1602,7 +1602,7 @@ export default function HumanInTheLoopView() {
             </div>
 
             <p style={{ fontSize: '13.5px', color: 'var(--color-slate-gray)', lineHeight: 1.6, margin: '0 0 16px 0' }}>
-              Se transferirán <strong>{selectedReviewIds.length}</strong> registros validados a las tablas canónicas de PostgreSQL:
+              Se transferirán <strong>{selectedReviewIds.length}</strong> registros validados a las entidades canónicas de PostgreSQL:
             </p>
 
             <div style={{
@@ -1614,9 +1614,9 @@ export default function HumanInTheLoopView() {
               lineHeight: 1.7,
               border: '1px solid var(--color-border)'
             }}>
-              <div>• <code style={{ fontWeight: 700 }}>public.dim_estudiante</code> ({batchMode === 'PRESERVE_INDIVIDUAL' ? `${selectedReviewIds.length} perfiles individuales preservados` : '1 perfil unificado'})</div>
-              <div>• <code style={{ fontWeight: 700 }}>public.dim_modulo</code> (Dimensión curricular homologada)</div>
-              <div>• <code style={{ fontWeight: 700 }}>public.fact_rendimiento_academico</code> (Hechos de auditoría confirmados)</div>
+              <div>• <strong style={{ fontWeight: 700 }}>Catálogo de Estudiantes</strong> ({batchMode === 'PRESERVE_INDIVIDUAL' ? `${selectedReviewIds.length} perfiles individuales preservados` : '1 perfil unificado'})</div>
+              <div>• <strong style={{ fontWeight: 700 }}>Módulos y Programas</strong> (Dimensión curricular homologada)</div>
+              <div>• <strong style={{ fontWeight: 700 }}>Rendimiento Académico</strong> (Hechos de auditoría confirmados)</div>
             </div>
 
             <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginBottom: '24px' }}>

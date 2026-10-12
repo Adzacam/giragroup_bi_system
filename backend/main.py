@@ -40,6 +40,7 @@ app = FastAPI(
 @app.on_event("startup")
 def on_startup():
     try:
+        from pathlib import Path
         from core.database import Base, engine
         import models
         Base.metadata.create_all(bind=engine)
@@ -53,8 +54,14 @@ def on_startup():
                 ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_en TIMESTAMP;
             """))
             conn.commit()
+
+            mig_003 = Path(__file__).resolve().parent / "scripts" / "migrations" / "003_dataops_lote_and_facts_alignment.sql"
+            if mig_003.exists():
+                sql_003 = mig_003.read_text(encoding="utf-8")
+                conn.execute(text(sql_003))
+                conn.commit()
     except Exception as e:
-        logger.error(f"Error creating DB tables: {e}")
+        logger.error(f"Error creating/migrating DB tables: {e}")
 
     try:
         seed_default_users()

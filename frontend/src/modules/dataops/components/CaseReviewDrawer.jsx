@@ -493,7 +493,7 @@ export default function CaseReviewDrawer({
                       Homologar con Concepto Financiero Canónico (Protección DW)
                     </strong>
                     <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', lineHeight: 1.4, display: 'block' }}>
-                      Asocia el término a un concepto canónico de <code>cat_conceptos_financieros</code> sin crear categorías no autorizadas en el DW.
+                      Asocia el término a un concepto canónico del <strong>Catálogo de Conceptos Financieros</strong> sin crear categorías no autorizadas en el DW.
                     </span>
 
                     {selectedAction === 'LINK_FINANCIAL_CONCEPT' && (
@@ -609,7 +609,7 @@ export default function CaseReviewDrawer({
                     Vincular con estudiante existente del catálogo
                   </strong>
                   <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', lineHeight: 1.4, display: 'block' }}>
-                    Asocia este registro a un perfil canónico ya registrado en <code>dim_estudiante</code>.
+                    Asocia este registro a un perfil canónico ya registrado en el <strong>Catálogo de Estudiantes</strong>.
                   </span>
 
                   {selectedAction === 'LINK_EXISTING' && (
@@ -686,7 +686,7 @@ export default function CaseReviewDrawer({
                     Crear nuevo estudiante (Alta Institucional)
                   </strong>
                   <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', lineHeight: 1.4, display: 'block' }}>
-                    Crea un nuevo registro en <code>dim_estudiante</code> con clave foránea canónica.
+                    Crea un nuevo registro en el <strong>Catálogo de Estudiantes</strong> con clave foránea canónica.
                   </span>
 
                   {selectedAction === 'CREATE_NEW' && (

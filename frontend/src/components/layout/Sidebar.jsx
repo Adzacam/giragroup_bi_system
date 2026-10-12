@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, ShieldCheck, FileUp, Wand2, CheckSquare,
-  GitMerge, AlertTriangle, Cpu, GraduationCap, Star, BookOpen,
+  LayoutDashboard, ShieldCheck, FileUp, FileText, Wand2, CheckSquare,
+  GitMerge, Cpu, GraduationCap, Star, BookOpen,
   TrendingUp, DollarSign, PieChart, Target, LineChart,
   Users, Settings, ChevronDown, ChevronRight, Activity, SlidersHorizontal, LogOut, X
 } from 'lucide-react';
@@ -11,21 +11,25 @@ import { useAuth } from '../../context/AuthContext';
 /* ─── Role-based menu definitions for non-admin roles ─── */
 const ROLE_MENUS = {
   AUDITOR_CALIDAD: [
-    { id: 'ingesta',          path: '/dataops/ingesta',          label: '① Ingesta de Archivos',       icon: FileUp },
-    { id: 'revision',         path: '/dataops/revision',         label: '④ Revisión Humana (HITL)',    icon: CheckSquare },
-    { id: 'datos-maestros',   path: '/dataops/datos-maestros',   label: 'Datos Maestros & Catálogo',   icon: GitMerge },
-    { id: 'auditoria',        path: '/admin/auditoria',          label: 'Auditoría del Sistema',        icon: ShieldCheck },
+    { id: 'ingesta',          path: '/dataops/ingesta',          label: '① Ingesta de Archivos',            icon: FileUp },
+    { id: 'texto',            path: '/dataops/texto',            label: '② Texto Plano Estructurado',        icon: FileText },
+    { id: 'beto',             path: '/dataops/beto',             label: '③ Lectura de BETO',                 icon: Wand2 },
+    { id: 'revision',         path: '/dataops/revision',         label: '④ Revisión Humana (HITL)',         icon: CheckSquare },
+    { id: 'beto-ner',         path: '/dataops/beto-ner',         label: 'Laboratorio BETO NER',              icon: Cpu },
+    { id: 'auditoria-humana', path: '/dataops/auditoria-humana', label: 'Consola HITL e Inconsistencias',    icon: Activity },
+    { id: 'datos-maestros',   path: '/dataops/datos-maestros',   label: 'Datos Maestros & Catálogo',        icon: GitMerge },
+    { id: 'auditoria',        path: '/admin/auditoria',          label: 'Auditoría del Sistema',             icon: ShieldCheck },
   ],
   DIRECTOR_ACADEMICO: [
-    { id: 'rendimiento',   path: '/academico/rendimiento',   label: 'Rendimiento y Alertas de Riesgo',   icon: GraduationCap },
-    { id: 'docente',       path: '/academico/docente',       label: 'Evaluación y Desempeño Docente',    icon: Star },
+    { id: 'rendimiento',   path: '/academico/rendimiento',   label: 'Rendimiento y Alertas',             icon: GraduationCap },
+    { id: 'docente',       path: '/academico/docente',       label: 'Desempeño Docente',                 icon: Star },
     { id: 'catalogo',      path: '/academico/catalogo',      label: 'Catálogo Curricular y Actas',       icon: BookOpen },
     { id: 'proyeccion',    path: '/academico/proyeccion',    label: 'Proyección de Alumnos',             icon: TrendingUp },
   ],
   ANALISTA_FINANCIERO: [
-    { id: 'recaudacion',   path: '/financiero/recaudacion',  label: 'Panel de Cobranzas y Recaudación',  icon: DollarSign },
+    { id: 'recaudacion',   path: '/financiero/recaudacion',  label: 'Cobranzas y Recaudación',           icon: DollarSign },
     { id: 'cartera',       path: '/financiero/cartera',      label: 'Gestión de Cartera y Mora',         icon: PieChart },
-    { id: 'metas',         path: '/financiero/metas',        label: 'Metas de Gestión vs. Ejecutado',    icon: Target },
+    { id: 'metas',         path: '/financiero/metas',        label: 'Metas vs. Ejecutado',               icon: Target },
     { id: 'proyeccion',    path: '/financiero/proyeccion',   label: 'Proyección Financiera',             icon: LineChart },
   ],
 };
@@ -35,10 +39,13 @@ const ADMIN_OPERATIVE_CLUSTERS = [
   {
     id: 'dataops', label: 'Flujo DataOps & BETO', icon: ShieldCheck, defaultOpen: true,
     items: [
-      { path: '/dataops/ingesta',          label: '① Ingesta de Archivos',     icon: FileUp },
-      { path: '/dataops/revision',         label: '④ Revisión Humana (HITL)',  icon: CheckSquare },
-      { path: '/dataops/beto-ner',         label: 'Laboratorio BETO NER',      icon: Cpu },
-      { path: '/dataops/datos-maestros',   label: 'Datos Maestros & Catálogo', icon: GitMerge },
+      { path: '/dataops/ingesta',          label: '① Ingesta de Archivos',            icon: FileUp },
+      { path: '/dataops/texto',            label: '② Texto Plano Estructurado',        icon: FileText },
+      { path: '/dataops/beto',             label: '③ Lectura de BETO',                 icon: Wand2 },
+      { path: '/dataops/revision',         label: '④ Revisión Humana (HITL)',         icon: CheckSquare },
+      { path: '/dataops/beto-ner',         label: 'Laboratorio BETO NER',              icon: Cpu },
+      { path: '/dataops/auditoria-humana', label: 'Consola HITL e Inconsistencias',    icon: Activity },
+      { path: '/dataops/datos-maestros',   label: 'Datos Maestros & Catálogo',        icon: GitMerge },
     ],
   },
   {
@@ -72,9 +79,40 @@ const AJUSTES_CLUSTER = {
   ],
 };
 
+function isRouteItemActive(itemPath, pathname) {
+  if (pathname === itemPath || pathname.startsWith(`${itemPath}/`)) return true;
+  if (itemPath === '/dataops/texto' && /^\/dataops\/lote\/[^/]+\/texto/.test(pathname)) return true;
+  if (itemPath === '/dataops/beto' && /^\/dataops\/lote\/[^/]+\/beto/.test(pathname)) return true;
+  if (itemPath === '/dataops/revision' && /^\/dataops\/lote\/[^/]+\/revision/.test(pathname)) return true;
+  return false;
+}
+
 export default function Sidebar({ collapsed, isOpen, onClose, onToggle }) {
   const { role, logout } = useAuth();
   const location = useLocation();
+
+  const [isMobileViewport, setIsMobileViewport] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(max-width: 960px)').matches || window.innerWidth <= 960
+      : false
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 960px)');
+    const updateViewport = () => {
+      setIsMobileViewport(media.matches || window.innerWidth <= 960);
+    };
+    updateViewport();
+    media.addEventListener('change', updateViewport);
+    window.addEventListener('resize', updateViewport, { passive: true });
+    return () => {
+      media.removeEventListener('change', updateViewport);
+      window.removeEventListener('resize', updateViewport);
+    };
+  }, []);
+
+  // On mobile/tablet (<= 960px) or when mobile drawer is open, never render in collapsed icon-only mode
+  const isEffectiveCollapsed = (isOpen || isMobileViewport) ? false : Boolean(collapsed);
 
   const [expandedGroups, setExpandedGroups] = useState(() => {
     const initial = { ajustes: false };
@@ -82,250 +120,322 @@ export default function Sidebar({ collapsed, isOpen, onClose, onToggle }) {
     return initial;
   });
 
+  // Automatically expand the cluster containing the active route
+  useEffect(() => {
+    ADMIN_OPERATIVE_CLUSTERS.forEach(cluster => {
+      if (cluster.items.some(item => isRouteItemActive(item.path, location.pathname))) {
+        setExpandedGroups(prev => (prev[cluster.id] ? prev : { ...prev, [cluster.id]: true }));
+      }
+    });
+    if (AJUSTES_CLUSTER.items.some(item => isRouteItemActive(item.path, location.pathname))) {
+      setExpandedGroups(prev => (prev.ajustes ? prev : { ...prev, ajustes: true }));
+    }
+  }, [location.pathname]);
+
   const toggleGroup = (id) => {
-    if (collapsed && onToggle) {
-      onToggle(); // expand on click if collapsed
+    if (isEffectiveCollapsed && onToggle) {
+      onToggle(); // expand desktop sidebar if collapsed
+      setExpandedGroups(prev => ({ ...prev, [id]: true }));
+      return;
     }
     setExpandedGroups(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const handleLinkClick = () => {
     if (onClose) onClose();
-    if (window.innerWidth <= 960 && onToggle && !onClose) {
-      onToggle();
-    }
+  };
+
+  const handleLogoutClick = () => {
+    if (onClose) onClose();
+    logout();
   };
 
   const isAdmin = role === 'ADMIN';
   const menuItems = !isAdmin ? (ROLE_MENUS[role] || []) : [];
 
   const isAjustesExpanded = expandedGroups['ajustes'];
-  const hasAjustesActive = AJUSTES_CLUSTER.items.some(i => location.pathname === i.path);
+  const hasAjustesActive = AJUSTES_CLUSTER.items.some(i => isRouteItemActive(i.path, location.pathname));
 
   return (
     <aside
-      className={`app-sidebar ${collapsed ? 'collapsed' : ''} ${isOpen ? 'open' : ''}`}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        height: 'calc(100vh - 64px)',
-      }}
+      className={`app-sidebar ${isEffectiveCollapsed ? 'collapsed' : ''} ${isOpen ? 'open' : ''}`}
+      aria-label="Menú lateral de módulos"
     >
-      {/* ─── Upper Section: Main Navigation (Scrollable) ─────────── */}
-      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-        {/* Mobile drawer close header */}
-        {isOpen && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 18px 8px', borderBottom: '1px solid var(--color-border)' }}>
-            <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.6px', color: 'var(--color-ink-black)' }}>Módulos del Sistema</span>
-            <button
-              onClick={onClose}
-              type="button"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-slate-gray)', padding: '4px', display: 'flex', alignItems: 'center' }}
-              title="Cerrar menú"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        )}
-
-        {/* Dashboard link */}
-        <div style={{ padding: collapsed ? '16px 8px 6px' : '16px 14px 6px' }}>
-          <NavLink
-            to="/dashboard"
-            onClick={handleLinkClick}
-            className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
-            title={isAdmin ? 'Cuadro de Mando Integral' : 'Vista General'}
-            style={collapsed ? { justifyContent: 'center', padding: '10px 0' } : {}}
+      {/* ─── Mobile/Tablet Drawer Header (<= 960px, controlled via CSS) ─────────── */}
+      <div className="sidebar-mobile-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+          <div
+            style={{
+              width: '30px',
+              height: '30px',
+              borderRadius: '8px',
+              backgroundColor: '#0C1E33',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              border: '1px solid rgba(217, 155, 38, 0.35)',
+            }}
           >
-            <LayoutDashboard size={18} />
-            {!collapsed && (
-              <span className="sidebar-text" style={{ marginLeft: '10px' }}>
-                {isAdmin ? 'Cuadro de Mando Integral' : 'Vista General'}
-              </span>
-            )}
-          </NavLink>
-        </div>
-
-        {/* Section title */}
-        {!collapsed && (
-          <div className="sidebar-section-title">
-            {isAdmin ? 'Módulos de Inteligencia' : 'Módulos Operativos'}
+            <span style={{ color: '#D99B26', fontWeight: 800, fontSize: '13px', fontFamily: 'var(--font-sohne)' }}>
+              G
+            </span>
           </div>
-        )}
-
-        {/* Non-admin: flat role menu */}
-        {!isAdmin && menuItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.id}
-              to={item.path}
-              onClick={handleLinkClick}
-              className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
-              title={item.label}
-              style={collapsed ? { justifyContent: 'center', padding: '10px 0' } : { padding: '10px 16px' }}
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: '13.5px',
+                fontWeight: 700,
+                color: 'var(--color-ink-black)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                lineHeight: 1.2,
+              }}
             >
-              <Icon size={18} />
-              {!collapsed && <span className="sidebar-text" style={{ marginLeft: '10px' }}>{item.label}</span>}
-            </NavLink>
-          );
-        })}
-
-        {/* Admin: operative cluster groups */}
-        {isAdmin && ADMIN_OPERATIVE_CLUSTERS.map((cluster) => {
-          const ClusterIcon = cluster.icon;
-          const isExpanded = expandedGroups[cluster.id];
-          const hasActiveChild = cluster.items.some(i => location.pathname === i.path);
-
-          if (collapsed) {
-            return (
-              <div key={cluster.id} style={{ padding: '4px 8px' }}>
-                <div
-                  className={`sidebar-nav-item ${hasActiveChild ? 'active' : ''}`}
-                  onClick={() => toggleGroup(cluster.id)}
-                  title={cluster.label}
-                  style={{ justifyContent: 'center', padding: '10px 0', cursor: 'pointer' }}
-                >
-                  <ClusterIcon size={18} />
-                </div>
-              </div>
-            );
-          }
-
-          return (
-            <div key={cluster.id} className={`admin-cluster-group ${isExpanded ? 'open' : ''}`}>
-              <div
-                className="admin-cluster-header"
-                onClick={() => toggleGroup(cluster.id)}
-                style={hasActiveChild ? { color: 'var(--color-ink-black)', fontWeight: 600 } : {}}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <ClusterIcon size={16} />
-                  <span className="sidebar-text">{cluster.label}</span>
-                </span>
-                {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              </div>
-              {isExpanded && (
-                <div className="admin-cluster-content">
-                  {cluster.items.map((item) => {
-                    const ItemIcon = item.icon;
-                    return (
-                      <NavLink
-                        key={item.path}
-                        to={item.path}
-                        onClick={handleLinkClick}
-                        className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
-                      >
-                        <ItemIcon size={14} />
-                        <span className="sidebar-text" style={{ marginLeft: '8px' }}>{item.label}</span>
-                      </NavLink>
-                    );
-                  })}
-                </div>
-              )}
+              Módulos del Sistema
             </div>
-          );
-        })}
+            <div
+              style={{
+                fontSize: '10px',
+                fontWeight: 600,
+                color: 'var(--color-slate-gray)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              GIRA Group BI
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          type="button"
+          className="sidebar-close-btn"
+          title="Cerrar menú"
+          aria-label="Cerrar menú lateral"
+        >
+          <X size={17} />
+        </button>
       </div>
 
-      {/* ─── Bottom Section: Ajustes, Logout & DB Monitor (Pinned at Bottom) ─── */}
+      {/* ─── Upper Section: Main Navigation (Scrollable) ─────────── */}
+      <div className="sidebar-scroll-area">
+        <div>
+          {/* Dashboard link */}
+          <div style={{ padding: isEffectiveCollapsed ? '10px 6px 4px' : '10px 4px 2px' }}>
+            <NavLink
+              to="/dashboard"
+              onClick={handleLinkClick}
+              className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+              title={isAdmin ? 'Cuadro de Mando Integral' : 'Vista General'}
+              style={isEffectiveCollapsed ? { justifyContent: 'center', padding: '10px 0', margin: '2px 6px' } : {}}
+            >
+              <LayoutDashboard size={18} style={{ flexShrink: 0 }} />
+              {!isEffectiveCollapsed && (
+                <span className="sidebar-text">
+                  {isAdmin ? 'Cuadro de Mando Integral' : 'Vista General'}
+                </span>
+              )}
+            </NavLink>
+          </div>
+
+          {/* Section title */}
+          {!isEffectiveCollapsed && (
+            <div className="sidebar-section-title">
+              {isAdmin ? 'Módulos de Inteligencia' : 'Módulos Operativos'}
+            </div>
+          )}
+
+          {/* Non-admin: flat role menu */}
+          {!isAdmin && menuItems.map((item) => {
+            const Icon = item.icon;
+            const activeMatch = isRouteItemActive(item.path, location.pathname);
+            return (
+              <NavLink
+                key={item.id}
+                to={item.path}
+                onClick={handleLinkClick}
+                className={({ isActive }) => `sidebar-nav-item ${isActive || activeMatch ? 'active' : ''}`}
+                title={item.label}
+                style={isEffectiveCollapsed ? { justifyContent: 'center', padding: '10px 0', margin: '2px 6px' } : {}}
+              >
+                <Icon size={17} style={{ flexShrink: 0 }} />
+                {!isEffectiveCollapsed && <span className="sidebar-text">{item.label}</span>}
+              </NavLink>
+            );
+          })}
+
+          {/* Admin: operative cluster groups */}
+          {isAdmin && ADMIN_OPERATIVE_CLUSTERS.map((cluster) => {
+            const ClusterIcon = cluster.icon;
+            const isExpanded = expandedGroups[cluster.id];
+            const hasActiveChild = cluster.items.some(i => isRouteItemActive(i.path, location.pathname));
+
+            if (isEffectiveCollapsed) {
+              return (
+                <div key={cluster.id} style={{ padding: '2px 6px' }}>
+                  <div
+                    className={`sidebar-nav-item ${hasActiveChild ? 'active' : ''}`}
+                    onClick={() => toggleGroup(cluster.id)}
+                    title={cluster.label}
+                    style={{ justifyContent: 'center', padding: '10px 0', margin: 0, cursor: 'pointer' }}
+                  >
+                    <ClusterIcon size={18} style={{ flexShrink: 0 }} />
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div key={cluster.id} className={`admin-cluster-group ${isExpanded ? 'open' : ''}`}>
+                <div
+                  className="admin-cluster-header"
+                  onClick={() => toggleGroup(cluster.id)}
+                  style={hasActiveChild ? { color: 'var(--color-ink-black)', fontWeight: 700 } : {}}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0, flex: 1 }}>
+                    <ClusterIcon size={16} style={{ flexShrink: 0 }} />
+                    <span className="sidebar-text">{cluster.label}</span>
+                  </span>
+                  {isExpanded ? (
+                    <ChevronDown size={14} style={{ flexShrink: 0, marginLeft: '4px' }} />
+                  ) : (
+                    <ChevronRight size={14} style={{ flexShrink: 0, marginLeft: '4px' }} />
+                  )}
+                </div>
+                {isExpanded && (
+                  <div className="admin-cluster-content">
+                    {cluster.items.map((item) => {
+                      const ItemIcon = item.icon;
+                      const activeMatch = isRouteItemActive(item.path, location.pathname);
+                      return (
+                        <NavLink
+                          key={item.path}
+                          to={item.path}
+                          onClick={handleLinkClick}
+                          className={({ isActive }) => `sidebar-nav-item ${isActive || activeMatch ? 'active' : ''}`}
+                          title={item.label}
+                        >
+                          <ItemIcon size={14} style={{ flexShrink: 0 }} />
+                          <span className="sidebar-text">{item.label}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ─── Ajustes Cluster / Link (Bottom-aligned inside scroll area) ─── */}
+        <div style={{ marginTop: 'auto', paddingTop: '6px', borderTop: '1px solid var(--color-border)' }}>
+          {isAdmin ? (
+            isEffectiveCollapsed ? (
+              <div style={{ padding: '2px 6px' }}>
+                <div
+                  className={`sidebar-nav-item ${hasAjustesActive ? 'active' : ''}`}
+                  onClick={() => toggleGroup('ajustes')}
+                  title="Ajustes y Gestión"
+                  style={{ justifyContent: 'center', padding: '10px 0', margin: 0, cursor: 'pointer' }}
+                >
+                  <Settings size={18} style={{ flexShrink: 0 }} />
+                </div>
+              </div>
+            ) : (
+              <div className={`admin-cluster-group ${isAjustesExpanded ? 'open' : ''}`}>
+                <div
+                  className="admin-cluster-header"
+                  onClick={() => toggleGroup('ajustes')}
+                  style={hasAjustesActive ? { color: 'var(--color-ink-black)', fontWeight: 700 } : {}}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0, flex: 1 }}>
+                    <Settings size={16} style={{ flexShrink: 0 }} />
+                    <span className="sidebar-text">Ajustes</span>
+                  </span>
+                  {isAjustesExpanded ? (
+                    <ChevronDown size={14} style={{ flexShrink: 0, marginLeft: '4px' }} />
+                  ) : (
+                    <ChevronRight size={14} style={{ flexShrink: 0, marginLeft: '4px' }} />
+                  )}
+                </div>
+                {isAjustesExpanded && (
+                  <div className="admin-cluster-content">
+                    {AJUSTES_CLUSTER.items.map((item) => {
+                      const ItemIcon = item.icon;
+                      const activeMatch = isRouteItemActive(item.path, location.pathname);
+                      return (
+                        <NavLink
+                          key={item.path}
+                          to={item.path}
+                          onClick={handleLinkClick}
+                          className={({ isActive }) => `sidebar-nav-item ${isActive || activeMatch ? 'active' : ''}`}
+                          title={item.label}
+                        >
+                          <ItemIcon size={14} style={{ flexShrink: 0 }} />
+                          <span className="sidebar-text">{item.label}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          ) : (
+            <div style={{ padding: isEffectiveCollapsed ? '2px 6px' : '2px 4px' }}>
+              <NavLink
+                to="/ajustes"
+                onClick={handleLinkClick}
+                className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+                title="Ajustes del Sistema"
+                style={isEffectiveCollapsed ? { justifyContent: 'center', padding: '10px 0', margin: 0 } : {}}
+              >
+                <SlidersHorizontal size={17} style={{ flexShrink: 0 }} />
+                {!isEffectiveCollapsed && (
+                  <span className="sidebar-text">
+                    Ajustes
+                  </span>
+                )}
+              </NavLink>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ─── Bottom Section: Logout & DB Monitor (Compact Pinned Footer) ─── */}
       <div
         className="sidebar-bottom-section"
         style={{
           borderTop: '1px solid var(--color-border)',
           backgroundColor: 'var(--color-fog-white)',
-          paddingTop: '6px',
+          paddingTop: '2px',
           flexShrink: 0,
         }}
       >
-        {/* Admin: Cluster Ajustes */}
-        {isAdmin ? (
-          collapsed ? (
-            <div style={{ padding: '4px 8px' }}>
-              <div
-                className={`sidebar-nav-item ${hasAjustesActive ? 'active' : ''}`}
-                onClick={() => toggleGroup('ajustes')}
-                title="Ajustes y Gestión"
-                style={{ justifyContent: 'center', padding: '10px 0', cursor: 'pointer' }}
-              >
-                <Settings size={18} />
-              </div>
-            </div>
-          ) : (
-            <div className={`admin-cluster-group ${isAjustesExpanded ? 'open' : ''}`}>
-              <div
-                className="admin-cluster-header"
-                onClick={() => toggleGroup('ajustes')}
-                style={hasAjustesActive ? { color: 'var(--color-ink-black)', fontWeight: 600 } : {}}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Settings size={16} />
-                  <span className="sidebar-text">Ajustes</span>
-                </span>
-                {isAjustesExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              </div>
-              {isAjustesExpanded && (
-                <div className="admin-cluster-content">
-                  {AJUSTES_CLUSTER.items.map((item) => {
-                    const ItemIcon = item.icon;
-                    return (
-                      <NavLink
-                        key={item.path}
-                        to={item.path}
-                        onClick={handleLinkClick}
-                        className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
-                      >
-                        <ItemIcon size={14} />
-                        <span className="sidebar-text" style={{ marginLeft: '8px' }}>{item.label}</span>
-                      </NavLink>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )
-        ) : (
-          /* Non-admin: Direct link to Ajustes */
-          <div style={{ padding: collapsed ? '4px 8px' : '4px 14px' }}>
-            <NavLink
-              to="/ajustes"
-              onClick={handleLinkClick}
-              className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
-              title="Ajustes del Sistema"
-              style={collapsed ? { justifyContent: 'center', padding: '10px 0' } : {}}
-            >
-              <SlidersHorizontal size={18} />
-              {!collapsed && (
-                <span className="sidebar-text" style={{ marginLeft: '10px' }}>
-                  Ajustes
-                </span>
-              )}
-            </NavLink>
-          </div>
-        )}
-
         {/* Cerrar Sesión Button */}
-        <div style={{ padding: collapsed ? '2px 8px 6px' : '2px 14px 6px' }}>
+        <div style={{ padding: isEffectiveCollapsed ? '2px 6px 2px' : '2px 4px 2px' }}>
           <button
-            onClick={logout}
+            onClick={handleLogoutClick}
             className="sidebar-nav-item"
             title="Cerrar sesión"
             type="button"
             style={{
-              width: '100%',
+              width: isEffectiveCollapsed ? '100%' : 'calc(100% - 16px)',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
               textAlign: 'left',
               color: 'var(--color-alert-red)',
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              padding: collapsed ? '8px 0' : '8px 12px',
+              justifyContent: isEffectiveCollapsed ? 'center' : 'flex-start',
+              padding: isEffectiveCollapsed ? '8px 0' : '6.5px 10px',
+              margin: isEffectiveCollapsed ? 0 : '1px 8px',
             }}
           >
-            <LogOut size={16} />
-            {!collapsed && (
-              <span className="sidebar-text" style={{ marginLeft: '10px', fontSize: '12.5px', fontWeight: 500 }}>
+            <LogOut size={15} style={{ flexShrink: 0 }} />
+            {!isEffectiveCollapsed && (
+              <span className="sidebar-text" style={{ fontSize: '12.5px', fontWeight: 600 }}>
                 Cerrar Sesión
               </span>
             )}
@@ -333,11 +443,11 @@ export default function Sidebar({ collapsed, isOpen, onClose, onToggle }) {
         </div>
 
         {/* PostgreSQL status widget */}
-        <div style={{ padding: collapsed ? '10px 8px 12px' : '10px 16px 14px', borderTop: '1px solid var(--color-border)' }}>
-          {!collapsed ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--color-slate-gray)' }}>
-              <Activity size={13} color="var(--color-alert-green)" />
-              <div>
+        <div style={{ padding: isEffectiveCollapsed ? '6px 6px 8px' : '6px 14px 8px', borderTop: '1px solid var(--color-border)' }}>
+          {!isEffectiveCollapsed ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--color-slate-gray)', minWidth: 0 }}>
+              <Activity size={13} color="var(--color-alert-green)" style={{ flexShrink: 0 }} />
+              <div style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 <div>PostgreSQL: <strong style={{ color: 'var(--color-alert-green)' }}>Conectado</strong></div>
                 <div style={{ fontSize: '10px', color: 'var(--color-ash-gray)' }}>PoLP Enforced · JWT Secure</div>
               </div>
@@ -350,3 +460,5 @@ export default function Sidebar({ collapsed, isOpen, onClose, onToggle }) {
     </aside>
   );
 }
+
+

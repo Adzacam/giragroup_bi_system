@@ -1,3 +1,4 @@
+from .lote import Lote
 from .dim_tiempo import DimTiempo
 from .dim_estudiante import DimEstudiante
 from .dim_docente import DimDocente
@@ -9,6 +10,7 @@ from .notification import Notification
 from .staging_registro import StagingRegistroCrudo
 from .log_pipeline import LogPipelineIngesta
 from .log_auditoria_nlp import LogAuditoriaNlp
+from .log_inconsistencia import LogInconsistencia
 from .fact_rendimiento import FactRendimientoAcademico
 from .fact_financiero import FactSituacionFinanciera
 from .fact_cobranzas import FactCobranzasProyectadas
@@ -33,4 +35,10 @@ from .catalogos import (
     CatEtiquetaClasificacion,
     CatMapeoColumna,
     CatGuiaTextoPlano,
+    CatCategoriaFinanciera,
+    CatInstitucion,
+    CatAliasModulo,
+    CatAliasDocente,
+    CatAliasPrograma,
+    CatAliasFinanciero,
 )
