@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FileSpreadsheet, FileText, Database, CheckCircle, AlertCircle, RefreshCw, Eye, AlertTriangle, Play, Trash2 } from 'lucide-react';
 import ResponsiveTable from '../../../components/shared/ResponsiveTable';
 import { sileoToast } from '../../../services/sileoToast';
+import { getSourceTableMeta } from '../../../utils/sourceLabelUtils';
 
 export default function SourcesTable({
   sources = [],
@@ -16,6 +17,9 @@ export default function SourcesTable({
   onDeleteSource,
   onDeleteSelected,
   isReprocessingId,
+  title,
+  mode = 'all', // 'queue' | 'history' | 'all'
+  emptyMessage,
 }) {
   const navigate = useNavigate();
   const getSourceIcon = (type) => {
@@ -45,7 +49,14 @@ export default function SourcesTable({
     if (status === 'warning' || status === 'processing') {
       return (
         <span className="badge-status badge-status-processing" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-          <AlertCircle size={13} /> En proceso (2)
+          <AlertCircle size={13} /> En proceso
+        </span>
+      );
+    }
+    if (status === 'ready' || status === 'pending') {
+      return (
+        <span className="badge-status" style={{ backgroundColor: 'rgba(217, 155, 38, 0.15)', color: '#b45309', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <AlertCircle size={13} /> Listo para Procesar
         </span>
       );
     }
@@ -56,7 +67,7 @@ export default function SourcesTable({
     );
   };
 
-  const isAllSelected = sources.length > 0 && sources.every((item) => selectedIds.includes(item.id));
+  const isAllSelected = sources.length > 0 && sources.every((item) => selectedIds.some((sId) => String(sId) === String(item.id)));
 
   const handleProcessSelectedClick = () => {
     if (selectedIds.length === 0) {
@@ -69,36 +80,31 @@ export default function SourcesTable({
     if (onProcessSelected) {
       onProcessSelected(selectedIds);
     } else {
-      navigate(`/dataops/procesamiento?autoRun=true&docIds=${selectedIds.join(',')}`);
+      navigate(`/dataops/ingesta?tab=pipeline&autoRun=true&docIds=${selectedIds.join(',')}`);
     }
   };
 
+  const displayTitle = title || (
+    mode === 'queue'
+      ? 'Archivos en Cola para Análisis y Normalización'
+      : mode === 'history'
+      ? 'Historial de Archivos Ingeridos y Procesados'
+      : 'Archivos Procesados Recientemente'
+  );
+
   return (
-    <div style={{ marginTop: '32px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-        <h3 className="serif-heading" style={{ fontSize: '20px', margin: 0, color: 'var(--color-ink-black)' }}>
-          Archivos Procesados Recientemente
-        </h3>
-        {selectedIds.length === 0 && (
-          <button
-            type="button"
-            onClick={handleProcessSelectedClick}
-            className="btn-pill-ghost"
-            style={{
-              padding: '6px 14px',
-              fontSize: '12.5px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: 'var(--color-slate-gray)',
-              border: '1px solid var(--color-border)',
-              backgroundColor: 'var(--color-paper-white)'
-            }}
-            title="Debe marcar al menos un archivo de la tabla para continuar"
-          >
-            <Play size={12} fill="currentColor" /> Procesar Seleccionados (0)
-          </button>
-        )}
+    <div style={{ marginTop: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h3 className="serif-heading" style={{ fontSize: '19px', margin: 0, color: 'var(--color-ink-black)' }}>
+            {displayTitle}
+          </h3>
+          <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>
+            {mode === 'queue'
+              ? `${sources.length} archivo(s) pendientes de normalización e inserción.`
+              : `${sources.length} archivo(s) registrados en el catálogo documental.`}
+          </div>
+        </div>
       </div>
 
       {/* Barra de Acciones en Lote */}
@@ -196,8 +202,17 @@ export default function SourcesTable({
                 borderRadius: '9999px',
               }}
             >
-              <Play size={12} fill="currentColor" />
-              Procesar Seleccionados en Fase 2 ({selectedIds.length}) →
+              {mode === 'history' ? (
+                <>
+                  <RefreshCw size={12} />
+                  <span>Volver a Procesar Seleccionados ({selectedIds.length}) →</span>
+                </>
+              ) : (
+                <>
+                  <Play size={12} fill="currentColor" />
+                  <span>Convertir a Texto Plano ({selectedIds.length}) →</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -226,8 +241,8 @@ export default function SourcesTable({
                   }}
                 />
               </th>
-              <th>Nombre del Archivo</th>
-              <th>Tipo de Fuente</th>
+              <th>Entidad & Tabla Canónica</th>
+              <th>Tipo & Esquema</th>
               <th>Registros Detectados</th>
               <th>Fecha y Hora</th>
               <th>Estado</th>
@@ -235,23 +250,42 @@ export default function SourcesTable({
             </tr>
           </thead>
           <tbody>
-            {sources.map((item) => {
+            {sources.length === 0 ? (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--color-slate-gray)' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 500 }}>
+                    {emptyMessage || (mode === 'queue' ? 'No hay archivos en cola pendientes de procesamiento.' : 'No hay archivos en el historial de procesados.')}
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              sources.map((item) => {
               const isReprocessing = isReprocessingId === item.id;
-              const isSelected = selectedIds.includes(item.id);
+              const isSelected = selectedIds.some((sId) => String(sId) === String(item.id));
+              const meta = getSourceTableMeta(item.name, item.type);
 
               return (
                 <tr
                   key={item.id}
+                  onClick={(e) => {
+                    if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && !e.target.closest('button')) {
+                      onToggleSelect && onToggleSelect(item.id);
+                    }
+                  }}
                   style={{
-                    backgroundColor: isSelected ? 'rgba(180, 83, 9, 0.04)' : undefined,
+                    backgroundColor: isSelected ? 'rgba(217, 155, 38, 0.08)' : undefined,
                     transition: 'background-color 0.15s ease',
+                    cursor: 'pointer',
                   }}
                 >
                   <td style={{ textAlign: 'center', width: '42px' }}>
                     <input
                       type="checkbox"
                       checked={isSelected}
-                      onChange={() => onToggleSelect && onToggleSelect(item.id)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        onToggleSelect && onToggleSelect(item.id);
+                      }}
                       aria-label={`Seleccionar ${item.name}`}
                       style={{
                         accentColor: 'var(--color-sienna-brown)',
@@ -262,31 +296,56 @@ export default function SourcesTable({
                     />
                   </td>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      {getSourceIcon(item.type)}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <div style={{ marginTop: '2px' }}>{getSourceIcon(item.type)}</div>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: '13.5px', color: 'var(--color-ink-black)' }}>
-                          {item.name}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 600, fontSize: '13.5px', color: 'var(--color-ink-black)' }}>
+                            {meta.domainTitle}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              fontFamily: 'var(--font-mono)',
+                              fontWeight: 700,
+                              padding: '1px 6px',
+                              borderRadius: '4px',
+                              color: meta.color,
+                              backgroundColor: meta.bgColor,
+                              border: `1px solid ${meta.borderColor}`,
+                            }}
+                          >
+                            {meta.table}
+                          </span>
                         </div>
-                        <div style={{ fontSize: '11px', color: 'var(--color-ash-gray)', fontFamily: 'var(--font-mono)' }}>
-                          sha256: {item.sha256 || '8f4e2a1b'}
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>{item.name}</span>
+                          <span style={{ color: 'var(--color-ash-gray)', fontFamily: 'var(--font-mono)', fontSize: '10.5px' }}>
+                            sha256: {item.sha256 || '8f4e2a1b'}
+                          </span>
                         </div>
                       </div>
                     </div>
                   </td>
                   <td>
-                    <span 
-                      className="badge-source" 
-                      style={{ 
-                        ...getSourceBadgeStyle(item.type),
-                        borderRadius: '9999px',
-                        padding: '4px 10px',
-                        fontSize: '11.5px',
-                        fontWeight: 600 
-                      }}
-                    >
-                      {item.type}
-                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                      <span 
+                        className="badge-source" 
+                        style={{ 
+                          ...getSourceBadgeStyle(item.type),
+                          borderRadius: '9999px',
+                          padding: '3px 8px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          alignSelf: 'flex-start',
+                        }}
+                      >
+                        {item.type}
+                      </span>
+                      <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)', fontWeight: 500 }}>
+                        {meta.category} · <code style={{ fontSize: '10px', color: meta.color }}>{meta.tableType}</code>
+                      </span>
+                    </div>
                   </td>
                   <td style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
                     {item.records.toLocaleString()}
@@ -319,54 +378,56 @@ export default function SourcesTable({
                         <Eye size={14} /> Detalle
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => onReprocess && onReprocess(item.id)}
-                        disabled={isReprocessing}
-                        style={{
-                          background: 'none',
-                          border: '1px solid var(--color-border)',
-                          color: 'var(--color-ink-black)',
-                          cursor: isReprocessing ? 'not-allowed' : 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          fontSize: '12px',
-                          padding: '4px 10px',
-                          borderRadius: '9999px',
-                          backgroundColor: 'var(--color-paper-white)',
-                          opacity: isReprocessing ? 0.5 : 1
-                        }}
-                        title="Reprocesar en el pipeline"
-                      >
-                        <RefreshCw size={12} className={isReprocessing ? 'spin' : ''} />
-                        {isReprocessing ? 'Reprocesando...' : 'Reprocesar'}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/dataops/procesamiento?autoRun=true&docId=${item.id}`)}
-                        style={{
-                          backgroundColor: 'var(--color-ink-black)',
-                          border: 'none',
-                          color: '#ffffff',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '5px',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          padding: '4px 12px',
-                          borderRadius: '9999px',
-                          transition: 'opacity 0.15s ease',
-                          whiteSpace: 'nowrap'
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.85')}
-                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                        title="Procesar inmediatamente en Fase 2"
-                      >
-                        <Play size={11} fill="currentColor" /> Procesar en Fase 2
-                      </button>
+                      {mode === 'history' ? (
+                        <button
+                          type="button"
+                          onClick={() => onReprocess ? onReprocess(item.id) : navigate(`/dataops/ingesta?tab=pipeline&autoRun=true&docId=${item.id}`)}
+                          disabled={isReprocessing}
+                          style={{
+                            background: 'var(--color-mist-gray)',
+                            border: '1px solid var(--color-border)',
+                            color: 'var(--color-ink-black)',
+                            cursor: isReprocessing ? 'not-allowed' : 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '11.5px',
+                            fontWeight: 600,
+                            padding: '4px 10px',
+                            borderRadius: '9999px',
+                            opacity: isReprocessing ? 0.5 : 1
+                          }}
+                          title="Volver a procesar en el pipeline"
+                        >
+                          <RefreshCw size={11} className={isReprocessing ? 'spin' : ''} />
+                          {isReprocessing ? 'Reprocesando...' : 'Volver a procesar'}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/dataops/ingesta?tab=pipeline&autoRun=true&docId=${item.id}`)}
+                          style={{
+                            backgroundColor: 'var(--color-ink-black)',
+                            border: 'none',
+                            color: '#ffffff',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            padding: '4px 12px',
+                            borderRadius: '9999px',
+                            transition: 'opacity 0.15s ease',
+                            whiteSpace: 'nowrap'
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.85')}
+                          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                          title="Convertir inmediatamente a texto plano y procesar"
+                        >
+                          <Play size={11} fill="currentColor" /> Convertir a Texto Plano
+                        </button>
+                      )}
 
                       <button
                         type="button"
@@ -401,7 +462,7 @@ export default function SourcesTable({
                   </td>
                 </tr>
               );
-            })}
+            }))}
           </tbody>
         </table>
       </ResponsiveTable>

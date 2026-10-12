@@ -28,7 +28,11 @@ from backend.main import app
 from backend.schemas.forecast_schemas import ForecastAlumnosResponse, ForecastMetasResponse
 from backend.schemas.risk_schemas import RiesgoCruzadoResponse
 
+from backend.core.security import create_access_token
+
+admin_token = create_access_token({"sub": "1", "role": "ADMIN"})
 client = TestClient(app)
+client.headers["Authorization"] = f"Bearer {admin_token}"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LOOP 1: LOOP DE SEGURIDAD OWASP TOP 10 (INYECCIÓN, FUZZING Y PARAMETER TAMPERING)

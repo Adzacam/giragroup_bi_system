@@ -2,19 +2,18 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# 1. Habilitar o instalar pnpm globalmente
-RUN npm install -g pnpm
+# Instalar pnpm v9 (compatible con el lockfile del proyecto)
+RUN npm install -g pnpm@9
 
-# 2. Copiar package.json (y pnpm-lock.yaml si ya existe)
-COPY frontend/package.json frontend/pnpm-lock.yaml* ./
+# Copiar definiciones de dependencias
+COPY frontend/package.json frontend/pnpm-lock.yaml* frontend/.npmrc* ./
 
-# 3. Instalar dependencias usando la caché eficiente de pnpm
-RUN pnpm install
+# Instalar dependencias usando pnpm
+RUN pnpm install --frozen-lockfile=false
 
-# 4. Copiar el resto del código
+# Copiar código del frontend
 COPY frontend/ .
 
 EXPOSE 5173
 
-# 5. Ejecutar Vite usando pnpm
 CMD ["pnpm", "run", "dev", "--host"]

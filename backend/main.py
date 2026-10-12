@@ -43,6 +43,16 @@ def on_startup():
         from core.database import Base, engine
         import models
         Base.metadata.create_all(bind=engine)
+
+        with engine.connect() as conn:
+            conn.execute(text("""
+                ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS requiere_revision BOOLEAN DEFAULT FALSE;
+                ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS score_confianza NUMERIC(5, 4) DEFAULT 1.0;
+                ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto BOOLEAN DEFAULT FALSE;
+                ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_por INTEGER REFERENCES users(id) ON DELETE SET NULL;
+                ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_en TIMESTAMP;
+            """))
+            conn.commit()
     except Exception as e:
         logger.error(f"Error creating DB tables: {e}")
 

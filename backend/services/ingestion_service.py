@@ -14,6 +14,7 @@ import tempfile
 import logging
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
+from fastapi import HTTPException
 import pandas as pd
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
@@ -52,10 +53,14 @@ try:
     from models.dim_origen import DimOrigenDocumental
     from models.staging_registro import StagingRegistroCrudo
     from models.log_pipeline import LogPipelineIngesta
+    from models.fact_rendimiento import FactRendimientoAcademico
+    from models.staging_entidad import StagingEntidadNoResuelta
 except ImportError:
     from backend.models.dim_origen import DimOrigenDocumental
     from backend.models.staging_registro import StagingRegistroCrudo
     from backend.models.log_pipeline import LogPipelineIngesta
+    from backend.models.fact_rendimiento import FactRendimientoAcademico
+    from backend.models.staging_entidad import StagingEntidadNoResuelta
 
 try:
     from backend.services.readers.moodle_adapter import es_reporte_moodle, adaptar_moodle_df
@@ -194,8 +199,10 @@ class IngestionService:
             t_ms_2 = max(1, int((time.perf_counter() - t0) * 1000) + 65)
 
             if not hojas:
-                # Fallback sintético en caso de archivo no legible
-                hojas = {"Hoja1": pd.DataFrame({"NOMBRES Y APELLIDOS": ["Daza Adriano"], "CALIF_FINAL": [75]})}
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"El archivo '{filename}' no contiene matrices tabulares legibles o el formato '{ext}' no es compatible."
+                )
 
             total_hojas = len(hojas)
             log2 = cls._registrar_log(
@@ -272,7 +279,8 @@ class IngestionService:
             log4 = cls._registrar_log(
                 db, doc_id, "NORMALIZE", "INFO", "mapper.py",
                 f"Matriz de normalización: {len(matriz_normalizacion)} cabeceras mapeadas a esquema canónico.",
-                t_ms_4
+                t_ms_4,
+                metadata={"matriz": matriz_normalizacion}
             )
             logs_generados.append(log4)
             stages_info.append({"id": 4, "name": "Cabeceras", "time": f"{t_ms_4}ms", "desc": f"{len(matriz_normalizacion)} Columnas", "status": "completed"})
@@ -346,10 +354,10 @@ class IngestionService:
             logs_generados.append(log7)
 
             kpis = {
-                "total_registros_procesados": registros_procesados or 1248,
-                "registros_normalizados": registros_normalizados or 1196,
-                "inconsistencias_estructurales": inconsistencias or 52,
-                "tasa_limpieza": tasa_limpieza or 95.8,
+                "total_registros_procesados": registros_procesados,
+                "registros_normalizados": registros_normalizados,
+                "inconsistencias_estructurales": inconsistencias,
+                "tasa_limpieza": tasa_limpieza if registros_procesados > 0 else 100.0,
                 "total_fuentes": db.query(DimOrigenDocumental).count(),
                 "sha256": sha256_hash
             }
@@ -381,8 +389,12 @@ class IngestionService:
         except Exception as e:
             db.rollback()
             logger.error("Error en pipeline de ingesta para '%s': %s", filename, e, exc_info=True)
-            cls._registrar_log(db, doc_id, "ERROR", "ERROR", "pipeline.py", f"Error crítico: {str(e)}", 0)
-            db.commit()
+            if not isinstance(e, HTTPException):
+                try:
+                    cls._registrar_log(db, doc_id, "ERROR", "ERROR", "pipeline.py", f"Error crítico: {str(e)}", 0)
+                    db.commit()
+                except Exception:
+                    db.rollback()
             raise e
         finally:
             if os.path.exists(tmp_path):
@@ -437,13 +449,35 @@ class IngestionService:
             else:
                 st = "Excel Acta"
 
+            total_filas = db.query(func.sum(StagingRegistroCrudo.n_filas)).filter_by(id_documento=d.id_documento).scalar() or n_reg or 0
+
+            # Evaluación de estado del ciclo de vida (Staging vs. Data Warehouse):
+            # Solo está consolidado en el DW si tiene registros cargados en el DW y no quedan pendientes en HITL
+            n_dw = 0
+            try:
+                n_dw = db.query(FactRendimientoAcademico).filter_by(id_documento=d.id_documento).count()
+            except Exception:
+                n_dw = 0
+
+            n_hitl_pend = 0
+            try:
+                n_hitl_pend = db.query(StagingEntidadNoResuelta).filter_by(id_documento=d.id_documento, resuelto=False).count()
+            except Exception:
+                n_hitl_pend = 0
+
+            consolidado_dw = bool(n_dw > 0 and n_hitl_pend == 0)
+            status_calc = "completed" if consolidado_dw else ("staging_ready" if total_filas > 0 else "pending")
+
             items.append({
                 "id": d.id_documento,
                 "name": d.nombre_archivo or f"Archivo_{d.id_documento}.xlsx",
                 "type": st,
-                "records": max(n_reg * 20, 240),
+                "records": int(total_filas),
+                "records_dw": int(n_dw),
+                "pendientes_hitl": int(n_hitl_pend),
+                "consolidado_dw": consolidado_dw,
                 "date": fecha_str,
-                "status": "completed",
+                "status": status_calc,
                 "sha256": hashlib.sha256(str(d.id_documento).encode()).hexdigest()[:8]
             })
 
@@ -514,12 +548,26 @@ class IngestionService:
 
     @classmethod
     def obtener_matriz_normalizacion(cls, db: Session, id_doc: int) -> List[Dict[str, Any]]:
-        """Retorna la matriz de normalización canónica de un documento."""
-        return [
-            {"cabecera_original": "NOMBRES Y APELLIDOS", "cabecera_normalizada": "nombre_completo", "tipo_dato": "VARCHAR", "regla": "Mapeo directo", "estado": "Completado"},
-            {"cabecera_original": "CALIF_FINAL", "cabecera_normalizada": "nota_final", "tipo_dato": "NUMERIC", "regla": "Conversión a float", "estado": "Completado"},
-            {"cabecera_original": "DOC_IDENTIDAD/CI", "cabecera_normalizada": "ci_estudiante", "tipo_dato": "VARCHAR", "regla": "Limpieza alfanumérica", "estado": "Completado"},
-            {"cabecera_original": "COD_MODULO", "cabecera_normalizada": "codigo_modulo", "tipo_dato": "VARCHAR", "regla": "Mapeo directo", "estado": "Completado"},
-            {"cabecera_original": "FECHA_EVAL", "cabecera_normalizada": "fecha_asentamiento", "tipo_dato": "DATE", "regla": "Parseo YYYY-MM-DD", "estado": "Completado"},
-            {"cabecera_original": "OBSERVACIONES", "cabecera_normalizada": "observacion", "tipo_dato": "TEXT", "regla": "Sanitizado HTML", "estado": "Completado"},
-        ]
+        """Retorna la matriz de normalización canónica real de un documento."""
+        log = db.query(LogPipelineIngesta).filter_by(id_documento=id_doc, etapa="NORMALIZE").order_by(LogPipelineIngesta.id.desc()).first()
+        if log and log.metadata_json and isinstance(log.metadata_json, dict) and "matriz" in log.metadata_json:
+            return log.metadata_json["matriz"]
+
+        # Si no se encuentra en el log de ese documento específico, intentar deducir de staging
+        stg = db.query(StagingRegistroCrudo).filter_by(id_documento=id_doc).first()
+        if stg and stg.texto_plano:
+            linea1 = stg.texto_plano.split("\n")[0] if "\n" in stg.texto_plano else stg.texto_plano
+            campos = [p.split(":")[0].strip() for p in linea1.split("|") if ":" in p]
+            if campos:
+                return [
+                    {
+                        "cabecera_original": c,
+                        "cabecera_normalizada": CANONICAL_HEADERS.get(c.lower(), (c.lower().replace(" ", "_"), "VARCHAR", "Mapeo inferido"))[0],
+                        "tipo_dato": CANONICAL_HEADERS.get(c.lower(), ("", "VARCHAR", ""))[1],
+                        "regla": CANONICAL_HEADERS.get(c.lower(), ("", "", "Mapeo inferido"))[2],
+                        "estado": "Completado"
+                    }
+                    for c in campos
+                ]
+
+        return []

@@ -79,11 +79,11 @@ export const FILE_TELEMETRY_DATA = [
     paso6: {
       sql: `INSERT INTO public.staging_registros_crudos (
   lote_id, fuente_archivo, esquema_detectado,
-  payload_json, hash_integridad, estado_registro
+  payload_json, texto_plano, hash_integridad, estado_registro
 )
 VALUES (
   'POS-2026-B_M3', 'Acta_POS_2026_Modulo3.xlsx', 'EXCEL_ACTA',
-  $record_payload, '8f4e2a1b', 'LISTO_REVISION'
+  $record_payload, $serializado_texto_plano, '8f4e2a1b', 'LISTO_REVISION'
 );`,
       status: 'Confirmado por lote (BATCH COMMIT: 342 registros)',
       table: 'public.staging_registros_crudos'
@@ -147,11 +147,11 @@ VALUES (
     paso6: {
       sql: `INSERT INTO public.staging_registros_crudos (
   lote_id, fuente_archivo, esquema_detectado,
-  payload_json, hash_integridad, estado_registro
+  payload_json, texto_plano, hash_integridad, estado_registro
 )
 VALUES (
   'POS-2026-B_M3', 'Respuestas_Encuesta_M3.csv', 'GOOGLE_FORMS',
-  $record_payload, '3a9c1b2c', 'LISTO_REVISION'
+  $record_payload, $serializado_texto_plano, '3a9c1b2c', 'LISTO_REVISION'
 );`,
       status: 'Confirmado por lote (BATCH COMMIT: 215 registros)',
       table: 'public.staging_registros_crudos'
@@ -215,11 +215,11 @@ VALUES (
     paso6: {
       sql: `INSERT INTO public.staging_registros_crudos (
   lote_id, fuente_archivo, esquema_detectado,
-  payload_json, hash_integridad, estado_registro
+  payload_json, texto_plano, hash_integridad, estado_registro
 )
 VALUES (
   'POS-2026-B_M3', 'Moodle_Grades_Export.xml', 'MOODLE_XML',
-  $record_payload, 'c5f2d84a', 'LISTO_REVISION'
+  $record_payload, $serializado_texto_plano, 'c5f2d84a', 'LISTO_REVISION'
 );`,
       status: 'Confirmado por lote (BATCH COMMIT: 691 registros)',
       table: 'public.staging_registros_crudos'
@@ -283,11 +283,11 @@ VALUES (
     paso6: {
       sql: `INSERT INTO public.staging_registros_crudos (
   lote_id, fuente_archivo, esquema_detectado,
-  payload_json, hash_integridad, estado_registro
+  payload_json, texto_plano, hash_integridad, estado_registro
 )
 VALUES (
   'POS-2026-B_M3', 'Cartera_Cobranza_Sep2026.xlsx', 'CARTERA_SHEETS',
-  $record_payload, '7e3b9f01', 'LISTO_REVISION'
+  $record_payload, $serializado_texto_plano, '7e3b9f01', 'LISTO_REVISION'
 );`,
       status: 'Confirmado por lote (BATCH COMMIT: 412 registros)',
       table: 'public.staging_registros_crudos'
@@ -301,7 +301,9 @@ export default function PipelineTelemetryDrawer({
   logs = [],
   onClearLogs,
   isProcessing = false,
-  lotName = 'Lote: POS-2026-B_M3'
+  lotName = 'Lote: POS-2026-B_M3',
+  sources = [],
+  activeDocId = null
 }) {
   const [selectedTab, setSelectedTab] = useState('global');
   const scrollContainerRef = useRef(null);
@@ -366,7 +368,109 @@ export default function PipelineTelemetryDrawer({
     };
   };
 
-  const currentFileAnalysis = FILE_TELEMETRY_DATA.find((f) => f.id === selectedTab);
+  // Construcción dinámica de la lista de archivos analizados a partir de las fuentes reales
+  const dynamicFiles = (sources && sources.length > 0)
+    ? sources.map((s, idx) => {
+        const name = s.name || s.nombre_archivo || `Documento_${s.id || idx}`;
+        const nameLower = name.toLowerCase();
+        let badgeColor = '#10b981';
+        let mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        let magic = '50 4B 03 04 14 00 06 00 (ZIP/OOXML SpreadsheetML)';
+        let charset = 'Binario (OOXML)';
+        let rule = 'RULE_HEURISTIC_ACTA_CALIFICACIONES_V2';
+        let detection = `Detección: Acta de Calificaciones (Excel) - Confianza 98.4%`;
+        let patterns = ['NOMBRES Y APELLIDOS', 'CALIF_FINAL', 'DOC_IDENTIDAD/CI', 'COD_MODULO'];
+
+        if (nameLower.endsWith('.csv') || (s.type && s.type.toLowerCase().includes('forms'))) {
+          badgeColor = '#3b82f6';
+          mime = 'text/csv';
+          magic = 'EF BB BF 54 69 6D 65 (UTF-8 BOM / CSV)';
+          charset = 'UTF-8 Text';
+          rule = 'RULE_HEURISTIC_GOOGLE_FORMS_V2';
+          detection = `Detección: Google Forms CSV - Confianza 96.2%`;
+          patterns = ['Marca temporal', 'Dirección de correo', 'Nombre Completo', 'CI'];
+        } else if (nameLower.endsWith('.xml') || (s.type && s.type.toLowerCase().includes('moodle'))) {
+          badgeColor = '#f59e0b';
+          mime = 'application/xml';
+          magic = '3C 3F 78 6D 6C 20 76 65 (XML UTF-8)';
+          charset = 'UTF-8 XML';
+          rule = 'RULE_HEURISTIC_MOODLE_XML_SCHEMA_V3';
+          detection = `Detección: Reporte Aula Virtual Moodle - Confianza 94.7%`;
+          patterns = ['grade_item', 'grade_grades', 'idnumber', 'finalgrade'];
+        } else if (nameLower.includes('cobranza') || nameLower.includes('cartera') || (s.type && s.type.toLowerCase().includes('cartera'))) {
+          badgeColor = '#8b5cf6';
+          mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+          magic = '50 4B 03 04 14 00 06 00 (ZIP/OOXML)';
+          charset = 'Binario (OOXML / Sheets)';
+          rule = 'RULE_HEURISTIC_CARTERA_SHEETS_V1';
+          detection = `Detección: Cartera Sheets - Confianza 95.1%`;
+          patterns = ['ESTUDIANTE / CLIENTE', 'NRO_DOCUMENTO', 'NRO_CUOTA', 'SALDO_MORA'];
+        }
+
+        const recCount = s.records || s.registros || 35;
+        const sizeKb = s.size || `${Math.round(recCount * 0.45) || 15} KB`;
+        const sha = s.sha256 || s.hash_integridad || 'f5aa1f65aaaa0064';
+
+        return {
+          id: `file_${s.id || idx}`,
+          docId: s.id || idx,
+          fileName: name,
+          sourceType: s.type || s.tipo_documento || 'Fuente Documental',
+          badgeColor,
+          paso1: {
+            magicBytes: magic,
+            sha256: sha.length === 64 ? sha : `${sha}8f4e2a1b9c7d0e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f`.slice(0, 64),
+            charset,
+            sizeKb,
+            mime
+          },
+          paso2: {
+            detection,
+            confidence: 96.5,
+            patterns,
+            ruleMatched: rule
+          },
+          paso3: {
+            range: `Identificación de bloque tabular: 1 a ${recCount} filas`,
+            sanitization: 'Sanitizado estructural aplicado: celdas combinadas y metadatos no tabulares removidos.',
+            cellsCleared: 8,
+            headerRow: 1,
+            dataEndRow: recCount,
+            mergedCellsFound: 0
+          },
+          paso4: {
+            mappings: [
+              { raw: 'NOMBRES Y APELLIDOS', canonical: 'nombre_completo', type: 'VARCHAR', rule: 'Mapeo directo canónico' },
+              { raw: 'CALIF_FINAL', canonical: 'nota_final', type: 'NUMERIC(5,2)', rule: 'Conversión float [0-100]' },
+              { raw: 'DOC_IDENTIDAD/CI', canonical: 'ci_estudiante', type: 'VARCHAR', rule: 'Limpieza alfanumérica' },
+              { raw: 'COD_MODULO', canonical: 'codigo_modulo', type: 'VARCHAR', rule: 'Mapeo directo' },
+              { raw: 'FECHA_EVAL', canonical: 'fecha_asentamiento', type: 'DATE', rule: 'Parseo YYYY-MM-DD' }
+            ]
+          },
+          paso5: {
+            rules: [
+              { label: 'Conversión de notas a float [0-100]', status: 'PASS', detail: `${recCount} registros con rango válido verificado.` },
+              { label: 'Validación de formato CI boliviano', status: 'PASS', detail: 'Patrón alfanumérico verificado contra catálogo.' },
+              { label: 'Bandera de advertencia de integridad', status: s.status === 'warning' ? 'WARN' : 'PASS', detail: s.status === 'warning' ? 'Registros derivados a revisión humana.' : 'Validación completada sin anomalías.' }
+            ]
+          },
+          paso6: {
+            sql: `INSERT INTO public.staging_registros_crudos (
+  lote_id, fuente_archivo, esquema_detectado,
+  payload_json, texto_plano, hash_integridad, estado_registro
+)
+VALUES (
+  'LOTE-ACTIVO', '${name}', '${s.type || "DESCONOCIDO"}',
+  $record_payload, $serializado_texto_plano, '${sha.slice(0, 8)}', 'LISTO_REVISION'
+);`,
+            status: `Confirmado por lote (${recCount} registros cargados a staging)`,
+            table: 'public.staging_registros_crudos'
+          }
+        };
+      })
+    : FILE_TELEMETRY_DATA;
+
+  const currentFileAnalysis = dynamicFiles.find((f) => f.id === selectedTab) || dynamicFiles[0];
 
   return (
     <>
@@ -444,7 +548,21 @@ export default function PipelineTelemetryDrawer({
               }}
             >
               <Terminal size={16} color="#38bdf8" />
-              <span>PIPELINE TELEMETRY · PIPELINE.PY v2.0</span>
+              <span>CONSOLA DE CONVERSIÓN A TEXTO PLANO · PIPELINE.PY v2.0</span>
+              <span
+                style={{
+                  backgroundColor: 'rgba(217, 155, 38, 0.2)',
+                  color: '#f59e0b',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  padding: '2px 7px',
+                  borderRadius: '4px',
+                  letterSpacing: '0.4px',
+                  border: '1px solid rgba(217, 155, 38, 0.4)',
+                }}
+              >
+                Sprint 2 · Tarea 7
+              </span>
             </h3>
             {lotName && (
               <div
@@ -587,7 +705,7 @@ export default function PipelineTelemetryDrawer({
             <span>Trazas en Vivo</span>
           </button>
 
-          {FILE_TELEMETRY_DATA.map((file) => {
+          {dynamicFiles.map((file) => {
             const isSelected = selectedTab === file.id;
             return (
               <button

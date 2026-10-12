@@ -11,13 +11,10 @@ import { useAuth } from '../../context/AuthContext';
 /* ─── Role-based menu definitions for non-admin roles ─── */
 const ROLE_MENUS = {
   AUDITOR_CALIDAD: [
-    { id: 'fuentes',          path: '/dataops/fuentes',          label: '1. Fuentes de Datos (Ingesta)',     icon: FileUp },
-    { id: 'procesamiento',    path: '/dataops/procesamiento',    label: '2. Procesamiento & Normalización', icon: Wand2 },
-    { id: 'revision',         path: '/dataops/revision',         label: '3. Bandeja de Revisión Humana',    icon: CheckSquare },
-    { id: 'entidades',        path: '/dataops/entidades',        label: '4. Entidades No Resueltas',        icon: GitMerge },
-    { id: 'inconsistencias',  path: '/dataops/inconsistencias',  label: '5. Registro de Inconsistencias',   icon: AlertTriangle },
-    { id: 'telemetria',       path: '/dataops/telemetria',       label: '6. Telemetría y Rendimiento IA',   icon: Cpu },
-    { id: 'auditoria',        path: '/admin/auditoria',          label: '7. Auditoría del Sistema',          icon: ShieldCheck },
+    { id: 'ingesta',          path: '/dataops/ingesta',          label: '① Ingesta de Archivos',       icon: FileUp },
+    { id: 'revision',         path: '/dataops/revision',         label: '④ Revisión Humana (HITL)',    icon: CheckSquare },
+    { id: 'datos-maestros',   path: '/dataops/datos-maestros',   label: 'Datos Maestros & Catálogo',   icon: GitMerge },
+    { id: 'auditoria',        path: '/admin/auditoria',          label: 'Auditoría del Sistema',        icon: ShieldCheck },
   ],
   DIRECTOR_ACADEMICO: [
     { id: 'rendimiento',   path: '/academico/rendimiento',   label: 'Rendimiento y Alertas de Riesgo',   icon: GraduationCap },
@@ -36,14 +33,12 @@ const ROLE_MENUS = {
 /* ─── Admin Operative clusters (Top Scrollable Section) ─── */
 const ADMIN_OPERATIVE_CLUSTERS = [
   {
-    id: 'dataops', label: 'DataOps & Procesamiento', icon: ShieldCheck, defaultOpen: true,
+    id: 'dataops', label: 'Flujo DataOps & BETO', icon: ShieldCheck, defaultOpen: true,
     items: [
-      { path: '/dataops/fuentes',         label: 'Fase 1: Fuentes de Datos',   icon: FileUp },
-      { path: '/dataops/procesamiento',   label: 'Fase 2: Procesamiento',      icon: Wand2 },
-      { path: '/dataops/revision',        label: 'Fase 3: Revisión Humana',    icon: CheckSquare },
-      { path: '/dataops/entidades',       label: 'Entidades No Resueltas',     icon: GitMerge },
-      { path: '/dataops/inconsistencias', label: 'Inconsistencias',            icon: AlertTriangle },
-      { path: '/dataops/telemetria',      label: 'Telemetría IA',              icon: Cpu },
+      { path: '/dataops/ingesta',          label: '① Ingesta de Archivos',     icon: FileUp },
+      { path: '/dataops/revision',         label: '④ Revisión Humana (HITL)',  icon: CheckSquare },
+      { path: '/dataops/beto-ner',         label: 'Laboratorio BETO NER',      icon: Cpu },
+      { path: '/dataops/datos-maestros',   label: 'Datos Maestros & Catálogo', icon: GitMerge },
     ],
   },
   {

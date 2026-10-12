@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   UploadCloud, CheckCircle, AlertCircle, X,
@@ -30,6 +30,13 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess, existing
   const fileInputRef = useRef(null);
   const { notify } = useNotifications();
 
+  // Reset state whenever modal is opened
+  useEffect(() => {
+    if (isOpen) {
+      resetState();
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleDrag = (e) => {
@@ -60,40 +67,42 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess, existing
 
     setError('');
     const existingInPhase1 = new Set((existingSources || []).map((s) => s.name?.toLowerCase()));
+    const alreadyInPhase1 = [];
+    const newItems = [];
 
-    setSelectedFiles((prev) => {
-      const existingNames = new Set(prev.map((item) => item.file.name.toLowerCase()));
-      const alreadyInPhase1 = [];
-      const newItems = [];
+    const existingNames = new Set(selectedFiles.map((item) => item.file.name.toLowerCase()));
 
-      for (const file of validFiles) {
-        const lower = file.name.toLowerCase();
-        if (existingNames.has(lower)) {
-          continue; // Evitar duplicar el mismo archivo dos veces en el modal
-        }
-        existingNames.add(lower);
-        const exists = existingInPhase1.has(lower);
-        if (exists) {
-          alreadyInPhase1.push(file.name);
-        }
-        newItems.push({
-          file,
-          id: `${file.name}-${Date.now()}-${Math.random()}`,
-          sourceType: detectSourceType(file),
-          isAutoDetected: true,
-          isExistingInPhase1: exists,
-        });
+    for (const file of validFiles) {
+      const lower = file.name.toLowerCase();
+      if (existingNames.has(lower)) {
+        continue;
       }
+      existingNames.add(lower);
+      const exists = existingInPhase1.has(lower);
+      if (exists) {
+        alreadyInPhase1.push(file.name);
+      }
+      newItems.push({
+        file,
+        id: `${file.name}-${Date.now()}-${Math.random()}`,
+        sourceType: detectSourceType(file),
+        isAutoDetected: true,
+        isExistingInPhase1: exists,
+      });
+    }
 
-      if (alreadyInPhase1.length > 0) {
+    if (newItems.length > 0) {
+      setSelectedFiles((prev) => [...prev, ...newItems]);
+    }
+
+    if (alreadyInPhase1.length > 0) {
+      setTimeout(() => {
         sileoToast.info({
           title: 'Archivo ya existente detectado',
           description: `${alreadyInPhase1.length === 1 ? `El archivo '${alreadyInPhase1[0]}'` : `${alreadyInPhase1.length} archivos`} ya existe(n) en Fase 1. Al cargar se actualizará la versión existente sin crear duplicados.`,
         });
-      }
-
-      return [...prev, ...newItems];
-    });
+      }, 50);
+    }
   };
 
   const handleDrop = (e) => {
@@ -184,7 +193,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess, existing
     const filesParam = encodeURIComponent(selectedToProcess.join(','));
     resetState();
     onClose();
-    navigate(`/dataops/procesamiento?autoRun=true&files=${filesParam}`);
+    navigate(`/dataops/ingesta?tab=pipeline&autoRun=true&files=${filesParam}`);
   };
 
   const startUpload = async () => {
@@ -252,7 +261,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess, existing
           title: 'Ir a Fase 2',
           onClick: () => {
             onClose();
-            navigate(`/dataops/procesamiento?autoRun=true&files=${encodeURIComponent(filesToProcess.join(','))}`);
+            navigate(`/dataops/ingesta?tab=pipeline&autoRun=true&files=${encodeURIComponent(filesToProcess.join(','))}`);
           }
         }
       });

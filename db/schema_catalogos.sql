@@ -152,4 +152,28 @@ CREATE TABLE IF NOT EXISTS public.cat_guia_texto_plano (
     prioridad INT DEFAULT 1
 );
 
+-- 15. Catálogo Maestro de Conceptos Financieros (Canónico)
+CREATE TABLE IF NOT EXISTS public.cat_concepto_financiero (
+    id_concepto SERIAL PRIMARY KEY,
+    codigo_canonico VARCHAR(50) NOT NULL UNIQUE,  -- ej: 'FIN-CUOTA-01'
+    nombre_canonico VARCHAR(100) NOT NULL UNIQUE, -- ej: 'CUOTA'
+    tipo_movimiento VARCHAR(30) NOT NULL,        -- 'INGRESO', 'EGRESO', 'SALDO', 'AJUSTE'
+    categoria_contable VARCHAR(50),              -- 'COBRANZA', 'OPERATIVO', 'DOCENTE', 'CONVENIO', 'METAS'
+    descripcion VARCHAR(255)
+);
+CREATE INDEX IF NOT EXISTS idx_cat_concepto_codigo ON public.cat_concepto_financiero(codigo_canonico);
+CREATE INDEX IF NOT EXISTS idx_cat_concepto_tipo ON public.cat_concepto_financiero(tipo_movimiento);
+
+-- 16. Histórico de Equivalencias y Sinónimos Financieros
+CREATE TABLE IF NOT EXISTS public.cat_historico_equivalencia (
+    id_equivalencia SERIAL PRIMARY KEY,
+    id_concepto INT NOT NULL REFERENCES public.cat_concepto_financiero(id_concepto) ON DELETE CASCADE,
+    termino_origen VARCHAR(150) NOT NULL,        -- ej: 'Mensualidad', 'Colegiatura', 'Honorarios'
+    periodo_historico VARCHAR(50) DEFAULT 'TODOS',
+    confianza_mapeo NUMERIC(5, 4) DEFAULT 0.9500,
+    fuente_referencia VARCHAR(100)               -- ej: 'BD Cobranzas.xlsx', 'BD Egresos.xlsx'
+);
+CREATE INDEX IF NOT EXISTS idx_cat_equiv_termino ON public.cat_historico_equivalencia(termino_origen);
+CREATE INDEX IF NOT EXISTS idx_cat_equiv_concepto ON public.cat_historico_equivalencia(id_concepto);
+
 

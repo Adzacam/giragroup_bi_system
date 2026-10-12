@@ -858,6 +858,22 @@ em, i, cite, .serif-heading em, .serif-display em {
   transform: translateY(-2px);
 }
 
+/* Anulación de transformaciones en tablas para evitar saltos de pantalla (Hover Bugfix) */
+.floating-artifact:has(table),
+.floating-artifact:has(.steep-table),
+.table-container,
+.responsive-table-wrap,
+.steep-table,
+.steep-table tbody tr {
+  transform: none !important;
+}
+
+.floating-artifact:has(table):hover,
+.floating-artifact:has(.steep-table):hover {
+  transform: none !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
 /* ── Login Split Layout ────────────────────────────────────────────────────── */
 .login-split-grid {
   min-height: 100vh;

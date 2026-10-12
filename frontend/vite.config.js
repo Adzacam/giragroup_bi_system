@@ -12,8 +12,9 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: process.env.VITE_API_TARGET || 'http://api:8000',
+        target: process.env.VITE_API_TARGET || 'http://gateway:80',
         changeOrigin: true,
+        followRedirects: true,
       }
     }
   }

@@ -10,6 +10,7 @@ from core.security import get_current_user
 router = APIRouter(prefix="/api/v1/notifications", tags=["Notificaciones"])
 
 @router.get("", response_model=NotificationListResponse)
+@router.get("/", response_model=NotificationListResponse, include_in_schema=False)
 def get_notifications(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)

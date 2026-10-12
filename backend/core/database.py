@@ -58,7 +58,7 @@ catalog_engine = create_engine(
     pool_pre_ping=True
 )
 CatalogSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=catalog_engine)
-CatalogBase = declarative_base()
+CatalogBase = Base
 
 def get_catalog_db():
     db = CatalogSessionLocal()

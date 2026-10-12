@@ -45,6 +45,7 @@ class CatPrograma(CatalogBase):
     inversion_base = Column(Numeric(12, 2), default=0.00)
     punto_equilibrio = Column(Integer, default=0)
     horas_totales = Column(Integer, default=0)
+    tipo_escala = Column(String(20), default="CENTESIMAL_100")
 
     escuela = relationship("CatEscuela", back_populates="programas")
     tipo_programa = relationship("CatTipoPrograma", back_populates="programas")
@@ -157,4 +158,86 @@ class CatGuiaTextoPlano(CatalogBase):
     plantilla_texto = Column(Text, nullable=False)
     campos_requeridos = Column(Text)
     prioridad = Column(Integer, default=1)
+
+
+class CatConceptoFinanciero(CatalogBase):
+    __tablename__ = "cat_concepto_financiero"
+
+    id_concepto = Column(Integer, primary_key=True, index=True)
+    codigo_canonico = Column(String(50), nullable=False, unique=True, index=True)
+    nombre_canonico = Column(String(100), nullable=False, unique=True)
+    tipo_movimiento = Column(String(30), nullable=False)  # INGRESO | EGRESO | SALDO | AJUSTE
+    categoria_contable = Column(String(50))               # COBRANZA | OPERATIVO | DOCENTE | CONVENIO
+    descripcion = Column(String(255))
+
+    equivalencias = relationship("CatHistoricoEquivalencia", back_populates="concepto", cascade="all, delete-orphan")
+
+
+class CatHistoricoEquivalencia(CatalogBase):
+    __tablename__ = "cat_historico_equivalencia"
+
+    id_equivalencia = Column(Integer, primary_key=True, index=True)
+    id_concepto = Column(Integer, ForeignKey("cat_concepto_financiero.id_concepto", ondelete="CASCADE"), nullable=False)
+    termino_origen = Column(String(150), nullable=False, index=True)
+    periodo_historico = Column(String(50), default="TODOS")
+    confianza_mapeo = Column(Numeric(5, 4), default=0.9500)
+    fuente_referencia = Column(String(100))
+
+    concepto = relationship("CatConceptoFinanciero", back_populates="equivalencias")
+
+
+class CatCategoriaFinanciera(CatalogBase):
+    __tablename__ = "cat_categoria_financiera"
+
+    id_categoria_fin = Column(Integer, primary_key=True, index=True)
+    codigo = Column(String(50), nullable=False, unique=True, index=True)
+    nombre_categoria = Column(String(100), nullable=False)
+    tipo_flujo = Column(String(30), nullable=False, default="INGRESO")
+
+
+class CatInstitucion(CatalogBase):
+    __tablename__ = "cat_institucion"
+
+    id_institucion = Column(Integer, primary_key=True, index=True)
+    nombre_institucion = Column(String(100), nullable=False, unique=True, index=True)
+    sigla = Column(String(30))
+    tipo_escala_default = Column(String(20), default="CENTESIMAL_100")
+
+
+class CatAliasModulo(CatalogBase):
+    __tablename__ = "cat_alias_modulo"
+
+    id_alias = Column(Integer, primary_key=True, index=True)
+    id_modulo = Column(Integer, ForeignKey("cat_modulo.id_modulo", ondelete="CASCADE"), nullable=False)
+    id_programa = Column(Integer, ForeignKey("cat_programa.id_programa", ondelete="CASCADE"), nullable=False)
+    alias_texto = Column(String(255), nullable=False, index=True)
+
+    __table_args__ = (
+        UniqueConstraint("id_programa", "alias_texto", name="uq_cat_alias_modulo_prog_alias"),
+    )
+
+
+class CatAliasDocente(CatalogBase):
+    __tablename__ = "cat_alias_docente"
+
+    id_alias = Column(Integer, primary_key=True, index=True)
+    id_docente = Column(Integer, ForeignKey("cat_docente.id_docente", ondelete="CASCADE"), nullable=False)
+    alias_texto = Column(String(255), nullable=False, unique=True, index=True)
+
+
+class CatAliasPrograma(CatalogBase):
+    __tablename__ = "cat_alias_programa"
+
+    id_alias = Column(Integer, primary_key=True, index=True)
+    id_programa = Column(Integer, ForeignKey("cat_programa.id_programa", ondelete="CASCADE"), nullable=False)
+    alias_texto = Column(String(255), nullable=False, unique=True, index=True)
+
+
+class CatAliasFinanciero(CatalogBase):
+    __tablename__ = "cat_alias_financiero"
+
+    id_alias = Column(Integer, primary_key=True, index=True)
+    id_categoria_fin = Column(Integer, ForeignKey("cat_categoria_financiera.id_categoria_fin", ondelete="CASCADE"), nullable=False)
+    alias_texto = Column(String(255), nullable=False, unique=True, index=True)
+
 

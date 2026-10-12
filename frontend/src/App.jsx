@@ -13,13 +13,14 @@ import MobileBottomNav from './components/layout/MobileBottomNav';
 const LoginPage           = lazy(() => import('./modules/auth/LoginPage'));
 const NotificationsPage   = lazy(() => import('./modules/notifications/NotificationsPage'));
 
-// DataOps
-const Fase1Fuentes        = lazy(() => import('./modules/dataops/Fase1Fuentes'));
-const Fase2Procesamiento  = lazy(() => import('./modules/dataops/Fase2Procesamiento'));
-const Fase3RevisionHumana = lazy(() => import('./modules/dataops/Fase3RevisionHumana'));
-const EntidadesNoResueltas = lazy(() => import('./modules/dataops/EntidadesNoResueltas'));
-const RegistroInconsistencias = lazy(() => import('./modules/dataops/RegistroInconsistencias'));
-const TelemetriaIA        = lazy(() => import('./modules/dataops/TelemetriaIA'));
+// DataOps (Flujo Canónico Guiado de 4 Pasos & Módulos Especializados)
+const IngestView                  = lazy(() => import('./modules/dataops/IngestView'));
+const PlainTextTransformationView = lazy(() => import('./modules/dataops/PlainTextTransformationView'));
+const BetoReadingFlowView         = lazy(() => import('./modules/dataops/BetoReadingFlowView'));
+const HumanReviewFlowView         = lazy(() => import('./modules/dataops/HumanReviewFlowView'));
+const BetoNerExtractionView       = lazy(() => import('./modules/dataops/BetoNerExtractionView'));
+const HumanInTheLoopView          = lazy(() => import('./modules/dataops/HumanInTheLoopView'));
+const MasterDataView              = lazy(() => import('./modules/dataops/MasterDataView'));
 
 // Academic
 const RendimientoAlertas  = lazy(() => import('./modules/academic/RendimientoAlertas'));
@@ -185,37 +186,57 @@ function App() {
                   {/* System Settings (all roles) */}
                   <Route path="ajustes" element={<AjustesSistema />} />
 
-                {/* ─── DataOps routes (AUDITOR_CALIDAD + ADMIN) ─── */}
-                <Route path="dataops/fuentes" element={
+                {/* ─── DataOps: Flujo Canónico Guiado de 4 Pasos (AUDITOR_CALIDAD + ADMIN) ─── */}
+                <Route path="dataops/ingesta" element={
                   <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                    <Fase1Fuentes />
+                    <IngestView />
                   </RoleRoute>
                 } />
-                <Route path="dataops/procesamiento" element={
+                <Route path="dataops/lote/:id/texto" element={
                   <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                    <Fase2Procesamiento />
+                    <PlainTextTransformationView />
+                  </RoleRoute>
+                } />
+                <Route path="dataops/lote/:id/beto" element={
+                  <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
+                    <BetoReadingFlowView />
                   </RoleRoute>
                 } />
                 <Route path="dataops/revision" element={
                   <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                    <Fase3RevisionHumana />
+                    <HumanReviewFlowView />
                   </RoleRoute>
                 } />
-                <Route path="dataops/entidades" element={
+                <Route path="dataops/lote/:id/revision" element={
                   <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                    <EntidadesNoResueltas />
+                    <HumanReviewFlowView />
                   </RoleRoute>
                 } />
-                <Route path="dataops/inconsistencias" element={
+
+                {/* Vistas Avanzadas y de Soporte */}
+                <Route path="dataops/beto-ner" element={
                   <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                    <RegistroInconsistencias />
+                    <BetoNerExtractionView />
                   </RoleRoute>
                 } />
-                <Route path="dataops/telemetria" element={
+                <Route path="dataops/auditoria-humana" element={
                   <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                    <TelemetriaIA />
+                    <HumanInTheLoopView />
                   </RoleRoute>
                 } />
+                <Route path="dataops/datos-maestros" element={
+                  <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
+                    <MasterDataView />
+                  </RoleRoute>
+                } />
+
+                {/* Redirecciones de Compatibilidad */}
+                <Route path="dataops/nlp-lab" element={<Navigate to="/dataops/beto-ner" replace />} />
+                <Route path="dataops/fuentes" element={<Navigate to="/dataops/ingesta" replace />} />
+                <Route path="dataops/procesamiento" element={<Navigate to="/dataops/ingesta" replace />} />
+                <Route path="dataops/entidades" element={<Navigate to="/dataops/revision" replace />} />
+                <Route path="dataops/inconsistencias" element={<Navigate to="/dataops/revision" replace />} />
+                <Route path="dataops/telemetria" element={<Navigate to="/dataops/beto-ner" replace />} />
 
                 {/* ─── Academic routes (DIRECTOR_ACADEMICO + ADMIN) ─── */}
                 <Route path="academico/rendimiento" element={

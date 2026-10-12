@@ -5,3 +5,9 @@ torch>=2.2.0
 rapidfuzz>=3.6.0
 pytest>=8.0.0
 statsmodels>=0.14.0
+sqlalchemy==2.0.36
+psycopg2-binary
+python-dotenv
+scikit-learn>=1.4.0
+seqeval>=1.2.2
+datasets>=2.18.0

@@ -5,6 +5,7 @@ from core.database import Base
 class DimOrigenDocumental(Base):
     __tablename__ = "dim_origen_documental"
     id_documento = Column(Integer, primary_key=True, index=True)
-    tipo_documento = Column(String(10))
+    tipo_documento = Column(String(50))
+    tipo_escala = Column(String(20), server_default="CENTESIMAL_100")
     nombre_archivo = Column(String(500))
     fecha_procesamiento = Column(DateTime(timezone=True), server_default=func.now())

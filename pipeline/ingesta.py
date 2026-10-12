@@ -23,6 +23,7 @@ import csv
 import json
 import logging
 import os
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Callable
 
@@ -100,12 +101,50 @@ def _leer_csv(ruta: str) -> dict[str, pd.DataFrame]:
         return {}
 
 
+def _leer_xml(ruta: str) -> dict[str, pd.DataFrame]:
+    """
+    Lee un archivo XML (por ejemplo reportes Moodle o exportaciones tabulares).
+    Extrae elementos repetitivos en filas de un DataFrame.
+    """
+    nombre = Path(ruta).stem
+    try:
+        tree = ET.parse(ruta)
+        root = tree.getroot()
+        rows = []
+        # Buscar nodos repetidos que representen registros/estudiantes/calificaciones
+        for elem in root:
+            row_data = {}
+            for child in elem:
+                row_data[child.tag] = child.text or ""
+            if row_data:
+                rows.append(row_data)
+        if not rows:
+            for elem in root.iter():
+                if len(list(elem)) > 1:
+                    row_data = {c.tag: (c.text or "") for c in elem}
+                    if len(row_data) >= 2:
+                        rows.append(row_data)
+        if rows:
+            df = pd.DataFrame(rows).astype(str)
+            logger.info(
+                "Archivo XML '%s': 1 hoja, %d filas × %d columnas.",
+                os.path.basename(ruta), len(df), len(df.columns),
+            )
+            return {nombre: df}
+        logger.warning("El archivo XML '%s' no contiene nodos tabulares estructurados.", ruta)
+        return {}
+    except Exception as e:
+        logger.error("No se pudo leer XML '%s': %s", ruta, e)
+        return {}
+
+
 # ── Registro de lectores por extensión ──────────────────────────────
 
 LECTORES: dict[str, LectorFn] = {
     ".xlsx": _leer_xlsx,
     ".xls":  _leer_xlsx,
     ".csv":  _leer_csv,
+    ".xml":  _leer_xml,
 }
 
 

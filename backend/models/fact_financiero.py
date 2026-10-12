@@ -8,6 +8,7 @@ class FactSituacionFinanciera(Base):
 
     id_hecho_fin = Column(Integer, primary_key=True, index=True)
     id_estudiante = Column(Integer, ForeignKey("dim_estudiante.id_estudiante", ondelete="CASCADE"))
+    id_modulo = Column(Integer, ForeignKey("dim_modulo.id_modulo", ondelete="SET NULL"), nullable=True)
     id_tiempo = Column(Integer, ForeignKey("dim_tiempo.id_tiempo", ondelete="CASCADE"))
     id_documento = Column(Integer, ForeignKey("dim_origen_documental.id_documento", ondelete="SET NULL"), nullable=True)
     monto_deuda = Column(Numeric(10, 2))

@@ -117,3 +117,86 @@ class CatalogService:
             "total": len(modulos),
             "data": modulos
         }
+
+    def listar_instituciones(self, busqueda: Optional[str] = None, limit: int = 100) -> Dict[str, Any]:
+        instituciones_db = (
+            self.db.query(DimModulo.nombre_institucion)
+            .distinct()
+            .filter(DimModulo.nombre_institucion.isnot(None))
+            .all()
+        )
+        nombres = [r[0] for r in instituciones_db if r[0]]
+        # Catálogo base por defecto si aún no hay muchos registros
+        nombres_base = ["GiraGroup S.A.", "UAGRM Business School", "Universidad Mayor de San Andrés (UMSA)", "Universidad Privada Boliviana (UPB)"]
+        todos_nombres = list(dict.fromkeys(nombres + nombres_base))
+
+        if busqueda:
+            term = busqueda.strip().lower()
+            todos_nombres = [n for n in todos_nombres if term in n.lower()]
+
+        items = [
+            {
+                "id_institucion": idx + 1,
+                "nombre": nom,
+                "sigla": "".join(w[0] for w in nom.split() if w[0].isupper())[:6],
+                "tipo": "Sede / Universidad Aliada",
+                "estado": "Activo"
+            }
+            for idx, nom in enumerate(todos_nombres[:limit])
+        ]
+        return {
+            "status": "success",
+            "total": len(items),
+            "data": items
+        }
+
+    def crear_estudiante(self, data: dict) -> DimEstudiante:
+        est = DimEstudiante(
+            nombre_completo=data["nombre_completo"],
+            codigo_estudiante=data.get("codigo_estudiante") or f"EST-{self.db.query(DimEstudiante).count() + 101}",
+            ciudad=data.get("ciudad") or "La Paz",
+            nivel_academico=data.get("nivel_academico") or "Pregrado"
+        )
+        self.db.add(est)
+        self.db.commit()
+        self.db.refresh(est)
+        return est
+
+    def crear_docente(self, data: dict) -> DimDocente:
+        doc = DimDocente(
+            nombre_completo=data["nombre_completo"],
+            area_especialidad=data.get("area_especialidad") or "General"
+        )
+        self.db.add(doc)
+        self.db.commit()
+        self.db.refresh(doc)
+        return doc
+
+    def crear_modulo(self, data: dict) -> DimModulo:
+        mod = DimModulo(
+            nombre_modulo=data["nombre_modulo"],
+            nombre_institucion=data.get("nombre_institucion") or "GiraGroup",
+            programa=data.get("programa") or "Programa General",
+            pos_code=data.get("pos_code") or f"MOD-{self.db.query(DimModulo).count() + 101}"
+        )
+        self.db.add(mod)
+        self.db.commit()
+        self.db.refresh(mod)
+        return mod
+
+    def eliminar_registro(self, modelo: str, record_id: int) -> bool:
+        model_map = {
+            "estudiante": (DimEstudiante, DimEstudiante.id_estudiante),
+            "docente": (DimDocente, DimDocente.id_docente),
+            "modulo": (DimModulo, DimModulo.id_modulo)
+        }
+        if modelo not in model_map:
+            return False
+        cls, id_col = model_map[modelo]
+        row = self.db.query(cls).filter(id_col == record_id).first()
+        if not row:
+            return False
+        self.db.delete(row)
+        self.db.commit()
+        return True
+
