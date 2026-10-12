@@ -13,8 +13,8 @@ import LoginHeroPane from './components/LoginHeroPane';
 export default function LoginPage() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('giragroup2026');
-  const [rememberDevice, setRememberDevice] = useState(true);
+  const [password, setPassword] = useState('');
+  const [rememberDevice, setRememberDevice] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [tempToken, setTempToken] = useState('');
   
@@ -292,6 +292,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="usuario@giragroup.bo"
                     className="form-input"
+                    autoComplete="username"
                     disabled={isLocked || isLoading}
                   />
                 </div>
@@ -307,6 +308,7 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••••••"
                     className="form-input"
+                    autoComplete="current-password"
                     disabled={isLocked || isLoading}
                   />
                 </div>
@@ -324,7 +326,7 @@ export default function LoginPage() {
                       onChange={(e) => setRememberDevice(e.target.checked)}
                       style={{ accentColor: 'var(--color-ink-black)', width: '16px', height: '16px' }} 
                     />
-                    <span>Recordar este equipo (Evitar 2FA reiterado)</span>
+                    <span>Recordar este equipo</span>
                   </label>
                   <a 
                     href="#forgot" 
@@ -367,12 +369,6 @@ export default function LoginPage() {
                 formatTime={formatTime}
               />
             )}
-
-            {/* ── Demo Accounts Quick Selector (Modular) ── */}
-            <DemoAccountsSelector 
-              currentEmail={email}
-              onSelectAccount={handleSelectAccount}
-            />
           </div>
 
           <div style={{ fontSize: '12px', color: 'var(--color-ash-gray)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

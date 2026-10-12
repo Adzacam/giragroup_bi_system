@@ -4,16 +4,16 @@ import { sileoToast } from './sileoToast';
 export const ROLE_NOTIFICATIONS = {
   ADMIN: {
     roleName: 'Administrador del Sistema',
-    highlightMsg: '2 intentos anómalos de acceso bloqueados por política 423.',
+    highlightMsg: 'Sistema seguro y políticas de integridad activas.',
     topLink: '/admin/auditoria',
     items: [
       {
         id: 201,
         title: 'Auditoría de Seguridad (GIRA-SEC)',
-        message: '2 intentos anómalos de inicio de sesión bloqueados automáticamente por política HTTP 423.',
-        severity: 'CRITICAL',
+        message: 'Políticas de seguridad e integridad activas sin anomalías reportadas.',
+        severity: 'INFO',
         category: 'Seguridad',
-        is_read: false,
+        is_read: true,
         created_at: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
         link: '/admin/auditoria'
       },
@@ -163,10 +163,8 @@ export const notificationService = {
     try {
       const res = await notificationsApi.getNotifications();
       const list = Array.isArray(res) ? res : (res?.data || []);
-      if (list.length > 0) {
-        localStorage.setItem('gira_notifications_cache', JSON.stringify(list));
-        return list;
-      }
+      localStorage.setItem('gira_notifications_cache', JSON.stringify(list));
+      return list;
     } catch (error) {
       console.warn('[NotificationService] Conexión API no disponible, utilizando almacenamiento local/fallback:', error.message);
     }
@@ -175,14 +173,13 @@ export const notificationService = {
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       } catch (e) {
         console.error('[NotificationService] Error al parsear caché local de notificaciones');
       }
     }
 
-    localStorage.setItem('gira_notifications_cache', JSON.stringify(DEMO_FALLBACK_NOTIFICATIONS));
-    return DEMO_FALLBACK_NOTIFICATIONS;
+    return [];
   },
 
   /**
@@ -291,7 +288,9 @@ export const notificationService = {
     setTimeout(() => {
       sileoToast.action({
         title: `Bienvenido, ${config.roleName}`,
-        description: `Tiene ${pendingCount} alertas institucionales: ${config.highlightMsg}`,
+        description: pendingCount > 0 
+          ? `Tiene ${pendingCount} alertas institucionales: ${config.highlightMsg}`
+          : 'Sesión iniciada correctamente. Estado del sistema óptimo.',
         button: {
           title: 'Ver Notificaciones',
           onClick: () => {

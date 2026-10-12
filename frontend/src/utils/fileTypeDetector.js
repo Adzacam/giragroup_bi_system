@@ -10,7 +10,7 @@ import {
   FORMATOS_PERMITIDOS,
   MAX_TAMANO_ARCHIVO_BYTES,
   MAX_TAMANO_ARCHIVO_MB,
-} from '../constants/dataopsConfig';
+} from '../constants/dataopsConfig.js';
 
 export const SOURCE_TYPE_LABELS = {
   EXCEL_ACTA: 'Acta de Calificaciones (Excel)',
@@ -78,10 +78,19 @@ export function isAcademicSourceType(type) {
 }
 
 /**
- * Normaliza un texto eliminando tildes y convirtiendo a minúsculas para inspección de cabeceras
+ * Decodifica entidades numéricas y nombradas XML/HTML (ej. &#211; -> Ó) y normaliza texto sin tildes
  */
 function normalizeText(str) {
-  return String(str || '')
+  const decoded = String(str || '')
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(Number(dec)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+
+  return decoded
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
@@ -101,19 +110,33 @@ export function classifyHeadersList(rawTokens = []) {
 
   const cobranzaPatterns = [
     'monto_deuda', 'cuotas_impagas', 'monto_pagado', 'saldo_deuda',
-    'cuotas en mora', 'concepto_pago', 'concepto financiero', 'deuda', 'mora', 'arancel', 'colegiatura'
+    'cuotas en mora', 'en mora', 'dias de mora', 'concepto_pago', 'concepto financiero',
+    'deuda', 'arancel', 'colegiatura',
+    'bd cobranzas', 'cobranza', 'egreso anterior', 'egreso real', 'rentabilidad',
+    'gestion techo', 'escuela techo', 'estado de pago', 'meta por categoria', 'ebitda',
+    'ejecutado 202', 'ejecutado vs meta', 'egresos', 'techos'
   ];
   const moodlePatterns = [
-    'idnumber', 'timemodified', 'finalgrade', 'course', 'itemid',
-    'calificacion maxima', 'retroalimentacion', 'apellido(s)', 'direccion de correo'
+    'idnumber', 'id number', 'timemodified', 'finalgrade', 'course', 'itemid',
+    'calificacion maxima', 'retroalimentacion', 'apellido(s)', 'grade/100',
+    'last downloaded from this course', 'reporte_aula_virtual', 'aula virtual moodle', 'aula_virtual_moodle'
   ];
   const admisionPatterns = [
     'marca temporal', 'timestamp', 'postulante', 'programa de interes',
-    'medio de captacion', 'formulario de inscripcion', 'fecha_inscripcion'
+    'medio de captacion', 'medio de contacto', 'formulario de inscripcion', 'fecha_inscripcion',
+    'tipo de inscripcion', 'estado del inscrito', 'numeroproyecto', 'pos-ci inscritos',
+    'pos-ci incritos', 'tbl_inscritos', 'inscripciones_google_forms', 'inscripciones'
   ];
   const actaPatterns = [
     'nota_final', 'calificacion', 'asistencia_pct', 'porcentaje_asistencia',
-    'asistencia', 'nota final', 'promedio final', 'sigla_modulo', 'acta'
+    'asistencia', 'nota final', 'promedio final', 'sigla_modulo', 'acta',
+    'pos - actas', 'estado academico', 'estado tutoria', 'estado arca', 'fecha emision arca',
+    'base_academica', 'base centralizada academica', 'evaluacion_docente', 'evaluacion docente',
+    'experiencia_docente', 'experiencia docente', 'satisfaccion general con el modulo',
+    'docente explica claramente', 'probabilidad de recomendar el modulo',
+    'calidad docente', 'evaluacion global', 'planificacion_ejecucion',
+    'planificacion y ejecucion academica', 'diseno curricular', 'coordinador academico',
+    'modulo 1', 'modulo 2', 'numero del modulo'
   ];
 
   const matchedCobranza = cobranzaPatterns.filter((kw) => joined.includes(kw));
@@ -121,33 +144,21 @@ export function classifyHeadersList(rawTokens = []) {
   const matchedAdmision = admisionPatterns.filter((kw) => joined.includes(kw));
   const matchedActa = actaPatterns.filter((kw) => joined.includes(kw));
 
-  // Priorizar coincidencias específicas de cabeceras reales
-  if (matchedCobranza.length >= 1 && matchedCobranza.length >= matchedActa.length) {
+  // Evaluar candidatos por cantidad de coincidencias específicas
+  const candidates = [
+    { code: 'ADMISION', label: SOURCE_TYPE_LABELS.FORMS_INSCRIPCIONES, matches: matchedAdmision },
+    { code: 'MOODLE', label: SOURCE_TYPE_LABELS.MOODLE_AULA, matches: matchedMoodle },
+    { code: 'COBRANZA', label: SOURCE_TYPE_LABELS.SHEETS_COBRANZA, matches: matchedCobranza },
+    { code: 'ACTA', label: SOURCE_TYPE_LABELS.EXCEL_ACTA, matches: matchedActa },
+  ].filter((c) => c.matches.length >= 1);
+
+  if (candidates.length > 0) {
+    candidates.sort((a, b) => b.matches.length - a.matches.length);
+    const winner = candidates[0];
     return {
-      code: 'COBRANZA',
-      label: SOURCE_TYPE_LABELS.SHEETS_COBRANZA,
-      matchedKeywords: matchedCobranza,
-    };
-  }
-  if (matchedMoodle.length >= 1) {
-    return {
-      code: 'MOODLE',
-      label: SOURCE_TYPE_LABELS.MOODLE_AULA,
-      matchedKeywords: matchedMoodle,
-    };
-  }
-  if (matchedAdmision.length >= 1) {
-    return {
-      code: 'ADMISION',
-      label: SOURCE_TYPE_LABELS.FORMS_INSCRIPCIONES,
-      matchedKeywords: matchedAdmision,
-    };
-  }
-  if (matchedActa.length >= 1) {
-    return {
-      code: 'ACTA',
-      label: SOURCE_TYPE_LABELS.EXCEL_ACTA,
-      matchedKeywords: matchedActa,
+      code: winner.code,
+      label: winner.label,
+      matchedKeywords: winner.matches,
     };
   }
 
@@ -159,7 +170,7 @@ export function classifyHeadersList(rawTokens = []) {
  */
 async function extractXlsxHeaderStrings(file) {
   try {
-    const buffer = await file.slice(0, Math.min(file.size, 512 * 1024)).arrayBuffer();
+    const buffer = await file.slice(0, Math.min(file.size, 6 * 1024 * 1024)).arrayBuffer();
     const bytes = new Uint8Array(buffer);
     const view = new DataView(buffer);
     const decoder = new TextDecoder('utf-8', { fatal: false });
@@ -184,12 +195,13 @@ async function extractXlsxHeaderStrings(file) {
 
       const isTargetXml =
         entryName === 'xl/sharedStrings.xml' ||
-        entryName === 'xl/worksheets/sheet1.xml';
+        entryName === 'xl/worksheets/sheet1.xml' ||
+        entryName === 'xl/workbook.xml';
 
       if (isTargetXml && dataStart < bytes.length) {
         const endPos = compressedSize > 0
           ? Math.min(bytes.length, dataStart + compressedSize)
-          : Math.min(bytes.length, dataStart + 128 * 1024);
+          : Math.min(bytes.length, dataStart + 256 * 1024);
         const slice = bytes.subarray(dataStart, endPos);
 
         let xmlText = '';
@@ -204,7 +216,7 @@ async function extractXlsxHeaderStrings(file) {
             const reader = ds.readable.getReader();
             const chunks = [];
             let totalRead = 0;
-            while (totalRead < 65536) {
+            while (totalRead < 98304) {
               const { value, done } = await reader.read();
               if (done || !value) break;
               chunks.push(value);
@@ -224,9 +236,14 @@ async function extractXlsxHeaderStrings(file) {
 
         if (xmlText) {
           const matches = xmlText.match(/<t[^>]*>([^<]+)<\/t>/gi) || [];
-          for (const m of matches.slice(0, 60)) {
+          for (const m of matches.slice(0, 80)) {
             const cleaned = m.replace(/<\/?t[^>]*>/gi, '').trim();
             if (cleaned) extractedStrings.push(cleaned);
+          }
+          const sheetMatches = xmlText.match(/<sheet[^>]+name="([^"]+)"/gi) || [];
+          for (const sm of sheetMatches) {
+            const nameMatch = sm.match(/name="([^"]+)"/i);
+            if (nameMatch && nameMatch[1]) extractedStrings.push(nameMatch[1]);
           }
         }
       }
@@ -283,7 +300,8 @@ export async function inspectFileHeaders(file) {
     }
   }
 
-  const headerClassification = classifyHeadersList(headerCandidates);
+  const cleanFileName = normalizeText(fileName.replace(/\.[^.]+$/, ''));
+  const headerClassification = classifyHeadersList([...headerCandidates, cleanFileName]);
   if (headerClassification.code) {
     return {
       sourceType: headerClassification.label,
@@ -293,16 +311,14 @@ export async function inspectFileHeaders(file) {
     };
   }
 
-  // Fallback secundario solo si el nombre del archivo contiene un término inequívoco;
-  // NUNCA asumir "Acta" solo por la extensión .xlsx/.csv
-  const cleanFileName = normalizeText(fileName.replace(/\.[^.]+$/, ''));
-  const nameClassification = classifyHeadersList([cleanFileName]);
-  if (nameClassification.code) {
+  const fallbackLabel = detectSourceType(fileName);
+  const fallbackCode = toCanonicalSourceCode(fallbackLabel);
+  if (fallbackCode) {
     return {
-      sourceType: nameClassification.label,
-      code: nameClassification.code,
+      sourceType: fallbackLabel,
+      code: fallbackCode,
       recognized: true,
-      matchedKeywords: nameClassification.matchedKeywords,
+      matchedKeywords: [cleanFileName],
     };
   }
 
@@ -326,16 +342,16 @@ export function detectSourceType(file) {
   const fileName = typeof file === 'string' ? file : (file.name || '');
   const cleanName = normalizeText(fileName.replace(/\.[^.]+$/, ''));
 
-  if (['cobranza', 'cartera', 'cuotas', 'pagos', 'mora', 'deuda'].some((kw) => cleanName.includes(kw))) {
+  if (['cobranza', 'cartera', 'cuotas', 'pagos', 'mora', 'deuda', 'egreso', 'techo', 'meta', 'ejecutado'].some((kw) => cleanName.includes(kw))) {
     return SOURCE_TYPE_LABELS.SHEETS_COBRANZA;
   }
   if (['moodle', 'grades', 'aula_virtual', 'aula virtual'].some((kw) => cleanName.includes(kw))) {
     return SOURCE_TYPE_LABELS.MOODLE_AULA;
   }
-  if (['form', 'encuesta', 'respuestas', 'inscrip', 'admision', 'postulante'].some((kw) => cleanName.includes(kw))) {
+  if (['form', 'inscrip', 'admision', 'postulante', 'tbl_inscritos'].some((kw) => cleanName.includes(kw))) {
     return SOURCE_TYPE_LABELS.FORMS_INSCRIPCIONES;
   }
-  if (['acta', 'calif', 'notas', 'rendimiento'].some((kw) => cleanName.includes(kw))) {
+  if (['acta', 'calif', 'notas', 'rendimiento', 'arca', 'evaluacion', 'experiencia', 'planificacion', 'ejecucion'].some((kw) => cleanName.includes(kw))) {
     return SOURCE_TYPE_LABELS.EXCEL_ACTA;
   }
 

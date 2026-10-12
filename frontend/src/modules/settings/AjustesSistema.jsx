@@ -46,17 +46,36 @@ export default function AjustesSistema() {
   }, []);
 
   const handleClearQueryCache = () => {
-    // Purge temporary query caches, keep session intact
+    // Purge temporary query caches and memory
     sessionStorage.clear();
-    const tempKeys = ['giragroup_visited'];
+    const tempKeys = ['giragroup_visited', 'gira_notifications_cache', 'last_active_batch_id', 'gira_last_login_date'];
     tempKeys.forEach(k => localStorage.removeItem(k));
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith('gira_trusted_device_')) {
+        localStorage.removeItem(k);
+      }
+    });
     calculateStorage();
-    setCacheStatus('Caché de consultas y vistas en memoria purgada exitosamente.');
+    setCacheStatus('Caché de consultas, vistas, alertas y registros de sesión purgados exitosamente.');
+    setTimeout(() => setCacheStatus(''), 4000);
+  };
+
+  const handleClearLoginData = () => {
+    // Limpia datos residuales de inicio de sesión, fechas y dispositivos de confianza
+    localStorage.removeItem('gira_notifications_cache');
+    localStorage.removeItem('gira_last_login_date');
+    Object.keys(localStorage).forEach((k) => {
+      if (k.startsWith('gira_trusted_device_')) {
+        localStorage.removeItem(k);
+      }
+    });
+    calculateStorage();
+    setCacheStatus('Datos de inicio de sesión, dispositivos recordados y alertas residuales eliminados.');
     setTimeout(() => setCacheStatus(''), 4000);
   };
 
   const handleFullReset = () => {
-    if (window.confirm('¿Deseas restablecer todas las preferencias locales de la interfaz? (Esto cerrará tu sesión activa).')) {
+    if (window.confirm('¿Deseas restablecer todas las preferencias locales de la interfaz? (Esto cerrará tu sesión activa y purgará todo el almacenamiento).')) {
       localStorage.clear();
       sessionStorage.clear();
       window.location.href = '/login';
@@ -186,6 +205,14 @@ export default function AjustesSistema() {
               style={{ justifyContent: 'center', padding: '10px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
             >
               <RefreshCw size={14} /> Limpiar Caché de Consultas y Vistas
+            </button>
+            <button
+              onClick={handleClearLoginData}
+              type="button"
+              className="btn-pill-ghost"
+              style={{ justifyContent: 'center', padding: '10px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <ShieldCheck size={14} /> Limpiar Datos y Caché de Inicio de Sesión
             </button>
             <button
               onClick={handleFullReset}

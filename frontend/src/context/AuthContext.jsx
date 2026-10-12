@@ -30,6 +30,14 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(() => {
     localStorage.removeItem('gira_token');
     localStorage.removeItem('gira_user');
+    localStorage.removeItem('gira_notifications_cache');
+    localStorage.removeItem('gira_last_login_date');
+    Object.keys(localStorage).forEach((k) => {
+      if (k.startsWith('gira_trusted_device_')) {
+        localStorage.removeItem(k);
+      }
+    });
+    sessionStorage.clear();
     setToken(null);
     setUser(null);
   }, []);

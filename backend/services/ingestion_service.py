@@ -133,13 +133,13 @@ def normalizar_codigo_tipo_fuente(raw_type: Optional[str]) -> Optional[str]:
     val = _strip_accents(raw_type).upper()
     if val in ("ACTA", "COBRANZA", "ADMISION", "MOODLE"):
         return val
-    if "MOODLE" in val:
+    if any(k in val for k in ("MOODLE", "AULA VIRTUAL", "LMS")):
         return "MOODLE"
-    if any(k in val for k in ("COBRANZA", "PAGO", "FINANC", "CARTERA", "MORA")):
+    if any(k in val for k in ("COBRANZA", "PAGO", "FINANC", "CARTERA", "MORA", "EGRESO", "TECHO", "PRESUPUESTO", "META")):
         return "COBRANZA"
-    if any(k in val for k in ("ADMISION", "MATRICUL", "INSCRIP", "FORM", "POSTULANTE")):
+    if any(k in val for k in ("ADMISION", "MATRICUL", "INSCRIP", "FORM", "POSTULANTE", "PROSPECTO")):
         return "ADMISION"
-    if any(k in val for k in ("ACTA", "CALIFIC", "NOTA", "ACADEMIC")):
+    if any(k in val for k in ("ACTA", "CALIFIC", "NOTA", "ACADEMIC", "EVALUACION", "EXPERIENCIA", "DOCENTE", "ARCA", "PLANIFICACION")):
         return "ACTA"
     return None
 
@@ -150,12 +150,17 @@ def detectar_tipo_fuente_por_cabeceras(
 ) -> Optional[str]:
     """
     Detecta el tipo de fuente ('ACTA', 'MOODLE', 'COBRANZA', 'ADMISION')
-    priorizando las cabeceras reales de las primeras filas del archivo (#15).
+    priorizando las cabeceras reales de las primeras filas y nombres de hoja del archivo (#15).
     Si las cabeceras no alcanzan coincidencia y el nombre tampoco es explícito,
     retorna None ('Sin reconocer'), nunca asumiendo 'ACTA' por defecto.
     """
     tokens_cabecera: List[str] = []
-    for _, df in (hojas or {}).items():
+    if filename:
+        tokens_cabecera.append(_strip_accents(filename))
+    for sheet_name, df in (hojas or {}).items():
+        s_str = _strip_accents(str(sheet_name))
+        if s_str:
+            tokens_cabecera.append(s_str)
         if df is None or df.empty:
             continue
         # Revisar nombres de columna de pandas si existen
@@ -163,14 +168,14 @@ def detectar_tipo_fuente_por_cabeceras(
             c_str = _strip_accents(str(col))
             if c_str and not c_str.startswith("unnamed"):
                 tokens_cabecera.append(c_str)
-        # Revisar primeras 8 filas por si la cabecera está desplazada
-        max_rows = min(8, len(df))
+        # Revisar primeras 12 filas por si la cabecera está desplazada
+        max_rows = min(12, len(df))
         for idx in range(max_rows):
             row_vals = df.iloc[idx].values
             for v in row_vals:
                 if pd.notna(v):
                     v_str = _strip_accents(str(v))
-                    if 1 < len(v_str) <= 60:
+                    if 1 < len(v_str) <= 90:
                         tokens_cabecera.append(v_str)
 
     joined_headers = " | ".join(tokens_cabecera)
@@ -182,22 +187,44 @@ def detectar_tipo_fuente_por_cabeceras(
         "ACTA": 0,
     }
 
-    moodle_kw = ("idnumber", "finalgrade", "course", "username", "calificacion maxima", "firstname", "lastname")
-    cobranza_kw = ("cuota", "monto", "saldo", "mora", "pagado", "deuda", "concepto", "cartera", "cuotas_impagas", "monto_deuda", "monto_pagado")
-    admision_kw = ("postulante", "marca temporal", "timestamp", "formulario", "inscripcion", "matriculacion")
-    acta_kw = ("nota", "calificacion", "calif_final", "nota_final", "modulo", "asistencia", "asistencia_pct", "promedio")
+    moodle_kw = (
+        "idnumber", "id number", "finalgrade", "course", "username", "calificacion maxima",
+        "firstname", "lastname", "total del curso", "cuestionario:", "tarea:",
+        "numero de id", "aula virtual moodle", "reporte_aula_virtual"
+    )
+    cobranza_kw = (
+        "cuota", "monto_deuda", "monto_pagado", "saldo", "cuotas en mora", "en mora",
+        "pagado", "deuda", "concepto", "cartera", "cuotas_impagas",
+        "comprobante", "factura", "arancel", "fecha de pago", "fecha vencimiento",
+        "egreso", "egresos", "presupuesto", "techo", "techos", "ejecutado",
+        "meta por categoria", "ejecutado vs meta", "ebitda", "rentabilidad", "cobranza"
+    )
+    admision_kw = (
+        "postulante", "marca temporal", "timestamp", "formulario", "inscripcion",
+        "inscripciones", "matriculacion", "programa de interes", "medio de contacto",
+        "tbl_inscritos", "tipo de inscripcion", "numeroproyecto", "fecha de inscripcion",
+        "asesor comercial", "estado del inscrito", "prospecto"
+    )
+    acta_kw = (
+        "nota", "calificacion", "calif_final", "nota_final", "modulo",
+        "asistencia", "asistencia_pct", "promedio", "acta", "aprobado", "reprobado",
+        "evaluacion docente", "evaluacion_docente", "satisfaccion", "desempeno",
+        "experiencia docente", "experiencia_docente", "anos de experiencia",
+        "especialidad", "base academica", "base_academica", "arca", "planificacion",
+        "carga horaria", "cronograma", "diseno curricular", "coordinador academico"
+    )
 
     for kw in moodle_kw:
-        if re.search(rf"\b{re.escape(kw)}\b", joined_headers):
+        if kw in joined_headers:
             scores["MOODLE"] += 3
     for kw in cobranza_kw:
-        if re.search(rf"\b{re.escape(kw)}\b", joined_headers):
+        if kw in joined_headers:
             scores["COBRANZA"] += 2
     for kw in admision_kw:
-        if re.search(rf"\b{re.escape(kw)}\b", joined_headers):
-            scores["ADMISION"] += 2
+        if kw in joined_headers:
+            scores["ADMISION"] += 3
     for kw in acta_kw:
-        if re.search(rf"\b{re.escape(kw)}\b", joined_headers):
+        if kw in joined_headers:
             scores["ACTA"] += 2
 
     best_type, best_score = max(scores.items(), key=lambda x: x[1])
@@ -206,13 +233,22 @@ def detectar_tipo_fuente_por_cabeceras(
 
     # Señal secundaria: nombre del archivo (solo si contiene palabras clave explícitas)
     fname_norm = _strip_accents(filename)
-    if any(k in fname_norm for k in ("moodle", "grades", "calificaciones_aula")):
+    if any(k in fname_norm for k in ("moodle", "grades", "calificaciones_aula", "aula_virtual", "lms")):
         return "MOODLE"
-    if any(k in fname_norm for k in ("cobranza", "pago", "cartera", "mora", "deuda", "arancel")):
+    if any(k in fname_norm for k in (
+        "cobranza", "pago", "cartera", "mora", "deuda", "arancel",
+        "egreso", "techo", "ejecutado", "meta", "presupuesto", "financ"
+    )):
         return "COBRANZA"
-    if any(k in fname_norm for k in ("admision", "inscripcion", "postulante", "formulario", "matricula")):
+    if any(k in fname_norm for k in (
+        "admision", "inscripcion", "inscripciones", "inscrito", "inscritos",
+        "postulante", "formulario", "forms", "matricula"
+    )):
         return "ADMISION"
-    if any(k in fname_norm for k in ("acta", "calificacion", "notas")):
+    if any(k in fname_norm for k in (
+        "acta", "calificacion", "notas", "evaluacion", "experiencia",
+        "arca", "academica", "planificacion", "docente", "curricular"
+    )):
         return "ACTA"
 
     return None

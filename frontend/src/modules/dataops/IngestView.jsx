@@ -31,7 +31,7 @@ export default function IngestView() {
   const [queuedFiles, setQueuedFiles] = useState([]);
   const [institucion, setInstitucion] = useState('Unifranz');
   const [periodo, setPeriodo] = useState('2026-1');
-  const [escalaGlobalAcademica, setEscalaGlobalAcademica] = useState('');
+  const [escalaGlobalAcademica, setEscalaGlobalAcademica] = useState('CENTESIMAL_100');
 
   // Estados de proceso y UI
   const [isDragging, setIsDragging] = useState(false);
@@ -179,7 +179,7 @@ export default function IngestView() {
         sourceType: canonicalCode, // '' cuando no se reconoce (#15: Nunca asumir Acta por defecto)
         recognized: headerResult.recognized,
         matchedKeywords: headerResult.matchedKeywords || [],
-        tipoEscala: isAcademicSourceType(canonicalCode) ? escalaGlobalAcademica : null,
+        tipoEscala: isAcademicSourceType(canonicalCode) ? (escalaGlobalAcademica || 'CENTESIMAL_100') : null,
         status: null,
         statusDetail: '',
       });
@@ -204,7 +204,7 @@ export default function IngestView() {
       } else {
         sileoToast.success({
           title: `${validItems.length} archivo(s) añadido(s) al lote`,
-          description: 'Cabeceras verificadas. Confirme la escala en archivos académicos.',
+          description: 'Cabeceras y tipo documental verificados automáticamente.',
         });
       }
     }
@@ -249,7 +249,7 @@ export default function IngestView() {
           ...item,
           sourceType: newCode,
           // Si pasa a COBRANZA o ADMISION, escala es null (#16)
-          tipoEscala: academic ? (item.tipoEscala || escalaGlobalAcademica || '') : null,
+          tipoEscala: academic ? (item.tipoEscala || escalaGlobalAcademica || 'CENTESIMAL_100') : null,
           status: null,
           statusDetail: '',
         };
@@ -664,7 +664,19 @@ export default function IngestView() {
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <select
                   value={escalaGlobalAcademica}
-                  onChange={(e) => setEscalaGlobalAcademica(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEscalaGlobalAcademica(val);
+                    if (val) {
+                      setQueuedFiles((prev) =>
+                        prev.map((item) =>
+                          isAcademicSourceType(item.sourceType)
+                            ? { ...item, tipoEscala: val }
+                            : item
+                        )
+                      );
+                    }
+                  }}
                   className="dataops-select"
                   style={{ flex: 1, minWidth: '200px' }}
                 >
