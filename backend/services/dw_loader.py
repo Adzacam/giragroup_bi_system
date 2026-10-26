@@ -293,7 +293,25 @@ class DWLoaderService:
 
                 return est_encontrado.id_estudiante, "B"
 
-            # 2c. Ningún candidato >= 90% -> Alta directa creando id_temporal determinista por institución
+            # 2c. Ningún candidato >= 90%: Si la confianza IA es baja (< 0.85), derivar a HITL / Estado C
+            if confianza_ia is not None and confianza_ia < 0.85 and not forzar_resolucion_humana:
+                stg = StagingEntidadNoResuelta(
+                    id_documento=doc_id,
+                    tipo_entidad="ESTUDIANTE",
+                    texto_original=nombre_clean,
+                    ci_temporal=ci,
+                    mejor_candidato=None,
+                    score_fuzzy=None,
+                    fk_estado="C",
+                    motivo="BAJA_CONFIANZA_IA",
+                    nivel_confianza=confianza_ia,
+                    resuelto=False
+                )
+                self.db.add(stg)
+                self.db.flush()
+                return None, "C"
+
+            # De lo contrario (alta confianza >= 0.85), crear id_temporal determinista por institución
             import hashlib
             inst_clean = (institucion or "GiraGroup").strip().lower()
             norm_str = "".join(nombre_clean.lower().split()) + "_" + "".join(inst_clean.split())

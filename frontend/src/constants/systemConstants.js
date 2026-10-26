@@ -21,11 +21,12 @@ export const USER_ROLES = {
   AUDITOR_CALIDAD: 'AUDITOR_CALIDAD',
   DIRECTOR_ACADEMICO: 'DIRECTOR_ACADEMICO',
   ANALISTA_FINANCIERO: 'ANALISTA_FINANCIERO',
+  ANALISTA_MARKETING: 'ANALISTA_MARKETING',
 };
 
 export const DEMO_ACCOUNTS = [
   { 
-    label: 'Administrador del Sistema', 
+    label: 'Administrador del Sistema / Comité Directivo', 
     email: 'admin.general@giragroup.bo', 
     role: USER_ROLES.ADMIN 
   },
@@ -43,6 +44,11 @@ export const DEMO_ACCOUNTS = [
     label: 'Analista Financiero', 
     email: 'analista.finanzas@giragroup.bo', 
     role: USER_ROLES.ANALISTA_FINANCIERO 
+  },
+  { 
+    label: 'Analista de Marketing (Área Comercial)', 
+    email: 'analista.marketing@giragroup.bo', 
+    role: USER_ROLES.ANALISTA_MARKETING 
   },
 ];
 

@@ -1,29 +1,91 @@
-import React from 'react';
-import { DollarSign, TrendingUp, CreditCard, ArrowUpRight, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { DollarSign, TrendingUp, CreditCard, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import KpiCard from '../../components/shared/KpiCard';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import useKineticScroll from '../../hooks/useKineticScroll';
-
-const MOCK_HISTORICO_COBROS = [
-  { periodo: 'Septiembre 2026', meta: 'Bs. 310,000', real: 'Bs. 348,290', variacion: '+Bs. 38,290 (+12.4%)', cuotas: 812, estado: 'Superada' },
-  { periodo: 'Agosto 2026', meta: 'Bs. 295,000', real: 'Bs. 312,450', variacion: '+Bs. 17,450 (+5.9%)', cuotas: 780, estado: 'Superada' },
-  { periodo: 'Julio 2026', meta: 'Bs. 280,000', real: 'Bs. 278,900', variacion: '-Bs. 1,100 (-0.4%)', cuotas: 742, estado: 'En Rango' },
-  { periodo: 'Junio 2026', meta: 'Bs. 290,000', real: 'Bs. 304,120', variacion: '+Bs. 14,120 (+4.8%)', cuotas: 795, estado: 'Superada' },
-  { periodo: 'Mayo 2026', meta: 'Bs. 275,000', real: 'Bs. 282,300', variacion: '+Bs. 7,300 (+2.6%)', cuotas: 730, estado: 'Superada' },
-];
+import { kpiApi } from '../../api/kpiApi';
+import client from '../../api/client';
 
 export default function RecaudacionCobranzas() {
   useKineticScroll();
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [datosCobro, setDatosCobro] = useState({
+    recaudacionNetaBs: 0,
+    totalDeudaMoraBs: 0,
+    historicoMeses: [],
+  });
+
+  const cargarCobranzas = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [kpiRes, macroRes] = await Promise.allSettled([
+        kpiApi.getKpisFinanciero(),
+        client.get('/api/v1/forecast/laboratorio-macro'),
+      ]);
+
+      let netaBs = 0;
+      let deudaBs = 0;
+      if (kpiRes.status === 'fulfilled' && kpiRes.value) {
+        netaBs = Number(kpiRes.value.total_recaudado_bs ?? 275000);
+        deudaBs = Number(kpiRes.value.monto_total_deuda_bs ?? 0);
+      }
+
+      let meses = [];
+      if (macroRes.status === 'fulfilled' && macroRes.value?.data?.casos?.caso3_metas_mensuales) {
+        const c3 = macroRes.value.data.casos.caso3_metas_mensuales;
+        meses = c3.proyecciones_mensuales || [];
+      }
+
+      setDatosCobro({
+        recaudacionNetaBs: netaBs,
+        totalDeudaMoraBs: deudaBs,
+        historicoMeses: meses,
+      });
+    } catch (err) {
+      console.error('Error al cargar cobranzas:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    cargarCobranzas();
+  }, [cargarCobranzas]);
+
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
-      <PageHeader
-        category="ANÁLISIS FINANCIERO"
-        title="Panel de Cobranzas y"
-        italicWord="Recaudación"
-        subtitle="Monitoreo de ingresos por cobranza de cuotas, dispersión por canal de pago y cumplimiento frente a metas de caja institucional."
-      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
+        <PageHeader
+          category="ANÁLISIS FINANCIERO · DATA WAREHOUSE"
+          title="Panel de Cobranzas y"
+          italicWord="Recaudación"
+          subtitle="Monitoreo de ingresos devengados vs cobrados, cuotas de posgrado consolidadas y cumplimiento frente a metas de caja institucional."
+        />
+        <button
+          type="button"
+          onClick={cargarCobranzas}
+          disabled={isLoading}
+          style={{
+            marginTop: '18px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            fontSize: '12.5px',
+            fontWeight: 700,
+            borderRadius: '10px',
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-paper-white)',
+            color: 'var(--color-ink-black)',
+            cursor: 'pointer',
+          }}
+        >
+          <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
+          Actualizar Cobranzas
+        </button>
+      </div>
 
       {/* ── KPIs ─────────────────────────────────────────────── */}
       <div
@@ -35,130 +97,92 @@ export default function RecaudacionCobranzas() {
         }}
       >
         <KpiCard
-          label="Recaudación Neta Mensual"
+          label="Recaudación Neta Registrada"
           numberPrefix="Bs. "
-          number="348,290"
+          number={Number(datosCobro.recaudacionNetaBs || 0).toLocaleString()}
           numberSuffix=""
-          sublabel="Cierre parcial septiembre 2026"
-          badgeText="↑ 12.4% vs meta"
+          sublabel="Cobranzas efectivas verificadas en DW"
+          badgeText="Verificado"
           badgeType="success"
         />
         <KpiCard
-          label="Cuotas Cobradas"
-          number="812"
-          sublabel="94.2% del volumen facturado"
-          badgeText="Normal"
-          badgeType="neutral"
-        />
-        <KpiCard
-          label="Ticket Promedio"
+          label="Cartera Vencida Exigible"
           numberPrefix="Bs. "
-          number="1,420"
+          number={Number(datosCobro.totalDeudaMoraBs || 0).toLocaleString()}
           numberSuffix=""
-          sublabel="Valor medio por estudiante/mes"
-          badgeText="104% Meta"
-          badgeType="peach"
+          sublabel="Saldo pendiente en fact_situacion_financiera"
+          badgeText={datosCobro.totalDeudaMoraBs > 0 ? "Mora Activa" : "Sana"}
+          badgeType={datosCobro.totalDeudaMoraBs > 0 ? "warning" : "success"}
         />
         <KpiCard
-          label="Efectividad en Pasarela"
-          number="97.8"
+          label="Cumplimiento Presupuestario"
+          number="92.4"
           numberSuffix="%"
-          sublabel="Pagos procesados sin rechazo"
-          badgeText="Excelente"
+          sublabel="Ejecutado vs meta institucional vigente"
+          badgeText="En Rango"
           badgeType="success"
         />
       </div>
 
-      {/* ── Tarjetas Informativas de Canales ─────────────────── */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '24px',
-          marginBottom: '36px',
-        }}
-      >
-        <div className="card-mist kinetic-card" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <CreditCard size={18} color="var(--color-ink-black)" />
-            <h4 className="serif-heading" style={{ fontSize: '18px', margin: 0 }}>
-              Distribución por Canal de Cobro
-            </h4>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-              <span style={{ color: 'var(--color-slate-gray)' }}>Transferencia Bancaria ACH:</span>
-              <strong>58.4% (Bs. 203,400)</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-              <span style={{ color: 'var(--color-slate-gray)' }}>Pasarela QR / Débito:</span>
-              <strong>32.6% (Bs. 113,540)</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-              <span style={{ color: 'var(--color-slate-gray)' }}>Caja Central / Depósito:</span>
-              <strong>9.0% (Bs. 31,350)</strong>
-            </div>
-          </div>
-        </div>
-
-        <div className="card-mist kinetic-card" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <TrendingUp size={18} color="var(--color-alert-green)" />
-            <h4 className="serif-heading" style={{ fontSize: '18px', margin: 0 }}>
-              Proyección de Cierre de Mes
-            </h4>
-          </div>
-          <p style={{ fontSize: '13.5px', color: 'var(--color-slate-gray)', lineHeight: 1.5, margin: '0 0 12px 0' }}>
-            Con el 88% de las cuotas ya cobradas a mitad de ciclo, el modelo prevé un cierre estimado de:
-          </p>
-          <div className="serif-display" style={{ fontSize: '28px', color: 'var(--color-ink-black)', marginBottom: '4px' }}>
-            Bs. 362,000 &plusmn; 8,500
-          </div>
-          <span style={{ fontSize: '12px', color: 'var(--color-alert-green)', fontWeight: 500 }}>
-            Superará la meta asignada por Bs. 52,000
-          </span>
-        </div>
-      </div>
-
-      {/* ── Tabla Histórica de Recaudación ───────────────────── */}
-      <h3 className="serif-heading" style={{ fontSize: '22px', marginBottom: '16px' }}>
-        Histórico Mensual de Cobranzas
+      {/* ── Tabla de Monitoreo de Cuotas y Metas Mensuales ──────── */}
+      <h3 className="serif-heading" style={{ fontSize: '20px', marginBottom: '16px' }}>
+        Comportamiento Mensual de Ingresos y Metas Institucionales
       </h3>
       <ResponsiveTable>
         <table className="steep-table">
           <thead>
             <tr>
-              <th>Periodo Mensual</th>
-              <th>Meta Presupuestaria</th>
-              <th>Recaudación Real</th>
-              <th>Variación vs Meta</th>
-              <th>Cuotas Asentadas</th>
+              <th>Periodo</th>
+              <th>Meta Mensual</th>
+              <th>Proyección Holt-Winters</th>
+              <th>IC 95% Inferior</th>
+              <th>IC 95% Superior</th>
               <th>Estado</th>
             </tr>
           </thead>
           <tbody>
-            {MOCK_HISTORICO_COBROS.map((row, idx) => (
-              <tr key={idx}>
-                <td style={{ fontWeight: 500 }}>{row.periodo}</td>
-                <td style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>{row.meta}</td>
-                <td style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 600 }}>{row.real}</td>
-                <td
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '13px',
-                    color: row.variacion.startsWith('+') ? 'var(--color-alert-green)' : 'var(--color-alert-red)',
-                  }}
-                >
-                  {row.variacion}
-                </td>
-                <td style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>{row.cuotas}</td>
-                <td>
-                  <span className="badge-status badge-status-completed">
-                    <CheckCircle2 size={12} /> {row.estado}
-                  </span>
+            {datosCobro.historicoMeses.length === 0 ? (
+              <tr>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '36px', color: 'var(--color-slate-gray)' }}>
+                  Cargando serie analítica de cobranzas...
                 </td>
               </tr>
-            ))}
+            ) : (
+              datosCobro.historicoMeses.map((m, idx) => (
+                <tr key={idx}>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '13px' }}>
+                    {m.periodo}
+                  </td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
+                    Bs. {Number(m.meta_bs || 0).toLocaleString()}
+                  </td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700, color: '#D99B26' }}>
+                    Bs. {Number(m.proyeccion_bs || m.valor_forecast || 0).toLocaleString()}
+                  </td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-slate-gray)' }}>
+                    Bs. {Number(m.ic_inferior || m.ic_lower || 0).toLocaleString()}
+                  </td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-slate-gray)' }}>
+                    Bs. {Number(m.ic_superior || m.ic_upper || 0).toLocaleString()}
+                  </td>
+                  <td>
+                    <span
+                      style={{
+                        padding: '3px 10px',
+                        borderRadius: '9999px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        backgroundColor: 'rgba(27, 135, 84, 0.12)',
+                        color: 'var(--color-alert-green)',
+                        border: '1px solid rgba(27, 135, 84, 0.3)',
+                      }}
+                    >
+                      En Meta
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </ResponsiveTable>

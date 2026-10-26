@@ -4,6 +4,7 @@ import { UploadCloud, FileText, Cpu, UserCheck, CheckCircle2 } from 'lucide-reac
 
 export default function BatchFlowStepper({ currentStep = 1, batchId = null, pendientesCount = 0 }) {
   const navigate = useNavigate();
+  const effectiveBatchId = batchId || localStorage.getItem('last_active_batch_id');
 
   const steps = [
     {
@@ -18,23 +19,23 @@ export default function BatchFlowStepper({ currentStep = 1, batchId = null, pend
       num: 2,
       title: 'Texto plano',
       subtitle: '¿Cómo se transformó mi archivo?',
-      path: batchId ? `/dataops/lote/${batchId}/texto` : '/dataops/ingesta',
+      path: effectiveBatchId ? `/dataops/lote/${effectiveBatchId}/texto` : '/dataops/texto',
       icon: FileText,
-      available: Boolean(batchId)
+      available: true
     },
     {
       num: 3,
       title: 'Lectura de BETO',
       subtitle: '¿Qué entendió el modelo?',
-      path: batchId ? `/dataops/lote/${batchId}/beto` : '/dataops/ingesta',
+      path: effectiveBatchId ? `/dataops/lote/${effectiveBatchId}/beto` : '/dataops/beto',
       icon: Cpu,
-      available: Boolean(batchId)
+      available: true
     },
     {
       num: 4,
       title: `Revisión humana ${pendientesCount > 0 ? `(${pendientesCount})` : ''}`,
       subtitle: '¿Qué debo decidir yo?',
-      path: batchId ? `/dataops/revision?lote=${batchId}` : '/dataops/revision',
+      path: effectiveBatchId ? `/dataops/lote/${effectiveBatchId}/revision` : '/dataops/revision',
       icon: UserCheck,
       available: true,
       badge: pendientesCount > 0 ? pendientesCount : null
@@ -103,16 +104,16 @@ export default function BatchFlowStepper({ currentStep = 1, batchId = null, pend
                   alignItems: 'center',
                   justifyContent: 'center',
                   backgroundColor: isCompleted
-                    ? '#10b981'
+                    ? '#1B8754'
                     : isCurrent
-                    ? '#2563eb'
+                    ? 'var(--color-gira-gold, #D99B26)'
                     : 'var(--color-paper-white)',
                   color: isCompleted || isCurrent ? '#ffffff' : 'var(--color-slate-gray)',
                   border: isCompleted || isCurrent ? 'none' : '2px solid var(--color-border)',
                   boxShadow: isCurrent
-                    ? '0 0 0 5px rgba(37, 99, 235, 0.2)'
+                    ? '0 0 0 5px rgba(217, 155, 38, 0.25)'
                     : isCompleted
-                    ? '0 2px 6px rgba(16, 185, 129, 0.25)'
+                    ? '0 2px 6px rgba(27, 135, 84, 0.25)'
                     : 'none',
                   transition: 'all 0.3s ease',
                   position: 'relative'

@@ -182,14 +182,15 @@ export default function BetoNerExtractionView() {
   // ─── CARGA DE DATOS REALES DEL BACKEND ───
   useEffect(() => {
     const docIds = searchParams.get('docIds') || searchParams.get('docId');
-    const loteParam = searchParams.get('lote') || docIds || 'latest';
+    const loteParam = searchParams.get('lote');
+    const resolvedLote = loteParam || (docIds ? docIds.split(',')[0].trim() : 'latest');
     setIsLoading(true);
 
     const tStart = performance.now();
     Promise.all([
-      dataopsApi.getPlainTextRecords(docIds),
+      dataopsApi.getPlainTextRecords(docIds, loteParam),
       dataopsApi.getCatalogs(),
-      dataopsApi.getLoteResumen(loteParam).catch(() => null),
+      dataopsApi.getLoteResumen(resolvedLote).catch(() => null),
     ]).then(([stgRes, catRes, resumenRes]) => {
       const elapsed = Math.round(performance.now() - tStart);
       setLatencyMs(elapsed);

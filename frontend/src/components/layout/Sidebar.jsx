@@ -15,13 +15,11 @@ const ROLE_MENUS = {
     { id: 'texto',            path: '/dataops/texto',            label: '② Texto Plano Estructurado',        icon: FileText },
     { id: 'beto',             path: '/dataops/beto',             label: '③ Lectura de BETO',                 icon: Wand2 },
     { id: 'revision',         path: '/dataops/revision',         label: '④ Revisión Humana (HITL)',         icon: CheckSquare },
-    { id: 'beto-ner',         path: '/dataops/beto-ner',         label: 'Laboratorio BETO NER',              icon: Cpu },
-    { id: 'auditoria-humana', path: '/dataops/auditoria-humana', label: 'Consola HITL e Inconsistencias',    icon: Activity },
     { id: 'datos-maestros',   path: '/dataops/datos-maestros',   label: 'Datos Maestros & Catálogo',        icon: GitMerge },
     { id: 'auditoria',        path: '/admin/auditoria',          label: 'Auditoría del Sistema',             icon: ShieldCheck },
   ],
   DIRECTOR_ACADEMICO: [
-    { id: 'rendimiento',   path: '/academico/rendimiento',   label: 'Rendimiento y Alertas',             icon: GraduationCap },
+    { id: 'rendimiento',   path: '/academico/rendimiento',   label: 'Alertas Tempranas (IF/THEN)',       icon: GraduationCap },
     { id: 'docente',       path: '/academico/docente',       label: 'Desempeño Docente',                 icon: Star },
     { id: 'catalogo',      path: '/academico/catalogo',      label: 'Catálogo Curricular y Actas',       icon: BookOpen },
     { id: 'proyeccion',    path: '/academico/proyeccion',    label: 'Proyección de Alumnos',             icon: TrendingUp },
@@ -29,8 +27,13 @@ const ROLE_MENUS = {
   ANALISTA_FINANCIERO: [
     { id: 'recaudacion',   path: '/financiero/recaudacion',  label: 'Cobranzas y Recaudación',           icon: DollarSign },
     { id: 'cartera',       path: '/financiero/cartera',      label: 'Gestión de Cartera y Mora',         icon: PieChart },
+    { id: 'alertas',       path: '/alertas-tempranas',       label: 'Alertas Tempranas (IF/THEN)',       icon: GraduationCap },
     { id: 'metas',         path: '/financiero/metas',        label: 'Metas vs. Ejecutado',               icon: Target },
     { id: 'proyeccion',    path: '/financiero/proyeccion',   label: 'Proyección Financiera',             icon: LineChart },
+  ],
+  ANALISTA_MARKETING: [
+    { id: 'proyeccion', path: '/academico/proyeccion', label: 'Demanda y Viabilidad', icon: TrendingUp },
+    { id: 'catalogo',   path: '/academico/programas',  label: 'Catálogo de Oferta',   icon: BookOpen },
   ],
 };
 
@@ -43,15 +46,13 @@ const ADMIN_OPERATIVE_CLUSTERS = [
       { path: '/dataops/texto',            label: '② Texto Plano Estructurado',        icon: FileText },
       { path: '/dataops/beto',             label: '③ Lectura de BETO',                 icon: Wand2 },
       { path: '/dataops/revision',         label: '④ Revisión Humana (HITL)',         icon: CheckSquare },
-      { path: '/dataops/beto-ner',         label: 'Laboratorio BETO NER',              icon: Cpu },
-      { path: '/dataops/auditoria-humana', label: 'Consola HITL e Inconsistencias',    icon: Activity },
       { path: '/dataops/datos-maestros',   label: 'Datos Maestros & Catálogo',        icon: GitMerge },
     ],
   },
   {
     id: 'acad', label: 'Área Académica', icon: GraduationCap, defaultOpen: false,
     items: [
-      { path: '/academico/rendimiento',   label: 'Rendimiento y Alertas',      icon: GraduationCap },
+      { path: '/academico/rendimiento',   label: 'Alertas Tempranas (IF/THEN)', icon: GraduationCap },
       { path: '/academico/docente',       label: 'Desempeño Docente',          icon: Star },
       { path: '/academico/catalogo',      label: 'Catálogo Curricular',        icon: BookOpen },
       { path: '/academico/proyeccion',    label: 'Proyección de Alumnos',      icon: TrendingUp },
@@ -84,6 +85,18 @@ function isRouteItemActive(itemPath, pathname) {
   if (itemPath === '/dataops/texto' && /^\/dataops\/lote\/[^/]+\/texto/.test(pathname)) return true;
   if (itemPath === '/dataops/beto' && /^\/dataops\/lote\/[^/]+\/beto/.test(pathname)) return true;
   if (itemPath === '/dataops/revision' && /^\/dataops\/lote\/[^/]+\/revision/.test(pathname)) return true;
+  if (
+    (itemPath === '/academico/rendimiento' || itemPath === '/alertas-tempranas') &&
+    (pathname === '/alertas-tempranas' || pathname === '/academico/alertas' || pathname === '/academico/rendimiento')
+  ) {
+    return true;
+  }
+  if (
+    (itemPath === '/academico/programas' || itemPath === '/academico/catalogo') &&
+    (pathname === '/academico/programas' || pathname === '/academico/catalogo')
+  ) {
+    return true;
+  }
   return false;
 }
 
@@ -205,7 +218,7 @@ export default function Sidebar({ collapsed, isOpen, onClose, onToggle }) {
                 whiteSpace: 'nowrap',
               }}
             >
-              GIRA Group BI
+              {isAdmin ? 'Administrador / Comité Directivo' : 'GIRA Group BI'}
             </div>
           </div>
         </div>
@@ -244,7 +257,7 @@ export default function Sidebar({ collapsed, isOpen, onClose, onToggle }) {
           {/* Section title */}
           {!isEffectiveCollapsed && (
             <div className="sidebar-section-title">
-              {isAdmin ? 'Módulos de Inteligencia' : 'Módulos Operativos'}
+              {isAdmin ? 'Administrador / Comité Directivo' : 'Módulos Operativos'}
             </div>
           )}
 

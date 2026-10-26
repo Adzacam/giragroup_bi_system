@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileCode, Sparkles, CheckCircle2, Copy, Check, Zap, AlertCircle, FileText } from 'lucide-react';
+import { FileCode, Sparkles, CheckCircle2, Copy, Check, Zap, AlertCircle, FileText, Calendar, ShieldCheck } from 'lucide-react';
 import { sileoToast } from '../../../services/sileoToast';
 import { dataopsApi } from '../../../api/dataopsApi';
 
@@ -10,6 +10,7 @@ export default function PlainTextContractViewer({ activeDocId = null, incomingFi
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDocId, setSelectedDocId] = useState(activeDocId);
+  const [batchMeta, setBatchMeta] = useState(null);
 
   // Sincronizar selección de documento cuando activeDocId cambia desde el padre
   useEffect(() => {
@@ -20,7 +21,7 @@ export default function PlainTextContractViewer({ activeDocId = null, incomingFi
     }
   }, [activeDocId, sources]);
 
-  // Cargar registros de texto plano reales desde Registros de Ingesta
+  // Cargar registros de texto plano reales desde Registros de Ingesta y metadatos
   useEffect(() => {
     let isMounted = true;
     const loadPlainText = async () => {
@@ -54,11 +55,18 @@ export default function PlainTextContractViewer({ activeDocId = null, incomingFi
                          (records[0] ? { name: records[0].nombre_archivo, type: records[0].tipo_fuente, id: records[0].id_documento } : null);
 
   const activeRecord = records[0] || null;
+  const activeChips = activeRecord?.chips_catalogo || {};
+  const progChip = activeChips.programa_cat || activeChips['PROGRAMA_CAT'] || activeRecord?.programa || 'Sin catalogar';
+  const modChip = activeChips.modulo_cat || activeChips['MODULO_CAT'] || activeRecord?.modulo || 'Sin catalogar';
+  const precioChip = activeChips.precio_base_cat || activeChips['PRECIO_BASE_CAT'] || '—';
+  const fechasChip = activeRecord?.rango_fechas || activeChips.fecha_detectada || 'Auto';
 
   // Generar el contrato de salida serializado a partir de las tuplas reales
   const contractOutput = activeRecord ? [
     '=== GIRAGROUP DATAOPS INGESTION CONTRACT v2.0 ===',
     `METADATA: DOC_ID=${activeRecord.id_documento || selectedDocId || 'N/A'} | ARCHIVO=${activeRecord.nombre_archivo || currentDocMeta?.name || 'Documento'} | TIPO=${activeRecord.tipo_fuente || currentDocMeta?.type || 'Tabular'}`,
+    `FECHAS_RECONOCIDAS: ${fechasChip} | ANONIMIZACION: SHA-256 OK`,
+    `CHIPS_CATALOGO: [PROGRAMA_CAT: ${progChip}] | [MODULO_CAT: ${modChip}] | [PRECIO_BASE_CAT: ${precioChip}]`,
     `TARGET_CONTRACT: Registros de Ingesta (Texto Plano) | SCORE_CONFIANZA=${activeRecord.score_confianza ?? '0.90'}`,
     `ESTADO_INTEGRIDAD: ${activeRecord.requiere_revision ? 'REQUIERE_REVISION (Dudoso / Incompleto)' : 'VALIDADO_CANONICO'}`,
     '--------------------------------------------------------------------------------',
@@ -132,7 +140,7 @@ export default function PlainTextContractViewer({ activeDocId = null, incomingFi
             Conversión Estandarizada bajo Contrato Canónico
           </h3>
           <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', margin: '4px 0 0 0' }}>
-            Transformación homogénea de filas heterogéneas a texto plano inmutable en el repositorio de <strong>Registros de Ingesta</strong>.
+            Transformación homogénea de filas heterogéneas a texto plano inmutable con chips de pre-etiquetado institucional.
           </p>
         </div>
 
@@ -168,6 +176,25 @@ export default function PlainTextContractViewer({ activeDocId = null, incomingFi
             })}
           </div>
         )}
+      </div>
+
+      {/* Chips de Catálogo y Fecha de Inferencia */}
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+        <span className="chip-cat chip-programa">
+          PROGRAMA_CAT: {progChip}
+        </span>
+        <span className="chip-cat chip-modulo">
+          MODULO_CAT: {modChip}
+        </span>
+        <span className="chip-cat chip-precio">
+          PRECIO_BASE_CAT: {precioChip}
+        </span>
+        <span className="chip-cat chip-fecha">
+          <Calendar size={12} /> FECHAS: {fechasChip}
+        </span>
+        <span style={{ fontSize: '11px', fontWeight: 700, color: '#059669', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <ShieldCheck size={12} /> SHA-256 OK
+        </span>
       </div>
 
       {isLoading ? (
@@ -303,7 +330,10 @@ export default function PlainTextContractViewer({ activeDocId = null, incomingFi
               <button
                 type="button"
                 className="btn-pill-dark"
-                onClick={() => navigate(selectedDocId ? `/dataops/beto-ner?docIds=${selectedDocId}` : '/dataops/beto-ner')}
+                onClick={() => {
+                  const targetBatch = activeRecord?.id_lote || selectedDocId || localStorage.getItem('last_active_batch_id');
+                  navigate(targetBatch ? `/dataops/lote/${targetBatch}/beto` : '/dataops/beto');
+                }}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',

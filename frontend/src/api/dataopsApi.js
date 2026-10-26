@@ -60,6 +60,19 @@ export const dataopsApi = {
   },
 
   /**
+   * Purga completamente todos los lotes de staging, archivos y registros trancados
+   */
+  purgeStagingCache: async () => {
+    try {
+      const res = await client.post(`${BASE_URL}/purge-staging-cache`);
+      return res.data;
+    } catch (err) {
+      const res = await client.delete(`${BASE_URL}/sources/clear-completed`);
+      return res.data;
+    }
+  },
+
+  /**
    * Sube un nuevo archivo fuente individual con tracking de progreso
    */
   uploadFile: async (file, sourceType = 'ACTA', tipoEscala = null, onProgress = null) => {
@@ -164,16 +177,20 @@ export const dataopsApi = {
   /**
    * Obtiene resumen agregado y KPIs server-side de un lote (#1, #2)
    */
-  getLoteResumen: async (idLote = 'latest') => {
-    const res = await client.get(`${BASE_URL}/lote/${idLote}/resumen`);
+  getLoteResumen: async (idLote = 'latest', docId = null) => {
+    const cleanLote = idLote || 'latest';
+    const params = docId ? { doc_id: docId } : {};
+    const res = await client.get(`${BASE_URL}/lote/${cleanLote}/resumen`, { params });
     return res.data;
   },
 
   /**
    * Obtiene la cabecera contextual y lista de archivos de un lote (#17)
    */
-  getLoteContext: async (idLote) => {
-    const res = await client.get(`${BASE_URL}/lote/${idLote}/context`);
+  getLoteContext: async (idLote = 'latest', docId = null) => {
+    const cleanLote = idLote || 'latest';
+    const params = docId ? { doc_id: docId } : {};
+    const res = await client.get(`${BASE_URL}/lote/${cleanLote}/context`, { params });
     return res.data;
   },
 
@@ -306,14 +323,31 @@ export const dataopsApi = {
   /**
    * Obtiene los registros de texto plano serializados del pipeline (Registros de Ingesta)
    */
-  getPlainTextRecords: async (docIds = null) => {
+  getPlainTextRecords: async (docIds = null, idLote = null) => {
     try {
-      const params = docIds ? { doc_ids: docIds } : {};
+      const params = {};
+      if (docIds) params.doc_ids = docIds;
+      if (idLote) params.id_lote = idLote;
       const res = await client.get(`${BASE_URL}/plain-text-records`, { params });
       return res.data;
     } catch (err) {
       console.warn('Backend plain-text-records no disponible:', err.message);
       return { status: 'success', data: [] };
+    }
+  },
+
+  /**
+   * Obtiene texto plano estructurado, diagnóstico de aplanamiento asimétrico y chips de catálogo
+   */
+  getPlainTextBatch: async (idLote, docId = null) => {
+    try {
+      const params = {};
+      if (docId) params.doc_id = docId;
+      const res = await client.get(`${BASE_URL}/PlainText/${idLote}`, { params });
+      return res.data;
+    } catch (err) {
+      console.warn('Fallback getPlainTextBatch:', err.message);
+      return null;
     }
   },
 

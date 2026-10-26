@@ -113,6 +113,8 @@ export default function GestionUsuarios() {
         return { bg: '#e0f2fe', color: '#0369a1', label: 'Director Académico' };
       case 'ANALISTA_FINANCIERO':
         return { bg: '#dcfce7', color: 'var(--color-alert-green)', label: 'Analista Finanzas' };
+      case 'ANALISTA_MARKETING':
+        return { bg: '#fef3c7', color: '#b45309', label: 'Analista Marketing' };
       default:
         return { bg: 'var(--color-mist-gray)', color: 'var(--color-ink-black)', label: role };
     }
@@ -419,6 +421,7 @@ export default function GestionUsuarios() {
                   <option value="AUDITOR_CALIDAD">AUDITOR_CALIDAD (DataOps &amp; Pipeline)</option>
                   <option value="DIRECTOR_ACADEMICO">DIRECTOR_ACADEMICO (Retención &amp; Curricular)</option>
                   <option value="ANALISTA_FINANCIERO">ANALISTA_FINANCIERO (Cobranzas &amp; Flujo)</option>
+                  <option value="ANALISTA_MARKETING">ANALISTA_MARKETING (Comercial &amp; Demanda)</option>
                   <option value="ADMIN">ADMIN (Acceso Total)</option>
                 </select>
               </div>

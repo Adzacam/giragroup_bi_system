@@ -18,7 +18,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
@@ -30,6 +30,7 @@ from main import app
 from core.database import Base, get_db
 from models.user import User
 from models.notification import Notification
+from models.log_pipeline import LogPipelineIngesta
 from core.security import get_password_hash, create_access_token
 
 # ── Base de datos de pruebas en memoria (SQLite) ────────────────────────────
@@ -51,15 +52,16 @@ def override_get_db():
         db.close()
 
 
-app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
 def setup_database():
     """Inicializa la base de datos de prueba antes de cada test con usuarios de prueba."""
+    app.dependency_overrides[get_db] = override_get_db
     User.__table__.create(bind=test_engine, checkfirst=True)
     Notification.__table__.create(bind=test_engine, checkfirst=True)
+    LogPipelineIngesta.__table__.create(bind=test_engine, checkfirst=True)
     db = TestingSessionLocal()
 
     # Admin 1 (Principal)
@@ -112,6 +114,7 @@ def setup_database():
 
     Notification.__table__.drop(bind=test_engine, checkfirst=True)
     User.__table__.drop(bind=test_engine, checkfirst=True)
+    app.dependency_overrides.pop(get_db, None)
 
 
 # ── 1. PRUEBAS DE FLUJO 2FA Y BLOQUEO POR INTENTOS FALLIDOS ─────────────────
@@ -263,3 +266,57 @@ def test_notifications_endpoints():
     # Marcar todas como leídas
     res_all = client.post("/api/v1/notifications/mark-all-read", headers={"Authorization": f"Bearer {admin1_token}"})
     assert res_all.status_code == 200
+
+
+# ── 5. PRUEBAS DE RECUPERACIÓN DE CONTRASEÑA Y PLANTILLAS DE EMAIL ───────────
+
+def test_forgot_password_registered_user():
+    """Solicitar recuperación para un usuario registrado genera código y responde 200."""
+    res = client.post("/api/v1/auth/forgot-password", json={
+        "email": "admin1@giragroup.bo"
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "success"
+    assert "instrucciones" in data["message"].lower()
+
+    # Verificar que el usuario tiene otp temporal en DB
+    db = TestingSessionLocal()
+    user = db.query(User).filter(User.email == "admin1@giragroup.bo").first()
+    assert user.otp_code_hash is not None
+    assert user.otp_expires_at is not None
+    db.close()
+
+
+def test_forgot_password_unregistered_user():
+    """Anti-enumeración: usuario no registrado responde 200 con el mismo mensaje neutro."""
+    res = client.post("/api/v1/auth/forgot-password", json={
+        "email": "inexistente@giragroup.bo"
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "success"
+
+
+def test_email_service_rendering():
+    """El servicio de email renderiza correctamente las plantillas HTML con branding GiraGroup."""
+    from services.email_service import email_service
+    html_otp = email_service.render_otp_email(
+        to_email="test@giragroup.bo",
+        username="Tester",
+        otp_code="654321",
+        expires_in_minutes=5
+    )
+    assert "654 321" in html_otp
+    assert "GiraGroup" in html_otp
+    assert "0C1E33" in html_otp
+
+    html_reset = email_service.render_password_reset_email(
+        to_email="test@giragroup.bo",
+        username="Tester",
+        reset_code="789012",
+        expires_in_minutes=15
+    )
+    assert "789 012" in html_reset
+    assert "GiraGroup" in html_reset
+

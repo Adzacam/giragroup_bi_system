@@ -35,6 +35,12 @@ USERS = [
         "role": "ANALISTA_FINANCIERO",
         "password": "giragroup2026",
     },
+    {
+        "username": "analista_mkt",
+        "email": "analista.marketing@giragroup.bo",
+        "role": "ANALISTA_MARKETING",
+        "password": "giragroup2026",
+    },
 ]
 
 def hash_password(password: str) -> str:

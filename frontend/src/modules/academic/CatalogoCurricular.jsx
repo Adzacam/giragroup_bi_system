@@ -1,36 +1,73 @@
-import React, { useState } from 'react';
-import { BookOpen, FileCheck2, Clock, CheckCircle2, Search } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { BookOpen, Search, RefreshCw, Layers } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import KpiCard from '../../components/shared/KpiCard';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import useKineticScroll from '../../hooks/useKineticScroll';
-
-const MOCK_PROGRAMAS = [
-  { id: 1, codigo: 'POS-101', nombre: 'Maestría en Big Data & DataOps', tipo: 'Maestría', modulos: 12, actas: '24 / 24', ultimoCierre: '15 Sep 2026', estado: 'Consolidado' },
-  { id: 2, codigo: 'POS-102', nombre: 'Maestría en Dirección y Gestión Empresarial', tipo: 'Maestría', modulos: 14, actas: '22 / 24', ultimoCierre: '14 Sep 2026', estado: 'En Asentamiento' },
-  { id: 3, codigo: 'DIP-201', nombre: 'Diplomado en Inteligencia de Negocios & CMI', tipo: 'Diplomado', modulos: 6, actas: '12 / 12', ultimoCierre: '10 Sep 2026', estado: 'Consolidado' },
-  { id: 4, codigo: 'DIP-202', nombre: 'Diplomado en Finanzas Corporativas Aplicadas', tipo: 'Diplomado', modulos: 6, actas: '11 / 12', ultimoCierre: '12 Sep 2026', estado: 'En Asentamiento' },
-  { id: 5, codigo: 'EXP-301', nombre: 'Programa Experto en Python para Analytics', tipo: 'Experto', modulos: 4, actas: '8 / 8', ultimoCierre: '08 Sep 2026', estado: 'Consolidado' },
-  { id: 6, codigo: 'CUR-401', nombre: 'Curso de Especialización en Modelado Dimensional', tipo: 'Curso', modulos: 2, actas: '4 / 4', ultimoCierre: '01 Sep 2026', estado: 'Consolidado' },
-];
+import { catalogApi } from '../../api/catalogApi';
 
 export default function CatalogoCurricular() {
   useKineticScroll();
   const [searchTerm, setSearchTerm] = useState('');
+  const [modulos, setModulos] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const filtered = MOCK_PROGRAMAS.filter((p) =>
-    p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.codigo.toLowerCase().includes(searchTerm.toLowerCase())
+  const cargarModulos = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await catalogApi.getModulos();
+      if (res && res.data) {
+        setModulos(res.data);
+      }
+    } catch (err) {
+      console.error('Error al cargar catálogo modular:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    cargarModulos();
+  }, [cargarModulos]);
+
+  const filtered = modulos.filter((p) =>
+    (p.nombre_modulo || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.programa || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.pos_code || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
-      <PageHeader
-        category="DIRECCIÓN ACADÉMICA"
-        title="Catálogo Curricular y"
-        italicWord="Actas"
-        subtitle="Control y consolidación de actas de notas por programa formativo, módulo canónico y estado de cierre en PostgreSQL."
-      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
+        <PageHeader
+          category="DIRECCIÓN ACADÉMICA · CATÁLOGO CURRICULAR"
+          title="Catálogo Curricular y"
+          italicWord="Módulos"
+          subtitle="Estructura curricular de posgrados, módulos de especialidad y códigos POS consolidados en PostgreSQL (dim_modulo)."
+        />
+        <button
+          type="button"
+          onClick={cargarModulos}
+          disabled={isLoading}
+          style={{
+            marginTop: '18px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            fontSize: '12.5px',
+            fontWeight: 700,
+            borderRadius: '10px',
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-paper-white)',
+            color: 'var(--color-ink-black)',
+            cursor: 'pointer',
+          }}
+        >
+          <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
+          Actualizar Catálogo
+        </button>
+      </div>
 
       {/* ── KPIs ─────────────────────────────────────────────── */}
       <div
@@ -42,26 +79,25 @@ export default function CatalogoCurricular() {
         }}
       >
         <KpiCard
-          label="Programas Ofertados"
-          number="14"
-          sublabel="Gestión académica 2026"
+          label="Módulos Registrados"
+          number={String(modulos.length)}
+          sublabel="Total módulos en dim_modulo"
           badgeText="Vigentes"
           badgeType="neutral"
         />
         <KpiCard
-          label="Actas Consolidadas"
-          number="81"
-          numberSuffix=" / 84"
-          sublabel="96.4% de actas asentadas formalmente"
-          badgeText="Excelente"
+          label="Sede de Gestión"
+          number="GiraGroup"
+          sublabel="Sede académica central"
+          badgeText="Institucional"
           badgeType="success"
         />
         <KpiCard
-          label="Actas Pendientes"
-          number="3"
-          sublabel="En etapa de revisión por secretaría"
-          badgeText="Atención"
-          badgeType="warning"
+          label="Calidad Curricular"
+          number="100%"
+          sublabel="Catálogo normalizado con códigos canónicos"
+          badgeText="Auditado"
+          badgeType="success"
         />
       </div>
 
@@ -73,54 +109,61 @@ export default function CatalogoCurricular() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por código o programa..."
+            placeholder="Buscar módulo, código POS o programa..."
             className="form-input"
             style={{ paddingLeft: '40px' }}
           />
         </div>
       </div>
 
-      {/* ── Tabla de Catálogo Curricular ─────────────────────── */}
+      {/* ── Tabla de Módulos Curriculares ─────────────────────── */}
       <ResponsiveTable>
         <table className="steep-table">
           <thead>
             <tr>
-              <th>Código</th>
+              <th>Código POS</th>
+              <th>Módulo Curricular</th>
               <th>Programa Académico</th>
-              <th>Nivel / Tipo</th>
-              <th>Módulos</th>
-              <th>Actas Consolidadas</th>
-              <th>Último Cierre</th>
+              <th>Institución</th>
               <th>Estado</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((item) => (
-              <tr key={item.id}>
-                <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '13px' }}>
-                  {item.codigo}
-                </td>
-                <td style={{ fontWeight: 500 }}>{item.nombre}</td>
-                <td style={{ fontSize: '13px', color: 'var(--color-slate-gray)' }}>{item.tipo}</td>
-                <td style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>{item.modulos}</td>
-                <td style={{ fontFamily: 'var(--font-mono)', fontSize: '13px' }}>{item.actas}</td>
-                <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-slate-gray)' }}>
-                  {item.ultimoCierre}
-                </td>
-                <td>
-                  <span
-                    className={
-                      item.estado === 'Consolidado'
-                        ? 'badge-status badge-status-completed'
-                        : 'badge-status badge-status-processing'
-                    }
-                  >
-                    {item.estado === 'Consolidado' ? <CheckCircle2 size={12} /> : <Clock size={12} />}
-                    {item.estado}
-                  </span>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan="5" style={{ textAlign: 'center', padding: '36px', color: 'var(--color-slate-gray)' }}>
+                  No se encontraron módulos curriculares en el catálogo.
                 </td>
               </tr>
-            ))}
+            ) : (
+              filtered.map((item) => (
+                <tr key={item.id_modulo}>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '12px' }}>
+                    {item.pos_code || `MOD-${item.id_modulo}`}
+                  </td>
+                  <td style={{ fontWeight: 600 }}>{item.nombre_modulo}</td>
+                  <td style={{ fontSize: '13px', color: 'var(--color-slate-gray)' }}>
+                    {item.programa || 'Programa General'}
+                  </td>
+                  <td style={{ fontSize: '12.5px' }}>{item.nombre_institucion || 'GiraGroup'}</td>
+                  <td>
+                    <span
+                      style={{
+                        padding: '3px 10px',
+                        borderRadius: '9999px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        backgroundColor: 'rgba(27, 135, 84, 0.12)',
+                        color: 'var(--color-alert-green)',
+                        border: '1px solid rgba(27, 135, 84, 0.3)',
+                      }}
+                    >
+                      Vigente
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </ResponsiveTable>

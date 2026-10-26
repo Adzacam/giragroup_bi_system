@@ -59,6 +59,7 @@ try:
     from models.fact_rendimiento import FactRendimientoAcademico
     from models.fact_financiero import FactSituacionFinanciera
     from models.staging_entidad import StagingEntidadNoResuelta
+    from models.lote import Lote
 except ImportError:
     from backend.models.dim_origen import DimOrigenDocumental
     from backend.models.staging_registro import StagingRegistroCrudo
@@ -66,11 +67,20 @@ except ImportError:
     from backend.models.fact_rendimiento import FactRendimientoAcademico
     from backend.models.fact_financiero import FactSituacionFinanciera
     from backend.models.staging_entidad import StagingEntidadNoResuelta
+    from backend.models.lote import Lote
 
 try:
     from backend.services.readers.moodle_adapter import es_reporte_moodle, adaptar_moodle_df
 except ImportError:
     from services.readers.moodle_adapter import es_reporte_moodle, adaptar_moodle_df
+
+try:
+    from pipeline.normalization.asymmetric_flattener import AsymmetricFlattener
+except ImportError:
+    try:
+        from normalization.asymmetric_flattener import AsymmetricFlattener
+    except ImportError:
+        AsymmetricFlattener = None
 
 logger = logging.getLogger(__name__)
 
@@ -337,6 +347,29 @@ class IngestionService:
         return log_entry
 
     @classmethod
+    def procesar_archivo(
+        cls,
+        db: Session,
+        ruta_o_bytes: Any,
+        filename: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Método de compatibilidad para procesar archivo aceptando ruta o bytes.
+        Garantiza compatibilidad con llamadas que esperan 'doc_id' e 'id_documento'.
+        """
+        if isinstance(ruta_o_bytes, (bytes, bytearray)):
+            file_bytes = bytes(ruta_o_bytes)
+        elif isinstance(ruta_o_bytes, str) and os.path.exists(ruta_o_bytes):
+            with open(ruta_o_bytes, "rb") as f:
+                file_bytes = f.read()
+        else:
+            file_bytes = b""
+        res = cls.procesar_archivo_ingesta(db, file_bytes, filename, **kwargs)
+        res["doc_id"] = res.get("id_documento")
+        return res
+
+    @classmethod
     def procesar_archivo_ingesta(
         cls,
         db: Session,
@@ -383,10 +416,34 @@ class IngestionService:
                     detail=f"El archivo '{safe_filename}' no contiene matrices tabulares legibles o el formato '{ext}' no es compatible."
                 )
 
+            # Diagnóstico y aplanamiento asimétrico con inferencia automática de fechas y cruce de catálogo
+            asym_info = {}
+            if AsymmetricFlattener:
+                try:
+                    asym_info = AsymmetricFlattener.procesar_archivo_asimetrico(file_bytes, safe_filename)
+                except Exception as e_asym:
+                    logger.warning("No se pudo ejecutar AsymmetricFlattener: %s", e_asym)
+                    asym_info = {}
+
             # Detectar tipo_fuente: primero por cabeceras reales (#15), o por el parámetro explícito del usuario
             detected_fuente = detectar_tipo_fuente_por_cabeceras(hojas, safe_filename)
             explicit_fuente = normalizar_codigo_tipo_fuente(tipo_fuente) or normalizar_codigo_tipo_fuente(source_type)
             final_tipo_fuente = explicit_fuente or detected_fuente
+            if not final_tipo_fuente and asym_info.get("origen_detectado"):
+                origen_raw = asym_info["origen_detectado"]
+                if origen_raw == "MOODLE_EXPORT":
+                    final_tipo_fuente = "MOODLE"
+                elif origen_raw == "GFORMS_ADM_PAGOS":
+                    final_tipo_fuente = "ADMISION"
+                else:
+                    final_tipo_fuente = "ACTA"
+
+            # Inferencia automática de fechas y periodo multi-gestión sin requerir selector manual
+            rango_detectado = asym_info.get("rango_fechas")
+            if not periodo or str(periodo).strip() in ("", "2026-1", "auto", "Auto") or "Auto" in str(periodo):
+                periodo_final = rango_detectado or "2024–2026 (Auto)"
+            else:
+                periodo_final = str(periodo).strip()
 
             # Regla #16: Si es COBRANZA o ADMISION, tipo_escala es obligatoriamente NULL
             if final_tipo_fuente in ("COBRANZA", "ADMISION"):
@@ -403,7 +460,7 @@ class IngestionService:
                 tipo_escala=final_tipo_escala,
                 nombre_archivo=safe_filename,
                 institucion=institucion,
-                periodo=periodo,
+                periodo=periodo_final,
                 hash_sha256=sha256_full,
             )
             db.add(origen)
@@ -558,6 +615,13 @@ class IngestionService:
                 else:
                     texto = a_texto_plano(b)
                 n_b_filas = max(1, len(b) - 1) if len(b) > 1 else len(b)
+                payload_data = {
+                    "diagnostico_estructural": asym_info.get("diagnostico_estructural", {}),
+                    "chips_catalogo": asym_info.get("chips_catalogo", {}),
+                    "origen_detectado": asym_info.get("origen_detectado", "GSHEETS_ACTA_NOTAS"),
+                    "rango_fechas": asym_info.get("rango_fechas", periodo_final),
+                    "fechas_reconocidas": asym_info.get("fechas_reconocidas", [])
+                }
                 staging_entry = StagingRegistroCrudo(
                     id_documento=doc_id,
                     hoja=nombre_hoja,
@@ -568,7 +632,8 @@ class IngestionService:
                     fila_inicio=b.attrs.get("fila_inicio", 0),
                     fila_fin=b.attrs.get("fila_fin", len(b) - 1),
                     es_ruido=False,
-                    estado_resolucion="PENDIENTE"
+                    estado_resolucion="PENDIENTE",
+                    payload_json=payload_data
                 )
                 db.add(staging_entry)
                 bloques_insertados += 1
@@ -623,10 +688,16 @@ class IngestionService:
                 "nombre_archivo": safe_filename,
                 "tipo_fuente": final_tipo_fuente,
                 "tipo_escala": final_tipo_escala,
+                "periodo": periodo_final,
                 "stages": stages_info,
                 "kpis": kpis,
                 "normalization_matrix": matriz_normalizacion,
-                "logs": logs_output
+                "logs": logs_output,
+                "diagnostico_estructural": asym_info.get("diagnostico_estructural", {}),
+                "chips_catalogo": asym_info.get("chips_catalogo", {}),
+                "origen_detectado": asym_info.get("origen_detectado", "GSHEETS_ACTA_NOTAS"),
+                "rango_fechas": asym_info.get("rango_fechas", periodo_final),
+                "fechas_reconocidas": asym_info.get("fechas_reconocidas", [])
             }
 
         except Exception as e:
@@ -740,12 +811,72 @@ class IngestionService:
 
     @classmethod
     def limpiar_todas_las_fuentes(cls, db: Session) -> int:
-        """Elimina todas las fuentes procesadas."""
-        db.query(StagingRegistroCrudo).delete(synchronize_session=False)
-        db.query(LogPipelineIngesta).delete(synchronize_session=False)
-        deleted = db.query(DimOrigenDocumental).delete(synchronize_session=False)
+        """
+        Elimina todas las fuentes procesadas, registros crudos en staging,
+        lotes temporales y entidades no resueltas de la cola activa.
+        Limpia también los archivos temporales en el directorio de batches.
+        """
+        # 1. Purgar tablas dependientes en staging
+        try:
+            db.query(StagingEntidadNoResuelta).delete(synchronize_session=False)
+        except Exception:
+            pass
+
+        try:
+            db.query(StagingRegistroCrudo).delete(synchronize_session=False)
+        except Exception:
+            pass
+
+        try:
+            db.query(LogPipelineIngesta).delete(synchronize_session=False)
+        except Exception:
+            pass
+
+        # 2. Purgar documentos de origen y lotes
+        deleted_docs = 0
+        try:
+            deleted_docs = db.query(DimOrigenDocumental).delete(synchronize_session=False)
+        except Exception:
+            pass
+
+        try:
+            db.query(Lote).delete(synchronize_session=False)
+        except Exception:
+            pass
+
         db.commit()
-        return deleted
+
+        # 3. Limpiar directorio de landing batches si existe
+        try:
+            batches_dir = os.path.join(RAIZ_PROYECTO, "data", "landing", "batches")
+            if os.path.exists(batches_dir):
+                import shutil
+                for item in os.listdir(batches_dir):
+                    item_path = os.path.join(batches_dir, item)
+                    if os.path.isdir(item_path):
+                        shutil.rmtree(item_path, ignore_errors=True)
+                    elif os.path.isfile(item_path):
+                        try:
+                            os.remove(item_path)
+                        except Exception:
+                            pass
+        except Exception as e_clean:
+            logger.warning(f"No se pudo limpiar completamente data/landing/batches: {e_clean}")
+
+        # 4. Registrar evento inmutable de purga en la bitácora
+        try:
+            log_purga = LogPipelineIngesta(
+                etapa="PURGA_SISTEMA",
+                nivel="INFO",
+                modulo="Gobernanza & Mantenimiento",
+                mensaje=f"Purga limpia de staging y lotes temporales ejecutada exitosamente ({deleted_docs} documentos eliminados)."
+            )
+            db.add(log_purga)
+            db.commit()
+        except Exception:
+            pass
+
+        return deleted_docs
 
     @classmethod
     def obtener_logs_documento(cls, db: Session, id_doc: int) -> List[Dict[str, Any]]:

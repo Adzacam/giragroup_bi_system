@@ -18,8 +18,6 @@ const IngestView                  = lazy(() => import('./modules/dataops/IngestV
 const PlainTextTransformationView = lazy(() => import('./modules/dataops/PlainTextTransformationView'));
 const BetoReadingFlowView         = lazy(() => import('./modules/dataops/BetoReadingFlowView'));
 const HumanReviewFlowView         = lazy(() => import('./modules/dataops/HumanReviewFlowView'));
-const BetoNerExtractionView       = lazy(() => import('./modules/dataops/BetoNerExtractionView'));
-const HumanInTheLoopView          = lazy(() => import('./modules/dataops/HumanInTheLoopView'));
 const MasterDataView              = lazy(() => import('./modules/dataops/MasterDataView'));
 
 // Academic
@@ -146,6 +144,7 @@ function DashboardRedirect() {
     AUDITOR_CALIDAD: '/dataops/ingesta',
     DIRECTOR_ACADEMICO: '/academico/rendimiento',
     ANALISTA_FINANCIERO: '/financiero/recaudacion',
+    ANALISTA_MARKETING: '/dashboard',
   };
   return <Navigate to={redirectMap[role] || '/dashboard'} replace />;
 }
@@ -384,6 +383,7 @@ function App() {
 
                   {/* Admin dashboard (also accessible to all roles as overview) */}
                   <Route path="dashboard" element={<CuadroMandoIntegral />} />
+                  <Route path="cmi" element={<CuadroMandoIntegral />} />
 
                   {/* Notifications (all roles) */}
                   <Route path="notificaciones" element={<NotificationsPage />} />
@@ -429,16 +429,6 @@ function App() {
                 } />
 
                 {/* Vistas Avanzadas y de Soporte */}
-                <Route path="dataops/beto-ner" element={
-                  <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                    <BetoNerExtractionView />
-                  </RoleRoute>
-                } />
-                <Route path="dataops/auditoria-humana" element={
-                  <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                    <HumanInTheLoopView />
-                  </RoleRoute>
-                } />
                 <Route path="dataops/datos-maestros" element={
                   <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
                     <MasterDataView />
@@ -446,16 +436,29 @@ function App() {
                 } />
 
                 {/* Redirecciones de Compatibilidad */}
-                <Route path="dataops/nlp-lab" element={<Navigate to="/dataops/beto-ner" replace />} />
+                <Route path="dataops/beto-ner" element={<Navigate to="/dataops/beto" replace />} />
+                <Route path="dataops/hitl" element={<Navigate to="/dataops/revision" replace />} />
+                <Route path="dataops/auditoria-humana" element={<Navigate to="/dataops/revision" replace />} />
+                <Route path="dataops/nlp-lab" element={<Navigate to="/dataops/beto" replace />} />
                 <Route path="dataops/fuentes" element={<Navigate to="/dataops/ingesta" replace />} />
                 <Route path="dataops/procesamiento" element={<Navigate to="/dataops/ingesta" replace />} />
                 <Route path="dataops/entidades" element={<Navigate to="/dataops/revision" replace />} />
                 <Route path="dataops/inconsistencias" element={<Navigate to="/dataops/revision" replace />} />
-                <Route path="dataops/telemetria" element={<Navigate to="/dataops/beto-ner" replace />} />
+                <Route path="dataops/telemetria" element={<Navigate to="/dataops/beto" replace />} />
 
-                {/* ─── Academic routes (DIRECTOR_ACADEMICO + ADMIN) ─── */}
+                {/* ─── Academic & Early Warning routes (Vista 3: Monitoreo de Reglas de Umbral y Alertas Tempranas) ─── */}
+                <Route path="alertas-tempranas" element={
+                  <RoleRoute allowedRoles={['DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD', 'ADMIN']}>
+                    <RendimientoAlertas />
+                  </RoleRoute>
+                } />
+                <Route path="academico/alertas" element={
+                  <RoleRoute allowedRoles={['DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD', 'ADMIN']}>
+                    <RendimientoAlertas />
+                  </RoleRoute>
+                } />
                 <Route path="academico/rendimiento" element={
-                  <RoleRoute allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN']}>
+                  <RoleRoute allowedRoles={['DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD', 'ADMIN']}>
                     <RendimientoAlertas />
                   </RoleRoute>
                 } />
@@ -464,13 +467,19 @@ function App() {
                     <DesempenoDocente />
                   </RoleRoute>
                 } />
+                <Route path="academico/docentes" element={<Navigate to="/academico/docente" replace />} />
                 <Route path="academico/catalogo" element={
-                  <RoleRoute allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN']}>
+                  <RoleRoute allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN', 'ANALISTA_MARKETING']}>
+                    <CatalogoCurricular />
+                  </RoleRoute>
+                } />
+                <Route path="academico/programas" element={
+                  <RoleRoute allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN', 'ANALISTA_MARKETING']}>
                     <CatalogoCurricular />
                   </RoleRoute>
                 } />
                 <Route path="academico/proyeccion" element={
-                  <RoleRoute allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN']}>
+                  <RoleRoute allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN', 'ANALISTA_MARKETING']}>
                     <ProyeccionAlumnos />
                   </RoleRoute>
                 } />

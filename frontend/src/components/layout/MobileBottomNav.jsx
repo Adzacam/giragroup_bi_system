@@ -14,6 +14,7 @@ import {
   BookOpen,
   PieChart,
   Target,
+  TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -49,6 +50,14 @@ export default function MobileBottomNav({ onOpenMenu, onCloseMenu, isMenuOpen = 
         { to: '/ajustes', label: 'Ajustes', icon: SlidersHorizontal, matchPrefix: '/ajustes' },
       ];
     }
+    if (role === 'ANALISTA_MARKETING') {
+      return [
+        { to: '/dashboard', label: 'CMI', icon: LayoutDashboard, matchPrefix: '/dashboard' },
+        { to: '/academico/proyeccion', label: 'Demanda', icon: TrendingUp, matchPrefix: '/academico/proyeccion' },
+        { to: '/academico/programas', label: 'Catálogo', icon: BookOpen, matchPrefix: '/academico/programas' },
+        { to: '/ajustes', label: 'Ajustes', icon: SlidersHorizontal, matchPrefix: '/ajustes' },
+      ];
+    }
     // Default / ADMIN: Core executive modules + Menu drawer trigger
     return [
       { to: '/dashboard', label: 'CMI', icon: LayoutDashboard, matchPrefix: '/dashboard' },
@@ -68,6 +77,9 @@ export default function MobileBottomNav({ onOpenMenu, onCloseMenu, isMenuOpen = 
         const isSectionActive =
           location.pathname === item.to ||
           (item.matchPrefix && location.pathname.startsWith(item.matchPrefix)) ||
+          (item.to === '/dashboard' && (location.pathname === '/dashboard' || location.pathname === '/cmi')) ||
+          ((item.to === '/academico/programas' || item.to === '/academico/catalogo') &&
+            (location.pathname === '/academico/programas' || location.pathname === '/academico/catalogo')) ||
           (item.to === '/dataops/beto' && /^\/dataops\/lote\/[^/]+\/beto/.test(location.pathname)) ||
           (item.to === '/dataops/revision' && (/^\/dataops\/lote\/[^/]+\/revision/.test(location.pathname) || location.pathname === '/dataops/auditoria-humana')) ||
           (item.to === '/ajustes' && location.pathname.startsWith('/admin'));

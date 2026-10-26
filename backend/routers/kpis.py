@@ -18,7 +18,8 @@ from schemas.kpi_schemas import (
     KpisAcademicos,
     KpisFinancieros,
     KpisPipelineCalidad,
-    AlertasListResponse
+    AlertasListResponse,
+    CmiCompletoResponse
 )
 
 router = APIRouter(prefix="/api/v1", tags=["KPIs y Alertas de Negocio"])
@@ -31,10 +32,29 @@ router = APIRouter(prefix="/api/v1", tags=["KPIs y Alertas de Negocio"])
 )
 def get_kpis_general(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(["ADMIN", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO"]))
+    current_user: User = Depends(require_roles(["ADMIN", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "ANALISTA_MARKETING"]))
 ):
     service = KPIService(db)
     return service.obtener_consolidado_general()
+
+
+@router.get(
+    "/kpis/cmi-completo",
+    response_model=CmiCompletoResponse,
+    summary="Obtener las 4 Perspectivas Estratégicas Institucionales del CMI con drilldowns"
+)
+@router.get(
+    "/kpis/perspectivas",
+    response_model=CmiCompletoResponse,
+    include_in_schema=False
+)
+def get_cmi_completo(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "AUDITOR_CALIDAD", "ANALISTA_MARKETING"]))
+):
+    service = KPIService(db)
+    return service.obtener_perspectivas_cmi_completo()
+
 
 
 @router.get(
@@ -83,17 +103,20 @@ def get_kpis_pipeline(
 )
 def get_alertas(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(["ADMIN", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO"]))
+    current_user: User = Depends(require_roles(["ADMIN", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "AUDITOR_CALIDAD", "ANALISTA_MARKETING"]))
 ):
     engine = AlertEngine(db)
     todas = engine.evaluar_todas(persistir_notificaciones=False)
 
-    # Filtrar según rol si no es ADMIN
+    # Filtrar según rol si no es ADMIN ni AUDITOR_CALIDAD
     if current_user.role == "DIRECTOR_ACADEMICO":
         filtradas = [a for a in todas if a["tipo"] in ("ACADEMICO", "DESERCION")]
     elif current_user.role == "ANALISTA_FINANCIERO":
         filtradas = [a for a in todas if a["tipo"] == "FINANCIERO"]
+    elif current_user.role == "ANALISTA_MARKETING":
+        filtradas = [a for a in todas if a["tipo"] in ("MARKETING", "DEMANDA", "CONVERSION")]
     else:
+        # ADMIN y AUDITOR_CALIDAD tienen visibilidad completa institucional
         filtradas = todas
 
     criticas = sum(1 for a in filtradas if a["severidad"] == "CRITICAL")

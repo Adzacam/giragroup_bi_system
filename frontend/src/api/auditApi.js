@@ -26,4 +26,38 @@ export const auditApi = {
       };
     }
   },
+
+  /**
+   * Dispara la ejecución del pipeline integral bajo demanda (Ingesta, NLP, Calidad y Carga DW)
+   * @param {Object} options - { file?: File, docId?: number|string }
+   */
+  triggerManualPipeline: async ({ file, docId } = {}) => {
+    const formData = new FormData();
+    if (file) {
+      formData.append('file', file);
+    }
+    if (docId !== undefined && docId !== null && docId !== '') {
+      formData.append('doc_id', docId);
+    }
+
+    try {
+      const res = await client.post('/pipeline/process', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return res.data;
+    } catch (err) {
+      // Fallback a /api/v1/pipeline/process en caso de que el proxy o gateway no resuelva la raíz
+      if (err.response?.status === 404) {
+        const resFallback = await client.post('/api/v1/pipeline/process', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        return resFallback.data;
+      }
+      throw err;
+    }
+  },
 };

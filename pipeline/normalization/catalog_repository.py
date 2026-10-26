@@ -628,6 +628,244 @@ class CatalogRepository:
             "prioridad": 99
         })
 
+    def obtener_resumen_institucional(self) -> Dict[str, Any]:
+        """
+        Retorna el resumen del Catálogo Maestro Institucional Estático (18 Programas Activos).
+        Garantiza por diseño que no contiene ni expone ningún dato personal (Zero-PII).
+        """
+        programas_resumen = []
+        for p in PROGRAMAS_ACTIVOS_INSTITUCIONALES:
+            pos = p["pos_code"]
+            nom = self.programas.get(pos, p["nombre"])
+            programas_resumen.append({
+                "pos_code": pos,
+                "nombre": nom,
+                "version": p["version"],
+                "arancel_base_bs": p["arancel_base_bs"],
+                "escuela": p["escuela"],
+                "modalidad": p["modalidad"],
+                "modulos_count": p["modulos_count"],
+                "punto_equilibrio": p["punto_equilibrio"],
+                "modulos_clave": p["modulos_clave"]
+            })
+
+        return {
+            "status": "success",
+            "total_programas_activos": len(programas_resumen),
+            "sin_pii": True,
+            "contiene_pii": False,
+            "programas": programas_resumen,
+            "modulos_activos_total": sum(p["modulos_count"] for p in programas_resumen),
+            "convenios_activos_total": 6,
+            "metas_presupuestarias": {
+                "meta_anual_bs": 2450000.0,
+                "punto_equilibrio_promedio_alumnos": 15
+            },
+            "mensaje": "Catálogo Maestro Institucional Estático Oficial (Zero PII Compliance)"
+        }
+
+
+PROGRAMAS_ACTIVOS_INSTITUCIONALES: List[Dict[str, Any]] = [
+    {
+        "pos_code": "POS-5308",
+        "nombre": "Maestría en Business Intelligence y Big Data",
+        "version": 4,
+        "arancel_base_bs": 14500.0,
+        "escuela": "Tecnología/Ingeniería",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 8,
+        "punto_equilibrio": 15,
+        "modulos_clave": ["Minería de Datos", "Arquitectura de Datos", "Visualización de Datos"]
+    },
+    {
+        "pos_code": "POS-5952",
+        "nombre": "Diplomado en Endodoncia y Sistemas de Instrumentación Mecanizada",
+        "version": 1,
+        "arancel_base_bs": 8200.0,
+        "escuela": "Salud",
+        "modalidad": "SEMIPRESENCIAL",
+        "modulos_count": 5,
+        "punto_equilibrio": 11,
+        "modulos_clave": ["Instrumentación Rotatoria", "Obturación Termoplastificada"]
+    },
+    {
+        "pos_code": "POS-5940",
+        "nombre": "Diplomado en Liderazgo Comercial y Estrategia de Ventas",
+        "version": 7,
+        "arancel_base_bs": 7500.0,
+        "escuela": "Negocios",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 6,
+        "punto_equilibrio": 14,
+        "modulos_clave": ["Negociación Estratégica", "Gestión de Equipos Comerciales"]
+    },
+    {
+        "pos_code": "POS-5910",
+        "nombre": "Diplomado en Medicina Estética",
+        "version": 29,
+        "arancel_base_bs": 12000.0,
+        "escuela": "Salud",
+        "modalidad": "SEMIPRESENCIAL",
+        "modulos_count": 6,
+        "punto_equilibrio": 28,
+        "modulos_clave": ["Toxina Botulínica", "Rellenos Dérmicos", "Bioestimuladores"]
+    },
+    {
+        "pos_code": "POS-5948",
+        "nombre": "Programa Experto en Bases de Datos y SQL",
+        "version": 3,
+        "arancel_base_bs": 6500.0,
+        "escuela": "Tecnología/Ingeniería",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 4,
+        "punto_equilibrio": 11,
+        "modulos_clave": ["Modelado Relacional", "Optimización de Consultas SQL"]
+    },
+    {
+        "pos_code": "POS-5905",
+        "nombre": "Diplomado en Urgencias y Emergencias Clínicas Quirúrgicas",
+        "version": 5,
+        "arancel_base_bs": 8900.0,
+        "escuela": "Salud",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 6,
+        "punto_equilibrio": 19,
+        "modulos_clave": ["Soporte Vital Avanzado", "Trauma Quirúrgico"]
+    },
+    {
+        "pos_code": "POS-5922",
+        "nombre": "Curso en Obstetricia Clínica Integral y Manejo de Emergencias",
+        "version": 1,
+        "arancel_base_bs": 4200.0,
+        "escuela": "Salud",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 3,
+        "punto_equilibrio": 15,
+        "modulos_clave": ["Control Prenatal", "Parto de Alto Riesgo"]
+    },
+    {
+        "pos_code": "POS-5919",
+        "nombre": "Diplomado en Análisis Clínico y Microbiología Laboratorial",
+        "version": 11,
+        "arancel_base_bs": 7800.0,
+        "escuela": "Salud",
+        "modalidad": "SEMIPRESENCIAL",
+        "modulos_count": 6,
+        "punto_equilibrio": 16,
+        "modulos_clave": ["Bacteriología Clínica", "Inmunodiagnóstico"]
+    },
+    {
+        "pos_code": "POS-5951",
+        "nombre": "Curso Tablas Dinámicas y Analítica en Microsoft Excel",
+        "version": 14,
+        "arancel_base_bs": 2500.0,
+        "escuela": "Tecnología/Ingeniería",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 2,
+        "punto_equilibrio": 14,
+        "modulos_clave": ["Power Query", "Dashboards Ejecutivos"]
+    },
+    {
+        "pos_code": "POS-5935",
+        "nombre": "Maestría en Gestión y Dirección de Empresas (MBA)",
+        "version": 3,
+        "arancel_base_bs": 16000.0,
+        "escuela": "Negocios",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 10,
+        "punto_equilibrio": 18,
+        "modulos_clave": ["Dirección Estratégica", "Finanzas Corporativas"]
+    },
+    {
+        "pos_code": "POS-5915",
+        "nombre": "Diplomado en Derecho Procesal Civil y Oralidad",
+        "version": 4,
+        "arancel_base_bs": 7000.0,
+        "escuela": "Leyes",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 5,
+        "punto_equilibrio": 16,
+        "modulos_clave": ["Audiencias Preliminares", "Recursos Ordinarios"]
+    },
+    {
+        "pos_code": "POS-5928",
+        "nombre": "Diplomado en Inteligencia Artificial y Machine Learning",
+        "version": 2,
+        "arancel_base_bs": 11500.0,
+        "escuela": "Tecnología/Ingeniería",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 6,
+        "punto_equilibrio": 15,
+        "modulos_clave": ["Deep Learning", "Procesamiento de Lenguaje Natural"]
+    },
+    {
+        "pos_code": "POS-5931",
+        "nombre": "Diplomado en Marketing Digital y Growth Hacking",
+        "version": 5,
+        "arancel_base_bs": 6800.0,
+        "escuela": "Negocios",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 5,
+        "punto_equilibrio": 14,
+        "modulos_clave": ["Performance Marketing", "Automatización de Embudos"]
+    },
+    {
+        "pos_code": "POS-5944",
+        "nombre": "Programa Experto en Ciberseguridad Defensiva",
+        "version": 2,
+        "arancel_base_bs": 8500.0,
+        "escuela": "Tecnología/Ingeniería",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 4,
+        "punto_equilibrio": 12,
+        "modulos_clave": ["SOC & SIEM", "Respuesta a Incidentes"]
+    },
+    {
+        "pos_code": "POS-5912",
+        "nombre": "Diplomado en Farmacología Clínica y Terapéutica",
+        "version": 6,
+        "arancel_base_bs": 7900.0,
+        "escuela": "Salud",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 5,
+        "punto_equilibrio": 17,
+        "modulos_clave": ["Farmacovigilancia", "Interacciones Medicamentosas"]
+    },
+    {
+        "pos_code": "POS-5925",
+        "nombre": "Diplomado en Educación Superior y Docencia Universitaria",
+        "version": 8,
+        "arancel_base_bs": 6200.0,
+        "escuela": "Ciencias Sociales",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 5,
+        "punto_equilibrio": 20,
+        "modulos_clave": ["Diseño Curricular por Competencias", "Evaluación de los Aprendizajes"]
+    },
+    {
+        "pos_code": "POS-5938",
+        "nombre": "Maestría en Finanzas Corporativas y Mercado de Valores",
+        "version": 2,
+        "arancel_base_bs": 15500.0,
+        "escuela": "Negocios",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 9,
+        "punto_equilibrio": 16,
+        "modulos_clave": ["Valoración de Empresas", "Instrumentos Derivados"]
+    },
+    {
+        "pos_code": "POS-5945",
+        "nombre": "Diplomado en Gestión de Proyectos Tecnológicos",
+        "version": 4,
+        "arancel_base_bs": 8000.0,
+        "escuela": "Tecnología/Ingeniería",
+        "modalidad": "VIRTUAL SINCRÓNICO",
+        "modulos_count": 5,
+        "punto_equilibrio": 15,
+        "modulos_clave": ["Metodologías Ágiles", "Gestión de Riesgos TI"]
+    }
+]
+
 
 _repositorio_singleton: Optional[CatalogRepository] = None
 
@@ -640,3 +878,9 @@ def obtener_catalogo_repositorio(
     if _repositorio_singleton is None:
         _repositorio_singleton = CatalogRepository(ruta_seed_sql)
     return _repositorio_singleton
+
+
+def obtener_resumen_institucional() -> Dict[str, Any]:
+    """Helper para obtener el resumen institucional del catálogo singleton."""
+    return obtener_catalogo_repositorio().obtener_resumen_institucional()
+

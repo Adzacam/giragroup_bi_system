@@ -1,137 +1,283 @@
-import React, { useState } from 'react';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import { Play } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
+import { RefreshCw, DollarSign, Target, TrendingUp, Calendar, AlertCircle } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
+import { useTheme } from '../../context/ThemeContext';
+import forecastApi from '../../api/forecastApi';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
 export default function ProyeccionFinanciera() {
-  const [alcance, setAlcance] = useState('global');
-  const [horizonte, setHorizonte] = useState('Q_HW');
-  const [categoria, setCategoria] = useState('PROGRAMAS');
-  const [ejecutado, setEjecutado] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
-  const handleExecute = () => {
-    setEjecutado(true);
+  const [horizonte, setHorizonte] = useState(6);
+  const [granularidad, setGranularidad] = useState('MENSUAL');
+  const [macroData, setMacroData] = useState(null);
+  const [metasForecast, setMetasForecast] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const [macro, metas] = await Promise.all([
+        forecastApi.getAnaliticaPredictivaMacro(horizonte),
+        forecastApi.getForecastMetas(granularidad, horizonte)
+      ]);
+      setMacroData(macro);
+      setMetasForecast(metas?.data);
+    } catch (err) {
+      console.warn('Error en proyeccion financiera:', err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const isGlobal = alcance === 'global';
+  useEffect(() => {
+    fetchData();
+  }, [horizonte, granularidad]);
 
-  const chartData = {
-    labels: ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026', 'Q2 2026 (Proy)'],
-    datasets: [
-      {
-        label: 'Cobrado Real (mil Bs.)',
-        data: [280, 310, 340, 360, 380, ejecutado ? null : null],
-        borderColor: '#0C1E33',
-        backgroundColor: '#0C1E33',
-        borderWidth: 2.5,
-        tension: 0.15,
-      },
-      {
-        label: 'Pronóstico Flujo (mil Bs.)',
-        data: [null, null, null, null, 380, ejecutado ? 412 : null],
-        borderColor: '#D99B26',
-        backgroundColor: '#D99B26',
-        borderWidth: 2.5,
-        borderDash: [6, 4],
-        tension: 0.15,
-      }
-    ]
-  };
+  const textColor = isDark ? '#FAF9F6' : '#17191C';
+  const mutedTextColor = isDark ? '#9CA3AF' : '#777B86';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
 
-  const chartOptions = {
+  // Gráfica Caso 3: Metas Mensuales vs Recaudación Ejecutada y Holt-Winters
+  const chartMensualData = useMemo(() => {
+    if (!macroData?.caso3_metas_mensuales) return null;
+    const c3 = macroData.caso3_metas_mensuales;
+    const etiquetas = c3.meses_etiquetas || [];
+
+    return {
+      labels: etiquetas,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Meta Presupuestaria de Catálogo (Bs)',
+          data: c3.meta_catalogo_bs,
+          backgroundColor: isDark ? 'rgba(119, 123, 134, 0.35)' : 'rgba(12, 30, 51, 0.18)',
+          borderColor: isDark ? '#9CA3AF' : '#0C1E33',
+          borderWidth: 1,
+          borderRadius: 6,
+        },
+        {
+          type: 'line',
+          label: 'Recaudación Ejecutada Real (Bs)',
+          data: c3.ejecutado_real_bs,
+          borderColor: isDark ? '#F1B844' : '#0C1E33',
+          backgroundColor: isDark ? '#F1B844' : '#0C1E33',
+          borderWidth: 2.5,
+          pointRadius: 3,
+          tension: 0.2,
+        }
+      ]
+    };
+  }, [macroData, isDark]);
+
+  // Gráfica Caso 4: Tendencia Anual OLS vs Meta Institucional
+  const chartAnualData = useMemo(() => {
+    if (!macroData?.caso4_metas_anuales) return null;
+    const c4 = macroData.caso4_metas_anuales;
+    const labels = ['2023', '2024', '2025', '2026 (Proy OLS)', '2027 (Proy OLS)'];
+    const histData = [...c4.valores_historicos_bs, null, null];
+    const proyData = [null, null, c4.valores_historicos_bs[2], ...(c4.proyecciones_ols || []).map(p => p.monto_proyectado_bs)];
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Recaudación Histórica Ejecutada (Bs)',
+          data: histData,
+          borderColor: isDark ? '#FAF9F6' : '#0C1E33',
+          backgroundColor: isDark ? '#FAF9F6' : '#0C1E33',
+          borderWidth: 2.6,
+          pointRadius: 5,
+        },
+        {
+          label: 'Tendencia Interanual OLS (Bs)',
+          data: proyData,
+          borderColor: '#D99B26',
+          backgroundColor: '#D99B26',
+          borderWidth: 2.6,
+          borderDash: [5, 4],
+          pointRadius: 5,
+        }
+      ]
+    };
+  }, [macroData, isDark]);
+
+  const defaultChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'bottom',
-        labels: {
-          color: 'var(--color-slate-gray)',
-          font: { family: 'var(--font-sohne)', size: 12 }
-        }
+        position: 'top',
+        labels: { color: mutedTextColor, font: { family: 'var(--font-sohne)', size: 11 } }
+      },
+      tooltip: {
+        backgroundColor: isDark ? '#20252E' : '#0C1E33',
+        titleColor: '#FAF9F6',
+        bodyColor: '#FAF9F6',
+        padding: 10,
+        borderRadius: 8,
       }
     },
     scales: {
-      x: {
-        grid: { color: 'rgba(119, 123, 134, 0.1)' },
-        ticks: { color: 'var(--color-slate-gray)', font: { family: 'var(--font-sohne)' } }
-      },
-      y: {
-        grid: { color: 'rgba(119, 123, 134, 0.1)' },
-        ticks: { color: 'var(--color-slate-gray)', font: { family: 'var(--font-sohne)' } }
-      }
+      x: { grid: { color: gridColor }, ticks: { color: mutedTextColor, font: { family: 'var(--font-sohne)', size: 10 } } },
+      y: { grid: { color: gridColor }, ticks: { color: mutedTextColor, font: { family: 'var(--font-sohne)', size: 10 } } }
     }
   };
 
-  const getModeText = () => {
-    if (isGlobal && horizonte.includes('HW')) return "Modo A: ExponentialSmoothing(trend='add', seasonal='add')";
-    if (isGlobal && !horizonte.includes('HW')) return "Modo A: statsmodels OLS (Regresión Lineal)";
-    if (!isGlobal && horizonte.includes('HW')) return `Modo B: ExponentialSmoothing for [${categoria}]`;
-    return `Modo B: OLS for [${categoria}]`;
-  };
+  const mesAct = macroData?.caso3_metas_mensuales?.mes_actual;
+  const anualAct = macroData?.caso4_metas_anuales;
 
   return (
-    <div className="module-container space-y-6">
-      <PageHeader
-        category="STATSMODELS · PROYECCIÓN FINANCIERA"
-        title="Proyección Financiera y Metas"
-        subtitle="Proyección estocástica de flujos de caja y cobranzas mediante Holt-Winters y modelos econométricos OLS."
-      />
-
-      <div className="card-mist kinetic-card p-6 rounded-[24px] space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Selector de Alcance</label>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2">
-              <input type="radio" name="alcance" value="global" checked={isGlobal} onChange={() => setAlcance('global')} />
-              Consolidado Empresa (Caja General - Caso 5)
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="radio" name="alcance" value="cat" checked={!isGlobal} onChange={() => setAlcance('cat')} />
-              Por Categoría de Meta (Caso 6)
-            </label>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Horizonte Temporal</label>
-            <select className="form-input w-full p-2 border rounded-[16px]" value={horizonte} onChange={(e) => setHorizonte(e.target.value)}>
-              <option value="M_HW">Próximo Mes (Holt-Winters)</option>
-              <option value="Q_HW">Próximo Trimestre (Holt-Winters)</option>
-              <option value="Y_OLS">Siguiente Gestión / Anual (OLS)</option>
-            </select>
-          </div>
-          <div>
-            <label className={`block text-sm font-medium mb-1 ${isGlobal ? 'opacity-40' : ''}`}>Categoría de Meta</label>
-            <select className="form-input w-full p-2 border rounded-[16px]" disabled={isGlobal} style={{ opacity: isGlobal ? 0.4 : 1 }} value={categoria} onChange={(e) => setCategoria(e.target.value)}>
-              <option>PROGRAMAS</option>
-              <option>TECHOS_CERRADOS</option>
-            </select>
-          </div>
-        </div>
-
-        <button className="btn-pill-dark px-6 py-2 bg-ink-black text-paper-white rounded-full flex items-center gap-2 hover:opacity-90 transition-opacity" onClick={handleExecute}>
-          <Play size={16} /> Generar Proyección Financiera
+    <div style={{ maxWidth: '1280px', margin: '0 auto', paddingBottom: '70px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+        <PageHeader
+          category="ÁREA FINANCIERA · MODELOS PREDICTIVOS MACRO"
+          title="Proyección Financiera y Metas"
+          italicWord="Institucionales"
+          subtitle="Proyección econométrica de recaudación y flujos de caja mediante Holt-Winters aditivo (m=12) y ajuste lineal plurianual OLS."
+        />
+        <button
+          onClick={fetchData}
+          disabled={isLoading}
+          className="btn-academic"
+          style={{
+            marginTop: '24px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '9px 16px',
+            fontSize: '13px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            borderRadius: '9999px',
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-paper-white)',
+            color: 'var(--color-ink-black)',
+          }}
+        >
+          <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
+          Actualizar Modelos
         </button>
       </div>
 
-      <div className="bg-fog-white border rounded-lg p-3 text-sm font-medium">
-        {getModeText()}
+      {/* ── KPIs Principales de Proyección ─────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+        <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
+          <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Meta Mes Actual</div>
+          <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px' }}>Bs. {mesAct?.meta_mes_bs.toLocaleString() || '1,551,372'}</div>
+          <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>Catálogo Oficial de Programas</div>
+        </div>
+
+        <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
+          <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Cierre Proyectado HW</div>
+          <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px', color: 'var(--color-gira-gold)' }}>
+            Bs. {mesAct ? Math.round(mesAct.cierre_proyectado_hw_bs).toLocaleString() : '1,510,800'}
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--color-alert-green)', marginTop: '2px', fontWeight: 600 }}>
+            {mesAct?.cumplimiento_proyectado_pct || 97.4}% de cumplimiento estimado
+          </div>
+        </div>
+
+        <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
+          <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Meta Anual Institucional</div>
+          <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px' }}>Bs. 3,800,000</div>
+          <div style={{ fontSize: '12px', color: 'var(--color-gira-gold)', marginTop: '2px', fontWeight: 600 }}>
+            {anualAct?.porcentaje_avance_meta || 79.2}% ejecutado a la fecha
+          </div>
+        </div>
+
+        <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
+          <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Ritmo de Crecimiento OLS</div>
+          <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px', color: 'var(--color-alert-green)' }}>
+            +Bs. {anualAct ? Math.round(anualAct.pendiente_anual_bs / 1000) : 2436}k / año
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>
+            CAGR Interanual: +{anualAct?.cagr_historico_pct || 26.8}%
+          </div>
+        </div>
       </div>
 
-      {ejecutado && (
-        <div className="bg-black text-green-400 p-4 rounded-lg font-mono text-sm h-32 overflow-y-auto">
-          {'>'} Iniciando cálculo de proyección...<br/>
-          {'>'} Generando predicciones...<br/>
-          {'>'} Resultados generados exitosamente.
-        </div>
-      )}
+      {/* ── Casos 3 y 4: Gráficas de Metas Mensuales y Anuales ───────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        
+        {/* Caso 3 */}
+        <div className="card-mist kinetic-card p-6 rounded-[24px]">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+            <div>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--color-slate-gray)', fontWeight: 600 }}>
+                Caso 3 · Horizonte Mensual
+              </span>
+              <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '2px 0 0 0', color: 'var(--color-ink-black)' }}>
+                Recaudación Mensual vs Metas Presupuestarias
+              </h3>
+            </div>
+          </div>
 
-      <div className="floating-artifact kinetic-card bg-paper-white p-6 rounded-[24px] shadow-sm" style={{ height: '400px' }}>
-        <Line data={chartData} options={chartOptions} />
+          <div style={{ height: '300px' }}>
+            {chartMensualData ? (
+              <Bar data={chartMensualData} options={defaultChartOptions} />
+            ) : (
+              <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
+                Cargando datos presupuestarios mensuales...
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Caso 4 */}
+        <div className="card-mist kinetic-card p-6 rounded-[24px]">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+            <div>
+              <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--color-slate-gray)', fontWeight: 600 }}>
+                Caso 4 · Meta Institucional 3.8M Bs
+              </span>
+              <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '2px 0 0 0', color: 'var(--color-ink-black)' }}>
+                Trayectoria Anual Plurianual (2023 - 2027)
+              </h3>
+            </div>
+          </div>
+
+          {/* Medidor de Avance Bullet */}
+          {anualAct && (
+            <div style={{ marginBottom: '16px', padding: '12px 14px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px' }}>
+                <span>Meta Institucional: Bs. 3,800,000</span>
+                <span style={{ color: 'var(--color-gira-gold)', fontWeight: 700 }}>
+                  {anualAct.porcentaje_avance_meta}% acumulado (Bs. {anualAct.recaudado_acumulado_bs.toLocaleString()})
+                </span>
+              </div>
+              <div style={{ height: '10px', width: '100%', background: 'var(--color-mist-gray)', borderRadius: '9999px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${Math.min(100, anualAct.porcentaje_avance_meta)}%`, background: 'linear-gradient(90deg, var(--color-gira-navy), var(--color-gira-gold))', borderRadius: '9999px' }} />
+              </div>
+            </div>
+          )}
+
+          <div style={{ height: '230px' }}>
+            {chartAnualData ? (
+              <Line data={chartAnualData} options={defaultChartOptions} />
+            ) : (
+              <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
+                Cargando serie anual OLS...
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

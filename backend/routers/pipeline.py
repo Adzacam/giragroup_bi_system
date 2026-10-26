@@ -67,24 +67,20 @@ async def process_pipeline(
                 detail=f"Formato no soportado: '{ext}'. Formatos válidos: .xlsx, .xls, .csv"
             )
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
-            contenido = await file.read()
-            tmp.write(contenido)
-            tmp_path = tmp.name
-
-        try:
-            res_ingesta = IngestionService.procesar_archivo(db, tmp_path, nombre_archivo)
-            doc_id = res_ingesta["doc_id"]
-        finally:
-            if os.path.exists(tmp_path):
-                os.remove(tmp_path)
+        contenido = await file.read()
+        res_ingesta = IngestionService.procesar_archivo(
+            db=db,
+            ruta_o_bytes=contenido,
+            filename=nombre_archivo
+        )
+        doc_id = res_ingesta.get("id_documento") or res_ingesta.get("doc_id")
     else:
         # Verificar que el doc_id exista
         doc = db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento == doc_id).first()
         if not doc:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Documento con ID {doc_id} no encontrado en dim_origen_documental."
+                detail=f"Documento con ID {doc_id} no encontrado en el registro de Origen Documental y Lotes."
             )
         nombre_archivo = doc.nombre_archivo
 

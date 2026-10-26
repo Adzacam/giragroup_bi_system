@@ -1,6 +1,7 @@
 :root {
   /* ── Paleta Institucional Oficial GIRA Group ── */
   --color-gira-navy: #0C1E33;
+  --color-navy-deep: #0C1E33;
   --color-gira-gold: #D99B26;
   --color-gira-gold-light: #F1B844;
   --color-ink-black: #17191C;
@@ -51,6 +52,7 @@
   --color-gira-gold: #F1B844;
   --color-gira-gold-light: #F6C866;
   --color-ink-black: #FAF9F6;
+  --color-navy-deep: #FAF9F6;
   --color-alabaster: #161920;
   --color-pure-white: #161920;
   --color-paper-white: #161920;
@@ -422,6 +424,11 @@ em, i, cite, .serif-heading em, .serif-display em {
   background-color: var(--color-mist-gray);
   color: var(--color-ash-gray);
   cursor: not-allowed;
+}
+
+.form-input::placeholder {
+  color: var(--color-slate-gray);
+  opacity: 0.75;
 }
 
 .steep-table {
@@ -1404,6 +1411,10 @@ em, i, cite, .serif-heading em, .serif-display em {
   background: #1a1e26;
   border-color: #242a35;
   color: #6b7280;
+}
+[data-theme="dark"] .form-input::placeholder {
+  color: #6b7280;
+  opacity: 0.75;
 }
 
 [data-theme="dark"] .steep-table th {

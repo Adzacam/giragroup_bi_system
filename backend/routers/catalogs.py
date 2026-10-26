@@ -164,7 +164,7 @@ def delete_docente(
 def get_modulos(
     q: Optional[str] = Query(None, description="Búsqueda por nombre o código POS", max_length=100),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "ADMIN"]))
+    current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "ADMIN", "ANALISTA_MARKETING"]))
 ):
     service = CatalogService(db)
     return service.listar_modulos(busqueda=q)
@@ -212,6 +212,26 @@ def get_instituciones(
 ):
     service = CatalogService(db)
     return service.listar_instituciones(busqueda=q)
+
+
+@router.get(
+    "/catalogs/institutional-summary",
+    summary="Resumen del Catálogo Maestro Institucional Estático (18 Programas Activos, Cero PII)"
+)
+def get_institutional_summary(
+    current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "ADMIN", "COORDINADOR_ACADEMICO", "ANALISTA_DATOS_MARKETING", "ANALISTA_MARKETING"]))
+):
+    """
+    Retorna el resumen del Catálogo Maestro Institucional Estático de GiraGroup BI:
+    - 18 programas canónicos activos
+    - Aranceles base (precios de referencia)
+    - Módulos curriculares y puntos de equilibrio
+    - Convenios y metas presupuestarias
+    - Garantía estricta de Cero PII (sin datos de estudiantes).
+    """
+    from pipeline.normalization.catalog_repository import obtener_catalogo_repositorio
+    repo = obtener_catalogo_repositorio()
+    return repo.obtener_resumen_institucional()
 
 
 # ── Catálogos Maestros Financieros con Soporte Histórico ──────────────

@@ -82,6 +82,11 @@ class BatchUploadItem(BaseModel):
     status: str
     mensaje: Optional[str] = None
     pipeline_result: Optional[PipelineResult] = None
+    diagnostico_estructural: Optional[Dict[str, Any]] = None
+    chips_catalogo: Optional[Dict[str, Any]] = None
+    origen_detectado: Optional[str] = None
+    rango_fechas: Optional[str] = None
+    fechas_reconocidas: Optional[List[str]] = None
 
 class BatchUploadResponse(BaseModel):
     status: str

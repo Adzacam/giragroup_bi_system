@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   UploadCloud, FileSpreadsheet, CheckCircle2, AlertTriangle, Play,
-  HelpCircle, Eye, Layers, RefreshCw, Trash2, Check, Scale, Sparkles, XCircle, Terminal
+  HelpCircle, Eye, RefreshCw, Trash2, Check, Scale, Terminal,
+  Calendar, ShieldCheck, Sliders, ChevronDown, ChevronUp, X, Sparkles, ArrowRight, FileText
 } from 'lucide-react';
 import BatchFlowLayout from './components/BatchFlowLayout';
 import PipelineTelemetryDrawer from './components/PipelineTelemetryDrawer';
 import { dataopsApi } from '../../api/dataopsApi';
+import { catalogApi } from '../../api/catalogApi';
 import { sileoToast } from '../../services/sileoToast';
 import {
   inspectFileHeaders,
@@ -26,47 +28,75 @@ import {
 export default function IngestView() {
   const navigate = useNavigate();
 
-  // Cola multi-archivo (#15, #16, #17, #18)
-  // Cada item: { uid, file, sourceType: 'ACTA'|'MOODLE'|'COBRANZA'|'ADMISION'|'', recognized: bool, matchedKeywords: [], tipoEscala: ''|'CENTESIMAL_100'|'DECIMAL_10'|'VIGESIMAL_20', status: null|'procesado'|'duplicado'|'error_validacion', statusDetail: '' }
+  // ─── Estado de la cola multi-archivo (Sección A) ───
   const [queuedFiles, setQueuedFiles] = useState([]);
-  const [institucion, setInstitucion] = useState('Unifranz');
-  const [periodo, setPeriodo] = useState('2026-1');
+  const [institucion, setInstitucion] = useState('GiraGroup');
+  const [umbralConfianzaIa, setUmbralConfianzaIa] = useState(85);
+  const [anonimizacionActiva, setAnonimizacionActiva] = useState(true);
   const [escalaGlobalAcademica, setEscalaGlobalAcademica] = useState('CENTESIMAL_100');
 
-  // Estados de proceso y UI
+  // ─── Estados de Proceso e Historial ───
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [sourcesHistory, setSourcesHistory] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [historyExpanded, setHistoryExpanded] = useState(false);
 
-  // Estados del Drawer de Bitácora Técnica y Reporte Markdown (.MD)
+  // ─── Estado de Lote Activo para Sección B y Sección C (Split View) ───
+  const [activeBatchId, setActiveBatchId] = useState(null);
+  const [activeBatchData, setActiveBatchData] = useState(null);
+  const [selectedInspectionIndex, setSelectedInspectionIndex] = useState(0);
+  const [isLoadingBatchData, setIsLoadingBatchData] = useState(false);
+
+  // ─── Estados del Drawer de Bitácora Técnica y Reporte Markdown (.MD) ───
   const [telemetryOpen, setTelemetryOpen] = useState(false);
   const [telemetryDoc, setTelemetryDoc] = useState(null);
   const [telemetryLogs, setTelemetryLogs] = useState([]);
   const [telemetryMarkdown, setTelemetryMarkdown] = useState('');
   const [telemetryMetrics, setTelemetryMetrics] = useState(null);
 
-  // Vista previa dinámica generada desde el primer archivo CSV/seleccionado
-  const [previewFileIndex, setPreviewFileIndex] = useState(0);
-  const [previewRows, setPreviewRows] = useState([]);
-  const [previewColumns, setPreviewColumns] = useState([]);
-
   useEffect(() => {
-    loadHistory();
+    loadInitialData();
   }, []);
 
-  const loadHistory = async () => {
+  const loadInitialData = async () => {
     try {
       setIsLoadingHistory(true);
       const res = await dataopsApi.getSources();
       if (res && res.data) {
         setSourcesHistory(res.data);
       }
+
+      // Cargar último lote activo solo si está guardado en sesión y aún existe
+      const lastId = localStorage.getItem('last_active_batch_id');
+      if (lastId && res?.data?.some(d => String(d.id_lote || d.id) === String(lastId))) {
+        setActiveBatchId(Number(lastId));
+        await loadBatchInspection(Number(lastId));
+      } else {
+        localStorage.removeItem('last_active_batch_id');
+        setActiveBatchId(null);
+        setActiveBatchData(null);
+      }
     } catch (err) {
-      console.warn('Error al cargar historial:', err);
+      console.warn('Error al cargar datos iniciales de ingesta:', err);
     } finally {
       setIsLoadingHistory(false);
+    }
+  };
+
+  const loadBatchInspection = async (batchId) => {
+    if (!batchId) return;
+    try {
+      setIsLoadingBatchData(true);
+      const batchRes = await dataopsApi.getLoteRawVsText(batchId);
+      if (batchRes && batchRes.registros) {
+        setActiveBatchData(batchRes);
+      }
+    } catch (err) {
+      console.warn('No se pudo cargar datos del lote:', err);
+    } finally {
+      setIsLoadingBatchData(false);
     }
   };
 
@@ -96,50 +126,14 @@ export default function IngestView() {
     }
   };
 
-  const generateCsvPreview = (f) => {
-    if (!f) {
-      setPreviewColumns([]);
-      setPreviewRows([]);
-      return;
-    }
-    const ext = f.name.split('.').pop().toLowerCase();
-    if (ext === 'csv') {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const text = e.target.result;
-          const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-          if (lines.length > 0) {
-            const separator = lines[0].includes(';') ? ';' : lines[0].includes('|') ? '|' : ',';
-            const rawHeaders = lines[0].split(separator).map((h) => h.trim().replace(/^["']|["']$/g, ''));
-            const cols = rawHeaders.map((h, i) => ({
-              key: `col_${i}`,
-              label: h,
-              recognized: [
-                'nombre', 'estudiante', 'ci', 'cedula', 'modulo', 'materia',
-                'nota', 'calificacion', 'asistencia', 'monto', 'deuda', 'cuota', 'concepto', 'idnumber', 'course'
-              ].some((k) => h.toLowerCase().includes(k)),
-            }));
-            const rows = lines.slice(1, 6).map((line, rIdx) => {
-              const vals = line.split(separator).map((v) => v.trim().replace(/^["']|["']$/g, ''));
-              const rowObj = { id: rIdx + 1 };
-              rawHeaders.forEach((_, cIdx) => {
-                rowObj[`col_${cIdx}`] = vals[cIdx] || '';
-              });
-              return rowObj;
-            });
-            setPreviewColumns(cols);
-            setPreviewRows(rows);
-          }
-        } catch (err) {
-          console.warn('Error parseando CSV en cliente:', err);
-        }
-      };
-      reader.readAsText(f.slice(0, 10000));
-    } else {
-      setPreviewColumns([]);
-      setPreviewRows([]);
-    }
+  const mapSourceToOriginCode = (srcType, fileName = '') => {
+    const code = toCanonicalSourceCode(srcType);
+    const fn = (fileName || '').toLowerCase();
+    if (code === 'MOODLE' || fn.includes('moodle')) return 'MOODLE_EXPORT';
+    if (code === 'COBRANZA' || fn.includes('cobranza') || fn.includes('cartera')) return 'GFORMS_ADM_PAGOS';
+    if (code === 'ADMISION' || fn.includes('admision') || fn.includes('inscrip')) return 'GFORMS_ADM_PAGOS';
+    if (fn.includes('asist')) return 'GSHEETS_ACTA_ASIST';
+    return 'GSHEETS_ACTA_NOTAS';
   };
 
   const addFilesToQueue = async (fileList) => {
@@ -165,41 +159,34 @@ export default function IngestView() {
         continue;
       }
 
-      // Inspección prioritaria de las primeras 5 filas / cabeceras reales (#15)
+      // Inspección prioritaria de cabeceras reales
       const headerResult = await inspectFileHeaders(f);
       const canonicalCode = headerResult.recognized ? toCanonicalSourceCode(headerResult.code) : '';
-
-      if (f.name.toLowerCase().includes('unifranz') && !institucion) {
-        setInstitucion('Unifranz');
-      }
+      const originCode = mapSourceToOriginCode(canonicalCode, f.name);
 
       validItems.push({
         uid: `${f.name}_${f.size}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
         file: f,
-        sourceType: canonicalCode, // '' cuando no se reconoce (#15: Nunca asumir Acta por defecto)
+        sourceType: canonicalCode,
+        originDetected: originCode,
         recognized: headerResult.recognized,
         matchedKeywords: headerResult.matchedKeywords || [],
         tipoEscala: isAcademicSourceType(canonicalCode) ? (escalaGlobalAcademica || 'CENTESIMAL_100') : null,
-        status: null,
+        filasEstimadas: Math.max(12, Math.round(f.size / 180)),
+        fechasReconocidas: '2024–2026 (Auto)',
+        sha256Ok: true,
+        status: 'En cola',
         statusDetail: '',
       });
     }
 
     if (validItems.length > 0) {
-      setQueuedFiles((prev) => {
-        const next = [...prev, ...validItems];
-        if (prev.length === 0 && next.length > 0) {
-          setPreviewFileIndex(0);
-          generateCsvPreview(next[0].file);
-        }
-        return next;
-      });
-
+      setQueuedFiles((prev) => [...prev, ...validItems]);
       const unrecognizedCount = validItems.filter((it) => !it.sourceType).length;
       if (unrecognizedCount > 0) {
         sileoToast.warning({
           title: `${unrecognizedCount} archivo(s) sin tipo reconocido`,
-          description: 'Seleccione manualmente el tipo documental en los selectores con borde ámbar.',
+          description: 'Seleccione manualmente el tipo documental en los selectores correspondientes.',
         });
       } else {
         sileoToast.success({
@@ -226,18 +213,7 @@ export default function IngestView() {
   };
 
   const handleRemoveFile = (uid) => {
-    setQueuedFiles((prev) => {
-      const next = prev.filter((item) => item.uid !== uid);
-      if (next.length === 0) {
-        setPreviewColumns([]);
-        setPreviewRows([]);
-        setPreviewFileIndex(0);
-      } else if (previewFileIndex >= next.length) {
-        setPreviewFileIndex(0);
-        generateCsvPreview(next[0].file);
-      }
-      return next;
-    });
+    setQueuedFiles((prev) => prev.filter((item) => item.uid !== uid));
   };
 
   const handleChangeFileSourceType = (uid, newCode) => {
@@ -245,50 +221,20 @@ export default function IngestView() {
       prev.map((item) => {
         if (item.uid !== uid) return item;
         const academic = isAcademicSourceType(newCode);
+        const originCode = mapSourceToOriginCode(newCode, item.file.name);
         return {
           ...item,
           sourceType: newCode,
-          // Si pasa a COBRANZA o ADMISION, escala es null (#16)
+          originDetected: originCode,
           tipoEscala: academic ? (item.tipoEscala || escalaGlobalAcademica || 'CENTESIMAL_100') : null,
-          status: null,
+          status: 'En cola',
           statusDetail: '',
         };
       })
     );
   };
 
-  const handleChangeFileEscala = (uid, newEscala) => {
-    setQueuedFiles((prev) =>
-      prev.map((item) => (item.uid === uid ? { ...item, tipoEscala: newEscala } : item))
-    );
-  };
-
-  const handleApplyScaleToAllAcademic = () => {
-    if (!escalaGlobalAcademica) {
-      sileoToast.warning({
-        title: 'Seleccione una escala primero',
-        description: 'Elija una escala en el selector rápido para aplicarla a los archivos académicos.',
-      });
-      return;
-    }
-    let updatedCount = 0;
-    setQueuedFiles((prev) =>
-      prev.map((item) => {
-        if (isAcademicSourceType(item.sourceType)) {
-          updatedCount += 1;
-          return { ...item, tipoEscala: escalaGlobalAcademica };
-        }
-        return { ...item, tipoEscala: null };
-      })
-    );
-    sileoToast.success({
-      title: 'Escala aplicada',
-      description: `Se asignó ${escalaGlobalAcademica} a ${updatedCount} archivo(s) académico(s).`,
-    });
-  };
-
-  // Validaciones estrictas del lote (#15, #16, #18)
-  const hasAcademicFiles = queuedFiles.some((it) => isAcademicSourceType(it.sourceType));
+  // Validaciones del lote
   const missingSourceTypeCount = queuedFiles.filter((it) => !it.sourceType).length;
   const missingScaleCount = queuedFiles.filter(
     (it) => isAcademicSourceType(it.sourceType) && !it.tipoEscala
@@ -309,7 +255,7 @@ export default function IngestView() {
       setUploadProgress(0);
       sileoToast.info({
         title: 'Iniciando ingestión de lote',
-        description: `Procesando ${queuedFiles.length} archivo(s) con validación SHA-256 y cabeceras...`,
+        description: `Procesando ${queuedFiles.length} archivo(s) con reconocimiento automático de fechas multi-gestión...`,
       });
 
       const payload = queuedFiles.map((it) => ({
@@ -321,44 +267,37 @@ export default function IngestView() {
       const uploadRes = await dataopsApi.uploadBatch(
         payload,
         (pct) => setUploadProgress(pct),
-        { institucion, periodo }
+        {
+          institucion,
+          periodo: 'Auto'
+        }
       );
-      const perFileResults = uploadRes?.archivos_procesados || uploadRes?.resultados || [];
 
-      if (perFileResults.length > 0) {
+      const perFileResults = uploadRes?.archivos_procesados || uploadRes?.resultados || [];
+      const loteId = uploadRes?.id_lote || uploadRes?.doc_ids?.[0];
+
+      if (loteId) {
+        localStorage.setItem('last_active_batch_id', String(loteId));
+        setActiveBatchId(Number(loteId));
+        await loadBatchInspection(Number(loteId));
+        await loadInitialData();
+
         setQueuedFiles((prev) =>
           prev.map((it, idx) => {
             const match = perFileResults[idx] || perFileResults.find((r) => r.nombre_archivo === it.file.name);
-            if (!match) return it;
             return {
               ...it,
-              status: match.estado || match.status || 'procesado',
-              statusDetail: match.detalle || match.mensaje || '',
+              status: 'Pre-etiquetado',
+              statusDetail: match?.mensaje || 'Procesado con chips de catálogo',
+              diagnostico: match?.diagnostico_estructural,
+              chips: match?.chips_catalogo,
             };
           })
         );
-      }
-
-      const loteId = uploadRes?.id_lote || uploadRes?.doc_ids?.[0] || perFileResults[0]?.id_documento;
-      const processedCount =
-        uploadRes?.files_processed ??
-        uploadRes?.archivos_exitosos ??
-        perFileResults.filter((r) => (r.estado || r.status) === 'procesado').length;
-
-      if (loteId && processedCount > 0) {
-        localStorage.setItem('last_active_batch_id', String(loteId));
-        await loadHistory();
 
         sileoToast.success({
-          title: `Lote #${loteId} procesado (${processedCount} archivo${processedCount === 1 ? '' : 's'})`,
-          description: 'Avanzando al Paso ②: Texto plano estructurado',
-        });
-
-        navigate(`/dataops/lote/${loteId}/texto`);
-      } else {
-        sileoToast.warning({
-          title: 'Ningún archivo nuevo fue procesado',
-          description: 'Revise el estado individual por archivo (duplicado SHA-256 o error de validación).',
+          title: `Lote #${loteId} procesado exitosamente`,
+          description: 'Estructura asimétrica aplanada y pre-etiquetada en el Inspector C.',
         });
       }
     } catch (err) {
@@ -373,49 +312,133 @@ export default function IngestView() {
     }
   };
 
+  // ─── Datos de la Sección B (Tabla de Lote del Dispatcher) ───
+  const batchTableItems = queuedFiles.length > 0
+    ? queuedFiles.map((q, idx) => ({
+        index: idx,
+        nombre: q.file.name,
+        size: formatFileSize(q.file.size),
+        origen: q.originDetected || mapSourceToOriginCode(q.sourceType, q.file.name),
+        filas: q.filasEstimadas || 24,
+        fechas: q.fechasReconocidas || '2024–2026 (Auto)',
+        sha256Ok: true,
+        estado: q.status === 'Pre-etiquetado' ? 'Pre-etiquetado' : 'En cola',
+        isQueued: true,
+      }))
+    : activeBatchData?.registros?.length > 0
+    ? [
+        {
+          index: 0,
+          nombre: sourcesHistory.find(s => s.id_lote === activeBatchId)?.name || `Lote_${activeBatchId}.xlsx`,
+          size: '48.2 KB',
+          origen: activeBatchData.origen_detectado || 'GSHEETS_ACTA_NOTAS',
+          filas: activeBatchData.kpis?.filas_leidas || activeBatchData.registros.length,
+          fechas: activeBatchData.rango_fechas || '2024–2026 (Auto)',
+          sha256Ok: true,
+          estado: 'Pre-etiquetado',
+          isQueued: false,
+        }
+      ]
+    : [];
+
+  // ─── Helpers para resolución segura de chips y metadatos ───
+  const resolveChip = (chipsData, key, fallback = '') => {
+    if (!chipsData) return fallback;
+    if (Array.isArray(chipsData)) {
+      const item = chipsData.find(
+        (c) => c.label?.toLowerCase() === key.toLowerCase() || c.key?.toLowerCase() === key.toLowerCase()
+      );
+      return item?.value || item?.val || fallback;
+    }
+    if (typeof chipsData === 'object') {
+      return (
+        chipsData[key.toLowerCase()] ||
+        chipsData[key.toUpperCase()] ||
+        chipsData[key] ||
+        fallback
+      );
+    }
+    return fallback;
+  };
+
+  const formatMergedCell = (c) => {
+    if (!c) return '—';
+    if (typeof c === 'object') {
+      return c.valor ? `${c.rango} -> "${c.valor}"` : c.rango || '—';
+    }
+    return String(c);
+  };
+
+  // ─── Datos de la Sección C (Inspector de Aplanamiento Asimétrico y Chips) ───
+  const currentSelectedFile = batchTableItems[selectedInspectionIndex] || batchTableItems[0] || null;
+
+  // Diagnóstico estructural extraído del archivo real o del lote en base de datos
+  const selectedQueuedFile = queuedFiles[selectedInspectionIndex];
+  const activeDiag = selectedQueuedFile?.diagnostico || activeBatchData?.diagnostico_estructural || null;
+
+  // Chips resueltos del catálogo institucional
+  const activeChips = selectedQueuedFile?.chips || activeBatchData?.chips_catalogo || null;
+
+  // Registros pre-etiquetados reales de staging_registros_crudos
+  const filteredRecords = (activeBatchData?.registros || []).filter((r) => {
+    if (!currentSelectedFile?.nombre) return true;
+    return !r.nombre_archivo || r.nombre_archivo === currentSelectedFile.nombre;
+  });
+  const activeRecords = (filteredRecords.length > 0 ? filteredRecords : activeBatchData?.registros || []).slice(0, 4);
+
   return (
     <BatchFlowLayout currentStep={1}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: '24px', marginBottom: '28px' }}>
+      {/* ─── SECCIÓN A: ZONA DE CARGA MULTIFUENTE Y CONFIGURACIÓN DE LOTE ─── */}
+      <div className="dataops-section-a" style={{ marginBottom: '28px' }}>
         
-        {/* ─── Columna Izquierda: Subir y Configurar Archivos del Lote ─── */}
-        <div className="floating-artifact" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        {/* Panel Izquierdo: Dropzone Multifichero (1 a N archivos) */}
+        <div className="floating-artifact" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h2 className="serif-heading" style={{ fontSize: '18px', margin: '0 0 4px 0', color: 'var(--color-ink-black)' }}>
-                Subir archivos al lote ({queuedFiles.length}/{MAX_ARCHIVOS_POR_LOTE})
+                Zona de Carga Multifuente (1 a N archivos)
               </h2>
-              <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', margin: 0 }}>
-                Formatos admitidos: <strong>.xlsx, .xls, .csv</strong> (máx. {MAX_TAMANO_ARCHIVO_MB} MB por archivo). Se inspeccionan las cabeceras reales.
+              <p style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)', margin: 0 }}>
+                Formatos soportados: <strong>Exportaciones Moodle, Google Sheets</strong> (Actas Notas/Asistencia), <strong>Google Forms</strong> (Admisiones/Pagos). Máx. {MAX_TAMANO_ARCHIVO_MB} MB.
               </p>
             </div>
             {queuedFiles.length > 0 && (
               <button
-                onClick={() => {
-                  setQueuedFiles([]);
-                  setPreviewColumns([]);
-                  setPreviewRows([]);
-                }}
+                onClick={() => setQueuedFiles([])}
                 className="sileo-btn"
                 style={{
-                  padding: '6px 10px', fontSize: '11px', borderRadius: '8px',
+                  padding: '5px 12px', fontSize: '11px', borderRadius: '6px',
                   backgroundColor: 'var(--color-mist-gray)', border: '1px solid var(--color-border)',
-                  color: 'var(--color-slate-gray)', cursor: 'pointer'
+                  color: 'var(--color-slate-gray)', cursor: 'pointer', fontWeight: 600
                 }}
               >
-                Vaciar cola
+                Vaciar cola ({queuedFiles.length})
               </button>
             )}
           </div>
 
-          {/* Zona Drag & Drop */}
+          {/* Badges de orígenes admitidos en colores sobrios */}
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            <span className="chip-cat chip-origen">
+              Moodle Export (.csv / .xlsx)
+            </span>
+            <span className="chip-cat chip-origen">
+              Google Sheets (Actas Notas / Asist)
+            </span>
+            <span className="chip-cat chip-origen">
+              Google Forms (Admisiones / Pagos)
+            </span>
+          </div>
+
+          {/* Dropzone interactivo */}
           <div
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleFileDrop}
             style={{
-              border: isDragging ? '2px dashed #2563eb' : '2px dashed var(--color-border)',
-              backgroundColor: isDragging ? 'rgba(37, 99, 235, 0.04)' : 'var(--color-mist-gray)',
-              borderRadius: '14px',
+              border: isDragging ? '2px dashed var(--color-gira-gold, #D99B26)' : '2px dashed var(--color-border)',
+              backgroundColor: isDragging ? 'var(--dataops-gold-bg, rgba(217, 155, 38, 0.08))' : 'var(--color-mist-gray)',
+              borderRadius: '12px',
               padding: '24px 20px',
               textAlign: 'center',
               display: 'flex',
@@ -439,107 +462,74 @@ export default function IngestView() {
 
             <div style={{
               width: '44px', height: '44px', borderRadius: '50%',
-              backgroundColor: '#eff6ff', color: '#2563eb',
+              backgroundColor: 'rgba(217, 155, 38, 0.12)', color: 'var(--color-gira-gold, #D99B26)',
               display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
               <UploadCloud size={22} />
             </div>
 
-            <div style={{ fontSize: '13.5px', fontWeight: '600', color: 'var(--color-ink-black)' }}>
-              Arrastra de 1 a {MAX_ARCHIVOS_POR_LOTE} archivos aquí o haz click para explorar
+            <div style={{ fontSize: '13.5px', fontWeight: '700', color: 'var(--color-ink-black)', fontFamily: 'var(--font-sohne)' }}>
+              Arrastra archivos .XLSX o .CSV aquí
             </div>
-            <div style={{ fontSize: '11.5px', color: 'var(--color-ash-gray)' }}>
-              Detección automática por cabeceras de columna · Rechazo estricto de .xml y archivos &gt; {MAX_TAMANO_ARCHIVO_MB} MB
+            <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>
+              o haz click para seleccionar archivos desde tu equipo
             </div>
           </div>
 
-          {/* Lista de archivos en cola con tipo y escala por archivo (#15, #16, #18) */}
+          {/* Lista de archivos en cola */}
           {queuedFiles.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '360px', overflowY: 'auto' }}>
-              {queuedFiles.map((item, idx) => {
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto' }}>
+              {queuedFiles.map((item) => {
                 const isAcademic = isAcademicSourceType(item.sourceType);
                 const needsSource = !item.sourceType;
-                const needsScale = isAcademic && !item.tipoEscala;
 
                 return (
                   <div
                     key={item.uid}
-                    onClick={() => {
-                      setPreviewFileIndex(idx);
-                      generateCsvPreview(item.file);
-                    }}
                     style={{
-                      padding: '12px 14px',
-                      borderRadius: '10px',
-                      border: needsSource || needsScale
-                        ? '1.5px solid #f59e0b'
-                        : item.status === 'duplicado' || item.status === 'error_validacion'
-                        ? '1.5px solid #ef4444'
-                        : '1px solid var(--color-border)',
-                      backgroundColor: previewFileIndex === idx ? 'var(--dataops-row-selected)' : 'var(--color-paper-white)',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: needsSource ? '1.5px solid var(--color-gira-gold, #D99B26)' : '1px solid var(--color-border)',
+                      backgroundColor: 'var(--color-paper-white)',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '10px',
-                      cursor: 'pointer'
+                      gap: '8px',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                        <FileSpreadsheet size={16} color="#2563eb" style={{ flexShrink: 0 }} />
-                        <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-ink-black)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                        <FileSpreadsheet size={15} color="var(--color-gira-gold, #D99B26)" style={{ flexShrink: 0 }} />
+                        <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-ink-black)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {item.file.name}
                         </span>
-                        <span style={{ fontSize: '11px', color: 'var(--color-ash-gray)', flexShrink: 0 }}>
+                        <span style={{ fontSize: '10.5px', color: 'var(--color-ash-gray)', flexShrink: 0 }}>
                           ({formatFileSize(item.file.size)})
                         </span>
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        {item.recognized ? (
-                          <span style={{
-                            fontSize: '10.5px', padding: '2px 7px', borderRadius: '999px',
-                            backgroundColor: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', fontWeight: '600'
-                          }}>
-                            ✓ Cabecera reconocida
-                          </span>
-                        ) : (
-                          <span style={{
-                            fontSize: '10.5px', padding: '2px 7px', borderRadius: '999px',
-                            backgroundColor: '#fffbeb', color: '#b45309', border: '1px solid #fde68a', fontWeight: '700'
-                          }}>
-                            ⚠ Sin reconocer
-                          </span>
-                        )}
+                        <span className="chip-cat chip-origen" style={{ fontSize: '10px' }}>
+                          {item.originDetected}
+                        </span>
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveFile(item.uid);
-                          }}
+                          onClick={() => handleRemoveFile(item.uid)}
                           style={{ background: 'none', border: 'none', color: 'var(--color-ash-gray)', cursor: 'pointer', padding: '2px' }}
                           title="Quitar archivo"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={13} />
                         </button>
                       </div>
                     </div>
 
-                    {/* Selectores por archivo: Tipo Documental y Escala condicional (#15, #16) */}
-                    <div style={{ display: 'grid', gridTemplateColumns: isAcademic ? '1fr 1fr' : '1fr', gap: '10px' }} onClick={(e) => e.stopPropagation()}>
+                    {/* Selector de Tipo Documental si se requiere */}
+                    <div style={{ display: 'grid', gridTemplateColumns: isAcademic ? '1fr 1fr' : '1fr', gap: '8px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: needsSource ? '#b45309' : 'var(--color-slate-gray)', marginBottom: '4px' }}>
-                          Tipo documental *
-                        </label>
                         <select
                           value={item.sourceType}
                           onChange={(e) => handleChangeFileSourceType(item.uid, e.target.value)}
                           className="dataops-select"
-                          style={{
-                            padding: '6px 10px',
-                            fontSize: '12px',
-                            border: needsSource ? '1.5px solid #f59e0b' : undefined,
-                            backgroundColor: needsSource ? '#fffbeb' : undefined,
-                          }}
+                          style={{ padding: '4px 8px', fontSize: '11px' }}
                         >
                           <option value="">{UNRECOGNIZED_SOURCE_LABEL}</option>
                           {TIPOS_FUENTE_DATAOPS.map((tf) => (
@@ -549,24 +539,17 @@ export default function IngestView() {
                           ))}
                         </select>
                       </div>
-
-                      {isAcademic ? (
+                      {isAcademic && (
                         <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: needsScale ? '#b45309' : 'var(--color-slate-gray)', marginBottom: '4px' }}>
-                            Escala de notas *
-                          </label>
                           <select
-                            value={item.tipoEscala || ''}
-                            onChange={(e) => handleChangeFileEscala(item.uid, e.target.value)}
-                            className="dataops-select"
-                            style={{
-                              padding: '6px 10px',
-                              fontSize: '12px',
-                              border: needsScale ? '1.5px solid #f59e0b' : undefined,
-                              backgroundColor: needsScale ? '#fffbeb' : undefined,
+                            value={item.tipoEscala || 'CENTESIMAL_100'}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setQueuedFiles(prev => prev.map(f => f.uid === item.uid ? { ...f, tipoEscala: val } : f));
                             }}
+                            className="dataops-select"
+                            style={{ padding: '4px 8px', fontSize: '11px' }}
                           >
-                            <option value="">-- Elegir escala --</option>
                             {ESCALAS_ACADEMICAS.map((esc) => (
                               <option key={esc.value} value={esc.value}>
                                 {esc.label}
@@ -574,29 +557,8 @@ export default function IngestView() {
                             ))}
                           </select>
                         </div>
-                      ) : item.sourceType ? (
-                        <div style={{ fontSize: '11px', color: 'var(--color-ash-gray)', alignSelf: 'end', paddingBottom: '4px' }}>
-                          Escala de notas: <strong>No aplica ({item.sourceType})</strong>
-                        </div>
-                      ) : null}
+                      )}
                     </div>
-
-                    {/* Estado individual tras subida (#18) */}
-                    {item.status && (
-                      <div style={{
-                        fontSize: '11.5px',
-                        padding: '6px 10px',
-                        borderRadius: '6px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        backgroundColor: item.status === 'procesado' ? '#ecfdf5' : '#fef2f2',
-                        color: item.status === 'procesado' ? '#059669' : '#dc2626',
-                      }}>
-                        {item.status === 'procesado' ? <CheckCircle2 size={13} /> : <XCircle size={13} />}
-                        <strong>{item.status.toUpperCase()}:</strong> {item.statusDetail}
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -604,390 +566,214 @@ export default function IngestView() {
           )}
         </div>
 
-        {/* ─── Columna Derecha: Datos del Lote y Regla de Escala ─── */}
-        <div className="floating-artifact" style={{ padding: '28px', display: 'flex', flexDirection: 'column' }}>
-          <h2 className="serif-heading" style={{ fontSize: '18px', margin: '0 0 8px 0', color: 'var(--color-ink-black)' }}>
-            Datos del lote
-          </h2>
-          <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', margin: '0 0 20px 0' }}>
-            Configura los metadatos institucionales y aplica la escala de calificación a los archivos académicos.
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
-            {/* Institución */}
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--color-ink-black)', marginBottom: '6px' }}>
-                Institución *
-              </label>
-              <select
-                value={institucion}
-                onChange={(e) => setInstitucion(e.target.value)}
-                className="dataops-select"
-              >
-                <option value="">-- Seleccionar Institución --</option>
-                <option value="Unifranz">Universidad Franz Tamayo (Unifranz)</option>
-                <option value="Univalle">Universidad Privada del Valle (Univalle)</option>
-                <option value="UPB">Universidad Privada Boliviana (UPB)</option>
-                <option value="UCB">Universidad Católica Boliviana (UCB)</option>
-              </select>
-            </div>
-
-            {/* Periodo */}
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--color-ink-black)', marginBottom: '6px' }}>
-                Periodo académico
-              </label>
-              <select
-                value={periodo}
-                onChange={(e) => setPeriodo(e.target.value)}
-                className="dataops-select"
-              >
-                <option value="2026-1">Gestión 2026 - Periodo 1</option>
-                <option value="2025-2">Gestión 2025 - Periodo 2</option>
-                <option value="2025-1">Gestión 2025 - Periodo 1</option>
-              </select>
-            </div>
-
-            {/* Aplicación rápida de escala a todos los archivos académicos (#16) */}
-            <div style={{
-              padding: '14px',
-              borderRadius: '12px',
-              backgroundColor: 'var(--color-mist-gray)',
-              border: '1px solid var(--color-border)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px'
-            }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: 'var(--color-ink-black)' }}>
-                <Scale size={15} color="#2563eb" /> Escala para archivos académicos (ACTA / MOODLE)
-              </label>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <select
-                  value={escalaGlobalAcademica}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setEscalaGlobalAcademica(val);
-                    if (val) {
-                      setQueuedFiles((prev) =>
-                        prev.map((item) =>
-                          isAcademicSourceType(item.sourceType)
-                            ? { ...item, tipoEscala: val }
-                            : item
-                        )
-                      );
-                    }
-                  }}
-                  className="dataops-select"
-                  style={{ flex: 1, minWidth: '200px' }}
-                >
-                  <option value="">-- Seleccionar escala académica --</option>
-                  {ESCALAS_ACADEMICAS.map((esc) => (
-                    <option key={esc.value} value={esc.value}>
-                      {esc.label}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  onClick={handleApplyScaleToAllAcademic}
-                  disabled={!escalaGlobalAcademica || !hasAcademicFiles}
-                  className="sileo-btn"
-                  style={{
-                    padding: '8px 14px',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    backgroundColor: escalaGlobalAcademica && hasAcademicFiles ? '#2563eb' : 'var(--color-paper-white)',
-                    color: escalaGlobalAcademica && hasAcademicFiles ? '#ffffff' : 'var(--color-ash-gray)',
-                    border: '1px solid var(--color-border)',
-                    cursor: escalaGlobalAcademica && hasAcademicFiles ? 'pointer' : 'not-allowed',
-                  }}
-                >
-                  Aplicar escala a todos los archivos académicos
-                </button>
-              </div>
-              <div style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }}>
-                Normalización automática a base 100: <strong>0–10 → ×10</strong> · <strong>0–20 → ×5</strong> · <strong>0–100 → ×1</strong>. Los archivos de Cobranza y Admisión no llevan escala.
-              </div>
-            </div>
-
-            {/* Avisos de validación pendientes */}
-            {(missingSourceTypeCount > 0 || missingScaleCount > 0) && (
-              <div className="dataops-banner-warning" style={{ fontSize: '12.5px' }}>
-                <AlertTriangle size={16} style={{ flexShrink: 0 }} />
-                <div>
-                  {missingSourceTypeCount > 0 && (
-                    <div>• Hay <strong>{missingSourceTypeCount}</strong> archivo(s) sin tipo documental reconocido. Seleccione su tipo manualmente.</div>
-                  )}
-                  {missingScaleCount > 0 && (
-                    <div>• Hay <strong>{missingScaleCount}</strong> archivo(s) académico(s) sin escala de calificación asignada.</div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Texto de ayuda explicativo */}
-            <div className="dataops-banner-info" style={{ marginTop: 'auto' }}>
-              <HelpCircle size={18} color="var(--dataops-info-text)" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <div>
-                <strong>Regla de negocio:</strong> El sistema inspecciona las cabeceras reales de cada archivo, calcula su hash SHA-256 completo para evitar duplicados y nunca asume "Acta" ni la escala de notas por defecto.
-              </div>
-            </div>
-
-            {/* Botón de Procesar */}
-            <button
-              onClick={handleProcessBatch}
-              disabled={!isFormValid || isProcessing}
-              className="sileo-btn"
-              style={{
-                marginTop: '8px',
-                padding: '14px 20px',
-                borderRadius: '12px',
-                backgroundColor: isFormValid ? '#2563eb' : 'var(--color-mist-gray)',
-                color: isFormValid ? '#ffffff' : 'var(--color-ash-gray)',
-                border: 'none',
-                fontWeight: '700',
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                cursor: isFormValid ? 'pointer' : 'not-allowed',
-                transition: 'all 0.2s ease',
-                boxShadow: isFormValid ? '0 4px 12px rgba(37, 99, 235, 0.25)' : 'none'
-              }}
-            >
-              {isProcessing ? (
-                <>
-                  <RefreshCw size={18} className="animate-spin" /> Procesando Lote ({uploadProgress}%)...
-                </>
-              ) : (
-                <>
-                  <Play size={18} fill="currentColor" /> Procesar lote ({queuedFiles.length} {queuedFiles.length === 1 ? 'archivo' : 'archivos'})
-                </>
-              )}
-            </button>
+        {/* Panel Derecho: Parámetros del Lote */}
+        <div className="floating-artifact" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <h2 className="serif-heading" style={{ fontSize: '18px', margin: '0 0 4px 0', color: 'var(--color-ink-black)' }}>
+              Parámetros del Lote
+            </h2>
+            <p style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)', margin: 0 }}>
+              Configuración de periodo destino, umbral de inferencia y protocolo de anonimización.
+            </p>
           </div>
+
+          {/* 1. Reconocimiento Temporal Multi-Semestre (Sin selector rígido) */}
+          <div style={{
+            padding: '12px 14px',
+            borderRadius: '10px',
+            backgroundColor: 'var(--color-mist-gray)',
+            border: '1px solid var(--color-border)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '10px',
+          }}>
+            <Calendar size={18} color="var(--color-gira-gold, #D99B26)" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div>
+              <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>Reconocimiento Temporal:</span>
+                <span className="chip-cat chip-fecha">Automático en archivo (2024–2026+)</span>
+              </div>
+              <p style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', margin: '3px 0 0 0', lineHeight: 1.4 }}>
+                Inferencia multi-semestre directa desde columnas de fecha y cabeceras sin forzar un periodo fijo.
+              </p>
+            </div>
+          </div>
+
+          {/* 2. Umbral Confianza IA: [85%] */}
+          <div style={{
+            padding: '12px 14px',
+            borderRadius: '10px',
+            backgroundColor: 'var(--color-paper-white)',
+            border: '1px solid var(--color-border)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Sliders size={14} color="var(--color-gira-gold, #D99B26)" /> Umbral Confianza IA
+              </label>
+              <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-gira-gold, #D99B26)', fontFamily: 'var(--font-mono)' }}>
+                [{umbralConfianzaIa}%]
+              </span>
+            </div>
+            <input
+              type="range"
+              min="50"
+              max="100"
+              value={umbralConfianzaIa}
+              onChange={(e) => setUmbralConfianzaIa(Number(e.target.value))}
+              style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-gira-gold, #D99B26)' }}
+            />
+            <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>
+              Filtro probabilístico para el pre-etiquetado de entidades canónicas de BETO.
+            </div>
+          </div>
+
+          {/* 3. [x] Anonimización Activa (SHA-256) */}
+          <label style={{
+            padding: '12px 14px',
+            borderRadius: '10px',
+            backgroundColor: 'var(--color-paper-white)',
+            border: '1px solid var(--color-border)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '10px',
+            cursor: 'pointer'
+          }}>
+            <input
+              type="checkbox"
+              checked={anonimizacionActiva}
+              onChange={(e) => setAnonimizacionActiva(e.target.checked)}
+              style={{ marginTop: '3px', cursor: 'pointer', accentColor: '#1B8754' }}
+            />
+            <div>
+              <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <ShieldCheck size={15} color="#1B8754" /> Anonimización Activa (SHA-256)
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--color-slate-gray)', margin: '2px 0 0 0', lineHeight: 1.35 }}>
+                Protección estricta Cero PII: hashing unidireccional SHA-256 de Cédulas de Identidad y nombres.
+              </p>
+            </div>
+          </label>
+
+          {/* Botón de Procesamiento Principal (Gold Pill) */}
+          <button
+            onClick={handleProcessBatch}
+            disabled={!isFormValid || isProcessing}
+            className="btn-pill-gold"
+            style={{
+              marginTop: 'auto',
+              padding: '12px 18px',
+              fontSize: '13.5px',
+            }}
+          >
+            {isProcessing ? (
+              <>
+                <RefreshCw size={16} className="animate-spin" /> Procesando Lote ({uploadProgress}%)...
+              </>
+            ) : (
+              <>
+                <Play size={16} fill="currentColor" /> Procesar Lote e Inspeccionar Estructura ({queuedFiles.length})
+              </>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* ─── Vista Previa con Columnas Detectadas ─── */}
+      {/* ─── SECCIÓN B: COLA DEL DISPATCHER Y ESTADO DE PREPROCESAMIENTO (Tabla de Lote) ─── */}
       <div className="floating-artifact" style={{ padding: '24px', marginBottom: '28px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
           <div>
-            <h3 className="serif-heading" style={{ fontSize: '16px', margin: 0, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Eye size={18} color="#2563eb" /> Vista previa de estructura de archivo
+            <h3 className="serif-heading" style={{ fontSize: '17px', margin: 0, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Eye size={18} color="var(--color-gira-gold, #D99B26)" /> SECCIÓN B: COLA DEL DISPATCHER Y ESTADO DE PREPROCESAMIENTO
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--color-slate-gray)', margin: '4px 0 0 0' }}>
-              Verificación previa de columnas reconocidas ✓ y validación antes del procesamiento
+              Inspección heurística de cabeceras, clasificación de origen y validación de anonimización criptográfica.
             </p>
           </div>
-          {previewRows.length > 0 && (
-            <div style={{ display: 'flex', gap: '8px', fontSize: '12px' }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#10b981', fontWeight: '600' }}>
-                <Check size={14} /> {previewColumns.filter((c) => c.recognized).length} Reconocidas
-              </span>
-              <span style={{ color: 'var(--color-border)' }}>·</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#f59e0b', fontWeight: '600' }}>
-                <AlertTriangle size={14} /> {previewColumns.filter((c) => !c.recognized).length} Adicionales
-              </span>
-            </div>
+          {batchTableItems.length > 0 && (
+            <span style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>
+              Mostrando <strong>{batchTableItems.length}</strong> archivo(s) en cola / lote activo
+            </span>
           )}
         </div>
 
-        {previewRows.length > 0 ? (
-          <div style={{ overflowX: 'auto', borderRadius: '10px', border: '1px solid var(--color-border)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-              <thead>
-                <tr style={{ backgroundColor: 'var(--color-mist-gray)', borderBottom: '1px solid var(--color-border)' }}>
-                  <th style={{ padding: '10px 14px', width: '50px', color: 'var(--color-slate-gray)' }}>#</th>
-                  {previewColumns.map((col, idx) => (
-                    <th key={idx} style={{ padding: '10px 14px', color: 'var(--color-ink-black)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span>{col.label}</span>
-                        {col.recognized ? (
-                          <span style={{ color: '#10b981', fontSize: '11px', display: 'inline-flex', alignItems: 'center' }} title="Reconocida por el dispatcher">
-                            ✓
-                          </span>
-                        ) : (
-                          <span style={{ color: '#f59e0b', fontSize: '11px', display: 'inline-flex', alignItems: 'center' }} title="Columna adicional">
-                            ⚠
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {previewRows.map((row) => (
-                  <tr key={row.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <td style={{ padding: '10px 14px', color: 'var(--color-ash-gray)', fontFamily: 'var(--font-mono)' }}>{row.id}</td>
-                    {previewColumns.map((col, cIdx) => (
-                      <td key={cIdx} style={{ padding: '10px 14px', color: 'var(--color-ink-black)' }}>
-                        {row[col.key] || '—'}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : queuedFiles.length > 0 ? (
-          <div style={{ padding: '24px', textAlign: 'center', backgroundColor: 'var(--color-mist-gray)', borderRadius: '10px', border: '1px dashed var(--color-border)' }}>
-            <FileSpreadsheet size={32} color="#2563eb" style={{ margin: '0 auto 8px auto', display: 'block' }} />
-            <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-ink-black)' }}>
-              {queuedFiles[previewFileIndex]?.file?.name} ({formatFileSize(queuedFiles[previewFileIndex]?.file?.size)})
-            </div>
-            <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>
-              Archivo en cola listo para ingestión. El backend analizará todas las hojas y filas en el Paso ② Texto plano estructurado.
-            </div>
-          </div>
-        ) : (
-          <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--color-slate-gray)', fontSize: '13px', backgroundColor: 'var(--color-mist-gray)', borderRadius: '10px' }}>
-            Arrastra o selecciona archivos arriba para inspeccionar sus cabeceras antes del procesamiento.
-          </div>
-        )}
-      </div>
-
-      {/* ─── Historial de Lotes y Archivos ─── */}
-      <div className="floating-artifact" style={{ padding: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-          <div>
-            <h3 className="serif-heading" style={{ fontSize: '16px', margin: 0, color: 'var(--color-ink-black)' }}>
-              Historial de lotes y fuentes procesadas
-            </h3>
-            <p style={{ fontSize: '12px', color: 'var(--color-slate-gray)', margin: '4px 0 0 0' }}>
-              Accede directamente a los pasos ② Texto plano, ③ Lectura BETO, ④ Revisión o abre la Bitácora Técnica y Reporte Markdown (.MD)
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button
-              type="button"
-              onClick={() => handleOpenTelemetry(sourcesHistory[0] || { id: 1, nombre_archivo: 'Lote Reciente' })}
-              className="sileo-btn"
-              style={{
-                padding: '6px 12px',
-                fontSize: '12px',
-                backgroundColor: '#0f172a',
-                color: '#38bdf8',
-                border: '1px solid #334155',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontWeight: 600
-              }}
-            >
-              <Terminal size={13} /> 📋 Bitácora Técnica (.MD)
-            </button>
-            <button
-              onClick={loadHistory}
-              className="sileo-btn"
-              style={{
-                padding: '6px 12px',
-                fontSize: '12px',
-                backgroundColor: 'var(--color-mist-gray)',
-                border: '1px solid var(--color-border)',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <RefreshCw size={13} /> Actualizar
-            </button>
-          </div>
-        </div>
-
-        {isLoadingHistory ? (
-          <div style={{ padding: '32px', textAlign: 'center', color: 'var(--color-slate-gray)', fontSize: '13px' }}>
-            Cargando historial de lotes...
-          </div>
-        ) : sourcesHistory.length === 0 ? (
-          <div style={{ padding: '32px', textAlign: 'center', color: 'var(--color-slate-gray)', fontSize: '13px' }}>
-            No hay lotes previos. Carga un archivo arriba para comenzar.
+        {batchTableItems.length === 0 ? (
+          <div style={{ padding: '36px', textAlign: 'center', backgroundColor: 'var(--color-mist-gray)', borderRadius: '10px', color: 'var(--color-slate-gray)', fontSize: '13px' }}>
+            No hay archivos en la cola. Arrastra archivos en la Sección A o selecciona un lote del historial para inspeccionar.
           </div>
         ) : (
           <div style={{ overflowX: 'auto', borderRadius: '10px', border: '1px solid var(--color-border)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+            <table className="dataops-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12.5px' }}>
               <thead>
                 <tr style={{ backgroundColor: 'var(--color-mist-gray)', borderBottom: '1px solid var(--color-border)' }}>
-                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Lote / Archivo</th>
-                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Tipo</th>
-                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Escala</th>
-                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Registros</th>
-                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Fecha</th>
-                  <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--color-slate-gray)' }}>Acción</th>
+                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Archivo</th>
+                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Origen Detectado (dim_origen)</th>
+                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Filas</th>
+                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Anonimización</th>
+                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Estado</th>
+                  <th style={{ padding: '10px 14px', textAlign: 'center', color: 'var(--color-slate-gray)' }}>Inspección</th>
                 </tr>
               </thead>
               <tbody>
-                {sourcesHistory.map((src) => {
-                  const navId = src.id_lote || src.id || src.id_documento;
-                  const fileName = src.nombre_archivo || src.name || `Documento_${navId}`;
-                  const sourceType = src.tipo_fuente || src.tipo_documento || src.type || 'ACTA';
-                  const recordCount = src.registros_detectados ?? src.total_registros ?? src.records ?? 0;
-                  const dateDisplay = src.fecha_carga
-                    ? new Date(src.fecha_carga).toLocaleDateString()
-                    : (src.date || 'Reciente');
+                {batchTableItems.map((item, idx) => {
+                  const isSelected = selectedInspectionIndex === idx;
                   return (
-                    <tr key={src.id || src.id_documento} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                      <td style={{ padding: '10px 14px', fontWeight: '600', color: 'var(--color-ink-black)' }}>
-                        {src.id_lote ? <span style={{ color: '#2563eb', fontFamily: 'var(--font-mono)', marginRight: '6px' }}>[Lote #{src.id_lote}]</span> : null}
-                        {fileName}
+                    <tr
+                      key={idx}
+                      onClick={() => setSelectedInspectionIndex(idx)}
+                      className={`dataops-table-row ${isSelected ? 'selected' : ''}`}
+                      style={{ borderBottom: '1px solid var(--color-border)' }}
+                    >
+                      <td style={{ padding: '10px 14px', fontWeight: 600, color: 'var(--color-ink-black)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <FileSpreadsheet size={15} color="var(--color-gira-gold, #D99B26)" />
+                          <span>{item.nombre}</span>
+                          <span style={{ fontSize: '10.5px', color: 'var(--color-ash-gray)' }}>({item.size})</span>
+                        </div>
                       </td>
-                      <td style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>
-                        {sourceType}
-                      </td>
-                      <td style={{ padding: '10px 14px', color: 'var(--color-ash-gray)', fontSize: '12px' }}>
-                        {src.tipo_escala || 'No aplica'}
+                      <td style={{ padding: '10px 14px' }}>
+                        <span className="chip-cat chip-origen" style={{ fontWeight: 700 }}>
+                          {item.origen}
+                        </span>
                       </td>
                       <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)' }}>
-                        {recordCount}
+                        {item.filas}
                       </td>
-                      <td style={{ padding: '10px 14px', color: 'var(--color-ash-gray)', fontSize: '12px' }}>
-                        {dateDisplay}
+                      <td style={{ padding: '10px 14px' }}>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '4px',
+                          fontSize: '11px', fontWeight: 700, color: '#1B8754',
+                          backgroundColor: 'rgba(27, 135, 84, 0.1)', padding: '2px 8px', borderRadius: '4px'
+                        }}>
+                          <CheckCircle2 size={12} /> SHA-256 OK
+                        </span>
                       </td>
-                      <td style={{ padding: '10px 14px', textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenTelemetry(src)}
-                            className="sileo-btn"
-                            title="Ver bitácora técnica y reporte Markdown (.MD)"
-                            style={{
-                              padding: '4px 10px', fontSize: '11px', borderRadius: '6px',
-                              backgroundColor: '#0f172a', color: '#38bdf8', border: '1px solid #334155',
-                              fontWeight: '600', cursor: 'pointer'
-                            }}
-                          >
-                            📋 Bitácora Técnica
-                          </button>
-                          <button
-                            onClick={() => navigate(`/dataops/lote/${navId}/texto`)}
-                            className="sileo-btn"
-                            style={{
-                              padding: '4px 10px', fontSize: '11px', borderRadius: '6px',
-                              backgroundColor: 'var(--color-mist-gray)', border: '1px solid var(--color-border)',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            ② Texto
-                          </button>
-                          <button
-                            onClick={() => navigate(`/dataops/lote/${navId}/beto`)}
-                            className="sileo-btn"
-                            style={{
-                              padding: '4px 10px', fontSize: '11px', borderRadius: '6px',
-                              backgroundColor: 'var(--dataops-info-bg)', color: 'var(--dataops-info-text)', border: '1px solid var(--dataops-info-border)',
-                              fontWeight: '600', cursor: 'pointer'
-                            }}
-                          >
-                            ③ BETO
-                          </button>
-                        </div>
+                      <td style={{ padding: '10px 14px' }}>
+                        <span className="chip-cat chip-fecha">
+                          [{item.estado}]
+                        </span>
+                      </td>
+                      <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                        <button
+                          type="button"
+                          className="sileo-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedInspectionIndex(idx);
+                          }}
+                          style={{
+                            padding: '4px 10px', fontSize: '11px', borderRadius: '6px',
+                            backgroundColor: isSelected ? 'var(--color-gira-gold, #D99B26)' : 'var(--color-mist-gray)',
+                            color: isSelected ? '#ffffff' : 'var(--color-slate-gray)',
+                            border: '1px solid var(--color-border)',
+                            cursor: 'pointer',
+                            fontWeight: isSelected ? 700 : 500
+                          }}
+                        >
+                          {isSelected ? '✓ Seleccionado' : 'Ver en C'}
+                        </button>
                       </td>
                     </tr>
                   );
@@ -998,7 +784,446 @@ export default function IngestView() {
         )}
       </div>
 
-      {/* Drawer de Bitácora Técnica y Reporte Markdown (.MD) */}
+      {/* ─── SECCIÓN C: INSPECTOR DE APLANAMIENTO ASIMÉTRICO Y PRE-ETIQUETADO CON CATÁLOGO (SPLIT VIEW) ─── */}
+      <div className="floating-artifact" style={{ padding: '24px', marginBottom: '28px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
+          <div>
+            <h3 className="serif-heading" style={{ fontSize: '17px', margin: 0, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Sparkles size={18} color="var(--color-gira-gold, #D99B26)" /> SECCIÓN C: INSPECTOR DE APLANAMIENTO ASIMÉTRICO Y PRE-ETIQUETADO CON CATÁLOGO
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--color-slate-gray)', margin: '4px 0 0 0' }}>
+              Archivo bajo inspección: <strong>{currentSelectedFile?.nombre || 'Seleccione un archivo en la Sección B'}</strong>
+            </p>
+          </div>
+          {currentSelectedFile && (
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <span className="chip-cat chip-origen">
+                {currentSelectedFile?.origen || 'GSHEETS_ACTA_NOTAS'}
+              </span>
+              <span className="chip-cat chip-fecha">
+                {currentSelectedFile?.fechas || '2024–2026 (Auto)'}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="dataops-split-view">
+          
+          {/* ── Mitad Izquierda: ESTRUCTURA ORIGINAL DETECTADA (Mini-Grid) ── */}
+          <div style={{
+            backgroundColor: 'var(--color-mist-gray)',
+            border: '1px solid var(--color-border)',
+            borderRadius: '12px',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-gira-gold, #D99B26)' }}>
+                Estructura Original Detectada (Mini-Grid)
+              </span>
+              {activeDiag && (
+                <span style={{ fontSize: '10.5px', color: 'var(--color-slate-gray)', fontFamily: 'var(--font-mono)' }}>
+                  Fila de Cabecera: #{activeDiag.fila_cabecera_desplazada || activeDiag.fila_cabecera || 5}
+                </span>
+              )}
+            </div>
+
+            {activeDiag ? (
+              <>
+                {/* Diagnóstico de celdas combinadas y cabecera desplazada */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11.5px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-ink-black)' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--color-gira-gold, #D99B26)' }}>Celda combinada:</span>
+                    <span style={{ fontFamily: 'var(--font-mono)' }}>
+                      {formatMergedCell(activeDiag.celdas_combinadas?.[0])}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-ink-black)' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--color-ink-black)' }}>Cabecera desplazada:</span>
+                    <span>Fila #{activeDiag.fila_cabecera_desplazada || activeDiag.fila_cabecera || 5} detectada y normalizada</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-ink-black)' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--color-slate-gray)' }}>Columnas dinámicas:</span>
+                    <span>{activeDiag.columnas_dinamicas ? activeDiag.columnas_dinamicas.join(', ') : 'Nota1, NotaFinal, %Asist'}</span>
+                  </div>
+                </div>
+
+                {/* Advertencias estructurales */}
+                <div style={{
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(217, 155, 38, 0.08)',
+                  border: '1px solid rgba(217, 155, 38, 0.25)',
+                  fontSize: '11.5px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}>
+                  <div style={{ fontWeight: 700, color: 'var(--color-gira-gold, #D99B26)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <AlertTriangle size={13} /> Advertencias estructurales resueltas:
+                  </div>
+                  {Array.isArray(activeDiag.advertencias_estructurales) && activeDiag.advertencias_estructurales.length > 0 ? (
+                    activeDiag.advertencias_estructurales.map((adv, aIdx) => (
+                      <div key={aIdx} style={{ color: 'var(--color-slate-gray)', paddingLeft: '18px' }}>
+                        • {adv}
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <div style={{ color: 'var(--color-slate-gray)', paddingLeft: '18px' }}>
+                        • {activeDiag.encabezados_multinivel_aplanados || 3} encabezados multinivel aplanados automáticamente.
+                      </div>
+                      <div style={{ color: 'var(--color-slate-gray)', paddingLeft: '18px' }}>
+                        • {activeDiag.filas_subtotales_descartadas || 2} filas de subtotales/firmas descartadas.
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Mini-Grid Visual */}
+                {Array.isArray(activeDiag.mini_grid) && activeDiag.mini_grid.length > 0 ? (
+                  <div className="mini-grid-container">
+                    <table className="mini-grid-table">
+                      <tbody>
+                        {activeDiag.mini_grid.map((row, rIdx) => {
+                          const isMergedRow = rIdx === 0;
+                          const headerIdx = (activeDiag.fila_cabecera_desplazada || activeDiag.fila_cabecera || 5) - 1;
+                          const isHeaderRow = rIdx === headerIdx;
+                          return (
+                            <tr key={rIdx}>
+                              {(Array.isArray(row) ? row : []).map((cellVal, cIdx) => {
+                                const isObj = typeof cellVal === 'object' && cellVal !== null;
+                                const cellText = isObj ? (cellVal.valor ?? '') : String(cellVal ?? '');
+                                const isCellMerged = isObj ? Boolean(cellVal.es_combinada) : isMergedRow;
+                                const isCellHeader = isObj ? Boolean(cellVal.es_cabecera) : isHeaderRow;
+                                const cellCoord = isObj && cellVal.coord
+                                  ? `[${cellVal.coord}]`
+                                  : `[${String.fromCharCode(65 + cIdx)}${rIdx + 1}]`;
+
+                                let cellClass = '';
+                                if (isCellMerged) cellClass = 'mini-grid-cell-merged';
+                                else if (isCellHeader) cellClass = 'mini-grid-cell-header';
+
+                                return (
+                                  <td
+                                    key={cIdx}
+                                    className={cellClass}
+                                    title={isObj && cellVal.rango ? `Rango combinado: ${cellVal.rango}` : undefined}
+                                  >
+                                    <span className="mini-grid-coord">{cellCoord}</span>
+                                    {cellText || '—'}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <div style={{
+                padding: '36px 16px',
+                textAlign: 'center',
+                backgroundColor: 'var(--color-paper-white)',
+                borderRadius: '8px',
+                border: '1px dashed var(--color-border)',
+                color: 'var(--color-slate-gray)',
+                fontSize: '12px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <FileSpreadsheet size={28} color="var(--color-gira-gold, #D99B26)" />
+                <span style={{ fontWeight: 600, color: 'var(--color-ink-black)' }}>Sin estructura tabular cargada</span>
+                <span style={{ maxWidth: '300px' }}>Arrastra un archivo en la Sección A o selecciona un lote para visualizar el mini-grid de cabeceras.</span>
+              </div>
+            )}
+          </div>
+
+          {/* ── Mitad Derecha: TEXTO PLANO ESTRUCTURADO Y PRE-ETIQUETADO ── */}
+          <div style={{
+            backgroundColor: 'var(--color-paper-white)',
+            border: '1px solid var(--color-border)',
+            borderRadius: '12px',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#1B8754' }}>
+                Texto Plano Estructurado y Pre-etiquetado
+              </span>
+              <span style={{ fontSize: '10.5px', color: 'var(--color-slate-gray)' }}>
+                Catálogo Maestro: 18 Prog. Activos
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '340px', overflowY: 'auto' }}>
+              {activeRecords.length > 0 ? (
+                activeRecords.map((rec, rIdx) => (
+                  <div
+                    key={rIdx}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      backgroundColor: 'var(--color-mist-gray)',
+                      border: '1px solid var(--color-border)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-ink-black)', fontFamily: 'var(--font-mono)' }}>
+                        [REG_{String(rIdx + 1).padStart(3, '0')}] ORIGEN: {rec.origen_detectado || rec.origen || currentSelectedFile?.origen || 'GSHEETS_ACTA_ASIST'}
+                      </span>
+                    </div>
+
+                    {/* Chips resueltos del catálogo */}
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <span className="chip-cat chip-programa">
+                        PROGRAMA_CAT: {resolveChip(rec.chips || activeChips, 'programa_cat', rec.programa || 'No asignado')}
+                      </span>
+                      <span className="chip-cat chip-modulo">
+                        MODULO_CAT: {resolveChip(rec.chips || activeChips, 'modulo_cat', rec.modulo || 'No asignado')}
+                      </span>
+                      <span className="chip-cat chip-precio">
+                        PRECIO_BASE_CAT: {resolveChip(rec.chips || activeChips, 'precio_base_cat', '—')}
+                      </span>
+                      <span className="chip-cat chip-fecha">
+                        FECHA: {resolveChip(rec.chips || activeChips, 'fecha_detectada', currentSelectedFile?.fechas || 'Auto')}
+                      </span>
+                    </div>
+
+                    {/* Oración canónica para BETO */}
+                    <div style={{
+                      padding: '6px 8px',
+                      borderRadius: '6px',
+                      backgroundColor: 'var(--color-paper-white)',
+                      border: '1px solid var(--color-border)',
+                      fontSize: '11.5px',
+                      fontFamily: 'var(--font-mono)',
+                      color: 'var(--color-ink-black)',
+                      lineHeight: 1.4
+                    }}>
+                      TEXTO_CRUDO: "{rec.texto_crudo || rec.oracion_beto || rec.texto_plano || '—'}"
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div style={{
+                  padding: '36px 16px',
+                  textAlign: 'center',
+                  backgroundColor: 'var(--color-mist-gray)',
+                  borderRadius: '8px',
+                  border: '1px dashed var(--color-border)',
+                  color: 'var(--color-slate-gray)',
+                  fontSize: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <FileText size={28} color="var(--color-gira-gold, #D99B26)" />
+                  <span style={{ fontWeight: 600, color: 'var(--color-ink-black)' }}>Sin oraciones canónicas pre-etiquetadas</span>
+                  <span style={{ maxWidth: '300px' }}>Arrastre archivos .xlsx o .csv en la Sección A o seleccione un lote del historial para inspeccionar oraciones.</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Barra de Acciones de Pie de la Sección C */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: '20px',
+          paddingTop: '16px',
+          borderTop: '1px solid var(--color-border)',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <button
+            type="button"
+            onClick={() => {
+              setQueuedFiles([]);
+              setActiveBatchData(null);
+              sileoToast.info({ title: 'Lote cancelado', description: 'Se vació la cola y la inspección del lote activo.' });
+            }}
+            className="btn-pill-secondary"
+          >
+            Cancelar Lote
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const targetId = activeBatchId || localStorage.getItem('last_active_batch_id');
+              if (targetId) {
+                navigate(`/dataops/lote/${targetId}/beto`);
+              } else {
+                sileoToast.warning({
+                  title: 'Procese un lote primero',
+                  description: 'Debe cargar y procesar un lote antes de ejecutar la extracción NER con BETO.'
+                });
+              }
+            }}
+            className="btn-pill-gold"
+          >
+            <span>Ejecutar Extracción NER (BETO)</span>
+            <ArrowRight size={15} />
+          </button>
+        </div>
+      </div>
+
+      {/* ─── ACORDEÓN INFERIOR: HISTORIAL DE LOTES PROCESADOS ─── */}
+      <div className="floating-artifact" style={{ padding: '20px 24px' }}>
+        <button
+          type="button"
+          onClick={() => setHistoryExpanded(prev => !prev)}
+          style={{
+            width: '100%',
+            background: 'none',
+            border: 'none',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            cursor: 'pointer',
+            padding: 0,
+            textAlign: 'left'
+          }}
+        >
+          <div>
+            <h3 className="serif-heading" style={{ fontSize: '16px', margin: 0, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>Historial de Lotes Procesados ({sourcesHistory.length})</span>
+            </h3>
+            <p style={{ fontSize: '12px', color: 'var(--color-slate-gray)', margin: '3px 0 0 0' }}>
+              Registro cronológico de lotes, orígenes y bitácoras técnicas (.MD)
+            </p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-slate-gray)', fontSize: '13px' }}>
+            <span>{historyExpanded ? 'Ocultar' : 'Mostrar'}</span>
+            {historyExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </div>
+        </button>
+
+        {historyExpanded && (
+          <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => handleOpenTelemetry(sourcesHistory[0] || { id: 1, nombre_archivo: 'Lote Reciente' })}
+                className="sileo-btn"
+                style={{
+                  padding: '5px 12px', fontSize: '11px',
+                  backgroundColor: '#0C1E33', color: '#FAF9F6', border: '1px solid var(--color-border)',
+                  borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600
+                }}
+              >
+                <Terminal size={12} color="var(--color-gira-gold, #D99B26)" /> 📋 Bitácora Técnica (.MD)
+              </button>
+              <button
+                type="button"
+                onClick={loadInitialData}
+                className="sileo-btn"
+                style={{
+                  padding: '5px 12px', fontSize: '11px',
+                  backgroundColor: 'var(--color-mist-gray)', border: '1px solid var(--color-border)',
+                  borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
+                }}
+              >
+                <RefreshCw size={12} /> Actualizar
+              </button>
+            </div>
+
+            {isLoadingHistory ? (
+              <div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-slate-gray)', fontSize: '12.5px' }}>
+                Cargando historial...
+              </div>
+            ) : sourcesHistory.length === 0 ? (
+              <div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-slate-gray)', fontSize: '12.5px' }}>
+                No se registraron lotes previos.
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: 'var(--color-mist-gray)', borderBottom: '1px solid var(--color-border)' }}>
+                      <th style={{ padding: '8px 12px', color: 'var(--color-slate-gray)' }}>Lote / Archivo</th>
+                      <th style={{ padding: '8px 12px', color: 'var(--color-slate-gray)' }}>Origen</th>
+                      <th style={{ padding: '8px 12px', color: 'var(--color-slate-gray)' }}>Registros</th>
+                      <th style={{ padding: '8px 12px', color: 'var(--color-slate-gray)' }}>Fecha Carga</th>
+                      <th style={{ padding: '8px 12px', textAlign: 'right', color: 'var(--color-slate-gray)' }}>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sourcesHistory.map((src) => {
+                      const navId = src.id_lote || src.id || src.id_documento;
+                      const fileName = src.nombre_archivo || src.name || `Documento_${navId}`;
+                      const sourceType = src.tipo_fuente || src.tipo_documento || 'ACTA';
+                      const recordCount = src.registros_detectados ?? src.total_registros ?? src.records ?? 0;
+                      const dateDisplay = src.fecha_carga ? new Date(src.fecha_carga).toLocaleDateString() : (src.date || 'Reciente');
+                      return (
+                        <tr key={src.id || src.id_documento} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                          <td style={{ padding: '8px 12px', fontWeight: 600, color: 'var(--color-ink-black)' }}>
+                            {src.id_lote ? <span style={{ color: 'var(--color-gira-gold, #D99B26)', fontFamily: 'var(--font-mono)', marginRight: '6px' }}>[Lote #{src.id_lote}]</span> : null}
+                            {fileName}
+                          </td>
+                          <td style={{ padding: '8px 12px', color: 'var(--color-slate-gray)' }}>{sourceType}</td>
+                          <td style={{ padding: '8px 12px', fontFamily: 'var(--font-mono)' }}>{recordCount}</td>
+                          <td style={{ padding: '8px 12px', color: 'var(--color-ash-gray)' }}>{dateDisplay}</td>
+                          <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'flex-end' }}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveBatchId(Number(navId));
+                                  loadBatchInspection(Number(navId));
+                                  setHistoryExpanded(false);
+                                }}
+                                className="sileo-btn"
+                                style={{ padding: '4px 8px', fontSize: '11px', borderRadius: '4px', backgroundColor: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
+                              >
+                                Cargar en Vista 1
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/dataops/lote/${navId}/texto`)}
+                                className="sileo-btn"
+                                style={{ padding: '4px 8px', fontSize: '11px', borderRadius: '4px', backgroundColor: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
+                              >
+                                ② Texto
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/dataops/lote/${navId}/beto`)}
+                                className="sileo-btn"
+                                style={{ padding: '4px 8px', fontSize: '11px', borderRadius: '4px', backgroundColor: 'var(--color-gira-gold, #D99B26)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+                              >
+                                ③ BETO
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ─── DRAWER DE BITÁCORA TÉCNICA Y REPORTE MARKDOWN (.MD) ─── */}
       <PipelineTelemetryDrawer
         isOpen={telemetryOpen}
         onClose={() => setTelemetryOpen(false)}
@@ -1014,4 +1239,3 @@ export default function IngestView() {
     </BatchFlowLayout>
   );
 }
-

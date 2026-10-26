@@ -74,3 +74,35 @@ class ForecastMetasResponse(BaseModel):
 
     status: str = Field("success")
     data: ForecastMetasData
+
+
+class MatrizViabilidadItem(BaseModel):
+    """Elemento individual de la Matriz de Viabilidad de Programas (Marketing)."""
+    programa: str
+    tipo: str
+    total_historico: int
+    inscritos_2025: int
+    inscritos_2026: int
+    cagr_pct: float
+    proyeccion_6m: int
+    tendencia_ols: str
+    decision_sugerida: str
+    badge_color: str
+    justificacion: str
+
+
+class MatrizViabilidadResponse(BaseModel):
+    status: str = "success"
+    total_programas: int
+    data: List[MatrizViabilidadItem]
+
+
+class AnaliticaMacroResponse(BaseModel):
+    status: str = "success"
+    fecha_calculo_iso: str
+    horizonte_meses: int
+    caso1_demanda_global: dict
+    caso2_demanda_programa: dict
+    caso3_metas_mensuales: dict
+    caso4_metas_anuales: dict
+

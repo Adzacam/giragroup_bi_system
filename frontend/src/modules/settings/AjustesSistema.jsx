@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   Sun, Moon, Trash2, Bell, BellOff, RefreshCw, Cpu, Database,
-  ShieldCheck, HardDrive, CheckCircle2, AlertTriangle, Sparkles, Volume2, VolumeX
+  ShieldCheck, HardDrive, CheckCircle2, AlertTriangle, Sparkles, Volume2, VolumeX, Loader2
 } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import { useTheme } from '../../context/ThemeContext';
+import { useNotifications } from '../../context/NotificationContext';
+import { dataopsApi } from '../../api/dataopsApi';
+import { sileoToast } from '../../services/sileoToast';
 import useKineticScroll from '../../hooks/useKineticScroll';
 
 export default function AjustesSistema() {
@@ -19,6 +22,8 @@ export default function AjustesSistema() {
     setAutoRefresh,
   } = useTheme();
 
+  const { refreshNotifications } = useNotifications();
+
   const [notificationSound, setNotificationSound] = useState(() => {
     return localStorage.getItem('gira_notify_sound') !== 'false';
   });
@@ -29,6 +34,7 @@ export default function AjustesSistema() {
 
   const [cacheStatus, setCacheStatus] = useState('');
   const [storageSize, setStorageSize] = useState('0 KB');
+  const [isClearing, setIsClearing] = useState(false);
 
   // Calculate local storage size
   const calculateStorage = () => {
@@ -45,19 +51,58 @@ export default function AjustesSistema() {
     calculateStorage();
   }, []);
 
-  const handleClearQueryCache = () => {
-    // Purge temporary query caches and memory
-    sessionStorage.clear();
-    const tempKeys = ['giragroup_visited', 'gira_notifications_cache', 'last_active_batch_id', 'gira_last_login_date'];
-    tempKeys.forEach(k => localStorage.removeItem(k));
-    Object.keys(localStorage).forEach(k => {
-      if (k.startsWith('gira_trusted_device_')) {
-        localStorage.removeItem(k);
+  const handleClearQueryCache = async () => {
+    try {
+      setIsClearing(true);
+      // 1. Purgar en el backend todos los lotes de staging y archivos temporales
+      const res = await dataopsApi.purgeStagingCache();
+      const count = res?.deleted_count ?? 0;
+
+      // 2. Limpiar sessionStorage y claves locales de DataOps y consultas
+      sessionStorage.clear();
+      const tempKeys = [
+        'giragroup_visited',
+        'gira_notifications_cache',
+        'last_active_batch_id',
+        'active_batch_id',
+        'gira_last_login_date',
+        'gira_query_cache',
+      ];
+      tempKeys.forEach((k) => localStorage.removeItem(k));
+      Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith('gira_trusted_device_') || k.startsWith('dataops_')) {
+          localStorage.removeItem(k);
+        }
+      });
+
+      // 3. Refrescar contexto de notificaciones y recalcular almacenamiento
+      if (refreshNotifications) {
+        await refreshNotifications();
       }
-    });
-    calculateStorage();
-    setCacheStatus('Caché de consultas, vistas, alertas y registros de sesión purgados exitosamente.');
-    setTimeout(() => setCacheStatus(''), 4000);
+      calculateStorage();
+
+      const successMsg = `Caché local purgado y ${count} archivo(s)/lote(s) residuales eliminados del servidor.`;
+      setCacheStatus(successMsg);
+      sileoToast.success({
+        title: 'Caché y Lotes Purgados',
+        description: 'Vistas limpiadas y lotes en staging reseteados a estado original.',
+      });
+      setTimeout(() => setCacheStatus(''), 5000);
+    } catch (err) {
+      console.warn('Error purgando caché:', err);
+      sessionStorage.clear();
+      localStorage.removeItem('last_active_batch_id');
+      localStorage.removeItem('gira_notifications_cache');
+      calculateStorage();
+      setCacheStatus('Caché local del navegador purgado.');
+      sileoToast.info({
+        title: 'Caché Local Purgado',
+        description: 'Se liberó el almacenamiento local del cliente.',
+      });
+      setTimeout(() => setCacheStatus(''), 4000);
+    } finally {
+      setIsClearing(false);
+    }
   };
 
   const handleClearLoginData = () => {
@@ -69,13 +114,23 @@ export default function AjustesSistema() {
         localStorage.removeItem(k);
       }
     });
+    if (refreshNotifications) {
+      refreshNotifications();
+    }
     calculateStorage();
     setCacheStatus('Datos de inicio de sesión, dispositivos recordados y alertas residuales eliminados.');
+    sileoToast.info({
+      title: 'Datos de Sesión Limpiados',
+      description: 'Dispositivos de confianza y credenciales recordadas revocadas.',
+    });
     setTimeout(() => setCacheStatus(''), 4000);
   };
 
-  const handleFullReset = () => {
-    if (window.confirm('¿Deseas restablecer todas las preferencias locales de la interfaz? (Esto cerrará tu sesión activa y purgará todo el almacenamiento).')) {
+  const handleFullReset = async () => {
+    if (window.confirm('¿Deseas restablecer todas las preferencias locales de la interfaz y purgar lotes en staging? (Esto cerrará tu sesión activa y purgará todo el almacenamiento).')) {
+      try {
+        await dataopsApi.purgeStagingCache();
+      } catch (e) {}
       localStorage.clear();
       sessionStorage.clear();
       window.location.href = '/login';
@@ -201,10 +256,19 @@ export default function AjustesSistema() {
             <button
               onClick={handleClearQueryCache}
               type="button"
+              disabled={isClearing}
               className="btn-pill-ghost"
-              style={{ justifyContent: 'center', padding: '10px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
+              style={{ justifyContent: 'center', padding: '10px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', cursor: isClearing ? 'not-allowed' : 'pointer' }}
             >
-              <RefreshCw size={14} /> Limpiar Caché de Consultas y Vistas
+              {isClearing ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" /> Purgando Lotes y Caché...
+                </>
+              ) : (
+                <>
+                  <RefreshCw size={14} /> Limpiar Caché de Consultas y Vistas
+                </>
+              )}
             </button>
             <button
               onClick={handleClearLoginData}

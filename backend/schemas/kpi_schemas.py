@@ -68,3 +68,10 @@ class AlertasListResponse(BaseModel):
     criticas: int
     advertencias: int
     data: List[AlertaItemSchema]
+
+
+class CmiCompletoResponse(BaseModel):
+    status: str = "success"
+    fecha_calculo_iso: str
+    perspectivas: Dict[str, Any]
+

@@ -41,3 +41,9 @@ class ChangePasswordRequest(BaseModel):
     new_password: str
     confirm_password: str
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ForgotPasswordResponse(BaseModel):
+    message: str
+    status: str = "success"

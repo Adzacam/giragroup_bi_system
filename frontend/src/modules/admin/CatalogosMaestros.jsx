@@ -1,80 +1,141 @@
-import React, { useState } from 'react';
-import { Database, Plus, Search, CheckCircle, RefreshCw, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Database, Plus, Search, CheckCircle, RefreshCw, X, Trash2, AlertCircle } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import useKineticScroll from '../../hooks/useKineticScroll';
-
-const MOCK_CATALOGS = {
-  modulos: [
-    { id: 101, codigo: 'POS-101', nombre: 'Maestría en Big Data & DataOps', tipo: 'Postgrado', institucion: 'GiraGroup Central', estado: 'Vigente' },
-    { id: 102, codigo: 'POS-102', nombre: 'Diplomado en Machine Learning Aplicado', tipo: 'Diplomado', institucion: 'Escuela de IA', estado: 'Vigente' },
-    { id: 103, codigo: 'DIP-201', nombre: 'Gestión Financiera para Directivos', tipo: 'Diplomado', institucion: 'Escuela de Negocios', estado: 'Vigente' },
-    { id: 104, codigo: 'EXP-301', nombre: 'Programa Experto en Python Analytics', tipo: 'Experto', institucion: 'Educación Continua', estado: 'Vigente' },
-  ],
-  docentes: [
-    { id: 1, codigo: 'DOC-109', nombre: 'Dr. Carlos Alberto Gómez Murillo', especialidad: 'Arquitectura de Datos & MLOps', actas: 14, estado: 'Activo' },
-    { id: 2, codigo: 'DOC-112', nombre: 'MSc. Valeria Quiroga Morales', especialidad: 'Modelos de Riesgo Financiero', actas: 9, estado: 'Activo' },
-    { id: 3, codigo: 'DOC-120', nombre: 'Ing. Fernando Tapia Dávalos', especialidad: 'Sistemas de Recomendación', actas: 12, estado: 'Activo' },
-    { id: 4, codigo: 'DOC-135', nombre: 'Lic. Mariana Siles Benítez', especialidad: 'Auditoría Forense y Control', actas: 6, estado: 'Activo' },
-  ],
-  categorias: [
-    { id: 1, codigo: 'CAT-01', nombre: 'Matrículas de Postgrado', tipo: 'INGRESO', centroCosto: 'CC-100', estado: 'Canónico' },
-    { id: 2, codigo: 'CAT-02', nombre: 'Cuotas Mensuales Programas', tipo: 'INGRESO', centroCosto: 'CC-101', estado: 'Canónico' },
-    { id: 3, codigo: 'CAT-03', nombre: 'Honorarios Docentes de Cátedra', tipo: 'EGRESO', centroCosto: 'CC-200', estado: 'Canónico' },
-    { id: 4, codigo: 'CAT-04', nombre: 'Licenciamiento Cloud & GPU', tipo: 'EGRESO', centroCosto: 'CC-300', estado: 'Canónico' },
-  ],
-};
+import { useTheme } from '../../context/ThemeContext';
+import { catalogApi } from '../../api/catalogApi';
 
 export default function CatalogosMaestros() {
   useKineticScroll();
-  const [activeTab, setActiveTab] = useState('modulos');
+  const { isDark } = useTheme();
+
+  const [activeTab, setActiveTab] = useState('modulos'); // 'modulos' | 'docentes' | 'categorias'
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [data, setData] = useState(MOCK_CATALOGS);
-  const [newEntry, setNewEntry] = useState({ codigo: '', nombre: '', extra: '' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
 
-  const currentList = data[activeTab].filter((item) =>
-    item.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.codigo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [modulosList, setModulosList] = useState([]);
+  const [docentesList, setDocentesList] = useState([]);
+  const [conceptosList, setConceptosList] = useState([]);
 
-  const handleAdd = (e) => {
+  const [newEntry, setNewEntry] = useState({ codigo: '', nombre: '', extra: '', institucion: 'GiraGroup' });
+
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [modRes, docRes, finRes] = await Promise.all([
+        catalogApi.getModulos().catch(() => ({ data: [] })),
+        catalogApi.getDocentes().catch(() => ({ data: [] })),
+        catalogApi.getFinancialConcepts().catch(() => [])
+      ]);
+
+      const modulos = Array.isArray(modRes?.data) ? modRes.data : Array.isArray(modRes) ? modRes : [];
+      const docentes = Array.isArray(docRes?.data) ? docRes.data : Array.isArray(docRes) ? docRes : [];
+      const conceptos = Array.isArray(finRes) ? finRes : Array.isArray(finRes?.data) ? finRes.data : [];
+
+      setModulosList(modulos);
+      setDocentesList(docentes);
+      setConceptosList(conceptos);
+    } catch (err) {
+      console.error('Error al sincronizar catálogos:', err);
+      setError('No se pudieron recuperar los catálogos dimensionales desde PostgreSQL.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const getFilteredList = () => {
+    const q = searchTerm.toLowerCase();
+    if (activeTab === 'modulos') {
+      return modulosList.filter(item =>
+        (item.nombre_modulo || '').toLowerCase().includes(q) ||
+        (item.pos_code || '').toLowerCase().includes(q) ||
+        (item.programa || '').toLowerCase().includes(q)
+      );
+    }
+    if (activeTab === 'docentes') {
+      return docentesList.filter(item =>
+        (item.nombre_completo || '').toLowerCase().includes(q) ||
+        (item.area_especialidad || '').toLowerCase().includes(q)
+      );
+    }
+    if (activeTab === 'categorias') {
+      return conceptosList.filter(item =>
+        (item.nombre_canonico || '').toLowerCase().includes(q) ||
+        (item.codigo_canonico || '').toLowerCase().includes(q) ||
+        (item.descripcion || '').toLowerCase().includes(q)
+      );
+    }
+    return [];
+  };
+
+  const currentList = getFilteredList();
+
+  const handleAdd = async (e) => {
     e.preventDefault();
-    const created = {
-      id: Date.now(),
-      codigo: newEntry.codigo,
-      nombre: newEntry.nombre,
-      tipo: newEntry.extra || 'Canónico',
-      institucion: 'GiraGroup Central',
-      especialidad: newEntry.extra,
-      centroCosto: newEntry.extra,
-      actas: 0,
-      estado: 'Vigente',
-    };
-    setData((prev) => ({
-      ...prev,
-      [activeTab]: [created, ...prev[activeTab]],
-    }));
-    setIsModalOpen(false);
-    setNewEntry({ codigo: '', nombre: '', extra: '' });
+    setSaving(true);
+    try {
+      if (activeTab === 'modulos') {
+        await catalogApi.createModulo({
+          nombre_modulo: newEntry.nombre,
+          pos_code: newEntry.codigo || 'MOD-GEN',
+          nombre_institucion: newEntry.institucion || 'GiraGroup',
+          programa: newEntry.extra || 'Programa General'
+        });
+      } else if (activeTab === 'docentes') {
+        await catalogApi.createDocente({
+          nombre_completo: newEntry.nombre,
+          area_especialidad: newEntry.extra || 'General'
+        });
+      }
+      setIsModalOpen(false);
+      setNewEntry({ codigo: '', nombre: '', extra: '', institucion: 'GiraGroup' });
+      await loadData();
+    } catch (err) {
+      console.error('Error al crear registro de catálogo:', err);
+      alert('Error al registrar en PostgreSQL: ' + (err.response?.data?.detail || err.message));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
+    <div style={{ maxWidth: '1240px', margin: '0 auto', paddingBottom: '60px' }}>
       <PageHeader
         category="DIMENSIONES CANÓNICAS POSTGRESQL"
         title="Catálogos Maestros"
-        italicWord="CRUD"
-        subtitle="Mantenimiento y sincronización de tablas dimensionales canónicas que alimentan las llaves foráneas del modelo estrella."
+        italicWord="Dimensionales"
+        subtitle="Mantenimiento y sincronización de tablas dimensionales canónicas (dim_modulo, dim_docente, cat_conceptos_financieros) que alimentan el esquema constelación."
         action={
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="btn-pill-dark"
-            type="button"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-          >
-            <Plus size={16} /> Añadir Registro
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={loadData}
+              className="btn-pill-ghost"
+              type="button"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
+              title="Recargar desde base de datos"
+            >
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refrescar
+            </button>
+            {activeTab !== 'categorias' && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="btn-pill-dark"
+                type="button"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+              >
+                <Plus size={16} /> Añadir {activeTab === 'modulos' ? 'Módulo' : 'Docente'}
+              </button>
+            )}
+          </div>
         }
       />
 
@@ -95,7 +156,7 @@ export default function CatalogosMaestros() {
           type="button"
           style={{ padding: '8px 18px', fontSize: '13.5px' }}
         >
-          Módulos y Programas
+          Módulos y Programas ({modulosList.length})
         </button>
         <button
           onClick={() => { setActiveTab('docentes'); setSearchTerm(''); }}
@@ -103,7 +164,7 @@ export default function CatalogosMaestros() {
           type="button"
           style={{ padding: '8px 18px', fontSize: '13.5px' }}
         >
-          Plantel Docente
+          Plantel Docente ({docentesList.length})
         </button>
         <button
           onClick={() => { setActiveTab('categorias'); setSearchTerm(''); }}
@@ -111,7 +172,7 @@ export default function CatalogosMaestros() {
           type="button"
           style={{ padding: '8px 18px', fontSize: '13.5px' }}
         >
-          Categorías Financieras
+          Conceptos Financieros ({conceptosList.length})
         </button>
       </div>
 
@@ -123,64 +184,101 @@ export default function CatalogosMaestros() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por código o nombre..."
+            placeholder="Buscar por código, nombre o especialidad..."
             className="form-input"
             style={{ paddingLeft: '40px' }}
           />
         </div>
         <div style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)' }}>
-          Total registros: <strong>{currentList.length}</strong>
+          Total registros sincronizados: <strong>{currentList.length}</strong>
         </div>
       </div>
 
-      {/* ── Tabla de Catálogo ────────────────────────────────── */}
-      <ResponsiveTable>
-        <table className="steep-table">
-          <thead>
-            <tr>
-              <th>Código Canónico</th>
-              <th>Descripción / Nombre</th>
-              {activeTab === 'modulos' && <th>Tipo Programa</th>}
-              {activeTab === 'docentes' && <th>Área Especialidad</th>}
-              {activeTab === 'categorias' && <th>Tipo Rubro</th>}
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentList.map((row) => (
-              <tr key={row.id}>
-                <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '13px' }}>
-                  {row.codigo}
-                </td>
-                <td>{row.nombre}</td>
-                {activeTab === 'modulos' && <td>{row.tipo}</td>}
-                {activeTab === 'docentes' && <td>{row.especialidad}</td>}
-                {activeTab === 'categorias' && (
-                  <td>
-                    <span
-                      style={{
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        fontSize: '11px',
-                        fontFamily: 'var(--font-mono)',
-                        backgroundColor: row.tipo === 'INGRESO' ? '#dcfce7' : '#fee2e2',
-                        color: row.tipo === 'INGRESO' ? 'var(--color-alert-green)' : 'var(--color-alert-red)',
-                      }}
-                    >
-                      {row.tipo}
-                    </span>
-                  </td>
-                )}
-                <td>
-                  <span className="badge-status badge-status-completed">
-                    <CheckCircle size={12} /> {row.estado}
-                  </span>
-                </td>
+      {loading ? (
+        <div style={{ padding: '60px', textAlign: 'center', color: 'var(--color-slate-gray)' }}>
+          <RefreshCw className="animate-spin" size={28} style={{ margin: '0 auto 12px' }} />
+          <p>Consultando tablas dimensionales en PostgreSQL...</p>
+        </div>
+      ) : error ? (
+        <div style={{ padding: '24px', backgroundColor: 'rgba(217, 56, 58, 0.08)', borderRadius: '12px', border: '1px solid var(--color-alert-red)', color: 'var(--color-alert-red)', marginBottom: '24px' }}>
+          <AlertCircle size={20} style={{ verticalAlign: 'middle', marginRight: '8px' }} />
+          {error}
+        </div>
+      ) : (
+        <ResponsiveTable>
+          <table className="steep-table">
+            <thead>
+              <tr>
+                <th>Código Canónico</th>
+                <th>Descripción / Nombre</th>
+                {activeTab === 'modulos' && <th>Programa / Institución</th>}
+                {activeTab === 'docentes' && <th>Área Especialidad</th>}
+                {activeTab === 'categorias' && <th>Tipo / Categoría</th>}
+                <th>Estado</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </ResponsiveTable>
+            </thead>
+            <tbody>
+              {currentList.length > 0 ? (
+                currentList.map((row, idx) => {
+                  const id = row.id_modulo || row.id_docente || row.id_concepto || idx;
+                  const codigo = row.pos_code || `DOC-${row.id_docente}` || row.codigo_canonico || `CAT-${id}`;
+                  const nombre = row.nombre_modulo || row.nombre_completo || row.nombre_canonico || 'Sin nombre';
+
+                  return (
+                    <tr key={id}>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '13px' }}>
+                        {codigo}
+                      </td>
+                      <td style={{ fontWeight: 500 }}>{nombre}</td>
+                      {activeTab === 'modulos' && (
+                        <td>
+                          <span style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)' }}>
+                            {row.programa || row.nombre_institucion || 'GiraGroup Central'}
+                          </span>
+                        </td>
+                      )}
+                      {activeTab === 'docentes' && (
+                        <td>
+                          <span style={{ fontSize: '12.5px', color: 'var(--color-ink-black)' }}>
+                            {row.area_especialidad || 'Cátedra General'}
+                          </span>
+                        </td>
+                      )}
+                      {activeTab === 'categorias' && (
+                        <td>
+                          <span
+                            style={{
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontFamily: 'var(--font-mono)',
+                              backgroundColor: row.tipo_movimiento === 'INGRESO' ? '#dcfce7' : '#fee2e2',
+                              color: row.tipo_movimiento === 'INGRESO' ? 'var(--color-alert-green)' : 'var(--color-alert-red)',
+                            }}
+                          >
+                            {row.tipo_movimiento} · {row.categoria_contable}
+                          </span>
+                        </td>
+                      )}
+                      <td>
+                        <span className="badge-status badge-status-completed">
+                          <CheckCircle size={12} /> Vigente
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: 'var(--color-slate-gray)' }}>
+                    No se encontraron registros que coincidan con la búsqueda.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </ResponsiveTable>
+      )}
 
       {/* ── Modal Alta Registro ──────────────────────────────── */}
       {isModalOpen && (
@@ -201,17 +299,17 @@ export default function CatalogosMaestros() {
             className="floating-artifact"
             style={{
               width: '100%',
-              maxWidth: '460px',
+              maxWidth: '480px',
               padding: '30px',
               borderRadius: 'var(--radius-cards)',
-              backgroundColor: 'var(--color-paper-white)',
+              backgroundColor: isDark ? 'var(--color-bg-card)' : 'var(--color-paper-white)',
               boxShadow: 'var(--shadow-modal)',
               animation: 'modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h3 className="serif-heading" style={{ fontSize: '20px', margin: 0 }}>
-                Nuevo Registro ({activeTab})
+                Nuevo Registro ({activeTab === 'modulos' ? 'Módulo Curricular' : 'Docente'})
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -223,43 +321,45 @@ export default function CatalogosMaestros() {
             </div>
 
             <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
-                  Código Canónico
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={newEntry.codigo}
-                  onChange={(e) => setNewEntry({ ...newEntry, codigo: e.target.value })}
-                  placeholder="ej. POS-105 o DOC-140"
-                  className="form-input"
-                />
-              </div>
+              {activeTab === 'modulos' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
+                    Código Canónico POS / MOD
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newEntry.codigo}
+                    onChange={(e) => setNewEntry({ ...newEntry, codigo: e.target.value })}
+                    placeholder="ej. POS-105 o MOD-12"
+                    className="form-input"
+                  />
+                </div>
+              )}
 
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
-                  Nombre / Descripción
+                  {activeTab === 'modulos' ? 'Nombre del Módulo' : 'Nombre Completo del Docente'}
                 </label>
                 <input
                   type="text"
                   required
                   value={newEntry.nombre}
                   onChange={(e) => setNewEntry({ ...newEntry, nombre: e.target.value })}
-                  placeholder="Descripción canónica completa"
+                  placeholder={activeTab === 'modulos' ? 'ej. Arquitectura de Datos y Data Lakehouse' : 'ej. Dr. Carlos Murillo'}
                   className="form-input"
                 />
               </div>
 
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
-                  Atributo Secundario (Especialidad / Tipo / Centro Costo)
+                  {activeTab === 'modulos' ? 'Programa Académico Perteneciente' : 'Área de Especialidad'}
                 </label>
                 <input
                   type="text"
                   value={newEntry.extra}
                   onChange={(e) => setNewEntry({ ...newEntry, extra: e.target.value })}
-                  placeholder="ej. Maestría o CC-400"
+                  placeholder={activeTab === 'modulos' ? 'ej. Maestría en Big Data' : 'ej. Inteligencia Artificial'}
                   className="form-input"
                 />
               </div>
@@ -269,11 +369,12 @@ export default function CatalogosMaestros() {
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="btn-pill-ghost"
+                  disabled={saving}
                 >
                   Cancelar
                 </button>
-                <button type="submit" className="btn-pill-dark">
-                  Guardar en PostgreSQL
+                <button type="submit" className="btn-pill-dark" disabled={saving}>
+                  {saving ? 'Guardando...' : 'Guardar en PostgreSQL'}
                 </button>
               </div>
             </form>

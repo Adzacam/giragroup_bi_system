@@ -27,8 +27,18 @@ from models.staging_entidad import StagingEntidadNoResuelta
 class TestDWLoaderResolution:
     def test_resolver_estudiante_ci_directo_existente(self):
         db = MagicMock(spec=Session)
-        estudiante_mock = DimEstudiante(id_estudiante=10, codigo_estudiante="4892019", nombre_completo="Carlos Murillo")
-        db.query().filter().first.return_value = estudiante_mock
+        estudiante_mock = DimEstudiante(
+            id_estudiante=10,
+            codigo_estudiante="4892019",
+            nombre_completo="Carlos Murillo",
+            deprecado=False,
+            ci="4892019",
+            ci_numero="4892019"
+        )
+        q_mock = MagicMock()
+        q_mock.filter.return_value = q_mock
+        q_mock.first.return_value = estudiante_mock
+        db.query.return_value = q_mock
 
         loader = DWLoaderService(db)
         id_est, estado = loader.resolver_o_crear_estudiante(ci="4892019", nombre="Carlos Murillo")
@@ -38,7 +48,10 @@ class TestDWLoaderResolution:
 
     def test_resolver_estudiante_ci_directo_nuevo(self):
         db = MagicMock(spec=Session)
-        db.query().filter().first.return_value = None  # No existe aún
+        q_mock = MagicMock()
+        q_mock.filter.return_value = q_mock
+        q_mock.first.return_value = None
+        db.query.return_value = q_mock
 
         loader = DWLoaderService(db)
         id_est, estado = loader.resolver_o_crear_estudiante(ci="8932014", nombre="Estudiante Nuevo")
@@ -49,8 +62,10 @@ class TestDWLoaderResolution:
 
     def test_resolver_estudiante_sintetico_derivado_a_staging_estado_c(self):
         db = MagicMock(spec=Session)
-        # Base vacía de estudiantes para forzar falla de match
-        db.query().all.return_value = []
+        q_mock = MagicMock()
+        q_mock.filter.return_value = q_mock
+        q_mock.all.return_value = []
+        db.query.return_value = q_mock
 
         loader = DWLoaderService(db)
         id_est, estado = loader.resolver_o_crear_estudiante(
@@ -72,7 +87,10 @@ class TestDWLoaderResolution:
 
     def test_resolver_tiempo_genera_datos_calendario(self):
         db = MagicMock(spec=Session)
-        db.query().filter().first.return_value = None
+        q_mock = MagicMock()
+        q_mock.filter.return_value = q_mock
+        q_mock.first.return_value = None
+        db.query.return_value = q_mock
 
         loader = DWLoaderService(db)
         id_t = loader.resolver_o_crear_tiempo("2025-05-18")
@@ -88,24 +106,32 @@ class TestDWLoaderResolution:
 
     def test_cargar_registro_academico_asigna_fks(self):
         db = MagicMock(spec=Session)
-        estudiante_mock = DimEstudiante(id_estudiante=42, codigo_estudiante="123456", nombre_completo="Ana Perez")
+        estudiante_mock = DimEstudiante(
+            id_estudiante=42,
+            codigo_estudiante="123456",
+            nombre_completo="Ana Perez",
+            ci="123456",
+            ci_numero="123456",
+            deprecado=False
+        )
         modulo_mock = DimModulo(id_modulo=7, nombre_modulo="Marketing Digital", pos_code="POS-5291")
         docente_mock = DimDocente(id_docente=3, nombre_completo="Lic. Gomez")
         tiempo_mock = DimTiempo(id_tiempo=20250518)
 
-        # Mock de consultas
+        # Mock de consultas que soporta chained filters
         def mock_query(model):
             m = MagicMock()
+            m.filter.return_value = m
             if model == DimEstudiante:
-                m.filter().first.return_value = estudiante_mock
+                m.first.return_value = estudiante_mock
             elif model == DimModulo:
-                m.filter().first.return_value = modulo_mock
+                m.first.return_value = modulo_mock
             elif model == DimDocente:
-                m.filter().first.return_value = docente_mock
+                m.first.return_value = docente_mock
             elif model == DimTiempo:
-                m.filter().first.return_value = tiempo_mock
+                m.first.return_value = tiempo_mock
             elif model == FactRendimientoAcademico:
-                m.filter().first.return_value = None
+                m.first.return_value = None
             return m
 
         db.query.side_effect = mock_query

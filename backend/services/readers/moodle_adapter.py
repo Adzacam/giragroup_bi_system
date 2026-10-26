@@ -70,11 +70,11 @@ def adaptar_moodle_df(df: pd.DataFrame) -> pd.DataFrame:
     if df is None or df.empty:
         return df
 
-    # Buscar la fila de cabeceras
+    # Buscar la fila de cabeceras (inspeccionar hasta 12 filas)
     header_idx = -1
-    for idx in range(min(5, len(df))):
+    for idx in range(min(12, len(df))):
         fila = [str(x).strip().lower() for x in df.iloc[idx] if pd.notna(x)]
-        matches = sum(1 for celda in fila if any(k in celda for k in ["first name", "surname", "nombre", "apellido", "email", "id"]))
+        matches = sum(1 for celda in fila if any(k in celda for k in ["first name", "surname", "nombre", "apellido", "email", "id", "grade", "calificación", "course"]))
         if matches >= 2:
             header_idx = idx
             break
@@ -90,6 +90,7 @@ def adaptar_moodle_df(df: pd.DataFrame) -> pd.DataFrame:
     # Descartar filas de agregación/resumen de Moodle
     if len(df_clean) > 0 and len(df_clean.columns) > 0:
         primera_col = df_clean.columns[0]
-        df_clean = df_clean[~df_clean[primera_col].astype(str).str.lower().str.contains("overall average|promedio general|media del curso", na=False)]
+        descartar_patron = "overall average|promedio general|media del curso|total general|course total|subtotal|firma"
+        df_clean = df_clean[~df_clean[primera_col].astype(str).str.lower().str.contains(descartar_patron, na=False)]
 
     return df_clean

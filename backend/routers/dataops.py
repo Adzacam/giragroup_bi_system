@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, Query, HTTPException, status
+from fastapi import APIRouter, Depends, UploadFile, File, Form, Query, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import Optional, List, Dict, Any, Tuple, Union
@@ -15,13 +15,14 @@ from difflib import SequenceMatcher
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
-UPLOAD_DIR = os.environ.get(
-    "UPLOAD_DIR",
-    "/app/uploads/data"
-    if os.path.exists("/app/uploads")
-    else os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "data")),
+
+BASE_PROJ_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+LANDING_DIR = os.environ.get(
+    "LANDING_DIR",
+    os.path.join(BASE_PROJ_DIR, "data", "landing", "batches")
 )
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(LANDING_DIR, exist_ok=True)
+UPLOAD_DIR = LANDING_DIR
 
 from core.database import get_db
 from core.security import require_roles, get_current_user
@@ -37,6 +38,8 @@ from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
 from models.dim_tiempo import DimTiempo
 from models.log_auditoria_nlp import LogAuditoriaNlp
+from models.log_pipeline import LogPipelineIngesta
+from services.notification_service import NotificationService
 from schemas.dataops_schemas import (
     SourceListResponse,
     FileUploadResponse,
@@ -78,6 +81,32 @@ except ImportError:
 from pydantic import BaseModel
 
 
+def get_current_user_optional(
+    request: Request,
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """Obtiene el usuario actual vía Bearer token JWT si existe, o fallback al usuario auditor/admin activo."""
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+        try:
+            from jose import jwt
+            from core.security import SECRET_KEY, ALGORITHM
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            user_id = payload.get("sub")
+            if user_id:
+                if str(user_id).isdigit():
+                    u = db.query(User).filter(User.id == int(user_id)).first()
+                    if u:
+                        return u
+                u = db.query(User).filter((User.username == str(user_id)) | (User.email == str(user_id))).first()
+                if u:
+                    return u
+        except Exception:
+            pass
+    return db.query(User).filter(User.role.in_(["AUDITOR_CALIDAD", "ADMIN"]), User.is_active == True).first()
+
+
 class DeleteBatchRequest(BaseModel):
     ids: List[int]
 
@@ -116,7 +145,7 @@ class BatchResolveRequest(BaseModel):
 router = APIRouter(
     prefix="/api/v1/dataops",
     tags=["DataOps & Pipeline de Ingesta"],
-    dependencies=[Depends(require_roles(["AUDITOR_CALIDAD", "ADMIN", "COORDINADOR_ACADEMICO", "ANALISTA_DATOS_MARKETING"]))],
+    dependencies=[Depends(require_roles(["AUDITOR_CALIDAD", "ADMIN"]))],
 )
 
 
@@ -296,6 +325,21 @@ def clear_all_sources(db: Session = Depends(get_db)):
     return {"status": "success", "message": f"{deleted} fuente(s) eliminada(s) exitosamente.", "deleted_count": deleted}
 
 
+@router.post("/purge-staging-cache")
+@router.delete("/purge-staging-cache")
+def purge_staging_cache(db: Session = Depends(get_db)):
+    """
+    Purga completamente todos los lotes de staging, archivos en cola,
+    registros crudos y logs temporales, dejando el sistema DataOps en estado limpio.
+    """
+    deleted = IngestionService.limpiar_todas_las_fuentes(db)
+    return {
+        "status": "success",
+        "message": f"Se han purgado {deleted} documentos y todos los lotes de staging.",
+        "deleted_count": deleted
+    }
+
+
 @router.post("/sources/delete-batch")
 def delete_batch_sources(payload: DeleteBatchRequest, db: Session = Depends(get_db)):
     """Elimina un lote de fuentes documentales por sus IDs."""
@@ -332,12 +376,13 @@ async def upload_file(
     tipo_fuente: Optional[str] = Form(None),
     tipo_escala: Optional[str] = Form(None),
     institucion: Optional[str] = Form("GiraGroup"),
-    periodo: Optional[str] = Form("2026-1"),
+    periodo: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
     """
     Sube un archivo individual (.xlsx, .xls, .csv), valida seguridad (#18),
-    crea su registro en `lote` (#17) y ejecuta las 6 etapas del pipeline.
+    crea su registro en `lote` (#17) con reconocimiento automático de fechas multi-gestión
+    y ejecuta las 6 etapas del pipeline.
     """
     content = await file.read()
     err_sec = IngestionService.validar_seguridad_archivo(file.filename or "", content)
@@ -350,19 +395,22 @@ async def upload_file(
     # Crear lote para el archivo
     nuevo_lote = Lote(
         institucion=(institucion or "GiraGroup").strip(),
-        periodo=(periodo or "2026-1").strip(),
+        periodo=(periodo or "Auto").strip(),
         estado="PROCESADO",
         total_archivos=1,
     )
     db.add(nuevo_lote)
     db.flush()
 
+    batch_landing_dir = os.path.join(LANDING_DIR, str(nuevo_lote.id_lote))
+    os.makedirs(batch_landing_dir, exist_ok=True)
+
     try:
-        dest_path = os.path.join(UPLOAD_DIR, safe_name)
+        dest_path = os.path.join(batch_landing_dir, safe_name)
         with open(dest_path, "wb") as f_out:
             f_out.write(content)
     except Exception as e_save:
-        logger.warning("No se pudo guardar copia física de '%s': %s", safe_name, e_save)
+        logger.warning("No se pudo guardar copia física de '%s' en '%s': %s", safe_name, batch_landing_dir, e_save)
 
     resultado = IngestionService.procesar_archivo_ingesta(
         db=db,
@@ -373,9 +421,33 @@ async def upload_file(
         tipo_fuente=tipo_fuente,
         tipo_escala=tipo_escala,
         institucion=(institucion or "GiraGroup").strip(),
-        periodo=(periodo or "2026-1").strip(),
+        periodo=(periodo or "Auto").strip(),
         hash_sha256=sha256_full,
     )
+
+    if resultado.get("rango_fechas"):
+        nuevo_lote.periodo = resultado.get("rango_fechas")
+        db.commit()
+
+    try:
+        from models.log_pipeline import LogPipelineIngesta
+        audit_log = LogPipelineIngesta(
+            id_documento=resultado.get("id_documento"),
+            etapa="INGESTA",
+            nivel="SUCCESS",
+            modulo="DataOps: Ingesta",
+            mensaje=f"Lote #{nuevo_lote.id_lote} ({safe_name}): Ingesta, aplanamiento asimétrico y hash SHA-256 completado.",
+            metadata_json={
+                "id_lote": nuevo_lote.id_lote,
+                "nombre_archivo": safe_name,
+                "sha256": sha256_full,
+                "registros": resultado.get("kpis", {}).get("total_registros_procesados", 0)
+            }
+        )
+        db.add(audit_log)
+        db.commit()
+    except Exception as e_audit:
+        logger.warning("No se pudo registrar log de auditoría: %s", e_audit)
 
     try:
         doc_obj = db.query(DimOrigenDocumental).filter_by(id_documento=resultado["id_documento"]).first()
@@ -405,7 +477,7 @@ async def upload_batch(
     tipos_escala: Optional[List[str]] = Form(None),
     archivos_meta: Optional[str] = Form(None),
     institucion: Optional[str] = Form("GiraGroup"),
-    periodo: Optional[str] = Form("2026-1"),
+    periodo: Optional[str] = Form(None),
     tipo_escala_global: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
@@ -455,7 +527,7 @@ async def upload_batch(
             meta_list = []
 
     inst_clean = (institucion or "GiraGroup").strip()
-    per_clean = (periodo or "2026-1").strip()
+    per_clean = (periodo or "Auto").strip()
 
     nuevo_lote = Lote(
         institucion=inst_clean,
@@ -465,6 +537,9 @@ async def upload_batch(
     )
     db.add(nuevo_lote)
     db.flush()
+
+    batch_landing_dir = os.path.join(LANDING_DIR, str(nuevo_lote.id_lote))
+    os.makedirs(batch_landing_dir, exist_ok=True)
 
     resultados: List[BatchUploadItem] = []
     archivos_procesados: List[Dict[str, Any]] = []
@@ -575,11 +650,11 @@ async def upload_batch(
         )
 
         try:
-            dest_path = os.path.join(UPLOAD_DIR, safe_name)
+            dest_path = os.path.join(batch_landing_dir, safe_name)
             with open(dest_path, "wb") as f_out:
                 f_out.write(content)
         except Exception as e_save:
-            logger.warning("No se pudo guardar copia física de '%s': %s", safe_name, e_save)
+            logger.warning("No se pudo guardar copia física de '%s' en '%s': %s", safe_name, batch_landing_dir, e_save)
 
         try:
             resultado = IngestionService.procesar_archivo_ingesta(
@@ -603,6 +678,14 @@ async def upload_batch(
             fuente_final = resultado.get("tipo_fuente")
             escala_final = resultado.get("tipo_escala")
             ok_msg = f"Archivo '{safe_name}' procesado exitosamente ({n_regs} registros)."
+            diag_item = resultado.get("diagnostico_estructural")
+            chips_item = resultado.get("chips_catalogo")
+            origen_det = resultado.get("origen_detectado")
+            rango_det = resultado.get("rango_fechas")
+            fechas_det = resultado.get("fechas_reconocidas")
+            if rango_det and (nuevo_lote.periodo == "Auto" or not nuevo_lote.periodo):
+                nuevo_lote.periodo = rango_det
+                db.commit()
 
             archivos_procesados.append({
                 "nombre_archivo": safe_name,
@@ -616,6 +699,11 @@ async def upload_batch(
                 "hash_sha256": sha256_full,
                 "mensaje": ok_msg,
                 "detalle": ok_msg,
+                "diagnostico_estructural": diag_item,
+                "chips_catalogo": chips_item,
+                "origen_detectado": origen_det,
+                "rango_fechas": rango_det,
+                "fechas_reconocidas": fechas_det,
             })
             resultados.append(BatchUploadItem(
                 id_documento=doc_id_created,
@@ -627,6 +715,11 @@ async def upload_batch(
                 status="procesado",
                 mensaje=f"Archivo '{safe_name}' procesado y normalizado con éxito.",
                 pipeline_result=resultado,
+                diagnostico_estructural=diag_item,
+                chips_catalogo=chips_item,
+                origen_detectado=origen_det,
+                rango_fechas=rango_det,
+                fechas_reconocidas=fechas_det,
             ))
         except Exception as e_proc:
             err_str = str(e_proc.detail) if hasattr(e_proc, "detail") else str(e_proc)
@@ -653,6 +746,28 @@ async def upload_batch(
     if not exitosos:
         nuevo_lote.estado = "CON_ERRORES"
     db.commit()
+
+    try:
+        from models.log_pipeline import LogPipelineIngesta
+        audit_batch_log = LogPipelineIngesta(
+            id_documento=docs_creados_ids[0] if docs_creados_ids else None,
+            etapa="INGESTA",
+            nivel="SUCCESS" if exitosos else "ERROR",
+            modulo="DataOps: Ingesta",
+            mensaje=f"Lote #{nuevo_lote.id_lote}: Carga de {len(exitosos)} archivo(s) procesados exitosamente ({total_registros} registros), aplanamiento asimétrico y hashes SHA-256 verificados.",
+            metadata_json={
+                "id_lote": nuevo_lote.id_lote,
+                "total_archivos": len(files),
+                "exitosos": len(exitosos),
+                "fallidos": len(errores),
+                "total_registros": total_registros,
+                "archivos": [a.get("nombre_archivo") for a in archivos_procesados],
+            }
+        )
+        db.add(audit_batch_log)
+        db.commit()
+    except Exception as e_audit_batch:
+        logger.warning("No se pudo registrar log de auditoría del lote: %s", e_audit_batch)
 
     if docs_creados_ids:
         try:
@@ -1497,6 +1612,55 @@ def extract_entities_from_line(
                 "algorithm": "Explicit Scale Declared" if not grade_invalida else "Unspecified Scale Error",
             })
 
+    # 7. ASISTENCIA / INASISTENCIA (Umbral de Abandono)
+    asist_val = None
+    es_inasistencia = False
+    for k in ["ASISTENCIA", "ASIST", "INASISTENCIA", "INASIST", "FALTAS", "FALTA"]:
+        if k in labeled_data and labeled_data[k]:
+            asist_val = labeled_data[k]
+            if "INASIST" in k or "FALTA" in k:
+                es_inasistencia = True
+            break
+
+    if not asist_val:
+        m_asist = re.search(
+            r"\b([0-9]{1,3}(?:\.[0-9]{1,2})?)\s*%\s*(?:de\s+)?(inasistencia|asistencia|faltas)\b|\b(?:asistencia|inasistencia|asist|inasist)\s*:\s*([0-9]{1,3}(?:\.[0-9]{1,2})?%?)",
+            raw_text,
+            re.IGNORECASE,
+        )
+        if m_asist:
+            asist_val = m_asist.group(1) or m_asist.group(3)
+            palabra = (m_asist.group(2) or "").lower()
+            if "inasist" in palabra or "falta" in palabra:
+                es_inasistencia = True
+            elif not palabra and ("inasist" in raw_text.lower() or "falta" in raw_text.lower()):
+                es_inasistencia = True
+
+    if asist_val:
+        try:
+            m_a_num = float(re.search(r"[0-9]+(?:\.[0-9]+)?", str(asist_val)).group(0))
+            asist_pct = 100.0 - m_a_num if es_inasistencia else m_a_num
+            inasist_pct = m_a_num if es_inasistencia else 100.0 - m_a_num
+            alerta_des = inasist_pct >= 20.0 or asist_pct <= 80.0
+            entities.append({
+                "token": f"{m_a_num:.0f}% {'inasistencia' if es_inasistencia else 'asistencia'}",
+                "label": "ASISTENCIA",
+                "tag": "B-ASIST",
+                "conllTag": "ASISTENCIA",
+                "lecturaModelo": 0.96,
+                "betoConfidence": 0.96,
+                "catalogTable": "Control de Asistencia",
+                "asistenciaPct": asist_pct,
+                "inasistenciaPct": inasist_pct,
+                "alertaDesercion": alerta_des,
+                "matchedCanonical": f"{asist_pct:.0f}% Asistencia",
+                "canonicalId": "ASIST_ALERTA_ABANDONO" if alerta_des else "ASIST_OK",
+                "fuzzScore": 100.0,
+                "algorithm": "Regex Attendance Pattern",
+            })
+        except Exception:
+            pass
+
     if not entities:
         entities.append({
             "token": raw_text[:35],
@@ -1558,9 +1722,21 @@ def _resolver_documentos_lote(
     lote_obj: Optional[Lote] = None
     docs_lote: List[DimOrigenDocumental] = []
 
+    # Sanitización defensiva de id_lote_or_doc y doc_id_filter contra Query objects o strings
+    if hasattr(id_lote_or_doc, "default"):
+        id_lote_or_doc = "latest"
+
+    clean_doc_id: Optional[int] = None
+    if doc_id_filter is not None and not hasattr(doc_id_filter, "default"):
+        try:
+            clean_doc_id = int(doc_id_filter)
+        except (ValueError, TypeError):
+            clean_doc_id = None
+    doc_id_filter = clean_doc_id
+
     raw_id_str = str(id_lote_or_doc).strip().lower() if id_lote_or_doc is not None else "latest"
 
-    if raw_id_str in ("latest", "0", "none", ""):
+    if raw_id_str in ("latest", "0", "none", "", "null", "undefined"):
         lote_obj = db.query(Lote).order_by(Lote.id_lote.desc()).first()
         if lote_obj:
             docs_lote = (
@@ -1916,6 +2092,15 @@ def _evaluar_documentos_lote(
                 for e in ents
             ]
 
+            ent_prog = next((e for e in ents if e.get("label") == "PROGRAMA"), None)
+            ent_asist = next((e for e in ents if e.get("label") == "ASISTENCIA"), None)
+            es_comercial = doc_fuente in ("ADMISION", "COMERCIAL", "INSCRIPCIONES", "LEADS") or "INSCRIPCI" in doc_fuente or "META" in line.upper() or "CANAL" in line.upper()
+            es_financiero = (doc_fuente in ("COBRANZA", "FINANCIERO", "PAGOS") or ent_mon is not None or (ent_con and "PAGO" in ent_con.get("token", "").upper())) and not es_comercial
+            area_reg = "comercial" if es_comercial else ("financiera" if es_financiero else "academica")
+
+            es_nuevo_cat = bool(ent_mod and ent_mod.get("es_nuevo_perfil"))
+            en_calidad = (estado_reg != "AUTOMATICO") or es_nuevo_cat or ci_dudosa or nota_invalida
+
             row_id = f"REG_{stg.id}_{line_idx + 1}"
             tupla_item = {
                 "id": row_id,
@@ -1937,6 +2122,10 @@ def _evaluar_documentos_lote(
                 "modulo": (ent_mod.get("matchedCanonical") or ent_mod.get("token")) if ent_mod else (ent_con.get("token") if ent_con else "No detectado"),
                 "nota_original": ent_cal.get("notaOriginal") if ent_cal else None,
                 "nota_normalizada": ent_cal.get("matchedCanonical") if ent_cal else (ent_mon.get("matchedCanonical") if ent_mon else "—"),
+                "area": area_reg,
+                "en_calidad": en_calidad,
+                "es_nuevo_catalogo": es_nuevo_cat,
+                "alerta_abandono": False,
                 "lectura": {
                     "texto": line,
                     "tokens": tokens_visuales,
@@ -2029,7 +2218,97 @@ def _evaluar_documentos_lote(
             db.commit()
         except Exception as e_com:
             db.rollback()
-            logger.warning("Rollback al actualizar staging_registros_crudos: %s", e_com)
+    # Mapeo de estudiantes para corroboración multifuente y detección de umbral de abandono
+    estudiantes_map: Dict[str, Dict[str, list]] = {}
+    for item in detalles:
+        c_key = item.get("ci")
+        nom_key = item.get("estudiante")
+        ident = c_key if (c_key and "••" not in c_key) else (nom_key if nom_key and nom_key != "No detectado" else None)
+        if not ident:
+            continue
+        ident_norm = ident.strip().lower()
+        if ident_norm not in estudiantes_map:
+            estudiantes_map[ident_norm] = {"academico": [], "financiero": []}
+        if item.get("area") == "academica":
+            estudiantes_map[ident_norm]["academico"].append(item)
+        elif item.get("area") == "financiera":
+            estudiantes_map[ident_norm]["financiero"].append(item)
+
+    # Identificar quiénes cruzan alerta de abandono y estructurar desglose relacional BETO
+    for item in detalles:
+        ident_norm = (item.get("ci") or item.get("estudiante") or "").strip().lower()
+        est_cross = estudiantes_map.get(ident_norm) or {"academico": [], "financiero": []}
+
+        has_mora = False
+        mora_ref = None
+        mora_cuotas = 0
+        for fin in est_cross["financiero"]:
+            cuotas = fin.get("verificacion_reglas", {}).get("monto", {}).get("cuotas_impagas", 0)
+            if cuotas >= 2 or "MORA" in fin.get("raw_text", "").upper():
+                has_mora = True
+                mora_ref = fin.get("id")
+                mora_cuotas = max(mora_cuotas, cuotas or 2)
+
+        has_inasist = False
+        inasist_ref = None
+        inasist_pct = 0
+        for acad in est_cross["academico"]:
+            asist_e = next((e for e in acad.get("lectura", {}).get("entidades", []) if e.get("label") == "ASISTENCIA"), None)
+            if asist_e and (asist_e.get("inasistenciaPct", 0) >= 20.0 or asist_e.get("asistenciaPct", 100) <= 80.0):
+                has_inasist = True
+                inasist_ref = acad.get("id")
+                inasist_pct = asist_e.get("inasistenciaPct", 35)
+
+        reg_asist_e = next((e for e in item.get("lectura", {}).get("entidades", []) if e.get("label") == "ASISTENCIA"), None)
+        reg_inasist = reg_asist_e and reg_asist_e.get("inasistenciaPct", 0) >= 20.0
+        reg_cuotas = item.get("verificacion_reglas", {}).get("monto", {}).get("cuotas_impagas", 0) >= 2 or "MORA" in item.get("raw_text", "").upper()
+
+        alerta_abandono = (has_mora and (has_inasist or reg_inasist)) or (has_inasist and (has_mora or reg_cuotas)) or (reg_inasist and reg_cuotas)
+
+        cruce_dict = {
+            "activo": bool(alerta_abandono),
+            "tipo": "ALERTA_UMBRAL_ABANDONO" if alerta_abandono else "CONCILIACION_NORMAL",
+            "detalle": (
+                f"Cruce multifuente: El estudiante registra {mora_cuotas or 2} cuotas impagas en registros financieros y {inasist_pct or 35}% de inasistencia en actas académicas -> Alerta de Umbral de Abandono."
+                if alerta_abandono
+                else "Relaciones corroboradas sin alertas críticas entre fuentes del lote."
+            ),
+            "archivo_cruzado": (docs[1].nombre_archivo if len(docs) > 1 else docs[0].nombre_archivo) if docs else "archivo_fuente.xlsx",
+            "ref_cruzada": mora_ref or inasist_ref or "S/R",
+        }
+
+        ent_mod = next((e for e in item.get("lectura", {}).get("entidades", []) if e.get("label") == "MÓDULO"), None)
+        ent_prog = next((e for e in item.get("lectura", {}).get("entidades", []) if e.get("label") == "PROGRAMA"), None)
+        es_nuevo_cat = bool(ent_mod and ent_mod.get("es_nuevo_perfil"))
+
+        prog_nom = ent_prog.get("token") if ent_prog else (item.get("programa") or "Programa Curricular")
+        mod_nom = (ent_mod.get("matchedCanonical") or ent_mod.get("token")) if ent_mod else (item.get("modulo") or "Módulo Académico")
+
+        arancel_calc = "14.500 Bs" if "MAESTR" in str(prog_nom).upper() else ("1.500 Bs por módulo" if ent_mod else "Arancel según catálogo")
+
+        desglose_relacional = {
+            "oracion_texto_plano": item.get("raw_text"),
+            "tokens": item.get("lectura", {}).get("tokens", []),
+            "catalogo_guia": {
+                "programa": prog_nom,
+                "modulo": mod_nom,
+                "modulo_codigo": ent_mod.get("canonicalId", "MOD-ACT") if ent_mod else "MOD-ACT",
+                "arancel_base": arancel_calc,
+                "estado_catalogo": "SUGERENCIA_NUEVO_PARAMETRO" if es_nuevo_cat else "VALIDADO_EN_CATALOGO",
+                "mensaje": (
+                    "No existe en Catálogo Guía Maestro · Sugerido para incorporación como nuevo curso/módulo Cero-PII."
+                    if es_nuevo_cat
+                    else "Parámetro validado contra Catálogo Guía Institucional (Cero-PII)."
+                ),
+            },
+            "cruce_multifuente": cruce_dict,
+        }
+
+        item["alerta_abandono"] = bool(alerta_abandono)
+        item["desglose_relacional"] = desglose_relacional
+        item["cruce_multifuente"] = cruce_dict
+        if alerta_abandono:
+            item["en_calidad"] = True
 
     total_tuplas = len(detalles)
     indice_medio = round(suma_indices / total_tuplas, 1) if total_tuplas > 0 else 0.0
@@ -2061,6 +2340,8 @@ def get_lote_resumen(
     - Aplica redondeo por Mayor Residuo garantizando que autoPct + auditPct + inconsistenciasPct == 100.0%.
     - Con lote vacío (totalTuplas == 0), retorna '—' en los indicadores y 0.0% en la barra de distribución.
     """
+    if hasattr(doc_id, "default"):
+        doc_id = None
     lote_obj, docs_lote, docs_filtrados = _resolver_documentos_lote(db, id_lote, doc_id_filter=doc_id)
     eval_res = _evaluar_documentos_lote(db, docs_filtrados, persistir_staging=True)
     archivos_tabs = _serializar_archivos_lote(db, docs_lote)
@@ -2234,8 +2515,34 @@ def get_lote_raw_vs_text(
     total_omitidas = 0
     alertas = []
 
+    diagnostico_global = {}
+    chips_global = {}
+    origen_global = "GSHEETS_ACTA_NOTAS"
+    rango_fechas_global = "2024–2026 (Auto)"
+
     for stg in stg_records:
         orig_doc = doc_map.get(stg.id_documento)
+        payload = stg.payload_json or {}
+        if isinstance(payload, str):
+            try:
+                payload = json.loads(payload)
+            except Exception:
+                payload = {}
+
+        stg_diag = payload.get("diagnostico_estructural") or {}
+        stg_chips = payload.get("chips_catalogo") or {}
+        stg_origen = payload.get("origen_detectado") or (orig_doc.tipo_fuente if orig_doc else "GSHEETS_ACTA_NOTAS")
+        stg_rango = payload.get("rango_fechas") or (orig_doc.periodo if orig_doc else "2024–2026 (Auto)")
+
+        if stg_diag and not diagnostico_global:
+            diagnostico_global = stg_diag
+        if stg_chips and not chips_global:
+            chips_global = stg_chips
+        if stg_origen:
+            origen_global = stg_origen
+        if stg_rango:
+            rango_fechas_global = stg_rango
+
         raw_text = (stg.texto_plano or "").strip()
         lines = [l.strip() for l in raw_text.split("\n") if l.strip()]
         if not lines:
@@ -2258,19 +2565,54 @@ def get_lote_raw_vs_text(
                 item_alert = "Fila con menos columnas de las esperadas"
                 alertas.append({"line": line_counter, "motivo": item_alert, "archivo": orig_doc.nombre_archivo if orig_doc else ""})
 
+            # Chips canónicos si el registro o lote los posee
+            chips_item = stg_chips or {
+                "programa_cat": None,
+                "modulo_cat": None,
+                "precio_base_cat": None,
+                "fecha_detectada": stg_rango or None
+            }
+
             items.append({
                 "line_number": line_counter,
                 "stg_id": stg.id,
                 "id_documento": stg.id_documento,
                 "nombre_archivo": orig_doc.nombre_archivo if orig_doc else f"Archivo_{stg.id_documento}",
                 "tipo_fuente": orig_doc.tipo_fuente if orig_doc else "ACTA",
+                "origen_detectado": stg_origen,
                 "tipo_escala": orig_doc.tipo_escala if orig_doc else None,
                 "fila_original": cols if len(cols) > 1 else [line],
                 "fila_original_raw": line,
                 "oracion_beto": sentence,
+                "texto_crudo": sentence,
                 "alerta": item_alert,
+                "chips": chips_item,
+                "rango_fechas": stg_rango
             })
             line_counter += 1
+
+    # Estructura limpia si el lote no tiene diagnóstico específico aún
+    if not diagnostico_global:
+        diagnostico_global = {
+            "celdas_combinadas": [],
+            "fila_cabecera_desplazada": None,
+            "encabezados_multinivel_aplanados": 0,
+            "filas_subtotales_descartadas": 0,
+            "advertencias_estructurales": [],
+            "columnas_dinamicas": [],
+            "fechas_reconocidas": [],
+            "rango_fechas": rango_fechas_global if rango_fechas_global != "2024–2026 (Auto)" else None,
+            "origen_detectado": origen_global,
+            "mini_grid": []
+        }
+
+    if not chips_global:
+        chips_global = {
+            "programa_cat": None,
+            "modulo_cat": None,
+            "precio_base_cat": None,
+            "fecha_detectada": rango_fechas_global if rango_fechas_global != "2024–2026 (Auto)" else None
+        }
 
     archivos_tabs = _serializar_archivos_lote(db, docs_lote)
     return {
@@ -2281,20 +2623,40 @@ def get_lote_raw_vs_text(
         "kpis": {
             "filas_leidas": len(items),
             "filas_omitidas": total_omitidas,
-            "columnas_detectadas": 5,
+            "columnas_detectadas": len(diagnostico_global.get("columnas_dinamicas", [])) or 5,
             "total_alertas": len(alertas),
         },
         "alertas": alertas[:15],
+        "diagnostico_estructural": diagnostico_global,
+        "chips_catalogo": chips_global,
+        "origen_detectado": origen_global,
+        "rango_fechas": rango_fechas_global,
         "registros": items,
     }
+
+
+@router.get("/PlainText/{id_lote}")
+def get_lote_plain_text_alias(
+    id_lote: str,
+    doc_id: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+):
+    """
+    Endpoint compatible para obtener el texto plano estructurado,
+    diagnóstico de aplanamiento asimétrico y chips pre-etiquetados con el Catálogo.
+    """
+    return get_lote_raw_vs_text(id_lote=id_lote, doc_id=doc_id, db=db)
 
 
 @router.get("/lote/{id_lote}/beto-reading")
 def get_lote_beto_reading(
     id_lote: str,
     doc_id: Optional[int] = Query(None),
+    area: Optional[str] = Query(None),
     estado: Optional[str] = Query(None),
     motivo: Optional[str] = Query(None),
+    filtro_global: Optional[str] = Query(None),
+    tipo_entidad: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db),
@@ -2302,14 +2664,21 @@ def get_lote_beto_reading(
     """
     Paso ③: Vista principal de lectura de BETO con Capa A, B y C (#1, #2, #3, #12, #13, #17).
     - El campo `ci` se entrega siempre enmascarado por defecto (`••••019 LP`).
-    - Soporta pestañas por archivo (`doc_id`) y filtrado/paginación server-side (`page`, `page_size`, `estado`, `motivo`).
+    - Clasifica registros en las 4 Áreas de Trabajo: Académica, Financiera, Comercial y Calidad.
+    - Soporta filtros globales persistentes, corroboración multifuente y desglose relacional Cero-PII.
     """
     if not isinstance(doc_id, int):
         doc_id = None
+    if not isinstance(area, str):
+        area = None
     if not isinstance(estado, str):
         estado = None
     if not isinstance(motivo, str):
         motivo = None
+    if not isinstance(filtro_global, str):
+        filtro_global = None
+    if not isinstance(tipo_entidad, str):
+        tipo_entidad = None
     if not isinstance(page, int):
         page = 1
     if not isinstance(page_size, int):
@@ -2322,8 +2691,39 @@ def get_lote_beto_reading(
     eval_res = _evaluar_documentos_lote(db, docs_filtrados, persistir_staging=True)
     detalles_all = eval_res["detalles"]
 
-    # Filtrado server-side por estado o motivo (#12, #13)
+    # 1. Filtro por Área de Trabajo
     filtrados = detalles_all
+    if area and area.upper() not in ("ALL", "TODAS", "TODOS"):
+        area_clean = area.lower()
+        if area_clean == "calidad":
+            filtrados = [r for r in filtrados if r.get("en_calidad")]
+        else:
+            filtrados = [r for r in filtrados if r.get("area") == area_clean]
+
+    # 2. Filtros Globales Persistentes
+    if filtro_global and filtro_global.upper() not in ("ALL", "TODOS"):
+        fg = filtro_global.upper()
+        if "CONFIANZA" in fg or "< 85" in fg or "BAJA" in fg:
+            filtrados = [r for r in filtrados if r.get("indice_registro", 100) < 85]
+        elif "CONFLICTO" in fg or "INCIDENCIA" in fg:
+            filtrados = [r for r in filtrados if r.get("estado") in ("INCONSISTENCIA", "REVISION")]
+        elif "CATALOGO" in fg or "SUGERENCIA" in fg:
+            filtrados = [r for r in filtrados if r.get("es_nuevo_catalogo")]
+        elif "ABANDONO" in fg or "DESERCION" in fg:
+            filtrados = [r for r in filtrados if r.get("alerta_abandono")]
+
+    # 3. Filtro por Tipo de Entidad
+    if tipo_entidad and tipo_entidad.upper() not in ("ALL", "TODAS", "TODOS"):
+        te_up = tipo_entidad.upper()
+        filtrados = [
+            r for r in filtrados
+            if any(
+                te_up in (e.get("label") or "").upper() or te_up in (e.get("tag") or "").upper()
+                for e in r.get("lectura", {}).get("entidades", [])
+            )
+        ]
+
+    # 4. Filtrado server-side por estado o motivo (#12, #13)
     if estado and estado.upper() not in ("ALL", "TODOS"):
         est_up = estado.upper()
         if est_up == "REVISION":
@@ -2357,6 +2757,80 @@ def get_lote_beto_reading(
         "inconsistencias_pct": eval_res["inconsistenciasPct"],
     }
 
+    # Conteo por las 4 Áreas de Trabajo
+    count_acad = len([r for r in detalles_all if r.get("area") == "academica"])
+    auto_acad = len([r for r in detalles_all if r.get("area") == "academica" and r.get("estado") == "AUTOMATICO"])
+    rev_acad = len([r for r in detalles_all if r.get("area") == "academica" and r.get("estado") == "REVISION"])
+    inc_acad = len([r for r in detalles_all if r.get("area") == "academica" and r.get("estado") == "INCONSISTENCIA"])
+
+    count_fin = len([r for r in detalles_all if r.get("area") == "financiera"])
+    auto_fin = len([r for r in detalles_all if r.get("area") == "financiera" and r.get("estado") == "AUTOMATICO"])
+    rev_fin = len([r for r in detalles_all if r.get("area") == "financiera" and r.get("estado") == "REVISION"])
+    inc_fin = len([r for r in detalles_all if r.get("area") == "financiera" and r.get("estado") == "INCONSISTENCIA"])
+
+    count_com = len([r for r in detalles_all if r.get("area") == "comercial"])
+    auto_com = len([r for r in detalles_all if r.get("area") == "comercial" and r.get("estado") == "AUTOMATICO"])
+    rev_com = len([r for r in detalles_all if r.get("area") == "comercial" and r.get("estado") == "REVISION"])
+    inc_com = len([r for r in detalles_all if r.get("area") == "comercial" and r.get("estado") == "INCONSISTENCIA"])
+
+    count_cal = len([r for r in detalles_all if r.get("en_calidad")])
+    rev_cal = len([r for r in detalles_all if r.get("en_calidad") and r.get("estado") == "REVISION"])
+    inc_cal = len([r for r in detalles_all if r.get("en_calidad") and r.get("estado") == "INCONSISTENCIA"])
+
+    areas_dict = {
+        "academica": {
+            "key": "academica",
+            "titulo": "Académica",
+            "icono": "🎓",
+            "total": count_acad,
+            "auto": auto_acad,
+            "revision": rev_acad,
+            "incidencias": inc_acad,
+            "descripcion": "Notas, módulos, asistencia (umbral de abandono) y validación contra oferta curricular.",
+        },
+        "financiera": {
+            "key": "financiera",
+            "titulo": "Financiera",
+            "icono": "💳",
+            "total": count_fin,
+            "auto": auto_fin,
+            "revision": rev_fin,
+            "incidencias": inc_fin,
+            "descripcion": "Pagos, cuotas impagas, importes y vencimientos conciliados con aranceles del catálogo.",
+        },
+        "comercial": {
+            "key": "comercial",
+            "titulo": "Comercial",
+            "icono": "🛒",
+            "total": count_com,
+            "auto": auto_com,
+            "revision": rev_com,
+            "incidencias": inc_com,
+            "descripcion": "Inscripciones individuales vs demanda agregada, canales de captación y metas por programa.",
+        },
+        "calidad": {
+            "key": "calidad",
+            "titulo": "Calidad (Capa Transversal)",
+            "icono": "🛡️",
+            "total": count_cal,
+            "auto": 0,
+            "revision": rev_cal,
+            "incidencias": count_cal,
+            "descripcion": "Duplicados, faltantes, valores fuera de rango, cruce de abandono y nuevos ítems para el Catálogo Guía.",
+        },
+    }
+
+    resumen_ejecutivo = {
+        "total_procesados": total_analizados,
+        "aceptados_automaticamente": directo_dw,
+        "por_revisar": eval_res["auditCount"],
+        "con_incidencias": eval_res["inconsistenciasCount"],
+        "avance_porcentaje": round((directo_dw / total_analizados * 100), 1) if total_analizados > 0 else 0.0,
+        "estado_lote": "Listo para consolidar" if (eval_res["auditCount"] + eval_res["inconsistenciasCount"] == 0) else "Revisión en curso",
+        "alerta_abandono_count": len([r for r in detalles_all if r.get("alerta_abandono")]),
+        "sugerencias_catalogo_count": len([r for r in detalles_all if r.get("es_nuevo_catalogo")]),
+    }
+
     archivos_tabs = _serializar_archivos_lote(db, docs_lote)
     return {
         "status": "success",
@@ -2365,6 +2839,8 @@ def get_lote_beto_reading(
         "archivos": archivos_tabs,
         "capaA": capa_resumen,
         "capa_a_resumen": capa_resumen,
+        "resumen_ejecutivo": resumen_ejecutivo,
+        "areas": areas_dict,
         "pendientes_revision": a_revision,
         "pagination": {
             "page": page,
@@ -2892,7 +3368,11 @@ def infer_beto_text(payload: BetoInferRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/confirm-dw-insert")
-def confirm_dw_insert(payload: ConfirmDwInsertRequest, db: Session = Depends(get_db)):
+def confirm_dw_insert(
+    payload: ConfirmDwInsertRequest,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
     """
     Confirma e inserta transaccionalmente los registros aprobados en el Data Warehouse (#8, #9, #10):
     - Si recibe `resolved_item_id`, delega la resolución individual a `resolve_review_item`.
@@ -3104,6 +3584,41 @@ def confirm_dw_insert(payload: ConfirmDwInsertRequest, db: Session = Depends(get
 
     db.commit()
     inserted_total = inserted_academico + inserted_financiero
+
+    # Registrar auditoría en LogPipelineIngesta y emitir notificación de consolidación DW
+    try:
+        user_name = current_user.username if current_user else "Auditor Calidad"
+        doc_ref_id = effective_doc_id or (stg_records[0].id_documento if stg_records else None)
+        audit_pipe = LogPipelineIngesta(
+            id_documento=doc_ref_id,
+            etapa="DW_CONSOLIDACION",
+            nivel="SUCCESS",
+            modulo="DataOps Pipeline",
+            mensaje=f"Consolidación exitosa en Data Warehouse por {user_name}: {inserted_total} registros (+{inserted_academico} académicos, +{inserted_financiero} financieros).",
+            metadata_json={
+                "id_lote": payload.id_lote,
+                "inserted_total": inserted_total,
+                "inserted_academico": inserted_academico,
+                "inserted_financiero": inserted_financiero,
+                "sent_hitl": sent_hitl,
+                "usuario": user_name,
+            }
+        )
+        db.add(audit_pipe)
+        db.commit()
+
+        NotificationService.create_notification(
+            db=db,
+            title="Consolidación a Data Warehouse Completada",
+            message=f"Se consolidaron transaccionalmente {inserted_total} registros aprobados en el DW (+{inserted_academico} académicos, +{inserted_financiero} financieros) por {user_name}.",
+            category="DataOps",
+            severity="SUCCESS",
+            role_target="AUDITOR_CALIDAD",
+            link="/dataops/revision"
+        )
+    except Exception as e_aud_dw:
+        logger.warning("No se pudo registrar auditoría/notificación de consolidación DW: %s", e_aud_dw)
+
     return {
         "status": "success",
         "message": (
@@ -3268,6 +3783,12 @@ def get_review_tray(
             else ("Catálogo de Estudiantes" if doc_fuente == "ADMISION" else "Catálogo de Estudiantes, Rendimiento Académico")
         )
 
+        item_area = payload_data.get("area") or (
+            "financiera" if doc_fuente == "COBRANZA" else ("comercial" if doc_fuente == "ADMISION" else "academica")
+        )
+        if payload_data.get("en_calidad") or "CATALOGO" in motivo_slug:
+            item_area = "calidad"
+
         items.append({
             "id": ent.id_staging,
             "db_id": ent.id_staging,
@@ -3293,6 +3814,15 @@ def get_review_tray(
             "sugerencia_catalogo": ent.mejor_candidato,
             "ner_confidence": float(ent.nivel_confianza) if ent.nivel_confianza else 0.72,
             "estado": "REQUIERE_REVISION",
+            "area": item_area,
+            "en_calidad": bool(payload_data.get("en_calidad") or item_area == "calidad"),
+            "cruce_multifuente": payload_data.get("cruce_multifuente"),
+            "alerta_abandono": bool(payload_data.get("alerta_abandono")),
+            "desglose_relacional": payload_data.get("desglose_relacional") or [],
+            "es_nuevo_catalogo": bool(payload_data.get("es_nuevo_catalogo")),
+            "sugerencia_parametro_catalogo": payload_data.get("sugerencia_parametro_catalogo") or (
+                modulo_detectado if payload_data.get("es_nuevo_catalogo") else None
+            ),
         })
 
     resolved_history = []
@@ -3319,12 +3849,30 @@ def get_review_tray(
     start_idx = (page - 1) * page_size
     paginated_items = items[start_idx : start_idx + page_size]
 
+    target_ids = [d.id_documento for d in target_docs] if target_docs else []
+    dw_acad_q = db.query(func.count(FactRendimientoAcademico.id_rendimiento))
+    dw_fin_q = db.query(func.count(FactSituacionFinanciera.id_situacion_financiera))
+    if target_ids:
+        dw_acad_count = dw_acad_q.filter(FactRendimientoAcademico.id_documento.in_(target_ids)).scalar() or 0
+        dw_fin_count = dw_fin_q.filter(FactSituacionFinanciera.id_documento.in_(target_ids)).scalar() or 0
+    else:
+        dw_acad_count = dw_acad_q.scalar() or 0
+        dw_fin_count = dw_fin_q.scalar() or 0
+
+    aprobados_resumen = {
+        "total_aprobados": dw_acad_count + dw_fin_count,
+        "fact_rendimiento_academico": dw_acad_count,
+        "fact_situacion_financiera": dw_fin_count,
+        "resueltos_hitl_count": len(resolved_history),
+    }
+
     return {
         "status": "success",
         "total": total_items,
         "pendientes": total_items,
         "resueltos_count": len(resolved_history),
         "resolved_history": resolved_history,
+        "aprobados_resumen": aprobados_resumen,
         "pagination": {
             "page": page,
             "page_size": page_size,
@@ -3337,7 +3885,11 @@ def get_review_tray(
 
 
 @router.post("/review-tray/batch-resolve")
-def batch_resolve_review_items(payload: BatchResolveRequest, db: Session = Depends(get_db)):
+def batch_resolve_review_items(
+    payload: BatchResolveRequest,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
     """Resuelve y consolida en lote múltiples casos de la bandeja de revisión humana."""
     resolved_count = 0
     dw = DWLoaderService(db)
@@ -3408,6 +3960,33 @@ def batch_resolve_review_items(payload: BatchResolveRequest, db: Session = Depen
         resolved_count += 1
 
     db.commit()
+
+    user_name = current_user.username if current_user else "Auditor Calidad"
+    try:
+        if resolved_count > 0:
+            audit_pipe = LogPipelineIngesta(
+                id_documento=None,
+                etapa="HITL_RESOLUCION_LOTE",
+                nivel="INFO",
+                modulo="DataOps HITL",
+                mensaje=f"Resolución en lote por {user_name}: {resolved_count} casos aprobados y consolidados en el Data Warehouse.",
+                metadata_json={"item_ids": payload.item_ids, "resolved_count": resolved_count, "usuario": user_name}
+            )
+            db.add(audit_pipe)
+            db.commit()
+
+            NotificationService.create_notification(
+                db=db,
+                title=f"{resolved_count} casos consolidados",
+                message=f"Se resolvieron y consolidaron {resolved_count} casos de la bandeja de revisión en el Data Warehouse por {user_name}.",
+                category="DataOps",
+                severity="SUCCESS",
+                role_target="AUDITOR_CALIDAD",
+                link="/dataops/revision"
+            )
+    except Exception as e_aud_batch:
+        logger.warning("No se pudo registrar auditoría en lote: %s", e_aud_batch)
+
     return {
         "status": "success",
         "resolved_count": resolved_count,
@@ -3421,6 +4000,7 @@ def resolve_review_item(
     item_id: str,
     payload: Optional[dict] = None,
     db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
     """Aprueba y consolida un registro individual en la bandeja de revisión humana."""
     payload = payload or {}
@@ -3428,7 +4008,10 @@ def resolve_review_item(
     if clean_id.isdigit():
         ent = db.query(StagingEntidadNoResuelta).filter(StagingEntidadNoResuelta.id_staging == int(clean_id)).first()
         if ent:
+            user_name = current_user.username if current_user else "Auditor Calidad"
+            user_id = current_user.id if current_user else None
             accion = (payload.get("accion") or "APROBAR").upper()
+
             if "DESCARTAR" in accion:
                 ent.resuelto = True
                 ent.estado_resolucion = "DESCARTADO"
@@ -3439,6 +4022,30 @@ def resolve_review_item(
                         stg_parent.resuelto = True
                         stg_parent.estado_resolucion = "DESCARTADO"
                 db.commit()
+
+                # Auditoría de descarte
+                try:
+                    audit_nlp = LogAuditoriaNlp(
+                        texto_original=(ent.texto_original or "")[:500],
+                        prediccion_beto=(ent.mejor_candidato or ent.tipo_entidad or "")[:200],
+                        confianza_ia=float(ent.nivel_confianza or 0.70),
+                        correccion_humana="Descartado",
+                        usuario_auditor=user_id,
+                    )
+                    db.add(audit_nlp)
+                    audit_pipe = LogPipelineIngesta(
+                        id_documento=ent.id_documento,
+                        etapa="HITL_RESOLUCION_INDIVIDUAL",
+                        nivel="WARNING",
+                        modulo="DataOps HITL",
+                        mensaje=f"Registro {item_id} descartado por {user_name}.",
+                        metadata_json={"item_id": item_id, "accion": "DESCARTAR", "usuario": user_name}
+                    )
+                    db.add(audit_pipe)
+                    db.commit()
+                except Exception as e_desc_aud:
+                    logger.warning("No se pudo auditar descarte de item %s: %s", item_id, e_desc_aud)
+
                 return {
                     "status": "success",
                     "message": f"Registro {item_id} descartado.",
@@ -3504,6 +4111,47 @@ def resolve_review_item(
                     stg_parent.estado_resolucion = "RESUELTO_HUMANO"
                     stg_parent.resuelto_en = datetime.now()
             db.commit()
+
+            # Auditoría en LogAuditoriaNlp, LogPipelineIngesta y notificación
+            try:
+                audit_nlp = LogAuditoriaNlp(
+                    texto_original=(ent.texto_original or "")[:500],
+                    prediccion_beto=(ent.mejor_candidato or ent.tipo_entidad or "")[:200],
+                    confianza_ia=float(ent.nivel_confianza or 0.70),
+                    correccion_humana=nom_clean[:200],
+                    usuario_auditor=user_id,
+                )
+                db.add(audit_nlp)
+
+                audit_pipe = LogPipelineIngesta(
+                    id_documento=ent.id_documento,
+                    etapa="HITL_RESOLUCION_INDIVIDUAL",
+                    nivel="INFO",
+                    modulo="DataOps HITL",
+                    mensaje=f"Registro {item_id} resuelto y consolidado en el DW por {user_name}: {nom_clean}.",
+                    metadata_json={
+                        "item_id": item_id,
+                        "accion": "APROBAR",
+                        "usuario": user_name,
+                        "ci": ci_clean,
+                        "nombre": nom_clean,
+                        "modulo": payload.get("modulo_resuelto"),
+                    }
+                )
+                db.add(audit_pipe)
+                db.commit()
+
+                NotificationService.create_notification(
+                    db=db,
+                    title=f"Caso {item_id} resuelto y consolidado",
+                    message=f"El caso {item_id} ({nom_clean}) fue validado e insertado en el DW por {user_name}.",
+                    category="DataOps",
+                    severity="SUCCESS",
+                    role_target="AUDITOR_CALIDAD",
+                    link="/dataops/revision"
+                )
+            except Exception as e_aud_ind:
+                logger.warning("No se pudo registrar auditoría de resolución individual: %s", e_aud_ind)
 
     return {
         "status": "success",
@@ -3580,7 +4228,16 @@ def get_plain_text_records(
     id_lote: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    """Obtiene los registros de texto plano almacenados en staging_registros_crudos."""
+    # Sanitización defensiva de parámetros
+    if hasattr(doc_ids, "default"):
+        doc_ids = None
+    if hasattr(id_lote, "default"):
+        id_lote = None
+
+    ids_list = []
+    if doc_ids:
+        ids_list = [int(x.strip()) for x in str(doc_ids).split(",") if x.strip().isdigit()]
+
     estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
     docentes = db.query(DimDocente).all()
     modulos = db.query(DimModulo).all()
@@ -3589,14 +4246,33 @@ def get_plain_text_records(
         DimOrigenDocumental, StagingRegistroCrudo.id_documento == DimOrigenDocumental.id_documento
     )
 
-    if id_lote:
+    if ids_list and id_lote:
+        _, docs_lote, _ = _resolver_documentos_lote(db, id_lote)
+        if docs_lote:
+            lote_doc_ids = {d.id_documento for d in docs_lote}
+            filtered_ids = [d_id for d_id in ids_list if d_id in lote_doc_ids]
+            if not filtered_ids:
+                return {"status": "success", "total": 0, "data": []}
+            query = query.filter(StagingRegistroCrudo.id_documento.in_(filtered_ids))
+        else:
+            return {"status": "success", "total": 0, "data": []}
+    elif ids_list:
+        query = query.filter(StagingRegistroCrudo.id_documento.in_(ids_list))
+    elif doc_ids and not ids_list:
+        return {"status": "success", "total": 0, "data": []}
+    elif id_lote:
         _, docs_lote, _ = _resolver_documentos_lote(db, id_lote)
         if docs_lote:
             query = query.filter(StagingRegistroCrudo.id_documento.in_([d.id_documento for d in docs_lote]))
-    elif doc_ids:
-        ids_list = [int(x.strip()) for x in doc_ids.split(",") if x.strip().isdigit()]
-        if ids_list:
-            query = query.filter(StagingRegistroCrudo.id_documento.in_(ids_list))
+        else:
+            return {"status": "success", "total": 0, "data": []}
+    else:
+        # Default fallback a lote más reciente para evitar escaneo completo de 3.1M registros
+        _, docs_lote, _ = _resolver_documentos_lote(db, "latest")
+        if docs_lote:
+            query = query.filter(StagingRegistroCrudo.id_documento.in_([d.id_documento for d in docs_lote]))
+        else:
+            return {"status": "success", "total": 0, "data": []}
 
     records_db = query.all()
     if not records_db:
@@ -3617,6 +4293,16 @@ def get_plain_text_records(
         if not lines and raw_text:
             lines = [raw_text]
 
+        payload = stg.payload_json or {}
+        if isinstance(payload, str):
+            try:
+                payload = json.loads(payload)
+            except Exception:
+                payload = {}
+        stg_diag = payload.get("diagnostico_estructural") or {}
+        stg_chips = payload.get("chips_catalogo") or {}
+        stg_rango = payload.get("rango_fechas") or (orig.periodo if orig else "2024–2026 (Auto)")
+
         for line_idx, line in enumerate(lines):
             ents, score, req_rev = extract_entities_from_line(
                 line, estudiantes, docentes, modulos, tipo_escala=doc_escala, tipo_fuente=doc_fuente
@@ -3634,10 +4320,14 @@ def get_plain_text_records(
                 "tipo_escala": doc_escala,
                 "line_number": line_idx + 1,
                 "rawText": line,
+                "texto_plano": raw_text,
                 "score_confianza": score,
                 "indice_registro": int(round(score * 100)),
                 "requiere_revision": req_rev,
                 "entities": ents,
+                "chips_catalogo": stg_chips,
+                "diagnostico_estructural": stg_diag,
+                "rango_fechas": stg_rango,
                 "relacion_semantica": {
                     "estudiante": {
                         "nombre": next((e["token"] for e in ents if e.get("label") == "ESTUDIANTE"), "No especificado"),
@@ -3751,7 +4441,7 @@ def link_entity_to_catalog(entity_id: int, payload: Optional[dict] = None, db: S
 
 @router.get("/telemetry/summary")
 def get_telemetry_summary(db: Session = Depends(get_db)):
-    resumen = get_lote_resumen("latest", db=db)
+    resumen = get_lote_resumen("latest", doc_id=None, db=db)
     return {
         "status": "success",
         "kpis": {

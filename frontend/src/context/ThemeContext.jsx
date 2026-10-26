@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 const ThemeContext = createContext({
   theme: 'light',
+  isDark: false,
   toggleTheme: () => {},
   setTheme: () => {},
   canvasEnabled: true,
@@ -54,6 +55,7 @@ export function ThemeProvider({ children }) {
     <ThemeContext.Provider
       value={{
         theme,
+        isDark: theme === 'dark',
         toggleTheme,
         setTheme,
         canvasEnabled,

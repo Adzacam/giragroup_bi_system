@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Cpu, CheckCircle2, AlertTriangle, ArrowRight, ShieldCheck,
+  Cpu, CheckCircle2, AlertTriangle, AlertCircle, ArrowRight, ShieldCheck,
   HelpCircle, ChevronDown, ChevronUp, Eye, EyeOff, Database,
-  User, BookOpen, Award, FileText, Check, Sparkles, ChevronLeft,
-  ChevronRight, Search, TableProperties
+  User, BookOpen, Award, FileText, Check, Sparkles, Search,
+  GraduationCap, CreditCard, ShoppingCart, ShieldAlert, ExternalLink
 } from 'lucide-react';
 import BatchFlowLayout from './components/BatchFlowLayout';
 import { dataopsApi } from '../../api/dataopsApi';
@@ -17,20 +17,22 @@ export default function BetoReadingFlowView() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [selectedDocId, setSelectedDocId] = useState(null);
-  const [selectedRecord, setSelectedRecord] = useState(null);
-  const [filterState, setFilterState] = useState('ALL'); // 'ALL' | 'AUTOMATICO' | 'REVISION'
-  const [tableFilter, setTableFilter] = useState('ALL'); // 'ALL' | 'AUTOMATICO' | 'REVISION'
+  
+  // Filtros
+  const [activeArea, setActiveArea] = useState('TODAS'); // 'TODAS' | 'academica' | 'financiera' | 'comercial' | 'calidad'
+  const [filterCondition, setFilterCondition] = useState('ALL'); // 'ALL' | 'BAJA_CONFIANZA' | 'CONFLICTOS' | 'CATALOGO' | 'ABANDONO'
+  const [selectedFileFilter, setSelectedFileFilter] = useState('TODOS');
+  const [selectedEntityType, setSelectedEntityType] = useState('TODOS');
   const [searchQuery, setSearchQuery] = useState('');
   const [tablePage, setTablePage] = useState(1);
   const tablePageSize = 10;
 
-  const [showHowScoreWorks, setShowHowScoreWorks] = useState(false);
-  const [showModelDetails, setShowModelDetails] = useState(false);
+  // Estados de expansión y modales
+  const [expandedRows, setExpandedRows] = useState({});
   const [revealedCis, setRevealedCis] = useState({});
+  const [showModelDetails, setShowModelDetails] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isInserting, setIsInserting] = useState(false);
-  const [insertedSuccess, setInsertedSuccess] = useState(false);
-  const [dwInsertDesglose, setDwInsertDesglose] = useState(null);
 
   useEffect(() => {
     setTablePage(1);
@@ -40,75 +42,49 @@ export default function BetoReadingFlowView() {
   const loadReadingData = async (docFilter = null) => {
     try {
       setLoading(true);
-      let batchIdToLoad = id;
-      if (!batchIdToLoad) {
-        batchIdToLoad = localStorage.getItem('last_active_batch_id');
-      }
-      if (!batchIdToLoad) {
-        const sources = await dataopsApi.getSources();
-        if (sources?.data?.length > 0) {
-          batchIdToLoad = sources.data[0].id_lote || sources.data[0].id || sources.data[0].id_documento;
-          if (batchIdToLoad) localStorage.setItem('last_active_batch_id', batchIdToLoad);
-        }
-      }
-
+      let batchIdToLoad = id || localStorage.getItem('last_active_batch_id');
       if (!batchIdToLoad) {
         setData(null);
-        setSelectedRecord(null);
+        setLoading(false);
         return;
       }
 
       const res = await dataopsApi.getLoteBetoReading(batchIdToLoad, { docId: docFilter });
-      if (res && res.registros && res.registros.length > 0) {
-        setData(res);
-        const firstReview = res.registros.find(r => r.estado === 'REVISION') || res.registros[0];
-        setSelectedRecord(firstReview);
-      } else {
-        setData(res || null);
-        setSelectedRecord(null);
-      }
+      setData(res || null);
     } catch (err) {
       console.warn('Error al cargar beto-reading:', err);
       setData(null);
-      setSelectedRecord(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const capaA = data?.capa_a_resumen || {
-    total_analizados: 0,
-    directo_dw: 0,
-    a_revision: 0,
-    indice_medio: 0,
-    porcentaje_automatico: 0
+  const resumen = data?.resumen_ejecutivo || {
+    total_procesados: data?.registros?.length || 0,
+    aceptados_automaticamente: data?.capa_a_resumen?.directo_dw || 0,
+    por_revisar: data?.capa_a_resumen?.a_revision || 0,
+    con_incidencias: 0,
+    avance_porcentaje: data?.capa_a_resumen?.porcentaje_automatico || 0,
+    estado_lote: 'Revisión en curso',
+    alerta_abandono_count: 0,
+    sugerencias_catalogo_count: 0
+  };
+
+  const areas = data?.areas || {
+    academica: { key: 'academica', titulo: 'Académica', total: 0, auto: 0, revision: 0, incidencias: 0 },
+    financiera: { key: 'financiera', titulo: 'Financiera', total: 0, auto: 0, revision: 0, incidencias: 0 },
+    comercial: { key: 'comercial', titulo: 'Comercial', total: 0, auto: 0, revision: 0, incidencias: 0 },
+    calidad: { key: 'calidad', titulo: 'Calidad (Capa Transversal)', total: 0, auto: 0, revision: 0, incidencias: 0 }
   };
 
   const allRecords = data?.registros || [];
 
-  // Filtro de lista izquierda (Capa B)
-  const masterListFiltered = allRecords.filter(r => {
-    if (filterState === 'ALL') return true;
-    return r.estado === filterState;
-  });
-
-  // Filtro de tabla completa (Capa C)
-  const tableFiltered = allRecords.filter(r => {
-    if (tableFilter !== 'ALL' && r.estado !== tableFilter) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      return (
-        (r.estudiante || '').toLowerCase().includes(q) ||
-        (r.modulo || '').toLowerCase().includes(q) ||
-        (r.ci_enmascarado && r.ci_enmascarado.toLowerCase().includes(q)) ||
-        (revealedCis[r.id] && String(revealedCis[r.id]).toLowerCase().includes(q))
-      );
-    }
-    return true;
-  });
-
-  const tableTotalPages = Math.ceil(tableFiltered.length / tablePageSize) || 1;
-  const paginatedTableRows = tableFiltered.slice((tablePage - 1) * tablePageSize, tablePage * tablePageSize);
+  const toggleRowExpansion = (recId) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [recId]: !prev[recId]
+    }));
+  };
 
   const toggleCiReveal = async (recordId) => {
     if (revealedCis[recordId]) {
@@ -146,22 +122,23 @@ export default function BetoReadingFlowView() {
         id_lote: effectiveBatchId ? Number(effectiveBatchId) : undefined,
         doc_id: selectedDocId ? Number(selectedDocId) : undefined
       });
-      setInsertedSuccess(true);
+      
+      const totalInserted = res?.inserted_dw ?? resumen.aceptados_automaticamente;
       const desglose = res?.desglose || {
-        inserted_academico: res?.inserted_dw ?? capaA.directo_dw,
-        inserted_financiero: 0
+        inserted_academico: res?.inserted_academico ?? totalInserted,
+        inserted_financiero: res?.inserted_financiero ?? 0
       };
-      setDwInsertDesglose(desglose);
-      const totalInserted = res?.inserted_dw ?? (desglose.inserted_academico + desglose.inserted_financiero);
+
       sileoToast.success({
-        title: `${totalInserted} registros insertados al Data Warehouse`,
+        title: `${totalInserted} registros consolidados en Data Warehouse`,
         description: `Académicos: +${desglose.inserted_academico} · Financieros: +${desglose.inserted_financiero}`
       });
       setIsConfirmModalOpen(false);
+      loadReadingData(selectedDocId);
     } catch (err) {
       console.error('Error en confirmación DW:', err);
       sileoToast.error({
-        title: 'Error al insertar en Data Warehouse',
+        title: 'Error al consolidar en Data Warehouse',
         description: err.response?.data?.detail || err.message || 'Error en la transacción de carga.'
       });
       setIsConfirmModalOpen(false);
@@ -170,14 +147,81 @@ export default function BetoReadingFlowView() {
     }
   };
 
-  const renderTokenIcon = (iconName) => {
-    switch (iconName) {
-      case 'user': return <User size={12} />;
-      case 'book': return <BookOpen size={12} />;
-      case 'award': return <Award size={12} />;
-      default: return <FileText size={12} />;
-    }
-  };
+  // Lista de archivos únicos disponibles en el lote para filtro persistente
+  const availableFiles = useMemo(() => {
+    const fileSet = new Set();
+    allRecords.forEach(r => {
+      const fName = r.archivo_origen || r.nombre_archivo;
+      if (fName) fileSet.add(fName);
+    });
+    return Array.from(fileSet);
+  }, [allRecords]);
+
+  // Filtrado de registros
+  const filteredRecords = useMemo(() => {
+    return allRecords.filter(r => {
+      // 1. Filtro de área de trabajo
+      if (activeArea !== 'TODAS') {
+        if (activeArea === 'calidad') {
+          if (!r.en_calidad && r.area !== 'calidad') return false;
+        } else if (r.area !== activeArea) {
+          return false;
+        }
+      }
+
+      // 2. Filtro global persistente de Archivo de Origen
+      if (selectedFileFilter !== 'TODOS') {
+        const fileMatch = (r.archivo_origen === selectedFileFilter) || (r.nombre_archivo === selectedFileFilter);
+        if (!fileMatch) return false;
+      }
+
+      // 3. Filtro global persistente de Tipo de Entidad
+      if (selectedEntityType !== 'TODOS') {
+        const ents = r.lectura?.entidades || [];
+        const hasEnt = ents.some(e => {
+          const l = (e.label || '').toUpperCase();
+          if (selectedEntityType === 'ESTUDIANTE') return l.includes('ESTUDIANTE') || l.includes('ALUMNO') || l.includes('CI');
+          if (selectedEntityType === 'MODULO') return l.includes('MODULO') || l.includes('MÓDULO');
+          if (selectedEntityType === 'DOCENTE') return l.includes('DOCENTE');
+          if (selectedEntityType === 'CALIFICACION') return l.includes('CALIFICACI') || l.includes('NOTA');
+          if (selectedEntityType === 'MONTO') return l.includes('MONTO') || l.includes('CONCEPTO') || l.includes('CUOTA');
+          if (selectedEntityType === 'ASISTENCIA') return l.includes('ASISTENCIA');
+          return false;
+        });
+        if (!hasEnt) return false;
+      }
+
+      // 4. Filtro de condición
+      if (filterCondition === 'BAJA_CONFIANZA') {
+        const score = r.indice_registro || (r.score_confianza ? r.score_confianza * 100 : 80);
+        if (score >= 85) return false;
+      } else if (filterCondition === 'CONFLICTOS') {
+        if (r.estado !== 'INCONSISTENCIA' && r.estado !== 'REVISION') return false;
+      } else if (filterCondition === 'CATALOGO') {
+        if (!r.es_nuevo_catalogo) return false;
+      } else if (filterCondition === 'ABANDONO') {
+        if (!r.alerta_abandono && !r.cruce_multifuente) return false;
+      }
+
+      // 5. Búsqueda textual
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const estMatch = (r.estudiante || '').toLowerCase().includes(q);
+        const modMatch = (r.modulo || '').toLowerCase().includes(q);
+        const ciMaskMatch = (r.ci_enmascarado || '').toLowerCase().includes(q);
+        const ciRevMatch = (revealedCis[r.id] && String(revealedCis[r.id]).toLowerCase().includes(q));
+        const rawMatch = (r.texto_linea || '').toLowerCase().includes(q);
+        if (!estMatch && !modMatch && !ciMaskMatch && !ciRevMatch && !rawMatch) return false;
+      }
+
+      return true;
+    });
+  }, [allRecords, activeArea, selectedFileFilter, selectedEntityType, filterCondition, searchQuery, revealedCis]);
+
+  const totalPages = Math.ceil(filteredRecords.length / tablePageSize) || 1;
+  const paginatedRows = filteredRecords.slice((tablePage - 1) * tablePageSize, tablePage * tablePageSize);
+
+  const effectiveBatchId = id || localStorage.getItem('last_active_batch_id') || '01';
 
   return (
     <BatchFlowLayout
@@ -185,744 +229,791 @@ export default function BetoReadingFlowView() {
       selectedDocId={selectedDocId}
       onSelectDocId={setSelectedDocId}
     >
-      {loading ? (
-        <div className="floating-artifact" style={{ padding: '64px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: '15px', color: 'var(--color-slate-gray)', fontWeight: '600' }}>
-            Cargando inferencias y métricas del modelo BETO...
-          </div>
-        </div>
-      ) : allRecords.length === 0 ? (
-        <div className="floating-artifact" style={{ padding: '64px 24px', textAlign: 'center' }}>
-          <Cpu size={48} color="var(--color-slate-gray)" style={{ margin: '0 auto 16px auto', display: 'block' }} />
-          <h3 className="serif-heading" style={{ fontSize: '20px', margin: '0 0 10px 0', color: 'var(--color-ink-black)' }}>
-            No hay lecturas de BETO registradas para este lote
-          </h3>
-          <p style={{ fontSize: '14px', color: 'var(--color-slate-gray)', maxWidth: '520px', margin: '0 auto 24px auto', lineHeight: '1.5' }}>
-            Selecciona o procesa un archivo fuente en el paso ① Ingesta para que el modelo BETO pueda clasificar los registros y extraer entidades.
-          </p>
-          <button
-            onClick={() => navigate('/dataops/ingesta')}
-            className="sileo-btn"
-            style={{
-              padding: '10px 20px', backgroundColor: '#2563eb', color: '#fff',
-              border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '13px', cursor: 'pointer'
-            }}
-          >
-            Ir al paso ① Ingesta
-          </button>
-        </div>
-      ) : (
-        <>
-          {/* ─── Capa A. Resumen (4 tarjetas + barra apilada) ─── */}
-          <div style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-          <div className="floating-artifact" style={{ padding: '20px 24px' }}>
-            <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', fontWeight: '600' }}>Analizados</div>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--color-ink-black)', marginTop: '4px' }}>
-              {capaA.total_analizados}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-ash-gray)', marginTop: '4px' }}>
-              100% de registros leídos
-            </div>
-          </div>
-
-          <div className="floating-artifact" style={{ padding: '20px 24px', borderLeft: '4px solid #10b981' }}>
-            <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', fontWeight: '600' }}>Directo al DW (≥85)</div>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#10b981', marginTop: '4px' }}>
-              {capaA.directo_dw}
-            </div>
-            <div style={{ fontSize: '11px', color: '#059669', marginTop: '4px' }}>
-              {capaA.porcentaje_automatico}% automatización
-            </div>
-          </div>
-
-          <div className="floating-artifact" style={{ padding: '20px 24px', borderLeft: '4px solid #f59e0b' }}>
-            <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', fontWeight: '600' }}>A revisión humana</div>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#f59e0b', marginTop: '4px' }}>
-              {capaA.a_revision}
-            </div>
-            <div style={{ fontSize: '11px', color: '#b45309', marginTop: '4px' }}>
-              Elementos con score &lt; 85 o reglas
-            </div>
-          </div>
-
-          <div className="floating-artifact" style={{ padding: '20px 24px' }}>
-            <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', fontWeight: '600' }}>Índice medio</div>
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#2563eb', marginTop: '4px' }}>
-              {capaA.indice_medio} <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--color-slate-gray)' }}>/ 99</span>
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-ash-gray)', marginTop: '4px' }}>
-              Calidad semántica global
-            </div>
-          </div>
-        </div>
-
-        {/* Barra apilada interactiva */}
-        <div className="floating-artifact" style={{ padding: '16px 20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '8px' }}>
-            <span style={{ fontWeight: '600', color: 'var(--color-ink-black)' }}>Distribución del Lote</span>
-            <span style={{ color: 'var(--color-slate-gray)' }}>
-              verde = automático ({capaA.directo_dw}) · ámbar = revisión ({capaA.a_revision})
-            </span>
-          </div>
-          <div style={{
-            height: '14px',
-            borderRadius: '9999px',
-            backgroundColor: '#e5e7eb',
-            overflow: 'hidden',
-            display: 'flex'
-          }}>
-            <div
-              style={{
-                width: `${capaA.porcentaje_automatico}%`,
-                backgroundColor: '#10b981',
-                transition: 'width 0.4s ease'
-              }}
-              title={`Directo al DW: ${capaA.directo_dw}`}
-            />
-            <div
-              style={{
-                width: `${100 - capaA.porcentaje_automatico}%`,
-                backgroundColor: '#f59e0b',
-                transition: 'width 0.4s ease'
-              }}
-              title={`A revisión: ${capaA.a_revision}`}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* ─── Texto de ayuda de la vista ─── */}
-      <div className="dataops-banner-info" style={{ marginBottom: '24px' }}>
-        <HelpCircle size={20} color="var(--dataops-info-text)" style={{ flexShrink: 0 }} />
-        <div>
-          <strong>Cómo funciona BETO:</strong> BETO lee cada línea, identifica estudiantes, módulos y docentes, y mide cuán seguro está. Si el elemento más débil queda bajo 85, un humano lo revisa.
-        </div>
-      </div>
-
-      {/* ─── Capa B. Maestro–Detalle (Lista Izq | 4 Pasos Der) ─── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '24px', marginBottom: '28px' }}>
-        
-        {/* Lista de Registros a la Izquierda */}
-        <div className="floating-artifact" style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '640px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-            <h3 className="serif-heading" style={{ fontSize: '15px', margin: 0, color: 'var(--color-ink-black)' }}>
-              Registros
-            </h3>
-            <span style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>
-              {masterListFiltered.length}
-            </span>
-          </div>
-
-          {/* Filtros rápidos: Todos · Auto · Revisión */}
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
-            {['ALL', 'AUTOMATICO', 'REVISION'].map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setFilterState(mode)}
+      {/* ── Encabezado Principal ── */}
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+              <h2 className="serif-heading" style={{ fontSize: '24px', margin: 0, color: 'var(--color-ink-black)' }}>
+                Procesamiento de entidades
+              </h2>
+              <span
                 style={{
-                  flex: 1,
-                  padding: '6px 4px',
-                  borderRadius: '6px',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  border: '1px solid',
-                  borderColor: filterState === mode ? 'var(--color-accent-blue)' : 'var(--color-border)',
-                  backgroundColor: filterState === mode ? 'var(--dataops-info-bg)' : 'var(--color-paper-white)',
-                  color: filterState === mode ? 'var(--dataops-info-text)' : 'var(--color-slate-gray)',
-                  cursor: 'pointer'
-                }}
-              >
-                {mode === 'ALL' ? 'Todos' : mode === 'AUTOMATICO' ? 'Auto' : 'Revisión'}
-              </button>
-            ))}
-          </div>
-
-          {/* Lista scrollable con bullets solicitados: ● Pérez M. 62 ámbar */}
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {masterListFiltered.map((rec) => {
-              const isSelected = selectedRecord?.id === rec.id;
-              const isAuto = rec.estado === 'AUTOMATICO';
-              const bulletColor = isAuto ? '#10b981' : '#f59e0b';
-              const badgeLabel = isAuto ? 'verde' : 'ámbar';
-
-              return (
-                <div
-                  key={rec.id}
-                  onClick={() => setSelectedRecord(rec)}
-                  style={{
-                    padding: '12px',
-                    borderRadius: '10px',
-                    border: '1px solid',
-                    borderColor: isSelected ? 'var(--color-accent-blue)' : 'var(--color-border)',
-                    backgroundColor: isSelected ? 'var(--dataops-row-selected)' : 'var(--color-paper-white)',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{
-                        fontSize: '14px',
-                        color: bulletColor,
-                        lineHeight: 1
-                      }}>
-                        ●
-                      </span>
-                      <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-ink-black)' }}>
-                        {rec.estudiante}
-                      </span>
-                    </div>
-                    <span style={{
-                      fontSize: '11px',
-                      fontWeight: '700',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      backgroundColor: isAuto ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                      color: isAuto ? '#059669' : '#b45309'
-                    }}>
-                      {rec.indice_registro} {badgeLabel}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', marginTop: '4px', paddingLeft: '14px' }}>
-                    {rec.modulo}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Panel Detalle a la Derecha: 4 Pasos Visibles */}
-        <div className="floating-artifact" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
-          {selectedRecord ? (
-            <>
-              {/* Encabezado del Detalle */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)', paddingBottom: '14px' }}>
-                <div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>Cómo leyó BETO esta línea</div>
-                  <h3 className="serif-heading" style={{ fontSize: '18px', margin: '4px 0 0 0', color: 'var(--color-ink-black)' }}>
-                    {selectedRecord.estudiante}
-                  </h3>
-                </div>
-                <span style={{
-                  fontSize: '12px',
+                  fontSize: '11.5px',
                   fontWeight: '700',
                   padding: '4px 10px',
-                  borderRadius: '6px',
-                  backgroundColor: selectedRecord.estado === 'AUTOMATICO' ? '#ecfdf5' : '#fffbeb',
-                  color: selectedRecord.estado === 'AUTOMATICO' ? '#059669' : '#b45309',
-                  border: selectedRecord.estado === 'AUTOMATICO' ? '1px solid #a7f3d0' : '1px solid #fde68a'
-                }}>
-                  {selectedRecord.estado === 'AUTOMATICO' ? '✓ Aprobado Automático (≥85)' : '⚠ A Revisión Humana'}
-                </span>
-              </div>
-
-              {/* 1 LECTURA */}
-              <div>
-                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--dataops-info-text)', letterSpacing: '0.5px', marginBottom: '8px' }}>
-                  1 · LECTURA (CHIPS CON COLOR E ÍCONO/ETIQUETA)
-                </div>
-                <div style={{
-                  padding: '14px',
-                  backgroundColor: 'var(--color-mist-gray)',
-                  borderRadius: '10px',
-                  lineHeight: '2.4',
-                  fontSize: '13.5px'
-                }}>
-                  {selectedRecord.lectura?.tokens ? selectedRecord.lectura.tokens.map((tok, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        margin: '0 4px',
-                        padding: '4px 10px',
-                        borderRadius: '6px',
-                        backgroundColor: 'var(--dataops-chip-bg)',
-                        border: `1.5px solid ${tok.color}`,
-                        color: 'var(--color-ink-black)',
-                        fontWeight: '600',
-                        fontSize: '12.5px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
-                    >
-                      <span style={{ color: tok.color, display: 'inline-flex', alignItems: 'center' }}>
-                        {renderTokenIcon(tok.icon)}
-                      </span>
-                      <span>{tok.text}</span>
-                      <span style={{
-                        fontSize: '10px',
-                        textTransform: 'uppercase',
-                        padding: '1px 5px',
-                        borderRadius: '4px',
-                        backgroundColor: tok.color,
-                        color: '#ffffff',
-                        fontWeight: '700'
-                      }}>
-                        {tok.tag}
-                      </span>
-                    </span>
-                  )) : selectedRecord.raw_text}
-                </div>
-              </div>
-
-              {/* 2 CONFIANZA POR ELEMENTO */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--dataops-info-text)', letterSpacing: '0.5px' }}>
-                    2 · CONFIANZA POR ELEMENTO
-                  </div>
-                  <button
-                    onClick={() => setShowHowScoreWorks(!showHowScoreWorks)}
-                    style={{
-                      background: 'none', border: 'none', color: 'var(--dataops-info-text)', fontSize: '12px',
-                      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px'
-                    }}
-                  >
-                    ¿Cómo se calcula? {showHowScoreWorks ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                  </button>
-                </div>
-
-                {/* Desplegable: fórmula de cálculo */}
-                {showHowScoreWorks && (
-                  <div className="dataops-banner-info" style={{ marginBottom: '12px', fontSize: '12px', display: 'block' }}>
-                    Fórmula del índice de confianza: <code>min(99, lectura del modelo + bono catálogo + bono aparición repetida)</code>.
-                    <br />
-                    <strong>Compuerta mínima:</strong> Los bonos solo se aplican si la lectura base del modelo alcanza al menos <strong>70 / 100</strong>. <em>El catálogo suma, nunca resta.</em>
-                  </div>
-                )}
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {selectedRecord.confianza_elementos.map((elem, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span style={{ width: '90px', fontSize: '13px', fontWeight: '600', color: 'var(--color-ink-black)' }}>
-                        {elem.elemento}
-                      </span>
-                      <div style={{ flex: 1, height: '8px', backgroundColor: 'var(--color-border)', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{
-                          width: `${elem.indice}%`,
-                          height: '100%',
-                          backgroundColor: elem.indice >= 85 ? '#10b981' : '#f59e0b'
-                        }} />
-                      </div>
-                      <span style={{ width: '40px', fontSize: '13px', fontWeight: '700', color: elem.indice >= 85 ? '#059669' : '#b45309', textAlign: 'right' }}>
-                        {elem.indice}
-                      </span>
-                      <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)', width: '200px' }}>
-                        {elem.explicacion}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 3 VERIFICACIÓN DE REGLAS */}
-              <div>
-                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--dataops-info-text)', letterSpacing: '0.5px', marginBottom: '8px' }}>
-                  3 · VERIFICACIÓN DE REGLAS FIJAS (APRUEBAN O DETIENEN, NO SUMAN CONFIANZA)
-                </div>
-                <div style={{
-                  display: 'flex',
-                  gap: '16px',
-                  padding: '12px 16px',
-                  borderRadius: '10px',
-                  backgroundColor: 'var(--color-mist-gray)',
-                  fontSize: '13px',
-                  flexWrap: 'wrap'
-                }}>
-                  {/* CI */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: selectedRecord.verificacion_reglas?.ci?.valido ? '#10b981' : '#ef4444', fontWeight: '700' }}>
-                      {selectedRecord.verificacion_reglas?.ci?.valido ? '✓' : '✗'}
-                    </span>
-                    <span>CI:</span>
-                    <strong style={{ fontFamily: 'var(--font-mono)' }}>
-                      {revealedCis[selectedRecord.id]
-                        ? revealedCis[selectedRecord.id]
-                        : selectedRecord.verificacion_reglas?.ci?.valor_enmascarado}
-                    </strong>
-                    <button
-                      onClick={() => toggleCiReveal(selectedRecord.id)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--dataops-info-text)', padding: '0 2px' }}
-                      title="Revelar CI (auditado)"
-                    >
-                      {revealedCis[selectedRecord.id] ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
-
-                  <span style={{ color: 'var(--color-border)' }}>|</span>
-
-                  {/* Nota */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: selectedRecord.verificacion_reglas?.nota?.valido ? '#10b981' : '#ef4444', fontWeight: '700' }}>
-                      {selectedRecord.verificacion_reglas?.nota?.valido ? '✓' : '✗'}
-                    </span>
-                    <span>Nota:</span>
-                    <strong>{selectedRecord.verificacion_reglas?.nota?.motivo}</strong>
-                  </div>
-
-                  <span style={{ color: 'var(--color-border)' }}>|</span>
-
-                  {/* Monto */}
-                  <div style={{ color: selectedRecord.verificacion_reglas?.monto?.valido === false ? '#ef4444' : 'var(--color-slate-gray)' }}>
-                    <strong>{selectedRecord.verificacion_reglas?.monto?.motivo || 'Monto: —'}</strong>
-                  </div>
-                </div>
-              </div>
-
-              {/* 4 DECISIÓN */}
-              <div className={selectedRecord.estado === 'AUTOMATICO' ? 'dataops-banner-success' : 'dataops-banner-warning'} style={{ display: 'block' }}>
-                <div style={{ fontSize: '12px', fontWeight: '700', marginBottom: '4px' }}>
-                  4 · DECISIÓN EN LENGUAJE LLANO
-                </div>
-                <div style={{ fontSize: '14px', fontWeight: '600' }}>
-                  Índice del registro = el más bajo: <strong>{selectedRecord.decision?.indice_mas_bajo}</strong>
-                </div>
-                <div style={{ fontSize: '13px', marginTop: '4px' }}>
-                  → {selectedRecord.estado === 'AUTOMATICO' ? 'Directo al DW' : 'A revisión humana'}: "{selectedRecord.decision?.motivo_llano}"
-                </div>
-              </div>
-            </>
-          ) : (
-            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-slate-gray)' }}>
-              Selecciona un registro a la izquierda para inspeccionar la lectura de BETO
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ─── Confirmación Explícita de Inserción al DW ─── */}
-      <div className="floating-artifact" style={{
-        padding: '22px 26px',
-        marginBottom: '28px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '16px',
-        backgroundColor: 'var(--color-mist-gray)',
-        border: '1.5px solid var(--dataops-info-border)',
-        borderRadius: '14px'
-      }}>
-        <div>
-          <div style={{ fontSize: '16px', fontWeight: '700', color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Database size={18} color="var(--dataops-info-text)" /> Inserción de Registros Automáticos al Data Warehouse
-          </div>
-          <div style={{ fontSize: '13px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>
-            {insertedSuccess
-              ? `✓ Insertados en el DW: +${dwInsertDesglose?.inserted_academico ?? capaA.directo_dw} en Rendimiento Académico · +${dwInsertDesglose?.inserted_financiero ?? 0} en Situación Financiera y Cobranzas.`
-              : `Hay ${capaA.directo_dw} registros con índice del registro ≥ 85 aprobados listos para cargarse al DW según su tipo documental.`}
-          </div>
-        </div>
-
-        <button
-          onClick={() => setIsConfirmModalOpen(true)}
-          disabled={insertedSuccess || isInserting || capaA.directo_dw === 0}
-          className="sileo-btn"
-          style={{
-            padding: '14px 24px',
-            borderRadius: '12px',
-            backgroundColor: insertedSuccess ? '#10b981' : '#2563eb',
-            color: '#ffffff',
-            border: 'none',
-            fontSize: '14px',
-            fontWeight: '700',
-            cursor: insertedSuccess ? 'default' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)'
-          }}
-        >
-          {insertedSuccess ? (
-            <>
-              <CheckCircle2 size={18} /> {capaA.directo_dw} Registros Insertados en DW
-            </>
-          ) : (
-            <>
-              <Database size={18} /> Insertar {capaA.directo_dw} registros al DW
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* ─── Capa C. Tabla de Todos los Registros ─── */}
-      <div className="floating-artifact" style={{ padding: '24px', marginBottom: '28px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '14px' }}>
-          <div>
-            <h3 className="serif-heading" style={{ fontSize: '17px', margin: 0, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <TableProperties size={18} color="var(--dataops-info-text)" /> Capa C · Tabla de todos los registros del lote
-            </h3>
-            <p style={{ fontSize: '12px', color: 'var(--color-slate-gray)', margin: '4px 0 0 0' }}>
-              Inspección tabular completa: haz click en cualquier fila para cargarla en el detalle de BETO
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {/* Buscador */}
-            <div style={{ position: 'relative' }}>
-              <Search size={14} style={{ position: 'absolute', left: '10px', top: '10px', color: 'var(--color-ash-gray)' }} />
-              <input
-                type="text"
-                placeholder="Buscar por estudiante..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="dataops-input"
-                style={{
-                  padding: '7px 12px 7px 30px',
-                  borderRadius: '8px',
-                  fontSize: '12px'
+                  borderRadius: '999px',
+                  backgroundColor: resumen.estado_lote === 'Listo para consolidar' ? 'rgba(27, 135, 84, 0.12)' : 'rgba(217, 155, 38, 0.14)',
+                  color: resumen.estado_lote === 'Listo para consolidar' ? '#1B8754' : '#B8801A',
+                  border: `1px solid ${resumen.estado_lote === 'Listo para consolidar' ? 'rgba(27, 135, 84, 0.3)' : 'rgba(217, 155, 38, 0.35)'}`,
                 }}
-              />
+              >
+                {resumen.estado_lote}
+              </span>
             </div>
+            <div style={{ fontSize: '13px', color: 'var(--color-slate-gray)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span>Lote: <strong>LOTE-{effectiveBatchId}</strong></span>
+              <span>•</span>
+              <span>Modelo: <strong>BETO (Spanish BERT)</strong></span>
+              <span>•</span>
+              <span>Umbral de relación: <strong>0,85</strong></span>
+              <button
+                type="button"
+                onClick={() => setShowModelDetails(!showModelDetails)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--color-gira-gold, #D99B26)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '0 4px',
+                  textDecoration: 'underline'
+                }}
+              >
+                <HelpCircle size={13} /> {showModelDetails ? 'Ocultar detalles técnicos' : 'Ver detalles técnicos del modelo'}
+              </button>
+            </div>
+          </div>
 
-            {/* Filtros Rápidos */}
-            <div style={{ display: 'flex', gap: '4px' }}>
-              {['ALL', 'AUTOMATICO', 'REVISION'].map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setTableFilter(mode)}
-                  style={{
-                    padding: '7px 12px',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    border: '1px solid',
-                    borderColor: tableFilter === mode ? 'var(--color-accent-blue)' : 'var(--color-border)',
-                    backgroundColor: tableFilter === mode ? 'var(--dataops-info-bg)' : 'var(--color-paper-white)',
-                    color: tableFilter === mode ? 'var(--dataops-info-text)' : 'var(--color-slate-gray)',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {mode === 'ALL' ? 'Todos' : mode === 'AUTOMATICO' ? 'Automático' : 'Revisión'}
-                </button>
-              ))}
-            </div>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              type="button"
+              className="btn-pill-secondary"
+              onClick={() => setIsConfirmModalOpen(true)}
+              disabled={resumen.aceptados_automaticamente === 0}
+            >
+              <Database size={14} /> Consolidar Aceptados al DW ({resumen.aceptados_automaticamente})
+            </button>
+            <button
+              type="button"
+              className="btn-pill-gold"
+              onClick={() => navigate(`/dataops/lote/${effectiveBatchId}/revision`)}
+            >
+              <span>Ir a Bandeja ④ Revisión ({resumen.por_revisar + resumen.con_incidencias})</span>
+              <ArrowRight size={15} />
+            </button>
           </div>
         </div>
 
-        {/* Tabla */}
-        <div style={{ overflowX: 'auto', borderRadius: '10px', border: '1px solid var(--color-border)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+        {/* Panel Desplegable: Detalles Técnicos BETO */}
+        {showModelDetails && (
+          <div
+            className="floating-artifact"
+            style={{
+              marginTop: '16px',
+              padding: '16px 20px',
+              backgroundColor: 'var(--color-paper-white)',
+              border: '1px solid var(--dataops-gold-border)',
+              borderRadius: '12px'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: 'var(--color-gira-gold, #D99B26)' }}>
+              <Cpu size={16} />
+              <strong style={{ fontSize: '13px' }}>Arquitectura y Parámetros del Modelo BETO</strong>
+            </div>
+            <p style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)', margin: '0 0 10px 0', lineHeight: '1.5' }}>
+              {data?.modelo_info?.conll_mapping || (
+                'Modelo mrm8488/bert-spanish-cased-finetuned-ner (base: dccuchile/bert-base-spanish-wwm-cased). Extrae entidades CoNLL (PER, ORG, LOC, MISC), mapeándolas determinísticamente con el Catálogo Guía institucional (POS-XXXX).'
+              )}
+            </p>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--color-ink-black)', flexWrap: 'wrap' }}>
+              <span>• Compuerta Base: <strong>70%</strong></span>
+              <span>• Umbral Corte Automático: <strong>85%</strong></span>
+              <span>• Bono Catálogo: <strong>+4% a +12%</strong></span>
+              <span>• Bono Frecuencia Lote: <strong>+3%</strong></span>
+              <span>• Tope Bonificación: <strong>99%</strong></span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── 4 Tarjetas de Resumen Ejecutivo (Cards Superiores) ── */}
+      <div className="status-card-grid">
+        {/* Card 1: Registros Procesados */}
+        <div className="status-card">
+          <div className="status-card-header">
+            <span className="status-card-title">Registros procesados</span>
+            <FileText size={18} color="var(--color-slate-gray)" />
+          </div>
+          <div className="status-card-value">{resumen.total_procesados}</div>
+          <p className="status-card-subtext">Total analizado por BETO</p>
+        </div>
+
+        {/* Card 2: Aceptados Automáticamente (#1B8754) */}
+        <div className="status-card" style={{ borderLeft: '4px solid #1B8754' }}>
+          <div className="status-card-header">
+            <span className="status-card-title">Aceptados automáticamente</span>
+            <CheckCircle2 size={18} color="#1B8754" />
+          </div>
+          <div className="status-card-value" style={{ color: '#1B8754' }}>
+            {resumen.aceptados_automaticamente}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span className="status-card-subtext">Superan umbral ≥ 85%</span>
+            <span style={{ fontSize: '10.5px', fontWeight: '700', padding: '2px 6px', borderRadius: '4px', background: 'rgba(27, 135, 84, 0.1)', color: '#1B8754' }}>
+              &gt; 85% índice
+            </span>
+          </div>
+        </div>
+
+        {/* Card 3: Por revisar (#D99B26) */}
+        <div className="status-card" style={{ borderLeft: '4px solid #D99B26' }}>
+          <div className="status-card-header">
+            <span className="status-card-title">Por revisar</span>
+            <AlertTriangle size={18} color="#D99B26" />
+          </div>
+          <div className="status-card-value" style={{ color: '#D99B26' }}>
+            {resumen.por_revisar}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span className="status-card-subtext">Requieren validación humana</span>
+            <span style={{ fontSize: '10.5px', fontWeight: '700', padding: '2px 6px', borderRadius: '4px', background: 'rgba(217, 155, 38, 0.1)', color: '#B8801A' }}>
+              Requiere HITL
+            </span>
+          </div>
+        </div>
+
+        {/* Card 4: Con incidencias (#D9383A) */}
+        <div className="status-card" style={{ borderLeft: '4px solid #D9383A' }}>
+          <div className="status-card-header">
+            <span className="status-card-title">Con incidencias</span>
+            <AlertCircle size={18} color="#D9383A" />
+          </div>
+          <div className="status-card-value" style={{ color: '#D9383A' }}>
+            {resumen.con_incidencias}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span className="status-card-subtext">Inconsistencias y alertas</span>
+            <span style={{ fontSize: '10.5px', fontWeight: '700', padding: '2px 6px', borderRadius: '4px', background: 'rgba(217, 56, 58, 0.1)', color: '#D9383A' }}>
+              Conflicto / Alerta
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Barra de Progreso: Avance de Procesamiento ── */}
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', fontSize: '12.5px' }}>
+          <span style={{ fontWeight: '600', color: 'var(--color-ink-black)' }}>Avance de procesamiento</span>
+          <span style={{ fontWeight: '700', color: '#1B8754' }}>{resumen.avance_porcentaje}% completado</span>
+        </div>
+        <div className="progress-bar-container">
+          <div className="progress-bar-fill" style={{ width: `${Math.min(100, Math.max(0, resumen.avance_porcentaje))}%` }} />
+        </div>
+      </div>
+
+      {/* ── 4 Tarjetas de Áreas de Trabajo con Drill-Down ── */}
+      <div style={{ marginBottom: '12px' }}>
+        <h3 className="serif-heading" style={{ fontSize: '16px', margin: '0 0 12px 0', color: 'var(--color-ink-black)' }}>
+          Áreas de trabajo
+        </h3>
+        <div className="area-card-grid">
+          {/* Área 1: Académica */}
+          <div
+            className={`area-card ${activeArea === 'academica' ? 'active' : ''}`}
+            onClick={() => setActiveArea(activeArea === 'academica' ? 'TODAS' : 'academica')}
+          >
+            <div className="area-card-top">
+              <span className="area-card-name">
+                <GraduationCap size={16} color="#0C1E33" /> {areas.academica.titulo}
+              </span>
+              <span className="area-card-count">{areas.academica.total}</span>
+            </div>
+            <p style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', margin: '0 0 8px 0', lineHeight: '1.4' }}>
+              Notas, módulos, asistencia y validación contra oferta curricular.
+            </p>
+            <div className="area-card-stats">
+              <span style={{ color: '#1B8754' }}>Auto: <strong>{areas.academica.auto}</strong></span>
+              <span>•</span>
+              <span style={{ color: '#D99B26' }}>Rev: <strong>{areas.academica.revision}</strong></span>
+              <span>•</span>
+              <span style={{ color: '#D9383A' }}>Inc: <strong>{areas.academica.incidencias}</strong></span>
+            </div>
+          </div>
+
+          {/* Área 2: Financiera */}
+          <div
+            className={`area-card ${activeArea === 'financiera' ? 'active' : ''}`}
+            onClick={() => setActiveArea(activeArea === 'financiera' ? 'TODAS' : 'financiera')}
+          >
+            <div className="area-card-top">
+              <span className="area-card-name">
+                <CreditCard size={16} color="#0C1E33" /> {areas.financiera.titulo}
+              </span>
+              <span className="area-card-count">{areas.financiera.total}</span>
+            </div>
+            <p style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', margin: '0 0 8px 0', lineHeight: '1.4' }}>
+              Pagos, cuotas impagas e importes conciliados con aranceles del catálogo.
+            </p>
+            <div className="area-card-stats">
+              <span style={{ color: '#1B8754' }}>Auto: <strong>{areas.financiera.auto}</strong></span>
+              <span>•</span>
+              <span style={{ color: '#D99B26' }}>Rev: <strong>{areas.financiera.revision}</strong></span>
+              <span>•</span>
+              <span style={{ color: '#D9383A' }}>Inc: <strong>{areas.financiera.incidencias}</strong></span>
+            </div>
+          </div>
+
+          {/* Área 3: Comercial */}
+          <div
+            className={`area-card ${activeArea === 'comercial' ? 'active' : ''}`}
+            onClick={() => setActiveArea(activeArea === 'comercial' ? 'TODAS' : 'comercial')}
+          >
+            <div className="area-card-top">
+              <span className="area-card-name">
+                <ShoppingCart size={16} color="#0C1E33" /> {areas.comercial.titulo}
+              </span>
+              <span className="area-card-count">{areas.comercial.total}</span>
+            </div>
+            <p style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', margin: '0 0 8px 0', lineHeight: '1.4' }}>
+              Inscripciones individuales vs demanda agregada y metas de captación.
+            </p>
+            <div className="area-card-stats">
+              <span style={{ color: '#1B8754' }}>Auto: <strong>{areas.comercial.auto}</strong></span>
+              <span>•</span>
+              <span style={{ color: '#D99B26' }}>Rev: <strong>{areas.comercial.revision}</strong></span>
+              <span>•</span>
+              <span style={{ color: '#D9383A' }}>Inc: <strong>{areas.comercial.incidencias}</strong></span>
+            </div>
+          </div>
+
+          {/* Área 4: Calidad (Capa Transversal) */}
+          <div
+            className={`area-card ${activeArea === 'calidad' ? 'active' : ''}`}
+            onClick={() => setActiveArea(activeArea === 'calidad' ? 'TODAS' : 'calidad')}
+          >
+            <div className="area-card-top">
+              <span className="area-card-name">
+                <ShieldAlert size={16} color="#D9383A" /> Calidad Transversal
+              </span>
+              <span className="area-card-count" style={{ color: '#D9383A' }}>{areas.calidad.total}</span>
+            </div>
+            <p style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', margin: '0 0 8px 0', lineHeight: '1.4' }}>
+              Duplicados, cruce de abandono y sugerencias de Catálogo Guía.
+            </p>
+            <div className="area-card-stats">
+              <span style={{ color: '#D99B26' }}>Rev: <strong>{areas.calidad.revision}</strong></span>
+              <span>•</span>
+              <span style={{ color: '#D9383A' }}>Alertas: <strong>{areas.calidad.incidencias}</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Barra de Filtros Persistentes y Búsqueda ── */}
+      <div
+        className="floating-artifact"
+        style={{
+          padding: '14px 18px',
+          marginBottom: '20px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '14px'
+        }}
+      >
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-slate-gray)', marginRight: '4px' }}>
+            Filtros:
+          </span>
+
+          {/* Pastillas de condición */}
+          <button
+            type="button"
+            className={`pill-filter ${filterCondition === 'ALL' ? 'active' : ''}`}
+            onClick={() => setFilterCondition('ALL')}
+          >
+            Todos ({allRecords.length})
+          </button>
+          <button
+            type="button"
+            className={`pill-filter ${filterCondition === 'BAJA_CONFIANZA' ? 'active' : ''}`}
+            onClick={() => setFilterCondition('BAJA_CONFIANZA')}
+          >
+            Confianza &lt; 85%
+          </button>
+          <button
+            type="button"
+            className={`pill-filter ${filterCondition === 'CONFLICTOS' ? 'active' : ''}`}
+            onClick={() => setFilterCondition('CONFLICTOS')}
+          >
+            Conflictos ({resumen.por_revisar + resumen.con_incidencias})
+          </button>
+          <button
+            type="button"
+            className={`pill-filter ${filterCondition === 'CATALOGO' ? 'active' : ''}`}
+            onClick={() => setFilterCondition('CATALOGO')}
+          >
+            💡 Sugerencias Catálogo ({resumen.sugerencias_catalogo_count})
+          </button>
+          <button
+            type="button"
+            className={`pill-filter ${filterCondition === 'ABANDONO' ? 'active' : ''}`}
+            onClick={() => setFilterCondition('ABANDONO')}
+          >
+            ⚠️ Alerta Abandono ({resumen.alerta_abandono_count})
+          </button>
+
+          {/* Filtro Archivo de Origen */}
+          {availableFiles.length > 0 && (
+            <select
+              className="dataops-select"
+              style={{ width: 'auto', padding: '6px 12px', fontSize: '12px', borderRadius: '999px', cursor: 'pointer' }}
+              value={selectedFileFilter}
+              onChange={(e) => {
+                setSelectedFileFilter(e.target.value);
+                setTablePage(1);
+              }}
+              title="Filtrar por archivo de origen"
+              aria-label="Archivo de origen"
+            >
+              <option value="TODOS">📁 Todos los archivos ({availableFiles.length})</option>
+              {availableFiles.map(f => (
+                <option key={f} value={f}>{f}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Filtro Tipo de Entidad */}
+          <select
+            className="dataops-select"
+            style={{ width: 'auto', padding: '6px 12px', fontSize: '12px', borderRadius: '999px', cursor: 'pointer' }}
+            value={selectedEntityType}
+            onChange={(e) => {
+              setSelectedEntityType(e.target.value);
+              setTablePage(1);
+            }}
+            title="Filtrar por tipo de entidad"
+            aria-label="Tipo de entidad"
+          >
+            <option value="TODOS">🏷️ Todas las entidades</option>
+            <option value="ESTUDIANTE">Estudiante / Persona</option>
+            <option value="MODULO">Módulo / Materia</option>
+            <option value="DOCENTE">Docente</option>
+            <option value="CALIFICACION">Calificación / Nota</option>
+            <option value="MONTO">Monto / Deuda / Cuota</option>
+            <option value="ASISTENCIA">Asistencia / Abandono</option>
+          </select>
+        </div>
+
+        {/* Buscador */}
+        <div style={{ position: 'relative', minWidth: '240px', flex: '1', maxWidth: '320px' }}>
+          <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-slate-gray)' }} />
+          <input
+            type="text"
+            className="dataops-input"
+            style={{ paddingLeft: '32px', fontSize: '12.5px' }}
+            placeholder="Buscar por estudiante, CI o módulo..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setTablePage(1);
+            }}
+          />
+        </div>
+      </div>
+
+      {/* ── Tabla de Registros con Drill-Down Expandible ── */}
+      <div className="floating-artifact" style={{ padding: '0', overflow: 'hidden', marginBottom: '24px' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="dataops-table">
             <thead>
-              <tr style={{ backgroundColor: 'var(--color-mist-gray)', borderBottom: '1px solid var(--color-border)' }}>
-                <th style={{ padding: '12px 14px', width: '110px', color: 'var(--color-slate-gray)' }}>Estado</th>
-                <th style={{ padding: '12px 14px', color: 'var(--color-ink-black)' }}>Estudiante</th>
-                <th style={{ padding: '12px 14px', color: 'var(--color-ink-black)' }}>Módulo</th>
-                <th style={{ padding: '12px 14px', color: 'var(--color-ink-black)' }}>Nota Normalizada</th>
-                <th style={{ padding: '12px 14px', width: '80px', color: 'var(--color-ink-black)', textAlign: 'center' }}>Índice</th>
-                <th style={{ padding: '12px 14px', color: 'var(--color-slate-gray)' }}>Motivo de la Decisión</th>
+              <tr>
+                <th style={{ width: '40px', textAlign: 'center' }}></th>
+                <th>Estado</th>
+                <th>Área</th>
+                <th>Estudiante / Entidad</th>
+                <th>Módulo / Concepto</th>
+                <th>Calificación / Asist / Deuda</th>
+                <th>Índice BETO</th>
+                <th>Alerta / Cruce</th>
+                <th style={{ textAlign: 'right' }}>Acción</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedTableRows.map((row) => {
-                const isAuto = row.estado === 'AUTOMATICO';
-                const isSelected = selectedRecord?.id === row.id;
+              {paginatedRows.length === 0 ? (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '48px 16px', color: 'var(--color-slate-gray)' }}>
+                    No se encontraron registros coincidentes con los filtros aplicados.
+                  </td>
+                </tr>
+              ) : (
+                paginatedRows.map((rec) => {
+                  const isExpanded = !!expandedRows[rec.id];
+                  const scoreVal = rec.indice_registro || (rec.score_confianza ? Math.round(rec.score_confianza * 100) : 80);
+                  const isAutomatic = rec.estado === 'AUTOMATICO';
+                  const isRevision = rec.estado === 'REVISION';
 
-                return (
-                  <tr
-                    key={row.id}
-                    onClick={() => setSelectedRecord(row)}
-                    style={{
-                      borderBottom: '1px solid var(--color-border)',
-                      backgroundColor: isSelected ? 'var(--dataops-row-selected)' : 'transparent',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <td style={{ padding: '12px 14px' }}>
-                      <span style={{
-                        padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700',
-                        backgroundColor: isAuto ? '#ecfdf5' : '#fffbeb',
-                        color: isAuto ? '#059669' : '#b45309',
-                        border: isAuto ? '1px solid #a7f3d0' : '1px solid #fde68a'
-                      }}>
-                        {isAuto ? 'Automático' : 'Revisión'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '12px 14px', fontWeight: '700', color: 'var(--color-ink-black)' }}>
-                      {row.estudiante}
-                    </td>
-                    <td style={{ padding: '12px 14px', color: 'var(--color-slate-gray)' }}>
-                      {row.modulo}
-                    </td>
-                    <td style={{ padding: '12px 14px', fontFamily: 'var(--font-mono)', fontWeight: '600', color: 'var(--dataops-info-text)' }}>
-                      {row.nota_normalizada}
-                    </td>
-                    <td style={{ padding: '12px 14px', textAlign: 'center', fontWeight: '800', color: isAuto ? '#059669' : '#b45309' }}>
-                      {row.indice_registro}
-                    </td>
-                    <td style={{ padding: '12px 14px', fontSize: '12px', color: isAuto ? 'var(--color-ash-gray)' : '#b45309' }}>
-                      {row.decision?.motivo_llano || row.motivo}
-                    </td>
-                  </tr>
-                );
-              })}
+                  return (
+                    <React.Fragment key={rec.id}>
+                      <tr
+                        className={`dataops-table-row ${isExpanded ? 'selected' : ''}`}
+                        onClick={() => toggleRowExpansion(rec.id)}
+                      >
+                        <td style={{ textAlign: 'center', color: 'var(--color-slate-gray)' }}>
+                          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              backgroundColor: isAutomatic ? 'rgba(27, 135, 84, 0.1)' : (isRevision ? 'rgba(217, 155, 38, 0.12)' : 'rgba(217, 56, 58, 0.12)'),
+                              color: isAutomatic ? '#1B8754' : (isRevision ? '#B8801A' : '#D9383A'),
+                            }}
+                          >
+                            {isAutomatic ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
+                            {rec.estado || (isAutomatic ? 'AUTOMÁTICO' : 'REVISIÓN')}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontSize: '12px', fontWeight: '600', textTransform: 'capitalize' }}>
+                            {rec.area === 'academica' ? '🎓 Académica' : (rec.area === 'financiera' ? '💳 Financiera' : (rec.area === 'comercial' ? '🛒 Comercial' : '🛡️ Calidad'))}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: '600', color: 'var(--color-ink-black)' }}>
+                            {rec.estudiante || 'Registro no identificado'}
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <span>CI: {revealedCis[rec.id] || rec.ci_enmascarado || '••••••'}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleCiReveal(rec.id);
+                              }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--color-slate-gray)' }}
+                              title="Revelar Cédula de Identidad (Auditoría)"
+                            >
+                              {revealedCis[rec.id] ? <EyeOff size={12} /> : <Eye size={12} />}
+                            </button>
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '12px', color: 'var(--color-ink-black)', maxWidth: '220px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {rec.modulo || rec.concepto || 'Módulo Académico'}
+                          </div>
+                        </td>
+                        <td>
+                          {rec.nota_normalizada !== undefined && rec.nota_normalizada !== null ? (
+                            <span style={{ fontWeight: '700', color: rec.nota_normalizada >= 51 ? '#1B8754' : '#D9383A' }}>
+                              Nota: {rec.nota_normalizada}/100
+                            </span>
+                          ) : rec.monto_deuda ? (
+                            <span style={{ fontWeight: '700', color: '#D9383A' }}>
+                              Deuda: Bs. {rec.monto_deuda} ({rec.cuotas_impagas || 1} ctas)
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--color-slate-gray)' }}>—</span>
+                          )}
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              fontSize: '12px',
+                              fontWeight: '700',
+                              color: scoreVal >= 85 ? '#1B8754' : (scoreVal >= 70 ? '#B8801A' : '#D9383A')
+                            }}
+                          >
+                            {scoreVal}%
+                          </span>
+                        </td>
+                        <td>
+                          {rec.alerta_abandono ? (
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                backgroundColor: 'rgba(217, 56, 58, 0.12)',
+                                color: '#D9383A'
+                              }}
+                            >
+                              ⚠️ Alerta Abandono
+                            </span>
+                          ) : rec.es_nuevo_catalogo ? (
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                backgroundColor: 'rgba(217, 155, 38, 0.14)',
+                                color: '#B8801A'
+                              }}
+                            >
+                              💡 Nuevo Catálogo
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }}>Normal</span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleRowExpansion(rec.id);
+                            }}
+                            className="btn-pill-secondary"
+                            style={{ padding: '4px 10px', fontSize: '11.5px' }}
+                          >
+                            {isExpanded ? 'Ocultar' : 'Detalle'}
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* Fila Desplegable (Drill-Down) */}
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan={9} style={{ backgroundColor: 'var(--color-mist-gray)', padding: '16px 20px', borderBottom: '2px solid var(--color-border)' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '18px' }}>
+                              {/* Izquierda: Sentencia extraída y Tokens */}
+                              <div>
+                                <div style={{ fontSize: '11.5px', fontWeight: '700', color: 'var(--color-slate-gray)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                                  Línea extraída del documento original
+                                </div>
+                                <div
+                                  style={{
+                                    padding: '10px 12px',
+                                    borderRadius: '8px',
+                                    backgroundColor: 'var(--color-paper-white)',
+                                    border: '1px solid var(--color-border)',
+                                    fontFamily: 'var(--font-mono, monospace)',
+                                    fontSize: '12px',
+                                    color: 'var(--color-ink-black)',
+                                    lineHeight: '1.5',
+                                    marginBottom: '10px'
+                                  }}
+                                >
+                                  {rec.texto_linea || 'No se dispone del texto raw de la línea'}
+                                </div>
+
+                                {/* Desglose de Tokens Reconocidos */}
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                  <span className="chip-cat chip-programa">PROG: {rec.programa || 'POS-2026'}</span>
+                                  <span className="chip-cat chip-modulo">MOD: {rec.modulo || 'Módulo'}</span>
+                                  <span className="chip-cat chip-origen">DOC: {rec.archivo_origen || 'Origen'}</span>
+                                </div>
+
+                                {/* Alerta Multifuente de Abandono si existe */}
+                                {rec.cruce_multifuente && (
+                                  <div className="multi-source-alert">
+                                    <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+                                    <div>
+                                      <strong>Cruce Multifuente de Abandono Detectado:</strong>
+                                      <div style={{ marginTop: '3px' }}>{rec.cruce_multifuente.descripcion}</div>
+                                      <div style={{ fontSize: '11.5px', opacity: 0.85, marginTop: '2px' }}>
+                                        Correlación con archivo: <em>{rec.cruce_multifuente.archivo_cruzado}</em>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Derecha: Desglose Relacional Catálogo Guía (Cero-PII) */}
+                              <div>
+                                <div style={{ fontSize: '11.5px', fontWeight: '700', color: 'var(--color-slate-gray)', textTransform: 'uppercase', marginBottom: '6px' }}>
+                                  Conciliación Catálogo Guía (Cero-PII)
+                                </div>
+                                <div className="zero-pii-card">
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                    <span style={{ color: 'var(--color-slate-gray)' }}>Código Oferta:</span>
+                                    <strong>{rec.desglose_relacional?.catalogo_guia?.modulo_codigo || rec.codigo_oferta || 'POS-GEST-2026'}</strong>
+                                  </div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                    <span style={{ color: 'var(--color-slate-gray)' }}>Módulo Canónico:</span>
+                                    <span>{rec.modulo || 'Módulo Curricular'}</span>
+                                  </div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                    <span style={{ color: 'var(--color-slate-gray)' }}>Arancel Catálogo:</span>
+                                    <span>{rec.desglose_relacional?.catalogo_guia?.arancel_base || 'Bs. 1.500 por cuota/módulo'}</span>
+                                  </div>
+                                  <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', borderTop: '1px dashed var(--color-border)', paddingTop: '6px', marginTop: '6px' }}>
+                                    🛡️ <em>Principio Cero-PII: El Catálogo Guía solo almacena entidades curriculares e institucionales, nunca identidades de personas.</em>
+                                  </div>
+                                </div>
+
+                                {!isAutomatic && (
+                                  <div style={{ marginTop: '12px', textAlign: 'right' }}>
+                                    <button
+                                      type="button"
+                                      className="btn-pill-gold"
+                                      style={{ padding: '8px 16px', fontSize: '12px' }}
+                                      onClick={() => navigate(`/dataops/lote/${effectiveBatchId}/revision`)}
+                                    >
+                                      <span>Resolver en Revisión Humana</span>
+                                      <ArrowRight size={13} />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Paginación */}
-        {tableTotalPages > 1 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>
-              Mostrando {paginatedTableRows.length} de {tableFiltered.length} registros
+        {totalPages > 1 && (
+          <div
+            style={{
+              padding: '12px 20px',
+              borderTop: '1px solid var(--color-border)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              fontSize: '12.5px'
+            }}
+          >
+            <span style={{ color: 'var(--color-slate-gray)' }}>
+              Mostrando {Math.min(filteredRecords.length, (tablePage - 1) * tablePageSize + 1)} - {Math.min(filteredRecords.length, tablePage * tablePageSize)} de {filteredRecords.length}
             </span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
-                disabled={tablePage <= 1}
+                type="button"
+                className="btn-pill-secondary"
+                disabled={tablePage === 1}
                 onClick={() => setTablePage(p => Math.max(1, p - 1))}
-                className="sileo-btn"
-                style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '6px', border: '1px solid var(--color-border)' }}
               >
-                <ChevronLeft size={14} /> Anterior
+                Anterior
               </button>
-              <span style={{ padding: '6px 12px', fontSize: '12px', color: 'var(--color-slate-gray)' }}>
-                {tablePage} / {tableTotalPages}
-              </span>
               <button
-                disabled={tablePage >= tableTotalPages}
-                onClick={() => setTablePage(p => Math.min(tableTotalPages, p + 1))}
-                className="sileo-btn"
-                style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '6px', border: '1px solid var(--color-border)' }}
+                type="button"
+                className="btn-pill-secondary"
+                disabled={tablePage >= totalPages}
+                onClick={() => setTablePage(p => p + 1)}
               >
-                Siguiente <ChevronRight size={14} />
+                Siguiente
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* ─── Modal de Vista Previa de Inserción DW ─── */}
+      {/* ── Footer de Avance a Paso 4 ── */}
+      <div
+        className="floating-artifact"
+        style={{
+          padding: '20px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '16px'
+        }}
+      >
+        <div>
+          <div style={{ fontWeight: '700', fontSize: '15px', color: 'var(--color-ink-black)', marginBottom: '4px' }}>
+            {resumen.por_revisar + resumen.con_incidencias === 0
+              ? 'Todos los registros han superado el umbral del 85%'
+              : `Hay ${resumen.por_revisar + resumen.con_incidencias} casos pendientes en la Bandeja de Revisión Humana`}
+          </div>
+          <div style={{ fontSize: '13px', color: 'var(--color-slate-gray)' }}>
+            Consolida los registros aprobados directamente al DW o procede a la resolución manual.
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            type="button"
+            className="btn-pill-secondary"
+            onClick={() => setIsConfirmModalOpen(true)}
+            disabled={resumen.aceptados_automaticamente === 0}
+          >
+            <Database size={15} /> Consolidar Aprobados ({resumen.aceptados_automaticamente})
+          </button>
+          <button
+            type="button"
+            className="btn-pill-gold"
+            onClick={() => navigate(`/dataops/lote/${effectiveBatchId}/revision`)}
+          >
+            <span>Ir a Bandeja ④ Revisión Humana y Consolidación DW ({resumen.por_revisar + resumen.con_incidencias})</span>
+            <ArrowRight size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Modal de Confirmación DW ── */}
       {isConfirmModalOpen && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.6)', zIndex: 9999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
-        }}>
-          <div className="floating-artifact" style={{ maxWidth: '540px', width: '100%', padding: '28px' }}>
-            <h3 className="serif-heading" style={{ fontSize: '18px', margin: '0 0 12px 0', color: 'var(--color-ink-black)' }}>
-              Confirmar Inserción en Data Warehouse
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(12, 30, 51, 0.65)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '16px'
+          }}
+        >
+          <div
+            className="floating-artifact"
+            style={{
+              maxWidth: '480px',
+              width: '100%',
+              padding: '24px',
+              backgroundColor: 'var(--color-paper-white)',
+              borderRadius: '16px'
+            }}
+          >
+            <h3 className="serif-heading" style={{ fontSize: '20px', margin: '0 0 10px 0', color: 'var(--color-ink-black)' }}>
+              Confirmar consolidación al Data Warehouse
             </h3>
-            <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', margin: '0 0 20px 0' }}>
-              Se aplicará la transacción de carga sobre las entidades de negocio según el dominio documental de cada archivo:
+            <p style={{ fontSize: '13.5px', color: 'var(--color-slate-gray)', lineHeight: '1.5', margin: '0 0 16px 0' }}>
+              Se insertarán transaccionalmente <strong>{resumen.aceptados_automaticamente}</strong> registros que superaron el umbral de relación del 85% directamente en las tablas de hechos:
             </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px', fontSize: '13px' }}>
-              <div style={{ padding: '10px 14px', backgroundColor: 'var(--color-mist-gray)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                <span><strong>Rendimiento Académico</strong> / <strong>Situación Financiera y Cobranzas</strong></span>
-                <strong>+{capaA.directo_dw} filas aprobadas (≥85)</strong>
-              </div>
-              <div style={{ padding: '10px 14px', backgroundColor: 'var(--color-mist-gray)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                <span><strong>Catálogo de Estudiantes</strong> (Coincidencias / Nuevos)</span>
-                <strong>Verificado ✓</strong>
-              </div>
-              <div style={{ padding: '10px 14px', backgroundColor: 'var(--color-mist-gray)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                <span><strong>Registros de Ingesta</strong> (A revisión ④)</span>
-                <strong>{capaA.a_revision} pendientes</strong>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+            <ul style={{ fontSize: '13px', color: 'var(--color-ink-black)', marginBottom: '20px', paddingLeft: '20px', lineHeight: '1.6' }}>
+              <li><code>fact_rendimiento_academico</code> (calificaciones normalizadas a escala centesimal)</li>
+              <li><code>fact_situacion_financiera</code> (cuotas impagas y cobros conciliados)</li>
+            </ul>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button
+                type="button"
+                className="btn-pill-secondary"
                 onClick={() => setIsConfirmModalOpen(false)}
-                className="sileo-btn"
-                style={{ padding: '10px 18px', borderRadius: '8px', border: '1px solid var(--color-border)', backgroundColor: 'transparent' }}
+                disabled={isInserting}
               >
                 Cancelar
               </button>
               <button
+                type="button"
+                className="btn-pill-gold"
                 onClick={handleConfirmInsertDw}
                 disabled={isInserting}
-                className="sileo-btn"
-                style={{
-                  padding: '10px 20px', borderRadius: '8px', backgroundColor: '#2563eb', color: '#ffffff',
-                  border: 'none', fontWeight: '700'
-                }}
               >
-                {isInserting ? 'Insertando...' : 'Confirmar e Insertar'}
+                {isInserting ? 'Consolidando transaccionalmente...' : 'Confirmar e Insertar'}
               </button>
             </div>
           </div>
         </div>
       )}
-
-      {/* ─── Pie Colapsado: Detalle del Modelo ─── */}
-      <div className="floating-artifact" style={{ padding: '16px 20px', marginBottom: '28px' }}>
-        <button
-          onClick={() => setShowModelDetails(!showModelDetails)}
-          style={{
-            width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            background: 'none', border: 'none', cursor: 'pointer', padding: 0
-          }}
-        >
-          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Cpu size={16} /> Detalle del modelo y calibración de inferencia
-          </span>
-          {showModelDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-
-        {showModelDetails && (
-          <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid var(--color-border)', display: 'flex', gap: '28px', flexWrap: 'wrap', fontSize: '12px' }}>
-            <div>
-              <span style={{ color: 'var(--color-slate-gray)' }}>Arquitectura: </span>
-              <strong>{data?.modelo_info?.nombre}</strong>
-            </div>
-            <div>
-              <span style={{ color: 'var(--color-slate-gray)' }}>F1 en Validación: </span>
-              <strong style={{ color: '#10b981' }}>{data?.modelo_info?.f1_validacion}</strong>
-              <span style={{ color: 'var(--color-ash-gray)', marginLeft: '4px' }}>(Conjunto de validación)</span>
-            </div>
-            <div>
-              <span style={{ color: 'var(--color-slate-gray)' }}>Umbral de corte: </span>
-              <strong>{data?.modelo_info?.umbral_vigente}%</strong>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ─── Navegación al Paso ④ ─── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <button
-          onClick={() => navigate(`/dataops/lote/${id}/texto`)}
-          className="sileo-btn"
-          style={{
-            padding: '12px 20px',
-            borderRadius: '10px',
-            backgroundColor: 'var(--color-mist-gray)',
-            border: '1px solid var(--color-border)',
-            color: 'var(--color-slate-gray)',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontWeight: '600'
-          }}
-        >
-          ← Volver a Texto Plano ②
-        </button>
-
-        <button
-          onClick={() => navigate(`/dataops/revision?lote=${id}`)}
-          className="sileo-btn"
-          style={{
-            padding: '14px 26px',
-            borderRadius: '12px',
-            backgroundColor: capaA.a_revision > 0 ? '#d97706' : '#2563eb',
-            color: '#ffffff',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '700',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            boxShadow: '0 4px 14px rgba(217, 119, 6, 0.3)'
-          }}
-        >
-          Pasar a Revisión Humana ④ ({capaA.a_revision} pendientes) <ArrowRight size={18} />
-        </button>
-      </div>
-      </>
-    )}
-  </BatchFlowLayout>
+    </BatchFlowLayout>
   );
 }
