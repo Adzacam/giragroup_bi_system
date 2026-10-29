@@ -15,7 +15,7 @@ from schemas.auth_schemas import (
 )
 from core.security import (
     verify_password, generate_otp, get_password_hash, create_access_token,
-    get_current_user, SECRET_KEY, ALGORITHM
+    get_current_user, invalidate_user_cache, SECRET_KEY, ALGORITHM
 )
 from services.email_service import email_service
 
@@ -50,6 +50,7 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
         user.failed_login_attempts += 1
         if user.failed_login_attempts >= 5:
             user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
+            invalidate_user_cache(user.id)
         db.commit()
         raise HTTPException(status_code=401, detail="Credenciales invalidas")
         
@@ -284,6 +285,7 @@ def change_password(
 
     current_user.hashed_password = get_password_hash(req.new_password)
     db.commit()
+    invalidate_user_cache(current_user.id)
 
     return {
         "status": "success",

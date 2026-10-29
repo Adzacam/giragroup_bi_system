@@ -5,7 +5,7 @@ from typing import List
 from core.database import get_db
 from models.user import User
 from schemas.user_schemas import UserCreate, UserUpdate, UserResponse
-from core.security import get_current_user, require_roles, get_password_hash
+from core.security import get_current_user, require_roles, get_password_hash, invalidate_user_cache
 
 router = APIRouter(prefix="/api/v1/users", tags=["Usuarios"])
 
@@ -49,6 +49,7 @@ def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db)
         user.is_active = user_in.is_active
         
     db.commit()
+    invalidate_user_cache(user_id)
     db.refresh(user)
     return user
 
@@ -68,4 +69,5 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: User 
             
     db.delete(user)
     db.commit()
+    invalidate_user_cache(user_id)
     return None

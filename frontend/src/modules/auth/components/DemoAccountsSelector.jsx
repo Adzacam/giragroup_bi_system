@@ -3,6 +3,10 @@ import { ChevronDown, ChevronUp, UserCheck, Shield } from 'lucide-react';
 import { DEMO_ACCOUNTS } from '../../../constants/systemConstants';
 
 export default function DemoAccountsSelector({ currentEmail, onSelectAccount, defaultOpen = false }) {
+  if (!import.meta.env.DEV) {
+    return null;
+  }
+
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const activeAccount = DEMO_ACCOUNTS.find((a) => a.email === currentEmail);

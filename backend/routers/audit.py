@@ -60,13 +60,34 @@ def get_audit_logs(
             mod = l.modulo or ("Seguridad & 2FA" if "AUTH" in (l.etapa or "").upper() or "2FA" in (l.etapa or "").upper() else "DataOps")
             sev = sev_map.get(str(l.nivel or "INFO").upper(), "INFO")
             ts = l.created_at.strftime("%Y-%m-%d %H:%M:%S") if l.created_at else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            user_lbl = "Sistema / Pipeline" if mod == "DataOps" else "Usuario Autenticado"
+            if l.mensaje and "para usuario '" in l.mensaje:
+                try:
+                    part = l.mensaje.split("para usuario '")[1]
+                    email_str = part.split("'")[0]
+                    role_str = part.split("(Rol: ")[1].split(")")[0] if "(Rol: " in part else ""
+                    user_lbl = f"{email_str} ({role_str})" if role_str else email_str
+                except Exception:
+                    pass
+            elif l.mensaje and "para '" in l.mensaje:
+                try:
+                    part = l.mensaje.split("para '")[1]
+                    email_str = part.split("'")[0]
+                    role_str = part.split("(Rol: ")[1].split(")")[0] if "(Rol: " in part else ""
+                    user_lbl = f"{email_str} ({role_str})" if role_str else email_str
+                except Exception:
+                    pass
+
+            ip_lbl = "127.0.0.1 (Worker Pipeline)" if mod == "DataOps" else "Red Corporativa / API"
+
             todos_los_logs.append({
                 "id": f"AUD-LOG-{l.id:04d}",
                 "timestamp": ts,
                 "modulo": mod,
-                "usuario_rol": "Sistema / Pipeline" if mod == "DataOps" else "admin_general (ADMIN)",
+                "usuario_rol": user_lbl,
                 "accion": f"[{l.etapa}]: {mod}",
-                "ip_canal": "127.0.0.1 (Worker Pipeline)",
+                "ip_canal": ip_lbl,
                 "severidad": sev,
                 "detalles": l.mensaje or "Operación ejecutada en el pipeline"
             })
