@@ -523,11 +523,6 @@ def obtener_ficha_cruzada_estudiante(db: Session, id_estudiante: int) -> Optiona
     if not est:
         return None
 
-    modulos_db = {m.id_modulo: m for m in db.query(DimModulo).all()}
-    docentes_db = {d.id_docente: d for d in db.query(DimDocente).all()}
-    tiempos_db = {t.id_tiempo: t for t in db.query(DimTiempo).all()}
-    origenes_db = {o.id_documento: o for o in db.query(DimOrigenDocumental).all()}
-
     hechos_aca = (
         db.query(FactRendimientoAcademico)
         .filter(FactRendimientoAcademico.id_estudiante == id_estudiante)
@@ -540,6 +535,17 @@ def obtener_ficha_cruzada_estudiante(db: Session, id_estudiante: int) -> Optiona
         .order_by(desc(FactSituacionFinanciera.id_hecho_fin))
         .all()
     )
+
+    # Carga dirigida únicamente de las dimensiones asociadas al estudiante (sin .all() global)
+    modulo_ids = {h.id_modulo for h in hechos_aca if h.id_modulo} | {h.id_modulo for h in hechos_fin if h.id_modulo}
+    docente_ids = {h.id_docente for h in hechos_aca if h.id_docente}
+    tiempo_ids = {h.id_tiempo for h in hechos_aca if h.id_tiempo} | {h.id_tiempo for h in hechos_fin if h.id_tiempo}
+    doc_ids = {h.id_documento for h in hechos_aca if h.id_documento} | {h.id_documento for h in hechos_fin if h.id_documento}
+
+    modulos_db = {m.id_modulo: m for m in db.query(DimModulo).filter(DimModulo.id_modulo.in_(modulo_ids)).all()} if modulo_ids else {}
+    docentes_db = {d.id_docente: d for d in db.query(DimDocente).filter(DimDocente.id_docente.in_(docente_ids)).all()} if docente_ids else {}
+    tiempos_db = {t.id_tiempo: t for t in db.query(DimTiempo).filter(DimTiempo.id_tiempo.in_(tiempo_ids)).all()} if tiempo_ids else {}
+    origenes_db = {o.id_documento: o for o in db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids)).all()} if doc_ids else {}
 
     historial_aca = []
     notas_vals = []
