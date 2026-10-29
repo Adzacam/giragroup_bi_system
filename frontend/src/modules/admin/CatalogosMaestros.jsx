@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { Database, Plus, Search, CheckCircle, RefreshCw, X, Trash2, AlertCircle } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
@@ -13,46 +14,41 @@ export default function CatalogosMaestros() {
   const [activeTab, setActiveTab] = useState('modulos'); // 'modulos' | 'docentes' | 'categorias'
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
-
-  const [modulosList, setModulosList] = useState([]);
-  const [docentesList, setDocentesList] = useState([]);
-  const [conceptosList, setConceptosList] = useState([]);
 
   const [newEntry, setNewEntry] = useState({ codigo: '', nombre: '', extra: '', institucion: 'GiraGroup Posgrado' });
 
-  const loadData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
+  const {
+    data: catalogData,
+    isLoading: loading,
+    error: queryError,
+    refetch: loadData,
+  } = useQuery({
+    queryKey: ['admin', 'catalogos-maestros'],
+    queryFn: async () => {
       const [modRes, docRes, finRes] = await Promise.all([
         catalogApi.getModulos().catch(() => ({ data: [] })),
         catalogApi.getDocentes().catch(() => ({ data: [] })),
-        catalogApi.getFinancialConcepts().catch(() => [])
+        catalogApi.getFinancialConcepts().catch(() => []),
       ]);
 
-      const modulos = Array.isArray(modRes?.data) ? modRes.data : Array.isArray(modRes) ? modRes : [];
-      const docentes = Array.isArray(docRes?.data) ? docRes.data : Array.isArray(docRes) ? docRes : [];
-      const conceptos = Array.isArray(finRes) ? finRes : Array.isArray(finRes?.data) ? finRes.data : [];
+      return {
+        modulos: Array.isArray(modRes?.data) ? modRes.data : Array.isArray(modRes) ? modRes : [],
+        docentes: Array.isArray(docRes?.data) ? docRes.data : Array.isArray(docRes) ? docRes : [],
+        conceptos: Array.isArray(finRes) ? finRes : Array.isArray(finRes?.data) ? finRes.data : [],
+      };
+    },
+    staleTime: 60_000,
+    gcTime: 300_000,
+    placeholderData: keepPreviousData,
+  });
 
-      setModulosList(modulos);
-      setDocentesList(docentes);
-      setConceptosList(conceptos);
-    } catch (err) {
-      console.error('Error al sincronizar catálogos:', err);
-      setError('No se pudieron recuperar los catálogos dimensionales desde PostgreSQL.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const error = queryError ? 'No se pudieron recuperar los catálogos dimensionales desde PostgreSQL.' : null;
+  const modulosList = catalogData?.modulos || [];
+  const docentesList = catalogData?.docentes || [];
+  const conceptosList = catalogData?.conceptos || [];
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const getFilteredList = () => {
+  const currentList = useMemo(() => {
     const q = searchTerm.toLowerCase();
     if (activeTab === 'modulos') {
       return modulosList.filter(item =>
@@ -75,9 +71,8 @@ export default function CatalogosMaestros() {
       );
     }
     return [];
-  };
+  }, [activeTab, searchTerm, modulosList, docentesList, conceptosList]);
 
-  const currentList = getFilteredList();
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -117,7 +112,7 @@ export default function CatalogosMaestros() {
         action={
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
-              onClick={loadData}
+              onClick={() => loadData()}
               className="btn-pill-ghost"
               type="button"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
@@ -195,9 +190,9 @@ export default function CatalogosMaestros() {
       </div>
 
       {loading ? (
-        <div style={{ padding: '60px', textAlign: 'center', color: 'var(--color-slate-gray)' }}>
-          <RefreshCw className="animate-spin" size={28} style={{ margin: '0 auto 12px' }} />
-          <p>Consultando tablas dimensionales en PostgreSQL...</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }} role="status" aria-live="polite">
+          <div className="skeleton-shimmer" style={{ height: '52px', width: '100%' }} />
+          <div className="skeleton-shimmer" style={{ height: '240px', width: '100%' }} />
         </div>
       ) : error ? (
         <div style={{ padding: '24px', backgroundColor: 'rgba(217, 56, 58, 0.08)', borderRadius: '12px', border: '1px solid var(--color-alert-red)', color: 'var(--color-alert-red)', marginBottom: '24px' }}>

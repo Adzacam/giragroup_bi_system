@@ -1351,6 +1351,13 @@ em, i, cite, .serif-heading em, .serif-display em {
   z-index: 1;
 }
 
+/* Defer rendering for below-the-fold heavy tables and dashboard grids */
+.heavy-section-deferred {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 380px;
+}
+
+
 /* ── Modo Oscuro Avanzado (Alto Contraste y Superficies Ricas) ─────── */
 [data-theme="dark"] body {
   background-color: var(--color-fog-white);

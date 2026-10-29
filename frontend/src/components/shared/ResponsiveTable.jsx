@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-export default function ResponsiveTable({ children, className = '', style = {} }) {
+const ResponsiveTable = memo(function ResponsiveTable({ children, className = '', style = {} }) {
   return (
     <div
       className={`floating-artifact ${className}`}
@@ -18,4 +18,7 @@ export default function ResponsiveTable({ children, className = '', style = {} }
       </div>
     </div>
   );
-}
+});
+
+export default ResponsiveTable;
+

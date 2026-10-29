@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { Target, TrendingUp, CheckCircle2, AlertCircle, RefreshCw, Layers, Calendar, Award } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import KpiCard from '../../components/shared/KpiCard';
@@ -13,61 +14,63 @@ export default function MetasGestion() {
   useKineticScroll();
   const { isDark } = useTheme();
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('mensual'); // 'mensual' | 'programas'
-  const [macroData, setMacroData] = useState(null);
-  const [cmiData, setCmiData] = useState(null);
-  const [catalogPrograms, setCatalogPrograms] = useState([]);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchMetasData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const [macroRes, cmiRes, catalogRes] = await Promise.all([
-          forecastApi.getAnaliticaPredictivaMacro(6).catch(() => null),
-          kpiApi.getCmiCompleto().catch(() => null),
-          catalogApi.getInstitutionalSummary().catch(() => null)
-        ]);
+  const {
+    data: queryData,
+    isLoading: loading,
+    error: queryError,
+  } = useQuery({
+    queryKey: ['finance', 'metas-gestion'],
+    queryFn: async () => {
+      const [macroRes, cmiRes, catalogRes] = await Promise.all([
+        forecastApi.getAnaliticaPredictivaMacro(6).catch(() => null),
+        kpiApi.getCmiCompleto().catch(() => null),
+        catalogApi.getInstitutionalSummary().catch(() => null),
+      ]);
+      return {
+        macroData: macroRes?.data || macroRes || null,
+        cmiData: cmiRes?.data?.perspectivas || cmiRes?.perspectivas || null,
+        catalogPrograms: catalogRes?.programas || catalogRes?.data?.programas || [],
+      };
+    },
+    staleTime: 60_000,
+    gcTime: 300_000,
+    placeholderData: keepPreviousData,
+  });
 
-        if (isMounted) {
-          if (macroRes?.data) {
-            setMacroData(macroRes.data);
-          }
-          if (cmiRes?.data?.perspectivas) {
-            setCmiData(cmiRes.data.perspectivas);
-          }
-          if (catalogRes?.programas) {
-            setCatalogPrograms(catalogRes.programas);
-          }
-        }
-      } catch (err) {
-        console.error('Error al cargar metas de gestión:', err);
-        if (isMounted) setError('No se pudieron sincronizar las metas de gestión con el servidor.');
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    fetchMetasData();
-    return () => { isMounted = false; };
-  }, []);
+  const error = queryError ? 'No se pudieron sincronizar las metas de gestión con el servidor.' : null;
+  const macroData = queryData?.macroData || null;
+  const cmiData = queryData?.cmiData || null;
+  const catalogPrograms = queryData?.catalogPrograms || [];
 
   // Métricas calculadas desde Caso 3 y 4 de Analítica Macro o CMI
   const caso3 = macroData?.caso3_metas_mensuales || {};
   const caso4 = macroData?.caso4_metas_anuales || {};
-  const caso2 = macroData?.caso2_demanda_programas || {};
-  const finCmi = cmiData?.perspectiva_financiera || {};
+  const caso2 = macroData?.caso2_demanda_programa || macroData?.caso2_demanda_programas || {};
+  const finCmi = cmiData?.financiera || cmiData?.perspectiva_financiera || {};
 
-  const metaAnual = caso3?.meta_anual_institucional || finCmi?.monto_meta_gestion_bs || 3800000;
-  const recaudadoAcumulado = caso3?.recaudado_acumulado_gestion || finCmi?.monto_total_recaudado_bs || 3480000;
-  const desviacionAcumulada = caso3?.desviacion_acumulada || (recaudadoAcumulado - (metaAnual * 0.9));
-  const pctCumplimiento = caso3?.porcentaje_cumplimiento_anual || ((recaudadoAcumulado / metaAnual) * 100);
+  const metaAnual = caso4?.meta_anual_institucional_bs || caso3?.meta_anual_institucional || finCmi?.monto_meta_gestion_bs || 3800000;
+  const recaudadoAcumulado = caso4?.recaudado_acumulado_bs || caso3?.recaudado_acumulado_gestion || finCmi?.monto_total_recaudado_bs || 3480000;
+  const desviacionAcumulada = caso3?.desviacion_acumulada ?? (recaudadoAcumulado - (metaAnual * 0.9));
+  const pctCumplimiento = caso4?.porcentaje_avance_meta || caso3?.porcentaje_cumplimiento_anual || ((recaudadoAcumulado / metaAnual) * 100);
 
-  const mesesComparativo = caso3?.comparativo || [];
-  const matrizViabilidad = caso2?.matriz_viabilidad || [];
+  const mesesComparativo = useMemo(() => {
+    if (Array.isArray(caso3?.comparativo) && caso3.comparativo.length > 0) {
+      return caso3.comparativo;
+    }
+    if (Array.isArray(caso3?.meses_etiquetas) && caso3.meses_etiquetas.length > 0) {
+      return caso3.meses_etiquetas.map((mes, idx) => ({
+        mes,
+        meta_presupuestada: caso3.meta_catalogo_bs?.[idx] || 0,
+        ingreso_real: caso3.ejecutado_real_bs?.[idx] || 0,
+        proyeccion_holt_winters: caso3.ejecutado_real_bs?.[idx] || 0,
+      }));
+    }
+    return [];
+  }, [caso3]);
+
+  const matrizViabilidad = useMemo(() => caso2?.matriz_viabilidad || [], [caso2]);
 
   const formatBs = (num) => {
     if (num === undefined || num === null || isNaN(num)) return 'Bs. 0';
@@ -106,9 +109,14 @@ export default function MetasGestion() {
       />
 
       {loading ? (
-        <div style={{ padding: '60px', textAlign: 'center', color: 'var(--color-slate-gray)' }}>
-          <RefreshCw className="animate-spin" size={28} style={{ margin: '0 auto 12px' }} />
-          <p>Consultando hechos financieros y metas de gestión consolidadas...</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} role="status" aria-live="polite">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '18px' }}>
+            <div className="skeleton-shimmer" style={{ height: '112px' }} />
+            <div className="skeleton-shimmer" style={{ height: '112px' }} />
+            <div className="skeleton-shimmer" style={{ height: '112px' }} />
+            <div className="skeleton-shimmer" style={{ height: '112px' }} />
+          </div>
+          <div className="skeleton-shimmer" style={{ height: '280px', width: '100%' }} />
         </div>
       ) : error ? (
         <div style={{ padding: '24px', backgroundColor: 'rgba(217, 56, 58, 0.08)', borderRadius: '12px', border: '1px solid var(--color-alert-red)', color: 'var(--color-alert-red)', marginBottom: '24px' }}>

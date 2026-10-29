@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-export default function PageHeader({ category, title, italicWord, subtitle, description, action }) {
+const PageHeader = memo(function PageHeader({ category, title, italicWord, subtitle, description, action }) {
   const displaySubtitle = subtitle || description;
 
   return (
@@ -57,4 +57,7 @@ export default function PageHeader({ category, title, italicWord, subtitle, desc
       </div>
     </div>
   );
-}
+});
+
+export default PageHeader;
+

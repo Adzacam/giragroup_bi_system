@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-export default function KpiCard({
+const KpiCard = memo(function KpiCard({
   numberPrefix,
   number,
   numberSuffix,
@@ -102,4 +102,7 @@ export default function KpiCard({
       </div>
     </div>
   );
-}
+});
+
+export default KpiCard;
+

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Search, RefreshCw, ExternalLink } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
@@ -12,14 +13,6 @@ export default function CarteraMora() {
   useKineticScroll();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [registrosMora, setRegistrosMora] = useState([]);
-  const [resumenFin, setResumenFin] = useState({
-    estudiantesEnMora: 0,
-    porcentajeMora: 0,
-    saldoVencidoBs: 0,
-    recaudadoTotalBs: 0,
-  });
 
   const maskCi = (ci) => {
     if (!ci || ci === 'S/C') return 'S/C';
@@ -28,9 +21,14 @@ export default function CarteraMora() {
     return `${str.slice(0, 3)}***${str.slice(-2)}`;
   };
 
-  const cargarCartera = useCallback(async () => {
-    setIsLoading(true);
-    try {
+  const {
+    data: carteraData,
+    isLoading,
+    isFetching,
+    refetch: cargarCartera,
+  } = useQuery({
+    queryKey: ['finance', 'cartera-mora'],
+    queryFn: async () => {
       const [alertasRes, kpiFinRes] = await Promise.allSettled([
         academicApi.getAlertasTempranas({ regla_filtro: 'FINANCIERO' }),
         kpiApi.getKpisFinanciero(),
@@ -39,6 +37,7 @@ export default function CarteraMora() {
       let alumnosMora = 0;
       let pctMora = 0;
       let moraBs = 0;
+      let estudiantes = [];
 
       if (alertasRes.status === 'fulfilled' && alertasRes.value) {
         const val = alertasRes.value;
@@ -46,7 +45,7 @@ export default function CarteraMora() {
         alumnosMora = cardFin.total_alumnos || 0;
         pctMora = cardFin.porcentaje_matricula || 0;
         moraBs = cardFin.monto_mora_bs || 0;
-        setRegistrosMora(val.estudiantes || []);
+        estudiantes = val.estudiantes || [];
       }
 
       let recaudadoBs = 0;
@@ -58,29 +57,39 @@ export default function CarteraMora() {
         }
       }
 
-      setResumenFin({
-        estudiantesEnMora: alumnosMora,
-        porcentajeMora: pctMora,
-        saldoVencidoBs: moraBs,
-        recaudadoTotalBs: recaudadoBs,
-      });
-    } catch (err) {
-      console.error('Error al cargar cartera y mora desde el DW:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      return {
+        registrosMora: estudiantes,
+        resumenFin: {
+          estudiantesEnMora: alumnosMora,
+          porcentajeMora: pctMora,
+          saldoVencidoBs: moraBs,
+          recaudadoTotalBs: recaudadoBs,
+        },
+      };
+    },
+    staleTime: 60_000,
+    gcTime: 300_000,
+    placeholderData: keepPreviousData,
+  });
 
-  useEffect(() => {
-    cargarCartera();
-  }, [cargarCartera]);
+  const registrosMora = carteraData?.registrosMora || [];
+  const resumenFin = carteraData?.resumenFin || {
+    estudiantesEnMora: 0,
+    porcentajeMora: 0,
+    saldoVencidoBs: 0,
+    recaudadoTotalBs: 0,
+  };
 
-  const filtered = registrosMora.filter(
-    (m) =>
-      (m.nombre_completo || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (m.ci || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (m.programa || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    const q = searchTerm.toLowerCase();
+    return registrosMora.filter(
+      (m) =>
+        (m.nombre_completo || '').toLowerCase().includes(q) ||
+        (m.ci || '').toLowerCase().includes(q) ||
+        (m.programa || '').toLowerCase().includes(q)
+    );
+  }, [registrosMora, searchTerm]);
+
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>

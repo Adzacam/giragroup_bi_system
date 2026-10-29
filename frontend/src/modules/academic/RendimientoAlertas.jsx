@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import {
   AlertCircle,
   AlertTriangle,
@@ -138,6 +138,7 @@ export default function RendimientoAlertas() {
     },
     staleTime: 60_000,
     gcTime: 300_000,
+    placeholderData: keepPreviousData,
   });
 
   // Selección automática de primer alumno sin re-disparar petición de la tabla
@@ -1158,7 +1159,7 @@ export default function RendimientoAlertas() {
               </span>
             </div>
 
-            <ResponsiveTable>
+            <ResponsiveTable className="heavy-section-deferred">
               <table className="steep-table">
                 <thead>
                   <tr>

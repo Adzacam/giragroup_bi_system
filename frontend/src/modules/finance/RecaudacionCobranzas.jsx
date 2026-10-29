@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { DollarSign, TrendingUp, CreditCard, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import KpiCard from '../../components/shared/KpiCard';
@@ -10,16 +11,18 @@ import client from '../../api/client';
 export default function RecaudacionCobranzas() {
   useKineticScroll();
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [datosCobro, setDatosCobro] = useState({
-    recaudacionNetaBs: 0,
-    totalDeudaMoraBs: 0,
-    historicoMeses: [],
-  });
-
-  const cargarCobranzas = useCallback(async () => {
-    setIsLoading(true);
-    try {
+  const {
+    data: datosCobro = {
+      recaudacionNetaBs: 0,
+      totalDeudaMoraBs: 0,
+      historicoMeses: [],
+    },
+    isLoading,
+    isFetching,
+    refetch: cargarCobranzas,
+  } = useQuery({
+    queryKey: ['finance', 'recaudacion-cobranzas'],
+    queryFn: async () => {
       const [kpiRes, macroRes] = await Promise.allSettled([
         kpiApi.getKpisFinanciero(),
         client.get('/api/v1/forecast/laboratorio-macro'),
@@ -38,21 +41,16 @@ export default function RecaudacionCobranzas() {
         meses = c3.proyecciones_mensuales || [];
       }
 
-      setDatosCobro({
+      return {
         recaudacionNetaBs: netaBs,
         totalDeudaMoraBs: deudaBs,
         historicoMeses: meses,
-      });
-    } catch (err) {
-      console.error('Error al cargar cobranzas:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    cargarCobranzas();
-  }, [cargarCobranzas]);
+      };
+    },
+    staleTime: 60_000,
+    gcTime: 300_000,
+    placeholderData: keepPreviousData,
+  });
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>

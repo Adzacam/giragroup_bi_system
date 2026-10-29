@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import PageHeader from '../../components/shared/PageHeader';
 import KpiCard from '../../components/shared/KpiCard';
 import useKineticScroll from '../../hooks/useKineticScroll';
@@ -74,12 +75,6 @@ export default function CuadroMandoIntegral() {
   // Sub-pestaña para Modo A: 'resumen', 'financiera', 'cliente', 'procesos', 'aprendizaje'
   const [subTabModoA, setSubTabModoA] = useState(isMarketing ? 'cliente' : 'resumen');
 
-  // Estados de datos
-  const [cmiData, setCmiData] = useState(null);
-  const [macroData, setMacroData] = useState(null);
-  const [isLoadingCmi, setIsLoadingCmi] = useState(true);
-  const [isLoadingMacro, setIsLoadingMacro] = useState(false);
-
   // Filtros en Modo B
   const [horizonte, setHorizonte] = useState(6);
   const [filtroTipoProg, setFiltroTipoProg] = useState('GLOBAL');
@@ -110,134 +105,150 @@ export default function CuadroMandoIntegral() {
     }
   };
 
-  // Carga inicial de datos
-  const fetchCmi = async (force = false) => {
-    setIsLoadingCmi(true);
-    try {
-      const res = await kpiApi.getCmiCompleto(force);
-      if (res && res.perspectivas) {
-        setCmiData(res.perspectivas);
-      }
-    } catch (err) {
-      console.warn('Backend /kpis/cmi-completo no disponible, usando fallback:', err.message);
-      // Fallback seguro con datos reales consolidados
-      setCmiData({
-        financiera: {
-          recaudacion_vs_meta_pct: 92.4,
-          monto_total_recaudado_bs: 12907977.61,
-          monto_meta_gestion_bs: 14041718.15,
-          monto_total_deuda_bs: 14200.0,
-          mora_total_pct: 14.2,
-          estudiantes_cartera_vigente: 120,
-          estudiantes_cartera_mora: 14,
-          estudiantes_cartera_previsionable: 4,
-          drilldown_categorias: [
-            { categoria: 'PROGRAMAS REGULARES', recaudado_bs: 12907977.61, meta_bs: 14041718.15, cumplimiento_pct: 91.9, estado: 'Óptimo' },
-            { categoria: 'TECHOS / CERRADOS', recaudado_bs: 1133740.54, meta_bs: 1250000.00, cumplimiento_pct: 90.7, estado: 'En rango' },
-            { categoria: 'INGRESOS DEVENGADOS', recaudado_bs: 14041718.15, meta_bs: 14041718.15, cumplimiento_pct: 100.0, estado: 'Base devengada' }
-          ],
-          drilldown_cartera: [
-            { estado: 'Cartera Vigente', alumnos: 120, pct_total: 85.7, monto_estimado_bs: 0.0, riesgo: 'Bajo' },
-            { estado: 'Mora (30 a 90 días)', alumnos: 14, pct_total: 10.0, monto_estimado_bs: 9800.0, riesgo: 'Medio' },
-            { estado: 'Previsionable (> 90 días)', alumnos: 4, pct_total: 2.9, monto_estimado_bs: 4400.0, riesgo: 'Crítico' }
-          ]
-        },
-        cliente_mercado: {
-          tasa_conversion_admisiones_pct: 34.2,
-          retencion_neta_pct: 88.7,
-          total_matricula_acumulada: 15196,
-          alumnos_libres_alertas_pct: 92.8,
-          drilldown_lineas: [
-            { linea: 'Diplomados', inscritos: 9150, pct: 60.2, crecimiento_anual: '+31.8%' },
-            { linea: 'Cursos Cortos y Especializados', inscritos: 3399, pct: 22.4, crecimiento_anual: '+23.6%' },
-            { linea: 'Programas Expertos', inscritos: 2504, pct: 16.5, crecimiento_anual: '+24.1%' },
-            { linea: 'Maestrías Institucionales', inscritos: 143, pct: 0.9, crecimiento_anual: '+12.4%' }
-          ],
-          drilldown_embudo: [
-            { etapa: '1. Postulaciones en Plataforma Web', cantidad: 44432, pct_conversion: 100.0 },
-            { etapa: '2. Contacto Asesor y Validación', cantidad: 31102, pct_conversion: 70.0 },
-            { etapa: '3. Admisión Aprobada', cantidad: 19755, pct_conversion: 44.5 },
-            { etapa: '4. Pago 1ra Cuota (Matrícula Efectiva)', cantidad: 15196, pct_conversion: 34.2 }
-          ]
-        },
-        procesos_internos: {
-          confianza_media_beto_pct: 98.1,
-          tasa_automatizacion_pct: 94.6,
-          documentos_procesados: 38,
-          registros_derivados_hitl: 7,
-          entidades_no_resueltas: 3,
-          tiempo_medio_procesamiento_ms: 340,
-          drilldown_fuentes: [
-            { tipo_fuente: 'Planillas Excel Institucionales', archivos: 28, confianza_ia_pct: 98.6, latencia_ms: 320 },
-            { tipo_fuente: 'Actas Académicas y Calificaciones PDF', archivos: 6, confianza_ia_pct: 97.4, latencia_ms: 580 },
-            { tipo_fuente: 'Formularios Web Google Forms', archivos: 4, confianza_ia_pct: 99.2, latencia_ms: 190 }
-          ],
-          drilldown_calidad_nlp: [
-            { componente: 'Tokenizador y Embeddings BETO', estado: 'Operativo', score: '98.8%' },
-            { componente: 'Resolución de Nombres RapidFuzz', estado: 'Operativo', score: '96.4%' },
-            { componente: 'Detección IF/THEN de Alertas Tempranas', estado: 'Operativo', score: '100.0%' }
-          ]
-        },
-        aprendizaje_crecimiento: {
-          promedio_general_notas: 79.4,
-          tasa_aprobacion_pct: 94.8,
-          puntualidad_actas_pct: 96.2,
-          cobertura_catalogo_pct: 98.5,
-          estudiantes_en_riesgo: 24,
-          drilldown_distribucion_notas: [
-            { rango: 'Excelente (86 - 100 pts)', cantidad: 412, pct: 33.0, estado: 'Sobresaliente' },
-            { rango: 'Bueno (71 - 85 pts)', cantidad: 635, pct: 50.9, estado: 'Satisfactorio' },
-            { rango: 'Regular (51 - 70 pts)', cantidad: 136, pct: 10.9, estado: 'Riesgo Leve' },
-            { rango: 'Reprobado (< 51 pts)', cantidad: 65, pct: 5.2, estado: 'Riesgo Crítico' }
-          ],
-          drilldown_docentes: [
-            { area: 'Ciencias de la Salud (Medicina Estética)', docentes_activos: 12, puntualidad_pct: 97.5, promedio_notas: 78.2 },
-            { area: 'Tecnología e Inteligencia de Negocios', docentes_activos: 9, puntualidad_pct: 98.0, promedio_notas: 81.4 },
-            { area: 'Gestión Pública y Jurídica', docentes_activos: 8, puntualidad_pct: 94.0, promedio_notas: 75.8 },
-            { area: 'Educación Superior e Innovación', docentes_activos: 6, puntualidad_pct: 96.0, promedio_notas: 79.0 }
-          ]
+  const FALLBACK_CMI_PERSPECTIVAS = {
+    financiera: {
+      recaudacion_vs_meta_pct: 92.4,
+      monto_total_recaudado_bs: 12907977.61,
+      monto_meta_gestion_bs: 14041718.15,
+      monto_total_deuda_bs: 14200.0,
+      mora_total_pct: 14.2,
+      estudiantes_cartera_vigente: 120,
+      estudiantes_cartera_mora: 14,
+      estudiantes_cartera_previsionable: 4,
+      drilldown_categorias: [
+        { categoria: 'PROGRAMAS REGULARES', recaudado_bs: 12907977.61, meta_bs: 14041718.15, cumplimiento_pct: 91.9, estado: 'Óptimo' },
+        { categoria: 'TECHOS / CERRADOS', recaudado_bs: 1133740.54, meta_bs: 1250000.00, cumplimiento_pct: 90.7, estado: 'En rango' },
+        { categoria: 'INGRESOS DEVENGADOS', recaudado_bs: 14041718.15, meta_bs: 14041718.15, cumplimiento_pct: 100.0, estado: 'Base devengada' }
+      ],
+      drilldown_cartera: [
+        { estado: 'Cartera Vigente', alumnos: 120, pct_total: 85.7, monto_estimado_bs: 0.0, riesgo: 'Bajo' },
+        { estado: 'Mora (30 a 90 días)', alumnos: 14, pct_total: 10.0, monto_estimado_bs: 9800.0, riesgo: 'Medio' },
+        { estado: 'Previsionable (> 90 días)', alumnos: 4, pct_total: 2.9, monto_estimado_bs: 4400.0, riesgo: 'Crítico' }
+      ]
+    },
+    cliente_mercado: {
+      tasa_conversion_admisiones_pct: 34.2,
+      retencion_neta_pct: 88.7,
+      total_matricula_acumulada: 15196,
+      alumnos_libres_alertas_pct: 92.8,
+      drilldown_lineas: [
+        { linea: 'Diplomados', inscritos: 9150, pct: 60.2, crecimiento_anual: '+31.8%' },
+        { linea: 'Cursos Cortos y Especializados', inscritos: 3399, pct: 22.4, crecimiento_anual: '+23.6%' },
+        { linea: 'Programas Expertos', inscritos: 2504, pct: 16.5, crecimiento_anual: '+24.1%' },
+        { linea: 'Maestrías Institucionales', inscritos: 143, pct: 0.9, crecimiento_anual: '+12.4%' }
+      ],
+      drilldown_embudo: [
+        { etapa: '1. Postulaciones en Plataforma Web', cantidad: 44432, pct_conversion: 100.0 },
+        { etapa: '2. Contacto Asesor y Validación', cantidad: 31102, pct_conversion: 70.0 },
+        { etapa: '3. Admisión Aprobada', cantidad: 19755, pct_conversion: 44.5 },
+        { etapa: '4. Pago 1ra Cuota (Matrícula Efectiva)', cantidad: 15196, pct_conversion: 34.2 }
+      ]
+    },
+    procesos_internos: {
+      confianza_media_beto_pct: 98.1,
+      tasa_automatizacion_pct: 94.6,
+      documentos_procesados: 38,
+      registros_derivados_hitl: 7,
+      entidades_no_resueltas: 3,
+      tiempo_medio_procesamiento_ms: 340,
+      drilldown_fuentes: [
+        { tipo_fuente: 'Planillas Excel Institucionales', archivos: 28, confianza_ia_pct: 98.6, latencia_ms: 320 },
+        { tipo_fuente: 'Actas Académicas y Calificaciones PDF', archivos: 6, confianza_ia_pct: 97.4, latencia_ms: 580 },
+        { tipo_fuente: 'Formularios Web Google Forms', archivos: 4, confianza_ia_pct: 99.2, latencia_ms: 190 }
+      ],
+      drilldown_calidad_nlp: [
+        { componente: 'Tokenizador y Embeddings BETO', estado: 'Operativo', score: '98.8%' },
+        { componente: 'Resolución de Nombres RapidFuzz', estado: 'Operativo', score: '96.4%' },
+        { componente: 'Detección IF/THEN de Alertas Tempranas', estado: 'Operativo', score: '100.0%' }
+      ]
+    },
+    aprendizaje_crecimiento: {
+      promedio_general_notas: 79.4,
+      tasa_aprobacion_pct: 94.8,
+      puntualidad_actas_pct: 96.2,
+      cobertura_catalogo_pct: 98.5,
+      estudiantes_en_riesgo: 24,
+      drilldown_distribucion_notas: [
+        { rango: 'Excelente (86 - 100 pts)', cantidad: 412, pct: 33.0, estado: 'Sobresaliente' },
+        { rango: 'Bueno (71 - 85 pts)', cantidad: 635, pct: 50.9, estado: 'Satisfactorio' },
+        { rango: 'Regular (51 - 70 pts)', cantidad: 136, pct: 10.9, estado: 'Riesgo Leve' },
+        { rango: 'Reprobado (< 51 pts)', cantidad: 65, pct: 5.2, estado: 'Riesgo Crítico' }
+      ],
+      drilldown_docentes: [
+        { area: 'Ciencias de la Salud (Medicina Estética)', docentes_activos: 12, puntualidad_pct: 97.5, promedio_notas: 78.2 },
+        { area: 'Tecnología e Inteligencia de Negocios', docentes_activos: 9, puntualidad_pct: 98.0, promedio_notas: 81.4 },
+        { area: 'Gestión Pública y Jurídica', docentes_activos: 8, puntualidad_pct: 94.0, promedio_notas: 75.8 },
+        { area: 'Educación Superior e Innovación', docentes_activos: 6, puntualidad_pct: 96.0, promedio_notas: 79.0 }
+      ]
+    }
+  };
+
+  // Query React Query para Perspectivas del CMI (Modo A)
+  const {
+    data: cmiData = FALLBACK_CMI_PERSPECTIVAS,
+    isLoading: isLoadingCmi,
+    refetch: refetchCmi,
+  } = useQuery({
+    queryKey: ['cmiCompletoPerspectivas'],
+    queryFn: async () => {
+      try {
+        const res = await kpiApi.getCmiCompleto();
+        if (res && res.perspectivas) {
+          return res.perspectivas;
         }
-      });
-    } finally {
-      setIsLoadingCmi(false);
-    }
-  };
-
-  const fetchMacro = async () => {
-    setIsLoadingMacro(true);
-    try {
-      const res = await forecastApi.getAnaliticaPredictivaMacro(horizonte);
-      if (res && res.status === 'success') {
-        setMacroData(res);
+      } catch (err) {
+        console.warn('Backend /kpis/cmi-completo no disponible, usando fallback:', err.message);
       }
-    } catch (err) {
-      console.warn('Backend /forecast/analitica-macro error:', err.message);
-    } finally {
-      setIsLoadingMacro(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCmi();
-  }, []);
-
-  useEffect(() => {
-    if (activeMode === 'B' && !macroData) {
-      fetchMacro();
-    }
-  }, [activeMode]);
-
-  // Recargar macro cuando cambia horizonte
-  const handleRecalcularMacro = () => {
-    fetchMacro();
-  };
-
-  // Filtrado de la Matriz de Viabilidad
-  const filteredViabilidad = (macroData?.caso2_demanda_programa?.matriz_viabilidad || []).filter(item => {
-    const matchTipo = filtroTipoProg === 'GLOBAL' || item.tipo.toUpperCase().includes(filtroTipoProg);
-    const matchText = searchProg === '' || item.programa.toLowerCase().includes(searchProg.toLowerCase());
-    return matchTipo && matchText;
+      return FALLBACK_CMI_PERSPECTIVAS;
+    },
+    staleTime: 60_000,
+    gcTime: 300_000,
+    placeholderData: keepPreviousData,
   });
+
+  // Query React Query para Analítica Predictiva Macro (Modo B)
+  const {
+    data: macroData = null,
+    isLoading: isLoadingMacro,
+    refetch: refetchMacro,
+  } = useQuery({
+    queryKey: ['analiticaPredictivaMacro', horizonte],
+    queryFn: async () => {
+      try {
+        const res = await forecastApi.getAnaliticaPredictivaMacro(horizonte);
+        if (res && res.status === 'success') {
+          return res;
+        }
+      } catch (err) {
+        console.warn('Backend /forecast/analitica-macro error:', err.message);
+      }
+      return null;
+    },
+    enabled: activeMode === 'B',
+    staleTime: 60_000,
+    gcTime: 300_000,
+    placeholderData: keepPreviousData,
+  });
+
+  const fetchCmi = async (force = false) => {
+    if (force) {
+      await kpiApi.getCmiCompleto(true).catch(() => null);
+    }
+    return refetchCmi();
+  };
+
+  const fetchMacro = () => refetchMacro();
+  const handleRecalcularMacro = () => refetchMacro();
+
+  // Filtrado memoizado de la Matriz de Viabilidad
+  const filteredViabilidad = useMemo(() => {
+    return (macroData?.caso2_demanda_programa?.matriz_viabilidad || []).filter(item => {
+      const matchTipo = filtroTipoProg === 'GLOBAL' || item.tipo.toUpperCase().includes(filtroTipoProg);
+      const matchText = searchProg === '' || item.programa.toLowerCase().includes(searchProg.toLowerCase());
+      return matchTipo && matchText;
+    });
+  }, [macroData, filtroTipoProg, searchProg]);
+
 
   // Configuración de colores para Chart.js
   const textColor = isDark ? '#FAF9F6' : '#17191C';
@@ -1175,7 +1186,7 @@ export default function CuadroMandoIntegral() {
             </div>
 
             {/* ── CASO 3: Cumplimiento de Metas / Ingresos Mensuales ────────────── */}
-            <div className="card-mist kinetic-card p-6 rounded-[24px]">
+            <div className="card-mist kinetic-card heavy-section-deferred p-6 rounded-[24px]">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                 <div>
                   <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--color-slate-gray)', fontWeight: 600 }}>
@@ -1225,7 +1236,7 @@ export default function CuadroMandoIntegral() {
             </div>
 
             {/* ── CASO 4: Cumplimiento de Metas / Ingresos Anuales ───────────────── */}
-            <div className="card-mist kinetic-card p-6 rounded-[24px]">
+            <div className="card-mist kinetic-card heavy-section-deferred p-6 rounded-[24px]">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                 <div>
                   <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--color-slate-gray)', fontWeight: 600 }}>

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -25,29 +26,30 @@ export default function ProyeccionFinanciera() {
 
   const [horizonte, setHorizonte] = useState(6);
   const [granularidad, setGranularidad] = useState('MENSUAL');
-  const [macroData, setMacroData] = useState(null);
-  const [metasForecast, setMetasForecast] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
+  const {
+    data: queryData,
+    isLoading,
+    refetch: fetchData,
+  } = useQuery({
+    queryKey: ['finance', 'proyeccion-financiera', horizonte, granularidad],
+    queryFn: async () => {
       const [macro, metas] = await Promise.all([
         forecastApi.getAnaliticaPredictivaMacro(horizonte),
-        forecastApi.getForecastMetas(granularidad, horizonte)
+        forecastApi.getForecastMetas(granularidad, horizonte),
       ]);
-      setMacroData(macro);
-      setMetasForecast(metas?.data);
-    } catch (err) {
-      console.warn('Error en proyeccion financiera:', err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      return {
+        macroData: macro,
+        metasForecast: metas?.data || metas,
+      };
+    },
+    staleTime: 60_000,
+    gcTime: 300_000,
+    placeholderData: keepPreviousData,
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, [horizonte, granularidad]);
+  const macroData = queryData?.macroData || null;
+  const metasForecast = queryData?.metasForecast || null;
 
   const textColor = isDark ? '#FAF9F6' : '#17191C';
   const mutedTextColor = isDark ? '#9CA3AF' : '#777B86';
