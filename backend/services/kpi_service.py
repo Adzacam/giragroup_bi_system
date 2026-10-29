@@ -362,29 +362,7 @@ class KPIService:
             ]
         }
 
-        # ── Registro de Auditoría en LogPipelineIngesta ───────────────
-        if self.db is not None:
-            try:
-                from models.log_pipeline import LogPipelineIngesta
-                log_entry = LogPipelineIngesta(
-                    etapa="CMI_PERSPECTIVAS",
-                    nivel="INFO",
-                    modulo="KPI_SERVICE",
-                    mensaje="Consolidación de las 4 Perspectivas Estratégicas Institucionales del CMI",
-                    tiempo_ms=45,
-                    metadata_json={
-                        "perspectivas": ["financiera", "cliente_mercado", "procesos_internos", "aprendizaje_crecimiento"],
-                        "recaudacion_vs_meta_pct": rec_pct,
-                        "automatizacion_nlp_pct": float(pipe.get("tasa_calidad_nlp_pct") or 94.6)
-                    }
-                )
-                self.db.add(log_entry)
-                self.db.commit()
-            except Exception:
-                try:
-                    self.db.rollback()
-                except Exception:
-                    pass
+        # Lectura pura sin escrituras síncronas a base de datos en GET (Eliminación de db.commit() en lecturas)
 
         return {
             "status": "success",

@@ -1867,6 +1867,19 @@ def _evaluar_documentos_lote(
         .all()
     )
 
+    # Precargar entidades no resueltas existentes en lote para evitar N+1 queries dentro del bucle de líneas
+    hitl_records = (
+        db.query(StagingEntidadNoResuelta)
+        .filter(StagingEntidadNoResuelta.id_documento.in_(doc_ids))
+        .all()
+    )
+    hitl_map: Dict[Tuple[int, str], StagingEntidadNoResuelta] = {}
+    for h in hitl_records:
+        if h.registro_origen_id and h.texto_original:
+            hitl_map[(h.registro_origen_id, h.texto_original)] = h
+            if len(h.texto_original) > 250:
+                hitl_map[(h.registro_origen_id, h.texto_original[:250])] = h
+
     detalles: List[Dict[str, Any]] = []
     auto_count = 0
     audit_count = 0
@@ -1926,15 +1939,8 @@ def _evaluar_documentos_lote(
             )
             escala_ambigua = bool(ent_cal and ent_cal.get("canonicalId") == "ESCALA_AMBIGUA")
 
-            exists_hitl = (
-                db.query(StagingEntidadNoResuelta)
-                .filter(
-                    StagingEntidadNoResuelta.id_documento == stg.id_documento,
-                    StagingEntidadNoResuelta.registro_origen_id == stg.id,
-                    StagingEntidadNoResuelta.texto_original.in_([line, line[:250]]),
-                )
-                .first()
-            )
+            # Búsqueda instantánea O(1) en memoria precargada en lugar de query N+1
+            exists_hitl = hitl_map.get((stg.id, line)) or hitl_map.get((stg.id, line[:250]))
 
             # Determinar partición tripartita mutuamente excluyente (#1, #2):
             # 1) INCONSISTENCIA DURA (regla determinista fallida)
@@ -2343,7 +2349,8 @@ def get_lote_resumen(
     if hasattr(doc_id, "default"):
         doc_id = None
     lote_obj, docs_lote, docs_filtrados = _resolver_documentos_lote(db, id_lote, doc_id_filter=doc_id)
-    eval_res = _evaluar_documentos_lote(db, docs_filtrados, persistir_staging=True)
+    # Lectura pura: si los registros ya tienen payload_json evaluado, no persistir ni hacer commit en GET
+    eval_res = _evaluar_documentos_lote(db, docs_filtrados, persistir_staging=False)
     archivos_tabs = _serializar_archivos_lote(db, docs_lote)
 
     total_tuplas = eval_res["totalTuplas"]
@@ -2691,7 +2698,8 @@ def get_lote_beto_reading(
     if not docs_lote:
         raise HTTPException(status_code=404, detail=f"Lote con ID {id_lote} no encontrado.")
 
-    eval_res = _evaluar_documentos_lote(db, docs_filtrados, persistir_staging=True)
+    # Lectura pura en GET: persistir_staging=False
+    eval_res = _evaluar_documentos_lote(db, docs_filtrados, persistir_staging=False)
     detalles_all = eval_res["detalles"]
 
     # 1. Filtro por Área de Trabajo
@@ -3740,9 +3748,18 @@ def get_review_tray(
         "REVISION_GENERAL": "Revisión general",
     }
 
+    # Precarga de documentos en memoria para eliminar N+1 en la bandeja de revisión
+    origen_docs = db.query(DimOrigenDocumental).filter(
+        DimOrigenDocumental.id_documento.in_(
+            [ent.id_documento for ent in entidades_db if ent.id_documento] +
+            [r_ent.id_documento for r_ent in resolved_db if r_ent.id_documento]
+        )
+    ).all() if (entidades_db or resolved_db) else []
+    origen_doc_map = {d.id_documento: d for d in origen_docs}
+
     items = []
     for ent in entidades_db:
-        doc = db.query(DimOrigenDocumental).filter_by(id_documento=ent.id_documento).first() if ent.id_documento else None
+        doc = origen_doc_map.get(ent.id_documento)
         doc_name = doc.nombre_archivo if doc else f"Documento_{ent.id_documento or 'Lote'}"
         doc_fuente = (doc.tipo_fuente if doc and doc.tipo_fuente else "ACTA").upper()
 
@@ -3836,7 +3853,7 @@ def get_review_tray(
 
     resolved_history = []
     for r_ent in resolved_db:
-        r_doc = db.query(DimOrigenDocumental).filter_by(id_documento=r_ent.id_documento).first() if r_ent.id_documento else None
+        r_doc = origen_doc_map.get(r_ent.id_documento)
         r_fuente = (r_doc.tipo_fuente if r_doc and r_doc.tipo_fuente else "ACTA").upper()
         r_destino = (
             "Catálogo de Estudiantes, Situación Financiera y Cobranzas"

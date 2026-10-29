@@ -513,52 +513,7 @@ def obtener_analitica_macro_completa(
     }
 
     elapsed_ms = (time.time() - t_start) * 1000.0
-
-    # ── AUDITORÍA Y NOTIFICACIONES ─────────────────────────────────────
-    if db is not None:
-        if LogPipelineIngesta is not None:
-            try:
-                log_entry = LogPipelineIngesta(
-                    etapa="MACRO_PREDICTIVO",
-                    nivel="INFO",
-                    modulo="FORECAST_ENGINE",
-                    mensaje=f"Cálculo de Analítica Predictiva Macro ejecutado con horizonte {horizonte}m",
-                    tiempo_ms=int(round(elapsed_ms)),
-                    metadata_json={"horizonte": horizonte, "casos": [1, 2, 3, 4]}
-                )
-                db.add(log_entry)
-                db.commit()
-            except Exception as e:
-                logger.warning(f"Error registrando auditoría en LogPipelineIngesta: {e}")
-                try:
-                    db.rollback()
-                except Exception:
-                    pass
-
-        if Notification is not None and NotificationService is not None:
-            try:
-                from datetime import datetime, timedelta, timezone
-                cutoff = datetime.now(timezone.utc) - timedelta(hours=6)
-                existente = db.query(Notification).filter(
-                    Notification.title == "Modelos Predictivos Macro Actualizados",
-                    Notification.created_at >= cutoff
-                ).first()
-                if not existente:
-                    NotificationService.create_notification(
-                        db=db,
-                        title="Modelos Predictivos Macro Actualizados",
-                        message="Se actualizaron las series históricas de 43 meses, modelos Holt-Winters aditivos y rectas OLS para metas institucionales.",
-                        category="Predictivo",
-                        severity="INFO",
-                        role_target="ADMIN"
-                    )
-            except Exception as e:
-                logger.warning(f"Error emitiendo notificación predictiva: {e}")
-                try:
-                    db.rollback()
-                except Exception:
-                    pass
-
+    # Lectura pura sin escrituras síncronas a base de datos en GET (Eliminación de db.commit() en lecturas)
     return {
         "status": "success",
         "fecha_calculo_iso": pd.Timestamp.now().isoformat(),
