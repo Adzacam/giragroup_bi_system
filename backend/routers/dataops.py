@@ -370,7 +370,7 @@ def get_source_detail(doc_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/upload", response_model=FileUploadResponse)
-async def upload_file(
+def upload_file(
     file: UploadFile = File(...),
     source_type: Optional[str] = Form(None),
     tipo_fuente: Optional[str] = Form(None),
@@ -382,9 +382,9 @@ async def upload_file(
     """
     Sube un archivo individual (.xlsx, .csv), valida seguridad (#18),
     crea su registro en `lote` (#17) con reconocimiento automático de fechas multi-gestión
-    y ejecuta las 6 etapas del pipeline.
+    y ejecuta las 6 etapas del pipeline en el threadpool de FastAPI.
     """
-    content = await file.read()
+    content = file.file.read()
     err_sec = IngestionService.validar_seguridad_archivo(file.filename or "", content)
     if err_sec:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err_sec)
@@ -470,7 +470,7 @@ async def upload_file(
 
 
 @router.post("/upload-batch", response_model=BatchUploadResponse)
-async def upload_batch(
+def upload_batch(
     files: List[UploadFile] = File(...),
     source_types: Optional[List[str]] = Form(None),
     tipos_fuente: Optional[List[str]] = Form(None),
@@ -553,7 +553,7 @@ async def upload_batch(
         safe_name = IngestionService.sanitizar_nombre_archivo(raw_name)
 
         try:
-            content = await f.read()
+            content = f.file.read()
         except Exception as e_read:
             msg = f"Error al leer bytes del archivo '{safe_name}': {e_read}"
             errores.append({"filename": safe_name, "error": msg})
@@ -3229,20 +3229,19 @@ def infer_beto_text(payload: BetoInferRequest, db: Session = Depends(get_db)):
     modulos = db.query(DimModulo).all()
 
     pipeline_service_data = None
-    for host_url in ("http://pipeline:8006/infer", "http://giragroup_pipeline:8006/infer", "http://localhost:8006/infer"):
-        try:
-            req = urllib.request.Request(
-                host_url,
-                data=json.dumps({"text": payload.text}).encode("utf-8"),
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=1.0) as resp:
-                if resp.status == 200:
-                    pipeline_service_data = json.loads(resp.read().decode("utf-8"))
-                    break
-        except Exception:
-            continue
+    beto_url = os.getenv("BETO_INFERENCE_URL", "http://pipeline:8006/infer")
+    try:
+        req = urllib.request.Request(
+            beto_url,
+            data=json.dumps({"text": payload.text}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=1.0) as resp:
+            if resp.status == 200:
+                pipeline_service_data = json.loads(resp.read().decode("utf-8"))
+    except Exception:
+        pipeline_service_data = None
 
     if pipeline_service_data is None:
         try:

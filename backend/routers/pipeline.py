@@ -34,7 +34,7 @@ router = APIRouter(prefix="/api/v1/pipeline", tags=["Pipeline Integrado"])
     response_model=PipelineExecutionResponse,
     summary="Ejecutar pipeline completo (Ingesta -> NLP -> Calidad -> Carga DW)"
 )
-async def process_pipeline(
+def process_pipeline(
     file: Optional[UploadFile] = File(None),
     doc_id: Optional[int] = Form(None),
     db: Session = Depends(get_db),
@@ -67,7 +67,7 @@ async def process_pipeline(
                 detail=f"Formato no soportado: '{ext}'. Formatos válidos: .xlsx, .xls, .csv"
             )
 
-        contenido = await file.read()
+        contenido = file.file.read()
         res_ingesta = IngestionService.procesar_archivo(
             db=db,
             ruta_o_bytes=contenido,
