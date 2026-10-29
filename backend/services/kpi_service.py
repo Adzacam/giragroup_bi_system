@@ -22,7 +22,21 @@ class KPIService:
         self.db = db
 
     def obtener_kpis_academicos(self) -> Dict[str, Any]:
-        total_eval = self.db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).scalar() or 0
+        # Consolidación en 1 sola consulta SQL con agregaciones condicionales (elimina 5 consultas secuenciales)
+        row = self.db.query(
+            func.count(FactRendimientoAcademico.id_hecho_aca).label("total"),
+            func.avg(FactRendimientoAcademico.nota_final).label("avg_nota"),
+            func.count(FactRendimientoAcademico.id_hecho_aca).filter(FactRendimientoAcademico.nota_final >= 51.0).label("aprobados"),
+            func.count(FactRendimientoAcademico.id_hecho_aca).filter(
+                FactRendimientoAcademico.nota_final.isnot(None),
+                FactRendimientoAcademico.nota_final <= 70.0
+            ).label("riesgo_aca"),
+            func.count(FactRendimientoAcademico.id_hecho_aca).filter(
+                FactRendimientoAcademico.incumplimiento_actividades_pct > 30.0
+            ).label("riesgo_des"),
+        ).first()
+
+        total_eval = row.total or 0 if row else 0
         if total_eval == 0:
             return {
                 "promedio_general_notas": 0.0,
@@ -33,22 +47,10 @@ class KPIService:
                 "total_evaluaciones_registradas": 0
             }
 
-        avg_nota = self.db.query(func.avg(FactRendimientoAcademico.nota_final)).filter(
-            FactRendimientoAcademico.nota_final.isnot(None)
-        ).scalar() or 0.0
-
-        aprobados = self.db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).filter(
-            FactRendimientoAcademico.nota_final >= 51.0
-        ).scalar() or 0
-
-        riesgo_aca = self.db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).filter(
-            FactRendimientoAcademico.nota_final.isnot(None),
-            FactRendimientoAcademico.nota_final <= 70.0
-        ).scalar() or 0
-
-        riesgo_des = self.db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).filter(
-            FactRendimientoAcademico.incumplimiento_actividades_pct > 30.0
-        ).scalar() or 0
+        avg_nota = row.avg_nota or 0.0
+        aprobados = row.aprobados or 0
+        riesgo_aca = row.riesgo_aca or 0
+        riesgo_des = row.riesgo_des or 0
 
         tasa_apr = round((aprobados / total_eval) * 100.0, 2)
         tasa_rep = round(100.0 - tasa_apr, 2)
@@ -63,7 +65,18 @@ class KPIService:
         }
 
     def obtener_kpis_financieros(self) -> Dict[str, Any]:
-        total_fin = self.db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).scalar() or 0
+        # Consolidación en 1 sola consulta SQL con agregaciones condicionales (elimina 6 consultas secuenciales)
+        row = self.db.query(
+            func.count(FactSituacionFinanciera.id_hecho_fin).label("total"),
+            func.sum(FactSituacionFinanciera.monto_deuda).label("total_deuda"),
+            func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.cuotas_impagas > 0).label("con_mora"),
+            func.sum(FactSituacionFinanciera.cuotas_impagas).label("sum_cuotas"),
+            func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera == "Previsionable").label("previsionable"),
+            func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera == "Mora").label("mora"),
+            func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera == "Vigente").label("vigente"),
+        ).first()
+
+        total_fin = row.total or 0 if row else 0
         if total_fin == 0:
             return {
                 "monto_total_deuda_bs": 0.0,
@@ -74,32 +87,13 @@ class KPIService:
                 "estudiantes_cartera_vigente": 0
             }
 
-        total_deuda = self.db.query(func.sum(FactSituacionFinanciera.monto_deuda)).scalar() or 0.0
-        con_mora = self.db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).filter(
-            FactSituacionFinanciera.cuotas_impagas > 0
-        ).scalar() or 0
-
-        sum_cuotas = self.db.query(func.sum(FactSituacionFinanciera.cuotas_impagas)).scalar() or 0
-
-        previsionable = self.db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).filter(
-            FactSituacionFinanciera.estado_cartera == "Previsionable"
-        ).scalar() or 0
-
-        mora = self.db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).filter(
-            FactSituacionFinanciera.estado_cartera == "Mora"
-        ).scalar() or 0
-
-        vigente = self.db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).filter(
-            FactSituacionFinanciera.estado_cartera == "Vigente"
-        ).scalar() or 0
-
         return {
-            "monto_total_deuda_bs": round(float(total_deuda), 2),
-            "estudiantes_con_cuotas_impagas": int(con_mora),
-            "total_cuotas_impagas": int(sum_cuotas),
-            "estudiantes_cartera_previsionable": int(previsionable),
-            "estudiantes_cartera_mora": int(mora),
-            "estudiantes_cartera_vigente": int(vigente)
+            "monto_total_deuda_bs": round(float(row.total_deuda or 0.0), 2),
+            "estudiantes_con_cuotas_impagas": int(row.con_mora or 0),
+            "total_cuotas_impagas": int(row.sum_cuotas or 0),
+            "estudiantes_cartera_previsionable": int(row.previsionable or 0),
+            "estudiantes_cartera_mora": int(row.mora or 0),
+            "estudiantes_cartera_vigente": int(row.vigente or 0)
         }
 
     @staticmethod

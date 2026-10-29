@@ -54,6 +54,19 @@ def create_refresh_token(data: dict):
     to_encode.update({"exp": expire, "type": "refresh"})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+import time
+
+# Caché en memoria con TTL de 60 segundos para evitar query síncrono a users por cada request
+_USER_CACHE: dict[int, tuple[float, User]] = {}
+
+def invalidate_user_cache(user_id: Optional[int] = None):
+    """Invalida el usuario en caché tras cambio de contraseña, desactivación o bloqueo."""
+    global _USER_CACHE
+    if user_id is None:
+        _USER_CACHE.clear()
+    else:
+        _USER_CACHE.pop(user_id, None)
+
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -69,8 +82,17 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
         
     user = None
+    now = time.time()
     if str(user_id).isdigit():
-        user = db.query(User).filter(User.id == int(user_id)).first()
+        uid_int = int(user_id)
+        cached = _USER_CACHE.get(uid_int)
+        if cached and (now - cached[0] < 60.0):
+            user = cached[1]
+        else:
+            user = db.query(User).filter(User.id == uid_int).first()
+            if user:
+                _USER_CACHE[uid_int] = (now, user)
+
     if not user:
         user = db.query(User).filter((User.username == str(user_id)) | (User.email == str(user_id))).first()
     if user is None:
