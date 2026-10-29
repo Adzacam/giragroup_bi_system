@@ -93,15 +93,18 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
     user.otp_expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
     db.commit()
     
-    print(f"DEV OTP para {user.email}: {otp}", flush=True)
+    logger.info(f"🔑 CÓDIGO OTP PARA {user.email}: {otp} (Válido 5 min)")
 
+    email_dispatched = False
     try:
-        email_service.send_otp_email(
+        email_res = email_service.send_otp_email(
             to_email=user.email,
             username=user.username,
             otp_code=otp,
             expires_in_minutes=5
         )
+        if email_res and email_res.get("smtp", {}).get("sent") is True:
+            email_dispatched = True
     except Exception as e:
         logger.warning(f"No se pudo despachar el correo OTP: {e}")
     
@@ -114,7 +117,7 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
     return LoginStepOneResponse(
         temp_token=temp_token,
         mfa_required=True,
-        channel="console"
+        channel="email" if email_dispatched else "console"
     )
 
 @router.post("/verify-otp", response_model=TokenResponse)
@@ -190,19 +193,25 @@ def resend_otp(req: dict = Body(...), db: Session = Depends(get_db)):
     user.otp_expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
     db.commit()
     
-    print(f"DEV OTP RESEND para {user.email}: {otp}", flush=True)
+    logger.info(f"🔑 CÓDIGO OTP REENVIADO PARA {user.email}: {otp}")
 
+    email_dispatched = False
     try:
-        email_service.send_otp_email(
+        email_res = email_service.send_otp_email(
             to_email=user.email,
             username=user.username,
             otp_code=otp,
             expires_in_minutes=5
         )
+        if email_res and email_res.get("smtp", {}).get("sent") is True:
+            email_dispatched = True
     except Exception as e:
         logger.warning(f"No se pudo despachar el reenvío de correo OTP: {e}")
 
-    return {"message": "OTP reenviado"}
+    return {
+        "message": "OTP reenviado",
+        "channel": "email" if email_dispatched else "console"
+    }
 
 @router.post("/forgot-password", response_model=ForgotPasswordResponse)
 def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):

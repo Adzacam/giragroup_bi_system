@@ -323,3 +323,203 @@ def test_email_service_rendering():
     assert "789 012" in html_reset
     assert "GiraGroup" in html_reset
 
+
+def test_email_service_send_otp_and_reset_unconfigured(monkeypatch):
+    """Cuando no hay SMTP_HOST configurado, el servicio opera en fallback de consola sin errores."""
+    from services.email_service import email_service
+    monkeypatch.delenv("SMTP_HOST", raising=False)
+    
+    res = email_service.send_otp_email(
+        to_email="operador@giragroup.bo",
+        username="Operador",
+        otp_code="123456",
+        expires_in_minutes=5
+    )
+    assert res["status"] == "delivered"
+    assert res["otp"] == "123456"
+    assert res["smtp"]["sent"] is False
+    assert res["smtp"]["reason"] == "not_configured"
+
+    res_reset = email_service.send_password_reset_email(
+        to_email="operador@giragroup.bo",
+        username="Operador",
+        reset_code="654321",
+        expires_in_minutes=15
+    )
+    assert res_reset["status"] == "delivered"
+    assert res_reset["reset_code"] == "654321"
+    assert res_reset["smtp"]["sent"] is False
+
+
+def test_email_service_send_smtp_success(monkeypatch):
+    """Envío real simulado vía smtplib con STARTTLS exitoso."""
+    from unittest.mock import MagicMock
+    import smtplib
+    from services.email_service import email_service
+
+    monkeypatch.setenv("SMTP_HOST", "smtp.testserver.com")
+    monkeypatch.setenv("SMTP_PORT", "587")
+    monkeypatch.setenv("SMTP_USER", "sender@test.com")
+    monkeypatch.setenv("SMTP_PASSWORD", "secret123")
+    monkeypatch.setenv("SMTP_USE_TLS", "True")
+
+    mock_smtp_inst = MagicMock()
+    mock_smtp_class = MagicMock(return_value=mock_smtp_inst)
+    monkeypatch.setattr(smtplib, "SMTP", mock_smtp_class)
+
+    res = email_service.send_otp_email(
+        to_email="cliente@giragroup.bo",
+        username="Cliente",
+        otp_code="987654",
+        expires_in_minutes=5
+    )
+
+    assert res["status"] == "delivered"
+    assert res["smtp"]["sent"] is True
+    assert res["smtp"]["host"] == "smtp.testserver.com"
+    mock_smtp_class.assert_called_once_with("smtp.testserver.com", 587, timeout=5.0)
+    mock_smtp_inst.starttls.assert_called_once()
+    mock_smtp_inst.login.assert_called_once_with("sender@test.com", "secret123")
+    mock_smtp_inst.send_message.assert_called_once()
+    mock_smtp_inst.quit.assert_called_once()
+
+
+def test_email_service_smtp_resilience_to_failures(monkeypatch):
+    """Si el servidor SMTP rechaza credenciales o hace timeout, no se produce excepción hacia el caller."""
+    import smtplib
+    from unittest.mock import MagicMock
+    from services.email_service import email_service
+
+    monkeypatch.setenv("SMTP_HOST", "smtp.error.com")
+    monkeypatch.setenv("SMTP_USER", "fail@error.com")
+    monkeypatch.setenv("SMTP_PASSWORD", "wrongpass")
+
+    # Simular error de autenticación SMTP
+    mock_smtp_inst = MagicMock()
+    mock_smtp_inst.login.side_effect = smtplib.SMTPAuthenticationError(535, b"Authentication credentials invalid")
+    mock_smtp_class = MagicMock(return_value=mock_smtp_inst)
+    monkeypatch.setattr(smtplib, "SMTP", mock_smtp_class)
+
+    res = email_service.send_otp_email(
+        to_email="test@giragroup.bo",
+        username="TestUser",
+        otp_code="111222",
+        expires_in_minutes=5
+    )
+
+    assert res["status"] == "delivered"
+    assert res["smtp"]["sent"] is False
+    assert res["smtp"]["error_type"] == "AuthenticationError"
+
+
+def test_auth_service_email_service_consistency(monkeypatch):
+    """Verifica que services/auth-service/services/email_service.py funcione de forma idéntica."""
+    import importlib.util
+    from pathlib import Path
+
+    auth_email_path = Path("services/auth-service/services/email_service.py").resolve()
+    assert auth_email_path.exists()
+
+    spec = importlib.util.spec_from_file_location("auth_service_email", auth_email_path)
+    auth_email_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(auth_email_module)
+
+    svc = auth_email_module.EmailService()
+    monkeypatch.delenv("SMTP_HOST", raising=False)
+    
+    html = svc.render_otp_email("audit@giragroup.bo", "Auditor", "888999", 5)
+    assert "888 999" in html
+    assert "GiraGroup" in html
+
+    res = svc.send_otp_email("audit@giragroup.bo", "Auditor", "888999", 5)
+    assert res["status"] == "delivered"
+    assert res["otp"] == "888999"
+    assert res["smtp"]["sent"] is False
+
+
+def test_email_service_send_smtp_ssl_port_465(monkeypatch):
+    """Verifica envío directo mediante SMTP_SSL (puerto 465)."""
+    from unittest.mock import MagicMock
+    import smtplib
+    from services.email_service import email_service
+
+    monkeypatch.setenv("SMTP_HOST", "mail.giragroup.bo")
+    monkeypatch.setenv("SMTP_PORT", "465")
+    monkeypatch.setenv("SMTP_USER", "admin@giragroup.bo")
+    monkeypatch.setenv("SMTP_PASSWORD", '"securepass"')
+    monkeypatch.setenv("SMTP_FROM_NAME", '"GiraGroup Notificaciones"')
+
+    mock_ssl_inst = MagicMock()
+    mock_ssl_class = MagicMock(return_value=mock_ssl_inst)
+    monkeypatch.setattr(smtplib, "SMTP_SSL", mock_ssl_class)
+
+    res = email_service.send_otp_email(
+        to_email="direct@giragroup.bo",
+        username="DirectUser",
+        otp_code="333444",
+        expires_in_minutes=5
+    )
+
+    assert res["status"] == "delivered"
+    assert res["smtp"]["sent"] is True
+    mock_ssl_class.assert_called_once_with("mail.giragroup.bo", 465, timeout=5.0)
+    mock_ssl_inst.login.assert_called_once_with("admin@giragroup.bo", "securepass")
+    mock_ssl_inst.send_message.assert_called_once()
+    mock_ssl_inst.quit.assert_called_once()
+
+    # Verificar que el mensaje incluye headers RFC 5322 Date y Message-ID
+    sent_msg = mock_ssl_inst.send_message.call_args[0][0]
+    assert "Date" in sent_msg
+    assert "Message-ID" in sent_msg
+    assert "GiraGroup Notificaciones" in sent_msg["From"]
+
+
+def test_login_step_one_channel_dynamic(monkeypatch):
+    """
+    Verifica que el endpoint login retorna channel='email' cuando SMTP despacha exitosamente,
+    y channel='console' cuando SMTP falla o no está configurado (fallback seguro).
+    """
+    import smtplib
+    from unittest.mock import MagicMock
+
+    # Caso 1: Sin SMTP configurado -> channel="console"
+    monkeypatch.delenv("SMTP_HOST", raising=False)
+    res_console = client.post("/api/v1/auth/login", json={
+        "email": "admin1@giragroup.bo",
+        "password": "AdminPass123!"
+    })
+    assert res_console.status_code == 200
+    assert res_console.json()["channel"] == "console"
+
+    # Caso 2: Con SMTP configurado y fallido (bad auth) -> fallback a channel="console"
+    monkeypatch.setenv("SMTP_HOST", "smtp.broken.com")
+    monkeypatch.setenv("SMTP_USER", "fail@broken.com")
+    monkeypatch.setenv("SMTP_PASSWORD", "wrongpass")
+    mock_smtp_inst = MagicMock()
+    mock_smtp_inst.login.side_effect = smtplib.SMTPAuthenticationError(535, b"Invalid credentials")
+    monkeypatch.setattr(smtplib, "SMTP", MagicMock(return_value=mock_smtp_inst))
+
+    res_fail = client.post("/api/v1/auth/login", json={
+        "email": "admin1@giragroup.bo",
+        "password": "AdminPass123!"
+    })
+    assert res_fail.status_code == 200
+    assert res_fail.json()["channel"] == "console"
+
+    # Caso 3: Con SMTP configurado y exitoso -> channel="email"
+    monkeypatch.setenv("SMTP_HOST", "smtp.ok.com")
+    monkeypatch.setenv("SMTP_USER", "ok@ok.com")
+    monkeypatch.setenv("SMTP_PASSWORD", "okpass")
+    mock_smtp_ok = MagicMock()
+    monkeypatch.setattr(smtplib, "SMTP", MagicMock(return_value=mock_smtp_ok))
+
+    res_email = client.post("/api/v1/auth/login", json={
+        "email": "admin1@giragroup.bo",
+        "password": "AdminPass123!"
+    })
+    assert res_email.status_code == 200
+    assert res_email.json()["channel"] == "email"
+
+
+
+
