@@ -11,6 +11,7 @@ Responsable de:
 import logging
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
@@ -28,6 +29,8 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -35,6 +38,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 app.include_router(audit.router)
 

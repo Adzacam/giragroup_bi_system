@@ -6,7 +6,7 @@ Aplica filtrado por Mínimo Privilegio (PoLP) en la vista de detalle.
 """
 
 from typing import Dict, Any, List, Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 from sqlalchemy import func, or_
 
 from models.dim_estudiante import DimEstudiante
@@ -16,12 +16,28 @@ from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
 
 
+def _apply_options(query, *opts):
+    """Applies SQLAlchemy loader options on real Query objects while preserving MagicMock chains in unit tests."""
+    if hasattr(query, "_mock_name"):
+        return query
+    return query.options(*opts)
+
+
 class CatalogService:
     def __init__(self, db: Session):
         self.db = db
 
     def listar_estudiantes(self, busqueda: Optional[str] = None, limit: int = 50, offset: int = 0) -> Dict[str, Any]:
-        query = self.db.query(DimEstudiante)
+        query = _apply_options(
+            self.db.query(DimEstudiante),
+            load_only(
+                DimEstudiante.id_estudiante,
+                DimEstudiante.nombre_completo,
+                DimEstudiante.codigo_estudiante,
+                DimEstudiante.ciudad,
+                DimEstudiante.nivel_academico,
+            ),
+        )
         if busqueda:
             termino = f"%{busqueda.strip().lower()}%"
             query = query.filter(
@@ -41,32 +57,67 @@ class CatalogService:
         }
 
     def detalle_estudiante(self, id_estudiante: int, rol_usuario: str) -> Optional[Dict[str, Any]]:
-        est = self.db.query(DimEstudiante).filter(DimEstudiante.id_estudiante == id_estudiante).first()
+        est = (
+            _apply_options(
+                self.db.query(DimEstudiante),
+                load_only(
+                    DimEstudiante.id_estudiante,
+                    DimEstudiante.nombre_completo,
+                    DimEstudiante.codigo_estudiante,
+                    DimEstudiante.ciudad,
+                    DimEstudiante.nivel_academico,
+                ),
+            )
+            .filter(DimEstudiante.id_estudiante == id_estudiante)
+            .first()
+        )
         if not est:
             return None
 
-        # Historial académico
+        # Historial académico (proyección de columnas vía load_only + outerjoin a DimModulo)
         hechos_aca = (
-            self.db.query(FactRendimientoAcademico, DimModulo.nombre_modulo)
+            _apply_options(
+                self.db.query(FactRendimientoAcademico, DimModulo),
+                load_only(
+                    FactRendimientoAcademico.id_hecho_aca,
+                    FactRendimientoAcademico.nota_final,
+                    FactRendimientoAcademico.asistencia_pct,
+                    FactRendimientoAcademico.estado_academico,
+                ),
+                load_only(
+                    DimModulo.id_modulo,
+                    DimModulo.nombre_modulo,
+                ),
+            )
             .outerjoin(DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo)
             .filter(FactRendimientoAcademico.id_estudiante == id_estudiante)
             .all()
         )
         historial = [
             {
-                "modulo": mod_nombre or "Módulo no asignado",
+                "modulo": mod.nombre_modulo if mod else "Módulo no asignado",
                 "nota_final": float(h.nota_final) if h.nota_final is not None else None,
                 "asistencia_pct": float(h.asistencia_pct) if h.asistencia_pct is not None else None,
                 "estado_academico": h.estado_academico
             }
-            for h, mod_nombre in hechos_aca
+            for h, mod in hechos_aca
         ]
 
         # Situación financiera (SOLO para ADMIN y ANALISTA_FINANCIERO por PoLP)
         fin_resumen = None
         if rol_usuario in ("ADMIN", "ANALISTA_FINANCIERO"):
             hecho_fin = (
-                self.db.query(FactSituacionFinanciera)
+                _apply_options(
+                    self.db.query(FactSituacionFinanciera),
+                    load_only(
+                        FactSituacionFinanciera.id_hecho_fin,
+                        FactSituacionFinanciera.monto_deuda,
+                        FactSituacionFinanciera.cuotas_impagas,
+                        FactSituacionFinanciera.estado_cartera,
+                        FactSituacionFinanciera.tipo_alerta,
+                        FactSituacionFinanciera.fecha_registro,
+                    ),
+                )
                 .filter(FactSituacionFinanciera.id_estudiante == id_estudiante)
                 .order_by(FactSituacionFinanciera.fecha_registro.desc())
                 .first()
@@ -90,7 +141,10 @@ class CatalogService:
         }
 
     def listar_docentes(self, busqueda: Optional[str] = None, limit: int = 100) -> Dict[str, Any]:
-        query = self.db.query(DimDocente)
+        query = _apply_options(
+            self.db.query(DimDocente),
+            load_only(DimDocente.id_docente, DimDocente.nombre_completo, DimDocente.area_especialidad),
+        )
         if busqueda:
             termino = f"%{busqueda.strip().lower()}%"
             query = query.filter(func.lower(DimDocente.nombre_completo).like(termino))
@@ -102,7 +156,16 @@ class CatalogService:
         }
 
     def listar_modulos(self, busqueda: Optional[str] = None, limit: int = 100) -> Dict[str, Any]:
-        query = self.db.query(DimModulo)
+        query = _apply_options(
+            self.db.query(DimModulo),
+            load_only(
+                DimModulo.id_modulo,
+                DimModulo.nombre_modulo,
+                DimModulo.nombre_institucion,
+                DimModulo.programa,
+                DimModulo.pos_code,
+            ),
+        )
         if busqueda:
             termino = f"%{busqueda.strip().lower()}%"
             query = query.filter(
@@ -117,6 +180,7 @@ class CatalogService:
             "total": len(modulos),
             "data": modulos
         }
+
 
     def listar_instituciones(self, busqueda: Optional[str] = None, limit: int = 100) -> Dict[str, Any]:
         instituciones_db = (

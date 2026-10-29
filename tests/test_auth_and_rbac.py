@@ -521,5 +521,50 @@ def test_login_step_one_channel_dynamic(monkeypatch):
     assert res_email.json()["channel"] == "email"
 
 
+def test_user_cache_detached_instance_and_change_password():
+    """
+    Verifica que:
+    1. _USER_CACHE no lanza DetachedInstanceError en peticiones subsiguientes después de que
+       una petición previa ejecuta db.commit() (ej. POST /api/v1/users).
+    2. POST /api/v1/auth/change-password persiste el nuevo hash en la base de datos incluso
+       cuando current_user proviene de _USER_CACHE (instancia expurgada de la sesión previa).
+    """
+    from core.security import invalidate_user_cache, verify_password
 
+    invalidate_user_cache()
+    admin_token = create_access_token({"sub": "1", "role": "ADMIN"})
+    headers = {"Authorization": f"Bearer {admin_token}"}
 
+    # 1. Petición de escritura que hace db.commit() mientras admin1 se almacena en _USER_CACHE
+    res_create = client.post(
+        "/api/v1/users",
+        json={
+            "username": "cache_test_user",
+            "email": "cache_test@giragroup.bo",
+            "password": "CacheUserPass123!",
+            "role": "AUDITOR_CALIDAD",
+        },
+        headers=headers,
+    )
+    assert res_create.status_code == 200
+
+    # 2. Petición subsiguiente dentro del TTL (60s) que consume _USER_CACHE tras el commit
+    res_list = client.get("/api/v1/users", headers=headers)
+    assert res_list.status_code == 200
+
+    # 3. Cambio de contraseña con usuario proveniente de _USER_CACHE
+    res_chg = client.post(
+        "/api/v1/auth/change-password",
+        json={
+            "current_password": "AdminPass123!",
+            "new_password": "NewAdminPass456!",
+            "confirm_password": "NewAdminPass456!",
+        },
+        headers=headers,
+    )
+    assert res_chg.status_code == 200
+
+    db = TestingSessionLocal()
+    admin_db = db.query(User).filter(User.id == 1).first()
+    assert verify_password("NewAdminPass456!", admin_db.hashed_password) is True
+    db.close()

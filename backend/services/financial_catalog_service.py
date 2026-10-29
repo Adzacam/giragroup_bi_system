@@ -10,7 +10,7 @@ Aplica política estricta anti-contaminación del DW:
 """
 
 from typing import Optional, Dict, Any, List
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from models.catalogos import CatConceptoFinanciero, CatHistoricoEquivalencia
 from core.database import get_catalog_db, CatalogSessionLocal
 
@@ -111,10 +111,13 @@ class FinancialCatalogService:
                     "motivo": "Coincidencia exacta con catálogo canónico"
                 }
 
-            # 2. Búsqueda exacta en equivalencias históricas
-            eq_exacta = db_catalog.query(CatHistoricoEquivalencia).filter(
-                CatHistoricoEquivalencia.termino_origen.ilike(termino_clean)
-            ).first()
+            # 2. Búsqueda exacta en equivalencias históricas (con eager loading del concepto padre)
+            eq_exacta = (
+                db_catalog.query(CatHistoricoEquivalencia)
+                .options(joinedload(CatHistoricoEquivalencia.concepto))
+                .filter(CatHistoricoEquivalencia.termino_origen.ilike(termino_clean))
+                .first()
+            )
 
             if eq_exacta and eq_exacta.concepto:
                 conf = float(eq_exacta.confianza_mapeo) * 100.0 if eq_exacta.confianza_mapeo else 98.0
@@ -134,7 +137,11 @@ class FinancialCatalogService:
 
             # 3. Búsqueda difusa (Fuzzy Token Sort) contra todo el universo de términos
             conceptos_todos = db_catalog.query(CatConceptoFinanciero).all()
-            equivalencias_todas = db_catalog.query(CatHistoricoEquivalencia).all()
+            equivalencias_todas = (
+                db_catalog.query(CatHistoricoEquivalencia)
+                .options(joinedload(CatHistoricoEquivalencia.concepto))
+                .all()
+            )
 
             # Mapeo de términos a su concepto destino
             termino_map = {}
@@ -196,8 +203,10 @@ class FinancialCatalogService:
         db_catalog: Session,
         tipo_movimiento: Optional[str] = None
     ) -> List[Dict[str, Any]]:
-        """Retorna lista de conceptos canónicos financieros con sus variantes históricas."""
-        query = db_catalog.query(CatConceptoFinanciero)
+        """Retorna lista de conceptos canónicos financieros con sus variantes históricas (con joinedload anti N+1)."""
+        query = db_catalog.query(CatConceptoFinanciero).options(
+            joinedload(CatConceptoFinanciero.equivalencias)
+        )
         if tipo_movimiento:
             query = query.filter(CatConceptoFinanciero.tipo_movimiento.ilike(tipo_movimiento))
         

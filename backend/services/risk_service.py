@@ -1,5 +1,5 @@
 from typing import Optional, Dict, Any, List
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 from sqlalchemy import desc
 from models.dim_estudiante import DimEstudiante
 from models.dim_modulo import DimModulo
@@ -8,6 +8,7 @@ from models.dim_tiempo import DimTiempo
 from models.dim_origen import DimOrigenDocumental
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
+
 
 
 def _formatear_periodo(tiempo: Optional[DimTiempo], doc_periodo: Optional[str] = None) -> str:
@@ -106,15 +107,94 @@ def evaluar_alertas_tempranas_deterministicas(
     """
     estudiantes_db = {
         e.id_estudiante: e
-        for e in db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
+        for e in db.query(DimEstudiante)
+        .options(
+            load_only(
+                DimEstudiante.id_estudiante,
+                DimEstudiante.ci,
+                DimEstudiante.ci_numero,
+                DimEstudiante.codigo_estudiante,
+                DimEstudiante.nombre_completo,
+                DimEstudiante.programa_origen,
+                DimEstudiante.deprecado,
+            )
+        )
+        .filter(DimEstudiante.deprecado == False)
+        .all()
     }
-    modulos_db = {m.id_modulo: m for m in db.query(DimModulo).all()}
-    docentes_db = {d.id_docente: d for d in db.query(DimDocente).all()}
-    tiempos_db = {t.id_tiempo: t for t in db.query(DimTiempo).all()}
-    origenes_db = {o.id_documento: o for o in db.query(DimOrigenDocumental).all()}
+    modulos_db = {
+        m.id_modulo: m
+        for m in db.query(DimModulo)
+        .options(
+            load_only(
+                DimModulo.id_modulo,
+                DimModulo.nombre_modulo,
+                DimModulo.programa,
+                DimModulo.pos_code,
+            )
+        )
+        .all()
+    }
+    docentes_db = {
+        d.id_docente: d
+        for d in db.query(DimDocente)
+        .options(load_only(DimDocente.id_docente, DimDocente.nombre_completo))
+        .all()
+    }
+    tiempos_db = {
+        t.id_tiempo: t
+        for t in db.query(DimTiempo)
+        .options(
+            load_only(
+                DimTiempo.id_tiempo,
+                DimTiempo.gestion,
+                DimTiempo.semestre,
+                DimTiempo.mes,
+                DimTiempo.periodo_mes,
+            )
+        )
+        .all()
+    }
+    origenes_db = {
+        o.id_documento: o
+        for o in db.query(DimOrigenDocumental)
+        .options(load_only(DimOrigenDocumental.id_documento, DimOrigenDocumental.periodo))
+        .all()
+    }
 
-    hechos_aca = db.query(FactRendimientoAcademico).all()
-    hechos_fin = db.query(FactSituacionFinanciera).all()
+    hechos_aca = (
+        db.query(FactRendimientoAcademico)
+        .options(
+            load_only(
+                FactRendimientoAcademico.id_hecho_aca,
+                FactRendimientoAcademico.id_estudiante,
+                FactRendimientoAcademico.id_modulo,
+                FactRendimientoAcademico.id_docente,
+                FactRendimientoAcademico.id_tiempo,
+                FactRendimientoAcademico.id_documento,
+                FactRendimientoAcademico.nota_final,
+                FactRendimientoAcademico.incumplimiento_actividades_pct,
+                FactRendimientoAcademico.asistencia_pct,
+                FactRendimientoAcademico.tipo_alerta,
+            )
+        )
+        .all()
+    )
+    hechos_fin = (
+        db.query(FactSituacionFinanciera)
+        .options(
+            load_only(
+                FactSituacionFinanciera.id_hecho_fin,
+                FactSituacionFinanciera.id_estudiante,
+                FactSituacionFinanciera.id_modulo,
+                FactSituacionFinanciera.id_tiempo,
+                FactSituacionFinanciera.id_documento,
+                FactSituacionFinanciera.cuotas_impagas,
+                FactSituacionFinanciera.monto_deuda,
+            )
+        )
+        .all()
+    )
 
     periodos_set = set()
     programas_set = set()

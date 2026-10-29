@@ -9,7 +9,7 @@ Conexión directa con PostgreSQL (LogPipelineIngesta y LogAuditoriaNlp),
 """
 
 from fastapi import APIRouter, Depends, Query, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
@@ -45,6 +45,16 @@ def get_audit_logs(
     try:
         pipeline_logs = (
             db.query(LogPipelineIngesta)
+            .options(
+                load_only(
+                    LogPipelineIngesta.id,
+                    LogPipelineIngesta.etapa,
+                    LogPipelineIngesta.nivel,
+                    LogPipelineIngesta.modulo,
+                    LogPipelineIngesta.mensaje,
+                    LogPipelineIngesta.created_at,
+                )
+            )
             .order_by(LogPipelineIngesta.id.desc())
             .limit(1000)
             .all()
@@ -99,10 +109,22 @@ def get_audit_logs(
     try:
         nlp_logs = (
             db.query(LogAuditoriaNlp)
+            .options(
+                load_only(
+                    LogAuditoriaNlp.id_log,
+                    LogAuditoriaNlp.usuario_auditor,
+                    LogAuditoriaNlp.confianza_ia,
+                    LogAuditoriaNlp.texto_original,
+                    LogAuditoriaNlp.prediccion_beto,
+                    LogAuditoriaNlp.correccion_humana,
+                    LogAuditoriaNlp.created_at,
+                )
+            )
             .order_by(LogAuditoriaNlp.id_log.desc())
             .limit(500)
             .all()
         )
+
         for n in nlp_logs:
             ts = n.created_at.strftime("%Y-%m-%d %H:%M:%S") if n.created_at else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             user_lbl = f"Auditor ACRA (User #{n.usuario_auditor})" if n.usuario_auditor else "Auditor ACRA (HITL)"

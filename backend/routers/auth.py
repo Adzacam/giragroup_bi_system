@@ -287,7 +287,11 @@ def change_password(
             detail="La confirmación no coincide con la nueva contraseña."
         )
 
-    current_user.hashed_password = get_password_hash(req.new_password)
+    new_hash = get_password_hash(req.new_password)
+    db_user = db.query(User).filter(User.id == current_user.id).first()
+    if db_user is not None:
+        db_user.hashed_password = new_hash
+    current_user.hashed_password = new_hash
     db.commit()
     invalidate_user_cache(current_user.id)
 

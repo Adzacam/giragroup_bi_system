@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 from typing import List
 
 from core.database import get_db
@@ -11,7 +11,10 @@ router = APIRouter(prefix="/api/v1/users", tags=["Usuarios"])
 
 @router.get("", response_model=List[UserResponse])
 def get_users(db: Session = Depends(get_db), current_user: User = Depends(require_roles(["ADMIN"]))):
-    return db.query(User).all()
+    return db.query(User).options(
+        load_only(User.id, User.username, User.email, User.phone, User.role, User.is_active, User.created_by_id)
+    ).all()
+
 
 @router.post("", response_model=UserResponse)
 def create_user(user_in: UserCreate, db: Session = Depends(get_db), current_user: User = Depends(require_roles(["ADMIN"]))):

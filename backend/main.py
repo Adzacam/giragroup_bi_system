@@ -11,6 +11,7 @@ import logging
 from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException, Request, Response, status, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
@@ -75,7 +76,16 @@ def on_startup():
     except Exception as e:
         logger.error(f"Error seeding default users: {e}")
 
-# ── Middleware de Seguridad OWASP (Cabeceras de Protección HTTP) ─────────────
+# ── Middleware de Seguridad OWASP y Cabeceras de Caché HTTP ───────────────────
+_CACHEABLE_GET_PREFIXES = (
+    "/api/v1/catalogs/institutional-summary",
+    "/api/v1/catalogs/financial/concepts",
+    "/api/v1/docentes",
+    "/api/v1/modulos",
+    "/api/v1/instituciones",
+    "/api/v1/kpis",
+)
+
 @app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
     response: Response = await call_next(request)
@@ -85,8 +95,15 @@ async def security_headers_middleware(request: Request, call_next):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Content-Security-Policy"] = "default-src 'self'; frame-ancestors 'none';"
+    if request.method == "GET" and response.status_code == 200:
+        if any(request.url.path.startswith(p) for p in _CACHEABLE_GET_PREFIXES):
+            response.headers.setdefault("Cache-Control", "private, max-age=60, stale-while-revalidate=120")
+            response.headers.setdefault("Vary", "Authorization, Accept-Encoding")
     return response
 
+
+# ── Compresión HTTP GZip (respuestas >= 1000 bytes) ──────────────────────────
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # ── Middleware CORS Controlado ────────────────────────────────────────────────
 app.add_middleware(
@@ -96,6 +113,7 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
 
 # ── Registro de Routers del Monolito Core ─────────────────────────────────────
 app.include_router(dataops.router)

@@ -80,6 +80,20 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         else:
             user = db.query(User).filter(User.id == uid_int).first()
             if user:
+                _ = (
+                    user.id,
+                    user.username,
+                    user.email,
+                    user.role,
+                    user.is_active,
+                    user.hashed_password,
+                    getattr(user, "phone", None),
+                    getattr(user, "is_mfa_enabled", True),
+                )
+                try:
+                    db.expunge(user)
+                except Exception:
+                    pass
                 _USER_CACHE[uid_int] = (now, user)
 
     if not user:

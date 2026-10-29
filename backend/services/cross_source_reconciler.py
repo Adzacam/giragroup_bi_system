@@ -12,7 +12,8 @@ Servicio de Cascada de Resolución de Identidad y Detección de Discrepancias Cr
 
 import re
 from typing import Optional, Dict, Any, List
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
+from sqlalchemy import func
 
 from models.dim_estudiante import DimEstudiante
 from models.fact_rendimiento import FactRendimientoAcademico
@@ -151,7 +152,17 @@ class IdentityResolutionCascade:
         # ── Nivel 4: Nombre + Programa + Período (Matching Difuso RapidFuzz) ───
         if nombre and str(nombre).strip():
             nombre_clean = str(nombre).strip()
-            estudiantes = db.query(DimEstudiante).all()
+            estudiantes = (
+                db.query(DimEstudiante)
+                .options(
+                    load_only(
+                        DimEstudiante.id_estudiante,
+                        DimEstudiante.codigo_estudiante,
+                        DimEstudiante.nombre_completo,
+                    )
+                )
+                .all()
+            )
 
             if estudiantes:
                 nombres_map = {e.nombre_completo: e for e in estudiantes if e.nombre_completo}
@@ -194,47 +205,17 @@ class IdentityResolutionCascade:
 class CrossSourceReconciler:
     """Detecta inconsistencias y fragmentación entre plataformas dispares (Moodle vs Cobranzas)."""
 
-    @classmethod
-    def verificar_presencia_cruzada(
-        cls,
-        db: Session,
+    @staticmethod
+    def _construir_resultado_reconciliacion(
         id_estudiante: int,
-        id_documento_actual: Optional[int] = None
+        codigo_estudiante: Optional[str],
+        nombre_completo: Optional[str],
+        total_aca: int,
+        total_fin: int,
     ) -> Dict[str, Any]:
-        """
-        Coteja la presencia de un estudiante entre hechos académicos y financieros:
-        - ¿Tiene registros en FactRendimientoAcademico (Moodle / Actas)?
-        - ¿Tiene registros en FactSituacionFinanciera (Cobranzas)?
-        """
-        estudiante = db.query(DimEstudiante).filter(DimEstudiante.id_estudiante == id_estudiante).first()
-        if not estudiante:
-            return {
-                "id_estudiante": id_estudiante,
-                "nombre_completo": "Desconocido",
-                "reconciliado": False,
-                "estado": "ESTUDIANTE_NO_EXISTE",
-                "tiene_academico": False,
-                "tiene_financiero": False,
-                "alerta": "El ID de estudiante no existe en el Data Warehouse.",
-                "fragmentacion_detectada": True
-            }
-
-        # Conteo en FactRendimientoAcademico
-        query_aca = db.query(FactRendimientoAcademico).filter(
-            FactRendimientoAcademico.id_estudiante == id_estudiante
-        )
-        total_aca = query_aca.count()
-
-        # Conteo en FactSituacionFinanciera
-        query_fin = db.query(FactSituacionFinanciera).filter(
-            FactSituacionFinanciera.id_estudiante == id_estudiante
-        )
-        total_fin = query_fin.count()
-
         tiene_academico = total_aca > 0
         tiene_financiero = total_fin > 0
 
-        # Determinación de estado y alertas de fragmentación
         if tiene_academico and tiene_financiero:
             estado = "RECONCILIADO"
             alerta = None
@@ -264,8 +245,8 @@ class CrossSourceReconciler:
 
         return {
             "id_estudiante": id_estudiante,
-            "codigo_estudiante": estudiante.codigo_estudiante,
-            "nombre_completo": estudiante.nombre_completo,
+            "codigo_estudiante": codigo_estudiante,
+            "nombre_completo": nombre_completo,
             "tiene_academico": tiene_academico,
             "total_registros_academicos": total_aca,
             "tiene_financiero": tiene_financiero,
@@ -273,8 +254,65 @@ class CrossSourceReconciler:
             "reconciliado": reconciliado,
             "estado": estado,
             "alerta": alerta,
-            "fragmentacion_detectada": fragmentacion
+            "fragmentacion_detectada": fragmentacion,
         }
+
+    @classmethod
+    def verificar_presencia_cruzada(
+        cls,
+        db: Session,
+        id_estudiante: int,
+        id_documento_actual: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Coteja la presencia de un estudiante entre hechos académicos y financieros:
+        - ¿Tiene registros en FactRendimientoAcademico (Moodle / Actas)?
+        - ¿Tiene registros en FactSituacionFinanciera (Cobranzas)?
+        """
+        estudiante = (
+            db.query(DimEstudiante)
+            .options(
+                load_only(
+                    DimEstudiante.id_estudiante,
+                    DimEstudiante.codigo_estudiante,
+                    DimEstudiante.nombre_completo,
+                )
+            )
+            .filter(DimEstudiante.id_estudiante == id_estudiante)
+            .first()
+        )
+        if not estudiante:
+            return {
+                "id_estudiante": id_estudiante,
+                "nombre_completo": "Desconocido",
+                "reconciliado": False,
+                "estado": "ESTUDIANTE_NO_EXISTE",
+                "tiene_academico": False,
+                "tiene_financiero": False,
+                "alerta": "El ID de estudiante no existe en el Data Warehouse.",
+                "fragmentacion_detectada": True
+            }
+
+        total_aca = (
+            db.query(func.count(FactRendimientoAcademico.id_hecho_aca))
+            .filter(FactRendimientoAcademico.id_estudiante == id_estudiante)
+            .scalar()
+            or 0
+        )
+        total_fin = (
+            db.query(func.count(FactSituacionFinanciera.id_hecho_fin))
+            .filter(FactSituacionFinanciera.id_estudiante == id_estudiante)
+            .scalar()
+            or 0
+        )
+
+        return cls._construir_resultado_reconciliacion(
+            id_estudiante=id_estudiante,
+            codigo_estudiante=estudiante.codigo_estudiante,
+            nombre_completo=estudiante.nombre_completo,
+            total_aca=int(total_aca),
+            total_fin=int(total_fin),
+        )
 
     @classmethod
     def auditar_discrepancias_lote(
@@ -283,18 +321,67 @@ class CrossSourceReconciler:
         limite: int = 50
     ) -> Dict[str, Any]:
         """
-        Genera reporte ejecutivo y auditoría de fragmentación de datos para el lote activo.
+        Genera reporte ejecutivo y auditoría de fragmentación de datos para el lote activo
+        con agregación en bloque (3 queries SQL totales en lugar de 1 + 3*N).
         """
-        estudiantes = db.query(DimEstudiante).limit(limite).all()
+        estudiantes = (
+            db.query(DimEstudiante)
+            .options(
+                load_only(
+                    DimEstudiante.id_estudiante,
+                    DimEstudiante.codigo_estudiante,
+                    DimEstudiante.nombre_completo,
+                )
+            )
+            .limit(limite)
+            .all()
+        )
 
         total = len(estudiantes)
+        if total == 0:
+            return {
+                "total_estudiantes_auditados": 0,
+                "estudiantes_reconciliados": 0,
+                "tasa_reconciliacion_pct": 0.0,
+                "discrepancias_sin_cobranza": 0,
+                "discrepancias_sin_aula_virtual": 0,
+                "total_discrepancias_fragmentacion": 0,
+                "casos_discrepancia": [],
+            }
+
+        ids_lote = [e.id_estudiante for e in estudiantes]
+        conteos_aca = dict(
+            db.query(
+                FactRendimientoAcademico.id_estudiante,
+                func.count(FactRendimientoAcademico.id_hecho_aca),
+            )
+            .filter(FactRendimientoAcademico.id_estudiante.in_(ids_lote))
+            .group_by(FactRendimientoAcademico.id_estudiante)
+            .all()
+        )
+        conteos_fin = dict(
+            db.query(
+                FactSituacionFinanciera.id_estudiante,
+                func.count(FactSituacionFinanciera.id_hecho_fin),
+            )
+            .filter(FactSituacionFinanciera.id_estudiante.in_(ids_lote))
+            .group_by(FactSituacionFinanciera.id_estudiante)
+            .all()
+        )
+
         reconciliados = 0
         sin_cobranza = 0
         sin_aula_virtual = 0
         discrepancias_list: List[Dict[str, Any]] = []
 
         for e in estudiantes:
-            res = cls.verificar_presencia_cruzada(db, e.id_estudiante)
+            res = cls._construir_resultado_reconciliacion(
+                id_estudiante=e.id_estudiante,
+                codigo_estudiante=e.codigo_estudiante,
+                nombre_completo=e.nombre_completo,
+                total_aca=int(conteos_aca.get(e.id_estudiante, 0) or 0),
+                total_fin=int(conteos_fin.get(e.id_estudiante, 0) or 0),
+            )
             if res["reconciliado"]:
                 reconciliados += 1
             elif res["fragmentacion_detectada"]:
