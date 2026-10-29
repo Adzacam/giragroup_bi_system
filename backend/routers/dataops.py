@@ -81,32 +81,6 @@ except ImportError:
 from pydantic import BaseModel
 
 
-def get_current_user_optional(
-    request: Request,
-    db: Session = Depends(get_db)
-) -> Optional[User]:
-    """Obtiene el usuario actual vía Bearer token JWT si existe, o fallback al usuario auditor/admin activo."""
-    auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header.split(" ", 1)[1].strip()
-        try:
-            from jose import jwt
-            from core.security import SECRET_KEY, ALGORITHM
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            user_id = payload.get("sub")
-            if user_id:
-                if str(user_id).isdigit():
-                    u = db.query(User).filter(User.id == int(user_id)).first()
-                    if u:
-                        return u
-                u = db.query(User).filter((User.username == str(user_id)) | (User.email == str(user_id))).first()
-                if u:
-                    return u
-        except Exception:
-            pass
-    return db.query(User).filter(User.role.in_(["AUDITOR_CALIDAD", "ADMIN"]), User.is_active == True).first()
-
-
 class DeleteBatchRequest(BaseModel):
     ids: List[int]
 
@@ -3381,7 +3355,7 @@ def infer_beto_text(payload: BetoInferRequest, db: Session = Depends(get_db)):
 def confirm_dw_insert(
     payload: ConfirmDwInsertRequest,
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
 ):
     """
     Confirma e inserta transaccionalmente los registros aprobados en el Data Warehouse (#8, #9, #10):
@@ -3401,6 +3375,7 @@ def confirm_dw_insert(
                 "texto_editado": payload.texto_editado,
             },
             db=db,
+            current_user=current_user,
         )
 
     dw = DWLoaderService(db)
@@ -3913,7 +3888,7 @@ def get_review_tray(
 def batch_resolve_review_items(
     payload: BatchResolveRequest,
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
 ):
     """Resuelve y consolida en lote múltiples casos de la bandeja de revisión humana."""
     resolved_count = 0
@@ -4025,7 +4000,7 @@ def resolve_review_item(
     item_id: str,
     payload: Optional[dict] = None,
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
 ):
     """Aprueba y consolida un registro individual en la bandeja de revisión humana."""
     payload = payload or {}
