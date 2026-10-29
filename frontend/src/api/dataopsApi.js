@@ -343,28 +343,11 @@ export const dataopsApi = {
   },
 
   /**
-   * Desvincula fuentes conciliadas
-   */
-  unlinkSources: async (data) => {
-    const res = await client.post(`${BASE_URL}/unlink`, data);
-    return res.data;
-  },
-
-  /**
    * Resuelve y confirma un registro individual de la bandeja de revisión humana
    */
   resolveReviewItem: async (itemId, payload = {}) => {
     invalidateDataopsCache();
     const res = await client.post(`${BASE_URL}/review-tray/${itemId}/resolve`, payload);
-    return res.data;
-  },
-
-  /**
-   * Desvincula / rechaza un registro de la bandeja de revisión
-   */
-  unlinkReviewItem: async (itemId) => {
-    invalidateDataopsCache();
-    const res = await client.post(`${BASE_URL}/review-tray/${itemId}/unlink`);
     return res.data;
   },
 

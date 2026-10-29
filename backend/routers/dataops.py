@@ -4161,17 +4161,6 @@ def resolve_review_item(
     }
 
 
-@router.post("/review-tray/{item_id}/unlink")
-@router.post("/unlink")
-def unlink_sources(item_id: Optional[str] = None, data: Optional[dict] = None, db: Session = Depends(get_db)):
-    target_id = item_id or (data.get("id") if data else "REV-01")
-    return {
-        "status": "success",
-        "message": f"Fuentes desvinculadas exitosamente para el caso {target_id}.",
-        "id": target_id,
-    }
-
-
 @router.post("/review-tray/{item_id}/lock")
 def lock_review_item(
     item_id: int,
