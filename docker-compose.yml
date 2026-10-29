@@ -53,12 +53,10 @@ services:
       - api
       - auth-service
       - notifications-service
-      - analytics-service
       - audit-service
-      - storage-service
       - web
 
-  # 4. Monolito Modular — BETO Core (DataOps, Pipeline, Catálogos, Riesgos)
+  # 4. Monolito Modular — BETO Core (DataOps, Pipeline, Catálogos, Riesgos, KPIs, Forecast)
   api:
     build:
       context: .
@@ -68,6 +66,8 @@ services:
     ports:
       - "8000:8000"
     env_file: .env
+    environment:
+      STANDALONE_MONOLITH: "false"
     depends_on:
       db:
         condition: service_healthy
@@ -78,15 +78,15 @@ services:
       - ./pipeline:/app/pipeline
       - ./uploads:/app/uploads
 
-  # 5. Microservicio Auth & IAM (Puerto 8001)
+  # 5. Microservicio Auth & IAM (Puerto 8001 aislado en red interna Docker)
   auth-service:
     build:
       context: .
       dockerfile: infrastructure/docker/auth-service.Dockerfile
     container_name: giragroup_auth_svc
     restart: unless-stopped
-    ports:
-      - "8001:8001"
+    expose:
+      - "8001"
     env_file: .env
     depends_on:
       db:
@@ -95,15 +95,15 @@ services:
       - ./services/auth-service:/app
       - ./shared:/app/shared
 
-  # 6. Microservicio Notifications & WebSockets (Puerto 8002)
+  # 6. Microservicio Notifications & WebSockets (Puerto 8002 aislado en red interna Docker)
   notifications-service:
     build:
       context: .
       dockerfile: infrastructure/docker/notifications-service.Dockerfile
     container_name: giragroup_notifications_svc
     restart: unless-stopped
-    ports:
-      - "8002:8002"
+    expose:
+      - "8002"
     env_file: .env
     depends_on:
       db:
@@ -112,33 +112,15 @@ services:
       - ./services/notifications-service:/app
       - ./shared:/app/shared
 
-  # 7. Microservicio Analytics, Forecast Holt-Winters & Power BI (Puerto 8003)
-  analytics-service:
-    build:
-      context: .
-      dockerfile: infrastructure/docker/analytics-service.Dockerfile
-    container_name: giragroup_analytics_svc
-    restart: unless-stopped
-    ports:
-      - "8003:8003"
-    env_file: .env
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - ./services/analytics-service:/app
-      - ./shared:/app/shared
-      - ./uploads:/app/uploads
-
-  # 8. Microservicio Audit & Observability (Puerto 8004)
+  # 7. Microservicio Audit & Observability (Puerto 8004 aislado en red interna Docker)
   audit-service:
     build:
       context: .
       dockerfile: infrastructure/docker/audit-service.Dockerfile
     container_name: giragroup_audit_svc
     restart: unless-stopped
-    ports:
-      - "8004:8004"
+    expose:
+      - "8004"
     env_file: .env
     depends_on:
       db:
@@ -147,22 +129,7 @@ services:
       - ./services/audit-service:/app
       - ./shared:/app/shared
 
-  # 9. Microservicio File Storage (Puerto 8005)
-  storage-service:
-    build:
-      context: .
-      dockerfile: infrastructure/docker/storage-service.Dockerfile
-    container_name: giragroup_storage_svc
-    restart: unless-stopped
-    ports:
-      - "8005:8005"
-    env_file: .env
-    volumes:
-      - ./services/storage-service:/app
-      - ./uploads:/app/uploads
-      - ./shared:/app/shared
-
-  # 10. Pipeline BETO NER Motor de Inferencia
+  # 8. Pipeline BETO NER Motor de Inferencia
   pipeline:
     build:
       context: .

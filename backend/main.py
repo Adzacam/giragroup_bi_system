@@ -6,6 +6,7 @@ Incluye configuración de middleware de cabeceras de seguridad OWASP (A05)
 y manejo centralizado de excepciones sanitizadas.
 """
 
+import os
 import logging
 from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException, Request, Response, status, UploadFile, File, Form
@@ -96,34 +97,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Registro de Routers Modulares ─────────────────────────────────────────────
-app.include_router(riesgos.router)
-app.include_router(forecast.router)
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(notifications.router)
+# ── Registro de Routers del Monolito Core ─────────────────────────────────────
 app.include_router(dataops.router)
-app.include_router(audit.router)
-app.include_router(catalogs.router)
 app.include_router(kpis.router)
-app.include_router(pipeline.router)
+app.include_router(forecast.router)
+app.include_router(riesgos.router)
+app.include_router(catalogs.router)
 app.include_router(reportes.router)
+app.include_router(pipeline.router)
 
-
-@app.post(
-    "/pipeline/process",
-    response_model=PipelineExecutionResponse,
-    summary="Alias de compatibilidad: Ejecutar pipeline completo bajo demanda",
-    tags=["Pipeline Integrado"]
-)
-async def process_pipeline_root_alias(
-    file: Optional[UploadFile] = File(None),
-    doc_id: Optional[int] = Form(None),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "ADMIN"]))
-):
-    """Alias raíz para ejecutar el pipeline de procesamiento de datos bajo demanda."""
-    return await process_pipeline(file=file, doc_id=doc_id, db=db, current_user=current_user)
+# En despliegue distribuido (Docker), auth, users, notifications y audit corren en sus microservicios (:8001, :8002, :8004).
+# Se montan condicionalmente en modo monolítico local / testing para compatibilidad con la suite pytest y TestClient.
+if os.getenv("STANDALONE_MONOLITH", "true").lower() == "true":
+    app.include_router(auth.router)
+    app.include_router(users.router)
+    app.include_router(notifications.router)
+    app.include_router(audit.router)
 
 
 
