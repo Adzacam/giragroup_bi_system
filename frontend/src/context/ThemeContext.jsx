@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const ThemeContext = createContext({
   theme: 'light',
@@ -51,19 +51,19 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('gira_auto_refresh', val);
   }, []);
 
+  const value = useMemo(() => ({
+    theme,
+    isDark: theme === 'dark',
+    toggleTheme,
+    setTheme,
+    canvasEnabled,
+    toggleCanvas,
+    autoRefresh,
+    setAutoRefresh,
+  }), [theme, toggleTheme, setTheme, canvasEnabled, toggleCanvas, autoRefresh, setAutoRefresh]);
+
   return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        isDark: theme === 'dark',
-        toggleTheme,
-        setTheme,
-        canvasEnabled,
-        toggleCanvas,
-        autoRefresh,
-        setAutoRefresh,
-      }}
-    >
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );

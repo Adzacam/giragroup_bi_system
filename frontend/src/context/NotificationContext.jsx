@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { notificationService } from '../services/notificationService';
 import { sileoToast } from '../services/sileoToast';
 
@@ -87,7 +87,7 @@ export function NotificationProvider({ children }) {
 
   const unreadCount = notificationService.getUnreadCount(notifications);
 
-  const value = {
+  const value = useMemo(() => ({
     notifications,
     unreadCount,
     loading,
@@ -95,7 +95,7 @@ export function NotificationProvider({ children }) {
     markAllRead,
     refreshNotifications,
     notify,
-  };
+  }), [notifications, unreadCount, loading, markAsRead, markAllRead, refreshNotifications, notify]);
 
   return (
     <NotificationContext.Provider value={value}>

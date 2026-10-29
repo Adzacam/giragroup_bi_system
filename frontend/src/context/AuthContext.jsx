@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { invalidateDataopsCache } from '../api/dataopsApi';
 import { clearKpiMemoryCache } from '../api/kpiApi';
 
@@ -47,14 +47,14 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     token,
     role: user?.role || null,
     login,
     logout,
     isAuthenticated: !!token && !!user,
-  };
+  }), [user, token, login, logout]);
 
   return (
     <AuthContext.Provider value={value}>
