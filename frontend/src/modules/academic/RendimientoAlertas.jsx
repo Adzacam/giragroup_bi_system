@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   AlertCircle,
   AlertTriangle,
@@ -32,7 +33,6 @@ export default function RendimientoAlertas() {
   const canRevealPii = ['ADMIN', 'DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD'].includes(role);
 
   const [revealCi, setRevealCi] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Filtros multi-criterio (sin forzar 2026-II fijo; por defecto TODOS)
@@ -42,72 +42,121 @@ export default function RendimientoAlertas() {
   const [docente, setDocente] = useState('TODOS');
   const [reglaFiltro, setReglaFiltro] = useState('TODOS');
   const [busqueda, setBusqueda] = useState('');
+  const [debouncedBusqueda, setDebouncedBusqueda] = useState('');
 
-  // Estado devuelto por el motor determinístico IF/THEN del backend
-  const [datosAlertas, setDatosAlertas] = useState({
-    motor_reglas: 'DETERMINISTICO_IF_THEN_ESTRICTO',
-    total_matricula_activa: 0,
-    tarjetas: {
-      riesgo_academico: {
-        codigo: 'ACADEMICO',
-        titulo: 'RIESGO ACADÉM.',
-        regla_texto: 'Regla: Promedio <= 70',
-        severidad: 'ROJO',
-        total_alumnos: 0,
-        porcentaje_matricula: 0,
-        subtitulo_secundario: '0.0% de matrícula',
-      },
-      riesgo_desercion: {
-        codigo: 'DESERCION',
-        titulo: 'RIESGO DESERC.',
-        regla_texto: 'Regla: Incumpl. > 30%',
-        severidad: 'ROJO',
-        total_alumnos: 0,
-        porcentaje_matricula: 0,
-        subtitulo_secundario: '0.0% de matrícula',
-      },
-      riesgo_financiero: {
-        codigo: 'FINANCIERO',
-        titulo: 'RIESGO FINANC.',
-        regla_texto: 'Regla: Mora >= 2 Cuot.',
-        severidad: 'AMBAR',
-        total_alumnos: 0,
-        porcentaje_matricula: 0,
-        monto_mora_bs: 0,
-        subtitulo_secundario: '0 Bs en mora',
-      },
-      alerta_critica: {
-        codigo: 'CRITICA',
-        titulo: 'ALERTA CRÍTICA',
-        regla_texto: '(2 o + Reglas)',
-        severidad: 'CRITICO',
-        total_alumnos: 0,
-        porcentaje_matricula: 0,
-        subtitulo_secundario: 'Prioridad Alta',
-      },
-    },
-    matriz_interseccion: [
-      { codigo: 'A+D', etiqueta: 'Académico + Deserción (A+D)', total_alumnos: 0 },
-      { codigo: 'D+F', etiqueta: 'Deserción + Financiero (D+F)', total_alumnos: 0 },
-      { codigo: 'A+F', etiqueta: 'Académico + Financiero (A+F)', total_alumnos: 0 },
-      { codigo: 'A+D+F', etiqueta: 'Triple Alerta (A+D+F)', total_alumnos: 0 },
-    ],
-    top_programas: [],
-    filtros_disponibles: {
-      periodos: [],
-      programas: [],
-      modulos: [],
-      docentes: [],
-    },
-    total_estudiantes_filtrados: 0,
-    estudiantes: [],
-  });
+  // Debounce para búsqueda nominal (350 ms)
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedBusqueda(busqueda.trim());
+    }, 350);
+    return () => clearTimeout(handler);
+  }, [busqueda]);
 
   // Selección de alumno y Modal de Ficha Cruzada Académico-Financiera
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [fichaModalOpen, setFichaModalOpen] = useState(false);
-  const [fichaLoading, setFichaLoading] = useState(false);
-  const [fichaData, setFichaData] = useState(null);
+
+  // Consulta React Query para Alertas Tempranas (queryKey SIN selectedStudentId)
+  const {
+    data: datosAlertas = {
+      motor_reglas: 'DETERMINISTICO_IF_THEN_ESTRICTO',
+      total_matricula_activa: 0,
+      tarjetas: {
+        riesgo_academico: {
+          codigo: 'ACADEMICO',
+          titulo: 'RIESGO ACADÉM.',
+          regla_texto: 'Regla: Promedio <= 70',
+          severidad: 'ROJO',
+          total_alumnos: 0,
+          porcentaje_matricula: 0,
+          subtitulo_secundario: '0.0% de matrícula',
+        },
+        riesgo_desercion: {
+          codigo: 'DESERCION',
+          titulo: 'RIESGO DESERC.',
+          regla_texto: 'Regla: Incumpl. > 30%',
+          severidad: 'ROJO',
+          total_alumnos: 0,
+          porcentaje_matricula: 0,
+          subtitulo_secundario: '0.0% de matrícula',
+        },
+        riesgo_financiero: {
+          codigo: 'FINANCIERO',
+          titulo: 'RIESGO FINANC.',
+          regla_texto: 'Regla: Mora >= 2 Cuot.',
+          severidad: 'AMBAR',
+          total_alumnos: 0,
+          porcentaje_matricula: 0,
+          monto_mora_bs: 0,
+          subtitulo_secundario: '0 Bs en mora',
+        },
+        alerta_critica: {
+          codigo: 'CRITICA',
+          titulo: 'ALERTA CRÍTICA',
+          regla_texto: '(2 o + Reglas)',
+          severidad: 'CRITICO',
+          total_alumnos: 0,
+          porcentaje_matricula: 0,
+          subtitulo_secundario: 'Prioridad Alta',
+        },
+      },
+      matriz_interseccion: [
+        { codigo: 'A+D', etiqueta: 'Académico + Deserción (A+D)', total_alumnos: 0 },
+        { codigo: 'D+F', etiqueta: 'Deserción + Financiero (D+F)', total_alumnos: 0 },
+        { codigo: 'A+F', etiqueta: 'Académico + Financiero (A+F)', total_alumnos: 0 },
+        { codigo: 'A+D+F', etiqueta: 'Triple Alerta (A+D+F)', total_alumnos: 0 },
+      ],
+      top_programas: [],
+      filtros_disponibles: {
+        periodos: [],
+        programas: [],
+        modulos: [],
+        docentes: [],
+      },
+      total_estudiantes_filtrados: 0,
+      estudiantes: [],
+    },
+    isLoading,
+    isError,
+    refetch: cargarAlertas,
+  } = useQuery({
+    queryKey: ['alertasTempranas', periodo, programa, modulo, docente, reglaFiltro, debouncedBusqueda],
+    queryFn: async () => {
+      setErrorMsg('');
+      const res = await academicApi.getAlertasTempranas({
+        periodo,
+        programa,
+        modulo,
+        docente,
+        regla_filtro: reglaFiltro,
+        busqueda: debouncedBusqueda || undefined,
+      });
+      if (res && res.status === 'success') {
+        return res;
+      }
+      throw new Error('Respuesta no válida del motor de alertas');
+    },
+    staleTime: 60_000,
+    gcTime: 300_000,
+  });
+
+  // Selección automática de primer alumno sin re-disparar petición de la tabla
+  useEffect(() => {
+    if (!selectedStudentId && datosAlertas.estudiantes?.length > 0) {
+      setSelectedStudentId(datosAlertas.estudiantes[0].id_estudiante);
+    }
+  }, [datosAlertas.estudiantes, selectedStudentId]);
+
+  // Query separada e independiente para la ficha del estudiante seleccionado
+  const {
+    data: fichaData = null,
+    isLoading: fichaLoading,
+  } = useQuery({
+    queryKey: ['fichaCruzadaEstudiante', selectedStudentId],
+    queryFn: () => academicApi.getFichaCruzadaEstudiante(selectedStudentId),
+    enabled: Boolean(selectedStudentId && fichaModalOpen),
+    staleTime: 120_000,
+  });
 
   const maskCi = (ci) => {
     if (!ci || ci === 'S/C') return 'S/C';
@@ -116,36 +165,6 @@ export default function RendimientoAlertas() {
     if (str.length <= 4) return str;
     return `${str.slice(0, 3)}***${str.slice(-2)}`;
   };
-
-  const cargarAlertas = useCallback(async () => {
-    setIsLoading(true);
-    setErrorMsg('');
-    try {
-      const res = await academicApi.getAlertasTempranas({
-        periodo,
-        programa,
-        modulo,
-        docente,
-        regla_filtro: reglaFiltro,
-        busqueda: busqueda.trim() || undefined,
-      });
-      if (res && res.status === 'success') {
-        setDatosAlertas(res);
-        if (res.estudiantes?.length > 0 && !selectedStudentId) {
-          setSelectedStudentId(res.estudiantes[0].id_estudiante);
-        }
-      }
-    } catch (err) {
-      console.error('Error al consultar el motor determinístico de alertas tempranas:', err);
-      setErrorMsg('No se pudo sincronizar con el motor determinístico de alertas tempranas.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [periodo, programa, modulo, docente, reglaFiltro, busqueda, selectedStudentId]);
-
-  useEffect(() => {
-    cargarAlertas();
-  }, [cargarAlertas]);
 
   const handleToggleRegla = (codigo) => {
     setReglaFiltro((prev) => (prev === codigo ? 'TODOS' : codigo));
@@ -160,21 +179,11 @@ export default function RendimientoAlertas() {
     setBusqueda('');
   };
 
-  const handleOpenFicha = async (idEst) => {
+  const handleOpenFicha = (idEst) => {
     const targetId = idEst || selectedStudentId || datosAlertas.estudiantes?.[0]?.id_estudiante;
     if (!targetId) return;
     setSelectedStudentId(targetId);
     setFichaModalOpen(true);
-    setFichaLoading(true);
-    try {
-      const res = await academicApi.getFichaCruzadaEstudiante(targetId);
-      setFichaData(res);
-    } catch (err) {
-      console.error('Error al obtener la ficha cruzada del estudiante:', err);
-      setFichaData(null);
-    } finally {
-      setFichaLoading(false);
-    }
   };
 
   const [isExporting, setIsExporting] = useState(false);
