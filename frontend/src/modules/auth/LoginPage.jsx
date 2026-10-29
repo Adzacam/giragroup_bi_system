@@ -122,9 +122,11 @@ export default function LoginPage() {
 
       // Si requiere doble factor (primera vez o cuenta distinta)
       setTempToken(res.temp_token);
+      setOtp(['', '', '', '', '', '']);
       setStep(2);
       setOtpTimeLeft(300);
       setResendCooldown(60);
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (err) {
       sileoToast.error({
         title: 'Acceso Denegado',
@@ -144,7 +146,35 @@ export default function LoginPage() {
     }
   };
 
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const clipboardText = e.clipboardData?.getData('text') || '';
+    const cleanDigits = clipboardText.replace(/\D/g, '').slice(0, 6);
+    if (!cleanDigits) return;
+
+    const newOtp = ['', '', '', '', '', ''];
+    for (let i = 0; i < cleanDigits.length; i++) {
+      newOtp[i] = cleanDigits[i];
+    }
+    setOtp(newOtp);
+
+    const targetFocus = Math.min(cleanDigits.length, 5);
+    otpRefs.current[targetFocus]?.focus();
+  };
+
   const handleOtpChange = (index, value) => {
+    const cleanDigits = value.replace(/\D/g, '');
+    if (cleanDigits.length > 1) {
+      const newOtp = [...otp];
+      for (let i = 0; i < cleanDigits.length && (index + i) < 6; i++) {
+        newOtp[index + i] = cleanDigits[i];
+      }
+      setOtp(newOtp);
+      const nextFocus = Math.min(index + cleanDigits.length, 5);
+      otpRefs.current[nextFocus]?.focus();
+      return;
+    }
+
     if (!/^\d*$/.test(value)) return;
     
     const newOtp = [...otp];
@@ -521,6 +551,7 @@ export default function LoginPage() {
                 otp={otp}
                 onOtpChange={handleOtpChange}
                 onOtpKeyDown={handleOtpKeyDown}
+                onOtpPaste={handleOtpPaste}
                 otpRefs={otpRefs}
                 onSubmit={handleStep2Submit}
                 onBack={() => setStep(1)}

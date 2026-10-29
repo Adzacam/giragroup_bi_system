@@ -6,6 +6,7 @@ export default function OtpInputForm({
   otp,
   onOtpChange,
   onOtpKeyDown,
+  onOtpPaste,
   otpRefs,
   onSubmit,
   onBack,
@@ -53,6 +54,7 @@ export default function OtpInputForm({
             value={digit}
             onChange={(e) => onOtpChange(i, e.target.value)}
             onKeyDown={(e) => onOtpKeyDown(i, e)}
+            onPaste={onOtpPaste}
             onFocus={(e) => {
               e.target.style.borderColor = 'var(--color-gira-gold, #D99B26)';
               e.target.style.boxShadow = '0 0 0 3px rgba(217, 155, 38, 0.2)';
