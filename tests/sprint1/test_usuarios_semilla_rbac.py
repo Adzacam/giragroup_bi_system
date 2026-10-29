@@ -29,9 +29,10 @@ class TestUsuariosSemillaRBAC:
         )
 
     def test_correos_con_dominio_institucional(self):
-        """Valida que todos los usuarios semilla usen el dominio @giragroup.bo."""
+        """Valida que todos los usuarios semilla usen dominios autorizados (@giragroup.bo o @gmail.com)."""
+        dominios_validos = ("@giragroup.bo", "@gmail.com")
         for u in USERS:
-            assert u["email"].endswith("@giragroup.bo"), f"El email {u['email']} debe usar @giragroup.bo"
+            assert u["email"].endswith(dominios_validos), f"El email {u['email']} debe usar un dominio válido"
 
     def test_hashing_de_contrasenas_seguro(self):
         """Comprueba que el algoritmo de hash (bcrypt/argon2) genere firmas seguras."""

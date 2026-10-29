@@ -27,12 +27,12 @@ export const USER_ROLES = {
 export const DEMO_ACCOUNTS = [
   { 
     label: 'Administrador del Sistema / Comité Directivo', 
-    email: 'admin.general@giragroup.bo', 
+    email: 'dazaadriano12@gmail.com', 
     role: USER_ROLES.ADMIN 
   },
   { 
     label: 'Auditor de Calidad (DataOps)', 
-    email: 'auditor.dataops@giragroup.bo', 
+    email: 'dazaadrianoc@gmail.com', 
     role: USER_ROLES.AUDITOR_CALIDAD 
   },
   { 
@@ -42,7 +42,7 @@ export const DEMO_ACCOUNTS = [
   },
   { 
     label: 'Analista Financiero', 
-    email: 'analista.finanzas@giragroup.bo', 
+    email: 'dazwebos@gmail.com', 
     role: USER_ROLES.ANALISTA_FINANCIERO 
   },
   { 

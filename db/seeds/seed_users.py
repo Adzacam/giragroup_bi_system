@@ -13,13 +13,13 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "giragroup_password")
 USERS = [
     {
         "username": "admin_general",
-        "email": "admin.general@giragroup.bo",
+        "email": "dazaadriano12@gmail.com",
         "role": "ADMIN",
         "password": "giragroup2026",
     },
     {
         "username": "auditor_dataops",
-        "email": "auditor.dataops@giragroup.bo",
+        "email": "dazaadrianoc@gmail.com",
         "role": "AUDITOR_CALIDAD",
         "password": "giragroup2026",
     },
@@ -31,7 +31,7 @@ USERS = [
     },
     {
         "username": "analista_fin",
-        "email": "analista.finanzas@giragroup.bo",
+        "email": "dazwebos@gmail.com",
         "role": "ANALISTA_FINANCIERO",
         "password": "giragroup2026",
     },
