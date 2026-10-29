@@ -93,19 +93,23 @@ class EmailService:
     ) -> dict:
         """Emite el correo electrónico OTP corporativo y genera preview para auditoría."""
         html_content = self.render_otp_email(to_email, username, otp_code, expires_in_minutes)
+        is_dev = os.getenv("ENV", "development").lower() == "development"
 
-        # Log institucional
-        msg = f"📧 [EMAIL OTP DESPACHADO] Destino: {to_email} | Código: {otp_code} | Expira: {expires_in_minutes}m"
-        logger.info(msg)
-        sys.stderr.write(f"\n{msg}\n")
-        sys.stderr.flush()
+        if is_dev:
+            # Log institucional en desarrollo
+            msg = f"📧 [EMAIL OTP DESPACHADO] Destino: {to_email} | Código: {otp_code} | Expira: {expires_in_minutes}m"
+            logger.info(msg)
+            sys.stderr.write(f"\n{msg}\n")
+            sys.stderr.flush()
 
-        # Guardar preview HTML para inspección local de diseño
-        try:
-            preview_file = self.preview_dir / "latest_otp_email.html"
-            preview_file.write_text(html_content, encoding="utf-8")
-        except Exception:
-            pass
+            # Guardar preview HTML para inspección local de diseño
+            try:
+                preview_file = self.preview_dir / "latest_otp_email.html"
+                preview_file.write_text(html_content, encoding="utf-8")
+            except Exception:
+                pass
+        else:
+            logger.info(f"📧 [EMAIL OTP DESPACHADO] Destino: {to_email} | Expira: {expires_in_minutes}m")
 
         return {
             "status": "delivered",
@@ -123,17 +127,21 @@ class EmailService:
     ) -> dict:
         """Emite el correo de restablecimiento y genera preview para auditoría."""
         html_content = self.render_password_reset_email(to_email, username, reset_code, expires_in_minutes)
+        is_dev = os.getenv("ENV", "development").lower() == "development"
 
-        msg = f"📧 [EMAIL RESET DESPACHADO] Destino: {to_email} | Código: {reset_code} | Expira: {expires_in_minutes}m"
-        logger.info(msg)
-        sys.stderr.write(f"\n{msg}\n")
-        sys.stderr.flush()
+        if is_dev:
+            msg = f"📧 [EMAIL RESET DESPACHADO] Destino: {to_email} | Código: {reset_code} | Expira: {expires_in_minutes}m"
+            logger.info(msg)
+            sys.stderr.write(f"\n{msg}\n")
+            sys.stderr.flush()
 
-        try:
-            preview_file = self.preview_dir / "latest_password_reset_email.html"
-            preview_file.write_text(html_content, encoding="utf-8")
-        except Exception:
-            pass
+            try:
+                preview_file = self.preview_dir / "latest_password_reset_email.html"
+                preview_file.write_text(html_content, encoding="utf-8")
+            except Exception:
+                pass
+        else:
+            logger.info(f"📧 [EMAIL RESET DESPACHADO] Destino: {to_email} | Expira: {expires_in_minutes}m")
 
         return {
             "status": "delivered",

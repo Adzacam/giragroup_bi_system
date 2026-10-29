@@ -85,13 +85,7 @@ def seed():
             cur.execute("""
                 INSERT INTO public.users (username, email, role, hashed_password, is_active, is_mfa_enabled, failed_login_attempts)
                 VALUES (%s, %s, %s, %s, TRUE, TRUE, 0)
-                ON CONFLICT (email) DO UPDATE 
-                SET role = EXCLUDED.role,
-                    hashed_password = EXCLUDED.hashed_password,
-                    is_active = TRUE,
-                    is_mfa_enabled = TRUE,
-                    failed_login_attempts = 0,
-                    locked_until = NULL;
+                ON CONFLICT (email) DO NOTHING;
             """, (user_data["username"], user_data["email"], user_data["role"], hashed))
             print(f"Seeded user: {user_data['email']} ({user_data['role']})")
             

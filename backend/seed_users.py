@@ -61,14 +61,7 @@ def seed_default_users():
                 db.add(new_user)
                 print(f"[SEED] Created demo user: {u['email']} as {u['role']}")
             else:
-                # Update role and password if needed
-                existing.role = u["role"]
-                existing.hashed_password = hash_password(u["password"])
-                existing.is_active = True
-                existing.is_mfa_enabled = True
-                existing.failed_login_attempts = 0
-                existing.locked_until = None
-                print(f"[SEED] Updated demo user: {u['email']} as {u['role']}")
+                print(f"[SEED] User already exists (password preserved): {u['email']}")
         db.commit()
         print("[SEED] All demo users verified in database.")
     except Exception as e:

@@ -450,6 +450,27 @@ docker-compose logs python_env
 Verificar puertos en `docker-compose.yml`:
 ```yaml
 ports:
-  - "5433:5432"   # PostgreSQL
+  - "127.0.0.1:5433:5432"   # PostgreSQL (aislado a localhost)
   - "5051:80"     # pgAdmin
 ```
+
+
+---
+
+## 13. Cuentas de Acceso Iniciales y Gestión de Credenciales
+
+El sistema cuenta con 5 cuentas demostrativas iniciales para control de acceso basado en roles (RBAC) y verificación 2FA (TOTP/Email):
+
+| Usuario | Correo Electrónico | Rol | Contraseña Inicial (Dev) |
+|---|---|---|---|
+| Administrador General | `admin.general@giragroup.bo` | `ADMIN` | `giragroup2026` |
+| Auditor DataOps | `auditor.dataops@giragroup.bo` | `AUDITOR_CALIDAD` | `giragroup2026` |
+| Dirección Académica | `direccion.academica@giragroup.bo` | `DIRECTOR_ACADEMICO` | `giragroup2026` |
+| Analista Financiero | `analista.finanzas@giragroup.bo` | `ANALISTA_FINANCIERO` | `giragroup2026` |
+| Analista Marketing | `analista.marketing@giragroup.bo` | `ANALISTA_MARKETING` | `giragroup2026` |
+
+> **Nota de Seguridad:** El script de sembrado inicial (`seed_users.py`) preserva las contraseñas modificadas por los usuarios y no las sobreescribe en reinicios del contenedor.
+> Para resembrar nuevos usuarios o ejecutar el sembrado manual:
+> ```bash
+> docker exec -it giragroup_api python seed_users.py
+> ```

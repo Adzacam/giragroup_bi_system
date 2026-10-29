@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+import os
 import sys
 import logging
 from jose import jwt, JWTError
@@ -103,10 +104,11 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
     user.otp_expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
     db.commit()
     
-    msg_otp = f"DEV OTP para {user.email}: {otp}"
-    sys.stderr.write(f"\n========================================\n{msg_otp}\n========================================\n")
-    sys.stderr.flush()
-    logger.info(msg_otp)
+    if os.getenv("ENV", "development").lower() == "development":
+        msg_otp = f"DEV OTP para {user.email}: {otp}"
+        sys.stderr.write(f"\n========================================\n{msg_otp}\n========================================\n")
+        sys.stderr.flush()
+        logger.info(msg_otp)
 
     # Despachar correo electrónico corporativo OTP
     try:
