@@ -14,7 +14,7 @@ from schemas.auth_schemas import (
 )
 from core.security import (
     verify_password, generate_otp, get_password_hash, create_access_token,
-    create_refresh_token, get_current_user, SECRET_KEY, ALGORITHM
+    get_current_user, SECRET_KEY, ALGORITHM
 )
 from services.email_service import email_service
 
@@ -79,7 +79,6 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
         except Exception:
             pass
         access_token = create_access_token({"sub": str(user.id), "role": user.role})
-        refresh_token = create_refresh_token({"sub": str(user.id)})
         new_device_token = jwt.encode(
             {"sub": str(user.id), "type": "device_trust", "exp": datetime.now(timezone.utc) + timedelta(days=30)},
             SECRET_KEY,
@@ -88,7 +87,6 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
         return LoginStepOneResponse(
             mfa_required=False,
             access_token=access_token,
-            refresh_token=refresh_token,
             token_type="bearer",
             device_token=new_device_token,
             user=UserPublic(
@@ -121,7 +119,11 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
     except Exception as e:
         logger.warning(f"No se pudo despachar el correo OTP: {e}")
     
-    temp_token = jwt.encode({"sub": str(user.id), "type": "temp"}, SECRET_KEY, algorithm=ALGORITHM)
+    temp_token = jwt.encode(
+        {"sub": str(user.id), "type": "temp", "exp": datetime.now(timezone.utc) + timedelta(minutes=5)},
+        SECRET_KEY,
+        algorithm=ALGORITHM
+    )
     
     return LoginStepOneResponse(
         temp_token=temp_token,
@@ -143,12 +145,11 @@ def verify_otp(req: OTPVerifyRequest, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
         
-    if req.code not in ("123456", "000000"):
-        if not user.otp_code_hash or not user.otp_expires_at or _is_expired(user.otp_expires_at):
-            raise HTTPException(status_code=400, detail="OTP expirado o no generado")
-            
-        if not verify_password(req.code, user.otp_code_hash):
-            raise HTTPException(status_code=401, detail="Codigo OTP invalido")
+    if not user.otp_code_hash or not user.otp_expires_at or _is_expired(user.otp_expires_at):
+        raise HTTPException(status_code=400, detail="OTP expirado o no generado")
+        
+    if not verify_password(req.code, user.otp_code_hash):
+        raise HTTPException(status_code=401, detail="Codigo OTP invalido")
         
     user.otp_code_hash = None
     user.otp_expires_at = None
@@ -167,7 +168,6 @@ def verify_otp(req: OTPVerifyRequest, db: Session = Depends(get_db)):
         db.rollback()
     
     access_token = create_access_token({"sub": str(user.id), "role": user.role})
-    refresh_token = create_refresh_token({"sub": str(user.id)})
     
     device_token = None
     if req.remember_device:
@@ -179,7 +179,6 @@ def verify_otp(req: OTPVerifyRequest, db: Session = Depends(get_db)):
     
     return TokenResponse(
         access_token=access_token,
-        refresh_token=refresh_token,
         token_type="bearer",
         device_token=device_token,
         user=UserPublic(

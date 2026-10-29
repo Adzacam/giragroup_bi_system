@@ -31,7 +31,7 @@ class OTPVerifyRequest(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
-    refresh_token: str
+    refresh_token: Optional[str] = None
     token_type: str
     device_token: Optional[str] = None
     user: UserPublic

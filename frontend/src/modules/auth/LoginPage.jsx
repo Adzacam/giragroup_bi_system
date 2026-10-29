@@ -529,7 +529,6 @@ export default function LoginPage() {
                 onResend={handleResend}
                 isLoading={isLoading}
                 formatTime={formatTime}
-                onQuickFillOtp={() => setOtp(['1', '2', '3', '4', '5', '6'])}
               />
             )}
           </div>

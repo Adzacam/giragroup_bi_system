@@ -14,7 +14,6 @@ export default function OtpInputForm({
   onResend,
   isLoading,
   formatTime,
-  onQuickFillOtp,
 }) {
   return (
     <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
@@ -128,41 +127,6 @@ export default function OtpInputForm({
         {isLoading ? 'Comprobando OTP...' : 'Verificar y Acceder'}
         {!isLoading && <ArrowRight size={16} />}
       </button>
-
-      {onQuickFillOtp && (
-        <div style={{ paddingTop: '14px', borderTop: '1px solid var(--color-border)' }}>
-          <button
-            type="button"
-            onClick={onQuickFillOtp}
-            style={{
-              width: '100%',
-              padding: '9px 12px',
-              borderRadius: '10px',
-              border: '1px dashed var(--color-border)',
-              background: 'var(--color-paper-white)',
-              color: 'var(--color-ink-black)',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              transition: 'background-color 0.2s, border-color 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-mist-gray)';
-              e.currentTarget.style.borderColor = 'var(--color-gira-gold, #D99B26)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-paper-white)';
-              e.currentTarget.style.borderColor = 'var(--color-border)';
-            }}
-          >
-            <span>Autocompletar código 2FA de demostración</span>
-            <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-gira-gold, #D99B26)' }}>123456</span>
-          </button>
-        </div>
-      )}
     </form>
   );
 }
