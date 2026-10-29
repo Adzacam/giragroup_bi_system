@@ -29,7 +29,10 @@ export function NotificationProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    refreshNotifications();
+    // Solo consultar si existe token de sesión activo en el navegador
+    if (localStorage.getItem('gira_token')) {
+      refreshNotifications();
+    }
   }, [refreshNotifications]);
 
   const markAsRead = useCallback(async (id) => {

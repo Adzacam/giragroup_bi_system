@@ -3,6 +3,10 @@ import client from './client';
 const kpiMemoryCache = new Map();
 const KPI_CACHE_TTL = 45_000; // 45 segundos
 
+export const clearKpiMemoryCache = () => {
+  kpiMemoryCache.clear();
+};
+
 /**
  * Obtiene el consolidado general de KPIs para el Cuadro de Mando Integral (CMI)
  */

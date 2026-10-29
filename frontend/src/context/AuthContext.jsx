@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { invalidateDataopsCache } from '../api/dataopsApi';
+import { clearKpiMemoryCache } from '../api/kpiApi';
 
 const AuthContext = createContext(null);
 
@@ -38,6 +40,9 @@ export const AuthProvider = ({ children }) => {
       }
     });
     sessionStorage.clear();
+    // Limpieza de todos los cachés en memoria para prevenir retención de datos entre sesiones
+    invalidateDataopsCache();
+    clearKpiMemoryCache();
     setToken(null);
     setUser(null);
   }, []);

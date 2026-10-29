@@ -45,9 +45,11 @@ export default function IsometricCanvasBackground() {
     const isDark = theme === 'dark';
 
     let animationId;
+    let isRunning = false;
+
     const render = () => {
       if (document.hidden) {
-        animationId = requestAnimationFrame(render);
+        isRunning = false;
         return;
       }
 
@@ -105,15 +107,31 @@ export default function IsometricCanvasBackground() {
       }
       
       ctx.restore();
-      animationId = requestAnimationFrame(render);
+      if (!document.hidden) {
+        animationId = requestAnimationFrame(render);
+        isRunning = true;
+      } else {
+        isRunning = false;
+      }
     };
 
+    const handleVisibilityChange = () => {
+      if (!document.hidden && !isRunning) {
+        isRunning = true;
+        animationId = requestAnimationFrame(render);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    isRunning = true;
     animationId = requestAnimationFrame(render);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       cancelAnimationFrame(animationId);
+      isRunning = false;
     };
   }, [canvasEnabled, theme]);
 

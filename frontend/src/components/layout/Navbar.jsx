@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, Sun, Moon, Settings } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
@@ -8,14 +8,23 @@ import UserProfileDropdown from './UserProfileDropdown';
 export default function Navbar({ onToggleSidebar, topLoadingProgress = 0, isNavigating = false }) {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const scrollBarRef = useRef(null);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollTop;
-      const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      const scroll = windowHeight > 0 ? (totalScroll / windowHeight) * 100 : 0;
-      setScrollProgress(scroll);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (scrollBarRef.current) {
+            const totalScroll = document.documentElement.scrollTop;
+            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scroll = windowHeight > 0 ? (totalScroll / windowHeight) * 100 : 0;
+            scrollBarRef.current.style.width = `${scroll}%`;
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -114,8 +123,9 @@ export default function Navbar({ onToggleSidebar, topLoadingProgress = 0, isNavi
       {/* Bottom Dynamic Scroll Progress Bar (Current Section Position) */}
       <div
         id="navbar-scroll-progress-bar"
+        ref={scrollBarRef}
         className="navbar-scroll-progress"
-        style={{ width: `${scrollProgress}%` }}
+        style={{ width: '0%' }}
       />
     </header>
   );
