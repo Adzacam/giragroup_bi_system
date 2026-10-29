@@ -35,14 +35,14 @@ CREATE TABLE IF NOT EXISTS public.cat_institucion (
 
 INSERT INTO public.cat_institucion (nombre_institucion, sigla, tipo_escala_default)
 VALUES
-    ('GiraGroup', 'GG', 'CENTESIMAL_100'),
+    ('GiraGroup Posgrado', 'GG', 'CENTESIMAL_100'),
     ('Escuela de Negocios y Postgrado', 'ENP', 'CENTESIMAL_100'),
     ('Facultad de Ciencias de la Salud', 'FCS', 'CENTESIMAL_100')
 ON CONFLICT (nombre_institucion) DO NOTHING;
 
 -- 3. Alineación de dim_modulo (#20)
 ALTER TABLE public.dim_modulo
-    ADD COLUMN IF NOT EXISTS nombre_institucion VARCHAR(200) NOT NULL DEFAULT 'GiraGroup';
+    ADD COLUMN IF NOT EXISTS nombre_institucion VARCHAR(200) NOT NULL DEFAULT 'GiraGroup Posgrado';
 
 ALTER TABLE public.dim_modulo
     ADD COLUMN IF NOT EXISTS id_institucion INT REFERENCES public.cat_institucion(id_institucion) ON DELETE SET NULL;

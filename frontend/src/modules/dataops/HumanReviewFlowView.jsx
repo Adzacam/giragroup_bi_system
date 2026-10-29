@@ -866,14 +866,27 @@ export default function HumanReviewFlowView() {
           </div>
         </div>
 
-        <button
-          type="button"
-          className="btn-pill-gold"
-          onClick={handleConsolidateDw}
-          disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
-        >
-          {isConsolidatingDw ? 'Consolidando transaccionalmente...' : 'Consolidar Aprobados al DW →'}
-        </button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="btn-pill-secondary"
+            onClick={() => {
+              const navId = effectiveBatchNumber !== '—' ? effectiveBatchNumber : (localStorage.getItem('last_active_batch_id') || '01');
+              navigate(`/dataops/lote/${navId}/beto`);
+            }}
+          >
+            ← Volver a ③ Lectura de BETO
+          </button>
+
+          <button
+            type="button"
+            className="btn-pill-gold"
+            onClick={handleConsolidateDw}
+            disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
+          >
+            {isConsolidatingDw ? 'Consolidando transaccionalmente...' : 'Consolidar Aprobados al DW →'}
+          </button>
+        </div>
       </div>
 
       {/* ── Modal de Descarte ── */}

@@ -8,6 +8,7 @@ import {
   Filter,
   Download,
   FileSpreadsheet,
+  FileText,
   Eye,
   EyeOff,
   X,
@@ -22,6 +23,8 @@ import {
 import PageHeader from '../../components/shared/PageHeader';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import { academicApi } from '../../api/academicApi';
+import { reportesApi } from '../../api/reportesApi';
+import { sileoToast } from '../../services/sileoToast';
 import { useAuth } from '../../context/AuthContext';
 
 export default function RendimientoAlertas() {
@@ -171,6 +174,29 @@ export default function RendimientoAlertas() {
       setFichaData(null);
     } finally {
       setFichaLoading(false);
+    }
+  };
+
+  const [isExporting, setIsExporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+
+  const handleExportarOficial = async (formato) => {
+    try {
+      setIsExporting(true);
+      setShowExportMenu(false);
+      sileoToast.info(`Generando exportación de alertas en formato ${formato.toUpperCase()}...`);
+      await reportesApi.exportarReporte({
+        tipo: 'alertas',
+        formato,
+        gestion: periodo !== 'TODOS' ? periodo : '',
+        programa: programa !== 'TODOS' ? programa : '',
+      });
+      sileoToast.success(`Reporte de Alertas (${formato.toUpperCase()}) descargado con éxito.`);
+    } catch (err) {
+      console.error('Error al exportar alertas:', err);
+      sileoToast.error('Error al exportar alertas institucionales.');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -355,6 +381,98 @@ export default function RendimientoAlertas() {
             <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} style={{ color: '#D99B26' }} />
             Evaluar Reglas IF/THEN
           </button>
+
+          {/* Botón de Exportación Oficial con RBAC */}
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              disabled={isExporting}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 14px',
+                fontSize: '12.5px',
+                fontWeight: 700,
+                borderRadius: '10px',
+                border: '1px solid rgba(217, 155, 38, 0.5)',
+                background: '#0C1E33',
+                color: '#FAF9F6',
+                cursor: 'pointer',
+              }}
+            >
+              <Download size={14} style={{ color: '#D99B26' }} className={isExporting ? 'animate-bounce' : ''} />
+              {isExporting ? 'Exportando...' : 'Exportar Alertas'}
+            </button>
+
+            {showExportMenu && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: '110%',
+                  zIndex: 50,
+                  width: '210px',
+                  backgroundColor: 'var(--color-paper-white)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                  padding: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => handleExportarOficial('xlsx')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--color-ink-black)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-mist-gray)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <FileSpreadsheet size={15} color="#16a34a" />
+                  <span>Descargar Excel (.xlsx)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleExportarOficial('pdf')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--color-ink-black)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-mist-gray)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <FileText size={15} color="#dc2626" />
+                  <span>Descargar PDF (.pdf)</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -440,7 +558,7 @@ export default function RendimientoAlertas() {
                 marginBottom: '5px',
               }}
             >
-              Periodo (Multi-Semestre)
+              Línea Temporal / Periodo Académico
             </label>
             <select
               value={periodo}

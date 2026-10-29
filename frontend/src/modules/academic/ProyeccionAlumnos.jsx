@@ -241,7 +241,7 @@ export default function ProyeccionAlumnos() {
               }}
             >
               <option value={3}>3 meses futuros</option>
-              <option value={6}>6 meses futuros (Semestre)</option>
+              <option value={6}>6 meses futuros (Semestre proyectado)</option>
             </select>
           </div>
 

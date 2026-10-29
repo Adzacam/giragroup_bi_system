@@ -17,11 +17,45 @@ export default function PlainTextTransformationView() {
   const [selectedDocId, setSelectedDocId] = useState(null);
   const [hoveredLine, setHoveredLine] = useState(null);
   const [page, setPage] = useState(1);
-  const pageSize = 15;
+  const [pageSize, setPageSize] = useState(15);
 
   useEffect(() => {
+    let isMounted = true;
     setPage(1);
-    loadRawVsText(selectedDocId);
+
+    const run = async () => {
+      try {
+        setLoading(true);
+        let batchIdToLoad = id || localStorage.getItem('last_active_batch_id');
+        if (!batchIdToLoad) {
+          if (isMounted) {
+            setData(null);
+            setLoading(false);
+          }
+          return;
+        }
+
+        const res = await dataopsApi.getLoteRawVsText(batchIdToLoad, selectedDocId);
+        if (isMounted) {
+          setData(res && res.registros ? res : null);
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.warn('Error cargando raw-vs-text:', err);
+          setData(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    run();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id, selectedDocId]);
 
   const loadRawVsText = async (docFilter = null) => {
@@ -35,11 +69,7 @@ export default function PlainTextTransformationView() {
       }
 
       const res = await dataopsApi.getLoteRawVsText(batchIdToLoad, docFilter);
-      if (res && res.registros) {
-        setData(res);
-      } else {
-        setData(null);
-      }
+      setData(res && res.registros ? res : null);
     } catch (err) {
       console.warn('Error cargando raw-vs-text:', err);
       setData(null);
@@ -358,15 +388,27 @@ const formatMergedCell = (c) => {
                         }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                              <span className="chip-cat chip-programa" style={{ fontSize: '10px', padding: '1px 5px' }}>
-                                PROG_CAT
-                              </span>
-                              <span className="chip-cat chip-modulo" style={{ fontSize: '10px', padding: '1px 5px' }}>
-                                MOD_CAT
-                              </span>
-                              <span className="chip-cat chip-fecha" style={{ fontSize: '10px', padding: '1px 5px' }}>
-                                {data?.rango_fechas || '2024–2026'}
-                              </span>
+                              {(() => {
+                                const oracion = row.oracion_beto || row.texto_crudo || '';
+                                const posMatch = oracion.match(/POS-[A-Za-z0-9_-]+/i)?.[0];
+                                const modMatch = oracion.match(/MÓDULO\s*[0-9]+/i)?.[0];
+                                const progVal = row.chips?.programa_cat || row.chips?.programa || posMatch || 'POS-034';
+                                const modVal = row.chips?.modulo_cat || row.chips?.modulo || (modMatch ? 'MÓDULOS 1-12' : (oracion.includes('MÓDULO') ? 'MÓDULOS' : 'MOD_CAT'));
+                                const fechaVal = row.rango_fechas || data?.rango_fechas || '2023–2026';
+                                return (
+                                  <>
+                                    <span className="chip-cat chip-programa" style={{ fontSize: '10px', padding: '1px 6px', fontWeight: 600 }}>
+                                      {progVal}
+                                    </span>
+                                    <span className="chip-cat chip-modulo" style={{ fontSize: '10px', padding: '1px 6px', fontWeight: 600 }}>
+                                      {modVal}
+                                    </span>
+                                    <span className="chip-cat chip-fecha" style={{ fontSize: '10px', padding: '1px 6px' }}>
+                                      {fechaVal}
+                                    </span>
+                                  </>
+                                );
+                              })()}
                             </div>
                             <div style={{ fontWeight: isHovered ? 600 : 400 }}>
                               "{row.oracion_beto}"
@@ -380,13 +422,40 @@ const formatMergedCell = (c) => {
               </table>
             </div>
 
-            {/* Paginación */}
-            {totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+            {/* Paginación con Selector de Filas por Página (#5, 10, 15, 25) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>
                   Mostrando {paginatedRegistros.length} de {registros.length} filas
                 </span>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--color-slate-gray)' }}>
+                  <span>Filas por página:</span>
+                  {[5, 10, 15, 25].map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => {
+                        setPageSize(size);
+                        setPage(1);
+                      }}
+                      style={{
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        border: pageSize === size ? '1px solid var(--color-gira-gold, #D99B26)' : '1px solid var(--color-border)',
+                        backgroundColor: pageSize === size ? 'rgba(217, 155, 38, 0.15)' : 'transparent',
+                        color: pageSize === size ? 'var(--color-gira-gold, #D99B26)' : 'var(--color-ink-black)',
+                        fontWeight: pageSize === size ? '700' : '400',
+                        cursor: 'pointer',
+                        fontSize: '11.5px',
+                      }}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <button
                     disabled={page <= 1}
                     onClick={() => setPage(p => Math.max(1, p - 1))}
@@ -407,8 +476,8 @@ const formatMergedCell = (c) => {
                     Siguiente <ChevronRight size={14} />
                   </button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* ─── Botón Flotante / Acciones Inferiores ─── */}
@@ -427,7 +496,7 @@ const formatMergedCell = (c) => {
               }}
               className="btn-pill-gold"
             >
-              <span>Continuar a Lectura de BETO ③</span>
+              <span>Iniciar Análisis con BETO ③</span>
               <ArrowRight size={16} />
             </button>
           </div>

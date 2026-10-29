@@ -35,9 +35,49 @@ export default function BetoReadingFlowView() {
   const [isInserting, setIsInserting] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     setTablePage(1);
-    loadReadingData(selectedDocId);
-  }, [id, selectedDocId]);
+
+    const run = async () => {
+      try {
+        setLoading(true);
+        let batchIdToLoad = id || localStorage.getItem('last_active_batch_id');
+        if (!batchIdToLoad) {
+          if (isMounted) {
+            setData(null);
+            setLoading(false);
+          }
+          return;
+        }
+
+        const res = await dataopsApi.getLoteBetoReading(batchIdToLoad, {
+          docId: selectedDocId,
+          area: activeArea !== 'TODAS' ? activeArea : undefined,
+          filtroGlobal: filterCondition !== 'ALL' ? filterCondition : undefined,
+          tipoEntidad: selectedEntityType !== 'TODOS' ? selectedEntityType : undefined,
+          pageSize: 300,
+        });
+        if (isMounted) {
+          setData(res || null);
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.warn('Error al cargar beto-reading:', err);
+          setData(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    run();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, selectedDocId, activeArea, filterCondition, selectedEntityType]);
 
   const loadReadingData = async (docFilter = null) => {
     try {
@@ -49,7 +89,13 @@ export default function BetoReadingFlowView() {
         return;
       }
 
-      const res = await dataopsApi.getLoteBetoReading(batchIdToLoad, { docId: docFilter });
+      const res = await dataopsApi.getLoteBetoReading(batchIdToLoad, {
+        docId: docFilter,
+        area: activeArea !== 'TODAS' ? activeArea : undefined,
+        filtroGlobal: filterCondition !== 'ALL' ? filterCondition : undefined,
+        tipoEntidad: selectedEntityType !== 'TODOS' ? selectedEntityType : undefined,
+        pageSize: 300,
+      });
       setData(res || null);
     } catch (err) {
       console.warn('Error al cargar beto-reading:', err);
@@ -938,7 +984,14 @@ export default function BetoReadingFlowView() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="btn-pill-secondary"
+            onClick={() => navigate(`/dataops/lote/${effectiveBatchId}/texto`)}
+          >
+            ← Volver a ② Texto Plano
+          </button>
           <button
             type="button"
             className="btn-pill-secondary"

@@ -30,7 +30,7 @@ export default function IngestView() {
 
   // ─── Estado de la cola multi-archivo (Sección A) ───
   const [queuedFiles, setQueuedFiles] = useState([]);
-  const [institucion, setInstitucion] = useState('GiraGroup');
+  const [institucion, setInstitucion] = useState('GiraGroup Posgrado');
   const [umbralConfianzaIa, setUmbralConfianzaIa] = useState(85);
   const [anonimizacionActiva, setAnonimizacionActiva] = useState(true);
   const [escalaGlobalAcademica, setEscalaGlobalAcademica] = useState('CENTESIMAL_100');
@@ -39,6 +39,7 @@ export default function IngestView() {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStageText, setUploadStageText] = useState('');
   const [sourcesHistory, setSourcesHistory] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [historyExpanded, setHistoryExpanded] = useState(false);
@@ -46,6 +47,7 @@ export default function IngestView() {
   // ─── Estado de Lote Activo para Sección B y Sección C (Split View) ───
   const [activeBatchId, setActiveBatchId] = useState(null);
   const [activeBatchData, setActiveBatchData] = useState(null);
+  const [lastUploadedBatchId, setLastUploadedBatchId] = useState(null);
   const [selectedInspectionIndex, setSelectedInspectionIndex] = useState(0);
   const [isLoadingBatchData, setIsLoadingBatchData] = useState(false);
 
@@ -56,10 +58,6 @@ export default function IngestView() {
   const [telemetryMarkdown, setTelemetryMarkdown] = useState('');
   const [telemetryMetrics, setTelemetryMetrics] = useState(null);
 
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
   const loadInitialData = async () => {
     try {
       setIsLoadingHistory(true);
@@ -68,7 +66,6 @@ export default function IngestView() {
         setSourcesHistory(res.data);
       }
 
-      // Cargar último lote activo solo si está guardado en sesión y aún existe
       const lastId = localStorage.getItem('last_active_batch_id');
       if (lastId && res?.data?.some(d => String(d.id_lote || d.id) === String(lastId))) {
         setActiveBatchId(Number(lastId));
@@ -84,6 +81,10 @@ export default function IngestView() {
       setIsLoadingHistory(false);
     }
   };
+
+  useEffect(() => {
+    loadInitialData();
+  }, []);
 
   const loadBatchInspection = async (batchId) => {
     if (!batchId) return;
@@ -253,9 +254,10 @@ export default function IngestView() {
     try {
       setIsProcessing(true);
       setUploadProgress(0);
+      setUploadStageText(`Transfiriendo ${queuedFiles.length} archivo(s) al servidor...`);
       sileoToast.info({
         title: 'Iniciando ingestión de lote',
-        description: `Procesando ${queuedFiles.length} archivo(s) con reconocimiento automático de fechas multi-gestión...`,
+        description: `Subiendo ${queuedFiles.length} archivo(s) con reconocimiento multi-gestión...`,
       });
 
       const payload = queuedFiles.map((it) => ({
@@ -266,7 +268,18 @@ export default function IngestView() {
 
       const uploadRes = await dataopsApi.uploadBatch(
         payload,
-        (pct) => setUploadProgress(pct),
+        (pct) => {
+          setUploadProgress(pct);
+          if (pct < 100) {
+            setUploadStageText(`Subiendo archivos al servidor: ${pct}% completado...`);
+          } else {
+            setUploadStageText('Archivos recibidos (100%). Procesando en servidor (normalización, fechas y pre-etiquetado)...');
+            sileoToast.info({
+              title: 'Archivos transferidos (100%)',
+              description: 'El servidor está ejecutando el pipeline de extracción y normalización. Por favor espere...',
+            });
+          }
+        },
         {
           institucion,
           periodo: 'Auto'
@@ -279,6 +292,7 @@ export default function IngestView() {
       if (loteId) {
         localStorage.setItem('last_active_batch_id', String(loteId));
         setActiveBatchId(Number(loteId));
+        setLastUploadedBatchId(Number(loteId));
         await loadBatchInspection(Number(loteId));
         await loadInitialData();
 
@@ -309,6 +323,7 @@ export default function IngestView() {
       });
     } finally {
       setIsProcessing(false);
+      setUploadStageText('');
     }
   };
 
@@ -388,6 +403,71 @@ export default function IngestView() {
 
   return (
     <BatchFlowLayout currentStep={1}>
+      {/* ─── BANNER / CALLOUT INTERACTIVO TRAS ÉXITO DE CARGA DE LOTE ─── */}
+      {lastUploadedBatchId && (
+        <div
+          className="floating-artifact"
+          style={{
+            marginBottom: '20px',
+            padding: '14px 18px',
+            backgroundColor: 'rgba(27, 135, 84, 0.08)',
+            border: '1px solid rgba(27, 135, 84, 0.3)',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '32px', height: '32px', borderRadius: '50%',
+              backgroundColor: 'rgba(27, 135, 84, 0.15)', color: '#1B8754',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+            }}>
+              <CheckCircle2 size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-ink-black)' }}>
+                ¡Lote #{lastUploadedBatchId} cargado y pre-procesado con éxito!
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>
+                Los archivos fueron validados y el texto crudo aplanado está listo para revisión de texto plano.
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={() => navigate(`/dataops/lote/${lastUploadedBatchId}/texto`)}
+              className="btn-pill-gold"
+              style={{ fontSize: '12px', padding: '6px 14px' }}
+            >
+              <span>Pasar a Texto Plano ②</span>
+              <ArrowRight size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setLastUploadedBatchId(null)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--color-slate-gray)',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              title="Cerrar notificación"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ─── SECCIÓN A: ZONA DE CARGA MULTIFUENTE Y CONFIGURACIÓN DE LOTE ─── */}
       <div className="dataops-section-a" style={{ marginBottom: '28px' }}>
         
@@ -455,7 +535,7 @@ export default function IngestView() {
               id="file-upload-input"
               type="file"
               multiple
-              accept=".xlsx,.xls,.csv"
+              accept=".xlsx,.csv"
               style={{ display: 'none' }}
               onChange={handleFileSelect}
             />
@@ -657,20 +737,61 @@ export default function IngestView() {
             </div>
           </label>
 
+          {/* Barra de Progreso Activa durante la Ingesta */}
+          {isProcessing && (
+            <div style={{
+              marginTop: 'auto',
+              marginBottom: '10px',
+              padding: '12px 14px',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(217, 155, 38, 0.08)',
+              border: '1px solid rgba(217, 155, 38, 0.3)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <RefreshCw size={13} className="animate-spin" color="var(--color-gira-gold, #D99B26)" />
+                  {uploadProgress < 100 ? 'Subiendo archivos...' : 'Procesando en servidor...'}
+                </span>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-gira-gold, #D99B26)' }}>
+                  {uploadProgress}%
+                </span>
+              </div>
+              <div style={{
+                width: '100%',
+                height: '8px',
+                borderRadius: '4px',
+                backgroundColor: 'rgba(0,0,0,0.08)',
+                overflow: 'hidden',
+                position: 'relative',
+              }}>
+                <div style={{
+                  width: `${Math.max(5, uploadProgress)}%`,
+                  height: '100%',
+                  background: 'linear-gradient(90deg, #D99B26 0%, #1B8754 100%)',
+                  borderRadius: '4px',
+                  transition: 'width 0.3s ease-in-out',
+                }} />
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--color-slate-gray)', margin: '6px 0 0 0', lineHeight: 1.3 }}>
+                {uploadStageText || (uploadProgress < 100 ? `Cargando lote: ${uploadProgress}%` : 'Ejecutando pipeline y diagnósticos estructurales...')}
+              </p>
+            </div>
+          )}
+
           {/* Botón de Procesamiento Principal (Gold Pill) */}
           <button
             onClick={handleProcessBatch}
             disabled={!isFormValid || isProcessing}
             className="btn-pill-gold"
             style={{
-              marginTop: 'auto',
+              marginTop: isProcessing ? '0' : 'auto',
               padding: '12px 18px',
               fontSize: '13.5px',
             }}
           >
             {isProcessing ? (
               <>
-                <RefreshCw size={16} className="animate-spin" /> Procesando Lote ({uploadProgress}%)...
+                <RefreshCw size={16} className="animate-spin" /> {uploadProgress < 100 ? `Subiendo Lote (${uploadProgress}%)...` : 'Procesando en Servidor...'}
               </>
             ) : (
               <>
@@ -1056,6 +1177,7 @@ export default function IngestView() {
             onClick={() => {
               setQueuedFiles([]);
               setActiveBatchData(null);
+              setLastUploadedBatchId(null);
               sileoToast.info({ title: 'Lote cancelado', description: 'Se vació la cola y la inspección del lote activo.' });
             }}
             className="btn-pill-secondary"
@@ -1063,24 +1185,46 @@ export default function IngestView() {
             Cancelar Lote
           </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              const targetId = activeBatchId || localStorage.getItem('last_active_batch_id');
-              if (targetId) {
-                navigate(`/dataops/lote/${targetId}/beto`);
-              } else {
-                sileoToast.warning({
-                  title: 'Procese un lote primero',
-                  description: 'Debe cargar y procesar un lote antes de ejecutar la extracción NER con BETO.'
-                });
-              }
-            }}
-            className="btn-pill-gold"
-          >
-            <span>Ejecutar Extracción NER (BETO)</span>
-            <ArrowRight size={15} />
-          </button>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => {
+                const targetId = activeBatchId || localStorage.getItem('last_active_batch_id');
+                if (targetId) {
+                  navigate(`/dataops/lote/${targetId}/beto`);
+                } else {
+                  sileoToast.warning({
+                    title: 'Procese un lote primero',
+                    description: 'Debe cargar y procesar un lote antes de ejecutar la extracción NER con BETO.'
+                  });
+                }
+              }}
+              className="btn-pill-secondary"
+              title="Atajo directo al análisis con BETO"
+            >
+              <Sparkles size={14} color="var(--color-gira-gold, #D99B26)" />
+              <span>Ejecutar BETO Directo ③</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const targetId = activeBatchId || localStorage.getItem('last_active_batch_id');
+                if (targetId) {
+                  navigate(`/dataops/lote/${targetId}/texto`);
+                } else {
+                  sileoToast.warning({
+                    title: 'Procese un lote primero',
+                    description: 'Debe cargar y procesar un lote antes de pasar a la revisión de texto plano.'
+                  });
+                }
+              }}
+              className="btn-pill-gold"
+            >
+              <span>Pasar a Texto Plano ②</span>
+              <ArrowRight size={15} />
+            </button>
+          </div>
         </div>
       </div>
 

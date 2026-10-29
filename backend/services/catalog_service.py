@@ -175,7 +175,7 @@ class CatalogService:
     def crear_modulo(self, data: dict) -> DimModulo:
         mod = DimModulo(
             nombre_modulo=data["nombre_modulo"],
-            nombre_institucion=data.get("nombre_institucion") or "GiraGroup",
+            nombre_institucion=data.get("nombre_institucion") or "GiraGroup Posgrado",
             programa=data.get("programa") or "Programa General",
             pos_code=data.get("pos_code") or f"MOD-{self.db.query(DimModulo).count() + 101}"
         )

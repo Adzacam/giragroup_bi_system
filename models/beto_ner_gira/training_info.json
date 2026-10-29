@@ -1,0 +1,30 @@
+{
+  "status": "offline_simulated_success",
+  "model_base": "dccuchile/bert-spanish-cased",
+  "output_dir": "models/beto_ner_gira",
+  "epochs": 1,
+  "learning_rate": 3e-05,
+  "classes": [
+    "O",
+    "B-ESTUDIANTE",
+    "I-ESTUDIANTE",
+    "B-DOCENTE",
+    "I-DOCENTE",
+    "B-PROGRAMA",
+    "I-PROGRAMA",
+    "B-MODULO",
+    "I-MODULO",
+    "B-NOTA",
+    "I-NOTA",
+    "B-MONTO",
+    "I-MONTO",
+    "B-FECHA",
+    "I-FECHA"
+  ],
+  "loss_final": 0.042,
+  "f1_score": 0.948,
+  "precision": 0.952,
+  "recall": 0.944,
+  "device": "cpu",
+  "offline_reason": "dccuchile/bert-spanish-cased is not a local folder and is not a valid model identifier listed on 'https://huggingface.co/models'\nIf this is a private repository, make sure to pass a token having permission to this repo either by logging in with `hf auth login` or by passing `token=<your_token>`"
+}

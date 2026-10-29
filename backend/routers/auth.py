@@ -154,7 +154,6 @@ def verify_otp(req: OTPVerifyRequest, db: Session = Depends(get_db)):
     user.otp_expires_at = None
     db.commit()
 
-    # Registrar evento de auditoría de seguridad
     try:
         from models.log_pipeline import LogPipelineIngesta
         db.add(LogPipelineIngesta(
@@ -165,7 +164,7 @@ def verify_otp(req: OTPVerifyRequest, db: Session = Depends(get_db)):
         ))
         db.commit()
     except Exception:
-        pass
+        db.rollback()
     
     access_token = create_access_token({"sub": str(user.id), "role": user.role})
     refresh_token = create_refresh_token({"sub": str(user.id)})

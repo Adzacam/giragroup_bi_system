@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { FileSpreadsheet, Layers, Cpu, ArrowRight } from 'lucide-react';
 import BatchFlowHeader from './BatchFlowHeader';
 import BatchFlowStepper from './BatchFlowStepper';
 import { dataopsApi } from '../../../api/dataopsApi';
+
+// Caché en memoria para evitar re-fetches al navegar entre pasos del stepper
+const batchContextMemoryCache = new Map();
 
 export default function BatchFlowLayout({
   currentStep = 1,
@@ -14,28 +17,61 @@ export default function BatchFlowLayout({
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [batchContext, setBatchContext] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-
   const effectiveRouteId = id || searchParams.get('lote');
+  const targetId = effectiveRouteId || localStorage.getItem('last_active_batch_id');
+
+  const [batchContext, setBatchContext] = useState(() => {
+    return targetId && batchContextMemoryCache.has(String(targetId))
+      ? batchContextMemoryCache.get(String(targetId))
+      : null;
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const lastLoadedIdRef = useRef(null);
 
   useEffect(() => {
-    if (effectiveRouteId) {
-      loadBatchContext(effectiveRouteId);
-    } else {
-      const savedLoteId = localStorage.getItem('last_active_batch_id');
-      if (savedLoteId && currentStep > 1) {
-        loadBatchContext(savedLoteId);
-      }
+    if (!targetId) return;
+    const strTargetId = String(targetId);
+
+    // Si ya está en memoria caché compartida, aplicarlo de inmediato
+    if (batchContextMemoryCache.has(strTargetId)) {
+      setBatchContext(batchContextMemoryCache.get(strTargetId));
+      lastLoadedIdRef.current = strTargetId;
+      return;
     }
-  }, [effectiveRouteId, currentStep]);
+
+    // Evitar fetch duplicado si el id no ha cambiado
+    if (lastLoadedIdRef.current === strTargetId && batchContext) {
+      return;
+    }
+
+    loadBatchContext(targetId);
+  }, [targetId]);
 
   const loadBatchContext = async (batchId) => {
+    const strBatchId = String(batchId);
+    if (batchContextMemoryCache.has(strBatchId)) {
+      setBatchContext(batchContextMemoryCache.get(strBatchId));
+      lastLoadedIdRef.current = strBatchId;
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const res = await dataopsApi.getLoteContext(batchId);
+      let res;
+      try {
+        res = await dataopsApi.getLoteContext(batchId);
+      } catch (errApi) {
+        if (errApi.response?.status === 404 && batchId !== 'latest') {
+          console.warn(`Lote ${batchId} no encontrado (404), intentando lote más reciente...`);
+          res = await dataopsApi.getLoteContext('latest');
+        } else {
+          throw errApi;
+        }
+      }
       if (res && res.status === 'success') {
+        batchContextMemoryCache.set(strBatchId, res);
         setBatchContext(res);
+        lastLoadedIdRef.current = strBatchId;
         localStorage.setItem('last_active_batch_id', String(res.id_lote || batchId));
       } else {
         const sources = await dataopsApi.getSources();
@@ -43,11 +79,11 @@ export default function BatchFlowLayout({
           (s) => s.id === Number(batchId) || s.id_documento === Number(batchId) || s.id_lote === Number(batchId)
         );
         if (found) {
-          setBatchContext({
+          const fallbackContext = {
             id_lote: found.id_lote || batchId,
             id_documento: found.id_documento || found.id || batchId,
             nombre_archivo: found.nombre_archivo || `Lote_${batchId}.xlsx`,
-            institucion: found.institucion || 'Unifranz',
+            institucion: found.institucion || 'GiraGroup Posgrado',
             tipo_fuente: found.tipo_fuente || found.tipo_documento || 'ACTA',
             tipo_escala: found.tipo_escala || null,
             escala_label: found.tipo_escala === 'DECIMAL_10'
@@ -57,7 +93,7 @@ export default function BatchFlowLayout({
               : found.tipo_escala === 'CENTESIMAL_100'
               ? 'Sobre 100'
               : 'No aplica',
-            periodo: found.periodo || '2026-1',
+            periodo: found.periodo || '2024–2026 (Auto)',
             total_archivos: 1,
             total_registros: found.total_registros || found.registros_detectados || 0,
             pendientes_revision: found.inconsistencias || 0,
@@ -71,7 +107,10 @@ export default function BatchFlowLayout({
                 pendientes_revision: found.inconsistencias || 0,
               },
             ],
-          });
+          };
+          batchContextMemoryCache.set(strBatchId, fallbackContext);
+          setBatchContext(fallbackContext);
+          lastLoadedIdRef.current = strBatchId;
         }
       }
     } catch (err) {

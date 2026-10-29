@@ -47,6 +47,8 @@ uploads/data/*
 !uploads/.gitkeep
 !uploads/test/
 !uploads/test/*
+data/landing/
+backend/data/
 
 # No subir logs pesados de la IA o el sistema
 logs/*.log
@@ -72,3 +74,15 @@ output/*.jsonl
 output/*.csv
 pipeline/semantic/beto_local/
 *.pbix
+
+#---------------------------------------------------
+# Documentos de tesis
+#---------------------------------------------------
+docs/proyecto de grado/*
+!docs/proyecto de grado/.gitkeep
+!docs/figuras_tesis/*
+!docs/figuras_tesis/.gitkeep
+!docs/images/*
+!docs/images/.gitkeep
+
+

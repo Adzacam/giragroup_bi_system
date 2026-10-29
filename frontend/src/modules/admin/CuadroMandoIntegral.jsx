@@ -26,7 +26,8 @@ import {
   ArrowUpRight,
   Calendar,
   Sparkles,
-  Info
+  Info,
+  Download
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -45,6 +46,8 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import kpiApi from '../../api/kpiApi';
 import forecastApi from '../../api/forecastApi';
+import { reportesApi } from '../../api/reportesApi';
+import { sileoToast } from '../../services/sileoToast';
 
 ChartJS.register(
   CategoryScale,
@@ -84,12 +87,34 @@ export default function CuadroMandoIntegral() {
 
   // Drawer / Modal de Detalle
   const [modalDetail, setModalDetail] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+
+  const handleExportReporte = async (formato) => {
+    try {
+      setIsExporting(true);
+      setShowExportMenu(false);
+      sileoToast.info(`Generando exportación oficial en formato ${formato.toUpperCase()}...`);
+      await reportesApi.exportarReporte({
+        tipo: 'kpis',
+        formato,
+        gestion: '2026',
+        programa: searchProg || ''
+      });
+      sileoToast.success(`Reporte CMI ${formato.toUpperCase()} generado y descargado.`);
+    } catch (err) {
+      console.error('Error al exportar reporte CMI:', err);
+      sileoToast.error('Error al exportar reporte. Verifique sus permisos RBAC.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Carga inicial de datos
-  const fetchCmi = async () => {
+  const fetchCmi = async (force = false) => {
     setIsLoadingCmi(true);
     try {
-      const res = await kpiApi.getCmiCompleto();
+      const res = await kpiApi.getCmiCompleto(force);
       if (res && res.perspectivas) {
         setCmiData(res.perspectivas);
       }
@@ -378,9 +403,9 @@ export default function CuadroMandoIntegral() {
           italicWord="Macroinstitucional"
           subtitle="Monitoreo multidimensional del desempeño académico-financiero y suite econométrica de modelos predictivos."
         />
-        <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '24px', position: 'relative' }}>
           <button
-            onClick={() => { fetchCmi(); if (activeMode === 'B') fetchMacro(); }}
+            onClick={() => { fetchCmi(true); if (activeMode === 'B') fetchMacro(); }}
             disabled={isLoadingCmi || isLoadingMacro}
             className="btn-academic"
             style={{
@@ -400,6 +425,99 @@ export default function CuadroMandoIntegral() {
             <RefreshCw size={14} className={isLoadingCmi || isLoadingMacro ? 'animate-spin' : ''} />
             Actualizar
           </button>
+
+          {/* Botón de Exportación RBAC / Auditoría */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              disabled={isExporting}
+              className="btn-academic"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '9px 16px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                borderRadius: '9999px',
+                border: '1px solid rgba(217, 155, 38, 0.5)',
+                background: isDark ? '#0C1E33' : '#0C1E33',
+                color: '#FAF9F6',
+                boxShadow: '0 2px 8px rgba(12, 30, 51, 0.15)',
+              }}
+            >
+              <Download size={14} style={{ color: '#D99B26' }} className={isExporting ? 'animate-bounce' : ''} />
+              {isExporting ? 'Exportando...' : 'Exportar CMI'}
+            </button>
+
+            {showExportMenu && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: '110%',
+                  zIndex: 50,
+                  width: '200px',
+                  backgroundColor: isDark ? '#1e2430' : '#ffffff',
+                  border: isDark ? '1px solid #2d3748' : '1px solid var(--color-border)',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                  padding: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => handleExportReporte('xlsx')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 12px',
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: isDark ? '#FAF9F6' : '#1F2937',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDark ? '#2d3748' : '#F3F4F6'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <FileSpreadsheet size={15} color="#16a34a" />
+                  <span>Descargar Excel (.xlsx)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleExportReporte('pdf')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 12px',
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: isDark ? '#FAF9F6' : '#1F2937',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDark ? '#2d3748' : '#F3F4F6'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <FileText size={15} color="#dc2626" />
+                  <span>Descargar PDF (.pdf)</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

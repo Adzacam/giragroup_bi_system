@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS public.dim_docente (
 CREATE TABLE IF NOT EXISTS public.dim_modulo (
     id_modulo SERIAL PRIMARY KEY,
     nombre_modulo VARCHAR(200) NOT NULL DEFAULT 'Modulo Generico',
-    nombre_institucion VARCHAR(200) NOT NULL DEFAULT 'GiraGroup',
+    nombre_institucion VARCHAR(200) NOT NULL DEFAULT 'GiraGroup Posgrado',
     programa VARCHAR(200) DEFAULT 'General',
     pos_code VARCHAR(50)
 );

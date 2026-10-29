@@ -26,8 +26,9 @@ INCONSISTENCIAS_LOG_PATH = OUTPUT_DIR / "inconsistencias_sprint3.jsonl"
 # Configuración de Modelos NLP
 MODELO_BETO_BASE = "dccuchile/bert-base-spanish-wwm-cased"
 MODELO_BETO_NER = "mrm8488/bert-spanish-cased-finetuned-ner"
-MODELO_BETO_NOMBRE = MODELO_BETO_NER  # Por defecto usar el fine-tuned para NER en español
 MODELO_BETO_CACHE_DIR = BASE_DIR / "pipeline" / "semantic" / "beto_local"
+MODELO_BETO_NOMBRE = str(MODELO_BETO_CACHE_DIR)  # Ruta de beto_local (checkpoint local)
+MODELO_BETO_FALLBACK = MODELO_BETO_NER           # Respaldo si falla la carga local
 
 
 # Umbrales únicos de lectura base y de índice del registro (#3, #6)

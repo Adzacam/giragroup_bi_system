@@ -17,8 +17,8 @@ import tempfile
 import logging
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
-from fastapi import HTTPException
 import pandas as pd
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
@@ -84,6 +84,8 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+FORMATOS_PERMITIDOS = (".xlsx", ".csv")
+
 # Diccionario de normalización canónica de cabeceras
 CANONICAL_HEADERS = {
     "nombres y apellidos": ("nombre_completo", "VARCHAR", "Mapeo directo"),
@@ -136,22 +138,59 @@ def _strip_accents(text: str) -> str:
 def normalizar_codigo_tipo_fuente(raw_type: Optional[str]) -> Optional[str]:
     """
     Convierte etiquetas de UI o códigos al código canónico de base de datos:
-    'ACTA' | 'COBRANZA' | 'ADMISION' | 'MOODLE' | None.
+    'ACTA' | 'COBRANZA' | 'ADMISION' | 'MOODLE' | 'EVALUACION_DOCENTE' |
+    'EGRESOS' | 'TECHOS' | 'PLANIFICACION' | 'MARKETING' | 'RENTABILIDAD' | None.
     """
     if not raw_type:
         return None
     val = _strip_accents(raw_type).upper()
-    if val in ("ACTA", "COBRANZA", "ADMISION", "MOODLE"):
+    if val in (
+        "ACTA", "COBRANZA", "ADMISION", "MOODLE",
+        "EVALUACION_DOCENTE", "EGRESOS", "TECHOS",
+        "PLANIFICACION", "MARKETING", "RENTABILIDAD"
+    ):
         return val
     if any(k in val for k in ("MOODLE", "AULA VIRTUAL", "LMS")):
         return "MOODLE"
-    if any(k in val for k in ("COBRANZA", "PAGO", "FINANC", "CARTERA", "MORA", "EGRESO", "TECHO", "PRESUPUESTO", "META")):
-        return "COBRANZA"
+    if any(k in val for k in ("EVALUACION", "DOCENTE", "ENCUESTA", "NPS", "SATISFACCION")):
+        return "EVALUACION_DOCENTE"
+    if any(k in val for k in ("EGRESO", "GASTO")):
+        return "EGRESOS"
+    if any(k in val for k in ("TECHO", "TECHOS")):
+        return "TECHOS"
+    if any(k in val for k in ("RENTABILIDAD", "EBITDA", "UTILIDAD")):
+        return "RENTABILIDAD"
+    if any(k in val for k in ("MARKETING", "LEAD", "CAMPANA", "PUBLICIDAD")):
+        return "MARKETING"
     if any(k in val for k in ("ADMISION", "MATRICUL", "INSCRIP", "FORM", "POSTULANTE", "PROSPECTO")):
         return "ADMISION"
-    if any(k in val for k in ("ACTA", "CALIFIC", "NOTA", "ACADEMIC", "EVALUACION", "EXPERIENCIA", "DOCENTE", "ARCA", "PLANIFICACION")):
+    if any(k in val for k in ("PLANIFICA", "CRONOGRAMA", "CURRICULAR")):
+        return "PLANIFICACION"
+    if any(k in val for k in ("COBRANZA", "PAGO", "FINANC", "CARTERA", "MORA", "PRESUPUESTO", "META")):
+        return "COBRANZA"
+    if any(k in val for k in ("ACTA", "CALIFIC", "NOTA", "ACADEMIC", "ARCA")):
         return "ACTA"
     return None
+
+
+def _contiene_tokens(texto: str, palabras_o_frases: tuple[str, ...]) -> bool:
+    """
+    Verifica si alguna de las palabras o frases clave está presente en el texto,
+    respetando límites de palabra (word boundaries) para términos únicos
+    (evitando falsos positivos como 'ci' en 'servicio', 'lead' en 'empleados', 'mora' en 'memorando').
+    """
+    for term in palabras_o_frases:
+        term_clean = term.strip()
+        if not term_clean:
+            continue
+        if " " in term_clean or "-" in term_clean or "_" in term_clean:
+            if term_clean in texto:
+                return True
+        else:
+            pattern = r"\b" + re.escape(term_clean) + r"\b"
+            if re.search(pattern, texto):
+                return True
+    return False
 
 
 def detectar_tipo_fuente_por_cabeceras(
@@ -159,34 +198,46 @@ def detectar_tipo_fuente_por_cabeceras(
     filename: str = ""
 ) -> Optional[str]:
     """
-    Detecta el tipo de fuente ('ACTA', 'MOODLE', 'COBRANZA', 'ADMISION')
-    priorizando las cabeceras reales de las primeras filas y nombres de hoja del archivo (#15).
-    Si las cabeceras no alcanzan coincidencia y el nombre tampoco es explícito,
-    retorna None ('Sin reconocer'), nunca asumiendo 'ACTA' por defecto.
+    Detecta el tipo de fuente de manera heurística y semántica sin depender de nombres
+    de archivos ni nombres de hojas fijos:
+      - 'ACTA' / 'MOODLE' -> fact_rendimiento_academico (Estudiante/CI + Módulo + Calificación)
+      - 'COBRANZA' -> fact_situacion_financiera (Estudiante/CI + Saldo/Monto + Cuota/Fecha)
+      - 'EVALUACION_DOCENTE' -> fact_evaluacion_docente (Docente + Preguntas / Escala 1-5 / Satisfacción)
+      - 'RENTABILIDAD' / 'EGRESOS' / 'TECHOS' -> fact_rentabilidad (Costos, Egresos, Techos, Presupuesto)
+      - 'MARKETING' / 'ADMISION' -> fact_marketing (Leads, Campañas, Preinscripciones, Admisiones)
     """
     tokens_cabecera: List[str] = []
-    if filename:
-        tokens_cabecera.append(_strip_accents(filename))
+    ratings_1_5_count = 0
+    total_numeric = 0
+
     for sheet_name, df in (hojas or {}).items():
         s_str = _strip_accents(str(sheet_name))
-        if s_str:
+        if s_str and not s_str.startswith("sheet") and not s_str.startswith("hoja"):
             tokens_cabecera.append(s_str)
         if df is None or df.empty:
             continue
-        # Revisar nombres de columna de pandas si existen
+        # Nombres de columnas
         for col in df.columns:
             c_str = _strip_accents(str(col))
             if c_str and not c_str.startswith("unnamed"):
                 tokens_cabecera.append(c_str)
-        # Revisar primeras 12 filas por si la cabecera está desplazada
-        max_rows = min(12, len(df))
+        # Primeras 15 filas de muestra
+        max_rows = min(15, len(df))
         for idx in range(max_rows):
             row_vals = df.iloc[idx].values
             for v in row_vals:
                 if pd.notna(v):
-                    v_str = _strip_accents(str(v))
+                    v_raw = str(v).strip()
+                    v_str = _strip_accents(v_raw)
                     if 1 < len(v_str) <= 90:
                         tokens_cabecera.append(v_str)
+                    try:
+                        num_v = float(v_raw.replace("$", "").replace("Bs", "").replace(",", ".").strip())
+                        total_numeric += 1
+                        if 1.0 <= num_v <= 5.0 and num_v.is_integer():
+                            ratings_1_5_count += 1
+                    except (ValueError, TypeError):
+                        pass
 
     joined_headers = " | ".join(tokens_cabecera)
 
@@ -195,70 +246,150 @@ def detectar_tipo_fuente_por_cabeceras(
         "COBRANZA": 0,
         "ADMISION": 0,
         "ACTA": 0,
+        "EVALUACION_DOCENTE": 0,
+        "EGRESOS": 0,
+        "TECHOS": 0,
+        "RENTABILIDAD": 0,
+        "MARKETING": 0,
+        "PLANIFICACION": 0,
     }
 
-    moodle_kw = (
-        "idnumber", "id number", "finalgrade", "course", "username", "calificacion maxima",
-        "firstname", "lastname", "total del curso", "cuestionario:", "tarea:",
-        "numero de id", "aula virtual moodle", "reporte_aula_virtual"
-    )
-    cobranza_kw = (
-        "cuota", "monto_deuda", "monto_pagado", "saldo", "cuotas en mora", "en mora",
-        "pagado", "deuda", "concepto", "cartera", "cuotas_impagas",
-        "comprobante", "factura", "arancel", "fecha de pago", "fecha vencimiento",
-        "egreso", "egresos", "presupuesto", "techo", "techos", "ejecutado",
-        "meta por categoria", "ejecutado vs meta", "ebitda", "rentabilidad", "cobranza"
-    )
-    admision_kw = (
-        "postulante", "marca temporal", "timestamp", "formulario", "inscripcion",
-        "inscripciones", "matriculacion", "programa de interes", "medio de contacto",
-        "tbl_inscritos", "tipo de inscripcion", "numeroproyecto", "fecha de inscripcion",
-        "asesor comercial", "estado del inscrito", "prospecto"
-    )
-    acta_kw = (
-        "nota", "calificacion", "calif_final", "nota_final", "modulo",
-        "asistencia", "asistencia_pct", "promedio", "acta", "aprobado", "reprobado",
-        "evaluacion docente", "evaluacion_docente", "satisfaccion", "desempeno",
-        "experiencia docente", "experiencia_docente", "anos de experiencia",
-        "especialidad", "base academica", "base_academica", "arca", "planificacion",
-        "carga horaria", "cronograma", "diseno curricular", "coordinador academico"
-    )
+    # 1. Académico / Acta
+    has_estudiante = _contiene_tokens(joined_headers, (
+        "ci", "cedula", "dni", "idnumber", "carnet", "alumno", "alumnos",
+        "estudiante", "estudiantes", "postulante", "nombres y apellidos", "nombre completo"
+    ))
+    has_modulo = _contiene_tokens(joined_headers, (
+        "modulo", "modulos", "materia", "materias", "asignatura", "asignaturas",
+        "curso", "cursos", "cod_modulo", "codigo modulo"
+    ))
+    has_nota = _contiene_tokens(joined_headers, (
+        "nota", "notas", "calificacion", "calificaciones", "calif_final", "nota_final",
+        "finalgrade", "promedio", "calif", "asistencia", "aprobado", "reprobado"
+    ))
+    if has_estudiante and has_modulo and has_nota:
+        scores["ACTA"] += 15
+    elif has_modulo and has_nota:
+        scores["ACTA"] += 12
+    elif has_estudiante and has_nota:
+        scores["ACTA"] += 8
+    elif has_nota:
+        scores["ACTA"] += 4
 
-    for kw in moodle_kw:
-        if kw in joined_headers:
-            scores["MOODLE"] += 3
-    for kw in cobranza_kw:
-        if kw in joined_headers:
-            scores["COBRANZA"] += 2
-    for kw in admision_kw:
-        if kw in joined_headers:
-            scores["ADMISION"] += 3
-    for kw in acta_kw:
-        if kw in joined_headers:
-            scores["ACTA"] += 2
+    # Moodle
+    if _contiene_tokens(joined_headers, ("idnumber", "finalgrade", "total del curso", "cuestionario:", "tarea:", "aula virtual moodle")):
+        scores["MOODLE"] += 16
+
+    # 2. Financiero / Cobranza
+    has_saldo_monto = _contiene_tokens(joined_headers, (
+        "monto", "saldo", "deuda", "monto_deuda", "monto_pagado", "pagado",
+        "importe", "cobranza", "cartera", "abono", "deposito", "arancel"
+    ))
+    has_cuota_mora = _contiene_tokens(joined_headers, (
+        "cuota", "cuotas", "cuotas_impagas", "mora", "en mora", "vencimiento",
+        "fecha de pago", "comprobante", "factura", "concepto"
+    ))
+    if has_estudiante and has_saldo_monto and has_cuota_mora:
+        scores["COBRANZA"] += 15
+    elif has_estudiante and has_saldo_monto:
+        scores["COBRANZA"] += 11
+    elif has_saldo_monto and has_cuota_mora and not _contiene_tokens(joined_headers, ("partida", "egreso", "egresos", "gasto", "gastos")):
+        scores["COBRANZA"] += 8
+    elif has_saldo_monto and _contiene_tokens(joined_headers, ("cobranza", "cartera")):
+        scores["COBRANZA"] += 6
+
+    # 3. Evaluación Docente
+    has_docente = _contiene_tokens(joined_headers, (
+        "docente", "docentes", "profesor", "profesores", "profesora", "profesoras",
+        "facilitador", "facilitadores", "instructor", "experiencia docente"
+    ))
+    has_eval_doc = _contiene_tokens(joined_headers, (
+        "evaluacion docente", "evaluacion_docente", "encuesta docente", "encuesta de satisfaccion",
+        "satisfaccion docente", "desempeno docente", "evaluacion del docente", "criterio de evaluacion",
+        "item evaluacion", "escala de calificacion", "escala likert", "dominio del tema",
+        "didactica del docente", "nps docente", "puntualidad docente"
+    ))
+    has_eval_pregunta = _contiene_tokens(joined_headers, (
+        "pregunta", "criterio", "satisfaccion", "dominio del tema", "didactica", "nps", "encuesta"
+    ))
+
+    if has_docente and has_eval_doc:
+        scores["EVALUACION_DOCENTE"] += 15
+    elif has_docente and has_eval_pregunta and ratings_1_5_count >= 3 and not has_nota:
+        scores["EVALUACION_DOCENTE"] += 12
+    elif has_eval_doc and ratings_1_5_count >= 3 and not has_nota:
+        scores["EVALUACION_DOCENTE"] += 10
+    elif has_eval_doc and not has_nota:
+        scores["EVALUACION_DOCENTE"] += 6
+
+    # 4. Rentabilidad / Egresos / Techos
+    has_egreso = _contiene_tokens(joined_headers, (
+        "egreso", "egresos", "gasto", "gastos", "partida", "comprobante de egreso",
+        "proveedor", "proveedores", "desembolso", "beneficiario"
+    ))
+    has_techo = _contiene_tokens(joined_headers, (
+        "techo", "techos", "techo presupuestario", "presupuesto asignado", "presupuestado"
+    ))
+    has_rent = _contiene_tokens(joined_headers, (
+        "rentabilidad", "ejecutado vs meta", "ejecutado", "monto_ejecutado", "monto_meta",
+        "ebitda", "margen", "utilidad", "meta por categoria"
+    ))
+    if has_egreso and has_techo:
+        scores["RENTABILIDAD"] += 15
+    elif has_rent:
+        scores["RENTABILIDAD"] += 14
+    if has_egreso and not has_estudiante:
+        scores["EGRESOS"] += 12
+    elif has_egreso:
+        scores["EGRESOS"] += 6
+    if has_techo and not has_estudiante:
+        scores["TECHOS"] += 12
+    elif has_techo:
+        scores["TECHOS"] += 6
+
+    # 5. Marketing / Admisión
+    has_mkt = _contiene_tokens(joined_headers, (
+        "lead", "leads", "campana", "campaña", "medio de contacto", "canal",
+        "fuente lead", "asesor comercial", "reservas", "costo programa"
+    ))
+    has_adm = _contiene_tokens(joined_headers, (
+        "postulante", "postulantes", "preinscrito", "preinscritos", "preinscripcion",
+        "matricula", "matriculas", "inscrito", "inscritos", "marca temporal", "formulario"
+    ))
+    if has_mkt and not has_nota:
+        scores["MARKETING"] += 14
+    if has_adm and not has_nota and not (has_estudiante and has_saldo_monto):
+        scores["ADMISION"] += 12
+
+    # 6. Planificación
+    if _contiene_tokens(joined_headers, ("planificacion", "cronograma", "carga horaria", "diseno curricular", "coordinador academico", "inicio clases", "fin clases")):
+        scores["PLANIFICACION"] += 12
 
     best_type, best_score = max(scores.items(), key=lambda x: x[1])
-    if best_score >= 2:
+    if best_score >= 4:
         return best_type
 
-    # Señal secundaria: nombre del archivo (solo si contiene palabras clave explícitas)
+    # Señal secundaria: nombre del archivo solo como fallback si el contenido no fue concluyente
     fname_norm = _strip_accents(filename)
     if any(k in fname_norm for k in ("moodle", "grades", "calificaciones_aula", "aula_virtual", "lms")):
         return "MOODLE"
-    if any(k in fname_norm for k in (
-        "cobranza", "pago", "cartera", "mora", "deuda", "arancel",
-        "egreso", "techo", "ejecutado", "meta", "presupuesto", "financ"
-    )):
+    if any(k in fname_norm for k in ("evaluacion", "nps", "docente", "desempeno")):
+        return "EVALUACION_DOCENTE"
+    if any(k in fname_norm for k in ("egreso", "gasto")):
+        return "EGRESOS"
+    if any(k in fname_norm for k in ("techo",)):
+        return "TECHOS"
+    if any(k in fname_norm for k in ("rentabilidad", "ebitda")):
+        return "RENTABILIDAD"
+    if any(k in fname_norm for k in ("marketing", "lead", "campana")):
+        return "MARKETING"
+    if any(k in fname_norm for k in ("cobranza", "pago", "cartera", "mora", "deuda", "arancel", "financ")):
         return "COBRANZA"
-    if any(k in fname_norm for k in (
-        "admision", "inscripcion", "inscripciones", "inscrito", "inscritos",
-        "postulante", "formulario", "forms", "matricula"
-    )):
+    if any(k in fname_norm for k in ("admision", "inscripcion", "inscripciones", "postulante", "formulario")):
         return "ADMISION"
-    if any(k in fname_norm for k in (
-        "acta", "calificacion", "notas", "evaluacion", "experiencia",
-        "arca", "academica", "planificacion", "docente", "curricular"
-    )):
+    if any(k in fname_norm for k in ("planificacion", "cronograma")):
+        return "PLANIFICACION"
+    if any(k in fname_norm for k in ("acta", "calificacion", "notas", "arca", "academica")):
         return "ACTA"
 
     return None
@@ -283,18 +414,20 @@ class IngestionService:
         sanitized = re.sub(r"[^A-Za-z0-9._\- ()áéíóúÁÉÍÓÚñÑ]", "_", base)
         return sanitized[:250] or "archivo.xlsx"
 
+    FORMATOS_PERMITIDOS = FORMATOS_PERMITIDOS
+
     @staticmethod
     def validar_seguridad_archivo(filename: str, file_bytes: bytes) -> Optional[str]:
         """
         Valida las reglas de seguridad de ingesta (#18):
-        - Formato estrictamente en {.xlsx, .xls, .csv} (rechaza .xml y otros).
+        - Formato estrictamente en {.xlsx, .csv} (rechaza .xls, .xml y otros).
         - Tamaño máximo: 15 MB.
         - Magic bytes correspondientes al formato declarado.
         Retorna None si es válido, o string con el motivo de rechazo si falla.
         """
         ext = os.path.splitext(filename or "")[1].lower()
-        if ext not in (".xlsx", ".xls", ".csv"):
-            return f"Extensión '{ext or 'sin extensión'}' no permitida. Solo se aceptan .xlsx, .xls y .csv."
+        if ext not in FORMATOS_PERMITIDOS:
+            return f"Extensión '{ext or 'sin extensión'}' no permitida. Solo se aceptan .xlsx y .csv."
 
         max_bytes = 15 * 1024 * 1024
         if len(file_bytes) == 0:
@@ -305,10 +438,6 @@ class IngestionService:
         if ext == ".xlsx":
             if not file_bytes.startswith(b"PK\x03\x04"):
                 return "Firma binaria inválida para .xlsx (se esperaba contenedor ZIP/OpenXML PK\\x03\\x04)."
-        elif ext == ".xls":
-            # Permitir OLE2 Compound Document (D0CF11E0) o BIFF/tab-delimited exportado como .xls si es texto legible
-            if not file_bytes.startswith(b"\xd0\xcf\x11\xe0"):
-                return "Firma binaria inválida para .xls (se esperaba cabecera OLE2 D0CF11E0)."
         elif ext == ".csv":
             if file_bytes.startswith(b"PK\x03\x04") or file_bytes.startswith(b"\xd0\xcf\x11\xe0") or b"\x00" in file_bytes[:1024]:
                 return "El archivo .csv contiene bytes binarios no válidos para texto plano."
@@ -398,7 +527,7 @@ class IngestionService:
         sha256_full = hash_sha256 or cls.calcular_sha256_completo(file_bytes)
 
         ext = os.path.splitext(safe_filename)[1].lower()
-        tipo_doc_db = "SHEET" if ext in [".xlsx", ".xls"] else "CSV"
+        tipo_doc_db = "SHEET" if ext == ".xlsx" else "CSV"
 
         # Guardar en archivo temporal primero para leer hojas y detectar tipo_fuente por cabeceras
         with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
@@ -440,13 +569,13 @@ class IngestionService:
 
             # Inferencia automática de fechas y periodo multi-gestión sin requerir selector manual
             rango_detectado = asym_info.get("rango_fechas")
-            if not periodo or str(periodo).strip() in ("", "2026-1", "auto", "Auto") or "Auto" in str(periodo):
+            if not periodo or str(periodo).strip().lower() in ("", "auto") or "auto" in str(periodo).lower():
                 periodo_final = rango_detectado or "2024–2026 (Auto)"
             else:
                 periodo_final = str(periodo).strip()
 
-            # Regla #16: Si es COBRANZA o ADMISION, tipo_escala es obligatoriamente NULL
-            if final_tipo_fuente in ("COBRANZA", "ADMISION"):
+            # Regla #16: Si es no-académico (COBRANZA, ADMISION, MARKETING, etc.), tipo_escala es obligatoriamente NULL
+            if final_tipo_fuente in ("COBRANZA", "ADMISION", "MARKETING", "EGRESOS", "TECHOS", "RENTABILIDAD", "EVALUACION_DOCENTE"):
                 final_tipo_escala = None
             else:
                 escala_clean = (tipo_escala or "").strip().upper()
@@ -589,8 +718,10 @@ class IngestionService:
             bloques_insertados = 0
             categoria_por_fuente = (
                 "financiero" if final_tipo_fuente == "COBRANZA"
-                else "admision" if final_tipo_fuente == "ADMISION"
-                else "academico" if final_tipo_fuente in ("ACTA", "MOODLE")
+                else "rentabilidad" if final_tipo_fuente in ("EGRESOS", "TECHOS", "RENTABILIDAD")
+                else "evaluacion_docente" if final_tipo_fuente == "EVALUACION_DOCENTE"
+                else "marketing" if final_tipo_fuente in ("MARKETING", "ADMISION")
+                else "academico" if final_tipo_fuente in ("ACTA", "MOODLE", "PLANIFICACION")
                 else None
             )
             for nombre_hoja, b in bloques_validos:

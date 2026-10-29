@@ -375,12 +375,12 @@ async def upload_file(
     source_type: Optional[str] = Form(None),
     tipo_fuente: Optional[str] = Form(None),
     tipo_escala: Optional[str] = Form(None),
-    institucion: Optional[str] = Form("GiraGroup"),
+    institucion: Optional[str] = Form("GiraGroup Posgrado"),
     periodo: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
     """
-    Sube un archivo individual (.xlsx, .xls, .csv), valida seguridad (#18),
+    Sube un archivo individual (.xlsx, .csv), valida seguridad (#18),
     crea su registro en `lote` (#17) con reconocimiento automático de fechas multi-gestión
     y ejecuta las 6 etapas del pipeline.
     """
@@ -394,7 +394,7 @@ async def upload_file(
 
     # Crear lote para el archivo
     nuevo_lote = Lote(
-        institucion=(institucion or "GiraGroup").strip(),
+        institucion=(institucion or "GiraGroup Posgrado").strip(),
         periodo=(periodo or "Auto").strip(),
         estado="PROCESADO",
         total_archivos=1,
@@ -420,7 +420,7 @@ async def upload_file(
         id_lote=nuevo_lote.id_lote,
         tipo_fuente=tipo_fuente,
         tipo_escala=tipo_escala,
-        institucion=(institucion or "GiraGroup").strip(),
+        institucion=(institucion or "GiraGroup Posgrado").strip(),
         periodo=(periodo or "Auto").strip(),
         hash_sha256=sha256_full,
     )
@@ -476,7 +476,7 @@ async def upload_batch(
     tipos_fuente: Optional[List[str]] = Form(None),
     tipos_escala: Optional[List[str]] = Form(None),
     archivos_meta: Optional[str] = Form(None),
-    institucion: Optional[str] = Form("GiraGroup"),
+    institucion: Optional[str] = Form("GiraGroup Posgrado"),
     periodo: Optional[str] = Form(None),
     tipo_escala_global: Optional[str] = Form(None),
     db: Session = Depends(get_db),
@@ -484,7 +484,7 @@ async def upload_batch(
     """
     Sube y procesa un lote de 1 a 10 archivos simultáneos (#15, #16, #17, #18):
     - Máximo 10 archivos por lote, máximo 15 MB por archivo.
-    - Solo permite .xlsx, .xls, .csv (rechaza .xml y otros).
+    - Solo permite .xlsx, .csv (rechaza .xls, .xml y otros).
     - Valida firma binaria (magic bytes), sanitiza nombres y verifica hash_sha256 duplicado.
     - Crea entidad `Lote` en PostgreSQL y vincula cada `dim_origen_documental.id_lote`.
     - Devuelve respuesta granular por archivo (`archivos_procesados`) sin abortar los válidos si uno falla.
@@ -526,7 +526,7 @@ async def upload_batch(
         except Exception:
             meta_list = []
 
-    inst_clean = (institucion or "GiraGroup").strip()
+    inst_clean = (institucion or "GiraGroup Posgrado").strip()
     per_clean = (periodo or "Auto").strip()
 
     nuevo_lote = Lote(
@@ -913,7 +913,7 @@ def get_logs(doc_id: int, db: Session = Depends(get_db)):
     escala_clean = (doc.tipo_escala or "No aplica (Finanzas/Admisión)") if doc else "CENTESIMAL_100"
     nombre_arch = doc.nombre_archivo if doc else f"Documento_{doc_id}.xlsx"
     sha_val = (doc.hash_sha256 or "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855") if doc else "N/A"
-    institucion_val = (doc.institucion or "GiraGroup") if doc else "GiraGroup"
+    institucion_val = (doc.institucion or "GiraGroup Posgrado") if doc else "GiraGroup Posgrado"
     periodo_val = (doc.periodo or "2026-1") if doc else "2026-1"
     fecha_proc = (
         doc.fecha_procesamiento.strftime("%Y-%m-%d %H:%M:%S")
@@ -1818,7 +1818,7 @@ def _serializar_archivos_lote(db: Session, docs_lote: List[DimOrigenDocumental])
             "tipo_documento": d.tipo_documento,
             "tipo_fuente": d.tipo_fuente or "ACTA",
             "tipo_escala": d.tipo_escala,
-            "institucion": d.institucion or "GiraGroup",
+            "institucion": d.institucion or "GiraGroup Posgrado",
             "periodo": d.periodo or "2026-1",
             "total_registros": n_tuplas,
         })
@@ -2375,7 +2375,7 @@ def get_lote_resumen(
         "status": "success",
         "empty": False,
         "id_lote": lote_obj.id_lote if lote_obj else (docs_lote[0].id_lote if docs_lote else None),
-        "institucion": lote_obj.institucion if lote_obj else (docs_lote[0].institucion if docs_lote else "GiraGroup"),
+        "institucion": lote_obj.institucion if lote_obj else (docs_lote[0].institucion if docs_lote else "GiraGroup Posgrado"),
         "periodo": lote_obj.periodo if lote_obj else (docs_lote[0].periodo if docs_lote else "2026-1"),
         "totalDocumentos": len(docs_lote),
         "totalTuplas": total_tuplas,
@@ -2405,7 +2405,10 @@ def get_lote_context(
     """Paso común: Información de cabecera y contexto del lote multi-archivo siempre visible (#17)."""
     lote_obj, docs_lote, docs_filtrados = _resolver_documentos_lote(db, id_lote, doc_id_filter=doc_id)
     if not docs_lote and not lote_obj:
-        raise HTTPException(status_code=404, detail=f"Lote o documento con ID {id_lote} no encontrado.")
+        # Fallback defensivo a 'latest' si el ID específico de lote quedó obsoleto en el cliente
+        lote_obj, docs_lote, docs_filtrados = _resolver_documentos_lote(db, "latest", doc_id_filter=doc_id)
+        if not docs_lote and not lote_obj:
+            raise HTTPException(status_code=404, detail=f"Lote o documento con ID {id_lote} no encontrado.")
 
     archivos_tabs = _serializar_archivos_lote(db, docs_lote)
     active_doc = docs_filtrados[0] if docs_filtrados else (docs_lote[0] if docs_lote else None)
@@ -2438,7 +2441,7 @@ def get_lote_context(
     institucion = (
         (lote_obj.institucion if lote_obj else None)
         or (active_doc.institucion if active_doc else None)
-        or "GiraGroup"
+        or "GiraGroup Posgrado"
     )
     periodo = (
         (lote_obj.periodo if lote_obj else None)
@@ -3437,7 +3440,7 @@ def confirm_dw_insert(
         elif not doc_escala:
             doc_escala = "CENTESIMAL_100"
 
-        institucion = (orig_doc.institucion if orig_doc else None) or "GiraGroup"
+        institucion = (orig_doc.institucion if orig_doc else None) or "GiraGroup Posgrado"
 
         raw_text = (stg.texto_plano or "").strip()
         lines = [l.strip() for l in raw_text.split("\n") if l.strip()]
@@ -3502,9 +3505,12 @@ def confirm_dw_insert(
 
             if is_approved:
                 categoria_ruteo = (
-                    "financiero"
-                    if doc_fuente == "COBRANZA"
-                    else ("admision" if doc_fuente == "ADMISION" else "academico")
+                    "financiero" if doc_fuente == "COBRANZA"
+                    else "rentabilidad" if doc_fuente in ("EGRESOS", "TECHOS", "RENTABILIDAD")
+                    else "evaluacion_docente" if doc_fuente == "EVALUACION_DOCENTE"
+                    else "marketing" if doc_fuente == "MARKETING"
+                    else "admision" if doc_fuente == "ADMISION"
+                    else "academico"
                 )
                 reg_dict = {
                     "categoria": categoria_ruteo,
@@ -3535,10 +3541,13 @@ def confirm_dw_insert(
                 }
                 res = dw.cargar_registro(reg_dict)
                 if res.get("status") == "loaded":
-                    if res.get("tipo") == "financiero":
+                    tipo_loaded = res.get("tipo")
+                    if tipo_loaded == "financiero":
                         inserted_financiero += 1
-                    elif res.get("tipo") == "admision":
+                    elif tipo_loaded == "admision":
                         inserted_admision += 1
+                    elif tipo_loaded in ("evaluacion_docente", "rentabilidad", "marketing"):
+                        inserted_academico += 1  # contabilizar en hechos cargados
                     else:
                         inserted_academico += 1
                 else:
@@ -3850,8 +3859,8 @@ def get_review_tray(
     paginated_items = items[start_idx : start_idx + page_size]
 
     target_ids = [d.id_documento for d in target_docs] if target_docs else []
-    dw_acad_q = db.query(func.count(FactRendimientoAcademico.id_rendimiento))
-    dw_fin_q = db.query(func.count(FactSituacionFinanciera.id_situacion_financiera))
+    dw_acad_q = db.query(func.count(FactRendimientoAcademico.id_hecho_aca))
+    dw_fin_q = db.query(func.count(FactSituacionFinanciera.id_hecho_fin))
     if target_ids:
         dw_acad_count = dw_acad_q.filter(FactRendimientoAcademico.id_documento.in_(target_ids)).scalar() or 0
         dw_fin_count = dw_fin_q.filter(FactSituacionFinanciera.id_documento.in_(target_ids)).scalar() or 0
@@ -4008,8 +4017,8 @@ def resolve_review_item(
     if clean_id.isdigit():
         ent = db.query(StagingEntidadNoResuelta).filter(StagingEntidadNoResuelta.id_staging == int(clean_id)).first()
         if ent:
-            user_name = current_user.username if current_user else "Auditor Calidad"
-            user_id = current_user.id if current_user else None
+            user_name = current_user.username if (current_user and hasattr(current_user, "username")) else "Auditor Calidad"
+            user_id = current_user.id if (current_user and hasattr(current_user, "id")) else None
             accion = (payload.get("accion") or "APROBAR").upper()
 
             if "DESCARTAR" in accion:

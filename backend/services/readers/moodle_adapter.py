@@ -10,8 +10,11 @@ import os
 import re
 import csv
 import logging
-from typing import Dict, Any, List
-import pandas as pd
+from typing import Any
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 logger = logging.getLogger(__name__)
 
@@ -60,20 +63,25 @@ def es_reporte_moodle(df: pd.DataFrame, nombre_archivo: str = "") -> bool:
                     return True
     return False
 
-def adaptar_moodle_df(df: pd.DataFrame) -> pd.DataFrame:
+def adaptar_moodle_df(df: Any) -> Any:
     """
     Limpia y normaliza un DataFrame exportado de Moodle:
     - Encuentra la fila real de cabeceras
     - Mapea las cabeceras Moodle a nombres canónicos
     - Descarta filas de resumen como 'Promedio general' o 'Overall average'
     """
-    if df is None or df.empty:
+    if df is None or getattr(df, "empty", True):
         return df
+
+    def _notna(v: Any) -> bool:
+        if pd is not None:
+            return bool(pd.notna(v))
+        return v is not None and str(v) != "nan" and str(v) != "None"
 
     # Buscar la fila de cabeceras (inspeccionar hasta 12 filas)
     header_idx = -1
     for idx in range(min(12, len(df))):
-        fila = [str(x).strip().lower() for x in df.iloc[idx] if pd.notna(x)]
+        fila = [str(x).strip().lower() for x in df.iloc[idx] if _notna(x)]
         matches = sum(1 for celda in fila if any(k in celda for k in ["first name", "surname", "nombre", "apellido", "email", "id", "grade", "calificación", "course"]))
         if matches >= 2:
             header_idx = idx
@@ -81,7 +89,7 @@ def adaptar_moodle_df(df: pd.DataFrame) -> pd.DataFrame:
 
     if header_idx != -1:
         # Extraer cabeceras
-        headers = [str(col).strip() if pd.notna(col) else f"col_{i}" for i, col in enumerate(df.iloc[header_idx])]
+        headers = [str(col).strip() if _notna(col) else f"col_{i}" for i, col in enumerate(df.iloc[header_idx])]
         df_clean = df.iloc[header_idx + 1:].copy().reset_index(drop=True)
         df_clean.columns = headers
     else:

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, ShieldCheck, FileUp, FileText, Wand2, CheckSquare,
+  LayoutDashboard, ShieldCheck, FileUp, FileText, FileSpreadsheet, Wand2, CheckSquare,
   GitMerge, Cpu, GraduationCap, Star, BookOpen,
   TrendingUp, DollarSign, PieChart, Target, LineChart,
   Users, Settings, ChevronDown, ChevronRight, Activity, SlidersHorizontal, LogOut, X
@@ -250,6 +250,20 @@ export default function Sidebar({ collapsed, isOpen, onClose, onToggle }) {
                 <span className="sidebar-text">
                   {isAdmin ? 'Cuadro de Mando Integral' : 'Vista General'}
                 </span>
+              )}
+            </NavLink>
+
+            {/* Centro de Reportes link (HU-12) */}
+            <NavLink
+              to="/reportes"
+              onClick={handleLinkClick}
+              className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
+              title="Centro de Reportes (HU-12)"
+              style={isEffectiveCollapsed ? { justifyContent: 'center', padding: '10px 0', margin: '2px 6px' } : { marginTop: '4px' }}
+            >
+              <FileSpreadsheet size={18} style={{ flexShrink: 0 }} />
+              {!isEffectiveCollapsed && (
+                <span className="sidebar-text">Centro de Reportes</span>
               )}
             </NavLink>
           </div>

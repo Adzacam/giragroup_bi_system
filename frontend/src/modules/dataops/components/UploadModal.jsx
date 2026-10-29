@@ -54,14 +54,12 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess, existing
       const ext = f.name.toLowerCase();
       return (
         ext.endsWith('.xlsx') ||
-        ext.endsWith('.xls') ||
-        ext.endsWith('.csv') ||
-        ext.endsWith('.xml')
+        ext.endsWith('.csv')
       );
     });
 
     if (validFiles.length === 0) {
-      setError('Formato no soportado. Por favor seleccione archivos .xlsx, .xls, .csv o .xml.');
+      setError('Formato no soportado. Por favor seleccione archivos .xlsx o .csv.');
       return;
     }
 
@@ -610,7 +608,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess, existing
               ref={fileInputRef}
               type="file"
               multiple
-              accept=".xlsx,.csv,.xls,.xml"
+              accept=".xlsx,.csv"
               onChange={handleFileChange}
               style={{ display: 'none' }}
             />
@@ -662,7 +660,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess, existing
               marginBottom: 0,
             }}
           >
-            Auto-clasificación inteligente: .xlsx (Actas), .csv (Forms), Moodle (.xml/.csv), Cartera (.xlsx)
+            Auto-clasificación inteligente: .xlsx (Actas), .csv (Forms), Moodle (.csv/.xlsx), Cartera (.xlsx)
           </p>
         </div>
 

@@ -1,0 +1,77 @@
+{
+  "total_archivos_evaluados": 5,
+  "total_excepciones_globales": 0,
+  "criterio_cero_excepciones_cumplido": true,
+  "detalle_layouts": [
+    {
+      "archivo": "layout1_cabeceras_desconocidas.xlsx",
+      "filas_totales": 6,
+      "filas_procesadas": 6,
+      "entidades_extraidas": 13,
+      "derivadas_staging": 5,
+      "excepciones": 0,
+      "detalle_entidades": {
+        "DOCENTE": 9,
+        "PROGRAMA": 2,
+        "ESTUDIANTE": 2
+      },
+      "status": "PASS"
+    },
+    {
+      "archivo": "layout2_columnas_invertidas_ruido.xlsx",
+      "filas_totales": 5,
+      "filas_procesadas": 5,
+      "entidades_extraidas": 13,
+      "derivadas_staging": 5,
+      "excepciones": 0,
+      "detalle_entidades": {
+        "FECHA": 4,
+        "DOCENTE": 7,
+        "ESTUDIANTE": 2
+      },
+      "status": "PASS"
+    },
+    {
+      "archivo": "layout3_celdas_combinadas_merged.xlsx",
+      "filas_totales": 8,
+      "filas_procesadas": 7,
+      "entidades_extraidas": 6,
+      "derivadas_staging": 7,
+      "excepciones": 0,
+      "detalle_entidades": {
+        "DOCENTE": 1,
+        "ESTUDIANTE": 5
+      },
+      "status": "PASS"
+    },
+    {
+      "archivo": "layout4_filas_totales_subtotales.xlsx",
+      "filas_totales": 9,
+      "filas_procesadas": 9,
+      "entidades_extraidas": 14,
+      "derivadas_staging": 6,
+      "excepciones": 0,
+      "detalle_entidades": {
+        "ESTUDIANTE": 6,
+        "DOCENTE": 5,
+        "PROGRAMA": 3
+      },
+      "status": "PASS"
+    },
+    {
+      "archivo": "layout5_multihoja_anidada.xlsx",
+      "filas_totales": 10,
+      "filas_procesadas": 10,
+      "entidades_extraidas": 15,
+      "derivadas_staging": 10,
+      "excepciones": 0,
+      "detalle_entidades": {
+        "NOTA": 1,
+        "PROGRAMA": 2,
+        "ESTUDIANTE": 9,
+        "DOCENTE": 3
+      },
+      "status": "PASS"
+    }
+  ]
+}

@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS public.cat_institucion (
 
 INSERT INTO public.cat_institucion (nombre_institucion, sigla, tipo_escala_default)
 VALUES 
-    ('GiraGroup', 'GG', 'CENTESIMAL_100'),
+    ('GiraGroup Posgrado', 'GG', 'CENTESIMAL_100'),
     ('Escuela de Negocios y Postgrado', 'ENP', 'CENTESIMAL_100'),
     ('Facultad de Ciencias de la Salud', 'FCS', 'CENTESIMAL_100')
 ON CONFLICT (nombre_institucion) DO NOTHING;

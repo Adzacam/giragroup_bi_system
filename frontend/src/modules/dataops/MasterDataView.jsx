@@ -324,7 +324,7 @@ export default function MasterDataView() {
                       <td style={{ fontWeight: 600 }}>{m.nombre_modulo}</td>
                       <td><code>{m.pos_code || 'MOD-N/A'}</code></td>
                       <td>{m.programa || 'Programa General'}</td>
-                      <td><span className="badge-source">{m.nombre_institucion || 'GiraGroup'}</span></td>
+                      <td><span className="badge-source">{m.nombre_institucion || 'GiraGroup Posgrado'}</span></td>
                       <td>
                         <button
                           className="btn-pill-ghost"

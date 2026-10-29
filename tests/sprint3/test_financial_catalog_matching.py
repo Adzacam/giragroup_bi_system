@@ -26,7 +26,8 @@ RUTA_SCHEMA = os.path.join("db", "schema_catalogos.sql")
 def sqlite_catalog_db():
     """Crea una base de datos SQLite en memoria para pruebas rápidas y aisladas."""
     engine = create_engine("sqlite:///:memory:")
-    CatalogBase.metadata.create_all(bind=engine)
+    CatConceptoFinanciero.__table__.create(bind=engine, checkfirst=True)
+    CatHistoricoEquivalencia.__table__.create(bind=engine, checkfirst=True)
     TestingSession = sessionmaker(bind=engine)
     session = TestingSession()
 

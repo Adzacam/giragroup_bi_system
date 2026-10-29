@@ -60,6 +60,11 @@ def setup_database():
     app.dependency_overrides[get_db] = override_get_db
     User.__table__.create(bind=test_engine, checkfirst=True)
     Notification.__table__.create(bind=test_engine, checkfirst=True)
+    try:
+        from models.log_pipeline import LogPipelineIngesta
+        LogPipelineIngesta.__table__.create(bind=test_engine, checkfirst=True)
+    except Exception:
+        pass
     db = TestingSessionLocal()
 
     # Admin 1 (Principal)

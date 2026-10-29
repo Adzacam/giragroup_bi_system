@@ -27,7 +27,7 @@ elif "@giragroup_db:" in SQLALCHEMY_DATABASE_URL and not _can_resolve("giragroup
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={"connect_timeout": 1},
+    connect_args={"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {"connect_timeout": 1},
     pool_pre_ping=True
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -54,7 +54,7 @@ elif "@catalog_db:" in CATALOG_DATABASE_URL and not _can_resolve("catalog_db"):
 
 catalog_engine = create_engine(
     CATALOG_DATABASE_URL,
-    connect_args={"connect_timeout": 1},
+    connect_args={"check_same_thread": False} if CATALOG_DATABASE_URL.startswith("sqlite") else {"connect_timeout": 1},
     pool_pre_ping=True
 )
 CatalogSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=catalog_engine)

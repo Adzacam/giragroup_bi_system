@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: infrastructure/docker/catalog_db.Dockerfile
     container_name: giragroup_catalog_db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: giragroup_catalog_db
       POSTGRES_USER: giragroup_user
@@ -22,6 +23,7 @@ services:
   db:
     image: postgres:16-alpine
     container_name: giragroup_db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: giragroup_db
       POSTGRES_USER: giragroup_user
@@ -62,6 +64,7 @@ services:
       context: .
       dockerfile: infrastructure/docker/api.Dockerfile
     container_name: giragroup_api
+    restart: unless-stopped
     ports:
       - "8000:8000"
     env_file: .env
@@ -81,6 +84,7 @@ services:
       context: .
       dockerfile: infrastructure/docker/auth-service.Dockerfile
     container_name: giragroup_auth_svc
+    restart: unless-stopped
     ports:
       - "8001:8001"
     env_file: .env
@@ -97,6 +101,7 @@ services:
       context: .
       dockerfile: infrastructure/docker/notifications-service.Dockerfile
     container_name: giragroup_notifications_svc
+    restart: unless-stopped
     ports:
       - "8002:8002"
     env_file: .env
@@ -113,6 +118,7 @@ services:
       context: .
       dockerfile: infrastructure/docker/analytics-service.Dockerfile
     container_name: giragroup_analytics_svc
+    restart: unless-stopped
     ports:
       - "8003:8003"
     env_file: .env
@@ -130,6 +136,7 @@ services:
       context: .
       dockerfile: infrastructure/docker/audit-service.Dockerfile
     container_name: giragroup_audit_svc
+    restart: unless-stopped
     ports:
       - "8004:8004"
     env_file: .env
@@ -146,6 +153,7 @@ services:
       context: .
       dockerfile: infrastructure/docker/storage-service.Dockerfile
     container_name: giragroup_storage_svc
+    restart: unless-stopped
     ports:
       - "8005:8005"
     env_file: .env
@@ -160,6 +168,7 @@ services:
       context: .
       dockerfile: infrastructure/docker/pipeline.Dockerfile
     container_name: giragroup_pipeline
+    restart: unless-stopped
     env_file: .env
     depends_on:
       db:
@@ -183,6 +192,7 @@ services:
       context: .
       dockerfile: infrastructure/docker/web.Dockerfile
     container_name: giragroup_web
+    restart: unless-stopped
     ports:
       - "5173:5173"
     environment:

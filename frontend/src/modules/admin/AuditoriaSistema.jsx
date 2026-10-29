@@ -314,12 +314,12 @@ export default function AuditoriaSistema() {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       const ext = file.name.split('.').pop().toLowerCase();
-      if (['xlsx', 'xls', 'csv'].includes(ext)) {
+      if (['xlsx', 'csv'].includes(ext)) {
         setSelectedFile(file);
       } else {
         sileoToast.icon({
           title: 'Formato no soportado',
-          description: 'Solo se admiten archivos .xlsx, .xls y .csv',
+          description: 'Solo se admiten archivos .xlsx y .csv',
           icon: <AlertCircle size={16} color="#ef4444" />
         });
       }
@@ -1441,7 +1441,7 @@ export default function AuditoriaSistema() {
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept=".xlsx,.xls,.csv"
+                      accept=".xlsx,.csv"
                       style={{ display: 'none' }}
                       onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {
@@ -1465,7 +1465,7 @@ export default function AuditoriaSistema() {
                           Arrastre su archivo aquí o haga clic para examinar
                         </p>
                         <p style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', margin: '4px 0 0' }}>
-                          Formatos admitidos: Excel (.xlsx, .xls) o CSV delimitado por comas
+                          Formatos admitidos: Excel (.xlsx) o CSV delimitado por comas
                         </p>
                       </div>
                     )}

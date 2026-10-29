@@ -81,7 +81,7 @@ def seed_fact_marketing(engine: Engine, data_dir: Optional[Path] = None) -> int:
             conn.execute(
                 text("""
                     INSERT INTO public.dim_modulo (nombre_modulo, nombre_institucion, programa, pos_code)
-                    SELECT :nombre, 'GiraGroup', :programa, :pos
+                    SELECT :nombre, 'GiraGroup Posgrado', :programa, :pos
                     WHERE NOT EXISTS (
                         SELECT 1 FROM public.dim_modulo WHERE pos_code = :pos
                     )
@@ -107,7 +107,7 @@ def seed_fact_marketing(engine: Engine, data_dir: Optional[Path] = None) -> int:
                 ins = conn.execute(
                     text("""
                         INSERT INTO public.dim_modulo (nombre_modulo, nombre_institucion, programa, pos_code)
-                        VALUES (:nombre, 'GiraGroup', :prog, :pos)
+                        VALUES (:nombre, 'GiraGroup Posgrado', :prog, :pos)
                         RETURNING id_modulo
                     """),
                     {"nombre": f"Programa {pos}", "prog": tipo, "pos": pos}

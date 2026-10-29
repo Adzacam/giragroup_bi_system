@@ -3,28 +3,80 @@ import { UMBRAL_INDICE_REGISTRO_DEC } from '../constants/dataopsConfig';
 
 const BASE_URL = '/api/v1/dataops';
 
-export const dataopsApi = {
-  /**
-   * Obtiene la lista de fuentes documentales y métricas KPI de ingesta
-   */
-  getSources: async () => {
-    try {
-      const res = await client.get(`${BASE_URL}/sources`);
-      return res.data;
-    } catch (err) {
-      console.warn('Backend dataops/sources no disponible:', err.message);
-      return {
-        status: 'success',
-        total: 0,
-        kpis: {
-          total_fuentes: 0,
-          registros_detectados: 0,
-          archivos_advertencias: 0,
-          ultima_sincronizacion: 'Sin sincronización previa'
-        },
-        data: []
-      };
+// ─── Mecanismo de Caché en Memoria y Deduplicación Concurrente ───
+const apiCache = new Map();
+const inFlightRequests = new Map();
+const DEFAULT_CACHE_TTL = 45_000; // 45 segundos
+
+/**
+ * Envoltorio para peticiones GET con caché en memoria y deduplicación en vuelo
+ */
+const cachedGet = async (key, fetcher, ttl = DEFAULT_CACHE_TTL, forceRefresh = false) => {
+  const now = Date.now();
+  if (!forceRefresh && apiCache.has(key)) {
+    const entry = apiCache.get(key);
+    if (now < entry.expiry) {
+      return entry.data;
     }
+    apiCache.delete(key);
+  }
+
+  if (inFlightRequests.has(key)) {
+    return inFlightRequests.get(key);
+  }
+
+  const promise = (async () => {
+    try {
+      const data = await fetcher();
+      apiCache.set(key, { data, expiry: Date.now() + ttl });
+      return data;
+    } finally {
+      inFlightRequests.delete(key);
+    }
+  })();
+
+  inFlightRequests.set(key, promise);
+  return promise;
+};
+
+export const invalidateDataopsCache = (keyPrefix = null) => {
+  if (!keyPrefix) {
+    apiCache.clear();
+  } else {
+    for (const k of apiCache.keys()) {
+      if (k.startsWith(keyPrefix)) {
+        apiCache.delete(k);
+      }
+    }
+  }
+};
+
+export const dataopsApi = {
+  invalidateCache: invalidateDataopsCache,
+
+  /**
+   * Obtiene la lista de fuentes documentales y métricas KPI de ingesta (con caché en memoria)
+   */
+  getSources: async (forceRefresh = false) => {
+    return cachedGet('sources', async () => {
+      try {
+        const res = await client.get(`${BASE_URL}/sources`);
+        return res.data;
+      } catch (err) {
+        console.warn('Backend dataops/sources no disponible:', err.message);
+        return {
+          status: 'success',
+          total: 0,
+          kpis: {
+            total_fuentes: 0,
+            registros_detectados: 0,
+            archivos_advertencias: 0,
+            ultima_sincronizacion: 'Sin sincronización previa'
+          },
+          data: []
+        };
+      }
+    }, 30_000, forceRefresh);
   },
 
   /**
@@ -39,6 +91,7 @@ export const dataopsApi = {
    * Elimina una fuente documental individual por su ID
    */
   deleteSource: async (id) => {
+    invalidateDataopsCache();
     const res = await client.delete(`${BASE_URL}/sources/${id}`);
     return res.data;
   },
@@ -47,6 +100,7 @@ export const dataopsApi = {
    * Elimina un conjunto de fuentes documentales por sus IDs
    */
   deleteBatch: async (ids) => {
+    invalidateDataopsCache();
     const res = await client.post(`${BASE_URL}/sources/delete-batch`, { ids });
     return res.data;
   },
@@ -55,6 +109,7 @@ export const dataopsApi = {
    * Limpia todas las fuentes procesadas
    */
   clearCompleted: async () => {
+    invalidateDataopsCache();
     const res = await client.delete(`${BASE_URL}/sources/clear-completed`);
     return res.data;
   },
@@ -63,6 +118,7 @@ export const dataopsApi = {
    * Purga completamente todos los lotes de staging, archivos y registros trancados
    */
   purgeStagingCache: async () => {
+    invalidateDataopsCache();
     try {
       const res = await client.post(`${BASE_URL}/purge-staging-cache`);
       return res.data;
@@ -76,6 +132,7 @@ export const dataopsApi = {
    * Sube un nuevo archivo fuente individual con tracking de progreso
    */
   uploadFile: async (file, sourceType = 'ACTA', tipoEscala = null, onProgress = null) => {
+    invalidateDataopsCache();
     const formData = new FormData();
     formData.append('file', file);
     if (sourceType) formData.append('source_type', sourceType);
@@ -83,6 +140,7 @@ export const dataopsApi = {
 
     const res = await client.post(`${BASE_URL}/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 600000, // 10 minutos para archivo individual
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -99,6 +157,7 @@ export const dataopsApi = {
    * @param {Function} onProgress
    */
   uploadBatch: async (filesWithTypes, onProgress = null, batchMeta = {}) => {
+    invalidateDataopsCache();
     const formData = new FormData();
     filesWithTypes.forEach(({ file, sourceType, tipoEscala }) => {
       formData.append('files', file);
@@ -115,6 +174,7 @@ export const dataopsApi = {
 
     const res = await client.post(`${BASE_URL}/upload-batch`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 600000, // 10 minutos para transferencia y ejecución de pipeline de lote
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -129,9 +189,10 @@ export const dataopsApi = {
    * Ejecuta o re-procesa el pipeline sobre un lote
    */
   processBatch: async (docId = null) => {
+    invalidateDataopsCache();
     const res = docId
-      ? await client.post(`${BASE_URL}/process/${docId}`)
-      : await client.post(`${BASE_URL}/process-batch`);
+      ? await client.post(`${BASE_URL}/process/${docId}`, null, { timeout: 600000 })
+      : await client.post(`${BASE_URL}/process-batch`, null, { timeout: 600000 });
     return res.data;
   },
 
@@ -139,39 +200,45 @@ export const dataopsApi = {
    * Obtiene la bitácora técnica de logs para un documento
    */
   getLogs: async (docId) => {
-    try {
-      const res = await client.get(`${BASE_URL}/logs/${docId}`);
-      return res.data;
-    } catch (err) {
-      console.warn('Backend dataops/logs no disponible:', err.message);
-      return { status: 'success', data: [] };
-    }
+    return cachedGet(`logs_${docId}`, async () => {
+      try {
+        const res = await client.get(`${BASE_URL}/logs/${docId}`);
+        return res.data;
+      } catch (err) {
+        console.warn('Backend dataops/logs no disponible:', err.message);
+        return { status: 'success', data: [] };
+      }
+    }, 30_000);
   },
 
   /**
    * Alias de getLogs para obtener la bitácora técnica y reporte Markdown de un documento
    */
   getDocumentLogs: async (docId) => {
-    try {
-      const res = await client.get(`${BASE_URL}/logs/${docId}`);
-      return res.data;
-    } catch (err) {
-      console.warn('Backend dataops/logs no disponible:', err.message);
-      return { status: 'success', data: [] };
-    }
+    return cachedGet(`logs_${docId}`, async () => {
+      try {
+        const res = await client.get(`${BASE_URL}/logs/${docId}`);
+        return res.data;
+      } catch (err) {
+        console.warn('Backend dataops/logs no disponible:', err.message);
+        return { status: 'success', data: [] };
+      }
+    }, 30_000);
   },
 
   /**
    * Obtiene la matriz de normalización canónica
    */
   getNormalizationMatrix: async (docId) => {
-    try {
-      const res = await client.get(`${BASE_URL}/normalization-matrix/${docId}`);
-      return res.data;
-    } catch (err) {
-      console.warn('Backend dataops/normalization-matrix no disponible:', err.message);
-      return { status: 'success', data: [] };
-    }
+    return cachedGet(`norm_matrix_${docId}`, async () => {
+      try {
+        const res = await client.get(`${BASE_URL}/normalization-matrix/${docId}`);
+        return res.data;
+      } catch (err) {
+        console.warn('Backend dataops/normalization-matrix no disponible:', err.message);
+        return { status: 'success', data: [] };
+      }
+    }, 60_000);
   },
 
   /**
@@ -179,9 +246,11 @@ export const dataopsApi = {
    */
   getLoteResumen: async (idLote = 'latest', docId = null) => {
     const cleanLote = idLote || 'latest';
-    const params = docId ? { doc_id: docId } : {};
-    const res = await client.get(`${BASE_URL}/lote/${cleanLote}/resumen`, { params });
-    return res.data;
+    return cachedGet(`lote_resumen_${cleanLote}_${docId || ''}`, async () => {
+      const params = docId ? { doc_id: docId } : {};
+      const res = await client.get(`${BASE_URL}/lote/${cleanLote}/resumen`, { params });
+      return res.data;
+    }, 45_000);
   },
 
   /**
@@ -189,53 +258,66 @@ export const dataopsApi = {
    */
   getLoteContext: async (idLote = 'latest', docId = null) => {
     const cleanLote = idLote || 'latest';
-    const params = docId ? { doc_id: docId } : {};
-    const res = await client.get(`${BASE_URL}/lote/${cleanLote}/context`, { params });
-    return res.data;
+    return cachedGet(`lote_context_${cleanLote}_${docId || ''}`, async () => {
+      const params = docId ? { doc_id: docId } : {};
+      const res = await client.get(`${BASE_URL}/lote/${cleanLote}/context`, { params });
+      return res.data;
+    }, 60_000);
   },
 
   /**
    * Paso ②: Obtiene el mapeo fila origen vs oración que lee BETO (#17)
    */
   getLoteRawVsText: async (idLote, docId = null) => {
-    const params = docId ? { doc_id: docId } : {};
-    const res = await client.get(`${BASE_URL}/lote/${idLote}/raw-vs-text`, { params });
-    return res.data;
+    return cachedGet(`lote_raw_vs_text_${idLote}_${docId || ''}`, async () => {
+      const params = docId ? { doc_id: docId } : {};
+      const res = await client.get(`${BASE_URL}/lote/${idLote}/raw-vs-text`, { params });
+      return res.data;
+    }, 60_000);
   },
 
   /**
    * Paso ③: Obtiene la lectura estructurada de BETO (Capas A, B y C) con filtro opcional por archivo y paginación (#13, #17)
    */
   getLoteBetoReading: async (idLote, options = {}) => {
-    const params = {};
-    if (options.docId) params.doc_id = options.docId;
-    if (options.page) params.page = options.page;
-    if (options.pageSize) params.page_size = options.pageSize;
-    if (options.search) params.search = options.search;
-    const estadoVal = options.estado || options.filtroEstado;
-    if (estadoVal && estadoVal !== 'ALL') params.estado = estadoVal;
-    if (options.motivo && options.motivo !== 'ALL') params.motivo = options.motivo;
-    const res = await client.get(`${BASE_URL}/lote/${idLote}/beto-reading`, { params });
-    return res.data;
+    const key = `lote_beto_${idLote}_${options.docId || ''}_${options.area || ''}_${options.page || 1}_${options.pageSize || 100}_${options.search || ''}_${options.estado || options.filtroEstado || ''}_${options.motivo || ''}_${options.filtroGlobal || ''}_${options.tipoEntidad || ''}`;
+    return cachedGet(key, async () => {
+      const params = {};
+      if (options.docId) params.doc_id = options.docId;
+      if (options.area && options.area !== 'TODAS') params.area = options.area;
+      if (options.page) params.page = options.page;
+      if (options.pageSize) params.page_size = options.pageSize;
+      if (options.search) params.search = options.search;
+      if (options.filtroGlobal && options.filtroGlobal !== 'ALL') params.filtro_global = options.filtroGlobal;
+      if (options.tipoEntidad && options.tipoEntidad !== 'TODOS') params.tipo_entidad = options.tipoEntidad;
+      const estadoVal = options.estado || options.filtroEstado;
+      if (estadoVal && estadoVal !== 'ALL') params.estado = estadoVal;
+      if (options.motivo && options.motivo !== 'ALL') params.motivo = options.motivo;
+      const res = await client.get(`${BASE_URL}/lote/${idLote}/beto-reading`, { params });
+      return res.data;
+    }, 60_000);
   },
 
   /**
    * Paso ④: Obtiene los casos derivados a la bandeja de revisión humana (#12, #17)
    */
   getReviewTray: async (idLote = null, options = {}) => {
-    const params = {};
-    if (idLote) {
-      params.id_lote = idLote;
-    }
-    if (options.docId) {
-      params.doc_id = options.docId;
-    }
-    if (options.motivo && options.motivo !== 'ALL') params.motivo = options.motivo;
-    if (options.estado && options.estado !== 'ALL') params.estado = options.estado;
-    if (options.page) params.page = options.page;
-    if (options.pageSize) params.page_size = options.pageSize;
-    const res = await client.get(`${BASE_URL}/review-tray`, { params });
-    return res.data;
+    const key = `review_tray_${idLote || 'all'}_${options.docId || ''}_${options.motivo || ''}_${options.estado || ''}_${options.page || 1}`;
+    return cachedGet(key, async () => {
+      const params = {};
+      if (idLote) {
+        params.id_lote = idLote;
+      }
+      if (options.docId) {
+        params.doc_id = options.docId;
+      }
+      if (options.motivo && options.motivo !== 'ALL') params.motivo = options.motivo;
+      if (options.estado && options.estado !== 'ALL') params.estado = options.estado;
+      if (options.page) params.page = options.page;
+      if (options.pageSize) params.page_size = options.pageSize;
+      const res = await client.get(`${BASE_URL}/review-tray`, { params });
+      return res.data;
+    }, 45_000);
   },
 
   /**
@@ -272,6 +354,7 @@ export const dataopsApi = {
    * Resuelve y confirma un registro individual de la bandeja de revisión humana
    */
   resolveReviewItem: async (itemId, payload = {}) => {
+    invalidateDataopsCache();
     const res = await client.post(`${BASE_URL}/review-tray/${itemId}/resolve`, payload);
     return res.data;
   },
@@ -280,6 +363,7 @@ export const dataopsApi = {
    * Desvincula / rechaza un registro de la bandeja de revisión
    */
   unlinkReviewItem: async (itemId) => {
+    invalidateDataopsCache();
     const res = await client.post(`${BASE_URL}/review-tray/${itemId}/unlink`);
     return res.data;
   },
@@ -288,6 +372,7 @@ export const dataopsApi = {
    * Resuelve en lote múltiples registros de revisión humana
    */
   batchResolveReviewItems: async (payload = {}) => {
+    invalidateDataopsCache();
     const res = await client.post(`${BASE_URL}/review-tray/batch-resolve`, payload);
     return res.data;
   },
@@ -382,6 +467,7 @@ export const dataopsApi = {
    * o resuelve un caso individual si se provee resolved_item_id.
    */
   confirmDwInsert: async (payload = {}) => {
+    invalidateDataopsCache();
     if (payload && payload.resolved_item_id) {
       const res = await client.post(`${BASE_URL}/review-tray/${payload.resolved_item_id}/resolve`, {
         motivo: payload.motivo,

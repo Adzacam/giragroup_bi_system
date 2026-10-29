@@ -97,7 +97,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
     id_lote,
     id_documento,
     nombre_archivo = 'Lote sin nombre',
-    institucion = 'GiraGroup',
+    institucion = 'GiraGroup Posgrado',
     tipo_fuente = 'GSHEETS_ACTA_NOTAS',
     escala_label = 'No aplica',
     periodo = '2024–2026 (Auto)',

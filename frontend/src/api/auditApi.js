@@ -41,21 +41,25 @@ export const auditApi = {
     }
 
     try {
-      const res = await client.post('/pipeline/process', formData, {
+      const res = await client.post('/api/v1/pipeline/process', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       return res.data;
     } catch (err) {
-      // Fallback a /api/v1/pipeline/process en caso de que el proxy o gateway no resuelva la raíz
-      if (err.response?.status === 404) {
-        const resFallback = await client.post('/api/v1/pipeline/process', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        return resFallback.data;
+      // Fallback a /pipeline/process en caso de que el proxy o gateway apunte al alias raíz
+      if (err.response?.status === 404 || err.response?.status === 403) {
+        try {
+          const resFallback = await client.post('/pipeline/process', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          return resFallback.data;
+        } catch (fallbackErr) {
+          throw fallbackErr;
+        }
       }
       throw err;
     }

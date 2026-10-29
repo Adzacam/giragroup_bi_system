@@ -113,7 +113,7 @@ class DocenteCreate(BaseModel):
 
 class ModuloCreate(BaseModel):
     nombre_modulo: str
-    nombre_institucion: str = "GiraGroup"
+    nombre_institucion: str = "GiraGroup Posgrado"
     programa: Optional[str] = None
     pos_code: Optional[str] = None
 

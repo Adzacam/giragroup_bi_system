@@ -12,12 +12,18 @@ import time
 import logging
 from typing import List, Dict, Any, Optional, Union
 
-import torch
-from transformers import pipeline
+try:
+    import torch
+    from transformers import pipeline
+except (ImportError, Exception):
+    torch = None
+    pipeline = None
 
 from pipeline.config import (
     MODELO_BETO_NOMBRE,
     MODELO_BETO_BASE,
+    MODELO_BETO_NER,
+    MODELO_BETO_FALLBACK,
     DEFAULT_BATCH_SIZE,
     UMBRAL_CONFIANZA_ALTO,
     UMBRAL_CONFIANZA_MEDIO,
@@ -82,11 +88,12 @@ class BetoNEREngine:
         self.gazetteer = gazetteer or CatalogoGazetteer()
         self.telemetria = PerformanceLogger()
         
+        has_cuda = torch is not None and torch.cuda.is_available()
         if device is None:
-            self.device_id = 0 if torch.cuda.is_available() else -1
+            self.device_id = 0 if has_cuda else -1
             self.dispositivo_nombre = f"cuda:{self.device_id}" if self.device_id >= 0 else "cpu"
         elif isinstance(device, str):
-            if "cuda" in device.lower() and torch.cuda.is_available():
+            if "cuda" in device.lower() and has_cuda:
                 self.device_id = 0
                 self.dispositivo_nombre = "cuda:0"
             else:
@@ -94,7 +101,7 @@ class BetoNEREngine:
                 self.dispositivo_nombre = "cpu"
         else:
             self.device_id = int(device)
-            self.dispositivo_nombre = f"cuda:{self.device_id}" if self.device_id >= 0 else "cpu"
+            self.dispositivo_nombre = f"cuda:{self.device_id}" if (self.device_id >= 0 and has_cuda) else "cpu"
 
         self._nlp_pipeline = None
         if auto_load:
@@ -104,6 +111,11 @@ class BetoNEREngine:
     def _inicializar_modelo(self):
         """Carga perezosa del pipeline de transformers en memoria."""
         if self._nlp_pipeline is not None:
+            return
+
+        if pipeline is None:
+            logger.info("Torch/Transformers no están disponibles en el entorno. Operando en modo semántico por reglas y gazetteer.")
+            self._nlp_pipeline = None
             return
 
         t0 = time.time()
@@ -124,7 +136,7 @@ class BetoNEREngine:
             try:
                 self._nlp_pipeline = pipeline(
                     "ner",
-                    model=MODELO_BETO_BASE,
+                    model=MODELO_BETO_FALLBACK,
                     aggregation_strategy="simple",
                     device=self.device_id
                 )
@@ -234,9 +246,17 @@ class BetoNEREngine:
             if not palabra or len(palabra) < 2:
                 continue
 
-            # Desambiguación semántica de entidades PER
+            # Soporte nativo para etiquetas de BETO GiraGroup fine-tuned y fallback CoNLL
             tipo_final = TipoEntidad.OTRO
-            if etiqueta == "PER":
+            if etiqueta == "PER_ESTUDIANTE":
+                tipo_final = TipoEntidad.ESTUDIANTE
+            elif etiqueta == "PER_DOCENTE":
+                tipo_final = TipoEntidad.DOCENTE
+            elif etiqueta == "MODULO":
+                tipo_final = TipoEntidad.MODULO
+            elif etiqueta == "PROGRAMA":
+                tipo_final = TipoEntidad.PROGRAMA
+            elif etiqueta == "PER":
                 tipo_final = self._desambiguar_persona(texto, start, end)
             elif etiqueta in ("MISC", "ORG"):
                 palabra_limpia = palabra.strip().upper()
@@ -464,6 +484,50 @@ class BetoNEREngine:
                     origen="REGEX_SEMANTICO"
                 )
             )
+
+        # 8. Personas y Programas (Extracción semántica complementaria / fallback cuando BETO está offline)
+        if self._nlp_pipeline is None:
+            # Docentes por proximidad sintáctica
+            for m in re.finditer(r'\b(?:[Ee]l\s+docente|[Dd]ocente|[Pp]rofesor)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})', texto):
+                val = m.group(1).strip()
+                entidades.append(
+                    EntidadExtraida(
+                        tipo=TipoEntidad.DOCENTE,
+                        valor=val,
+                        start_char=m.start(1),
+                        end_char=m.start(1) + len(val),
+                        score=0.93,
+                        origen="REGEX_SEMANTICO"
+                    )
+                )
+
+            # Estudiantes por proximidad sintáctica
+            for m in re.finditer(r'\b(?:(?:al|el|para\s+el)\s+estudiante|[Ee]studiante|[Aa]lumno)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})', texto):
+                val = m.group(1).strip()
+                entidades.append(
+                    EntidadExtraida(
+                        tipo=TipoEntidad.ESTUDIANTE,
+                        valor=val,
+                        start_char=m.start(1),
+                        end_char=m.start(1) + len(val),
+                        score=0.93,
+                        origen="REGEX_SEMANTICO"
+                    )
+                )
+
+            # Programas por prefijo canónico (Diplomado, Experto, Curso, Maestría)
+            for m in re.finditer(r'\b(?:programa\s+)?((?:Diplomado|Experto|Curso|Maestr[ií]a)\s+en\s+[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+?)(?=\s*\(|\s*con|\s*,|\s*\.|$)', texto, re.IGNORECASE):
+                val = m.group(1).strip()
+                entidades.append(
+                    EntidadExtraida(
+                        tipo=TipoEntidad.PROGRAMA,
+                        valor=val,
+                        start_char=m.start(1),
+                        end_char=m.start(1) + len(val),
+                        score=0.92,
+                        origen="REGEX_SEMANTICO"
+                    )
+                )
 
         return entidades
 

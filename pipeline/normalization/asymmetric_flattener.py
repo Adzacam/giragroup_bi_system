@@ -60,6 +60,17 @@ class AsymmetricFlattener:
     """
 
     @classmethod
+    def sanitizar_texto_institucion(cls, texto: str) -> str:
+        """Sanitiza menciones de instituciones antiguas unificando a GiraGroup Posgrado."""
+        if not texto:
+            return ""
+        pattern = re.compile(
+            r"\b(universidad\s+franz\s+tamayo|unifranz|universidad\s+bolivariana|bolivariana|bm\s+group)\b",
+            re.IGNORECASE
+        )
+        return pattern.sub("GiraGroup Posgrado", texto)
+
+    @classmethod
     def extraer_fechas_texto(cls, texto: str) -> List[str]:
         """Extrae años y fechas encontradas en una cadena de texto."""
         if not texto:
@@ -190,6 +201,7 @@ class AsymmetricFlattener:
                 min_col, min_row, max_col, max_row = range_boundaries(coord)
                 top_left_val = ws.cell(row=min_row, column=min_col).value
                 val_str = str(top_left_val).strip() if top_left_val is not None else ""
+                val_str = cls.sanitizar_texto_institucion(val_str)
                 
                 celda_info = {
                     "rango": coord,
@@ -248,12 +260,12 @@ class AsymmetricFlattener:
             preceding_rows = [raw_matrix[pr] for pr in range(max(0, fila_cabecera_idx - 4), fila_cabecera_idx - 1)]
 
             for c_idx, col_name in enumerate(hdr_row):
-                nombre_limpio = col_name.strip()
+                nombre_limpio = cls.sanitizar_texto_institucion(col_name.strip())
                 partes_multinivel = []
                 if preceding_rows:
                     for p_row in preceding_rows:
                         if c_idx < len(p_row):
-                            cat_sup = p_row[c_idx].strip()
+                            cat_sup = cls.sanitizar_texto_institucion(p_row[c_idx].strip())
                             if cat_sup and cat_sup not in partes_multinivel and cat_sup != nombre_limpio and not cat_sup.isdigit() and len(cat_sup) > 2:
                                 if len(cat_sup) < 70 and not any(k in cat_sup.lower() for k in ["maestría", "diplomado", "universidad"]):
                                     partes_multinivel.append(cat_sup)
@@ -263,6 +275,7 @@ class AsymmetricFlattener:
                     prefijo = " - ".join(partes_multinivel)
                     nombre_limpio = f"{prefijo} - {nombre_limpio}" if nombre_limpio else prefijo
 
+                nombre_limpio = cls.sanitizar_texto_institucion(nombre_limpio)
                 if not nombre_limpio:
                     nombre_limpio = f"Columna_{c_idx + 1}"
                 cabecera_final.append(nombre_limpio)

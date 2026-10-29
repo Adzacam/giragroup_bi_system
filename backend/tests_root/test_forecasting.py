@@ -167,11 +167,17 @@ mock_db = MagicMock(spec=Session)
 mock_db.execute.side_effect = Exception("DB offline in test")
 mock_db.get_bind.return_value = None
 
-app.dependency_overrides[get_current_user] = lambda: mock_admin
-app.dependency_overrides[get_db] = lambda: mock_db
-
 client = TestClient(app)
-client.headers["Authorization"] = "Bearer mock_admin_token"
+
+@pytest.fixture(autouse=True)
+def setup_forecasting_test():
+    app.dependency_overrides[get_current_user] = lambda: mock_admin
+    app.dependency_overrides[get_db] = lambda: mock_db
+    client.headers["Authorization"] = "Bearer mock_admin_token"
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
+    app.dependency_overrides.pop(get_db, None)
+    client.headers.pop("Authorization", None)
 
 
 def test_api_forecast_alumnos():

@@ -23,9 +23,11 @@ import csv
 import json
 import logging
 import os
+import re
+import unicodedata
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Dict, Any, List, Optional, Tuple
 
 import pandas as pd
 
@@ -389,7 +391,7 @@ def segmentar_archivo(
 PALABRAS_CLAVE_CATEGORIA = {
     "academico": [
         "nota", "asistencia", "módulo", "modulo", "docente", "acta",
-        "evaluacion", "evaluación", "postgrado", "unifranz", "programa",
+        "evaluacion", "evaluación", "postgrado", "giragroup", "programa",
         "alumno", "estudiante", "carrera", "arca", "academ", "inicios y okr",
         "okr", "materia", "experto", "diplomado", "curso"
     ],
@@ -425,20 +427,295 @@ def a_texto_plano(bloque: pd.DataFrame) -> str:
     return "\n".join(lineas)
 
 
+def _strip_accents(text: str) -> str:
+    if not text:
+        return ""
+    return "".join(
+        c for c in unicodedata.normalize("NFD", str(text))
+        if unicodedata.category(c) != "Mn"
+    ).lower().strip()
+
+
+
+def _contiene_tokens(texto: str, palabras_o_frases: tuple[str, ...]) -> bool:
+    """
+    Verifica si alguna de las palabras o frases clave está presente en el texto,
+    respetando límites de palabra (word boundaries) para términos únicos
+    (evitando falsos positivos como 'ci' en 'servicio', 'lead' en 'empleados', 'mora' en 'memorando').
+    """
+    for term in palabras_o_frases:
+        term_clean = term.strip()
+        if not term_clean:
+            continue
+        if " " in term_clean or "-" in term_clean or "_" in term_clean:
+            if term_clean in texto:
+                return True
+        else:
+            pattern = r"\b" + re.escape(term_clean) + r"\b"
+            if re.search(pattern, texto):
+                return True
+    return False
+
+
+def clasificar_contenido_agnostico(
+    df: pd.DataFrame,
+    cabeceras: Optional[List[str]] = None
+) -> Dict[str, Any]:
+    """
+    Clasificador Semántico Agnóstico de Contenido (cero nombres de archivos u hojas quemados):
+    Inspecciona tokens canónicos de cabecera, tipos de datos y densidad muestral para derivar
+    con precisión el hecho destino del modelo estrella / constelación:
+      * Académico (estudiante CI/nombre + módulo + nota) -> fact_rendimiento_academico
+      * Financiero (estudiante CI + monto/saldo + cuota/fecha) -> fact_situacion_financiera
+      * Evaluación Docente (docente + preguntas/satisfacción + escala 1-5) -> fact_evaluacion_docente
+      * Rentabilidad/Egresos (costos, egresos, techos, presupuesto, margen) -> fact_rentabilidad
+      * Marketing/Admisión (leads, campañas, prospectos, preinscritos) -> fact_marketing
+    """
+    if df is None or df.empty:
+        return {
+            "categoria": "generico",
+            "fact_table": None,
+            "tipo_fuente": "SIN_RECONOCER",
+            "confidence": 0.0,
+            "scores": {},
+            "criterios": []
+        }
+
+    tokens_cabecera: List[str] = []
+    if cabeceras:
+        for c in cabeceras:
+            t = _strip_accents(str(c))
+            if t and not t.startswith("unnamed"):
+                tokens_cabecera.append(t)
+
+    for col in df.columns:
+        c_str = _strip_accents(str(col))
+        if c_str and not c_str.startswith("unnamed"):
+            tokens_cabecera.append(c_str)
+
+    max_rows = min(15, len(df))
+    ratings_1_5_count = 0
+    total_numeric_cells = 0
+
+    for r_idx in range(max_rows):
+        row_vals = df.iloc[r_idx].values
+        for v in row_vals:
+            if pd.notna(v):
+                v_raw = str(v).strip()
+                v_str = _strip_accents(v_raw)
+                if 1 < len(v_str) <= 90:
+                    tokens_cabecera.append(v_str)
+
+                try:
+                    num_val = float(v_raw.replace("$", "").replace("Bs", "").replace(",", ".").strip())
+                    total_numeric_cells += 1
+                    if 1.0 <= num_val <= 5.0 and num_val.is_integer():
+                        ratings_1_5_count += 1
+                except (ValueError, TypeError):
+                    pass
+
+    joined = " | ".join(tokens_cabecera)
+
+    # Detección basada en tokens con límites de palabra precisos
+    has_estudiante = _contiene_tokens(joined, (
+        "ci", "cedula", "dni", "idnumber", "carnet", "alumno", "alumnos",
+        "estudiante", "estudiantes", "postulante", "nombre completo",
+        "nombres y apellidos", "apellidos y nombres"
+    ))
+    has_modulo = _contiene_tokens(joined, (
+        "modulo", "modulos", "materia", "materias", "asignatura", "asignaturas",
+        "curso", "cursos", "course", "cod_modulo", "codigo modulo"
+    ))
+    has_nota = _contiene_tokens(joined, (
+        "nota", "notas", "calificacion", "calificaciones", "calif_final", "nota_final",
+        "finalgrade", "promedio", "calif", "aprobado", "reprobado"
+    ))
+    has_moodle = _contiene_tokens(joined, (
+        "idnumber", "finalgrade", "total del curso", "cuestionario:", "tarea:", "aula virtual"
+    ))
+
+    has_saldo_monto = _contiene_tokens(joined, (
+        "monto", "saldo", "deuda", "monto_deuda", "monto_pagado", "pagado",
+        "importe", "cobranza", "cartera", "abono", "deposito", "arancel", "recibo"
+    ))
+    has_cuota_mora = _contiene_tokens(joined, (
+        "cuota", "cuotas", "cuotas_impagas", "mora", "en mora", "vencimiento",
+        "fecha de pago", "comprobante de pago", "factura", "concepto"
+    ))
+
+    has_docente = _contiene_tokens(joined, (
+        "docente", "docentes", "profesor", "profesores", "profesora", "profesoras",
+        "facilitador", "facilitadores", "instructor", "instructores", "tutor", "tutores",
+        "desempeno docente"
+    ))
+    has_eval_doc = _contiene_tokens(joined, (
+        "evaluacion docente", "evaluacion_docente", "encuesta docente", "encuesta de satisfaccion",
+        "satisfaccion docente", "desempeno docente", "evaluacion del docente", "criterio de evaluacion",
+        "item evaluacion", "escala de calificacion", "escala likert", "dominio del tema",
+        "didactica del docente", "nps docente", "puntualidad docente"
+    ))
+    has_eval_pregunta = _contiene_tokens(joined, (
+        "pregunta", "criterio", "satisfaccion", "dominio del tema", "didactica", "nps", "encuesta"
+    ))
+
+    has_egreso_puro = _contiene_tokens(joined, (
+        "egreso", "egresos", "gasto", "gastos", "partida",
+        "partida presupuestaria", "comprobante de egreso", "proveedor", "proveedores",
+        "desembolso", "beneficiario"
+    ))
+    has_egreso_costo = has_egreso_puro or _contiene_tokens(joined, ("costo", "costos"))
+    has_techo_meta = _contiene_tokens(joined, (
+        "techo", "techos", "techo presupuestario", "presupuesto asignado", "presupuestado",
+        "presupuesto", "rentabilidad", "balance financiero", "utilidad neta", "margen",
+        "ebitda", "ejecutado", "monto_ejecutado", "monto_meta", "ejecutado vs meta",
+        "categoria financiera"
+    ))
+
+    has_mkt_lead = _contiene_tokens(joined, (
+        "lead", "leads", "campana", "campaña", "medio de contacto", "canal de marketing",
+        "fuente lead", "asesor comercial", "reservas de plaza", "costo programa", "costo programa comercial"
+    ))
+    has_admision = _contiene_tokens(joined, (
+        "preinscrito", "preinscritos", "preinscripcion", "preinscripciones",
+        "prospecto", "prospectos", "matricula", "matriculas", "inscrito", "inscritos",
+        "formulario de admision", "marca temporal"
+    ))
+
+    scores = {
+        "academico": 0.0,
+        "financiero": 0.0,
+        "evaluacion_docente": 0.0,
+        "rentabilidad": 0.0,
+        "marketing": 0.0
+    }
+    criterios = []
+
+    # 1. Académico
+    if has_estudiante and has_modulo and has_nota:
+        scores["academico"] += 14.0
+        criterios.append("Co-ocurrencia estudiante + modulo + calificacion")
+    elif has_modulo and has_nota:
+        scores["academico"] += 10.0
+        criterios.append("Modulo + calificacion detectados")
+    elif has_estudiante and has_nota:
+        scores["academico"] += 8.0
+        criterios.append("Estudiante + calificacion detectados")
+    if has_moodle:
+        scores["academico"] += 8.0
+        criterios.append("Tokens estructurales Moodle")
+
+    # 2. Financiero (Situación financiera de estudiantes / aranceles / mora)
+    if has_estudiante and has_saldo_monto and has_cuota_mora:
+        scores["financiero"] += 14.0
+        criterios.append("Co-ocurrencia estudiante/CI + saldo/monto + cuota/mora")
+    elif has_estudiante and has_saldo_monto:
+        scores["financiero"] += 10.0
+        criterios.append("Estudiante + saldo/monto detectados")
+    elif has_saldo_monto and has_cuota_mora and not has_egreso_costo:
+        scores["financiero"] += 7.0
+        criterios.append("Saldo/monto + cuota/mora detectados")
+
+    # 3. Evaluación Docente
+    if has_docente and has_eval_doc:
+        scores["evaluacion_docente"] += 14.0
+        criterios.append("Docente + encuesta/evaluacion formal detectada")
+    elif has_docente and has_eval_pregunta and ratings_1_5_count >= 3 and not has_nota:
+        scores["evaluacion_docente"] += 12.0
+        criterios.append("Docente + preguntas de satisfaccion y escala 1-5")
+    elif has_eval_doc and ratings_1_5_count >= 3 and not has_nota:
+        scores["evaluacion_docente"] += 10.0
+        criterios.append("Encuesta de satisfaccion con escala numerica 1-5")
+    elif has_eval_doc and not has_nota:
+        scores["evaluacion_docente"] += 6.0
+
+    # 4. Rentabilidad / Egresos / Techos
+    if has_egreso_costo and has_techo_meta:
+        scores["rentabilidad"] += 14.0
+        criterios.append("Co-ocurrencia costos/egresos + techos/presupuesto/ejecutado")
+    elif has_egreso_puro and not has_estudiante:
+        scores["rentabilidad"] += 11.0
+        criterios.append("Costos y egresos institucionales")
+    elif has_techo_meta and not has_estudiante:
+        scores["rentabilidad"] += 11.0
+        criterios.append("Techos presupuestarios / ejecutado vs meta")
+    elif has_egreso_costo and not has_mkt_lead and not has_estudiante:
+        scores["rentabilidad"] += 6.0
+
+    if not has_estudiante and scores["rentabilidad"] > 0 and not has_mkt_lead:
+        scores["rentabilidad"] += 2.0
+
+    # 5. Marketing / Admisión
+    if has_mkt_lead and not has_nota:
+        scores["marketing"] += 14.0
+        criterios.append("Leads / campanas de marketing comercial")
+    if has_admision and not has_nota and not (has_estudiante and has_saldo_monto):
+        scores["marketing"] += 10.0
+        criterios.append("Postulantes / matriculas / admision")
+    if has_mkt_lead and has_admision and not has_nota:
+        scores["marketing"] += 4.0
+
+    best_cat = max(scores, key=scores.get)
+    best_score = scores[best_cat]
+
+    if best_score < 3.0:
+        return {
+            "categoria": "generico",
+            "fact_table": None,
+            "tipo_fuente": "SIN_RECONOCER",
+            "confidence": 0.2,
+            "scores": scores,
+            "criterios": ["Puntaje insuficiente para clasificacion determinista"]
+        }
+
+    fact_table_map = {
+        "academico": "fact_rendimiento_academico",
+        "financiero": "fact_situacion_financiera",
+        "evaluacion_docente": "fact_evaluacion_docente",
+        "rentabilidad": "fact_rentabilidad",
+        "marketing": "fact_marketing"
+    }
+
+    fuente_map = {
+        "academico": "MOODLE" if has_moodle else "ACTA",
+        "financiero": "COBRANZA",
+        "evaluacion_docente": "EVALUACION_DOCENTE",
+        "rentabilidad": "RENTABILIDAD" if has_techo_meta and "ejecutado" in joined else ("EGRESOS" if has_egreso_costo else "TECHOS"),
+        "marketing": "MARKETING" if has_mkt_lead else "ADMISION"
+    }
+
+    confidence = min(0.99, round(0.5 + (best_score / 20.0), 2))
+
+    return {
+        "categoria": best_cat,
+        "fact_table": fact_table_map.get(best_cat),
+        "tipo_fuente": fuente_map.get(best_cat, "ACTA"),
+        "confidence": confidence,
+        "scores": scores,
+        "criterios": criterios
+    }
+
+
 def clasificar_categoria(
     bloque: pd.DataFrame = None,
     nombre_archivo: str = "",
     nombre_hoja: str = "",
 ) -> str:
     """
-    Clasifica un bloque en una categoría de negocio ('academico', 'financiero', 'comercial', 'generico')
-    delegando de forma dinámica en las etiquetas y reglas cargadas de la base de datos de catálogos
-    (CatalogRepository), eliminando heurísticas manuales en código.
+    Clasifica un bloque en una categoría de negocio ('academico', 'financiero', 'evaluacion_docente',
+    'rentabilidad', 'marketing', 'comercial', 'generico').
+    Prioriza la inspección heurística agnóstica de tokens y densidad de contenido del DataFrame,
+    garantizando cero dependencia de nombres de archivo u hojas quemadas.
     """
     if bloque is not None:
         if getattr(bloque, "attrs", {}).get("es_ruido", False) or len(bloque) < MIN_FILAS_ISLA:
             return "ruido"
 
+        # 1. Detección agnóstica primaria basada en contenido y cabeceras
+        agnostico = clasificar_contenido_agnostico(bloque)
+        if agnostico.get("confidence", 0.0) >= 0.5 and agnostico.get("categoria") != "generico":
+            return agnostico["categoria"]
+
+    # 2. Respaldo secundario en catálogo dinámico si el contenido fue ambiguo o bloque es None
     texto_contenido = ""
     if bloque is not None and not bloque.empty:
         filas_muestra = bloque.iloc[:min(3, len(bloque))].values.flatten()

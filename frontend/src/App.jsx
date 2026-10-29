@@ -38,13 +38,20 @@ const GestionUsuarios     = lazy(() => import('./modules/admin/GestionUsuarios')
 const CatalogosMaestros   = lazy(() => import('./modules/admin/CatalogosMaestros'));
 const AuditoriaSistema    = lazy(() => import('./modules/admin/AuditoriaSistema'));
 const AjustesSistema      = lazy(() => import('./modules/settings/AjustesSistema'));
+const CentroReportes      = lazy(() => import('./modules/reports/CentroReportes'));
 
 import { ThemeProvider } from './context/ThemeContext';
 
-/* ─── React Query Client ─── */
+/* ─── React Query Client Optimizado para Navegación Instantánea ─── */
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { staleTime: 30_000, retry: 1 },
+    queries: {
+      staleTime: 60_000,
+      gcTime: 300_000,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      retry: 1,
+    },
   },
 });
 
@@ -384,6 +391,13 @@ function App() {
                   {/* Admin dashboard (also accessible to all roles as overview) */}
                   <Route path="dashboard" element={<CuadroMandoIntegral />} />
                   <Route path="cmi" element={<CuadroMandoIntegral />} />
+
+                  {/* Centro de Reportes Institucionales (HU-12) */}
+                  <Route path="reportes" element={
+                    <RoleRoute allowedRoles={['ADMIN', 'DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD', 'ANALISTA_MARKETING']}>
+                      <CentroReportes />
+                    </RoleRoute>
+                  } />
 
                   {/* Notifications (all roles) */}
                   <Route path="notificaciones" element={<NotificationsPage />} />

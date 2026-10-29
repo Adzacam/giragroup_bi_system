@@ -76,12 +76,18 @@ def obtener_gazetteer() -> CatalogoGazetteer:
 
 
 def limpiar_texto_celda(val: Any) -> str:
-    """Elimina caracteres de control y normaliza espacios en blanco."""
+    """Elimina caracteres de control, normaliza espacios en blanco y sanitiza menciones institucionales."""
     if val is None:
         return ""
     txt = str(val)
     # Eliminar caracteres de control nulos o no imprimibles
     txt = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", txt)
+    txt = re.sub(
+        r"\b(universidad\s+franz\s+tamayo|unifranz|universidad\s+bolivariana|bolivariana|bm\s+group)\b",
+        "GiraGroup Posgrado",
+        txt,
+        flags=re.IGNORECASE
+    )
     txt = re.sub(r"\s+", " ", txt).strip()
     return txt
 
@@ -167,8 +173,8 @@ def formatear_fila_dinamica(
     # 2. Clasificar campos de la fila usando cat_mapeo_columna
     datos_extraidos: Dict[str, Any] = {
         "POS": cod_pos,
-        "PROGRAMA": nom_prog if nom_prog and nom_prog != cod_pos else (cod_pos or "programa académico"),
-        "HOJA": metadatos.get("hoja", "Datos"),
+        "PROGRAMA": limpiar_texto_celda(nom_prog if nom_prog and nom_prog != cod_pos else (cod_pos or "programa académico")),
+        "HOJA": limpiar_texto_celda(metadatos.get("hoja", "Datos")),
         "NOTAS": [],
         "RESPUESTAS": [],
         "DETALLES": []
@@ -179,8 +185,8 @@ def formatear_fila_dinamica(
     for col_orig, val_orig in row_dict.items():
         if not val_orig or not str(val_orig).strip():
             continue
-        val_clean = str(val_orig).strip()
-        col_clean = str(col_orig).strip()
+        val_clean = limpiar_texto_celda(val_orig)
+        col_clean = limpiar_texto_celda(col_orig)
 
         mapeo = gazetteer.repo.identificar_columna(col_clean)
         campo = mapeo["campo_canonico"] if mapeo else None
@@ -288,6 +294,12 @@ def formatear_fila_dinamica(
     oracion = re.sub(r"\s+por concepto de\s*\.", ".", oracion)
     oracion = re.sub(r"\s+asesorado por\s*\.", ".", oracion)
     oracion = re.sub(r"\s*,\s*\.", ".", oracion)
+    oracion = re.sub(
+        r"\b(universidad\s+franz\s+tamayo|unifranz|universidad\s+bolivariana|bolivariana|bm\s+group)\b",
+        "GiraGroup Posgrado",
+        oracion,
+        flags=re.IGNORECASE
+    )
     oracion = re.sub(r"\s+", " ", oracion).strip()
     if not oracion.endswith("."):
         oracion += "."

@@ -109,7 +109,7 @@ export default function PipelineMonitorBadge({
             }}
           >
             <Layers size={14} color="#D99B26" />
-            <span>Formatos: <strong>Excel (.xlsx), Forms (.csv), Moodle (.xml)</strong></span>
+            <span>Formatos: <strong>Excel (.xlsx), Forms (.csv), Moodle (.csv)</strong></span>
           </div>
 
           <div

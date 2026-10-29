@@ -28,7 +28,8 @@ from routers import (
     audit,
     catalogs,
     kpis,
-    pipeline
+    pipeline,
+    reportes
 )
 from seed_users import seed_default_users
 
@@ -106,6 +107,7 @@ app.include_router(audit.router)
 app.include_router(catalogs.router)
 app.include_router(kpis.router)
 app.include_router(pipeline.router)
+app.include_router(reportes.router)
 
 
 @app.post(

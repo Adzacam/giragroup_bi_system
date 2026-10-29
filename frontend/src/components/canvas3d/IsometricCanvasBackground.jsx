@@ -44,7 +44,13 @@ export default function IsometricCanvasBackground() {
 
     const isDark = theme === 'dark';
 
+    let animationId;
     const render = () => {
+      if (document.hidden) {
+        animationId = requestAnimationFrame(render);
+        return;
+      }
+
       ctx.clearRect(0, 0, width, height);
       
       targetX += (mouseX - targetX) * 0.04;
@@ -99,10 +105,10 @@ export default function IsometricCanvasBackground() {
       }
       
       ctx.restore();
-      requestAnimationFrame(render);
+      animationId = requestAnimationFrame(render);
     };
 
-    const animationId = requestAnimationFrame(render);
+    animationId = requestAnimationFrame(render);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);

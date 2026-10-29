@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS public.cat_institucion (
 
 INSERT INTO public.cat_institucion (nombre_institucion, sigla, tipo_escala_default)
 VALUES
-    ('GiraGroup', 'GG', 'CENTESIMAL_100'),
+    ('GiraGroup Posgrado', 'GG', 'CENTESIMAL_100'),
     ('Escuela de Negocios y Postgrado', 'ENP', 'CENTESIMAL_100'),
     ('Facultad de Ciencias de la Salud', 'FCS', 'CENTESIMAL_100')
 ON CONFLICT (nombre_institucion) DO NOTHING;
@@ -136,7 +136,7 @@ CREATE TABLE public.dim_docente (
 CREATE TABLE public.dim_modulo (
     id_modulo SERIAL PRIMARY KEY,
     nombre_modulo VARCHAR(200) NOT NULL DEFAULT 'Modulo Generico',
-    nombre_institucion VARCHAR(200) NOT NULL DEFAULT 'GiraGroup',
+    nombre_institucion VARCHAR(200) NOT NULL DEFAULT 'GiraGroup Posgrado',
     id_institucion INT REFERENCES public.cat_institucion(id_institucion) ON DELETE SET NULL,
     programa VARCHAR(200) DEFAULT 'General',
     pos_code VARCHAR(50),
@@ -147,7 +147,7 @@ CREATE TABLE public.dim_origen_documental (
     id_documento SERIAL PRIMARY KEY,
     id_lote INT REFERENCES public.lote(id_lote) ON DELETE SET NULL,
     tipo_documento VARCHAR(50) DEFAULT 'SHEET',
-    tipo_fuente VARCHAR(30) CHECK (tipo_fuente IS NULL OR tipo_fuente IN ('ACTA', 'COBRANZA', 'ADMISION', 'MOODLE')),
+    tipo_fuente VARCHAR(30) CHECK (tipo_fuente IS NULL OR tipo_fuente IN ('ACTA', 'COBRANZA', 'ADMISION', 'MOODLE', 'EVALUACION_DOCENTE', 'EGRESOS', 'TECHOS', 'PLANIFICACION', 'MARKETING', 'RENTABILIDAD', 'ERROR', 'RECHAZADO', 'DUPLICADO', 'SIN_RECONOCER')),
     tipo_escala VARCHAR(20) CHECK (tipo_escala IS NULL OR tipo_escala IN ('CENTESIMAL_100', 'DECIMAL_10', 'VIGESIMAL_20')),
     nombre_archivo VARCHAR(500) DEFAULT 'archivo_generico',
     institucion VARCHAR(100),

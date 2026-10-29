@@ -87,7 +87,7 @@ export default function CatalogoCurricular() {
         />
         <KpiCard
           label="Sede de Gestión"
-          number="GiraGroup"
+          number="GiraGroup Posgrado"
           sublabel="Sede académica central"
           badgeText="Institucional"
           badgeType="success"
@@ -145,7 +145,7 @@ export default function CatalogoCurricular() {
                   <td style={{ fontSize: '13px', color: 'var(--color-slate-gray)' }}>
                     {item.programa || 'Programa General'}
                   </td>
-                  <td style={{ fontSize: '12.5px' }}>{item.nombre_institucion || 'GiraGroup'}</td>
+                  <td style={{ fontSize: '12.5px' }}>{item.nombre_institucion || 'GiraGroup Posgrado'}</td>
                   <td>
                     <span
                       style={{

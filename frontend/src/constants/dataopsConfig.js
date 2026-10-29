@@ -20,7 +20,7 @@ export const TOPE_INDICE_BONIFICADO_DEC = 0.99;
 export const MAX_ARCHIVOS_POR_LOTE = 10;
 export const MAX_TAMANO_ARCHIVO_MB = 15;
 export const MAX_TAMANO_ARCHIVO_BYTES = MAX_TAMANO_ARCHIVO_MB * 1024 * 1024;
-export const FORMATOS_PERMITIDOS = ['.xlsx', '.xls', '.csv'];
+export const FORMATOS_PERMITIDOS = ['.xlsx', '.csv'];
 
 /** Escalas de calificación para archivos académicos (#16) */
 export const ESCALAS_ACADEMICAS = [

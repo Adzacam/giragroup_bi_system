@@ -14,7 +14,7 @@ export default function HeterogeneousReadersCard() {
       title: 'Lector Excel / Sheets',
       subtitle: 'Limpieza estructural & cabeceras',
       icon: FileSpreadsheet,
-      badge: '.XLSX / .XLS',
+      badge: '.XLSX',
       badgeColor: '#2563eb',
       spec: 'Aislamiento de islas tabulares rectangulares (B5:H180), remoción de celdas combinadas y títulos administrativos.',
       features: [
@@ -22,8 +22,8 @@ export default function HeterogeneousReadersCard() {
         'Normalización canónica de columnas: NOMBRES Y APELLIDOS → nombre_completo, CALIF_FINAL → nota_final.',
         'Manejo de múltiples hojas (pestañas) y libros de calificaciones consolidados.'
       ],
-      sampleRaw: `Fila 1: [UNIVERSIDAD GIRA - GOBERNANZA ACADÉMICA] (CELDA COMBINADA)
-Fila 2: [Docente: Dr. Carlos A. Gómez | Gestión 2026-I]
+      sampleRaw: `Fila 1: [GIRAGROUP POSGRADO - GOBERNANZA ACADÉMICA] (CELDA COMBINADA)
+Fila 2: [Docente: Dr. Carlos A. Gómez | Gestión 2024–2026]
 Fila 4: [NRO | NOMBRES Y APELLIDOS | DOC_IDENTIDAD/CI | CALIF_FINAL | ESTADO]
 Fila 5: [ 1  | Daza Adriano        | 4892019 LP?      | 75.0        | APROBADO]`,
       sampleClean: `{

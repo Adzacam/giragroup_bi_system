@@ -24,15 +24,33 @@ BACKEND_DIR = ROOT_DIR / "backend"
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from backend.main import app
-from backend.schemas.forecast_schemas import ForecastAlumnosResponse, ForecastMetasResponse
-from backend.schemas.risk_schemas import RiesgoCruzadoResponse
+from main import app
+from schemas.forecast_schemas import ForecastAlumnosResponse, ForecastMetasResponse
+from schemas.risk_schemas import RiesgoCruzadoResponse
 
-from backend.core.security import create_access_token
+from unittest.mock import MagicMock
+from sqlalchemy.orm import Session
+from core.security import create_access_token, get_current_user
+from core.database import get_db
+from models.user import User
 
-admin_token = create_access_token({"sub": "1", "role": "ADMIN"})
+mock_admin = User(id=1, username="admin", email="admin.general@giragroup.bo", role="ADMIN", is_active=True)
+mock_db = MagicMock(spec=Session)
+mock_db.execute.side_effect = Exception("DB offline in test")
+mock_db.get_bind.return_value = None
+
+@pytest.fixture(autouse=True)
+def setup_loops_test():
+    app.dependency_overrides[get_current_user] = lambda: mock_admin
+    app.dependency_overrides[get_db] = lambda: mock_db
+    admin_token = create_access_token({"sub": "1", "role": "ADMIN"})
+    client.headers["Authorization"] = f"Bearer {admin_token}"
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
+    app.dependency_overrides.pop(get_db, None)
+    client.headers.pop("Authorization", None)
+
 client = TestClient(app)
-client.headers["Authorization"] = f"Bearer {admin_token}"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LOOP 1: LOOP DE SEGURIDAD OWASP TOP 10 (INYECCIÓN, FUZZING Y PARAMETER TAMPERING)

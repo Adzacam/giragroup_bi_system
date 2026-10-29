@@ -27,6 +27,19 @@ from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.catalogos import CatInstitucion
+try:
+    from models.fact_evaluacion import FactEvaluacionDocente
+    from models.fact_rentabilidad import FactRentabilidad
+    from models.fact_marketing import FactMarketing
+except ImportError:
+    try:
+        from backend.models.fact_evaluacion import FactEvaluacionDocente
+        from backend.models.fact_rentabilidad import FactRentabilidad
+        from backend.models.fact_marketing import FactMarketing
+    except ImportError:
+        FactEvaluacionDocente = None
+        FactRentabilidad = None
+        FactMarketing = None
 
 logger = logging.getLogger("dw_loader")
 
@@ -150,7 +163,7 @@ class DWLoaderService:
         nombre: Optional[str],
         doc_id: Optional[int] = None,
         confianza_ia: Optional[float] = None,
-        institucion: Optional[str] = "GiraGroup",
+        institucion: Optional[str] = "GiraGroup Posgrado",
         programa: Optional[str] = None,
         forzar_resolucion_humana: bool = False,
     ) -> Tuple[Optional[int], str]:
@@ -165,22 +178,25 @@ class DWLoaderService:
         es_sintetico = not ci or ci.startswith("TEMP-CI-") or "TEMP" in (ci or "")
         ci_num, ci_comp = normalizar_ci(ci) if not es_sintetico else (None, None)
 
-        # Caso 1: CI válido directo (búsqueda por ci_numero o ci exacto)
         if ci and not es_sintetico:
             ci_clean = ci.strip()
-            q = self.db.query(DimEstudiante).filter(DimEstudiante.deprecado == False)
             if ci_num:
-                est = q.filter(
+                ci_cond = (
                     (DimEstudiante.ci_numero == ci_num)
                     | (DimEstudiante.ci == ci_clean)
                     | (DimEstudiante.codigo_estudiante == ci_clean)
                     | (DimEstudiante.codigo_estudiante == ci_num)
-                ).first()
+                )
             else:
-                est = q.filter(
+                ci_cond = (
                     (DimEstudiante.ci == ci_clean)
                     | (DimEstudiante.codigo_estudiante == ci_clean)
-                ).first()
+                )
+
+            est = self.db.query(DimEstudiante).filter(
+                DimEstudiante.deprecado == False,
+                ci_cond
+            ).first()
 
             if est:
                 # Regla CI_NOMBRE_DISCORDANTE: si el nombre no coincide léxicamente (WRatio < 70) -> HITL
@@ -313,7 +329,7 @@ class DWLoaderService:
 
             # De lo contrario (alta confianza >= 0.85), crear id_temporal determinista por institución
             import hashlib
-            inst_clean = (institucion or "GiraGroup").strip().lower()
+            inst_clean = (institucion or "GiraGroup Posgrado").strip().lower()
             norm_str = "".join(nombre_clean.lower().split()) + "_" + "".join(inst_clean.split())
             hash_temp = f"TEMP-{hashlib.sha256(norm_str.encode()).hexdigest()[:12]}"
             id_inst = self._resolver_id_institucion(institucion)
@@ -452,7 +468,7 @@ class DWLoaderService:
         nombre_modulo: Optional[str],
         pos_code: Optional[str] = None,
         doc_id: Optional[int] = None,
-        institucion: Optional[str] = "GiraGroup"
+        institucion: Optional[str] = "GiraGroup Posgrado"
     ) -> Optional[int]:
         if not nombre_modulo and not pos_code:
             return None
@@ -480,7 +496,7 @@ class DWLoaderService:
             id_inst = self._resolver_id_institucion(institucion)
             nuevo_mod = DimModulo(
                 nombre_modulo=clean_name,
-                nombre_institucion=institucion or "GiraGroup",
+                nombre_institucion=institucion or "GiraGroup Posgrado",
                 id_institucion=id_inst,
                 pos_code=pos_code or "MOD-GEN"
             )
@@ -564,16 +580,20 @@ class DWLoaderService:
         institucion = (
             registro.get("institucion")
             or (origen_doc.institucion if origen_doc else None)
-            or "GiraGroup"
+            or "GiraGroup Posgrado"
         )
 
         # Determinar categoría determinísticamente desde tipo_fuente si existe
         if tipo_fuente == "COBRANZA":
             categoria = "financiero"
-        elif tipo_fuente in ("ACTA", "MOODLE"):
+        elif tipo_fuente in ("ACTA", "MOODLE", "PLANIFICACION"):
             categoria = "academico"
-        elif tipo_fuente == "ADMISION":
-            categoria = "admision"
+        elif tipo_fuente == "EVALUACION_DOCENTE":
+            categoria = "evaluacion_docente"
+        elif tipo_fuente in ("EGRESOS", "TECHOS", "RENTABILIDAD"):
+            categoria = "rentabilidad"
+        elif tipo_fuente in ("MARKETING", "ADMISION"):
+            categoria = "marketing" if tipo_fuente == "MARKETING" else "admision"
         else:
             categoria = (registro.get("categoria") or "academico").lower()
 
@@ -724,7 +744,104 @@ class DWLoaderService:
                 "fk_estado": fk_estado_est
             }
 
-        # 3c. Ruteo ACTA / MOODLE -> FactRendimientoAcademico
+        # 3c. Ruteo EVALUACION_DOCENTE -> FactEvaluacionDocente
+        if categoria == "evaluacion_docente" and FactEvaluacionDocente:
+            id_doc_eval = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id)
+            id_mod_eval = self.resolver_o_crear_modulo(
+                nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
+            ) or self.resolver_o_crear_modulo("Módulo General", pos_code="MOD-GEN", institucion=institucion)
+
+            puntuacion = float(resoluciones.get("puntuacion") or resoluciones.get("rating") or 5.0)
+            pregunta = str(resoluciones.get("pregunta_bloque") or resoluciones.get("criterio") or "Evaluación de desempeño docente")[:500]
+            comentario = resoluciones.get("comentario")
+            comentario_str = str(comentario)[:1000] if comentario else None
+
+            nuevo_eval = FactEvaluacionDocente(
+                id_docente=id_doc_eval,
+                id_modulo=id_mod_eval,
+                id_estudiante=id_est,
+                id_tiempo=id_tiempo,
+                pregunta_bloque=pregunta,
+                puntuacion=puntuacion,
+                comentario=comentario_str
+            )
+            self.db.add(nuevo_eval)
+            self.db.flush()
+            return {
+                "tipo": "evaluacion_docente",
+                "status": "loaded",
+                "id_hecho": nuevo_eval.id_hecho_eval,
+                "id_docente": id_doc_eval,
+                "puntuacion": puntuacion
+            }
+
+        # 3d. Ruteo RENTABILIDAD -> FactRentabilidad
+        if categoria == "rentabilidad" and FactRentabilidad:
+            id_mod_rent = self.resolver_o_crear_modulo(
+                nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
+            ) or self.resolver_o_crear_modulo("Administración General", pos_code="ADM-GEN", institucion=institucion)
+
+            id_cat = None
+            cat_nom = resoluciones.get("categoria_financiera") or "Operativo"
+            cat_db = self.db.query(DimCategoriaFinanciera).filter(
+                func.lower(DimCategoriaFinanciera.nombre_categoria) == cat_nom.lower()
+            ).first()
+            if cat_db:
+                id_cat = cat_db.id_categoria
+            else:
+                cat_first = self.db.query(DimCategoriaFinanciera).first()
+                id_cat = cat_first.id_categoria if cat_first else None
+
+            m_ejec = float(resoluciones.get("monto_ejecutado") or resoluciones.get("gasto") or resoluciones.get("egreso") or 0.0)
+            m_meta = float(resoluciones.get("monto_meta") or resoluciones.get("presupuesto") or resoluciones.get("techo") or 0.0)
+
+            nuevo_rent = FactRentabilidad(
+                id_modulo=id_mod_rent,
+                id_tiempo=id_tiempo,
+                id_categoria=id_cat,
+                monto_ejecutado=m_ejec,
+                monto_meta=m_meta
+            )
+            self.db.add(nuevo_rent)
+            self.db.flush()
+            return {
+                "tipo": "rentabilidad",
+                "status": "loaded",
+                "id_hecho": nuevo_rent.id_hecho_rent,
+                "monto_ejecutado": m_ejec,
+                "monto_meta": m_meta
+            }
+
+        # 3e. Ruteo MARKETING -> FactMarketing
+        if categoria == "marketing" and FactMarketing:
+            id_mod_mkt = self.resolver_o_crear_modulo(
+                nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
+            ) or self.resolver_o_crear_modulo("Difusión Institucional", pos_code="MKT-GEN", institucion=institucion)
+
+            leads = int(resoluciones.get("leads") or 1)
+            reservas = int(resoluciones.get("reservas") or 0)
+            inscritos = int(resoluciones.get("inscritos") or (1 if id_est else 0))
+            costo_prog = float(resoluciones.get("costo_programa") or 0.0)
+
+            nuevo_mkt = FactMarketing(
+                id_modulo=id_mod_mkt,
+                id_tiempo=id_tiempo,
+                leads=leads,
+                reservas=reservas,
+                inscritos=inscritos,
+                costo_programa=costo_prog
+            )
+            self.db.add(nuevo_mkt)
+            self.db.flush()
+            return {
+                "tipo": "marketing",
+                "status": "loaded",
+                "id_hecho": nuevo_mkt.id_hecho_mkt,
+                "leads": leads,
+                "inscritos": inscritos
+            }
+
+        # 3f. Ruteo ACTA / MOODLE -> FactRendimientoAcademico
         id_doc = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id)
         id_mod = self.resolver_o_crear_modulo(
             nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion

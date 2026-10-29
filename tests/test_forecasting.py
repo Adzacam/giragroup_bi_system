@@ -156,7 +156,28 @@ def test_extractor_series_reales():
 # 4. PRUEBAS DE INTEGRACIÓN API REST (GIRA-57)
 # ─────────────────────────────────────────────────────────────────────────────
 
+from unittest.mock import MagicMock
+from sqlalchemy.orm import Session
+from core.security import create_access_token, get_current_user
+from core.database import get_db
+from models.user import User
+
+mock_admin = User(id=1, username="admin", email="admin.general@giragroup.bo", role="ADMIN", is_active=True)
+mock_db = MagicMock(spec=Session)
+mock_db.execute.side_effect = Exception("DB offline in test")
+mock_db.get_bind.return_value = None
+
 client = TestClient(app)
+
+@pytest.fixture(autouse=True)
+def setup_forecasting_test():
+    app.dependency_overrides[get_current_user] = lambda: mock_admin
+    app.dependency_overrides[get_db] = lambda: mock_db
+    client.headers["Authorization"] = "Bearer mock_admin_token"
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
+    app.dependency_overrides.pop(get_db, None)
+    client.headers.pop("Authorization", None)
 
 
 def test_api_forecast_alumnos():

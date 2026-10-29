@@ -1,0 +1,44 @@
+{
+  "MODULO": {
+    "precision": 1.0,
+    "recall": 0.9487,
+    "f1-score": 0.9737,
+    "support": 195
+  },
+  "PER_DOCENTE": {
+    "precision": 0.9333,
+    "recall": 0.869,
+    "f1-score": 0.9,
+    "support": 145
+  },
+  "PER_ESTUDIANTE": {
+    "precision": 0.9326,
+    "recall": 1.0,
+    "f1-score": 0.9651,
+    "support": 180
+  },
+  "PROGRAMA": {
+    "precision": 0.8849,
+    "recall": 0.9696,
+    "f1-score": 0.9253,
+    "support": 230
+  },
+  "micro avg": {
+    "precision": 0.9333,
+    "recall": 0.952,
+    "f1-score": 0.9426,
+    "support": 750
+  },
+  "macro avg": {
+    "precision": 0.9377,
+    "recall": 0.9468,
+    "f1-score": 0.941,
+    "support": 750
+  },
+  "weighted avg": {
+    "precision": 0.9357,
+    "recall": 0.952,
+    "f1-score": 0.9426,
+    "support": 750
+  }
+}

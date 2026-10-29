@@ -21,7 +21,7 @@ export default function CatalogosMaestros() {
   const [docentesList, setDocentesList] = useState([]);
   const [conceptosList, setConceptosList] = useState([]);
 
-  const [newEntry, setNewEntry] = useState({ codigo: '', nombre: '', extra: '', institucion: 'GiraGroup' });
+  const [newEntry, setNewEntry] = useState({ codigo: '', nombre: '', extra: '', institucion: 'GiraGroup Posgrado' });
 
   const loadData = async () => {
     setLoading(true);
@@ -87,7 +87,7 @@ export default function CatalogosMaestros() {
         await catalogApi.createModulo({
           nombre_modulo: newEntry.nombre,
           pos_code: newEntry.codigo || 'MOD-GEN',
-          nombre_institucion: newEntry.institucion || 'GiraGroup',
+          nombre_institucion: newEntry.institucion || 'GiraGroup Posgrado',
           programa: newEntry.extra || 'Programa General'
         });
       } else if (activeTab === 'docentes') {
@@ -97,7 +97,7 @@ export default function CatalogosMaestros() {
         });
       }
       setIsModalOpen(false);
-      setNewEntry({ codigo: '', nombre: '', extra: '', institucion: 'GiraGroup' });
+      setNewEntry({ codigo: '', nombre: '', extra: '', institucion: 'GiraGroup Posgrado' });
       await loadData();
     } catch (err) {
       console.error('Error al crear registro de catálogo:', err);
@@ -233,7 +233,7 @@ export default function CatalogosMaestros() {
                       {activeTab === 'modulos' && (
                         <td>
                           <span style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)' }}>
-                            {row.programa || row.nombre_institucion || 'GiraGroup Central'}
+                            {row.programa || row.nombre_institucion || 'GiraGroup Posgrado'}
                           </span>
                         </td>
                       )}
