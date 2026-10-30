@@ -157,7 +157,7 @@ def verify_otp(req: OTPVerifyRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="OTP expirado o no generado")
         
     clean_code = str(req.code).strip().replace(" ", "").replace("-", "")
-    if clean_code != "123456" and not verify_password(clean_code, user.otp_code_hash):
+    if not verify_password(clean_code, user.otp_code_hash):
         raise HTTPException(status_code=401, detail="Codigo OTP invalido")
     
     user.otp_code_hash = None

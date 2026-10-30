@@ -36,13 +36,6 @@ USERS = [
         "role": "ANALISTA_MARKETING",
         "password": "giragroup2026",
     },
-    {
-        "username": "loadtest_user",
-        "email": "loadtest@giragroup.bo",
-        "role": "ADMIN",
-        "password": "giragroup2026",
-        "is_mfa_enabled": False,
-    },
 ]
 
 def hash_password(password: str) -> str:
@@ -62,7 +55,7 @@ def seed_default_users():
                     role=u["role"],
                     hashed_password=hash_password(u["password"]),
                     is_active=True,
-                    is_mfa_enabled=u.get("is_mfa_enabled", True),
+                    is_mfa_enabled=True,
                     failed_login_attempts=0,
                 )
                 db.add(new_user)
