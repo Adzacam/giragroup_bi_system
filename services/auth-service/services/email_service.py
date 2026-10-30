@@ -125,6 +125,12 @@ class EmailService:
             logger.info("ℹ️ [SMTP OMITIDO] SMTP_HOST no configurado. Operando en modo consola/local.")
             return {"sent": False, "reason": "not_configured"}
 
+        smtp_enabled = os.getenv("SMTP_ENABLED", "true").strip().lower() in ("true", "1", "yes", "t")
+        real_smtp_enabled = os.getenv("ENABLE_REAL_SMTP", "true").strip().lower() in ("true", "1", "yes", "t")
+        if not smtp_enabled or not real_smtp_enabled:
+            logger.info("ℹ️ [SMTP OMITIDO] SMTP deshabilitado por configuración (SMTP_ENABLED o ENABLE_REAL_SMTP en false).")
+            return {"sent": False, "reason": "disabled_by_config"}
+
         port = cfg["port"]
         user = cfg["user"]
         password = cfg["password"]

@@ -14,23 +14,23 @@ class GiraGroupLoadUser(HttpUser):
     def on_start(self):
         """Autenticacion inicial del usuario virtual para llamadas protegidas."""
         try:
-            # 1. Login step 1
             res1 = self.client.post(
                 "/api/v1/auth/login",
-                json={"email": "admin.general@giragroup.bo", "password": "giragroup2026"},
+                json={"email": "loadtest@giragroup.bo", "password": "giragroup2026"},
                 name="/api/v1/auth/login"
             )
             if res1.status_code == 200:
                 data1 = res1.json()
-                temp_token = data1.get("temp_token")
-                # 2. Verify OTP
-                res2 = self.client.post(
-                    "/api/v1/auth/verify-otp",
-                    json={"temp_token": temp_token, "code": "123456", "remember_device": True},
-                    name="/api/v1/auth/verify-otp"
-                )
-                if res2.status_code == 200:
-                    self.token = res2.json().get("access_token")
+                if "access_token" in data1:
+                    self.token = data1.get("access_token")
+                elif "temp_token" in data1:
+                    res2 = self.client.post(
+                        "/api/v1/auth/verify-otp",
+                        json={"temp_token": data1.get("temp_token"), "code": "123456", "remember_device": True},
+                        name="/api/v1/auth/verify-otp"
+                    )
+                    if res2.status_code == 200:
+                        self.token = res2.json().get("access_token")
         except Exception:
             self.token = None
 

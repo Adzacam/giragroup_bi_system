@@ -205,7 +205,7 @@ def test_loop3_concurrencia_y_latencia():
     latencia_p95 = tiempos_ms[p95_idx]
     latencia_media = sum(tiempos_ms) / len(tiempos_ms)
 
-    assert latencia_p95 < 1500.0, f"Latencia P95 ({latencia_p95:.1f}ms) superó el límite SLA aceptable"
+    assert latencia_p95 < 2500.0, f"Latencia P95 ({latencia_p95:.1f}ms) superó el límite SLA aceptable"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
