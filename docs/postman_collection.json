@@ -97,9 +97,13 @@
               "if (json.mfa_required) {",
               "    pm.test('Requiere 2FA OTP', function () { pm.expect(json.temp_token).to.be.a('string'); });",
               "    pm.collectionVariables.set('temp_token', json.temp_token);",
+              "    try { pm.environment.set('temp_token', json.temp_token); } catch(e){}",
+              "    try { pm.globals.set('temp_token', json.temp_token); } catch(e){}",
               "} else {",
               "    pm.test('Login directo con token de acceso', function () { pm.expect(json.access_token).to.be.a('string'); });",
               "    pm.collectionVariables.set('access_token', json.access_token);",
+              "    try { pm.environment.set('access_token', json.access_token); } catch(e){}",
+              "    try { pm.globals.set('access_token', json.access_token); } catch(e){}",
               "}"
             ]
           }
@@ -139,12 +143,14 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "var token = pm.collectionVariables.get('access_token');",
+              "var token = pm.collectionVariables.get('access_token') || (pm.environment && pm.environment.get('access_token'));",
               "if (!token || token.length === 0) {",
               "    pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
               "    var json = pm.response.json();",
               "    pm.test('Retorna access_token valido', function () { pm.expect(json.access_token).to.be.a('string'); });",
               "    pm.collectionVariables.set('access_token', json.access_token);",
+              "    try { pm.environment.set('access_token', json.access_token); } catch(e){}",
+              "    try { pm.globals.set('access_token', json.access_token); } catch(e){}",
               "} else {",
               "    pm.test('Omitido: ya autenticado previamente', function () { pm.expect(true).to.be.true; });",
               "}"

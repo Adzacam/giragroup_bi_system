@@ -197,8 +197,8 @@ def obtener_pronostico_metas(
             proyecciones.append({
                 "periodo": p,
                 "monto_proyectado_bs": f,
-                "ic_lower": None,
-                "ic_upper": None
+                "ic_lower": round(f * 0.95, 2),
+                "ic_upper": round(f * 1.05, 2)
             })
         return {
             "caso_uso": "META_ANUAL",
@@ -207,6 +207,9 @@ def obtener_pronostico_metas(
             "tipo_estimacion": res_ols["tipo_estimacion"],
             "pendiente_anual_bs": res_ols["pendiente_anual_bs"],
             "cagr_historico_pct": res_ols["cagr_historico_pct"],
+            "banda_operativa_pct": 5.0,
+            "banda_min_bs": round(res_ols["forecast"][0] * 0.95, 2) if res_ols["forecast"] else None,
+            "banda_max_bs": round(res_ols["forecast"][0] * 1.05, 2) if res_ols["forecast"] else None,
             "nota_metodologica": res_ols["nota_metodologica"],
             "proyecciones": proyecciones
         }
@@ -490,9 +493,9 @@ def obtener_analitica_macro_completa(
     # ── CASO 4: Cumplimiento de Metas / Ingresos Anuales ─────────────────
     ols_anual = obtener_pronostico_metas(db=db, granularity="ANUAL", horizonte=2)
 
-    meta_institucional_bs = 3800000.0
+    meta_institucional_bs = 15000000.0
     recaudado_acumulado_2026 = 3010000.0
-    cierre_anual_ols = float(ols_anual["proyecciones"][0]["monto_proyectado_bs"]) if ols_anual.get("proyecciones") else 3765000.0
+    cierre_anual_ols = float(ols_anual["proyecciones"][0]["monto_proyectado_bs"]) if ols_anual.get("proyecciones") else 15183417.34
 
     caso4 = {
         "nombre": "Caso 4: Cumplimiento de Metas / Ingresos Anuales",
@@ -506,6 +509,7 @@ def obtener_analitica_macro_completa(
         "cierre_anual_proyectado_ols_bs": cierre_anual_ols,
         "porcentaje_avance_meta": round((recaudado_acumulado_2026 / meta_institucional_bs) * 100.0, 1),
         "banda_ols_indicativa": {
+            "porcentaje_tolerancia": 5.0,
             "min_bs": round(cierre_anual_ols * 0.95, 2),
             "max_bs": round(cierre_anual_ols * 1.05, 2)
         },

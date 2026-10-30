@@ -463,10 +463,10 @@ El sistema cuenta con 5 cuentas demostrativas iniciales para control de acceso b
 
 | Usuario | Correo Electrónico | Rol | Contraseña Inicial (Dev) |
 |---|---|---|---|
-| Administrador General | `admin.general@giragroup.bo` | `ADMIN` | `giragroup2026` |
-| Auditor DataOps | `auditor.dataops@giragroup.bo` | `AUDITOR_CALIDAD` | `giragroup2026` |
+| Administrador General | `dazaadriano12@gmail.com` | `ADMIN` | `giragroup2026` |
+| Auditor DataOps | `dazaadrianoc@gmail.com` | `AUDITOR_CALIDAD` | `giragroup2026` |
 | Dirección Académica | `direccion.academica@giragroup.bo` | `DIRECTOR_ACADEMICO` | `giragroup2026` |
-| Analista Financiero | `analista.finanzas@giragroup.bo` | `ANALISTA_FINANCIERO` | `giragroup2026` |
+| Analista Financiero | `dazwebos@gmail.com` | `ANALISTA_FINANCIERO` | `giragroup2026` |
 | Analista Marketing | `analista.marketing@giragroup.bo` | `ANALISTA_MARKETING` | `giragroup2026` |
 
 > **Nota de Seguridad:** El script de sembrado inicial (`seed_users.py`) preserva las contraseñas modificadas por los usuarios y no las sobreescribe en reinicios del contenedor.

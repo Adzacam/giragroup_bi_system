@@ -53,7 +53,7 @@ class ProyeccionMetaItem(BaseModel):
 
 class ForecastMetasData(BaseModel):
     """Cuerpo de datos para proyección de metas financieras."""
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     caso_uso: str
     granularidad: str = Field(..., description="'MENSUAL' o 'ANUAL'")
@@ -62,6 +62,9 @@ class ForecastMetasData(BaseModel):
     horizonte_meses: Optional[int] = Field(None, ge=1, le=6)
     pendiente_anual_bs: Optional[float] = None
     cagr_historico_pct: Optional[float] = None
+    banda_operativa_pct: Optional[float] = None
+    banda_min_bs: Optional[float] = None
+    banda_max_bs: Optional[float] = None
     nota_metodologica: Optional[str] = None
     rmse: Optional[float] = None
     aic: Optional[float] = None

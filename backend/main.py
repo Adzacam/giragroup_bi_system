@@ -10,13 +10,14 @@ import os
 import logging
 from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException, Request, Response, status, UploadFile, File, Form
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from core.database import get_db
-from core.security import require_roles
+from core.security import require_roles, create_access_token, verify_password
 from models.user import User
 from schemas.pipeline_schemas import PipelineExecutionResponse
 from routers.pipeline import process_pipeline
@@ -94,7 +95,16 @@ async def security_headers_middleware(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Content-Security-Policy"] = "default-src 'self'; frame-ancestors 'none';"
+    if request.url.path in ("/docs", "/redoc", "/openapi.json"):
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "img-src 'self' data: https://fastapi.tiangolo.com; "
+            "frame-ancestors 'none';"
+        )
+    else:
+        response.headers["Content-Security-Policy"] = "default-src 'self'; frame-ancestors 'none';"
     if request.method == "GET" and response.status_code == 200:
         if any(request.url.path.startswith(p) for p in _CACHEABLE_GET_PREFIXES):
             response.headers.setdefault("Cache-Control", "private, max-age=60, stale-while-revalidate=120")
@@ -123,17 +133,49 @@ app.include_router(riesgos.router)
 app.include_router(catalogs.router)
 app.include_router(reportes.router)
 app.include_router(pipeline.router)
+app.include_router(audit.router)
 
-# En despliegue distribuido (Docker), auth, users, notifications y audit corren en sus microservicios (:8001, :8002, :8004).
+# En despliegue distribuido (Docker), auth, users y notifications corren en sus microservicios (:8001, :8002, :8004).
 # Se montan condicionalmente en modo monolítico local / testing para compatibilidad con la suite pytest y TestClient.
 if os.getenv("STANDALONE_MONOLITH", "true").lower() == "true":
     app.include_router(auth.router)
     app.include_router(users.router)
     app.include_router(notifications.router)
-    app.include_router(audit.router)
 
 
 
+
+
+# ── Endpoint OAuth2 Password Flow / Login Unificado ─────────────────────────
+@app.post("/api/v1/auth/login", summary="Login OAuth2 / JSON", tags=["Autenticación"])
+async def swagger_oauth2_login(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Permite autenticarse desde Swagger UI (OAuth2 Form) o clientes JSON (Locust/Frontend)."""
+    username = None
+    password = None
+    content_type = request.headers.get("content-type", "")
+
+    if "application/json" in content_type:
+        body = await request.json()
+        username = body.get("username") or body.get("email")
+        password = body.get("password")
+    else:
+        form = await request.form()
+        username = form.get("username") or form.get("email")
+        password = form.get("password")
+
+    user = db.query(User).filter(
+        (User.username == username) | (User.email == username)
+    ).first()
+    if not user or not verify_password(password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Credenciales incorrectas (usuario o contraseña inválidos)."
+        )
+    access_token = create_access_token(data={"sub": str(user.id), "role": user.role})
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @app.get("/", summary="Portal API Root", tags=["Monitoreo"])
@@ -149,8 +191,14 @@ def root():
     }
 
 
-@app.get(
+@app.api_route(
+    "/api/v1/health",
+    methods=["GET", "HEAD"],
+    include_in_schema=False
+)
+@app.api_route(
     "/health",
+    methods=["GET", "HEAD"],
     summary="Verificación de estado y salud del sistema",
     tags=["Monitoreo"]
 )
