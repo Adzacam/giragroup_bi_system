@@ -36,6 +36,14 @@ def _is_expired(dt: Optional[datetime]) -> bool:
 
 _USER_LAST_OTP_CHANNEL = {}
 
+# 2FA en el entorno de pruebas (Postman/Locust): con APP_ENV=test el login devuelve el OTP real que
+# acaba de generar (aleatorio, hasheado, 5 min, un solo uso). Sin APP_ENV, o con cualquier otro
+# valor, nunca se expone. APP_ENV=test junto a ENVIRONMENT=production impide arrancar el servicio.
+APP_ENV = os.getenv("APP_ENV", "").strip().lower()
+OTP_EXPUESTO_EN_PRUEBAS = APP_ENV == "test"
+if OTP_EXPUESTO_EN_PRUEBAS and os.getenv("ENVIRONMENT", "").strip().lower() in ("production", "prod"):
+    raise RuntimeError("APP_ENV=test no está permitido con ENVIRONMENT=production: el OTP quedaría expuesto.")
+
 @router.post("/login", response_model=LoginStepOneResponse)
 def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == req.email).first()
@@ -92,11 +100,12 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
 
     now_utc = datetime.now(timezone.utc)
     email_dispatched = False
+    otp = None
 
     # Cooldown anti-spam de 60 segundos en servidores activos: si ya se emitió un OTP recientemente
     # que sigue vigente, no generar nuevo código ni enviar correo duplicado. En suite de testing
     # se permite renovación inmediata para evaluar transiciones dinámicas entre canales.
-    is_testing = ("pytest" in sys.modules) or (os.getenv("TESTING") == "true")
+    is_testing = ("pytest" in sys.modules) or (os.getenv("TESTING") == "true") or OTP_EXPUESTO_EN_PRUEBAS
     is_in_cooldown = False
     if not is_testing and user.otp_expires_at and user.otp_code_hash:
         dt_exp = user.otp_expires_at if user.otp_expires_at.tzinfo else user.otp_expires_at.replace(tzinfo=timezone.utc)
@@ -114,7 +123,8 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
         logger.info(f"🔑 CÓDIGO OTP PARA {user.email}: {otp} (Válido 5 min)")
 
         try:
-            email_res = email_service.send_otp_email(
+            # En pruebas el OTP viaja en la respuesta: no se envían correos reales en cada login de Postman/Locust
+            email_res = None if OTP_EXPUESTO_EN_PRUEBAS else email_service.send_otp_email(
                 to_email=user.email,
                 username=user.username,
                 otp_code=otp,
@@ -136,7 +146,8 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
     return LoginStepOneResponse(
         temp_token=temp_token,
         mfa_required=True,
-        channel="email" if email_dispatched else "console"
+        channel="email" if email_dispatched else "console",
+        otp_test=otp if OTP_EXPUESTO_EN_PRUEBAS else None,
     )
 
 @router.post("/verify-otp", response_model=TokenResponse)

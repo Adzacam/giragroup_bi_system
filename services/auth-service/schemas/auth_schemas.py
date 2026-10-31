@@ -23,6 +23,8 @@ class LoginStepOneResponse(BaseModel):
     token_type: Optional[str] = None
     device_token: Optional[str] = None
     user: Optional[UserPublic] = None
+    # Solo con APP_ENV=test (Postman/Locust): el OTP real de este login. Nunca se llena en otro entorno.
+    otp_test: Optional[str] = None
 
 class OTPVerifyRequest(BaseModel):
     temp_token: str

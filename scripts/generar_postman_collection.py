@@ -20,7 +20,12 @@ collection = {
     "variable": [
         {"key": "baseUrl", "value": "http://localhost", "type": "string"},
         {"key": "temp_token", "value": "", "type": "string"},
-        {"key": "access_token", "value": "", "type": "string"}
+        {"key": "access_token", "value": "", "type": "string"},
+        # Usuario semilla de QA (backend/seed_users.py, solo APP_ENV=test). La contraseña se pasa al
+        # ejecutar: newman run ... --env-var qa_password=<QA_ADMIN_PASSWORD de .env> (no se versiona).
+        {"key": "qa_email", "value": "qa.admin@giragroup.bo", "type": "string"},
+        {"key": "qa_password", "value": "", "type": "string"},
+        {"key": "otp_code", "value": "", "type": "string"}
     ],
     "item": [
         {
@@ -62,7 +67,7 @@ collection = {
                 "header": [{"key": "Content-Type", "value": "application/json"}],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n    \"email\": \"admin.general@giragroup.bo\",\n    \"password\": \"giragroup2026\"\n}"
+                    "raw": "{\n    \"email\": \"{{qa_email}}\",\n    \"password\": \"{{qa_password}}\"\n}"
                 },
                 "url": {
                     "raw": "{{baseUrl}}/api/v1/auth/login",
@@ -81,6 +86,8 @@ collection = {
                             "if (json.mfa_required) {",
                             "    pm.test('Requiere 2FA OTP', function () { pm.expect(json.temp_token).to.be.a('string'); });",
                             "    pm.collectionVariables.set('temp_token', json.temp_token);",
+                            "    pm.test('OTP de pruebas disponible (APP_ENV=test)', function () { pm.expect(json.otp_test).to.match(/^[0-9]{6}$/); });",
+                            "    pm.collectionVariables.set('otp_code', json.otp_test);",
                             "} else {",
                             "    pm.test('Login directo con token de acceso', function () { pm.expect(json.access_token).to.be.a('string'); });",
                             "    pm.collectionVariables.set('access_token', json.access_token);",
@@ -97,7 +104,7 @@ collection = {
                 "header": [{"key": "Content-Type", "value": "application/json"}],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n    \"temp_token\": \"{{temp_token}}\",\n    \"code\": \"123456\",\n    \"remember_device\": true\n}"
+                    "raw": "{\n    \"temp_token\": \"{{temp_token}}\",\n    \"code\": \"{{otp_code}}\",\n    \"remember_device\": true\n}"
                 },
                 "url": {
                     "raw": "{{baseUrl}}/api/v1/auth/verify-otp",
@@ -111,15 +118,10 @@ collection = {
                     "script": {
                         "type": "text/javascript",
                         "exec": [
-                            "var token = pm.collectionVariables.get('access_token');",
-                            "if (!token || token.length === 0) {",
-                            "    pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
-                            "    var json = pm.response.json();",
-                            "    pm.test('Retorna access_token valido', function () { pm.expect(json.access_token).to.be.a('string'); });",
-                            "    pm.collectionVariables.set('access_token', json.access_token);",
-                            "} else {",
-                            "    pm.test('Omitido: ya autenticado previamente', function () { pm.expect(true).to.be.true; });",
-                            "}"
+                            "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                            "var json = pm.response.json();",
+                            "pm.test('Retorna access_token valido', function () { pm.expect(json.access_token).to.be.a('string'); });",
+                            "pm.collectionVariables.set('access_token', json.access_token);"
                         ]
                     }
                 }
