@@ -16,9 +16,9 @@ MESES = {
     "AGOSTO": 8, "SEPTIEMBRE": 9, "SETIEMBRE": 9, "OCTUBRE": 10, "NOVIEMBRE": 11, "DICIEMBRE": 12,
 }
 
-_CLAVES_CI = ("CEDULA DE IDENTIDAD", "CI", "C.I.", "DOC_IDENTIDAD/CI", "CI_ESTUDIANTE", "IDNUMBER")
+_CLAVES_CI = ("CEDULA DE IDENTIDAD", "CI", "C.I.", "DOC_IDENTIDAD/CI", "CI_ESTUDIANTE", "IDNUMBER", "ID NUMBER")
 _CLAVES_NOMBRE_COMPLETO = ("NOMBRE COMPLETO", "NOMBRES Y APELLIDOS", "APELLIDOS Y NOMBRES", "ESTUDIANTE", "ALUMNO")
-_CLAVES_NOTA = ("NOTA FINAL", "NOTA_FINAL", "CALIFICACION FINAL", "CALIF_FINAL", "FINALGRADE", "FINAL_GRADE",
+_CLAVES_NOTA = ("GRADE/100.00", "GRADE/100", "NOTA FINAL", "NOTA_FINAL", "CALIFICACION FINAL", "CALIF_FINAL", "FINALGRADE", "FINAL_GRADE",
                 "PROMEDIO FINAL", "PROMEDIO", "NOTA", "CALIFICACION", "PUNTAJE")
 # Cobranzas: la fecha de pago más reciente; si no, la primera factura o el inicio del programa
 _CLAVES_FECHA_FINANCIERA = ("FECHA ULTIMA FACTURA", "FECHA DE PAGO", "FECHA PAGO", "FECHA DE VENCIMIENTO",
@@ -114,6 +114,8 @@ def estudiante_de_fila(campos: Dict[str, str]) -> Optional[Dict[str, Any]]:
     ci_raw = _primero(campos, _CLAVES_CI)
     ci = "".join(ch for ch in ci_raw if ch.isalnum()) if ci_raw else None
     nombre = _primero(campos, _CLAVES_NOMBRE_COMPLETO)
+    if not nombre and campos.get("FIRST NAME"):  # Moodle
+        nombre = " ".join(p for p in (campos.get("FIRST NAME"), campos.get("SURNAME")) if p)
     if not nombre and campos.get("NOMBRES"):
         partes = [
             campos.get("NOMBRES"),
@@ -130,6 +132,10 @@ def estudiante_de_fila(campos: Dict[str, str]) -> Optional[Dict[str, Any]]:
 
 
 def _pos(campos: Dict[str, str]) -> Optional[str]:
+    curso = campos.get("COURSE") or campos.get("CURSO") or ""
+    m = re.match(r"^POS-?(\d+)", curso.strip().upper())  # Moodle: 'POS-5376 - Maestría en Ciberseguridad'
+    if m:
+        return f"POS-{m.group(1)}"
     for k, v in campos.items():
         if k.startswith("POS") and k not in ("POS-CI", "POS + IBP"):
             digitos = re.sub(r"^POS-?", "", v.strip().upper())
@@ -145,6 +151,8 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
     Cada registro trae 'requiere_revision' si falta nota o fecha.
     """
     estudiante = estudiante_de_fila(campos)
+    if estudiante is None:
+        return []  # hoja sin estudiante (MODULOS, IBP, catálogos): no es un hecho académico
     fecha = fecha_de_fila(campos, "academico")
     pos = _pos(campos)
 

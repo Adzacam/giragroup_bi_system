@@ -400,24 +400,34 @@ class IngestionService:
     def serializar_bloque_con_encabezados(b: "pd.DataFrame") -> str:
         """
         Serializa un bloque a texto plano con celdas 'ENCABEZADO: valor' (se omiten las vacías).
-        Encabezado = primera fila con ≥ 2 celdas: salta filas de título de hoja (una sola
-        celda), que antes se tomaban como encabezado y desalineaban los campos.
+        Encabezado = nombres de columna si el lector ya los trae (CSV); si no, primera fila con ≥ 2 celdas,
+        saltando filas de título de hoja (una sola celda) que antes desalineaban los campos.
         """
-        if len(b) <= 1:
-            return a_texto_plano(b)
-        header_idx = next(
-            (i for i in range(min(len(b) - 1, 5)) if b.iloc[i].notna().sum() >= 2),
-            0
+        nombres_columna = [str(c).strip() for c in b.columns]
+        # Lectores que ya traen encabezados como nombres de columna (CSV de Moodle): no consumir una fila de datos
+        columnas_con_nombre = all(
+            not isinstance(c, (int, float)) and not str(c).lower().startswith("unnamed") for c in b.columns
         )
-        headers_row = [str(h).strip() if pd.notna(h) else "" for h in b.iloc[header_idx].values]
+        if columnas_con_nombre:
+            headers_row, primera_fila = nombres_columna, 0
+        else:
+            if len(b) <= 1:
+                return a_texto_plano(b)
+            header_idx = next(
+                (i for i in range(min(len(b) - 1, 5)) if b.iloc[i].notna().sum() >= 2),
+                0
+            )
+            headers_row = [str(h).strip() if pd.notna(h) else "" for h in b.iloc[header_idx].values]
+            primera_fila = header_idx + 1
         lineas_datos = []
-        for row_idx in range(header_idx + 1, len(b)):
+        for row_idx in range(primera_fila, len(b)):
             celdas_fmt = []
             for col_idx, v in enumerate(b.iloc[row_idx].values):
                 if pd.notna(v) and str(v).strip() != "":
                     val_s = str(v).strip()
                     hdr_s = headers_row[col_idx] if col_idx < len(headers_row) else ""
-                    if hdr_s and ":" not in val_s and not hdr_s.lower().startswith("unnamed"):
+                    # Solo ': ' rompe el formato 'ENCABEZADO: valor'; las fechas con hora (00:00:00) llevan su encabezado
+                    if hdr_s and ": " not in val_s and not hdr_s.lower().startswith("unnamed"):
                         celdas_fmt.append(f"{hdr_s}: {val_s}")
                     else:
                         celdas_fmt.append(val_s)

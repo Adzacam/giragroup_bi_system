@@ -17,6 +17,7 @@ class PipelineExecutionResponse(BaseModel):
     total_filas_procesadas: int
     total_entidades_extraidas: int
     hechos_cargados_dw: int
+    hechos_en_revision: int = 0
     entidades_derivadas_staging: int
     nivel_confianza_promedio: float
     requiere_revision_humana: bool

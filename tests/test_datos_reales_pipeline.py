@@ -180,3 +180,33 @@ class TestMetadatoPos:
         est = registros_academicos(_campos(LINEA_ACTA))[0]["estudiante"]
         assert est["fk_resolucion"]["ci"] == "13727801"
         assert est["fk_resolucion"]["nombre_resuelto"] == "Ana Lucía Torrez Salinas"
+
+
+# ── Serialización y fuentes encontradas al recargar el DW ──────────────────────
+class TestSerializacionYFuentes:
+    def test_fecha_con_hora_conserva_su_encabezado(self):
+        import pandas as pd
+        from services.ingestion_service import IngestionService
+        b = pd.DataFrame([["CI", "FECHA ULTIMA FACTURA"], ["13441152", "2024-04-03 00:00:00"]])
+        linea = IngestionService.serializar_bloque_con_encabezados(b)
+        assert "FECHA ULTIMA FACTURA: 2024-04-03 00:00:00" in linea
+        assert fecha_de_fila(_campos(linea), "financiero") == date(2024, 4, 3)
+
+    def test_csv_con_columnas_nombradas_no_consume_la_primera_fila(self):
+        import pandas as pd
+        from services.ingestion_service import IngestionService
+        b = pd.DataFrame({"First name": ["Carlos", "Lucia"], "Surname": ["Mendoza", "Vargas"]})
+        lineas = IngestionService.serializar_bloque_con_encabezados(b).split("\n")
+        assert lineas == ["First name: Carlos | Surname: Mendoza", "First name: Lucia | Surname: Vargas"]
+
+    def test_fila_moodle(self):
+        linea = ("First name: Carlos | Surname: Mendoza Ruiz | ID number: CI-1029384 | "
+                 "Course: POS-5376 - Maestría en Ciberseguridad | Grade/100.00: 88.50")
+        reg = registros_academicos(_campos(linea))[0]
+        assert reg["estudiante"]["fk_resolucion"]["nombre_resuelto"] == "Carlos Mendoza Ruiz"
+        assert reg["programa"]["valor_extraido"] == "POS-5376"
+        assert reg["nota_final"] == 88.5
+        assert reg["requiere_revision"] is True  # Moodle no trae fecha de evaluación
+
+    def test_hoja_sin_estudiante_no_genera_hechos(self):
+        assert registros_academicos(_campos("N°: 1 | POS - MODULO: POS-006 | DOCENTE: Dr. María Huanca | MODULO N°: 1")) == []
