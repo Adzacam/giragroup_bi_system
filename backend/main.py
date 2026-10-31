@@ -38,6 +38,12 @@ from seed_users import seed_default_users
 
 logger = logging.getLogger("api_main")
 
+# Migraciones idempotentes que se reaplican en cada arranque, en este orden
+MIGRACIONES_EN_ARRANQUE = (
+    "003_dataops_lote_and_facts_alignment.sql",
+    "004_extend_tipo_fuente_sources.sql",
+)
+
 app = FastAPI(
     title="GiraGroup BI System API",
     description="API REST de Inteligencia de Negocios y Forecasting Predictivo (Sprint 4)",
@@ -64,11 +70,14 @@ def on_startup():
             """))
             conn.commit()
 
-            mig_003 = Path(__file__).resolve().parent / "scripts" / "migrations" / "003_dataops_lote_and_facts_alignment.sql"
-            if mig_003.exists():
-                sql_003 = mig_003.read_text(encoding="utf-8")
-                conn.execute(text(sql_003))
-                conn.commit()
+            # 004 va después de 003: 003 recrea chk_dim_origen_tipo_fuente con solo 4 tipos y 004 lo amplía
+            # (RENTABILIDAD, MARKETING, EGRESOS...). Sin 004, cada arranque rechazaba EJECUTADO VS META.
+            dir_migraciones = Path(__file__).resolve().parent / "scripts" / "migrations"
+            for nombre in MIGRACIONES_EN_ARRANQUE:
+                mig = dir_migraciones / nombre
+                if mig.exists():
+                    conn.execute(text(mig.read_text(encoding="utf-8")))
+                    conn.commit()
     except Exception as e:
         logger.error(f"Error creating/migrating DB tables: {e}")
 
