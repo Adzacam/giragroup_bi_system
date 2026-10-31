@@ -162,6 +162,11 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
         if m:
             notas_modulo[int(m.group(1))] = _a_float(v)
 
+    # Un valor fuera de 0-100 en MÓDULO N no es una nota (en ARCA hay CIs pegados en esas columnas):
+    # se descarta y los hechos de la fila van a revisión
+    fuera_de_rango = any(x is not None and not (0.0 <= x <= 100.0) for x in notas_modulo.values())
+    notas_modulo = {n: (x if x is not None and 0.0 <= x <= 100.0 else None) for n, x in notas_modulo.items()}
+
     if notas_modulo and not any(x is not None for x in notas_modulo.values()):
         # Acta sin ninguna nota: un hecho del programa con nota null, a revisión
         return [{
@@ -188,7 +193,7 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
                 "nota_final": nota,
                 "nota_ya_normalizada": True,
                 "fecha": fecha,
-                "requiere_revision": fecha is None,
+                "requiere_revision": fecha is None or fuera_de_rango,
             })
         return registros
 

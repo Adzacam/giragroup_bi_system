@@ -210,3 +210,20 @@ class TestSerializacionYFuentes:
 
     def test_hoja_sin_estudiante_no_genera_hechos(self):
         assert registros_academicos(_campos("N°: 1 | POS - MODULO: POS-006 | DOCENTE: Dr. María Huanca | MODULO N°: 1")) == []
+
+
+class TestNotaFueraDeRango:
+    def test_valor_fuera_de_0_100_no_es_nota(self):
+        # ARCA real: un CI pegado en MÓDULO 4 desbordaba nota_final numeric(5,2) y abortaba la consolidación
+        regs = registros_academicos(_campos(
+            "POS - ACTAS: 5283 | CÉDULA DE IDENTIDAD: 12189253 | MES INICO: 10 | AÑO INCIO: 2024 | NOMBRES: JHONNY | "
+            "MÓDULO 1: 100 | MÓDULO 2: 94 | MÓDULO 4: 3481044"))
+        assert [r["nota_final"] for r in regs] == [100.0, 94.0]
+        assert all(r["requiere_revision"] for r in regs)
+
+    def test_loader_descarta_nota_invalida(self, dw):
+        from models.fact_rendimiento import FactRendimientoAcademico
+        loader, db = dw
+        loader.cargar_registro(_registro_academico(3481044.0, date(2024, 10, 1)))
+        hecho = db.query(FactRendimientoAcademico).one()
+        assert hecho.nota_final is None and hecho.requiere_revision is True

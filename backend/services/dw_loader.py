@@ -924,11 +924,19 @@ class DWLoaderService:
             nota = float(nota_raw) if nota_raw is not None else None
         else:
             nota = normalizar_nota_base_100(nota_raw, tipo_escala)
+        if nota is not None and not (0.0 <= float(nota) <= 100.0):
+            nota = None  # no es una nota en base 100 (desbordaba numeric(5,2) y abortaba toda la consolidación)
         if nota is None:
             requiere_rev = True  # fila sin nota: queda null, nunca un valor de relleno
 
-        asistencia = resoluciones.get("asistencia_pct")
-        incumplimiento = resoluciones.get("incumplimiento_actividades_pct") or 0.00
+        def _pct_valido(v):
+            try:
+                return float(v) if v is not None and 0.0 <= float(v) <= 100.0 else None
+            except (TypeError, ValueError):
+                return None
+
+        asistencia = _pct_valido(resoluciones.get("asistencia_pct"))
+        incumplimiento = _pct_valido(resoluciones.get("incumplimiento_actividades_pct")) or 0.00
         estado_aca = "Aprobado" if (nota is not None and float(nota) >= 70.0) else "Reprobado" if nota is not None else "En Curso"
         tipo_alerta_aca = (
             "RIESGO_CRITICO" if (nota is not None and float(nota) < 51.0)
