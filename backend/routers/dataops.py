@@ -60,6 +60,14 @@ from services.dw_loader import (
     normalizar_nota_base_100,
     calcular_tipo_alerta_financiera,
 )
+from services.confianza_service import obtener_indices, banda_de
+from services.extraccion_por_encabezado import (
+    campos_por_encabezado,
+    es_encabezado_metadato_pos,
+    fecha_de_fila,
+    registros_academicos,
+)
+from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
 from services.dataops_evaluation_service import (
     strip_accents,
     fuzzy_score,
@@ -863,7 +871,8 @@ _ENCABEZADOS_NO_ESTUDIANTE = (
 
 
 def _es_encabezado_no_estudiante(clave: str) -> bool:
-    return any(p in clave for p in _ENCABEZADOS_NO_ESTUDIANTE)
+    # 'POS - ACTAS', 'POS-CI'…: identifican el programa (antes 'POS - ACTAS: POS-011' se tomaba como estudiante)
+    return any(p in clave for p in _ENCABEZADOS_NO_ESTUDIANTE) or es_encabezado_metadato_pos(clave)
 
 
 
@@ -3237,6 +3246,7 @@ def confirm_dw_insert(
     inserted_financiero = 0
     inserted_admision = 0
     sent_hitl = 0
+    inserted_revision = 0
 
     for stg in stg_records:
         orig_doc = (
@@ -3260,7 +3270,9 @@ def confirm_dw_insert(
         if not lines and raw_text:
             lines = [raw_text]
 
-        for line in lines:
+        # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
+        indices_linea = obtener_indices(lines)
+        for line, indice in zip(lines, indices_linea):
             ents, score, req_rev = extract_entities_from_line(
                 line,
                 estudiantes,
@@ -3269,7 +3281,12 @@ def confirm_dw_insert(
                 tipo_escala=doc_escala,
                 tipo_fuente=doc_fuente,
             )
-            is_approved = (score >= thresh) and not req_rev
+            banda = banda_de(indice)
+            is_approved = banda != BANDA_STAGING
+            # Lecturas dudosas del extractor (CI con '?', escala ambigua) no se descartan: quedan en revisión
+            en_revision = banda == BANDA_REVISION or req_rev
+            if indice is not None:
+                score = indice
 
             ci_tok = next((e["token"] for e in ents if "CI" in e.get("label", "")), None)
             if ci_tok == "No provisto":
@@ -3325,6 +3342,8 @@ def confirm_dw_insert(
                     else "admision" if doc_fuente == "ADMISION"
                     else "academico"
                 )
+                campos_linea = campos_por_encabezado([c.strip() for c in line.split("|")])
+                fecha_linea = fecha_de_fila(campos_linea, categoria_ruteo) if campos_linea else None
                 reg_dict = {
                     "categoria": categoria_ruteo,
                     "tipo_fuente": doc_fuente,
@@ -3342,32 +3361,48 @@ def confirm_dw_insert(
                         "docente": {"valor_extraido": nombre_doc},
                         "modulo": {"valor_extraido": nombre_mod},
                         "programa": {"valor_extraido": nombre_prog},
-                        "nota_final": grade_norm if grade_norm is not None else 80.0,
+                        "nota_final": grade_norm,
                         "nota_ya_normalizada": True,
                         "monto_deuda": monto_deuda_val,
                         "monto_pagado": monto_pagado_val,
                         "cuotas_impagas": cuotas_impagas_val,
                         "concepto": concepto_str,
                         "nivel_confianza_ia": score,
+                        "fecha": fecha_linea,
                     },
-                    "calidad": {"requiere_revision": False},
+                    "calidad": {"requiere_revision": en_revision},
                 }
-                res = dw.cargar_registro(reg_dict)
-                if res.get("status") == "loaded":
+                registros_linea = [reg_dict]
+                if categoria_ruteo == "academico" and campos_linea:
+                    # Acta con columnas MÓDULO 1..12 (ARCA): un hecho por módulo con su nota real
+                    registros_linea = []
+                    for reg_aca in registros_academicos(campos_linea):
+                        revision_fila = reg_aca.pop("requiere_revision")
+                        registros_linea.append({
+                            **reg_dict,
+                            "resoluciones": {
+                                **reg_dict["resoluciones"],
+                                **{k: v for k, v in reg_aca.items() if v is not None or k in ("nota_final", "fecha")},
+                            },
+                            "calidad": {"requiere_revision": en_revision or revision_fila},
+                        })
+                for reg_item in registros_linea:
+                    res = dw.cargar_registro(reg_item)
+                    if res.get("status") != "loaded":
+                        sent_hitl += 1
+                        continue
+                    if reg_item["calidad"]["requiere_revision"]:
+                        inserted_revision += 1
                     tipo_loaded = res.get("tipo")
                     if tipo_loaded == "financiero":
                         inserted_financiero += 1
                     elif tipo_loaded == "admision":
                         inserted_admision += 1
-                    elif tipo_loaded in ("evaluacion_docente", "rentabilidad", "marketing"):
-                        inserted_academico += 1  # contabilizar en hechos cargados
                     else:
-                        inserted_academico += 1
-                else:
-                    sent_hitl += 1
+                        inserted_academico += 1  # académicos, evaluación docente, rentabilidad y marketing
             else:
                 sent_hitl += 1
-                motivo_canonico = "BAJA_CONFIANZA"
+                motivo_canonico = "BAJA_CONFIANZA_IA"
                 if ci_tok and "?" in ci_tok:
                     motivo_canonico = "CI_DUDOSA"
                 elif grade_ent and grade_ent.get("canonicalId") in ("ESCALA_AMBIGUA", "NOTA_FUERA_ESCALA"):
@@ -3423,6 +3458,7 @@ def confirm_dw_insert(
                 "inserted_academico": inserted_academico,
                 "inserted_financiero": inserted_financiero,
                 "sent_hitl": sent_hitl,
+                "inserted_revision": inserted_revision,
                 "usuario": user_name,
             }
         )
@@ -3456,6 +3492,7 @@ def confirm_dw_insert(
         "inserted_academico": inserted_academico,
         "inserted_financiero": inserted_financiero,
         "inserted_admision": inserted_admision,
+        "inserted_revision": inserted_revision,
         "sent_hitl": sent_hitl,
     }
 

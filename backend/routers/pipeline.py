@@ -23,6 +23,12 @@ from models.dim_origen import DimOrigenDocumental
 from models.staging_registro import StagingRegistroCrudo
 from services.ingestion_service import IngestionService
 from services.dw_loader import DWLoaderService
+from services.confianza_service import obtener_indices, banda_de
+from services.extraccion_por_encabezado import (
+    campos_por_encabezado, es_encabezado_metadato_pos, estudiante_de_fila, fecha_de_fila, registros_academicos,
+)
+from models.staging_entidad import StagingEntidadNoResuelta
+from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
 from schemas.pipeline_schemas import PipelineExecutionResponse
 
 logger = logging.getLogger("pipeline_router")
@@ -125,6 +131,40 @@ def _resolver_fila_financiera(campos: Dict[str, str]) -> Dict[str, Any]:
     }
 
 
+def _resolver_fila_sin_encabezados(
+    celdas: List[str], categoria: str, base: Dict[str, Any], entidades_fila: List[Dict[str, Any]]
+) -> Dict[str, Any]:
+    """Heurística posicional para texto sin encabezados. Las celdas 'POS…: valor' son metadato del programa."""
+    res = dict(base)
+    for c in celdas:
+        hdr, sep, _ = c.partition(": ")
+        if sep and es_encabezado_metadato_pos(hdr):
+            continue
+        # CI numérico típico boliviano (6 a 8 dígitos)
+        if c.isdigit() and 5 <= len(c) <= 9:
+            res["estudiante"] = {
+                "valor_extraido": c,
+                "fk_resolucion": {"ci": c, "fk_estado": "A", "nombre_resuelto": f"Estudiante CI {c}"}
+            }
+            entidades_fila.append({"tipo": "CI", "valor": c})
+        elif any(car.isalpha() for car in c) and len(c) > 6 and not res["estudiante"]:
+            res["estudiante"] = {
+                "valor_extraido": c,
+                "fk_resolucion": {"ci": None, "fk_estado": "B", "nombre_resuelto": c}
+            }
+            entidades_fila.append({"tipo": "ESTUDIANTE", "valor": c})
+
+        try:
+            val_num = float(c.replace(",", "."))
+            if 0.0 <= val_num <= 100.0 and categoria == "academico" and res["nota_final"] is None:
+                res["nota_final"] = val_num * 10.0 if 0.0 < val_num <= 10.0 else val_num  # escala 10 -> base 100
+            elif val_num >= 0.0 and categoria == "financiero" and res["monto_deuda"] is None:
+                res["monto_deuda"] = val_num
+        except ValueError:
+            pass
+    return res
+
+
 @router.post(
     "/process",
     response_model=PipelineExecutionResponse,
@@ -194,6 +234,7 @@ def process_pipeline(
     total_filas = 0
     total_entidades = 0
     confianzas = []
+    cargados_revision = 0
 
     # Importes tolerantes para PLN / Calidad
     try:
@@ -213,23 +254,40 @@ def process_pipeline(
         total_filas += len(texto_lineas)
         categoria = b.categoria or "academico"
 
+        lineas = []
         for linea in texto_lineas:
             linea_str = linea.strip()
             if not linea_str:
                 continue
-
             celdas = [c.strip() for c in linea_str.split("|")]
             campos_fin = _campos_financieros_por_encabezado(celdas) if categoria == "financiero" else None
             if campos_fin == {}:
                 continue  # fila con encabezados pero sin montos: no es un hecho financiero
-            # Construir dict simulado de fila
-            fila_dict = {}
-            for i, c in enumerate(celdas):
-                fila_dict[f"col_{i}"] = c
+            lineas.append((linea_str, celdas, campos_fin))
 
-            # Formatear y extraer entidades
-            entidades_fila = []
-            resoluciones_fila = {
+        # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
+        indices = obtener_indices([l[0] for l in lineas])
+
+        for (linea_str, celdas, campos_fin), indice in zip(lineas, indices):
+            banda = banda_de(indice)
+            if indice is not None:
+                confianzas.append(indice)
+            if banda == BANDA_STAGING:
+                db.add(StagingEntidadNoResuelta(
+                    id_documento=doc_id,
+                    tipo_entidad="ESTUDIANTE",
+                    texto_original=linea_str[:2000],
+                    fk_estado="C",
+                    motivo="BAJA_CONFIANZA_IA",
+                    nivel_confianza=indice,
+                    resuelto=False,
+                ))
+                staged_entidades += 1
+                continue
+            en_revision = banda == BANDA_REVISION
+
+            campos = campos_por_encabezado(celdas)
+            base = {
                 "categoria": categoria,
                 "nota_final": None,
                 "asistencia_pct": None,
@@ -237,71 +295,55 @@ def process_pipeline(
                 "monto_deuda": None,
                 "cuotas_impagas": None,
                 "estado_cartera": "Vigente",
-                "nivel_confianza_ia": 0.88,
+                "nivel_confianza_ia": indice,
                 "estudiante": None,
                 "docente": None,
-                "modulo": None
+                "modulo": None,
+                "fecha": fecha_de_fila(campos, categoria) if campos else None,
             }
+            entidades_fila = []
+            resoluciones_lista = []
 
             if campos_fin is not None:
                 fila_fin = _resolver_fila_financiera(campos_fin)
-                resoluciones_fila.update(fila_fin)
-                resoluciones_fila["estado_cartera"] = None  # el loader lo deriva de cuotas_impagas
+                resoluciones_lista.append({**base, **fila_fin, "estado_cartera": None})  # el loader deriva la cartera
                 if fila_fin["estudiante"]:
                     entidades_fila.append({"tipo": "CI", "valor": fila_fin["estudiante"]["fk_resolucion"]["ci"]})
-
-            # Buscar posibles números de nota o CI (heurística para bloques sin encabezados)
-            for c in ([] if campos_fin is not None else celdas):
-                # CI numérico típico boliviano (6 a 8 dígitos)
-                if c.isdigit() and 5 <= len(c) <= 9:
-                    resoluciones_fila["estudiante"] = {
-                        "valor_extraido": c,
-                        "fk_resolucion": {"ci": c, "fk_estado": "A", "nombre_resuelto": f"Estudiante CI {c}"}
-                    }
-                    entidades_fila.append({"tipo": "CI", "valor": c})
-                elif any(car.isalpha() for car in c) and len(c) > 6 and not resoluciones_fila["estudiante"]:
-                    resoluciones_fila["estudiante"] = {
-                        "valor_extraido": c,
-                        "fk_resolucion": {"ci": None, "fk_estado": "B", "nombre_resuelto": c}
-                    }
-                    entidades_fila.append({"tipo": "ESTUDIANTE", "valor": c})
-
-                # Nota numérica
-                try:
-                    val_num = float(c.replace(",", "."))
-                    if 0.0 <= val_num <= 100.0 and categoria == "academico" and resoluciones_fila["nota_final"] is None:
-                        # Si está en escala 0-10, unificar
-                        if 0.0 < val_num <= 10.0:
-                            val_num = val_num * 10.0
-                        resoluciones_fila["nota_final"] = val_num
-                    elif val_num >= 0.0 and categoria == "financiero" and resoluciones_fila["monto_deuda"] is None:
-                        resoluciones_fila["monto_deuda"] = val_num
-                except ValueError:
-                    pass
+            elif campos and categoria == "academico":
+                for reg in registros_academicos(campos):
+                    revision_fila = reg.pop("requiere_revision")
+                    resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
+                    if reg["estudiante"]:
+                        entidades_fila.append({"tipo": "ESTUDIANTE", "valor": reg["estudiante"]["valor_extraido"]})
+            elif campos and categoria == "admision":
+                resoluciones_lista.append({**base, "estudiante": estudiante_de_fila(campos)})
+            else:
+                resoluciones_lista.append(_resolver_fila_sin_encabezados(celdas, categoria, base, entidades_fila))
 
             total_entidades += len(entidades_fila)
-            confianzas.append(0.88)
-
-            reg_simulado = {
-                "doc_id": doc_id,
-                "categoria": categoria,
-                "entidades_ner": entidades_fila,
-                "resoluciones": resoluciones_fila,
-                "calidad": {"requiere_revision": False}
-            }
-
-            res_carga = dw_loader.cargar_registro(reg_simulado, id_usuario=current_user.id)
-            detalles_carga.append(res_carga)
-            if res_carga.get("status") == "loaded":
-                cargados_dw += 1
-            elif res_carga.get("status") == "staged":
-                staged_entidades += 1
+            for resoluciones_fila in resoluciones_lista:
+                revision_fila = resoluciones_fila.pop("_revision_fila", False)
+                reg_simulado = {
+                    "doc_id": doc_id,
+                    "categoria": categoria,
+                    "entidades_ner": entidades_fila,
+                    "resoluciones": resoluciones_fila,
+                    "calidad": {"requiere_revision": en_revision or revision_fila},
+                }
+                res_carga = dw_loader.cargar_registro(reg_simulado, id_usuario=current_user.id)
+                detalles_carga.append(res_carga)
+                if res_carga.get("status") == "loaded":
+                    cargados_dw += 1
+                    if reg_simulado["calidad"]["requiere_revision"]:
+                        cargados_revision += 1
+                elif res_carga.get("status") == "staged":
+                    staged_entidades += 1
 
     db.commit()
 
     tiempo_total_ms = round((time.time() - inicio) * 1000.0, 2)
     prom_confianza = round(sum(confianzas) / max(1, len(confianzas)), 4)
-    requiere_rev = staged_entidades > 0
+    requiere_rev = staged_entidades > 0 or cargados_revision > 0
 
     return {
         "status": "success",
@@ -311,6 +353,7 @@ def process_pipeline(
         "total_filas_procesadas": total_filas,
         "total_entidades_extraidas": total_entidades,
         "hechos_cargados_dw": cargados_dw,
+        "hechos_en_revision": cargados_revision,
         "entidades_derivadas_staging": staged_entidades,
         "nivel_confianza_promedio": prom_confianza,
         "requiere_revision_humana": requiere_rev,
