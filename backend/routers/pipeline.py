@@ -23,6 +23,7 @@ from models.dim_origen import DimOrigenDocumental
 from models.staging_registro import StagingRegistroCrudo
 from services.ingestion_service import IngestionService
 from services.dw_loader import DWLoaderService
+from services import cache_consultas
 from services.confianza_service import obtener_indices, banda_de
 from services.extraccion_por_encabezado import (
     campos_por_encabezado, es_encabezado_metadato_pos, estudiante_de_fila, fecha_de_fila, registros_academicos,
@@ -340,6 +341,7 @@ def process_pipeline(
                     staged_entidades += 1
 
     db.commit()
+    cache_consultas.invalidar()  # el DW cambió: alertas, CMI y forecast se recalculan
 
     tiempo_total_ms = round((time.time() - inicio) * 1000.0, 2)
     prom_confianza = round(sum(confianzas) / max(1, len(confianzas)), 4)

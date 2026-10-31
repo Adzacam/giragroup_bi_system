@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import require_roles
 from models.user import User
+from services import cache_consultas
 from services.kpi_service import KPIService
 from services.alert_engine import AlertEngine
 from schemas.kpi_schemas import (
@@ -24,6 +25,9 @@ from schemas.kpi_schemas import (
 )
 
 router = APIRouter(prefix="/api/v1", tags=["KPIs y Alertas de Negocio"])
+
+# Lecturas cacheadas (RNF-03); se invalidan al consolidar cargas en el DW
+TTL_CMI_SEG = 60
 
 
 @router.get(
@@ -55,8 +59,10 @@ def get_cmi_completo(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["ADMIN", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "AUDITOR_CALIDAD", "ANALISTA_MARKETING"]))
 ):
-    service = KPIService(db)
-    return service.obtener_perspectivas_cmi_completo(gestion=gestion, programa=programa)
+    return cache_consultas.obtener(
+        ("cmi", gestion, programa), TTL_CMI_SEG,
+        lambda: KPIService(db).obtener_perspectivas_cmi_completo(gestion=gestion, programa=programa),
+    )
 
 
 

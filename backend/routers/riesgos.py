@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import require_roles
 from models.user import User
+from services import cache_consultas
 from services.risk_service import (
     get_riesgo_cruzado,
     evaluar_alertas_tempranas_deterministicas,
@@ -30,6 +31,9 @@ router = APIRouter(
     prefix="/api/v1/riesgos",
     tags=["Alertas de Riesgo"]
 )
+
+# Lecturas cacheadas (RNF-03); se invalidan al consolidar cargas en el DW
+TTL_ALERTAS_SEG = 60
 
 ROLES_ALERTAS = ["ADMIN", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "AUDITOR_CALIDAD"]
 
@@ -104,7 +108,9 @@ def obtener_alertas_tempranas(
     aislando cualquier incertidumbre estadística en la toma de decisiones sobre alumnos individuales.
     """
     try:
-        return evaluar_alertas_tempranas_deterministicas(
+        clave = ("alertas", periodo, programa, modulo, docente, regla_filtro, busqueda,
+                 umbral_nota, umbral_incumplimiento, umbral_cuotas_mora)
+        return cache_consultas.obtener(clave, TTL_ALERTAS_SEG, lambda: evaluar_alertas_tempranas_deterministicas(
             db=db,
             periodo=periodo,
             programa=programa,
@@ -115,7 +121,7 @@ def obtener_alertas_tempranas(
             umbral_nota=umbral_nota,
             umbral_incumplimiento=umbral_incumplimiento,
             umbral_cuotas_mora=umbral_cuotas_mora,
-        )
+        ))
     except Exception as e:
         logger.error(f"Falla al evaluar alertas tempranas determinísticas: {e}", exc_info=True)
         raise HTTPException(

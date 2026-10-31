@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import require_roles
 from models.user import User
+from services import cache_consultas
 from services.forecast_service import (
     obtener_pronostico_alumnos,
     obtener_pronostico_metas,
@@ -32,6 +33,9 @@ router = APIRouter(
     prefix="/api/v1/forecast",
     tags=["Pronósticos y Metas (Forecasting)"]
 )
+
+# Lecturas cacheadas (RNF-03); se invalidan al consolidar cargas en el DW
+TTL_FORECAST_SEG = 600
 
 TIPOS_PERMITIDOS = {"GLOBAL", "DIPLOMADO", "CURSO", "EXPERTO", "PROGRAMA EXPERTO", "MAESTRIA", "MAESTRÍA"}
 GRANULARIDADES_PERMITIDAS = {"MENSUAL", "ANUAL"}
@@ -127,7 +131,11 @@ def get_forecast_metas(
         )
 
     try:
-        resultado = obtener_pronostico_metas(db=db, granularity=gran_sanitizada, horizonte=horizonte)
+        # Holt-Winters / OLS se entrenan una vez por TTL, no en cada petición
+        resultado = cache_consultas.obtener(
+            ("forecast_metas", gran_sanitizada, horizonte), TTL_FORECAST_SEG,
+            lambda: obtener_pronostico_metas(db=db, granularity=gran_sanitizada, horizonte=horizonte),
+        )
         return {
             "status": "success",
             "data": resultado

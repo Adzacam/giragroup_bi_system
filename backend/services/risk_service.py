@@ -1,5 +1,5 @@
 from typing import Optional, Dict, Any, List
-from sqlalchemy.orm import Session, load_only
+from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from models.dim_estudiante import DimEstudiante
 from models.dim_modulo import DimModulo
@@ -107,91 +107,80 @@ def evaluar_alertas_tempranas_deterministicas(
     """
     estudiantes_db = {
         e.id_estudiante: e
-        for e in db.query(DimEstudiante)
-        .options(
-            load_only(
-                DimEstudiante.id_estudiante,
-                DimEstudiante.ci,
-                DimEstudiante.ci_numero,
-                DimEstudiante.codigo_estudiante,
-                DimEstudiante.nombre_completo,
-                DimEstudiante.programa_origen,
-                DimEstudiante.deprecado,
-            )
+        for e in db.query(
+            DimEstudiante.id_estudiante,
+            DimEstudiante.ci,
+            DimEstudiante.ci_numero,
+            DimEstudiante.codigo_estudiante,
+            DimEstudiante.nombre_completo,
+            DimEstudiante.programa_origen,
+            DimEstudiante.deprecado,
         )
         .filter(DimEstudiante.deprecado == False)
         .all()
     }
     modulos_db = {
         m.id_modulo: m
-        for m in db.query(DimModulo)
-        .options(
-            load_only(
-                DimModulo.id_modulo,
-                DimModulo.nombre_modulo,
-                DimModulo.programa,
-                DimModulo.pos_code,
-            )
+        for m in db.query(
+            DimModulo.id_modulo,
+            DimModulo.nombre_modulo,
+            DimModulo.programa,
+            DimModulo.pos_code,
         )
         .all()
     }
     docentes_db = {
         d.id_docente: d
-        for d in db.query(DimDocente)
-        .options(load_only(DimDocente.id_docente, DimDocente.nombre_completo))
+        for d in db.query(
+            DimDocente.id_docente,
+            DimDocente.nombre_completo,
+        )
         .all()
     }
     tiempos_db = {
         t.id_tiempo: t
-        for t in db.query(DimTiempo)
-        .options(
-            load_only(
-                DimTiempo.id_tiempo,
-                DimTiempo.gestion,
-                DimTiempo.semestre,
-                DimTiempo.mes,
-                DimTiempo.periodo_mes,
-            )
+        for t in db.query(
+            DimTiempo.id_tiempo,
+            DimTiempo.gestion,
+            DimTiempo.semestre,
+            DimTiempo.mes,
+            DimTiempo.periodo_mes,
         )
         .all()
     }
     origenes_db = {
         o.id_documento: o
-        for o in db.query(DimOrigenDocumental)
-        .options(load_only(DimOrigenDocumental.id_documento, DimOrigenDocumental.periodo))
+        for o in db.query(
+            DimOrigenDocumental.id_documento,
+            DimOrigenDocumental.periodo,
+        )
         .all()
     }
 
     hechos_aca = (
-        db.query(FactRendimientoAcademico)
-        .options(
-            load_only(
-                FactRendimientoAcademico.id_hecho_aca,
-                FactRendimientoAcademico.id_estudiante,
-                FactRendimientoAcademico.id_modulo,
-                FactRendimientoAcademico.id_docente,
-                FactRendimientoAcademico.id_tiempo,
-                FactRendimientoAcademico.id_documento,
-                FactRendimientoAcademico.nota_final,
-                FactRendimientoAcademico.incumplimiento_actividades_pct,
-                FactRendimientoAcademico.asistencia_pct,
-                FactRendimientoAcademico.tipo_alerta,
-            )
+        db.query(
+            FactRendimientoAcademico.id_hecho_aca,
+            FactRendimientoAcademico.id_estudiante,
+            FactRendimientoAcademico.id_modulo,
+            FactRendimientoAcademico.id_docente,
+            FactRendimientoAcademico.id_tiempo,
+            FactRendimientoAcademico.id_documento,
+            FactRendimientoAcademico.nota_final,
+            FactRendimientoAcademico.incumplimiento_actividades_pct,
+            FactRendimientoAcademico.asistencia_pct,
+            FactRendimientoAcademico.tipo_alerta,
         )
         .all()
     )
     hechos_fin = (
-        db.query(FactSituacionFinanciera)
-        .options(
-            load_only(
-                FactSituacionFinanciera.id_hecho_fin,
-                FactSituacionFinanciera.id_estudiante,
-                FactSituacionFinanciera.id_modulo,
-                FactSituacionFinanciera.id_tiempo,
-                FactSituacionFinanciera.id_documento,
-                FactSituacionFinanciera.cuotas_impagas,
-                FactSituacionFinanciera.monto_deuda,
-            )
+        db.query(
+            FactSituacionFinanciera.id_hecho_fin,
+            FactSituacionFinanciera.id_estudiante,
+            FactSituacionFinanciera.id_modulo,
+            FactSituacionFinanciera.id_tiempo,
+            FactSituacionFinanciera.id_documento,
+            FactSituacionFinanciera.cuotas_impagas,
+            FactSituacionFinanciera.monto_deuda,
         )
         .all()
     )

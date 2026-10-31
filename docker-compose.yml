@@ -68,6 +68,12 @@ services:
     env_file: .env
     environment:
       STANDALONE_MONOLITH: "false"
+    # RNF-03: varios workers para atender concurrencia (un solo proceso con --reload saturaba con 50 usuarios).
+    # API_RELOAD=1 vuelve al modo desarrollo con recarga automática.
+    command: >
+      sh -c 'if [ "$${API_RELOAD:-0}" = "1" ];
+             then exec uvicorn main:app --host 0.0.0.0 --port 8000 --reload;
+             else exec uvicorn main:app --host 0.0.0.0 --port 8000 --workers $${API_WORKERS:-4}; fi'
     depends_on:
       db:
         condition: service_healthy

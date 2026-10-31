@@ -60,6 +60,7 @@ from services.dw_loader import (
     normalizar_nota_base_100,
     calcular_tipo_alerta_financiera,
 )
+from services import cache_consultas
 from services.confianza_service import obtener_indices, banda_de
 from services.extraccion_por_encabezado import (
     campos_por_encabezado,
@@ -3440,6 +3441,7 @@ def confirm_dw_insert(
                     db.add(stg_unresolved)
 
     db.commit()
+    cache_consultas.invalidar()  # el DW cambió: alertas, CMI y forecast se recalculan
     inserted_total = inserted_academico + inserted_financiero
 
     # Registrar auditoría en LogPipelineIngesta y emitir notificación de consolidación DW
