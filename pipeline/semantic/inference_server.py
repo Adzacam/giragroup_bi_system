@@ -397,6 +397,14 @@ try:
     def infer(req: InferRequest):
         return ejecutar_inferencia_beto(req.text)
 
+    class IndiceRequest(BaseModel):
+        textos: List[str] = []
+
+    @app.post("/indice")
+    def indice(req: IndiceRequest):
+        from pipeline.semantic.indice_confianza import calcular_indices
+        return {"indices": calcular_indices(req.textos)}
+
 except ImportError:
     app = None
 
@@ -425,7 +433,12 @@ class _InferenceHTTPHandler(BaseHTTPRequestHandler):
             self._send_json(404, {"error": "Not found"})
 
     def do_POST(self):
-        if self.path.startswith("/infer"):
+        if self.path.startswith("/indice"):
+            from pipeline.semantic.indice_confianza import calcular_indices
+            length = int(self.headers.get("Content-Length", "0"))
+            data = json.loads(self.rfile.read(length).decode("utf-8") or "{}") if length > 0 else {}
+            self._send_json(200, {"indices": calcular_indices(data.get("textos") or [])})
+        elif self.path.startswith("/infer"):
             length = int(self.headers.get("Content-Length", "0"))
             raw = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
             try:

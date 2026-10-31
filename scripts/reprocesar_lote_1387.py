@@ -17,30 +17,21 @@ Genera:
 import os
 import sys
 import json
-import torch
-import numpy as np
 import pandas as pd
 from pathlib import Path
-from transformers import BertTokenizerFast, BertForTokenClassification
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+from pipeline.semantic.indice_confianza import (  # noqa: E402
+    BANDA_CONSOLIDADO, BANDA_REVISION, BANDA_STAGING, calcular_indices, clasificar_banda,
+)
+
 MODEL_PATH = ROOT_DIR / "pipeline" / "semantic" / "beto_local"
 OUTPUT_CSV = ROOT_DIR / "output" / "lote1387_beto_local.csv"
 
 def main():
-    print(f"Cargando BETO Local desde: {MODEL_PATH}...")
-    device = torch.device("cpu")
-    tokenizer = BertTokenizerFast.from_pretrained(str(MODEL_PATH))
-    model = BertForTokenClassification.from_pretrained(str(MODEL_PATH))
-    model.to(device)
-    model.eval()
-
-    # Cargar etiquetas del modelo
-    id2label = model.config.id2label
-
     # Extraer 1.387 registros representativos de las fuentes reales
     registros = []
     
@@ -131,64 +122,19 @@ def main():
     filas_procesar = filas_procesar[:1387]
     print(f"Total registros en lote a evaluar: {len(filas_procesar)}")
 
-    # Ejecutar inferencia BETO Local sobre el lote
-    resultados = []
-    batch_size = 32
-
-    for i in range(0, len(filas_procesar), batch_size):
-        lote_batch = filas_procesar[i : i + batch_size]
-        textos = [item["texto"] for item in lote_batch]
-        
-        inputs = tokenizer(
-            textos,
-            return_tensors="pt",
-            padding=True,
-            truncation=True,
-            max_length=128
-        ).to(device)
-
-        with torch.no_grad():
-            outputs = model(**inputs)
-            logits = outputs.logits
-            probs = torch.softmax(logits, dim=-1)
-
-        for b_idx, item in enumerate(lote_batch):
-            # Obtener tokens y probabilidades para entidades distintas de 'O'
-            token_ids = inputs["input_ids"][b_idx]
-            p_matrix = probs[b_idx]
-            pred_ids = torch.argmax(p_matrix, dim=-1)
-
-            confianzas_entidades = []
-            for t_idx, (tid, pid) in enumerate(zip(token_ids, pred_ids)):
-                if tid in (tokenizer.cls_token_id, tokenizer.sep_token_id, tokenizer.pad_token_id):
-                    continue
-                label_str = id2label.get(int(pid), "O")
-                if label_str != "O":
-                    prob_val = float(p_matrix[t_idx, pid].item())
-                    confianzas_entidades.append(prob_val)
-
-            # Indice de confianza final hibrido
-            if confianzas_entidades:
-                indice_final = round(float(np.mean(confianzas_entidades)), 4)
-            else:
-                # Si no detecto entidad explicita pero la estructura es tabular valida
-                indice_final = 0.55 if len(item["texto"]) < 20 else 0.72
-
-            # Determinar estado segun umbrales formales
-            if indice_final >= 0.85:
-                estado = "Consolidado directo"
-            elif indice_final >= 0.60:
-                estado = "Revision HITL"
-            else:
-                estado = "Retenido en Staging"
-
-            resultados.append({
-                "registro": item["registro"],
-                "archivo": item["archivo"],
-                "formato": item["formato"],
-                "indice_final": indice_final,
-                "estado": estado
-            })
+    # Índice final y banda con el módulo compartido por la plataforma (pipeline/semantic/indice_confianza.py)
+    estados = {BANDA_CONSOLIDADO: "Consolidado directo", BANDA_REVISION: "Revision HITL", BANDA_STAGING: "Retenido en Staging"}
+    indices = calcular_indices([item["texto"] for item in filas_procesar])
+    resultados = [
+        {
+            "registro": item["registro"],
+            "archivo": item["archivo"],
+            "formato": item["formato"],
+            "indice_final": indice_final,
+            "estado": estados[clasificar_banda(indice_final)],
+        }
+        for item, indice_final in zip(filas_procesar, indices)
+    ]
 
     # Guardar CSV
     OUTPUT_CSV.parent.mkdir(parents=True, exist_ok=True)
