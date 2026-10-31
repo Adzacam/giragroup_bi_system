@@ -1260,15 +1260,18 @@ def extract_entities_from_line(
         if k in labeled_data and labeled_data[k]:
             concepto_val = labeled_data[k]
             break
-    for k in ["MONTO", "IMPORTE", "TOTAL", "DEUDA", "SALDO", "MONTO_DEUDA", "MONTO DEUDA"]:
+    # Alias del libro de cobranzas (DEUDA TOTAL, TOTAL PAGADO HASTA LA FECHA, TOTAL CUOTAS EN MORA) primero:
+    # sin ellos, monto_pagado quedaba en 0 y las cuotas en mora no se leían.
+    for k in ["DEUDA TOTAL", "MONTO", "IMPORTE", "TOTAL", "DEUDA", "SALDO", "MONTO_DEUDA", "MONTO DEUDA"]:
         if k in labeled_data and labeled_data[k]:
             monto_val = labeled_data[k]
             break
-    for k in ["PAGADO", "MONTO_PAGADO", "MONTO PAGADO", "ABONO"]:
+    for k in ["TOTAL PAGADO HASTA LA FECHA", "TOTAL PAGADO", "PAGADO", "MONTO_PAGADO", "MONTO PAGADO", "ABONO"]:
         if k in labeled_data and labeled_data[k]:
             monto_pagado_val = labeled_data[k]
             break
-    for k in ["CUOTAS_IMPAGAS", "CUOTAS IMPAGAS", "CUOTAS VENCIDAS", "CUOTAS_VENCIDAS", "MORA", "CUOTAS_MORA", "CUOTA"]:
+    for k in ["TOTAL CUOTAS EN MORA", "CUOTAS EN MORA", "CUOTAS_IMPAGAS", "CUOTAS IMPAGAS", "CUOTAS VENCIDAS",
+              "CUOTAS_VENCIDAS", "MORA", "CUOTAS_MORA", "CUOTA"]:
         if k in labeled_data and labeled_data[k]:
             cuotas_impagas_val = labeled_data[k]
             break

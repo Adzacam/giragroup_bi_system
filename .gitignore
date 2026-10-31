@@ -86,3 +86,6 @@ docs/proyecto de grado/*
 !docs/images/.gitkeep
 
 
+
+# Respaldos locales del DW (contienen CI y nombres reales)
+output/backups/

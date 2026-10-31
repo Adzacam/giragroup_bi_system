@@ -131,6 +131,61 @@ def seed_fact_marketing(engine: Engine, data_dir: Optional[Path] = None) -> int:
     return filas_cargadas
 
 
+def seed_fact_marketing_leads(engine: Engine, data_dir: Optional[Path] = None) -> int:
+    """
+    Carga LEADS y RESERVAS de PLANIFICACION Y EJECUCION ACADÉMICA (hoja Centralizado_Mensual)
+    en fact_marketing, por POS y mes (AÑO, MES). Es la única fuente del corpus con leads por programa.
+    Retorna el número de pares (módulo, mes) actualizados.
+    """
+    dir_datos = data_dir or DATA_DIR
+    archivo = dir_datos / "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx"
+    if not archivo.exists():
+        logger.warning(f"No se encontró archivo {archivo}. Omitiendo carga de leads.")
+        return 0
+
+    logger.info(f"Procesando leads de {archivo.name}...")
+    df = pd.read_excel(archivo, sheet_name="Centralizado_Mensual")
+    for col in ("LEADS", "RESERVAS", "AÑO", "MES"):
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+    df = df.dropna(subset=["LEADS", "AÑO", "MES", "POS"])
+    df["pos_code"] = "POS-" + df["POS"].astype(str).str.replace(r"\.0$", "", regex=True).str.strip()
+    df["id_tiempo"] = df["AÑO"].astype(int) * 10000 + df["MES"].astype(int) * 100 + 1
+    df["tipo_prog"] = df["PROGRAMA"].apply(normalizar_tipo_programa)
+    agrupado = df.groupby(["pos_code", "tipo_prog", "id_tiempo"]).agg(
+        leads=("LEADS", "sum"), reservas=("RESERVAS", "sum")
+    ).reset_index()
+
+    with engine.begin() as conn:
+        modulos_map = {r.pos_code: r.id_modulo for r in conn.execute(text("SELECT id_modulo, pos_code FROM public.dim_modulo"))}
+        filas = 0
+        for _, row in agrupado.iterrows():
+            id_mod = modulos_map.get(row["pos_code"])
+            if not id_mod:
+                id_mod = conn.execute(
+                    text("""
+                        INSERT INTO public.dim_modulo (nombre_modulo, nombre_institucion, programa, pos_code)
+                        VALUES (:nombre, 'GiraGroup Posgrado', :prog, :pos)
+                        RETURNING id_modulo
+                    """),
+                    {"nombre": f"Programa {row['pos_code']}", "prog": row["tipo_prog"], "pos": row["pos_code"]}
+                ).scalar_one()
+                modulos_map[row["pos_code"]] = id_mod
+            conn.execute(
+                text("""
+                    INSERT INTO public.fact_marketing (id_modulo, id_tiempo, inscritos, leads, reservas)
+                    VALUES (:id_mod, :id_t, 0, :leads, :res)
+                    ON CONFLICT (id_modulo, id_tiempo)
+                    DO UPDATE SET leads = EXCLUDED.leads, reservas = EXCLUDED.reservas
+                """),
+                {"id_mod": id_mod, "id_t": int(row["id_tiempo"]), "leads": int(row["leads"]),
+                 "res": int(row["reservas"]) if pd.notna(row["reservas"]) else 0}
+            )
+            filas += 1
+
+    logger.info(f"Leads cargados en fact_marketing: {filas} pares (módulo, mes).")
+    return filas
+
+
 def seed_fact_rentabilidad_y_metas(engine: Engine, data_dir: Optional[Path] = None) -> int:
     """
     Carga EJECUTADO VS META.xlsx en fact_rentabilidad y dim_meta.
@@ -238,6 +293,7 @@ def ejecutar_seeding() -> None:
             conn.execute(text("SELECT 1"))
         logger.info("Conexión a base de datos PostgreSQL exitosa.")
         seed_fact_marketing(eng)
+        seed_fact_marketing_leads(eng)
         seed_fact_rentabilidad_y_metas(eng)
         logger.info("GIRA-52b finalizado con éxito.")
     except Exception as e:
