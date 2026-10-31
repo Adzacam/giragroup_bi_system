@@ -325,7 +325,8 @@ class DWLoaderService:
                 return est_encontrado.id_estudiante, "B"
 
             # 2c. Ningún candidato >= 90%: Si la confianza IA es baja (< 0.85), derivar a HITL / Estado C
-            if confianza_ia is not None and confianza_ia < 0.85 and not forzar_resolucion_humana:
+            # Solo < 0.60 va a staging: la banda [0.60, 0.85) se carga como hecho con requiere_revision
+            if confianza_ia is not None and confianza_ia < 0.60 and not forzar_resolucion_humana:
                 stg = StagingEntidadNoResuelta(
                     id_documento=doc_id,
                     tipo_entidad="ESTUDIANTE",
@@ -483,7 +484,8 @@ class DWLoaderService:
         nombre_modulo: Optional[str],
         pos_code: Optional[str] = None,
         doc_id: Optional[int] = None,
-        institucion: Optional[str] = "GiraGroup Posgrado"
+        institucion: Optional[str] = "GiraGroup Posgrado",
+        programa: Optional[str] = None,
     ) -> Optional[int]:
         if not nombre_modulo and not pos_code:
             return None
@@ -492,6 +494,18 @@ class DWLoaderService:
             mod = self.db.query(DimModulo).filter(DimModulo.pos_code == pos_code.strip()).first()
             if mod:
                 return mod.id_modulo
+            if nombre_modulo:
+                # El código POS es autoritativo: sin él, el fuzzy fusionaba 'POS-X · Módulo 1' con 'Módulo 2'
+                nuevo_mod = DimModulo(
+                    nombre_modulo=nombre_modulo.strip(),
+                    nombre_institucion=institucion or "GiraGroup Posgrado",
+                    id_institucion=self._resolver_id_institucion(institucion),
+                    pos_code=pos_code.strip(),
+                    programa=programa,
+                )
+                self.db.add(nuevo_mod)
+                self.db.flush()
+                return nuevo_mod.id_modulo
 
         if nombre_modulo:
             clean_name = nombre_modulo.strip()
@@ -522,47 +536,38 @@ class DWLoaderService:
         return None
 
     # ── 4. Resolución DimTiempo ──────────────────────────────────────────────
-    def resolver_o_crear_tiempo(self, fecha_val: Optional[Any] = None) -> int:
-        gestion = 2026
-        semestre = 1
-        mes_num = 5
-        mes_nombre = "Mayo"
-        id_tiempo = 20260501
+    def resolver_o_crear_tiempo(self, fecha_val: Optional[Any] = None) -> Optional[int]:
+        """
+        id_tiempo (AAAAMMDD) de la fecha de la fila. Sin fecha válida retorna None: el hecho queda sin
+        tiempo y con requiere_revision (antes se asignaba 20260501 a todo lo que no traía fecha).
+        """
+        from services.extraccion_por_encabezado import parsear_fecha
 
-        if isinstance(fecha_val, (date, datetime)):
-            gestion = fecha_val.year
-            semestre = 1 if fecha_val.month <= 6 else 2
-            mes_num = fecha_val.month
-            mes_nombre = MESES_ES.get(fecha_val.month, "Mayo")
-            dia = getattr(fecha_val, "day", 1)
-            id_tiempo = int(f"{gestion}{fecha_val.month:02d}{dia:02d}")
-        elif isinstance(fecha_val, str) and fecha_val.strip():
-            for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d"):
-                try:
-                    f_obj = datetime.strptime(fecha_val.strip(), fmt).date()
-                    gestion = f_obj.year
-                    semestre = 1 if f_obj.month <= 6 else 2
-                    mes_num = f_obj.month
-                    mes_nombre = MESES_ES.get(f_obj.month, "Mayo")
-                    id_tiempo = int(f"{gestion}{f_obj.month:02d}{f_obj.day:02d}")
-                    break
-                except ValueError:
-                    continue
+        f = parsear_fecha(fecha_val)
+        if f is None:
+            return None
+        id_tiempo = int(f"{f.year}{f.month:02d}{f.day:02d}")
 
         t_existente = self.db.query(DimTiempo).filter(DimTiempo.id_tiempo == id_tiempo).first()
         if t_existente:
             return t_existente.id_tiempo
 
-        periodo_mes = f"{gestion}-{mes_num:02d}"
-        nuevo_tiempo = DimTiempo(
+        iso = f.isocalendar()
+        self.db.add(DimTiempo(
             id_tiempo=id_tiempo,
-            gestion=gestion,
-            semestre=semestre,
-            mes=mes_num,
-            nombre_mes=mes_nombre,
-            periodo_mes=periodo_mes
-        )
-        self.db.add(nuevo_tiempo)
+            fecha=f,
+            gestion=f.year,
+            semestre=1 if f.month <= 6 else 2,
+            trimestre=(f.month - 1) // 3 + 1,
+            mes=f.month,
+            nombre_mes=MESES_ES[f.month],
+            semana_iso=iso[1],
+            dia_mes=f.day,
+            dia_semana=iso[2],
+            nombre_dia=DIAS_ES[iso[2]],
+            es_fin_semana=iso[2] >= 6,
+            periodo_mes=f"{f.year}-{f.month:02d}",
+        ))
         self.db.flush()
         return id_tiempo
 
@@ -670,6 +675,8 @@ class DWLoaderService:
             forzar_resolucion_humana=es_resuelto_humano,
         )
         id_tiempo = self.resolver_o_crear_tiempo(fecha_encontrada)
+        if id_tiempo is None:
+            requiere_rev = True  # hecho sin fecha: no se le asigna un período inventado
 
         # 3a. Ruteo ADMISION -> DimEstudiante
         if categoria == "admision":
@@ -897,7 +904,7 @@ class DWLoaderService:
         # 3f. Ruteo ACTA / MOODLE -> FactRendimientoAcademico
         id_doc = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id)
         id_mod = self.resolver_o_crear_modulo(
-            nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
+            nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion, programa=nombre_programa
         )
 
         if not id_est:
@@ -910,12 +917,15 @@ class DWLoaderService:
 
         if not id_mod:
             id_mod = self.resolver_o_crear_modulo("Módulo General", pos_code="MOD-GEN", institucion=institucion)
+            requiere_rev = True  # sin módulo identificado
 
         nota_raw = resoluciones.get("nota_final")
         if resoluciones.get("nota_ya_normalizada"):
             nota = float(nota_raw) if nota_raw is not None else None
         else:
             nota = normalizar_nota_base_100(nota_raw, tipo_escala)
+        if nota is None:
+            requiere_rev = True  # fila sin nota: queda null, nunca un valor de relleno
 
         asistencia = resoluciones.get("asistencia_pct")
         incumplimiento = resoluciones.get("incumplimiento_actividades_pct") or 0.00
