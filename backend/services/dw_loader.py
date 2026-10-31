@@ -11,6 +11,7 @@ a la tabla stg_entidad_no_resuelta para gobernanza y revisión asistida.
 import json
 import logging
 import re
+import unicodedata
 from datetime import datetime, date
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple, List
@@ -112,6 +113,17 @@ def calcular_tipo_alerta_financiera(cuotas_impagas: Optional[int]) -> str:
     return "NORMAL"
 
 
+def _tokens_nombre(nombre: str) -> set:
+    sin_tildes = "".join(c for c in unicodedata.normalize("NFD", nombre or "") if unicodedata.category(c) != "Mn")
+    return set(sin_tildes.upper().split())
+
+
+def _es_nombre_incompleto(guardado: str, entrante: str) -> bool:
+    """True si el nombre guardado es un subconjunto estricto del entrante ('ROBERTO JOSE' ⊂ 'ROBERTO JOSE VARGAS')."""
+    t_guardado, t_entrante = _tokens_nombre(guardado), _tokens_nombre(entrante)
+    return bool(t_guardado) and t_guardado < t_entrante
+
+
 def _fuzzy_best_match(query_str: str, candidates: list):
     """Búsqueda difusa compatible con rapidfuzz o difflib como fallback."""
     if not query_str or not candidates:
@@ -199,8 +211,11 @@ class DWLoaderService:
             ).first()
 
             if est:
+                # Mismo CI con nombre guardado incompleto (solo nombres de pila): misma persona, se completa
+                if nombre and est.nombre_completo and _es_nombre_incompleto(est.nombre_completo, nombre):
+                    est.nombre_completo = nombre.strip()
                 # Regla CI_NOMBRE_DISCORDANTE: si el nombre no coincide léxicamente (WRatio < 70) -> HITL
-                if not forzar_resolucion_humana and nombre and est.nombre_completo:
+                elif not forzar_resolucion_humana and nombre and est.nombre_completo:
                     match_ratio = _fuzzy_best_match(nombre.strip(), [est.nombre_completo])[1] or 0.0
                     if match_ratio < 70.0:
                         stg = StagingEntidadNoResuelta(
@@ -795,22 +810,41 @@ class DWLoaderService:
             m_ejec = float(resoluciones.get("monto_ejecutado") or resoluciones.get("gasto") or resoluciones.get("egreso") or 0.0)
             m_meta = float(resoluciones.get("monto_meta") or resoluciones.get("presupuesto") or resoluciones.get("techo") or 0.0)
 
-            nuevo_rent = FactRentabilidad(
-                id_modulo=id_mod_rent,
-                id_tiempo=id_tiempo,
-                id_categoria=id_cat,
-                monto_ejecutado=m_ejec,
-                monto_meta=m_meta
-            )
-            self.db.add(nuevo_rent)
-            self.db.flush()
-            return {
-                "tipo": "rentabilidad",
-                "status": "loaded",
-                "id_hecho": nuevo_rent.id_hecho_rent,
-                "monto_ejecutado": m_ejec,
-                "monto_meta": m_meta
-            }
+            existente_rent = self.db.query(FactRentabilidad).filter(
+                FactRentabilidad.id_categoria == id_cat,
+                FactRentabilidad.id_tiempo == id_tiempo
+            ).first()
+
+            if existente_rent:
+                curr_ejec = float(existente_rent.monto_ejecutado or 0.0)
+                curr_meta = float(existente_rent.monto_meta or 0.0)
+                existente_rent.monto_ejecutado = curr_ejec + m_ejec
+                existente_rent.monto_meta = max(curr_meta, m_meta)
+                self.db.flush()
+                return {
+                    "tipo": "rentabilidad",
+                    "status": "loaded",
+                    "id_hecho": existente_rent.id_hecho_rent,
+                    "monto_ejecutado": existente_rent.monto_ejecutado,
+                    "monto_meta": existente_rent.monto_meta
+                }
+            else:
+                nuevo_rent = FactRentabilidad(
+                    id_modulo=id_mod_rent,
+                    id_tiempo=id_tiempo,
+                    id_categoria=id_cat,
+                    monto_ejecutado=m_ejec,
+                    monto_meta=m_meta
+                )
+                self.db.add(nuevo_rent)
+                self.db.flush()
+                return {
+                    "tipo": "rentabilidad",
+                    "status": "loaded",
+                    "id_hecho": nuevo_rent.id_hecho_rent,
+                    "monto_ejecutado": m_ejec,
+                    "monto_meta": m_meta
+                }
 
         # 3e. Ruteo MARKETING -> FactMarketing
         if categoria == "marketing" and FactMarketing:
@@ -818,28 +852,47 @@ class DWLoaderService:
                 nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
             ) or self.resolver_o_crear_modulo("Difusión Institucional", pos_code="MKT-GEN", institucion=institucion)
 
-            leads = int(resoluciones.get("leads") or 1)
             reservas = int(resoluciones.get("reservas") or 0)
             inscritos = int(resoluciones.get("inscritos") or (1 if id_est else 0))
+            # Todo inscrito proviene de un lead: evita conversiones > 100 % por fila
+            leads = max(int(resoluciones.get("leads") or 1), inscritos)
             costo_prog = float(resoluciones.get("costo_programa") or 0.0)
 
-            nuevo_mkt = FactMarketing(
-                id_modulo=id_mod_mkt,
-                id_tiempo=id_tiempo,
-                leads=leads,
-                reservas=reservas,
-                inscritos=inscritos,
-                costo_programa=costo_prog
-            )
-            self.db.add(nuevo_mkt)
-            self.db.flush()
-            return {
-                "tipo": "marketing",
-                "status": "loaded",
-                "id_hecho": nuevo_mkt.id_hecho_mkt,
-                "leads": leads,
-                "inscritos": inscritos
-            }
+            existente_mkt = self.db.query(FactMarketing).filter(
+                FactMarketing.id_modulo == id_mod_mkt,
+                FactMarketing.id_tiempo == id_tiempo
+            ).first()
+
+            if existente_mkt:
+                existente_mkt.leads = (existente_mkt.leads or 0) + leads
+                existente_mkt.reservas = (existente_mkt.reservas or 0) + reservas
+                existente_mkt.inscritos = (existente_mkt.inscritos or 0) + inscritos
+                self.db.flush()
+                return {
+                    "tipo": "marketing",
+                    "status": "loaded",
+                    "id_hecho": existente_mkt.id_hecho_mkt,
+                    "leads": existente_mkt.leads,
+                    "inscritos": existente_mkt.inscritos
+                }
+            else:
+                nuevo_mkt = FactMarketing(
+                    id_modulo=id_mod_mkt,
+                    id_tiempo=id_tiempo,
+                    leads=leads,
+                    reservas=reservas,
+                    inscritos=inscritos,
+                    costo_programa=costo_prog
+                )
+                self.db.add(nuevo_mkt)
+                self.db.flush()
+                return {
+                    "tipo": "marketing",
+                    "status": "loaded",
+                    "id_hecho": nuevo_mkt.id_hecho_mkt,
+                    "leads": leads,
+                    "inscritos": inscritos
+                }
 
         # 3f. Ruteo ACTA / MOODLE -> FactRendimientoAcademico
         id_doc = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id)

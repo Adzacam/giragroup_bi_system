@@ -19,10 +19,10 @@ END $$;
 -- ==========================================
 CREATE TABLE public.users (
     id SERIAL PRIMARY KEY,
-    username VARCHAR(100) UNIQUE NOT NULL DEFAULT 'sistema',
-    hashed_password VARCHAR(255) NOT NULL DEFAULT '$placeholder$',
-    role VARCHAR(50) DEFAULT 'admin',
-    email VARCHAR(150) UNIQUE NOT NULL DEFAULT 'admin@giragroup.com',
+    username VARCHAR(100) UNIQUE NOT NULL,
+    hashed_password VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
     phone VARCHAR(30),
     is_active BOOLEAN DEFAULT TRUE,
     is_mfa_enabled BOOLEAN DEFAULT TRUE,
@@ -31,7 +31,8 @@ CREATE TABLE public.users (
     failed_login_attempts INTEGER DEFAULT 0,
     locked_until TIMESTAMP WITH TIME ZONE,
     created_by_id INTEGER REFERENCES public.users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT ck_users_role CHECK (role IN ('ADMIN','AUDITOR_CALIDAD','DIRECTOR_ACADEMICO','ANALISTA_FINANCIERO','ANALISTA_MARKETING'))
 );
 
 CREATE TABLE public.notifications (
@@ -213,6 +214,7 @@ CREATE TABLE public.fact_rendimiento_academico (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_fact_rendimiento_aca_id ON public.fact_rendimiento_academico(id_hecho_aca);
+CREATE UNIQUE INDEX uq_fact_aca_est_mod ON public.fact_rendimiento_academico(id_estudiante, id_modulo);
 
 -- B. Finanzas y Cobranza
 CREATE TABLE public.fact_situacion_financiera (

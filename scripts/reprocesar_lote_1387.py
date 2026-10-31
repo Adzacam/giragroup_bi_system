@@ -62,7 +62,7 @@ def main():
         (test_dir / "TBL_INSCRITOS_TEST.xlsx", None, ".xlsx", 250, "inscritos"),
         (test_dir / "Inscripciones_Google_Forms_TEST.csv", None, ".csv", 150, "inscritos"),
         (test_dir / "Reporte_Aula_Virtual_Moodle_TEST.csv", None, ".csv", 110, "academico"),
-        (data_dir / "EJECUTADO VS META.xlsx", "EJECUTADO", ".xls", 77, "financiero"),
+        (data_dir / "EJECUTADO VS META.xlsx", "EJECUTADO", ".xlsx", 77, "financiero"),
     ]
 
     reg_id = 1

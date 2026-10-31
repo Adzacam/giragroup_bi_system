@@ -397,6 +397,35 @@ def detectar_tipo_fuente_por_cabeceras(
 
 class IngestionService:
     @staticmethod
+    def serializar_bloque_con_encabezados(b: "pd.DataFrame") -> str:
+        """
+        Serializa un bloque a texto plano con celdas 'ENCABEZADO: valor' (se omiten las vacías).
+        Encabezado = primera fila con ≥ 2 celdas: salta filas de título de hoja (una sola
+        celda), que antes se tomaban como encabezado y desalineaban los campos.
+        """
+        if len(b) <= 1:
+            return a_texto_plano(b)
+        header_idx = next(
+            (i for i in range(min(len(b) - 1, 5)) if b.iloc[i].notna().sum() >= 2),
+            0
+        )
+        headers_row = [str(h).strip() if pd.notna(h) else "" for h in b.iloc[header_idx].values]
+        lineas_datos = []
+        for row_idx in range(header_idx + 1, len(b)):
+            celdas_fmt = []
+            for col_idx, v in enumerate(b.iloc[row_idx].values):
+                if pd.notna(v) and str(v).strip() != "":
+                    val_s = str(v).strip()
+                    hdr_s = headers_row[col_idx] if col_idx < len(headers_row) else ""
+                    if hdr_s and ":" not in val_s and not hdr_s.lower().startswith("unnamed"):
+                        celdas_fmt.append(f"{hdr_s}: {val_s}")
+                    else:
+                        celdas_fmt.append(val_s)
+            if celdas_fmt:
+                lineas_datos.append(" | ".join(celdas_fmt))
+        return "\n".join(lineas_datos) if lineas_datos else a_texto_plano(b)
+
+    @staticmethod
     def _calcular_sha256(content: bytes) -> str:
         h = hashlib.sha256()
         h.update(content)
@@ -421,7 +450,7 @@ class IngestionService:
         """
         Valida las reglas de seguridad de ingesta (#18):
         - Formato estrictamente en {.xlsx, .csv} (rechaza .xls, .xml y otros).
-        - Tamaño máximo: 15 MB.
+        - Tamaño máximo: 50 MB.
         - Magic bytes correspondientes al formato declarado.
         Retorna None si es válido, o string con el motivo de rechazo si falla.
         """
@@ -429,11 +458,11 @@ class IngestionService:
         if ext not in FORMATOS_PERMITIDOS:
             return f"Extensión '{ext or 'sin extensión'}' no permitida. Solo se aceptan .xlsx y .csv."
 
-        max_bytes = 15 * 1024 * 1024
+        max_bytes = 50 * 1024 * 1024
         if len(file_bytes) == 0:
             return "El archivo está vacío (0 bytes)."
         if len(file_bytes) > max_bytes:
-            return f"El archivo supera el límite máximo permitido de 15 MB ({len(file_bytes) / (1024 * 1024):.1f} MB)."
+            return f"El archivo supera el límite máximo permitido de 50 MB ({len(file_bytes) / (1024 * 1024):.1f} MB)."
 
         if ext == ".xlsx":
             if not file_bytes.startswith(b"PK\x03\x04"):
@@ -726,25 +755,7 @@ class IngestionService:
             )
             for nombre_hoja, b in bloques_validos:
                 categoria = categoria_por_fuente or clasificar_categoria(b, safe_filename, nombre_hoja)
-                if len(b) > 1:
-                    headers_row = [str(h).strip() if pd.notna(h) else "" for h in b.iloc[0].values]
-                    lineas_datos = []
-                    for row_idx in range(1, len(b)):
-                        fila_vals = b.iloc[row_idx].values
-                        celdas_fmt = []
-                        for col_idx, v in enumerate(fila_vals):
-                            if pd.notna(v) and str(v).strip() != "":
-                                val_s = str(v).strip()
-                                hdr_s = headers_row[col_idx] if col_idx < len(headers_row) else ""
-                                if hdr_s and ":" not in val_s and not hdr_s.lower().startswith("unnamed"):
-                                    celdas_fmt.append(f"{hdr_s}: {val_s}")
-                                else:
-                                    celdas_fmt.append(val_s)
-                        if celdas_fmt:
-                            lineas_datos.append(" | ".join(celdas_fmt))
-                    texto = "\n".join(lineas_datos) if lineas_datos else a_texto_plano(b)
-                else:
-                    texto = a_texto_plano(b)
+                texto = cls.serializar_bloque_con_encabezados(b)
                 n_b_filas = max(1, len(b) - 1) if len(b) > 1 else len(b)
                 payload_data = {
                     "diagnostico_estructural": asym_info.get("diagnostico_estructural", {}),

@@ -362,7 +362,7 @@ export function detectSourceType(file) {
 /**
  * Valida en cliente las reglas de seguridad de archivo (#18):
  * - Extensión estrictamente en .xlsx, .xls o .csv (rechaza .xml y otros)
- * - Tamaño <= 15 MB y > 0 bytes
+ * - Tamaño <= MAX_TAMANO_ARCHIVO_MB y > 0 bytes
  *
  * @param {File} file
  * @returns {{ valid: boolean, error: string|null }}

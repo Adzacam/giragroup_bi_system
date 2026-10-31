@@ -9,7 +9,7 @@
 
 ## 1. Consulta SQL de Importación (Power Query / PostgreSQL)
 
-Al importar la tabla desde el origen PostgreSQL (`localhost:5432` / `giragroup_db`), utilizar la siguiente vista analítica o consulta nativa:
+Al importar la tabla desde el origen PostgreSQL (`127.0.0.1:5434` / `giragroup_db`), utilizar la siguiente vista analítica o consulta nativa:
 
 ```sql
 SELECT 

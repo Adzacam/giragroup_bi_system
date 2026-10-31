@@ -120,3 +120,53 @@ class TestKPITicketPromedio:
         assert persp_fin["ticket_promedio_bs"] >= 0.0
         assert "ticket_promedio_programas" in persp_fin
         assert isinstance(persp_fin["ticket_promedio_programas"], list)
+
+
+@pytest.fixture
+def sqlite_dw():
+    from sqlalchemy import create_engine, event
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
+    from core.database import Base
+    import models.dim_modulo, models.dim_tiempo, models.fact_marketing  # noqa: F401  registro de tablas
+
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+
+    @event.listens_for(engine, "connect")
+    def do_connect(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("ATTACH DATABASE ':memory:' AS public")
+        cursor.close()
+
+    Base.metadata.create_all(bind=engine)
+    session = sessionmaker(bind=engine)()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+class TestKPIConversionAdmisiones:
+    def test_conversion_ignora_filas_sin_leads(self, sqlite_dw):
+        """
+        Las filas del seed histórico (leads = 0) no deben entrar al cálculo:
+        antes 34 leads vs 15 224 inscritos daban una conversión de 44 776 %.
+        """
+        from models.dim_modulo import DimModulo
+        from models.dim_tiempo import DimTiempo
+        from models.fact_marketing import FactMarketing
+
+        sqlite_dw.add_all([
+            DimModulo(id_modulo=1, nombre_modulo="Diplomado BI", programa="Diplomados"),
+            DimTiempo(id_tiempo=1, gestion=2026, periodo_mes="2026-05"),
+        ])
+        sqlite_dw.add_all([
+            FactMarketing(id_modulo=1, id_tiempo=1, leads=40, reservas=0, inscritos=10),
+            FactMarketing(id_modulo=1, id_tiempo=1, leads=0, reservas=0, inscritos=500),  # seed histórico
+        ])
+        sqlite_dw.commit()
+
+        cmi = KPIService(sqlite_dw).obtener_perspectivas_cmi_completo()
+
+        assert cmi["kpis"]["6_tasa_conversion_admisiones"] == 25.0
+        assert cmi["perspectivas"]["cliente_mercado"]["total_postulantes_leads"] == 40

@@ -21,8 +21,8 @@ from pipeline.ingesta import (
 )
 
 
-CORPUS_DIR = os.path.join(
-    os.path.dirname(__file__), "..", "uploads", "data"
+CORPUS_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "data")
 )
 
 

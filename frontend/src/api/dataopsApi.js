@@ -152,7 +152,7 @@ export const dataopsApi = {
   },
 
   /**
-   * Sube un lote de 1 a 10 archivos simultáneos con tipos documentales y escala por archivo (#16, #17, #18)
+   * Sube un lote de 1 a 30 archivos simultáneos con tipos documentales y escala por archivo (#16, #17, #18)
    * @param {Array<{ file: File, sourceType: string, tipoEscala?: string|null }>} filesWithTypes
    * @param {Function} onProgress
    */

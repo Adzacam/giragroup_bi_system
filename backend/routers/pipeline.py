@@ -11,7 +11,8 @@ import sys
 import time
 import tempfile
 import logging
-from typing import Optional
+import unicodedata
+from typing import Optional, Dict, List, Any
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -27,6 +28,101 @@ from schemas.pipeline_schemas import PipelineExecutionResponse
 logger = logging.getLogger("pipeline_router")
 
 router = APIRouter(prefix="/api/v1/pipeline", tags=["Pipeline Integrado"])
+
+
+# Encabezados de cobranza reconocidos (sin tildes, mayúsculas). Sin ellos, la heurística
+# posicional tomaba el CI como deuda y el celular como CI, y nunca asignaba monto_pagado.
+_ENCABEZADOS_FINANCIEROS: Dict[str, tuple] = {
+    "ci": ("CI", "CEDULA DE IDENTIDAD", "DOC_IDENTIDAD/CI", "CI_ESTUDIANTE"),
+    "monto_deuda": ("DEUDA TOTAL", "MONTO_DEUDA", "SALDO DEUDOR", "SALDO", "DEUDA"),
+    "monto_pagado": ("TOTAL PAGADO HASTA LA FECHA", "TOTAL PAGADO", "MONTO PAGADO", "MONTO_PAGADO", "PAGADO"),
+    "cuotas_impagas": ("TOTAL CUOTAS EN MORA", "CUOTAS EN MORA", "CUOTAS IMPAGAS", "CUOTAS_IMPAGAS"),
+    "nombre_completo": ("NOMBRE COMPLETO", "ESTUDIANTE"),
+    "nombres": ("NOMBRES",),
+    "paterno": ("PATERNO",),
+    "materno": ("MATERNO",),
+    "programa": ("NOMBRE DEL PROGRAMA", "PROGRAMA"),
+}
+
+
+def _normalizar_encabezado(texto: str) -> str:
+    sin_tildes = "".join(
+        c for c in unicodedata.normalize("NFD", texto or "") if unicodedata.category(c) != "Mn"
+    )
+    return " ".join(sin_tildes.upper().split())
+
+
+def _campos_financieros_por_encabezado(celdas: List[str]) -> Optional[Dict[str, str]]:
+    """
+    Lee celdas 'ENCABEZADO: valor' (formato del ingestor; las celdas vacías se omiten, por lo
+    que la posición no es fiable). Retorna:
+      - {campo: valor} si la fila trae al menos un monto (deuda, pagado o cuotas en mora);
+      - {} si trae encabezados pero ningún monto (resúmenes, tablas de referencia,
+        congelados): no es un hecho financiero y no debe pasar por la heurística posicional;
+      - None si la fila no trae encabezados (texto sin formato: aplica la heurística).
+    """
+    por_encabezado = {}
+    for c in celdas:
+        hdr, sep, val = c.partition(": ")
+        if sep:
+            por_encabezado.setdefault(_normalizar_encabezado(hdr), val.strip())
+    if not por_encabezado:
+        return None
+    campos = {}
+    for campo, alias in _ENCABEZADOS_FINANCIEROS.items():
+        for a in alias:
+            if por_encabezado.get(a):
+                campos[campo] = por_encabezado[a]
+                break
+    tiene_monto = any(k in campos for k in ("monto_deuda", "monto_pagado", "cuotas_impagas"))
+    return campos if tiene_monto else {}
+
+
+def _a_numero(valor: Optional[str]) -> Optional[float]:
+    if valor is None:
+        return None
+    v = str(valor).replace("Bs.", "").replace("Bs", "").replace(" ", "").strip()
+    if not v or v.lower() in ("nan", "none"):
+        return None
+    v = v.replace(",", "") if ("," in v and "." in v) else v.replace(",", ".")
+    try:
+        return float(v)
+    except ValueError:
+        return None
+
+
+def _resolver_fila_financiera(campos: Dict[str, str]) -> Dict[str, Any]:
+    """Construye las resoluciones financieras a partir de los campos leídos por encabezado."""
+    def celda(campo: str) -> Optional[str]:
+        val = (campos.get(campo) or "").strip()
+        return val if val and val.lower() != "nan" else None
+
+    ci_raw = celda("ci")
+    ci = "".join(ch for ch in ci_raw if ch.isalnum()) if ci_raw else None
+    nombre = celda("nombre_completo") or " ".join(
+        p for p in (celda("nombres"), celda("paterno"), celda("materno")) if p
+    ) or None
+    cuotas = _a_numero(celda("cuotas_impagas"))
+    programa = celda("programa")
+
+    estudiante = None
+    if ci or nombre:
+        estudiante = {
+            "valor_extraido": nombre or ci,
+            "fk_resolucion": {
+                "ci": ci,
+                "fk_estado": "A" if ci else "B",
+                "nombre_resuelto": nombre or f"Estudiante CI {ci}",
+            },
+        }
+
+    return {
+        "estudiante": estudiante,
+        "monto_deuda": _a_numero(celda("monto_deuda")),
+        "monto_pagado": _a_numero(celda("monto_pagado")),
+        "cuotas_impagas": int(cuotas) if cuotas is not None else None,
+        "programa": {"valor_extraido": programa} if programa else None,
+    }
 
 
 @router.post(
@@ -123,6 +219,9 @@ def process_pipeline(
                 continue
 
             celdas = [c.strip() for c in linea_str.split("|")]
+            campos_fin = _campos_financieros_por_encabezado(celdas) if categoria == "financiero" else None
+            if campos_fin == {}:
+                continue  # fila con encabezados pero sin montos: no es un hecho financiero
             # Construir dict simulado de fila
             fila_dict = {}
             for i, c in enumerate(celdas):
@@ -144,8 +243,15 @@ def process_pipeline(
                 "modulo": None
             }
 
-            # Buscar posibles números de nota o CI
-            for c in celdas:
+            if campos_fin is not None:
+                fila_fin = _resolver_fila_financiera(campos_fin)
+                resoluciones_fila.update(fila_fin)
+                resoluciones_fila["estado_cartera"] = None  # el loader lo deriva de cuotas_impagas
+                if fila_fin["estudiante"]:
+                    entidades_fila.append({"tipo": "CI", "valor": fila_fin["estudiante"]["fk_resolucion"]["ci"]})
+
+            # Buscar posibles números de nota o CI (heurística para bloques sin encabezados)
+            for c in ([] if campos_fin is not None else celdas):
                 # CI numérico típico boliviano (6 a 8 dígitos)
                 if c.isdigit() and 5 <= len(c) <= 9:
                     resoluciones_fila["estudiante"] = {

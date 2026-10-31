@@ -164,7 +164,7 @@ class TestExportReportesRBAC:
 
     def test_export_cierre_polp_segregacion(self, client):
         """
-        DIRECTOR_ACADEMICO exportando Cierre recibe montos financieros restringidos [RESTRINGIDO PoLP],
+        DIRECTOR_ACADEMICO y AUDITOR_CALIDAD exportando Cierre reciben montos financieros restringidos [RESTRINGIDO PoLP],
         mientras ANALISTA_FINANCIERO recibe montos expresados en Bs.
         """
         # 1. DIRECTOR_ACADEMICO
@@ -177,10 +177,24 @@ class TestExportReportesRBAC:
             # Buscar en las celdas de recaudación
             valores_aca = [str(cell.value) for row in ws_aca.iter_rows() for cell in row]
             assert any("[RESTRINGIDO PoLP]" in v for v in valores_aca)
+            assert not any("Bs." in v for v in valores_aca)
         finally:
             app.dependency_overrides.pop(get_current_user, None)
 
-        # 2. ANALISTA_FINANCIERO
+        # 2. AUDITOR_CALIDAD (también debe tener montos restringidos)
+        app.dependency_overrides[get_current_user] = lambda: mock_user("AUDITOR_CALIDAD", username="auditor_cal")
+        try:
+            res_aud = client.get("/api/v1/reportes/export?tipo=cierre&formato=xlsx")
+            assert res_aud.status_code == 200
+            wb_aud = openpyxl.load_workbook(io.BytesIO(res_aud.content))
+            ws_aud = wb_aud.active
+            valores_aud = [str(cell.value) for row in ws_aud.iter_rows() for cell in row]
+            assert any("[RESTRINGIDO PoLP]" in v for v in valores_aud)
+            assert not any("Bs." in v for v in valores_aud)
+        finally:
+            app.dependency_overrides.pop(get_current_user, None)
+
+        # 3. ANALISTA_FINANCIERO (ve montos en Bs.)
         app.dependency_overrides[get_current_user] = lambda: mock_user("ANALISTA_FINANCIERO", username="analista_fin")
         try:
             res_fin = client.get("/api/v1/reportes/export?tipo=cierre&formato=xlsx")
@@ -190,6 +204,36 @@ class TestExportReportesRBAC:
             valores_fin = [str(cell.value) for row in ws_fin.iter_rows() for cell in row]
             assert any("Bs." in v for v in valores_fin)
             assert not any("[RESTRINGIDO PoLP]" in v for v in valores_fin)
+        finally:
+            app.dependency_overrides.pop(get_current_user, None)
+
+    def test_export_kpis_polp_segregacion(self, client):
+        """
+        DIRECTOR_ACADEMICO exportando KPIs recibe montos financieros restringidos [RESTRINGIDO PoLP],
+        mientras ANALISTA_FINANCIERO ve cifras en Bs.
+        """
+        # DIRECTOR_ACADEMICO
+        app.dependency_overrides[get_current_user] = lambda: mock_user("DIRECTOR_ACADEMICO", username="director_aca")
+        try:
+            res = client.get("/api/v1/reportes/export?tipo=kpis&formato=xlsx")
+            assert res.status_code == 200
+            wb = openpyxl.load_workbook(io.BytesIO(res.content))
+            ws = wb.active
+            valores = [str(cell.value) for row in ws.iter_rows() for cell in row]
+            assert any("[RESTRINGIDO PoLP]" in v for v in valores)
+        finally:
+            app.dependency_overrides.pop(get_current_user, None)
+
+        # ANALISTA_FINANCIERO
+        app.dependency_overrides[get_current_user] = lambda: mock_user("ANALISTA_FINANCIERO", username="analista_fin")
+        try:
+            res = client.get("/api/v1/reportes/export?tipo=kpis&formato=xlsx")
+            assert res.status_code == 200
+            wb = openpyxl.load_workbook(io.BytesIO(res.content))
+            ws = wb.active
+            valores = [str(cell.value) for row in ws.iter_rows() for cell in row]
+            assert any("Bs." in v for v in valores)
+            assert not any("[RESTRINGIDO PoLP]" in v for v in valores)
         finally:
             app.dependency_overrides.pop(get_current_user, None)
 

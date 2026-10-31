@@ -60,15 +60,26 @@ export const getKpisPipeline = async () => {
 };
 
 /**
- * Obtiene las 4 Perspectivas Estratégicas Institucionales del CMI con drilldowns (con caché en memoria)
+ * Obtiene las 4 Perspectivas Estratégicas Institucionales del CMI con drilldowns y 11 KPIs
+ * Permite filtrar opcionalmente por gestión y programa.
  */
-export const getCmiCompleto = async (forceRefresh = false) => {
-  const key = 'cmi_completo';
+export const getCmiCompleto = async (gestion = null, programa = null, forceRefresh = false) => {
+  // Manejo de sobrecarga cuando el primer argumento es booleano (forceRefresh)
+  if (typeof gestion === 'boolean') {
+    forceRefresh = gestion;
+    gestion = null;
+    programa = null;
+  }
+  const params = {};
+  if (gestion) params.gestion = gestion;
+  if (programa) params.programa = programa;
+
+  const key = `cmi_completo_${gestion || 'all'}_${programa || 'all'}`;
   if (!forceRefresh && kpiMemoryCache.has(key)) {
     const entry = kpiMemoryCache.get(key);
     if (Date.now() < entry.expiry) return entry.data;
   }
-  const res = await client.get('/api/v1/kpis/cmi-completo');
+  const res = await client.get('/api/v1/kpis/cmi-completo', { params });
   kpiMemoryCache.set(key, { data: res.data, expiry: Date.now() + KPI_CACHE_TTL });
   return res.data;
 };

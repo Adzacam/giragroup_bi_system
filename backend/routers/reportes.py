@@ -12,6 +12,7 @@ cada exportación en la bitácora de auditoría log_pipeline_ingesta (etapa='EXP
 """
 
 import io
+import re
 import time
 from datetime import datetime
 from typing import Optional, List, Dict, Any
@@ -279,6 +280,8 @@ def exportar_reporte(
     tiempo_inicio = time.time()
     tipo_clean = (tipo or "").strip().lower()
     formato_clean = (formato or "").strip().lower()
+    # Gestión numérica para filtrar el DW (mismo criterio que KPIService: solo dígitos)
+    gestion_int = int(gestion.strip()) if gestion and gestion.strip().isdigit() else None
 
     if tipo_clean not in ("kpis", "alertas", "cierre"):
         raise HTTPException(
@@ -340,6 +343,21 @@ def exportar_reporte(
             "Mensaje Institucional"
         ]
         for a in alertas_filtradas:
+            metrica_val = str(a.get("metrica_valor", ""))
+            umbral_val = str(a.get("umbral_disparador", ""))
+            mensaje_val = str(a.get("mensaje", ""))
+
+            # Segregación estricta de montos financieros por rol (# PoLP):
+            # Solo ADMIN y ANALISTA_FINANCIERO ven montos financieros.
+            if current_user.role not in ("ADMIN", "ANALISTA_FINANCIERO"):
+                if a.get("tipo") in ("FINANCIERO", "RIESGO_CRUZADO") or "Bs" in metrica_val or "Bs" in mensaje_val or "Bs" in umbral_val:
+                    if a.get("tipo") in ("FINANCIERO", "RIESGO_CRUZADO") or "Bs" in metrica_val:
+                        metrica_val = "[RESTRINGIDO PoLP]"
+                    if "Bs" in umbral_val or a.get("tipo") == "FINANCIERO":
+                        umbral_val = "[RESTRINGIDO PoLP]"
+                    mensaje_val = re.sub(r'Bs\.?\s*[\d,]+(\.\d+)?', '[RESTRINGIDO PoLP]', mensaje_val)
+                    mensaje_val = re.sub(r'deuda de\s+[\d,]+(\.\d+)?', 'deuda de [RESTRINGIDO PoLP]', mensaje_val)
+
             filas.append([
                 a.get("regla", ""),
                 a.get("tipo", ""),
@@ -347,88 +365,130 @@ def exportar_reporte(
                 a.get("estudiante", ""),
                 a.get("codigo_estudiante", "") or "S/C",
                 a.get("modulo", "") or "N/D",
-                str(a.get("metrica_valor", "")),
-                a.get("umbral_disparador", ""),
-                a.get("mensaje", "")
+                metrica_val,
+                umbral_val,
+                mensaje_val
             ])
 
     # ── 2. EXPORTACIÓN DE KPIS Y CMI ──────────────────────────────────────────
     elif tipo_clean == "kpis":
         titulo_reporte = "Cuadro de Mando Integral y KPIs Consolidados"
         kpi_srv = KPIService(db)
-        cmi_data = kpi_srv.obtener_perspectivas_cmi_completo().get("perspectivas", {})
-        ticket_programas = kpi_srv.calcular_ticket_promedio_por_programa(programa_filtro=programa)
+        cmi_data = kpi_srv.obtener_perspectivas_cmi_completo(gestion=gestion, programa=programa).get("perspectivas", {})
+        ticket_programas = kpi_srv.calcular_ticket_promedio_por_programa(programa_filtro=programa, gestion_filtro=gestion_int)
 
         # Construir tabla según rol
         cabeceras = ["Perspectiva CMI", "Indicador Clave (KPI)", "Valor Calculado", "Meta / Referencia", "Estado"]
 
-        # Perspectiva Financiera (Solo ADMIN y ANALISTA_FINANCIERO)
+        # Perspectiva Financiera: solo ADMIN y ANALISTA_FINANCIERO ven montos reales.
+        # Todo otro rol ve [RESTRINGIDO PoLP] (# PoLP).
+        fin = cmi_data.get("financiera", {})
         if current_user.role in ("ADMIN", "ANALISTA_FINANCIERO"):
-            fin = cmi_data.get("financiera", {})
-            filas.append(["Financiera", "Cumplimiento Recaudación vs Meta", f"{fin.get('recaudacion_vs_meta_pct', 0.0)}%", "100.0%", "Óptimo" if fin.get('recaudacion_vs_meta_pct', 0) >= 90 else "En Riesgo"])
-            filas.append(["Financiera", "Monto Total Recaudado (Bs)", f"Bs. {fin.get('monto_total_recaudado_bs', 0.0):,.2f}", f"Bs. {fin.get('monto_meta_gestion_bs', 0.0):,.2f}", "Ejecutado"])
-            filas.append(["Financiera", "Mora Total de Cartera (%)", f"{fin.get('mora_total_pct', 0.0)}%", "< 15.0%", "Controlado" if fin.get('mora_total_pct', 0) < 15 else "Alerta"])
-            filas.append(["Financiera", "KPI Ticket Promedio Global (Bs)", f"Bs. {fin.get('ticket_promedio_bs', 0.0):,.2f}", "Bs. 850.00", "Rentable"])
+            rec_pct_val = fin.get('recaudacion_vs_meta_pct')
+            rec_bs_val = fin.get('monto_total_recaudado_bs')
+            meta_bs_val = fin.get('monto_meta_gestion_bs')
+            mora_pct_val = fin.get('mora_total_pct')
+            tk_bs_val = fin.get('ticket_promedio_bs')
+
+            rec_pct_str = f"{rec_pct_val}%" if rec_pct_val is not None else "N/D"
+            rec_bs_str = f"Bs. {rec_bs_val:,.2f}" if rec_bs_val is not None else "Bs. 0.00"
+            meta_bs_str = f"Bs. {meta_bs_val:,.2f}" if meta_bs_val is not None else "Bs. 0.00"
+            mora_pct_str = f"{mora_pct_val}%" if mora_pct_val is not None else "0.0%"
+            tk_bs_str = f"Bs. {tk_bs_val:,.2f}" if tk_bs_val is not None else "Bs. 0.00"
+
+            filas.append(["Financiera", "Cumplimiento Recaudación vs Meta", rec_pct_str, "100.0%", "Óptimo" if (rec_pct_val or 0) >= 90 else "En Riesgo"])
+            filas.append(["Financiera", "Monto Total Recaudado (Bs)", rec_bs_str, meta_bs_str, "Ejecutado"])
+            filas.append(["Financiera", "Mora Total de Cartera (%)", mora_pct_str, "< 15.0%", "Controlado" if (mora_pct_val or 0) < 15 else "Alerta"])
+            filas.append(["Financiera", "KPI Ticket Promedio Global (Bs)", tk_bs_str, "Bs. 850.00", "Rentable"])
 
             # Desglose Ticket Promedio por programa
             for prog in ticket_programas:
                 filas.append([
                     "Financiera (Ticket Prog.)",
                     f"Ticket Promedio: {prog['programa']}",
-                    f"Bs. {prog['ticket_promedio_bs']:,.2f}",
-                    f"Rec: Bs. {prog['recaudacion_bs']:,.2f} | Mat: {prog['matricula']}",
-                    "Normal" if prog['matricula'] > 0 else "Sin Matrícula"
+                    f"Bs. {prog['ticket_promedio_bs']:,.2f}" if prog.get('ticket_promedio_bs') is not None else "Bs. 0.00",
+                    f"Rec: Bs. {prog['recaudacion_bs']:,.2f} | Mat: {prog['matricula']}" if prog.get('recaudacion_bs') is not None else "N/D",
+                    "Normal" if prog.get('matricula', 0) > 0 else "Sin Matrícula"
+                ])
+        else:
+            filas.append(["Financiera", "Cumplimiento Recaudación vs Meta", "[RESTRINGIDO PoLP]", "100.0%", "[RESTRINGIDO PoLP]"])
+            filas.append(["Financiera", "Monto Total Recaudado (Bs)", "[RESTRINGIDO PoLP]", "[RESTRINGIDO PoLP]", "[RESTRINGIDO PoLP]"])
+            filas.append(["Financiera", "Mora Total de Cartera (%)", "[RESTRINGIDO PoLP]", "< 15.0%", "[RESTRINGIDO PoLP]"])
+            filas.append(["Financiera", "KPI Ticket Promedio Global (Bs)", "[RESTRINGIDO PoLP]", "[RESTRINGIDO PoLP]", "[RESTRINGIDO PoLP]"])
+
+            for prog in ticket_programas:
+                filas.append([
+                    "Financiera (Ticket Prog.)",
+                    f"Ticket Promedio: {prog['programa']}",
+                    "[RESTRINGIDO PoLP]",
+                    f"Rec: [RESTRINGIDO PoLP] | Mat: {prog['matricula']}",
+                    "[RESTRINGIDO PoLP]"
                 ])
 
         # Perspectiva Aprendizaje / Académica (Solo ADMIN y DIRECTOR_ACADEMICO)
         if current_user.role in ("ADMIN", "DIRECTOR_ACADEMICO"):
             apr = cmi_data.get("aprendizaje_crecimiento", {})
-            filas.append(["Aprendizaje y Crecimiento", "Promedio General de Notas", f"{apr.get('promedio_general_notas', 0.0)} pts", ">= 75.0 pts", "Satisfactorio"])
-            filas.append(["Aprendizaje y Crecimiento", "Tasa de Aprobación Global", f"{apr.get('tasa_aprobacion_pct', 0.0)}%", ">= 90.0%", "Óptimo"])
-            filas.append(["Aprendizaje y Crecimiento", "Puntualidad en Entrega de Actas", f"{apr.get('puntualidad_actas_pct', 0.0)}%", ">= 95.0%", "Cumplido"])
-            filas.append(["Aprendizaje y Crecimiento", "Estudiantes en Riesgo Académico", str(apr.get("estudiantes_en_riesgo", 0)), "0", "En Seguimiento"])
+            prom_n = apr.get('promedio_general_notas')
+            t_apr = apr.get('tasa_aprobacion_pct')
+            filas.append(["Aprendizaje y Crecimiento", "Promedio General de Notas", f"{prom_n} pts" if prom_n is not None else "N/D", ">= 75.0 pts", "Satisfactorio"])
+            filas.append(["Aprendizaje y Crecimiento", "Tasa de Aprobación Global", f"{t_apr}%" if t_apr is not None else "N/D", ">= 90.0%", "Óptimo"])
+            filas.append(["Aprendizaje y Crecimiento", "Estudiantes en Riesgo Académico", str(apr.get("estudiantes_en_riesgo") or 0), "0", "En Seguimiento"])
 
         # Perspectiva Procesos Internos / Calidad (Solo ADMIN y AUDITOR_CALIDAD)
         if current_user.role in ("ADMIN", "AUDITOR_CALIDAD"):
             proc = cmi_data.get("procesos_internos", {})
-            filas.append(["Procesos Internos (DataOps)", "Confianza Media Modelo BETO NER", f"{proc.get('confianza_media_beto_pct', 0.0)}%", ">= 95.0%", "Operativo"])
-            filas.append(["Procesos Internos (DataOps)", "Tasa Automatización Limpieza", f"{proc.get('tasa_automatizacion_pct', 0.0)}%", ">= 90.0%", "Óptimo"])
-            filas.append(["Procesos Internos (DataOps)", "Documentos Procesados DW", str(proc.get("documentos_procesados", 0)), "N/A", "Registrado"])
-            filas.append(["Procesos Internos (DataOps)", "Registros Derivados a HITL", str(proc.get("registros_derivados_hitl", 0)), "< 15", "Controlado"])
+            c_med = proc.get('confianza_media_beto_pct')
+            t_aut = proc.get('tasa_automatizacion_pct')
+            filas.append(["Procesos Internos (DataOps)", "Confianza Media Modelo BETO NER", f"{c_med}%" if c_med is not None else "N/D", ">= 95.0%", "Operativo"])
+            filas.append(["Procesos Internos (DataOps)", "Tasa Automatización Limpieza", f"{t_aut}%" if t_aut is not None else "N/D", ">= 90.0%", "Óptimo"])
+            filas.append(["Procesos Internos (DataOps)", "Documentos Procesados DW", str(proc.get("documentos_procesados") or 0), "N/A", "Registrado"])
+            filas.append(["Procesos Internos (DataOps)", "Registros Derivados a HITL", str(proc.get("registros_derivados_hitl") or 0), "< 15", "Controlado"])
 
         # Perspectiva Cliente / Mercado (Solo ADMIN y ANALISTA_MARKETING)
         if current_user.role in ("ADMIN", "ANALISTA_MARKETING"):
             cli = cmi_data.get("cliente_mercado", {})
-            filas.append(["Cliente y Mercado", "Tasa Conversión Admisiones", f"{cli.get('tasa_conversion_admisiones_pct', 0.0)}%", ">= 30.0%", "Cumplido"])
-            filas.append(["Cliente y Mercado", "Retención Neta de Matrícula", f"{cli.get('retencion_neta_pct', 0.0)}%", ">= 85.0%", "Óptimo"])
-            filas.append(["Cliente y Mercado", "Total Matrícula Acumulada", str(cli.get("total_matricula_acumulada", 0)), "N/A", "Activa"])
+            t_adm = cli.get('tasa_conversion_admisiones_pct')
+            filas.append(["Cliente y Mercado", "Tasa Conversión Admisiones", f"{t_adm}%" if t_adm is not None else "N/D", ">= 30.0%", "Cumplido"])
+            filas.append(["Cliente y Mercado", "Total Matrícula Acumulada", str(cli.get("total_matricula_acumulada") or 0), "N/A", "Activa"])
 
     # ── 3. EXPORTACIÓN DE CIERRE DE GESTIÓN ────────────────────────────────────
     elif tipo_clean == "cierre":
         titulo_reporte = "Cierre Institucional de Gestión y Rendimiento"
         kpi_srv = KPIService(db)
-        ticket_programas = kpi_srv.calcular_ticket_promedio_por_programa(programa_filtro=programa)
+        ticket_programas = kpi_srv.calcular_ticket_promedio_por_programa(programa_filtro=programa, gestion_filtro=gestion_int)
 
         cabeceras = ["Programa Académico", "Gestión", "Matrícula Registrada", "Recaudación Total (Bs)", "Ticket Promedio (Bs)", "Estado de Cierre"]
         gestion_label = gestion or "2026-I"
 
-        for prog in ticket_programas:
-            # Si el rol es DIRECTOR_ACADEMICO, no expone recaudación financiera sensible (# PoLP)
-            if current_user.role == "DIRECTOR_ACADEMICO":
-                rec_str = "[RESTRINGIDO PoLP]"
-                ticket_str = "[RESTRINGIDO PoLP]"
-            else:
-                rec_str = f"Bs. {prog['recaudacion_bs']:,.2f}"
-                ticket_str = f"Bs. {prog['ticket_promedio_bs']:,.2f}"
-
+        if not ticket_programas:
+            rec_str = "[RESTRINGIDO PoLP]" if current_user.role not in ("ADMIN", "ANALISTA_FINANCIERO") else "Bs. 0.00"
+            ticket_str = "[RESTRINGIDO PoLP]" if current_user.role not in ("ADMIN", "ANALISTA_FINANCIERO") else "Bs. 0.00"
             filas.append([
-                prog["programa"],
+                "Consolidado General",
                 gestion_label,
-                prog["matricula"],
+                0,
                 rec_str,
                 ticket_str,
-                "Cerrado Satisfactorio" if prog["matricula"] > 0 else "Sin Matrícula"
+                "Sin Movimientos"
             ])
+        else:
+            for prog in ticket_programas:
+                # Solo ADMIN y ANALISTA_FINANCIERO ven montos financieros. Todo otro rol ve [RESTRINGIDO PoLP] (# PoLP).
+                if current_user.role not in ("ADMIN", "ANALISTA_FINANCIERO"):
+                    rec_str = "[RESTRINGIDO PoLP]"
+                    ticket_str = "[RESTRINGIDO PoLP]"
+                else:
+                    rec_str = f"Bs. {prog['recaudacion_bs']:,.2f}" if prog.get('recaudacion_bs') is not None else "Bs. 0.00"
+                    ticket_str = f"Bs. {prog['ticket_promedio_bs']:,.2f}" if prog.get('ticket_promedio_bs') is not None else "Bs. 0.00"
+
+                filas.append([
+                    prog["programa"],
+                    gestion_label,
+                    prog["matricula"],
+                    rec_str,
+                    ticket_str,
+                    "Cerrado Satisfactorio" if prog["matricula"] > 0 else "Sin Matrícula"
+                ])
 
     # ── METADATOS COMUNES DE AUDITORÍA ────────────────────────────────────────
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

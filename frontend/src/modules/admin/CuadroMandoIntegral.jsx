@@ -653,35 +653,35 @@ export default function CuadroMandoIntegral() {
                 <KpiCard
                   label="1. PERSPECTIVA FINANCIERA"
                   numberPrefix="Bs. "
-                  number={`${(cmiData.financiera.monto_total_recaudado_bs / 1000000).toFixed(2)}M`}
-                  sublabel={`Cumplimiento de Meta: ${cmiData.financiera.recaudacion_vs_meta_pct}% · Mora: ${cmiData.financiera.mora_total_pct}%`}
-                  badgeText="Saludable"
-                  badgeType="success"
+                  number={cmiData?.financiera?.monto_total_recaudado_bs != null ? `${(cmiData.financiera.monto_total_recaudado_bs / 1000000).toFixed(2)}M` : '0.00M'}
+                  sublabel={cmiData?.financiera?.recaudacion_vs_meta_pct != null ? `Cumplimiento de Meta: ${cmiData.financiera.recaudacion_vs_meta_pct}% · Mora: ${cmiData?.financiera?.mora_total_pct ?? 0}%` : 'Sin registros financieros en DW'}
+                  badgeText={cmiData?.financiera?.recaudacion_vs_meta_pct != null ? (cmiData.financiera.recaudacion_vs_meta_pct >= 90 ? 'Saludable' : 'En Riesgo') : 'Sin datos'}
+                  badgeType={cmiData?.financiera?.recaudacion_vs_meta_pct >= 90 ? 'success' : 'peach'}
                 />
 
                 <KpiCard
                   label="2. DEL CLIENTE / MERCADO"
-                  number={cmiData.cliente_mercado.total_matricula_acumulada.toLocaleString()}
+                  number={cmiData?.cliente_mercado?.total_matricula_acumulada != null ? cmiData.cliente_mercado.total_matricula_acumulada.toLocaleString() : '0'}
                   numberSuffix=" Alumnos"
-                  sublabel={`Conversión Admisión: ${cmiData.cliente_mercado.tasa_conversion_admisiones_pct}% · Retención: ${cmiData.cliente_mercado.retencion_neta_pct}%`}
+                  sublabel={cmiData?.cliente_mercado?.tasa_conversion_admisiones_pct != null ? `Conversión Admisión: ${cmiData.cliente_mercado.tasa_conversion_admisiones_pct}%` : 'Sin postulaciones registradas en DW'}
                   badgeText="Sostenido"
                   badgeType="success"
                 />
 
                 <KpiCard
                   label="3. PROCESOS INTERNOS DATAOPS"
-                  number={cmiData.procesos_internos.confianza_media_beto_pct.toFixed(1)}
+                  number={cmiData?.procesos_internos?.confianza_media_beto_pct != null ? cmiData.procesos_internos.confianza_media_beto_pct.toFixed(1) : '0.0'}
                   numberSuffix="%"
-                  sublabel={`Automatización: ${cmiData.procesos_internos.tasa_automatizacion_pct}% · HITL: ${cmiData.procesos_internos.registros_derivados_hitl} casos`}
+                  sublabel={cmiData?.procesos_internos?.tasa_automatizacion_pct != null ? `Automatización: ${cmiData.procesos_internos.tasa_automatizacion_pct}% · HITL: ${cmiData?.procesos_internos?.registros_derivados_hitl ?? 0} casos` : 'Sin procesamiento activo en DW'}
                   badgeText="NLP Activo"
                   badgeType="peach"
                 />
 
                 <KpiCard
                   label="4. APRENDIZAJE Y CRECIMIENTO"
-                  number={cmiData.aprendizaje_crecimiento.promedio_general_notas.toFixed(1)}
+                  number={cmiData?.aprendizaje_crecimiento?.promedio_general_notas != null ? cmiData.aprendizaje_crecimiento.promedio_general_notas.toFixed(1) : '0.0'}
                   numberSuffix=" pts"
-                  sublabel={`Aprobación: ${cmiData.aprendizaje_crecimiento.tasa_aprobacion_pct}% · Actas a tiempo: ${cmiData.aprendizaje_crecimiento.puntualidad_actas_pct}%`}
+                  sublabel={cmiData?.aprendizaje_crecimiento?.tasa_aprobacion_pct != null ? `Aprobación: ${cmiData.aprendizaje_crecimiento.tasa_aprobacion_pct}% · En riesgo: ${cmiData?.aprendizaje_crecimiento?.estudiantes_en_riesgo ?? 0} alumnos` : 'Sin evaluaciones registradas en DW'}
                   badgeText="Vigente"
                   badgeType="neutral"
                 />
@@ -702,7 +702,7 @@ export default function CuadroMandoIntegral() {
                     </button>
                   </div>
                   <div className="space-y-3">
-                    {cmiData.financiera.drilldown_cartera.map((item, idx) => (
+                    {(cmiData?.financiera?.drilldown_cartera || []).map((item, idx) => (
                       <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                         <div>
                           <div style={{ fontSize: '13px', fontWeight: 600 }}>{item.estado}</div>
@@ -713,6 +713,9 @@ export default function CuadroMandoIntegral() {
                         </span>
                       </div>
                     ))}
+                    {(!cmiData?.financiera?.drilldown_cartera || cmiData.financiera.drilldown_cartera.length === 0) && (
+                      <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', textAlign: 'center', padding: '12px' }}>Sin registros de cartera en el DW</div>
+                    )}
                   </div>
                 </div>
 
@@ -729,7 +732,7 @@ export default function CuadroMandoIntegral() {
                     </button>
                   </div>
                   <div className="space-y-3">
-                    {cmiData.cliente_mercado.drilldown_embudo.map((e, idx) => (
+                    {(cmiData?.cliente_mercado?.drilldown_embudo || []).map((e, idx) => (
                       <div key={idx} style={{ padding: '8px 12px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px' }}>
                           <span>{e.etapa}</span>
@@ -740,6 +743,9 @@ export default function CuadroMandoIntegral() {
                         </div>
                       </div>
                     ))}
+                    {(!cmiData?.cliente_mercado?.drilldown_embudo || cmiData.cliente_mercado.drilldown_embudo.length === 0) && (
+                      <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', textAlign: 'center', padding: '12px' }}>Sin datos de embudo en el DW</div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -756,18 +762,18 @@ export default function CuadroMandoIntegral() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                     <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Recaudación Total Real</div>
-                    <div style={{ fontSize: '24px', fontWeight: 700, marginTop: '4px' }}>Bs. {cmiData.financiera.monto_total_recaudado_bs.toLocaleString()}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-alert-green)', marginTop: '4px', fontWeight: 600 }}>{cmiData.financiera.recaudacion_vs_meta_pct}% de Meta de Gestión</div>
+                    <div style={{ fontSize: '24px', fontWeight: 700, marginTop: '4px' }}>Bs. {(cmiData?.financiera?.monto_total_recaudado_bs ?? 0).toLocaleString()}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-alert-green)', marginTop: '4px', fontWeight: 600 }}>{cmiData?.financiera?.recaudacion_vs_meta_pct ?? 0}% de Meta de Gestión</div>
                   </div>
                   <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                     <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Meta Total Presupuestada</div>
-                    <div style={{ fontSize: '24px', fontWeight: 700, marginTop: '4px' }}>Bs. {cmiData.financiera.monto_meta_gestion_bs.toLocaleString()}</div>
+                    <div style={{ fontSize: '24px', fontWeight: 700, marginTop: '4px' }}>Bs. {(cmiData?.financiera?.monto_meta_gestion_bs ?? 0).toLocaleString()}</div>
                     <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>Catálogo Oficial de Programas</div>
                   </div>
                   <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                     <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Morosidad Institucional</div>
-                    <div style={{ fontSize: '24px', fontWeight: 700, marginTop: '4px', color: 'var(--color-alert-red)' }}>{cmiData.financiera.mora_total_pct}%</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>18 alumnos con cuotas pendientes</div>
+                    <div style={{ fontSize: '24px', fontWeight: 700, marginTop: '4px', color: 'var(--color-alert-red)' }}>{cmiData?.financiera?.mora_total_pct ?? 0}%</div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>{cmiData?.financiera?.estudiantes_riesgo_financiero ?? 0} alumnos con riesgo financiero</div>
                   </div>
                 </div>
 
@@ -784,17 +790,17 @@ export default function CuadroMandoIntegral() {
                       </tr>
                     </thead>
                     <tbody>
-                      {cmiData.financiera.drilldown_categorias.map((cat, idx) => (
+                      {(cmiData?.financiera?.drilldown_categorias || []).map((cat, idx) => (
                         <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
                           <td style={{ padding: '12px 10px', fontWeight: 600 }}>{cat.categoria}</td>
-                          <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>Bs. {cat.recaudado_bs.toLocaleString()}</td>
-                          <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>Bs. {cat.meta_bs.toLocaleString()}</td>
-                          <td style={{ padding: '12px 10px', fontWeight: 700, color: cat.cumplimiento_pct >= 90 ? 'var(--color-alert-green)' : 'var(--color-gira-gold)' }}>
-                            {cat.cumplimiento_pct}%
+                          <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>Bs. {(cat.recaudado_bs ?? 0).toLocaleString()}</td>
+                          <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>Bs. {(cat.meta_bs ?? 0).toLocaleString()}</td>
+                          <td style={{ padding: '12px 10px', fontWeight: 700, color: (cat.cumplimiento_pct || 0) >= 90 ? 'var(--color-alert-green)' : 'var(--color-gira-gold)' }}>
+                            {cat.cumplimiento_pct ?? 0}%
                           </td>
                           <td style={{ padding: '12px 10px' }}>
                             <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '9999px', background: 'rgba(27,135,84,0.12)', color: 'var(--color-alert-green)', fontWeight: 600 }}>
-                              {cat.estado}
+                              {cat.estado || 'Activo'}
                             </span>
                           </td>
                         </tr>
@@ -817,14 +823,14 @@ export default function CuadroMandoIntegral() {
                   <div>
                     <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '14px' }}>Distribución por Línea de Posgrado</h4>
                     <div className="space-y-3">
-                      {cmiData.cliente_mercado.drilldown_lineas.map((l, idx) => (
+                      {(cmiData?.cliente_mercado?.drilldown_lineas || []).map((l, idx) => (
                         <div key={idx} style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, marginBottom: '4px' }}>
                             <span>{l.linea}</span>
                             <span style={{ color: 'var(--color-gira-gold)' }}>{l.crecimiento_anual}</span>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-slate-gray)', marginBottom: '8px' }}>
-                            <span>{l.inscritos.toLocaleString()} estudiantes matriculados</span>
+                            <span>{(l.inscritos ?? 0).toLocaleString()} estudiantes matriculados</span>
                             <span>{l.pct}% del total</span>
                           </div>
                           <div style={{ height: '6px', width: '100%', background: 'var(--color-mist-gray)', borderRadius: '9999px', overflow: 'hidden' }}>
@@ -838,11 +844,11 @@ export default function CuadroMandoIntegral() {
                   <div>
                     <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '14px' }}>Embudo de Conversión de Matrícula</h4>
                     <div className="space-y-3">
-                      {cmiData.cliente_mercado.drilldown_embudo.map((e, idx) => (
+                      {(cmiData?.cliente_mercado?.drilldown_embudo || []).map((e, idx) => (
                         <div key={idx} style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, marginBottom: '4px' }}>
                             <span>{e.etapa}</span>
-                            <span style={{ fontFamily: 'var(--font-mono)' }}>{e.cantidad.toLocaleString()}</span>
+                            <span style={{ fontFamily: 'var(--font-mono)' }}>{(e.cantidad ?? 0).toLocaleString()}</span>
                           </div>
                           <div style={{ height: '6px', width: '100%', background: 'var(--color-mist-gray)', borderRadius: '9999px', overflow: 'hidden' }}>
                             <div style={{ height: '100%', width: `${e.pct_conversion}%`, background: 'var(--color-gira-gold)', borderRadius: '9999px' }} />
@@ -893,7 +899,7 @@ export default function CuadroMandoIntegral() {
                       </tr>
                     </thead>
                     <tbody>
-                      {cmiData.procesos_internos.drilldown_fuentes.map((f, idx) => (
+                      {(cmiData?.procesos_internos?.drilldown_fuentes || []).map((f, idx) => (
                         <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
                           <td style={{ padding: '12px 10px', fontWeight: 600 }}>{f.tipo_fuente}</td>
                           <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>{f.archivos} archivos</td>
@@ -919,7 +925,7 @@ export default function CuadroMandoIntegral() {
                   <div>
                     <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Distribución de Calificaciones</h4>
                     <div className="space-y-3">
-                      {cmiData.aprendizaje_crecimiento.drilldown_distribucion_notas.map((n, idx) => (
+                      {(cmiData?.aprendizaje_crecimiento?.drilldown_distribucion_notas || []).map((n, idx) => (
                         <div key={idx} style={{ padding: '10px 14px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div>
                             <div style={{ fontSize: '13px', fontWeight: 600 }}>{n.rango}</div>
@@ -936,7 +942,7 @@ export default function CuadroMandoIntegral() {
                   <div>
                     <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Puntualidad y Desempeño por Área Docente</h4>
                     <div className="space-y-3">
-                      {cmiData.aprendizaje_crecimiento.drilldown_docentes.map((d, idx) => (
+                      {(cmiData?.aprendizaje_crecimiento?.drilldown_docentes || []).map((d, idx) => (
                         <div key={idx} style={{ padding: '10px 14px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                           <div style={{ fontSize: '13px', fontWeight: 600 }}>{d.area}</div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>

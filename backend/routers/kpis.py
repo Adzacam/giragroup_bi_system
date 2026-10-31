@@ -5,6 +5,7 @@ Router FastAPI para exposición de KPIs consolidados del CMI y feed de alertas p
 Aplica RBAC estricto según la matriz de mínimo privilegio (PoLP).
 """
 
+from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -49,11 +50,13 @@ def get_kpis_general(
     include_in_schema=False
 )
 def get_cmi_completo(
+    gestion: Optional[str] = Query(None, description="Filtro opcional de gestión"),
+    programa: Optional[str] = Query(None, description="Filtro opcional de programa"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["ADMIN", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "AUDITOR_CALIDAD", "ANALISTA_MARKETING"]))
 ):
     service = KPIService(db)
-    return service.obtener_perspectivas_cmi_completo()
+    return service.obtener_perspectivas_cmi_completo(gestion=gestion, programa=programa)
 
 
 

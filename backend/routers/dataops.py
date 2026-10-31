@@ -306,8 +306,8 @@ def upload_batch(
     db: Session = Depends(get_db),
 ):
     """
-    Sube y procesa un lote de 1 a 10 archivos simultáneos (#15, #16, #17, #18):
-    - Máximo 10 archivos por lote, máximo 15 MB por archivo.
+    Sube y procesa un lote de 1 a 30 archivos simultáneos (#15, #16, #17, #18):
+    - Máximo 30 archivos por lote, máximo 50 MB por archivo.
     - Solo permite .xlsx, .csv (rechaza .xls, .xml y otros).
     - Valida firma binaria (magic bytes), sanitiza nombres y verifica hash_sha256 duplicado.
     - Crea entidad `Lote` en PostgreSQL y vincula cada `dim_origen_documental.id_lote`.
@@ -319,10 +319,10 @@ def upload_batch(
             detail="No se enviaron archivos para procesamiento por lote.",
         )
 
-    if len(files) > 10:
+    if len(files) > 30:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Se enviaron {len(files)} archivos. El límite máximo permitido es de 10 archivos por lote.",
+            detail=f"Se enviaron {len(files)} archivos. El límite máximo permitido es de 30 archivos por lote.",
         )
 
     def _parse_form_list(raw_list: Optional[List[str]]) -> List[str]:
@@ -398,7 +398,7 @@ def upload_batch(
             ))
             continue
 
-        # 1. Validación de seguridad (#18: extensión, tamaño <= 15MB, magic bytes)
+        # 1. Validación de seguridad (#18: extensión, tamaño <= 50MB, magic bytes)
         err_sec = IngestionService.validar_seguridad_archivo(raw_name, content)
         if err_sec:
             errores.append({"filename": safe_name, "error": err_sec})
@@ -853,6 +853,19 @@ def get_normalization_matrix(doc_id: int, db: Session = Depends(get_db)):
 # MOTOR DE EXTRACCIÓN SEMÁNTICA, BONOS ACUMULATIVOS Y RAPIDFUZZ (#3, #4, #5, #6, #7)
 # =============================================================================
 
+# Encabezados cuyo valor nunca es el nombre ni el CI del estudiante. Sin esta exclusión, la
+# heurística tomaba el ASESOR o la RESIDENCIA DOCENTE como estudiante y el CELULAR como CI.
+_ENCABEZADOS_NO_ESTUDIANTE = (
+    "ASESOR", "DOCENTE", "PROFESOR", "TUTOR", "EXPERTO", "COORDINADOR", "RESPONSABLE",
+    "RESIDENCIA", "SEDE", "CIUDAD", "ESCUELA", "PROGRAMA", "MODULO", "CELULAR", "TELEFONO",
+    "FACTURA", "CORREO", "E-MAIL", "EMAIL",
+)
+
+
+def _es_encabezado_no_estudiante(clave: str) -> bool:
+    return any(p in clave for p in _ENCABEZADOS_NO_ESTUDIANTE)
+
+
 
 def extract_entities_from_line(
     raw_text: str,
@@ -885,15 +898,33 @@ def extract_entities_from_line(
             k, v = ch.split(":", 1)
             labeled_data[strip_accents(k).upper().strip()] = v.strip()
 
+    # Texto sin columnas de asesores, docentes, sedes ni contactos, para las búsquedas sueltas
+    texto_permitido = " | ".join(
+        ch for ch in chunks
+        if not (":" in ch and _es_encabezado_no_estudiante(strip_accents(ch.split(":", 1)[0]).upper().strip()))
+    ) if chunks else raw_text
+
     # 1. ESTUDIANTE (etiqueta CoNLL PER sin prefijo docente)
     est_cands = []
-    for k in ["ESTUDIANTE", "ALUMNO", "POSTULANTE", "USER_LMS", "NOMBRE", "NOMBRES_Y_APELLIDOS", "NOMBRE_COMPLETO"]:
+    for k in ["ESTUDIANTE", "ALUMNO", "POSTULANTE", "USER_LMS", "NOMBRE", "NOMBRES_Y_APELLIDOS", "NOMBRE_COMPLETO",
+              "NOMBRES Y APELLIDOS", "NOMBRE COMPLETO", "APELLIDOS Y NOMBRES"]:
         if k in labeled_data and labeled_data[k]:
             est_cands.append(labeled_data[k])
             break
 
+    # Nombre repartido en columnas (cobranzas, actas ARCA): NOMBRES + PATERNO + MATERNO
+    if not est_cands and labeled_data.get("NOMBRES"):
+        partes = [
+            labeled_data.get("NOMBRES"),
+            labeled_data.get("PATERNO") or labeled_data.get("APELLIDO PATERNO"),
+            labeled_data.get("MATERNO") or labeled_data.get("APELLIDO MATERNO"),
+        ]
+        est_cands.append(" ".join(p for p in partes if p))
+
     if not est_cands and chunks:
         for ch in chunks:
+            if ":" in ch and _es_encabezado_no_estudiante(strip_accents(ch.split(":", 1)[0]).upper().strip()):
+                continue
             val = ch.split(":", 1)[1].strip() if ":" in ch else ch
             words = val.split()
             if not re.search(r"\d", val) and "@" not in val and 2 <= len(words) <= 4:
@@ -902,7 +933,7 @@ def extract_entities_from_line(
                     est_cands.append(val)
 
     if not est_cands:
-        m_names = re.findall(r"\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})\b", raw_text)
+        m_names = re.findall(r"\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})\b", texto_permitido)
         for nm in m_names:
             nm_clean = strip_accents(nm).lower()
             if not any(w in nm_clean for w in NON_PERSON_WORDS):
@@ -973,13 +1004,13 @@ def extract_entities_from_line(
 
     # 2. DOCUMENTO / CI
     ci_match = None
-    for k in ["CI", "C.I.", "IDNUMBER", "CARNET", "DOCUMENTO", "DOC_IDENTIDAD/CI", "CI_ESTUDIANTE"]:
+    for k in ["CI", "C.I.", "IDNUMBER", "CARNET", "DOCUMENTO", "DOC_IDENTIDAD/CI", "CI_ESTUDIANTE", "CEDULA DE IDENTIDAD"]:
         if k in labeled_data and labeled_data[k]:
             ci_match = labeled_data[k]
             break
 
     if not ci_match:
-        m_ci = re.search(r"\b([0-9]{5,9}\b(?:\s*(?:LP|SC|CB|OR|PT|TJ|CH|BE|PA)\b)?\??)", raw_text, re.IGNORECASE)
+        m_ci = re.search(r"\b([0-9]{5,9}\b(?:\s*(?:LP|SC|CB|OR|PT|TJ|CH|BE|PA)\b)?\??)", texto_permitido, re.IGNORECASE)
         if m_ci:
             val_ci = m_ci.group(1).strip()
             if val_ci not in ["2024", "2025", "2026", "2027"]:

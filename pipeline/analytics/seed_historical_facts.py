@@ -152,8 +152,10 @@ def seed_fact_rentabilidad_y_metas(engine: Engine, data_dir: Optional[Path] = No
             conn.execute(
                 text("""
                     INSERT INTO public.dim_categoria_financiera (nombre_categoria, tipo)
-                    VALUES (:nombre, 'INGRESO')
-                    ON CONFLICT (nombre_categoria) DO NOTHING
+                    SELECT :nombre, 'INGRESO'
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM public.dim_categoria_financiera WHERE nombre_categoria = :nombre
+                    )
                 """),
                 {"nombre": cat}
             )

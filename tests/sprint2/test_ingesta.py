@@ -16,8 +16,8 @@ from pipeline.ingesta import leer_archivo, leer_corpus, LECTORES
 
 # ── Helpers ──────────────────────────────────────────────────────────
 
-CORPUS_DIR = os.path.join(
-    os.path.dirname(__file__), "..", "uploads", "data"
+CORPUS_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "data")
 )
 
 
