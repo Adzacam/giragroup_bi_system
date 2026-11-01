@@ -8,6 +8,12 @@ y partición de registros para DataOps (Sprint 2, 3 & 4).
 import math
 import re
 import unicodedata
+from functools import lru_cache
+
+try:
+    from rapidfuzz import fuzz as _rf_fuzz
+except ImportError:  # pragma: no cover
+    _rf_fuzz = None
 from difflib import SequenceMatcher
 from typing import Optional, Tuple, Dict, Any, List
 
@@ -55,10 +61,16 @@ NON_PERSON_WORDS = {
 }
 
 
+@lru_cache(maxsize=262_144)
+def _sin_tildes(s: str) -> str:
+    return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
+
+
 def strip_accents(s: str) -> str:
+    # Cacheado: la evaluación compara cada línea contra todo el catálogo (miles de nombres repetidos por línea)
     if not s:
         return ""
-    return "".join(c for c in unicodedata.normalize("NFD", str(s)) if unicodedata.category(c) != "Mn")
+    return _sin_tildes(str(s))
 
 
 def fuzzy_score(s1: str, s2: str) -> Tuple[float, str]:
@@ -68,15 +80,12 @@ def fuzzy_score(s1: str, s2: str) -> Tuple[float, str]:
         return 0.0, "Empty"
     if s1_clean == s2_clean:
         return 100.0, "Levenshtein Exact Match"
-    try:
-        from rapidfuzz import fuzz
-        ts_ratio = round(float(fuzz.token_sort_ratio(s1_clean, s2_clean)), 1)
-        w_ratio = round(float(fuzz.WRatio(s1_clean, s2_clean)), 1)
+    if _rf_fuzz is not None:
+        ts_ratio = round(float(_rf_fuzz.token_sort_ratio(s1_clean, s2_clean)), 1)
+        w_ratio = round(float(_rf_fuzz.WRatio(s1_clean, s2_clean)), 1)
         best = max(ts_ratio, w_ratio)
         if best >= 80.0:
             return best, "RapidFuzz Token Sort / WRatio"
-    except Exception:
-        pass
     w1, w2 = set(s1_clean.split()), set(s2_clean.split())
     if w1 and w1.issubset(w2):
         return 95.0, "Token Subset Match"
@@ -88,6 +97,9 @@ def fuzzy_score(s1: str, s2: str) -> Tuple[float, str]:
         return round(overlap * 90.0 + 10.0, 1), "Token Overlap Match"
     t1 = " ".join(sorted(w1))
     t2 = " ".join(sorted(w2))
+    if _rf_fuzz is not None:
+        # Misma razón 2·M/T que difflib, en C: difflib era ~85 % del tiempo de evaluar un lote
+        return round(float(_rf_fuzz.ratio(t1, t2)), 1), "SequenceMatcher Ratio"
     ratio = SequenceMatcher(None, t1, t2).ratio()
     return round(ratio * 100, 1), "SequenceMatcher Ratio"
 

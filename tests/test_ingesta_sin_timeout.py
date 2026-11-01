@@ -1,0 +1,111 @@
+"""
+tests/test_ingesta_sin_timeout.py
+---------------------------------
+Subir los 10 libros de uploads/data terminaba en 504: upload-batch evaluaba todas las líneas (92 837) antes de
+responder, a ~105 ms por línea (difflib en Python puro contra todo el catálogo), y el gateway corta a los 300 s.
+1. fuzzy_score conserva sus resultados (ahora con rapidfuzz en C y normalización cacheada).
+2. upload-batch responde tras la ingesta y deja la evaluación en segundo plano.
+3. /resumen y /beto-reading reutilizan la evaluación mientras el lote no cambia.
+"""
+
+from difflib import SequenceMatcher
+
+import pytest
+from fastapi import BackgroundTasks
+
+from services.dataops_evaluation_service import fuzzy_score, strip_accents
+
+
+@pytest.mark.parametrize("a, b, esperado", [
+    ("Juan Pérez", "JUAN PEREZ", (100.0, "Levenshtein Exact Match")),
+    ("NATALY CAERO FORONDA", "Nataly Caero Foronda", (100.0, "Levenshtein Exact Match")),
+    ("Maria Lopez", "Maria Lopez Vargas", None),   # subconjunto / rapidfuzz alto
+    ("", "Juan", (0.0, "Empty")),
+])
+def test_fuzzy_score_casos_conocidos(a, b, esperado):
+    score, algoritmo = fuzzy_score(a, b)
+    if esperado:
+        assert (score, algoritmo) == esperado
+    else:
+        assert score >= 80.0
+
+
+def test_fuzzy_score_sin_palabras_en_comun_aproxima_a_difflib():
+    a, b = "Diplomado en Gestion Publica", "Curso Taller Excel"
+    score, algoritmo = fuzzy_score(a, b)
+    t1 = " ".join(sorted(set(strip_accents(a).lower().split())))
+    t2 = " ".join(sorted(set(strip_accents(b).lower().split())))
+    difflib_pct = SequenceMatcher(None, t1, t2).ratio() * 100
+    assert algoritmo == "SequenceMatcher Ratio"
+    assert score < 80.0 and abs(score - difflib_pct) <= 10.0  # misma razón 2·M/T; nunca cruza el umbral de 80
+
+
+def test_strip_accents_cacheado_y_sin_cambios():
+    assert strip_accents("Ana Lucía Ríos") == "Ana Lucia Rios"
+    assert strip_accents(None) == "" and strip_accents("") == ""
+
+
+@pytest.fixture
+def dw():
+    from sqlalchemy import create_engine, event
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
+    from core.database import Base
+    import models  # noqa: F401
+
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+
+    @event.listens_for(engine, "connect")
+    def _public(dbapi_connection, _):
+        dbapi_connection.execute("ATTACH DATABASE ':memory:' AS public")
+
+    Base.metadata.create_all(bind=engine)
+    s = sessionmaker(bind=engine)()
+    yield s
+    s.close()
+
+
+def test_upload_batch_no_evalua_antes_de_responder(dw, monkeypatch):
+    from io import BytesIO
+    from starlette.datastructures import Headers, UploadFile
+    from routers import dataops
+
+    def _no_sincrono(*_a, **_k):
+        raise AssertionError("upload-batch no debe evaluar el lote antes de responder")
+
+    monkeypatch.setattr(dataops, "_evaluar_documentos_lote", _no_sincrono)
+    contenido = "Nombre Completo,Cédula de Identidad,Ciudad\nAdriano Daza Camargo,CI-4892019,Cochabamba\n".encode("utf-8")
+    archivo = UploadFile(file=BytesIO(contenido), filename="inscripciones.csv", headers=Headers({"content-type": "text/csv"}))
+    tareas = BackgroundTasks()
+
+    res = dataops.upload_batch(files=[archivo], source_types=["ADMISION"], tipos_fuente=["ADMISION"], tipos_escala=None,
+                               archivos_meta=None, institucion="GiraGroup Posgrado", periodo=None, tipo_escala_global=None,
+                               background_tasks=tareas, db=dw)
+
+    assert res.archivos_exitosos == 1
+    assert [t.func for t in tareas.tasks] == [dataops._evaluar_lote_en_segundo_plano]
+
+
+def test_lectura_del_lote_reutiliza_la_evaluacion_hasta_que_cambia(dw, monkeypatch):
+    from models.dim_origen import DimOrigenDocumental
+    from models.staging_entidad import StagingEntidadNoResuelta
+    from routers import dataops
+    from services import cache_consultas
+
+    cache_consultas.invalidar()
+    llamadas = []
+    monkeypatch.setattr(dataops, "_evaluar_documentos_lote",
+                        lambda db, docs, persistir_staging=True: llamadas.append(1) or {"totalTuplas": 0, "detalles": []})
+    dw.add(DimOrigenDocumental(id_documento=1, nombre_archivo="ARCA.xlsx", tipo_fuente="ACTA"))
+    dw.commit()
+    docs = dw.query(DimOrigenDocumental).all()
+
+    dataops._evaluacion_lectura(dw, docs)
+    dataops._evaluacion_lectura(dw, docs)
+    assert len(llamadas) == 1  # el segundo GET no recalcula
+
+    dw.add(StagingEntidadNoResuelta(id_documento=1, tipo_entidad="ESTUDIANTE", texto_original="x", resuelto=False))
+    dw.commit()
+    dataops._evaluacion_lectura(dw, docs)
+    assert len(llamadas) == 2  # cambió la bandeja: se recalcula
+    cache_consultas.invalidar()

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, Query, HTTPException, status, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, File, Form, Query, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import Optional, List, Dict, Any, Tuple, Union
@@ -8,6 +8,7 @@ import hashlib
 import logging
 import json
 import re
+import threading
 import unicodedata
 import urllib.request
 import urllib.error
@@ -24,7 +25,7 @@ LANDING_DIR = os.environ.get(
 os.makedirs(LANDING_DIR, exist_ok=True)
 UPLOAD_DIR = LANDING_DIR
 
-from core.database import get_db
+from core.database import SessionLocal, get_db
 from core.security import require_roles, get_current_user
 from models.user import User
 from models.lote import Lote
@@ -318,6 +319,7 @@ def upload_batch(
     institucion: Optional[str] = Form("GiraGroup Posgrado"),
     periodo: Optional[str] = Form(None),
     tipo_escala_global: Optional[str] = Form(None),
+    background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
 ):
     """
@@ -609,14 +611,12 @@ def upload_batch(
         logger.warning("No se pudo registrar log de auditoría del lote: %s", e_audit_batch)
 
     if docs_creados_ids:
-        try:
-            docs_lote_objs = db.query(DimOrigenDocumental).filter(
-                DimOrigenDocumental.id_documento.in_(docs_creados_ids)
-            ).all()
-            if docs_lote_objs:
-                _evaluar_documentos_lote(db, docs_lote_objs, persistir_staging=True)
-        except Exception as e_eval_batch:
-            logger.warning("No se pudo evaluar lote %s post-ingesta: %s", nuevo_lote.id_lote, e_eval_batch)
+        # La evaluación línea a línea de un lote grande tarda minutos: se hace después de responder.
+        # Antes se hacía aquí y el gateway cortaba la subida con 504 aunque la ingesta ya estuviera completa.
+        if background_tasks is not None:
+            background_tasks.add_task(_evaluar_lote_en_segundo_plano, list(docs_creados_ids), nuevo_lote.id_lote)
+        else:
+            _evaluar_lote_en_segundo_plano(list(docs_creados_ids), nuevo_lote.id_lote)
 
     return BatchUploadResponse(
         status="success" if exitosos else ("partial" if archivos_procesados else "error"),
@@ -883,6 +883,94 @@ def _es_encabezado_no_estudiante(clave: str) -> bool:
 
 
 
+# ── Memo de emparejamiento contra catálogos ──────────────────────────────────
+# Evaluar un lote compara cada línea contra todo el catálogo (≈10 000 estudiantes, ≈2 600 módulos). El mejor
+# candidato depende solo del texto candidato y del catálogo, así que se calcula una vez por texto distinto.
+# El memo vive mientras exista la lista de catálogo de esa evaluación (se guarda una referencia a la lista).
+_STOP_TOKENS_EST = ("del", "los", "las", "san")
+_MEMO_CATALOGOS: Dict[Tuple[str, int], Dict[Any, Any]] = {}
+_MEMO_LOCK = threading.Lock()
+_MEMO_MAX_CATALOGOS = 12
+
+
+def _memo_catalogo(tipo: str, catalogo: list) -> Dict[Any, Any]:
+    clave = (tipo, id(catalogo))
+    with _MEMO_LOCK:
+        memo = _MEMO_CATALOGOS.get(clave)
+        if memo is None or memo["_ref"] is not catalogo or memo["_len"] != len(catalogo):
+            while len(_MEMO_CATALOGOS) >= _MEMO_MAX_CATALOGOS:
+                _MEMO_CATALOGOS.pop(next(iter(_MEMO_CATALOGOS)))
+            memo = {"_ref": catalogo, "_len": len(catalogo)}
+            _MEMO_CATALOGOS[clave] = memo
+        return memo
+
+
+def _mejor_estudiante(cand: str, estudiantes: list) -> Tuple[Any, float, str]:
+    """Mejor estudiante para el texto (solo los que comparten una palabra válida), como el bucle original."""
+    memo = _memo_catalogo("estudiantes", estudiantes)
+    if ("mejor", cand) in memo:
+        return memo[("mejor", cand)]
+    indice = memo.get("indice")
+    if indice is None:
+        indice = {}
+        for pos, e in enumerate(estudiantes):
+            for t in set(strip_accents(e.nombre_completo).lower().split()):
+                if len(t) >= 3 and t not in _STOP_TOKENS_EST:
+                    indice.setdefault(t, []).append(pos)
+        memo["indice"] = indice
+    tokens_cand = {t for t in strip_accents(cand).lower().split() if len(t) >= 3 and t not in _STOP_TOKENS_EST}
+    mejor = (None, 0.0, "None")
+    for pos in sorted({p for t in tokens_cand for p in indice.get(t, ())}):  # mismo orden que el catálogo
+        e = estudiantes[pos]
+        score, algo = fuzzy_score(cand, e.nombre_completo)
+        if score > mejor[1]:
+            mejor = (e, score, algo)
+    memo[("mejor", cand)] = mejor
+    return mejor
+
+
+def _mejor_docente(cand: str, docentes: list) -> Tuple[Any, float, str]:
+    memo = _memo_catalogo("docentes", docentes)
+    if ("mejor", cand) not in memo:
+        mejor = (None, 0.0, "None")
+        for d in docentes:
+            score, algo = fuzzy_score(cand, d.nombre_completo)
+            if score > mejor[1]:
+                mejor = (d, score, algo)
+        memo[("mejor", cand)] = mejor
+    return memo[("mejor", cand)]
+
+
+def _mejor_modulo(cand: str, modulos: list) -> Tuple[Any, float, str]:
+    memo = _memo_catalogo("modulos", modulos)
+    if ("mejor", cand) in memo:
+        return memo[("mejor", cand)]
+    cand_clean = strip_accents(cand).lower()
+    mejor = (None, 0.0, "None")
+    for m in modulos:
+        m_name_clean = strip_accents(m.nombre_modulo).lower()
+        score, algo = fuzzy_score(cand, m.nombre_modulo)
+        if m.pos_code and strip_accents(m.pos_code).lower() in cand_clean:
+            score = max(score, 95.0)
+            algo = "Prefix Code Match"
+        elif f"modulo {m.id_modulo // 100}" in cand_clean or f"mod {m.id_modulo // 100}" in cand_clean or ("3" in cand_clean and "302" in m_name_clean):
+            score = max(score, 89.0)
+            algo = "Jaro-Winkler Distance"
+        elif any(w in cand_clean for w in ["estetica", "medicina"]) and "estetica" in m_name_clean:
+            score = max(score, 87.5)
+            algo = "Gazetteer Alias Matching"
+        elif any(w in cand_clean for w in ["gobernanza", "datos"]) and "gobernanza" in m_name_clean:
+            score = max(score, 91.5)
+            algo = "Domain Keyword Match"
+        elif any(w in cand_clean for w in ["big data", "analytics"]) and "big data" in m_name_clean:
+            score = max(score, 93.0)
+            algo = "Domain Keyword Match"
+        if score > mejor[1]:
+            mejor = (m, score, algo)
+    memo[("mejor", cand)] = mejor
+    return mejor
+
+
 def extract_entities_from_line(
     raw_text: str,
     estudiantes: list,
@@ -959,20 +1047,12 @@ def extract_entities_from_line(
     if est_cands:
         est_token = est_cands[0]
         for cand in est_cands:
-            cand_clean = strip_accents(cand).lower()
-            tokens_cand = set(cand_clean.split())
-            for e in estudiantes:
-                e_clean = strip_accents(e.nombre_completo).lower()
-                tokens_e = set(e_clean.split())
-                palabras_comunes = tokens_cand.intersection(tokens_e)
-                palabras_validas = [p for p in palabras_comunes if len(p) >= 3 and p not in ["del", "los", "las", "san"]]
-                if palabras_validas:
-                    score, algo = fuzzy_score(cand, e.nombre_completo)
-                    if score > best_est_score:
-                        best_est_score = score
-                        best_est_algo = algo
-                        best_est = e
-                        est_token = cand
+            e, score, algo = _mejor_estudiante(cand, estudiantes)
+            if e is not None and score > best_est_score:
+                best_est_score = score
+                best_est_algo = algo
+                best_est = e
+                est_token = cand
 
     lectura_est_base = float(prob_override.get("ESTUDIANTE", 0.91 if (best_est and best_est_score >= 80.0) else 0.88))
     calc_est = calcular_indice_entidad_con_bonos(
@@ -1110,13 +1190,12 @@ def extract_entities_from_line(
     if doc_cands:
         doc_token = doc_cands[0]
         for cand in doc_cands:
-            for d in docentes:
-                score, algo = fuzzy_score(cand, d.nombre_completo)
-                if score > best_doc_score:
-                    best_doc_score = score
-                    best_doc_algo = algo
-                    best_doc = d
-                    doc_token = cand
+            d, score, algo = _mejor_docente(cand, docentes)
+            if d is not None and score > best_doc_score:
+                best_doc_score = score
+                best_doc_algo = algo
+                best_doc = d
+                doc_token = cand
     elif has_teacher_hint:
         for d in docentes:
             d_clean = strip_accents(d.nombre_completo).lower()
@@ -1197,31 +1276,12 @@ def extract_entities_from_line(
     if mod_cands:
         mod_token = mod_cands[0]
         for cand in mod_cands:
-            cand_clean = strip_accents(cand).lower()
-            for m in modulos:
-                m_name_clean = strip_accents(m.nombre_modulo).lower()
-                score, algo = fuzzy_score(cand, m.nombre_modulo)
-                if m.pos_code and strip_accents(m.pos_code).lower() in cand_clean:
-                    score = max(score, 95.0)
-                    algo = "Prefix Code Match"
-                elif f"modulo {m.id_modulo // 100}" in cand_clean or f"mod {m.id_modulo // 100}" in cand_clean or ("3" in cand_clean and "302" in m_name_clean):
-                    score = max(score, 89.0)
-                    algo = "Jaro-Winkler Distance"
-                elif any(w in cand_clean for w in ["estetica", "medicina"]) and "estetica" in m_name_clean:
-                    score = max(score, 87.5)
-                    algo = "Gazetteer Alias Matching"
-                elif any(w in cand_clean for w in ["gobernanza", "datos"]) and "gobernanza" in m_name_clean:
-                    score = max(score, 91.5)
-                    algo = "Domain Keyword Match"
-                elif any(w in cand_clean for w in ["big data", "analytics"]) and "big data" in m_name_clean:
-                    score = max(score, 93.0)
-                    algo = "Domain Keyword Match"
-
-                if score > best_mod_score:
-                    best_mod_score = score
-                    best_mod_algo = algo
-                    best_mod = m
-                    mod_token = cand
+            m, score, algo = _mejor_modulo(cand, modulos)
+            if m is not None and score > best_mod_score:
+                best_mod_score = score
+                best_mod_algo = algo
+                best_mod = m
+                mod_token = cand
 
     lectura_mod_base = float(prob_override.get("MODULO", prob_override.get("MÓDULO", 0.85)))
     calc_mod = calcular_indice_entidad_con_bonos(
@@ -2061,30 +2121,35 @@ def _evaluar_documentos_lote(
         elif item.get("area") == "financiera":
             estudiantes_map[ident_norm]["financiero"].append(item)
 
-    # Identificar quiénes cruzan alerta de abandono y estructurar desglose relacional BETO
-    for item in detalles:
-        ident_norm = (item.get("ci") or item.get("estudiante") or "").strip().lower()
-        est_cross = estudiantes_map.get(ident_norm) or {"academico": [], "financiero": []}
+    # Señales de mora e inasistencia por identidad: dependen solo de la identidad, no de la línea. Antes se
+    # recorrían todas las líneas de la identidad por cada línea (cuadrático: minutos con miles de líneas por persona).
+    senales_por_ident: Dict[str, Tuple] = {}
 
-        has_mora = False
-        mora_ref = None
-        mora_cuotas = 0
+    def _senales(ident_norm: str) -> Tuple:
+        if ident_norm in senales_por_ident:
+            return senales_por_ident[ident_norm]
+        est_cross = estudiantes_map.get(ident_norm) or {"academico": [], "financiero": []}
+        has_mora, mora_ref, mora_cuotas = False, None, 0
         for fin in est_cross["financiero"]:
             cuotas = fin.get("verificacion_reglas", {}).get("monto", {}).get("cuotas_impagas", 0)
             if cuotas >= 2 or "MORA" in fin.get("raw_text", "").upper():
                 has_mora = True
                 mora_ref = fin.get("id")
                 mora_cuotas = max(mora_cuotas, cuotas or 2)
-
-        has_inasist = False
-        inasist_ref = None
-        inasist_pct = 0
+        has_inasist, inasist_ref, inasist_pct = False, None, 0
         for acad in est_cross["academico"]:
             asist_e = next((e for e in acad.get("lectura", {}).get("entidades", []) if e.get("label") == "ASISTENCIA"), None)
             if asist_e and (asist_e.get("inasistenciaPct", 0) >= 20.0 or asist_e.get("asistenciaPct", 100) <= 80.0):
                 has_inasist = True
                 inasist_ref = acad.get("id")
                 inasist_pct = asist_e.get("inasistenciaPct", 35)
+        senales_por_ident[ident_norm] = (has_mora, mora_ref, mora_cuotas, has_inasist, inasist_ref, inasist_pct)
+        return senales_por_ident[ident_norm]
+
+    # Identificar quiénes cruzan alerta de abandono y estructurar desglose relacional BETO
+    for item in detalles:
+        ident_norm = (item.get("ci") or item.get("estudiante") or "").strip().lower()
+        has_mora, mora_ref, mora_cuotas, has_inasist, inasist_ref, inasist_pct = _senales(ident_norm)
 
         reg_asist_e = next((e for e in item.get("lectura", {}).get("entidades", []) if e.get("label") == "ASISTENCIA"), None)
         reg_inasist = reg_asist_e and reg_asist_e.get("inasistenciaPct", 0) >= 20.0
@@ -2156,6 +2221,54 @@ def _evaluar_documentos_lote(
     }
 
 
+def _evaluar_lote_en_segundo_plano(doc_ids: List[int], id_lote: Optional[int]) -> None:
+    """Evaluación post-ingesta con su propia sesión (la del request ya se cerró al responder)."""
+    db_bg = SessionLocal()
+    try:
+        docs = db_bg.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids)).all()
+        if docs:
+            _evaluar_documentos_lote(db_bg, docs, persistir_staging=True)
+    except Exception as e_eval_batch:
+        logger.warning("No se pudo evaluar lote %s post-ingesta: %s", id_lote, e_eval_batch)
+    finally:
+        db_bg.close()
+
+
+TTL_EVALUACION_LECTURA_SEG = 1800
+
+
+def _huella_evaluacion(db: Session, doc_ids: List[int]) -> Tuple:
+    """Lo que cambia el resultado de evaluar: staging, casos resueltos y catálogos. Consulta barata."""
+    stg = db.query(
+        func.count(StagingRegistroCrudo.id), func.max(StagingRegistroCrudo.id)
+    ).filter(StagingRegistroCrudo.id_documento.in_(doc_ids)).one()
+    hitl = db.query(
+        func.count(StagingEntidadNoResuelta.id_staging),
+        func.max(StagingEntidadNoResuelta.id_staging),
+        func.count(StagingEntidadNoResuelta.id_staging).filter(StagingEntidadNoResuelta.resuelto == True),  # noqa: E712
+        func.max(StagingEntidadNoResuelta.resuelto_en),
+    ).filter(StagingEntidadNoResuelta.id_documento.in_(doc_ids)).one()
+    catalogos = (
+        db.query(func.count(DimEstudiante.id_estudiante), func.max(DimEstudiante.id_estudiante)).one(),
+        db.query(func.count(DimModulo.id_modulo)).scalar(),
+        db.query(func.count(DimDocente.id_docente)).scalar(),
+    )
+    return tuple(stg), tuple(str(x) for x in hitl), catalogos
+
+
+def _evaluacion_lectura(db: Session, docs: List[DimOrigenDocumental]) -> Dict[str, Any]:
+    """
+    Evaluación de solo lectura para /resumen y /beto-reading: se recalcula cuando cambia la huella
+    (no en cada GET). Recalcularla en cada pedido tardaba minutos en lotes grandes y terminaba en 504.
+    """
+    doc_ids = sorted(d.id_documento for d in docs)
+    if not doc_ids:
+        return _evaluar_documentos_lote(db, docs, persistir_staging=False)
+    clave = ("evaluacion_lectura", tuple(doc_ids), _huella_evaluacion(db, doc_ids))
+    return cache_consultas.obtener(clave, TTL_EVALUACION_LECTURA_SEG,
+                                   lambda: _evaluar_documentos_lote(db, docs, persistir_staging=False))
+
+
 @router.get("/lote/{id_lote}/resumen")
 def get_lote_resumen(
     id_lote: str,
@@ -2171,7 +2284,7 @@ def get_lote_resumen(
         doc_id = None
     lote_obj, docs_lote, docs_filtrados = _resolver_documentos_lote(db, id_lote, doc_id_filter=doc_id)
     # Lectura pura: si los registros ya tienen payload_json evaluado, no persistir ni hacer commit en GET
-    eval_res = _evaluar_documentos_lote(db, docs_filtrados, persistir_staging=False)
+    eval_res = _evaluacion_lectura(db, docs_filtrados)
     archivos_tabs = _serializar_archivos_lote(db, docs_lote)
 
     total_tuplas = eval_res["totalTuplas"]
@@ -2520,7 +2633,7 @@ def get_lote_beto_reading(
         raise HTTPException(status_code=404, detail=f"Lote con ID {id_lote} no encontrado.")
 
     # Lectura pura en GET: persistir_staging=False
-    eval_res = _evaluar_documentos_lote(db, docs_filtrados, persistir_staging=False)
+    eval_res = _evaluacion_lectura(db, docs_filtrados)
     detalles_all = eval_res["detalles"]
 
     # 1. Filtro por Área de Trabajo

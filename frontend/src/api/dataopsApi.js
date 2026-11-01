@@ -2,6 +2,8 @@ import client from './client';
 import { UMBRAL_INDICE_REGISTRO_DEC } from '../constants/dataopsConfig';
 
 const BASE_URL = '/api/v1/dataops';
+// La primera evaluación de un lote de varios libros completos tarda minutos (igual que el gateway: 900 s)
+const LECTURA_LOTE_TIMEOUT_MS = 900000;
 
 // ─── Mecanismo de Caché en Memoria y Deduplicación Concurrente ───
 const apiCache = new Map();
@@ -248,7 +250,7 @@ export const dataopsApi = {
     const cleanLote = idLote || 'latest';
     return cachedGet(`lote_resumen_${cleanLote}_${docId || ''}`, async () => {
       const params = docId ? { doc_id: docId } : {};
-      const res = await client.get(`${BASE_URL}/lote/${cleanLote}/resumen`, { params });
+      const res = await client.get(`${BASE_URL}/lote/${cleanLote}/resumen`, { params, timeout: LECTURA_LOTE_TIMEOUT_MS });
       return res.data;
     }, 45_000);
   },
@@ -293,7 +295,7 @@ export const dataopsApi = {
       const estadoVal = options.estado || options.filtroEstado;
       if (estadoVal && estadoVal !== 'ALL') params.estado = estadoVal;
       if (options.motivo && options.motivo !== 'ALL') params.motivo = options.motivo;
-      const res = await client.get(`${BASE_URL}/lote/${idLote}/beto-reading`, { params });
+      const res = await client.get(`${BASE_URL}/lote/${idLote}/beto-reading`, { params, timeout: LECTURA_LOTE_TIMEOUT_MS });
       return res.data;
     }, 60_000);
   },
