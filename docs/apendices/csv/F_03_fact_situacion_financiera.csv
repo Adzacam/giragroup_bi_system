@@ -1,0 +1,19 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_hecho_fin,SERIAL,NO,PK,Identificador del registro de situación financiera
+id_estudiante,INTEGER,SÍ,FK → dim_estudiante(id_estudiante) ON DELETE CASCADE; UNIQUE (índice uq_fact_fin_est_mod_tiempo),Estudiante titular de la deuda
+id_modulo,INTEGER,SÍ,FK → dim_modulo(id_modulo) ON DELETE SET NULL; UNIQUE (índice uq_fact_fin_est_mod_tiempo),Módulo o programa al que corresponde el cobro
+id_categoria_fin,INTEGER,SÍ,FK → dim_categoria_financiera(id_categoria) ON DELETE SET NULL,Categoría financiera del movimiento
+id_tiempo,INTEGER,SÍ,FK → dim_tiempo(id_tiempo) ON DELETE CASCADE; UNIQUE (índice uq_fact_fin_est_mod_tiempo),Fecha de corte de la cartera
+id_documento,INTEGER,SÍ,FK → dim_origen_documental(id_documento) ON DELETE SET NULL,Documento fuente del que se extrajo el registro
+concepto,VARCHAR(150),SÍ,—,Concepto de cobro informado en el documento fuente
+monto_deuda,"NUMERIC(12,2)",SÍ,DEFAULT 0.00,Saldo pendiente de pago del estudiante
+monto_pagado,"NUMERIC(12,2)",SÍ,DEFAULT 0.00,Monto pagado por el estudiante a la fecha de corte
+cuotas_impagas,INTEGER,SÍ,DEFAULT 0,Número de cuotas vencidas sin pagar (≥ 2 dispara la alerta de riesgo financiero)
+estado_cartera,VARCHAR(20),SÍ,—,"Clasificación de la cartera: Vigente, En Mora, Previsionable"
+tipo_alerta,VARCHAR(30),SÍ,DEFAULT 'NORMAL',"Alerta de mora: NORMAL (0 cuotas impagas), MORA_TEMPRANA (1), RIESGO_CARTERA (≥ 2)"
+nivel_confianza_ia,"NUMERIC(5,4)",SÍ,DEFAULT 1.0000,Confianza del modelo BETO en la extracción del registro (0–1)
+requiere_revision,BOOLEAN,SÍ,DEFAULT false,Indica que el registro debe pasar por la bandeja de revisión humana (HITL)
+fk_estado,VARCHAR(1),SÍ,DEFAULT 'A',"Calidad del enlace al estudiante: A (CI válido, enlace directo), B (rescatado por coincidencia de nombre), C (no resuelto, a revisión humana)"
+fecha_registro,TIMESTAMP,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora de carga del registro
+
+Indices,"fact_situacion_financiera_pkey (id_hecho_fin) [PK]; idx_fact_fin_documento (id_documento); idx_fact_fin_estado_cartera (estado_cartera); idx_fact_fin_estudiante (id_estudiante); idx_fact_fin_modulo (id_modulo); idx_fact_fin_mora_estudiante (id_estudiante) [parcial: WHERE (cuotas_impagas >= 2)]; idx_fact_fin_tiempo (id_tiempo); idx_fact_financiera_fk_estado (fk_estado); idx_fact_financiera_revision (requiere_revision); uq_fact_fin_est_mod_tiempo (id_estudiante, COALESCE(id_modulo, 0), id_tiempo) [único]"

@@ -1,0 +1,26 @@
+﻿N,Tabla,Tipo,Granularidad_proposito,N_columnas,Filas
+1,fact_rendimiento_academico,Hecho,"Un registro por estudiante y módulo cursado (nota, asistencia y alerta académica)",16,4567
+2,fact_situacion_financiera,Hecho,"Un registro por estudiante, módulo y fecha de corte de cartera (deuda, pagos y alerta de mora)",16,234
+3,fact_cobranzas_proyectadas,Hecho,Un registro por estudiante y fecha de cobro proyectado,6,0
+4,fact_evaluacion_docente,Hecho,Un registro por respuesta de evaluación de un docente en un módulo,8,0
+5,fact_marketing,Hecho,Un registro por programa/módulo y mes (embudo leads → reservas → inscritos),7,0
+6,fact_rentabilidad,Hecho,Un registro por categoría financiera y mes (monto ejecutado frente a meta),6,95
+7,fact_forecast,Hecho,Un registro por serie pronosticada (caso de uso) y mes proyectado,9,0
+8,dim_tiempo,Dimensión,Calendario con grano diario (clave AAAAMMDD),13,2230
+9,dim_estudiante,Dimensión,Un registro por estudiante identificado (con CI o identificador temporal),18,1364
+10,dim_docente,Dimensión,Un registro por docente que dicta módulos,4,0
+11,dim_modulo,Dimensión,Un registro por módulo de programa e institución,7,572
+12,dim_origen_documental,Dimensión,Un registro por archivo fuente ingerido (trazabilidad del dato),10,7
+13,dim_categoria_financiera,Dimensión,Categorías de ingreso/egreso usadas por los hechos financieros,4,3
+14,dim_meta,Dimensión,Metas presupuestarias mensuales por categoría,5,45
+15,cat_institucion,Dimensión,Instituciones del grupo a las que pertenecen estudiantes y módulos,5,4
+16,cat_categoria_financiera,Dimensión,Catálogo estándar de categorías financieras (códigos de ingreso y egreso),5,5
+17,staging_registros_crudos,Staging,Bloques y filas extraídos de cada documento antes de cargarse al almacén,20,15
+18,stg_entidad_no_resuelta,Staging,Entidades que no se pudieron enlazar a una dimensión y esperan revisión humana (HITL),21,150
+19,log_pipeline_ingesta,Log,Bitácora de cada etapa del pipeline de ingesta por documento,9,51
+20,log_inconsistencias,Log,Registro de reglas de calidad incumplidas por documento y fila,13,0
+21,log_auditoria_nlp,Log,Correcciones humanas a predicciones del modelo BETO,7,0
+22,schema_migrations,Log,Migraciones SQL versionadas ya aplicadas a la base,2,3
+23,users,Transaccional,Usuarios del sistema con su rol RBAC y estado de autenticación,14,7
+24,notifications,Transaccional,Notificaciones y alertas enviadas a usuarios o roles,10,10
+25,lote,Transaccional,Lotes de carga multi-archivo por institución y periodo,6,1

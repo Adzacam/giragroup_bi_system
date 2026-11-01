@@ -1,0 +1,19 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_hecho_aca,SERIAL,NO,PK,Identificador del registro de rendimiento académico
+id_estudiante,INTEGER,SÍ,"FK → dim_estudiante(id_estudiante) ON DELETE CASCADE; UNIQUE (id_estudiante, id_modulo); UNIQUE (índice uq_fact_aca_est_mod)",Estudiante que cursó el módulo
+id_docente,INTEGER,SÍ,FK → dim_docente(id_docente) ON DELETE SET NULL,Docente que dictó el módulo
+id_modulo,INTEGER,SÍ,"FK → dim_modulo(id_modulo) ON DELETE CASCADE; UNIQUE (id_estudiante, id_modulo); UNIQUE (índice uq_fact_aca_est_mod)",Módulo cursado
+id_tiempo,INTEGER,SÍ,FK → dim_tiempo(id_tiempo) ON DELETE CASCADE,Fecha a la que se imputa la calificación
+id_documento,INTEGER,SÍ,FK → dim_origen_documental(id_documento) ON DELETE SET NULL,Documento fuente del que se extrajo la calificación
+id_usuario_carga,INTEGER,SÍ,FK → users(id) ON DELETE SET NULL,Usuario que ejecutó la carga del registro
+nota_final,"NUMERIC(5,2)",SÍ,—,Promedio final del módulo en escala 0–100 (las escalas 0–10 y 0–20 se convierten al cargar)
+asistencia_pct,"NUMERIC(5,2)",SÍ,—,Porcentaje de asistencia del estudiante al módulo (0–100)
+incumplimiento_actividades_pct,"NUMERIC(5,2)",SÍ,DEFAULT 0.00,Porcentaje de actividades no cumplidas en el módulo (0–100)
+nivel_confianza_ia,"NUMERIC(5,4)",SÍ,—,Confianza del modelo BETO en la extracción del registro (0–1)
+requiere_revision,BOOLEAN,SÍ,DEFAULT false,Indica que el registro debe pasar por la bandeja de revisión humana (HITL)
+fk_estado,VARCHAR(1),SÍ,DEFAULT 'A',"Calidad del enlace al estudiante: A (CI válido, enlace directo), B (rescatado por coincidencia de nombre), C (no resuelto, a revisión humana)"
+estado_academico,VARCHAR(50),SÍ,—,"Resultado del módulo: Aprobado (nota ≥ 70), Reprobado o En Curso (sin nota)"
+tipo_alerta,VARCHAR(30),SÍ,—,"Alerta temprana académica: NORMAL, RIESGO_ACADEMICO (nota ≤ 70), RIESGO_CRITICO (nota < 51)"
+created_at,TIMESTAMP,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora de carga del registro
+
+Indices,"fact_rendimiento_academico_pkey (id_hecho_aca) [PK]; idx_fact_rend_docente (id_docente); idx_fact_rend_documento (id_documento); idx_fact_rend_estudiante (id_estudiante); idx_fact_rend_modulo (id_modulo); idx_fact_rend_tiempo (id_tiempo); idx_fact_rendimiento_fk_estado (fk_estado); uq_fact_aca_est_mod (id_estudiante, id_modulo) [único]; uq_fact_rendimiento_estudiante_modulo (id_estudiante, id_modulo) [único]"

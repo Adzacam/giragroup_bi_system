@@ -1,0 +1,5 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_estado_arca,SERIAL,NO,PK,Identificador del estado ARCA
+nombre_arca,VARCHAR(100),NO,UNIQUE,"Estado del título: HOMOLOGADO_SISTEMA_NACIONAL, EN_TRAMITE_MINISTERIAL, NO_APLICA_FORMACION_CONTINUA, REGISTRO_ARCHIVADO"
+
+Indices,cat_estado_arca_nombre_arca_key (nombre_arca) [único]; cat_estado_arca_pkey (id_estado_arca) [PK]

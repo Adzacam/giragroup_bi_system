@@ -1,0 +1,9 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_concepto,SERIAL,NO,PK,Identificador del concepto
+codigo_canonico,VARCHAR(50),NO,UNIQUE (índice ix_cat_concepto_financiero_codigo_canonico),"Código canónico del concepto (FIN-CUOTA-01, FIN-MAT-01…)"
+nombre_canonico,VARCHAR(100),NO,UNIQUE,"Nombre canónico: CUOTA, MATRICULA, CONTADO, REINCORPORACION, DESCUENTO, MORA, DEUDA_TOTAL, TOTAL_PAGADO, EGRESO_REAL, EGRESO_ANTERIOR, HONORARIO_DOCENTE, TECHO_CONVENIO, META_PROGRAMAS, META_TECHOS"
+tipo_movimiento,VARCHAR(30),NO,—,"Tipo de movimiento: INGRESO, EGRESO, SALDO, AJUSTE"
+categoria_contable,VARCHAR(50),SÍ,—,"Categoría contable: COBRANZA, OPERATIVO, DOCENTE, CONVENIO, METAS"
+descripcion,VARCHAR(255),SÍ,—,Descripción del concepto
+
+Indices,cat_concepto_financiero_nombre_canonico_key (nombre_canonico) [único]; cat_concepto_financiero_pkey (id_concepto) [PK]; ix_cat_concepto_financiero_codigo_canonico (codigo_canonico) [único]; ix_cat_concepto_financiero_id_concepto (id_concepto)

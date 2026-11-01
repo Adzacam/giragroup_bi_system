@@ -1,0 +1,13 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_documento,SERIAL,NO,PK,Identificador del documento fuente
+id_lote,INTEGER,SÍ,FK → lote(id_lote) ON DELETE SET NULL,Lote de carga al que pertenece el documento
+tipo_documento,VARCHAR(50),SÍ,DEFAULT 'SHEET',"Formato del archivo (SHEET, CSV)"
+tipo_fuente,VARCHAR(30),SÍ,"CHECK IN (ACTA, COBRANZA, ADMISION, MOODLE, EVALUACION_DOCENTE, EGRESOS, TECHOS, PLANIFICACION, MARKETING, RENTABILIDAD, ERROR, RECHAZADO, DUPLICADO, SIN_RECONOCER) o NULL","Tipo de fuente: ACTA, COBRANZA, ADMISION, MOODLE, EVALUACION_DOCENTE, EGRESOS, TECHOS, PLANIFICACION, MARKETING, RENTABILIDAD, ERROR, RECHAZADO, DUPLICADO, SIN_RECONOCER"
+tipo_escala,VARCHAR(20),SÍ,"CHECK IN (CENTESIMAL_100, DECIMAL_10, VIGESIMAL_20) o NULL","Escala de calificación del documento: CENTESIMAL_100, DECIMAL_10, VIGESIMAL_20"
+nombre_archivo,VARCHAR(500),SÍ,DEFAULT 'archivo_generico',Nombre del archivo cargado
+institucion,VARCHAR(100),SÍ,—,Institución a la que pertenece el documento
+periodo,VARCHAR(30),SÍ,—,Periodo que cubre el documento
+hash_sha256,VARCHAR(64),SÍ,—,"Huella SHA-256 del archivo, para detectar cargas duplicadas"
+fecha_procesamiento,TIMESTAMP,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora en que se procesó el documento
+
+Indices,dim_origen_documental_pkey (id_documento) [PK]; idx_dim_origen_hash_sha256 (hash_sha256); idx_dim_origen_id_lote (id_lote)

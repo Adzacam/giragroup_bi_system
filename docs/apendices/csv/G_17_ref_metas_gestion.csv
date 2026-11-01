@@ -1,0 +1,11 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_meta,SERIAL,NO,PK,Identificador de la meta
+gestion,INTEGER,NO,"UNIQUE (gestion, mes, categoria)",Año de la meta
+mes,INTEGER,NO,"UNIQUE (gestion, mes, categoria)",Mes de la meta (1 a 12)
+categoria,VARCHAR(100),NO,"UNIQUE (gestion, mes, categoria)","Línea de negocio de la meta (POSTGRADO_REGULAR, CONVENIOS_CORPORATIVOS)"
+monto_meta_ingreso,"NUMERIC(14,2)",SÍ,DEFAULT 0,Meta de ingreso del mes
+monto_ejecutado,"NUMERIC(14,2)",SÍ,DEFAULT 0,Ingreso ejecutado en el mes
+ebitda_meta_pct,"NUMERIC(6,4)",SÍ,—,"Meta de margen EBITDA como fracción (0,30 = 30 %)"
+ebitda_ejecutado_pct,"NUMERIC(6,4)",SÍ,—,Margen EBITDA ejecutado como fracción
+
+Indices,"ref_metas_gestion_pkey (id_meta) [PK]; uq_ref_metas_gestion_mes_cat (gestion, mes, categoria) [único]"

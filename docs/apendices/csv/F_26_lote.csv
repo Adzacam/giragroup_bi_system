@@ -1,0 +1,9 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_lote,SERIAL,NO,PK,Identificador del lote de carga
+institucion,VARCHAR(100),NO,—,Institución a la que pertenece el lote
+periodo,VARCHAR(30),NO,—,Periodo que cubre el lote
+estado,VARCHAR(30),SÍ,DEFAULT 'PROCESADO',Estado del lote (PROCESADO por defecto)
+total_archivos,INTEGER,SÍ,DEFAULT 0,Cantidad de archivos del lote
+creado_en,TIMESTAMP,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora de creación del lote
+
+Indices,"idx_lote_institucion_periodo (institucion, periodo); lote_pkey (id_lote) [PK]"

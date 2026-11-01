@@ -1,0 +1,23 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id,SERIAL,NO,PK,Identificador del registro crudo
+id_documento,INTEGER,SÍ,FK → dim_origen_documental(id_documento) ON DELETE CASCADE,Documento del que se extrajo el registro
+hoja,VARCHAR(200),SÍ,—,Hoja de cálculo de origen
+bloque_id,INTEGER,SÍ,—,Número del bloque tabular dentro de la hoja
+categoria,VARCHAR(50),SÍ,—,"Categoría del bloque: academico, financiero, marketing, rentabilidad, evaluacion_docente"
+texto_plano,TEXT,SÍ,—,Contenido del bloque serializado a texto para el modelo BETO
+n_filas,INTEGER,SÍ,—,Número de filas del bloque
+fila_inicio,INTEGER,SÍ,—,Primera fila del bloque en la hoja
+fila_fin,INTEGER,SÍ,—,Última fila del bloque en la hoja
+es_ruido,BOOLEAN,SÍ,DEFAULT false,Marca el bloque como ruido; no se carga al almacén
+requiere_revision,BOOLEAN,SÍ,DEFAULT false,Indica que el registro debe pasar por la bandeja de revisión humana (HITL)
+score_confianza,"NUMERIC(5,4)",SÍ,DEFAULT 1.0,Confianza de la extracción del registro (0–1)
+motivo,VARCHAR(100),SÍ,—,"Motivo del estado del registro (por ejemplo, APROBADO_AUTOMATICO)"
+payload_json,JSONB,SÍ,—,"Datos estructurados extraídos del registro, en JSON"
+registro_origen_id,INTEGER,SÍ,FK → staging_registros_crudos(id) ON DELETE CASCADE,Registro crudo del que deriva este registro
+estado_resolucion,VARCHAR(30),SÍ,DEFAULT 'PENDIENTE',"Estado del registro: PENDIENTE, APROBADO_AUTOMATICO, RESUELTO_HUMANO, DESCARTADO"
+resuelto,BOOLEAN,SÍ,DEFAULT false,Indica que el registro ya fue resuelto
+resuelto_por,INTEGER,SÍ,FK → users(id) ON DELETE SET NULL,Usuario que resolvió el registro
+resuelto_en,TIMESTAMP,SÍ,—,Fecha y hora de la resolución
+created_at,TIMESTAMPTZ,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora de extracción del registro
+
+Indices,idx_staging_doc_id (id_documento); staging_registros_crudos_pkey (id) [PK]

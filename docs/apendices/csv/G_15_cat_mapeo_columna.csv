@@ -1,0 +1,7 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_mapeo,SERIAL,NO,PK,Identificador del mapeo
+campo_canonico,VARCHAR(50),NO,—,"Campo canónico (ESTUDIANTE, CI, MONTO, NOTA…)"
+alias_columna,VARCHAR(100),NO,UNIQUE,Encabezado alternativo con el que el campo aparece en las planillas
+tipo_entidad,VARCHAR(50),NO,—,Tipo de entidad NER al que corresponde el campo
+
+Indices,cat_mapeo_columna_alias_columna_key (alias_columna) [único]; cat_mapeo_columna_pkey (id_mapeo) [PK]; ix_cat_mapeo_columna_campo_canonico (campo_canonico); ix_cat_mapeo_columna_id_mapeo (id_mapeo)

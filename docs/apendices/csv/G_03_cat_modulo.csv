@@ -1,0 +1,9 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_modulo,SERIAL,NO,PK,Identificador del módulo
+id_programa,INTEGER,NO,"FK → cat_programa(id_programa) ON DELETE CASCADE; UNIQUE (id_programa, nro_modulo)",Programa al que pertenece el módulo
+nro_modulo,INTEGER,NO,"UNIQUE (id_programa, nro_modulo)",Número de orden del módulo dentro del programa
+nombre_modulo,VARCHAR(255),NO,—,Nombre del módulo
+horas_modulo,"NUMERIC(6,2)",SÍ,DEFAULT 0,Carga horaria del módulo
+pago_docente_base,"NUMERIC(10,2)",SÍ,DEFAULT 0,Pago base al docente por dictar el módulo
+
+Indices,"cat_modulo_pkey (id_modulo) [PK]; uq_cat_modulo_programa_nro (id_programa, nro_modulo) [único]"

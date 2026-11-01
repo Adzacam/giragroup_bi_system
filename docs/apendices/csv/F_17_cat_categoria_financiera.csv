@@ -1,0 +1,8 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_categoria_fin,SERIAL,NO,PK,Identificador de la categoría estándar
+codigo,VARCHAR(50),NO,UNIQUE,"Código de la categoría (ING-MAT-01, ING-COB-01, ING-CER-01, EGR-DOC-01, EGR-OPE-01)"
+nombre_categoria,VARCHAR(100),NO,—,Nombre de la categoría
+tipo_flujo,VARCHAR(30),NO,DEFAULT 'INGRESO',Tipo de flujo: INGRESO o EGRESO
+created_at,TIMESTAMP,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora de registro de la categoría
+
+Indices,cat_categoria_financiera_codigo_key (codigo) [único]; cat_categoria_financiera_pkey (id_categoria_fin) [PK]

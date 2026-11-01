@@ -1,0 +1,9 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_hecho_rent,SERIAL,NO,PK,Identificador del registro de rentabilidad
+id_modulo,INTEGER,SÍ,FK → dim_modulo(id_modulo) ON DELETE CASCADE,Programa o centro de costo (ADM-GEN cuando el monto es general)
+id_tiempo,INTEGER,SÍ,"FK → dim_tiempo(id_tiempo) ON DELETE CASCADE; UNIQUE (id_categoria, id_tiempo)",Mes del registro
+id_categoria,INTEGER,SÍ,"FK → dim_categoria_financiera(id_categoria) ON DELETE CASCADE; UNIQUE (id_categoria, id_tiempo)","Categoría financiera del monto (PROGRAMAS, TECHOS_CERRADOS, FINANCIERO_ANUAL…)"
+monto_ejecutado,"NUMERIC(14,2)",SÍ,—,Ingreso o gasto ejecutado en el mes
+monto_meta,"NUMERIC(14,2)",SÍ,—,Meta presupuestaria del mes
+
+Indices,"fact_rentabilidad_pkey (id_hecho_rent) [PK]; idx_fact_rent_tiempo (id_tiempo); uq_fact_rentabilidad_categoria_tiempo (id_categoria, id_tiempo) [único]"

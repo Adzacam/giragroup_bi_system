@@ -1,0 +1,6 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_escuela,SERIAL,NO,PK,Identificador de la escuela
+nombre_escuela,VARCHAR(100),NO,UNIQUE,Nombre de la escuela académica
+sigla,VARCHAR(20),SÍ,—,Sigla de la escuela
+
+Indices,cat_escuela_nombre_escuela_key (nombre_escuela) [único]; cat_escuela_pkey (id_escuela) [PK]
