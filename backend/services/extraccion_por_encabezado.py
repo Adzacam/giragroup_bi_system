@@ -6,6 +6,7 @@ La lee /pipeline/process y /dataops/confirm-dw-insert, para que ambos flujos pro
 hechos con la nota, la fecha y el estudiante reales de cada fila, en lugar de heurísticas por posición.
 """
 
+import os
 import re
 import unicodedata
 from datetime import date, datetime
@@ -27,6 +28,8 @@ _CLAVES_FECHA_ACADEMICA = ("FECHA", "FECHA EVALUACION", "FECHA DE EVALUACION", "
                            "FECHA DE CIERRE", "FECHA FIN")
 _CLAVES_MES = ("MES INICIO", "MES INICO", "MES")
 _CLAVES_ANIO = ("ANO INICIO", "ANO INCIO", "ANO", "GESTION")
+# Moodle no trae la fecha del curso: la única es la de exportación del reporte, que se toma como fecha de corte
+_CLAVE_DESCARGA_MOODLE = "LAST DOWNLOADED FROM THIS COURSE"
 _RE_MODULO_N = re.compile(r"^MODULO (\d{1,2})$")
 # Google Forms escribe la cédula como 'CI-4892019' / 'ci 4892019' / 'C.I. 4892019': el prefijo no es parte del número
 _RE_PREFIJO_CI = re.compile(r"^\s*c\.?\s*i\.?\s*[-:]?\s*(?=\d)", re.IGNORECASE)
@@ -112,7 +115,17 @@ def fecha_de_fila(campos: Dict[str, str], categoria: str) -> Optional[date]:
     mes = _mes(_primero(campos, _CLAVES_MES))
     if anio and 2000 <= anio <= 2100 and mes:
         return date(int(anio), mes, 1)
-    return None
+    return fecha_corte_moodle(campos) if categoria != "financiero" else None
+
+
+def fecha_corte_moodle(campos: Dict[str, str]) -> Optional[date]:
+    """
+    Fecha de corte de un reporte de Moodle: MOODLE_FECHA_CORTE (AAAA-MM-DD) si está configurada; si no, la fecha
+    de descarga de la fila ('Last downloaded from this course'). None si la fila no es de Moodle.
+    """
+    if _CLAVE_DESCARGA_MOODLE not in campos and not (campos.get("FIRST NAME") and campos.get("COURSE")):
+        return None
+    return parsear_fecha(os.getenv("MOODLE_FECHA_CORTE", "").strip() or None) or parsear_fecha(campos.get(_CLAVE_DESCARGA_MOODLE))
 
 
 def estudiante_de_fila(campos: Dict[str, str]) -> Optional[Dict[str, Any]]:
