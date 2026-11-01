@@ -38,11 +38,37 @@ from seed_users import seed_default_users
 
 logger = logging.getLogger("api_main")
 
-# Migraciones idempotentes que se reaplican en cada arranque, en este orden
+# Migraciones que el arranque aplica si faltan, en este orden
 MIGRACIONES_EN_ARRANQUE = (
     "003_dataops_lote_and_facts_alignment.sql",
     "004_extend_tipo_fuente_sources.sql",
 )
+MIGRACION_TIPO_FUENTE = "004_extend_tipo_fuente_sources.sql"
+# pg_advisory_lock: los workers de uvicorn arrancan a la vez; solo uno migra y los demás esperan
+LLAVE_LOCK_ARRANQUE = 7_310_004
+
+
+def migraciones_a_aplicar(aplicadas: set) -> list:
+    """
+    003 recrea chk_dim_origen_tipo_fuente con 4 tipos. Si 004 ya está aplicada, reaplicar 003 fallaría
+    (hay documentos RENTABILIDAD) o estrecharía la restricción: con 004 aplicada no se reaplica ninguna.
+    """
+    if MIGRACION_TIPO_FUENTE in aplicadas:
+        return []
+    return [m for m in MIGRACIONES_EN_ARRANQUE if m not in aplicadas]
+
+
+def _migraciones_aplicadas(conn) -> set:
+    """Versiones en schema_migrations, más 004 si la restricción vigente ya admite RENTABILIDAD (comprobación previa)."""
+    aplicadas = set()
+    if conn.execute(text("SELECT to_regclass('public.schema_migrations')")).scalar():
+        aplicadas |= {v for (v,) in conn.execute(text("SELECT version FROM public.schema_migrations"))}
+    definicion = conn.execute(text(
+        "SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname = 'chk_dim_origen_tipo_fuente'"
+    )).scalar()
+    if definicion and "RENTABILIDAD" in definicion:
+        aplicadas.add(MIGRACION_TIPO_FUENTE)
+    return aplicadas
 
 app = FastAPI(
     title="GiraGroup BI System API",
@@ -54,37 +80,46 @@ app = FastAPI(
 
 @app.on_event("startup")
 def on_startup():
-    try:
-        from pathlib import Path
-        from core.database import Base, engine
-        import models
-        Base.metadata.create_all(bind=engine)
+    from pathlib import Path
+    from core.database import Base, engine
+    import models  # noqa: F401  registro de tablas
 
+    try:
         with engine.connect() as conn:
-            conn.execute(text("""
-                ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS requiere_revision BOOLEAN DEFAULT FALSE;
-                ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS score_confianza NUMERIC(5, 4) DEFAULT 1.0;
-                ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto BOOLEAN DEFAULT FALSE;
-                ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_por INTEGER REFERENCES users(id) ON DELETE SET NULL;
-                ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_en TIMESTAMP;
-            """))
+            conn.execute(text("SELECT pg_advisory_lock(:llave)"), {"llave": LLAVE_LOCK_ARRANQUE})
             conn.commit()
-
-            # 004 va después de 003: 003 recrea chk_dim_origen_tipo_fuente con solo 4 tipos y 004 lo amplía
-            # (RENTABILIDAD, MARKETING, EGRESOS...). Sin 004, cada arranque rechazaba EJECUTADO VS META.
-            dir_migraciones = Path(__file__).resolve().parent / "scripts" / "migrations"
-            for nombre in MIGRACIONES_EN_ARRANQUE:
-                mig = dir_migraciones / nombre
-                if mig.exists():
-                    conn.execute(text(mig.read_text(encoding="utf-8")))
+            try:
+                try:
+                    Base.metadata.create_all(bind=conn)
+                    conn.execute(text("""
+                        ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS requiere_revision BOOLEAN DEFAULT FALSE;
+                        ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS score_confianza NUMERIC(5, 4) DEFAULT 1.0;
+                        ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto BOOLEAN DEFAULT FALSE;
+                        ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_por INTEGER REFERENCES users(id) ON DELETE SET NULL;
+                        ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_en TIMESTAMP;
+                    """))
                     conn.commit()
-    except Exception as e:
-        logger.error(f"Error creating/migrating DB tables: {e}")
 
-    try:
-        seed_default_users()
-    except Exception as e:
-        logger.error(f"Error seeding default users: {e}")
+                    dir_migraciones = Path(__file__).resolve().parent / "scripts" / "migrations"
+                    for nombre in migraciones_a_aplicar(_migraciones_aplicadas(conn)):
+                        mig = dir_migraciones / nombre
+                        if mig.exists():
+                            conn.execute(text(mig.read_text(encoding="utf-8")))
+                            conn.commit()
+                            logger.info("Migración aplicada en el arranque: %s", nombre)
+                except Exception as e:
+                    conn.rollback()
+                    logger.error(f"Error creating/migrating DB tables: {e}")
+
+                try:
+                    seed_default_users()
+                except Exception as e:
+                    logger.error(f"Error seeding default users: {e}")
+            finally:
+                conn.execute(text("SELECT pg_advisory_unlock(:llave)"), {"llave": LLAVE_LOCK_ARRANQUE})
+                conn.commit()
+    except Exception as e:  # BD no disponible: la API arranca igual y lo deja en el log
+        logger.error(f"Error creating/migrating DB tables: {e}")
 
 # ── Middleware de Seguridad OWASP y Cabeceras de Caché HTTP ───────────────────
 _CACHEABLE_GET_PREFIXES = (

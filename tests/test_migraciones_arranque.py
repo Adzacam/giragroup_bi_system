@@ -33,3 +33,23 @@ def test_restriccion_final_admite_los_tipos_que_detecta_el_ingestor():
     tipos = _tipos_permitidos_tras_arranque()
     assert {"ACTA", "COBRANZA", "ADMISION", "MOODLE"} <= tipos
     assert {"RENTABILIDAD", "MARKETING", "EGRESOS", "TECHOS", "EVALUACION_DOCENTE", "PLANIFICACION"} <= tipos
+
+
+def test_con_004_aplicada_no_se_reaplica_003():
+    """Reaplicar 003 con documentos RENTABILIDAD fallaba en cada arranque (CheckViolation) y abortaba la 004."""
+    from main import MIGRACION_TIPO_FUENTE, migraciones_a_aplicar
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == []
+    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == []
+
+
+def test_base_nueva_aplica_003_y_luego_004():
+    from main import migraciones_a_aplicar
+    assert migraciones_a_aplicar(set()) == list(MIGRACIONES_EN_ARRANQUE)
+
+
+def test_arranque_serializa_los_workers_con_advisory_lock():
+    import inspect
+    import main
+    fuente = inspect.getsource(main.on_startup)
+    assert "pg_advisory_lock" in fuente and "pg_advisory_unlock" in fuente
+    assert fuente.index("pg_advisory_lock") < fuente.index("migraciones_a_aplicar")
