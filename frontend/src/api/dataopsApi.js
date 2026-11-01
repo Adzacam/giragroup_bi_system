@@ -354,6 +354,19 @@ export const dataopsApi = {
   },
 
   /**
+   * Aprueba en bloque los casos de un clic de la bandeja (el servidor exige confirmar = true)
+   */
+  aprobarCasosUnClic: async (idLote = null, docId = null) => {
+    invalidateDataopsCache();
+    const res = await client.post(
+      `${BASE_URL}/review-tray/aprobar-un-clic`,
+      { id_lote: idLote ? String(idLote) : null, doc_id: docId || null, confirmar: true },
+      { timeout: LECTURA_LOTE_TIMEOUT_MS }
+    );
+    return res.data;
+  },
+
+  /**
    * Resuelve en lote múltiples registros de revisión humana
    */
   batchResolveReviewItems: async (payload = {}) => {

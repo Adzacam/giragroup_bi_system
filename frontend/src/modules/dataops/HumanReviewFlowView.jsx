@@ -35,6 +35,10 @@ export default function HumanReviewFlowView() {
   const [formMonto, setFormMonto] = useState('');
   const [formCuotas, setFormCuotas] = useState('');
   const [formNotaAuditor, setFormNotaAuditor] = useState('');
+  const [formMes, setFormMes] = useState('');
+  const [formGestion, setFormGestion] = useState('');
+  const [unClicTotal, setUnClicTotal] = useState(0);
+  const [isAprobandoBloque, setIsAprobandoBloque] = useState(false);
 
   // Modales
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
@@ -69,11 +73,12 @@ export default function HumanReviewFlowView() {
 
       const res = await dataopsApi.getReviewTray(
         effectiveId ? Number(effectiveId) : null,
-        { docId: docFilter }
+        { docId: docFilter, pageSize: 500 }
       );
 
       if (res && res.data) {
         setQueueItems(res.data);
+        setUnClicTotal(res.un_clic_total ?? res.data.filter((q) => q.un_clic).length);
         if (Array.isArray(res.resolved_history)) {
           setResolvedHistory(res.resolved_history);
         }
@@ -107,6 +112,30 @@ export default function HumanReviewFlowView() {
     setFormMonto(item.monto_deuda !== undefined ? String(item.monto_deuda) : '');
     setFormCuotas(item.cuotas_impagas !== undefined ? String(item.cuotas_impagas) : '0');
     setFormNotaAuditor('');
+    setFormMes(item.mes ? String(item.mes) : '');
+    setFormGestion(item.gestion ? String(item.gestion) : '');
+  };
+
+  // Aprobación en bloque de los casos de un clic: los manuales quedan en la bandeja
+  const handleAprobarUnClic = async () => {
+    if (unClicTotal === 0) return;
+    if (!window.confirm(`Se aprobarán ${unClicTotal} casos de un clic (el candidato coincide por nombre o el hecho está completo). Los casos manuales seguirán en la bandeja. ¿Continuar?`)) {
+      return;
+    }
+    try {
+      setIsAprobandoBloque(true);
+      const effectiveId = batchId || localStorage.getItem('last_active_batch_id');
+      const res = await dataopsApi.aprobarCasosUnClic(effectiveId, selectedDocId);
+      sileoToast.success({ title: 'Aprobación en bloque', description: res.message });
+      await loadReviewQueue(selectedDocId);
+    } catch (err) {
+      sileoToast.error({
+        title: 'No se pudo aprobar en bloque',
+        description: err.response?.data?.detail || err.message,
+      });
+    } finally {
+      setIsAprobandoBloque(false);
+    }
   };
 
   const toggleCi = async (id) => {
@@ -166,7 +195,9 @@ export default function HumanReviewFlowView() {
         nota_final: formNota ? parseFloat(formNota) : undefined,
         monto_deuda: formMonto ? parseFloat(formMonto) : undefined,
         cuotas_impagas: formCuotas ? parseInt(formCuotas, 10) : undefined,
-        nota_auditor: formNotaAuditor.trim()
+        nota_auditor: formNotaAuditor.trim(),
+        mes: formMes ? parseInt(formMes, 10) : undefined,
+        gestion: formGestion ? parseInt(formGestion, 10) : undefined
       };
 
       await dataopsApi.resolveReviewItem(currentId, payload);
@@ -440,6 +471,15 @@ export default function HumanReviewFlowView() {
       {/* ── Filtros por Área de Trabajo ── */}
       {activeTab === 'PENDIENTES' && (
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
+          <button
+            type="button"
+            className="btn-pill-gold"
+            style={{ padding: '6px 14px', fontSize: '12px' }}
+            disabled={unClicTotal === 0 || isAprobandoBloque}
+            onClick={handleAprobarUnClic}
+          >
+            {isAprobandoBloque ? 'Aprobando…' : `Aprobar casos de un clic (${unClicTotal})`}
+          </button>
           <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-slate-gray)' }}>Área:</span>
           <button
             type="button"
@@ -796,6 +836,36 @@ export default function HumanReviewFlowView() {
                           </>
                         )}
                       </div>
+
+                      {selectedItem.tipo_entidad === 'HECHO' && (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>
+                              Mes{(selectedItem.campos_faltantes || []).includes('fecha') ? ' (falta)' : ''}:
+                            </label>
+                            <select className="dataops-input" value={formMes} onChange={(e) => setFormMes(e.target.value)}>
+                              <option value="">—</option>
+                              {['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'].map((m, i) => (
+                                <option key={m} value={i + 1}>{m}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>
+                              Gestión:
+                            </label>
+                            <input
+                              type="number"
+                              className="dataops-input"
+                              placeholder="Ej: 2025"
+                              min="2000"
+                              max="2100"
+                              value={formGestion}
+                              onChange={(e) => setFormGestion(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      )}
 
                       <div>
                         <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>

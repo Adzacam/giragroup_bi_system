@@ -3917,6 +3917,7 @@ def get_review_tray(
         "status": "success",
         "total": total_items,
         "pendientes": total_items,
+        "un_clic_total": sum(1 for it in items if it.get("un_clic")),
         "resueltos_count": len(resolved_history),
         "resolved_history": resolved_history,
         "aprobados_resumen": aprobados_resumen,
@@ -3982,7 +3983,7 @@ def batch_resolve_review_items(
                     "modulo": {
                         "valor_extraido": payload.modulo_resuelto or p_json.get("modulo") or "Módulo Académico"
                     },
-                    "nota_final": payload.nota_final or p_json.get("nota_normalizada") or 80.0,
+                    "nota_final": payload.nota_final or p_json.get("nota_normalizada"),  # sin nota no se inventa una
                     "monto_deuda": payload.monto_deuda or p_json.get("monto_deuda") or 0.0,
                     "monto_pagado": payload.monto_pagado or 0.0,
                     "cuotas_impagas": payload.cuotas_impagas if payload.cuotas_impagas is not None else (p_json.get("cuotas_impagas") or 0),
@@ -4042,6 +4043,61 @@ def batch_resolve_review_items(
 
 
 @router.patch("/review-tray/{item_id}/resolve")
+class AprobacionEnBloqueRequest(BaseModel):
+    id_lote: Optional[str] = None
+    doc_id: Optional[int] = None
+    confirmar: bool = False
+
+
+@router.post("/review-tray/aprobar-un-clic")
+def aprobar_casos_un_clic(
+    payload: AprobacionEnBloqueRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
+):
+    """
+    Aprueba en bloque los casos pendientes de un clic (candidato que coincide por nombre, token_sort >= 0,85,
+    o hecho sin campos faltantes). Exige confirmar = true. Cada caso queda en la bitácora con el usuario y la
+    acción "aprobación en bloque"; los casos manuales siguen en la bandeja.
+    """
+    if not payload.confirmar:
+        raise HTTPException(status_code=400, detail="Confirme la aprobación en bloque (confirmar = true).")
+    bandeja = get_review_tray(doc_id=payload.doc_id, id_lote=payload.id_lote, motivo=None, estado=None,
+                              page=1, page_size=10**9, db=db)
+    casos = [it for it in bandeja["items"] if it.get("un_clic")]
+    user_name = getattr(current_user, "username", None) or "Auditor Calidad"
+    user_id = getattr(current_user, "id", None)
+    aprobados, fallidos = [], []
+    for it in casos:
+        item_id = str(it["id"])
+        try:
+            if es_caso_hecho(item_id):
+                res = resolver_caso_hecho(db, item_id, {"accion": "APROBAR", "aprobacion_en_bloque": True},
+                                          user_id=user_id, user_name=user_name)
+            else:
+                res = resolve_review_item(item_id, {"accion": "APROBAR", "estudiante_resuelto": it.get("sugerencia")},
+                                          db=db, current_user=current_user)
+                db.add(LogPipelineIngesta(
+                    id_documento=it.get("id_documento"), etapa="HITL_APROBACION_EN_BLOQUE", nivel="SUCCESS",
+                    modulo="Bandeja HITL", mensaje=f"{user_name} aprobó {item_id} en bloque: {it.get('sugerencia')}.",
+                    metadata_json={"item_id": item_id, "accion": "APROBACION_EN_BLOQUE", "usuario": user_name},
+                ))
+                db.commit()
+            (aprobados if (res or {}).get("status") != "error" else fallidos).append(item_id)
+        except Exception as e_bloque:
+            db.rollback()
+            fallidos.append(item_id)
+            logger.warning("Aprobación en bloque: no se pudo aprobar %s: %s", item_id, e_bloque)
+    cache_consultas.invalidar()
+    return {
+        "status": "success",
+        "aprobados": len(aprobados),
+        "fallidos": fallidos,
+        "manuales_pendientes": bandeja["total"] - len(casos),
+        "message": f"{len(aprobados)} casos de un clic aprobados en bloque; {bandeja['total'] - len(casos)} manuales siguen en la bandeja.",
+    }
+
+
 @router.post("/review-tray/{item_id}/resolve")
 def resolve_review_item(
     item_id: str,
@@ -4127,29 +4183,43 @@ def resolve_review_item(
 
             try:
                 dw = DWLoaderService(db)
-                res_load = dw.cargar_registro({
+                base_registro = {
                     "categoria": categoria_ruteo,
                     "tipo_fuente": doc_fuente,
                     "tipo_escala": doc_escala,
                     "doc_id": ent.id_documento,
-                    "resoluciones": {
-                        "estudiante": {
-                            "fk_resolucion": {
-                                "ci": ci_clean,
-                                "nombre_resuelto": nom_clean,
-                            },
-                            "valor_extraido": nom_clean,
-                        },
+                    "calidad": {"requiere_revision": False, "resuelto_por_humano": True},
+                }
+                estudiante_res = {
+                    "fk_resolucion": {"ci": ci_clean, "nombre_resuelto": nom_clean},
+                    "valor_extraido": nom_clean,
+                }
+                # Acta con su línea original: un hecho por módulo con la nota real de la fila (como confirm-dw-insert).
+                # Antes se cargaba un solo hecho "Módulo Académico" y, sin nota, se inventaba 75.
+                linea_origen = p_json.get("raw_line") or (ent.texto_original if "|" in (ent.texto_original or "") else None)
+                registros_acta = []
+                if categoria_ruteo == "academico" and linea_origen and not payload.get("nota_final"):
+                    registros_acta = registros_academicos(campos_por_encabezado([c.strip() for c in linea_origen.split("|")]))
+                if registros_acta:
+                    res_load = {}
+                    for reg_aca in registros_acta:
+                        reg_aca.pop("requiere_revision", None)
+                        res_load = dw.cargar_registro({**base_registro, "resoluciones": {
+                            **{k: v for k, v in reg_aca.items() if v is not None or k in ("nota_final", "fecha")},
+                            "estudiante": estudiante_res, "nivel_confianza_ia": 0.99,
+                        }})
+                else:
+                    nota_payload = payload.get("nota_final")
+                    res_load = dw.cargar_registro({**base_registro, "resoluciones": {
+                        "estudiante": estudiante_res,
                         "modulo": {
                             "valor_extraido": payload.get("modulo_resuelto") or p_json.get("modulo") or "Módulo Académico"
                         },
-                        "nota_final": payload.get("nota_final") or p_json.get("nota_normalizada") or 75.0,
+                        "nota_final": nota_payload if nota_payload not in (None, "") else p_json.get("nota_normalizada"),
                         "monto_deuda": payload.get("monto_deuda") or p_json.get("monto_deuda") or 0.0,
                         "cuotas_impagas": payload.get("cuotas_impagas") if payload.get("cuotas_impagas") is not None else (p_json.get("cuotas_impagas") or 0),
                         "nivel_confianza_ia": 0.99,
-                    },
-                    "calidad": {"requiere_revision": False, "resuelto_por_humano": True},
-                })
+                    }})
                 ent.id_dimension_resuelta = res_load.get("id_estudiante")
             except Exception as e_res:
                 logger.warning("Error cargando registro resuelto al DW: %s", e_res)

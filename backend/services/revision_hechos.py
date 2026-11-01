@@ -9,6 +9,7 @@ Al rechazar: se elimina el hecho y queda el registro en la bitácora.
 Identificadores de caso: HECHO-ACA-<id_hecho_aca> y HECHO-FIN-<id_hecho_fin>.
 """
 
+from datetime import date
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from sqlalchemy.orm import Session
@@ -71,6 +72,7 @@ def items_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = Non
             "modulo_detectado": mod.nombre_modulo if mod else "",
             "nota_final": float(h.nota_final) if h.nota_final is not None else None,
             "fecha": str(fechas.get(h.id_tiempo) or ""),
+            **_mes_gestion(fechas.get(h.id_tiempo)),
             "que_vio": f"{est.nombre_completo if est else 'Sin estudiante'} · {mod.nombre_modulo if mod else 'Sin módulo'} · "
                        f"nota {h.nota_final if h.nota_final is not None else '—'} · {fechas.get(h.id_tiempo) or 'sin fecha'}",
             "destino_dw": "Rendimiento Académico",
@@ -82,11 +84,16 @@ def items_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = Non
             "monto_deuda": float(h.monto_deuda) if h.monto_deuda is not None else None,
             "cuotas_impagas": int(h.cuotas_impagas or 0),
             "fecha": str(fechas.get(h.id_tiempo) or ""),
+            **_mes_gestion(fechas.get(h.id_tiempo)),
             "que_vio": f"{est.nombre_completo if est else 'Sin estudiante'} · deuda {h.monto_deuda} · "
                        f"pagado {h.monto_pagado} · cuotas {h.cuotas_impagas} · {fechas.get(h.id_tiempo) or 'sin fecha'}",
             "destino_dw": "Situación Financiera y Cobranzas",
         }))
     return items
+
+
+def _mes_gestion(fecha) -> Dict[str, Any]:
+    return {"mes": fecha.month if fecha else None, "gestion": fecha.year if fecha else None}
 
 
 def _item(item_id, area, doc, est, confianza, faltan, extra) -> Dict[str, Any]:
@@ -114,7 +121,10 @@ def _cargar(db: Session, item_id: str) -> Tuple[Any, str]:
 
 
 def resolver_caso_hecho(db: Session, item_id: str, payload: Dict[str, Any], user_id: Optional[int], user_name: str) -> Dict[str, Any]:
-    """APROBAR (con correcciones opcionales: nota_final, monto_deuda, cuotas_impagas, estudiante_resuelto) o DESCARTAR."""
+    """
+    APROBAR (con correcciones opcionales: nota_final, monto_deuda, cuotas_impagas, estudiante_resuelto,
+    mes + gestion) o DESCARTAR. Con aprobacion_en_bloque = True la bitácora registra "Aprobación en bloque".
+    """
     hecho, tipo = _cargar(db, item_id)
     if hecho is None:
         return {"status": "error", "message": f"Caso {item_id} no existe."}
@@ -122,6 +132,7 @@ def resolver_caso_hecho(db: Session, item_id: str, payload: Dict[str, Any], user
         return {"status": "success", "message": f"Caso {item_id} ya estaba resuelto.", "item_id": item_id}
 
     accion = (payload.get("accion") or "APROBAR").upper()
+    en_bloque = bool(payload.get("aprobacion_en_bloque"))
     antes = _resumen(hecho, tipo)
     correcciones = {}
     if "DESCARTAR" in accion:
@@ -130,7 +141,8 @@ def resolver_caso_hecho(db: Session, item_id: str, payload: Dict[str, Any], user
     else:
         correcciones = _aplicar_correcciones(db, hecho, tipo, payload)
         hecho.requiere_revision = False
-        resultado = "Aprobado" + (f" con corrección ({', '.join(correcciones)})" if correcciones else " sin cambios")
+        resultado = ("Aprobación en bloque" if en_bloque else "Aprobado") + (
+            f" con corrección ({', '.join(correcciones)})" if correcciones else " sin cambios")
 
     db.add(LogAuditoriaNlp(
         texto_original=f"{item_id}: {antes}"[:500], prediccion_beto=f"Hecho {tipo} en revisión"[:200],
@@ -138,10 +150,11 @@ def resolver_caso_hecho(db: Session, item_id: str, payload: Dict[str, Any], user
         correccion_humana=resultado[:200], usuario_auditor=user_id,
     ))
     db.add(LogPipelineIngesta(
-        id_documento=hecho.id_documento, etapa="HITL_RESOLUCION_INDIVIDUAL",
+        id_documento=hecho.id_documento, etapa="HITL_APROBACION_EN_BLOQUE" if en_bloque else "HITL_RESOLUCION_INDIVIDUAL",
         nivel="WARNING" if "DESCARTAR" in accion else "SUCCESS", modulo="Bandeja HITL",
         mensaje=f"{user_name} resolvió {item_id}: {resultado}.",
-        metadata_json={"item_id": item_id, "accion": accion, "antes": antes, "correcciones": correcciones,
+        metadata_json={"item_id": item_id, "accion": "APROBACION_EN_BLOQUE" if en_bloque else accion, "usuario": user_name,
+                       "antes": antes, "correcciones": correcciones,
                        "nota_auditor": payload.get("nota_auditor")},
     ))
     db.commit()
@@ -162,6 +175,13 @@ def _aplicar_correcciones(db: Session, hecho, tipo: str, payload: Dict[str, Any]
             hecho.nota_final = nota
             hecho.estado_academico = "Aprobado" if nota >= NOTA_APROBACION else "Reprobado"
             cambios["nota_final"] = nota
+    fecha = _fecha_corregida(payload)
+    if fecha is not None:
+        from services.dw_loader import DWLoaderService
+        id_tiempo = DWLoaderService(db).resolver_o_crear_tiempo(fecha)
+        if id_tiempo and id_tiempo != hecho.id_tiempo:
+            hecho.id_tiempo = id_tiempo
+            cambios["fecha"] = fecha.isoformat()
     if tipo == "financiero":
         for campo, conv in (("monto_deuda", float), ("cuotas_impagas", int)):
             if payload.get(campo) not in (None, ""):
@@ -171,6 +191,17 @@ def _aplicar_correcciones(db: Session, hecho, tipo: str, payload: Dict[str, Any]
                     setattr(hecho, campo, valor)
                     cambios[campo] = valor
     return cambios
+
+
+def _fecha_corregida(payload: Dict[str, Any]) -> Optional[date]:
+    """Mes y gestión del formulario (los hechos sin fecha de Moodle y Cobranzas): primer día de ese mes."""
+    mes, gestion = payload.get("mes"), payload.get("gestion")
+    if mes in (None, "") or gestion in (None, ""):
+        return None
+    mes, gestion = int(mes), int(gestion)
+    if not (1 <= mes <= 12 and 2000 <= gestion <= 2100):
+        raise ValueError(f"Fecha inválida: mes {mes}, gestión {gestion}")
+    return date(gestion, mes, 1)
 
 
 def _resumen(hecho, tipo: str) -> str:
