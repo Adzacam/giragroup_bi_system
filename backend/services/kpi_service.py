@@ -21,6 +21,7 @@ from models.dim_modulo import DimModulo
 from models.dim_tiempo import DimTiempo
 from models.dim_origen import DimOrigenDocumental
 from models.staging_entidad import StagingEntidadNoResuelta
+from pipeline.config import NOTA_APROBACION
 
 
 class KPIService:
@@ -56,7 +57,7 @@ class KPIService:
                 FactRendimientoAcademico.nota_final.isnot(None)
             ).scalar()
             aprobados = self.db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).filter(
-                FactRendimientoAcademico.nota_final >= 51.0
+                FactRendimientoAcademico.nota_final >= NOTA_APROBACION
             ).scalar() or 0
             riesgo_aca = self.db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).filter(
                 FactRendimientoAcademico.nota_final.isnot(None),
@@ -69,7 +70,7 @@ class KPIService:
             q = self.db.query(
                 func.count(FactRendimientoAcademico.id_hecho_aca).label("total"),
                 func.avg(FactRendimientoAcademico.nota_final).label("avg_nota"),
-                func.count(FactRendimientoAcademico.id_hecho_aca).filter(FactRendimientoAcademico.nota_final >= 51.0).label("aprobados"),
+                func.count(FactRendimientoAcademico.id_hecho_aca).filter(FactRendimientoAcademico.nota_final >= NOTA_APROBACION).label("aprobados"),
                 func.count(FactRendimientoAcademico.id_hecho_aca).filter(
                     FactRendimientoAcademico.nota_final.isnot(None),
                     FactRendimientoAcademico.nota_final <= 70.0
@@ -648,7 +649,7 @@ class KPIService:
             q_mod = self.db.query(
                 DimModulo.nombre_modulo,
                 func.count(FactRendimientoAcademico.id_hecho_aca).label("evaluados"),
-                func.count(FactRendimientoAcademico.id_hecho_aca).filter(FactRendimientoAcademico.nota_final >= 51.0).label("aprobados")
+                func.count(FactRendimientoAcademico.id_hecho_aca).filter(FactRendimientoAcademico.nota_final >= NOTA_APROBACION).label("aprobados")
             ).outerjoin(DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo).filter(
                 FactRendimientoAcademico.nota_final.isnot(None)
             )

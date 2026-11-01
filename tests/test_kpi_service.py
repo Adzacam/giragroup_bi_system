@@ -170,3 +170,39 @@ class TestKPIConversionAdmisiones:
 
         assert cmi["kpis"]["6_tasa_conversion_admisiones"] == 25.0
         assert cmi["perspectivas"]["cliente_mercado"]["total_postulantes_leads"] == 40
+
+
+class TestKPIAprobacion:
+    def test_kpi8_aprueba_desde_nota_70(self, sqlite_dw):
+        """Reglamento GiraGroup: aprobado con nota >= 70. Antes el KPI 8 contaba como aprobado desde 51."""
+        from models.dim_modulo import DimModulo
+        from models.dim_tiempo import DimTiempo
+        from models.dim_estudiante import DimEstudiante
+        from models.fact_rendimiento import FactRendimientoAcademico
+        from pipeline.config import NOTA_APROBACION
+
+        assert NOTA_APROBACION == 70.0
+        sqlite_dw.add_all([
+            DimModulo(id_modulo=1, nombre_modulo="POS-5523 · Módulo 2", programa="Diplomados"),
+            DimTiempo(id_tiempo=1, gestion=2025, periodo_mes="2025-05"),
+        ])
+        notas = [60.0, 69.99, 70.0, 85.0]
+        for i, nota in enumerate(notas, start=1):
+            sqlite_dw.add(DimEstudiante(id_estudiante=i, nombre_completo=f"Alumno {i}", ci=f"10000{i}", codigo_estudiante=f"A{i}"))
+            sqlite_dw.add(FactRendimientoAcademico(id_estudiante=i, id_modulo=1, id_tiempo=1, nota_final=nota))
+        sqlite_dw.commit()
+
+        apr = KPIService(sqlite_dw).obtener_perspectivas_cmi_completo()["perspectivas"]["aprendizaje_crecimiento"]
+
+        assert apr["tasa_aprobacion_pct"] == 50.0
+        assert apr["tasa_reprobacion_pct"] == 50.0
+        modulo = apr["tasas_por_modulo"][0]
+        assert (modulo["aprobados"], modulo["reprobados"]) == (2, 2)
+
+    def test_coherencia_estado_nota_usa_70(self):
+        from pipeline.normalization.quality_rules import QualityEvaluator
+
+        qe = QualityEvaluator()
+        assert qe.validar_coherencia_academica(60.0, "Aprobado")[0] is False
+        assert qe.validar_coherencia_academica(70.0, "Aprobado")[0] is True
+        assert qe.validar_coherencia_academica(65.0, "Reprobado")[0] is True

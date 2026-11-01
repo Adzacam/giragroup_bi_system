@@ -28,6 +28,7 @@ from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.catalogos import CatInstitucion
+from pipeline.config import NOTA_APROBACION
 try:
     from models.fact_evaluacion import FactEvaluacionDocente
     from models.fact_rentabilidad import FactRentabilidad
@@ -937,7 +938,7 @@ class DWLoaderService:
 
         asistencia = _pct_valido(resoluciones.get("asistencia_pct"))
         incumplimiento = _pct_valido(resoluciones.get("incumplimiento_actividades_pct")) or 0.00
-        estado_aca = "Aprobado" if (nota is not None and float(nota) >= 70.0) else "Reprobado" if nota is not None else "En Curso"
+        estado_aca = "Aprobado" if (nota is not None and float(nota) >= NOTA_APROBACION) else "Reprobado" if nota is not None else "En Curso"
         tipo_alerta_aca = (
             "RIESGO_CRITICO" if (nota is not None and float(nota) < 51.0)
             else "RIESGO_ACADEMICO" if (nota is not None and float(nota) <= 70.0)

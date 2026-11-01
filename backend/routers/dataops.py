@@ -87,12 +87,14 @@ try:
         UMBRAL_INDICE_REGISTRO_DEC,
         TOPE_INDICE_BONIFICADO,
         TOPE_INDICE_BONIFICADO_DEC,
+        NOTA_APROBACION,
     )
 except ImportError:
     COMPUERTA_LECTURA_MODELO = 0.70
     COMPUERTA_LECTURA_MODELO_PCT = 70
     UMBRAL_INDICE_REGISTRO = 85
     UMBRAL_INDICE_REGISTRO_DEC = 0.85
+    NOTA_APROBACION = 70.0
     TOPE_INDICE_BONIFICADO = 99
     TOPE_INDICE_BONIFICADO_DEC = 0.99
 
@@ -1420,7 +1422,7 @@ def extract_entities_from_line(
                 "matchedCanonical": f"{grade_num:.2f} (Base 100)" if not grade_invalida else f"{raw_grade} (Escala No Declarada o Fuera de Rango)",
                 "canonicalId": (
                     "NOTA_APROBADO"
-                    if (not grade_invalida and grade_num >= 51)
+                    if (not grade_invalida and grade_num >= NOTA_APROBACION)
                     else ("NOTA_REPROBADO" if not grade_invalida else ("ESCALA_AMBIGUA" if not tipo_escala else "NOTA_FUERA_ESCALA"))
                 ),
                 "fuzzScore": 100.0 if not grade_invalida else 50.0,

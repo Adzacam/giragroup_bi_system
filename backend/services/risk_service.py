@@ -8,6 +8,7 @@ from models.dim_tiempo import DimTiempo
 from models.dim_origen import DimOrigenDocumental
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
+from pipeline.config import NOTA_APROBACION
 
 
 
@@ -653,7 +654,7 @@ def obtener_ficha_cruzada_estudiante(db: Session, id_estudiante: int) -> Optiona
             "nota_final": round(nota_f, 1),
             "asistencia_pct": round(asist_f, 1) if asist_f is not None else None,
             "incumplimiento_pct": round(inc_f, 1),
-            "estado_academico": h.estado_academico or ("Reprobado" if nota_f <= 70.0 else "Aprobado"),
+            "estado_academico": h.estado_academico or ("Reprobado" if nota_f < NOTA_APROBACION else "Aprobado"),
             "regla_disparada": " | ".join(reglas_fila) if reglas_fila else "SIN_ALERTA",
             "origen_archivo": orig.nombre_archivo if orig else None,
             "hash_sha256": orig.hash_sha256 if orig else None,

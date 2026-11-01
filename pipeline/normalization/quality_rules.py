@@ -11,7 +11,7 @@ Criterios de activación:
 2. Similitud RapidFuzz en catálogos < 80% (GIRA-41).
 3. CI no resuelto (Estado C en GIRA-50 o prefijo TEMP-CI-*).
 4. Nota numérica fuera de rango válido (< 0 o > 100).
-5. Inconsistencias de coherencia académica (ej. reprobado con nota >= 51).
+5. Inconsistencias de coherencia académica (ej. reprobado con nota >= 70).
 """
 
 from dataclasses import dataclass, field
@@ -23,7 +23,7 @@ from pipeline.config import (
     UMBRAL_REVISION_FUZZY,
     NOTA_MINIMA_VALIDA,
     NOTA_MAXIMA_VALIDA,
-    NOTA_APROBACION_MINIMA,
+    NOTA_APROBACION,
     PATRON_CI_BOLIVIA,
     ASISTENCIA_MINIMA_VALIDA,
     ASISTENCIA_MAXIMA_VALIDA,
@@ -104,7 +104,7 @@ class QualityEvaluator:
         umbral_fuzzy: float = UMBRAL_REVISION_FUZZY,
         nota_min: float = NOTA_MINIMA_VALIDA,
         nota_max: float = NOTA_MAXIMA_VALIDA,
-        nota_aprobacion: float = NOTA_APROBACION_MINIMA
+        nota_aprobacion: float = NOTA_APROBACION
     ):
         self.umbral_beto = umbral_beto
         self.umbral_fuzzy = umbral_fuzzy
@@ -250,7 +250,7 @@ class QualityEvaluator:
     ) -> Tuple[bool, Optional[str]]:
         """
         Verifica la coherencia entre la nota numérica y el estado académico descriptivo.
-        Por ejemplo: No debe ser 'REPROBADO' con nota >= 51, ni 'APROBADO' con nota < 51.
+        Por ejemplo: No debe ser 'REPROBADO' con nota >= 70, ni 'APROBADO' con nota < 70.
         """
         if nota_num is None or not estado_academico:
             return True, None
