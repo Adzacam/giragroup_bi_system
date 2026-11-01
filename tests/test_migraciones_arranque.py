@@ -38,8 +38,10 @@ def test_restriccion_final_admite_los_tipos_que_detecta_el_ingestor():
 def test_con_004_aplicada_no_se_reaplica_003():
     """Reaplicar 003 con documentos RENTABILIDAD fallaba en cada arranque (CheckViolation) y abortaba la 004."""
     from main import MIGRACION_TIPO_FUENTE, migraciones_a_aplicar
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == []
-    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == []
+    alineacion = "005_alinear_esquema_con_ddl.sql"
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == [alineacion]
+    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == [alineacion]
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, alineacion}) == []
 
 
 def test_base_nueva_aplica_003_y_luego_004():

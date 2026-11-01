@@ -42,7 +42,9 @@ logger = logging.getLogger("api_main")
 MIGRACIONES_EN_ARRANQUE = (
     "003_dataops_lote_and_facts_alignment.sql",
     "004_extend_tipo_fuente_sources.sql",
+    "005_alinear_esquema_con_ddl.sql",
 )
+MIGRACION_LOTE = "003_dataops_lote_and_facts_alignment.sql"
 MIGRACION_TIPO_FUENTE = "004_extend_tipo_fuente_sources.sql"
 # pg_advisory_lock: los workers de uvicorn arrancan a la vez; solo uno migra y los demás esperan
 LLAVE_LOCK_ARRANQUE = 7_310_004
@@ -51,11 +53,13 @@ LLAVE_LOCK_ARRANQUE = 7_310_004
 def migraciones_a_aplicar(aplicadas: set) -> list:
     """
     003 recrea chk_dim_origen_tipo_fuente con 4 tipos. Si 004 ya está aplicada, reaplicar 003 fallaría
-    (hay documentos RENTABILIDAD) o estrecharía la restricción: con 004 aplicada no se reaplica ninguna.
+    (hay documentos RENTABILIDAD) o estrecharía la restricción: con 004 aplicada no se reaplica 003.
+    005 (alineación con db/schema.sql) se aplica una vez, también al restaurar un respaldo anterior.
     """
+    pendientes = [m for m in MIGRACIONES_EN_ARRANQUE if m not in aplicadas]
     if MIGRACION_TIPO_FUENTE in aplicadas:
-        return []
-    return [m for m in MIGRACIONES_EN_ARRANQUE if m not in aplicadas]
+        pendientes = [m for m in pendientes if m != MIGRACION_LOTE]
+    return pendientes
 
 
 def _migraciones_aplicadas(conn) -> set:

@@ -214,7 +214,6 @@ CREATE TABLE public.fact_rendimiento_academico (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_fact_rendimiento_aca_id ON public.fact_rendimiento_academico(id_hecho_aca);
-CREATE UNIQUE INDEX uq_fact_aca_est_mod ON public.fact_rendimiento_academico(id_estudiante, id_modulo);
 
 -- B. Finanzas y Cobranza
 CREATE TABLE public.fact_situacion_financiera (
