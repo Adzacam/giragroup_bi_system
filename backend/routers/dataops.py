@@ -67,8 +67,10 @@ from services.extraccion_por_encabezado import (
     es_encabezado_metadato_pos,
     fecha_de_fila,
     registros_academicos,
+    motivo_fila_sin_entidad,
     registros_rentabilidad,
 )
+from services.sugerencia_hitl import es_sugerencia_un_clic, similitud_nombre_completo
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
 from services.dataops_evaluation_service import (
     strip_accents,
@@ -2869,7 +2871,8 @@ def compare_rapidfuzz_strings(
             "wratio": m_res["w_ratio"],
             "ratio_simple": m_res["ratio_simple"],
             "levenshtein_distance": m_res["levenshtein_distance"],
-            "is_auto_match": m_res["similitud"] >= umbral_cmp,
+            # Un clic solo con coincidencia de nombre completo (token_sort), no por WRatio parcial
+            "is_auto_match": es_sugerencia_un_clic(raw_a, cname, umbral_cmp),
         })
     resultados_cat.sort(key=lambda x: x["similarity"], reverse=True)
     top_resultados = resultados_cat[:8]
@@ -2887,7 +2890,7 @@ def compare_rapidfuzz_strings(
             "partial_ratio": pair_metrics["partial_ratio"],
             "w_ratio": pair_metrics["w_ratio"],
             "wratio": pair_metrics["w_ratio"],
-            "is_auto_match": pair_metrics["similitud"] >= umbral_cmp,
+            "is_auto_match": es_sugerencia_un_clic(raw_a, raw_b, umbral_cmp),
         }
     elif top_resultados:
         best_top = top_resultados[0]
@@ -2916,9 +2919,10 @@ def compare_rapidfuzz_strings(
             "partial_ratio": pair_metrics["partial_ratio"],
             "w_ratio": pair_metrics["w_ratio"],
             "wratio": pair_metrics["w_ratio"],
-            "is_auto_match": pair_metrics["similitud"] >= umbral_cmp,
+            "is_auto_match": False,  # sin candidatos en el catálogo: no hay nada que aceptar con un clic
         }
 
+    hay_candidato = best_match_obj.get("candidate_code") != "N/A"
     similitud = pair_metrics["similitud"]
     calc_bono = calcular_indice_entidad_con_bonos(
         COMPUERTA_LECTURA_MODELO_PCT,
@@ -2941,8 +2945,10 @@ def compare_rapidfuzz_strings(
         "levenshtein_distance": pair_metrics["levenshtein_distance"],
         "distancia_edicion": pair_metrics["levenshtein_distance"],
         "metricas": pair_metrics,
-        "supera_umbral": similitud >= umbral_cmp,
-        "supera_umbral_85": similitud >= float(UMBRAL_INDICE_REGISTRO),
+        "supera_umbral": hay_candidato and es_sugerencia_un_clic(raw_a, raw_b, umbral_cmp),
+        "supera_umbral_85": hay_candidato and es_sugerencia_un_clic(raw_a, raw_b, float(UMBRAL_INDICE_REGISTRO)),
+        "un_clic": hay_candidato and es_sugerencia_un_clic(raw_a, raw_b, umbral_cmp),
+        "criterio_un_clic": "token_sort_ratio >= umbral sobre el nombre completo",
         "bono_catalogo_estimado": calc_bono["bono_catalogo"],
         "best_match": best_match_obj,
         "resultados": top_resultados,
@@ -3251,6 +3257,7 @@ def confirm_dw_insert(
     inserted_admision = 0
     sent_hitl = 0
     inserted_revision = 0
+    descartados_ruido = 0
 
     for stg in stg_records:
         orig_doc = (
@@ -3274,9 +3281,25 @@ def confirm_dw_insert(
         if not lines and raw_text:
             lines = [raw_text]
 
+        categoria_ruteo = (
+            "financiero" if doc_fuente == "COBRANZA"
+            else "rentabilidad" if doc_fuente in ("EGRESOS", "TECHOS", "RENTABILIDAD")
+            else "evaluacion_docente" if doc_fuente == "EVALUACION_DOCENTE"
+            else "marketing" if doc_fuente == "MARKETING"
+            else "admision" if doc_fuente == "ADMISION"
+            else "academico"
+        )
+
         # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
         indices_linea = obtener_indices(lines)
         for line, indice in zip(lines, indices_linea):
+            campos_linea = campos_por_encabezado([c.strip() for c in line.split("|")])
+            motivo_ruido = motivo_fila_sin_entidad(campos_linea, categoria_ruteo)
+            if motivo_ruido:
+                # Sin entidad que enlazar (hoja de estados, catálogo, fila agregada): ruido, no va a revisión
+                _registrar_descarte_ruido(db, stg, line, indice, motivo_ruido, doc_fuente)
+                descartados_ruido += 1
+                continue
             ents, score, req_rev = extract_entities_from_line(
                 line,
                 estudiantes,
@@ -3338,15 +3361,6 @@ def confirm_dw_insert(
                         concepto_str = v_ch.strip()
 
             if is_approved:
-                categoria_ruteo = (
-                    "financiero" if doc_fuente == "COBRANZA"
-                    else "rentabilidad" if doc_fuente in ("EGRESOS", "TECHOS", "RENTABILIDAD")
-                    else "evaluacion_docente" if doc_fuente == "EVALUACION_DOCENTE"
-                    else "marketing" if doc_fuente == "MARKETING"
-                    else "admision" if doc_fuente == "ADMISION"
-                    else "academico"
-                )
-                campos_linea = campos_por_encabezado([c.strip() for c in line.split("|")])
                 fecha_linea = fecha_de_fila(campos_linea, categoria_ruteo) if campos_linea else None
                 reg_dict = {
                     "categoria": categoria_ruteo,
@@ -3507,7 +3521,32 @@ def confirm_dw_insert(
         "inserted_admision": inserted_admision,
         "inserted_revision": inserted_revision,
         "sent_hitl": sent_hitl,
+        "descartados_ruido": descartados_ruido,
     }
+
+
+def _registrar_descarte_ruido(db: Session, stg, line: str, indice, motivo: str, doc_fuente: str) -> None:
+    """Deja constancia de una línea descartada como ruido: resuelta (no entra a la bandeja) y con su motivo."""
+    ya_registrada = db.query(StagingEntidadNoResuelta.id_staging).filter(
+        StagingEntidadNoResuelta.id_documento == stg.id_documento,
+        StagingEntidadNoResuelta.registro_origen_id == stg.id,
+        StagingEntidadNoResuelta.texto_original == line[:250],
+    ).first()
+    if ya_registrada:
+        return
+    db.add(StagingEntidadNoResuelta(
+        id_documento=stg.id_documento,
+        tipo_entidad="RUIDO",
+        texto_original=line[:250],
+        fk_estado="C",
+        nivel_confianza=indice,
+        resuelto=True,
+        resuelto_en=datetime.utcnow(),
+        motivo=motivo,
+        estado_resolucion="DESCARTADO",
+        payload_json={"raw_line": line, "tipo_fuente": doc_fuente, "descarte": "RUIDO"},
+        registro_origen_id=stg.id,
+    ))
 
 
 # =============================================================================
@@ -3693,6 +3732,8 @@ def get_review_tray(
             "contexto_raw": contexto_raw,
             "modulo_detectado": modulo_detectado,
             "sugerencia_catalogo": ent.mejor_candidato,
+            "un_clic": es_sugerencia_un_clic(ent.texto_original, ent.mejor_candidato),
+            "similitud_nombre_completo": similitud_nombre_completo(ent.texto_original, ent.mejor_candidato),
             "ner_confidence": float(ent.nivel_confianza) if ent.nivel_confianza else 0.72,
             "estado": "REQUIERE_REVISION",
             "area": item_area,

@@ -248,3 +248,27 @@ def registros_rentabilidad(campos: Dict[str, str]) -> List[Dict[str, Any]]:
         for anio, montos in sorted(por_anio.items())
         if montos["monto_ejecutado"] is not None or montos["monto_meta"] is not None
     ]
+
+
+_CLAVES_ENTIDAD_PROGRAMA = ("NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA", "CURSO", "COURSE", "MODULO", "MATERIA")
+
+
+def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[str]:
+    """
+    Motivo por el que una línea no puede producir un hecho (se descarta como ruido, no va a revisión), o None.
+    - academico: sin estudiante (hojas MODULOS, IBP, catálogos): registros_academicos no generaría hechos.
+    - rentabilidad: fila sin categoría y mes reconocibles.
+    - financiero / admisión / marketing: sin estudiante ni programa (p. ej. la hoja de estados académicos
+      'Estado académico: Aprobado | Estado ARCA: Titulado', que es un catálogo de combinaciones).
+    """
+    if not campos:
+        return "FILA_SIN_CABECERAS"
+    if categoria == "rentabilidad":
+        return None if registros_rentabilidad(campos) else "FILA_AGREGADA_SIN_CATEGORIA_MES"
+    if estudiante_de_fila(campos) is not None:
+        return None
+    if categoria == "academico":
+        return "FILA_ACADEMICA_SIN_ESTUDIANTE"
+    if _pos(campos) or any(campos.get(k) for k in _CLAVES_ENTIDAD_PROGRAMA):
+        return None
+    return "FILA_SIN_ENTIDAD"
