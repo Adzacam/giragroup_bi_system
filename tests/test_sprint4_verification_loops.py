@@ -135,21 +135,27 @@ def test_loop1_owasp_fuzzing_riesgos():
 # LOOP 2: LOOP DE CABECERAS DEFENSIVAS Y ENMASCARAMIENTO (OWASP A05)
 # ─────────────────────────────────────────────────────────────────────────────
 
+CABECERAS_OWASP = ("X-Content-Type-Options", "X-Frame-Options", "X-XSS-Protection", "Referrer-Policy", "Content-Security-Policy")
+
+
 def test_loop2_cabeceras_defensivas_owasp():
-    """Verifica la presencia sistemática de cabeceras de seguridad HTTP en todas las respuestas."""
-    endpoints = [
-        "/health",
-        "/api/v1/forecast/alumnos?tipo=GLOBAL&horizonte=3",
-        "/api/v1/forecast/metas?granularidad=MENSUAL&horizonte=3",
-        "/api/v1/forecast/metas?granularidad=ANUAL&horizonte=2",
-        "/api/v1/riesgos/cruzado"
-    ]
-    for ep in endpoints:
-        resp = client.get(ep)
-        headers = resp.headers
-        assert headers.get("X-Content-Type-Options") == "nosniff", f"Falta X-Content-Type-Options en {ep}"
-        assert headers.get("X-Frame-Options") == "DENY", f"Falta X-Frame-Options en {ep}"
-        assert "Content-Security-Policy" in headers, f"Falta Content-Security-Policy en {ep}"
+    """
+    Las cabeceras de seguridad las pone solo el gateway nginx (una vez cada una): la API no las repite.
+    Antes las ponían los dos y curl -i http://localhost/health las mostraba duplicadas.
+    """
+    import re
+    from pathlib import Path
+
+    for ep in ("/health", "/api/v1/forecast/alumnos?tipo=GLOBAL&horizonte=3", "/api/v1/riesgos/cruzado"):
+        headers = client.get(ep).headers
+        for cabecera in CABECERAS_OWASP:
+            assert cabecera not in headers, f"La API no debe enviar {cabecera} ({ep}): la pone nginx"
+
+    conf = (Path(__file__).resolve().parent.parent / "gateway" / "nginx.conf").read_text(encoding="utf-8")
+    for cabecera in CABECERAS_OWASP:
+        assert len(re.findall(rf"^\s*add_header\s+{cabecera}\s", conf, re.M)) == 1, f"{cabecera} debe declararse una sola vez"
+    assert re.search(r"~\^/api/\s+\"default-src 'self'; frame-ancestors 'none';\"", conf)
+    assert re.search(r"^\s*/health\s+\"default-src 'self'", conf, re.M)
 
 
 def test_loop2_enmascaramiento_de_errores():

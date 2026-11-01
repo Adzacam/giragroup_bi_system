@@ -134,21 +134,8 @@ _CACHEABLE_GET_PREFIXES = (
 @app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
     response: Response = await call_next(request)
-    # OWASP A05: Cabeceras defensivas para prevenir Clickjacking, MIME-sniffing y XSS
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    if request.url.path in ("/docs", "/redoc", "/openapi.json"):
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-            "img-src 'self' data: https://fastapi.tiangolo.com; "
-            "frame-ancestors 'none';"
-        )
-    else:
-        response.headers["Content-Security-Policy"] = "default-src 'self'; frame-ancestors 'none';"
+    # Las cabeceras de seguridad OWASP (X-Frame-Options, CSP, etc.) las pone solo el gateway nginx:
+    # repetirlas aquí las duplicaba en cada respuesta. Este middleware solo agrega las de caché.
     if request.method == "GET" and response.status_code == 200:
         if any(request.url.path.startswith(p) for p in _CACHEABLE_GET_PREFIXES):
             response.headers.setdefault("Cache-Control", "private, max-age=60, stale-while-revalidate=120")
