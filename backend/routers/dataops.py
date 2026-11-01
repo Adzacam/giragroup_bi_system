@@ -67,6 +67,7 @@ from services.extraccion_por_encabezado import (
     es_encabezado_metadato_pos,
     fecha_de_fila,
     registros_academicos,
+    registros_rentabilidad,
 )
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
 from services.dataops_evaluation_service import (
@@ -3389,6 +3390,14 @@ def confirm_dw_insert(
                             },
                             "calidad": {"requiere_revision": en_revision or revision_fila},
                         })
+                elif categoria_ruteo == "rentabilidad" and campos_linea:
+                    # EJECUTADO VS META: un hecho por año con dato, con la categoría y el mes de la fila
+                    registros_rent = registros_rentabilidad(campos_linea)
+                    if registros_rent:
+                        registros_linea = [
+                            {**reg_dict, "resoluciones": {**reg_dict["resoluciones"], **reg_rent}}
+                            for reg_rent in registros_rent
+                        ]
                 for reg_item in registros_linea:
                     res = dw.cargar_registro(reg_item)
                     if res.get("status") != "loaded":

@@ -28,6 +28,9 @@ _CLAVES_FECHA_ACADEMICA = ("FECHA", "FECHA EVALUACION", "FECHA DE EVALUACION", "
 _CLAVES_MES = ("MES INICIO", "MES INICO", "MES")
 _CLAVES_ANIO = ("ANO INICIO", "ANO INCIO", "ANO", "GESTION")
 _RE_MODULO_N = re.compile(r"^MODULO (\d{1,2})$")
+# EJECUTADO VS META: una fila por categoría y mes, con columnas EJECUTADO <año> y META POR CATEGORIA <año>
+_RE_EJECUTADO_ANIO = re.compile(r"^EJECUTADO (\d{4})$")
+_RE_META_ANIO = re.compile(r"^META POR CATEGORIA (\d{4})$")
 
 
 def normalizar_encabezado(texto: str) -> str:
@@ -211,3 +214,37 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
         "fecha": fecha,
         "requiere_revision": nota is None or fecha is None,
     }]
+
+
+def categoria_rentabilidad(valor: Optional[str]) -> Optional[str]:
+    """CATEGORIA de EJECUTADO VS META -> categoría financiera (mismos nombres que seed_historical_facts)."""
+    v = normalizar_encabezado(valor or "")
+    if "PROGRAMA" in v:
+        return "PROGRAMAS"
+    if "TECHO" in v or "CERRADO" in v:
+        return "TECHOS_CERRADOS"
+    return None
+
+
+def registros_rentabilidad(campos: Dict[str, str]) -> List[Dict[str, Any]]:
+    """
+    Una fila mensual de EJECUTADO VS META trae varios años (EJECUTADO 2023..2026, META POR CATEGORIA 2024..2026).
+    Devuelve un registro por año con dato, con la fecha del primer día de ese mes: así cada fila conserva su
+    categoría y su mes en fact_rentabilidad (clave id_categoria + id_tiempo) en vez de colapsar en una sola.
+    """
+    categoria = categoria_rentabilidad(campos.get("CATEGORIA"))
+    mes = _mes(campos.get("MES NUMERICO")) or _mes(campos.get("MES"))
+    if not categoria or not mes:
+        return []
+    por_anio: Dict[int, Dict[str, Optional[float]]] = {}
+    for k, v in campos.items():
+        m_ejec, m_meta = _RE_EJECUTADO_ANIO.match(k), _RE_META_ANIO.match(k)
+        if m_ejec or m_meta:
+            anio = int((m_ejec or m_meta).group(1))
+            por_anio.setdefault(anio, {"monto_ejecutado": None, "monto_meta": None})
+            por_anio[anio]["monto_ejecutado" if m_ejec else "monto_meta"] = _a_float(v)
+    return [
+        {"categoria_financiera": categoria, "fecha": date(anio, mes, 1), **montos}
+        for anio, montos in sorted(por_anio.items())
+        if montos["monto_ejecutado"] is not None or montos["monto_meta"] is not None
+    ]

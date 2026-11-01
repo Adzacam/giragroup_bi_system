@@ -809,14 +809,22 @@ class DWLoaderService:
             cat_db = self.db.query(DimCategoriaFinanciera).filter(
                 func.lower(DimCategoriaFinanciera.nombre_categoria) == cat_nom.lower()
             ).first()
+            if not cat_db and resoluciones.get("categoria_financiera"):
+                # Categoría de la fila (PROGRAMAS, TECHOS_CERRADOS): se crea en vez de caer en otra ajena
+                cat_db = DimCategoriaFinanciera(nombre_categoria=cat_nom, tipo="INGRESO")
+                self.db.add(cat_db)
+                self.db.flush()
             if cat_db:
                 id_cat = cat_db.id_categoria
             else:
                 cat_first = self.db.query(DimCategoriaFinanciera).first()
                 id_cat = cat_first.id_categoria if cat_first else None
 
-            m_ejec = float(resoluciones.get("monto_ejecutado") or resoluciones.get("gasto") or resoluciones.get("egreso") or 0.0)
-            m_meta = float(resoluciones.get("monto_meta") or resoluciones.get("presupuesto") or resoluciones.get("techo") or 0.0)
+            def _monto(*claves):
+                return next((float(resoluciones[k]) for k in claves if resoluciones.get(k) is not None), None)
+
+            m_ejec = _monto("monto_ejecutado", "gasto", "egreso")
+            m_meta = _monto("monto_meta", "presupuesto", "techo")
 
             existente_rent = self.db.query(FactRentabilidad).filter(
                 FactRentabilidad.id_categoria == id_cat,
@@ -824,10 +832,11 @@ class DWLoaderService:
             ).first()
 
             if existente_rent:
-                curr_ejec = float(existente_rent.monto_ejecutado or 0.0)
-                curr_meta = float(existente_rent.monto_meta or 0.0)
-                existente_rent.monto_ejecutado = curr_ejec + m_ejec
-                existente_rent.monto_meta = max(curr_meta, m_meta)
+                # Misma categoría y mes: el valor nuevo reemplaza al anterior (recargar el libro no duplica montos)
+                if m_ejec is not None:
+                    existente_rent.monto_ejecutado = m_ejec
+                if m_meta is not None:
+                    existente_rent.monto_meta = m_meta
                 self.db.flush()
                 return {
                     "tipo": "rentabilidad",
@@ -841,8 +850,8 @@ class DWLoaderService:
                     id_modulo=id_mod_rent,
                     id_tiempo=id_tiempo,
                     id_categoria=id_cat,
-                    monto_ejecutado=m_ejec,
-                    monto_meta=m_meta
+                    monto_ejecutado=m_ejec or 0.0,
+                    monto_meta=m_meta or 0.0
                 )
                 self.db.add(nuevo_rent)
                 self.db.flush()
