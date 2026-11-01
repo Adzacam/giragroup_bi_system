@@ -21,3 +21,6 @@ markers = [
     "sprint2: Pruebas de ingesta, detección de bloques tabulares y categorización universal (Sprint 2)",
     "sprint3: Pruebas de PLN, BETO NER, catálogos 3NF, RapidFuzz, calidad y auditoría (Sprint 3)"
 ]
+
+[tool.coverage.run]
+omit = ["backend/tests_root/*", "backend/test_upload.py"]
