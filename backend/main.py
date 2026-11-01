@@ -170,6 +170,17 @@ app.include_router(reportes.router)
 app.include_router(pipeline.router)
 app.include_router(audit.router)
 
+# Alias raíz de compatibilidad: el gateway (location /pipeline), el respaldo de auditApi.js y la suite
+# de RBAC lo usan. Se eliminó en 73cc813 y devolvía 404; reutiliza la misma función y su control de roles.
+app.add_api_route(
+    "/pipeline/process",
+    process_pipeline,
+    methods=["POST"],
+    response_model=PipelineExecutionResponse,
+    summary="Alias de compatibilidad: Ejecutar pipeline completo bajo demanda",
+    tags=["Pipeline Integrado"],
+)
+
 # En despliegue distribuido (Docker), auth, users y notifications corren en sus microservicios (:8001, :8002, :8004).
 # Se montan condicionalmente en modo monolítico local / testing para compatibilidad con la suite pytest y TestClient.
 if os.getenv("STANDALONE_MONOLITH", "true").lower() == "true":
