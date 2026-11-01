@@ -31,7 +31,7 @@ export default function RecaudacionCobranzas() {
       let netaBs = 0;
       let deudaBs = 0;
       if (kpiRes.status === 'fulfilled' && kpiRes.value) {
-        netaBs = Number(kpiRes.value.total_recaudado_bs ?? 275000);
+        netaBs = Number(kpiRes.value.total_recaudado_bs ?? 0);
         deudaBs = Number(kpiRes.value.monto_total_deuda_bs ?? 0);
       }
 

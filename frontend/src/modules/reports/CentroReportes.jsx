@@ -7,6 +7,7 @@ import {
 import { sileoToast } from '../../services/sileoToast';
 import { useAuth } from '../../context/AuthContext';
 import { reportesApi } from '../../api/reportesApi';
+import { catalogApi } from '../../api/catalogApi';
 
 const TIPOS_REPORTE = [
   {
@@ -52,16 +53,12 @@ const FORMATOS = [
   },
 ];
 
-const GESTIONES = ['Todas', '2026', '2025', '2024'];
-
-const PROGRAMAS_DEFAULT = [
-  'Todos',
-  'Diplomado en Inteligencia de Negocios',
-  'Maestría en Data Science',
-  'Especialidad en Gestión Tributaria',
-  'Diplomado en Educación Superior',
-  'Maestría en Finanzas Corporativas',
-];
+// Gestiones desde la primera con datos (2023) hasta la actual
+const PRIMERA_GESTION = 2023;
+const GESTIONES = ['Todas', ...Array.from(
+  { length: new Date().getFullYear() - PRIMERA_GESTION + 1 },
+  (_, i) => String(new Date().getFullYear() - i)
+)];
 
 export default function CentroReportes() {
   const { user, role } = useAuth();
@@ -72,6 +69,15 @@ export default function CentroReportes() {
   const [loadingExport, setLoadingExport] = useState(false);
   const [loadingHistorial, setLoadingHistorial] = useState(false);
   const [historial, setHistorial] = useState([]);
+  const [programas, setProgramas] = useState(['Todos']);
+
+  // Programas del Catálogo Maestro institucional (sin lista local de relleno)
+  useEffect(() => {
+    catalogApi.getInstitutionalSummary().then((res) => {
+      const nombres = (res?.programas || []).map((p) => p.nombre).filter(Boolean);
+      setProgramas(['Todos', ...nombres]);
+    });
+  }, []);
 
   // Cargar historial de auditoría
   const cargarHistorial = async () => {
@@ -446,7 +452,7 @@ export default function CentroReportes() {
                     fontSize: '13px',
                   }}
                 >
-                  {PROGRAMAS_DEFAULT.map((p) => (
+                  {programas.map((p) => (
                     <option key={p} value={p}>{p}</option>
                   ))}
                 </select>

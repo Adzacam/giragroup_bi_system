@@ -143,6 +143,9 @@ services:
     container_name: giragroup_pipeline
     restart: unless-stopped
     env_file: .env
+    environment:
+      # Hilos de PyTorch: sin límite usa los 24 núcleos del host y cada forward tarda ~1 s
+      TORCH_NUM_THREADS: ${TORCH_NUM_THREADS:-8}
     depends_on:
       db:
         condition: service_healthy

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, File, Form, Query, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from typing import Optional, List, Dict, Any, Tuple, Union
 import os
 import math
@@ -4117,8 +4117,25 @@ def resolve_review_item(
         )
     clean_id = str(item_id).replace("REV-", "").strip()
     if clean_id.isdigit():
-        ent = db.query(StagingEntidadNoResuelta).filter(StagingEntidadNoResuelta.id_staging == int(clean_id)).first()
+        # FOR UPDATE serializa dos resoluciones simultáneas del mismo caso hasta el commit de la primera
+        ent = (
+            db.query(StagingEntidadNoResuelta)
+            .filter(StagingEntidadNoResuelta.id_staging == int(clean_id))
+            .with_for_update()
+            .first()
+        )
         if ent:
+            if ent.resuelto:
+                db.rollback()
+                raise HTTPException(status_code=409, detail=f"El registro {item_id} ya fue resuelto.")
+            if (
+                ent.lock_usuario_id
+                and ent.lock_usuario_id != current_user.id
+                and ent.lock_expira
+                and ent.lock_expira > datetime.utcnow()
+            ):
+                db.rollback()
+                raise HTTPException(status_code=409, detail="El registro está bloqueado por otro auditor.")
             user_name = current_user.username if (current_user and hasattr(current_user, "username")) else "Auditor Calidad"
             user_id = current_user.id if (current_user and hasattr(current_user, "id")) else None
             accion = (payload.get("accion") or "APROBAR").upper()
@@ -4292,29 +4309,42 @@ def lock_review_item(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "ADMIN"])),
 ):
-    item = db.query(StagingEntidadNoResuelta).filter(StagingEntidadNoResuelta.id_staging == item_id).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Registro no encontrado.")
-
     ahora = datetime.utcnow()
-    if item.lock_usuario_id and item.lock_usuario_id != current_user.id:
-        if item.lock_expira and item.lock_expira > ahora:
-            usuario_bloqueador = db.query(User).filter(User.id == item.lock_usuario_id).first()
-            nombre_u = usuario_bloqueador.username if usuario_bloqueador else f"Usuario #{item.lock_usuario_id}"
-            raise HTTPException(
-                status_code=409,
-                detail=f"El registro está siendo revisado por {nombre_u}. Bloqueo expira en {int((item.lock_expira - ahora).total_seconds())}s.",
-            )
-
-    item.lock_usuario_id = current_user.id
-    item.lock_expira = ahora + timedelta(minutes=5)
+    expira = ahora + timedelta(minutes=5)
+    # Comprobar y tomar el bloqueo en un único UPDATE condicional: dos auditores simultáneos
+    # no pueden ganar ambos (la lectura previa + escritura permitía la carrera).
+    tomado = (
+        db.query(StagingEntidadNoResuelta)
+        .filter(
+            StagingEntidadNoResuelta.id_staging == item_id,
+            or_(
+                StagingEntidadNoResuelta.lock_usuario_id.is_(None),
+                StagingEntidadNoResuelta.lock_usuario_id == current_user.id,
+                StagingEntidadNoResuelta.lock_expira.is_(None),
+                StagingEntidadNoResuelta.lock_expira <= ahora,
+            ),
+        )
+        .update({"lock_usuario_id": current_user.id, "lock_expira": expira}, synchronize_session=False)
+    )
     db.commit()
+
+    if not tomado:
+        item = db.query(StagingEntidadNoResuelta).filter(StagingEntidadNoResuelta.id_staging == item_id).first()
+        if not item:
+            raise HTTPException(status_code=404, detail="Registro no encontrado.")
+        usuario_bloqueador = db.query(User).filter(User.id == item.lock_usuario_id).first()
+        nombre_u = usuario_bloqueador.username if usuario_bloqueador else f"Usuario #{item.lock_usuario_id}"
+        segundos = max(0, int((item.lock_expira - ahora).total_seconds())) if item.lock_expira else 0
+        raise HTTPException(
+            status_code=409,
+            detail=f"El registro está siendo revisado por {nombre_u}. Bloqueo expira en {segundos}s.",
+        )
 
     return {
         "status": "success",
         "message": "Bloqueo pesimista adquirido correctamente (5 min)",
         "item_id": item_id,
-        "lock_expira": item.lock_expira.isoformat(),
+        "lock_expira": expira.isoformat(),
     }
 
 

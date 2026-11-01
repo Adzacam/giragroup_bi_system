@@ -376,12 +376,49 @@ def ejecutar_inferencia_beto(texto: str) -> Dict[str, Any]:
 # Definir aplicación FastAPI si está instalada (para uvicorn pipeline.semantic.inference_server:app)
 try:
     from fastapi import FastAPI
-    from pydantic import BaseModel
+    from pydantic import BaseModel, Field
 
     app = FastAPI(title="GiraGroup BETO PyTorch Inference Service", version="1.0.0")
 
     class InferRequest(BaseModel):
-        text: str = ""
+        # Obligatorio: un campo mal nombrado ({"texto": ...}) respondía success con 0 entidades
+        text: str = Field(..., min_length=1)
+
+    class InferBatchRequest(BaseModel):
+        textos: List[str] = Field(..., min_length=1, max_length=256)
+
+    @app.post("/infer-batch")
+    def infer_batch(req: InferBatchRequest):
+        """Lote de oraciones en un forward por bloque (ruta de alto volumen: < 20 ms/oración)."""
+        engine, _ = get_engine_and_tokenizer()
+        if engine is None:
+            return {"status": "error", "detail": "Motor BETO no disponible", "resultados": []}
+        t0 = time.perf_counter()
+        resultados = engine.extraer_lote(req.textos)
+        total_ms = (time.perf_counter() - t0) * 1000.0
+        return {
+            "status": "success",
+            "n_textos": len(req.textos),
+            "latency_ms_total": round(total_ms, 2),
+            "latency_ms_por_oracion": round(total_ms / len(req.textos), 2),
+            "resultados": [
+                {
+                    "texto": r.texto,
+                    "entities": [
+                        {
+                            "text": e.valor,
+                            "type": e.tipo.value if hasattr(e.tipo, "value") else str(e.tipo),
+                            "start": e.start_char,
+                            "end": e.end_char,
+                            "score": min(0.99, round(float(e.score), 4)),
+                            "source": e.origen,
+                        }
+                        for e in r.entidades
+                    ],
+                }
+                for r in resultados
+            ],
+        }
 
     @app.get("/health")
     def health():
@@ -438,7 +475,7 @@ class _InferenceHTTPHandler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0"))
             data = json.loads(self.rfile.read(length).decode("utf-8") or "{}") if length > 0 else {}
             self._send_json(200, {"indices": calcular_indices(data.get("textos") or [])})
-        elif self.path.startswith("/infer"):
+        elif self.path.split("?")[0].rstrip("/") == "/infer":
             length = int(self.headers.get("Content-Length", "0"))
             raw = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
             try:
@@ -446,6 +483,9 @@ class _InferenceHTTPHandler(BaseHTTPRequestHandler):
             except Exception:
                 data = {}
             text = data.get("text", "")
+            if not str(text).strip():
+                self._send_json(422, {"detail": "El campo 'text' es obligatorio y no puede estar vacío."})
+                return
             result = ejecutar_inferencia_beto(text)
             self._send_json(200, result)
         else:

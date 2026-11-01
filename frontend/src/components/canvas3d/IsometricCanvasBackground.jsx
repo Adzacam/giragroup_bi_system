@@ -47,6 +47,13 @@ export default function IsometricCanvasBackground() {
     let animationId;
     let isRunning = false;
 
+    // Ahorro de energía: con movimiento reducido, Save-Data o batería baja (<= 20 % sin cargar)
+    // se pinta un único cuadro estático y el loop no se reprograma.
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let ahorroBateria = false;
+    let bateria = null;
+    const modoEstatico = () => motionQuery.matches || navigator.connection?.saveData === true || ahorroBateria;
+
     const render = () => {
       if (document.hidden) {
         isRunning = false;
@@ -107,7 +114,7 @@ export default function IsometricCanvasBackground() {
       }
       
       ctx.restore();
-      if (!document.hidden) {
+      if (!document.hidden && !modoEstatico()) {
         animationId = requestAnimationFrame(render);
         isRunning = true;
       } else {
@@ -116,13 +123,25 @@ export default function IsometricCanvasBackground() {
     };
 
     const handleVisibilityChange = () => {
-      if (!document.hidden && !isRunning) {
+      if (!document.hidden && !isRunning && !modoEstatico()) {
         isRunning = true;
         animationId = requestAnimationFrame(render);
       }
     };
 
+    const actualizarBateria = () => {
+      ahorroBateria = !bateria.charging && bateria.level <= 0.2;
+      handleVisibilityChange();
+    };
+    navigator.getBattery?.().then((b) => {
+      bateria = b;
+      b.addEventListener('levelchange', actualizarBateria);
+      b.addEventListener('chargingchange', actualizarBateria);
+      actualizarBateria();
+    }).catch(() => {});
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    motionQuery.addEventListener('change', handleVisibilityChange);
     isRunning = true;
     animationId = requestAnimationFrame(render);
 
@@ -130,6 +149,9 @@ export default function IsometricCanvasBackground() {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      motionQuery.removeEventListener('change', handleVisibilityChange);
+      bateria?.removeEventListener('levelchange', actualizarBateria);
+      bateria?.removeEventListener('chargingchange', actualizarBateria);
       cancelAnimationFrame(animationId);
       isRunning = false;
     };

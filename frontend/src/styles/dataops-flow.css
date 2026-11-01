@@ -708,3 +708,28 @@
   color: #064E3B;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
 }
+
+/* Leyenda de atajos de la Bandeja HITL (oculta en táctil: allí no hay teclado físico) */
+.hitl-atajos {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--color-slate-gray);
+}
+.hitl-atajos kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 1px 5px;
+  border: 1px solid var(--color-border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--color-paper-white);
+}
+@media (hover: none) and (pointer: coarse) {
+  .hitl-atajos {
+    display: none;
+  }
+}

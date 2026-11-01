@@ -8,18 +8,11 @@ import useKineticScroll from '../../hooks/useKineticScroll';
 import ProfileModal from '../../components/profile/ProfileModal';
 import { sileoToast } from '../../services/sileoToast';
 
-const FALLBACK_USERS = [
-  { id: 1, username: 'admin_general', email: 'dazaadriano12@gmail.com', role: 'ADMIN', is_active: true },
-  { id: 2, username: 'auditor_dataops', email: 'dazaadrianoc@gmail.com', role: 'AUDITOR_CALIDAD', is_active: true },
-  { id: 3, username: 'dir_academica', email: 'direccion.academica@giragroup.bo', role: 'DIRECTOR_ACADEMICO', is_active: true },
-  { id: 4, username: 'analista_fin', email: 'dazwebos@gmail.com', role: 'ANALISTA_FINANCIERO', is_active: true },
-];
-
 export default function GestionUsuarios() {
   useKineticScroll();
   const { user: currentUser } = useAuth();
 
-  const [users, setUsers] = useState(FALLBACK_USERS);
+  const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');

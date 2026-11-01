@@ -143,6 +143,10 @@ export default function ProyeccionFinanciera() {
 
   const mesAct = macroData?.caso3_metas_mensuales?.mes_actual;
   const anualAct = macroData?.caso4_metas_anuales;
+  // Sin dato del backend se muestra "—": nunca una cifra de relleno
+  const sinDato = (v) => v === null || v === undefined || Number.isNaN(Number(v));
+  const bs = (v) => (sinDato(v) ? '—' : Math.round(Number(v)).toLocaleString('es-BO'));
+  const pct = (v) => (sinDato(v) ? '—' : `${v}%`);
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', paddingBottom: '70px' }}>
@@ -188,28 +192,28 @@ export default function ProyeccionFinanciera() {
         <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Cierre Proyectado HW</div>
           <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px', color: 'var(--color-gira-gold)' }}>
-            Bs. {mesAct ? Math.round(mesAct.cierre_proyectado_hw_bs).toLocaleString() : '1,510,800'}
+            Bs. {bs(mesAct?.cierre_proyectado_hw_bs)}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--color-alert-green)', marginTop: '2px', fontWeight: 600 }}>
-            {mesAct?.cumplimiento_proyectado_pct || 97.4}% de cumplimiento estimado
+            {pct(mesAct?.cumplimiento_proyectado_pct)} de cumplimiento estimado
           </div>
         </div>
 
         <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Meta Anual Institucional</div>
-          <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px' }}>Bs. 3,800,000</div>
+          <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px' }}>Bs. {bs(anualAct?.meta_anual_institucional_bs)}</div>
           <div style={{ fontSize: '12px', color: 'var(--color-gira-gold)', marginTop: '2px', fontWeight: 600 }}>
-            {anualAct?.porcentaje_avance_meta || 79.2}% ejecutado a la fecha
+            {pct(anualAct?.porcentaje_avance_meta)} ejecutado a la fecha
           </div>
         </div>
 
         <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Ritmo de Crecimiento OLS</div>
           <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px', color: 'var(--color-alert-green)' }}>
-            +Bs. {anualAct ? Math.round(anualAct.pendiente_anual_bs / 1000) : 2436}k / año
+            +Bs. {sinDato(anualAct?.pendiente_anual_bs) ? '—' : Math.round(anualAct.pendiente_anual_bs / 1000)}k / año
           </div>
           <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>
-            CAGR Interanual: +{anualAct?.cagr_historico_pct || 26.8}%
+            CAGR Interanual: {pct(anualAct?.cagr_historico_pct)}
           </div>
         </div>
       </div>

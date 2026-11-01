@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { invalidateDataopsCache } from '../api/dataopsApi';
 import { clearKpiMemoryCache } from '../api/kpiApi';
+import { limpiarCacheApi } from '../services/pwa';
 
 const AuthContext = createContext(null);
 
@@ -9,13 +10,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const stored = localStorage.getItem('gira_user');
       if (!stored) return null;
-      const parsed = JSON.parse(stored);
-      // Auto-migración si el navegador tenía la sesión previa del mock inicial
-      if (parsed?.role === 'Demo User' || parsed?.role === 'DEMO USER') {
-        parsed.role = 'ADMIN';
-        localStorage.setItem('gira_user', JSON.stringify(parsed));
-      }
-      return parsed;
+      return JSON.parse(stored);
     } catch {
       return null;
     }
@@ -43,6 +38,7 @@ export const AuthProvider = ({ children }) => {
     // Limpieza de todos los cachés en memoria para prevenir retención de datos entre sesiones
     invalidateDataopsCache();
     clearKpiMemoryCache();
+    limpiarCacheApi();
     setToken(null);
     setUser(null);
   }, []);

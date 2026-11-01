@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import BatchFlowLayout from './components/BatchFlowLayout';
 import { dataopsApi } from '../../api/dataopsApi';
+import { sileo } from 'sileo';
 import { sileoToast } from '../../services/sileoToast';
 
 export default function HumanReviewFlowView() {
@@ -181,72 +182,128 @@ export default function HumanReviewFlowView() {
     });
   }, [queueItems, selectedArea, selectedReason]);
 
-  // Resolver caso individual: Aprobar y Consolidar
-  const handleResolveApprove = async () => {
-    if (!selectedItem) return;
-    const currentId = selectedItem.id;
+  // Aprobación diferida (Heurística 3, control y libertad): la API se llama a los 10 s y
+  // mientras tanto el toast ofrece "Deshacer". Al salir de la vista se envían las pendientes.
+  const DESHACER_MS = 10000;
+  const aprobacionesPendientes = useRef(new Map());
+  const campoEstudianteRef = useRef(null);
 
+  useEffect(() => () => {
+    aprobacionesPendientes.current.forEach(({ timer, enviar }) => {
+      clearTimeout(timer);
+      enviar();
+    });
+  }, []);
+
+  const enviarAprobacion = async (item, payload, estudiante) => {
+    aprobacionesPendientes.current.delete(item.id);
     try {
-      const payload = {
-        accion: 'APROBAR',
-        estudiante_resuelto: formEstudiante.trim(),
-        ci_corregida: formCi.trim(),
-        modulo_resuelto: formModulo.trim(),
-        nota_final: formNota ? parseFloat(formNota) : undefined,
-        monto_deuda: formMonto ? parseFloat(formMonto) : undefined,
-        cuotas_impagas: formCuotas ? parseInt(formCuotas, 10) : undefined,
-        nota_auditor: formNotaAuditor.trim(),
-        mes: formMes ? parseInt(formMes, 10) : undefined,
-        gestion: formGestion ? parseInt(formGestion, 10) : undefined
-      };
-
-      await dataopsApi.resolveReviewItem(currentId, payload);
-
-      sileoToast.success({
-        title: `Caso #${currentId} aprobado y consolidado`,
-        description: `${formEstudiante || 'Estudiante'} verificado e insertado en el Data Warehouse.`
-      });
-
-      // Mover a resueltos localmente
+      await dataopsApi.resolveReviewItem(item.id, payload);
       setResolvedHistory(prev => [
         {
-          id: currentId,
+          id: item.id,
           quien: 'Auditor Calidad (Tú)',
           cuando: 'Recién resuelto',
-          antes: selectedItem.que_vio,
-          despues: formEstudiante || selectedItem.sugerencia,
-          motivo: selectedItem.motivo_label,
+          antes: item.que_vio,
+          despues: estudiante || item.sugerencia,
+          motivo: item.motivo_label,
           accion: 'RESUELTO_HUMANO'
         },
         ...prev
       ]);
-
-      const updatedQueue = queueItems.filter(q => q.id !== currentId);
-      setQueueItems(updatedQueue);
-
-      // Actualizar contadores
       setAprobadosResumen(prev => ({
         ...prev,
         total_aprobados: prev.total_aprobados + 1,
-        fact_rendimiento_academico: selectedItem.area === 'academica' ? prev.fact_rendimiento_academico + 1 : prev.fact_rendimiento_academico,
-        fact_situacion_financiera: selectedItem.area === 'financiera' ? prev.fact_situacion_financiera + 1 : prev.fact_situacion_financiera,
+        fact_rendimiento_academico: item.area === 'academica' ? prev.fact_rendimiento_academico + 1 : prev.fact_rendimiento_academico,
+        fact_situacion_financiera: item.area === 'financiera' ? prev.fact_situacion_financiera + 1 : prev.fact_situacion_financiera,
       }));
-
-      // Seleccionar el siguiente ítem
-      const nextItem = updatedQueue.find(q => q.id !== currentId);
-      if (nextItem) {
-        selectItemForEdit(nextItem);
-      } else {
-        setSelectedItem(null);
-      }
     } catch (err) {
       console.error('Error resolviendo caso:', err);
+      setQueueItems(prev => (prev.some(q => q.id === item.id) ? prev : [item, ...prev]));
       sileoToast.error({
-        title: 'Error al consolidar caso',
-        description: err.response?.data?.detail || err.message || 'No se pudo consolidar el registro.'
+        title: `Caso #${item.id} no se consolidó`,
+        description: err.response?.data?.detail || err.message || 'Volvió a la bandeja.'
       });
     }
   };
+
+  // Resolver caso individual: Aprobar y Consolidar
+  const handleResolveApprove = () => {
+    if (!selectedItem) return;
+    const item = selectedItem;
+    const estudiante = formEstudiante.trim();
+    const payload = {
+      accion: 'APROBAR',
+      estudiante_resuelto: estudiante,
+      ci_corregida: formCi.trim(),
+      modulo_resuelto: formModulo.trim(),
+      nota_final: formNota ? parseFloat(formNota) : undefined,
+      monto_deuda: formMonto ? parseFloat(formMonto) : undefined,
+      cuotas_impagas: formCuotas ? parseInt(formCuotas, 10) : undefined,
+      nota_auditor: formNotaAuditor.trim(),
+      mes: formMes ? parseInt(formMes, 10) : undefined,
+      gestion: formGestion ? parseInt(formGestion, 10) : undefined
+    };
+
+    const indice = queueItems.findIndex(q => q.id === item.id);
+    const updatedQueue = queueItems.filter(q => q.id !== item.id);
+    setQueueItems(updatedQueue);
+    const nextItem = updatedQueue[0];
+    if (nextItem) {
+      selectItemForEdit(nextItem);
+    } else {
+      setSelectedItem(null);
+    }
+
+    const enviar = () => enviarAprobacion(item, payload, estudiante);
+    const timer = setTimeout(enviar, DESHACER_MS);
+    aprobacionesPendientes.current.set(item.id, { timer, enviar });
+
+    const toastId = sileoToast.action({
+      title: `Caso #${item.id} aprobado`,
+      description: `${estudiante || 'Estudiante'} se consolidará en el Data Warehouse en 10 s.`,
+      duration: DESHACER_MS,
+      button: {
+        title: 'Deshacer',
+        onClick: () => {
+          clearTimeout(timer);
+          aprobacionesPendientes.current.delete(item.id);
+          setQueueItems(prev => {
+            const copia = prev.filter(q => q.id !== item.id);
+            copia.splice(Math.max(indice, 0), 0, item);
+            return copia;
+          });
+          selectItemForEdit(item);
+          sileo.dismiss(toastId);
+        }
+      }
+    });
+  };
+
+  // Atajos de teclado de la bandeja: A aprobar, E editar, J siguiente, K anterior
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || isDiscardModalOpen || isCatalogModalOpen) return;
+      const destino = e.target;
+      if (destino?.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(destino?.tagName)) return;
+      const tecla = e.key.toLowerCase();
+      if (tecla === 'j' || tecla === 'k') {
+        if (!filteredQueue.length) return;
+        const actual = filteredQueue.findIndex(q => q.id === selectedItem?.id);
+        const siguiente = tecla === 'j' ? actual + 1 : actual - 1;
+        e.preventDefault();
+        selectItemForEdit(filteredQueue[Math.max(0, Math.min(siguiente, filteredQueue.length - 1))]);
+      } else if (tecla === 'a' && selectedItem) {
+        e.preventDefault();
+        handleResolveApprove();
+      } else if (tecla === 'e' && selectedItem) {
+        e.preventDefault();
+        campoEstudianteRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  });
 
   // Descartar registro
   const handleConfirmDiscard = async () => {
@@ -754,6 +811,8 @@ export default function HumanReviewFlowView() {
                         <input
                           type="text"
                           className="dataops-input"
+                          ref={campoEstudianteRef}
+                          aria-keyshortcuts="E"
                           value={formEstudiante}
                           onChange={(e) => setFormEstudiante(e.target.value)}
                         />
@@ -896,10 +955,15 @@ export default function HumanReviewFlowView() {
                         className="thumb-action-btn approve"
                         onClick={handleResolveApprove}
                         aria-label="Aprobar caso"
+                        aria-keyshortcuts="A"
                       >
                         <CheckCircle2 size={19} /> ✅ Aprobar
                       </button>
                     </div>
+                    <p className="hitl-atajos" aria-label="Atajos de teclado">
+                      <Keyboard size={13} aria-hidden="true" />
+                      <kbd>A</kbd> aprobar · <kbd>E</kbd> editar · <kbd>J</kbd>/<kbd>K</kbd> siguiente/anterior · deshacer 10 s
+                    </p>
                   </div>
                 </div>
               </div>

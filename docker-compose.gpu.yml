@@ -1,0 +1,12 @@
+# Override opcional: inferencia BETO en GPU NVIDIA (requiere drivers + soporte GPU de Docker/WSL2).
+# Medido en RTX 5060 Laptop sobre data/test_gold_real.jsonl: 7,8 ms/oración frente a 31,6 en CPU, mismo F1 (0,973).
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d pipeline
+services:
+  pipeline:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

@@ -51,10 +51,16 @@ def _cargar_modelo():
     if _MODELO is None:
         from transformers import BertForTokenClassification, BertTokenizerFast
         from pipeline.config import MODELO_BETO_CACHE_DIR
+        from pipeline.semantic.ner_engine import configurar_hilos_torch
+
+        configurar_hilos_torch()
 
         _TOKENIZER = BertTokenizerFast.from_pretrained(str(MODELO_BETO_CACHE_DIR))
         _MODELO = BertForTokenClassification.from_pretrained(str(MODELO_BETO_CACHE_DIR))
         _MODELO.eval()
+        import torch
+        if torch.cuda.is_available():  # con docker-compose.gpu.yml: ~4x más rápido, mismo resultado
+            _MODELO.to("cuda")
     return _MODELO, _TOKENIZER
 
 
@@ -72,7 +78,8 @@ def calcular_indices(textos: List[str]) -> List[float]:
         lote = textos[i:i + BATCH_SIZE]
         inputs = tokenizer(lote, return_tensors="pt", padding=True, truncation=True, max_length=MAX_LENGTH_TOKENS)
         with torch.no_grad():
-            probs = torch.softmax(modelo(**inputs).logits, dim=-1)
+            en_dispositivo = {k: v.to(modelo.device) for k, v in inputs.items()}
+            probs = torch.softmax(modelo(**en_dispositivo).logits, dim=-1).cpu()
 
         for b_idx, texto in enumerate(lote):
             p_matrix = probs[b_idx]

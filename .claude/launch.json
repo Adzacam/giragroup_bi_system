@@ -1,0 +1,13 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web-preview-pwa",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--no-install", "vite", "preview", "--port", "4173", "--strictPort"],
+      "cwd": "frontend",
+      "env": { "VITE_API_TARGET": "http://localhost" },
+      "port": 4173
+    }
+  ]
+}

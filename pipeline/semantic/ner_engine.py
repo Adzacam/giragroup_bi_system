@@ -7,6 +7,7 @@ y desambiguación de entidades académicas y financieras con agregación de subt
 (wordpiece aggregation) y telemetría de inferencia.
 """
 
+import os
 import re
 import time
 import logging
@@ -18,6 +19,24 @@ try:
 except (ImportError, Exception):
     torch = None
     pipeline = None
+
+
+def configurar_hilos_torch() -> None:
+    """
+    Sin límite, PyTorch abre un hilo por núcleo del host (24 en WSL) aunque el contenedor
+    disponga de menos CPU, y los hilos compiten entre sí: medido 1 162 ms por forward
+    con 24 hilos frente a 53 ms con 4. TORCH_NUM_THREADS ajusta el valor por entorno.
+    """
+    if torch is None:
+        return
+    torch.set_num_threads(int(os.getenv("TORCH_NUM_THREADS", "4")))
+    try:
+        torch.set_num_interop_threads(1)
+    except RuntimeError:
+        pass  # solo se puede fijar antes del primer trabajo paralelo
+
+
+configurar_hilos_torch()
 
 from pipeline.config import (
     MODELO_BETO_NOMBRE,
@@ -127,6 +146,13 @@ class BetoNEREngine:
                 aggregation_strategy="simple",
                 device=self.device_id
             )
+            # BETO_INT8=1: cuantización dinámica int8 de las capas lineales (solo CPU).
+            # Opt-in: validar el F1 sobre data/test_gold_real.jsonl antes de activarla.
+            if os.getenv("BETO_INT8", "0") == "1" and self.device_id < 0:
+                self._nlp_pipeline.model = torch.ao.quantization.quantize_dynamic(
+                    self._nlp_pipeline.model, {torch.nn.Linear}, dtype=torch.qint8
+                )
+                logger.info("Modelo NER cuantizado a int8 (BETO_INT8=1).")
             duracion = time.time() - t0
             logger.info(f"Modelo cargado exitosamente en {duracion:.2f}s.")
         except Exception as e:
@@ -162,13 +188,27 @@ class BetoNEREngine:
         t_inicio = time.perf_counter()
 
         # 1. Inferencia con Modelo BETO si está disponible
-        entidades_beto = []
+        predicciones = None
         if self._nlp_pipeline is not None:
             try:
                 predicciones = self._nlp_pipeline(texto_limpio)
-                entidades_beto = self._procesar_predicciones_beto(texto_limpio, predicciones)
             except Exception as err:
                 logger.error(f"Error durante inferencia BETO sobre '{texto_limpio[:50]}...': {err}")
+        return self._construir_resultado(texto_limpio, predicciones, t_inicio)
+
+    def _construir_resultado(
+        self,
+        texto_limpio: str,
+        predicciones: Optional[List[Dict[str, Any]]],
+        t_inicio: float
+    ) -> ResultadoInferenciaNER:
+        """Reglas, consolidación y gazetteer sobre las predicciones de BETO de una oración."""
+        entidades_beto = []
+        if predicciones is not None:
+            try:
+                entidades_beto = self._procesar_predicciones_beto(texto_limpio, predicciones)
+            except Exception as err:
+                logger.error(f"Error procesando predicciones BETO de '{texto_limpio[:50]}...': {err}")
 
         # 2. Extracción complementaria con reglas semánticas de dominio (regex)
         entidades_reglas = self._extraer_entidades_por_reglas(texto_limpio)
@@ -206,8 +246,26 @@ class BetoNEREngine:
         resultados: List[ResultadoInferenciaNER] = []
         for i in range(0, len(textos), batch_size):
             chunk = textos[i : i + batch_size]
+            validos = [str(t).strip() for t in chunk if t and str(t).strip()]
+            # Un solo forward por bloque: con lotes el costo baja a ~17 ms/oración (frente a ~53 ms sueltas)
+            por_texto: Dict[str, Any] = {}
+            if self._nlp_pipeline is not None and validos:
+                t_lote = time.perf_counter()
+                try:
+                    salida = self._nlp_pipeline(validos, batch_size=len(validos))
+                    por_texto = dict(zip(validos, salida))
+                except Exception as err:
+                    logger.error(f"Error durante inferencia BETO por lote: {err}")
+                t_por_oracion = (time.perf_counter() - t_lote) / len(validos)
             for t in chunk:
-                resultados.append(self.extraer_entidades(t))
+                if not t or not str(t).strip():
+                    resultados.append(self.extraer_entidades(t))
+                    continue
+                limpio = str(t).strip()
+                # El tiempo de cada oración incluye su parte proporcional del forward compartido
+                resultados.append(self._construir_resultado(
+                    limpio, por_texto.get(limpio), time.perf_counter() - (t_por_oracion if por_texto else 0.0)
+                ))
 
         t_total_ms = (time.perf_counter() - t_inicio) * 1000.0
         try:

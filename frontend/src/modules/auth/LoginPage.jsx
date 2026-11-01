@@ -612,11 +612,14 @@ export default function LoginPage() {
             </div>
 
             {/* [▾] Rol de Acceso (Validado) Acordeón al Fondo Absoluto */}
-            <DemoAccountsSelector
-              currentEmail={email}
-              onSelectAccount={handleSelectAccount}
-              defaultOpen={false}
-            />
+            {/* Cuentas de demostración solo en desarrollo: nunca en el build de producción */}
+            {import.meta.env.DEV && (
+              <DemoAccountsSelector
+                currentEmail={email}
+                onSelectAccount={handleSelectAccount}
+                defaultOpen={false}
+              />
+            )}
           </div>
         </div>
 

@@ -133,13 +133,7 @@ export const catalogApi = {
       return res.data;
     } catch (err) {
       console.warn('Fallback institutional summary:', err.message);
-      return {
-        status: 'success',
-        total_programas_activos: 18,
-        sin_pii: true,
-        programas: [],
-        mensaje: 'Catálogo Maestro Institucional Estático Oficial (Zero PII Compliance)'
-      };
+      return { status: 'error', total_programas_activos: 0, sin_pii: true, programas: [] };
     }
   }
 };

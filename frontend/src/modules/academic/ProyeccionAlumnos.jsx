@@ -250,7 +250,7 @@ export default function ProyeccionAlumnos() {
               Tendencia Lineal OLS
             </label>
             <div style={{ padding: '8px 12px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)', fontSize: '13px', fontWeight: 700, color: 'var(--color-alert-green)' }}>
-              +{macroData?.caso1_demanda_global?.pendiente_ols_mes || 5.75} alumnos / mes
+              {macroData?.caso1_demanda_global?.pendiente_ols_mes ?? '—'} alumnos / mes
             </div>
           </div>
 
@@ -259,7 +259,7 @@ export default function ProyeccionAlumnos() {
               Precisión del Modelo (MAPE / RMSE)
             </label>
             <div style={{ padding: '8px 12px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)', fontSize: '13px', fontWeight: 600, color: 'var(--color-slate-gray)' }}>
-              MAPE: {macroData?.caso1_demanda_global?.mape_pct || 6.4}% · RMSE: {macroData?.caso1_demanda_global?.rmse || 135.1}
+              MAPE: {macroData?.caso1_demanda_global?.mape_pct ?? '—'}% · RMSE: {macroData?.caso1_demanda_global?.rmse ?? '—'}
             </div>
           </div>
         </div>

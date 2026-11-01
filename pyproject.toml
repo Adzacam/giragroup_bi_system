@@ -19,7 +19,8 @@ filterwarnings = [
 ]
 markers = [
     "sprint2: Pruebas de ingesta, detección de bloques tabulares y categorización universal (Sprint 2)",
-    "sprint3: Pruebas de PLN, BETO NER, catálogos 3NF, RapidFuzz, calidad y auditoría (Sprint 3)"
+    "sprint3: Pruebas de PLN, BETO NER, catálogos 3NF, RapidFuzz, calidad y auditoría (Sprint 3)",
+    "readiness_live: Puertas de producción contra la pila Docker en marcha (requieren variables READINESS_*)"
 ]
 
 [tool.coverage.run]

@@ -50,10 +50,13 @@ export default function MetasGestion() {
   const caso2 = macroData?.caso2_demanda_programa || macroData?.caso2_demanda_programas || {};
   const finCmi = cmiData?.financiera || cmiData?.perspectiva_financiera || {};
 
-  const metaAnual = caso4?.meta_anual_institucional_bs || caso3?.meta_anual_institucional || finCmi?.monto_meta_gestion_bs || 3800000;
-  const recaudadoAcumulado = caso4?.recaudado_acumulado_bs || caso3?.recaudado_acumulado_gestion || finCmi?.monto_total_recaudado_bs || 3480000;
-  const desviacionAcumulada = caso3?.desviacion_acumulada ?? (recaudadoAcumulado - (metaAnual * 0.9));
-  const pctCumplimiento = caso4?.porcentaje_avance_meta || caso3?.porcentaje_cumplimiento_anual || ((recaudadoAcumulado / metaAnual) * 100);
+  // Sin dato del backend se muestra "—": nunca una cifra de relleno
+  const metaAnual = caso4?.meta_anual_institucional_bs || caso3?.meta_anual_institucional || finCmi?.monto_meta_gestion_bs || null;
+  const recaudadoAcumulado = caso4?.recaudado_acumulado_bs || caso3?.recaudado_acumulado_gestion || finCmi?.monto_total_recaudado_bs || null;
+  const desviacionAcumulada = caso3?.desviacion_acumulada ?? (metaAnual && recaudadoAcumulado !== null ? recaudadoAcumulado - (metaAnual * 0.9) : null);
+  const pctCumplimiento = caso4?.porcentaje_avance_meta || caso3?.porcentaje_cumplimiento_anual || (metaAnual && recaudadoAcumulado !== null ? (recaudadoAcumulado / metaAnual) * 100 : null);
+  const hayCumplimiento = pctCumplimiento !== null;
+  const hayDesviacion = desviacionAcumulada !== null;
 
   const mesesComparativo = useMemo(() => {
     if (Array.isArray(caso3?.comparativo) && caso3.comparativo.length > 0) {
@@ -73,7 +76,7 @@ export default function MetasGestion() {
   const matrizViabilidad = useMemo(() => caso2?.matriz_viabilidad || [], [caso2]);
 
   const formatBs = (num) => {
-    if (num === undefined || num === null || isNaN(num)) return 'Bs. 0';
+    if (num === undefined || num === null || isNaN(num)) return '—';
     return `Bs. ${Number(num).toLocaleString('es-BO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
@@ -144,21 +147,21 @@ export default function MetasGestion() {
             <KpiCard
               label="Recaudación Acumulada"
               number={formatBs(recaudadoAcumulado)}
-              sublabel={`${pctCumplimiento.toFixed(1)}% de cumplimiento sobre meta anual`}
-              badgeText={pctCumplimiento >= 90 ? "En Trayectoria" : "En Riesgo"}
-              badgeType={pctCumplimiento >= 90 ? "success" : "alert"}
+              sublabel={hayCumplimiento ? `${pctCumplimiento.toFixed(1)}% de cumplimiento sobre meta anual` : 'Sin datos de meta o recaudación'}
+              badgeText={!hayCumplimiento ? "Sin datos" : pctCumplimiento >= 90 ? "En Trayectoria" : "En Riesgo"}
+              badgeType={!hayCumplimiento ? "neutral" : pctCumplimiento >= 90 ? "success" : "alert"}
             />
             <KpiCard
               label="Desviación Presupuestaria"
-              number={(desviacionAcumulada >= 0 ? '+' : '') + formatBs(desviacionAcumulada)}
-              sublabel={desviacionAcumulada >= 0 ? "Superávit frente a proyección lineal" : "Déficit frente a proyección"}
-              badgeText={desviacionAcumulada >= 0 ? "Favorable" : "Desfavorable"}
-              badgeType={desviacionAcumulada >= 0 ? "success" : "alert"}
+              number={hayDesviacion ? (desviacionAcumulada >= 0 ? '+' : '') + formatBs(desviacionAcumulada) : '—'}
+              sublabel={!hayDesviacion ? "Sin datos de meta o recaudación" : desviacionAcumulada >= 0 ? "Superávit frente a proyección lineal" : "Déficit frente a proyección"}
+              badgeText={!hayDesviacion ? "Sin datos" : desviacionAcumulada >= 0 ? "Favorable" : "Desfavorable"}
+              badgeType={!hayDesviacion ? "neutral" : desviacionAcumulada >= 0 ? "success" : "alert"}
             />
             <KpiCard
               label="Programas en Meta / Viables"
               number={matrizViabilidad.filter(p => p.decision_estrategica !== 'DESCARTAR / REESTRUCTURAR').length.toString()}
-              numberSuffix={` / ${matrizViabilidad.length || 18}`}
+              numberSuffix={` / ${matrizViabilidad.length}`}
               sublabel="Programas con viabilidad operativa alta/media"
               badgeText="Catálogo Activo"
               badgeType="neutral"
