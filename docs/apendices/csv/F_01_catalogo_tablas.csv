@@ -15,12 +15,14 @@
 14,dim_meta,Dimensión,Metas presupuestarias mensuales por categoría,5,45
 15,cat_institucion,Dimensión,Instituciones del grupo a las que pertenecen estudiantes y módulos,5,4
 16,cat_categoria_financiera,Dimensión,Catálogo estándar de categorías financieras (códigos de ingreso y egreso),5,5
-17,staging_registros_crudos,Staging,Bloques y filas extraídos de cada documento antes de cargarse al almacén,20,15
-18,stg_entidad_no_resuelta,Staging,Entidades que no se pudieron enlazar a una dimensión y esperan revisión humana (HITL),21,150
-19,log_pipeline_ingesta,Log,Bitácora de cada etapa del pipeline de ingesta por documento,9,51
-20,log_inconsistencias,Log,Registro de reglas de calidad incumplidas por documento y fila,13,0
-21,log_auditoria_nlp,Log,Correcciones humanas a predicciones del modelo BETO,7,0
-22,schema_migrations,Log,Migraciones SQL versionadas ya aplicadas a la base,2,3
-23,users,Transaccional,Usuarios del sistema con su rol RBAC y estado de autenticación,14,7
-24,notifications,Transaccional,Notificaciones y alertas enviadas a usuarios o roles,10,10
-25,lote,Transaccional,Lotes de carga multi-archivo por institución y periodo,6,1
+17,cat_docente,Dimensión,Un registro por docente del catálogo institucional al que se enlaza dim_docente,5,0
+18,cat_modulo,Dimensión,Un registro por módulo del catálogo institucional al que se enlaza dim_modulo,5,0
+19,staging_registros_crudos,Staging,Bloques y filas extraídos de cada documento antes de cargarse al almacén,20,15
+20,stg_entidad_no_resuelta,Staging,Entidades que no se pudieron enlazar a una dimensión y esperan revisión humana (HITL),21,150
+21,log_pipeline_ingesta,Log,Bitácora de cada etapa del pipeline de ingesta por documento,9,51
+22,log_inconsistencias,Log,Registro de reglas de calidad incumplidas por documento y fila,13,0
+23,log_auditoria_nlp,Log,Correcciones humanas a predicciones del modelo BETO,7,0
+24,schema_migrations,Log,Migraciones SQL versionadas ya aplicadas a la base,2,3
+25,users,Transaccional,Usuarios del sistema con su rol RBAC y estado de autenticación,14,7
+26,notifications,Transaccional,Notificaciones y alertas enviadas a usuarios o roles,10,10
+27,lote,Transaccional,Lotes de carga multi-archivo por institución y periodo,6,1

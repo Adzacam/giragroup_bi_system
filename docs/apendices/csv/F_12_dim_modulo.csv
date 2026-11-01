@@ -5,6 +5,6 @@ nombre_institucion,VARCHAR(200),NO,DEFAULT 'GiraGroup Posgrado',Nombre de la ins
 id_institucion,INTEGER,SÍ,FK → cat_institucion(id_institucion) ON DELETE SET NULL,Institución que dicta el módulo
 programa,VARCHAR(200),SÍ,DEFAULT 'General',Programa al que pertenece el módulo
 pos_code,VARCHAR(50),SÍ,—,Código del programa (POS-…; ADM-GEN para administración general)
-id_cat_modulo,INTEGER,SÍ,—,Módulo equivalente en el catálogo institucional (cat_modulo)
+id_cat_modulo,INTEGER,SÍ,FK → cat_modulo(id_modulo) ON DELETE NO ACTION,Módulo equivalente en el catálogo institucional (cat_modulo)
 
 Indices,dim_modulo_pkey (id_modulo) [PK]

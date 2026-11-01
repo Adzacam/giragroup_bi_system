@@ -1,0 +1,16 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_inconsistencia,SERIAL,NO,PK,Identificador de la inconsistencia
+id_documento,INTEGER,SÍ,FK → dim_origen_documental(id_documento) ON DELETE CASCADE,Documento en el que se detectó la inconsistencia
+fila_origen,INTEGER,SÍ,—,Fila del documento con la inconsistencia
+campo_afectado,VARCHAR(100),NO,—,Campo que no cumple la regla
+valor_recibido,TEXT,SÍ,—,Valor encontrado en la fuente
+valor_esperado,TEXT,SÍ,—,Valor o formato esperado
+tipo_regla,VARCHAR(50),NO,—,Por documentar
+severidad,VARCHAR(20),NO,DEFAULT 'ALTA',Por documentar (por defecto ALTA)
+estado_resolucion,VARCHAR(30),NO,DEFAULT 'BLOQUEADO',Por documentar (por defecto BLOQUEADO)
+descripcion,TEXT,SÍ,—,Detalle de la inconsistencia
+detectado_en,TIMESTAMP,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora de detección
+resuelto_en,TIMESTAMP,SÍ,—,Fecha y hora de la resolución
+resuelto_por,INTEGER,SÍ,FK → users(id) ON DELETE SET NULL,Usuario que resolvió la inconsistencia
+
+Indices,idx_log_inconsistencias_doc (id_documento); idx_log_inconsistencias_estado (estado_resolucion); log_inconsistencias_pkey (id_inconsistencia) [PK]

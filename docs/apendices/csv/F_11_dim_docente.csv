@@ -2,6 +2,6 @@
 id_docente,SERIAL,NO,PK,Identificador del docente en el almacén
 nombre_completo,VARCHAR(200),NO,DEFAULT 'Docente Generico',Nombre completo del docente (Docente Generico si la fuente no lo trae)
 area_especialidad,VARCHAR(200),SÍ,DEFAULT 'Generico',Área de especialidad del docente
-id_cat_docente,INTEGER,SÍ,—,Docente equivalente en el catálogo institucional (cat_docente)
+id_cat_docente,INTEGER,SÍ,FK → cat_docente(id_docente) ON DELETE NO ACTION,Docente equivalente en el catálogo institucional (cat_docente)
 
 Indices,dim_docente_pkey (id_docente) [PK]

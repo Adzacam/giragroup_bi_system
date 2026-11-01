@@ -1,0 +1,13 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id,SERIAL,NO,PK,Identificador de la notificación
+user_id,INTEGER,SÍ,FK → users(id) ON DELETE NO ACTION,Usuario destinatario (vacío si se dirige a un rol)
+role_target,VARCHAR(50),SÍ,—,"Rol destinatario: ADMIN, AUDITOR_CALIDAD, DIRECTOR_ACADEMICO, ANALISTA_FINANCIERO"
+title,VARCHAR(200),NO,—,Título de la notificación
+message,TEXT,NO,—,Texto de la notificación
+category,VARCHAR(50),NO,—,"Origen: DataOps, Predictivo o tipo de alerta (ACADEMICO, DESERCION, FINANCIERO, RIESGO_CRUZADO, DATAOPS_CALIDAD)"
+severity,VARCHAR(20),NO,—,"Severidad: INFO, SUCCESS, WARNING, CRITICAL"
+is_read,BOOLEAN,SÍ,DEFAULT false,Indica si el destinatario ya la leyó
+link,VARCHAR(255),SÍ,—,Ruta de la pantalla relacionada con la notificación
+created_at,TIMESTAMPTZ,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora de emisión
+
+Indices,"idx_notifications_user_unread (user_id, is_read); notifications_pkey (id) [PK]"

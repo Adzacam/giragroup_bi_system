@@ -1,0 +1,17 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id,SERIAL,NO,PK,Identificador del usuario
+username,VARCHAR(100),NO,UNIQUE,Nombre de usuario para iniciar sesión
+hashed_password,VARCHAR(255),NO,—,Contraseña almacenada como hash
+role,VARCHAR(50),NO,"CHECK IN (ADMIN, AUDITOR_CALIDAD, DIRECTOR_ACADEMICO, ANALISTA_FINANCIERO, ANALISTA_MARKETING)","Rol RBAC: ADMIN, AUDITOR_CALIDAD, DIRECTOR_ACADEMICO, ANALISTA_FINANCIERO, ANALISTA_MARKETING"
+email,VARCHAR(150),NO,UNIQUE,"Correo del usuario, al que se envía el código OTP"
+phone,VARCHAR(30),SÍ,—,Teléfono de contacto del usuario
+is_active,BOOLEAN,SÍ,DEFAULT true,Indica si la cuenta está habilitada
+is_mfa_enabled,BOOLEAN,SÍ,DEFAULT true,Indica si se exige el segundo factor (código OTP)
+otp_code_hash,VARCHAR(255),SÍ,—,Hash del código OTP vigente
+otp_expires_at,TIMESTAMPTZ,SÍ,—,Vencimiento del código OTP vigente
+failed_login_attempts,INTEGER,SÍ,DEFAULT 0,Intentos fallidos consecutivos de inicio de sesión
+locked_until,TIMESTAMPTZ,SÍ,—,Fecha y hora hasta la que la cuenta queda bloqueada
+created_by_id,INTEGER,SÍ,FK → users(id) ON DELETE NO ACTION,Usuario administrador que creó la cuenta
+created_at,TIMESTAMPTZ,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora de creación de la cuenta
+
+Indices,users_email_key (email) [único]; users_pkey (id) [PK]; users_username_key (username) [único]

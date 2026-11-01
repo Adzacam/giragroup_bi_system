@@ -1,0 +1,8 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_docente,SERIAL,NO,PK,Identificador del docente en el catálogo
+codigo_docente,VARCHAR(50),SÍ,—,Por documentar
+nombre_canonico,VARCHAR(200),NO,—,Nombre canónico del docente en el catálogo
+area,VARCHAR(100),SÍ,DEFAULT 'Académico',Por documentar (por defecto Académico)
+nombre_completo,VARCHAR(200),SÍ,—,Por documentar
+
+Indices,cat_docente_pkey (id_docente) [PK]

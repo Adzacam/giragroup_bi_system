@@ -1,0 +1,24 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_staging,SERIAL,NO,PK,Identificador de la entidad pendiente
+id_documento,INTEGER,SÍ,FK → dim_origen_documental(id_documento) ON DELETE CASCADE,Documento en el que se detectó la entidad
+tipo_entidad,VARCHAR(50),NO,—,"Tipo de entidad no resuelta (ESTUDIANTE, RUIDO)"
+texto_original,TEXT,NO,—,Texto de la entidad tal como se extrajo
+ci_temporal,VARCHAR(150),SÍ,—,CI leído en la fuente o CI temporal asignado a la entidad
+mejor_candidato,TEXT,SÍ,—,Mejor coincidencia encontrada en la dimensión
+score_fuzzy,"NUMERIC(5,2)",SÍ,—,"Similitud difusa (RapidFuzz) con el mejor candidato, de 0 a 100"
+fk_estado,VARCHAR(1),SÍ,DEFAULT 'C',Estado de la FK; las entidades ingresan con C (no resuelto)
+nivel_confianza,"NUMERIC(5,4)",SÍ,—,Confianza del modelo BETO en la extracción del registro (0–1)
+resuelto,BOOLEAN,SÍ,DEFAULT false,Indica que la entidad ya fue resuelta
+resuelto_por,INTEGER,SÍ,FK → users(id) ON DELETE SET NULL,Auditor que resolvió la entidad
+resuelto_en,TIMESTAMP,SÍ,—,Fecha y hora de la resolución
+id_dimension_resuelta,INTEGER,SÍ,—,Estudiante (id_estudiante) asignado al resolver la entidad
+motivo,VARCHAR(100),SÍ,—,"Motivo del envío a revisión: BAJA_CONFIANZA_IA, CI_NOMBRE_DISCORDANTE, FILA_ACADEMICA_SIN_ESTUDIANTE, FILA_SIN_ENTIDAD"
+payload_json,JSONB,SÍ,—,"Fila original en JSON, para recargarla al resolver"
+registro_origen_id,INTEGER,SÍ,FK → staging_registros_crudos(id) ON DELETE CASCADE,Registro crudo del que proviene la entidad
+estado_resolucion,VARCHAR(30),SÍ,DEFAULT 'PENDIENTE',"Estado de la revisión: PENDIENTE, RESUELTO_HUMANO, DESCARTADO"
+lock_usuario_id,INTEGER,SÍ,FK → users(id) ON DELETE SET NULL,Auditor que tiene tomada la entidad mientras la revisa
+lock_expira,TIMESTAMP,SÍ,—,Vencimiento del bloqueo de revisión (5 minutos desde que se toma)
+version,INTEGER,SÍ,DEFAULT 1,Por documentar
+created_at,TIMESTAMP,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora de detección de la entidad
+
+Indices,"idx_stg_entidad_doc (id_documento); idx_stg_entidad_registro (registro_origen_id); idx_stg_entidad_resuelto (resuelto, estado_resolucion); idx_stg_no_resuelta_doc (id_documento); idx_stg_no_resuelta_estado (resuelto); idx_stg_no_resuelta_estado_res (estado_resolucion); idx_stg_no_resuelta_lock (lock_usuario_id, lock_expira); idx_stg_no_resuelta_motivo (motivo); idx_stg_no_resuelta_tipo (tipo_entidad); stg_entidad_no_resuelta_pkey (id_staging) [PK]"

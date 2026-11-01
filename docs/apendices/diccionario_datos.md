@@ -6,7 +6,7 @@ Convenciones: Nulo = SÍ si la columna admite NULL. FK → tabla(columna) con su
 
 ## Apéndice F: Almacén de datos (giragroup_db, esquema constelación)
 
-Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/migrations/001` y `V005`–`V010`. La base `giragroup_db` en ejecución se alineó con ese DDL mediante `backend/scripts/migrations/005_alinear_esquema_con_ddl.sql` y se contrastó objeto por objeto (columnas, tipos, nulos, DEFAULT, PK, UNIQUE, FK con ON DELETE, CHECK, índices, RLS y políticas): 0 diferencias en las 27 tablas. Filas: conteo en `giragroup_db` en ejecución al 01-11-2026.
+Fuente: DDL de `db/schema.sql` con las migraciones `db/migrations/001`, `V004`–`V010` y `backend/scripts/migrations/003` y `004` aplicadas sobre una base PostgreSQL 16 vacía; se contrastó contra la base `giragroup_db` en ejecución (mismas tablas y columnas; las diferencias de restricciones se listan en la nota final). Filas: conteo en `giragroup_db` en ejecución al 01-11-2026.
 
 **Tabla F.1 Catálogo de tablas**
 
@@ -28,26 +28,26 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 | 14 | dim_meta | Dimensión | Metas presupuestarias mensuales por categoría | 5 | 45 |
 | 15 | cat_institucion | Dimensión | Instituciones del grupo a las que pertenecen estudiantes y módulos | 5 | 4 |
 | 16 | cat_categoria_financiera | Dimensión | Catálogo estándar de categorías financieras (códigos de ingreso y egreso) | 5 | 5 |
-| 17 | staging_registros_crudos | Staging | Bloques y filas extraídos de cada documento antes de cargarse al almacén | 20 | 15 |
-| 18 | stg_entidad_no_resuelta | Staging | Entidades que no se pudieron enlazar a una dimensión y esperan revisión humana (HITL) | 21 | 150 |
-| 19 | log_pipeline_ingesta | Log | Bitácora de cada etapa del pipeline de ingesta por documento | 9 | 51 |
-| 20 | log_inconsistencias | Log | Registro de reglas de calidad incumplidas por documento y fila | 13 | 0 |
-| 21 | log_auditoria_nlp | Log | Correcciones humanas a predicciones del modelo BETO | 7 | 0 |
-| 22 | schema_migrations | Log | Migraciones SQL versionadas ya aplicadas a la base | 2 | 4 |
-| 23 | users | Transaccional | Usuarios del sistema con su rol RBAC y estado de autenticación | 14 | 7 |
-| 24 | notifications | Transaccional | Notificaciones y alertas enviadas a usuarios o roles | 10 | 10 |
-| 25 | lote | Transaccional | Lotes de carga multi-archivo por institución y periodo | 6 | 1 |
-| 26 | cat_docente | Dimensión | Catálogo canónico de docentes al que se enlaza dim_docente | 5 | 0 |
-| 27 | cat_modulo | Dimensión | Catálogo canónico de módulos al que se enlaza dim_modulo | 5 | 0 |
+| 17 | cat_docente | Dimensión | Un registro por docente del catálogo institucional al que se enlaza dim_docente | 5 | 0 |
+| 18 | cat_modulo | Dimensión | Un registro por módulo del catálogo institucional al que se enlaza dim_modulo | 5 | 0 |
+| 19 | staging_registros_crudos | Staging | Bloques y filas extraídos de cada documento antes de cargarse al almacén | 20 | 15 |
+| 20 | stg_entidad_no_resuelta | Staging | Entidades que no se pudieron enlazar a una dimensión y esperan revisión humana (HITL) | 21 | 150 |
+| 21 | log_pipeline_ingesta | Log | Bitácora de cada etapa del pipeline de ingesta por documento | 9 | 51 |
+| 22 | log_inconsistencias | Log | Registro de reglas de calidad incumplidas por documento y fila | 13 | 0 |
+| 23 | log_auditoria_nlp | Log | Correcciones humanas a predicciones del modelo BETO | 7 | 0 |
+| 24 | schema_migrations | Log | Migraciones SQL versionadas ya aplicadas a la base | 2 | 3 |
+| 25 | users | Transaccional | Usuarios del sistema con su rol RBAC y estado de autenticación | 14 | 7 |
+| 26 | notifications | Transaccional | Notificaciones y alertas enviadas a usuarios o roles | 10 | 10 |
+| 27 | lote | Transaccional | Lotes de carga multi-archivo por institución y periodo | 6 | 1 |
 
 **Tabla F.2 Diccionario de datos - fact_rendimiento_academico**
 
 | Campo | Tipo | Nulo | Restricción / defecto | Descripción |
 |---|---|---|---|---|
 | id_hecho_aca | SERIAL | NO | PK | Identificador del registro de rendimiento académico |
-| id_estudiante | INTEGER | SÍ | FK → dim_estudiante(id_estudiante) ON DELETE CASCADE; UNIQUE (id_estudiante, id_modulo) | Estudiante que cursó el módulo |
+| id_estudiante | INTEGER | SÍ | FK → dim_estudiante(id_estudiante) ON DELETE CASCADE; UNIQUE (id_estudiante, id_modulo); UNIQUE (índice uq_fact_aca_est_mod) | Estudiante que cursó el módulo |
 | id_docente | INTEGER | SÍ | FK → dim_docente(id_docente) ON DELETE SET NULL | Docente que dictó el módulo |
-| id_modulo | INTEGER | SÍ | FK → dim_modulo(id_modulo) ON DELETE CASCADE; UNIQUE (id_estudiante, id_modulo) | Módulo cursado |
+| id_modulo | INTEGER | SÍ | FK → dim_modulo(id_modulo) ON DELETE CASCADE; UNIQUE (id_estudiante, id_modulo); UNIQUE (índice uq_fact_aca_est_mod) | Módulo cursado |
 | id_tiempo | INTEGER | SÍ | FK → dim_tiempo(id_tiempo) ON DELETE CASCADE | Fecha a la que se imputa la calificación |
 | id_documento | INTEGER | SÍ | FK → dim_origen_documental(id_documento) ON DELETE SET NULL | Documento fuente del que se extrajo la calificación |
 | id_usuario_carga | INTEGER | SÍ | FK → users(id) ON DELETE SET NULL | Usuario que ejecutó la carga del registro |
@@ -61,7 +61,7 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 | tipo_alerta | VARCHAR(30) | SÍ | — | Alerta temprana académica: NORMAL, RIESGO_ACADEMICO (nota ≤ 70), RIESGO_CRITICO (nota < 51) |
 | created_at | TIMESTAMP | SÍ | DEFAULT CURRENT_TIMESTAMP | Fecha y hora de carga del registro |
 
-Índices: fact_rendimiento_academico_pkey (id_hecho_aca) [PK]; idx_fact_rend_docente (id_docente); idx_fact_rend_documento (id_documento); idx_fact_rend_estudiante (id_estudiante); idx_fact_rend_modulo (id_modulo); idx_fact_rend_tiempo (id_tiempo); idx_fact_rendimiento_fk_estado (fk_estado); uq_fact_rendimiento_estudiante_modulo (id_estudiante, id_modulo) [único]
+Índices: fact_rendimiento_academico_pkey (id_hecho_aca) [PK]; idx_fact_rend_docente (id_docente); idx_fact_rend_documento (id_documento); idx_fact_rend_estudiante (id_estudiante); idx_fact_rend_modulo (id_modulo); idx_fact_rend_tiempo (id_tiempo); idx_fact_rendimiento_fk_estado (fk_estado); uq_fact_aca_est_mod (id_estudiante, id_modulo) [único]; uq_fact_rendimiento_estudiante_modulo (id_estudiante, id_modulo) [único]
 
 **Tabla F.3 Diccionario de datos - fact_situacion_financiera**
 
@@ -175,7 +175,7 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 | es_fin_semana | BOOLEAN | NO | — | Indica si la fecha cae sábado o domingo |
 | periodo_mes | VARCHAR(7) | NO | — | Año y mes en formato AAAA-MM |
 
-Índices: dim_tiempo_fecha_key (fecha) [único]; dim_tiempo_pkey (id_tiempo) [PK]; idx_dim_tiempo_gestion (gestion); idx_dim_tiempo_periodo (periodo_mes)
+Índices: dim_tiempo_fecha_key (fecha) [único]; dim_tiempo_pkey (id_tiempo) [PK]; idx_dim_tiempo_fecha (fecha); idx_dim_tiempo_gestion (gestion); idx_dim_tiempo_periodo (periodo_mes)
 
 **Tabla F.10 Diccionario de datos - dim_estudiante**
 
@@ -209,7 +209,7 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 | id_docente | SERIAL | NO | PK | Identificador del docente en el almacén |
 | nombre_completo | VARCHAR(200) | NO | DEFAULT 'Docente Generico' | Nombre completo del docente (Docente Generico si la fuente no lo trae) |
 | area_especialidad | VARCHAR(200) | SÍ | DEFAULT 'Generico' | Área de especialidad del docente |
-| id_cat_docente | INTEGER | SÍ | FK → cat_docente(id_docente) ON DELETE SET NULL | Docente equivalente en el catálogo institucional (cat_docente) |
+| id_cat_docente | INTEGER | SÍ | FK → cat_docente(id_docente) ON DELETE NO ACTION | Docente equivalente en el catálogo institucional (cat_docente) |
 
 Índices: dim_docente_pkey (id_docente) [PK]
 
@@ -223,7 +223,7 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 | id_institucion | INTEGER | SÍ | FK → cat_institucion(id_institucion) ON DELETE SET NULL | Institución que dicta el módulo |
 | programa | VARCHAR(200) | SÍ | DEFAULT 'General' | Programa al que pertenece el módulo |
 | pos_code | VARCHAR(50) | SÍ | — | Código del programa (POS-…; ADM-GEN para administración general) |
-| id_cat_modulo | INTEGER | SÍ | FK → cat_modulo(id_modulo) ON DELETE SET NULL | Módulo equivalente en el catálogo institucional (cat_modulo) |
+| id_cat_modulo | INTEGER | SÍ | FK → cat_modulo(id_modulo) ON DELETE NO ACTION | Módulo equivalente en el catálogo institucional (cat_modulo) |
 
 Índices: dim_modulo_pkey (id_modulo) [PK]
 
@@ -291,7 +291,31 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 
 Índices: cat_categoria_financiera_codigo_key (codigo) [único]; cat_categoria_financiera_pkey (id_categoria_fin) [PK]
 
-**Tabla F.18 Diccionario de datos - staging_registros_crudos**
+**Tabla F.18 Diccionario de datos - cat_docente**
+
+| Campo | Tipo | Nulo | Restricción / defecto | Descripción |
+|---|---|---|---|---|
+| id_docente | SERIAL | NO | PK | Identificador del docente en el catálogo |
+| codigo_docente | VARCHAR(50) | SÍ | — | Por documentar |
+| nombre_canonico | VARCHAR(200) | NO | — | Nombre canónico del docente en el catálogo |
+| area | VARCHAR(100) | SÍ | DEFAULT 'Académico' | Por documentar (por defecto Académico) |
+| nombre_completo | VARCHAR(200) | SÍ | — | Por documentar |
+
+Índices: cat_docente_pkey (id_docente) [PK]
+
+**Tabla F.19 Diccionario de datos - cat_modulo**
+
+| Campo | Tipo | Nulo | Restricción / defecto | Descripción |
+|---|---|---|---|---|
+| id_modulo | SERIAL | NO | PK | Identificador del módulo en el catálogo |
+| codigo_modulo | VARCHAR(50) | SÍ | — | Por documentar |
+| nombre_canonico | VARCHAR(200) | NO | — | Nombre canónico del módulo en el catálogo |
+| area | VARCHAR(100) | SÍ | DEFAULT 'General' | Por documentar (por defecto General) |
+| nombre_modulo | VARCHAR(255) | SÍ | — | Por documentar |
+
+Índices: cat_modulo_pkey (id_modulo) [PK]
+
+**Tabla F.20 Diccionario de datos - staging_registros_crudos**
 
 | Campo | Tipo | Nulo | Restricción / defecto | Descripción |
 |---|---|---|---|---|
@@ -318,7 +342,7 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 
 Índices: idx_staging_doc_id (id_documento); staging_registros_crudos_pkey (id) [PK]
 
-**Tabla F.19 Diccionario de datos - stg_entidad_no_resuelta**
+**Tabla F.21 Diccionario de datos - stg_entidad_no_resuelta**
 
 | Campo | Tipo | Nulo | Restricción / defecto | Descripción |
 |---|---|---|---|---|
@@ -346,7 +370,7 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 
 Índices: idx_stg_entidad_doc (id_documento); idx_stg_entidad_registro (registro_origen_id); idx_stg_entidad_resuelto (resuelto, estado_resolucion); idx_stg_no_resuelta_doc (id_documento); idx_stg_no_resuelta_estado (resuelto); idx_stg_no_resuelta_estado_res (estado_resolucion); idx_stg_no_resuelta_lock (lock_usuario_id, lock_expira); idx_stg_no_resuelta_motivo (motivo); idx_stg_no_resuelta_tipo (tipo_entidad); stg_entidad_no_resuelta_pkey (id_staging) [PK]
 
-**Tabla F.20 Diccionario de datos - log_pipeline_ingesta**
+**Tabla F.22 Diccionario de datos - log_pipeline_ingesta**
 
 | Campo | Tipo | Nulo | Restricción / defecto | Descripción |
 |---|---|---|---|---|
@@ -362,7 +386,7 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 
 Índices: idx_log_pipeline_doc (id_documento); log_pipeline_ingesta_pkey (id) [PK]
 
-**Tabla F.21 Diccionario de datos - log_inconsistencias**
+**Tabla F.23 Diccionario de datos - log_inconsistencias**
 
 | Campo | Tipo | Nulo | Restricción / defecto | Descripción |
 |---|---|---|---|---|
@@ -382,7 +406,7 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 
 Índices: idx_log_inconsistencias_doc (id_documento); idx_log_inconsistencias_estado (estado_resolucion); log_inconsistencias_pkey (id_inconsistencia) [PK]
 
-**Tabla F.22 Diccionario de datos - log_auditoria_nlp**
+**Tabla F.24 Diccionario de datos - log_auditoria_nlp**
 
 | Campo | Tipo | Nulo | Restricción / defecto | Descripción |
 |---|---|---|---|---|
@@ -396,7 +420,7 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 
 Índices: log_auditoria_nlp_pkey (id_log) [PK]
 
-**Tabla F.23 Diccionario de datos - schema_migrations**
+**Tabla F.25 Diccionario de datos - schema_migrations**
 
 | Campo | Tipo | Nulo | Restricción / defecto | Descripción |
 |---|---|---|---|---|
@@ -405,7 +429,7 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 
 Índices: schema_migrations_pkey (version) [PK]
 
-**Tabla F.24 Diccionario de datos - users**
+**Tabla F.26 Diccionario de datos - users**
 
 | Campo | Tipo | Nulo | Restricción / defecto | Descripción |
 |---|---|---|---|---|
@@ -426,7 +450,7 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 
 Índices: users_email_key (email) [único]; users_pkey (id) [PK]; users_username_key (username) [único]
 
-**Tabla F.25 Diccionario de datos - notifications**
+**Tabla F.27 Diccionario de datos - notifications**
 
 | Campo | Tipo | Nulo | Restricción / defecto | Descripción |
 |---|---|---|---|---|
@@ -443,7 +467,7 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 
 Índices: idx_notifications_user_unread (user_id, is_read); notifications_pkey (id) [PK]
 
-**Tabla F.26 Diccionario de datos - lote**
+**Tabla F.28 Diccionario de datos - lote**
 
 | Campo | Tipo | Nulo | Restricción / defecto | Descripción |
 |---|---|---|---|---|
@@ -456,40 +480,16 @@ Fuente: DDL de `db/schema.sql`, que incluye los índices de las migraciones `db/
 
 Índices: idx_lote_institucion_periodo (institucion, periodo); lote_pkey (id_lote) [PK]
 
-**Tabla F.27 Diccionario de datos - cat_docente**
-
-| Campo | Tipo | Nulo | Restricción / defecto | Descripción |
-|---|---|---|---|---|
-| id_docente | SERIAL | NO | PK | Identificador del docente en el catálogo canónico |
-| codigo_docente | VARCHAR(50) | SÍ | — | Código del docente en el sistema académico de origen |
-| nombre_canonico | VARCHAR(200) | NO | — | Nombre normalizado del docente, contra el que se emparejan los nombres extraídos |
-| area | VARCHAR(100) | SÍ | DEFAULT 'Académico' | Área a la que pertenece el docente |
-| nombre_completo | VARCHAR(200) | SÍ | — | Nombre completo del docente (la migración 002 lo inicializa con nombre_canonico) |
-
-Índices: cat_docente_pkey (id_docente) [PK]
-
-**Tabla F.28 Diccionario de datos - cat_modulo**
-
-| Campo | Tipo | Nulo | Restricción / defecto | Descripción |
-|---|---|---|---|---|
-| id_modulo | SERIAL | NO | PK | Identificador del módulo en el catálogo canónico |
-| codigo_modulo | VARCHAR(50) | SÍ | — | Código del módulo en el sistema académico de origen |
-| nombre_canonico | VARCHAR(200) | NO | — | Nombre normalizado del módulo, contra el que se emparejan los nombres extraídos |
-| area | VARCHAR(100) | SÍ | DEFAULT 'General' | Área temática del módulo |
-| nombre_modulo | VARCHAR(255) | SÍ | — | Nombre del módulo (la migración 002 lo inicializa con nombre_canonico) |
-
-Índices: cat_modulo_pkey (id_modulo) [PK]
-
 **Tabla F.29 Relaciones**
 
 | Tabla origen | Columna FK | Tabla destino | Columna | ON DELETE |
 |---|---|---|---|---|
 | dim_categoria_financiera | id_cat_categoria_fin | cat_categoria_financiera | id_categoria_fin | SET NULL |
-| dim_docente | id_cat_docente | cat_docente | id_docente | SET NULL |
+| dim_docente | id_cat_docente | cat_docente | id_docente | NO ACTION |
 | dim_estudiante | fusionado_en | dim_estudiante | id_estudiante | SET NULL |
 | dim_estudiante | id_institucion | cat_institucion | id_institucion | SET NULL |
 | dim_meta | id_tiempo | dim_tiempo | id_tiempo | CASCADE |
-| dim_modulo | id_cat_modulo | cat_modulo | id_modulo | SET NULL |
+| dim_modulo | id_cat_modulo | cat_modulo | id_modulo | NO ACTION |
 | dim_modulo | id_institucion | cat_institucion | id_institucion | SET NULL |
 | dim_origen_documental | id_lote | lote | id_lote | SET NULL |
 | fact_cobranzas_proyectadas | id_estudiante | dim_estudiante | id_estudiante | CASCADE |
@@ -766,6 +766,12 @@ Columnas sin comentario en el DDL ni uso claro en el código:
 | F | dim_estudiante | ocupacion |
 | F | dim_estudiante | estado_civil |
 | F | cat_institucion | tipo_escala_default |
+| F | cat_docente | codigo_docente |
+| F | cat_docente | area |
+| F | cat_docente | nombre_completo |
+| F | cat_modulo | codigo_modulo |
+| F | cat_modulo | area |
+| F | cat_modulo | nombre_modulo |
 | F | stg_entidad_no_resuelta | version |
 | F | log_inconsistencias | tipo_regla |
 | F | log_inconsistencias | severidad |
@@ -775,9 +781,41 @@ Columnas sin comentario en el DDL ni uso claro en el código:
 
 ### Diferencias entre el DDL del repositorio y `giragroup_db` en ejecución
 
-Ninguna en las 27 tablas del Apéndice F. La base en ejecución la habían levantado la migración `001_initial_constellation_baseline.sql` y `Base.metadata.create_all`, y difería del DDL en 95 puntos (entre otros: `dim_tiempo` admitía NULL y no tenía UNIQUE en `fecha`, faltaban DEFAULT y acciones ON DELETE, y el índice `uq_fact_aca_est_mod` duplicaba a `uq_fact_rendimiento_estudiante_modulo`). La migración `005_alinear_esquema_con_ddl.sql`, que la API aplica al arrancar (también al restaurar un respaldo anterior), la alinea; el DDL dejó de declarar `uq_fact_aca_est_mod` y los índices que repetían una PK o UNIQUE, y ahora incluye `cat_docente` y `cat_modulo` con las FK que las referencian.
+Las 25 tablas y sus columnas coinciden. La base en ejecución no se creó con `db/schema.sql`: la levantaron la migración `001_initial_constellation_baseline.sql` y `Base.metadata.create_all` del arranque de la API, y no tiene aplicada V009. Por eso difieren estas restricciones (el Apéndice F documenta el DDL del repositorio):
 
-La base en ejecución tiene además 19 tablas que no forman parte del almacén y que el Apéndice F no incluye: `cat_alias`, `cat_alias_docente`, `cat_alias_financiero`, `cat_alias_modulo`, `cat_alias_programa`, `cat_concepto_financiero`, `cat_escuela`, `cat_estado_academico`, `cat_estado_arca`, `cat_estado_reprobado`, `cat_etiqueta_clasificacion`, `cat_guia_texto_plano`, `cat_historico_equivalencia`, `cat_mapeo_columna`, `cat_modalidad`, `cat_programa`, `cat_tipo_cartera`, `cat_tipo_programa` y `ref_metas_gestion`. Las crean la migración `002_beto_ner_governance_schema.sql` y los modelos ORM de `backend/models/catalogos.py` al arrancar la API.
+| Tabla | Columna / restricción | DDL del repositorio | Base en ejecución |
+|---|---|---|---|
+| dim_tiempo | id_tiempo | INTEGER sin secuencia (clave AAAAMMDD) | INTEGER con secuencia `dim_tiempo_id_tiempo_seq` |
+| dim_tiempo | fecha | NOT NULL, UNIQUE | admite NULL, sin UNIQUE |
+| dim_tiempo | semestre, trimestre, mes, nombre_mes, semana_iso, dia_mes, dia_semana, nombre_dia, es_fin_semana, periodo_mes | NOT NULL | admiten NULL |
+| dim_tiempo | gestion, semestre, mes | sin DEFAULT | DEFAULT 2026, 1, 5 |
+| dim_tiempo | nombre_mes / periodo_mes | VARCHAR(20) / VARCHAR(7) | VARCHAR(50) / VARCHAR(20) |
+| dim_tiempo | índices | idx_dim_tiempo_fecha, idx_dim_tiempo_periodo | no existen |
+| dim_estudiante | FK id_institucion, fusionado_en | ON DELETE SET NULL | NO ACTION |
+| dim_categoria_financiera | nombre_categoria | UNIQUE | sin UNIQUE |
+| dim_categoria_financiera | FK id_cat_categoria_fin | ON DELETE SET NULL | NO ACTION |
+| dim_docente / dim_modulo | id_cat_docente / id_cat_modulo | sin FK | FK a `cat_docente` / `cat_modulo` (NO ACTION); el Apéndice F documenta estas FK porque ambas tablas se incluyen |
+| dim_modulo | nombre_institucion | DEFAULT 'GiraGroup Posgrado' | DEFAULT 'GiraGroup' |
+| fact_situacion_financiera | monto_deuda | NUMERIC(12,2) DEFAULT 0.00 | NUMERIC(10,2) sin DEFAULT |
+| fact_situacion_financiera | cuotas_impagas / nivel_confianza_ia | DEFAULT 0 / 1.0000 | sin DEFAULT |
+| fact_situacion_financiera | FK id_modulo | ON DELETE SET NULL | NO ACTION |
+| fact_forecast | metodo | DEFAULT 'HoltWinters' | sin DEFAULT |
+| stg_entidad_no_resuelta | tipo_entidad | VARCHAR(50) | VARCHAR(30) |
+| stg_entidad_no_resuelta | fk_estado / resuelto | DEFAULT 'C' / false | sin DEFAULT |
+| stg_entidad_no_resuelta | registro_origen_id | FK → staging_registros_crudos(id) ON DELETE CASCADE | sin FK |
+| staging_registros_crudos | es_ruido | DEFAULT false | sin DEFAULT |
+| log_inconsistencias | severidad / estado_resolucion | DEFAULT 'ALTA' / 'BLOQUEADO' | sin DEFAULT |
+| log_pipeline_ingesta | metadata | JSONB | JSON |
+| lote | estado / total_archivos | DEFAULT 'PROCESADO' / 0 | sin DEFAULT |
+| users | email | NOT NULL | admite NULL |
+| users | created_at | TIMESTAMPTZ | TIMESTAMP |
+| schema_migrations | version | VARCHAR(255) | VARCHAR(150) |
+
+`cat_docente` y `cat_modulo` se incluyen en el Apéndice F con la forma que tienen en `giragroup_db` (codigo, nombre_canonico, area y un nombre adicional); difiere de la definición de `catalog_db` y de `backend/models/catalogos.py` (Apéndice G), y no figura en `schema.sql`.
+
+Además, la base en ejecución tiene 19 tablas más que no están en `db/schema.sql` ni en sus migraciones y que el Apéndice F no incluye: `cat_alias`, `cat_alias_docente`, `cat_alias_financiero`, `cat_alias_modulo`, `cat_alias_programa`, `cat_concepto_financiero`, `cat_escuela`, `cat_estado_academico`, `cat_estado_arca`, `cat_estado_reprobado`, `cat_etiqueta_clasificacion`, `cat_guia_texto_plano`, `cat_historico_equivalencia`, `cat_mapeo_columna`, `cat_modalidad`, `cat_programa`, `cat_tipo_cartera`, `cat_tipo_programa` y `ref_metas_gestion`. Las crean la migración `002_beto_ner_governance_schema.sql` y los modelos ORM de `backend/models/catalogos.py` al arrancar la API; salvo `cat_programa` (4 filas), están vacías.
+
+Al aplicar `V006` sobre `db/schema.sql` falla la creación de la política RLS `Lectura_Global`, porque `schema.sql` ya la crea; la tabla y los índices de V006 sí quedan aplicados. El índice único `uq_fact_aca_est_mod` (V008) duplica a `uq_fact_rendimiento_estudiante_modulo` (mismas columnas).
 
 ### Diferencias entre `db/schema_catalogos.sql` y `giragroup_catalog_db` en ejecución
 
