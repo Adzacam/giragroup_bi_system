@@ -5,6 +5,7 @@ Regresión de extract_entities_from_line (routers/dataops.py) con filas reales:
 1. Cobranzas: el nombre es NOMBRES + PATERNO + MATERNO, no el ASESOR.
 2. Actas ARCA: el nombre usa APELLIDO PATERNO/MATERNO y el CI viene en CÉDULA DE IDENTIDAD.
 3. Hoja MODULOS: ni el DOCENTE ni la RESIDENCIA DOCENTE son estudiantes, y el CELULAR no es CI.
+4. Cobranzas 'Resumen por Programa': un estado de cartera ('EN PROCESO DE COBRO') no es un estudiante.
 """
 
 from routers.dataops import extract_entities_from_line
@@ -43,3 +44,16 @@ def test_hoja_modulos_no_genera_estudiante_ni_ci():
     est, ci = _estudiante_y_ci(linea)
     assert est is None
     assert ci == "No provisto"
+
+
+def test_estado_de_cartera_no_es_estudiante():
+    linea = (
+        "POS: POS-5439 | NOMBRE DEL PROGRAMA: CURSO EN EDICIÓN DE VIDEO PARA REDES SOCIALES 6ª Versión | "
+        "FECHA INICIO: 2023-03-02 00:00:00 | INSCRITOS: 31 | ESTADO PROGRAMA: PROGRAMA CERRADO | "
+        "TIPO CARTERA: CARTERA EN MORA | OBSERVACIÓN CARTERA: EN PROCESO DE COBRO"
+    )
+    est, _ = _estudiante_y_ci(linea)
+    assert est is None
+    # Sin encabezado tampoco: 'cobro' no forma parte de un nombre de persona
+    est, _ = _estudiante_y_ci("POS-5439 | EN PROCESO DE COBRO | 31")
+    assert est is None

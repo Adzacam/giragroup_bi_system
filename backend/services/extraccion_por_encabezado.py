@@ -260,7 +260,9 @@ def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[
     Motivo por el que una línea no puede producir un hecho (se descarta como ruido, no va a revisión), o None.
     - academico: sin estudiante (hojas MODULOS, IBP, catálogos): registros_academicos no generaría hechos.
     - rentabilidad: fila sin categoría y mes reconocibles.
-    - financiero / admisión / marketing: sin estudiante ni programa (p. ej. la hoja de estados académicos
+    - financiero: sin estudiante (hoja 'Resumen por Programa'): el hecho financiero es por estudiante, y sin él el
+      extractor tomaba otra celda como nombre ('OBSERVACIÓN CARTERA: EN PROCESO DE COBRO').
+    - admisión / marketing: sin estudiante ni programa (p. ej. la hoja de estados académicos
       'Estado académico: Aprobado | Estado ARCA: Titulado', que es un catálogo de combinaciones).
     """
     if not campos:
@@ -272,5 +274,5 @@ def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[
     if categoria == "academico":
         return "FILA_ACADEMICA_SIN_ESTUDIANTE"
     if _pos(campos) or any(campos.get(k) for k in _CLAVES_ENTIDAD_PROGRAMA):
-        return None
+        return "FILA_FINANCIERA_SIN_ESTUDIANTE" if categoria == "financiero" else None
     return "FILA_SIN_ENTIDAD"

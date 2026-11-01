@@ -55,7 +55,7 @@ NON_PERSON_WORDS = {
     "informe", "gestion", "big data", "ingenieria", "estetica", "ciencias", "usuario", "correo",
     "pos", "mba", "ejecutivo", "marketing", "digital", "comercial", "finanzas", "contabilidad",
     "egreso", "egresos", "techo", "techos", "cuota", "cuotas", "pago", "pagos", "cartera",
-    "cobranza", "cobranzas", "meta", "metas", "ejecutado", "presupuesto", "saldo", "mora",
+    "cobranza", "cobranzas", "cobro", "meta", "metas", "ejecutado", "presupuesto", "saldo", "mora",
     "inicio", "inicios", "okr", "okrs", "planificacion", "ejecucion", "fecha", "estado",
     "ciberseguridad", "desarrollo", "software", "redes", "sociales", "admision", "inscripcion",
 }

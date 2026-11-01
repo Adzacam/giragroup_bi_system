@@ -26,6 +26,9 @@ def _motivo(linea, categoria):
      "academico", "FILA_ACADEMICA_SIN_ESTUDIANTE"),
     ("MES: JULIO | EJECUTADO 2025: 188464.8", "rentabilidad", "FILA_AGREGADA_SIN_CATEGORIA_MES"),
     ("solo texto sin cabeceras", "academico", "FILA_SIN_CABECERAS"),
+    # Hoja 'Resumen por Programa' de cobranzas: sin estudiante no hay hecho financiero
+    ("POS: POS-5478 | NOMBRE DEL PROGRAMA: CURSO EN MARKETING DIGITAL 15ª Versión | INSCRITOS: 41 | "
+     "TIPO CARTERA: CARTERA CERRADA | OBSERVACIÓN CARTERA: EN PROCESO DE COBRO", "financiero", "FILA_FINANCIERA_SIN_ESTUDIANTE"),
 ])
 def test_lineas_sin_entidad_se_descartan_con_motivo(linea, categoria, motivo):
     assert _motivo(linea, categoria) == motivo
@@ -34,7 +37,8 @@ def test_lineas_sin_entidad_se_descartan_con_motivo(linea, categoria, motivo):
 @pytest.mark.parametrize("linea, categoria", [
     ("N°: 6 | POS - ACTAS: POS-030 | CÉDULA DE IDENTIDAD: 6744854 | APELLIDO PATERNO: Flores | "
      "APELLIDO MATERNO: Rojas | NOMBRES: Juan Carlos | MÓDULO 1: 53", "academico"),
-    ("POS: POS-5478 | NOMBRE DEL PROGRAMA: CURSO EN MARKETING DIGITAL 15ª Versión | INSCRITOS: 41", "financiero"),
+    ("POS: POS-5478 | NOMBRE DEL PROGRAMA: CURSO EN MARKETING DIGITAL 15ª Versión | INSCRITOS: 41", "marketing"),
+    ("POS: POS-5059 | CI: 2560728 | NOMBRES: PEDRO PABLO | PATERNO: CONDORI | DEUDA TOTAL: 750", "financiero"),
     ("Nombre Completo: Fernando Torrico Morales | Cédula de Identidad: CI-6294817 | Ciudad: Potosí", "admision"),
     ("CATEGORIA: TECHOS/CERRADOS | MES: JULIO | MES NUMERICO: 7 | EJECUTADO 2025: 188464.8", "rentabilidad"),
 ])
