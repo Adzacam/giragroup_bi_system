@@ -99,7 +99,6 @@ CREATE TABLE public.dim_tiempo (
     es_fin_semana   BOOLEAN NOT NULL,            -- TRUE si sábado o domingo
     periodo_mes     VARCHAR(7) NOT NULL          -- '2026-01'
 );
-CREATE INDEX idx_dim_tiempo_fecha ON public.dim_tiempo(fecha);
 CREATE INDEX idx_dim_tiempo_periodo ON public.dim_tiempo(periodo_mes);
 
 CREATE TABLE public.dim_estudiante (
@@ -122,7 +121,6 @@ CREATE TABLE public.dim_estudiante (
     ocupacion VARCHAR(100),
     estado_civil VARCHAR(50)
 );
-CREATE INDEX idx_dim_est_id ON public.dim_estudiante(id_estudiante);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_dim_estudiante_ci_numero 
 ON public.dim_estudiante (ci_numero) 
 WHERE deprecado = FALSE AND ci_numero IS NOT NULL AND length(ci_numero) >= 5;
@@ -188,7 +186,6 @@ CREATE TABLE public.log_auditoria_nlp (
     usuario_auditor INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_log_auditoria_nlp_id ON public.log_auditoria_nlp(id_log);
 
 -- ==========================================
 -- 4. TABLAS DE HECHOS (FACTS)
@@ -213,7 +210,6 @@ CREATE TABLE public.fact_rendimiento_academico (
     tipo_alerta VARCHAR(30),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_fact_rendimiento_aca_id ON public.fact_rendimiento_academico(id_hecho_aca);
 
 -- B. Finanzas y Cobranza
 CREATE TABLE public.fact_situacion_financiera (
@@ -243,7 +239,6 @@ CREATE TABLE public.fact_cobranzas_proyectadas (
     estado_pago VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_fact_cobro_id ON public.fact_cobranzas_proyectadas(id_hecho_cobro);
 
 -- C. Evaluaciones NPS Docentes
 CREATE TABLE public.fact_evaluacion_docente (
@@ -431,3 +426,41 @@ ALTER TABLE public.fact_rentabilidad ADD CONSTRAINT uq_fact_rentabilidad_categor
 ALTER TABLE public.fact_rendimiento_academico ADD CONSTRAINT uq_fact_rendimiento_estudiante_modulo UNIQUE (id_estudiante, id_modulo);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_fact_fin_est_mod_tiempo ON public.fact_situacion_financiera (id_estudiante, COALESCE(id_modulo, 0), id_tiempo);
 ALTER TABLE public.fact_cobranzas_proyectadas ADD CONSTRAINT uq_fact_cobranzas_proyectadas_estudiante_tiempo UNIQUE (id_estudiante, id_tiempo);
+
+-- ==========================================
+-- 9. ÍNDICES DE CONSULTA (migraciones 001, V005-V010 y modelos)
+-- Las claves primarias y UNIQUE ya crean su índice: no se repiten (uq_fact_aca_est_mod duplicaba
+-- uq_fact_rendimiento_estudiante_modulo; ver backend/scripts/migrations/005_alinear_esquema_con_ddl.sql).
+-- ==========================================
+CREATE INDEX IF NOT EXISTS idx_fact_rend_estudiante ON public.fact_rendimiento_academico (id_estudiante);
+CREATE INDEX IF NOT EXISTS idx_fact_rend_modulo ON public.fact_rendimiento_academico (id_modulo);
+CREATE INDEX IF NOT EXISTS idx_fact_rend_docente ON public.fact_rendimiento_academico (id_docente);
+CREATE INDEX IF NOT EXISTS idx_fact_rend_tiempo ON public.fact_rendimiento_academico (id_tiempo);
+CREATE INDEX IF NOT EXISTS idx_fact_rend_documento ON public.fact_rendimiento_academico (id_documento);
+CREATE INDEX IF NOT EXISTS idx_fact_rendimiento_fk_estado ON public.fact_rendimiento_academico (fk_estado);
+CREATE INDEX IF NOT EXISTS idx_fact_fin_estudiante ON public.fact_situacion_financiera (id_estudiante);
+CREATE INDEX IF NOT EXISTS idx_fact_fin_modulo ON public.fact_situacion_financiera (id_modulo);
+CREATE INDEX IF NOT EXISTS idx_fact_fin_tiempo ON public.fact_situacion_financiera (id_tiempo);
+CREATE INDEX IF NOT EXISTS idx_fact_fin_documento ON public.fact_situacion_financiera (id_documento);
+CREATE INDEX IF NOT EXISTS idx_fact_fin_estado_cartera ON public.fact_situacion_financiera (estado_cartera);
+CREATE INDEX IF NOT EXISTS idx_fact_financiera_fk_estado ON public.fact_situacion_financiera (fk_estado);
+CREATE INDEX IF NOT EXISTS idx_fact_financiera_revision ON public.fact_situacion_financiera (requiere_revision);
+CREATE INDEX IF NOT EXISTS idx_fact_fin_mora_estudiante ON public.fact_situacion_financiera (id_estudiante) WHERE cuotas_impagas >= 2;
+CREATE INDEX IF NOT EXISTS idx_fact_mkt_tiempo ON public.fact_marketing (id_tiempo);
+CREATE INDEX IF NOT EXISTS idx_fact_rent_tiempo ON public.fact_rentabilidad (id_tiempo);
+CREATE INDEX IF NOT EXISTS idx_fact_cobproy_tiempo ON public.fact_cobranzas_proyectadas (id_tiempo);
+CREATE INDEX IF NOT EXISTS idx_fact_eval_estudiante ON public.fact_evaluacion_docente (id_estudiante);
+CREATE INDEX IF NOT EXISTS idx_fact_eval_modulo ON public.fact_evaluacion_docente (id_modulo);
+CREATE INDEX IF NOT EXISTS idx_fact_eval_tiempo ON public.fact_evaluacion_docente (id_tiempo);
+CREATE INDEX IF NOT EXISTS idx_fact_eval_docente ON public.fact_evaluacion_docente (id_docente);
+CREATE INDEX IF NOT EXISTS idx_dim_tiempo_gestion ON public.dim_tiempo (gestion);
+CREATE INDEX IF NOT EXISTS ix_fact_forecast_id_tiempo ON public.fact_forecast (id_tiempo);
+CREATE INDEX IF NOT EXISTS ix_log_inconsistencias_tipo_regla ON public.log_inconsistencias (tipo_regla);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON public.notifications (user_id, is_read);
+CREATE INDEX IF NOT EXISTS idx_stg_entidad_resuelto ON public.stg_entidad_no_resuelta (resuelto, estado_resolucion);
+CREATE INDEX IF NOT EXISTS idx_stg_entidad_registro ON public.stg_entidad_no_resuelta (registro_origen_id);
+CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_estado ON public.stg_entidad_no_resuelta (resuelto);
+CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_tipo ON public.stg_entidad_no_resuelta (tipo_entidad);
+CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_motivo ON public.stg_entidad_no_resuelta (motivo);
+CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_estado_res ON public.stg_entidad_no_resuelta (estado_resolucion);
+CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_lock ON public.stg_entidad_no_resuelta (lock_usuario_id, lock_expira);
