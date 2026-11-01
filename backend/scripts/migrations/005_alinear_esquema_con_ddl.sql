@@ -230,6 +230,7 @@ CREATE TABLE IF NOT EXISTS public.schema_migrations (
     version VARCHAR(255) PRIMARY KEY,
     applied_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE public.schema_migrations ALTER COLUMN version TYPE VARCHAR(255);  -- 001 la creó con VARCHAR(150)
 INSERT INTO public.schema_migrations (version, applied_at)
 VALUES ('005_alinear_esquema_con_ddl.sql', CURRENT_TIMESTAMP)
 ON CONFLICT (version) DO UPDATE SET applied_at = CURRENT_TIMESTAMP;
