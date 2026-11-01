@@ -89,3 +89,11 @@ docs/proyecto de grado/*
 
 # Respaldos locales del DW (contienen CI y nombres reales)
 output/backups/
+
+# ---------------------------------------------------
+# DATOS PERSONALES Y CÓDIGOS OTP (auditoría 2026-11-01)
+# ---------------------------------------------------
+# Vistas previas de correo: llevan códigos OTP vigentes
+**/output/email_previews/
+# Actas con CI y nombres de estudiantes
+output/lote*/ARCA_*.xlsx
