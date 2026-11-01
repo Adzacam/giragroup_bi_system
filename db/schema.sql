@@ -125,11 +125,28 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_dim_estudiante_ci_numero
 ON public.dim_estudiante (ci_numero) 
 WHERE deprecado = FALSE AND ci_numero IS NOT NULL AND length(ci_numero) >= 5;
 
+-- Catálogos canónicos de docentes y módulos (migración 002): dim_docente y dim_modulo los referencian
+CREATE TABLE public.cat_docente (
+    id_docente SERIAL PRIMARY KEY,
+    codigo_docente VARCHAR(50),
+    nombre_canonico VARCHAR(200) NOT NULL,
+    area VARCHAR(100) DEFAULT 'Académico',
+    nombre_completo VARCHAR(200)
+);
+
+CREATE TABLE public.cat_modulo (
+    id_modulo SERIAL PRIMARY KEY,
+    codigo_modulo VARCHAR(50),
+    nombre_canonico VARCHAR(200) NOT NULL,
+    area VARCHAR(100) DEFAULT 'General',
+    nombre_modulo VARCHAR(255)
+);
+
 CREATE TABLE public.dim_docente (
     id_docente SERIAL PRIMARY KEY,
     nombre_completo VARCHAR(200) NOT NULL DEFAULT 'Docente Generico',
     area_especialidad VARCHAR(200) DEFAULT 'Generico',
-    id_cat_docente INT
+    id_cat_docente INT REFERENCES public.cat_docente(id_docente) ON DELETE SET NULL
 );
 
 CREATE TABLE public.dim_modulo (
@@ -139,7 +156,7 @@ CREATE TABLE public.dim_modulo (
     id_institucion INT REFERENCES public.cat_institucion(id_institucion) ON DELETE SET NULL,
     programa VARCHAR(200) DEFAULT 'General',
     pos_code VARCHAR(50),
-    id_cat_modulo INT
+    id_cat_modulo INT REFERENCES public.cat_modulo(id_modulo) ON DELETE SET NULL
 );
 
 CREATE TABLE public.dim_origen_documental (

@@ -67,3 +67,13 @@ def test_indices_declarados_en_ddl_y_en_005_coinciden():
     en_ddl = {(n, t, c.replace(" ", "")) for n, t, c in re.findall(patron, DDL)}
     en_005 = {(n, t, c.replace(" ", "")) for n, t, c in re.findall(patron, MIG_005)}
     assert en_005 <= en_ddl, en_005 - en_ddl
+
+
+def test_ddl_declara_catalogos_de_docente_y_modulo_con_sus_fk():
+    """Sin cat_docente/cat_modulo en el DDL, las FK de dim_docente y dim_modulo no podían declararse."""
+    ddl = _sin_comentarios(DDL)
+    assert ddl.index("CREATE TABLE public.cat_docente") < ddl.index("CREATE TABLE public.dim_docente")
+    assert ddl.index("CREATE TABLE public.cat_modulo") < ddl.index("CREATE TABLE public.dim_modulo")
+    assert "id_cat_docente INT REFERENCES public.cat_docente(id_docente) ON DELETE SET NULL" in ddl
+    assert "id_cat_modulo INT REFERENCES public.cat_modulo(id_modulo) ON DELETE SET NULL" in ddl
+    assert "'cat_docente', 'cat_modulo'" in _sin_comentarios(MIG_005)  # RLS y políticas también en esas tablas

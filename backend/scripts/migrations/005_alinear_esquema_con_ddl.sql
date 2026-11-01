@@ -2,7 +2,7 @@
 -- Migración Versionada: 005_alinear_esquema_con_ddl.sql
 -- Propósito:
 --   Alinear una base creada por versiones anteriores (create_all de SQLAlchemy, migraciones 002/003,
---   respaldos B0/B1) con el DDL del repositorio (db/schema.sql) en las 24 tablas que este define:
+--   respaldos B0/B1) con el DDL del repositorio (db/schema.sql) en las 26 tablas que este define:
 --   1. Índices duplicados: uq_fact_aca_est_mod repite la restricción uq_fact_rendimiento_estudiante_modulo,
 --      y los ix_*_id de SQLAlchemy repiten la clave primaria.
 --   2. dim_tiempo: clave inteligente YYYYMMDD sin secuencia, sin DEFAULT de relleno (gestión 2026, mes 5,
@@ -197,7 +197,7 @@ DECLARE
     p record;
 BEGIN
     FOREACH t IN ARRAY ARRAY[
-        'users', 'notifications', 'lote', 'cat_institucion', 'cat_categoria_financiera', 'dim_tiempo',
+        'users', 'notifications', 'lote', 'cat_institucion', 'cat_categoria_financiera', 'cat_docente', 'cat_modulo', 'dim_tiempo',
         'dim_estudiante', 'dim_docente', 'dim_modulo', 'dim_origen_documental', 'dim_categoria_financiera',
         'dim_meta', 'log_auditoria_nlp', 'fact_rendimiento_academico', 'fact_situacion_financiera',
         'fact_cobranzas_proyectadas', 'fact_marketing', 'fact_rentabilidad', 'fact_evaluacion_docente',
