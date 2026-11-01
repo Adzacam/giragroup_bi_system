@@ -110,3 +110,38 @@ def test_confirm_descarta_fila_de_estados_y_no_la_manda_a_revision(sqlite_dw, mo
     assert (registro.motivo, registro.estado_resolucion, registro.resuelto) == ("FILA_SIN_ENTIDAD", "DESCARTADO", True)
     pendientes = sqlite_dw.query(StagingEntidadNoResuelta).filter(StagingEntidadNoResuelta.resuelto == False).count()
     assert pendientes == 0  # la bandeja (resuelto = False) no la muestra
+
+
+# ── Un clic: nombre extraído vs nombre del candidato (casos reales de la bandeja del lote) ──
+LINEA_STAGING_EDGAR = ("N°: 2 | POS - ACTAS: 5314 | CÉDULA DE IDENTIDAD: 9008158 | MES INICO: 11 | AÑO INCIO: 2024 | "
+                       "APELLIDO MATERNO: CAYO | NOMBRES: EDGAR | MÓDULO 1: 83 | MÓDULO 2: 70")
+DISCORDANTE = "CI: 6702954 | Nombre: SAMANTHA STEFANY ALIAGA RAMIREZ (Discordante con: PAOLA GABRIELA RAMOS LORA)"
+
+
+def test_nombre_extraido_de_cada_tipo_de_caso():
+    from services.sugerencia_hitl import nombre_extraido
+    assert nombre_extraido(LINEA_STAGING_EDGAR) == "EDGAR CAYO"
+    assert nombre_extraido(DISCORDANTE) == "SAMANTHA STEFANY ALIAGA RAMIREZ"
+    assert nombre_extraido("JUAN PEREZ (Programa entrante: POS-5295)") == "JUAN PEREZ"
+
+
+def test_un_clic_compara_nombre_extraido_y_no_la_linea_completa(sqlite_dw, monkeypatch):
+    from models.dim_origen import DimOrigenDocumental
+    from models.staging_entidad import StagingEntidadNoResuelta
+    from routers import dataops
+
+    monkeypatch.setattr(dataops, "_evaluar_documentos_lote", lambda *a, **k: None)
+    sqlite_dw.add(DimOrigenDocumental(id_documento=1, nombre_archivo="ARCA_lote1387_860_filas.xlsx", tipo_fuente="ACTA"))
+    sqlite_dw.add_all([
+        StagingEntidadNoResuelta(id_staging=1, id_documento=1, tipo_entidad="ESTUDIANTE", texto_original=LINEA_STAGING_EDGAR[:250],
+                                 mejor_candidato="EDGAR CAYO", motivo="BAJA_CONFIANZA_IA", resuelto=False,
+                                 payload_json={"raw_line": LINEA_STAGING_EDGAR}),
+        StagingEntidadNoResuelta(id_staging=2, id_documento=1, tipo_entidad="ESTUDIANTE", texto_original=DISCORDANTE,
+                                 mejor_candidato="PAOLA GABRIELA RAMOS LORA", motivo="CI_NOMBRE_DISCORDANTE", resuelto=False),
+    ])
+    sqlite_dw.commit()
+
+    items = {i["id"]: i for i in dataops.get_review_tray(doc_id=1, id_lote=None, motivo=None, estado=None,
+                                                          page=1, page_size=100, db=sqlite_dw)["items"]}
+    assert items[1]["un_clic"] is True and items[1]["similitud_nombre_completo"] == 100.0  # antes: línea completa -> 7,7
+    assert items[2]["un_clic"] is False  # la CI es de otra persona: se resuelve a mano

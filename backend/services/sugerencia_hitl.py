@@ -6,6 +6,7 @@ como nombre completo (token_sort_ratio >= 85). WRatio no basta: puntúa alto coi
 'Maestría en Finanzas' -> 'INDICA QUE SE RETIRO DEL DIPLOMADO…' o 'Diplomado TIC' -> 'DIPLOMADO'.
 """
 
+import re
 import unicodedata
 from typing import Optional
 
@@ -30,3 +31,27 @@ def es_sugerencia_un_clic(texto: Optional[str], candidato: Optional[str], umbral
     """True si el candidato puede aceptarse con un clic (coincidencia de nombre completo >= umbral)."""
     umbral_pct = umbral * 100.0 if umbral <= 1.0 else umbral
     return similitud_nombre_completo(texto, candidato) >= umbral_pct
+
+
+_RE_NOMBRE_DISCORDANTE = re.compile(r"Nombre:\s*(.+?)\s*(?:\(|$)")
+
+
+def nombre_extraido(texto_original: Optional[str], linea_origen: Optional[str] = None) -> str:
+    """
+    Nombre que la plataforma leyó para el caso, para compararlo con el candidato (no la línea completa del acta):
+    - línea 'ENCABEZADO: valor | ...' (staging): NOMBRES + APELLIDOS por encabezado;
+    - 'CI: … | Nombre: X (Discordante con: Y)' (CI ≠ nombre): X;
+    - 'X (Programa entrante: …)' (homonimia): X.
+    """
+    from services.extraccion_por_encabezado import campos_por_encabezado, estudiante_de_fila
+
+    for texto in (linea_origen, texto_original):
+        if texto and "|" in texto and "Nombre:" not in texto:
+            est = estudiante_de_fila(campos_por_encabezado([c.strip() for c in texto.split("|")]))
+            if est and est.get("valor_extraido"):
+                return est["valor_extraido"]
+    texto = texto_original or ""
+    m = _RE_NOMBRE_DISCORDANTE.search(texto)
+    if m:
+        return m.group(1).strip()
+    return texto.split("(")[0].strip()

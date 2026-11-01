@@ -70,7 +70,7 @@ from services.extraccion_por_encabezado import (
     motivo_fila_sin_entidad,
     registros_rentabilidad,
 )
-from services.sugerencia_hitl import es_sugerencia_un_clic, similitud_nombre_completo
+from services.sugerencia_hitl import es_sugerencia_un_clic, nombre_extraido, similitud_nombre_completo
 from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, resolver_caso_hecho
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
 from services.dataops_evaluation_service import (
@@ -3710,6 +3710,8 @@ def get_review_tray(
         if payload_data.get("en_calidad") or "CATALOGO" in motivo_slug:
             item_area = "calidad"
 
+        # Un clic: nombre extraído vs nombre del candidato (no la línea completa del acta)
+        nombre_caso = nombre_extraido(ent.texto_original, payload_data.get("raw_line"))
         items.append({
             "id": ent.id_staging,
             "db_id": ent.id_staging,
@@ -3733,8 +3735,9 @@ def get_review_tray(
             "contexto_raw": contexto_raw,
             "modulo_detectado": modulo_detectado,
             "sugerencia_catalogo": ent.mejor_candidato,
-            "un_clic": es_sugerencia_un_clic(ent.texto_original, ent.mejor_candidato),
-            "similitud_nombre_completo": similitud_nombre_completo(ent.texto_original, ent.mejor_candidato),
+            "nombre_extraido": nombre_caso,
+            "un_clic": es_sugerencia_un_clic(nombre_caso, ent.mejor_candidato),
+            "similitud_nombre_completo": similitud_nombre_completo(nombre_caso, ent.mejor_candidato),
             "ner_confidence": float(ent.nivel_confianza) if ent.nivel_confianza else 0.72,
             "estado": "REQUIERE_REVISION",
             "area": item_area,
