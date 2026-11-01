@@ -36,24 +36,15 @@ class FKResolver:
             return
 
         try:
-            # Leer el archivo con pandas
             df = pd.read_excel(self.ruta_inscritos, dtype=str)
-            # Buscar columnas de CI y Nombre
-            col_ci = None
-            col_nom = None
+            col_ci = next((c for c in df.columns
+                           if str(c).strip().upper() in ("CI", "CARNET", "CEDULA", "NRO_DOCUMENTO", "DOCUMENTO")), None)
+            nombres = self._nombres_del_padron(df)
 
-            for col in df.columns:
-                c_upper = str(col).strip().upper()
-                if c_upper in ("CI", "CARNET", "CEDULA", "NRO_DOCUMENTO", "DOCUMENTO"):
-                    col_ci = col
-                elif "NOMBRE" in c_upper or "ESTUDIANTE" in c_upper or "POSTULANTE" in c_upper:
-                    if col_nom is None or "COMPLETO" in c_upper:
-                        col_nom = col
-
-            if col_ci and col_nom:
-                for _, row in df[[col_ci, col_nom]].dropna().iterrows():
-                    ci_val = self.limpiar_ci(row[col_ci])
-                    nom_val = str(row[col_nom]).strip()
+            if col_ci and nombres is not None:
+                for ci_raw, nom_raw in zip(df[col_ci], nombres):
+                    ci_val = self.limpiar_ci(ci_raw)
+                    nom_val = " ".join(str(nom_raw).split()) if isinstance(nom_raw, str) else ""
                     if ci_val and nom_val:
                         nom_limpio = FuzzyNormalizer.limpiar_nombre(nom_val)
                         if nom_limpio and nom_limpio not in self.padron_nombres:
@@ -62,6 +53,21 @@ class FKResolver:
         except Exception as e:
             # Fallback tolerante si no se puede abrir el Excel en el entorno
             pass
+
+    @staticmethod
+    def _nombres_del_padron(df: pd.DataFrame) -> Optional[pd.Series]:
+        """
+        Nombre del inscrito por fila. TBL_INSCRITOS lo trae en NOMBRES + PATERNO + MATERNO; si no,
+        se usa una columna de nombre completo. Nunca columnas como 'NOMBRE DEL PROGRAMA'.
+        """
+        cols = {str(c).strip().upper(): c for c in df.columns}
+        if "NOMBRES" in cols:
+            partes = [cols[k] for k in ("NOMBRES", "PATERNO", "APELLIDO PATERNO", "MATERNO", "APELLIDO MATERNO") if k in cols]
+            return df[partes].fillna("").astype(str).agg(" ".join, axis=1).str.strip()
+        for clave in ("NOMBRE COMPLETO", "NOMBRES Y APELLIDOS", "APELLIDOS Y NOMBRES", "ESTUDIANTE", "POSTULANTE"):
+            if clave in cols:
+                return df[cols[clave]]
+        return None
 
     @staticmethod
     def limpiar_ci(ci_raw: Any) -> Optional[str]:
