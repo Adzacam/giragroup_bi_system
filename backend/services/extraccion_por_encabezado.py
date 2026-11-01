@@ -28,6 +28,8 @@ _CLAVES_FECHA_ACADEMICA = ("FECHA", "FECHA EVALUACION", "FECHA DE EVALUACION", "
 _CLAVES_MES = ("MES INICIO", "MES INICO", "MES")
 _CLAVES_ANIO = ("ANO INICIO", "ANO INCIO", "ANO", "GESTION")
 _RE_MODULO_N = re.compile(r"^MODULO (\d{1,2})$")
+# Google Forms escribe la cédula como 'CI-4892019' / 'ci 4892019' / 'C.I. 4892019': el prefijo no es parte del número
+_RE_PREFIJO_CI = re.compile(r"^\s*c\.?\s*i\.?\s*[-:]?\s*(?=\d)", re.IGNORECASE)
 # EJECUTADO VS META: una fila por categoría y mes, con columnas EJECUTADO <año> y META POR CATEGORIA <año>
 _RE_EJECUTADO_ANIO = re.compile(r"^EJECUTADO (\d{4})$")
 _RE_META_ANIO = re.compile(r"^META POR CATEGORIA (\d{4})$")
@@ -115,7 +117,7 @@ def fecha_de_fila(campos: Dict[str, str], categoria: str) -> Optional[date]:
 
 def estudiante_de_fila(campos: Dict[str, str]) -> Optional[Dict[str, Any]]:
     ci_raw = _primero(campos, _CLAVES_CI)
-    ci = "".join(ch for ch in ci_raw if ch.isalnum()) if ci_raw else None
+    ci = "".join(ch for ch in _RE_PREFIJO_CI.sub("", ci_raw) if ch.isalnum()) if ci_raw else None
     nombre = _primero(campos, _CLAVES_NOMBRE_COMPLETO)
     if not nombre and campos.get("FIRST NAME"):  # Moodle
         nombre = " ".join(p for p in (campos.get("FIRST NAME"), campos.get("SURNAME")) if p)
