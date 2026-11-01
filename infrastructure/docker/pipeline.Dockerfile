@@ -1,19 +1,24 @@
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Dependencias del sistema para compilar librerías matemáticas y NLP
-RUN apt-get update && \
-    apt-get install -y build-essential gcc g++ && \
-    rm -rf /var/lib/apt/lists/*
+# Instalar dependencias de sistema para compilación y lectura de XML/Excel
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libxml2-dev \
+    libxslt-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copiar e instalar dependencias pesadas del pipeline
-COPY pipeline/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copiar e instalar requerimientos del pipeline
+COPY pipeline/requirements.txt /app/pipeline/requirements.txt
+RUN pip install --no-cache-dir -r /app/pipeline/requirements.txt
 
-# Copiar el código del pipeline
-COPY pipeline/ ./pipeline/
+# Copiar el código fuente
+COPY . /app
 
-# Mantiene el contenedor activo en reposo. 
-# Permite entrar a ejecutar scripts (ej: docker exec -it giragroup_pipeline python pipeline/ingestion/sheet_reader.py)
-CMD ["tail", "-f", "/dev/null"]
+ENV PYTHONPATH=/app
+
+EXPOSE 8006
+
+# Levantar micro-servicio interno de inferencia PyTorch BETO NER en el puerto 8006
+CMD ["python", "-m", "pipeline.semantic.inference_server", "--host", "0.0.0.0", "--port", "8006"]

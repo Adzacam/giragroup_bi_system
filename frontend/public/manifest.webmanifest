@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "GiraGroup BI — Posgrado",
+  "short_name": "GiraGroup BI",
+  "description": "Cuadro de Mando Integral, DataOps y analítica predictiva de GiraGroup Posgrado.",
+  "lang": "es-BO",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FAF9F6",
+  "theme_color": "#0C1E33",
+  "categories": ["business", "education", "productivity"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Cuadro de Mando", "url": "/dashboard", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Bandeja HITL", "url": "/dataops/revision", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

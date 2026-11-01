@@ -1,0 +1,150 @@
+{
+  "fecha": "2026-10-28T12:46:28.572722",
+  "modelo": "C:\\Users\\DAZA\\Documents\\Universidad\\Proyecto de Grado 7MO semestre\\giragroup_bi_system\\pipeline\\semantic\\beto_local",
+  "test_gold_real": {
+    "MODULO": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 150
+    },
+    "PER_DOCENTE": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 50
+    },
+    "PER_ESTUDIANTE": {
+      "precision": 1.0,
+      "recall": 0.9846,
+      "f1-score": 0.9922,
+      "support": 130
+    },
+    "PROGRAMA": {
+      "precision": 0.9251,
+      "recall": 0.9611,
+      "f1-score": 0.9428,
+      "support": 180
+    },
+    "micro avg": {
+      "precision": 0.9728,
+      "recall": 0.9824,
+      "f1-score": 0.9776,
+      "support": 510
+    },
+    "macro avg": {
+      "precision": 0.9813,
+      "recall": 0.9864,
+      "f1-score": 0.9838,
+      "support": 510
+    },
+    "weighted avg": {
+      "precision": 0.9736,
+      "recall": 0.9824,
+      "f1-score": 0.9778,
+      "support": 510
+    }
+  },
+  "test_conll_sintetico": {
+    "MODULO": {
+      "precision": 0.5714,
+      "recall": 0.041,
+      "f1-score": 0.0766,
+      "support": 195
+    },
+    "PER_DOCENTE": {
+      "precision": 0.7379,
+      "recall": 0.7379,
+      "f1-score": 0.7379,
+      "support": 145
+    },
+    "PER_ESTUDIANTE": {
+      "precision": 0.7389,
+      "recall": 0.7389,
+      "f1-score": 0.7389,
+      "support": 180
+    },
+    "PROGRAMA": {
+      "precision": 0.9383,
+      "recall": 0.9913,
+      "f1-score": 0.9641,
+      "support": 230
+    },
+    "micro avg": {
+      "precision": 0.8179,
+      "recall": 0.6347,
+      "f1-score": 0.7147,
+      "support": 750
+    },
+    "macro avg": {
+      "precision": 0.7466,
+      "recall": 0.6273,
+      "f1-score": 0.6294,
+      "support": 750
+    },
+    "weighted avg": {
+      "precision": 0.7563,
+      "recall": 0.6347,
+      "f1-score": 0.6355,
+      "support": 750
+    }
+  },
+  "training_info": {
+    "status": "trained_success",
+    "timestamp": "2026-10-28T12:46:19.074396",
+    "model_base": "dccuchile/bert-base-spanish-wwm-cased",
+    "output_dir": "C:\\Users\\DAZA\\Documents\\Universidad\\Proyecto de Grado 7MO semestre\\giragroup_bi_system\\pipeline\\semantic\\beto_local",
+    "epochs": 3,
+    "best_epoch": 3,
+    "learning_rate": 2.5e-05,
+    "batch_size": 16,
+    "max_length": 128,
+    "seed": 42,
+    "train_size": 1400,
+    "dev_size": 350,
+    "test_gold_size": 180,
+    "classes": [
+      "O",
+      "B-PER_ESTUDIANTE",
+      "I-PER_ESTUDIANTE",
+      "B-PER_DOCENTE",
+      "I-PER_DOCENTE",
+      "B-MODULO",
+      "I-MODULO",
+      "B-PROGRAMA",
+      "I-PROGRAMA"
+    ],
+    "best_dev_f1": 0.9989,
+    "train_duration_sec": 689.9,
+    "device": "cpu",
+    "epoch_history": [
+      {
+        "epoch": 1,
+        "train_loss": 0.3057,
+        "dev_loss": 0.0056,
+        "dev_f1": 0.9939,
+        "dev_precision": 0.9936,
+        "dev_recall": 0.9943,
+        "time_sec": 228.81
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.0064,
+        "dev_loss": 0.0014,
+        "dev_f1": 0.9986,
+        "dev_precision": 0.9986,
+        "dev_recall": 0.9986,
+        "time_sec": 224.09
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.0023,
+        "dev_loss": 0.0007,
+        "dev_f1": 0.9989,
+        "dev_precision": 0.9993,
+        "dev_recall": 0.9986,
+        "time_sec": 229.53
+      }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_docente,SERIAL,NO,PK,Identificador del docente
+nombre_completo,VARCHAR(200),NO,UNIQUE,Nombre completo del docente
+email,VARCHAR(150),SÍ,—,Correo de contacto del docente
+celular,VARCHAR(50),SÍ,—,Teléfono celular del docente
+grado_academico,VARCHAR(100),SÍ,—,Grado académico del docente
+tipo_docente,VARCHAR(50),SÍ,DEFAULT 'TITULAR',"Tipo de docente: TITULAR, ADJUNTO, INVITADO"
+
+Indices,cat_docente_nombre_completo_key (nombre_completo) [único]; cat_docente_pkey (id_docente) [PK]; idx_cat_doc_nombre (nombre_completo)

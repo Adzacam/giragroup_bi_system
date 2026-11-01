@@ -1,0 +1,8 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_meta,SERIAL,NO,PK,Identificador de la meta
+categoria,VARCHAR(50),NO,—,"Categoría de la meta (PROGRAMAS, TECHOS_CERRADOS)"
+id_tiempo,INTEGER,SÍ,FK → dim_tiempo(id_tiempo) ON DELETE CASCADE,Mes al que corresponde la meta
+monto_meta,"NUMERIC(14,2)",SÍ,—,Monto presupuestado como meta
+tipo_programa,VARCHAR(50),SÍ,—,"Tipo de programa de la meta (PROGRAMAS, TECHOS_CERRADOS)"
+
+Indices,dim_meta_pkey (id_meta) [PK]; idx_dim_meta_cat (categoria); idx_dim_meta_tiempo (id_tiempo)

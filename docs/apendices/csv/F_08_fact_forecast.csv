@@ -1,0 +1,12 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_forecast,SERIAL,NO,PK,Identificador del valor pronosticado
+caso_uso,VARCHAR(50),NO,"UNIQUE (caso_uso, id_tiempo)","Serie pronosticada: ALUMNOS_GLOBAL, ALUMNOS_DIPLOMADO, ALUMNOS_CURSO, ALUMNOS_EXPERTO, META_ANUAL, META_MENSUAL_PROGRAMAS"
+id_tiempo,INTEGER,SÍ,"FK → dim_tiempo(id_tiempo) ON DELETE CASCADE; UNIQUE (caso_uso, id_tiempo)",Mes proyectado
+valor_forecast,"NUMERIC(14,2)",NO,—,Valor pronosticado para el mes
+ic_lower,"NUMERIC(14,2)",SÍ,—,Límite inferior del intervalo de confianza del pronóstico
+ic_upper,"NUMERIC(14,2)",SÍ,—,Límite superior del intervalo de confianza del pronóstico
+metodo,VARCHAR(30),NO,DEFAULT 'HoltWinters',Modelo de pronóstico usado: HoltWinters u OLS
+horizonte_meses,INTEGER,NO,—,Cantidad de meses proyectados (1 a 6)
+generado_en,TIMESTAMP,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora en que se generó el pronóstico
+
+Indices,"fact_forecast_pkey (id_forecast) [PK]; idx_fact_forecast_caso (caso_uso); uq_forecast_caso_tiempo (caso_uso, id_tiempo) [único]"

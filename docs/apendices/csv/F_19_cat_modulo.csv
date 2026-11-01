@@ -1,0 +1,8 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_modulo,SERIAL,NO,PK,Identificador del módulo en el catálogo
+codigo_modulo,VARCHAR(50),SÍ,—,Por documentar
+nombre_canonico,VARCHAR(200),NO,—,Nombre canónico del módulo en el catálogo
+area,VARCHAR(100),SÍ,DEFAULT 'General',Por documentar (por defecto General)
+nombre_modulo,VARCHAR(255),SÍ,—,Por documentar
+
+Indices,cat_modulo_pkey (id_modulo) [PK]

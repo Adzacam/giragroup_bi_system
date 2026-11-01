@@ -1,0 +1,14 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_programa,SERIAL,NO,PK,Identificador del programa
+pos_code,VARCHAR(50),NO,UNIQUE,Código único del programa (POS-…)
+nombre_programa,VARCHAR(255),NO,—,"Nombre canónico del programa, sin sufijo de versión"
+version,INTEGER,SÍ,DEFAULT 1,"Versión del programa, tomada del nombre (v. N) o de la columna VERSIÓN"
+nombre_completo_raw,VARCHAR(300),SÍ,—,"Nombre del programa tal como figura en la fuente, con la versión"
+id_escuela,INTEGER,SÍ,FK → cat_escuela(id_escuela) ON DELETE RESTRICT,Escuela a la que pertenece el programa
+id_tipo_programa,INTEGER,SÍ,FK → cat_tipo_programa(id_tipo_programa) ON DELETE RESTRICT,Tipo de programa
+id_modalidad,INTEGER,SÍ,FK → cat_modalidad(id_modalidad) ON DELETE RESTRICT,Modalidad de dictado del programa
+inversion_base,"NUMERIC(12,2)",SÍ,DEFAULT 0.00,Inversión base del programa según la planilla de programas
+punto_equilibrio,INTEGER,SÍ,DEFAULT 0,Número de inscritos necesario para cubrir los costos del programa
+horas_totales,INTEGER,SÍ,DEFAULT 0,Carga horaria total del programa
+
+Indices,cat_programa_pkey (id_programa) [PK]; cat_programa_pos_code_key (pos_code) [único]; idx_cat_prg_nombre (nombre_programa); idx_cat_prg_pos (pos_code)

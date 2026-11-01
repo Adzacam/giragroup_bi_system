@@ -1,0 +1,735 @@
+/* =============================================================================
+   DATAOPS FLOW - ESTILOS SEMÁNTICOS INSTITUCIONALES (GIRA GROUP BI)
+   Paleta Institucional: Navy (#0C1E33), Gold (#D99B26), Alabaster (#FAF9F6)
+   Soporte completo para Modo Claro (default) y Modo Oscuro ([data-theme="dark"])
+   ============================================================================= */
+
+:root {
+  /* Tokens de acento adaptativos para DataOps (Institucional GiraGroup) */
+  --dataops-info-bg: rgba(12, 30, 51, 0.06);
+  --dataops-info-border: rgba(12, 30, 51, 0.18);
+  --dataops-info-text: #0C1E33;
+
+  --dataops-gold-bg: rgba(217, 155, 38, 0.10);
+  --dataops-gold-border: rgba(217, 155, 38, 0.35);
+  --dataops-gold-text: #B8801A;
+
+  --dataops-warning-bg: rgba(217, 155, 38, 0.09);
+  --dataops-warning-border: rgba(217, 155, 38, 0.32);
+  --dataops-warning-text: #A16A14;
+
+  --dataops-success-bg: rgba(27, 135, 84, 0.09);
+  --dataops-success-border: rgba(27, 135, 84, 0.28);
+  --dataops-success-text: #1B8754;
+
+  --dataops-chip-bg: var(--color-paper-white, #FFFFFF);
+  --dataops-row-hover: rgba(12, 30, 51, 0.04);
+  --dataops-row-selected: rgba(217, 155, 38, 0.14);
+  --dataops-input-bg: var(--color-paper-white, #FFFFFF);
+}
+
+[data-theme="dark"] {
+  --dataops-info-bg: rgba(241, 184, 68, 0.12);
+  --dataops-info-border: rgba(241, 184, 68, 0.32);
+  --dataops-info-text: #F1B844;
+
+  --dataops-gold-bg: rgba(241, 184, 68, 0.18);
+  --dataops-gold-border: rgba(241, 184, 68, 0.45);
+  --dataops-gold-text: #F6C866;
+
+  --dataops-warning-bg: rgba(241, 184, 68, 0.15);
+  --dataops-warning-border: rgba(241, 184, 68, 0.38);
+  --dataops-warning-text: #F6C866;
+
+  --dataops-success-bg: rgba(27, 135, 84, 0.20);
+  --dataops-success-border: rgba(27, 135, 84, 0.45);
+  --dataops-success-text: #4ADE80;
+
+  --dataops-chip-bg: #20252e;
+  --dataops-row-hover: rgba(241, 184, 68, 0.08);
+  --dataops-row-selected: rgba(241, 184, 68, 0.20);
+  --dataops-input-bg: #161920;
+}
+
+/* ── Banners Informativos y de Regla de Negocio ── */
+.dataops-banner-info {
+  background-color: var(--dataops-info-bg);
+  border: 1px solid var(--dataops-info-border);
+  color: var(--dataops-info-text);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-sohne, 'Plus Jakarta Sans', sans-serif);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.dataops-banner-warning {
+  background-color: var(--dataops-warning-bg);
+  border: 1px solid var(--dataops-warning-border);
+  border-left: 4px solid var(--color-gira-gold, #D99B26);
+  color: var(--dataops-warning-text);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-family: var(--font-sohne, 'Plus Jakarta Sans', sans-serif);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.dataops-banner-success {
+  background-color: var(--dataops-success-bg);
+  border: 1px solid var(--dataops-success-border);
+  border-left: 4px solid var(--sileo-state-success, #1B8754);
+  color: var(--dataops-success-text);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-family: var(--font-sohne, 'Plus Jakarta Sans', sans-serif);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* ── Selects e Inputs Adaptativos para DataOps ── */
+.dataops-select,
+.dataops-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background-color: var(--dataops-input-bg);
+  color: var(--color-ink-black);
+  font-family: var(--font-sohne, 'Plus Jakarta Sans', sans-serif);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.dataops-select:focus,
+.dataops-input:focus {
+  border-color: var(--color-gira-gold, #D99B26);
+  box-shadow: 0 0 0 3px rgba(217, 155, 38, 0.20);
+}
+
+/* ── Botones Estilo Institucional GiraGroup ── */
+.btn-pill-gold {
+  background: linear-gradient(135deg, #D99B26 0%, #B8801A 100%);
+  color: #FFFFFF !important;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-family: var(--font-sohne, 'Plus Jakarta Sans', sans-serif);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(217, 155, 38, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-pill-gold:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(217, 155, 38, 0.45);
+  filter: brightness(1.05);
+}
+
+.btn-pill-gold:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .btn-pill-gold {
+  background: linear-gradient(135deg, #F1B844 0%, #D99B26 100%);
+  color: #0C1E33 !important;
+  box-shadow: 0 4px 14px rgba(241, 184, 68, 0.30);
+}
+
+.btn-pill-secondary {
+  background-color: var(--color-mist-gray);
+  color: var(--color-ink-black);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-family: var(--font-sohne, 'Plus Jakarta Sans', sans-serif);
+  font-weight: 600;
+  font-size: 12.5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-pill-secondary:hover {
+  background-color: var(--color-paper-white);
+  border-color: var(--color-gira-gold, #D99B26);
+}
+
+/* ── Tablas de Flujo y Filas Interactivas ── */
+.dataops-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12.5px;
+  font-family: var(--font-sohne, 'Plus Jakarta Sans', sans-serif);
+}
+
+.dataops-table th {
+  padding: 10px 14px;
+  background-color: var(--color-mist-gray);
+  color: var(--color-slate-gray);
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 12px;
+}
+
+.dataops-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-ink-black);
+}
+
+.dataops-table-row {
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.dataops-table-row:hover {
+  background-color: var(--dataops-row-hover) !important;
+}
+
+.dataops-table-row.selected {
+  background-color: var(--dataops-row-selected) !important;
+}
+
+/* ── Split View Inspector y Sección C ── */
+.dataops-split-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.dataops-section-a {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 24px;
+}
+
+/* ── Mini-Grid Inspector de Aplanamiento Asimétrico ── */
+.mini-grid-container {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-paper-white);
+}
+
+.mini-grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+}
+
+.mini-grid-table th,
+.mini-grid-table td {
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  white-space: nowrap;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-ink-black);
+}
+
+.mini-grid-coord {
+  font-size: 9px;
+  color: var(--color-ash-gray);
+  margin-right: 4px;
+}
+
+.mini-grid-cell-merged {
+  background-color: rgba(217, 155, 38, 0.12) !important;
+  color: var(--color-gira-gold, #D99B26) !important;
+  font-weight: 700;
+  border: 1.5px dashed rgba(217, 155, 38, 0.65) !important;
+}
+
+.mini-grid-cell-header {
+  background-color: #0C1E33 !important;
+  color: #FAF9F6 !important;
+  font-weight: 700;
+}
+
+[data-theme="dark"] .mini-grid-cell-merged {
+  background-color: rgba(241, 184, 68, 0.18) !important;
+  color: #F1B844 !important;
+  border: 1.5px dashed rgba(241, 184, 68, 0.65) !important;
+}
+
+[data-theme="dark"] .mini-grid-cell-header {
+  background-color: #20252e !important;
+  color: #FAF9F6 !important;
+  border-color: rgba(241, 184, 68, 0.35) !important;
+}
+
+/* ── Chips Semánticos del Catálogo Maestro Institucional (Cero colores estridentes) ── */
+.chip-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2.5px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.2px;
+  font-family: var(--font-sohne, 'Plus Jakarta Sans', sans-serif);
+}
+
+/* PROGRAMA_CAT: Navy institucional con sutil borde dorado */
+.chip-programa {
+  background-color: rgba(12, 30, 51, 0.08);
+  color: #0C1E33;
+  border: 1px solid rgba(12, 30, 51, 0.25);
+}
+
+/* MODULO_CAT: Slate/Pizarra sobrio */
+.chip-modulo {
+  background-color: rgba(71, 85, 105, 0.09);
+  color: #334155;
+  border: 1px solid rgba(71, 85, 105, 0.28);
+}
+
+/* PRECIO_BASE_CAT: Verde esmeralda institucional tenue */
+.chip-precio {
+  background-color: rgba(27, 135, 84, 0.09);
+  color: #1B8754;
+  border: 1px solid rgba(27, 135, 84, 0.28);
+}
+
+/* FECHA: Dorado GiraGroup */
+.chip-fecha {
+  background-color: rgba(217, 155, 38, 0.10);
+  color: #B8801A;
+  border: 1px solid rgba(217, 155, 38, 0.35);
+}
+
+/* ORIGEN DOCUMENTAL: Gris niebla / carbón sobrio */
+.chip-origen {
+  background-color: rgba(100, 116, 139, 0.10);
+  color: #334155;
+  border: 1px solid rgba(100, 116, 139, 0.28);
+}
+
+/* Modo Oscuro para Chips */
+[data-theme="dark"] .chip-programa {
+  background-color: rgba(241, 184, 68, 0.16);
+  color: #F1B844;
+  border: 1px solid rgba(241, 184, 68, 0.38);
+}
+
+[data-theme="dark"] .chip-modulo {
+  background-color: rgba(148, 163, 184, 0.16);
+  color: #E2E8F0;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+[data-theme="dark"] .chip-precio {
+  background-color: rgba(27, 135, 84, 0.20);
+  color: #4ADE80;
+  border: 1px solid rgba(27, 135, 84, 0.40);
+}
+
+[data-theme="dark"] .chip-fecha {
+  background-color: rgba(241, 184, 68, 0.20);
+  color: #F6C866;
+  border: 1px solid rgba(241, 184, 68, 0.45);
+}
+
+[data-theme="dark"] .chip-origen {
+  background-color: rgba(148, 163, 184, 0.16);
+  color: #CBD5E1;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+/* ── Adaptabilidad Móvil (<= 960px y 390x844) ── */
+@media (max-width: 960px) {
+  .dataops-section-a {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .dataops-split-view {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .floating-artifact {
+    padding: 16px !important;
+  }
+
+  .dataops-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  .mini-grid-container {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* =============================================================================
+   VISTA ③ BETO READING & VISTA ④ REVISIÓN HUMANA - COMPONENTES ESPECIALIZADOS
+   ============================================================================= */
+
+/* ── Tarjetas Resumen Ejecutivo (Cards Superiores) ── */
+.status-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 960px) {
+  .status-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .status-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.status-card {
+  background: var(--color-paper-white, #FFFFFF);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(12, 30, 51, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.status-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(12, 30, 51, 0.08);
+}
+
+.status-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.status-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-slate-gray);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-card-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-ink-black);
+  line-height: 1.1;
+  margin-bottom: 6px;
+  font-family: var(--font-sohne, 'Plus Jakarta Sans', sans-serif);
+}
+
+.status-card-subtext {
+  font-size: 12px;
+  color: var(--color-slate-gray);
+  margin: 0;
+}
+
+/* ── Barra de Progreso ── */
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-mist-gray);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 12px 0 20px 0;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1B8754 0%, #34D399 100%);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* ── Grid y Tarjetas de Áreas de Trabajo ── */
+.area-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 960px) {
+  .area-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .area-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.area-card {
+  background: var(--color-paper-white, #FFFFFF);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.area-card:hover {
+  border-color: var(--color-gira-gold, #D99B26);
+  box-shadow: 0 4px 14px rgba(217, 155, 38, 0.12);
+}
+
+.area-card.active {
+  border-color: var(--color-gira-gold, #D99B26);
+  background: rgba(217, 155, 38, 0.04);
+  box-shadow: 0 0 0 2px var(--color-gira-gold, #D99B26);
+}
+
+.area-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.area-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink-black);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.area-card-count {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-ink-black);
+}
+
+.area-card-stats {
+  display: flex;
+  gap: 8px;
+  font-size: 11.5px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--color-border);
+}
+
+/* ── Filtros en Pastilla (Pill Filters) ── */
+.pill-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.pill-filter {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--color-border);
+  background: var(--color-paper-white);
+  color: var(--color-slate-gray);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pill-filter:hover {
+  border-color: var(--color-gira-gold);
+  color: var(--color-ink-black);
+}
+
+.pill-filter.active {
+  background: #0C1E33;
+  color: #FAF9F6;
+  border-color: #0C1E33;
+  box-shadow: 0 2px 6px rgba(12, 30, 51, 0.25);
+}
+
+[data-theme="dark"] .pill-filter.active {
+  background: var(--color-gira-gold, #D99B26);
+  color: #0C1E33;
+  border-color: var(--color-gira-gold, #D99B26);
+}
+
+/* ── Alertas de Cruce Multifuente (Riesgo Abandono) ── */
+.multi-source-alert {
+  background: rgba(217, 56, 58, 0.08);
+  border: 1px solid rgba(217, 56, 58, 0.35);
+  border-left: 4px solid #D9383A;
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: #B91C1C;
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin: 10px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+[data-theme="dark"] .multi-source-alert {
+  background: rgba(217, 56, 58, 0.18);
+  border-color: rgba(217, 56, 58, 0.50);
+  color: #F87171;
+}
+
+/* ── Desglose Relacional Cero-PII ── */
+.zero-pii-card {
+  background: rgba(12, 30, 51, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+[data-theme="dark"] .zero-pii-card {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ── Split Screen Vista ④ Revisión Humana ── */
+.split-screen-review {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .split-screen-review {
+    grid-template-columns: 1fr;
+  }
+  .review-evidence-panel.mobile-hidden {
+    display: none;
+  }
+  .mobile-only-toggle {
+    display: block;
+  }
+}
+
+@media (min-width: 901px) {
+  .mobile-only-toggle {
+    display: none;
+  }
+  .review-evidence-panel {
+    display: block !important;
+  }
+}
+
+/* ── Botones de Acción Móvil Táctil 52px (Thumb Ergonomics) ── */
+.thumb-action-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.thumb-action-btn {
+  min-height: 52px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.1s ease, filter 0.15s ease;
+  touch-action: manipulation;
+}
+
+.thumb-action-btn:active {
+  transform: scale(0.97);
+}
+
+.thumb-action-btn.reject {
+  background-color: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+[data-theme="dark"] .thumb-action-btn.reject {
+  background-color: rgba(153, 27, 27, 0.35);
+  color: #FCA5A5;
+  border-color: rgba(248, 113, 113, 0.40);
+}
+
+.thumb-action-btn.approve {
+  background-color: #1B8754;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(27, 135, 84, 0.35);
+}
+
+[data-theme="dark"] .thumb-action-btn.approve {
+  background-color: #10B981;
+  color: #064E3B;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+/* Leyenda de atajos de la Bandeja HITL (oculta en táctil: allí no hay teclado físico) */
+.hitl-atajos {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--color-slate-gray);
+}
+.hitl-atajos kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 1px 5px;
+  border: 1px solid var(--color-border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--color-paper-white);
+}
+@media (hover: none) and (pointer: coarse) {
+  .hitl-atajos {
+    display: none;
+  }
+}

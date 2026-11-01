@@ -1,0 +1,9 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_guia,SERIAL,NO,PK,Identificador de la guía
+subtipo,VARCHAR(50),NO,UNIQUE,"Subtipo de documento al que aplica (ACTAS_NOTAS, COBRANZAS…)"
+descripcion,VARCHAR(255),SÍ,—,Descripción de la guía
+plantilla_texto,TEXT,NO,—,Plantilla para convertir una fila a texto plano
+campos_requeridos,TEXT,SÍ,—,"Campos obligatorios de la plantilla, separados por coma"
+prioridad,INTEGER,SÍ,—,Prioridad de la plantilla frente a otras del mismo subtipo
+
+Indices,cat_guia_texto_plano_pkey (id_guia) [PK]; cat_guia_texto_plano_subtipo_key (subtipo) [único]; ix_cat_guia_texto_plano_id_guia (id_guia)

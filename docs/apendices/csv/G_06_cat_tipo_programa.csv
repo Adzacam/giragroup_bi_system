@@ -1,0 +1,5 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_tipo_programa,SERIAL,NO,PK,Identificador del tipo de programa
+nombre_tipo,VARCHAR(100),NO,UNIQUE,"Tipo de programa (Diplomado, Maestría, Especialidad, Curso, Curso Experto / Certificación, Formación Continua…)"
+
+Indices,cat_tipo_programa_nombre_tipo_key (nombre_tipo) [único]; cat_tipo_programa_pkey (id_tipo_programa) [PK]

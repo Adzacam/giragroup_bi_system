@@ -1,0 +1,7 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_categoria,SERIAL,NO,PK,Identificador de la categoría financiera
+nombre_categoria,VARCHAR(200),NO,UNIQUE,"Nombre de la categoría (PROGRAMAS, TECHOS_CERRADOS, FINANCIERO_ANUAL…)"
+tipo,VARCHAR(50),SÍ,—,"Tipo de flujo: INGRESO, EGRESO, RENTABILIDAD, EBITDA"
+id_cat_categoria_fin,INTEGER,SÍ,FK → cat_categoria_financiera(id_categoria_fin) ON DELETE SET NULL,Categoría equivalente del catálogo estándar (cat_categoria_financiera)
+
+Indices,dim_categoria_financiera_nombre_categoria_key (nombre_categoria) [único]; dim_categoria_financiera_pkey (id_categoria) [PK]

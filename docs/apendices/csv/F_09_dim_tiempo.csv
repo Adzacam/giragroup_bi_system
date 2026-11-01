@@ -1,0 +1,16 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_tiempo,INTEGER,NO,PK,Clave de la fecha en formato AAAAMMDD
+fecha,DATE,NO,UNIQUE,Fecha calendario
+gestion,INTEGER,NO,—,Año (gestión)
+semestre,INTEGER,NO,—,"Semestre del año (1, 2)"
+trimestre,INTEGER,NO,—,Trimestre del año (1 a 4)
+mes,INTEGER,NO,—,Mes del año (1 a 12)
+nombre_mes,VARCHAR(20),NO,—,Nombre del mes en español (Enero … Diciembre)
+semana_iso,INTEGER,NO,—,Semana ISO del año (1 a 53)
+dia_mes,INTEGER,NO,—,Día del mes (1 a 31)
+dia_semana,INTEGER,NO,—,Día de la semana (1 = Lunes … 7 = Domingo)
+nombre_dia,VARCHAR(20),NO,—,Nombre del día en español (Lunes … Domingo)
+es_fin_semana,BOOLEAN,NO,—,Indica si la fecha cae sábado o domingo
+periodo_mes,VARCHAR(7),NO,—,Año y mes en formato AAAA-MM
+
+Indices,dim_tiempo_fecha_key (fecha) [único]; dim_tiempo_pkey (id_tiempo) [PK]; idx_dim_tiempo_fecha (fecha); idx_dim_tiempo_gestion (gestion); idx_dim_tiempo_periodo (periodo_mes)

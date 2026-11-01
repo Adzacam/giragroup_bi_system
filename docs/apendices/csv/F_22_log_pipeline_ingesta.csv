@@ -1,0 +1,12 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id,SERIAL,NO,PK,Identificador del evento
+id_documento,INTEGER,SÍ,FK → dim_origen_documental(id_documento) ON DELETE CASCADE,Documento procesado
+etapa,VARCHAR(50),NO,—,"Etapa del pipeline: UPLOAD, INGESTA, CLEAN, NORMALIZE, VALIDATE, STAGE, DISPATCH, DW_CONSOLIDACION, SUMMARY"
+nivel,VARCHAR(10),NO,—,"Nivel del evento: INFO, WARN, ERROR, SUCCESS"
+modulo,VARCHAR(100),SÍ,—,Componente que emitió el evento
+mensaje,TEXT,NO,—,Descripción del evento
+tiempo_ms,INTEGER,SÍ,—,Duración de la etapa en milisegundos
+metadata,JSONB,SÍ,—,"Datos adicionales del evento, en JSON"
+created_at,TIMESTAMPTZ,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora del evento
+
+Indices,idx_log_pipeline_doc (id_documento); log_pipeline_ingesta_pkey (id) [PK]

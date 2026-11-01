@@ -1,0 +1,21 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_estudiante,SERIAL,NO,PK,Identificador del estudiante en el almacén
+nombre_completo,VARCHAR(200),NO,—,Nombre completo del estudiante
+codigo_estudiante,VARCHAR(50),SÍ,—,Código del estudiante (número de CI o identificador temporal)
+ci,VARCHAR(50),SÍ,—,Cédula de identidad tal como llegó en la fuente
+ci_numero,VARCHAR(30),SÍ,UNIQUE parcial (índice uq_dim_estudiante_ci_numero),Parte numérica normalizada del CI (única entre estudiantes vigentes)
+ci_complemento,VARCHAR(10),SÍ,—,Complemento o extensión del CI
+id_temporal,VARCHAR(100),SÍ,—,Identificador temporal (TEMP-…) asignado al estudiante que llega sin CI
+identidad_verificada,BOOLEAN,SÍ,DEFAULT false,Indica que la identidad se confirmó con un CI válido
+id_institucion,INTEGER,SÍ,FK → cat_institucion(id_institucion) ON DELETE SET NULL,Institución a la que pertenece el estudiante
+programa_origen,VARCHAR(200),SÍ,—,Programa con el que se registró por primera vez al estudiante
+deprecado,BOOLEAN,SÍ,DEFAULT false,Marca un registro duplicado que se fusionó en otro estudiante
+fusionado_en,INTEGER,SÍ,FK → dim_estudiante(id_estudiante) ON DELETE SET NULL,Estudiante que absorbió a este registro al fusionar duplicados
+genero,VARCHAR(20),SÍ,—,Por documentar
+ciudad,VARCHAR(100),SÍ,—,Ciudad del estudiante
+nivel_academico,VARCHAR(100),SÍ,—,Nivel académico del estudiante
+edad,INTEGER,SÍ,—,Por documentar
+ocupacion,VARCHAR(100),SÍ,—,Por documentar
+estado_civil,VARCHAR(50),SÍ,—,Por documentar
+
+Indices,dim_estudiante_pkey (id_estudiante) [PK]; uq_dim_estudiante_ci_numero (ci_numero) [único; parcial: WHERE ((deprecado = false) AND (ci_numero IS NOT NULL) AND (length((ci_numero)::text) >= 5))]

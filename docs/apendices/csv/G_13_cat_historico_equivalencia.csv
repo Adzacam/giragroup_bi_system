@@ -1,0 +1,9 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_equivalencia,SERIAL,NO,PK,Identificador de la equivalencia
+id_concepto,INTEGER,NO,FK → cat_concepto_financiero(id_concepto) ON DELETE CASCADE,Concepto canónico equivalente
+termino_origen,VARCHAR(150),NO,—,Término usado en las planillas que equivale al concepto
+periodo_historico,VARCHAR(50),SÍ,—,"Periodo en que se usó el término (HISTORICO, 2023-2025, 2024-2025)"
+confianza_mapeo,"NUMERIC(5,4)",SÍ,—,Confianza de la equivalencia (0–1)
+fuente_referencia,VARCHAR(100),SÍ,—,"Planilla de origen del término (BD Cobranzas.xlsx, BD Egresos.xlsx, BD Techos.xlsx, EJECUTADO VS META.xlsx)"
+
+Indices,cat_historico_equivalencia_pkey (id_equivalencia) [PK]; ix_cat_historico_equivalencia_id_equivalencia (id_equivalencia); ix_cat_historico_equivalencia_termino_origen (termino_origen)

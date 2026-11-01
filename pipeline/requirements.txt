@@ -1,7 +1,18 @@
-pandas==2.2.1
-openpyxl==3.1.2
-transformers==4.38.2
-torch==2.2.1
-rapidfuzz==3.6.1
-gspread==6.1.4
-google-auth==2.29.0
+# Requerimientos del Pipeline de Ingesta y Limpieza (Sprint 2)
+pandas>=2.2.0
+openpyxl>=3.1.2
+xlrd>=2.0.1
+lxml>=5.1.0
+rapidfuzz>=3.6.0
+Unidecode>=1.3.8
+pytest>=8.0.0
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.9
+python-dotenv>=1.0.0
+
+# Requerimientos del Motor Semántico PLN / BETO (Sprint 3)
+torch>=2.2.0
+transformers>=4.38.0
+accelerate>=0.27.0
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0

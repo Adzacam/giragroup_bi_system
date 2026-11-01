@@ -1,0 +1,179 @@
+-- =============================================================================
+-- BASE DE DATOS DE CATÁLOGOS DE REFERENCIA INSTITUCIONAL (3NF)
+-- Base de Datos: giragroup_catalog_db
+-- =============================================================================
+
+-- 1. Escuelas Académicas
+CREATE TABLE IF NOT EXISTS public.cat_escuela (
+    id_escuela SERIAL PRIMARY KEY,
+    nombre_escuela VARCHAR(100) NOT NULL UNIQUE,
+    sigla VARCHAR(20)
+);
+
+-- 2. Tipos de Programa
+CREATE TABLE IF NOT EXISTS public.cat_tipo_programa (
+    id_tipo_programa SERIAL PRIMARY KEY,
+    nombre_tipo VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- 3. Modalidades
+CREATE TABLE IF NOT EXISTS public.cat_modalidad (
+    id_modalidad SERIAL PRIMARY KEY,
+    nombre_modalidad VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- 4. Programas Canónicos (con versión y vínculo a escuela, tipo y modalidad)
+CREATE TABLE IF NOT EXISTS public.cat_programa (
+    id_programa SERIAL PRIMARY KEY,
+    pos_code VARCHAR(50) NOT NULL UNIQUE,
+    nombre_programa VARCHAR(255) NOT NULL,
+    version INT DEFAULT 1,
+    nombre_completo_raw VARCHAR(300),
+    id_escuela INT REFERENCES public.cat_escuela(id_escuela) ON DELETE RESTRICT,
+    id_tipo_programa INT REFERENCES public.cat_tipo_programa(id_tipo_programa) ON DELETE RESTRICT,
+    id_modalidad INT REFERENCES public.cat_modalidad(id_modalidad) ON DELETE RESTRICT,
+    inversion_base NUMERIC(12, 2) DEFAULT 0.00,
+    punto_equilibrio INT DEFAULT 0,
+    horas_totales INT DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_cat_prg_pos ON public.cat_programa(pos_code);
+CREATE INDEX IF NOT EXISTS idx_cat_prg_nombre ON public.cat_programa(nombre_programa);
+
+-- 5. Docentes Institucionales
+CREATE TABLE IF NOT EXISTS public.cat_docente (
+    id_docente SERIAL PRIMARY KEY,
+    nombre_completo VARCHAR(200) NOT NULL UNIQUE,
+    email VARCHAR(150),
+    celular VARCHAR(50),
+    grado_academico VARCHAR(100),
+    tipo_docente VARCHAR(50) DEFAULT 'TITULAR'
+);
+CREATE INDEX IF NOT EXISTS idx_cat_doc_nombre ON public.cat_docente(nombre_completo);
+
+-- 6. Módulos por Programa
+CREATE TABLE IF NOT EXISTS public.cat_modulo (
+    id_modulo SERIAL PRIMARY KEY,
+    id_programa INT NOT NULL REFERENCES public.cat_programa(id_programa) ON DELETE CASCADE,
+    nro_modulo INT NOT NULL,
+    nombre_modulo VARCHAR(255) NOT NULL,
+    horas_modulo NUMERIC(6, 2) DEFAULT 0,
+    pago_docente_base NUMERIC(10, 2) DEFAULT 0,
+    CONSTRAINT uq_cat_modulo_programa_nro UNIQUE (id_programa, nro_modulo)
+);
+
+-- 7. Criterios Académicos y Estados
+CREATE TABLE IF NOT EXISTS public.cat_estado_academico (
+    id_estado_academico SERIAL PRIMARY KEY,
+    nombre_estado VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS public.cat_estado_reprobado (
+    id_estado_reprobado SERIAL PRIMARY KEY,
+    nombre_detalle VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS public.cat_estado_arca (
+    id_estado_arca SERIAL PRIMARY KEY,
+    nombre_arca VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- 8. Clasificación de Cartera de Cobranzas
+CREATE TABLE IF NOT EXISTS public.cat_tipo_cartera (
+    id_cartera SERIAL PRIMARY KEY,
+    nombre_cartera VARCHAR(100) NOT NULL UNIQUE,
+    dias_mora_min INT NOT NULL,
+    dias_mora_max INT NOT NULL,
+    descripcion VARCHAR(255)
+);
+
+-- 9. Metas de Gestión Presupuestaria
+CREATE TABLE IF NOT EXISTS public.ref_metas_gestion (
+    id_meta SERIAL PRIMARY KEY,
+    gestion INT NOT NULL,
+    mes INT NOT NULL,
+    categoria VARCHAR(100) NOT NULL,
+    monto_meta_ingreso NUMERIC(14, 2) DEFAULT 0,
+    monto_ejecutado NUMERIC(14, 2) DEFAULT 0,
+    ebitda_meta_pct NUMERIC(6, 4),
+    ebitda_ejecutado_pct NUMERIC(6, 4),
+    CONSTRAINT uq_ref_metas_gestion_mes_cat UNIQUE (gestion, mes, categoria)
+);
+
+-- 10. Catálogo Financiero Estándar (Ingresos y Egresos)
+CREATE TABLE IF NOT EXISTS public.cat_categoria_financiera (
+    id_categoria_fin SERIAL PRIMARY KEY,
+    codigo VARCHAR(50) NOT NULL UNIQUE,
+    nombre_categoria VARCHAR(100) NOT NULL,
+    tipo_flujo VARCHAR(20) NOT NULL -- 'INGRESO' o 'EGRESO'
+);
+
+-- 11. Staging de Entidades No Resueltas (NLP / Normalización)
+CREATE TABLE IF NOT EXISTS public.stg_entidad_no_resuelta (
+    id_pendiente     SERIAL PRIMARY KEY,
+    tipo_entidad     VARCHAR(30) NOT NULL,   -- 'programa','docente','escuela','estudiante_sin_ci'
+    texto_original   VARCHAR(300) NOT NULL,
+    mejor_match_cat  VARCHAR(300),
+    score_similitud  NUMERIC(5,4),
+    archivo_origen   VARCHAR(500),
+    estado           VARCHAR(20) DEFAULT 'PENDIENTE',
+    fecha_deteccion  TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_stg_estado ON public.stg_entidad_no_resuelta(estado);
+CREATE INDEX IF NOT EXISTS idx_stg_tipo ON public.stg_entidad_no_resuelta(tipo_entidad);
+
+-- 12. Etiquetas y Reglas de Clasificación de Documentos / Texto
+CREATE TABLE IF NOT EXISTS public.cat_etiqueta_clasificacion (
+    id_etiqueta SERIAL PRIMARY KEY,
+    categoria VARCHAR(50) NOT NULL,            -- 'academico', 'financiero', 'comercial'
+    subtipo VARCHAR(50),                       -- 'ACTAS_NOTAS', 'COBRANZAS', 'EVALUACION_DOCENTE', etc.
+    palabra_clave VARCHAR(100) NOT NULL UNIQUE,
+    ambito VARCHAR(30) DEFAULT 'AMBOS',        -- 'ARCHIVO', 'HOJA', 'CONTENIDO', 'AMBOS'
+    peso INT DEFAULT 1
+);
+CREATE INDEX IF NOT EXISTS idx_cat_etiq_cat ON public.cat_etiqueta_clasificacion(categoria);
+CREATE INDEX IF NOT EXISTS idx_cat_etiq_sub ON public.cat_etiqueta_clasificacion(subtipo);
+
+-- 13. Mapeo Canónico de Columnas Tabulares
+CREATE TABLE IF NOT EXISTS public.cat_mapeo_columna (
+    id_mapeo SERIAL PRIMARY KEY,
+    campo_canonico VARCHAR(50) NOT NULL,       -- 'ESTUDIANTE', 'CI', 'MONTO', 'NOTA', etc.
+    alias_columna VARCHAR(100) NOT NULL UNIQUE,
+    tipo_entidad VARCHAR(50) NOT NULL          -- Corresponde a TipoEntidad (NER)
+);
+CREATE INDEX IF NOT EXISTS idx_cat_map_campo ON public.cat_mapeo_columna(campo_canonico);
+
+-- 14. Guías y Plantillas Dinámicas para Serialización a Texto Plano
+CREATE TABLE IF NOT EXISTS public.cat_guia_texto_plano (
+    id_guia SERIAL PRIMARY KEY,
+    subtipo VARCHAR(50) NOT NULL UNIQUE,       -- 'ACTAS_NOTAS', 'COBRANZAS', etc.
+    descripcion VARCHAR(255),
+    plantilla_texto TEXT NOT NULL,
+    campos_requeridos TEXT,                    -- Campos separados por coma: 'ESTUDIANTE,PROGRAMA'
+    prioridad INT DEFAULT 1
+);
+
+-- 15. Catálogo Maestro de Conceptos Financieros (Canónico)
+CREATE TABLE IF NOT EXISTS public.cat_concepto_financiero (
+    id_concepto SERIAL PRIMARY KEY,
+    codigo_canonico VARCHAR(50) NOT NULL UNIQUE,  -- ej: 'FIN-CUOTA-01'
+    nombre_canonico VARCHAR(100) NOT NULL UNIQUE, -- ej: 'CUOTA'
+    tipo_movimiento VARCHAR(30) NOT NULL,        -- 'INGRESO', 'EGRESO', 'SALDO', 'AJUSTE'
+    categoria_contable VARCHAR(50),              -- 'COBRANZA', 'OPERATIVO', 'DOCENTE', 'CONVENIO', 'METAS'
+    descripcion VARCHAR(255)
+);
+CREATE INDEX IF NOT EXISTS idx_cat_concepto_codigo ON public.cat_concepto_financiero(codigo_canonico);
+CREATE INDEX IF NOT EXISTS idx_cat_concepto_tipo ON public.cat_concepto_financiero(tipo_movimiento);
+
+-- 16. Histórico de Equivalencias y Sinónimos Financieros
+CREATE TABLE IF NOT EXISTS public.cat_historico_equivalencia (
+    id_equivalencia SERIAL PRIMARY KEY,
+    id_concepto INT NOT NULL REFERENCES public.cat_concepto_financiero(id_concepto) ON DELETE CASCADE,
+    termino_origen VARCHAR(150) NOT NULL,        -- ej: 'Mensualidad', 'Colegiatura', 'Honorarios'
+    periodo_historico VARCHAR(50) DEFAULT 'TODOS',
+    confianza_mapeo NUMERIC(5, 4) DEFAULT 0.9500,
+    fuente_referencia VARCHAR(100)               -- ej: 'BD Cobranzas.xlsx', 'BD Egresos.xlsx'
+);
+CREATE INDEX IF NOT EXISTS idx_cat_equiv_termino ON public.cat_historico_equivalencia(termino_origen);
+CREATE INDEX IF NOT EXISTS idx_cat_equiv_concepto ON public.cat_historico_equivalencia(id_concepto);
+
+

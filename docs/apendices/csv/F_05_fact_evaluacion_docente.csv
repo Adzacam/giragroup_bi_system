@@ -1,0 +1,11 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_hecho_eval,SERIAL,NO,PK,Identificador de la respuesta de evaluación
+id_docente,INTEGER,SÍ,FK → dim_docente(id_docente) ON DELETE CASCADE,Docente evaluado
+id_modulo,INTEGER,SÍ,FK → dim_modulo(id_modulo) ON DELETE CASCADE,Módulo en el que se evaluó al docente
+id_estudiante,INTEGER,SÍ,FK → dim_estudiante(id_estudiante) ON DELETE SET NULL,Estudiante que respondió la evaluación (opcional)
+id_tiempo,INTEGER,SÍ,FK → dim_tiempo(id_tiempo) ON DELETE CASCADE,Fecha de la evaluación
+pregunta_bloque,VARCHAR(500),SÍ,—,Pregunta o criterio evaluado de la encuesta docente
+puntuacion,"NUMERIC(4,2)",SÍ,—,Puntuación otorgada al docente en el criterio
+comentario,VARCHAR(1000),SÍ,—,Comentario libre del estudiante sobre el docente
+
+Indices,fact_evaluacion_docente_pkey (id_hecho_eval) [PK]; idx_fact_eval_docente (id_docente); idx_fact_eval_estudiante (id_estudiante); idx_fact_eval_modulo (id_modulo); idx_fact_eval_tiempo (id_tiempo)

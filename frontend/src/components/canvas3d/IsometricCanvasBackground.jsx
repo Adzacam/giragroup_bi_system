@@ -1,0 +1,163 @@
+import React, { useEffect, useRef } from 'react';
+import { useTheme } from '../../context/ThemeContext';
+
+export default function IsometricCanvasBackground() {
+  const canvasRef = useRef(null);
+  const { theme, canvasEnabled } = useTheme();
+
+  useEffect(() => {
+    if (!canvasEnabled) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    const cols = 18;
+    const rows = 12;
+    const spacing = 95;
+    
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
+    let time = 0;
+
+    const handleMouseMove = (e) => {
+      mouseX = (e.clientX / width) * 2 - 1;
+      mouseY = (e.clientY / height) * 2 - 1;
+    };
+
+    const handleResize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('resize', handleResize);
+
+    const isDark = theme === 'dark';
+
+    let animationId;
+    let isRunning = false;
+
+    // Ahorro de energía: con movimiento reducido, Save-Data o batería baja (<= 20 % sin cargar)
+    // se pinta un único cuadro estático y el loop no se reprograma.
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let ahorroBateria = false;
+    let bateria = null;
+    const modoEstatico = () => motionQuery.matches || navigator.connection?.saveData === true || ahorroBateria;
+
+    const render = () => {
+      if (document.hidden) {
+        isRunning = false;
+        return;
+      }
+
+      ctx.clearRect(0, 0, width, height);
+      
+      targetX += (mouseX - targetX) * 0.04;
+      targetY += (mouseY - targetY) * 0.04;
+      time += 0.01;
+      
+      const scrollOffset = window.scrollY * 0.15;
+
+      ctx.save();
+      ctx.translate(width / 2 + targetX * 50, height / 2 - 200 + targetY * 30 - scrollOffset);
+
+      const points = [];
+
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const x = (j - cols / 2) * spacing;
+          const y = (i - rows / 2) * spacing;
+          
+          const dist = Math.sqrt(x * x + y * y);
+          const angle = Math.atan2(y, x) + time;
+          
+          const z = Math.sin(dist * 0.45 - angle) * 24 + (targetY * i * 3);
+          
+          const isoX = (x - y) * Math.cos(Math.PI / 6);
+          const isoY = (x + y) * Math.sin(Math.PI / 6) - z;
+          
+          points.push({ x: isoX, y: isoY, i, j });
+          
+          ctx.beginPath();
+          ctx.arc(isoX, isoY, 1.8, 0, Math.PI * 2);
+          if ((i + j) % 3 === 0) {
+            ctx.fillStyle = isDark ? 'rgba(224, 152, 67, 0.65)' : 'rgba(93, 42, 26, 0.4)'; 
+          } else {
+            ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(23, 25, 28, 0.15)'; 
+          }
+          ctx.fill();
+        }
+      }
+
+      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(23, 25, 28, 0.05)';
+      ctx.lineWidth = 1;
+      
+      for (let p = 0; p < points.length; p++) {
+        const point = points[p];
+        if (point.j < cols - 1) {
+          const nextPoint = points[p + 1];
+          ctx.beginPath();
+          ctx.moveTo(point.x, point.y);
+          ctx.lineTo(nextPoint.x, nextPoint.y);
+          ctx.stroke();
+        }
+      }
+      
+      ctx.restore();
+      if (!document.hidden && !modoEstatico()) {
+        animationId = requestAnimationFrame(render);
+        isRunning = true;
+      } else {
+        isRunning = false;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && !isRunning && !modoEstatico()) {
+        isRunning = true;
+        animationId = requestAnimationFrame(render);
+      }
+    };
+
+    const actualizarBateria = () => {
+      ahorroBateria = !bateria.charging && bateria.level <= 0.2;
+      handleVisibilityChange();
+    };
+    navigator.getBattery?.().then((b) => {
+      bateria = b;
+      b.addEventListener('levelchange', actualizarBateria);
+      b.addEventListener('chargingchange', actualizarBateria);
+      actualizarBateria();
+    }).catch(() => {});
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    motionQuery.addEventListener('change', handleVisibilityChange);
+    isRunning = true;
+    animationId = requestAnimationFrame(render);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      motionQuery.removeEventListener('change', handleVisibilityChange);
+      bateria?.removeEventListener('levelchange', actualizarBateria);
+      bateria?.removeEventListener('chargingchange', actualizarBateria);
+      cancelAnimationFrame(animationId);
+      isRunning = false;
+    };
+  }, [canvasEnabled, theme]);
+
+  if (!canvasEnabled) return null;
+
+  return <canvas id="bg-3d-canvas" ref={canvasRef} />;
+}

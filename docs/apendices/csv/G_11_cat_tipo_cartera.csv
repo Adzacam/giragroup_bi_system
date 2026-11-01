@@ -1,0 +1,8 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_cartera,SERIAL,NO,PK,Identificador del tramo de cartera
+nombre_cartera,VARCHAR(100),NO,UNIQUE,"Tramo: VIGENTE_AL_DIA, MORA_PREVENTIVA, MORA_ADMINISTRATIVA, MORA_PREJUDICIAL, CARTERA_CASTIGADA_JUDICIAL"
+dias_mora_min,INTEGER,NO,—,Días de mora desde los que aplica el tramo
+dias_mora_max,INTEGER,NO,—,Días de mora hasta los que aplica el tramo
+descripcion,VARCHAR(255),SÍ,—,Descripción del tramo
+
+Indices,cat_tipo_cartera_nombre_cartera_key (nombre_cartera) [único]; cat_tipo_cartera_pkey (id_cartera) [PK]

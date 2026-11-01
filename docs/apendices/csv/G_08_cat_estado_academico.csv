@@ -1,0 +1,5 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_estado_academico,SERIAL,NO,PK,Identificador del estado académico
+nombre_estado,VARCHAR(100),NO,UNIQUE,"Estado académico: INSCRITO, REGULAR_ACTIVO, CONCLUIDO_PENDIENTE_MONOGRAFIA, GRADUADO_TITULADO, REPROBADO, RETIRADO_ABANDONO"
+
+Indices,cat_estado_academico_nombre_estado_key (nombre_estado) [único]; cat_estado_academico_pkey (id_estado_academico) [PK]

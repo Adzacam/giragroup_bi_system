@@ -1,0 +1,5 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_modalidad,SERIAL,NO,PK,Identificador de la modalidad
+nombre_modalidad,VARCHAR(100),NO,UNIQUE,"Modalidad de dictado (Presencial, Virtual Sincrónica, Virtual Asincrónica, Semipresencial / Híbrida)"
+
+Indices,cat_modalidad_nombre_modalidad_key (nombre_modalidad) [único]; cat_modalidad_pkey (id_modalidad) [PK]

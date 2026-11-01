@@ -1,0 +1,9 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_etiqueta,SERIAL,NO,PK,Identificador de la etiqueta
+categoria,VARCHAR(50),NO,—,"Categoría del documento: academico, financiero, comercial"
+subtipo,VARCHAR(50),SÍ,—,"Subtipo de documento (ACTAS_NOTAS, COBRANZAS, EVALUACION_DOCENTE…)"
+palabra_clave,VARCHAR(100),NO,UNIQUE,Palabra clave que identifica la categoría o subtipo
+ambito,VARCHAR(30),SÍ,—,"Dónde se busca la palabra: ARCHIVO, HOJA, CONTENIDO, AMBOS"
+peso,INTEGER,SÍ,—,Peso de la palabra en el puntaje de clasificación
+
+Indices,cat_etiqueta_clasificacion_palabra_clave_key (palabra_clave) [único]; cat_etiqueta_clasificacion_pkey (id_etiqueta) [PK]; ix_cat_etiqueta_clasificacion_categoria (categoria); ix_cat_etiqueta_clasificacion_id_etiqueta (id_etiqueta); ix_cat_etiqueta_clasificacion_subtipo (subtipo)

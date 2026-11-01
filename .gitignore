@@ -6,11 +6,27 @@
 *.key
 
 # ---------------------------------------------------
-# ENTORNOS VIRTUALES
+# ENTORNOS VIRTUALES Y DEPENDENCIAS
 # ---------------------------------------------------
 .venv/
 venv/
 env/
+backend/.venv/
+frontend/.venv/
+node_modules/
+frontend/node_modules/
+.pnpm-store/
+frontend/.pnpm-store/
+**/.pnpm-store/
+
+# ---------------------------------------------------
+# COMPILADOS Y BUILD ARTIFACTS
+# ---------------------------------------------------
+dist/
+frontend/dist/
+build/
+.vite/
+frontend/.vite/
 
 # ---------------------------------------------------
 # CACHÉ Y COMPILADOS DE PYTHON
@@ -19,16 +35,24 @@ __pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
+.coverage
+htmlcov/
+backend/tests/
 
 # ---------------------------------------------------
 # CARPETAS DEL PROYECTO (Datos Dinámicos)
 # ---------------------------------------------------
-# No subir documentos de GiraGroup ni archivos temporales
-uploads/*
+# No subir documentos de GiraGroup reales (carpeta data)
+uploads/data/*
 !uploads/.gitkeep
+!uploads/test/
+!uploads/test/*
+data/landing/
+backend/data/
 
 # No subir logs pesados de la IA o el sistema
 logs/*.log
+*.log
 !logs/.gitkeep
 
 # ---------------------------------------------------
@@ -39,3 +63,37 @@ Thumbs.db
 .vscode/
 .idea/
 .docker/
+.gemini/
+*borrador*/
+frontend/borrador web/
+
+# ---------------------------------------------------
+# ARCHIVOS GENERADOS Y PESADOS DEL PIPELINE
+# ---------------------------------------------------
+output/*.jsonl
+output/*.csv
+pipeline/semantic/beto_local/
+*.pbix
+
+#---------------------------------------------------
+# Documentos de tesis
+#---------------------------------------------------
+docs/proyecto de grado/*
+!docs/proyecto de grado/.gitkeep
+!docs/figuras_tesis/*
+!docs/figuras_tesis/.gitkeep
+!docs/images/*
+!docs/images/.gitkeep
+
+
+
+# Respaldos locales del DW (contienen CI y nombres reales)
+output/backups/
+
+# ---------------------------------------------------
+# DATOS PERSONALES Y CÓDIGOS OTP (auditoría 2026-11-01)
+# ---------------------------------------------------
+# Vistas previas de correo: llevan códigos OTP vigentes
+**/output/email_previews/
+# Actas con CI y nombres de estudiantes
+output/lote*/ARCA_*.xlsx

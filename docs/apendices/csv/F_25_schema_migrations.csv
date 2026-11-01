@@ -1,0 +1,5 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+version,VARCHAR(255),NO,PK,Nombre del archivo de migración aplicado
+applied_at,TIMESTAMPTZ,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora en que se aplicó la migración
+
+Indices,schema_migrations_pkey (version) [PK]

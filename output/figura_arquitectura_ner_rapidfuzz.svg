@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 680" width="100%" height="100%" style="background:#ffffff; font-family:'Segoe UI', Arial, sans-serif;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.15" />
+    </filter>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+    <linearGradient id="nerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#eff6ff" />
+      <stop offset="100%" stop-color="#dbeafe" />
+    </linearGradient>
+    <linearGradient id="fuzzyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fdf4ff" />
+      <stop offset="100%" stop-color="#fae8ff" />
+    </linearGradient>
+    <linearGradient id="rulesGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ecfdf5" />
+      <stop offset="100%" stop-color="#d1fae5" />
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#1e293b" />
+    </marker>
+  </defs>
+
+  <!-- Title Card -->
+  <rect x="30" y="25" width="1040" height="60" rx="8" fill="url(#headerGrad)" filter="url(#shadow)" />
+  <text x="50" y="62" fill="#ffffff" font-size="20" font-weight="bold">Arquitectura Híbrida NER (BETO) + Normalización Léxica (RapidFuzz) — GiraGroup BI</text>
+
+  <!-- Lane 1: Entrada y Preprocesamiento -->
+  <rect x="30" y="110" width="220" height="530" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2" />
+  <rect x="30" y="110" width="220" height="38" rx="8" fill="#334155" />
+  <text x="50" y="135" fill="#ffffff" font-size="14" font-weight="bold">1. ENTRADA Y FUENTES</text>
+
+  <rect x="45" y="165" width="190" height="90" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" filter="url(#shadow)" />
+  <text x="55" y="190" fill="#0f172a" font-size="12" font-weight="bold">Documentos Académicos</text>
+  <text x="55" y="210" fill="#475569" font-size="11">• Actas de Notas (ARCA)</text>
+  <text x="55" y="228" fill="#475569" font-size="11">• Evaluaciones Docentes</text>
+  <text x="55" y="246" fill="#475569" font-size="11">• Formularios Google/Moodle</text>
+
+  <rect x="45" y="275" width="190" height="85" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" filter="url(#shadow)" />
+  <text x="55" y="300" fill="#0f172a" font-size="12" font-weight="bold">Documentos Financieros</text>
+  <text x="55" y="320" fill="#475569" font-size="11">• BBDD Cobranzas / Egresos</text>
+  <text x="55" y="338" fill="#475569" font-size="11">• Techos Presupuestarios</text>
+  <text x="55" y="356" fill="#475569" font-size="11">• Recibos y Facturas</text>
+
+  <rect x="45" y="380" width="190" height="110" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5" filter="url(#shadow)" />
+  <text x="55" y="405" fill="#0f172a" font-size="12" font-weight="bold">Preprocesamiento Léxico</text>
+  <text x="55" y="425" fill="#475569" font-size="11">• Inversión Apellidos, Nombres</text>
+  <text x="55" y="443" fill="#475569" font-size="11">• Eliminación de Títulos Doc.</text>
+  <text x="55" y="461" fill="#475569" font-size="11">• Limpieza Diacríticos (NFKD)</text>
+  <text x="55" y="479" fill="#475569" font-size="11">• Tokenizer WordPiece (BETO)</text>
+
+  <!-- Lane 2: Extracción Semántica NER -->
+  <rect x="280" y="110" width="250" height="530" rx="8" fill="url(#nerGrad)" stroke="#93c5fd" stroke-width="2" />
+  <rect x="280" y="110" width="250" height="38" rx="8" fill="#1d4ed8" />
+  <text x="295" y="135" fill="#ffffff" font-size="14" font-weight="bold">2. MOTOR BETO NER (p. 8006)</text>
+
+  <rect x="295" y="165" width="220" height="150" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5" filter="url(#shadow)" />
+  <text x="305" y="190" fill="#1e3a8a" font-size="13" font-weight="bold">BETO Fine-Tuned (Local)</text>
+  <text x="305" y="210" fill="#334155" font-size="11"><b>Base:</b> bert-base-spanish-wwm</text>
+  <text x="305" y="228" fill="#334155" font-size="11"><b>Ruta:</b> pipeline/semantic/beto_local</text>
+  <text x="305" y="246" fill="#334155" font-size="11"><b>Checkpoint:</b> model.safetensors</text>
+  <text x="305" y="264" fill="#334155" font-size="11"><b>Vector dim:</b> 768d (CLS + Mean)</text>
+  <text x="305" y="284" fill="#15803d" font-size="11"><b>Etiquetas BIO (9 clases):</b></text>
+  <text x="305" y="302" fill="#0f172a" font-size="10.5">PER_EST, PER_DOC, MOD, PROG</text>
+
+  <rect x="295" y="330" width="220" height="100" rx="6" fill="#ffffff" stroke="#f59e0b" stroke-width="1.5" filter="url(#shadow)" />
+  <text x="305" y="352" fill="#b45309" font-size="12" font-weight="bold">Fallback Hub (HuggingFace)</text>
+  <text x="305" y="372" fill="#334155" font-size="11"><b>Modelo:</b> mrm8488/bert-spanish-...</text>
+  <text x="305" y="390" fill="#334155" font-size="11"><b>Etiquetas CoNLL:</b> PER, ORG, LOC</text>
+  <text x="305" y="410" fill="#475569" font-size="11">Desambiguación contextual</text>
+
+  <rect x="295" y="445" width="220" height="95" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5" filter="url(#shadow)" />
+  <text x="305" y="468" fill="#1e3a8a" font-size="12" font-weight="bold">Reglas de Apoyo Sintáctico</text>
+  <text x="305" y="488" fill="#334155" font-size="11">• Regex POS: POS-##### (4000-7000)</text>
+  <text x="305" y="506" fill="#334155" font-size="11">• Regex NOTA: 0-100 (Unif. x10)</text>
+  <text x="305" y="524" fill="#334155" font-size="11">• Regex CI, Montos (Bs), Fechas</text>
+
+  <!-- Lane 3: Desambiguación con RapidFuzz -->
+  <rect x="560" y="110" width="250" height="530" rx="8" fill="url(#fuzzyGrad)" stroke="#d8b4fe" stroke-width="2" />
+  <rect x="560" y="110" width="250" height="38" rx="8" fill="#7e22ce" />
+  <text x="575" y="135" fill="#ffffff" font-size="14" font-weight="bold">3. RAPIDFUZZ &amp; CATÁLOGOS</text>
+
+  <rect x="575" y="165" width="220" height="135" rx="6" fill="#ffffff" stroke="#a855f7" stroke-width="1.5" filter="url(#shadow)" />
+  <text x="585" y="190" fill="#581c87" font-size="13" font-weight="bold">Catálogo Maestro (3NF)</text>
+  <text x="585" y="210" fill="#334155" font-size="11">• Catálogo Posgrado (POS)</text>
+  <text x="585" y="228" fill="#334155" font-size="11">• Padrón Canónico Docentes</text>
+  <text x="585" y="246" fill="#334155" font-size="11">• Padrón Módulos Curriculares</text>
+  <text x="585" y="264" fill="#334155" font-size="11">• Estudiantes Históricos</text>
+  <text x="585" y="284" fill="#334155" font-size="11">Fuente: catalog_db (puerto 5433)</text>
+
+  <rect x="575" y="315" width="220" height="155" rx="6" fill="#ffffff" stroke="#a855f7" stroke-width="1.5" filter="url(#shadow)" />
+  <text x="585" y="338" fill="#581c87" font-size="12" font-weight="bold">Umbrales y Bonos RapidFuzz</text>
+  <text x="585" y="358" fill="#334155" font-size="11"><b>Algoritmo:</b> token_sort_ratio / WRatio</text>
+  <text x="585" y="378" fill="#15803d" font-size="11"><b>Score ≥ 95%:</b> Bono +12 (+0.12)</text>
+  <text x="585" y="396" fill="#15803d" font-size="11"><b>Score [90, 95)%:</b> Bono +6 a +12</text>
+  <text x="585" y="414" fill="#ca8a04" font-size="11"><b>Score [85, 90)%:</b> Bono +4 (+0.04)</text>
+  <text x="585" y="432" fill="#dc2626" font-size="11"><b>Score &lt; 80%:</b> Flag Revisión Humana</text>
+  <text x="585" y="452" fill="#475569" font-size="10.5">Compuerta base: Lectura ≥ 70%</text>
+
+  <!-- Lane 4: Evaluación de Calidad y DW -->
+  <rect x="840" y="110" width="230" height="530" rx="8" fill="url(#rulesGrad)" stroke="#86efac" stroke-width="2" />
+  <rect x="840" y="110" width="230" height="38" rx="8" fill="#15803d" />
+  <text x="850" y="135" fill="#ffffff" font-size="14" font-weight="bold">4. CALIDAD Y DATA WAREHOUSE</text>
+
+  <rect x="855" y="165" width="200" height="185" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)" />
+  <text x="865" y="190" fill="#14532d" font-size="13" font-weight="bold">Decisión y Compuertas</text>
+  <text x="865" y="212" fill="#334155" font-size="11"><b>Índice Registro:</b></text>
+  <text x="865" y="230" fill="#15803d" font-size="11"><b>≥ 85% (0.85):</b> Aceptación Directa</text>
+  <text x="865" y="248" fill="#334155" font-size="11">Carga a Fact Tables del DW</text>
+  <text x="865" y="272" fill="#dc2626" font-size="11"><b>&lt; 85% (0.85):</b> requiere_revision</text>
+  <text x="865" y="290" fill="#334155" font-size="11">• Staging inconsistencias</text>
+  <text x="865" y="308" fill="#334155" font-size="11">• Notificación a operador</text>
+  <text x="865" y="326" fill="#334155" font-size="11">• Logueo en JSONL / Audit DB</text>
+
+  <rect x="855" y="365" width="200" height="145" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)" />
+  <text x="865" y="390" fill="#14532d" font-size="12" font-weight="bold">Destino de Persistencia</text>
+  <text x="865" y="410" fill="#334155" font-size="11">• <b>DW Constelación:</b></text>
+  <text x="875" y="428" fill="#475569" font-size="11">fact_rendimiento_academico</text>
+  <text x="875" y="446" fill="#475569" font-size="11">fact_transaccion_financiera</text>
+  <text x="875" y="464" fill="#475569" font-size="11">fact_evaluacion_docente</text>
+  <text x="865" y="488" fill="#334155" font-size="11">• <b>Tablas Staging / Quarentine</b></text>
+
+  <!-- Connectors -->
+  <line x1="235" y1="435" x2="295" y2="240" stroke="#1e293b" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="515" y1="240" x2="575" y2="230" stroke="#1e293b" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="515" y1="490" x2="575" y2="390" stroke="#1e293b" stroke-width="2" marker-end="url(#arrow)" />
+  <line x1="795" y1="390" x2="855" y2="250" stroke="#1e293b" stroke-width="2" marker-end="url(#arrow)" />
+
+  <!-- Footnote -->
+  <text x="35" y="660" fill="#64748b" font-size="11">Fuente: giragroup_bi_system (pipeline/semantic/ner_engine.py, pipeline/config.py, pipeline/normalization/quality_rules.py, backend/routers/dataops.py)</text>
+</svg>

@@ -1,0 +1,8 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_institucion,SERIAL,NO,PK,Identificador de la institución
+nombre_institucion,VARCHAR(100),NO,UNIQUE,Nombre de la institución
+sigla,VARCHAR(30),SÍ,—,"Sigla de la institución (GG, ENP, FCS)"
+tipo_escala_default,VARCHAR(20),SÍ,DEFAULT 'CENTESIMAL_100',Por documentar
+created_at,TIMESTAMP,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora de registro de la institución
+
+Indices,cat_institucion_nombre_institucion_key (nombre_institucion) [único]; cat_institucion_pkey (id_institucion) [PK]

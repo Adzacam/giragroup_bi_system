@@ -1,1 +1,1 @@
-# normalization — limpieza y normalización de texto
+"""Package initialization."""

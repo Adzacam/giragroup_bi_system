@@ -1,0 +1,5 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_estado_reprobado,SERIAL,NO,PK,Identificador del motivo de reprobación
+nombre_detalle,VARCHAR(100),NO,UNIQUE,"Motivo: REPROBADO_POR_NOTA, REPROBADO_POR_ASISTENCIA, BAJA_POR_INCUMPLIMIENTO_PAGOS, REPROBADO_POR_PLAGIO_ACADEMICO"
+
+Indices,cat_estado_reprobado_nombre_detalle_key (nombre_detalle) [único]; cat_estado_reprobado_pkey (id_estado_reprobado) [PK]

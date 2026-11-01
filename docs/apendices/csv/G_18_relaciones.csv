@@ -1,0 +1,6 @@
+﻿Tabla_origen,Columna_FK,Tabla_destino,Columna,ON_DELETE
+cat_historico_equivalencia,id_concepto,cat_concepto_financiero,id_concepto,CASCADE
+cat_modulo,id_programa,cat_programa,id_programa,CASCADE
+cat_programa,id_escuela,cat_escuela,id_escuela,RESTRICT
+cat_programa,id_modalidad,cat_modalidad,id_modalidad,RESTRICT
+cat_programa,id_tipo_programa,cat_tipo_programa,id_tipo_programa,RESTRICT

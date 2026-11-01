@@ -1,0 +1,10 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_log,SERIAL,NO,PK,Identificador de la corrección
+texto_original,VARCHAR(500),NO,—,Texto revisado por el auditor
+prediccion_beto,VARCHAR(200),SÍ,—,Entidad que propuso el modelo BETO
+confianza_ia,"NUMERIC(5,4)",SÍ,—,Confianza del modelo BETO en su predicción (0–1)
+correccion_humana,VARCHAR(200),NO,—,Valor corregido por el auditor
+usuario_auditor,INTEGER,SÍ,FK → users(id) ON DELETE SET NULL,Auditor que hizo la corrección
+created_at,TIMESTAMP,SÍ,DEFAULT CURRENT_TIMESTAMP,Fecha y hora de la corrección
+
+Indices,log_auditoria_nlp_pkey (id_log) [PK]

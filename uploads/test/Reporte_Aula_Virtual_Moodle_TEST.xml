@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<moodle_grades>
+    <course_grade>
+        <firstname>Carlos</firstname>
+        <lastname>Mendoza Ruiz</lastname>
+        <idnumber>CI-1029384</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Tecnología y Gestión</department>
+        <email>carlos.mendoza@unifranz.edu.bo</email>
+        <course>POS-5376 - Maestría en Ciberseguridad</course>
+        <grade>88.50</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Lucia</firstname>
+        <lastname>Vargas Quiroga</lastname>
+        <idnumber>CI-5849302</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Salud</department>
+        <email>lucia.vargas@unifranz.edu.bo</email>
+        <course>POS-5376 - Maestría en Ciberseguridad</course>
+        <grade>92.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Adriano</firstname>
+        <lastname>Daza Camargo</lastname>
+        <idnumber>CI-4892019</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Tecnología y Gestión</department>
+        <email>adriano.daza@unifranz.edu.bo</email>
+        <course>POS-5376 - Maestría en Ciberseguridad</course>
+        <grade>95.50</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Mariana</firstname>
+        <lastname>Flores Gutierrez</lastname>
+        <idnumber>CI-6738291</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Negocios</department>
+        <email>mariana.flores@unifranz.edu.bo</email>
+        <course>POS-5376 - Maestría en Ciberseguridad</course>
+        <grade>74.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Jorge</firstname>
+        <lastname>Gutierrez Peña</lastname>
+        <idnumber>CI-3928172</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Tecnología y Gestión</department>
+        <email>jorge.gutierrez@unifranz.edu.bo</email>
+        <course>POS-5376 - Maestría en Ciberseguridad</course>
+        <grade>81.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Paola</firstname>
+        <lastname>Mamani Condori</lastname>
+        <idnumber>CI-8472910</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Ciencias Sociales</department>
+        <email>paola.mamani@unifranz.edu.bo</email>
+        <course>POS-5376 - Maestría en Ciberseguridad</course>
+        <grade>68.50</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Rodrigo</firstname>
+        <lastname>Quispe Ramos</lastname>
+        <idnumber>CI-5192834</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Leyes</department>
+        <email>rodrigo.quispe@unifranz.edu.bo</email>
+        <course>POS-5376 - Maestría en Ciberseguridad</course>
+        <grade>90.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Beatriz</firstname>
+        <lastname>Salazar Pinto</lastname>
+        <idnumber>CI-4729184</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Negocios</department>
+        <email>beatriz.salazar@unifranz.edu.bo</email>
+        <course>POS-5376 - Maestría en Ciberseguridad</course>
+        <grade>87.80</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Fernando</firstname>
+        <lastname>Torrico Morales</lastname>
+        <idnumber>CI-6294817</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Tecnología y Gestión</department>
+        <email>fernando.torrico@unifranz.edu.bo</email>
+        <course>POS-5376 - Maestría en Ciberseguridad</course>
+        <grade>57.80</grade>
+        <status>Incomplete</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Gabriela</firstname>
+        <lastname>Chavez Mercado</lastname>
+        <idnumber>CI-3829104</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Salud</department>
+        <email>gabriela.chavez@unifranz.edu.bo</email>
+        <course>POS-5376 - Maestría en Ciberseguridad</course>
+        <grade>93.80</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Monica</firstname>
+        <lastname>Bustamante Rocha</lastname>
+        <idnumber>CI-3719284</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Negocios</department>
+        <email>monica.bustamante@unifranz.edu.bo</email>
+        <course>POS-5377 - Maestría en Big Data &amp; Business Analytics</course>
+        <grade>90.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Nestor</firstname>
+        <lastname>Claros Velasco</lastname>
+        <idnumber>CI-5829103</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Tecnología y Gestión</department>
+        <email>nestor.claros@unifranz.edu.bo</email>
+        <course>POS-5377 - Maestría en Big Data &amp; Business Analytics</course>
+        <grade>94.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Olga</firstname>
+        <lastname>Delgado Miranda</lastname>
+        <idnumber>CI-4819284</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Ciencias Sociales</department>
+        <email>olga.delgado@unifranz.edu.bo</email>
+        <course>POS-5377 - Maestría en Big Data &amp; Business Analytics</course>
+        <grade>79.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Pablo</firstname>
+        <lastname>Escobar Teran</lastname>
+        <idnumber>CI-6928194</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Negocios</department>
+        <email>pablo.escobar@unifranz.edu.bo</email>
+        <course>POS-5377 - Maestría en Big Data &amp; Business Analytics</course>
+        <grade>85.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Raquel</firstname>
+        <lastname>Fuentes Siles</lastname>
+        <idnumber>CI-3819204</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Leyes</department>
+        <email>raquel.fuentes@unifranz.edu.bo</email>
+        <course>POS-5377 - Maestría en Big Data &amp; Business Analytics</course>
+        <grade>96.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Sergio</firstname>
+        <lastname>Gomez Barrientos</lastname>
+        <idnumber>CI-5928174</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Salud</department>
+        <email>sergio.gomez@unifranz.edu.bo</email>
+        <course>POS-5377 - Maestría en Big Data &amp; Business Analytics</course>
+        <grade>71.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Tania</firstname>
+        <lastname>Heredia Calvimontes</lastname>
+        <idnumber>CI-4728193</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Tecnología y Gestión</department>
+        <email>tania.heredia@unifranz.edu.bo</email>
+        <course>POS-5377 - Maestría en Big Data &amp; Business Analytics</course>
+        <grade>89.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Ulises</firstname>
+        <lastname>Iriarte Navia</lastname>
+        <idnumber>CI-6829104</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Negocios</department>
+        <email>ulises.iriarte@unifranz.edu.bo</email>
+        <course>POS-5377 - Maestría en Big Data &amp; Business Analytics</course>
+        <grade>91.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Valeria</firstname>
+        <lastname>Justiniano Roca</lastname>
+        <idnumber>CI-3829185</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Ciencias Sociales</department>
+        <email>valeria.justiniano@unifranz.edu.bo</email>
+        <course>POS-5377 - Maestría en Big Data &amp; Business Analytics</course>
+        <grade>84.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Walter</firstname>
+        <lastname>Lema Arancibia</lastname>
+        <idnumber>CI-5729183</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Leyes</department>
+        <email>walter.lema@unifranz.edu.bo</email>
+        <course>POS-5377 - Maestría en Big Data &amp; Business Analytics</course>
+        <grade>74.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Ximena</firstname>
+        <lastname>Medina Zambrana</lastname>
+        <idnumber>CI-4829105</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Salud</department>
+        <email>ximena.medina@unifranz.edu.bo</email>
+        <course>POS-5378 - Diplomado en Gestión Estratégica</course>
+        <grade>97.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Yamil</firstname>
+        <lastname>Nogales Parada</lastname>
+        <idnumber>CI-6928173</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Tecnología y Gestión</department>
+        <email>yamil.nogales@unifranz.edu.bo</email>
+        <course>POS-5378 - Diplomado en Gestión Estratégica</course>
+        <grade>87.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Zulema</firstname>
+        <lastname>Orellana Vaca</lastname>
+        <idnumber>CI-3918274</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Negocios</department>
+        <email>zulema.orellana@unifranz.edu.bo</email>
+        <course>POS-5378 - Diplomado en Gestión Estratégica</course>
+        <grade>91.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Alvaro</firstname>
+        <lastname>Paredes Torrico</lastname>
+        <idnumber>CI-5819205</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Ciencias Sociales</department>
+        <email>alvaro.paredes@unifranz.edu.bo</email>
+        <course>POS-5378 - Diplomado en Gestión Estratégica</course>
+        <grade>81.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Brenda</firstname>
+        <lastname>Quintanilla Sucre</lastname>
+        <idnumber>CI-4719284</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Leyes</department>
+        <email>brenda.quintanilla@unifranz.edu.bo</email>
+        <course>POS-5378 - Diplomado en Gestión Estratégica</course>
+        <grade>89.00</grade>
+        <status>Completed</status>
+    </course_grade>
+    <course_grade>
+        <firstname>Cristhian</firstname>
+        <lastname>Rivera Maldonado</lastname>
+        <idnumber>CI-6829175</idnumber>
+        <institution>UNIFRANZ Postgrado</institution>
+        <department>Salud</department>
+        <email>cristhian.rivera@unifranz.edu.bo</email>
+        <course>POS-5378 - Diplomado en Gestión Estratégica</course>
+        <grade>93.00</grade>
+        <status>Completed</status>
+    </course_grade>
+</moodle_grades>

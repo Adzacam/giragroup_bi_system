@@ -1,0 +1,10 @@
+﻿Campo,Tipo,Nulo,Restriccion_defecto,Descripcion
+id_hecho_mkt,SERIAL,NO,PK,Identificador del registro de marketing
+id_modulo,INTEGER,SÍ,"FK → dim_modulo(id_modulo) ON DELETE CASCADE; UNIQUE (id_modulo, id_tiempo)",Programa o módulo promocionado
+id_tiempo,INTEGER,SÍ,"FK → dim_tiempo(id_tiempo) ON DELETE CASCADE; UNIQUE (id_modulo, id_tiempo)",Mes de la campaña
+leads,INTEGER,SÍ,DEFAULT 0,Número de interesados (leads) captados
+reservas,INTEGER,SÍ,DEFAULT 0,Número de reservas de cupo
+inscritos,INTEGER,SÍ,DEFAULT 0,Número de inscritos efectivos
+costo_programa,"NUMERIC(12,2)",SÍ,—,Costo del programa ofertado
+
+Indices,"fact_marketing_pkey (id_hecho_mkt) [PK]; idx_fact_mkt_tiempo (id_tiempo); uq_fact_marketing_modulo_tiempo (id_modulo, id_tiempo) [único]"
