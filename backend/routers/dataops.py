@@ -71,6 +71,7 @@ from services.extraccion_por_encabezado import (
     registros_rentabilidad,
 )
 from services.sugerencia_hitl import es_sugerencia_un_clic, similitud_nombre_completo
+from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, resolver_caso_hecho
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
 from services.dataops_evaluation_service import (
     strip_accents,
@@ -3747,6 +3748,14 @@ def get_review_tray(
             ),
         })
 
+    # HU-06 / RF-06: también los hechos cargados con requiere_revision (índice 0,60–0,85, nota o fecha faltante)
+    estado_pendiente = not estado or estado.upper() in ("ALL", "TODOS", "PENDIENTE")
+    motivo_hechos = not motivo or motivo.upper() in ("ALL", "TODOS", MOTIVO_HECHO)
+    if estado_pendiente and motivo_hechos:
+        doc_ids_hechos = [d.id_documento for d in target_docs] if target_docs else (
+            [doc_id] if doc_id is not None else None)
+        items.extend(items_hechos_en_revision(db, doc_ids_hechos))
+
     resolved_history = []
     for r_ent in resolved_db:
         r_doc = origen_doc_map.get(r_ent.id_documento)
@@ -3926,6 +3935,12 @@ def resolve_review_item(
 ):
     """Aprueba y consolida un registro individual en la bandeja de revisión humana."""
     payload = payload or {}
+    if es_caso_hecho(item_id):
+        return resolver_caso_hecho(
+            db, str(item_id), payload,
+            user_id=getattr(current_user, "id", None),
+            user_name=getattr(current_user, "username", None) or "Auditor Calidad",
+        )
     clean_id = str(item_id).replace("REV-", "").strip()
     if clean_id.isdigit():
         ent = db.query(StagingEntidadNoResuelta).filter(StagingEntidadNoResuelta.id_staging == int(clean_id)).first()
