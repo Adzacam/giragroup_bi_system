@@ -1,476 +1,236 @@
-# Sistema de Inteligencia de Negocios y PLN — GiraGroup S.R.L.
+# GiraGroup BI System
 
-Sistema de Inteligencia de Negocios basado en Procesamiento de Lenguaje Natural (PLN) y Cuadro de Mando Integral (CMI) para la mitigación de la fragmentación informacional. 
+Sistema de Inteligencia de Negocios con Procesamiento de Lenguaje Natural (BETO) y Cuadro de Mando Integral para GiraGroup Posgrado. Integra fuentes académicas, financieras y comerciales heterogéneas (Excel, CSV, Google Forms, Moodle) en un Data Warehouse en constelación, con revisión humana (HITL) de los casos dudosos y pronóstico de demanda con Holt-Winters.
 
-Desarrollado bajo una **Arquitectura Monolítica Modular Orientada a Datos** con **Python**, **FastAPI**, **React**, modelo **BETO**, **Docker** y **PostgreSQL**.
-
-> **El entorno está completamente dockerizado.** No se necesita Python, Node ni PostgreSQL instalados localmente. Solo se necesita **Git** y **Docker Desktop**.
+> Todo corre en Docker. En la máquina solo hacen falta **Git** y **Docker Desktop** (con WSL2 en Windows).
 
 ---
 
-## 🏗️ Stack Tecnológico y Arquitectura (5 Capas)
+## Arquitectura
 
-| Capa | Componente | Tecnología |
+| Servicio (contenedor) | Función | Puerto en el host |
 |---|---|---|
-| 1 y 2. Pipeline de Datos | Ingestión y PLN | Python, Pandas, Rapidfuzz, BETO (HuggingFace) |
-| 3. Persistencia | Data Warehouse | PostgreSQL 16 (Esquema Estrella) |
-| 4. Backend (API) | Exposición de Datos | FastAPI, SQLAlchemy, Pydantic |
-| 5A. Frontend Web | Auditoría y DataOps | React + Vite + Tailwind |
-| 5B. Visualización | Cuadro de Mando | Power BI Desktop |
-| Infraestructura | Orquestación | Docker + Docker Compose |
+| `gateway` | Nginx: punto de entrada único y cabeceras de seguridad | **80** |
+| `web` | Frontend React 18 + Vite (PWA) | **5173** |
+| `api` | Monolito modular FastAPI: DataOps, pipeline, KPIs, forecast, catálogos, riesgos, reportes | 8000 |
+| `auth-service` | Autenticación, 2FA por OTP y usuarios | interno (8001) |
+| `notifications-service` | Notificaciones y WebSocket | interno (8002) |
+| `audit-service` | Auditoría y observabilidad | interno (8004) |
+| `pipeline` | Servidor de inferencia BETO (PyTorch) | interno (8006) |
+| `db` | PostgreSQL 16: Data Warehouse (7 tablas de hechos) | `127.0.0.1:5434` |
+| `catalog_db` | PostgreSQL 16: catálogos institucionales 3NF | `127.0.0.1:5433` |
+
+El frontend llama a rutas relativas `/api/...`; Vite las reenvía al gateway, y el gateway, a cada servicio.
 
 ---
 
-## ⚙️ Requisitos previos
-
-- [Git](https://git-scm.com/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) — con WSL2 habilitado en Windows.
-
-Verificar instalaciones:
+## Puesta en marcha
 
 ```bash
-git --version
-docker --version
-docker-compose version
+git clone https://github.com/Adzacam/giragroup_bi_system.git
 ```
 
----
-
-## 1. Clonar el repositorio
-
 ```bash
-git clone [https://github.com/Adzacam/giragroup_bi_system.git](https://github.com/Adzacam/giragroup_bi_system.git)
 cd giragroup_bi_system
-git checkout main
-  ```
-
-## 2. Crear `.env` a partir del `.env.example`
-
-
-**Windows PowerShell:**
-
-```powershell
-Copy-Item .env.example.env
 ```
 
-**Linux / Git Bash:**
+Crear el `.env` a partir de la plantilla (Git Bash / Linux):
+
 ```bash
 cp .env.example .env
 ```
 
-Configurar variables en `.env`:
+En PowerShell: `Copy-Item .env.example .env`. Antes de usarlo fuera de tu máquina, cambia `SECRET_KEY` y las contraseñas de base de datos. Las variables SMTP son opcionales (ver [Inicio de sesión](#inicio-de-sesión)).
+
+Levantar todo:
 
 ```bash
-APP_ENV=local
-APP_DEBUG=true
-
-DB_HOST=pg_database
-DB_PORT=5432
-DB_DATABASE=giragroup_db
-DB_USERNAME=giragroup_user
-DB_PASSWORD=giragroup_secret_2026
-
-# Configuración de BERT local (sin HuggingFace)
-USE_LOCAL_BETO=true
-LOCAL_BETO_PATH=./local_beto_model
+docker compose up -d --build
 ```
 
-**Importante**: Asegúrate de que la cadena de conexión a la base de datos en `.env` apunte al contenedor Docker interno, **NO** a tu host local. Debe verse así:
+En Windows también puedes usar `iniciar_sistema.bat`, `apagar_sistema.bat` y `reconstruir_sistema.bat`.
+
+La primera vez tarda varios minutos: descarga imágenes, crea el esquema con `db/schema.sql`, aplica las migraciones pendientes al arrancar la API y siembra los usuarios iniciales. Para comprobar que los 9 contenedores están arriba:
 
 ```bash
-DATABASE_URL=postgresql://giragroup_user:giragroup_secret_2026@giragroup_db:5432/giragroup_db
+docker compose ps
+```
+
+### Accesos
+
+| Qué | URL |
+|---|---|
+| Aplicación web | http://localhost:5173 |
+| API (Swagger) | http://localhost:8000/docs |
+| Estado de la API | http://localhost/api/v1/health |
+
+---
+
+## Inicio de sesión
+
+El acceso usa contraseña + código OTP de 6 dígitos (2FA). Si `SMTP_HOST` está vacío en `.env`, el código no se envía por correo: se imprime en el log del servicio de autenticación.
+
+```bash
+docker logs --tail 20 giragroup_auth_svc
+```
+
+Usuarios iniciales (solo desarrollo), creados por `backend/seed_users.py`, donde están sus correos y la contraseña inicial:
+
+| Usuario | Rol |
+|---|---|
+| `admin_general` | `ADMIN` |
+| `auditor_dataops` | `AUDITOR_CALIDAD` |
+| `dir_academica` | `DIRECTOR_ACADEMICO` |
+| `analista_fin` | `ANALISTA_FINANCIERO` |
+| `analista_mkt` | `ANALISTA_MARKETING` |
+
+El sembrado no sobrescribe contraseñas ya cambiadas. En producción, cambia todas las contraseñas iniciales y desactiva las cuentas técnicas de pruebas (`qa_admin`, `loadtest_user`).
+
+---
+
+## Motor BETO (NER)
+
+El servidor `pipeline` carga el modelo afinado de `pipeline/semantic/beto_local/`. Esa carpeta no se versiona (~420 MB):
+
+- Si no existe, el sistema usa como respaldo `mrm8488/bert-spanish-cased-finetuned-ner` (Hugging Face).
+- Para regenerar el modelo afinado con el corpus de `data/`, en el host, con un entorno que tenga `pipeline/requirements.txt` instalado. El contenedor `pipeline` no monta `scripts/` ni `data/`. Luego reinicia `pipeline` para que lo cargue.
+
+```bash
+python scripts/entrenar_beto_robusto.py
+```
+
+### ¿CPU o GPU?
+
+BETO **no necesita GPU**. CPU y GPU dan resultados idénticos (F1 0,973 y los mismos índices de confianza sobre las 180 frases de `data/test_gold_real.jsonl`); solo cambia la velocidad:
+
+| Medido (2026-11-01) | CPU, 8 hilos | GPU (RTX 5060 Laptop) |
+|---|---|---|
+| Lote de ingesta (`/infer-batch`) | 31,6 ms/oración | 8,0 ms/oración |
+| Una oración suelta (`/infer`) | 101 ms | 57 ms |
+| Lote de ~1 000 filas | ~30 s | ~8 s |
+| Memoria | ~540 MB de RAM | ~1 GB de VRAM (estimado) |
+
+**Recomendación**
+
+- **Servidor de producción:** CPU (configuración por defecto). La ingesta trabaja por lotes, así que unos 30 s por cada 1 000 filas es aceptable, y no depende de tener una tarjeta NVIDIA.
+- **Equipo de desarrollo o demo con GPU NVIDIA:** usar el override de GPU, unas 4 veces más rápido.
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d pipeline
+```
+
+Para volver a CPU:
+
+```bash
+docker compose up -d pipeline
+```
+
+No exijas la GPU en `docker-compose.yml`: en una máquina sin NVIDIA el contenedor `pipeline` no arrancaría.
+
+Variables de ajuste en el servicio `pipeline`:
+
+| Variable | Por defecto | Efecto |
+|---|---|---|
+| `TORCH_NUM_THREADS` | 8 (compose) | Hilos de PyTorch. Sin límite, PyTorch usa todos los núcleos del host y cada pasada tarda ~1 s. |
+| `BETO_INT8` | 0 | Cuantización int8 en CPU (~20 % más rápida). **Desaconsejada:** baja el F1 de 0,973 a 0,920. |
+
+---
+
+## Base de datos
+
+Conexión desde herramientas externas (DBeaver, Power BI). Usuario y contraseña: los del `.env` (`DATABASE_URL`).
+
+| Base | Host | Puerto |
+|---|---|---|
+| Data Warehouse `giragroup_db` | `localhost` | **5434** |
+| Catálogos `giragroup_catalog_db` | `localhost` | **5433** |
+
+Dentro de Docker los servicios se conectan por el nombre del contenedor y el puerto 5432, como indica `.env.example`.
+
+**Power BI:** el tablero está en `powerbi/dashboards/giragroup_cmi.pbix` y la guía de conexión, en `powerbi/dashboards/guia_integracion_powerbi_forecasting.md`.
+
+**Vaciar los datos cargados** (hechos, staging, lotes y logs; conserva `users`, `dim_tiempo` y `cat_institucion`):
+
+```bash
+python scripts/reset_dw.py --confirm
+```
+
+**Borrar todo**, incluidos usuarios y esquema (se recrean al volver a levantar):
+
+```bash
+docker compose down -v
 ```
 
 ---
 
-## 3. Estructura del Proyecto
+## Pruebas
+
+```bash
+python -m pytest tests backend/tests_root -q
+```
+
+Puertas de salida a producción. Las de `-m readiness_live` necesitan la pila en marcha y variables `READINESS_*`; ver la cabecera del archivo:
+
+```bash
+python -m pytest tests/readiness -q
+```
+
+Pruebas de carga (Locust; instrucciones en el propio archivo):
+
+```bash
+locust -f tests/load/locust_readiness.py --host http://localhost
+```
+
+---
+
+## Comandos frecuentes
+
+| Acción | Comando |
+|---|---|
+| Ver estado | `docker compose ps` |
+| Logs de un servicio | `docker compose logs -f api` |
+| Reiniciar todo | `docker compose restart` |
+| Aplicar cambios de Dockerfile o dependencias | `docker compose up -d --build` |
+| Apagar (conserva datos) | `docker compose down` |
+
+---
+
+## Problemas comunes
+
+**El login o cualquier llamada da 404 en `localhost:5173` (pero funciona en `localhost`).** Vite perdió el proxy hacia el gateway, típicamente tras cambiar de rama con los contenedores encendidos. Solución:
+
+```bash
+docker restart giragroup_web
+```
+
+**No llega el código OTP.** Sin SMTP configurado, el código aparece en `docker logs giragroup_auth_svc`.
+
+**`pipeline` no arranca con el override de GPU.** Falta el soporte de GPU de Docker o los drivers NVIDIA; vuelve a CPU con `docker compose up -d pipeline`.
+
+**Inferencia BETO muy lenta (~1 s por oración).** Revisa que `TORCH_NUM_THREADS` esté definido en el servicio `pipeline`.
+
+---
+
+## Documentación
+
+- `docs/auditoria/production_readiness_2026-11-01.md`: auditoría de preparación para producción (hallazgos y remediación).
+- `docs/auditoria/plan_maestro_ejecucion.md`: plan por fases, mediciones y estado de las correcciones.
+- `docs/apendices/diccionario_datos.md`: diccionario de datos del DW y de los catálogos.
+- `docs/architecture/`: metodología de pronóstico y auditorías de sprints.
+- `docs/postman_collection.json`: colección de la API.
+
+## Estructura
 
 ```text
-giragroup_bi_system/
-│
-├── pipeline/                        # CAPAS 1 y 2: Ingestión y Procesamiento NLP
-│   ├── ingestion/                   # sheets/, moodle/, excel/, forms/
-│   ├── normalization/               # entities/, fuzzy_matching/, validation/
-│   ├── semantic/                    # models/, inference/, embeddings/, confidence/
-│   ├── analytics/                   # indicators/, scoring/, projections/, alerts/
-│   ├── load/                        # Carga batch al Data Warehouse
-│   ├── jobs/                        # scheduler.py, sync_moodle.py, process_semantic.py
-│   ├── logs/                        # Logs de ejecución del pipeline
-│   └── requirements.txt             # Dependencias de IA (Transformers, Torch, Pandas)
-│
-├── db/                              # CAPA 3: Persistencia Analítica
-│   ├── warehouse/                   # facts/, dimensions/, materialized_views/
-│   ├── migrations/                  # Control de versiones de BD (Alembic o SQL)
-│   ├── seeds/                       # Datos iniciales estáticos (ej. dim_tiempo)
-│   └── snapshots/                   # Respaldos de datasets versionados
-│
-├── backend/                         # CAPA 4: Exposición (API REST)
-│   ├── core/                        # security/, config/, middleware/
-│   ├── models/                      # Mapeo ORM (SQLAlchemy)
-│   ├── schemas/                     # DTOs y validación (Pydantic)
-│   ├── routers/                     # Endpoints expuestos (FastAPI)
-│   ├── services/                    # Lógica de lectura y reglas de negocio
-│   │   ├── academic_service.py
-│   │   ├── finance_service.py
-│   │   └── risk_service.py
-│   ├── shared/                      # utils/, constants/, exceptions/
-│   ├── tests/                       # Pruebas unitarias de la API
-│   ├── main.py                      # Entrypoint Uvicorn
-│   └── requirements.txt             # Dependencias ligeras (FastAPI, Pydantic, SQLAlchemy)
-│
-├── frontend/                        # CAPA 5A: Interfaz Web (DataOps y Auditoría)
-│   ├── src/
-│   │   ├── components/              # UI reutilizable
-│   │   ├── modules/                 # dashboard/, risks/, indicators/, validation/, audit/
-│   │   ├── pages/                   # Vistas principales por rol
-│   │   ├── services/                # Cliente API (Axios/Fetch)
-│   │   ├── hooks/                   # Custom React hooks
-│   │   ├── store/                   # Manejo de estado global (Zustand/Redux)
-│   │   └── layouts/                 # Estructuras de página (Sidebar, Navbar)
-│   ├── package.json
-│   └── vite.config.js
-│
-├── powerbi/                         # CAPA 5B: Visualización Estratégica (CMI)
-│   ├── dashboards/                  # giragroup_cmi.pbix
-│   ├── templates/                   # Plantillas base corporativas
-│   └── exports/                     # Reportes exportados (PDF/PPTX)
-│
-├── infrastructure/                  # DevOps y Despliegue
-│   ├── docker/                      # api.Dockerfile, pipeline.Dockerfile, web.Dockerfile
-│   ├── nginx/                       # Configuración de proxy inverso
-│   ├── scripts/                     # Scripts de inicialización (init_db.sh)
-│   └── monitoring/                  # Configuraciones de monitoreo de contenedores
-│
-├── docs/                            # Documentación del Proyecto
-│   ├── architecture/                # Diagramas C4 o Mermaid
-│   ├── api/                         # Colecciones de Postman o Swagger estático
-│   ├── database/                    # Diccionario de datos
-│   └── thesis/                      # Borradores o respaldos del documento Word
-│
-├── .github/                         # CI/CD Workflows
-│   └── workflows/                   # Acciones de GitHub para testing automático
-│
-├── .env.example                     # Plantilla de variables de entorno
-├── .gitignore                       # Reglas de exclusión unificadas
-├── docker-compose.yml               # Orquestador local principal
-└── README.md                        # Documentación técnica de entrada
-
+backend/          API FastAPI (routers, services, models, schemas, tests_root)
+services/         Microservicios auth, notifications y audit
+pipeline/         Ingesta, normalización, BETO (semantic/) y analítica (analytics/)
+frontend/         SPA React + Vite (PWA)
+db/               Esquemas SQL, migraciones y semillas
+gateway/          Configuración de Nginx
+infrastructure/   Dockerfiles
+powerbi/          Tablero y guía de Power BI
+scripts/          Entrenamiento y evaluación de BETO, reset del DW, figuras de la tesis
+tests/            Pruebas por sprint, readiness y carga
+docs/             Documentación técnica y apéndices
 ```
----
-
-## 4. Levantar el entorno Docker
-
-```bash
-# Levantar todo (Python 3.11 + PostgreSQL)
-docker-compose up -d --build
-```
-
-**La primera vez:** tardará varios minutos mientras descarga las imágenes de Python, Node y PostgreSQL. y ejecuta `init.sql` para crear la base de datos.
-
-**Verificar:**
-
-```bash
-docker ps
-```
-
-Deben aparecer:
-- `giragroup_db`
-- `giragroup_api`
-- `giragroup_web`
-- `giragroup_pipeline`
-
----
-
-## 5. Acceder al sistema
-
-| Servicio | URL |
-|---|---|
-| Documentación API (Swagger) | http://localhost:8000/docs |
-| Interfaz Web (Capa 5A - React + Vite) | http://localhost:5173 |
-| Health Check BD | http://localhost:8000/health |
-
----
-###  **Redenciales de PostgreSQL (Para DBeaver o Power BI)**
-
-Para conectar herramientas externas desde tu máquina local a la base de datos de Docker:
-
-| Campo | Valor |
-|---|---|
-| Motor | PostgreSQL 16 |
-| Host | localhost o 127.0.0.1 |
-| Puerto | 5432 |
-| Base de datos | giragroup_db |
-| Usuario | giragroup_user |
-| Contraseña | giragroup_secret_2026 |
-
-### Base de datos inicial
-
-El archivo db/schema.sql se ejecuta automáticamente al crear el contenedor de PostgreSQL por primera vez, levantando el esquema estrella, dimensiones financieras y transaccionales.
-
-**Para reiniciar la base de datos desde cero (Reset Total)**:
-
-```bash
-docker-compose down -v
-docker-compose up -d
-```
-
-## 6. Descargar el modelo BETO Local
-
-Ejecutar **una sola vez** dentro del contenedor Python (no en host):
-
-```bash
-# Entrar al contenedor
-docker-compose exec python_env bash
-
-# Ejecutar el script de descarga
-python data_pipelines/scripts/descargar_beto.py
-```
-
-Dentro de Python:
-
-```python
-from transformers import AutoTokenizer, AutoModel
-import os
-
-# Crear directorio local
-os.makedirs("beto_local", exist_ok=True)
-
-# Descargar BETO
-tokenizer = AutoTokenizer.from_pretrained("dccuchile/bert-base-spanish-wwm-cased")
-model = AutoModel.from_pretrained("dccuchile/bert-base-spanish-wwm-cased")
-
-tokenizer.save_pretrained("beto_local")
-model.save_pretrained("beto_local")
-
-exit()
-```
-
-Ahora el modelo está en `data_pipelines/models/beto_local/`.
-
----
-
-## 7. Ejecutar Pipeline de Datos
-
-```bash
-# Entrar al contenedor
-docker-compose exec python_env bash
-
-# Ejecutar ETL
-python data_pipelines/scripts/etl_pipeline.py
-```
-
-Genera:
-- `data_pipelines/data/dataset_final_limpio.csv`
-- `data_pipelines/data/clustering_summary.csv`
-- `data_pipelines/data/similarity_matrix.csv`
-
----
-
-## 8. Cargar Datos al Data Warehouse (PostgreSQL)
-
-```bash
-docker-compose exec python_env bash
-
-# Ejecutar script de carga
-python data_pipelines/scripts/cargar_a_bd.py
-```
-
-Crea las tablas:
-- `dim_proyecto`
-- `dim_fecha`
-- `dim_area`
-- `fact_proyectos`
-
----
-
-## 9. Probar la API REST (FastAPI)
-
-```bash
-# Listar endpoints
-docker-compose exec python_env curl -X GET "http://localhost:8000/docs" -s | grep "http://localhost:8000"
-
-# Listar proyectos
-docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos?page=1&limit=10" -s | python -m json.tool
-
-# Buscar proyectos similares
-docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos/similares?titulo=Finanzas&top_k=5" -s | python -m json.tool
-
-# Carga de proyectos del año 2024
-docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos?anio=2024" -s | python -m json.tool
-
-# Carga de proyectos del año 2025
-docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos?anio=2025" -s | python -m json.tool
-
-# Carga de proyectos con fecha límite en 2026
-docker-compose exec python_env curl -X GET "http://localhost:8000/proyectos?fecha_limite_inicio=2026-01-01&fecha_limite_fin=2026-12-31" -s | python -m json.tool
-```
-
----
-
-## 10. Conectar Power BI al Data Warehouse
-
-1. Abrir **Power BI Desktop**
-2. Click **Obtener datos** → **Base de datos** → **PostgreSQL**
-3. Ingresar:
-   - Servidor: `localhost`
-   - Puerto: `5432`
-   - Base de datos: `giragroup_db`
-   - Autenticación: Usuario `giragroup_user`, Contraseña `giragroup_secret_2026`
-4. Seleccionar tablas:
-   - `fact_proyectos`
-   - `dim_proyecto`
-   - `dim_fecha`
-   - `dim_area`
-
----
-
-## 11. Guía de Referencia y Flujos de Trabajo Diarios
-
-A continuación, se detallan los comandos más utilizados para el desarrollo diario y control de versiones.
-
-### 1. Gestión del Entorno Virtual Local (Windows)
-Comandos utilizados para configurar el analizador del IDE y ejecutar scripts fuera de los contenedores.
-
-* **Crear entorno:** `py -m venv .venv`
-* **Activar entorno:** `.\.venv\Scripts\activate`
-* **Instalar dependencias:** `pip install -r pipeline/requirements.txt`
-* **Desactivar entorno:** `deactivate`
-
-### 2. Ejecución Independiente por Sprints
-
-#### 📦 Sprint 2: Ingesta Universal y Detección de Bloques Tabulares
-* **Objetivo:** Ingesta de hojas heterogéneas, segmentación de islas tabulares sin cabeceras fijas y categorización automática.
-* **Componentes:** `pipeline/ingesta.py`, `pipeline/categorizer.py`, `pipeline/extractor.py`.
-* **Ejecutar Ingesta Sprint 2:**
-  ```powershell
-  python run_sprint2.py
-  ```
-* **Ejecutar Tests de Sprint 2 (32 tests):**
-  ```powershell
-  pytest tests/sprint2/ -v
-  ```
-* **Entregables:** `output/sprint2_documentos.jsonl`, `output/sprint2_documentos.csv`.
-
-#### 🧠 Sprint 3: Procesamiento de Lenguaje Natural (PLN), Normalización y Calidad
-* **Objetivo:** Motor de inferencia NER con BETO, matching semántico contra catálogos canónicos 3NF, resolución difusa RapidFuzz, control de calidad determinista y auditoría de inconsistencias.
-* **Matriz de Historias Cubiertas (Épica GIRA-22):**
-  - **GIRA-40:** Formateo a oraciones semánticas estructuradas con offsets y attention masks.
-  - **GIRA-9 & GIRA-10:** Extractor NER con BETO (`mrm8488/bert-spanish-cased-finetuned-ner`), agregación de subpalabras y desambiguación.
-  - **GIRA-11:** Normalización léxica y difusa con RapidFuzz optimizada en C.
-  - **GIRA-12:** Telemetría de rendimiento y persistencia en `output/telemetria_ner.jsonl`.
-  - **GIRA-27:** Evaluador de reglas de calidad y flag `requiere_revision`.
-  - **GIRA-41:** Matching semántico contra catálogos maestros (`CatalogRepository`).
-  - **GIRA-42:** Clasificación de confianza probabilística (ALTA $\ge 0.85$, MEDIA $[0.60, 0.85)$, BAJA $< 0.60$).
-  - **GIRA-43:** Registro y trazabilidad de inconsistencias en `output/inconsistencias_sprint3.jsonl`.
-  - **GIRA-50:** Resolución inteligente de llaves foráneas (Máquina de estados A/B/C en padrón).
-* **Ejecutar Pipeline Completo Sprint 3:**
-  ```powershell
-  python pipeline/ejecutar_sprint3.py --cpu-only
-  # Para pruebas rápidas o muestreos:
-  python pipeline/ejecutar_sprint3.py --limite-docs 50 --cpu-only
-  ```
-* **Ejecutar Tests de Sprint 3 (53 tests):**
-  ```powershell
-  pytest tests/sprint3/ -v
-  ```
-* **Ejecutar Suite Completa de Pruebas (85 tests):**
-  ```powershell
-  pytest tests/ -v
-  ```
-* **Entregables:** `output/sprint3_entidades_procesadas.jsonl`, `output/inconsistencias_sprint3.jsonl`, `output/telemetria_ner.jsonl`.
-
-### 2. Orquestación de Infraestructura (Docker)
-Comandos para controlar el ciclo de vida de las 5 capas de la arquitectura.
-
-* **Encender servicios:** `docker-compose up -d`
-* **Reconstruir y encender (aplicar cambios en Dockerfile/schema):** `docker-compose up -d --build`
-* **Apagar servicios (mantiene los datos):** `docker-compose down`
-* **Reset total (borra la base de datos de PostgreSQL):** `docker-compose down -v`
-* **Verificar contenedores activos:** `docker ps`
-* **Ver logs en tiempo real (ej. de la API):** `docker-compose logs -f api`
-
-### 3. Ejecución Interna (Docker Exec)
-Comando para lanzar procesos directamente sobre el entorno Linux del contenedor, aprovechando las librerías nativas preinstaladas.
-
-* **Ejecutar extracción de Excel:** `docker exec -it giragroup_pipeline python run_sprint2.py`
-
-### 4. Control de Versiones (Git - Cierre de Sprint)
-Flujo estándar utilizado para consolidar la rama de desarrollo con la rama principal.
-
-* **Preparar archivos:** `git add .`
-* **Crear punto de restauración:** `git commit -m "mensaje descriptivo"`
-* **Subir a la rama activa:** `git push origin nombre-rama`
-* **Cambiar de rama:** `git checkout main`
-* **Fusionar cambios:** `git merge nombre-rama`
-
----
-
-## 11.5. Mantenimiento del Proyecto
-
-### Mover el proyecto de sitio
-Si necesitas cambiar la carpeta del proyecto de ubicación o de computadora:
-1. Apaga los contenedores: `docker-compose down`
-2. **Elimina la carpeta `.venv`** (si la creaste).
-3. Mueve la carpeta física.
-
-### Quitar el proyecto de un dispositivo (Limpieza Total)
-Si quieres eliminar por completo el proyecto de una computadora:
-```bash
-# 1. Detener y borrar volúmenes (datos)
-docker-compose down -v
-
-# 2. Eliminar imágenes de Docker asociadas
-docker rmi giragroup_bi_system-api
-docker rmi postgres:16-alpine
-
-# 3. Eliminar la carpeta física del proyecto manualmente
-```
-
----
-
-## 12. Solución de Errores Comunes
-
-**Error de conexión a BD:**
-Verificar `.env`:
-```env
-DB_HOST=pg_database
-DB_PORT=5432
-```
-No usar `127.0.0.1` ni `5433` — esos son para conexiones desde fuera de Docker.
-
-**Modelo BETO no encontrado:**
-Re-ejecutar paso 6.
-
-**FastAPI no responde:**
-```bash
-docker-compose logs python_env
-```
-
-**Power BI no conecta:**
-Verificar puertos en `docker-compose.yml`:
-```yaml
-ports:
-  - "127.0.0.1:5433:5432"   # PostgreSQL (aislado a localhost)
-  - "5051:80"     # pgAdmin
-```
-
-
----
-
-## 13. Cuentas de Acceso Iniciales y Gestión de Credenciales
-
-El sistema cuenta con 5 cuentas demostrativas iniciales para control de acceso basado en roles (RBAC) y verificación 2FA (TOTP/Email):
-
-| Usuario | Correo Electrónico | Rol | Contraseña Inicial (Dev) |
-|---|---|---|---|
-| Administrador General | `dazaadriano12@gmail.com` | `ADMIN` | `giragroup2026` |
-| Auditor DataOps | `dazaadrianoc@gmail.com` | `AUDITOR_CALIDAD` | `giragroup2026` |
-| Dirección Académica | `direccion.academica@giragroup.bo` | `DIRECTOR_ACADEMICO` | `giragroup2026` |
-| Analista Financiero | `dazwebos@gmail.com` | `ANALISTA_FINANCIERO` | `giragroup2026` |
-| Analista Marketing | `analista.marketing@giragroup.bo` | `ANALISTA_MARKETING` | `giragroup2026` |
-
-> **Nota de Seguridad:** El script de sembrado inicial (`seed_users.py`) preserva las contraseñas modificadas por los usuarios y no las sobreescribe en reinicios del contenedor.
-> Para resembrar nuevos usuarios o ejecutar el sembrado manual:
-> ```bash
-> docker exec -it giragroup_api python seed_users.py
-> ```
