@@ -384,6 +384,60 @@ def registros_costo_programa(campos: Dict[str, str]) -> List[Dict[str, Any]]:
     }]
 
 
+# ── Asignación docente-módulo (hoja MODULOS y equivalentes) ───────────────────
+_CLAVES_DOCENTE = ("DOCENTE", "DOCENTE TITULAR", "NOMBRE DOCENTE", "NOMBRE DEL DOCENTE", "PROFESOR", "FACILITADOR", "TUTOR")
+_CLAVES_NRO_MODULO = ("MODULO", "N° MODULO", "Nº MODULO", "NRO MODULO", "NUMERO MODULO", "NRO. MODULO")
+_CLAVES_NOMBRE_MODULO = ("NOMBRE DEL MODULO", "NOMBRE MODULO", "MODULO NOMBRE", "MATERIA", "ASIGNATURA")
+_CLAVES_TIPO_DOCENTE = ("TIPO DE DOCENTE", "TIPO DOCENTE", "ROL DOCENTE")
+_CLAVES_HORAS = ("HRS MODULO", "HORAS MODULO", "HORAS", "HRS", "CARGA HORARIA")
+_CLAVES_PAGO_DOCENTE = ("PAGO DOCENTE", "HONORARIO DOCENTE", "HONORARIO", "HONORARIOS")
+_CLAVES_FECHA_INICIO = ("FECHA INICIO", "FECHA DE INICIO", "INICIO")
+_CLAVES_FECHA_FIN = ("FECHA FIN", "FECHA DE FIN", "FECHA FINALIZACION", "FIN")
+_RE_ENTERO_MODULO = re.compile(r"^\s*(?:M(?:OD(?:ULO)?)?\.?\s*)?(\d{1,2})\s*$", re.IGNORECASE)
+
+
+def registros_asignacion_docente(campos: Dict[str, str]) -> List[Dict[str, Any]]:
+    """
+    Fila que dice qué docente dictó qué módulo de qué programa (sin estudiante): POS + número de módulo + docente.
+    El nombre del módulo se toma de su columna; si la planilla lo puso bajo 'NOMBRE DEL PROGRAMA' (pasa en MODULOS
+    de ARCA), una fila con número de módulo usa ese texto como nombre del módulo. Lista vacía si falta algo.
+    """
+    if estudiante_de_fila(campos) is not None:
+        return []  # fila de un estudiante: es un acta, no una asignación
+    docente = _primero(campos, _CLAVES_DOCENTE)
+    pos = _pos_de_valores(campos) or _pos(campos)
+    nro = None
+    for k in _CLAVES_NRO_MODULO:
+        m = _RE_ENTERO_MODULO.match(str(campos.get(k) or ""))
+        if m and 1 <= int(m.group(1)) <= 30:
+            nro = int(m.group(1))
+            break
+    if not (docente and pos and nro):
+        return []
+    nombre_mod = _primero(campos, _CLAVES_NOMBRE_MODULO)
+    if not nombre_mod:
+        candidato = _primero(campos, ("NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA"))
+        if candidato and not _RE_POS_VALOR.search(candidato.upper()):
+            nombre_mod = candidato
+    codigo = f"{pos}-M{nro:02d}"
+    return [{
+        "asignacion_docente": True,
+        "estudiante": {},
+        "docente": {"valor_extraido": docente},
+        "programa": {"valor_extraido": pos, "metadata": {"pos_canonico": codigo}},
+        "modulo": {"valor_extraido": nombre_mod or f"{pos} · Módulo {nro}"},
+        "nombre_modulo_real": nombre_mod,
+        "nro_modulo": nro,
+        "tipo_docente": (_primero(campos, _CLAVES_TIPO_DOCENTE) or "").strip().upper() or None,
+        "horas_modulo": _a_float(_primero(campos, _CLAVES_HORAS)),
+        "pago_docente": _a_float(_primero(campos, _CLAVES_PAGO_DOCENTE)),
+        "fecha_inicio": parsear_fecha(_primero(campos, _CLAVES_FECHA_INICIO)),
+        "fecha_fin": parsear_fecha(_primero(campos, _CLAVES_FECHA_FIN)),
+        "fecha": parsear_fecha(_primero(campos, _CLAVES_FECHA_INICIO)),
+        "requiere_revision": False,
+    }]
+
+
 _CLAVES_ENTIDAD_PROGRAMA = ("NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA", "CURSO", "COURSE", "MODULO", "MATERIA")
 
 
@@ -539,7 +593,7 @@ def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[
     if estudiante_de_fila(campos) is not None:
         return None
     if categoria == "academico":
-        return "FILA_ACADEMICA_SIN_ESTUDIANTE"
+        return None if registros_asignacion_docente(campos) else "FILA_ACADEMICA_SIN_ESTUDIANTE"
     if _pos(campos) or any(campos.get(k) for k in _CLAVES_ENTIDAD_PROGRAMA):
         return "FILA_FINANCIERA_SIN_ESTUDIANTE" if categoria == "financiero" else None
     return "FILA_SIN_ENTIDAD"

@@ -27,6 +27,7 @@ from models.dim_categoria_financiera import DimCategoriaFinanciera
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
 from models.fact_costo_programa import FactCostoPrograma
+from models.bridge_modulo_docente import BridgeModuloDocente
 from models.log_inconsistencia import LogInconsistencia
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.catalogos import CatInstitucion
@@ -114,6 +115,36 @@ def calcular_tipo_alerta_financiera(cuotas_impagas: Optional[int]) -> str:
     if c == 1:
         return "MORA_TEMPRANA"
     return "NORMAL"
+
+
+# Títulos y grados que acompañan al nombre del docente ('Fabian Mendivil Mgr.', 'Lic. Ana Pérez'): no son parte
+# del nombre; sin quitarlos, la misma persona queda como dos docentes
+_TITULOS_GRADO = {
+    "MGR": "Magister", "MG": "Magister", "MSC": "Magister", "MAGISTER": "Magister", "MBA": "Magister",
+    "DR": "Doctor", "DRA": "Doctor", "PHD": "Doctor", "DOCTOR": "Doctor",
+    "LIC": "Licenciado", "LICDA": "Licenciado", "LICENCIADO": "Licenciado", "LICENCIADA": "Licenciado",
+    "ING": "Ingeniero", "INGENIERO": "Ingeniero", "INGENIERA": "Ingeniero",
+    "ARQ": "Arquitecto", "ABG": "Abogado", "ABOG": "Abogado",
+}
+
+
+def separar_grado(nombre: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
+    """'Fabian Mendivil Mgr.' -> ('Fabian Mendivil', 'Magister'). Quita títulos al inicio o al final."""
+    if not nombre:
+        return nombre, None
+    tokens = nombre.replace(",", " ").split()
+    grado = None
+
+    def _clave(t: str) -> str:
+        return t.replace(".", "").upper()
+
+    while tokens and _clave(tokens[0]) in _TITULOS_GRADO:
+        titulo = _TITULOS_GRADO[_clave(tokens.pop(0))]  # pop siempre, aunque ya haya grado
+        grado = grado or titulo
+    while tokens and _clave(tokens[-1]) in _TITULOS_GRADO:
+        titulo = _TITULOS_GRADO[_clave(tokens.pop())]
+        grado = grado or titulo
+    return (" ".join(tokens) or None), grado
 
 
 def _tokens_nombre(nombre: str) -> set:
@@ -462,7 +493,9 @@ class DWLoaderService:
         if not nombre_docente or not nombre_docente.strip():
             return None
 
-        clean_nombre = nombre_docente.strip()
+        clean_nombre, _ = separar_grado(nombre_docente.strip())
+        if not clean_nombre:
+            return None
         doc = self.db.query(DimDocente).filter(
             func.lower(DimDocente.nombre_completo) == clean_nombre.lower()
         ).first()
@@ -539,15 +572,80 @@ class DWLoaderService:
         return None
 
     def _docente_unico_del_modulo(self, id_modulo: Optional[int]) -> Optional[int]:
-        """Docente de un módulo según los hechos académicos ya cargados; None si no hay o hay más de uno."""
+        """
+        Docente de un módulo: el de bridge_modulo_docente (hoja MODULOS) si hay uno solo, o el único TITULAR si hay
+        varios; si no, el de los hechos académicos ya cargados. None si no se sabe o es ambiguo.
+        """
         if not id_modulo:
             return None
+        asignados = self.db.query(BridgeModuloDocente.id_docente, BridgeModuloDocente.tipo_docente).filter(
+            BridgeModuloDocente.id_modulo == id_modulo
+        ).all()
+        if len(asignados) == 1:
+            return asignados[0][0]
+        titulares = [d for d, t in asignados if (t or "").upper().startswith("TITULAR")]
+        if len(titulares) == 1:
+            return titulares[0]
+        if asignados:
+            return None  # varios docentes sin un titular claro: no se adivina
         ids = [
             r[0] for r in self.db.query(FactRendimientoAcademico.id_docente)
             .filter(FactRendimientoAcademico.id_modulo == id_modulo, FactRendimientoAcademico.id_docente.isnot(None))
             .distinct().limit(2).all()
         ]
         return ids[0] if len(ids) == 1 else None
+
+    def _cargar_asignacion_docente(self, resoluciones, nombre_docente, pos_code, doc_id, institucion) -> Dict[str, Any]:
+        """
+        Registra qué docente dictó el módulo POS-XXXX-MNN (idempotente) y completa el docente de las notas y
+        evaluaciones de ese módulo que se cargaron antes sin él.
+        """
+        if not pos_code or not nombre_docente:
+            return {"tipo": "asignacion_docente", "status": "staged", "motivo": "Asignación sin POS o sin docente"}
+        nombre_real = resoluciones.get("nombre_modulo_real")
+        id_mod = self.resolver_o_crear_modulo(
+            nombre_real or f"{pos_code}", pos_code=pos_code, doc_id=doc_id, institucion=institucion,
+            programa=pos_code.rsplit("-M", 1)[0],
+        )
+        mod = self.db.query(DimModulo).get(id_mod)
+        if mod and nombre_real and "· Módulo" in (mod.nombre_modulo or ""):
+            mod.nombre_modulo = nombre_real[:200]  # el acta lo creó con un nombre provisional
+        id_doc = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id)
+        _, grado = separar_grado(nombre_docente)
+
+        asig = self.db.query(BridgeModuloDocente).filter_by(id_modulo=id_mod, id_docente=id_doc).first()
+        if asig is None:
+            asig = BridgeModuloDocente(id_modulo=id_mod, id_docente=id_doc)
+            self.db.add(asig)
+        asig.id_documento = doc_id
+        asig.tipo_docente = resoluciones.get("tipo_docente") or asig.tipo_docente
+        asig.grado_academico = grado or asig.grado_academico
+        for campo in ("horas_modulo", "pago_docente", "fecha_inicio", "fecha_fin"):
+            if resoluciones.get(campo) is not None:
+                setattr(asig, campo, resoluciones[campo])
+        self.db.flush()
+
+        # Notas y evaluaciones del módulo que llegaron antes que esta hoja: ahora se sabe su docente
+        completadas = {"notas": 0, "evaluaciones": 0}
+        id_doc_modulo = self._docente_unico_del_modulo(id_mod)
+        if id_doc_modulo:
+            completadas["notas"] = self.db.query(FactRendimientoAcademico).filter(
+                FactRendimientoAcademico.id_modulo == id_mod, FactRendimientoAcademico.id_docente.is_(None)
+            ).update({FactRendimientoAcademico.id_docente: id_doc_modulo}, synchronize_session=False)
+            if FactEvaluacionDocente is not None:
+                completadas["evaluaciones"] = self.db.query(FactEvaluacionDocente).filter(
+                    FactEvaluacionDocente.id_modulo == id_mod,
+                    FactEvaluacionDocente.id_docente.is_(None),
+                    FactEvaluacionDocente.tipo_pregunta == "DOCENTE",
+                ).update({FactEvaluacionDocente.id_docente: id_doc_modulo}, synchronize_session=False)
+        return {
+            "tipo": "asignacion_docente",
+            "status": "loaded",
+            "id_modulo": id_mod,
+            "id_docente": id_doc,
+            "pos_code": pos_code,
+            **{f"{k}_completadas": v for k, v in completadas.items()},
+        }
 
     # ── 4. Resolución DimTiempo ──────────────────────────────────────────────
     def resolver_o_crear_tiempo(self, fecha_val: Optional[Any] = None) -> Optional[int]:
@@ -996,6 +1094,10 @@ class DWLoaderService:
                     "inscritos": inscritos
                 }
 
+        # 3f'. Asignación docente-módulo (hoja MODULOS) -> dim_modulo + bridge_modulo_docente
+        if resoluciones.get("asignacion_docente"):
+            return self._cargar_asignacion_docente(resoluciones, nombre_docente, pos_code, doc_id, institucion)
+
         # 3f. Ruteo ACTA / MOODLE -> FactRendimientoAcademico
         id_doc = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id)
         id_mod = self.resolver_o_crear_modulo(
@@ -1013,6 +1115,8 @@ class DWLoaderService:
         if not id_mod:
             id_mod = self.resolver_o_crear_modulo("Módulo General", pos_code="MOD-GEN", institucion=institucion)
             requiere_rev = True  # sin módulo identificado
+        if not id_doc:
+            id_doc = self._docente_unico_del_modulo(id_mod)  # el acta no nombra al docente; la hoja MODULOS sí
 
         nota_raw = resoluciones.get("nota_final")
         if resoluciones.get("nota_ya_normalizada"):

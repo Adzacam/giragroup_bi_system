@@ -72,6 +72,7 @@ from services.extraccion_por_encabezado import (
     motivo_fila_sin_entidad,
     registros_rentabilidad,
     registros_costo_programa,
+    registros_asignacion_docente,
 )
 from services.sugerencia_hitl import es_sugerencia_un_clic, nombre_extraido, similitud_nombre_completo
 from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, resolver_caso_hecho
@@ -3512,6 +3513,14 @@ def confirm_dw_insert(
                 if categoria_ruteo == "academico" and campos_linea:
                     # Acta con columnas MÓDULO 1..12 (ARCA): un hecho por módulo con su nota real
                     registros_linea = []
+                    # Hoja de asignaciones (POS + módulo + docente, sin estudiante): docente de cada módulo
+                    for reg_asig in registros_asignacion_docente(campos_linea):
+                        reg_asig.pop("requiere_revision")
+                        registros_linea.append({
+                            **reg_dict,
+                            "resoluciones": {**reg_dict["resoluciones"], **reg_asig},
+                            "calidad": {"requiere_revision": en_revision},
+                        })
                     for reg_aca in registros_academicos(campos_linea):
                         revision_fila = reg_aca.pop("requiere_revision")
                         registros_linea.append({
