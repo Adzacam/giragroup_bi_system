@@ -8,6 +8,14 @@
       "cwd": "frontend",
       "env": { "VITE_API_TARGET": "http://localhost" },
       "port": 4173
+    },
+    {
+      "name": "web-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--no-install", "vite", "--port", "5174", "--strictPort"],
+      "cwd": "frontend",
+      "env": { "VITE_API_TARGET": "http://localhost" },
+      "port": 5174
     }
   ]
 }
