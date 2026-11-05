@@ -26,6 +26,7 @@ os.makedirs(LANDING_DIR, exist_ok=True)
 UPLOAD_DIR = LANDING_DIR
 
 from core.database import SessionLocal, get_db
+from services import tareas_dataops
 from core.security import require_roles, get_current_user
 from models.user import User
 from models.lote import Lote
@@ -131,6 +132,8 @@ class ConfirmDwInsertRequest(BaseModel):
     accion: Optional[str] = None
     texto_editado: Optional[str] = None
     threshold: Optional[float] = UMBRAL_INDICE_REGISTRO_DEC
+    # Lotes grandes: la consolidación corre en segundo plano y la SPA sigue su avance (GET /tareas/{id})
+    en_segundo_plano: bool = False
 
 
 class BatchResolveRequest(BaseModel):
@@ -1718,6 +1721,7 @@ def _evaluar_documentos_lote(
     db: Session,
     docs: List[DimOrigenDocumental],
     persistir_staging: bool = True,
+    tarea_id: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Evalúa todas las tuplas de los documentos indicados, actualiza `staging_registros_crudos`
@@ -1775,6 +1779,9 @@ def _evaluar_documentos_lote(
     inc_count = 0
     total_entidades = 0
     suma_indices = 0
+    lineas_hechas = 0
+    tareas_dataops.avanzar(tarea_id, 0, sum(len([l for l in (s_reg.texto_plano or "").splitlines() if l.strip()])
+                                            for s_reg in stg_records), forzar=True)
 
     for stg in stg_records:
         orig_doc = doc_map.get(stg.id_documento)
@@ -1796,6 +1803,8 @@ def _evaluar_documentos_lote(
         bloque_requiere_rev = False
 
         for line_idx, line in enumerate(lines):
+            lineas_hechas += 1
+            tareas_dataops.avanzar(tarea_id, lineas_hechas)
             ents, score, req_rev = extract_entities_from_line(
                 line,
                 estudiantes,
@@ -2275,8 +2284,20 @@ def _evaluacion_lectura(db: Session, docs: List[DimOrigenDocumental]) -> Dict[st
     if not doc_ids:
         return _evaluar_documentos_lote(db, docs, persistir_staging=False)
     clave = ("evaluacion_lectura", tuple(doc_ids), _huella_evaluacion(db, doc_ids))
-    return cache_consultas.obtener(clave, TTL_EVALUACION_LECTURA_SEG,
-                                   lambda: _evaluar_documentos_lote(db, docs, persistir_staging=False))
+
+    def _calcular_con_progreso():
+        # La primera lectura de un lote grande tarda minutos: se registra como tarea para que la SPA muestre avance
+        id_lote = next((d.id_lote for d in docs if getattr(d, "id_lote", None)), None)
+        tarea_id = tareas_dataops.crear("LECTURA_BETO", id_lote)
+        try:
+            res = _evaluar_documentos_lote(db, docs, persistir_staging=False, tarea_id=tarea_id)
+        except Exception as e_lect:
+            tareas_dataops.fallar(tarea_id, str(e_lect))
+            raise
+        tareas_dataops.terminar(tarea_id, {"total_tuplas": res.get("totalTuplas")})
+        return res
+
+    return cache_consultas.obtener(clave, TTL_EVALUACION_LECTURA_SEG, _calcular_con_progreso)
 
 
 @router.get("/lote/{id_lote}/resumen")
@@ -3362,7 +3383,50 @@ def confirm_dw_insert(
             db=db,
             current_user=current_user,
         )
+    if not payload.en_segundo_plano:
+        return _consolidar(payload, db, current_user)
 
+    if payload.id_lote:
+        previa = tareas_dataops.ultima(payload.id_lote, "CONSOLIDACION")
+        if previa and previa["estado"] == "EN_CURSO":
+            raise HTTPException(status.HTTP_409_CONFLICT,
+                                detail={"mensaje": "Ya hay una consolidación en curso para este lote.", "tarea": previa})
+    tarea_id = tareas_dataops.crear("CONSOLIDACION", payload.id_lote, usuario=current_user.username)
+    user_id = current_user.id
+
+    def _en_segundo_plano():
+        db_tarea = SessionLocal()
+        try:
+            usuario = db_tarea.query(User).filter(User.id == user_id).first()
+            resultado = _consolidar(payload, db_tarea, usuario, tarea_id=tarea_id)
+            tareas_dataops.terminar(tarea_id, resultado)
+        except Exception as e_tarea:
+            db_tarea.rollback()
+            logger.exception("Consolidación en segundo plano falló (tarea %s)", tarea_id)
+            tareas_dataops.fallar(tarea_id, getattr(e_tarea, "detail", None) or str(e_tarea))
+        finally:
+            db_tarea.close()
+
+    threading.Thread(target=_en_segundo_plano, name=f"consolidacion-{tarea_id}", daemon=True).start()
+    return {"status": "accepted", "tarea_id": tarea_id, "tarea": tareas_dataops.obtener(tarea_id)}
+
+
+@router.get("/tareas/{tarea_id}")
+def get_tarea(tarea_id: int, _: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"]))):
+    tarea = tareas_dataops.obtener(tarea_id)
+    if not tarea:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"No existe la tarea {tarea_id}.")
+    return tarea
+
+
+@router.get("/lote/{id_lote}/tarea")
+def get_tarea_lote(id_lote: int, tipo: str = Query("CONSOLIDACION", pattern="^(CONSOLIDACION|LECTURA_BETO)$")):
+    """Última tarea del lote de ese tipo (en curso o terminada), o null."""
+    return tareas_dataops.ultima(id_lote, tipo)
+
+
+def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Optional[User],
+                tarea_id: Optional[int] = None) -> Dict[str, Any]:
     dw = DWLoaderService(db)
     thresh = payload.threshold or UMBRAL_INDICE_REGISTRO_DEC
 
@@ -3411,6 +3475,9 @@ def confirm_dw_insert(
         d: factores_escala_por_programa(filas, (origenes_map.get(d).tipo_escala if origenes_map.get(d) else None))
         for d, filas in filas_por_doc.items()
     }
+    total_lineas = sum(len([l for l in (s_reg.texto_plano or "").splitlines() if l.strip()]) for s_reg in stg_records)
+    lineas_hechas = 0
+    tareas_dataops.avanzar(tarea_id, 0, total_lineas, forzar=True)
 
     for stg in stg_records:
         orig_doc = origenes_map.get(stg.id_documento) if stg.id_documento else None
@@ -3441,6 +3508,8 @@ def confirm_dw_insert(
         # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
         indices_linea = obtener_indices(lines)
         for line, indice in zip(lines, indices_linea):
+            lineas_hechas += 1
+            tareas_dataops.avanzar(tarea_id, lineas_hechas)
             campos_linea = campos_por_encabezado([c.strip() for c in line.split("|")])
             motivo_ruido = motivo_fila_sin_entidad(campos_linea, categoria_ruteo)
             if motivo_ruido:
