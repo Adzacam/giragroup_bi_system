@@ -474,7 +474,8 @@ export const dataopsApi = {
       });
       return res.data;
     }
-    const res = await client.post(`${BASE_URL}/confirm-dw-insert`, payload);
+    // La consolidación inserta miles de hechos (~2 min con 1.700 registros): 10 min como la subida de lote
+    const res = await client.post(`${BASE_URL}/confirm-dw-insert`, payload, { timeout: 600000 });
     return res.data;
   }
 };

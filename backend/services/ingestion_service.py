@@ -176,6 +176,21 @@ def normalizar_codigo_tipo_fuente(raw_type: Optional[str]) -> Optional[str]:
     return None
 
 
+# Tipos que el selector de la SPA sabe reconocer; el backend distingue además los especializados
+TIPOS_GENERICOS_CLIENTE = {"ACTA", "COBRANZA", "ADMISION", "MOODLE"}
+
+
+def elegir_tipo_fuente(explicito: Optional[str], detectado: Optional[str]) -> Optional[str]:
+    """
+    El tipo elegido en la SPA manda, salvo que sea uno de sus 4 genéricos y las cabeceras indiquen un
+    tipo especializado: la SPA no conoce EGRESOS, TECHOS, EVALUACION_DOCENTE, etc. y marcaba Egresos o
+    Techos como COBRANZA y la evaluación docente como ACTA (filas sin módulo ni nota en la bandeja).
+    """
+    if explicito in TIPOS_GENERICOS_CLIENTE and detectado and detectado not in TIPOS_GENERICOS_CLIENTE:
+        return detectado
+    return explicito or detectado
+
+
 def _contiene_tokens(texto: str, palabras_o_frases: tuple[str, ...]) -> bool:
     """
     Verifica si alguna de las palabras o frases clave está presente en el texto,
@@ -452,7 +467,9 @@ class IngestionService:
             for col_idx, v in enumerate(b.iloc[row_idx].values):
                 if pd.notna(v) and str(v).strip() != "":
                     val_s = str(v).strip()
-                    hdr_s = headers_row[col_idx] if col_idx < len(headers_row) else ""
+                    # ': ' dentro del encabezado ('1: Docente explica claramente (1-5)') partía la pregunta en dos
+                    # al leer 'ENCABEZADO: valor'; se reemplaza por ' - ' para conservar la pregunta entera
+                    hdr_s = (headers_row[col_idx] if col_idx < len(headers_row) else "").replace(": ", " - ")
                     # Solo ': ' rompe el formato 'ENCABEZADO: valor'; las fechas con hora (00:00:00) llevan su encabezado
                     if hdr_s and ": " not in val_s and not hdr_s.lower().startswith("unnamed"):
                         celdas_fmt.append(f"{hdr_s}: {val_s}")
@@ -623,7 +640,7 @@ class IngestionService:
             # Detectar tipo_fuente: primero por cabeceras reales (#15), o por el parámetro explícito del usuario
             detected_fuente = detectar_tipo_fuente_por_cabeceras(hojas, safe_filename)
             explicit_fuente = normalizar_codigo_tipo_fuente(tipo_fuente) or normalizar_codigo_tipo_fuente(source_type)
-            final_tipo_fuente = explicit_fuente or detected_fuente
+            final_tipo_fuente = elegir_tipo_fuente(explicit_fuente, detected_fuente)
             if not final_tipo_fuente and asym_info.get("origen_detectado"):
                 origen_raw = asym_info["origen_detectado"]
                 if origen_raw == "MOODLE_EXPORT":

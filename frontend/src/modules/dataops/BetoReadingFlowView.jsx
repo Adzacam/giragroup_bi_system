@@ -116,6 +116,8 @@ export default function BetoReadingFlowView() {
     sugerencias_catalogo_count: 0
   };
 
+  const consolidado = Boolean(resumen.consolidado);
+
   const areas = data?.areas || {
     academica: { key: 'academica', titulo: 'Académica', total: 0, auto: 0, revision: 0, incidencias: 0 },
     financiera: { key: 'financiera', titulo: 'Financiera', total: 0, auto: 0, revision: 0, incidencias: 0 },
@@ -325,19 +327,23 @@ export default function BetoReadingFlowView() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          {/* Orden del flujo: ③ consolidar (acción principal) → ④ bandeja. Tras consolidar, la bandeja pasa a ser la principal */}
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
             <button
               type="button"
-              className="btn-pill-secondary"
+              className={consolidado ? 'btn-pill-secondary' : 'btn-pill-gold'}
               onClick={() => setIsConfirmModalOpen(true)}
-              disabled={resumen.aceptados_automaticamente === 0}
+              disabled={resumen.total_procesados === 0}
+              title="≥ 85 % entran directo al DW; 60–85 % entran marcados para revisión; el resto queda en la bandeja"
             >
-              <Database size={14} /> Consolidar Aceptados al DW ({resumen.aceptados_automaticamente})
+              {consolidado ? <CheckCircle2 size={14} /> : <Database size={14} />}
+              {consolidado ? ' Lote consolidado · reconsolidar' : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
             </button>
             <button
               type="button"
-              className="btn-pill-gold"
+              className={consolidado ? 'btn-pill-gold' : 'btn-pill-secondary'}
               onClick={() => navigate(`/dataops/lote/${effectiveBatchId}/revision`)}
+              title={consolidado ? undefined : 'Consolida primero: los hechos marcados para revisión aparecen en la bandeja después de consolidar'}
             >
               <span>Ir a Bandeja ④ Revisión ({resumen.por_revisar + resumen.con_incidencias})</span>
               <ArrowRight size={15} />
@@ -752,9 +758,13 @@ export default function BetoReadingFlowView() {
                           </div>
                         </td>
                         <td>
-                          {rec.nota_normalizada !== undefined && rec.nota_normalizada !== null ? (
-                            <span style={{ fontWeight: '700', color: rec.nota_normalizada >= 51 ? '#1B8754' : '#D9383A' }}>
+                          {rec.nota_normalizada !== undefined && rec.nota_normalizada !== null && rec.nota_normalizada !== '' && !Number.isNaN(Number(rec.nota_normalizada)) ? (
+                            <span style={{ fontWeight: '700', color: Number(rec.nota_normalizada) >= 51 ? '#1B8754' : '#D9383A' }}>
                               Nota: {rec.nota_normalizada}/100
+                            </span>
+                          ) : rec.monto ? (
+                            <span style={{ fontWeight: '700', color: 'var(--color-ink-black)' }}>
+                              Monto: {String(rec.monto).startsWith('Bs') ? rec.monto : `Bs. ${rec.monto}`}
                             </span>
                           ) : rec.monto_deuda ? (
                             <span style={{ fontWeight: '700', color: '#D9383A' }}>
@@ -994,15 +1004,16 @@ export default function BetoReadingFlowView() {
           </button>
           <button
             type="button"
-            className="btn-pill-secondary"
+            className={consolidado ? 'btn-pill-secondary' : 'btn-pill-gold'}
             onClick={() => setIsConfirmModalOpen(true)}
-            disabled={resumen.aceptados_automaticamente === 0}
+            disabled={resumen.total_procesados === 0}
           >
-            <Database size={15} /> Consolidar Aprobados ({resumen.aceptados_automaticamente})
+            {consolidado ? <CheckCircle2 size={15} /> : <Database size={15} />}
+            {consolidado ? ' Lote consolidado · reconsolidar' : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
           </button>
           <button
             type="button"
-            className="btn-pill-gold"
+            className={consolidado ? 'btn-pill-gold' : 'btn-pill-secondary'}
             onClick={() => navigate(`/dataops/lote/${effectiveBatchId}/revision`)}
           >
             <span>Ir a Bandeja ④ Revisión Humana y Consolidación DW ({resumen.por_revisar + resumen.con_incidencias})</span>
@@ -1040,12 +1051,21 @@ export default function BetoReadingFlowView() {
               Confirmar consolidación al Data Warehouse
             </h3>
             <p style={{ fontSize: '13.5px', color: 'var(--color-slate-gray)', lineHeight: '1.5', margin: '0 0 16px 0' }}>
-              Se insertarán transaccionalmente <strong>{resumen.aceptados_automaticamente}</strong> registros que superaron el umbral de relación del 85% directamente en las tablas de hechos:
+              Se procesan los <strong>{resumen.total_procesados}</strong> registros del lote según el índice de relación de BETO:
             </p>
             <ul style={{ fontSize: '13px', color: 'var(--color-ink-black)', marginBottom: '20px', paddingLeft: '20px', lineHeight: '1.6' }}>
-              <li><code>fact_rendimiento_academico</code> (calificaciones normalizadas a escala centesimal)</li>
-              <li><code>fact_situacion_financiera</code> (cuotas impagas y cobros conciliados)</li>
+              <li><strong>≥ 85 %</strong> ({resumen.aceptados_automaticamente}): entran directo a las tablas de hechos.</li>
+              <li><strong>60–85 %</strong> o con un dato fuera de catálogo: entran marcados como <em>hecho en revisión</em> y aparecen en la bandeja ④.</li>
+              <li><strong>&lt; 60 %</strong> o sin entidad que enlazar: no entran; quedan en la bandeja o se descartan como ruido.</li>
             </ul>
+            {consolidado && (
+              <p style={{ fontSize: '12.5px', color: '#B8801A', margin: '-8px 0 16px 0' }}>
+                Este lote ya fue consolidado: volver a hacerlo actualiza los hechos existentes, no los duplica.
+              </p>
+            )}
+            <p style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)', margin: '-8px 0 16px 0' }}>
+              Puede tardar unos minutos con lotes grandes.
+            </p>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button
                 type="button"
