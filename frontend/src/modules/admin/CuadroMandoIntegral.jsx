@@ -1,7 +1,8 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import PageHeader from '../../components/shared/PageHeader';
-import KpiCard from '../../components/shared/KpiCard';
+import CmiScorecard from './cmi/CmiScorecard';
+import CmiConfiguracion from './cmi/CmiConfiguracion';
 import useKineticScroll from '../../hooks/useKineticScroll';
 import {
   ShieldCheck,
@@ -28,7 +29,8 @@ import {
   Calendar,
   Sparkles,
   Info,
-  Download
+  Download,
+  SlidersHorizontal
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -45,7 +47,6 @@ import {
 import { Line, Bar } from 'react-chartjs-2';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import kpiApi from '../../api/kpiApi';
 import forecastApi from '../../api/forecastApi';
 import { reportesApi } from '../../api/reportesApi';
 import { sileoToast } from '../../services/sileoToast';
@@ -70,13 +71,12 @@ export default function CuadroMandoIntegral() {
   const { theme } = useTheme();
   const { role } = useAuth();
   const isDark = theme === 'dark';
-  const isMarketing = role === 'ANALISTA_MARKETING';
+  const isAdmin = role === 'ADMIN';
+  const queryClient = useQueryClient();
 
   // Modo Principal: 'A' = Perspectivas Estratégicas Institucionales, 'B' = Analítica Predictiva Macro
   const [activeMode, setActiveMode] = useState('A');
 
-  // Sub-pestaña para Modo A: 'resumen', 'financiera', 'cliente', 'procesos', 'aprendizaje'
-  const [subTabModoA, setSubTabModoA] = useState(isMarketing ? 'cliente' : 'resumen');
 
   // Filtros en Modo B
   const [horizonte, setHorizonte] = useState(6);
@@ -108,71 +108,6 @@ export default function CuadroMandoIntegral() {
     }
   };
 
-  const EMPTY_CMI_PERSPECTIVAS = {
-    financiera: {
-      recaudacion_vs_meta_pct: null,
-      monto_total_recaudado_bs: null,
-      monto_meta_gestion_bs: null,
-      monto_total_deuda_bs: null,
-      mora_total_pct: null,
-      estudiantes_cartera_vigente: 0,
-      estudiantes_cartera_mora: 0,
-      estudiantes_cartera_previsionable: 0,
-      drilldown_categorias: [],
-      drilldown_cartera: []
-    },
-    cliente_mercado: {
-      tasa_conversion_admisiones_pct: null,
-      retencion_neta_pct: null,
-      total_matricula_acumulada: 0,
-      alumnos_libres_alertas_pct: null,
-      drilldown_lineas: [],
-      drilldown_embudo: []
-    },
-    procesos_internos: {
-      confianza_media_beto_pct: null,
-      tasa_automatizacion_pct: null,
-      documentos_procesados: 0,
-      registros_derivados_hitl: 0,
-      entidades_no_resueltas: 0,
-      tiempo_medio_procesamiento_ms: null,
-      drilldown_fuentes: [],
-      drilldown_calidad_nlp: []
-    },
-    aprendizaje_crecimiento: {
-      promedio_general_notas: null,
-      tasa_aprobacion_pct: null,
-      puntualidad_actas_pct: null,
-      cobertura_catalogo_pct: null,
-      estudiantes_en_riesgo: 0,
-      drilldown_distribucion_notas: [],
-      drilldown_docentes: []
-    }
-  };
-
-  // Query React Query para Perspectivas del CMI (Modo A)
-  const {
-    data: cmiData = EMPTY_CMI_PERSPECTIVAS,
-    isLoading: isLoadingCmi,
-    refetch: refetchCmi,
-  } = useQuery({
-    queryKey: ['cmiCompletoPerspectivas'],
-    queryFn: async () => {
-      try {
-        const res = await kpiApi.getCmiCompleto();
-        if (res && res.perspectivas) {
-          return res.perspectivas;
-        }
-      } catch (err) {
-        console.warn('Backend /kpis/cmi-completo no disponible, usando fallback:', err.message);
-      }
-      return EMPTY_CMI_PERSPECTIVAS;
-    },
-    staleTime: 60_000,
-    gcTime: 300_000,
-    placeholderData: keepPreviousData,
-  });
-
   // Query React Query para Analítica Predictiva Macro (Modo B)
   const {
     data: macroData = null,
@@ -196,13 +131,6 @@ export default function CuadroMandoIntegral() {
     gcTime: 300_000,
     placeholderData: keepPreviousData,
   });
-
-  const fetchCmi = async (force = false) => {
-    if (force) {
-      await kpiApi.getCmiCompleto(true).catch(() => null);
-    }
-    return refetchCmi();
-  };
 
   const fetchMacro = () => refetchMacro();
   const handleRecalcularMacro = () => refetchMacro();
@@ -384,12 +312,12 @@ export default function CuadroMandoIntegral() {
           category="ADMINISTRACIÓN ESTRATÉGICA"
           title="Cuadro de Mando Integral"
           italicWord="Macroinstitucional"
-          subtitle="Monitoreo multidimensional del desempeño académico-financiero y suite econométrica de modelos predictivos."
+          subtitle="Desempeño institucional en cuatro perspectivas estratégicas, con metas y semáforo comunes a la web y a Power BI."
         />
         <div style={{ display: 'flex', gap: '10px', marginTop: '24px', position: 'relative' }}>
           <button
-            onClick={() => { fetchCmi(true); if (activeMode === 'B') fetchMacro(); }}
-            disabled={isLoadingCmi || isLoadingMacro}
+            onClick={() => { queryClient.invalidateQueries({ queryKey: ['cmi'] }); if (activeMode === 'B') fetchMacro(); }}
+            disabled={isLoadingMacro}
             className="btn-academic"
             style={{
               display: 'inline-flex',
@@ -405,7 +333,7 @@ export default function CuadroMandoIntegral() {
               color: 'var(--color-ink-black)',
             }}
           >
-            <RefreshCw size={14} className={isLoadingCmi || isLoadingMacro ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={isLoadingMacro ? 'animate-spin' : ''} />
             Actualizar
           </button>
 
@@ -544,7 +472,7 @@ export default function CuadroMandoIntegral() {
           }}
         >
           <Layers size={16} color={activeMode === 'A' ? 'var(--color-gira-gold)' : 'currentColor'} />
-          (A) Perspectivas Estratégicas Institucionales
+          Perspectivas estratégicas
         </button>
 
         <button
@@ -574,363 +502,38 @@ export default function CuadroMandoIntegral() {
           }}
         >
           <TrendingUp size={16} color={activeMode === 'B' ? 'var(--color-gira-gold)' : 'currentColor'} />
-          (B) Analítica Predictiva Macro
+          Analítica predictiva
         </button>
+        {isAdmin && (
+          <button
+            onClick={() => setActiveMode('C')}
+            aria-pressed={activeMode === 'C'}
+            style={{
+              padding: '10px 22px',
+              borderRadius: '12px',
+              fontSize: '13.5px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              border: activeMode === 'C' && isDark ? '1px solid rgba(241, 184, 68, 0.45)' : '1px solid transparent',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease',
+              backgroundColor: activeMode === 'C' ? (isDark ? '#232a38' : 'var(--color-paper-white)') : 'transparent',
+              color: activeMode === 'C' ? (isDark ? '#FAF9F6' : '#0C1E33') : (isDark ? '#9ca3af' : 'var(--color-slate-gray)'),
+              boxShadow: activeMode === 'C' ? (isDark ? '0 4px 14px rgba(0,0,0,0.5)' : 'var(--shadow-subtle)') : 'none'
+            }}
+          >
+            <SlidersHorizontal size={16} color={activeMode === 'C' ? 'var(--color-gira-gold)' : 'currentColor'} />
+            Configuración
+          </button>
+        )}
       </div>
 
-      {/* ════════════════════════════════════════════════════════════════════════ */}
-      {/* MODO A: PERSPECTIVAS ESTRATÉGICAS INSTITUCIONALES (BALANCED SCORECARD) */}
-      {/* ════════════════════════════════════════════════════════════════════════ */}
-      {activeMode === 'A' && (
-        <div>
-          {/* Sub-selector de Perspectivas con chips */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
-            {[
-              { id: 'resumen', label: 'Resumen Ejecutivo (4 Pilares)' },
-              { id: 'financiera', label: '1. Perspectiva Financiera' },
-              { id: 'cliente', label: '2. Del Cliente / Mercado' },
-              { id: 'procesos', label: '3. Procesos Internos DataOps' },
-              { id: 'aprendizaje', label: '4. Aprendizaje y Crecimiento' },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setSubTabModoA(tab.id)}
-                style={{
-                  padding: '7px 16px',
-                  borderRadius: '9999px',
-                  fontSize: '12.5px',
-                  fontWeight: subTabModoA === tab.id ? 700 : 500,
-                  cursor: 'pointer',
-                  border: subTabModoA === tab.id
-                    ? '1px solid var(--color-gira-gold)'
-                    : (isDark ? '1px solid #2d3748' : '1px solid var(--color-border)'),
-                  backgroundColor: subTabModoA === tab.id
-                    ? (isDark ? 'rgba(217, 155, 38, 0.22)' : 'rgba(217, 155, 38, 0.12)')
-                    : (isDark ? '#1a202c' : 'var(--color-paper-white)'),
-                  color: subTabModoA === tab.id
-                    ? 'var(--color-gira-gold)'
-                    : (isDark ? '#cbd5e1' : 'var(--color-slate-gray)'),
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+      {activeMode === 'A' && <CmiScorecard />}
 
-          {/* ── Vista: Resumen Ejecutivo de 4 Pilares ─────────────────────────── */}
-          {subTabModoA === 'resumen' && cmiData && (
-            <div className="space-y-6">
-              <div className="cmi-kpi-grid">
-                <KpiCard
-                  label="1. PERSPECTIVA FINANCIERA"
-                  numberPrefix="Bs. "
-                  number={cmiData?.financiera?.monto_total_recaudado_bs != null ? `${(cmiData.financiera.monto_total_recaudado_bs / 1000000).toFixed(2)}M` : '0.00M'}
-                  sublabel={cmiData?.financiera?.recaudacion_vs_meta_pct != null ? `Cumplimiento de Meta: ${cmiData.financiera.recaudacion_vs_meta_pct}% · Mora: ${cmiData?.financiera?.mora_total_pct ?? 0}%` : 'Sin registros financieros en DW'}
-                  badgeText={cmiData?.financiera?.recaudacion_vs_meta_pct != null ? (cmiData.financiera.recaudacion_vs_meta_pct >= 90 ? 'Saludable' : 'En Riesgo') : 'Sin datos'}
-                  badgeType={cmiData?.financiera?.recaudacion_vs_meta_pct >= 90 ? 'success' : 'peach'}
-                />
+      {activeMode === 'C' && isAdmin && <CmiConfiguracion />}
 
-                <KpiCard
-                  label="2. DEL CLIENTE / MERCADO"
-                  number={cmiData?.cliente_mercado?.total_matricula_acumulada != null ? cmiData.cliente_mercado.total_matricula_acumulada.toLocaleString() : '0'}
-                  numberSuffix=" Alumnos"
-                  sublabel={cmiData?.cliente_mercado?.tasa_conversion_admisiones_pct != null ? `Conversión Admisión: ${cmiData.cliente_mercado.tasa_conversion_admisiones_pct}%` : 'Sin postulaciones registradas en DW'}
-                  badgeText="Sostenido"
-                  badgeType="success"
-                />
-
-                <KpiCard
-                  label="3. PROCESOS INTERNOS DATAOPS"
-                  number={cmiData?.procesos_internos?.confianza_media_beto_pct != null ? cmiData.procesos_internos.confianza_media_beto_pct.toFixed(1) : '0.0'}
-                  numberSuffix="%"
-                  sublabel={cmiData?.procesos_internos?.tasa_automatizacion_pct != null ? `Automatización: ${cmiData.procesos_internos.tasa_automatizacion_pct}% · HITL: ${cmiData?.procesos_internos?.registros_derivados_hitl ?? 0} casos` : 'Sin procesamiento activo en DW'}
-                  badgeText="NLP Activo"
-                  badgeType="peach"
-                />
-
-                <KpiCard
-                  label="4. APRENDIZAJE Y CRECIMIENTO"
-                  number={cmiData?.aprendizaje_crecimiento?.promedio_general_notas != null ? cmiData.aprendizaje_crecimiento.promedio_general_notas.toFixed(1) : '0.0'}
-                  numberSuffix=" pts"
-                  sublabel={cmiData?.aprendizaje_crecimiento?.tasa_aprobacion_pct != null ? `Aprobación: ${cmiData.aprendizaje_crecimiento.tasa_aprobacion_pct}% · En riesgo: ${cmiData?.aprendizaje_crecimiento?.estudiantes_en_riesgo ?? 0} alumnos` : 'Sin evaluaciones registradas en DW'}
-                  badgeText="Vigente"
-                  badgeType="neutral"
-                />
-              </div>
-
-              {/* Tarjetas Expandibles de Desglose Rápido */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
-                <div className="card-mist kinetic-card p-6 rounded-[24px]">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--color-ink-black)' }}>
-                      Desglose de Cartera y Cobranzas
-                    </h3>
-                    <button
-                      onClick={() => setSubTabModoA('financiera')}
-                      style={{ background: 'none', border: 'none', color: 'var(--color-gira-gold)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      Ver Detalle <ChevronRight size={14} />
-                    </button>
-                  </div>
-                  <div className="space-y-3">
-                    {(cmiData?.financiera?.drilldown_cartera || []).map((item, idx) => (
-                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                        <div>
-                          <div style={{ fontSize: '13px', fontWeight: 600 }}>{item.estado}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>{item.alumnos} alumnos ({item.pct_total}%)</div>
-                        </div>
-                        <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '9999px', background: item.riesgo === 'Bajo' ? 'rgba(27,135,84,0.14)' : (item.riesgo === 'Medio' ? 'rgba(217,155,38,0.14)' : 'rgba(217,56,58,0.14)'), color: item.riesgo === 'Bajo' ? 'var(--color-alert-green)' : (item.riesgo === 'Medio' ? 'var(--color-gira-gold)' : 'var(--color-alert-red)') }}>
-                          Riesgo {item.riesgo}
-                        </span>
-                      </div>
-                    ))}
-                    {(!cmiData?.financiera?.drilldown_cartera || cmiData.financiera.drilldown_cartera.length === 0) && (
-                      <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', textAlign: 'center', padding: '12px' }}>Sin registros de cartera en el DW</div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="card-mist kinetic-card p-6 rounded-[24px]">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--color-ink-black)' }}>
-                      Embudo de Conversión de Admisiones
-                    </h3>
-                    <button
-                      onClick={() => setSubTabModoA('cliente')}
-                      style={{ background: 'none', border: 'none', color: 'var(--color-gira-gold)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      Ver Detalle <ChevronRight size={14} />
-                    </button>
-                  </div>
-                  <div className="space-y-3">
-                    {(cmiData?.cliente_mercado?.drilldown_embudo || []).map((e, idx) => (
-                      <div key={idx} style={{ padding: '8px 12px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px' }}>
-                          <span>{e.etapa}</span>
-                          <span style={{ fontFamily: 'var(--font-mono)' }}>{e.cantidad.toLocaleString()} ({e.pct_conversion}%)</span>
-                        </div>
-                        <div style={{ height: '6px', width: '100%', background: 'var(--color-mist-gray)', borderRadius: '9999px', overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${e.pct_conversion}%`, background: 'var(--color-gira-gold)', borderRadius: '9999px' }} />
-                        </div>
-                      </div>
-                    ))}
-                    {(!cmiData?.cliente_mercado?.drilldown_embudo || cmiData.cliente_mercado.drilldown_embudo.length === 0) && (
-                      <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', textAlign: 'center', padding: '12px' }}>Sin datos de embudo en el DW</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Vista: Perspectiva Financiera Detallada ───────────────────────── */}
-          {subTabModoA === 'financiera' && cmiData && (
-            <div className="space-y-6">
-              <div className="card-mist kinetic-card p-6 rounded-[24px]">
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', color: 'var(--color-ink-black)' }}>
-                  1. Perspectiva Financiera: Recaudación vs Metas y Cartera
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Recaudación Total Real</div>
-                    <div style={{ fontSize: '24px', fontWeight: 700, marginTop: '4px' }}>Bs. {(cmiData?.financiera?.monto_total_recaudado_bs ?? 0).toLocaleString()}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-alert-green)', marginTop: '4px', fontWeight: 600 }}>{cmiData?.financiera?.recaudacion_vs_meta_pct ?? 0}% de Meta de Gestión</div>
-                  </div>
-                  <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Meta Total Presupuestada</div>
-                    <div style={{ fontSize: '24px', fontWeight: 700, marginTop: '4px' }}>Bs. {(cmiData?.financiera?.monto_meta_gestion_bs ?? 0).toLocaleString()}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>Catálogo Oficial de Programas</div>
-                  </div>
-                  <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Morosidad Institucional</div>
-                    <div style={{ fontSize: '24px', fontWeight: 700, marginTop: '4px', color: 'var(--color-alert-red)' }}>{cmiData?.financiera?.mora_total_pct ?? 0}%</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>{cmiData?.financiera?.estudiantes_riesgo_financiero ?? 0} alumnos con riesgo financiero</div>
-                  </div>
-                </div>
-
-                <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Desglose por Categoría Presupuestaria</h4>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid var(--color-border)', textAlign: 'left', color: 'var(--color-slate-gray)' }}>
-                        <th style={{ padding: '10px' }}>Categoría</th>
-                        <th style={{ padding: '10px' }}>Recaudado Real</th>
-                        <th style={{ padding: '10px' }}>Meta Presupuestada</th>
-                        <th style={{ padding: '10px' }}>Cumplimiento</th>
-                        <th style={{ padding: '10px' }}>Estado</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(cmiData?.financiera?.drilldown_categorias || []).map((cat, idx) => (
-                        <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                          <td style={{ padding: '12px 10px', fontWeight: 600 }}>{cat.categoria}</td>
-                          <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>Bs. {(cat.recaudado_bs ?? 0).toLocaleString()}</td>
-                          <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>Bs. {(cat.meta_bs ?? 0).toLocaleString()}</td>
-                          <td style={{ padding: '12px 10px', fontWeight: 700, color: (cat.cumplimiento_pct || 0) >= 90 ? 'var(--color-alert-green)' : 'var(--color-gira-gold)' }}>
-                            {cat.cumplimiento_pct ?? 0}%
-                          </td>
-                          <td style={{ padding: '12px 10px' }}>
-                            <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '9999px', background: 'rgba(27,135,84,0.12)', color: 'var(--color-alert-green)', fontWeight: 600 }}>
-                              {cat.estado || 'Activo'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Vista: Perspectiva del Cliente / Mercado ──────────────────────── */}
-          {subTabModoA === 'cliente' && cmiData && (
-            <div className="space-y-6">
-              <div className="card-mist kinetic-card p-6 rounded-[24px]">
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', color: 'var(--color-ink-black)' }}>
-                  2. Perspectiva del Cliente y Mercado: Líneas Formativas y Retención
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '14px' }}>Distribución por Línea de Posgrado</h4>
-                    <div className="space-y-3">
-                      {(cmiData?.cliente_mercado?.drilldown_lineas || []).map((l, idx) => (
-                        <div key={idx} style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, marginBottom: '4px' }}>
-                            <span>{l.linea}</span>
-                            <span style={{ color: 'var(--color-gira-gold)' }}>{l.crecimiento_anual}</span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-slate-gray)', marginBottom: '8px' }}>
-                            <span>{(l.inscritos ?? 0).toLocaleString()} estudiantes matriculados</span>
-                            <span>{l.pct}% del total</span>
-                          </div>
-                          <div style={{ height: '6px', width: '100%', background: 'var(--color-mist-gray)', borderRadius: '9999px', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${l.pct}%`, background: isDark ? 'var(--color-gira-gold)' : 'var(--color-gira-navy)', borderRadius: '9999px' }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '14px' }}>Embudo de Conversión de Matrícula</h4>
-                    <div className="space-y-3">
-                      {(cmiData?.cliente_mercado?.drilldown_embudo || []).map((e, idx) => (
-                        <div key={idx} style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, marginBottom: '4px' }}>
-                            <span>{e.etapa}</span>
-                            <span style={{ fontFamily: 'var(--font-mono)' }}>{(e.cantidad ?? 0).toLocaleString()}</span>
-                          </div>
-                          <div style={{ height: '6px', width: '100%', background: 'var(--color-mist-gray)', borderRadius: '9999px', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${e.pct_conversion}%`, background: 'var(--color-gira-gold)', borderRadius: '9999px' }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Vista: Procesos Internos (DataOps & NLP) ───────────────────────── */}
-          {subTabModoA === 'procesos' && cmiData && (
-            <div className="space-y-6">
-              <div className="card-mist kinetic-card p-6 rounded-[24px]">
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', color: 'var(--color-ink-black)' }}>
-                  3. Perspectiva de Procesos Internos: Cadena DataOps & Telemetría BETO
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Confianza Media BETO</div>
-                    <div style={{ fontSize: '26px', fontWeight: 700, marginTop: '4px', color: 'var(--color-gira-gold)' }}>{cmiData.procesos_internos.confianza_media_beto_pct}%</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>Extracción NER contextual</div>
-                  </div>
-                  <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Tasa de Automatización</div>
-                    <div style={{ fontSize: '26px', fontWeight: 700, marginTop: '4px', color: 'var(--color-alert-green)' }}>{cmiData.procesos_internos.tasa_automatizacion_pct}%</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>Sin intervención humana</div>
-                  </div>
-                  <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Derivados a HITL</div>
-                    <div style={{ fontSize: '26px', fontWeight: 700, marginTop: '4px', color: 'var(--color-ink-black)' }}>{cmiData.procesos_internos.registros_derivados_hitl}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>Revisión humana auditada</div>
-                  </div>
-                </div>
-
-                <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Rendimiento por Fuente Ofimática</h4>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid var(--color-border)', textAlign: 'left', color: 'var(--color-slate-gray)' }}>
-                        <th style={{ padding: '10px' }}>Tipo de Fuente</th>
-                        <th style={{ padding: '10px' }}>Lotes Procesados</th>
-                        <th style={{ padding: '10px' }}>Confianza Media IA</th>
-                        <th style={{ padding: '10px' }}>Latencia Media</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(cmiData?.procesos_internos?.drilldown_fuentes || []).map((f, idx) => (
-                        <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                          <td style={{ padding: '12px 10px', fontWeight: 600 }}>{f.tipo_fuente}</td>
-                          <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>{f.archivos} archivos</td>
-                          <td style={{ padding: '12px 10px', fontWeight: 700, color: 'var(--color-alert-green)' }}>{f.confianza_ia_pct}%</td>
-                          <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>{f.latencia_ms} ms</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Vista: Aprendizaje y Crecimiento ───────────────────────────────── */}
-          {subTabModoA === 'aprendizaje' && cmiData && (
-            <div className="space-y-6">
-              <div className="card-mist kinetic-card p-6 rounded-[24px]">
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', color: 'var(--color-ink-black)' }}>
-                  4. Perspectiva de Aprendizaje y Crecimiento: Desempeño Docente & Curricular
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Distribución de Calificaciones</h4>
-                    <div className="space-y-3">
-                      {(cmiData?.aprendizaje_crecimiento?.drilldown_distribucion_notas || []).map((n, idx) => (
-                        <div key={idx} style={{ padding: '10px 14px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div>
-                            <div style={{ fontSize: '13px', fontWeight: 600 }}>{n.rango}</div>
-                            <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>{n.cantidad} estudiantes ({n.pct}%)</div>
-                          </div>
-                          <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '9999px', background: n.estado.includes('Riesgo') ? 'rgba(217,56,58,0.12)' : 'rgba(27,135,84,0.12)', color: n.estado.includes('Riesgo') ? 'var(--color-alert-red)' : 'var(--color-alert-green)', fontWeight: 600 }}>
-                            {n.estado}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Puntualidad y Desempeño por Área Docente</h4>
-                    <div className="space-y-3">
-                      {(cmiData?.aprendizaje_crecimiento?.drilldown_docentes || []).map((d, idx) => (
-                        <div key={idx} style={{ padding: '10px 14px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                          <div style={{ fontSize: '13px', fontWeight: 600 }}>{d.area}</div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>
-                            <span>Docentes: {d.docentes_activos} · Nota media: {d.promedio_notas} pts</span>
-                            <span style={{ color: 'var(--color-alert-green)', fontWeight: 700 }}>Actas a tiempo: {d.puntualidad_pct}%</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ════════════════════════════════════════════════════════════════════════ */}
       {/* MODO B: ANALÍTICA PREDICTIVA MACRO (4 CASOS DE NEGOCIO: HW Y OLS)     */}

@@ -1,0 +1,138 @@
+// =============================================================================
+// Medidas del CMI GiraGroup
+//
+// Cómo cargarlas: Power BI Desktop > Vista de consultas DAX > pegar este archivo completo >
+// Ejecutar > "Actualizar modelo con cambios" (aparece sobre cada DEFINE MEASURE).
+//
+// Principio: Power BI NO recalcula los indicadores. Lee valor, meta, semáforo y puntaje de
+// bi.vw_cmi_scorecard / bi.vw_cmi_perspectiva, las mismas vistas que sirve la API a la web,
+// así que ambos muestran las mismas cifras. Estas medidas solo agregan y dan formato.
+//
+// Reglas replicadas de la web (frontend/src/modules/admin/cmi/cmiFormat.js):
+//   puntaje por indicador  VERDE 100 · AMBAR 60 · ROJO 20 · sin umbral = no puntúa
+//   banda de un índice     >= 80 En meta · >= 50 En alerta · < 50 Crítico
+//   colores                #1B8754 en meta · #C27C0E alerta · #D9383A crítico · #9A9CA3 sin evaluar
+// =============================================================================
+
+DEFINE
+
+// ---------- Índices (tabla IndicePerspectiva) ----------------------------------
+
+MEASURE IndicePerspectiva[Indice] =
+    // Promedio ponderado por peso de las perspectivas con índice; en el contexto de una
+    // perspectiva devuelve su propio índice. Igual que el índice global de la API.
+    VAR _t = FILTER ( IndicePerspectiva, NOT ISBLANK ( IndicePerspectiva[indice] ) )
+    RETURN ROUND ( DIVIDE ( SUMX ( _t, IndicePerspectiva[indice] * IndicePerspectiva[peso] ),
+                            SUMX ( _t, IndicePerspectiva[peso] ) ), 1 )
+
+MEASURE IndicePerspectiva[Indice Banda] =
+    VAR _i = [Indice]
+    RETURN SWITCH ( TRUE (), ISBLANK ( _i ), "Sin evaluar", _i >= 80, "En meta", _i >= 50, "En alerta", "Crítico" )
+
+MEASURE IndicePerspectiva[Indice Color] =
+    SWITCH ( [Indice Banda], "En meta", "#1B8754", "En alerta", "#C27C0E", "Crítico", "#D9383A", "#9A9CA3" )
+
+MEASURE IndicePerspectiva[Indice Texto] =
+    IF ( ISBLANK ( [Indice] ), "—", FORMAT ( [Indice], "0.0" ) )
+
+MEASURE IndicePerspectiva[En meta]     = SUM ( IndicePerspectiva[verdes] )
+MEASURE IndicePerspectiva[En alerta]   = SUM ( IndicePerspectiva[ambar] )
+MEASURE IndicePerspectiva[Críticos]    = SUM ( IndicePerspectiva[rojos] )
+MEASURE IndicePerspectiva[Sin evaluar] = SUM ( IndicePerspectiva[sin_evaluar] )
+MEASURE IndicePerspectiva[Indicadores] = SUM ( IndicePerspectiva[indicadores] )
+
+MEASURE IndicePerspectiva[Evaluados Texto] =
+    FORMAT ( [En meta] + [En alerta] + [Críticos], "0" ) & " de " & FORMAT ( [Indicadores], "0" ) & " evaluados"
+
+MEASURE IndicePerspectiva[Objetivo] = SELECTEDVALUE ( Perspectivas[objetivo] )
+
+MEASURE IndicePerspectiva[Titulo Gestion] =
+    "Índice de desempeño · " & FORMAT ( SELECTEDVALUE ( Gestiones[gestion] ), "0" )
+
+// ---------- Indicador (tabla Scorecard; usar con Scorecard[nombre] en filas) ------
+
+MEASURE Scorecard[Valor] = SELECTEDVALUE ( Scorecard[valor] )
+
+MEASURE Scorecard[Valor Texto] =
+    VAR _v = [Valor]
+    VAR _u = SELECTEDVALUE ( Scorecard[unidad] )
+    RETURN IF ( ISBLANK ( _v ), "—",
+        SWITCH ( _u,
+            "PCT", FORMAT ( _v, "#,0.0" ) & " %",
+            "PTS", FORMAT ( _v, "#,0.0" ),
+            "BS",  IF ( ABS ( _v ) >= 1000000, "Bs " & FORMAT ( _v / 1000000, "#,0.00" ) & " M", "Bs " & FORMAT ( _v, "#,0" ) ),
+            FORMAT ( _v, "#,0" ) ) )
+
+MEASURE Scorecard[Meta Texto] =
+    VAR _m = SELECTEDVALUE ( Scorecard[meta] )
+    VAR _u = SELECTEDVALUE ( Scorecard[unidad] )
+    VAR _s = IF ( SELECTEDVALUE ( Scorecard[sentido] ) = "MIN", "≤ ", "≥ " )
+    RETURN IF ( ISBLANK ( _m ), "No definida",
+        _s & SWITCH ( _u,
+            "PCT", FORMAT ( _m, "#,0.0" ) & " %",
+            "BS",  IF ( ABS ( _m ) >= 1000000, "Bs " & FORMAT ( _m / 1000000, "#,0.00" ) & " M", "Bs " & FORMAT ( _m, "#,0" ) ),
+            FORMAT ( _m, "#,0.0" ) ) )
+
+MEASURE Scorecard[Estado] =
+    IF ( ISBLANK ( [Valor] ), "Sin dato",
+        SWITCH ( SELECTEDVALUE ( Scorecard[semaforo] ),
+            "VERDE", "En meta", "AMBAR", "En alerta", "ROJO", "Crítico", "Sin evaluar" ) )
+
+MEASURE Scorecard[Estado Color] =
+    SWITCH ( SELECTEDVALUE ( Scorecard[semaforo] ),
+        "VERDE", "#1B8754", "AMBAR", "#C27C0E", "ROJO", "#D9383A", "#9A9CA3" )
+
+MEASURE Scorecard[Estado Icono] =
+    // Círculo + texto: el estado no depende solo del color (accesibilidad)
+    "● " & [Estado]
+
+MEASURE Scorecard[Tendencia Texto] =
+    VAR _d = SELECTEDVALUE ( Scorecard[delta] )
+    VAR _u = SELECTEDVALUE ( Scorecard[unidad] )
+    RETURN IF ( ISBLANK ( _d ) || _d = 0, "",
+        IF ( _d > 0, "▲ +", "▼ −" ) &
+        SWITCH ( _u,
+            "PCT", FORMAT ( ABS ( _d ), "#,0.0" ) & " pp",
+            "BS",  IF ( ABS ( _d ) >= 1000000, "Bs " & FORMAT ( ABS ( _d ) / 1000000, "#,0.00" ) & " M", "Bs " & FORMAT ( ABS ( _d ), "#,0" ) ),
+            FORMAT ( ABS ( _d ), "#,0.0" ) ) )
+
+MEASURE Scorecard[Tendencia Color] =
+    SWITCH ( SELECTEDVALUE ( Scorecard[tendencia] ), "MEJORA", "#1B8754", "EMPEORA", "#D9383A", "#9A9CA3" )
+
+MEASURE Scorecard[Avance Meta] =
+    // 0–1: MAX → valor/meta; MIN → 1 si valor ≤ meta, si no meta/valor. Igual que la barra de la web.
+    VAR _v = [Valor]
+    VAR _m = SELECTEDVALUE ( Scorecard[meta] )
+    RETURN SWITCH ( TRUE (),
+        ISBLANK ( _v ) || ISBLANK ( _m ), BLANK (),
+        SELECTEDVALUE ( Scorecard[sentido] ) = "MAX", IF ( _m > 0, MIN ( MAX ( _v / _m, 0 ), 1 ) ),
+        _v <= _m, 1,
+        IF ( _v > 0 && _m > 0, MIN ( _m / _v, 1 ), 0 ) )
+
+MEASURE Scorecard[Valor Anterior Texto] =
+    VAR _p = SELECTEDVALUE ( Scorecard[valor_anterior] )
+    RETURN IF ( ISBLANK ( _p ), "", "Anterior " &
+        SWITCH ( SELECTEDVALUE ( Scorecard[unidad] ),
+            "PCT", FORMAT ( _p, "#,0.0" ) & " %",
+            "BS",  "Bs " & FORMAT ( _p, "#,0" ),
+            FORMAT ( _p, "#,0.0" ) ) )
+
+// ---------- Detalle por perspectiva ----------------------------------------------
+
+MEASURE MetasMensual[Ejecutado Bs] = SUM ( MetasMensual[ejecutado] )
+MEASURE MetasMensual[Meta Bs]      = SUM ( MetasMensual[meta] )
+MEASURE MetasMensual[Ejecutado Año Anterior Bs] = SUM ( MetasMensual[ejecutado_anio_ant] )
+MEASURE MetasMensual[Cumplimiento %] = DIVIDE ( [Ejecutado Bs], [Meta Bs] )
+
+MEASURE RiesgoEstudiante[Estudiantes] = COUNTROWS ( RiesgoEstudiante )
+MEASURE RiesgoEstudiante[Prioridad crítica] =
+    CALCULATE ( COUNTROWS ( RiesgoEstudiante ), RiesgoEstudiante[k_reglas] >= 2 )
+
+MEASURE DataOpsDocumento[Registros]          = SUM ( DataOpsDocumento[registros] )
+MEASURE DataOpsDocumento[Consolidado directo] = SUM ( DataOpsDocumento[consolidado_directo] )
+MEASURE DataOpsDocumento[Revisión humana]     = SUM ( DataOpsDocumento[revision_hitl] )
+MEASURE DataOpsDocumento[Pendientes]          = SUM ( DataOpsDocumento[pendientes_revision] )
+
+EVALUATE
+    // Comprobación: debe coincidir con GET /api/v1/cmi/scorecard (índice global y por perspectiva)
+    SUMMARIZECOLUMNS ( Gestiones[gestion], Perspectivas[nombre], "Indice", [Indice], "Evaluados", [Evaluados Texto] )

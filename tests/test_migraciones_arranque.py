@@ -39,9 +39,18 @@ def test_con_004_aplicada_no_se_reaplica_003():
     """Reaplicar 003 con documentos RENTABILIDAD fallaba en cada arranque (CheckViolation) y abortaba la 004."""
     from main import MIGRACION_TIPO_FUENTE, migraciones_a_aplicar
     alineacion = "005_alinear_esquema_con_ddl.sql"
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == [alineacion]
-    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == [alineacion]
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, alineacion}) == []
+    cmi = "006_capa_semantica_cmi.sql"
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == [alineacion, cmi]
+    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == [alineacion, cmi]
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, alineacion, cmi}) == []
+
+
+def test_capa_cmi_no_pisa_la_configuracion_editada():
+    """Se reaplica en cada arranque si falta su registro: las semillas no deben sobrescribir metas editadas."""
+    sql = (DIR_MIGRACIONES / "006_capa_semantica_cmi.sql").read_text(encoding="utf-8")
+    assert "ON CONFLICT (codigo) DO UPDATE" not in sql
+    assert sql.count("ON CONFLICT (codigo) DO NOTHING") == 2
+    assert "INSERT INTO public.schema_migrations" in sql
 
 
 def test_base_nueva_aplica_003_y_luego_004():

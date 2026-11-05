@@ -33,7 +33,8 @@ from routers import (
     catalogs,
     kpis,
     pipeline,
-    reportes
+    reportes,
+    cmi
 )
 from seed_users import seed_default_users
 
@@ -44,6 +45,7 @@ MIGRACIONES_EN_ARRANQUE = (
     "003_dataops_lote_and_facts_alignment.sql",
     "004_extend_tipo_fuente_sources.sql",
     "005_alinear_esquema_con_ddl.sql",
+    "006_capa_semantica_cmi.sql",
 )
 MIGRACION_LOTE = "003_dataops_lote_and_facts_alignment.sql"
 MIGRACION_TIPO_FUENTE = "004_extend_tipo_fuente_sources.sql"
@@ -179,6 +181,7 @@ app.add_middleware(
 # ── Registro de Routers del Monolito Core ─────────────────────────────────────
 app.include_router(dataops.router)
 app.include_router(kpis.router)
+app.include_router(cmi.router)
 app.include_router(forecast.router)
 app.include_router(riesgos.router)
 app.include_router(catalogs.router)
