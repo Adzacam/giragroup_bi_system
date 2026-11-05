@@ -224,6 +224,8 @@ CREATE TABLE public.fact_rendimiento_academico (
     requiere_revision BOOLEAN DEFAULT FALSE,
     fk_estado VARCHAR(1) DEFAULT 'A',
     estado_academico VARCHAR(50),
+    estado_tutoria VARCHAR(50),
+    estado_arca VARCHAR(50),
     tipo_alerta VARCHAR(30),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

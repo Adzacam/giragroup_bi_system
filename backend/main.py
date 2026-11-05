@@ -106,6 +106,8 @@ def on_startup():
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto BOOLEAN DEFAULT FALSE;
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_por INTEGER REFERENCES users(id) ON DELETE SET NULL;
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_en TIMESTAMP;
+                        ALTER TABLE fact_rendimiento_academico ADD COLUMN IF NOT EXISTS estado_tutoria VARCHAR(50);
+                        ALTER TABLE fact_rendimiento_academico ADD COLUMN IF NOT EXISTS estado_arca VARCHAR(50);
                     """))
                     conn.commit()
 

@@ -161,6 +161,34 @@ def _pos(campos: Dict[str, str]) -> Optional[str]:
     return None
 
 
+def estados_de_fila(campos: Dict[str, str]) -> Dict[str, Any]:
+    """
+    Estados del acta tal como vienen en la fuente (ESTADO ACADEMICO / ESTADO TUTORIA / ESTADO ARCA),
+    llevados a su nombre de catálogo y validados contra las combinaciones de CRITERIOS.
+    'estado_revision' es True si algún estado no está en catálogo o la combinación no es válida.
+    """
+    from pipeline.config import ESTADOS_ACADEMICOS_VALIDOS, ESTADOS_TUTORIA_VALIDOS, ESTADOS_ARCA_VALIDOS
+    from pipeline.normalization.quality_rules import canonizar_estado, validar_combinacion_estados
+
+    aca, ok_aca = canonizar_estado(campos.get("ESTADO ACADEMICO"), ESTADOS_ACADEMICOS_VALIDOS)
+    tut, ok_tut = canonizar_estado(
+        campos.get("ESTADO TUTORIA") or campos.get("ESTADO REPROBADO"), ESTADOS_TUTORIA_VALIDOS
+    )
+    arca, ok_arca = canonizar_estado(campos.get("ESTADO ARCA"), ESTADOS_ARCA_VALIDOS)
+    motivos = [f"ESTADO_FUERA_DE_CATALOGO: '{v}'" for v, ok in ((aca, ok_aca), (tut, ok_tut), (arca, ok_arca)) if not ok]
+    if not motivos:
+        valida, motivo = validar_combinacion_estados(aca, tut, arca)
+        if not valida:
+            motivos.append(motivo)
+    return {
+        "estado_academico": aca,
+        "estado_tutoria": tut,
+        "estado_arca": arca,
+        "estado_motivo": "; ".join(motivos) or None,
+        "estado_revision": bool(motivos),
+    }
+
+
 def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
     """
     Resoluciones académicas de una fila. Acta ARCA (columnas MÓDULO 1..12): un registro por módulo con
@@ -173,6 +201,8 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
         return []  # hoja sin estudiante (MODULOS, IBP, catálogos): no es un hecho académico
     fecha = fecha_de_fila(campos, "academico")
     pos = _pos(campos)
+    estados = estados_de_fila(campos)
+    revision_estado = estados.pop("estado_revision")
 
     notas_modulo = {}
     for k, v in campos.items():
@@ -194,6 +224,7 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
             "nota_final": None,
             "nota_ya_normalizada": True,
             "fecha": fecha,
+            **estados,
             "requiere_revision": True,
         }]
 
@@ -211,7 +242,8 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
                 "nota_final": nota,
                 "nota_ya_normalizada": True,
                 "fecha": fecha,
-                "requiere_revision": fecha is None or fuera_de_rango,
+                **estados,
+                "requiere_revision": fecha is None or fuera_de_rango or revision_estado,
             })
         return registros
 
@@ -227,7 +259,8 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
         "nota_final": nota,
         "nota_ya_normalizada": True,
         "fecha": fecha,
-        "requiere_revision": nota is None or fecha is None,
+        **estados,
+        "requiere_revision": nota is None or fecha is None or revision_estado,
     }]
 
 

@@ -519,3 +519,50 @@ class QualityEvaluator:
                 pass
 
         return resultado
+
+
+# ---------------------------------------------------------------------------
+# Estados de acta (hoja CRITERIOS): el estado viene de la fuente, no se deduce de la nota
+# ---------------------------------------------------------------------------
+
+def _clave_estado(valor: Any) -> str:
+    import unicodedata
+    texto = "".join(c for c in unicodedata.normalize("NFD", str(valor or "")) if unicodedata.category(c) != "Mn")
+    return " ".join(texto.lower().split())
+
+
+def canonizar_estado(valor: Any, validos: Tuple[str, ...]) -> Tuple[Optional[str], bool]:
+    """
+    Lleva un estado escrito a mano ('No titulado', 'Tutoría', 'en curso') a su nombre de catálogo.
+    Devuelve (nombre_canonico, reconocido): vacío -> (None, True); valor fuera de catálogo -> (texto, False).
+    """
+    clave = _clave_estado(valor)
+    if not clave:
+        return None, True
+    for v in validos:
+        if _clave_estado(v) == clave:
+            return v, True
+    return str(valor).strip(), False
+
+
+def validar_combinacion_estados(
+    estado_academico: Optional[str], estado_tutoria: Optional[str], estado_arca: Optional[str]
+) -> Tuple[bool, Optional[str]]:
+    """
+    Valida (académico, tutoría, ARCA) contra COMBINACIONES_ESTADO_VALIDAS. Los estados ausentes no se
+    exigen: la combinación es válida si alguna fila de CRITERIOS coincide en los presentes.
+    """
+    from pipeline.config import COMBINACIONES_ESTADO_VALIDAS
+
+    presentes = (estado_academico, estado_tutoria, estado_arca)
+    if not any(presentes):
+        return True, None
+    if any(
+        all(p is None or p == c for p, c in zip(presentes, combo))
+        for combo in COMBINACIONES_ESTADO_VALIDAS
+    ):
+        return True, None
+    return False, (
+        f"COMBINACION_ESTADO_INVALIDA: ({estado_academico or '-'}, {estado_tutoria or '-'}, "
+        f"{estado_arca or '-'}) no figura en CRITERIOS"
+    )

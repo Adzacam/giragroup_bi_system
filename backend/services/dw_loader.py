@@ -947,7 +947,14 @@ class DWLoaderService:
 
         asistencia = _pct_valido(resoluciones.get("asistencia_pct"))
         incumplimiento = _pct_valido(resoluciones.get("incumplimiento_actividades_pct")) or 0.00
-        estado_aca = "Aprobado" if (nota is not None and float(nota) >= NOTA_APROBACION) else "Reprobado" if nota is not None else "En Curso"
+        # El estado del acta (Participó, Deserción, En curso…) manda; solo sin estado en la fuente se deduce de la nota
+        estado_aca = resoluciones.get("estado_academico") or (
+            "Aprobado" if (nota is not None and float(nota) >= NOTA_APROBACION) else "Reprobado" if nota is not None else "En curso"
+        )
+        estado_tut = resoluciones.get("estado_tutoria")
+        estado_arca = resoluciones.get("estado_arca")
+        if resoluciones.get("estado_motivo"):
+            requiere_rev = True  # estado fuera de catálogo o combinación no admitida por CRITERIOS
         tipo_alerta_aca = (
             "RIESGO_CRITICO" if (nota is not None and float(nota) < 51.0)
             else "RIESGO_ACADEMICO" if (nota is not None and float(nota) <= 70.0)
@@ -967,6 +974,8 @@ class DWLoaderService:
             existente.requiere_revision = requiere_rev or (fk_estado_est == "C")
             existente.fk_estado = fk_estado_est
             existente.estado_academico = estado_aca
+            existente.estado_tutoria = estado_tut
+            existente.estado_arca = estado_arca
             existente.tipo_alerta = tipo_alerta_aca
             if id_doc:
                 existente.id_docente = id_doc
@@ -988,6 +997,8 @@ class DWLoaderService:
                 requiere_revision=requiere_rev or (fk_estado_est == "C"),
                 fk_estado=fk_estado_est,
                 estado_academico=estado_aca,
+                estado_tutoria=estado_tut,
+                estado_arca=estado_arca,
                 tipo_alerta=tipo_alerta_aca
             )
             self.db.add(nuevo_hecho)
@@ -1003,6 +1014,8 @@ class DWLoaderService:
             "id_docente": id_doc,
             "nota_normalizada": nota,
             "tipo_alerta": tipo_alerta_aca,
+            "estado_academico": estado_aca,
+            "estado_motivo": resoluciones.get("estado_motivo"),
             "fk_estado": fk_estado_est
         }
 

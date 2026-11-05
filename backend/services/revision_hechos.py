@@ -173,7 +173,8 @@ def _aplicar_correcciones(db: Session, hecho, tipo: str, payload: Dict[str, Any]
         nota = float(payload["nota_final"])
         if nota != (float(hecho.nota_final) if hecho.nota_final is not None else None):
             hecho.nota_final = nota
-            hecho.estado_academico = "Aprobado" if nota >= NOTA_APROBACION else "Reprobado"
+            if not (hecho.estado_tutoria or hecho.estado_arca):  # estado de acta ARCA: lo fija la fuente, no la nota
+                hecho.estado_academico = "Aprobado" if nota >= NOTA_APROBACION else "Reprobado"
             cambios["nota_final"] = nota
     fecha = _fecha_corregida(payload)
     if fecha is not None:
