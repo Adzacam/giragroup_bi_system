@@ -27,6 +27,7 @@ from services import cache_consultas
 from services.confianza_service import obtener_indices, banda_de
 from services.extraccion_por_encabezado import (
     campos_por_encabezado, es_encabezado_metadato_pos, estudiante_de_fila, fecha_de_fila, registros_academicos, registros_evaluacion, registros_rentabilidad, registros_costo_programa, registros_asignacion_docente, registros_techo_convenio,
+    factores_escala_por_programa,
 )
 from models.staging_entidad import StagingEntidadNoResuelta
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
@@ -258,6 +259,10 @@ def process_pipeline(
                 continue  # fila con encabezados pero sin montos: no es un hecho financiero
             lineas.append((linea_str, celdas, campos_fin))
 
+        # Escala de notas por programa en el archivo (un acta mezcla programas sobre 20 y sobre 100)
+        factores_escala = factores_escala_por_programa(
+            [campos_por_encabezado(c) for _, c, _ in lineas]) if categoria == "academico" else None
+
         # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
         indices = obtener_indices([l[0] for l in lineas])
 
@@ -306,7 +311,7 @@ def process_pipeline(
                 for reg in registros_asignacion_docente(campos):
                     reg.pop("requiere_revision")
                     resoluciones_lista.append({**base, **reg, "_revision_fila": False})
-                for reg in registros_academicos(campos):
+                for reg in registros_academicos(campos, factores_escala):
                     revision_fila = reg.pop("requiere_revision")
                     resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
                     if reg["estudiante"]:

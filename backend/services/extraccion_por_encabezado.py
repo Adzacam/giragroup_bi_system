@@ -75,7 +75,20 @@ def _a_float(valor: Optional[str]) -> Optional[float]:
     return parsear_monto(valor)
 
 
+ANIO_MIN, ANIO_MAX = 2000, 2100  # rango de gestiones de negocio
+
+
 def parsear_fecha(valor: Optional[Any]) -> Optional[date]:
+    """
+    Fecha de negocio de la celda, o None. Fuera de ANIO_MIN..ANIO_MAX se descarta: en las planillas
+    aparecen números de factura tecleados en columnas con formato fecha (10554 -> 1928-11-22) o
+    años mal escritos (205), que antes creaban gestiones falsas en el CMI.
+    """
+    f = _parsear_fecha_cruda(valor)
+    return f if f and ANIO_MIN <= f.year <= ANIO_MAX else None
+
+
+def _parsear_fecha_cruda(valor: Optional[Any]) -> Optional[date]:
     if valor is None:
         return None
     if isinstance(valor, datetime):
@@ -120,7 +133,7 @@ def fecha_de_fila(campos: Dict[str, str], categoria: str) -> Optional[date]:
             return f
     anio = _a_float(_primero(campos, _CLAVES_ANIO))
     mes = _mes(_primero(campos, _CLAVES_MES))
-    if anio and 2000 <= anio <= 2100 and mes:
+    if anio and ANIO_MIN <= anio <= ANIO_MAX and mes:
         return date(int(anio), mes, 1)
     return fecha_corte_moodle(campos) if categoria != "financiero" else None
 
@@ -197,11 +210,77 @@ def estados_de_fila(campos: Dict[str, str]) -> Dict[str, Any]:
     }
 
 
-def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
+NOTA_MINIMA_MODULO = 51.0  # por debajo, un módulo está reprobado sin discusión (base 100)
+_FACTOR_ESCALA_EXPLICITA = {"DECIMAL_10": 10.0, "VIGESIMAL_20": 5.0}
+MIN_FILAS_ESCALA = 3  # estudiantes con nota necesarios para deducir la escala de un programa
+
+
+def factor_escala_fila(notas: List[float]) -> float:
+    """
+    Factor para llevar notas a base 100 según su máximo: <= 10 escala 10 (x10), <= 20 escala 20 (x5, hay
+    programas del ARCA calificados sobre 20), si no base 100. Todo en 0 queda en base 100.
+    Se aplica al máximo de un programa en el archivo (factores_escala_por_programa); una fila suelta sólo
+    cuando no hay archivo de contexto (resolución individual en la bandeja).
+    """
+    tope = max(notas) if notas else 0.0
+    if 0.0 < tope <= 10.0:
+        return 10.0
+    if 10.0 < tope <= 20.0:
+        return 5.0
+    return 1.0
+
+
+def _notas_modulo_validas(campos: Dict[str, str]) -> List[float]:
+    notas = (_a_float(v) for k, v in campos.items() if _RE_MODULO_N.match(k))
+    return [x for x in notas if x is not None and 0.0 <= x <= 100.0]
+
+
+def factores_escala_por_programa(filas: List[Dict[str, str]], tipo_escala: Optional[str] = None) -> Dict[Optional[str], float]:
+    """
+    Escala de cada programa (POS) del archivo: un mismo acta mezcla programas sobre 20 y sobre 100. Si el
+    archivo declara DECIMAL_10 o VIGESIMAL_20, manda para todos; con CENTESIMAL_100 (el valor por defecto del
+    selector) o sin escala, se deduce por programa con la nota más alta de todas sus filas. Así un estudiante
+    con notas bajas en un programa sobre 100 no se confunde con uno sobre 20, como pasaba al decidir por fila.
+    """
+    explicito = _FACTOR_ESCALA_EXPLICITA.get((tipo_escala or "").upper().strip())
+    maximos: Dict[Optional[str], float] = {}
+    con_nota: Dict[Optional[str], int] = {}
+    for campos in filas:
+        notas = _notas_modulo_validas(campos)
+        if notas:
+            pos = _pos(campos)
+            maximos[pos] = max(maximos.get(pos, 0.0), max(notas))
+            con_nota[pos] = con_nota.get(pos, 0) + (max(notas) > 0)
+    # Con menos de MIN_FILAS_ESCALA estudiantes con nota no hay evidencia para deducir otra escala (en el ARCA:
+    # un 'Reprobado' con 9 y el resto deserción en 0): queda en base 100
+    return {pos: explicito or (factor_escala_fila([m]) if con_nota[pos] >= MIN_FILAS_ESCALA else 1.0)
+            for pos, m in maximos.items()}
+
+
+def coherencia_estado_notas(estado_academico: Optional[str], notas: Dict[int, float]) -> Optional[str]:
+    """
+    Un acta 'Aprobado' con algún módulo claramente reprobado (< NOTA_MINIMA_MODULO, en base 100) es una
+    inconsistencia de la fuente: un 0 o un 30 cargado a un estudiante aprobado. Devuelve el motivo, o None.
+    Medido sobre el ARCA real: ~210 de 8.660 filas; entre 51 y 69 hay otras ~115 que se dejan pasar porque
+    pueden venir de recuperación por tutoría. 'Reprobado' con todas las notas altas no se marca: suele ser
+    reprobado por abandono (módulos del programa sin nota), y eso depende de cuántos módulos tiene cada
+    programa, que no se ve en una sola fila.
+    """
+    if not notas or not estado_academico or normalizar_encabezado(estado_academico) != "APROBADO":
+        return None
+    bajos = {n: x for n, x in sorted(notas.items()) if x < NOTA_MINIMA_MODULO}
+    if not bajos:
+        return None
+    detalle = ", ".join(f"módulo {n} = {x:g}" for n, x in bajos.items())
+    return f"APROBADO_CON_MODULO_REPROBADO: {detalle} (< {NOTA_MINIMA_MODULO:g})"
+
+
+def registros_academicos(campos: Dict[str, str],
+                         factores_escala: Optional[Dict[Optional[str], float]] = None) -> List[Dict[str, Any]]:
     """
     Resoluciones académicas de una fila. Acta ARCA (columnas MÓDULO 1..12): un registro por módulo con
     nota, del programa POS de la fila. Otras fuentes: un registro con la columna de nota final.
-    Escala: si todas las notas de la fila son <= 10 se trata como escala 10 y se lleva a base 100.
+    Escala: la del programa en el archivo (factores_escala, ver factores_escala_por_programa); sin ella, la de la fila.
     Cada registro trae 'requiere_revision' si falta nota o fecha.
     """
     estudiante = estudiante_de_fila(campos)
@@ -237,11 +316,22 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
         }]
 
     if notas_modulo:
+        # Cada programa tiene su propio número de módulos (uno llega al 5, otro al 11): las columnas vacías
+        # no son notas faltantes, sólo módulos que ese programa no tiene.
         con_nota = {n: x for n, x in notas_modulo.items() if x is not None}
-        escala_10 = bool(con_nota) and max(con_nota.values()) <= 10.0
+        if factores_escala is not None and pos in factores_escala:
+            factor = factores_escala[pos]  # escala del programa en todo el archivo
+        else:
+            factor = factor_escala_fila(list(con_nota.values()))
+        motivo_notas = coherencia_estado_notas(
+            estados.get("estado_academico"), {n: x * factor for n, x in con_nota.items()},
+        )
+        if motivo_notas:
+            estados["estado_motivo"] = "; ".join(m for m in (estados.get("estado_motivo"), motivo_notas) if m)
+            revision_estado = True
         registros = []
         for n in sorted(con_nota):
-            nota = round(con_nota[n] * 10.0, 2) if escala_10 else round(con_nota[n], 2)
+            nota = round(con_nota[n] * factor, 2)
             codigo = f"{pos}-M{n:02d}" if pos else None
             registros.append({
                 "estudiante": estudiante,
@@ -279,7 +369,11 @@ def categoria_rentabilidad(valor: Optional[str]) -> Optional[str]:
         return "PROGRAMAS"
     if "TECHO" in v or "CERRADO" in v:
         return "TECHOS_CERRADOS"
-    return None
+    # Cualquier otra categoría de ingreso de la fuente ('Inscripciones', 'Diplomados', 'Cursos cortos') se conserva
+    # con su propio nombre: el cargador la crea en dim_categoria_financiera. Totales y celdas numéricas no son categoría.
+    if not v or v.startswith(("TOTAL", "SUBTOTAL", "ACUMULADO")) or _a_float(v) is not None or len(v) > 60:
+        return None
+    return re.sub(r"[^A-Z0-9]+", "_", v).strip("_")[:50] or None
 
 
 def registros_rentabilidad(campos: Dict[str, str]) -> List[Dict[str, Any]]:

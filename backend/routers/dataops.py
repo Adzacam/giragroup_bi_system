@@ -1,6 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, File, Form, Query, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, text
 from typing import Optional, List, Dict, Any, Tuple, Union
 import os
 import math
@@ -74,6 +74,8 @@ from services.extraccion_por_encabezado import (
     registros_costo_programa,
     registros_asignacion_docente,
     registros_techo_convenio,
+    factores_escala_por_programa,
+    normalizar_encabezado,
 )
 from services.sugerencia_hitl import es_sugerencia_un_clic, nombre_extraido, similitud_nombre_completo
 from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, resolver_caso_hecho
@@ -2014,7 +2016,9 @@ def _evaluar_documentos_lote(
                 "ci_enmascarado": ci_masked,
                 "modulo": (ent_mod.get("matchedCanonical") or ent_mod.get("token")) if ent_mod else (ent_con.get("token") if ent_con else "No detectado"),
                 "nota_original": ent_cal.get("notaOriginal") if ent_cal else None,
-                "nota_normalizada": ent_cal.get("matchedCanonical") if ent_cal else (ent_mon.get("matchedCanonical") if ent_mon else "—"),
+                # Nota sólo de una calificación; el monto va aparte (antes la bandeja mostraba 'Nota: Bs. 135/100')
+                "nota_normalizada": (ent_cal.get("notaNormalizada") or ent_cal.get("matchedCanonical")) if ent_cal else None,
+                "monto": ent_mon.get("matchedCanonical") if ent_mon else None,
                 "area": area_reg,
                 "en_calidad": en_calidad,
                 "es_nuevo_catalogo": es_nuevo_cat,
@@ -2782,6 +2786,17 @@ def get_lote_beto_reading(
         "sugerencias_catalogo_count": len([r for r in detalles_all if r.get("es_nuevo_catalogo")]),
     }
 
+    # El lote ya pasó por la consolidación si alguno de sus documentos tiene hechos en el DW:
+    # la SPA lo usa para marcar el paso ③ como hecho y destacar la bandeja ④ como siguiente acción
+    ids_docs = [d.id_documento for d in docs_lote]
+    consolidado = bool(ids_docs) and bool(db.execute(text("""
+        SELECT EXISTS (SELECT 1 FROM public.fact_rendimiento_academico WHERE id_documento = ANY(:ids))
+            OR EXISTS (SELECT 1 FROM public.fact_situacion_financiera WHERE id_documento = ANY(:ids))
+            OR EXISTS (SELECT 1 FROM public.fact_techo_convenio      WHERE id_documento = ANY(:ids))
+            OR EXISTS (SELECT 1 FROM public.fact_costo_programa      WHERE id_documento = ANY(:ids))
+    """), {"ids": ids_docs}).scalar())
+    resumen_ejecutivo["consolidado"] = consolidado
+
     archivos_tabs = _serializar_archivos_lote(db, docs_lote)
     return {
         "status": "success",
@@ -3385,6 +3400,18 @@ def confirm_dw_insert(
         for o in db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids_stg)).all()
     } if doc_ids_stg else {}
 
+    # Escala de notas por programa en cada archivo: un acta mezcla programas sobre 20 y sobre 100
+    filas_por_doc: Dict[Any, List[Dict[str, str]]] = {}
+    for s_reg in stg_records:
+        for l in (s_reg.texto_plano or "").splitlines():
+            if "MODULO" in normalizar_encabezado(l):
+                filas_por_doc.setdefault(s_reg.id_documento, []).append(
+                    campos_por_encabezado([c.strip() for c in l.split("|")]))
+    factores_por_doc = {
+        d: factores_escala_por_programa(filas, (origenes_map.get(d).tipo_escala if origenes_map.get(d) else None))
+        for d, filas in filas_por_doc.items()
+    }
+
     for stg in stg_records:
         orig_doc = origenes_map.get(stg.id_documento) if stg.id_documento else None
         doc_fuente = (orig_doc.tipo_fuente if (orig_doc and orig_doc.tipo_fuente) else "ACTA").upper().strip()
@@ -3393,6 +3420,7 @@ def confirm_dw_insert(
             doc_escala = None
         elif not doc_escala:
             doc_escala = "CENTESIMAL_100"
+        factores_escala = factores_por_doc.get(stg.id_documento)
 
         institucion = (orig_doc.institucion if orig_doc else None) or "GiraGroup Posgrado"
 
@@ -3522,7 +3550,7 @@ def confirm_dw_insert(
                             "resoluciones": {**reg_dict["resoluciones"], **reg_asig},
                             "calidad": {"requiere_revision": en_revision},
                         })
-                    for reg_aca in registros_academicos(campos_linea):
+                    for reg_aca in registros_academicos(campos_linea, factores_escala):
                         revision_fila = reg_aca.pop("requiere_revision")
                         registros_linea.append({
                             **reg_dict,
