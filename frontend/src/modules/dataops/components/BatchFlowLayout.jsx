@@ -83,7 +83,7 @@ export default function BatchFlowLayout({
             id_lote: found.id_lote || batchId,
             id_documento: found.id_documento || found.id || batchId,
             nombre_archivo: found.nombre_archivo || `Lote_${batchId}.xlsx`,
-            institucion: found.institucion || 'GiraGroup Posgrado',
+            institucion: found.institucion || '—',
             tipo_fuente: found.tipo_fuente || found.tipo_documento || 'ACTA',
             tipo_escala: found.tipo_escala || null,
             escala_label: found.tipo_escala === 'DECIMAL_10'
@@ -93,7 +93,7 @@ export default function BatchFlowLayout({
               : found.tipo_escala === 'CENTESIMAL_100'
               ? 'Sobre 100'
               : 'No aplica',
-            periodo: found.periodo || '2024–2026 (Auto)',
+            periodo: found.periodo || 'Por detectar',
             total_archivos: 1,
             total_registros: found.total_registros || found.registros_detectados || 0,
             pendientes_revision: found.inconsistencias || 0,

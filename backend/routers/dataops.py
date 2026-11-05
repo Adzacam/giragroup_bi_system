@@ -3375,14 +3375,14 @@ def confirm_dw_insert(
     inserted_revision = 0
     descartados_ruido = 0
 
+    doc_ids_stg = {s.id_documento for s in stg_records if s.id_documento}
+    origenes_map = {
+        o.id_documento: o
+        for o in db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids_stg)).all()
+    } if doc_ids_stg else {}
+
     for stg in stg_records:
-        orig_doc = (
-            db.query(DimOrigenDocumental)
-            .filter(DimOrigenDocumental.id_documento == stg.id_documento)
-            .first()
-            if stg.id_documento
-            else None
-        )
+        orig_doc = origenes_map.get(stg.id_documento) if stg.id_documento else None
         doc_fuente = (orig_doc.tipo_fuente if (orig_doc and orig_doc.tipo_fuente) else "ACTA").upper().strip()
         doc_escala = orig_doc.tipo_escala if orig_doc else "CENTESIMAL_100"
         if doc_fuente in ("COBRANZA", "ADMISION"):
@@ -4589,9 +4589,10 @@ def get_telemetry_summary(db: Session = Depends(get_db)):
     return {
         "status": "success",
         "kpis": {
-            "p95_latency_sec": 0.42,
+            # Sin instrumentación de latencia/throughput aún: no se reportan cifras inventadas
+            "p95_latency_sec": None,
             "acceleration_device": "PyTorch Container (pipeline:8006)",
-            "token_throughput": 482,
+            "token_throughput": None,
             "vram_usage_gb": "CPU / CUDA",
             "auto_processed_pct": resumen.get("autoPct", 0.0),
             "human_review_pct": round(resumen.get("auditPct", 0.0) + resumen.get("inconsistenciasPct", 0.0), 1),

@@ -56,6 +56,8 @@ class DocenteItem(BaseModel):
     id_docente: int
     nombre_completo: str
     area_especialidad: Optional[str] = None
+    puntaje_promedio: Optional[float] = None
+    n_evaluaciones: int = 0
 
     model_config = ConfigDict(from_attributes=True)
 

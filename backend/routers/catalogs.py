@@ -216,22 +216,72 @@ def get_instituciones(
 
 @router.get(
     "/catalogs/institutional-summary",
-    summary="Resumen del Catálogo Maestro Institucional Estático (18 Programas Activos, Cero PII)"
+    summary="Resumen del Catálogo Maestro Institucional (giragroup_catalog_db, Cero PII)"
 )
 def get_institutional_summary(
+    catalog_db: Session = Depends(get_catalog_db),
     current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "ADMIN", "COORDINADOR_ACADEMICO", "ANALISTA_DATOS_MARKETING", "ANALISTA_MARKETING"]))
 ):
     """
-    Retorna el resumen del Catálogo Maestro Institucional Estático de GiraGroup BI:
-    - 18 programas canónicos activos
-    - Aranceles base (precios de referencia)
-    - Módulos curriculares y puntos de equilibrio
-    - Convenios y metas presupuestarias
-    - Garantía estricta de Cero PII (sin datos de estudiantes).
+    Resumen del Catálogo Maestro leído de giragroup_catalog_db (programas, inversión base, convenios,
+    módulos, punto de equilibrio y metas de la última gestión registrada).
+    Sin datos en el catálogo devuelve listas vacías; no contiene datos de estudiantes.
     """
-    from pipeline.normalization.catalog_repository import obtener_catalogo_repositorio
-    repo = obtener_catalogo_repositorio()
-    return repo.obtener_resumen_institucional()
+    from sqlalchemy import text as _sql
+
+    programas_rows = catalog_db.execute(_sql("""
+        SELECT p.id_programa, p.pos_code, p.nombre_programa, p.version, p.inversion_base,
+               p.punto_equilibrio, p.estado_programa, e.nombre_escuela, m.nombre_modalidad, t.nombre_tipo,
+               COUNT(mo.id_modulo) AS modulos_count,
+               (ARRAY_AGG(mo.nombre_modulo ORDER BY mo.nro_modulo)
+                  FILTER (WHERE mo.id_modulo IS NOT NULL))[1:3] AS modulos_clave
+        FROM cat_programa p
+        LEFT JOIN cat_escuela e ON e.id_escuela = p.id_escuela
+        LEFT JOIN cat_modalidad m ON m.id_modalidad = p.id_modalidad
+        LEFT JOIN cat_tipo_programa t ON t.id_tipo_programa = p.id_tipo_programa
+        LEFT JOIN cat_modulo mo ON mo.id_programa = p.id_programa
+        GROUP BY p.id_programa, e.nombre_escuela, m.nombre_modalidad, t.nombre_tipo
+        ORDER BY p.nombre_programa
+    """)).mappings().all()
+
+    programas = [{
+        "pos_code": r["pos_code"],
+        "nombre": r["nombre_programa"],
+        "version": r["version"],
+        "tipo": r["nombre_tipo"],
+        "arancel_base_bs": float(r["inversion_base"]) if r["inversion_base"] else None,
+        "escuela": r["nombre_escuela"],
+        "modalidad": r["nombre_modalidad"],
+        "modulos_count": int(r["modulos_count"]),
+        "punto_equilibrio": r["punto_equilibrio"] or None,
+        "estado_programa": r["estado_programa"],
+        "modulos_clave": list(r["modulos_clave"] or []),
+    } for r in programas_rows]
+
+    meta = catalog_db.execute(_sql("""
+        SELECT gestion, SUM(monto_meta_ingreso)::float AS meta_anual_bs
+        FROM ref_metas_gestion
+        WHERE gestion = (SELECT MAX(gestion) FROM ref_metas_gestion)
+        GROUP BY gestion
+    """)).mappings().first()
+
+    equilibrios = [p["punto_equilibrio"] for p in programas if p["punto_equilibrio"]]
+    return {
+        "status": "success",
+        "origen": "giragroup_catalog_db",
+        "total_programas": len(programas),
+        "total_programas_activos": sum(1 for p in programas if "BAJA" not in (p["estado_programa"] or "").upper()),
+        "sin_pii": True,
+        "contiene_pii": False,
+        "programas": programas,
+        "modulos_activos_total": sum(p["modulos_count"] for p in programas),
+        "convenios_activos_total": catalog_db.execute(_sql("SELECT count(*) FROM cat_institucion_convenio")).scalar(),
+        "metas_presupuestarias": {
+            "gestion": meta["gestion"] if meta else None,
+            "meta_anual_bs": meta["meta_anual_bs"] if meta else None,
+            "punto_equilibrio_promedio_alumnos": round(sum(equilibrios) / len(equilibrios)) if equilibrios else None,
+        },
+    }
 
 
 # ── Catálogos Maestros Financieros con Soporte Histórico ──────────────

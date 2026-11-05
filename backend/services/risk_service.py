@@ -106,20 +106,7 @@ def evaluar_alertas_tempranas_deterministicas(
     Evalúa estrictamente mediante reglas determinísticas IF/THEN (sin inferencia ML individual)
     el estado de la matrícula activa sobre fact_rendimiento_academico y fact_situacion_financiera.
     """
-    estudiantes_db = {
-        e.id_estudiante: e
-        for e in db.query(
-            DimEstudiante.id_estudiante,
-            DimEstudiante.ci,
-            DimEstudiante.ci_numero,
-            DimEstudiante.codigo_estudiante,
-            DimEstudiante.nombre_completo,
-            DimEstudiante.programa_origen,
-            DimEstudiante.deprecado,
-        )
-        .filter(DimEstudiante.deprecado == False)
-        .all()
-    }
+    # estudiantes_db se cargará selectivamente tras consultar los hechos para evitar full-scan en RAM
     modulos_db = {
         m.id_modulo: m
         for m in db.query(
@@ -185,6 +172,28 @@ def evaluar_alertas_tempranas_deterministicas(
         )
         .all()
     )
+
+    # Optimización R-06: Filtrar estudiantes en SQL por los IDs con hechos existentes en lugar de full-scan ciego
+    ids_con_hechos = {h.id_estudiante for h in hechos_aca if h.id_estudiante} | {
+        f.id_estudiante for f in hechos_fin if f.id_estudiante
+    }
+    estudiantes_db = {
+        e.id_estudiante: e
+        for e in db.query(
+            DimEstudiante.id_estudiante,
+            DimEstudiante.ci,
+            DimEstudiante.ci_numero,
+            DimEstudiante.codigo_estudiante,
+            DimEstudiante.nombre_completo,
+            DimEstudiante.programa_origen,
+            DimEstudiante.deprecado,
+        )
+        .filter(
+            DimEstudiante.deprecado == False,
+            DimEstudiante.id_estudiante.in_(ids_con_hechos)
+        )
+        .all()
+    } if ids_con_hechos else {}
 
     periodos_set = set()
     programas_set = set()

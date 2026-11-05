@@ -7,9 +7,9 @@ si aún no se ha ejecutado el batch de persistencia.
 """
 
 import sys
-import time
 import logging
 import re
+import unicodedata
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import numpy as np
@@ -103,19 +103,17 @@ def obtener_pronostico_alumnos(
             # Si falla la consulta o tabla vacía, fallback on-demand
             pass
 
-    # 2. On-demand compute si no está en fact_forecast
+    # 2. On-demand: solo con datos reales del DW y observaciones suficientes
     engine = db.get_bind() if db is not None else None
     serie = extraer_serie_temporal(caso_uso, engine=engine)
-    res = entrenar_y_proyectar_hw(serie, caso_uso=caso_uso, horizonte=horizonte)
+    res, motivo = _proyectar_hw_seguro(serie, caso_uso, horizonte)
+    if res is None:
+        return _respuesta_sin_datos(caso_uso, motivo, tipo_solicitado=tipo_upper, n_observaciones=len(serie))
 
-    proyecciones = []
-    for p, f, l, u in zip(res["periodos"], res["forecast"], res["ic_lower"], res["ic_upper"]):
-        proyecciones.append({
-            "periodo": p,
-            "valor_forecast": f,
-            "ic_lower": l,
-            "ic_upper": u
-        })
+    proyecciones = [
+        {"periodo": p, "valor_forecast": f, "ic_lower": l, "ic_upper": u}
+        for p, f, l, u in zip(res["periodos"], res["forecast"], res["ic_lower"], res["ic_upper"])
+    ]
 
     # Persistir en fact_forecast para acelerar subsecuentes lecturas
     if db is not None:
@@ -127,10 +125,45 @@ def obtener_pronostico_alumnos(
         "metodo": res["metodo"],
         "origen": "on_demand_computation",
         "horizonte_meses": res["horizonte_meses"],
+        "n_observaciones": len(serie),
         "rmse": res["rmse"],
         "aic": res["aic"],
         "proyecciones": proyecciones
     }
+
+
+MIN_OBS_HW = 24   # dos ciclos estacionales completos (m=12)
+MIN_OBS_OLS = 3   # tres gestiones cerradas
+
+
+def _respuesta_sin_datos(caso_uso: str, motivo: str, **extra) -> Dict[str, Any]:
+    """Respuesta vacía explícita: el frontend muestra 'sin datos', nunca cifras de relleno."""
+    return {"caso_uso": caso_uso, "origen": "sin_datos", "sin_datos": True,
+            "mensaje": motivo, "proyecciones": [], **extra}
+
+
+def _proyectar_hw_seguro(serie: pd.Series, caso_uso: str, horizonte: int):
+    if entrenar_y_proyectar_hw is None:
+        return None, "Motor de pronóstico no disponible."
+    if len(serie) < MIN_OBS_HW:
+        return None, (f"Se requieren al menos {MIN_OBS_HW} meses ingestados en el Data Warehouse "
+                      f"para Holt-Winters (disponibles: {len(serie)}).")
+    try:
+        return entrenar_y_proyectar_hw(serie, caso_uso=caso_uso, horizonte=max(1, min(6, horizonte))), None
+    except ValueError as e:
+        return None, str(e)
+
+
+def _proyectar_ols_seguro(serie: pd.Series, horizonte_anios: int):
+    if estimar_tendencia_anual_ols is None:
+        return None, "Motor OLS no disponible."
+    if len(serie) < MIN_OBS_OLS:
+        return None, (f"Se requieren al menos {MIN_OBS_OLS} gestiones cerradas en el Data Warehouse "
+                      f"para la tendencia OLS (disponibles: {len(serie)}).")
+    try:
+        return estimar_tendencia_anual_ols(serie, horizonte_anios=horizonte_anios), None
+    except ValueError as e:
+        return None, str(e)
 
 
 def _persistir_en_fact_forecast(db: Session, caso_uso: str, proyecciones: list, metodo: str, horizonte: int):
@@ -182,24 +215,23 @@ def obtener_pronostico_metas(
     horizonte: int = 6
 ) -> Dict[str, Any]:
     """
-    Retorna el pronóstico de metas financieras:
-    - granularity='MENSUAL': Proyección mensual de ingresos para Programas (Holt-Winters).
-    - granularity='ANUAL': Proyección indicativa de tendencia anual 2026-2027 (OLS N=3).
+    Pronóstico de metas financieras:
+    - MENSUAL: ingresos mensuales de Programas (Holt-Winters).
+    - ANUAL: tendencia anual indicativa (OLS sobre gestiones cerradas).
+    Sin historia suficiente en el DW devuelve sin_datos=True y proyecciones vacías.
     """
     gran_upper = granularity.strip().upper()
     engine = db.get_bind() if db is not None else None
 
     if gran_upper == "ANUAL":
         serie_anual = extraer_serie_temporal("META_ANUAL", engine=engine)
-        res_ols = estimar_tendencia_anual_ols(serie_anual, horizonte_anios=min(horizonte, 3))
-        proyecciones = []
-        for p, f in zip(res_ols["periodos"], res_ols["forecast"]):
-            proyecciones.append({
-                "periodo": p,
-                "monto_proyectado_bs": f,
-                "ic_lower": round(f * 0.95, 2),
-                "ic_upper": round(f * 1.05, 2)
-            })
+        res_ols, motivo = _proyectar_ols_seguro(serie_anual, min(horizonte, 3))
+        if res_ols is None:
+            return _respuesta_sin_datos("META_ANUAL", motivo, granularidad="ANUAL", n_observaciones=len(serie_anual))
+        proyecciones = [
+            {"periodo": p, "monto_proyectado_bs": f, "ic_lower": round(f * 0.95, 2), "ic_upper": round(f * 1.05, 2)}
+            for p, f in zip(res_ols["periodos"], res_ols["forecast"])
+        ]
         return {
             "caso_uso": "META_ANUAL",
             "granularidad": "ANUAL",
@@ -213,30 +245,25 @@ def obtener_pronostico_metas(
             "nota_metodologica": res_ols["nota_metodologica"],
             "proyecciones": proyecciones
         }
-    else:
-        # Mensual con Holt-Winters
-        serie_mensual = extraer_serie_temporal("META_MENSUAL_PROGRAMAS", engine=engine)
-        res_hw = entrenar_y_proyectar_hw(serie_mensual, caso_uso="META_MENSUAL_PROGRAMAS", horizonte=min(horizonte, 6))
-        proyecciones = []
-        for p, f, l, u in zip(res_hw["periodos"], res_hw["forecast"], res_hw["ic_lower"], res_hw["ic_upper"]):
-            proyecciones.append({
-                "periodo": p,
-                "monto_proyectado_bs": f,
-                "ic_lower": l,
-                "ic_upper": u
-            })
-        return {
-            "caso_uso": "META_MENSUAL_PROGRAMAS",
-            "granularidad": "MENSUAL",
-            "metodo": res_hw["metodo"],
-            "horizonte_meses": res_hw["horizonte_meses"],
-            "rmse": res_hw["rmse"],
-            "aic": res_hw["aic"],
-            "proyecciones": proyecciones
-        }
 
-
-import unicodedata
+    serie_mensual = extraer_serie_temporal("META_MENSUAL_PROGRAMAS", engine=engine)
+    res_hw, motivo = _proyectar_hw_seguro(serie_mensual, "META_MENSUAL_PROGRAMAS", min(horizonte, 6))
+    if res_hw is None:
+        return _respuesta_sin_datos("META_MENSUAL_PROGRAMAS", motivo, granularidad="MENSUAL",
+                                    n_observaciones=len(serie_mensual))
+    proyecciones = [
+        {"periodo": p, "monto_proyectado_bs": f, "ic_lower": l, "ic_upper": u}
+        for p, f, l, u in zip(res_hw["periodos"], res_hw["forecast"], res_hw["ic_lower"], res_hw["ic_upper"])
+    ]
+    return {
+        "caso_uso": "META_MENSUAL_PROGRAMAS",
+        "granularidad": "MENSUAL",
+        "metodo": res_hw["metodo"],
+        "horizonte_meses": res_hw["horizonte_meses"],
+        "rmse": res_hw["rmse"],
+        "aic": res_hw["aic"],
+        "proyecciones": proyecciones
+    }
 
 
 def _normalizar_texto(texto: str) -> str:
@@ -266,8 +293,27 @@ def _determinar_tipo_programa(nombre: str) -> str:
     return "PROGRAMA"
 
 
-_VIABILIDAD_CACHE = None
-_VIABILIDAD_TIMESTAMP = 0.0
+_SQL_INSCRITOS_PROGRAMA_GESTION = text("""
+    SELECT dm.programa, dt.gestion, SUM(fm.inscritos)::int AS inscritos
+    FROM public.fact_marketing fm
+    JOIN public.dim_modulo dm ON fm.id_modulo = dm.id_modulo
+    JOIN public.dim_tiempo dt ON fm.id_tiempo = dt.id_tiempo
+    WHERE dm.programa IS NOT NULL AND fm.inscritos > 0
+    GROUP BY dm.programa, dt.gestion
+""")
+
+
+def _inscritos_por_programa(db: Optional[Session]) -> pd.DataFrame:
+    """Inscritos por programa y gestión, exclusivamente desde fact_marketing (DW)."""
+    if db is None:
+        return pd.DataFrame(columns=["programa", "gestion", "inscritos"])
+    try:
+        rows = db.execute(_SQL_INSCRITOS_PROGRAMA_GESTION).fetchall()
+    except Exception as e:
+        logger.warning(f"No se pudo leer fact_marketing: {e}")
+        db.rollback()
+        rows = []
+    return pd.DataFrame(rows, columns=["programa", "gestion", "inscritos"])
 
 
 def obtener_matriz_viabilidad_programas(
@@ -275,102 +321,66 @@ def obtener_matriz_viabilidad_programas(
     tipo_filtro: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """
-    Retorna la Matriz de Viabilidad Estratégica de Programas (Foco Marketing)
-    clasificando la recomendación ejecutiva en:
-    - 'ABRIR NUEVA VERSIÓN' (emerald)
-    - 'CONTINUAR' (amber)
-    - 'DESCARTAR / REESTRUCTURAR' (rose)
+    Matriz de Viabilidad Estratégica de Programas (Foco Marketing) calculada sobre
+    fact_marketing. Sin inscripciones ingestadas retorna lista vacía.
+    Decisión: 'ABRIR NUEVA VERSIÓN' | 'CONTINUAR' | 'DESCARTAR / REESTRUCTURAR'.
     """
-    global _VIABILIDAD_CACHE, _VIABILIDAD_TIMESTAMP
-    now = time.time()
-    if _VIABILIDAD_CACHE is not None and (now - _VIABILIDAD_TIMESTAMP) < 300:
-        datos = _VIABILIDAD_CACHE
-    else:
-        from pipeline.config import DATA_DIR
-        archivo = DATA_DIR / "TBL_INSCRITOS.xlsx"
-        if not archivo.exists():
-            return []
+    df = _inscritos_por_programa(db)
+    if df.empty:
+        return []
 
-        df = pd.read_excel(archivo, sheet_name="TBL_INSCRITOS")
-        df["MARCA TEMPORAL"] = pd.to_datetime(df["MARCA TEMPORAL"], errors="coerce")
-        df = df.dropna(subset=["MARCA TEMPORAL", "NOMBRE DEL PROGRAMA"])
-        df["year"] = df["MARCA TEMPORAL"].dt.year
-        df["base_prog"] = df["NOMBRE DEL PROGRAMA"].apply(_limpiar_nombre_programa)
+    anio_actual = pd.Timestamp.now().year
+    a1, a2, a3 = anio_actual - 1, anio_actual - 2, anio_actual - 3
+    df["base_prog"] = df["programa"].apply(_limpiar_nombre_programa)
+    agg = df.groupby(["base_prog", "gestion"])["inscritos"].sum().unstack(fill_value=0)
+    totales = agg.sum(axis=1).sort_values(ascending=False).head(25)
 
-        top_programs = df["base_prog"].value_counts().head(25).index.tolist()
-        datos = []
+    datos = []
+    for p in totales.index:
+        fila = agg.loc[p]
 
-        for p in top_programs:
-            sub = df[df["base_prog"] == p]
-            total = len(sub)
-            c23 = len(sub[sub["year"] == 2023])
-            c24 = len(sub[sub["year"] == 2024])
-            c25 = len(sub[sub["year"] == 2025])
-            c26 = len(sub[sub["year"] == 2026])
+        def c(anio: int) -> int:
+            return int(fila.get(anio, 0))
 
-            tipo = _determinar_tipo_programa(p)
+        total, c_a3, c_a2, c_a1, c_act = int(totales[p]), c(a3), c(a2), c(a1), c(anio_actual)
 
-            if c23 > 0 and c25 > 0:
-                cagr = round(((c25 / c23) ** 0.5 - 1.0) * 100.0, 1)
-            elif c24 > 0 and c25 > 0:
-                cagr = round(((c25 - c24) / c24) * 100.0, 1)
-            else:
-                cagr = 0.0
+        if c_a3 > 0 and c_a1 > 0:
+            cagr = round(((c_a1 / c_a3) ** 0.5 - 1.0) * 100.0, 1)
+        elif c_a2 > 0 and c_a1 > 0:
+            cagr = round(((c_a1 - c_a2) / c_a2) * 100.0, 1)
+        else:
+            cagr = 0.0
 
-            c25_sem = c25 * 0.5
-            ajuste_cagr = max(-0.4, min(0.6, cagr / 100.0))
-            proy_6m = int(round(max(8, c25_sem * (1.0 + ajuste_cagr))))
+        ajuste_cagr = max(-0.4, min(0.6, cagr / 100.0))
+        proy_6m = int(round(c_a1 * 0.5 * (1.0 + ajuste_cagr)))
+        pendiente_mensual = round((c_a1 - c_a2) / 12.0, 1)
+        signo = "+" if pendiente_mensual >= 0 else ""
 
-            pendiente_mensual = round((c25 - c24) / 12.0, 1)
-            signo = "+" if pendiente_mensual >= 0 else ""
-            tendencia_str = f"{signo}{pendiente_mensual} al/mes"
+        if c_a1 >= 35 and cagr >= 5.0:
+            decision, color = "ABRIR NUEVA VERSIÓN", "emerald"
+            justificacion = f"Demanda alta y sostenida ({total} inscritos históricos, CAGR {cagr}%). Alta absorción proyectada."
+        elif c_a1 >= 18 or cagr >= -10.0:
+            decision, color = "CONTINUAR", "amber"
+            justificacion = f"Desempeño estable ({c_a1} inscritos en {a1}). Mantener rotación de módulos y monitoreo de equilibrio."
+        else:
+            decision, color = "DESCARTAR / REESTRUCTURAR", "rose"
+            justificacion = f"Volumen contractivo o inferior al punto de equilibrio ({c_a1} inscritos en {a1}). Requiere rediseño curricular."
 
-            if c25 >= 35 and cagr >= 5.0:
-                decision = "ABRIR NUEVA VERSIÓN"
-                color = "emerald"
-                justificacion = f"Demanda alta y sostenida ({total} inscritos históricos, CAGR {cagr}%). Alta absorción proyectada."
-            elif c25 >= 18 or cagr >= -10.0:
-                decision = "CONTINUAR"
-                color = "amber"
-                justificacion = f"Desempeño estable ({c25} inscritos recientes). Mantener rotación de módulos y monitoreo de equilibrio."
-            else:
-                decision = "DESCARTAR / REESTRUCTURAR"
-                color = "rose"
-                justificacion = f"Volumen contractivo o inferior a umbral de punto de equilibrio ({c25} inscritos). Requiere rediseño curricular."
-
-            datos.append({
-                "programa": p,
-                "tipo": tipo,
-                "total_historico": int(total),
-                "inscritos_2025": int(c25),
-                "inscritos_2026": int(c26),
-                "cagr_pct": float(cagr),
-                "proyeccion_6m": int(proy_6m),
-                "tendencia_ols": tendencia_str,
-                "decision_sugerida": decision,
-                "badge_color": color,
-                "justificacion": justificacion
-            })
-
-        # Asegurar inclusión del segmento estratégico de Maestría
-        tiene_maestria = any("MAESTR" in _normalizar_texto(d["tipo"]) for d in datos)
-        if not tiene_maestria:
-            datos.append({
-                "programa": "MAESTRÍA EN GESTIÓN ESTRATÉGICA Y SALUD PÚBLICA",
-                "tipo": "MAESTRÍA",
-                "total_historico": 143,
-                "inscritos_2025": 48,
-                "inscritos_2026": 22,
-                "cagr_pct": 12.4,
-                "proyeccion_6m": 25,
-                "tendencia_ols": "+1.8 al/mes",
-                "decision_sugerida": "CONTINUAR",
-                "badge_color": "amber",
-                "justificacion": "Nicho institucional de alto ticket (143 alumnos matriculados). Sostener acreditación y convocatorias semestrales."
-            })
-
-        _VIABILIDAD_CACHE = datos
-        _VIABILIDAD_TIMESTAMP = now
+        datos.append({
+            "programa": p,
+            "tipo": _determinar_tipo_programa(p),
+            "total_historico": total,
+            "anio_anterior": a1,
+            "anio_actual": anio_actual,
+            "inscritos_anio_anterior": c_a1,
+            "inscritos_anio_actual": c_act,
+            "cagr_pct": float(cagr),
+            "proyeccion_6m": proy_6m,
+            "tendencia_ols": f"{signo}{pendiente_mensual} al/mes",
+            "decision_sugerida": decision,
+            "badge_color": color,
+            "justificacion": justificacion
+        })
 
     if tipo_filtro and _normalizar_texto(tipo_filtro) != "GLOBAL":
         tf = _normalizar_texto(tipo_filtro)
@@ -378,153 +388,186 @@ def obtener_matriz_viabilidad_programas(
     return datos
 
 
+def _resumen_cartera(df: pd.DataFrame) -> Dict[str, Any]:
+    """Participación de inscritos por tipo de programa, calculada desde el DW."""
+    if df.empty:
+        return {}
+    tipos = df["programa"].apply(_determinar_tipo_programa)
+    por_tipo = df.groupby(tipos)["inscritos"].sum().sort_values(ascending=False)
+    total = float(por_tipo.sum()) or 1.0
+    return {
+        _normalizar_texto(t): {"total_inscritos": int(v), "pct_participacion": round(v / total * 100.0, 1)}
+        for t, v in por_tipo.items()
+    }
+
+
+_SQL_META_VS_EJECUTADO = text("""
+    SELECT dt.gestion, dt.mes,
+           SUM(fr.monto_meta)::float AS meta,
+           SUM(fr.monto_ejecutado)::float AS ejecutado
+    FROM public.fact_rentabilidad fr
+    JOIN public.dim_categoria_financiera dcf ON fr.id_categoria = dcf.id_categoria
+    JOIN public.dim_tiempo dt ON fr.id_tiempo = dt.id_tiempo
+    WHERE dcf.nombre_categoria = 'PROGRAMAS'
+    GROUP BY dt.gestion, dt.mes
+    ORDER BY dt.gestion, dt.mes
+""")
+
+_MESES_CORTOS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+_MESES_LARGOS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto",
+                 "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+
+
+def _meta_vs_ejecutado(db: Optional[Session]) -> pd.DataFrame:
+    if db is None:
+        return pd.DataFrame(columns=["gestion", "mes", "meta", "ejecutado"])
+    try:
+        rows = db.execute(_SQL_META_VS_EJECUTADO).fetchall()
+    except Exception as e:
+        logger.warning(f"No se pudo leer fact_rentabilidad: {e}")
+        db.rollback()
+        rows = []
+    return pd.DataFrame(rows, columns=["gestion", "mes", "meta", "ejecutado"])
+
+
+def _num(v) -> Optional[float]:
+    return None if v is None or pd.isna(v) else round(float(v), 2)
+
+
 def obtener_analitica_macro_completa(
     db: Optional[Session] = None,
     horizonte: int = 6
 ) -> Dict[str, Any]:
     """
-    Consolida la suite completa de Analítica Predictiva Macro de 4 Casos:
-    - Caso 1: Demanda Global de Alumnos (N=43 meses, Holt-Winters, OLS, CAGR, MAPE, RMSE)
+    Suite de Analítica Predictiva Macro (4 casos) calculada solo con datos del DW:
+    - Caso 1: Demanda Global de Alumnos (Holt-Winters, OLS, CAGR, MAPE, RMSE)
     - Caso 2: Demanda por Programa y Matriz de Viabilidad (Marketing)
-    - Caso 3: Cumplimiento de Metas / Ingresos Mensuales (Barras Meta vs HW con IC 95%)
-    - Caso 4: Cumplimiento de Metas / Ingresos Anuales (Curva acumulada OLS vs Meta Institucional 3.8M Bs)
-    Registra auditoría en LogPipelineIngesta y emite notificación institucional sin duplicados.
+    - Caso 3: Meta vs Ejecutado mensual (fact_rentabilidad) + cierre HW
+    - Caso 4: Recaudación anual OLS vs meta anual registrada
+    Un caso sin historia suficiente se devuelve como None y su motivo en `sin_datos`.
     """
-    t_start = time.time()
     engine = db.get_bind() if db is not None else None
-    h_val = 6 if horizonte is None else int(horizonte)
-    h_safe = max(1, min(6, h_val))
+    h_safe = max(1, min(6, 6 if horizonte is None else int(horizonte)))
+    sin_datos: Dict[str, str] = {}
 
     # ── CASO 1: Demanda Global de Alumnos ──────────────────────────────
     serie_global = extraer_serie_temporal("ALUMNOS_GLOBAL", engine=engine)
-    n_meses = len(serie_global)
-    periodos_hist = [str(p) for p in serie_global.index]
-    valores_hist = [float(v) for v in serie_global.values]
-
-    hw_alumnos = entrenar_y_proyectar_hw(serie_global, caso_uso="ALUMNOS_GLOBAL", horizonte=h_safe)
-
-    # OLS sobre serie histórica completa (N=43)
-    x_arr = np.arange(n_meses)
-    y_arr = np.array(valores_hist, dtype=float)
-    poly = np.polyfit(x_arr, y_arr, deg=1)
-    slope_ols = float(round(poly[0], 2))
-    intercept_ols = float(round(poly[1], 2))
-
-    x_full = np.arange(n_meses + len(hw_alumnos["periodos"]))
-    ols_fitted = [max(0.0, float(round(poly[0] * i + poly[1], 1))) for i in x_full]
-
-    residuos_ols = y_arr - (poly[0] * x_arr + poly[1])
-    mape_ols = float(round(np.mean(np.abs(residuos_ols / np.maximum(y_arr, 1.0))) * 100.0, 2))
-    cagr_global = float(round(((y_arr[-1] / max(1.0, y_arr[0])) ** (12.0 / max(1, n_meses)) - 1.0) * 100.0, 2))
-
-    caso1 = {
-        "nombre": "Caso 1: Demanda Global de Alumnos",
-        "n_observaciones": n_meses,
-        "periodos_historicos": periodos_hist,
-        "valores_historicos": valores_hist,
-        "periodos_proyectados": hw_alumnos["periodos"],
-        "forecast_hw": hw_alumnos["forecast"],
-        "ic_lower_95": hw_alumnos["ic_lower"],
-        "ic_upper_95": hw_alumnos["ic_upper"],
-        "recta_ols_full": ols_fitted,
-        "pendiente_ols_mes": slope_ols,
-        "intercepto_ols": intercept_ols,
-        "cagr_historico_pct": cagr_global,
-        "mape_pct": mape_ols,
-        "rmse": hw_alumnos["rmse"],
-        "modelo": "Holt-Winters Aditivo (m=12) con cota no negativa y Banda 95%"
-    }
-
-    # ── CASO 2: Demanda por Programa y Matriz de Viabilidad (Marketing) ─
-    matriz_viabilidad = obtener_matriz_viabilidad_programas(db=db)
-
-    seg_diplomado = obtener_pronostico_alumnos(db=db, tipo="DIPLOMADO", horizonte=h_safe)
-    seg_curso = obtener_pronostico_alumnos(db=db, tipo="CURSO", horizonte=h_safe)
-    seg_experto = obtener_pronostico_alumnos(db=db, tipo="EXPERTO", horizonte=h_safe)
-
-    resumen_cartera = {
-        "DIPLOMADO": {"total_inscritos": 9150, "pct_participacion": 60.2, "tendencia": "Creciente sostenida"},
-        "CURSO": {"total_inscritos": 3399, "pct_participacion": 22.4, "tendencia": "Alta rotación y demanda"},
-        "EXPERTO": {"total_inscritos": 2504, "pct_participacion": 16.5, "tendencia": "Especialización ejecutiva"},
-        "MAESTRIA": {"total_inscritos": 143, "pct_participacion": 0.9, "tendencia": "Nicho estratégico de posgrado"}
-    }
-
-    caso2 = {
-        "nombre": "Caso 2: Demanda por Programa y Matriz de Viabilidad",
-        "resumen_cartera": resumen_cartera,
-        "matriz_viabilidad": matriz_viabilidad,
-        "segmentos": {
-            "DIPLOMADO": seg_diplomado["proyecciones"],
-            "CURSO": seg_curso["proyecciones"],
-            "EXPERTO": seg_experto["proyecciones"]
+    hw_alumnos, motivo = _proyectar_hw_seguro(serie_global, "ALUMNOS_GLOBAL", h_safe)
+    caso1 = None
+    if hw_alumnos is None:
+        sin_datos["caso1"] = motivo
+    else:
+        n_meses = len(serie_global)
+        y_arr = np.array([float(v) for v in serie_global.values], dtype=float)
+        x_arr = np.arange(n_meses)
+        poly = np.polyfit(x_arr, y_arr, deg=1)
+        x_full = np.arange(n_meses + len(hw_alumnos["periodos"]))
+        residuos = y_arr - (poly[0] * x_arr + poly[1])
+        caso1 = {
+            "nombre": "Caso 1: Demanda Global de Alumnos",
+            "n_observaciones": n_meses,
+            "periodos_historicos": [str(p) for p in serie_global.index],
+            "valores_historicos": y_arr.tolist(),
+            "periodos_proyectados": hw_alumnos["periodos"],
+            "forecast_hw": hw_alumnos["forecast"],
+            "ic_lower_95": hw_alumnos["ic_lower"],
+            "ic_upper_95": hw_alumnos["ic_upper"],
+            "recta_ols_full": [max(0.0, float(round(poly[0] * i + poly[1], 1))) for i in x_full],
+            "pendiente_ols_mes": float(round(poly[0], 2)),
+            "intercepto_ols": float(round(poly[1], 2)),
+            "cagr_historico_pct": float(round(((y_arr[-1] / max(1.0, y_arr[0])) ** (12.0 / n_meses) - 1.0) * 100.0, 2)),
+            "mape_pct": float(round(np.mean(np.abs(residuos / np.maximum(y_arr, 1.0))) * 100.0, 2)),
+            "rmse": hw_alumnos["rmse"],
+            "modelo": "Holt-Winters Aditivo (m=12) con cota no negativa y Banda 95%"
         }
-    }
 
-    # ── CASO 3: Cumplimiento de Metas / Ingresos Mensuales ──────────────
-    hw_metas = obtener_pronostico_metas(db=db, granularity="MENSUAL", horizonte=h_safe)
+    # ── CASO 2: Demanda por Programa y Matriz de Viabilidad ─────────────
+    matriz = obtener_matriz_viabilidad_programas(db=db)
+    caso2 = None
+    if not matriz:
+        sin_datos["caso2"] = "No hay inscripciones ingestadas en fact_marketing."
+    else:
+        caso2 = {
+            "nombre": "Caso 2: Demanda por Programa y Matriz de Viabilidad",
+            "resumen_cartera": _resumen_cartera(_inscritos_por_programa(db)),
+            "matriz_viabilidad": matriz,
+            "segmentos": {
+                t: obtener_pronostico_alumnos(db=db, tipo=t, horizonte=h_safe)["proyecciones"]
+                for t in ("DIPLOMADO", "CURSO", "EXPERTO")
+            }
+        }
 
-    meses_etiquetas = ["Ene 25", "Feb 25", "Mar 25", "Abr 25", "May 25", "Jun 25", "Jul 25", "Ago 25", "Sep 25", "Oct 25", "Nov 25", "Dic 25", "Ene 26", "Feb 26", "Mar 26", "Abr 26", "May 26 (Act)"]
-    meta_catalogo = [950000, 890000, 1100000, 1250000, 1400000, 1380000, 1450000, 1480000, 1500000, 1420000, 1350000, 1100000, 1085960, 969607, 1241098, 1396235, 1551372]
-    ejecutado_real = [920000, 875000, 1080000, 1210000, 1385000, 1340000, 1420000, 1465000, 1480000, 1390000, 1320000, 1085000, 1040000, 935000, 1205000, 1360000, 1420500]
+    # ── CASO 3: Meta vs Ejecutado mensual ───────────────────────────────
+    mve = _meta_vs_ejecutado(db)
+    caso3 = None
+    if mve.empty:
+        sin_datos["caso3"] = "No hay metas ni ejecución financiera ingestadas en fact_rentabilidad."
+    else:
+        hw_metas = obtener_pronostico_metas(db=db, granularity="MENSUAL", horizonte=h_safe)
+        ult = mve.tail(18)
+        ultimo = ult.iloc[-1]
+        proy = hw_metas.get("proyecciones") or []
+        cierre = proy[0]["monto_proyectado_bs"] if proy else None
+        meta_mes = _num(ultimo["meta"])
+        caso3 = {
+            "nombre": "Caso 3: Cumplimiento de Metas / Ingresos Mensuales",
+            "meses_etiquetas": [f"{_MESES_CORTOS[int(m) - 1]} {str(int(g))[-2:]}" for g, m in zip(ult["gestion"], ult["mes"])],
+            "meta_catalogo_bs": [_num(v) for v in ult["meta"]],
+            "ejecutado_real_bs": [_num(v) for v in ult["ejecutado"]],
+            "proyecciones_hw": proy,
+            "mes_actual": {
+                "periodo": f"{_MESES_LARGOS[int(ultimo['mes']) - 1]} {int(ultimo['gestion'])}",
+                "meta_mes_bs": meta_mes,
+                "ejecutado_actual_bs": _num(ultimo["ejecutado"]),
+                "cierre_proyectado_hw_bs": cierre,
+                "ic_lower_95": proy[0]["ic_lower"] if proy else None,
+                "ic_upper_95": proy[0]["ic_upper"] if proy else None,
+                "cumplimiento_proyectado_pct": round(cierre / meta_mes * 100.0, 1) if cierre and meta_mes else None
+            },
+            "rmse": hw_metas.get("rmse"),
+            "mensaje_pronostico": hw_metas.get("mensaje")
+        }
 
-    proy_mensual_hw = hw_metas["proyecciones"]
-    primer_cierre = proy_mensual_hw[0]["monto_proyectado_bs"] if proy_mensual_hw else 1510800.0
-    ic_inf = proy_mensual_hw[0]["ic_lower"] if proy_mensual_hw and proy_mensual_hw[0]["ic_lower"] else round(primer_cierre * 0.92, 2)
-    ic_sup = proy_mensual_hw[0]["ic_upper"] if proy_mensual_hw and proy_mensual_hw[0]["ic_upper"] else round(primer_cierre * 1.08, 2)
+    # ── CASO 4: Recaudación anual vs meta anual ─────────────────────────
+    serie_anual = extraer_serie_temporal("META_ANUAL", engine=engine)
+    anio_actual = pd.Timestamp.now().year
+    del_anio = mve[mve["gestion"] == anio_actual] if not mve.empty else mve
+    meta_anual = _num(del_anio["meta"].sum(min_count=1)) if not del_anio.empty else None
+    recaudado = _num(del_anio["ejecutado"].sum(min_count=1)) if not del_anio.empty else None
+    caso4 = None
+    if serie_anual.empty and meta_anual is None and recaudado is None:
+        sin_datos["caso4"] = "No hay recaudación anual ni metas de la gestión ingestadas en fact_rentabilidad."
+    else:
+        ols_anual = obtener_pronostico_metas(db=db, granularity="ANUAL", horizonte=2)
+        proy_ols = ols_anual.get("proyecciones") or []
+        cierre_ols = float(proy_ols[0]["monto_proyectado_bs"]) if proy_ols else None
+        caso4 = {
+            "nombre": "Caso 4: Cumplimiento de Metas / Ingresos Anuales",
+            "anios_historicos": [int(a) for a in serie_anual.index],
+            "valores_historicos_bs": [float(v) for v in serie_anual.values],
+            "proyecciones_ols": proy_ols,
+            "pendiente_anual_bs": ols_anual.get("pendiente_anual_bs"),
+            "cagr_historico_pct": ols_anual.get("cagr_historico_pct"),
+            "gestion_actual": anio_actual,
+            "meta_anual_institucional_bs": meta_anual,
+            "recaudado_acumulado_bs": recaudado,
+            "cierre_anual_proyectado_ols_bs": cierre_ols,
+            "porcentaje_avance_meta": round(recaudado / meta_anual * 100.0, 1) if recaudado and meta_anual else None,
+            "banda_ols_indicativa": {
+                "porcentaje_tolerancia": 5.0,
+                "min_bs": round(cierre_ols * 0.95, 2),
+                "max_bs": round(cierre_ols * 1.05, 2)
+            } if cierre_ols else None,
+            "nota_metodologica": ols_anual.get("nota_metodologica") or ols_anual.get("mensaje")
+        }
 
-    caso3 = {
-        "nombre": "Caso 3: Cumplimiento de Metas / Ingresos Mensuales",
-        "meses_etiquetas": meses_etiquetas,
-        "meta_catalogo_bs": meta_catalogo,
-        "ejecutado_real_bs": ejecutado_real,
-        "proyecciones_hw": proy_mensual_hw,
-        "mes_actual": {
-            "periodo": "Mayo 2026",
-            "meta_mes_bs": 1551372.0,
-            "ejecutado_actual_bs": 1420500.0,
-            "cierre_proyectado_hw_bs": primer_cierre,
-            "ic_lower_95": ic_inf,
-            "ic_upper_95": ic_sup,
-            "cumplimiento_proyectado_pct": round((primer_cierre / 1551372.0) * 100.0, 1)
-        },
-        "rmse": hw_metas.get("rmse")
-    }
-
-    # ── CASO 4: Cumplimiento de Metas / Ingresos Anuales ─────────────────
-    ols_anual = obtener_pronostico_metas(db=db, granularity="ANUAL", horizonte=2)
-
-    meta_institucional_bs = 15000000.0
-    recaudado_acumulado_2026 = 3010000.0
-    cierre_anual_ols = float(ols_anual["proyecciones"][0]["monto_proyectado_bs"]) if ols_anual.get("proyecciones") else 15183417.34
-
-    caso4 = {
-        "nombre": "Caso 4: Cumplimiento de Metas / Ingresos Anuales",
-        "anios_historicos": [2023, 2024, 2025],
-        "valores_historicos_bs": [8035694.25, 9989730.09, 12907977.61],
-        "proyecciones_ols": ols_anual.get("proyecciones", []),
-        "pendiente_anual_bs": ols_anual.get("pendiente_anual_bs", 2436141.68),
-        "cagr_historico_pct": ols_anual.get("cagr_historico_pct", 26.8),
-        "meta_anual_institucional_bs": meta_institucional_bs,
-        "recaudado_acumulado_bs": recaudado_acumulado_2026,
-        "cierre_anual_proyectado_ols_bs": cierre_anual_ols,
-        "porcentaje_avance_meta": round((recaudado_acumulado_2026 / meta_institucional_bs) * 100.0, 1),
-        "banda_ols_indicativa": {
-            "porcentaje_tolerancia": 5.0,
-            "min_bs": round(cierre_anual_ols * 0.95, 2),
-            "max_bs": round(cierre_anual_ols * 1.05, 2)
-        },
-        "nota_metodologica": ols_anual.get("nota_metodologica")
-    }
-
-    elapsed_ms = (time.time() - t_start) * 1000.0
-    # Lectura pura sin escrituras síncronas a base de datos en GET (Eliminación de db.commit() en lecturas)
     return {
         "status": "success",
         "fecha_calculo_iso": pd.Timestamp.now().isoformat(),
         "horizonte_meses": h_safe,
+        "sin_datos": sin_datos,
         "caso1_demanda_global": caso1,
         "caso2_demanda_programa": caso2,
         "caso3_metas_mensuales": caso3,
         "caso4_metas_anuales": caso4
     }
-

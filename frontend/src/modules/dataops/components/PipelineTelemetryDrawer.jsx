@@ -20,293 +20,13 @@ import {
   Download
 } from 'lucide-react';
 
-export const FILE_TELEMETRY_DATA = [
-  {
-    id: 'acta',
-    docId: 1,
-    fileName: 'Acta_POS_2026_Modulo3.xlsx',
-    sourceType: 'Excel Acta',
-    badgeColor: '#10b981',
-    paso1: {
-      magicBytes: '50 4B 03 04 14 00 06 00 (ZIP/OOXML SpreadsheetML)',
-      sha256: '8f4e2a1b9c7d0e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f',
-      charset: 'Binario (OOXML PKZip / XML payload)',
-      sizeKb: '184.6 KB',
-      mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    },
-    paso2: {
-      detection: 'Detección: Acta de Calificaciones (Excel) - Confianza 98.4% (Patrones: NOMBRES, CALIF_FINAL, DOC_IDENTIDAD/CI)',
-      confidence: 98.4,
-      patterns: ['NOMBRES Y APELLIDOS', 'CALIF_FINAL', 'DOC_IDENTIDAD/CI', 'COD_MODULO', 'OBSERVACIONES'],
-      ruleMatched: 'RULE_HEURISTIC_ACTA_CALIFICACIONES_V2'
-    },
-    paso3: {
-      range: 'Identificación de rango rectangular B5:H180',
-      sanitization: 'Remoción de celdas combinadas y metadatos administrativos no tabulares (Cabeceras institucionales suprimidas en filas 1-4).',
-      cellsCleared: 24,
-      headerRow: 5,
-      dataEndRow: 180,
-      mergedCellsFound: 14
-    },
-    paso4: {
-      mappings: [
-        { raw: 'NOMBRES Y APELLIDOS', canonical: 'nombre_completo', type: 'VARCHAR', rule: 'Mapeo directo canónico' },
-        { raw: 'CALIF_FINAL', canonical: 'nota_final', type: 'NUMERIC(5,2)', rule: 'Conversión float [0-100]' },
-        { raw: 'DOC_IDENTIDAD/CI', canonical: 'ci_estudiante', type: 'VARCHAR', rule: 'Limpieza alfanumérica y sufijo' },
-        { raw: 'COD_MODULO', canonical: 'codigo_modulo', type: 'VARCHAR', rule: 'Mapeo directo' },
-        { raw: 'FECHA_ACTA', canonical: 'fecha_asentamiento', type: 'DATE', rule: 'Parseo YYYY-MM-DD' },
-        { raw: 'OBSERVACIONES', canonical: 'observacion', type: 'TEXT', rule: 'Sanitizado HTML' }
-      ]
-    },
-    paso5: {
-      rules: [
-        {
-          label: 'Conversión de notas a float [0-100]',
-          status: 'PASS',
-          detail: '340/342 registros con escala decimal válida normalizada en rango [0 - 100].'
-        },
-        {
-          label: 'Validación de formato CI boliviano',
-          status: 'PASS',
-          detail: 'Patrón regex ^[0-9]{5,8}(-[A-Z0-9]+)?$ validado en 340 registros.'
-        },
-        {
-          label: 'Bandera de advertencia para sufijos dudosos (?)',
-          status: 'WARN',
-          detail: 'Sufijo (?) detectado en CI "4892019 LP?" (#14) y (#89) -> derivado a cola de revisión humana.'
-        }
-      ]
-    },
-    paso6: {
-      sql: `-- Persistencia transaccional en Registros de Ingesta
-INSERT INTO "Registros de Ingesta" (
-  lote_id, fuente_archivo, esquema_detectado,
-  payload_json, texto_plano, hash_integridad, estado_registro
-)
-VALUES (
-  'POS-2026-B_M3', 'Acta_POS_2026_Modulo3.xlsx', 'EXCEL_ACTA',
-  $record_payload, $serializado_texto_plano, '8f4e2a1b', 'LISTO_REVISION'
-);`,
-      status: 'Confirmado por lote (BATCH COMMIT: 342 registros)',
-      table: 'Registros de Ingesta'
-    }
-  },
-  {
-    id: 'forms',
-    docId: 2,
-    fileName: 'Respuestas_Encuesta_M3.csv',
-    sourceType: 'Google Forms CSV',
-    badgeColor: '#3b82f6',
-    paso1: {
-      magicBytes: 'EF BB BF 54 69 6D 65 73 (UTF-8 BOM Text / Comma Delimited)',
-      sha256: '3a9c1b2c8e4d0f1a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8',
-      charset: 'UTF-8 con BOM (RFC 4180 CSV standard)',
-      sizeKb: '78.2 KB',
-      mime: 'text/csv'
-    },
-    paso2: {
-      detection: 'Detección: Google Forms CSV - Confianza 96.2% (Delimitador coma, timestamp de admisión)',
-      confidence: 96.2,
-      patterns: ['Marca temporal', 'Dirección de correo electrónico', 'Nombres y Apellidos completos', 'Cédula de Identidad'],
-      ruleMatched: 'RULE_HEURISTIC_GOOGLE_FORMS_CSV_V1'
-    },
-    paso3: {
-      range: 'Identificación de rango rectangular A1:F216',
-      sanitization: 'Remoción de celdas combinadas y metadatos administrativos no tabulares (Normalización de saltos \\r\\n y escape de comillas dobles).',
-      cellsCleared: 0,
-      headerRow: 1,
-      dataEndRow: 216,
-      mergedCellsFound: 0
-    },
-    paso4: {
-      mappings: [
-        { raw: 'Marca temporal', canonical: 'fecha_registro', type: 'TIMESTAMP', rule: 'Parseo ISO 8601' },
-        { raw: 'Dirección de correo electrónico', canonical: 'email_estudiante', type: 'VARCHAR', rule: 'Lowercasing y trim' },
-        { raw: 'Nombres y Apellidos completos', canonical: 'nombre_completo', type: 'VARCHAR', rule: 'Capitalización canónica' },
-        { raw: 'Cédula de Identidad', canonical: 'ci_estudiante', type: 'VARCHAR', rule: 'Limpieza regex numérico' },
-        { raw: 'Módulo seleccionado', canonical: 'codigo_modulo', type: 'VARCHAR', rule: 'Extracción código curricular' }
-      ]
-    },
-    paso5: {
-      rules: [
-        {
-          label: 'Conversión de notas a float [0-100]',
-          status: 'N/A',
-          detail: 'Formulario de admisión y autoinscripción; no contiene calificaciones evaluativas.'
-        },
-        {
-          label: 'Validación de formato CI',
-          status: 'PASS',
-          detail: '215/215 documentos de identidad numéricos validados sin caracteres no permitidos.'
-        },
-        {
-          label: 'Bandera de advertencia para sufijos dudosos (?)',
-          status: 'PASS',
-          detail: 'Sin anomalías ni caracteres dudosos detectados en los campos de entrada.'
-        }
-      ]
-    },
-    paso6: {
-      sql: `-- Persistencia transaccional en Registros de Ingesta
-INSERT INTO "Registros de Ingesta" (
-  lote_id, fuente_archivo, esquema_detectado,
-  payload_json, texto_plano, hash_integridad, estado_registro
-)
-VALUES (
-  'POS-2026-B_M3', 'Respuestas_Encuesta_M3.csv', 'GOOGLE_FORMS',
-  $record_payload, $serializado_texto_plano, '3a9c1b2c', 'LISTO_REVISION'
-);`,
-      status: 'Confirmado por lote (BATCH COMMIT: 215 registros)',
-      table: 'Registros de Ingesta'
-    }
-  },
-  {
-    id: 'moodle',
-    docId: 3,
-    fileName: 'Moodle_Grades_Export.xml',
-    sourceType: 'Reporte Aula Moodle',
-    badgeColor: '#f59e0b',
-    paso1: {
-      magicBytes: '3C 3F 78 6D 6C 20 76 65 (XML UTF-8 Declaration)',
-      sha256: 'c5f2d84a1b3e5f7a9b0c2d4e6f8a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7',
-      charset: 'UTF-8 Standalone XML (Moodle Gradebook Schema 2.0)',
-      sizeKb: '312.4 KB',
-      mime: 'application/xml'
-    },
-    paso2: {
-      detection: 'Detección: Reporte Aula Virtual Moodle - Confianza 94.7% (Estructura XML/Grades)',
-      confidence: 94.7,
-      patterns: ['grade_item', 'grade_grades', 'idnumber', 'finalgrade', 'timemodified'],
-      ruleMatched: 'RULE_HEURISTIC_MOODLE_XML_SCHEMA_V3'
-    },
-    paso3: {
-      range: 'Identificación de rango rectangular virtual A1:G692 vía XPath //grade_grades',
-      sanitization: 'Remoción de celdas combinadas y metadatos administrativos no tabulares (Desempaquetado de estructura arbórea a matriz plana).',
-      cellsCleared: 12,
-      headerRow: 1,
-      dataEndRow: 692,
-      mergedCellsFound: 0
-    },
-    paso4: {
-      mappings: [
-        { raw: 'idnumber / username', canonical: 'ci_estudiante', type: 'VARCHAR', rule: 'Extracción ID Moodle' },
-        { raw: 'firstname + lastname', canonical: 'nombre_completo', type: 'VARCHAR', rule: 'Concatenación canónica' },
-        { raw: 'itemname (MOD-302)', canonical: 'codigo_modulo', type: 'VARCHAR', rule: 'Mapeo código curricular' },
-        { raw: 'finalgrade', canonical: 'nota_final', type: 'NUMERIC(5,2)', rule: 'Escalamiento [0-100]' },
-        { raw: 'timemodified', canonical: 'fecha_asentamiento', type: 'TIMESTAMP', rule: 'Epoch Unix a Timestamp' }
-      ]
-    },
-    paso5: {
-      rules: [
-        {
-          label: 'Conversión de notas a float [0-100]',
-          status: 'PASS',
-          detail: 'Normalización de ponderaciones fraccionales a escala institucional estándar [0-100].'
-        },
-        {
-          label: 'Validación de formato CI',
-          status: 'PASS',
-          detail: 'Validación cruzada contra idnumber de usuario LMS.'
-        },
-        {
-          label: 'Bandera de advertencia para sufijos dudosos (?)',
-          status: 'WARN',
-          detail: '3 registros con calificaciones sin asentar (NULL) -> asignada bandera REVISION_PENDIENTE.'
-        }
-      ]
-    },
-    paso6: {
-      sql: `-- Persistencia transaccional en Registros de Ingesta
-INSERT INTO "Registros de Ingesta" (
-  lote_id, fuente_archivo, esquema_detectado,
-  payload_json, texto_plano, hash_integridad, estado_registro
-)
-VALUES (
-  'POS-2026-B_M3', 'Moodle_Grades_Export.xml', 'MOODLE_XML',
-  $record_payload, $serializado_texto_plano, 'c5f2d84a', 'LISTO_REVISION'
-);`,
-      status: 'Confirmado por lote (BATCH COMMIT: 691 registros)',
-      table: 'Registros de Ingesta'
-    }
-  },
-  {
-    id: 'cartera',
-    docId: 4,
-    fileName: 'Cartera_Cobranza_Sep2026.xlsx',
-    sourceType: 'Cartera Sheets',
-    badgeColor: '#8b5cf6',
-    paso1: {
-      magicBytes: '50 4B 03 04 14 00 06 00 (ZIP/OOXML SpreadsheetML)',
-      sha256: '7e3b9f012a4c6e8b0d2f4a6c8e0b2d4f6a8c0e2b4d6f8a0c2e4b6d8f0a2c4e6',
-      charset: 'Binario (OOXML SpreadsheetML / Google Sheets Export)',
-      sizeKb: '156.8 KB',
-      mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    },
-    paso2: {
-      detection: 'Detección: Cartera Sheets - Confianza 95.1% (Columnas: Cuotas, Mora, Saldo)',
-      confidence: 95.1,
-      patterns: ['ESTUDIANTE / CLIENTE', 'NRO_DOCUMENTO', 'NRO_CUOTA', 'SALDO_MORA', 'ESTADO_PAGO'],
-      ruleMatched: 'RULE_HEURISTIC_CARTERA_SHEETS_V1'
-    },
-    paso3: {
-      range: 'Identificación de rango rectangular C4:J416',
-      sanitization: 'Remoción de celdas combinadas y metadatos administrativos no tabulares (Poda de totales generales y sumatorias en fila 417).',
-      cellsCleared: 8,
-      headerRow: 4,
-      dataEndRow: 416,
-      mergedCellsFound: 6
-    },
-    paso4: {
-      mappings: [
-        { raw: 'ESTUDIANTE / CLIENTE', canonical: 'nombre_completo', type: 'VARCHAR', rule: 'Limpieza de caracteres especiales' },
-        { raw: 'NRO_DOCUMENTO', canonical: 'ci_estudiante', type: 'VARCHAR', rule: 'Extracción alfanumérica' },
-        { raw: 'NRO_CUOTA', canonical: 'numero_cuota', type: 'INTEGER', rule: 'Conversión entero' },
-        { raw: 'SALDO_MORA', canonical: 'monto_saldo', type: 'NUMERIC(10,2)', rule: 'Limpieza de prefijo moneda (Bs./$)' },
-        { raw: 'ESTADO_PAGO', canonical: 'estado_transaccion', type: 'VARCHAR', rule: 'Mapeo a ENUM canónico' }
-      ]
-    },
-    paso5: {
-      rules: [
-        {
-          label: 'Conversión de notas a float [0-100]',
-          status: 'N/A',
-          detail: 'Fuente contable de cobranzas; no contiene calificaciones académicas.'
-        },
-        {
-          label: 'Validación de formato CI',
-          status: 'PASS',
-          detail: '412/412 documentos de identidad financieros comprobados.'
-        },
-        {
-          label: 'Bandera de advertencia para sufijos dudosos (?)',
-          status: 'PASS',
-          detail: 'Sin identificaciones dudosas en cuentas por cobrar.'
-        }
-      ]
-    },
-    paso6: {
-      sql: `-- Persistencia transaccional en Registros de Ingesta
-INSERT INTO "Registros de Ingesta" (
-  lote_id, fuente_archivo, esquema_detectado,
-  payload_json, texto_plano, hash_integridad, estado_registro
-)
-VALUES (
-  'POS-2026-B_M3', 'Cartera_Cobranza_Sep2026.xlsx', 'CARTERA_SHEETS',
-  $record_payload, $serializado_texto_plano, '7e3b9f01', 'LISTO_REVISION'
-);`,
-      status: 'Confirmado por lote (BATCH COMMIT: 412 registros)',
-      table: 'Registros de Ingesta'
-    }
-  }
-];
-
 export default function PipelineTelemetryDrawer({
   isOpen,
   onClose,
   logs = [],
   onClearLogs,
   isProcessing = false,
-  lotName = 'Lote: POS-2026-B_M3',
+  lotName = '',
   sources = [],
   activeDocId = null,
   markdownReport = '',
@@ -387,7 +107,7 @@ export default function PipelineTelemetryDrawer({
         let magic = '50 4B 03 04 14 00 06 00 (ZIP/OOXML SpreadsheetML)';
         let charset = 'Binario (OOXML)';
         let rule = 'RULE_HEURISTIC_ACTA_CALIFICACIONES_V2';
-        let detection = `Detección: Acta de Calificaciones (Excel) - Confianza 98.4%`;
+        let detection = `Detección: Acta de Calificaciones (Excel)`;
         let patterns = ['NOMBRES Y APELLIDOS', 'CALIF_FINAL', 'DOC_IDENTIDAD/CI', 'COD_MODULO'];
 
         if (nameLower.endsWith('.csv') || rawType.toLowerCase().includes('forms')) {
@@ -396,7 +116,7 @@ export default function PipelineTelemetryDrawer({
           magic = 'EF BB BF 54 69 6D 65 (UTF-8 BOM / CSV)';
           charset = 'UTF-8 Text';
           rule = 'RULE_HEURISTIC_GOOGLE_FORMS_V2';
-          detection = `Detección: Google Forms CSV - Confianza 96.2%`;
+          detection = `Detección: Google Forms CSV`;
           patterns = ['Marca temporal', 'Dirección de correo', 'Nombre Completo', 'CI'];
         } else if (nameLower.endsWith('.xml') || rawType.toLowerCase().includes('moodle')) {
           badgeColor = '#f59e0b';
@@ -404,7 +124,7 @@ export default function PipelineTelemetryDrawer({
           magic = '3C 3F 78 6D 6C 20 76 65 (XML UTF-8)';
           charset = 'UTF-8 XML';
           rule = 'RULE_HEURISTIC_MOODLE_XML_SCHEMA_V3';
-          detection = `Detección: Reporte Aula Virtual Moodle - Confianza 94.7%`;
+          detection = `Detección: Reporte Aula Virtual Moodle`;
           patterns = ['grade_item', 'grade_grades', 'idnumber', 'finalgrade'];
         } else if (nameLower.includes('cobranza') || nameLower.includes('cartera') || rawType.toLowerCase().includes('cartera')) {
           badgeColor = '#8b5cf6';
@@ -412,13 +132,14 @@ export default function PipelineTelemetryDrawer({
           magic = '50 4B 03 04 14 00 06 00 (ZIP/OOXML)';
           charset = 'Binario (OOXML / Sheets)';
           rule = 'RULE_HEURISTIC_CARTERA_SHEETS_V1';
-          detection = `Detección: Cartera Sheets - Confianza 95.1%`;
+          detection = `Detección: Cartera Sheets`;
           patterns = ['ESTUDIANTE / CLIENTE', 'NRO_DOCUMENTO', 'NRO_CUOTA', 'SALDO_MORA'];
         }
 
-        const recCount = s.records ?? s.registros_detectados ?? s.total_registros ?? s.registros ?? 35;
-        const sizeKb = s.size || `${Math.round(recCount * 0.45) || 15} KB`;
-        const sha = s.sha256 || s.hash_sha256 || s.hash_integridad || 'f5aa1f65aaaa0064';
+        // Solo valores reportados por el backend; lo desconocido se muestra como '—'
+        const recCount = s.records ?? s.registros_detectados ?? s.total_registros ?? s.registros ?? null;
+        const sizeKb = s.size || '—';
+        const sha = s.sha256 || s.hash_sha256 || s.hash_integridad || '—';
 
         return {
           id: `file_${docIdVal}`,
@@ -428,23 +149,23 @@ export default function PipelineTelemetryDrawer({
           badgeColor,
           paso1: {
             magicBytes: magic,
-            sha256: sha.length === 64 ? sha : `${sha}8f4e2a1b9c7d0e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f`.slice(0, 64),
+            sha256: sha,
             charset,
             sizeKb,
             mime
           },
           paso2: {
             detection,
-            confidence: 96.5,
+            confidence: s.confianza_deteccion ?? s.confianza ?? '—',
             patterns,
             ruleMatched: rule
           },
           paso3: {
-            range: `Identificación de bloque tabular: 1 a ${recCount} filas`,
+            range: recCount != null ? `Identificación de bloque tabular: 1 a ${recCount} filas` : 'Bloque tabular pendiente de análisis',
             sanitization: 'Sanitizado estructural aplicado: celdas combinadas y metadatos no tabulares removidos.',
-            cellsCleared: 8,
+            cellsCleared: s.celdas_limpiadas ?? null,
             headerRow: 1,
-            dataEndRow: recCount,
+            dataEndRow: recCount ?? '—',
             mergedCellsFound: 0
           },
           paso4: {
@@ -458,7 +179,7 @@ export default function PipelineTelemetryDrawer({
           },
           paso5: {
             rules: [
-              { label: 'Conversión de notas a float [0-100]', status: 'PASS', detail: `${recCount} registros con rango válido verificado.` },
+              { label: 'Conversión de notas a float [0-100]', status: 'PASS', detail: recCount != null ? `${recCount} registros con rango válido verificado.` : 'Sin conteo reportado.' },
               { label: 'Validación de formato CI boliviano', status: 'PASS', detail: 'Patrón alfanumérico verificado contra catálogo.' },
               { label: 'Bandera de advertencia de integridad', status: s.status === 'warning' ? 'WARN' : 'PASS', detail: s.status === 'warning' ? 'Registros derivados a revisión humana.' : 'Validación completada sin anomalías.' }
             ]
@@ -471,14 +192,14 @@ INSERT INTO "Registros de Ingesta" (
 )
 VALUES (
   'LOTE-ACTIVO', '${name}', '${rawType}',
-  $record_payload, $serializado_texto_plano, '${sha.slice(0, 8)}', 'LISTO_REVISION'
+  $record_payload, $serializado_texto_plano, '${sha === '—' ? '' : sha.slice(0, 8)}', 'LISTO_REVISION'
 );`,
-            status: `Confirmado por lote (${recCount} registros cargados en Registros de Ingesta)`,
+            status: recCount != null ? `Confirmado por lote (${recCount} registros cargados en Registros de Ingesta)` : 'Pendiente de confirmación por lote',
             table: 'Registros de Ingesta'
           }
         };
       })
-    : FILE_TELEMETRY_DATA;
+    : [];
 
   const currentFileAnalysis = dynamicFiles.find((f) => f.id === selectedTab || String(f.docId) === String(activeDocId)) || dynamicFiles[0];
 

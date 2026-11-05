@@ -33,6 +33,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_stat_statements
+      -c pg_stat_statements.track=all
+      -c pg_stat_statements.max=10000
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U giragroup_user -d giragroup_db"]
       interval: 5s
@@ -82,7 +87,10 @@ services:
     volumes:
       - ./backend:/app
       - ./pipeline:/app/pipeline
+      - ./tests:/app/tests
       - ./uploads:/app/uploads
+      # Catálogo guía (seed_catalogos.sql) que lee pipeline/normalization/catalog_repository.py
+      - ./db:/app/db:ro
 
   # 5. Microservicio Auth & IAM (Puerto 8001 aislado en red interna Docker)
   auth-service:
@@ -145,7 +153,7 @@ services:
     env_file: .env
     environment:
       # Hilos de PyTorch: sin límite usa los 24 núcleos del host y cada forward tarda ~1 s
-      TORCH_NUM_THREADS: ${TORCH_NUM_THREADS:-8}
+      TORCH_NUM_THREADS: ${TORCH_NUM_THREADS:-4}
     depends_on:
       db:
         condition: service_healthy
@@ -174,10 +182,7 @@ services:
     environment:
       CI: "true"
       VITE_API_TARGET: "http://gateway:80"
-    volumes:
-      - ./frontend:/app
-      - web_node_modules:/app/node_modules
-    command: sh -c "pnpm install && pnpm run dev --host"
+    command: ["pnpm", "run", "preview", "--host", "0.0.0.0", "--port", "5173"]
 
 volumes:
   catalog_postgres_data:

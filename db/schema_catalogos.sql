@@ -177,3 +177,36 @@ CREATE INDEX IF NOT EXISTS idx_cat_equiv_termino ON public.cat_historico_equival
 CREATE INDEX IF NOT EXISTS idx_cat_equiv_concepto ON public.cat_historico_equivalencia(id_concepto);
 
 
+
+-- =============================================================================
+-- 17. Ampliación del catálogo desde uploads/data (idempotente sobre volúmenes existentes)
+-- =============================================================================
+-- Atributos de programa tomados de 'PLANIFICACION Y EJECUCION ACADÉMICA' (Programas Notificados)
+ALTER TABLE public.cat_programa ADD COLUMN IF NOT EXISTS tipo_escala VARCHAR(20) DEFAULT 'CENTESIMAL_100';
+ALTER TABLE public.cat_programa ADD COLUMN IF NOT EXISTS duracion_meses NUMERIC(5, 1);
+ALTER TABLE public.cat_programa ADD COLUMN IF NOT EXISTS estado_programa VARCHAR(50);
+ALTER TABLE public.cat_programa ADD COLUMN IF NOT EXISTS origen_programa VARCHAR(60);
+ALTER TABLE public.cat_programa ADD COLUMN IF NOT EXISTS diseno_curricular VARCHAR(60);
+ALTER TABLE public.cat_programa ADD COLUMN IF NOT EXISTS fuente_datos VARCHAR(120);
+-- Sin dato en la fuente se guarda NULL (no 0)
+ALTER TABLE public.cat_programa ALTER COLUMN inversion_base DROP DEFAULT;
+ALTER TABLE public.cat_programa ALTER COLUMN punto_equilibrio DROP DEFAULT;
+
+-- Metas: solo valores planificados; lo ejecutado proviene de la ingesta (DW)
+ALTER TABLE public.ref_metas_gestion ADD COLUMN IF NOT EXISTS fuente_referencia VARCHAR(150);
+ALTER TABLE public.ref_metas_gestion ALTER COLUMN monto_meta_ingreso DROP DEFAULT;
+ALTER TABLE public.ref_metas_gestion ALTER COLUMN monto_ejecutado DROP DEFAULT;
+
+-- Instituciones con convenio / techos académicos (BD Techos.xlsx)
+CREATE TABLE IF NOT EXISTS public.cat_institucion_convenio (
+    id_convenio SERIAL PRIMARY KEY,
+    nombre_institucion VARCHAR(200) NOT NULL UNIQUE,
+    variantes_origen TEXT,                     -- Grafías encontradas en la fuente, separadas por ' | '
+    fuente_referencia VARCHAR(150)
+);
+
+CREATE TABLE IF NOT EXISTS public.cat_convenio_programa (
+    id_convenio INT NOT NULL REFERENCES public.cat_institucion_convenio(id_convenio) ON DELETE CASCADE,
+    id_programa INT NOT NULL REFERENCES public.cat_programa(id_programa) ON DELETE CASCADE,
+    PRIMARY KEY (id_convenio, id_programa)
+);

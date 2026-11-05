@@ -76,12 +76,22 @@ class TestSeedCatalogosSQL:
         with open(RUTA_SEED, "r", encoding="utf-8") as f:
             contenido = f.read()
 
-        categorias_esperadas = [
-            "MATRICULA", "CUOTA_MENSUAL", "PAGO_AL_CONTADO", "CERTIFICACION",
-            "HONORARIOS_DOCENTES", "MARKETING_DIGITAL", "PLATAFORMAS_TIC", "ADMINISTRATIVO"
-        ]
-        for cat in categorias_esperadas:
+        # Categorías reales de 'EJECUTADO VS META.xlsx' (columna CATEGORIA)
+        for cat in ("PROGRAMAS", "TECHOS_CERRADOS"):
             assert f"'{cat}'" in contenido, f"Categoría financiera {cat} no sembrada"
+        # Categorías que no existen en ninguna fuente no deben sembrarse
+        for inventada in ("MARKETING_DIGITAL", "PLATAFORMAS_TIC", "CERTIFICACION"):
+            assert f"'{inventada}'" not in contenido, f"Categoría sin fuente sembrada: {inventada}"
+
+    def test_metas_sin_ejecutado_ni_pii_docente(self):
+        with open(RUTA_SEED, "r", encoding="utf-8") as f:
+            contenido = f.read()
+        # Lo ejecutado llega por ingesta; el catálogo solo guarda metas planificadas
+        for linea in contenido.splitlines():
+            if linea.startswith("INSERT INTO public.ref_metas_gestion"):
+                assert "monto_ejecutado = NULL" in linea and ", NULL, " in linea
+            if linea.startswith("INSERT INTO public.cat_docente"):
+                assert "email" not in linea.split("VALUES")[0], "El seed no debe incluir e-mail de docentes"
 
     def test_metas_gestion_presentes(self):
         with open(RUTA_SEED, "r", encoding="utf-8") as f:

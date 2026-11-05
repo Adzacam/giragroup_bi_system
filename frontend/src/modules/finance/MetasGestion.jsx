@@ -53,7 +53,7 @@ export default function MetasGestion() {
   // Sin dato del backend se muestra "—": nunca una cifra de relleno
   const metaAnual = caso4?.meta_anual_institucional_bs || caso3?.meta_anual_institucional || finCmi?.monto_meta_gestion_bs || null;
   const recaudadoAcumulado = caso4?.recaudado_acumulado_bs || caso3?.recaudado_acumulado_gestion || finCmi?.monto_total_recaudado_bs || null;
-  const desviacionAcumulada = caso3?.desviacion_acumulada ?? (metaAnual && recaudadoAcumulado !== null ? recaudadoAcumulado - (metaAnual * 0.9) : null);
+  const desviacionAcumulada = caso3?.desviacion_acumulada ?? (metaAnual && recaudadoAcumulado !== null ? recaudadoAcumulado - metaAnual : null);
   const pctCumplimiento = caso4?.porcentaje_avance_meta || caso3?.porcentaje_cumplimiento_anual || (metaAnual && recaudadoAcumulado !== null ? (recaudadoAcumulado / metaAnual) * 100 : null);
   const hayCumplimiento = pctCumplimiento !== null;
   const hayDesviacion = desviacionAcumulada !== null;
@@ -67,7 +67,7 @@ export default function MetasGestion() {
         mes,
         meta_presupuestada: caso3.meta_catalogo_bs?.[idx] || 0,
         ingreso_real: caso3.ejecutado_real_bs?.[idx] || 0,
-        proyeccion_holt_winters: caso3.ejecutado_real_bs?.[idx] || 0,
+        proyeccion_holt_winters: null,
       }));
     }
     return [];
@@ -138,7 +138,7 @@ export default function MetasGestion() {
             }}
           >
             <KpiCard
-              label="Meta Global Gestión 2026"
+              label={`Meta Global Gestión ${caso4?.gestion_actual ?? new Date().getFullYear()}`}
               number={formatBs(metaAnual)}
               sublabel="Techo presupuestario institucional"
               badgeText="Presupuesto"
@@ -203,7 +203,7 @@ export default function MetasGestion() {
                       mesesComparativo.map((row, idx) => {
                         const meta = Number(row.meta_presupuestada || 0);
                         const real = Number(row.ingreso_real || 0);
-                        const hw = Number(row.proyeccion_holt_winters || real);
+                        const hw = row.proyeccion_holt_winters ?? null;
                         const desv = real - meta;
                         const pct = meta > 0 ? (real / meta) * 100 : 100;
 

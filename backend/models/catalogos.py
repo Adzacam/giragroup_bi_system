@@ -42,10 +42,15 @@ class CatPrograma(CatalogBase):
     id_escuela = Column(Integer, ForeignKey("cat_escuela.id_escuela"))
     id_tipo_programa = Column(Integer, ForeignKey("cat_tipo_programa.id_tipo_programa"))
     id_modalidad = Column(Integer, ForeignKey("cat_modalidad.id_modalidad"))
-    inversion_base = Column(Numeric(12, 2), default=0.00)
-    punto_equilibrio = Column(Integer, default=0)
+    inversion_base = Column(Numeric(12, 2))      # NULL si la fuente no trae el dato
+    punto_equilibrio = Column(Integer)
     horas_totales = Column(Integer, default=0)
     tipo_escala = Column(String(20), default="CENTESIMAL_100")
+    duracion_meses = Column(Numeric(5, 1))
+    estado_programa = Column(String(50))
+    origen_programa = Column(String(60))
+    diseno_curricular = Column(String(60))
+    fuente_datos = Column(String(120))
 
     escuela = relationship("CatEscuela", back_populates="programas")
     tipo_programa = relationship("CatTipoPrograma", back_populates="programas")
@@ -119,10 +124,11 @@ class RefMetasGestion(CatalogBase):
     gestion = Column(Integer, nullable=False)
     mes = Column(Integer, nullable=False)
     categoria = Column(String(100), nullable=False)
-    monto_meta_ingreso = Column(Numeric(14, 2), default=0)
-    monto_ejecutado = Column(Numeric(14, 2), default=0)
+    monto_meta_ingreso = Column(Numeric(14, 2))
+    monto_ejecutado = Column(Numeric(14, 2))     # Lo ejecutado proviene de la ingesta (DW)
     ebitda_meta_pct = Column(Numeric(6, 4))
     ebitda_ejecutado_pct = Column(Numeric(6, 4))
+    fuente_referencia = Column(String(150))
 
     __table_args__ = (
         UniqueConstraint("gestion", "mes", "categoria", name="uq_ref_metas_gestion_mes_cat"),

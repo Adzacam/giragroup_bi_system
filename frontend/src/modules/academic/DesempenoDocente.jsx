@@ -34,6 +34,12 @@ export default function DesempenoDocente() {
     cargarDocentes();
   }, [cargarDocentes]);
 
+  // Indicadores calculados solo con evaluaciones reales (fact_evaluacion_docente)
+  const totalEvaluaciones = docentes.reduce((acc, d) => acc + (d.n_evaluaciones || 0), 0);
+  const promedioGlobal = totalEvaluaciones > 0
+    ? (docentes.reduce((acc, d) => acc + (d.puntaje_promedio || 0) * (d.n_evaluaciones || 0), 0) / totalEvaluaciones).toFixed(2)
+    : null;
+
   const filtered = docentes.filter(
     (d) =>
       (d.nombre_completo || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -92,20 +98,18 @@ export default function DesempenoDocente() {
           badgeType="neutral"
         />
         <KpiCard
-          label="Puntualidad en Actas"
-          number="96.2"
-          numberSuffix="%"
-          sublabel="Actas entregadas conforme a calendario"
-          badgeText="Conforme"
-          badgeType="success"
+          label="Evaluaciones Registradas"
+          number={String(totalEvaluaciones)}
+          sublabel="Respuestas en fact_evaluacion_docente"
+          badgeText={totalEvaluaciones > 0 ? 'Con datos' : 'Sin datos'}
+          badgeType="neutral"
         />
         <KpiCard
           label="Satisfacción Estudiantil"
-          number="4.78"
-          numberSuffix=" / 5.0"
-          sublabel="Evaluación promedio de desempeño docente"
-          badgeText="Sobresaliente"
-          badgeType="success"
+          number={promedioGlobal ?? '—'}
+          sublabel={promedioGlobal ? 'Puntaje promedio ponderado por evaluación' : 'Sin evaluaciones docentes ingestadas'}
+          badgeText={promedioGlobal ? "Calculado" : "Sin datos"}
+          badgeType="neutral"
         />
       </div>
 
@@ -154,7 +158,7 @@ export default function DesempenoDocente() {
                   </td>
                   <td style={{ fontWeight: 600 }}>{doc.nombre_completo}</td>
                   <td style={{ fontSize: '13px', color: 'var(--color-slate-gray)' }}>
-                    {doc.area_especialidad || 'Especialidad Posgrado GiraGroup'}
+                    {doc.area_especialidad || '—'}
                   </td>
                   <td>
                     <span
@@ -165,7 +169,7 @@ export default function DesempenoDocente() {
                         color: 'var(--color-alert-green)',
                       }}
                     >
-                      ★ 4.85 / 5.0
+                      {doc.puntaje_promedio != null ? `★ ${doc.puntaje_promedio} (${doc.n_evaluaciones})` : 'Sin evaluaciones'}
                     </span>
                   </td>
                   <td>

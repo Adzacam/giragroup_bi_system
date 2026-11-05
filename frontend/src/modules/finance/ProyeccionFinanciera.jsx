@@ -34,10 +34,10 @@ export default function ProyeccionFinanciera() {
   } = useQuery({
     queryKey: ['finance', 'proyeccion-financiera', horizonte, granularidad],
     queryFn: async () => {
-      const [macro, metas] = await Promise.all([
-        forecastApi.getAnaliticaPredictivaMacro(horizonte),
-        forecastApi.getForecastMetas(granularidad, horizonte),
-      ]);
+      const macro = await forecastApi.getAnaliticaPredictivaMacro(horizonte);
+      const metas = granularidad === 'MENSUAL'
+        ? macro?.caso3_metas_mensuales
+        : await forecastApi.getForecastMetas(granularidad, horizonte);
       return {
         macroData: macro,
         metasForecast: metas?.data || metas,
@@ -91,9 +91,14 @@ export default function ProyeccionFinanciera() {
   const chartAnualData = useMemo(() => {
     if (!macroData?.caso4_metas_anuales) return null;
     const c4 = macroData.caso4_metas_anuales;
-    const labels = ['2023', '2024', '2025', '2026 (Proy OLS)', '2027 (Proy OLS)'];
-    const histData = [...c4.valores_historicos_bs, null, null];
-    const proyData = [null, null, c4.valores_historicos_bs[2], ...(c4.proyecciones_ols || []).map(p => p.monto_proyectado_bs)];
+    const hist = c4.valores_historicos_bs || [];
+    const proy = c4.proyecciones_ols || [];
+    if (hist.length === 0 && proy.length === 0) return null;
+    const labels = [...(c4.anios_historicos || []).map(String), ...proy.map(p => `${p.periodo} (Proy OLS)`)];
+    const histData = [...hist, ...Array(proy.length).fill(null)];
+    const proyData = hist.length
+      ? [...Array(hist.length - 1).fill(null), hist[hist.length - 1], ...proy.map(p => p.monto_proyectado_bs)]
+      : proy.map(p => p.monto_proyectado_bs);
 
     return {
       labels,
@@ -185,7 +190,7 @@ export default function ProyeccionFinanciera() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Meta Mes Actual</div>
-          <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px' }}>Bs. {mesAct?.meta_mes_bs.toLocaleString() || '1,551,372'}</div>
+          <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px' }}>Bs. {bs(mesAct?.meta_mes_bs)}</div>
           <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>Catálogo Oficial de Programas</div>
         </div>
 
@@ -210,7 +215,7 @@ export default function ProyeccionFinanciera() {
         <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Ritmo de Crecimiento OLS</div>
           <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px', color: 'var(--color-alert-green)' }}>
-            +Bs. {sinDato(anualAct?.pendiente_anual_bs) ? '—' : Math.round(anualAct.pendiente_anual_bs / 1000)}k / año
+            Bs. {sinDato(anualAct?.pendiente_anual_bs) ? '—' : Math.round(anualAct.pendiente_anual_bs / 1000)}k / año
           </div>
           <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>
             CAGR Interanual: {pct(anualAct?.cagr_historico_pct)}
@@ -239,7 +244,7 @@ export default function ProyeccionFinanciera() {
               <Bar data={chartMensualData} options={defaultChartOptions} />
             ) : (
               <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
-                Cargando datos presupuestarios mensuales...
+                {isLoading ? 'Cargando datos presupuestarios mensuales...' : (macroData?.sin_datos?.caso3 || 'Sin metas ni ejecución financiera en el Data Warehouse.')}
               </div>
             )}
           </div>
@@ -250,10 +255,10 @@ export default function ProyeccionFinanciera() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
             <div>
               <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--color-slate-gray)', fontWeight: 600 }}>
-                Caso 4 · Meta Institucional 3.8M Bs
+                Caso 4 · Meta Institucional Anual
               </span>
               <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '2px 0 0 0', color: 'var(--color-ink-black)' }}>
-                Trayectoria Anual Plurianual (2023 - 2027)
+                Trayectoria Anual Plurianual (OLS)
               </h3>
             </div>
           </div>
@@ -262,13 +267,13 @@ export default function ProyeccionFinanciera() {
           {anualAct && (
             <div style={{ marginBottom: '16px', padding: '12px 14px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px' }}>
-                <span>Meta Institucional: Bs. 3,800,000</span>
+                <span>Meta {anualAct.gestion_actual}: Bs. {bs(anualAct.meta_anual_institucional_bs)}</span>
                 <span style={{ color: 'var(--color-gira-gold)', fontWeight: 700 }}>
-                  {anualAct.porcentaje_avance_meta}% acumulado (Bs. {anualAct.recaudado_acumulado_bs.toLocaleString()})
+                  {pct(anualAct.porcentaje_avance_meta)} acumulado (Bs. {bs(anualAct.recaudado_acumulado_bs)})
                 </span>
               </div>
               <div style={{ height: '10px', width: '100%', background: 'var(--color-mist-gray)', borderRadius: '9999px', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${Math.min(100, anualAct.porcentaje_avance_meta)}%`, background: 'linear-gradient(90deg, var(--color-gira-navy), var(--color-gira-gold))', borderRadius: '9999px' }} />
+                <div style={{ height: '100%', width: `${Math.min(100, anualAct.porcentaje_avance_meta ?? 0)}%`, background: 'linear-gradient(90deg, var(--color-gira-navy), var(--color-gira-gold))', borderRadius: '9999px' }} />
               </div>
             </div>
           )}
@@ -278,7 +283,7 @@ export default function ProyeccionFinanciera() {
               <Line data={chartAnualData} options={defaultChartOptions} />
             ) : (
               <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
-                Cargando serie anual OLS...
+                {isLoading ? 'Cargando serie anual OLS...' : (macroData?.sin_datos?.caso4 || anualAct?.nota_metodologica || 'Sin recaudación anual en el Data Warehouse.')}
               </div>
             )}
           </div>

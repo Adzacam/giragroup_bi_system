@@ -33,6 +33,18 @@ def get_password_hash(password: str) -> str:
 def generate_otp():
     return "".join(str(secrets.randbelow(10)) for _ in range(6))
 
+def generate_temp_password(prefix: str = "Gira#", length: int = 6) -> str:
+    """Genera una contraseña temporal segura, legible y robusta (p. ej. Gira#8Kp2M9)."""
+    digits = "23456789"
+    uppers = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+    lowers = "abcdefghijkmnopqrstuvwxyz"
+    all_chars = digits + uppers + lowers
+    chars = [secrets.choice(digits), secrets.choice(uppers), secrets.choice(lowers)]
+    for _ in range(max(0, length - 3)):
+        chars.append(secrets.choice(all_chars))
+    secrets.SystemRandom().shuffle(chars)
+    return f"{prefix}{''.join(chars)}"
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:

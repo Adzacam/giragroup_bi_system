@@ -9,6 +9,7 @@ import BatchFlowLayout from './components/BatchFlowLayout';
 import PipelineTelemetryDrawer from './components/PipelineTelemetryDrawer';
 import { dataopsApi } from '../../api/dataopsApi';
 import { catalogApi } from '../../api/catalogApi';
+import { useCatalogProgramCount } from '../../hooks/useCatalogProgramCount';
 import { sileoToast } from '../../services/sileoToast';
 import {
   inspectFileHeaders,
@@ -27,6 +28,7 @@ import {
 
 export default function IngestView() {
   const navigate = useNavigate();
+  const totalProgramas = useCatalogProgramCount();
 
   // ─── Estado de la cola multi-archivo (Sección A) ───
   const [queuedFiles, setQueuedFiles] = useState([]);
@@ -174,7 +176,7 @@ export default function IngestView() {
         matchedKeywords: headerResult.matchedKeywords || [],
         tipoEscala: isAcademicSourceType(canonicalCode) ? (escalaGlobalAcademica || 'CENTESIMAL_100') : null,
         filasEstimadas: Math.max(12, Math.round(f.size / 180)),
-        fechasReconocidas: '2024–2026 (Auto)',
+        fechasReconocidas: 'Por detectar',
         sha256Ok: true,
         status: 'En cola',
         statusDetail: '',
@@ -335,7 +337,7 @@ export default function IngestView() {
         size: formatFileSize(q.file.size),
         origen: q.originDetected || mapSourceToOriginCode(q.sourceType, q.file.name),
         filas: q.filasEstimadas || 24,
-        fechas: q.fechasReconocidas || '2024–2026 (Auto)',
+        fechas: q.fechasReconocidas || 'Por detectar',
         sha256Ok: true,
         estado: q.status === 'Pre-etiquetado' ? 'Pre-etiquetado' : 'En cola',
         isQueued: true,
@@ -348,7 +350,7 @@ export default function IngestView() {
           size: '48.2 KB',
           origen: activeBatchData.origen_detectado || 'GSHEETS_ACTA_NOTAS',
           filas: activeBatchData.kpis?.filas_leidas || activeBatchData.registros.length,
-          fechas: activeBatchData.rango_fechas || '2024–2026 (Auto)',
+          fechas: activeBatchData.rango_fechas || 'Por detectar',
           sha256Ok: true,
           estado: 'Pre-etiquetado',
           isQueued: false,
@@ -671,7 +673,7 @@ export default function IngestView() {
             <div>
               <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>Reconocimiento Temporal:</span>
-                <span className="chip-cat chip-fecha">Automático en archivo (2024–2026+)</span>
+                <span className="chip-cat chip-fecha">Automático en archivo</span>
               </div>
               <p style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', margin: '3px 0 0 0', lineHeight: 1.4 }}>
                 Inferencia multi-semestre directa desde columnas de fecha y cabeceras sin forzar un periodo fijo.
@@ -922,7 +924,7 @@ export default function IngestView() {
                 {currentSelectedFile?.origen || 'GSHEETS_ACTA_NOTAS'}
               </span>
               <span className="chip-cat chip-fecha">
-                {currentSelectedFile?.fechas || '2024–2026 (Auto)'}
+                {currentSelectedFile?.fechas || 'Por detectar'}
               </span>
             </div>
           )}
@@ -1082,7 +1084,7 @@ export default function IngestView() {
                 Texto Plano Estructurado y Pre-etiquetado
               </span>
               <span style={{ fontSize: '10.5px', color: 'var(--color-slate-gray)' }}>
-                Catálogo Maestro: 18 Prog. Activos
+                Catálogo Maestro: {totalProgramas ?? '—'} Prog. Activos
               </span>
             </div>
 

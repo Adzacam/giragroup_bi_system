@@ -2,7 +2,7 @@
 tests/test_otp_entorno_pruebas.py
 ---------------------------------
 El OTP del login solo se expone con APP_ENV=test y nunca junto a ENVIRONMENT=production.
-Se importa services/auth-service en un subproceso porque sus paquetes core/routers chocan con los del backend.
+Se importa el router de auth en un subproceso para evaluar las variables de entorno de forma aislada.
 """
 
 import os
@@ -12,13 +12,15 @@ from pathlib import Path
 
 import pytest
 
-AUTH_DIR = Path(__file__).resolve().parent.parent / "services" / "auth-service"
-SONDA = "import routers.auth as a; print(a.OTP_EXPUESTO_EN_PRUEBAS)"
+_candidate_auth = Path(__file__).resolve().parent.parent / "services" / "auth-service"
+AUTH_DIR = _candidate_auth if _candidate_auth.exists() else Path(__file__).resolve().parent.parent
+SONDA = "import os; import routers.auth as a; print(a.OTP_EXPUESTO_EN_PRUEBAS)"
 
 
 def _importar_auth(**env_extra):
     env = {k: v for k, v in os.environ.items() if k not in ("APP_ENV", "ENVIRONMENT")}
     env.update(env_extra)
+    env["PYTHONPATH"] = str(AUTH_DIR)
     return subprocess.run([sys.executable, "-c", SONDA], cwd=AUTH_DIR, env=env, capture_output=True, text=True, timeout=120)
 
 
@@ -39,7 +41,6 @@ def test_otp_solo_se_expone_en_pruebas(env_extra, esperado):
 
 def test_app_env_test_en_produccion_no_arranca():
     r = _importar_auth(APP_ENV="test", ENVIRONMENT="production")
-    if "ModuleNotFoundError" in r.stderr:
-        pytest.skip("dependencias del auth-service no instaladas")
     assert r.returncode != 0
-    assert "APP_ENV=test no está permitido con ENVIRONMENT=production" in r.stderr
+    assert "RuntimeError" in r.stderr
+    assert "no está permitido con ENVIRONMENT=production" in r.stderr

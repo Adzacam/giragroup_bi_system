@@ -15,6 +15,8 @@ export default function OtpInputForm({
   onResend,
   isLoading,
   formatTime,
+  rememberDevice = true,
+  onRememberDeviceChange,
 }) {
   return (
     <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
@@ -108,6 +110,46 @@ export default function OtpInputForm({
         >
           {resendCooldown > 0 ? `Reenviar en ${resendCooldown}s` : 'Reenviar cÃ³digo'}
         </button>
+      </div>
+
+      <label
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '13px',
+          color: 'var(--color-slate-gray)',
+          cursor: 'pointer',
+          userSelect: 'none',
+          marginTop: '-6px',
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={rememberDevice}
+          onChange={(e) => onRememberDeviceChange?.(e.target.checked)}
+          style={{
+            accentColor: 'var(--color-gira-gold, #D99B26)',
+            width: '16px',
+            height: '16px',
+            cursor: 'pointer',
+          }}
+        />
+        <span>Recordar este equipo por 30 días</span>
+      </label>
+
+      <div
+        style={{
+          backgroundColor: 'rgba(217, 155, 38, 0.08)',
+          border: '1px solid rgba(217, 155, 38, 0.25)',
+          borderRadius: '10px',
+          padding: '10px 14px',
+          fontSize: '12px',
+          color: 'var(--color-slate-gray)',
+          lineHeight: 1.45,
+        }}
+      >
+        ?? Si no visualizas el correo en tu bandeja principal, por favor revisa tu carpeta de <strong>Spam</strong> o <strong>Correo no deseado</strong>.
       </div>
 
       <button

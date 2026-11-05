@@ -267,7 +267,7 @@ export default function BetoReadingFlowView() {
   const totalPages = Math.ceil(filteredRecords.length / tablePageSize) || 1;
   const paginatedRows = filteredRecords.slice((tablePage - 1) * tablePageSize, tablePage * tablePageSize);
 
-  const effectiveBatchId = id || localStorage.getItem('last_active_batch_id') || '01';
+  const effectiveBatchId = id || localStorage.getItem('last_active_batch_id') || null;
 
   return (
     <BatchFlowLayout
@@ -298,7 +298,7 @@ export default function BetoReadingFlowView() {
               </span>
             </div>
             <div style={{ fontSize: '13px', color: 'var(--color-slate-gray)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span>Lote: <strong>LOTE-{effectiveBatchId}</strong></span>
+              <span>Lote: <strong>{effectiveBatchId ? `LOTE-${effectiveBatchId}` : 'Sin lote activo'}</strong></span>
               <span>•</span>
               <span>Modelo: <strong>BETO (Spanish BERT)</strong></span>
               <span>•</span>
@@ -855,7 +855,7 @@ export default function BetoReadingFlowView() {
 
                                 {/* Desglose de Tokens Reconocidos */}
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                  <span className="chip-cat chip-programa">PROG: {rec.programa || 'POS-2026'}</span>
+                                  <span className="chip-cat chip-programa">PROG: {rec.programa || '—'}</span>
                                   <span className="chip-cat chip-modulo">MOD: {rec.modulo || 'Módulo'}</span>
                                   <span className="chip-cat chip-origen">DOC: {rec.archivo_origen || 'Origen'}</span>
                                 </div>
@@ -883,7 +883,7 @@ export default function BetoReadingFlowView() {
                                 <div className="zero-pii-card">
                                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                                     <span style={{ color: 'var(--color-slate-gray)' }}>Código Oferta:</span>
-                                    <strong>{rec.desglose_relacional?.catalogo_guia?.modulo_codigo || rec.codigo_oferta || 'POS-GEST-2026'}</strong>
+                                    <strong>{rec.desglose_relacional?.catalogo_guia?.modulo_codigo || rec.codigo_oferta || '—'}</strong>
                                   </div>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                                     <span style={{ color: 'var(--color-slate-gray)' }}>Módulo Canónico:</span>
@@ -891,7 +891,7 @@ export default function BetoReadingFlowView() {
                                   </div>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                                     <span style={{ color: 'var(--color-slate-gray)' }}>Arancel Catálogo:</span>
-                                    <span>{rec.desglose_relacional?.catalogo_guia?.arancel_base || 'Bs. 1.500 por cuota/módulo'}</span>
+                                    <span>{rec.desglose_relacional?.catalogo_guia?.arancel_base || 'Sin arancel en catálogo'}</span>
                                   </div>
                                   <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', borderTop: '1px dashed var(--color-border)', paddingTop: '6px', marginTop: '6px' }}>
                                     🛡️ <em>Principio Cero-PII: El Catálogo Guía solo almacena entidades curriculares e institucionales, nunca identidades de personas.</em>

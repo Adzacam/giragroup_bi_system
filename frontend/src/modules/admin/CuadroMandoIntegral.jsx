@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import PageHeader from '../../components/shared/PageHeader';
 import KpiCard from '../../components/shared/KpiCard';
@@ -62,6 +62,9 @@ ChartJS.register(
   Filler
 );
 
+// Sin dato del backend se muestra '—', nunca una cifra de relleno
+const fmtBs = (v) => (v === null || v === undefined || Number.isNaN(Number(v)) ? '—' : Math.round(Number(v)).toLocaleString('es-BO'));
+
 export default function CuadroMandoIntegral() {
   useKineticScroll();
   const { theme } = useTheme();
@@ -93,7 +96,7 @@ export default function CuadroMandoIntegral() {
       await reportesApi.exportarReporte({
         tipo: 'kpis',
         formato,
-        gestion: '2026',
+        gestion: String(new Date().getFullYear()),
         programa: searchProg || ''
       });
       sileoToast.success(`Reporte CMI ${formato.toUpperCase()} generado y descargado.`);
@@ -105,87 +108,51 @@ export default function CuadroMandoIntegral() {
     }
   };
 
-  const FALLBACK_CMI_PERSPECTIVAS = {
+  const EMPTY_CMI_PERSPECTIVAS = {
     financiera: {
-      recaudacion_vs_meta_pct: 92.4,
-      monto_total_recaudado_bs: 12907977.61,
-      monto_meta_gestion_bs: 14041718.15,
-      monto_total_deuda_bs: 14200.0,
-      mora_total_pct: 14.2,
-      estudiantes_cartera_vigente: 120,
-      estudiantes_cartera_mora: 14,
-      estudiantes_cartera_previsionable: 4,
-      drilldown_categorias: [
-        { categoria: 'PROGRAMAS REGULARES', recaudado_bs: 12907977.61, meta_bs: 14041718.15, cumplimiento_pct: 91.9, estado: 'Óptimo' },
-        { categoria: 'TECHOS / CERRADOS', recaudado_bs: 1133740.54, meta_bs: 1250000.00, cumplimiento_pct: 90.7, estado: 'En rango' },
-        { categoria: 'INGRESOS DEVENGADOS', recaudado_bs: 14041718.15, meta_bs: 14041718.15, cumplimiento_pct: 100.0, estado: 'Base devengada' }
-      ],
-      drilldown_cartera: [
-        { estado: 'Cartera Vigente', alumnos: 120, pct_total: 85.7, monto_estimado_bs: 0.0, riesgo: 'Bajo' },
-        { estado: 'Mora (30 a 90 días)', alumnos: 14, pct_total: 10.0, monto_estimado_bs: 9800.0, riesgo: 'Medio' },
-        { estado: 'Previsionable (> 90 días)', alumnos: 4, pct_total: 2.9, monto_estimado_bs: 4400.0, riesgo: 'Crítico' }
-      ]
+      recaudacion_vs_meta_pct: null,
+      monto_total_recaudado_bs: null,
+      monto_meta_gestion_bs: null,
+      monto_total_deuda_bs: null,
+      mora_total_pct: null,
+      estudiantes_cartera_vigente: 0,
+      estudiantes_cartera_mora: 0,
+      estudiantes_cartera_previsionable: 0,
+      drilldown_categorias: [],
+      drilldown_cartera: []
     },
     cliente_mercado: {
-      tasa_conversion_admisiones_pct: 34.2,
-      retencion_neta_pct: 88.7,
-      total_matricula_acumulada: 15196,
-      alumnos_libres_alertas_pct: 92.8,
-      drilldown_lineas: [
-        { linea: 'Diplomados', inscritos: 9150, pct: 60.2, crecimiento_anual: '+31.8%' },
-        { linea: 'Cursos Cortos y Especializados', inscritos: 3399, pct: 22.4, crecimiento_anual: '+23.6%' },
-        { linea: 'Programas Expertos', inscritos: 2504, pct: 16.5, crecimiento_anual: '+24.1%' },
-        { linea: 'Maestrías Institucionales', inscritos: 143, pct: 0.9, crecimiento_anual: '+12.4%' }
-      ],
-      drilldown_embudo: [
-        { etapa: '1. Postulaciones en Plataforma Web', cantidad: 44432, pct_conversion: 100.0 },
-        { etapa: '2. Contacto Asesor y Validación', cantidad: 31102, pct_conversion: 70.0 },
-        { etapa: '3. Admisión Aprobada', cantidad: 19755, pct_conversion: 44.5 },
-        { etapa: '4. Pago 1ra Cuota (Matrícula Efectiva)', cantidad: 15196, pct_conversion: 34.2 }
-      ]
+      tasa_conversion_admisiones_pct: null,
+      retencion_neta_pct: null,
+      total_matricula_acumulada: 0,
+      alumnos_libres_alertas_pct: null,
+      drilldown_lineas: [],
+      drilldown_embudo: []
     },
     procesos_internos: {
-      confianza_media_beto_pct: 98.1,
-      tasa_automatizacion_pct: 94.6,
-      documentos_procesados: 38,
-      registros_derivados_hitl: 7,
-      entidades_no_resueltas: 3,
-      tiempo_medio_procesamiento_ms: 340,
-      drilldown_fuentes: [
-        { tipo_fuente: 'Planillas Excel Institucionales', archivos: 28, confianza_ia_pct: 98.6, latencia_ms: 320 },
-        { tipo_fuente: 'Actas Académicas y Calificaciones PDF', archivos: 6, confianza_ia_pct: 97.4, latencia_ms: 580 },
-        { tipo_fuente: 'Formularios Web Google Forms', archivos: 4, confianza_ia_pct: 99.2, latencia_ms: 190 }
-      ],
-      drilldown_calidad_nlp: [
-        { componente: 'Tokenizador y Embeddings BETO', estado: 'Operativo', score: '98.8%' },
-        { componente: 'Resolución de Nombres RapidFuzz', estado: 'Operativo', score: '96.4%' },
-        { componente: 'Detección IF/THEN de Alertas Tempranas', estado: 'Operativo', score: '100.0%' }
-      ]
+      confianza_media_beto_pct: null,
+      tasa_automatizacion_pct: null,
+      documentos_procesados: 0,
+      registros_derivados_hitl: 0,
+      entidades_no_resueltas: 0,
+      tiempo_medio_procesamiento_ms: null,
+      drilldown_fuentes: [],
+      drilldown_calidad_nlp: []
     },
     aprendizaje_crecimiento: {
-      promedio_general_notas: 79.4,
-      tasa_aprobacion_pct: 94.8,
-      puntualidad_actas_pct: 96.2,
-      cobertura_catalogo_pct: 98.5,
-      estudiantes_en_riesgo: 24,
-      drilldown_distribucion_notas: [
-        { rango: 'Excelente (86 - 100 pts)', cantidad: 412, pct: 33.0, estado: 'Sobresaliente' },
-        { rango: 'Bueno (71 - 85 pts)', cantidad: 635, pct: 50.9, estado: 'Satisfactorio' },
-        { rango: 'Regular (51 - 70 pts)', cantidad: 136, pct: 10.9, estado: 'Riesgo Leve' },
-        { rango: 'Reprobado (< 51 pts)', cantidad: 65, pct: 5.2, estado: 'Riesgo Crítico' }
-      ],
-      drilldown_docentes: [
-        { area: 'Ciencias de la Salud (Medicina Estética)', docentes_activos: 12, puntualidad_pct: 97.5, promedio_notas: 78.2 },
-        { area: 'Tecnología e Inteligencia de Negocios', docentes_activos: 9, puntualidad_pct: 98.0, promedio_notas: 81.4 },
-        { area: 'Gestión Pública y Jurídica', docentes_activos: 8, puntualidad_pct: 94.0, promedio_notas: 75.8 },
-        { area: 'Educación Superior e Innovación', docentes_activos: 6, puntualidad_pct: 96.0, promedio_notas: 79.0 }
-      ]
+      promedio_general_notas: null,
+      tasa_aprobacion_pct: null,
+      puntualidad_actas_pct: null,
+      cobertura_catalogo_pct: null,
+      estudiantes_en_riesgo: 0,
+      drilldown_distribucion_notas: [],
+      drilldown_docentes: []
     }
   };
 
   // Query React Query para Perspectivas del CMI (Modo A)
   const {
-    data: cmiData = FALLBACK_CMI_PERSPECTIVAS,
+    data: cmiData = EMPTY_CMI_PERSPECTIVAS,
     isLoading: isLoadingCmi,
     refetch: refetchCmi,
   } = useQuery({
@@ -199,7 +166,7 @@ export default function CuadroMandoIntegral() {
       } catch (err) {
         console.warn('Backend /kpis/cmi-completo no disponible, usando fallback:', err.message);
       }
-      return FALLBACK_CMI_PERSPECTIVAS;
+      return EMPTY_CMI_PERSPECTIVAS;
     },
     staleTime: 60_000,
     gcTime: 300_000,
@@ -271,7 +238,7 @@ export default function CuadroMandoIntegral() {
       labels,
       datasets: [
         {
-          label: 'Inscritos Históricos (N=43)',
+          label: 'Inscritos Históricos',
           data: historicalSeries,
           borderColor: isDark ? '#FAF9F6' : '#0C1E33',
           backgroundColor: isDark ? '#FAF9F6' : '#0C1E33',
@@ -354,9 +321,14 @@ export default function CuadroMandoIntegral() {
   const chartCaso4Data = React.useMemo(() => {
     if (!macroData?.caso4_metas_anuales) return null;
     const c4 = macroData.caso4_metas_anuales;
-    const labels = ['2023', '2024', '2025', '2026 (Proy OLS)', '2027 (Proy OLS)'];
-    const histData = [...c4.valores_historicos_bs, null, null];
-    const proyData = [null, null, c4.valores_historicos_bs[2], ...(c4.proyecciones_ols || []).map(p => p.monto_proyectado_bs)];
+    const hist = c4.valores_historicos_bs || [];
+    const proy = c4.proyecciones_ols || [];
+    if (hist.length === 0 && proy.length === 0) return null;
+    const labels = [...(c4.anios_historicos || []).map(String), ...proy.map(p => `${p.periodo} (Proy OLS)`)];
+    const histData = [...hist, ...Array(proy.length).fill(null)];
+    const proyData = hist.length
+      ? [...Array(hist.length - 1).fill(null), hist[hist.length - 1], ...proy.map(p => p.monto_proyectado_bs)]
+      : proy.map(p => p.monto_proyectado_bs);
 
     return {
       labels,
@@ -985,7 +957,7 @@ export default function CuadroMandoIntegral() {
                 Motor Predictivo: Holt-Winters Aditivo (m=12) & Estimadores OLS
               </div>
               <div style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>
-                Serie longitudinal N = 43 meses (Nov 2022 - May 2026) · Intervalo de Confianza: 95% con cota no negativa (ŷ ≥ 0)
+                {macroData?.caso1_demanda_global ? `Serie longitudinal N = ${macroData.caso1_demanda_global.n_observaciones} meses (${macroData.caso1_demanda_global.periodos_historicos[0]} – ${macroData.caso1_demanda_global.periodos_historicos.at(-1)}) · ` : ''}Intervalo de Confianza: 95% con cota no negativa (ŷ ≥ 0)
               </div>
             </div>
 
@@ -1042,7 +1014,7 @@ export default function CuadroMandoIntegral() {
                 </div>
                 <button
                   onClick={() => setModalDetail({
-                    titulo: 'Detalle Longitudinal: Caso 1 (N=43 meses)',
+                    titulo: `Detalle Longitudinal: Caso 1 (N=${macroData?.caso1_demanda_global?.n_observaciones ?? 0} meses)`,
                     tipo: 'caso1',
                     data: macroData?.caso1_demanda_global
                   })}
@@ -1057,10 +1029,10 @@ export default function CuadroMandoIntegral() {
               {macroData?.caso1_demanda_global && (
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
                   <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '9999px', background: 'rgba(27,135,84,0.12)', color: 'var(--color-alert-green)' }}>
-                    Tendencia OLS: +{macroData.caso1_demanda_global.pendiente_ols_mes} al/mes
+                    Tendencia OLS: {macroData.caso1_demanda_global.pendiente_ols_mes} al/mes
                   </span>
                   <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '9999px', background: 'rgba(217,155,38,0.12)', color: 'var(--color-gira-gold)' }}>
-                    CAGR: +{macroData.caso1_demanda_global.cagr_historico_pct}%
+                    CAGR: {macroData.caso1_demanda_global.cagr_historico_pct}%
                   </span>
                   <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 9px', borderRadius: '9999px', background: 'var(--color-mist-gray)', color: 'var(--color-slate-gray)' }}>
                     MAPE: {macroData.caso1_demanda_global.mape_pct}% · RMSE: {macroData.caso1_demanda_global.rmse}
@@ -1073,7 +1045,7 @@ export default function CuadroMandoIntegral() {
                   <Line data={chartCaso1Data} options={defaultChartOptions} />
                 ) : (
                   <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
-                    Cargando serie temporal histórica...
+                    {isLoadingMacro ? 'Cargando serie temporal histórica...' : (macroData?.sin_datos?.caso1 || 'Sin datos de inscripciones en el Data Warehouse.')}
                   </div>
                 )}
               </div>
@@ -1219,13 +1191,13 @@ export default function CuadroMandoIntegral() {
               {macroData?.caso3_metas_mensuales?.mes_actual && (
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
                   <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 9px', borderRadius: '9999px', background: 'var(--color-mist-gray)', color: 'var(--color-ink-black)' }}>
-                    Meta Mes Actual: Bs. {macroData.caso3_metas_mensuales.mes_actual.meta_mes_bs.toLocaleString()}
+                    Meta {macroData.caso3_metas_mensuales.mes_actual.periodo}: Bs. {fmtBs(macroData.caso3_metas_mensuales.mes_actual.meta_mes_bs)}
                   </span>
                   <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '9999px', background: 'rgba(217,155,38,0.14)', color: 'var(--color-gira-gold)' }}>
-                    Cierre HW: Bs. {Math.round(macroData.caso3_metas_mensuales.mes_actual.cierre_proyectado_hw_bs).toLocaleString()}
+                    Cierre HW: Bs. {fmtBs(macroData.caso3_metas_mensuales.mes_actual.cierre_proyectado_hw_bs)}
                   </span>
                   <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '9999px', background: 'rgba(27,135,84,0.14)', color: 'var(--color-alert-green)' }}>
-                    Cumplimiento: {macroData.caso3_metas_mensuales.mes_actual.cumplimiento_proyectado_pct}%
+                    Cumplimiento: {macroData.caso3_metas_mensuales.mes_actual.cumplimiento_proyectado_pct ?? '—'}%
                   </span>
                 </div>
               )}
@@ -1235,7 +1207,7 @@ export default function CuadroMandoIntegral() {
                   <Bar data={chartCaso3Data} options={defaultChartOptions} />
                 ) : (
                   <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
-                    Cargando comparativa mensual de metas...
+                    {isLoadingMacro ? 'Cargando comparativa mensual de metas...' : (macroData?.sin_datos?.caso3 || 'Sin metas ni ejecución financiera en el Data Warehouse.')}
                   </div>
                 )}
               </div>
@@ -1249,12 +1221,12 @@ export default function CuadroMandoIntegral() {
                     Caso 4 · Planificación Plurianual
                   </span>
                   <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '2px 0 0 0', color: 'var(--color-ink-black)' }}>
-                    Cumplimiento de Meta Anual (3.8M Bs) & Recta OLS
+                    Cumplimiento de Meta Anual & Recta OLS
                   </h3>
                 </div>
                 <button
                   onClick={() => setModalDetail({
-                    titulo: 'Desglose Plurianual: Caso 4 (Trayectoria 2023-2027 hacia 3.8M Bs)',
+                    titulo: 'Desglose Plurianual: Caso 4 (Trayectoria OLS hacia la Meta Anual)',
                     tipo: 'caso4',
                     data: macroData?.caso4_metas_anuales
                   })}
@@ -1265,21 +1237,21 @@ export default function CuadroMandoIntegral() {
                 </button>
               </div>
 
-              {/* Medidor de Avance Bullet hacia Meta de 3.8M Bs */}
+              {/* Medidor de Avance Bullet hacia la Meta Anual registrada */}
               {macroData?.caso4_metas_anuales && (
                 <div style={{ marginBottom: '16px', padding: '12px 14px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px' }}>
-                    <span>Meta Institucional: Bs. 3,800,000</span>
+                    <span>Meta {macroData.caso4_metas_anuales.gestion_actual}: Bs. {fmtBs(macroData.caso4_metas_anuales.meta_anual_institucional_bs)}</span>
                     <span style={{ color: 'var(--color-gira-gold)', fontWeight: 700 }}>
-                      {macroData.caso4_metas_anuales.porcentaje_avance_meta}% ejecutado (Bs. {macroData.caso4_metas_anuales.recaudado_acumulado_bs.toLocaleString()})
+                      {macroData.caso4_metas_anuales.porcentaje_avance_meta ?? '—'}% ejecutado (Bs. {fmtBs(macroData.caso4_metas_anuales.recaudado_acumulado_bs)})
                     </span>
                   </div>
                   <div style={{ height: '10px', width: '100%', background: 'var(--color-mist-gray)', borderRadius: '9999px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${Math.min(100, macroData.caso4_metas_anuales.porcentaje_avance_meta)}%`, background: isDark ? 'linear-gradient(90deg, #D99B26, #F1B844)' : 'linear-gradient(90deg, var(--color-gira-navy), var(--color-gira-gold))', borderRadius: '9999px' }} />
+                    <div style={{ height: '100%', width: `${Math.min(100, macroData.caso4_metas_anuales.porcentaje_avance_meta ?? 0)}%`, background: isDark ? 'linear-gradient(90deg, #D99B26, #F1B844)' : 'linear-gradient(90deg, var(--color-gira-navy), var(--color-gira-gold))', borderRadius: '9999px' }} />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-slate-gray)', marginTop: '6px' }}>
-                    <span>Pendiente OLS: +Bs. {Math.round(macroData.caso4_metas_anuales.pendiente_anual_bs).toLocaleString()}/año</span>
-                    <span>CAGR Histórica: +{macroData.caso4_metas_anuales.cagr_historico_pct}%</span>
+                    <span>Pendiente OLS: Bs. {fmtBs(macroData.caso4_metas_anuales.pendiente_anual_bs)}/año</span>
+                    <span>CAGR Histórica: {macroData.caso4_metas_anuales.cagr_historico_pct ?? '—'}%</span>
                   </div>
                 </div>
               )}
@@ -1289,7 +1261,7 @@ export default function CuadroMandoIntegral() {
                   <Line data={chartCaso4Data} options={defaultChartOptions} />
                 ) : (
                   <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
-                    Cargando tendencia anual OLS...
+                    {isLoadingMacro ? 'Cargando tendencia anual OLS...' : (macroData?.sin_datos?.caso4 || macroData?.caso4_metas_anuales?.nota_metodologica || 'Sin recaudación anual en el Data Warehouse.')}
                   </div>
                 )}
               </div>
@@ -1344,7 +1316,7 @@ export default function CuadroMandoIntegral() {
             {modalDetail.tipo === 'caso1' && modalDetail.data && (
               <div>
                 <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', marginBottom: '16px' }}>
-                  Serie histórica mensual de alumnos matriculados desde Noviembre 2022 hasta Mayo 2026 (N=43 meses),
+                  Serie histórica mensual de alumnos matriculados ({modalDetail.data?.periodos_historicos?.[0]} – {modalDetail.data?.periodos_historicos?.at(-1)}, N={modalDetail.data?.n_observaciones} meses),
                   junto con las proyecciones Holt-Winters aditivas con Intervalo de Confianza al 95%.
                 </p>
                 <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
@@ -1419,13 +1391,13 @@ export default function CuadroMandoIntegral() {
                     <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Matrícula histórica</div>
                   </div>
                   <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos 2025</div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalDetail.data.inscritos_2025}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos {modalDetail.data.anio_anterior}</div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalDetail.data.inscritos_anio_anterior}</div>
                     <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Última gestión cerrada</div>
                   </div>
                   <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos 2026</div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalDetail.data.inscritos_2026}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos {modalDetail.data.anio_actual}</div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalDetail.data.inscritos_anio_actual}</div>
                     <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Gestión en curso</div>
                   </div>
                   <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
@@ -1456,7 +1428,7 @@ export default function CuadroMandoIntegral() {
             {modalDetail.tipo === 'caso3' && modalDetail.data && (
               <div>
                 <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', marginBottom: '16px' }}>
-                  Comparativa presupuestaria mensual: Meta de Catálogo vs Recaudación Ejecutada Real a lo largo de los 17 meses registrados (Gestiones 2025 y 2026).
+                  Comparativa presupuestaria mensual: Meta de Catálogo vs Recaudación Ejecutada Real a lo largo de los {(modalDetail.data.meses_etiquetas || []).length} meses registrados en el Data Warehouse.
                 </p>
                 <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
@@ -1471,10 +1443,10 @@ export default function CuadroMandoIntegral() {
                     </thead>
                     <tbody>
                       {(modalDetail.data.meses_etiquetas || []).map((m, idx) => {
-                        const meta = modalDetail.data.meta_catalogo_bs[idx] || 0;
-                        const ejec = modalDetail.data.ejecutado_real_bs[idx] || 0;
+                        const meta = modalDetail.data.meta_catalogo_bs?.[idx] || 0;
+                        const ejec = modalDetail.data.ejecutado_real_bs?.[idx] || 0;
                         const diff = ejec - meta;
-                        const pct = meta > 0 ? ((ejec / meta) * 100).toFixed(1) : '100.0';
+                        const pct = meta > 0 ? ((ejec / meta) * 100).toFixed(1) : '—';
                         return (
                           <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
                             <td style={{ padding: '8px', fontWeight: 600 }}>{m}</td>
@@ -1498,20 +1470,20 @@ export default function CuadroMandoIntegral() {
             {modalDetail.tipo === 'caso4' && modalDetail.data && (
               <div>
                 <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', marginBottom: '16px' }}>
-                  Trayectoria plurianual de ingresos institucionales (2023 - 2027) ajustada por regresión lineal OLS frente a la Meta de 3.8M Bs.
+                  Trayectoria plurianual de ingresos institucionales ajustada por regresión lineal OLS frente a la meta anual registrada en el Data Warehouse.
                 </p>
                 <div style={{ padding: '14px', borderRadius: '14px', background: 'var(--color-mist-gray)', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                   <div>
                     <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Meta Institucional:</span>
-                    <div style={{ fontSize: '16px', fontWeight: 700 }}>Bs. {modalDetail.data.meta_anual_institucional_bs.toLocaleString()}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700 }}>Bs. {fmtBs(modalDetail.data.meta_anual_institucional_bs)}</div>
                   </div>
                   <div>
-                    <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Recaudado Acumulado 2026:</span>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-gira-gold)' }}>Bs. {modalDetail.data.recaudado_acumulado_bs.toLocaleString()} ({modalDetail.data.porcentaje_avance_meta}%)</div>
+                    <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Recaudado Acumulado {modalDetail.data.gestion_actual}:</span>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-gira-gold)' }}>Bs. {fmtBs(modalDetail.data.recaudado_acumulado_bs)} ({modalDetail.data.porcentaje_avance_meta ?? '—'}%)</div>
                   </div>
                   <div>
                     <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Pendiente OLS Anual:</span>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-alert-green)' }}>+Bs. {Math.round(modalDetail.data.pendiente_anual_bs).toLocaleString()}/año</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-alert-green)' }}>Bs. {fmtBs(modalDetail.data.pendiente_anual_bs)}/año</div>
                   </div>
                   <div>
                     <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>CAGR Histórica:</span>

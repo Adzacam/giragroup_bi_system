@@ -5,7 +5,7 @@ Esquemas Pydantic v2 para validación estricta de contratos de API en Forecastin
 Garantiza Clean Code, tipado estricto y prevención de fugas de datos (OWASP A04/A08).
 """
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -25,12 +25,15 @@ class ForecastAlumnosData(BaseModel):
 
     caso_uso: str = Field(..., description="Identificador canónico del caso de uso")
     tipo_solicitado: str = Field(..., description="Tipo de programa solicitado")
-    metodo: str = Field(..., description="Algoritmo predictivo (HoltWinters u OLS)")
+    metodo: Optional[str] = Field(None, description="Algoritmo predictivo (HoltWinters u OLS)")
     origen: Optional[str] = Field(None, description="Origen del dato (database_fact_forecast o on_demand)")
-    horizonte_meses: int = Field(..., ge=1, le=6, description="Meses proyectados (máximo 6)")
+    horizonte_meses: Optional[int] = Field(None, ge=1, le=6, description="Meses proyectados (máximo 6)")
     rmse: Optional[float] = Field(None, ge=0.0, description="Error cuadrático medio")
     aic: Optional[float] = Field(None, description="Criterio de Información de Akaike")
-    proyecciones: List[ProyeccionItem] = Field(..., min_length=1, max_length=6)
+    sin_datos: bool = Field(False, description="True cuando el DW no tiene historia suficiente")
+    mensaje: Optional[str] = Field(None, description="Motivo del estado sin datos")
+    n_observaciones: Optional[int] = Field(None, ge=0)
+    proyecciones: List[ProyeccionItem] = Field(default_factory=list, max_length=6)
 
 
 class ForecastAlumnosResponse(BaseModel):
@@ -57,7 +60,7 @@ class ForecastMetasData(BaseModel):
 
     caso_uso: str
     granularidad: str = Field(..., description="'MENSUAL' o 'ANUAL'")
-    metodo: str = Field(..., description="'HoltWinters' o 'OLS'")
+    metodo: Optional[str] = Field(None, description="'HoltWinters' o 'OLS'")
     tipo_estimacion: Optional[str] = None
     horizonte_meses: Optional[int] = Field(None, ge=1, le=6)
     pendiente_anual_bs: Optional[float] = None
@@ -68,7 +71,10 @@ class ForecastMetasData(BaseModel):
     nota_metodologica: Optional[str] = None
     rmse: Optional[float] = None
     aic: Optional[float] = None
-    proyecciones: List[ProyeccionMetaItem] = Field(..., min_length=1, max_length=6)
+    sin_datos: bool = Field(False, description="True cuando el DW no tiene historia suficiente")
+    mensaje: Optional[str] = Field(None, description="Motivo del estado sin datos")
+    n_observaciones: Optional[int] = Field(None, ge=0)
+    proyecciones: List[ProyeccionMetaItem] = Field(default_factory=list, max_length=6)
 
 
 class ForecastMetasResponse(BaseModel):
@@ -84,8 +90,10 @@ class MatrizViabilidadItem(BaseModel):
     programa: str
     tipo: str
     total_historico: int
-    inscritos_2025: int
-    inscritos_2026: int
+    anio_anterior: int
+    anio_actual: int
+    inscritos_anio_anterior: int
+    inscritos_anio_actual: int
     cagr_pct: float
     proyeccion_6m: int
     tendencia_ols: str
@@ -104,8 +112,9 @@ class AnaliticaMacroResponse(BaseModel):
     status: str = "success"
     fecha_calculo_iso: str
     horizonte_meses: int
-    caso1_demanda_global: dict
-    caso2_demanda_programa: dict
-    caso3_metas_mensuales: dict
-    caso4_metas_anuales: dict
+    sin_datos: Dict[str, str] = Field(default_factory=dict, description="Motivo por caso sin datos suficientes")
+    caso1_demanda_global: Optional[dict] = None
+    caso2_demanda_programa: Optional[dict] = None
+    caso3_metas_mensuales: Optional[dict] = None
+    caso4_metas_anuales: Optional[dict] = None
 

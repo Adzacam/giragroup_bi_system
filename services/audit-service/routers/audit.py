@@ -42,6 +42,7 @@ def get_audit_logs(
     todos_los_logs: List[Dict[str, Any]] = []
 
     # 1. Extraer eventos reales del Pipeline DataOps y Seguridad desde LogPipelineIngesta
+    fetch_cap = min(1000, offset + limit) if not (modulo or severidad or busqueda) else 1000
     try:
         pipeline_logs = (
             db.query(LogPipelineIngesta)
@@ -56,7 +57,7 @@ def get_audit_logs(
                 )
             )
             .order_by(LogPipelineIngesta.id.desc())
-            .limit(1000)
+            .limit(fetch_cap)
             .all()
         )
         sev_map = {
@@ -121,7 +122,7 @@ def get_audit_logs(
                 )
             )
             .order_by(LogAuditoriaNlp.id_log.desc())
-            .limit(500)
+            .limit(min(500, fetch_cap))
             .all()
         )
 

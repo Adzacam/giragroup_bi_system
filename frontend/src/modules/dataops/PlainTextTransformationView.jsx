@@ -220,7 +220,7 @@ const formatMergedCell = (c) => {
                   ORIGEN: {data?.origen_detectado || 'GSHEETS_ACTA_NOTAS'}
                 </span>
                 <span className="chip-cat chip-fecha">
-                  <Calendar size={12} /> FECHAS: {data?.rango_fechas || '2024–2026 (Auto)'}
+                  <Calendar size={12} /> FECHAS: {data?.rango_fechas || 'Por detectar'}
                 </span>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#059669', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   <ShieldCheck size={12} /> SHA-256 ACTIVO
@@ -394,7 +394,7 @@ const formatMergedCell = (c) => {
                                 const modMatch = oracion.match(/MÓDULO\s*[0-9]+/i)?.[0];
                                 const progVal = row.chips?.programa_cat || row.chips?.programa || posMatch || 'POS-034';
                                 const modVal = row.chips?.modulo_cat || row.chips?.modulo || (modMatch ? 'MÓDULOS 1-12' : (oracion.includes('MÓDULO') ? 'MÓDULOS' : 'MOD_CAT'));
-                                const fechaVal = row.rango_fechas || data?.rango_fechas || '2023–2026';
+                                const fechaVal = row.rango_fechas || data?.rango_fechas || 'Por detectar';
                                 return (
                                   <>
                                     <span className="chip-cat chip-programa" style={{ fontSize: '10px', padding: '1px 6px', fontWeight: 600 }}>

@@ -184,18 +184,13 @@ function MainLayout() {
 
   const triggerLoadingAnimation = useCallback(() => {
     clearTimers();
+    if (!suspenseActiveRef.current) {
+      setIsNavigating(false);
+      setTopProgress(0);
+      return;
+    }
     setIsNavigating(true);
-    setTopProgress(15);
-
-    const t1 = setTimeout(() => setTopProgress(65), 75);
-    const t2 = setTimeout(() => setTopProgress(90), 190);
-    const t3 = setTimeout(() => {
-      if (!suspenseActiveRef.current) {
-        finishLoadingAnimation();
-      }
-    }, 340);
-
-    timersRef.current.push(t1, t2, t3);
+    setTopProgress(65);
   }, [clearTimers, finishLoadingAnimation]);
 
   // Listen for instant clicks on any internal navigation link (<a href="...">)

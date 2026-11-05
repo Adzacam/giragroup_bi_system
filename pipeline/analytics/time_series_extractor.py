@@ -2,7 +2,7 @@
 pipeline/analytics/time_series_extractor.py
 -------------------------------------------
 GIRA-53: Extractor de series temporales mensuales desde el Data Warehouse (PostgreSQL)
-con soporte de fallback directo a fuentes analíticas para entornos de prueba.
+sin fallback a archivos: si el DW no tiene datos, la serie se devuelve vacía.
 
 Extrae 5 series temporales canónicas indexadas por Period('M') o año:
 1. ALUMNOS_GLOBAL: Inscripciones totales mensuales.
@@ -10,7 +10,7 @@ Extrae 5 series temporales canónicas indexadas por Period('M') o año:
 3. ALUMNOS_CURSO: Inscripciones mensuales en Cursos.
 4. ALUMNOS_EXPERTO: Inscripciones mensuales en Programas Expertos.
 5. META_MENSUAL_PROGRAMAS: Monto ejecutado / meta mensual en Programas regulares.
-6. META_ANUAL: Serie anual de recaudación ejecutada (2023-2025).
+6. META_ANUAL: Serie anual de recaudación ejecutada (gestiones cerradas).
 """
 
 import sys
@@ -25,7 +25,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from pipeline.config import DATA_DIR
 
 logger = logging.getLogger("time_series_extractor")
 
@@ -37,7 +36,6 @@ QUERIES = {
             COALESCE(SUM(fm.inscritos), 0)::numeric AS valor
         FROM public.dim_tiempo dt
         LEFT JOIN public.fact_marketing fm ON dt.id_tiempo = fm.id_tiempo
-        WHERE dt.fecha >= '2022-11-01' AND dt.fecha <= '2026-05-31'
         GROUP BY dt.periodo_mes
         HAVING SUM(fm.inscritos) > 0
         ORDER BY dt.periodo_mes;
@@ -50,7 +48,6 @@ QUERIES = {
         JOIN public.fact_marketing fm ON dt.id_tiempo = fm.id_tiempo
         JOIN public.dim_modulo dm ON fm.id_modulo = dm.id_modulo
         WHERE dm.programa ILIKE '%DIPLOMADO%'
-          AND dt.fecha >= '2022-11-01' AND dt.fecha <= '2026-05-31'
         GROUP BY dt.periodo_mes
         ORDER BY dt.periodo_mes;
     """,
@@ -62,7 +59,6 @@ QUERIES = {
         JOIN public.fact_marketing fm ON dt.id_tiempo = fm.id_tiempo
         JOIN public.dim_modulo dm ON fm.id_modulo = dm.id_modulo
         WHERE dm.programa ILIKE '%CURSO%'
-          AND dt.fecha >= '2022-11-01' AND dt.fecha <= '2026-05-31'
         GROUP BY dt.periodo_mes
         ORDER BY dt.periodo_mes;
     """,
@@ -74,7 +70,6 @@ QUERIES = {
         JOIN public.fact_marketing fm ON dt.id_tiempo = fm.id_tiempo
         JOIN public.dim_modulo dm ON fm.id_modulo = dm.id_modulo
         WHERE (dm.programa ILIKE '%EXPERTO%' OR dm.programa ILIKE '%PROGRAMA EXPERTO%')
-          AND dt.fecha >= '2022-11-01' AND dt.fecha <= '2026-05-31'
         GROUP BY dt.periodo_mes
         ORDER BY dt.periodo_mes;
     """,
@@ -98,7 +93,7 @@ QUERIES = {
         JOIN public.dim_tiempo dt ON fr.id_tiempo = dt.id_tiempo
         WHERE dcf.nombre_categoria = 'PROGRAMAS'
           AND fr.monto_ejecutado IS NOT NULL
-          AND dt.gestion IN (2023, 2024, 2025)
+          AND dt.gestion < EXTRACT(YEAR FROM CURRENT_DATE)
         GROUP BY dt.gestion
         ORDER BY dt.gestion;
     """
@@ -108,85 +103,6 @@ QUERIES = {
 import time
 
 _DB_FAIL_UNTIL: float = 0.0
-_EXCEL_CACHE: Dict[str, pd.DataFrame] = {}
-
-
-def _extraer_desde_archivos(caso_uso: str, data_dir: Optional[Path] = None) -> pd.Series:
-    """Extrae series de fallback directamente de los Excel de uploads/data/ con cache en memoria."""
-    dir_datos = data_dir or DATA_DIR
-    caso_upper = caso_uso.upper()
-
-    if "ALUMNOS" in caso_upper:
-        archivo = dir_datos / "TBL_INSCRITOS.xlsx"
-        if not archivo.exists():
-            raise FileNotFoundError(f"Archivo requerido no encontrado: {archivo}")
-
-        if "TBL_INSCRITOS" not in _EXCEL_CACHE:
-            df = pd.read_excel(archivo, sheet_name="TBL_INSCRITOS")
-            df["MARCA TEMPORAL"] = pd.to_datetime(df["MARCA TEMPORAL"], errors="coerce")
-            df = df.dropna(subset=["MARCA TEMPORAL"])
-            df["periodo_mes"] = df["MARCA TEMPORAL"].dt.to_period("M")
-            _EXCEL_CACHE["TBL_INSCRITOS"] = df
-        else:
-            df = _EXCEL_CACHE["TBL_INSCRITOS"]
-
-        if caso_upper == "ALUMNOS_GLOBAL":
-            serie = df.groupby("periodo_mes").size()
-        elif caso_upper == "ALUMNOS_DIPLOMADO":
-            sub = df[df["NOMBRE DEL PROGRAMA"].str.upper().str.contains("DIPLOMADO", na=False)]
-            serie = sub.groupby("periodo_mes").size()
-        elif caso_upper == "ALUMNOS_CURSO":
-            sub = df[df["NOMBRE DEL PROGRAMA"].str.upper().str.contains("CURSO", na=False)]
-            serie = sub.groupby("periodo_mes").size()
-        elif caso_upper == "ALUMNOS_EXPERTO":
-            sub = df[df["NOMBRE DEL PROGRAMA"].str.upper().str.contains("EXPERTO", na=False)]
-            serie = sub.groupby("periodo_mes").size()
-        else:
-            serie = df.groupby("periodo_mes").size()
-
-        serie = serie.sort_index().astype(float)
-        serie.name = caso_upper
-        return serie
-
-    elif caso_upper in ("META_MENSUAL_PROGRAMAS", "META_ANUAL"):
-        archivo = dir_datos / "EJECUTADO VS META.xlsx"
-        if not archivo.exists():
-            raise FileNotFoundError(f"Archivo requerido no encontrado: {archivo}")
-
-        if "EJECUTADO" not in _EXCEL_CACHE:
-            df = pd.read_excel(archivo, sheet_name="EJECUTADO")
-            _EXCEL_CACHE["EJECUTADO"] = df
-        else:
-            df = _EXCEL_CACHE["EJECUTADO"]
-
-        df_prog = df[df["CATEGORIA"].astype(str).str.upper().str.contains("PROGRAMAS", na=False)].copy()
-        
-        if caso_upper == "META_MENSUAL_PROGRAMAS":
-            records = []
-            for _, row in df_prog.iterrows():
-                mes_num = int(row["MES NUMERICO"])
-                for anio, col in [(2023, "EJECUTADO 2023"), (2024, "EJECUTADO 2024"), (2025, "EJECUTADO 2025")]:
-                    val = row.get(col)
-                    if pd.notna(val) and isinstance(val, (int, float)) and val > 0:
-                        records.append({
-                            "periodo_mes": pd.Period(f"{anio}-{mes_num:02d}", freq="M"),
-                            "valor": float(val)
-                        })
-            res_df = pd.DataFrame(records).sort_values("periodo_mes")
-            serie = pd.Series(res_df["valor"].values, index=res_df["periodo_mes"], name=caso_upper)
-            return serie
-
-        elif caso_upper == "META_ANUAL":
-            anios = [2023, 2024, 2025]
-            totales = []
-            for anio in anios:
-                col = f"EJECUTADO {anio}"
-                tot = df_prog[col].apply(lambda x: float(x) if pd.notna(x) and isinstance(x, (int, float)) else 0.0).sum()
-                totales.append(tot)
-            serie = pd.Series(totales, index=anios, name="META_ANUAL", dtype=float)
-            return serie
-
-    raise ValueError(f"Caso de uso no reconocido: {caso_uso}")
 
 
 def extraer_serie_temporal(
@@ -222,6 +138,7 @@ def extraer_serie_temporal(
             _DB_FAIL_UNTIL = now + 30.0
             logger.warning(f"Extracción DB falló para '{caso_norm}' ({e}). Activando Circuit Breaker (30s) y fallback...")
 
-    # Fallback automático y veloz
-    serie = _extraer_desde_archivos(caso_norm, data_dir=data_dir)
-    return serie
+    # Sin datos suficientes en el DW: serie vacía. Nunca se leen los Excel crudos
+    # de uploads/data, el único origen válido es lo ingestado y aprobado en PostgreSQL.
+    logger.info(f"Serie '{caso_norm}' sin datos suficientes en el Data Warehouse.")
+    return pd.Series(dtype=float, name=caso_norm)

@@ -449,7 +449,7 @@ ALTER TABLE public.fact_cobranzas_proyectadas ADD CONSTRAINT uq_fact_cobranzas_p
 -- Las claves primarias y UNIQUE ya crean su índice: no se repiten (uq_fact_aca_est_mod duplicaba
 -- uq_fact_rendimiento_estudiante_modulo; ver backend/scripts/migrations/005_alinear_esquema_con_ddl.sql).
 -- ==========================================
-CREATE INDEX IF NOT EXISTS idx_fact_rend_estudiante ON public.fact_rendimiento_academico (id_estudiante);
+-- idx_fact_rend_estudiante omitido (cubierto por prefijo de uq_fact_rendimiento_estudiante_modulo)
 CREATE INDEX IF NOT EXISTS idx_fact_rend_modulo ON public.fact_rendimiento_academico (id_modulo);
 CREATE INDEX IF NOT EXISTS idx_fact_rend_docente ON public.fact_rendimiento_academico (id_docente);
 CREATE INDEX IF NOT EXISTS idx_fact_rend_tiempo ON public.fact_rendimiento_academico (id_tiempo);
@@ -476,8 +476,13 @@ CREATE INDEX IF NOT EXISTS ix_log_inconsistencias_tipo_regla ON public.log_incon
 CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON public.notifications (user_id, is_read);
 CREATE INDEX IF NOT EXISTS idx_stg_entidad_resuelto ON public.stg_entidad_no_resuelta (resuelto, estado_resolucion);
 CREATE INDEX IF NOT EXISTS idx_stg_entidad_registro ON public.stg_entidad_no_resuelta (registro_origen_id);
-CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_estado ON public.stg_entidad_no_resuelta (resuelto);
+-- idx_stg_no_resuelta_estado omitido (cubierto por prefijo de idx_stg_entidad_resuelto)
 CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_tipo ON public.stg_entidad_no_resuelta (tipo_entidad);
 CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_motivo ON public.stg_entidad_no_resuelta (motivo);
 CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_estado_res ON public.stg_entidad_no_resuelta (estado_resolucion);
 CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_lock ON public.stg_entidad_no_resuelta (lock_usuario_id, lock_expira);
+
+-- Indices covering para agregaciones rapidas de KPIs y Alertas:
+CREATE INDEX IF NOT EXISTS idx_fact_rend_tiempo_modulo_cov ON public.fact_rendimiento_academico (id_tiempo, id_modulo) INCLUDE (id_estudiante, nota_final, asistencia_pct, incumplimiento_actividades_pct, nivel_confianza_ia, requiere_revision);
+CREATE INDEX IF NOT EXISTS idx_fact_fin_tiempo_modulo_cov ON public.fact_situacion_financiera (id_tiempo, id_modulo) INCLUDE (id_estudiante, monto_pagado, monto_deuda, cuotas_impagas, estado_cartera);
+CREATE INDEX IF NOT EXISTS idx_log_ingesta_etapa_id_desc ON public.log_pipeline_ingesta (etapa, id DESC);

@@ -7,6 +7,7 @@ y manejo centralizado de excepciones sanitizadas.
 """
 
 import os
+import time
 import logging
 from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException, Request, Response, status, UploadFile, File, Form
@@ -84,6 +85,10 @@ app = FastAPI(
 
 @app.on_event("startup")
 def on_startup():
+    import sys
+    if ("pytest" in sys.modules) or (os.getenv("TESTING") == "true") or (os.getenv("APP_ENV") == "test"):
+        return
+
     from pathlib import Path
     from core.database import Base, engine
     import models  # noqa: F401  registro de tablas
@@ -137,7 +142,12 @@ _CACHEABLE_GET_PREFIXES = (
 
 @app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
+    t0 = time.perf_counter()
     response: Response = await call_next(request)
+    dur_ms = round((time.perf_counter() - t0) * 1000.0, 2)
+    response.headers["Server-Timing"] = f"app;dur={dur_ms}"
+    if dur_ms > 300.0 and request.url.path.startswith("/api/"):
+        logger.warning(f"[SLOW ENDPOINT] {request.method} {request.url.path} tardó {dur_ms} ms (presupuesto: 300 ms)")
     # Las cabeceras de seguridad OWASP (X-Frame-Options, CSP, etc.) las pone solo el gateway nginx:
     # repetirlas aquí las duplicaba en cada respuesta. Este middleware solo agrega las de caché.
     if request.method == "GET" and response.status_code == 200:
