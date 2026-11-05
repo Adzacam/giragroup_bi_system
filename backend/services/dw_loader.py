@@ -26,6 +26,8 @@ from models.dim_origen import DimOrigenDocumental
 from models.dim_categoria_financiera import DimCategoriaFinanciera
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
+from models.fact_costo_programa import FactCostoPrograma
+from models.log_inconsistencia import LogInconsistencia
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.catalogos import CatInstitucion
 from pipeline.config import NOTA_APROBACION
@@ -835,6 +837,38 @@ class DWLoaderService:
                 "escala_max": escala_max,
             }
 
+        # 3d'. Ruteo COSTO POR PROGRAMA -> FactCostoPrograma (egreso/ingreso/rentabilidad de un POS)
+        if categoria == "rentabilidad" and resoluciones.get("costo_programa"):
+            if not pos_code:
+                return {"tipo": "costo_programa", "status": "staged", "motivo": "Fila de costos sin POS"}
+            id_mod_costo = self.resolver_o_crear_modulo(
+                nombre_modulo or pos_code, pos_code=pos_code, doc_id=doc_id, institucion=institucion,
+                programa=nombre_programa,
+            )
+            motivo_costo = resoluciones.get("motivo_costo")
+            valores = {
+                k: (float(resoluciones[k]) if resoluciones.get(k) is not None else None)
+                for k in ("egreso_anterior", "egreso_real", "ingreso", "rentabilidad")
+            }
+            hecho_costo = self.db.query(FactCostoPrograma).filter(FactCostoPrograma.id_modulo == id_mod_costo).first()
+            if hecho_costo is None:
+                hecho_costo = FactCostoPrograma(id_modulo=id_mod_costo)
+                self.db.add(hecho_costo)
+            for k, v in valores.items():  # recargar el libro actualiza, no duplica
+                setattr(hecho_costo, k, v)
+            hecho_costo.id_documento = doc_id
+            # Los costos por POS no tienen fecha: no se marca revisión por falta de id_tiempo
+            hecho_costo.requiere_revision = bool(motivo_costo) or bool(calidad.get("requiere_revision"))
+            hecho_costo.motivo_revision = (motivo_costo or "")[:300] or None
+            self.db.flush()
+            return {
+                "tipo": "costo_programa",
+                "status": "loaded",
+                "id_hecho": hecho_costo.id_hecho_costo,
+                "pos_code": pos_code,
+                **valores,
+            }
+
         # 3d. Ruteo RENTABILIDAD -> FactRentabilidad
         if categoria == "rentabilidad" and FactRentabilidad:
             id_mod_rent = self.resolver_o_crear_modulo(
@@ -869,7 +903,21 @@ class DWLoaderService:
             ).first()
 
             if existente_rent:
-                # Misma categoría y mes: el valor nuevo reemplaza al anterior (recargar el libro no duplica montos)
+                # Misma categoría y mes: el valor nuevo reemplaza al anterior (recargar el libro no duplica montos).
+                # Si otra fuente ya había cargado otra cifra para ese mes, queda registrado para revisión.
+                for campo, nuevo in (("monto_ejecutado", m_ejec), ("monto_meta", m_meta)):
+                    previo = getattr(existente_rent, campo)
+                    if nuevo is not None and previo not in (None, 0) and abs(float(previo) - nuevo) > max(1.0, 0.01 * abs(float(previo))):
+                        self.db.add(LogInconsistencia(
+                            id_documento=doc_id,
+                            campo_afectado=f"fact_rentabilidad.{campo}",
+                            valor_recibido=str(nuevo),
+                            valor_esperado=str(previo),
+                            tipo_regla="CONFLICTO_FUENTES",
+                            severidad="MEDIA",
+                            estado_resolucion="PENDIENTE",
+                            descripcion=f"{cat_nom} id_tiempo={id_tiempo}: la fuente nueva reemplaza {previo} por {nuevo}",
+                        ))
                 if m_ejec is not None:
                     existente_rent.monto_ejecutado = m_ejec
                 if m_meta is not None:
@@ -887,8 +935,8 @@ class DWLoaderService:
                     id_modulo=id_mod_rent,
                     id_tiempo=id_tiempo,
                     id_categoria=id_cat,
-                    monto_ejecutado=m_ejec or 0.0,
-                    monto_meta=m_meta or 0.0
+                    monto_ejecutado=m_ejec,  # mes solo con meta (2026): ejecutado vacío, no 0 inventado
+                    monto_meta=m_meta
                 )
                 self.db.add(nuevo_rent)
                 self.db.flush()

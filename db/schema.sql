@@ -295,6 +295,20 @@ CREATE TABLE public.fact_rentabilidad (
     monto_meta NUMERIC(14, 2)
 );
 
+-- E2. Costos por programa (grano: un POS; fact_rentabilidad es mensual por categoría)
+CREATE TABLE public.fact_costo_programa (
+    id_hecho_costo SERIAL PRIMARY KEY,
+    id_modulo INTEGER NOT NULL UNIQUE REFERENCES public.dim_modulo(id_modulo) ON DELETE CASCADE,
+    id_documento INTEGER REFERENCES public.dim_origen_documental(id_documento) ON DELETE SET NULL,
+    egreso_anterior NUMERIC(14, 2),
+    egreso_real NUMERIC(14, 2),
+    ingreso NUMERIC(14, 2),
+    rentabilidad NUMERIC(14, 2),
+    requiere_revision BOOLEAN DEFAULT FALSE,
+    motivo_revision VARCHAR(300),
+    actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- F. Pronósticos de Negocio (Forecasting)
 CREATE TABLE public.fact_forecast (
     id_forecast SERIAL PRIMARY KEY,

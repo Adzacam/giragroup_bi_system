@@ -17,6 +17,7 @@ from .fact_cobranzas import FactCobranzasProyectadas
 from .fact_evaluacion import FactEvaluacionDocente
 from .fact_marketing import FactMarketing
 from .fact_rentabilidad import FactRentabilidad
+from .fact_costo_programa import FactCostoPrograma
 from .dim_meta import DimMeta
 from .fact_forecast import FactForecast
 from .staging_entidad import StagingEntidadNoResuelta

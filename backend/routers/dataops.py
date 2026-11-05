@@ -71,6 +71,7 @@ from services.extraccion_por_encabezado import (
     registros_evaluacion,
     motivo_fila_sin_entidad,
     registros_rentabilidad,
+    registros_costo_programa,
 )
 from services.sugerencia_hitl import es_sugerencia_un_clic, nombre_extraido, similitud_nombre_completo
 from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, resolver_caso_hecho
@@ -3548,6 +3549,16 @@ def confirm_dw_insert(
                             {**reg_dict, "resoluciones": {**reg_dict["resoluciones"], **reg_rent}}
                             for reg_rent in registros_rent
                         ]
+                    else:
+                        # Costos por programa (egreso, ingreso, rentabilidad por POS): un hecho por programa
+                        registros_linea = []
+                        for reg_costo in registros_costo_programa(campos_linea):
+                            revision_fila = reg_costo.pop("requiere_revision")
+                            registros_linea.append({
+                                **reg_dict,
+                                "resoluciones": {**reg_dict["resoluciones"], **reg_costo},
+                                "calidad": {"requiere_revision": en_revision or revision_fila},
+                            })
                 for reg_item in registros_linea:
                     res = dw.cargar_registro(reg_item)
                     if res.get("status") == "skipped":  # respuesta vacía: nada que guardar ni revisar

@@ -26,7 +26,7 @@ from services.dw_loader import DWLoaderService
 from services import cache_consultas
 from services.confianza_service import obtener_indices, banda_de
 from services.extraccion_por_encabezado import (
-    campos_por_encabezado, es_encabezado_metadato_pos, estudiante_de_fila, fecha_de_fila, registros_academicos, registros_evaluacion,
+    campos_por_encabezado, es_encabezado_metadato_pos, estudiante_de_fila, fecha_de_fila, registros_academicos, registros_evaluacion, registros_rentabilidad, registros_costo_programa,
 )
 from models.staging_entidad import StagingEntidadNoResuelta
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
@@ -308,6 +308,12 @@ def process_pipeline(
                     resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
                     if reg["estudiante"]:
                         entidades_fila.append({"tipo": "ESTUDIANTE", "valor": reg["estudiante"]["valor_extraido"]})
+            elif campos and categoria == "rentabilidad" and (
+                registros_rentabilidad(campos) or registros_costo_programa(campos)
+            ):
+                for reg in registros_rentabilidad(campos) or registros_costo_programa(campos):
+                    revision_fila = reg.pop("requiere_revision", False)
+                    resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
             elif campos and categoria == "evaluacion_docente":
                 for reg in registros_evaluacion(campos):
                     revision_fila = reg.pop("requiere_revision")
