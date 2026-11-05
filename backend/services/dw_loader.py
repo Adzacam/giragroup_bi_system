@@ -126,14 +126,22 @@ _TITULOS_GRADO = {
     "LIC": "Licenciado", "LICDA": "Licenciado", "LICENCIADO": "Licenciado", "LICENCIADA": "Licenciado",
     "ING": "Ingeniero", "INGENIERO": "Ingeniero", "INGENIERA": "Ingeniero",
     "ARQ": "Arquitecto", "ABG": "Abogado", "ABOG": "Abogado",
+    "MGT": "Magister", "ESP": "Especialista", "ECO": "Economista", "AUD": "Auditor",
+    "CONT": "Contador", "CAP": "Capitan", "CNL": "Coronel", "MPM": "Magister", "INVITADO": None,
 }
+_RE_PARENTESIS = re.compile(r"\([^)]*\)")
 
 
 def separar_grado(nombre: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
     """'Fabian Mendivil Mgr.' -> ('Fabian Mendivil', 'Magister'). Quita títulos al inicio o al final."""
     if not nombre:
         return nombre, None
-    tokens = nombre.replace(",", " ").split()
+    # 'Ana Quiroz (La Paz)' -> 'Ana Quiroz'; 'A / B' (dos docentes) -> 'A'; 'Abog.Ing. X' -> 'Abog. Ing. X'
+    texto = _RE_PARENTESIS.sub(" ", nombre).split(" / ")[0]
+    texto = re.sub(r"\.(?=[A-Za-zÁÉÍÓÚÑáéíóúñ])", ". ", texto).replace(" - ", " ")
+    texto = re.sub(r"\bM\.?\s*Sc\b\.?", "MSc", texto, flags=re.I)
+    tokens = [t.strip(".,;:-\"'") for t in texto.replace(",", " ").split()]
+    tokens = [t for t in tokens if t]
     grado = None
 
     def _clave(t: str) -> str:
@@ -146,6 +154,20 @@ def separar_grado(nombre: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
         titulo = _TITULOS_GRADO[_clave(tokens.pop())]
         grado = grado or titulo
     return (" ".join(tokens) or None), grado
+
+
+def es_nombre_persona(nombre: Optional[str]) -> bool:
+    """
+    Al menos dos palabras con letras ('Claudia Heredia'). Descarta valores que no son personas y que llegaban a
+    dim_docente desde columnas mal alineadas: una sola palabra ('AFEDES', 'España') o una tira de siglas en
+    mayúsculas ('CJA GEM EPC CPMGA IME'). Un nombre real en mayúsculas ('JUAN PEREZ') sí pasa.
+    """
+    palabras = [t for t in (nombre or "").split() if re.search(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}", t)]
+    if len(palabras) < 2:
+        return False
+    siglas = (len(palabras) >= 5 and all(t.isupper() for t in palabras)
+              and sum(len(t) for t in palabras) / len(palabras) <= 4)
+    return not siglas
 
 
 def _tokens_nombre(nombre: str) -> set:
@@ -219,6 +241,12 @@ class DWLoaderService:
         fk_estado: 'A' (directo CI), 'B' (fuzzy rescatado/TEMP), 'C' (derivado a HITL/staging).
         Alineado por ci_numero normalizado, institución y detección de homonimia por programa.
         """
+        # Un "nombre" sin letras ('123456789 123456789') es un relleno de formulario, no una persona; y un CI de
+        # relleno (dígitos en secuencia o repetidos: '123456789', '0000000') no identifica a nadie.
+        if nombre and not re.search(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]", nombre):
+            nombre = None
+        if ci and re.sub(r"\D", "", ci) in ("123456789", "1234567", "12345678") or (ci and len(set(re.sub(r"\D", "", ci))) == 1):
+            ci = None
         if not ci and not nombre:
             return None, "C"
 
@@ -494,8 +522,10 @@ class DWLoaderService:
         if not nombre_docente or not nombre_docente.strip():
             return None
 
-        clean_nombre, _ = separar_grado(nombre_docente.strip())
-        if not clean_nombre:
+        clean_nombre, grado = separar_grado(nombre_docente.strip())
+        # 'Lic. Gomez' es un docente aunque sea una sola palabra: el título lo marca como persona
+        con_titulo = bool(grado) and bool(re.fullmatch(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]{3,}", clean_nombre or ""))
+        if not clean_nombre or not (es_nombre_persona(clean_nombre) or con_titulo):
             return None
         doc = self.db.query(DimDocente).filter(
             func.lower(DimDocente.nombre_completo) == clean_nombre.lower()
@@ -526,6 +556,16 @@ class DWLoaderService:
     ) -> Optional[int]:
         if not nombre_modulo and not pos_code:
             return None
+        nombre_limpio = (nombre_modulo or "").strip()
+        if "@" in nombre_limpio:
+            nombre_modulo = None  # un correo en la columna del módulo no es un módulo
+            if not pos_code:
+                return None
+        elif not pos_code:
+            # 'POS-5887' o '5077' sin código: el nombre ES el código del programa
+            m_pos = re.fullmatch(r"(?:POS[\s-]?)?(\d{4,5})(?:\.0)?", nombre_limpio, flags=re.I)
+            if m_pos:
+                pos_code = nombre_modulo = f"POS-{m_pos.group(1)}"
 
         if pos_code:
             mod = self.db.query(DimModulo).filter(DimModulo.pos_code == pos_code.strip()).first()
@@ -856,7 +896,10 @@ class DWLoaderService:
             monto_pagado = float(resoluciones.get("monto_pagado") or 0.0)
             concepto = resoluciones.get("concepto") or resoluciones.get("concepto_financiero")
             cuotas_impagas = int(resoluciones.get("cuotas_impagas") or 0)
-            estado_cartera = resoluciones.get("estado_cartera") or ("En Mora" if cuotas_impagas > 0 else "Vigente")
+            estado_cartera = resoluciones.get("estado_cartera") or ("Mora" if cuotas_impagas > 0 else "Vigente")
+            # Nombre canónico de config.ESTADOS_CARTERA_VALIDOS ("En mora", "EN MORA" -> "Mora").
+            if "MORA" in str(estado_cartera).upper():
+                estado_cartera = "Mora"
             tipo_alerta_fin = calcular_tipo_alerta_financiera(cuotas_impagas)
 
             if not id_est:

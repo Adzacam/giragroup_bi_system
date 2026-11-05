@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any, List
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from models.dim_estudiante import DimEstudiante
 from models.dim_modulo import DimModulo
 from models.dim_docente import DimDocente
@@ -48,27 +48,30 @@ def get_riesgo_cruzado(db: Session, limite_nota: float = 70.0, min_cuotas_mora: 
     Cruza la constelación de hechos: Obtiene estudiantes que están 
     reprobando o al límite (<= 70) Y que además tienen 2 o más cuotas en mora.
     """
+    # Una fila por estudiante: el join directo multiplicaba notas x filas de cobranza del mismo estudiante.
+    notas = db.query(
+        FactRendimientoAcademico.id_estudiante.label("id_est"),
+        func.min(FactRendimientoAcademico.nota_final).label("nota_final"),
+    ).filter(FactRendimientoAcademico.nota_final <= limite_nota).group_by(FactRendimientoAcademico.id_estudiante).subquery()
+    deudas = db.query(
+        FactSituacionFinanciera.id_estudiante.label("id_est"),
+        func.sum(FactSituacionFinanciera.cuotas_impagas).label("cuotas_impagas"),
+        func.sum(FactSituacionFinanciera.monto_deuda).label("monto_deuda"),
+        func.min(FactSituacionFinanciera.estado_cartera).label("estado_cartera"),  # "Mora" < "Vigente"
+    ).group_by(FactSituacionFinanciera.id_estudiante
+    ).having(func.sum(FactSituacionFinanciera.cuotas_impagas) >= min_cuotas_mora).subquery()
     resultados = db.query(
         DimEstudiante.nombre_completo,
         DimEstudiante.codigo_estudiante,
         DimEstudiante.ci,
-        FactRendimientoAcademico.nota_final,
-        FactSituacionFinanciera.cuotas_impagas,
-        FactSituacionFinanciera.monto_deuda,
-        FactSituacionFinanciera.estado_cartera
-    ).join(
-        FactRendimientoAcademico, 
-        DimEstudiante.id_estudiante == FactRendimientoAcademico.id_estudiante
-    ).join(
-        FactSituacionFinanciera, 
-        DimEstudiante.id_estudiante == FactSituacionFinanciera.id_estudiante
-    ).filter(
-        FactRendimientoAcademico.nota_final <= limite_nota,
-        FactSituacionFinanciera.cuotas_impagas >= min_cuotas_mora
-    ).order_by(
-        desc(FactSituacionFinanciera.cuotas_impagas),
-        FactRendimientoAcademico.nota_final
-    ).all()
+        notas.c.nota_final,
+        deudas.c.cuotas_impagas,
+        deudas.c.monto_deuda,
+        deudas.c.estado_cartera,
+    ).join(notas, notas.c.id_est == DimEstudiante.id_estudiante
+    ).join(deudas, deudas.c.id_est == DimEstudiante.id_estudiante).all()
+    # Más cuotas en mora primero; a igual mora, la nota más baja
+    resultados = sorted(resultados, key=lambda r: (-(r.cuotas_impagas or 0), float(r.nota_final or 0)))
 
     alertas_cruzadas = []
     for row in resultados:
