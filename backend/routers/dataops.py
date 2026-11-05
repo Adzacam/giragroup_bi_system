@@ -3551,6 +3551,17 @@ def confirm_dw_insert(
                             },
                             "calidad": {"requiere_revision": en_revision or revision_fila},
                         })
+                elif categoria_ruteo in ("marketing", "admision") and campos_linea and registros_techo_convenio(campos_linea):
+                    # Convenio con institución en un documento clasificado como marketing (p. ej. BD Techos):
+                    # el contenido de la fila decide el hecho, no la clasificación del documento
+                    registros_linea = []
+                    for reg_techo in registros_techo_convenio(campos_linea):
+                        revision_fila = reg_techo.pop("requiere_revision")
+                        registros_linea.append({
+                            **reg_dict,
+                            "resoluciones": {**reg_dict["resoluciones"], **reg_techo},
+                            "calidad": {"requiere_revision": en_revision or revision_fila},
+                        })
                 elif categoria_ruteo == "rentabilidad" and campos_linea:
                     # EJECUTADO VS META: un hecho por año con dato, con la categoría y el mes de la fila
                     registros_rent = registros_rentabilidad(campos_linea)

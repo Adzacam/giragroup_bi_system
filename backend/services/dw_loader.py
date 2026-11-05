@@ -980,12 +980,13 @@ class DWLoaderService:
             }
 
         # 3d''. Ruteo CONVENIO / TECHO -> FactTechoConvenio (institución cliente canónica)
-        if categoria == "rentabilidad" and resoluciones.get("techo_convenio"):
+        # Por contenido de la fila, no por cómo se clasificó el documento (BD Techos puede llegar como MARKETING)
+        if resoluciones.get("techo_convenio"):
             return self._cargar_techo_convenio(resoluciones, nombre_modulo, nombre_programa, pos_code, doc_id,
                                                institucion, id_tiempo, calidad)
 
         # 3d'. Ruteo COSTO POR PROGRAMA -> FactCostoPrograma (egreso/ingreso/rentabilidad de un POS)
-        if categoria == "rentabilidad" and resoluciones.get("costo_programa"):
+        if resoluciones.get("costo_programa"):
             if not pos_code:
                 return {"tipo": "costo_programa", "status": "staged", "motivo": "Fila de costos sin POS"}
             id_mod_costo = self.resolver_o_crear_modulo(
@@ -1054,6 +1055,13 @@ class DWLoaderService:
                 # Si otra fuente ya había cargado otra cifra para ese mes, queda registrado para revisión.
                 for campo, nuevo in (("monto_ejecutado", m_ejec), ("monto_meta", m_meta)):
                     previo = getattr(existente_rent, campo)
+                    if nuevo == 0 and previo not in (None, 0):
+                        # Un 0 de otra fuente es un mes aún no ejecutado, no una cifra: no pisa el monto real
+                        if campo == "monto_ejecutado":
+                            m_ejec = None
+                        else:
+                            m_meta = None
+                        nuevo = None
                     if nuevo is not None and previo not in (None, 0) and abs(float(previo) - nuevo) > max(1.0, 0.01 * abs(float(previo))):
                         self.db.add(LogInconsistencia(
                             id_documento=doc_id,

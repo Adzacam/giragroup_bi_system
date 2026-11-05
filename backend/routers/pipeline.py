@@ -327,6 +327,10 @@ def process_pipeline(
                     })
                     if reg["estudiante"]:
                         entidades_fila.append({"tipo": "ESTUDIANTE", "valor": reg["estudiante"]["valor_extraido"]})
+            elif campos and categoria in ("marketing", "admision") and registros_techo_convenio(campos):
+                for reg in registros_techo_convenio(campos):  # convenio en un documento clasificado como marketing
+                    revision_fila = reg.pop("requiere_revision", False)
+                    resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
             elif campos and categoria == "admision":
                 resoluciones_lista.append({**base, "estudiante": estudiante_de_fila(campos)})
             else:
