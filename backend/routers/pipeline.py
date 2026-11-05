@@ -86,16 +86,8 @@ def _campos_financieros_por_encabezado(celdas: List[str]) -> Optional[Dict[str, 
 
 
 def _a_numero(valor: Optional[str]) -> Optional[float]:
-    if valor is None:
-        return None
-    v = str(valor).replace("Bs.", "").replace("Bs", "").replace(" ", "").strip()
-    if not v or v.lower() in ("nan", "none"):
-        return None
-    v = v.replace(",", "") if ("," in v and "." in v) else v.replace(",", ".")
-    try:
-        return float(v)
-    except ValueError:
-        return None
+    from pipeline.normalization.montos import parsear_monto
+    return parsear_monto(valor)
 
 
 def _resolver_fila_financiera(campos: Dict[str, str]) -> Dict[str, Any]:

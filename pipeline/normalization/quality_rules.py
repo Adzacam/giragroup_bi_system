@@ -181,10 +181,9 @@ class QualityEvaluator:
         if monto is None or str(monto).strip() in ("", "nan", "none", "null", "-"):
             return True, None, None
 
-        try:
-            val_txt = str(monto).strip().replace(",", ".").replace("Bs", "").replace("bs", "").strip()
-            num = float(val_txt)
-        except (ValueError, TypeError):
+        from pipeline.normalization.montos import parsear_monto
+        num = parsear_monto(monto)
+        if num is None:
             return False, f"MONTO_NO_NUMERICO: '{monto}'", None
 
         if num < 0.0:

@@ -67,14 +67,9 @@ def _primero(campos: Dict[str, str], claves) -> Optional[str]:
 
 
 def _a_float(valor: Optional[str]) -> Optional[float]:
-    if valor is None:
-        return None
-    v = str(valor).replace("Bs.", "").replace("Bs", "").replace(" ", "").strip()
-    v = v.replace(",", "") if ("," in v and "." in v) else v.replace(",", ".")
-    try:
-        return float(v)
-    except ValueError:
-        return None
+    """Monto o número de la celda ('Bs1.171.260' -> 1171260.0); ver pipeline.normalization.montos."""
+    from pipeline.normalization.montos import parsear_monto
+    return parsear_monto(valor)
 
 
 def parsear_fecha(valor: Optional[Any]) -> Optional[date]:
