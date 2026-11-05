@@ -97,3 +97,6 @@ output/backups/
 **/output/email_previews/
 # Actas con CI y nombres de estudiantes
 output/lote*/ARCA_*.xlsx
+
+# Versiones del informe Power BI subidas desde el CMI
+uploads/powerbi/

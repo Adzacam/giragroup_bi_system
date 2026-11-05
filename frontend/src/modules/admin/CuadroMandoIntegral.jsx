@@ -3,6 +3,7 @@ import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-quer
 import PageHeader from '../../components/shared/PageHeader';
 import CmiScorecard from './cmi/CmiScorecard';
 import CmiConfiguracion from './cmi/CmiConfiguracion';
+import CmiPowerBi from './cmi/CmiPowerBi';
 import useKineticScroll from '../../hooks/useKineticScroll';
 import {
   ShieldCheck,
@@ -30,7 +31,8 @@ import {
   Sparkles,
   Info,
   Download,
-  SlidersHorizontal
+  SlidersHorizontal,
+  MonitorDown
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -72,6 +74,8 @@ export default function CuadroMandoIntegral() {
   const { role } = useAuth();
   const isDark = theme === 'dark';
   const isAdmin = role === 'ADMIN';
+  // Power BI Desktop: ADMIN edita y publica versiones; ANALISTA_MARKETING sólo descarga la vigente
+  const veePowerBi = isAdmin || role === 'ANALISTA_MARKETING';
   const queryClient = useQueryClient();
 
   // Modo Principal: 'A' = Perspectivas Estratégicas Institucionales, 'B' = Analítica Predictiva Macro
@@ -442,6 +446,8 @@ export default function CuadroMandoIntegral() {
           borderRadius: '16px',
           margin: '20px 0 28px 0',
           width: 'fit-content',
+          maxWidth: '100%',
+          flexWrap: 'wrap',
           border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'var(--color-border)'}`
         }}
       >
@@ -528,11 +534,37 @@ export default function CuadroMandoIntegral() {
             Configuración
           </button>
         )}
+        {veePowerBi && (
+          <button
+            onClick={() => setActiveMode('D')}
+            aria-pressed={activeMode === 'D'}
+            style={{
+              padding: '10px 22px',
+              borderRadius: '12px',
+              fontSize: '13.5px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              border: activeMode === 'D' && isDark ? '1px solid rgba(241, 184, 68, 0.45)' : '1px solid transparent',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease',
+              backgroundColor: activeMode === 'D' ? (isDark ? '#232a38' : 'var(--color-paper-white)') : 'transparent',
+              color: activeMode === 'D' ? (isDark ? '#FAF9F6' : '#0C1E33') : (isDark ? '#9ca3af' : 'var(--color-slate-gray)'),
+              boxShadow: activeMode === 'D' ? (isDark ? '0 4px 14px rgba(0,0,0,0.5)' : 'var(--shadow-subtle)') : 'none'
+            }}
+          >
+            <MonitorDown size={16} color={activeMode === 'D' ? 'var(--color-gira-gold)' : 'currentColor'} />
+            Power BI
+          </button>
+        )}
       </div>
 
       {activeMode === 'A' && <CmiScorecard />}
 
       {activeMode === 'C' && isAdmin && <CmiConfiguracion />}
+
+      {activeMode === 'D' && veePowerBi && <CmiPowerBi />}
 
 
       {/* ════════════════════════════════════════════════════════════════════════ */}

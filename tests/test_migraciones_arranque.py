@@ -40,9 +40,10 @@ def test_con_004_aplicada_no_se_reaplica_003():
     from main import MIGRACION_TIPO_FUENTE, migraciones_a_aplicar
     alineacion = "005_alinear_esquema_con_ddl.sql"
     cmi = "006_capa_semantica_cmi.sql"
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == [alineacion, cmi]
-    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == [alineacion, cmi]
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, alineacion, cmi}) == []
+    pbi = "007_powerbi_informe_version.sql"
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi]
+    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi]
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, alineacion, cmi, pbi}) == []
 
 
 def test_capa_cmi_no_pisa_la_configuracion_editada():
