@@ -163,7 +163,7 @@ def _pos(campos: Dict[str, str]) -> Optional[str]:
         return f"POS-{m.group(1)}"
     for k, v in campos.items():
         if k.startswith("POS") and k not in ("POS-CI", "POS + IBP"):
-            digitos = re.sub(r"^POS-?", "", v.strip().upper())
+            digitos = re.sub(r"\.0+$", "", re.sub(r"^POS-?", "", v.strip().upper()))  # '4244.0' de Excel
             return f"POS-{digitos}" if digitos else None
     return None
 
@@ -332,7 +332,9 @@ def _pos_de_valores(campos: Dict[str, str]) -> Optional[str]:
         if m:
             return f"POS-{m.group(1)}"
     for k in _CLAVES_NRO_POS:
-        digitos = re.sub(r"\D", "", str(campos.get(k) or ""))
+        valor = str(campos.get(k) or "").strip()
+        numero = _a_float(valor)  # Excel entrega '4244.0': sacar solo dígitos daría '42440'
+        digitos = str(int(numero)) if numero is not None and numero == int(numero) else re.sub(r"\D", "", valor)
         if 3 <= len(digitos) <= 5:
             return f"POS-{digitos}"
     return None
@@ -435,6 +437,78 @@ def registros_asignacion_docente(campos: Dict[str, str]) -> List[Dict[str, Any]]
         "fecha_fin": parsear_fecha(_primero(campos, _CLAVES_FECHA_FIN)),
         "fecha": parsear_fecha(_primero(campos, _CLAVES_FECHA_INICIO)),
         "requiere_revision": False,
+    }]
+
+
+# ── Convenios corporativos / techos (POS + institución cliente + monto) ───────
+_CABECERAS_INSTITUCION = ("INSTITUCION", "EMPRESA", "CONVENIO", "CLIENTE", "ENTIDAD", "INSTITUCION CONVENIO")
+_PALABRAS_MONTO_CONVENIO = (("PAGO", "MONTO", "IMPORTE", "VALOR"), ("TECHO",))  # por prioridad
+_EXCLUIR_MONTO = ("GESTION", "ANO", "FECHA", "ESCUELA", "N°", "Nº", "NRO", "INSCR", "ID")
+_CLAVES_FECHA_FIN_CONVENIO = ("FECHA CONCLUSION", "FECHA DE CONCLUSION") + _CLAVES_FECHA_FIN
+
+
+def _cabecera_institucion(campos: Dict[str, str]) -> Optional[str]:
+    """Columna de la institución cliente, tolerando erratas ('INSITUCION'); nunca una llave derivada ('ID_INSTITUCION')."""
+    from rapidfuzz import fuzz
+
+    for k in campos:
+        if k.startswith("ID") or not campos.get(k):
+            continue
+        if any(k == c or fuzz.ratio(k, c) >= 85 for c in _CABECERAS_INSTITUCION):
+            return k
+    return None
+
+
+def registros_techo_convenio(campos: Dict[str, str]) -> List[Dict[str, Any]]:
+    """
+    Fila de un convenio con una institución (techo/cerrado): POS + institución cliente, y si hay, monto,
+    inscritos y fechas. El monto se reconoce por el valor (numérico) bajo una cabecera de pago/monto/techo, aunque
+    la cabecera diga 'Estado de Pago'. Lista vacía si falta POS o institución.
+    """
+    if estudiante_de_fila(campos) is not None:
+        return []
+    k_inst = _cabecera_institucion(campos)
+    pos = _pos_de_valores(campos) or _pos(campos)
+    if not (k_inst and pos):
+        return []
+
+    monto = None
+    for palabras in _PALABRAS_MONTO_CONVENIO:
+        for k, v in campos.items():
+            if any(p in k for p in palabras) and not any(x in k.split() or k.startswith(x) for x in _EXCLUIR_MONTO):
+                monto = _a_float(v)
+                if monto is not None:
+                    break
+        if monto is not None:
+            break
+    inscritos = next((_a_float(v) for k, v in campos.items() if "INSCR" in k and _a_float(v) is not None), None)
+    gestion = next((_a_float(v) for k, v in campos.items() if k.startswith("GESTION") and _a_float(v)), None)
+    fecha_ini = parsear_fecha(_primero(campos, _CLAVES_FECHA_INICIO))
+    fecha_fin = parsear_fecha(_primero(campos, _CLAVES_FECHA_FIN_CONVENIO))
+
+    nombre_prog = _primero(campos, ("NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA"))
+    if nombre_prog:
+        nombre_prog = re.sub(r"^\s*POS[\s-]?\d{3,5}\s*", "", nombre_prog).strip() or None
+
+    motivos = []
+    if fecha_ini and fecha_fin and fecha_fin < fecha_ini:
+        motivos.append(f"FECHAS_INVERTIDAS: fin {fecha_fin} anterior al inicio {fecha_ini}")
+    if gestion and fecha_ini and int(gestion) != fecha_ini.year:
+        motivos.append(f"GESTION_DISTINTA_A_INICIO: gestión {int(gestion)} vs inicio {fecha_ini}")
+    return [{
+        "techo_convenio": True,
+        "estudiante": {},
+        "programa": {"valor_extraido": nombre_prog or pos, "metadata": {"pos_canonico": pos}},
+        "modulo": {"valor_extraido": nombre_prog or pos},
+        "institucion_cliente": campos[k_inst].strip(),
+        "monto_convenio": monto,
+        "n_inscritos": int(inscritos) if inscritos is not None else None,
+        "gestion": int(gestion) if gestion else None,
+        "fecha_inicio": fecha_ini,
+        "fecha_fin": fecha_fin,
+        "fecha": fecha_ini,
+        "motivo_techo": "; ".join(motivos) or None,
+        "requiere_revision": bool(motivos),
     }]
 
 
@@ -585,7 +659,7 @@ def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[
     if not campos:
         return "FILA_SIN_CABECERAS"
     if categoria == "rentabilidad":
-        if registros_rentabilidad(campos) or registros_costo_programa(campos):
+        if registros_rentabilidad(campos) or registros_costo_programa(campos) or registros_techo_convenio(campos):
             return None
         return "FILA_AGREGADA_SIN_CATEGORIA_MES"
     if categoria == "evaluacion_docente":

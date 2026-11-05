@@ -28,6 +28,7 @@ from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
 from models.fact_costo_programa import FactCostoPrograma
 from models.bridge_modulo_docente import BridgeModuloDocente
+from models.fact_techo_convenio import FactTechoConvenio
 from models.log_inconsistencia import LogInconsistencia
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.catalogos import CatInstitucion
@@ -647,6 +648,49 @@ class DWLoaderService:
             **{f"{k}_completadas": v for k, v in completadas.items()},
         }
 
+    def _cargar_techo_convenio(self, resoluciones, nombre_modulo, nombre_programa, pos_code, doc_id, institucion,
+                               id_tiempo, calidad) -> Dict[str, Any]:
+        """Fila de convenio de un programa con una institución; idempotente por clave_convenio."""
+        from services.instituciones_convenio import canonizar_institucion
+
+        if not pos_code or not resoluciones.get("institucion_cliente"):
+            return {"tipo": "techo_convenio", "status": "staged", "motivo": "Convenio sin POS o sin institución"}
+        id_mod = self.resolver_o_crear_modulo(
+            nombre_modulo or pos_code, pos_code=pos_code, doc_id=doc_id, institucion=institucion,
+            programa=nombre_programa,
+        )
+        existentes = [n for (n,) in self.db.query(FactTechoConvenio.institucion).distinct().all()]
+        canon, id_conv, score = canonizar_institucion(resoluciones["institucion_cliente"], existentes)
+        fecha_ini = resoluciones.get("fecha_inicio")
+        # Fila repetida tal cual -> mismo hecho; otro pago del mismo convenio (otro monto) -> otro hecho
+        import hashlib
+        clave = hashlib.sha1("|".join(str(x) for x in (
+            pos_code, canon.upper(), fecha_ini, resoluciones.get("monto_convenio"), resoluciones.get("n_inscritos"),
+        )).encode("utf-8")).hexdigest()
+
+        hecho = self.db.query(FactTechoConvenio).filter(FactTechoConvenio.clave_convenio == clave).first()
+        if hecho is None:
+            hecho = FactTechoConvenio(clave_convenio=clave, id_modulo=id_mod, institucion=canon, fecha_inicio=fecha_ini)
+            self.db.add(hecho)
+        hecho.id_convenio_catalogo = id_conv
+        hecho.id_tiempo = id_tiempo
+        hecho.id_documento = doc_id
+        for campo in ("monto_convenio", "n_inscritos", "gestion", "fecha_fin"):
+            setattr(hecho, campo, resoluciones.get(campo))
+        motivos = [m for m in (resoluciones.get("motivo_techo"),) if m]
+        if score < 100.0:
+            motivos.append(f"INSTITUCION_FUZZY: '{resoluciones['institucion_cliente']}' -> '{canon}' ({score:.0f})")
+        hecho.requiere_revision = bool(resoluciones.get("motivo_techo")) or bool(calidad.get("requiere_revision"))
+        hecho.motivo_revision = ("; ".join(motivos) or None) and "; ".join(motivos)[:300]
+        self.db.flush()
+        return {
+            "tipo": "techo_convenio",
+            "status": "loaded",
+            "id_hecho": hecho.id_hecho_techo,
+            "institucion": canon,
+            "monto_convenio": resoluciones.get("monto_convenio"),
+        }
+
     # ── 4. Resolución DimTiempo ──────────────────────────────────────────────
     def resolver_o_crear_tiempo(self, fecha_val: Optional[Any] = None) -> Optional[int]:
         """
@@ -934,6 +978,11 @@ class DWLoaderService:
                 "puntuacion": puntuacion,
                 "escala_max": escala_max,
             }
+
+        # 3d''. Ruteo CONVENIO / TECHO -> FactTechoConvenio (institución cliente canónica)
+        if categoria == "rentabilidad" and resoluciones.get("techo_convenio"):
+            return self._cargar_techo_convenio(resoluciones, nombre_modulo, nombre_programa, pos_code, doc_id,
+                                               institucion, id_tiempo, calidad)
 
         # 3d'. Ruteo COSTO POR PROGRAMA -> FactCostoPrograma (egreso/ingreso/rentabilidad de un POS)
         if categoria == "rentabilidad" and resoluciones.get("costo_programa"):

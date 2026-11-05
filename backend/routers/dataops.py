@@ -73,6 +73,7 @@ from services.extraccion_por_encabezado import (
     registros_rentabilidad,
     registros_costo_programa,
     registros_asignacion_docente,
+    registros_techo_convenio,
 )
 from services.sugerencia_hitl import es_sugerencia_un_clic, nombre_extraido, similitud_nombre_completo
 from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, resolver_caso_hecho
@@ -3561,7 +3562,8 @@ def confirm_dw_insert(
                     else:
                         # Costos por programa (egreso, ingreso, rentabilidad por POS): un hecho por programa
                         registros_linea = []
-                        for reg_costo in registros_costo_programa(campos_linea):
+                        # Costos por programa o, si no, convenios con instituciones (techos)
+                        for reg_costo in (registros_costo_programa(campos_linea) or registros_techo_convenio(campos_linea)):
                             revision_fila = reg_costo.pop("requiere_revision")
                             registros_linea.append({
                                 **reg_dict,

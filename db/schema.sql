@@ -326,6 +326,27 @@ CREATE TABLE IF NOT EXISTS public.bridge_modulo_docente (
 CREATE INDEX IF NOT EXISTS idx_bridge_mod_doc_modulo ON public.bridge_modulo_docente (id_modulo);
 CREATE INDEX IF NOT EXISTS idx_bridge_mod_doc_docente ON public.bridge_modulo_docente (id_docente);
 
+-- E4. Convenios con instituciones (techos)
+CREATE TABLE IF NOT EXISTS public.fact_techo_convenio (
+    id_hecho_techo SERIAL PRIMARY KEY,
+    id_modulo INTEGER NOT NULL REFERENCES public.dim_modulo(id_modulo) ON DELETE CASCADE,
+    id_tiempo INTEGER REFERENCES public.dim_tiempo(id_tiempo) ON DELETE SET NULL,
+    id_documento INTEGER REFERENCES public.dim_origen_documental(id_documento) ON DELETE SET NULL,
+    clave_convenio VARCHAR(40) NOT NULL UNIQUE,
+    institucion VARCHAR(200) NOT NULL,
+    id_convenio_catalogo INTEGER,
+    monto_convenio NUMERIC(14, 2),
+    n_inscritos INTEGER,
+    gestion INTEGER,
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    requiere_revision BOOLEAN DEFAULT FALSE,
+    motivo_revision VARCHAR(300),
+    actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_fact_techo_modulo ON public.fact_techo_convenio (id_modulo);
+CREATE INDEX IF NOT EXISTS idx_fact_techo_institucion ON public.fact_techo_convenio (institucion);
+
 -- F. Pronósticos de Negocio (Forecasting)
 CREATE TABLE public.fact_forecast (
     id_forecast SERIAL PRIMARY KEY,

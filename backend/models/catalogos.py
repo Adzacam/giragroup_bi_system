@@ -261,3 +261,13 @@ class CatAliasFinanciero(CatalogBase):
     alias_texto = Column(String(255), nullable=False, unique=True, index=True)
 
 
+
+
+class CatInstitucionConvenio(CatalogBase):
+    """Institución con convenio (techos): nombre canónico y grafías encontradas en las fuentes."""
+    __tablename__ = "cat_institucion_convenio"
+
+    id_convenio = Column(Integer, primary_key=True, index=True)
+    nombre_institucion = Column(String(200), nullable=False, unique=True)
+    variantes_origen = Column(Text)
+    fuente_referencia = Column(String(150))

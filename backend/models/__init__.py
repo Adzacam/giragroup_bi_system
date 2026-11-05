@@ -19,6 +19,7 @@ from .fact_marketing import FactMarketing
 from .fact_rentabilidad import FactRentabilidad
 from .fact_costo_programa import FactCostoPrograma
 from .bridge_modulo_docente import BridgeModuloDocente
+from .fact_techo_convenio import FactTechoConvenio
 from .dim_meta import DimMeta
 from .fact_forecast import FactForecast
 from .staging_entidad import StagingEntidadNoResuelta
