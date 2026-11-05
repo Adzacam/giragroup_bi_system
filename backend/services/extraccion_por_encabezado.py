@@ -174,17 +174,18 @@ def estados_de_fila(campos: Dict[str, str]) -> Dict[str, Any]:
     llevados a su nombre de catálogo y validados contra las combinaciones de CRITERIOS.
     'estado_revision' es True si algún estado no está en catálogo o la combinación no es válida.
     """
-    from pipeline.config import ESTADOS_ACADEMICOS_VALIDOS, ESTADOS_TUTORIA_VALIDOS, ESTADOS_ARCA_VALIDOS
+    from services.catalogo_estados import reglas_estado
     from pipeline.normalization.quality_rules import canonizar_estado, validar_combinacion_estados
 
-    aca, ok_aca = canonizar_estado(campos.get("ESTADO ACADEMICO"), ESTADOS_ACADEMICOS_VALIDOS)
+    reglas = reglas_estado()  # cat_estado_* y cat_combinacion_estado; config solo si el catálogo no responde
+    aca, ok_aca = canonizar_estado(campos.get("ESTADO ACADEMICO"), reglas.academicos)
     tut, ok_tut = canonizar_estado(
-        campos.get("ESTADO TUTORIA") or campos.get("ESTADO REPROBADO"), ESTADOS_TUTORIA_VALIDOS
+        campos.get("ESTADO TUTORIA") or campos.get("ESTADO REPROBADO"), reglas.tutoria
     )
-    arca, ok_arca = canonizar_estado(campos.get("ESTADO ARCA"), ESTADOS_ARCA_VALIDOS)
+    arca, ok_arca = canonizar_estado(campos.get("ESTADO ARCA"), reglas.arca)
     motivos = [f"ESTADO_FUERA_DE_CATALOGO: '{v}'" for v, ok in ((aca, ok_aca), (tut, ok_tut), (arca, ok_arca)) if not ok]
     if not motivos:
-        valida, motivo = validar_combinacion_estados(aca, tut, arca)
+        valida, motivo = validar_combinacion_estados(aca, tut, arca, reglas.combinaciones)
         if not valida:
             motivos.append(motivo)
     return {

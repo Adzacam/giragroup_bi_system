@@ -77,6 +77,17 @@ CREATE TABLE IF NOT EXISTS public.cat_estado_arca (
     nombre_arca VARCHAR(100) NOT NULL UNIQUE
 );
 
+-- Combinaciones válidas (estado académico, estado reprobado/tutoría, estado ARCA): reglas de la hoja
+-- CRITERIOS. La validación de actas las lee de aquí; agregar una combinación no requiere tocar código.
+CREATE TABLE IF NOT EXISTS public.cat_combinacion_estado (
+    id_combinacion SERIAL PRIMARY KEY,
+    id_estado_academico INTEGER NOT NULL REFERENCES public.cat_estado_academico(id_estado_academico) ON DELETE CASCADE,
+    id_estado_reprobado INTEGER NOT NULL REFERENCES public.cat_estado_reprobado(id_estado_reprobado) ON DELETE CASCADE,
+    id_estado_arca INTEGER NOT NULL REFERENCES public.cat_estado_arca(id_estado_arca) ON DELETE CASCADE,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    CONSTRAINT uq_combinacion_estado UNIQUE (id_estado_academico, id_estado_reprobado, id_estado_arca)
+);
+
 -- 8. Clasificación de Cartera de Cobranzas
 CREATE TABLE IF NOT EXISTS public.cat_tipo_cartera (
     id_cartera SERIAL PRIMARY KEY,

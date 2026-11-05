@@ -470,3 +470,93 @@ def detect_financial_anomalies(
         "requiere_revision": len(anomalias) > 0
     }
 
+
+
+# ── Combinaciones válidas de estados de acta (hoja CRITERIOS) ─────────────────
+from pydantic import BaseModel, Field  # noqa: E402
+
+
+class CombinacionEstadoIn(BaseModel):
+    estado_academico: str = Field(..., max_length=100)
+    estado_reprobado: str = Field(..., max_length=100, description="Estado reprobado / tutoría")
+    estado_arca: str = Field(..., max_length=100)
+
+
+def _combinaciones(catalog_db: Session):
+    from models.catalogos import CatCombinacionEstado, CatEstadoAcademico, CatEstadoArca, CatEstadoReprobado
+    return (
+        catalog_db.query(CatCombinacionEstado, CatEstadoAcademico.nombre_estado, CatEstadoReprobado.nombre_detalle,
+                         CatEstadoArca.nombre_arca)
+        .join(CatEstadoAcademico, CatEstadoAcademico.id_estado_academico == CatCombinacionEstado.id_estado_academico)
+        .join(CatEstadoReprobado, CatEstadoReprobado.id_estado_reprobado == CatCombinacionEstado.id_estado_reprobado)
+        .join(CatEstadoArca, CatEstadoArca.id_estado_arca == CatCombinacionEstado.id_estado_arca)
+    )
+
+
+@router.get("/catalogs/estados/combinaciones", summary="Combinaciones válidas (académico, reprobado, ARCA)")
+def listar_combinaciones_estado(
+    catalog_db: Session = Depends(get_catalog_db),
+    current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "DIRECTOR_ACADEMICO", "ADMIN"])),
+):
+    filas = _combinaciones(catalog_db).order_by("nombre_estado", "nombre_detalle", "nombre_arca").all()
+    return {"status": "success", "total": len(filas), "data": [
+        {"id_combinacion": c.id_combinacion, "estado_academico": a, "estado_reprobado": r, "estado_arca": e,
+         "activo": c.activo}
+        for c, a, r, e in filas
+    ]}
+
+
+@router.post("/catalogs/estados/combinaciones", status_code=status.HTTP_201_CREATED,
+             summary="Agregar (o reactivar) una combinación válida de estados")
+def crear_combinacion_estado(
+    payload: CombinacionEstadoIn,
+    catalog_db: Session = Depends(get_catalog_db),
+    current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "ADMIN"])),
+):
+    from models.catalogos import CatCombinacionEstado, CatEstadoAcademico, CatEstadoArca, CatEstadoReprobado
+    from pipeline.normalization.quality_rules import canonizar_estado
+    from services.catalogo_estados import invalidar_cache
+
+    ids = []
+    for valor, modelo, col_id, col_nombre in (
+        (payload.estado_academico, CatEstadoAcademico, "id_estado_academico", "nombre_estado"),
+        (payload.estado_reprobado, CatEstadoReprobado, "id_estado_reprobado", "nombre_detalle"),
+        (payload.estado_arca, CatEstadoArca, "id_estado_arca", "nombre_arca"),
+    ):
+        registros = catalog_db.query(modelo).all()
+        nombre, reconocido = canonizar_estado(valor, tuple(getattr(r, col_nombre) for r in registros))
+        if not reconocido or nombre is None:
+            raise HTTPException(status_code=422, detail=f"'{valor}' no existe en {modelo.__tablename__}")
+        ids.append(next(getattr(r, col_id) for r in registros if getattr(r, col_nombre) == nombre))
+
+    existente = catalog_db.query(CatCombinacionEstado).filter_by(
+        id_estado_academico=ids[0], id_estado_reprobado=ids[1], id_estado_arca=ids[2]
+    ).first()
+    if existente:
+        existente.activo = True
+        comb = existente
+    else:
+        comb = CatCombinacionEstado(id_estado_academico=ids[0], id_estado_reprobado=ids[1], id_estado_arca=ids[2])
+        catalog_db.add(comb)
+    catalog_db.commit()
+    invalidar_cache()
+    return {"status": "success", "id_combinacion": comb.id_combinacion}
+
+
+@router.delete("/catalogs/estados/combinaciones/{id_combinacion}",
+               summary="Desactivar una combinación (deja de ser válida; no se borra)")
+def desactivar_combinacion_estado(
+    id_combinacion: int,
+    catalog_db: Session = Depends(get_catalog_db),
+    current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "ADMIN"])),
+):
+    from models.catalogos import CatCombinacionEstado
+    from services.catalogo_estados import invalidar_cache
+
+    comb = catalog_db.query(CatCombinacionEstado).get(id_combinacion)
+    if not comb:
+        raise HTTPException(status_code=404, detail="Combinación no encontrada.")
+    comb.activo = False
+    catalog_db.commit()
+    invalidar_cache()
+    return {"status": "success", "id_combinacion": id_combinacion, "activo": False}

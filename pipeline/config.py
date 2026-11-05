@@ -65,7 +65,8 @@ UMBRAL_DESERCION_INCUMPLIMIENTO_PCT = 30.0
 UMBRAL_RIESGO_CUOTAS_IMPAGAS = 2
 ESTADOS_CARTERA_VALIDOS = ("Vigente", "Mora", "Previsionable")
 
-# Estados académicos de un acta (hoja CRITERIOS de la base ARCA; mismos nombres que cat_estado_*)
+# Estados académicos de un acta. Fuente de verdad: cat_estado_* y cat_combinacion_estado en giragroup_catalog_db
+# (services/catalogo_estados.py). Estos valores son solo el respaldo si el catálogo no responde.
 ESTADOS_ACADEMICOS_VALIDOS = ("Aprobado", "Reprobado", "Deserción", "En curso", "Participó")
 ESTADOS_TUTORIA_VALIDOS = ("Aprobado", "Insuficiencia académica", "Abandono", "Congelamiento", "Tutoria",
                            "Deserción", "En curso")

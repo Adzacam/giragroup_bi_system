@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Numeric, ForeignKey, UniqueConstraint, Text
+from sqlalchemy import Boolean, Column, Integer, String, Numeric, ForeignKey, UniqueConstraint, Text
 from sqlalchemy.orm import relationship
 from core.database import CatalogBase
 
@@ -105,6 +105,20 @@ class CatEstadoArca(CatalogBase):
 
     id_estado_arca = Column(Integer, primary_key=True, index=True)
     nombre_arca = Column(String(100), nullable=False, unique=True)
+
+
+class CatCombinacionEstado(CatalogBase):
+    """Combinación válida (académico, reprobado/tutoría, ARCA) de la hoja CRITERIOS."""
+    __tablename__ = "cat_combinacion_estado"
+    __table_args__ = (
+        UniqueConstraint("id_estado_academico", "id_estado_reprobado", "id_estado_arca", name="uq_combinacion_estado"),
+    )
+
+    id_combinacion = Column(Integer, primary_key=True, index=True)
+    id_estado_academico = Column(Integer, ForeignKey("cat_estado_academico.id_estado_academico", ondelete="CASCADE"), nullable=False)
+    id_estado_reprobado = Column(Integer, ForeignKey("cat_estado_reprobado.id_estado_reprobado", ondelete="CASCADE"), nullable=False)
+    id_estado_arca = Column(Integer, ForeignKey("cat_estado_arca.id_estado_arca", ondelete="CASCADE"), nullable=False)
+    activo = Column(Boolean, nullable=False, default=True)
 
 
 class CatTipoCartera(CatalogBase):

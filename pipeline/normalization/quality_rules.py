@@ -545,23 +545,26 @@ def canonizar_estado(valor: Any, validos: Tuple[str, ...]) -> Tuple[Optional[str
 
 
 def validar_combinacion_estados(
-    estado_academico: Optional[str], estado_tutoria: Optional[str], estado_arca: Optional[str]
+    estado_academico: Optional[str], estado_tutoria: Optional[str], estado_arca: Optional[str],
+    combinaciones=None,
 ) -> Tuple[bool, Optional[str]]:
     """
-    Valida (académico, tutoría, ARCA) contra COMBINACIONES_ESTADO_VALIDAS. Los estados ausentes no se
-    exigen: la combinación es válida si alguna fila de CRITERIOS coincide en los presentes.
+    Valida (académico, tutoría, ARCA) contra las combinaciones válidas: las que se pasen (las del catálogo
+    cat_combinacion_estado) o, si no, COMBINACIONES_ESTADO_VALIDAS de config. Los estados ausentes no se
+    exigen: la combinación es válida si alguna combinación coincide en los presentes.
     """
-    from pipeline.config import COMBINACIONES_ESTADO_VALIDAS
+    if combinaciones is None:
+        from pipeline.config import COMBINACIONES_ESTADO_VALIDAS as combinaciones
 
     presentes = (estado_academico, estado_tutoria, estado_arca)
     if not any(presentes):
         return True, None
     if any(
         all(p is None or p == c for p, c in zip(presentes, combo))
-        for combo in COMBINACIONES_ESTADO_VALIDAS
+        for combo in combinaciones
     ):
         return True, None
     return False, (
         f"COMBINACION_ESTADO_INVALIDA: ({estado_academico or '-'}, {estado_tutoria or '-'}, "
-        f"{estado_arca or '-'}) no figura en CRITERIOS"
+        f"{estado_arca or '-'}) no figura en cat_combinacion_estado"
     )

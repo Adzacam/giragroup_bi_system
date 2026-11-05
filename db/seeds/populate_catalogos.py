@@ -57,7 +57,7 @@ ARCHIVO_COBRANZAS = "BD Cobranzas.xlsx"
 TABLAS_CATALOGO = [
     "cat_convenio_programa", "cat_institucion_convenio", "cat_historico_equivalencia",
     "cat_concepto_financiero", "cat_modulo", "cat_programa", "cat_docente", "cat_escuela",
-    "cat_tipo_programa", "cat_modalidad", "cat_estado_academico", "cat_estado_reprobado",
+    "cat_tipo_programa", "cat_modalidad", "cat_combinacion_estado", "cat_estado_academico", "cat_estado_reprobado",
     "cat_estado_arca", "cat_tipo_cartera", "ref_metas_gestion", "cat_categoria_financiera",
     "cat_etiqueta_clasificacion", "cat_mapeo_columna", "cat_guia_texto_plano",
 ]
@@ -210,6 +210,7 @@ def extraer(dir_datos: Path = DIR_DATOS) -> Dict[str, Any]:
     docentes: Dict[str, Dict[str, Any]] = {}
     modulos: Dict[Tuple[str, int], Dict[str, Any]] = {}
     estados = {"academico": Canonizador(), "reprobado": Canonizador(), "arca": Canonizador()}
+    combinaciones: set = set()  # claves canónicas (académico, reprobado, ARCA)
 
     def programa(pc: str) -> Dict[str, Any]:
         return programas.setdefault(pc, {"pos_code": pc, "fuentes": set()})
@@ -271,6 +272,17 @@ def extraer(dir_datos: Path = DIR_DATOS) -> Dict[str, Any]:
         for k, i in (("academico", col(cab, "ESTADO ACADEMICO")), ("reprobado", col(cab, "ESTADO REPROBADO")),
                      ("arca", col(cab, "ESTADO ARCA"))):
             estados[k].agregar(celda(f, i))
+    # Isla 'Combinaciones': tres celdas contiguas (académico, reprobado, ARCA) desde la columna titulada así
+    i_comb = col(cab, "COMBINACIONES")
+    if i_comb is not None:
+        for f in filas:
+            trio = [celda(f, i_comb + d) for d in range(3)]
+            if all(trio):
+                combinaciones.add((
+                    estados["academico"].agregar(trio[0]),
+                    estados["reprobado"].agregar(trio[1]),
+                    estados["arca"].agregar(trio[2]),
+                ))
 
     # 4. PLANIFICACIÓN · Programas Notificados ─────────────────────────────────
     print(f"Leyendo {ARCHIVO_PLANIF} …")
@@ -375,7 +387,7 @@ def extraer(dir_datos: Path = DIR_DATOS) -> Dict[str, Any]:
             observado[car].append(dias)
 
     return {
-        "escuelas": escuelas, "tipos": tipos, "modalidades": modalidades, "estados": estados,
+        "escuelas": escuelas, "tipos": tipos, "modalidades": modalidades, "estados": estados, "combinaciones": combinaciones,
         "programas": programas, "docentes": docentes, "modulos": list(modulos.values()),
         "instituciones": instituciones, "metas": metas, "carteras_observadas": observado,
     }
@@ -537,6 +549,14 @@ def generar_sql(cat: Dict[str, Any], ruta_salida: Path, ruta_config: Path) -> Di
         ins("estados", f"INSERT INTO public.cat_estado_reprobado (nombre_detalle) VALUES ({sql(n)}) ON CONFLICT (nombre_detalle) DO NOTHING;")
     for n in est["arca"].todos():
         ins("estados", f"INSERT INTO public.cat_estado_arca (nombre_arca) VALUES ({sql(n)}) ON CONFLICT (nombre_arca) DO NOTHING;")
+    for k_aca, k_rep, k_arca in sorted(cat.get("combinaciones", ())):
+        n_aca, n_rep, n_arca = est["academico"].nombre(k_aca), est["reprobado"].nombre(k_rep), est["arca"].nombre(k_arca)
+        ins("estados",
+            "INSERT INTO public.cat_combinacion_estado (id_estado_academico, id_estado_reprobado, id_estado_arca) "
+            f"SELECT a.id_estado_academico, r.id_estado_reprobado, c.id_estado_arca FROM public.cat_estado_academico a, "
+            f"public.cat_estado_reprobado r, public.cat_estado_arca c WHERE a.nombre_estado = {sql(n_aca)} "
+            f"AND r.nombre_detalle = {sql(n_rep)} AND c.nombre_arca = {sql(n_arca)} "
+            "ON CONFLICT (id_estado_academico, id_estado_reprobado, id_estado_arca) DO NOTHING;")
 
     L += ["", "-- 5. Clasificación de Carteras (reglas; nombres según BD Cobranzas)"]
     for nombre, mn, mx, desc in REGLAS_CARTERA:
