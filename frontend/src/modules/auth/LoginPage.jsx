@@ -112,9 +112,7 @@ export default function LoginPage() {
       if (res.mfa_required === false && res.access_token) {
         if (res.device_token) {
           localStorage.setItem(`gira_trusted_device_${normalizedEmail}`, res.device_token);
-          const normalizedEmail = email.trim().toLowerCase();
-        localStorage.setItem(`gira_trusted_device_${normalizedEmail}`, res.device_token);
-        localStorage.setItem(`gira_trusted_device_${email}`, res.device_token);
+          localStorage.setItem(`gira_trusted_device_${email}`, res.device_token);
         }
         const todayStr = new Date().toISOString().split('T')[0];
         localStorage.setItem('gira_last_login_date', todayStr);
