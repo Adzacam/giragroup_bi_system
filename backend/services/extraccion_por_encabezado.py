@@ -25,12 +25,14 @@ _CLAVES_NOTA = ("GRADE/100.00", "GRADE/100", "NOTA FINAL", "NOTA_FINAL", "CALIFI
 _CLAVES_FECHA_FINANCIERA = ("FECHA ULTIMA FACTURA", "FECHA DE PAGO", "FECHA PAGO", "FECHA DE VENCIMIENTO",
                             "FECHA VENCIMIENTO", "FECHA DE LA PRIMERA FACTURA", "FECHA INICIO DIPLOMADO")
 _CLAVES_FECHA_ACADEMICA = ("FECHA", "FECHA EVALUACION", "FECHA DE EVALUACION", "FECHA ASENTAMIENTO",
-                           "FECHA DE CIERRE", "FECHA FIN")
+                           "FECHA DE CIERRE", "FECHA FIN", "MARCA TEMPORAL", "FECHA DE ENVIO", "FINALIZADO",
+                           "COMPLETADO", "COMENZADO EL")
 _CLAVES_MES = ("MES INICIO", "MES INICO", "MES")
 _CLAVES_ANIO = ("ANO INICIO", "ANO INCIO", "ANO", "GESTION")
 # Moodle no trae la fecha del curso: la única es la de exportación del reporte, que se toma como fecha de corte
 _CLAVE_DESCARGA_MOODLE = "LAST DOWNLOADED FROM THIS COURSE"
 _RE_MODULO_N = re.compile(r"^MODULO (\d{1,2})$")
+_RE_FECHA_LARGA = re.compile(r"(\d{1,2}) DE ([A-Z]+) DE (\d{4})")
 # Google Forms escribe la cédula como 'CI-4892019' / 'ci 4892019' / 'C.I. 4892019': el prefijo no es parte del número
 _RE_PREFIJO_CI = re.compile(r"^\s*c\.?\s*i\.?\s*[-:]?\s*(?=\d)", re.IGNORECASE)
 # EJECUTADO VS META: una fila por categoría y mes, con columnas EJECUTADO <año> y META POR CATEGORIA <año>
@@ -88,6 +90,13 @@ def parsear_fecha(valor: Optional[Any]) -> Optional[date]:
             return datetime.strptime(texto, fmt).date()
         except ValueError:
             continue
+    # Moodle/Forms en español: 'miércoles, 20 de noviembre de 2024, 5:38' (se ignoran el día y la hora)
+    m = _RE_FECHA_LARGA.search(normalizar_encabezado(texto))
+    if m and m.group(2) in MESES:
+        try:
+            return date(int(m.group(3)), MESES[m.group(2)], int(m.group(1)))
+        except ValueError:
+            return None
     return None
 
 
@@ -301,6 +310,137 @@ def registros_rentabilidad(campos: Dict[str, str]) -> List[Dict[str, Any]]:
 _CLAVES_ENTIDAD_PROGRAMA = ("NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA", "CURSO", "COURSE", "MODULO", "MATERIA")
 
 
+# ── Evaluación docente / satisfacción ────────────────────────────────────────
+# Columnas de identidad de una encuesta: nunca son preguntas
+_CLAVES_IDENTIDAD_ENCUESTA = (
+    "NOMBRE", "NOMBRES", "APELLIDO", "APELLIDOS", "APELLIDO(S)", "PATERNO", "MATERNO", "NOMBRE COMPLETO",
+    "ESTUDIANTE", "ALUMNO", "PARTICIPANTE", "CORREO", "CORREO ELECTRONICO", "EMAIL", "E-MAIL",
+    "USUARIO", "PROGRAMA", "NOMBRE DEL PROGRAMA", "CURSO", "COURSE", "MODULO", "N° MODULO", "NRO MODULO",
+    "MATERIA", "DOCENTE", "PROFESOR", "FACILITADOR", "TUTOR", "GRUPO", "SEDE", "CIUDAD", "N°", "Nº", "NRO",
+    "ID", "RESPUESTA", "INSTITUCION",
+) + _CLAVES_CI + _CLAVES_FECHA_ACADEMICA
+# '5/Totalmente de acuerdo', '3 - Adecuada', '8', '4,5'
+_RE_LIKERT = re.compile(r"^\s*(\d{1,2}(?:[.,]\d+)?)\s*(?:[/\-–:.)]\s*\D.*)?$")
+_RE_ANONIMO = re.compile(r"ANONIM|SIN NOMBRE|^PERSONA \d+$")
+_RE_POS_VALOR = re.compile(r"POS[\s-]?(\d{3,5})")
+_RE_NRO_MODULO = re.compile(r"(\d{1,2})")
+# Comentarios sin contenido: no se guardan. 'Todo conforme' sí es una opinión y se conserva.
+_COMENTARIOS_VACIOS = {"", ".", "-", "_", "NINGUNO", "NINGUNA", "NADA", "NO", "N/A", "NA", "SIN COMENTARIOS",
+                       "NINGUN COMENTARIO", "NO HAY", "NO HAY DATOS", "S/C", "X"}
+_PALABRAS_INSTITUCIONAL = ("PLATAFORMA", "MOODLE", "ZOOM", "TEAMS", "AULA VIRTUAL", "ATENCION", "ADMINISTRATIV",
+                           "COORDINACION", "COORDINADOR", "INSTITUCION", "UNIFRANZ", "SOPORTE", "SERVICIO",
+                           "INSCRIPCION", "PAGO", "CERTIFICA", "INFRAESTRUCTURA", "ORGANIZACION", "ASESOR")
+_PALABRAS_NPS = ("RECOMENDAR", "RECOMENDARIA", "RECOMENDACION", "DEL 0 AL 10", "DEL 1 AL 10", "0 A 10", "1 A 10")
+
+
+def _es_columna_identidad(encabezado: str) -> bool:
+    return encabezado in _CLAVES_IDENTIDAD_ENCUESTA or encabezado.startswith(("CORREO", "DIRECCION DE CORREO", "POS"))
+
+
+def _parece_pregunta(encabezado: str) -> bool:
+    return "?" in encabezado or "¿" in encabezado or len(encabezado) >= 30
+
+
+def tipo_pregunta(encabezado: str) -> str:
+    """NPS (recomendación 0-10), INSTITUCIONAL (plataforma, atención, gestión) o DOCENTE."""
+    if any(p in encabezado for p in _PALABRAS_NPS):
+        return "NPS"
+    if "DOCENTE" in encabezado or "PROFESOR" in encabezado or "FACILITADOR" in encabezado:
+        return "DOCENTE"
+    if any(p in encabezado for p in _PALABRAS_INSTITUCIONAL):
+        return "INSTITUCIONAL"
+    return "DOCENTE"
+
+
+def _escala(encabezado: str, valor: float, tipo: str) -> int:
+    """Escala de la pregunta: 10 si es NPS, si la cabecera la menciona o si el valor pasa de 5; si no, 5."""
+    if tipo == "NPS" or "10" in encabezado or valor > 5:
+        return 10
+    return 5
+
+
+def _estudiante_encuesta(campos: Dict[str, str]) -> Optional[Dict[str, Any]]:
+    """Estudiante de la encuesta, o None si es anónima o no trae identidad."""
+    est = estudiante_de_fila(campos)
+    if est is None and campos.get("NOMBRE"):
+        apellido = campos.get("APELLIDO(S)") or campos.get("APELLIDOS") or campos.get("APELLIDO") or ""
+        nombre = " ".join(p for p in (campos.get("NOMBRE"), apellido) if p)
+        est = {"valor_extraido": nombre, "fk_resolucion": {"ci": None, "fk_estado": "B", "nombre_resuelto": nombre}}
+    if est and _RE_ANONIMO.search(normalizar_encabezado(est["valor_extraido"])):
+        return None
+    return est
+
+
+def registros_evaluacion(campos: Dict[str, str]) -> List[Dict[str, Any]]:
+    """
+    Una fila de encuesta -> un registro por pregunta (fact_evaluacion_docente: una fila por respuesta).
+    - Pregunta con puntaje ('5/Totalmente de acuerdo', '8'): puntuacion + escala_max (5 o 10).
+    - Pregunta abierta (cabecera tipo pregunta, valor de texto): comentario, puntuacion NULL.
+    - tipo_pregunta DOCENTE / INSTITUCIONAL / NPS: solo DOCENTE se atribuye al docente.
+    - Anónima ('ENTRADA ANONIMA - PERSONA 5'): sin estudiante, nunca se crea uno ficticio.
+    - clave_respuesta: hash estable de la fila + pregunta, para que volver a subir el archivo no duplique.
+    Lista vacía si la fila no tiene respuestas (listas de comentarios de una hoja de gráficos, totales).
+    """
+    import hashlib
+
+    estudiante = _estudiante_encuesta(campos)
+    texto_programa = " ".join(campos.get(k) or "" for k in ("PROGRAMA", "NOMBRE DEL PROGRAMA", "CURSO", "COURSE"))
+    m_pos = _RE_POS_VALOR.search(texto_programa.upper())
+    pos = f"POS-{m_pos.group(1)}" if m_pos else _pos(campos)
+    m_mod = _RE_NRO_MODULO.search(campos.get("MODULO") or campos.get("N° MODULO") or campos.get("NRO MODULO") or "")
+    nro_modulo = int(m_mod.group(1)) if m_mod else None
+    docente = next((campos[k] for k in ("DOCENTE", "PROFESOR", "FACILITADOR", "TUTOR") if campos.get(k)), None)
+    fecha = fecha_de_fila(campos, "academico")
+
+    respuestas = []
+    for enc, valor in campos.items():
+        if _es_columna_identidad(enc) or valor is None:
+            continue
+        v = str(valor).strip()
+        m = _RE_LIKERT.match(v)
+        # Un número suelto solo es respuesta bajo una cabecera de pregunta (no 'EDAD', 'HORAS', 'GESTION')
+        if m and (_parece_pregunta(enc) or not v.replace(",", ".").replace(".", "", 1).isdigit()):
+            num = float(m.group(1).replace(",", "."))
+            tipo = tipo_pregunta(enc)
+            esc = _escala(enc, num, tipo)
+            if 0.0 <= num <= esc:
+                respuestas.append((enc, num, esc, tipo, None))
+            continue
+        if _parece_pregunta(enc) and normalizar_encabezado(v) not in _COMENTARIOS_VACIOS:
+            respuestas.append((enc, None, None, tipo_pregunta(enc), v[:1000]))
+
+    # Sin puntajes ni identidad: lista suelta de comentarios de una hoja de gráficos, o fila de resumen
+    if not respuestas or (not any(r[1] is not None for r in respuestas) and not (pos or estudiante)):
+        return []
+
+    if pos and nro_modulo:
+        programa = {"valor_extraido": pos, "metadata": {"pos_canonico": f"{pos}-M{nro_modulo:02d}"}}
+        modulo = {"valor_extraido": f"{pos} · Módulo {nro_modulo}"}
+    elif pos:
+        programa = {"valor_extraido": pos, "metadata": {"pos_canonico": pos}}
+        modulo = {"valor_extraido": campos.get("NOMBRE DEL PROGRAMA") or pos}
+    else:
+        programa = None
+        nombre_mod = campos.get("MODULO") or campos.get("CURSO") or campos.get("PROGRAMA")
+        modulo = {"valor_extraido": nombre_mod} if nombre_mod else None
+
+    fila_canonica = "|".join(f"{k}={campos[k]}" for k in sorted(campos))
+    return [{
+        "estudiante": estudiante,
+        "docente": {"valor_extraido": docente} if docente else None,
+        "programa": programa,
+        "modulo": modulo,
+        "fecha": fecha,
+        "pregunta_bloque": enc[:500],
+        "tipo_pregunta": tipo,
+        "puntuacion": num,
+        "escala_max": esc,
+        "comentario": coment,
+        "clave_respuesta": hashlib.sha1(f"{fila_canonica}||{enc}".encode("utf-8")).hexdigest(),
+        "requiere_revision": fecha is None,
+    } for enc, num, esc, tipo, coment in respuestas]
+
+
 def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[str]:
     """
     Motivo por el que una línea no puede producir un hecho (se descarta como ruido, no va a revisión), o None.
@@ -315,6 +455,8 @@ def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[
         return "FILA_SIN_CABECERAS"
     if categoria == "rentabilidad":
         return None if registros_rentabilidad(campos) else "FILA_AGREGADA_SIN_CATEGORIA_MES"
+    if categoria == "evaluacion_docente":
+        return None if registros_evaluacion(campos) else "FILA_EVALUACION_SIN_RESPUESTAS"
     if estudiante_de_fila(campos) is not None:
         return None
     if categoria == "academico":

@@ -108,6 +108,10 @@ def on_startup():
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_en TIMESTAMP;
                         ALTER TABLE fact_rendimiento_academico ADD COLUMN IF NOT EXISTS estado_tutoria VARCHAR(50);
                         ALTER TABLE fact_rendimiento_academico ADD COLUMN IF NOT EXISTS estado_arca VARCHAR(50);
+                        ALTER TABLE fact_evaluacion_docente ADD COLUMN IF NOT EXISTS tipo_pregunta VARCHAR(20);
+                        ALTER TABLE fact_evaluacion_docente ADD COLUMN IF NOT EXISTS escala_max INTEGER;
+                        ALTER TABLE fact_evaluacion_docente ADD COLUMN IF NOT EXISTS clave_respuesta VARCHAR(64);
+                        CREATE UNIQUE INDEX IF NOT EXISTS uq_fact_eval_clave ON fact_evaluacion_docente (clave_respuesta);
                     """))
                     conn.commit()
 

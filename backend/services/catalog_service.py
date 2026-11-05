@@ -159,8 +159,11 @@ class CatalogService:
                 r.id_docente: (r.promedio, r.n)
                 for r in self.db.query(
                     FactEvaluacionDocente.id_docente,
-                    func.avg(FactEvaluacionDocente.puntuacion).label("promedio"),
-                    func.count(FactEvaluacionDocente.id_hecho_eval).label("n"),
+                    # Likert 1-5 y escalas de 10 llevadas a 1-5; comentarios sin puntaje no cuentan
+                    func.avg(
+                        FactEvaluacionDocente.puntuacion * 5.0 / func.coalesce(FactEvaluacionDocente.escala_max, 5)
+                    ).label("promedio"),
+                    func.count(FactEvaluacionDocente.puntuacion).label("n"),
                 ).filter(FactEvaluacionDocente.id_docente.in_(ids))
                 .group_by(FactEvaluacionDocente.id_docente).all()
             }

@@ -13,3 +13,6 @@ class FactEvaluacionDocente(Base):
     pregunta_bloque = Column(String(500))
     puntuacion = Column(Numeric(4, 2))
     comentario = Column(String(1000))
+    tipo_pregunta = Column(String(20))             # DOCENTE / INSTITUCIONAL / NPS
+    escala_max = Column(Integer)                   # 5 (Likert) o 10 (NPS); el promedio se lleva a 1-5
+    clave_respuesta = Column(String(64), unique=True, index=True)  # idempotencia de la carga

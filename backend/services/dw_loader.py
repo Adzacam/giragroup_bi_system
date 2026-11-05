@@ -536,6 +536,17 @@ class DWLoaderService:
 
         return None
 
+    def _docente_unico_del_modulo(self, id_modulo: Optional[int]) -> Optional[int]:
+        """Docente de un módulo según los hechos académicos ya cargados; None si no hay o hay más de uno."""
+        if not id_modulo:
+            return None
+        ids = [
+            r[0] for r in self.db.query(FactRendimientoAcademico.id_docente)
+            .filter(FactRendimientoAcademico.id_modulo == id_modulo, FactRendimientoAcademico.id_docente.isnot(None))
+            .distinct().limit(2).all()
+        ]
+        return ids[0] if len(ids) == 1 else None
+
     # ── 4. Resolución DimTiempo ──────────────────────────────────────────────
     def resolver_o_crear_tiempo(self, fecha_val: Optional[Any] = None) -> Optional[int]:
         """
@@ -767,35 +778,61 @@ class DWLoaderService:
                 "fk_estado": fk_estado_est
             }
 
-        # 3c. Ruteo EVALUACION_DOCENTE -> FactEvaluacionDocente
+        # 3c. Ruteo EVALUACION_DOCENTE -> FactEvaluacionDocente (una fila por respuesta)
         if categoria == "evaluacion_docente" and FactEvaluacionDocente:
-            id_doc_eval = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id)
+            puntuacion_raw = resoluciones.get("puntuacion")
+            if puntuacion_raw is None:
+                puntuacion_raw = resoluciones.get("rating")
+            puntuacion = float(puntuacion_raw) if puntuacion_raw is not None else None
+            escala_max = resoluciones.get("escala_max") or (5 if puntuacion is not None else None)
+            comentario = resoluciones.get("comentario")
+            comentario_str = str(comentario)[:1000] if comentario else None
+            if puntuacion is None and not comentario_str:
+                # Sin puntaje ni comentario no hay respuesta que guardar: nunca un 5.0 de relleno
+                return {"tipo": "evaluacion_docente", "status": "skipped", "motivo": "RESPUESTA_VACIA"}
+            pregunta = str(resoluciones.get("pregunta_bloque") or resoluciones.get("criterio") or "Evaluación de desempeño docente")[:500]
+            tipo_preg = resoluciones.get("tipo_pregunta") or "DOCENTE"
+
             id_mod_eval = self.resolver_o_crear_modulo(
                 nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
             ) or self.resolver_o_crear_modulo("Módulo General", pos_code="MOD-GEN", institucion=institucion)
+            id_doc_eval = None
+            if tipo_preg == "DOCENTE":  # plataforma, atención y NPS no son del docente
+                id_doc_eval = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id) \
+                    or self._docente_unico_del_modulo(id_mod_eval)
+            if resoluciones.get("anonima") or not (ci_est or nombre_est):
+                id_est = None  # respuesta anónima: sin estudiante, no se crea uno ficticio
 
-            puntuacion = float(resoluciones.get("puntuacion") or resoluciones.get("rating") or 5.0)
-            pregunta = str(resoluciones.get("pregunta_bloque") or resoluciones.get("criterio") or "Evaluación de desempeño docente")[:500]
-            comentario = resoluciones.get("comentario")
-            comentario_str = str(comentario)[:1000] if comentario else None
-
-            nuevo_eval = FactEvaluacionDocente(
+            clave = resoluciones.get("clave_respuesta")
+            existente_eval = self.db.query(FactEvaluacionDocente).filter(
+                FactEvaluacionDocente.clave_respuesta == clave
+            ).first() if clave else None
+            valores = dict(
                 id_docente=id_doc_eval,
                 id_modulo=id_mod_eval,
                 id_estudiante=id_est,
                 id_tiempo=id_tiempo,
                 pregunta_bloque=pregunta,
+                tipo_pregunta=tipo_preg,
                 puntuacion=puntuacion,
-                comentario=comentario_str
+                escala_max=escala_max,
+                comentario=comentario_str,
             )
-            self.db.add(nuevo_eval)
+            if existente_eval:  # mismo archivo subido otra vez: se actualiza, no se duplica
+                for k, v in valores.items():
+                    setattr(existente_eval, k, v)
+                hecho_eval = existente_eval
+            else:
+                hecho_eval = FactEvaluacionDocente(clave_respuesta=clave, **valores)
+                self.db.add(hecho_eval)
             self.db.flush()
             return {
                 "tipo": "evaluacion_docente",
                 "status": "loaded",
-                "id_hecho": nuevo_eval.id_hecho_eval,
+                "id_hecho": hecho_eval.id_hecho_eval,
                 "id_docente": id_doc_eval,
-                "puntuacion": puntuacion
+                "puntuacion": puntuacion,
+                "escala_max": escala_max,
             }
 
         # 3d. Ruteo RENTABILIDAD -> FactRentabilidad

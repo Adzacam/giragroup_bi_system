@@ -68,6 +68,7 @@ from services.extraccion_por_encabezado import (
     es_encabezado_metadato_pos,
     fecha_de_fila,
     registros_academicos,
+    registros_evaluacion,
     motivo_fila_sin_entidad,
     registros_rentabilidad,
 )
@@ -3520,6 +3521,25 @@ def confirm_dw_insert(
                             },
                             "calidad": {"requiere_revision": en_revision or revision_fila},
                         })
+                elif categoria_ruteo == "evaluacion_docente" and campos_linea:
+                    # Encuesta: un hecho por pregunta respondida. La identidad sale de las columnas, no del NER:
+                    # una respuesta anónima queda sin estudiante en vez de crear 'ENTRADA ANONIMA - PERSONA 5'
+                    registros_linea = []
+                    for reg_eval in registros_evaluacion(campos_linea):
+                        revision_fila = reg_eval.pop("requiere_revision")
+                        registros_linea.append({
+                            **reg_dict,
+                            "resoluciones": {
+                                **reg_dict["resoluciones"],
+                                **reg_eval,
+                                "estudiante": reg_eval["estudiante"] or {},
+                                "anonima": reg_eval["estudiante"] is None,
+                                "docente": reg_eval["docente"] or reg_dict["resoluciones"].get("docente"),
+                                "modulo": reg_eval["modulo"] or reg_dict["resoluciones"].get("modulo"),
+                                "programa": reg_eval["programa"] or reg_dict["resoluciones"].get("programa"),
+                            },
+                            "calidad": {"requiere_revision": en_revision or revision_fila},
+                        })
                 elif categoria_ruteo == "rentabilidad" and campos_linea:
                     # EJECUTADO VS META: un hecho por año con dato, con la categoría y el mes de la fila
                     registros_rent = registros_rentabilidad(campos_linea)
@@ -3530,6 +3550,8 @@ def confirm_dw_insert(
                         ]
                 for reg_item in registros_linea:
                     res = dw.cargar_registro(reg_item)
+                    if res.get("status") == "skipped":  # respuesta vacía: nada que guardar ni revisar
+                        continue
                     if res.get("status") != "loaded":
                         sent_hitl += 1
                         continue

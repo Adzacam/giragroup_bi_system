@@ -268,7 +268,10 @@ CREATE TABLE public.fact_evaluacion_docente (
     id_tiempo INTEGER REFERENCES public.dim_tiempo(id_tiempo) ON DELETE CASCADE,
     pregunta_bloque VARCHAR(500),
     puntuacion NUMERIC(4, 2),
-    comentario VARCHAR(1000)
+    comentario VARCHAR(1000),
+    tipo_pregunta VARCHAR(20),
+    escala_max INTEGER,
+    clave_respuesta VARCHAR(64) UNIQUE
 );
 
 -- D. Marketing y Embudo Comercial
