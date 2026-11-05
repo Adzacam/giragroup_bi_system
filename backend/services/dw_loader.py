@@ -211,6 +211,11 @@ class DWLoaderService:
 
     def __init__(self, db: Session):
         self.db = db
+        # Memoria de una consolidación (una instancia por petición): con 100 mil filas, las mismas búsquedas
+        # de módulo, tiempo y docente se repetían decenas de miles de veces contra la base
+        self._modulo_por_pos: Dict[str, int] = {}
+        self._tiempos: set = set()
+        self._docente_por_modulo: Dict[int, Optional[int]] = {}
 
     def _resolver_id_institucion(self, institucion: Optional[str]) -> Optional[int]:
         if not institucion:
@@ -568,8 +573,12 @@ class DWLoaderService:
                 pos_code = nombre_modulo = f"POS-{m_pos.group(1)}"
 
         if pos_code:
-            mod = self.db.query(DimModulo).filter(DimModulo.pos_code == pos_code.strip()).first()
+            clave_pos = pos_code.strip()
+            if clave_pos in self._modulo_por_pos:
+                return self._modulo_por_pos[clave_pos]
+            mod = self.db.query(DimModulo).filter(DimModulo.pos_code == clave_pos).first()
             if mod:
+                self._modulo_por_pos[clave_pos] = mod.id_modulo
                 return mod.id_modulo
             if nombre_modulo:
                 # El código POS es autoritativo: sin él, el fuzzy fusionaba 'POS-X · Módulo 1' con 'Módulo 2'
@@ -582,6 +591,7 @@ class DWLoaderService:
                 )
                 self.db.add(nuevo_mod)
                 self.db.flush()
+                self._modulo_por_pos[clave_pos] = nuevo_mod.id_modulo
                 return nuevo_mod.id_modulo
 
         if nombre_modulo:
@@ -619,22 +629,30 @@ class DWLoaderService:
         """
         if not id_modulo:
             return None
+        if id_modulo in self._docente_por_modulo:
+            return self._docente_por_modulo[id_modulo]
         asignados = self.db.query(BridgeModuloDocente.id_docente, BridgeModuloDocente.tipo_docente).filter(
             BridgeModuloDocente.id_modulo == id_modulo
         ).all()
+        # La memoria se borra al cargar una asignación nueva (_cargar_asignacion_docente)
         if len(asignados) == 1:
+            self._docente_por_modulo[id_modulo] = asignados[0][0]
             return asignados[0][0]
         titulares = [d for d, t in asignados if (t or "").upper().startswith("TITULAR")]
         if len(titulares) == 1:
+            self._docente_por_modulo[id_modulo] = titulares[0]
             return titulares[0]
         if asignados:
+            self._docente_por_modulo[id_modulo] = None
             return None  # varios docentes sin un titular claro: no se adivina
         ids = [
             r[0] for r in self.db.query(FactRendimientoAcademico.id_docente)
             .filter(FactRendimientoAcademico.id_modulo == id_modulo, FactRendimientoAcademico.id_docente.isnot(None))
             .distinct().limit(2).all()
         ]
-        return ids[0] if len(ids) == 1 else None
+        # También se memoriza: el docente de los hechos no cambia salvo por una asignación nueva (que borra la memoria)
+        self._docente_por_modulo[id_modulo] = ids[0] if len(ids) == 1 else None
+        return self._docente_por_modulo[id_modulo]
 
     def _cargar_asignacion_docente(self, resoluciones, nombre_docente, pos_code, doc_id, institucion) -> Dict[str, Any]:
         """
@@ -643,6 +661,7 @@ class DWLoaderService:
         """
         if not pos_code or not nombre_docente:
             return {"tipo": "asignacion_docente", "status": "staged", "motivo": "Asignación sin POS o sin docente"}
+        self._docente_por_modulo.clear()  # la asignación nueva puede cambiar el docente único de un módulo
         nombre_real = resoluciones.get("nombre_modulo_real")
         id_mod = self.resolver_o_crear_modulo(
             nombre_real or f"{pos_code}", pos_code=pos_code, doc_id=doc_id, institucion=institucion,
@@ -744,8 +763,11 @@ class DWLoaderService:
             return None
         id_tiempo = int(f"{f.year}{f.month:02d}{f.day:02d}")
 
+        if id_tiempo in self._tiempos:
+            return id_tiempo
         t_existente = self.db.query(DimTiempo).filter(DimTiempo.id_tiempo == id_tiempo).first()
         if t_existente:
+            self._tiempos.add(id_tiempo)
             return t_existente.id_tiempo
 
         iso = f.isocalendar()
@@ -765,6 +787,7 @@ class DWLoaderService:
             periodo_mes=f"{f.year}-{f.month:02d}",
         ))
         self.db.flush()
+        self._tiempos.add(id_tiempo)
         return id_tiempo
 
     # ── 5. Carga de un Registro Procesado Individual ─────────────────────────

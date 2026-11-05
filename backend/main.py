@@ -48,6 +48,8 @@ MIGRACIONES_EN_ARRANQUE = (
     "005_alinear_esquema_con_ddl.sql",
     "006_capa_semantica_cmi.sql",
     "007_powerbi_informe_version.sql",
+    "008_dataops_tarea.sql",
+    "009_cache_indice_beto.sql",
 )
 MIGRACION_LOTE = "003_dataops_lote_and_facts_alignment.sql"
 MIGRACION_TIPO_FUENTE = "004_extend_tipo_fuente_sources.sql"
