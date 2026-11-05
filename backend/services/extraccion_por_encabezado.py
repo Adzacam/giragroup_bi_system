@@ -589,10 +589,17 @@ def registros_evaluacion(campos: Dict[str, str]) -> List[Dict[str, Any]]:
     import hashlib
 
     estudiante = _estudiante_encuesta(campos)
-    texto_programa = " ".join(campos.get(k) or "" for k in ("PROGRAMA", "NOMBRE DEL PROGRAMA", "CURSO", "COURSE"))
+    # Cabeceras cortas que nombran el programa ('PROGRAMA', 'PROGRAMA - POS', 'PROGRAMA POS', 'CURSO'); las
+    # preguntas largas que mencionan 'el programa' no cuentan.
+    texto_programa = " ".join(v for k, v in campos.items()
+                              if v and len(k) <= 40 and re.search(r"\b(PROGRAMA|CURSO|COURSE|POS)\b", k))
     m_pos = _RE_POS_VALOR.search(texto_programa.upper())
     pos = f"POS-{m_pos.group(1)}" if m_pos else _pos(campos)
-    m_mod = _RE_NRO_MODULO.search(campos.get("MODULO") or campos.get("N° MODULO") or campos.get("NRO MODULO") or "")
+    # Número de módulo bajo cualquier cabecera corta con 'MODULO' ('MODULO', 'N° MODULO', 'NUMERO DEL MODULO');
+    # el valor debe ser corto ('1', 'M02', 'Módulo 3'), no el nombre del módulo ni una respuesta.
+    valor_mod = next((v for k, v in campos.items()
+                      if v and len(k) <= 30 and "MODULO" in k and len(v.strip()) <= 12), "")
+    m_mod = _RE_NRO_MODULO.search(valor_mod)
     nro_modulo = int(m_mod.group(1)) if m_mod else None
     docente = next((campos[k] for k in ("DOCENTE", "PROFESOR", "FACILITADOR", "TUTOR") if campos.get(k)), None)
     fecha = fecha_de_fila(campos, "academico")

@@ -35,6 +35,7 @@ try:
         detectar_bloques,
         a_texto_plano,
         clasificar_categoria,
+        es_encuesta_likert,
     )
 except ImportError:
     try:
@@ -44,8 +45,10 @@ except ImportError:
             detectar_bloques,
             a_texto_plano,
             clasificar_categoria,
+            es_encuesta_likert,
         )
     except ImportError:
+        def es_encuesta_likert(df): return False
         def leer_archivo(ruta): return {}
         def segmentar_archivo(df): return []
         def detectar_bloques(df): return []
@@ -395,6 +398,29 @@ def detectar_tipo_fuente_por_cabeceras(
     return None
 
 
+def _celdas_con_texto(fila) -> List[str]:
+    return [str(v).strip() for v in fila.values
+            if pd.notna(v) and str(v).strip() and not re.match(r"^(col_\d+|unnamed.*)$", str(v).strip(), re.I)]
+
+
+def _fila_subencabezado(b: "pd.DataFrame", idx: int) -> int:
+    """
+    Encabezado de dos niveles: la fila idx trae rótulos de grupo dispersos (celdas combinadas como
+    'Información básica', 'Bloque 1. ...') y la fila siguiente los nombres de columna reales
+    ('Programa - POS', 'Número del módulo'). Se usa la fila siguiente cuando es claramente más densa, solo trae
+    texto (ningún número ni fecha, como sí traería una fila de datos) y la fila de después tiene forma de datos.
+    """
+    if idx + 2 >= len(b):
+        return idx
+    grupo, sub, datos = (_celdas_con_texto(b.iloc[i]) for i in (idx, idx + 1, idx + 2))
+    def _es_numero_o_fecha(v):
+        return bool(re.match(r"^-?[\d.,]+$|^\d{4}-\d{2}-\d{2}", v))
+    if (len(sub) >= len(grupo) + 2 and len(grupo) <= 0.6 * len(sub)
+            and not any(_es_numero_o_fecha(v) for v in sub) and len(datos) >= 0.5 * len(sub)):
+        return idx + 1
+    return idx
+
+
 class IngestionService:
     @staticmethod
     def serializar_bloque_con_encabezados(b: "pd.DataFrame") -> str:
@@ -417,6 +443,7 @@ class IngestionService:
                 (i for i in range(min(len(b) - 1, 5)) if b.iloc[i].notna().sum() >= 2),
                 0
             )
+            header_idx = _fila_subencabezado(b, header_idx)
             headers_row = [str(h).strip() if pd.notna(h) else "" for h in b.iloc[header_idx].values]
             primera_fila = header_idx + 1
         lineas_datos = []
@@ -764,7 +791,10 @@ class IngestionService:
                 else None
             )
             for nombre_hoja, b in bloques_validos:
-                categoria = categoria_por_fuente or clasificar_categoria(b, safe_filename, nombre_hoja)
+                # Una hoja de encuesta (preguntas + respuestas Likert) es evaluación docente aunque el libro se haya
+                # clasificado como ACTA o COBRANZA: el contenido del bloque manda sobre el tipo del documento.
+                categoria = ("evaluacion_docente" if es_encuesta_likert(b)
+                             else categoria_por_fuente or clasificar_categoria(b, safe_filename, nombre_hoja))
                 texto = cls.serializar_bloque_con_encabezados(b)
                 n_b_filas = max(1, len(b) - 1) if len(b) > 1 else len(b)
                 payload_data = {
