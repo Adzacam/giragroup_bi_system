@@ -109,12 +109,19 @@ def test_gira41_matching_programa_fuzzy(matcher):
 
 
 
-def test_gira41_matching_docente_catalogo(matcher):
-    """Verifica grounding de docentes extraídos contra la nómina oficial."""
-    res = matcher.enlazar_docente("Ing. Carlos Rojas")
-    assert res is not None
-    assert res["score"] >= 0.85
-    assert "ROJAS" in res["nombre_canonico"].upper()
+def test_gira41_matching_docente_catalogo():
+    """Docentes se resuelven contra dim_docente (sin cat_docente): 'Ing. Carlos Rojas' no se vincula a otro docente."""
+    from pipeline.normalization.person_resolver import resolver_persona_detalle
+    dim_docente = [
+        {"id": 268, "nombre": "Manuel Rojas", "ci": None},
+        {"id": 460, "nombre": "Manuel Marcelo Rojas Barea", "ci": None},
+        {"id": 151, "nombre": "Juan Humerto Rojas Noya", "ci": None},
+    ]
+    det = resolver_persona_detalle("Ing. Carlos Rojas", None, dim_docente)
+    assert det["resultado"] is None, "no debe vincularse a otro docente (HITL)"
+    assert det["motivo"] == "sin_candidatos"
+    ok = resolver_persona_detalle("Ing. Juan Humerto Rojas Noya", None, dim_docente)
+    assert ok["resultado"]["id"] == 151
 
 
 def test_gira41_programa_inexistente_retorna_none(matcher):

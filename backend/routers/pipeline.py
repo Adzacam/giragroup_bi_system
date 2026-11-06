@@ -26,6 +26,7 @@ from services.dw_loader import DWLoaderService
 from services import cache_consultas
 from services.confianza_service import obtener_indices, banda_de
 from services.extraccion_por_encabezado import (
+    parsear_fecha,
     campos_por_encabezado, es_encabezado_metadato_pos, estudiante_de_fila, fecha_de_fila, registros_academicos, registros_evaluacion, registros_rentabilidad, registros_costo_programa, registros_asignacion_docente, registros_techo_convenio,
     factores_escala_por_programa,
 )
@@ -186,6 +187,8 @@ def process_pipeline(
         )
 
     nombre_archivo = "documento_existente"
+    t_lectura_ms = 0.0
+    t_beto_ms = t_carga_ms = 0.0
 
     # Paso 1: Si hay archivo, procesarlo a través de IngestionService
     if file:
@@ -197,6 +200,7 @@ def process_pipeline(
                 detail=f"Formato no soportado: '{ext}'. Formatos válidos: .xlsx, .xls, .csv"
             )
 
+        t_lectura0 = time.perf_counter()
         contenido = file.file.read()
         res_ingesta = IngestionService.procesar_archivo(
             db=db,
@@ -204,6 +208,7 @@ def process_pipeline(
             filename=nombre_archivo
         )
         doc_id = res_ingesta.get("id_documento") or res_ingesta.get("doc_id")
+        t_lectura_ms = (time.perf_counter() - t_lectura0) * 1000.0
     else:
         # Verificar que el doc_id exista
         doc = db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento == doc_id).first()
@@ -264,7 +269,9 @@ def process_pipeline(
             [campos_por_encabezado(c) for _, c, _ in lineas]) if categoria == "academico" else None
 
         # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
+        t_b0 = time.perf_counter()
         indices = obtener_indices([l[0] for l in lineas])
+        t_beto_ms += (time.perf_counter() - t_b0) * 1000.0
 
         for (linea_str, celdas, campos_fin), indice in zip(lineas, indices):
             banda = banda_de(indice)
@@ -336,8 +343,14 @@ def process_pipeline(
                 for reg in registros_techo_convenio(campos):  # convenio en un documento clasificado como marketing
                     revision_fila = reg.pop("requiere_revision", False)
                     resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
-            elif campos and categoria == "admision":
-                resoluciones_lista.append({**base, "estudiante": estudiante_de_fila(campos)})
+            elif campos and (categoria == "admision" or (categoria == "marketing" and "MARCA TEMPORAL" in campos)):
+                # Inscripción (TBL_INSCRITOS): MARCA TEMPORAL es la fecha del inscrito y NUMEROPROYECTO el programa
+                resoluciones_lista.append({
+                    **base, "estudiante": estudiante_de_fila(campos),
+                    "fecha": parsear_fecha(campos.get("MARCA TEMPORAL")) or base["fecha"],
+                    "programa": {"valor_extraido": campos.get("NOMBRE DEL PROGRAMA"),
+                                 "metadata": {"pos_canonico": campos.get("NUMEROPROYECTO")}},
+                })
             else:
                 resoluciones_lista.append(_resolver_fila_sin_encabezados(celdas, categoria, base, entidades_fila))
 
@@ -351,7 +364,9 @@ def process_pipeline(
                     "resoluciones": resoluciones_fila,
                     "calidad": {"requiere_revision": en_revision or revision_fila},
                 }
+                t_c0 = time.perf_counter()
                 res_carga = dw_loader.cargar_registro(reg_simulado, id_usuario=current_user.id)
+                t_carga_ms += (time.perf_counter() - t_c0) * 1000.0
                 detalles_carga.append(res_carga)
                 if res_carga.get("status") == "loaded":
                     cargados_dw += 1
@@ -380,5 +395,9 @@ def process_pipeline(
         "nivel_confianza_promedio": prom_confianza,
         "requiere_revision_humana": requiere_rev,
         "tiempo_total_ms": tiempo_total_ms,
+        "tiempos_etapa_ms": {
+            "lectura_e_ingesta": round(t_lectura_ms, 1), "beto": round(t_beto_ms, 1), "carga_dw": round(t_carga_ms, 1),
+            "reglas_y_resto": round(tiempo_total_ms - t_lectura_ms - t_beto_ms - t_carga_ms, 1),
+        },
         "detalles_carga": detalles_carga[:20]  # Primeros 20 para no sobrecargar el payload
     }

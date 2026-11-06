@@ -82,7 +82,7 @@ def obtener_pronostico_alumnos(
                 LIMIT :limite;
             """)
             rows = db.execute(query, {"caso": caso_uso, "limite": horizonte}).fetchall()
-            if rows and len(rows) > 0:
+            if rows and len(rows) >= horizonte:  # un pronóstico guardado más corto que el pedido no sirve: se recalcula
                 proyecciones = []
                 for r in rows:
                     proyecciones.append({

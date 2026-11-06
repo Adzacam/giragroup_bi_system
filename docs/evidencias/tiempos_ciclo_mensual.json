@@ -1,0 +1,519 @@
+{
+  "mes_objetivo": "2026-03",
+  "cpu": "BETO en el contenedor giragroup_pipeline (docker-compose.yml, sin GPU)",
+  "tiempo_total_s": 554.4,
+  "suma_etapas_ms": {
+    "lectura_e_ingesta": 2406.9,
+    "reglas_y_resto": 30107.4,
+    "beto": 7619.9,
+    "carga_dw": 514089.8
+  },
+  "archivos": [
+    {
+      "archivo": "BD Cobranzas.xlsx",
+      "slice": "/app/docs/evidencias/ciclo_mensual_slices/BD Cobranzas.xlsx",
+      "hojas": [
+        {
+          "hoja": "COBRANZAS 2024 2025",
+          "columna_fecha": "FECHA INICIO DIPLOMADO",
+          "mes": "2026-03",
+          "filas": 272
+        },
+        {
+          "hoja": "Hoja 8",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 7,
+          "completa": true
+        },
+        {
+          "hoja": "Hoja 12",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 25,
+          "completa": true
+        },
+        {
+          "hoja": "Hoja 4",
+          "columna_fecha": "FECHA FINALIZACIÓN",
+          "mes": "2026-03",
+          "filas": 5
+        },
+        {
+          "hoja": "Copia de COBRANZAS 2024 2025",
+          "columna_fecha": "FECHA DE INICIO PLANILLA MICAELA",
+          "mes": "2025-01",
+          "filas": 446
+        }
+      ],
+      "filas_total": 755,
+      "http": 200,
+      "segundos": 44.07,
+      "tiempos_etapa_ms": {
+        "lectura_e_ingesta": 774.3,
+        "beto": 56.7,
+        "carga_dw": 39316.6,
+        "reglas_y_resto": 3872.0
+      },
+      "filas_procesadas": 746,
+      "hechos_cargados_dw": 718
+    },
+    {
+      "archivo": "BD Egresos.xlsx",
+      "slice": "/app/docs/evidencias/ciclo_mensual_slices/BD Egresos.xlsx",
+      "hojas": [
+        {
+          "hoja": "egresos",
+          "omitida": "sin columna de fecha y 1373 filas"
+        },
+        {
+          "hoja": "Gestiones",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 24,
+          "completa": true
+        },
+        {
+          "hoja": "acumulados",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 12,
+          "completa": true
+        }
+      ],
+      "filas_total": 36,
+      "http": 200,
+      "segundos": 4.73,
+      "tiempos_etapa_ms": {
+        "lectura_e_ingesta": 60.7,
+        "beto": 37.7,
+        "carga_dw": 893.7,
+        "reglas_y_resto": 3723.4
+      },
+      "filas_procesadas": 36,
+      "hechos_cargados_dw": 75
+    },
+    {
+      "archivo": "BD Techos.xlsx",
+      "slice": "/app/docs/evidencias/ciclo_mensual_slices/BD Techos.xlsx",
+      "hojas": [
+        {
+          "hoja": "BD Techos",
+          "columna_fecha": "Fecha Inicio",
+          "mes": "2034-01",
+          "filas": 1
+        }
+      ],
+      "filas_total": 1,
+      "http": 200,
+      "segundos": 3.67,
+      "tiempos_etapa_ms": {
+        "lectura_e_ingesta": 50.9,
+        "beto": 17.6,
+        "carga_dw": 31.5,
+        "reglas_y_resto": 3557.3
+      },
+      "filas_procesadas": 1,
+      "hechos_cargados_dw": 1
+    },
+    {
+      "archivo": "Base centralizada Académica ARCA (1).xlsx",
+      "slice": "/app/docs/evidencias/ciclo_mensual_slices/Base centralizada Académica ARCA (1).xlsx",
+      "hojas": [
+        {
+          "hoja": "ACTAS DE NOTAS",
+          "columna_fecha": "FECHA EMISION ARCA",
+          "mes": "2025-07",
+          "filas": 426
+        },
+        {
+          "hoja": "MODULOS",
+          "columna_fecha": "FECHA FIN",
+          "mes": "2026-03",
+          "filas": 11
+        },
+        {
+          "hoja": "Tabla dinámica 1",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 0,
+          "completa": true
+        },
+        {
+          "hoja": "PROGRMAS  DE BAJA",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 1,
+          "completa": true
+        },
+        {
+          "hoja": "IBP",
+          "omitida": "sin columna de fecha y 748 filas"
+        },
+        {
+          "hoja": "Hoja 8",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 0,
+          "completa": true
+        },
+        {
+          "hoja": "CRITERIOS",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 15,
+          "completa": true
+        }
+      ],
+      "filas_total": 453,
+      "http": 200,
+      "segundos": 9.07,
+      "tiempos_etapa_ms": {
+        "lectura_e_ingesta": 207.4,
+        "beto": 73.7,
+        "carga_dw": 5096.4,
+        "reglas_y_resto": 3680.5
+      },
+      "filas_procesadas": 453,
+      "hechos_cargados_dw": 1372
+    },
+    {
+      "archivo": "EJECUTADO VS META.xlsx",
+      "slice": "/app/docs/evidencias/ciclo_mensual_slices/EJECUTADO VS META.xlsx",
+      "hojas": [
+        {
+          "hoja": "EJECUTADO",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 24,
+          "completa": true
+        },
+        {
+          "hoja": "GESTIONES",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 12,
+          "completa": true
+        }
+      ],
+      "filas_total": 36,
+      "http": 200,
+      "segundos": 5.09,
+      "tiempos_etapa_ms": {
+        "lectura_e_ingesta": 34.8,
+        "beto": 389.2,
+        "carga_dw": 1058.1,
+        "reglas_y_resto": 3597.4
+      },
+      "filas_procesadas": 36,
+      "hechos_cargados_dw": 99
+    },
+    {
+      "archivo": "Evaluación Docente y Unifranz.xlsx",
+      "hojas": [
+        {
+          "hoja": "DIP. EXP DOC. X MODULO",
+          "omitida": "sin columna de fecha y 4096 filas"
+        },
+        {
+          "hoja": "DIP. EXP UNIFRANZ",
+          "omitida": "sin columna de fecha y 517 filas"
+        },
+        {
+          "hoja": "FINAL EXPERTOCURSO",
+          "omitida": "sin columna de fecha y 276 filas"
+        }
+      ],
+      "omitido": "sin filas"
+    },
+    {
+      "archivo": "Experiencia Docente 2.0.xlsx",
+      "slice": "/app/docs/evidencias/ciclo_mensual_slices/Experiencia Docente 2.0.xlsx",
+      "hojas": [
+        {
+          "hoja": "CURSOS DOC 1",
+          "columna_fecha": "Fecha",
+          "mes": "2025-05",
+          "filas": 89
+        },
+        {
+          "hoja": "DIPLOMADOS DOCENTE",
+          "columna_fecha": "Fecha",
+          "mes": "2026-03",
+          "filas": 64
+        },
+        {
+          "hoja": "CURSOS DOCENTE",
+          "omitida": "sin columna de fecha y 828 filas"
+        },
+        {
+          "hoja": "DIPLOMADOS DOC 2",
+          "columna_fecha": "Fecha",
+          "mes": "2025-01",
+          "filas": 156
+        }
+      ],
+      "filas_total": 309,
+      "http": 200,
+      "segundos": 5.62,
+      "tiempos_etapa_ms": {
+        "lectura_e_ingesta": 277.6,
+        "beto": 58.2,
+        "carga_dw": 1585.0,
+        "reglas_y_resto": 3679.4
+      },
+      "filas_procesadas": 309,
+      "hechos_cargados_dw": 0
+    },
+    {
+      "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+      "slice": "/app/docs/evidencias/ciclo_mensual_slices/PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+      "hojas": [
+        {
+          "hoja": "Centralizado_Mensual",
+          "columna_fecha": "FECHA",
+          "mes": "2026-03",
+          "filas": 37
+        },
+        {
+          "hoja": "Julio-2025",
+          "columna_fecha": "FECHA",
+          "mes": "2025-07",
+          "filas": 22
+        },
+        {
+          "hoja": "Agosto-2025",
+          "columna_fecha": "FECHA",
+          "mes": "2025-08",
+          "filas": 20
+        },
+        {
+          "hoja": "Septiembre-2025",
+          "columna_fecha": "FECHA",
+          "mes": "2025-09",
+          "filas": 24
+        },
+        {
+          "hoja": "Octubre-2025",
+          "columna_fecha": "FECHA INICIO",
+          "mes": "2025-10",
+          "filas": 21
+        },
+        {
+          "hoja": "Noviembre-2025",
+          "columna_fecha": "FECHA",
+          "mes": "2025-11",
+          "filas": 20
+        },
+        {
+          "hoja": "Julio-2025 borrador",
+          "columna_fecha": "FECHA DE PLANIFICACIÓN",
+          "mes": "2025-07",
+          "filas": 22
+        },
+        {
+          "hoja": "Diciembre-2025",
+          "columna_fecha": "FECHA INICIO",
+          "mes": "2026-01",
+          "filas": 2
+        },
+        {
+          "hoja": "Informe Gestión",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 62,
+          "completa": true
+        },
+        {
+          "hoja": "Programas Notificados",
+          "columna_fecha": "Fecha de nofiticación",
+          "mes": "2026-03",
+          "filas": 66
+        },
+        {
+          "hoja": "Enero-2026",
+          "columna_fecha": "FECHA",
+          "mes": "2026-01",
+          "filas": 22
+        },
+        {
+          "hoja": "Febrero-2026",
+          "columna_fecha": "FECHA",
+          "mes": "2026-02",
+          "filas": 29
+        },
+        {
+          "hoja": "Marzo-2026",
+          "columna_fecha": "FECHA",
+          "mes": "2026-03",
+          "filas": 37
+        },
+        {
+          "hoja": "Abril-2026",
+          "columna_fecha": "FECHA",
+          "mes": "2026-04",
+          "filas": 41
+        },
+        {
+          "hoja": "Mayo-2026",
+          "columna_fecha": "FECHA",
+          "mes": "2026-05",
+          "filas": 41
+        },
+        {
+          "hoja": "Junio-2026",
+          "columna_fecha": "FECHA",
+          "mes": "2026-06",
+          "filas": 41
+        },
+        {
+          "hoja": "Julio-2026",
+          "columna_fecha": "FECHA",
+          "mes": "2026-07",
+          "filas": 30
+        },
+        {
+          "hoja": "Agosto-2026",
+          "columna_fecha": "FECHA",
+          "mes": "2026-08",
+          "filas": 37
+        },
+        {
+          "hoja": "Septiembre-2025boor",
+          "columna_fecha": "FECHA DE PLANIFICACIÓN",
+          "mes": "2025-09",
+          "filas": 29
+        },
+        {
+          "hoja": "Septiembre-2026",
+          "columna_fecha": "FECHA",
+          "mes": "2026-09",
+          "filas": 36
+        },
+        {
+          "hoja": "Octubre-2026",
+          "columna_fecha": "FECHA",
+          "mes": "2026-10",
+          "filas": 43
+        },
+        {
+          "hoja": "Noviembre-2026",
+          "columna_fecha": "FECHA",
+          "mes": "2026-11",
+          "filas": 37
+        },
+        {
+          "hoja": "Diciembre-2026",
+          "columna_fecha": "FECHA",
+          "mes": "2026-12",
+          "filas": 23
+        },
+        {
+          "hoja": "Dashboard Programas",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 38,
+          "completa": true
+        },
+        {
+          "hoja": "Dashboard Académico",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 41,
+          "completa": true
+        },
+        {
+          "hoja": "Julio",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 32,
+          "completa": true
+        },
+        {
+          "hoja": "Agosto",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 32,
+          "completa": true
+        },
+        {
+          "hoja": "Septiembre",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 32,
+          "completa": true
+        },
+        {
+          "hoja": "Octubre",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 32,
+          "completa": true
+        },
+        {
+          "hoja": "Noviembre",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 32,
+          "completa": true
+        },
+        {
+          "hoja": "Diciembre",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 32,
+          "completa": true
+        },
+        {
+          "hoja": "Detalle Presupuestado-Proyectad",
+          "omitida": "sin columna de fecha y 300 filas"
+        }
+      ],
+      "filas_total": 1013,
+      "http": 200,
+      "segundos": 476.87,
+      "tiempos_etapa_ms": {
+        "lectura_e_ingesta": 728.9,
+        "beto": 6966.0,
+        "carga_dw": 464813.4,
+        "reglas_y_resto": 4322.9
+      },
+      "filas_procesadas": 2004,
+      "hechos_cargados_dw": 1821
+    },
+    {
+      "archivo": "TBL_INSCRITOS.xlsx",
+      "slice": "/app/docs/evidencias/ciclo_mensual_slices/TBL_INSCRITOS.xlsx",
+      "hojas": [
+        {
+          "hoja": "TBL_INSCRITOS",
+          "columna_fecha": "MARCA TEMPORAL",
+          "mes": "2026-03",
+          "filas": 391
+        },
+        {
+          "hoja": "BAJAS POR DUPLICADOS",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 0,
+          "completa": true
+        }
+      ],
+      "filas_total": 391,
+      "http": 200,
+      "segundos": 5.28,
+      "tiempos_etapa_ms": {
+        "lectura_e_ingesta": 272.3,
+        "beto": 20.8,
+        "carga_dw": 1295.1,
+        "reglas_y_resto": 3674.5
+      },
+      "filas_procesadas": 391,
+      "hechos_cargados_dw": 124
+    },
+    {
+      "archivo": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+      "omitido": "cuelga el pipeline (>30 min) - fuera de la medición"
+    }
+  ]
+}

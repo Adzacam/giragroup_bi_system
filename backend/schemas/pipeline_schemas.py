@@ -22,4 +22,5 @@ class PipelineExecutionResponse(BaseModel):
     nivel_confianza_promedio: float
     requiere_revision_humana: bool
     tiempo_total_ms: float
+    tiempos_etapa_ms: Dict[str, float] = {}
     detalles_carga: List[Dict[str, Any]] = []

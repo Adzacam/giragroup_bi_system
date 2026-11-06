@@ -244,7 +244,9 @@
       "hoja": "TBL_INSCRITOS",
       "fila_origen": 45,
       "registro": 844,
-      "persistida_en_dw": []
+      "persistida_en_dw": [
+        "dim_modulo.nombre_modulo"
+      ]
     },
     {
       "tipo": "PER_ESTUDIANTE",

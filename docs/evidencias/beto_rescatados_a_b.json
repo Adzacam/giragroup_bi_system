@@ -1,0 +1,184 @@
+{
+  "total_lote": 1387,
+  "resueltos_por_A": 1380,
+  "rescatados_A_a_B": 7,
+  "con_entidades_beto": 2,
+  "con_alguna_entidad_beto_en_dw": 0,
+  "registros": [
+    {
+      "archivo": "BD Egresos.xlsx",
+      "hoja": "egresos",
+      "fila_origen": 2,
+      "registro": 1311,
+      "entidades_parser": [
+        {
+          "tipo": "PROGRAMA",
+          "valor": "POS-4403"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0.0"
+        }
+      ],
+      "entidades_beto": []
+    },
+    {
+      "archivo": "BD Egresos.xlsx",
+      "hoja": "egresos",
+      "fila_origen": 12,
+      "registro": 1321,
+      "entidades_parser": [
+        {
+          "tipo": "PROGRAMA",
+          "valor": "POS-4529"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0.0"
+        }
+      ],
+      "entidades_beto": []
+    },
+    {
+      "archivo": "BD Egresos.xlsx",
+      "hoja": "egresos",
+      "fila_origen": 28,
+      "registro": 1337,
+      "entidades_parser": [
+        {
+          "tipo": "PROGRAMA",
+          "valor": "POS-4574"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0.0"
+        }
+      ],
+      "entidades_beto": []
+    },
+    {
+      "archivo": "BD Egresos.xlsx",
+      "hoja": "egresos",
+      "fila_origen": 30,
+      "registro": 1339,
+      "entidades_parser": [
+        {
+          "tipo": "PROGRAMA",
+          "valor": "POS-4576"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0.0"
+        }
+      ],
+      "entidades_beto": []
+    },
+    {
+      "archivo": "BD Egresos.xlsx",
+      "hoja": "egresos",
+      "fila_origen": 40,
+      "registro": 1349,
+      "entidades_parser": [
+        {
+          "tipo": "PROGRAMA",
+          "valor": "POS-4617"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0.0"
+        }
+      ],
+      "entidades_beto": []
+    },
+    {
+      "archivo": "EJECUTADO VS META.xlsx",
+      "hoja": "EJECUTADO",
+      "fila_origen": 14,
+      "registro": 1376,
+      "entidades_parser": [
+        {
+          "tipo": "NOTA",
+          "valor": "1"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0.0"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "5"
+        }
+      ],
+      "entidades_beto": [
+        {
+          "tipo": "PROGRAMA",
+          "valor": "TECHOS/CERRADOS",
+          "score": 0.9268214106559753,
+          "fuente": "BETO",
+          "persistida_en_dw": []
+        }
+      ]
+    },
+    {
+      "archivo": "EJECUTADO VS META.xlsx",
+      "hoja": "EJECUTADO",
+      "fila_origen": 18,
+      "registro": 1380,
+      "entidades_parser": [
+        {
+          "tipo": "NOTA",
+          "valor": "5"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "99"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "8"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "0"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "19"
+        }
+      ],
+      "entidades_beto": [
+        {
+          "tipo": "PROGRAMA",
+          "valor": "TECHOS/CERRADOS",
+          "score": 0.9668542146682739,
+          "fuente": "BETO",
+          "persistida_en_dw": []
+        }
+      ]
+    }
+  ]
+}

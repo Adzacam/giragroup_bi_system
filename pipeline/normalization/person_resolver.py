@@ -5,11 +5,9 @@ Resolución de personas (estudiantes y docentes) SIN catálogo canónico (cat_do
 
 Cascada:
   (a) CI exacta                      -> dim_estudiante / dim_docente   (fuente CI_EXACTA)
-  (b) sin CI: RapidFuzz contra la propia dimensión, con
-        - candidatos filtrados al mismo programa/módulo del registro,
-        - coincidencia de apellido tras quitar títulos (Lic., Ing., Dr., MSc., Mgr., Ph.D.),
-        - al menos 2 tokens de nombre en común y score >= UMBRAL_CONFIANZA_ALTO  (fuente FUZZY)
-  (c) sin coincidencia               -> None  => el llamador deriva a HITL.
+  (b) sin CI: RapidFuzz contra la propia dimensión con bloqueo escalonado módulo -> programa -> dimensión completa,
+        apellido obligatorio (tras quitar títulos), >=2 tokens en común y score >= 0,92  (fuente FUZZY)
+  (c) 0 candidatos o >=2 empatados   -> None  => el llamador deriva a HITL.
 
 El catálogo canónico (cat_*) sigue siendo la fuente solo de programa, módulo, institución,
 escuela, tipo de programa, modalidad y categoría financiera.
@@ -20,8 +18,6 @@ import unicodedata
 from typing import Any, Dict, Iterable, List, Optional
 
 from rapidfuzz import fuzz
-
-from pipeline.config import UMBRAL_CONFIANZA_ALTO
 
 _TITULOS = re.compile(
     r"\b(?:lic|licda|ing|dr|dra|msc|mgr|mag|mba|ph\.?\s?d|phd|arq|abg|cpa|m\.?sc)\b\.?",
@@ -57,37 +53,14 @@ def _coincide_contexto(persona_ctx: Iterable[str], registro_ctx: Iterable[str]) 
     return any(a and b and (a in b or b in a) for a in pc for b in rc)
 
 
-def resolver_persona(
-    nombre: Optional[str],
-    ci: Optional[str],
-    personas: List[Dict[str, Any]],
-    contexto: Optional[Iterable[str]] = None,
-    umbral: float = UMBRAL_CONFIANZA_ALTO,
-) -> Optional[Dict[str, Any]]:
-    """
-    personas: [{"id", "nombre", "ci"(opcional), "contextos"(opcional: programas/módulos)}]
-    contexto: programas/módulos del registro. Si se entrega, SOLO compiten personas con contexto coincidente.
-    Retorna {"id","nombre","score"(0-1),"fuente"} o None (=> HITL).
-    """
-    # (a) CI exacta
-    ci_n = _norm_ci(ci)
-    if len(ci_n) >= 5:
-        for p in personas:
-            if _norm_ci(p.get("ci")) == ci_n:
-                return {"id": p["id"], "nombre": p["nombre"], "score": 1.0, "fuente": "CI_EXACTA"}
+UMBRAL_PERSONA = 0.92  # umbral de candidato (score RapidFuzz/100) para el bloqueo escalonado
 
-    # (b) sin CI: fuzzy en la propia dimensión
-    cand = quitar_titulos(nombre or "")
-    toks_c = _tokens(cand)
-    if len(toks_c) < 2:
-        return None  # un solo token no identifica a una persona
+
+def _candidatos(personas, cand, toks_c, umbral):
+    """Personas compatibles: apellido (sin títulos) en los apellidos del canónico, >=2 tokens en común y score >= umbral."""
     apellido = toks_c[-1]
-
-    contexto = [c for c in (contexto or []) if c]
-    mejor, mejor_score, mejor_ts = None, 0.0, 0.0
+    out = []
     for p in personas:
-        if contexto and not _coincide_contexto(p.get("contextos") or [], contexto):
-            continue
         canon = quitar_titulos(p["nombre"])
         toks_p = _tokens(canon)
         if len(toks_p) < 2:
@@ -99,13 +72,72 @@ def resolver_persona(
             continue
         ts = fuzz.token_sort_ratio(cand, canon)
         score = max(ts, fuzz.token_set_ratio(cand, canon)) / 100.0
-        if (score, ts) > (mejor_score, mejor_ts):  # desempate: mayor token_sort (nombre más completo)
-            mejor, mejor_score, mejor_ts = p, score, ts
-    if mejor is not None and mejor_score >= umbral:
-        return {"id": mejor["id"], "nombre": mejor["nombre"], "score": round(mejor_score, 4), "fuente": "FUZZY"}
+        if score >= umbral:
+            out.append((score, ts, p))
+    return out
 
-    # (c) sin coincidencia
-    return None
+
+def resolver_persona_detalle(
+    nombre: Optional[str],
+    ci: Optional[str],
+    personas: List[Dict[str, Any]],
+    contexto: Optional[Iterable[str]] = None,
+    ctx_modulo: Optional[Iterable[str]] = None,
+    umbral: float = UMBRAL_PERSONA,
+) -> Dict[str, Any]:
+    """
+    Bloqueo escalonado: módulo -> programa -> dimensión completa (umbral 0,92 + apellido obligatorio).
+    Un nivel resuelve si tiene exactamente un candidato (o uno con score estrictamente mayor); con >=2 empatados
+    en el máximo => HITL por 'empate'; con 0 candidatos en todos los niveles => HITL por 'sin_candidatos'.
+    personas: [{"id","nombre","ci","modulos"(opcional),"contextos"(programas, opcional)}]
+    Retorna {"resultado": dict|None, "motivo": None|"sin_candidatos"|"empate", "nivel": "CI"|"MODULO"|"PROGRAMA"|"DIMENSION"|None}.
+    """
+    ci_n = _norm_ci(ci)
+    if len(ci_n) >= 5:
+        for p in personas:
+            if _norm_ci(p.get("ci")) == ci_n:
+                return {"resultado": {"id": p["id"], "nombre": p["nombre"], "score": 1.0, "fuente": "CI_EXACTA"},
+                        "motivo": None, "nivel": "CI"}
+
+    cand = quitar_titulos(nombre or "")
+    toks_c = _tokens(cand)
+    if len(toks_c) < 2:
+        return {"resultado": None, "motivo": "sin_candidatos", "nivel": None}  # un solo token no identifica a una persona
+
+    ctx_mod = [c for c in (ctx_modulo or []) if c]
+    ctx_prog = [c for c in (contexto or []) if c]
+    niveles = []
+    if ctx_mod:
+        niveles.append(("MODULO", [p for p in personas if _coincide_contexto(p.get("modulos") or [], ctx_mod)]))
+    if ctx_prog:
+        niveles.append(("PROGRAMA", [p for p in personas if _coincide_contexto(p.get("contextos") or [], ctx_prog)]))
+    niveles.append(("DIMENSION", personas))
+
+    empate = False
+    for nivel, pool in niveles:
+        cands = _candidatos(pool, cand, toks_c, umbral)
+        if not cands:
+            continue  # 0 candidatos: escala al siguiente nivel
+        cands.sort(key=lambda x: (x[0], x[1]), reverse=True)
+        if len(cands) > 1 and (cands[0][0], cands[0][1]) == (cands[1][0], cands[1][1]) and cands[0][2]["id"] != cands[1][2]["id"]:
+            empate = True  # >=2 empatados en el máximo: no se elige a ciegas
+            break
+        sc, _, p = cands[0]
+        return {"resultado": {"id": p["id"], "nombre": p["nombre"], "score": round(sc, 4), "fuente": "FUZZY"},
+                "motivo": None, "nivel": nivel}
+    return {"resultado": None, "motivo": "empate" if empate else "sin_candidatos", "nivel": None}
+
+
+def resolver_persona(
+    nombre: Optional[str],
+    ci: Optional[str],
+    personas: List[Dict[str, Any]],
+    contexto: Optional[Iterable[str]] = None,
+    umbral: float = UMBRAL_PERSONA,
+    ctx_modulo: Optional[Iterable[str]] = None,
+) -> Optional[Dict[str, Any]]:
+    """Versión de compatibilidad: devuelve {"id","nombre","score","fuente"} o None (=> HITL)."""
+    return resolver_persona_detalle(nombre, ci, personas, contexto=contexto, ctx_modulo=ctx_modulo, umbral=umbral)["resultado"]
 
 
 def cargar_personas_dw(tabla: str, database_url: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -125,11 +157,13 @@ def cargar_personas_dw(tabla: str, database_url: Optional[str] = None) -> List[D
             if tabla == "dim_docente":
                 rows = c.execute(text(
                     "SELECT d.id_docente, d.nombre_completo, "
-                    "COALESCE(array_remove(array_agg(DISTINCT m.nombre_modulo) || array_agg(DISTINCT m.programa), NULL), '{}') "
+                    "COALESCE(array_remove(array_agg(DISTINCT m.nombre_modulo), NULL), '{}'), "
+                    "COALESCE(array_remove(array_agg(DISTINCT m.programa), NULL), '{}') "
                     "FROM dim_docente d LEFT JOIN bridge_modulo_docente b ON b.id_docente=d.id_docente "
                     "LEFT JOIN dim_modulo m ON m.id_modulo=b.id_modulo GROUP BY d.id_docente, d.nombre_completo"
                 )).fetchall()
-                return [{"id": r[0], "nombre": r[1], "ci": None, "contextos": [x for x in (r[2] or []) if x]} for r in rows]
+                return [{"id": r[0], "nombre": r[1], "ci": None, "modulos": [x for x in (r[2] or []) if x],
+                         "contextos": [x for x in (r[3] or []) if x]} for r in rows]
             rows = c.execute(text(
                 "SELECT id_estudiante, nombre_completo, ci_numero, programa_origen FROM dim_estudiante WHERE deprecado = FALSE"
             )).fetchall()

@@ -137,17 +137,18 @@ def test_resolver_id_tiempo():
 
 def test_extractor_series_reales():
     """Valida que el extractor obtenga series consistentes desde las fuentes de datos."""
-    serie_global = extraer_serie_temporal("ALUMNOS_GLOBAL")
+    engine = _dw_session_factory().kw["bind"]  # engine del DW real
+    serie_global = extraer_serie_temporal("ALUMNOS_GLOBAL", engine=engine)
     assert len(serie_global) >= 24, "La serie global de inscritos debe tener al menos 24 meses"
     assert serie_global.sum() > 5000, "El volumen acumulado de inscritos debe ser sustancial"
 
-    serie_diplomado = extraer_serie_temporal("ALUMNOS_DIPLOMADO")
+    serie_diplomado = extraer_serie_temporal("ALUMNOS_DIPLOMADO", engine=engine)
     assert len(serie_diplomado) >= 24
 
-    serie_metas = extraer_serie_temporal("META_MENSUAL_PROGRAMAS")
+    serie_metas = extraer_serie_temporal("META_MENSUAL_PROGRAMAS", engine=engine)
     assert len(serie_metas) >= 24
 
-    serie_anual = extraer_serie_temporal("META_ANUAL")
+    serie_anual = extraer_serie_temporal("META_ANUAL", engine=engine)
     assert len(serie_anual) == 3
     assert list(serie_anual.index) == [2023, 2024, 2025]
 
@@ -167,12 +168,31 @@ mock_db = MagicMock(spec=Session)
 mock_db.execute.side_effect = Exception("DB offline in test")
 mock_db.get_bind.return_value = None
 
+def _dw_session_factory():
+    """Sesión al DW del docker-compose (host: localhost:5434). DW_TEST_URL lo sobreescribe; no depende de DATABASE_URL."""
+    import os
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    url = os.getenv("DW_TEST_URL", "postgresql+psycopg2://giragroup_user:giragroup_secret_2026@localhost:5434/giragroup_db")
+    return sessionmaker(autocommit=False, autoflush=False, bind=create_engine(url))
+
 client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def setup_forecasting_test():
     app.dependency_overrides[get_current_user] = lambda: mock_admin
-    app.dependency_overrides[get_db] = lambda: mock_db
+    SessionLocal = _dw_session_factory()  # DW real: antes mock_db (execute lanzaba "DB offline") => origen=sin_datos
+    def _db_real():
+        db = SessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+    import pipeline.analytics.time_series_extractor as _tse
+    _tse._DB_FAIL_UNTIL = 0.0  # aísla el circuit breaker que otros tests con DB simulada pudieron activar (30 s)
+    from services import cache_consultas
+    cache_consultas.invalidar()  # sin respuestas 'sin_datos' memorizadas por tests con DB simulada
+    app.dependency_overrides[get_db] = _db_real
     client.headers["Authorization"] = "Bearer mock_admin_token"
     yield
     app.dependency_overrides.pop(get_current_user, None)

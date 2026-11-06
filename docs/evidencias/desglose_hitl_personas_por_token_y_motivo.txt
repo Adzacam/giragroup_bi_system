@@ -1,0 +1,5 @@
+('docente', '1_token', 'sin_candidatos') 240 ['CUELLAR', 'PATRICIA DEL', 'JIMENEZ']
+('docente', '2+_tokens', 'sin_candidatos') 681 ['KAREN ULLOA', 'EVELYN PATTY', 'CARLA DE LA VEGA']
+('estudiante', '1_token', 'sin_candidatos') 122 ['CACERES', 'VARGAS', 'CARLOS']
+('estudiante', '2+_tokens', 'empate') 4 ['JOSE ANTONIO', 'DANIEL ALEJANDRO NAVARRO BURGOA', 'DANIEL ALEJANDRO NAVARRO BURGOA']
+('estudiante', '2+_tokens', 'sin_candidatos') 175 ['chavezcespedesr@gmail.com', 'dfernandezverduguez@gmail.com', 'alanhuarca1@gmail.com']

@@ -33,7 +33,25 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from pipeline.normalization.person_resolver import resolver_persona, cargar_personas_dw
+from pipeline.normalization.person_resolver import (
+    resolver_persona_detalle, cargar_personas_dw, quitar_titulos, _candidatos, _tokens, _coincide_contexto)
+
+
+def _regla_previa(valor, ci, pool, ctx):
+    """Regla anterior (solo para el 'antes'): umbral 0,85, contexto como filtro duro, sin escalar."""
+    det = resolver_persona_detalle(valor, ci, pool, contexto=None, umbral=0.85)
+    if det["nivel"] == "CI":
+        return det["resultado"], None
+    cand = quitar_titulos(valor or "")
+    toks = _tokens(cand)
+    if len(toks) < 2:
+        return None, "sin_candidatos"
+    p2 = [p for p in pool if _coincide_contexto(p.get("contextos") or [], ctx)] if ctx else pool
+    c85 = _candidatos(p2, cand, toks, 0.85)
+    if c85:
+        c85.sort(key=lambda x: (x[0], x[1]), reverse=True)
+        return {"id": c85[0][2]["id"], "fuente": "FUZZY"}, None
+    return None, ("umbral" if _candidatos(p2, cand, toks, 0.0) else "sin_candidatos")
 from scripts.ablacion_beto import EvaluadorAblacion
 
 MUESTRAS = [
@@ -132,11 +150,15 @@ def main():
     doc_dw = cargar_personas_dw("dim_docente")
     print(f"Dimensiones del DW: dim_estudiante={len(est_dw)}, dim_docente={len(doc_dw)}")
 
-    bandas = {"pre": [0, 0, 0], "post": [0, 0, 0]}
+    bandas = {"pre": [0, 0, 0], "post": [0, 0, 0], "prev": [0, 0, 0]}
     conf_registro, s_todas, s_beto, ent_beto = [], [], [], []
     fuentes = {"CI_EXACTA": 0, "ENCABEZADO": 0, "FUZZY": 0, "REGEX": 0, "BETO": 0}
     personas = {"total": 0, "resueltas_CI_EXACTA": 0, "resueltas_FUZZY": 0, "sin_coincidencia_HITL": 0}
     directo_a_hitl = 0
+    from collections import Counter
+    desglose_antes = {"estudiante": Counter(), "docente": Counter()}
+    desglose_despues = {"estudiante": Counter(), "docente": Counter()}
+    niveles = Counter()
 
     for item in lote:
         txt = item["texto"]
@@ -165,17 +187,29 @@ def main():
         ci = next((e["valor"] for e in todas if e["tipo"] == "CI"), None)
         ctx = [e["valor"] for e in todas if e["tipo"] in ("PROGRAMA", "MODULO", "POS")]
         sin_resolver = False
+        sin_resolver_prev = False
         for e in todas:
             if e["tipo"] not in ("PER_ESTUDIANTE", "PER_DOCENTE"):
                 continue
             personas["total"] += 1
             est = e["tipo"] == "PER_ESTUDIANTE"
-            r = resolver_persona(e["valor"], ci if est else None, est_dw if est else doc_dw, contexto=ctx)
+            pool = est_dw if est else doc_dw
+            ctx_mod = [e2["valor"] for e2 in todas if e2["tipo"] == "MODULO"]
+            det = resolver_persona_detalle(e["valor"], ci if est else None, pool, contexto=ctx, ctx_modulo=ctx_mod)
+            r = det["resultado"]
+            tipo = "estudiante" if est else "docente"
+            rp, mot_prev = _regla_previa(e["valor"], ci if est else None, pool, ctx)
+            if rp is None:
+                sin_resolver_prev = True
+                desglose_antes[tipo][mot_prev] += 1
             if r:
                 personas["resueltas_" + r["fuente"]] += 1
+                niveles[det["nivel"]] += 1
             else:
                 personas["sin_coincidencia_HITL"] += 1
+                desglose_despues[tipo][det["motivo"]] += 1
                 sin_resolver = True
+        bandas["prev"][max(b_pre, 1) if sin_resolver_prev else b_pre] += 1
         b_post = max(b_pre, 1) if sin_resolver else b_pre  # sin coincidencia -> HITL
         if sin_resolver and b_pre == 0:
             directo_a_hitl += 1
@@ -206,7 +240,11 @@ def main():
         "arquitectura": "B (CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO) + personas sin cat_docente (tarea 1)",
         "dimensiones_dw_usadas": {"dim_estudiante": len(est_dw), "dim_docente": len(doc_dw)},
         "personas": personas,
+        "personas_hitl_desglose_regla_previa_umbral_085": {k: dict(v) for k, v in desglose_antes.items()},
+        "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {k: dict(v) for k, v in desglose_despues.items()},
+        "personas_resueltas_por_nivel": dict(niveles),
         "distribucion_bandas_sin_regla_personas": dist(bandas["pre"]),
+        "distribucion_bandas_con_regla_personas_previa_umbral_085": dist(bandas["prev"]),
         "distribucion_bandas_con_regla_personas": dist(bandas["post"]),
         "registros_directo_movidos_a_hitl_por_persona_sin_resolver": directo_a_hitl,
         "kpis": {
@@ -226,7 +264,7 @@ def main():
     (out / "muestra_50_entidades_beto_semilla42.json").write_text(
         json.dumps({"semilla": 42, "total_entidades_beto": len(ent_beto), "muestra": muestra}, indent=2, ensure_ascii=False),
         encoding="utf-8")
-    print(json.dumps({k: res[k] for k in ("dimensiones_dw_usadas", "personas", "distribucion_bandas_sin_regla_personas",
+    print(json.dumps({k: res[k] for k in ("dimensiones_dw_usadas", "personas", "personas_hitl_desglose_regla_previa_umbral_085", "personas_hitl_desglose_bloqueo_escalonado_umbral_092", "personas_resueltas_por_nivel", "distribucion_bandas_sin_regla_personas",
                                           "distribucion_bandas_con_regla_personas", "kpis", "conteos_fuente_resolucion")},
                      indent=2, ensure_ascii=False))
 

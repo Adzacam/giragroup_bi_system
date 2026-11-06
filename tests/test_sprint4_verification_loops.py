@@ -50,6 +50,14 @@ def setup_loops_test():
     app.dependency_overrides.pop(get_db, None)
     client.headers.pop("Authorization", None)
 
+def _dw_session_factory():
+    """Sesión al DW del docker-compose (host: localhost:5434). DW_TEST_URL lo sobreescribe; no depende de DATABASE_URL."""
+    import os
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    url = os.getenv("DW_TEST_URL", "postgresql+psycopg2://giragroup_user:giragroup_secret_2026@localhost:5434/giragroup_db")
+    return sessionmaker(autocommit=False, autoflush=False, bind=create_engine(url))
+
 client = TestClient(app)
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -223,6 +231,19 @@ def test_loop4_validacion_estricta_contratos():
     Itera por todas las combinaciones válidas y valida conformidad estricta
     contra los esquemas Pydantic v2 (Clean Code y prevención de deformación de datos).
     """
+    SessionLocal = _dw_session_factory()  # DW real (antes mock_db: execute lanzaba "DB offline" => origen=sin_datos)
+    def _db_real():
+        db = SessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+    import pipeline.analytics.time_series_extractor as _tse
+    _tse._DB_FAIL_UNTIL = 0.0  # aísla el circuit breaker que otros tests con DB simulada pudieron activar (30 s)
+    from services import cache_consultas
+    cache_consultas.invalidar()  # sin respuestas 'sin_datos' memorizadas por tests con DB simulada
+    app.dependency_overrides[get_db] = _db_real  # el fixture autouse restaura/retira el override al terminar
+
     tipos_validos = ["GLOBAL", "DIPLOMADO", "CURSO", "EXPERTO"]
     horizontes_validos = [1, 2, 3, 4, 5, 6]
 

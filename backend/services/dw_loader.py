@@ -671,6 +671,8 @@ class DWLoaderService:
         if mod and nombre_real and "· Módulo" in (mod.nombre_modulo or ""):
             mod.nombre_modulo = nombre_real[:200]  # el acta lo creó con un nombre provisional
         id_doc = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id)
+        if id_mod is None or id_doc is None:  # "Por definir" no es persona: sin docente no hay asignación (antes: IntegrityError -> 500 y rollback de todo el documento)
+            return {"tipo": "asignacion_docente", "status": "staged", "motivo": "Docente no es una persona identificable"}
         _, grado = separar_grado(nombre_docente)
 
         asig = self.db.query(BridgeModuloDocente).filter_by(id_modulo=id_mod, id_docente=id_doc).first()
@@ -899,6 +901,17 @@ class DWLoaderService:
 
         # 3a. Ruteo ADMISION -> DimEstudiante
         if categoria == "admision":
+            if FactMarketing and id_tiempo and (pos_code or nombre_modulo):
+                # Cada inscrito (resuelto o no como persona) suma 1 a fact_marketing del programa y mes (alimenta ALUMNOS_* del forecast)
+                id_mod_adm = self.resolver_o_crear_modulo(nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion)
+                if id_mod_adm:
+                    mkt = self.db.query(FactMarketing).filter_by(id_modulo=id_mod_adm, id_tiempo=id_tiempo).first()
+                    if mkt:
+                        mkt.inscritos = (mkt.inscritos or 0) + 1
+                        mkt.leads = max(mkt.leads or 0, mkt.inscritos)
+                    else:
+                        self.db.add(FactMarketing(id_modulo=id_mod_adm, id_tiempo=id_tiempo, leads=1, reservas=0, inscritos=1, costo_programa=0.0))
+                    self.db.flush()
             if not id_est:
                 return {
                     "tipo": "admision",
