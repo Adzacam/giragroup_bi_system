@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useState, useEffect, useRef, useCallback } from 
 import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import TareasSegundoPlano from './components/shared/TareasSegundoPlano';
 import { NotificationProvider } from './context/NotificationContext';
 import { Toaster } from 'sileo';
 import IsometricCanvasBackground from './components/canvas3d/IsometricCanvasBackground';
@@ -158,6 +159,7 @@ function DashboardRedirect() {
 
 /* ─── Main Layout (navbar + top loading bar + sidebar + content) ─── */
 function MainLayout() {
+  const { role } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [topProgress, setTopProgress] = useState(0);
@@ -336,6 +338,9 @@ function MainLayout() {
           </Suspense>
         </main>
       </div>
+
+      {/* Tareas largas de DataOps: siguen visibles y avisan al terminar aunque se cambie de página */}
+      <TareasSegundoPlano role={role} />
 
       <MobileBottomNav
         onOpenMenu={() => setIsMobileOpen(prev => !prev)}

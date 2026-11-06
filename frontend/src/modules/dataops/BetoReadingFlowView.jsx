@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import BatchFlowLayout from './components/BatchFlowLayout';
 import ProgresoTarea from './components/ProgresoTarea';
+import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano';
 import { dataopsApi } from '../../api/dataopsApi';
 import { sileoToast } from '../../services/sileoToast';
 
@@ -223,6 +224,7 @@ export default function BetoReadingFlowView() {
         doc_id: selectedDocId ? Number(selectedDocId) : undefined,
       });
       setTareaDw(res?.tarea || { id: res?.tarea_id, estado: 'EN_CURSO' });
+      avisarTareaIniciada();
     } catch (err) {
       const det = err.response?.data?.detail;
       if (err.response?.status === 409 && det?.tarea) {

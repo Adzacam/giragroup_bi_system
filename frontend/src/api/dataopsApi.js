@@ -474,6 +474,9 @@ export const dataopsApi = {
   /** Avance de una tarea larga (consolidación o lectura de BETO), sin caché */
   getTarea: async (tareaId) => (await client.get(`${BASE_URL}/tareas/${tareaId}`)).data,
 
+  /** Tareas largas en curso o recién terminadas (panel global) */
+  getTareasActivas: async () => (await client.get(`${BASE_URL}/tareas`)).data || [],
+
   /** Última tarea del lote de ese tipo: 'CONSOLIDACION' | 'LECTURA_BETO' (o null) */
   getTareaLote: async (idLote, tipo = 'CONSOLIDACION') =>
     (await client.get(`${BASE_URL}/lote/${idLote}/tarea`, { params: { tipo } })).data,

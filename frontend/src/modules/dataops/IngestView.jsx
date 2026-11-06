@@ -11,6 +11,7 @@ import { dataopsApi } from '../../api/dataopsApi';
 import { catalogApi } from '../../api/catalogApi';
 import { useCatalogProgramCount } from '../../hooks/useCatalogProgramCount';
 import { sileoToast } from '../../services/sileoToast';
+import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano';
 import {
   inspectFileHeaders,
   validateFileSecurityClient,
@@ -275,10 +276,12 @@ export default function IngestView() {
           if (pct < 100) {
             setUploadStageText(`Subiendo archivos al servidor: ${pct}% completado...`);
           } else {
-            setUploadStageText('Archivos recibidos (100%). Procesando en servidor (normalización, fechas y pre-etiquetado)...');
+            setUploadStageText('Archivos transferidos. El servidor está procesando el lote (normalización, fechas y pre-etiquetado)...');
+            // La transferencia terminó, la ingesta no: el panel global sigue el avance aunque se cambie de página
+            avisarTareaIniciada();
             sileoToast.info({
-              title: 'Archivos transferidos (100%)',
-              description: 'El servidor está ejecutando el pipeline de extracción y normalización. Por favor espere...',
+              title: 'Archivos transferidos al servidor',
+              description: 'La ingesta sigue en el servidor. Puedes cambiar de página: te avisaremos al terminar.',
             });
           }
         },

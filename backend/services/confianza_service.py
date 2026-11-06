@@ -30,7 +30,7 @@ MODELO = os.getenv("BETO_MODELO_VERSION", "beto-v1")  # cambiarlo invalida la ca
 LOTE_CACHE_SQL = 5000
 
 
-def _inferir(textos: List[str]) -> List[Optional[float]]:
+def _inferir(textos: List[str], al_avanzar=None) -> List[Optional[float]]:
     """Índices del servicio BETO; None para las líneas de una petición que falla (nunca se inventa uno)."""
     indices: List[Optional[float]] = []
     for i in range(0, len(textos), LINEAS_POR_PETICION):
@@ -47,6 +47,8 @@ def _inferir(textos: List[str]) -> List[Optional[float]]:
         except Exception as e:
             logger.warning(f"Servicio de índice BETO no disponible ({e}); {len(lote)} líneas quedan sin índice.")
             indices.extend([None] * len(lote))
+        if al_avanzar:
+            al_avanzar(len(lote))
     return indices
 
 
@@ -87,7 +89,7 @@ def _guardar_cache(nuevos: Dict[str, float]) -> None:
         db.close()
 
 
-def obtener_indices(lineas: List[str]) -> List[Optional[float]]:
+def obtener_indices(lineas: List[str], al_avanzar=None) -> List[Optional[float]]:
     """
     Índice final por línea. Las líneas ya vistas salen de cache_indice_beto (migración 009) y sólo las nuevas
     van al servicio BETO, una vez por texto distinto aunque se repita en el lote. Si el servicio no responde,
@@ -103,20 +105,22 @@ def obtener_indices(lineas: List[str]) -> List[Optional[float]]:
         en_cache = None
 
     if en_cache is None:
-        return _inferir(textos)
+        return _inferir(textos, al_avanzar)
 
     pendientes: Dict[str, str] = {}
     for h, t in zip(hashes, textos):
         if h not in en_cache and h not in pendientes:
             pendientes[h] = t
     if pendientes:
-        inferidos = dict(zip(pendientes.keys(), _inferir(list(pendientes.values()))))
+        inferidos = dict(zip(pendientes.keys(), _inferir(list(pendientes.values()), al_avanzar)))
         nuevos = {h: v for h, v in inferidos.items() if v is not None}
         try:
             _guardar_cache(nuevos)
         except Exception as e:
             logger.warning(f"No se pudo guardar la caché de índices BETO ({e}).")
         en_cache.update(nuevos)
+    if al_avanzar:
+        al_avanzar(len(lineas) - len(pendientes))  # las que salieron de la caché cuentan como hechas
     return [en_cache.get(h) for h in hashes]
 
 

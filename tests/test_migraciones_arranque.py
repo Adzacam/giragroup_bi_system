@@ -43,9 +43,10 @@ def test_con_004_aplicada_no_se_reaplica_003():
     pbi = "007_powerbi_informe_version.sql"
     tarea = "008_dataops_tarea.sql"
     cache = "009_cache_indice_beto.sql"
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache]
-    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache]
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, alineacion, cmi, pbi, tarea, cache}) == []
+    ingesta = "010_dataops_tarea_ingesta.sql"
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache, ingesta]
+    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache, ingesta]
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, alineacion, cmi, pbi, tarea, cache, ingesta}) == []
 
 
 def test_capa_cmi_no_pisa_la_configuracion_editada():

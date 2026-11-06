@@ -6,6 +6,8 @@ instante, independiente de la transacción de la tarea: así la consolidación (
 puede reportar avance mientras corre, y cualquier worker de la API puede leerlo.
 """
 
+import functools
+import logging
 import time
 from typing import Any, Dict, Optional
 
@@ -17,6 +19,19 @@ INTERVALO_SEG = 1.0      # como mucho una escritura de avance por segundo y tare
 SIN_LATIDO_SEG = 180     # EN_CURSO sin avance en 3 min: la API se reinició y la tarea no terminará
 
 _ultima_escritura: Dict[int, float] = {}
+logger = logging.getLogger("tareas_dataops")
+
+
+def _sin_romper(fn):
+    """El seguimiento es auxiliar: si la base no responde, la ingesta o la consolidación siguen sin él."""
+    @functools.wraps(fn)
+    def envoltura(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as e:
+            logger.warning("Seguimiento de tarea no disponible (%s): %s", fn.__name__, e)
+            return [] if fn.__name__ == "activas" else None
+    return envoltura
 
 
 def _ejecutar(sql: str, params: Dict[str, Any]):
@@ -29,6 +44,7 @@ def _ejecutar(sql: str, params: Dict[str, Any]):
         db.close()
 
 
+@_sin_romper
 def crear(tipo: str, id_lote: Optional[int], total: int = 0, usuario: Optional[str] = None) -> int:
     db = SessionLocal()
     try:
@@ -41,6 +57,7 @@ def crear(tipo: str, id_lote: Optional[int], total: int = 0, usuario: Optional[s
         db.close()
 
 
+@_sin_romper
 def avanzar(tid: Optional[int], procesados: int, total: Optional[int] = None, forzar: bool = False) -> None:
     if not tid:
         return
@@ -53,6 +70,7 @@ def avanzar(tid: Optional[int], procesados: int, total: Optional[int] = None, fo
                actualizado_en = CURRENT_TIMESTAMP WHERE id = :id""", {"p": procesados, "n": total, "id": tid})
 
 
+@_sin_romper
 def terminar(tid: Optional[int], resultado: Optional[Dict[str, Any]] = None) -> None:
     if not tid:
         return
@@ -64,6 +82,7 @@ def terminar(tid: Optional[int], resultado: Optional[Dict[str, Any]] = None) -> 
          WHERE id = :id""", {"r": json.dumps(resultado or {}, default=str), "id": tid})
 
 
+@_sin_romper
 def fallar(tid: Optional[int], error: str) -> None:
     if not tid:
         return
@@ -101,6 +120,7 @@ def _serializar(r) -> Optional[Dict[str, Any]]:
     return d
 
 
+@_sin_romper
 def obtener(tid: int) -> Optional[Dict[str, Any]]:
     db = SessionLocal()
     try:
@@ -110,6 +130,22 @@ def obtener(tid: int) -> Optional[Dict[str, Any]]:
         db.close()
 
 
+@_sin_romper
+def activas(horas: int = 24) -> list:
+    """Tareas EN_CURSO recientes (para el panel global de la SPA), más las terminadas hace menos de 2 min."""
+    db = SessionLocal()
+    try:
+        filas = db.execute(text(f"""
+            SELECT {_COLS} FROM public.dataops_tarea
+             WHERE iniciado_en > CURRENT_TIMESTAMP - make_interval(hours => :h)
+               AND (estado = 'EN_CURSO' OR terminado_en > CURRENT_TIMESTAMP - INTERVAL '2 minutes')
+             ORDER BY id DESC LIMIT 20"""), {"h": horas}).all()
+        return [t for t in (_serializar(f) for f in filas) if t]
+    finally:
+        db.close()
+
+
+@_sin_romper
 def ultima(id_lote: int, tipo: str) -> Optional[Dict[str, Any]]:
     """Tarea más reciente de ese tipo para el lote (en curso o la última terminada)."""
     db = SessionLocal()

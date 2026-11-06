@@ -9,6 +9,7 @@ import logging
 import json
 import re
 import threading
+import time
 import unicodedata
 import urllib.request
 import urllib.error
@@ -26,7 +27,7 @@ os.makedirs(LANDING_DIR, exist_ok=True)
 UPLOAD_DIR = LANDING_DIR
 
 from core.database import SessionLocal, get_db
-from services import tareas_dataops
+from services import tareas_dataops, cache_lectura
 from core.security import require_roles, get_current_user
 from models.user import User
 from models.lote import Lote
@@ -387,6 +388,8 @@ def upload_batch(
     )
     db.add(nuevo_lote)
     db.flush()
+    db.commit()  # el lote existe ya para el seguimiento de la ingesta desde otras páginas
+    tarea_ingesta = tareas_dataops.crear("INGESTA", nuevo_lote.id_lote, total=len(files))
 
     batch_landing_dir = os.path.join(LANDING_DIR, str(nuevo_lote.id_lote))
     os.makedirs(batch_landing_dir, exist_ok=True)
@@ -399,6 +402,7 @@ def upload_batch(
     docs_creados_ids: List[int] = []
 
     for idx, f in enumerate(files):
+        tareas_dataops.avanzar(tarea_ingesta, idx, forzar=True)
         raw_name = f.filename or f"archivo_{idx + 1}.xlsx"
         safe_name = IngestionService.sanitizar_nombre_archivo(raw_name)
 
@@ -596,6 +600,9 @@ def upload_batch(
     if not exitosos:
         nuevo_lote.estado = "CON_ERRORES"
     db.commit()
+    tareas_dataops.terminar(tarea_ingesta, {
+        "exitosos": len(exitosos), "fallidos": len(errores), "total_registros": total_registros,
+    })
 
     try:
         from models.log_pipeline import LogPipelineIngesta
@@ -1722,6 +1729,7 @@ def _evaluar_documentos_lote(
     docs: List[DimOrigenDocumental],
     persistir_staging: bool = True,
     tarea_id: Optional[int] = None,
+    aplicar_resoluciones: bool = True,
 ) -> Dict[str, Any]:
     """
     Evalúa todas las tuplas de los documentos indicados, actualiza `staging_registros_crudos`
@@ -1767,6 +1775,8 @@ def _evaluar_documentos_lote(
         .all()
     )
     hitl_map: Dict[Tuple[int, str], StagingEntidadNoResuelta] = {}
+    if not aplicar_resoluciones:
+        hitl_records = []  # lectura base: las resoluciones se superponen al leer (_superponer_resoluciones)
     for h in hitl_records:
         if h.registro_origen_id and h.texto_original:
             hitl_map[(h.registro_origen_id, h.texto_original)] = h
@@ -2241,14 +2251,42 @@ def _evaluar_documentos_lote(
 
 
 def _evaluar_lote_en_segundo_plano(doc_ids: List[int], id_lote: Optional[int]) -> None:
-    """Evaluación post-ingesta con su propia sesión (la del request ya se cerró al responder)."""
+    """
+    Evaluación post-ingesta con su propia sesión (la del request ya se cerró al responder). Registra su avance
+    (LECTURA_BETO), deja el resultado en la caché de disco para que el paso ③ abra al instante desde cualquier
+    worker y avisa cuando el lote está listo para revisar.
+    """
     db_bg = SessionLocal()
+    tarea_id = tareas_dataops.crear("LECTURA_BETO", id_lote)
     try:
         docs = db_bg.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids)).all()
-        if docs:
-            _evaluar_documentos_lote(db_bg, docs, persistir_staging=True)
+        if not docs:
+            tareas_dataops.terminar(tarea_id, {})
+            return
+        res = _evaluar_documentos_lote(db_bg, docs, persistir_staging=True, tarea_id=tarea_id)
+        # Tras persistir sólo se agregan casos sin resolver, que no cambian la lectura: el mismo resultado sirve
+        # como lectura del lote con su huella nueva
+        ids = sorted(d.id_documento for d in docs)
+        clave = ("evaluacion_lectura", tuple(ids), _huella_evaluacion(db_bg, ids))
+        cache_lectura.guardar(clave, res)
+        tareas_dataops.terminar(tarea_id, {"total_tuplas": res.get("totalTuplas")})
+        try:
+            NotificationService.create_notification(
+                db=db_bg,
+                title=f"Lote #{id_lote} listo para revisar",
+                message=(f"BETO terminó de analizar {res.get('totalTuplas', 0)} registros: "
+                         f"{res.get('autoCount', 0)} automáticos, {res.get('auditCount', 0)} a revisión y "
+                         f"{res.get('inconsistenciasCount', 0)} con incidencias."),
+                category="DataOps",
+                severity="SUCCESS",
+                role_target="AUDITOR_CALIDAD",
+                link=f"/dataops/lote/{id_lote}/beto",
+            )
+        except Exception as e_notif:
+            logger.warning("No se pudo notificar el lote %s listo: %s", id_lote, e_notif)
     except Exception as e_eval_batch:
         logger.warning("No se pudo evaluar lote %s post-ingesta: %s", id_lote, e_eval_batch)
+        tareas_dataops.fallar(tarea_id, str(e_eval_batch))
     finally:
         db_bg.close()
 
@@ -2257,22 +2295,61 @@ TTL_EVALUACION_LECTURA_SEG = 1800
 
 
 def _huella_evaluacion(db: Session, doc_ids: List[int]) -> Tuple:
-    """Lo que cambia el resultado de evaluar: staging, casos resueltos y catálogos. Consulta barata."""
+    """
+    Lo que cambia la lectura de BETO de un lote: su staging (textos y bloques). Consulta barata.
+    Las resoluciones de la bandeja no entran: se superponen en cada lectura (_superponer_resoluciones), así
+    revisar un caso o consolidar al DW no obliga a releer el lote entero (minutos con 100 mil registros).
+    """
     stg = db.query(
         func.count(StagingRegistroCrudo.id), func.max(StagingRegistroCrudo.id)
     ).filter(StagingRegistroCrudo.id_documento.in_(doc_ids)).one()
-    hitl = db.query(
-        func.count(StagingEntidadNoResuelta.id_staging),
-        func.max(StagingEntidadNoResuelta.id_staging),
-        func.count(StagingEntidadNoResuelta.id_staging).filter(StagingEntidadNoResuelta.resuelto == True),  # noqa: E712
-        func.max(StagingEntidadNoResuelta.resuelto_en),
-    ).filter(StagingEntidadNoResuelta.id_documento.in_(doc_ids)).one()
-    catalogos = (
-        db.query(func.count(DimEstudiante.id_estudiante), func.max(DimEstudiante.id_estudiante)).one(),
-        db.query(func.count(DimModulo.id_modulo)).scalar(),
-        db.query(func.count(DimDocente.id_docente)).scalar(),
+    return ("v2",) + tuple(stg)
+
+
+def _superponer_resoluciones(db: Session, base: Dict[str, Any], doc_ids: List[int]) -> Dict[str, Any]:
+    """
+    Aplica a la lectura base los casos ya resueltos en la bandeja: aprobado -> AUTOMATICO (RESUELTO_HUMANO),
+    descartado -> INCONSISTENCIA. Misma regla que _evaluar_documentos_lote con exists_hitl.resuelto, pero en
+    memoria y sin volver a leer con BETO. Devuelve un resultado nuevo; la base cacheada no se modifica.
+    """
+    resueltos = (
+        db.query(StagingEntidadNoResuelta.registro_origen_id, StagingEntidadNoResuelta.texto_original,
+                 StagingEntidadNoResuelta.estado_resolucion, StagingEntidadNoResuelta.motivo)
+        .filter(StagingEntidadNoResuelta.id_documento.in_(doc_ids), StagingEntidadNoResuelta.resuelto == True)  # noqa: E712
+        .all()
     )
-    return tuple(stg), tuple(str(x) for x in hitl), catalogos
+    if not resueltos:
+        return base
+    mapa: Dict[Tuple[int, str], Tuple[str, Optional[str]]] = {}
+    for rid, texto, estado, motivo in resueltos:
+        if rid and texto:
+            mapa[(rid, texto)] = (estado or "RESUELTO_HUMANO", motivo)
+            mapa.setdefault((rid, texto[:250]), (estado or "RESUELTO_HUMANO", motivo))
+
+    detalles, auto_c, audit_c, inc_c = [], 0, 0, 0
+    for d in base.get("detalles", []):
+        r = mapa.get((d.get("stg_id"), d.get("raw_text"))) or mapa.get((d.get("stg_id"), (d.get("raw_text") or "")[:250]))
+        if r:
+            estado_res, motivo = r
+            d = dict(d)
+            descartado = estado_res == "DESCARTADO"
+            estado = "INCONSISTENCIA" if descartado else "AUTOMATICO"
+            d.update({
+                "estado": estado, "categoria_particion": estado, "estado_resolucion": estado_res,
+                "motivo": (motivo or "DESCARTADO") if descartado else "RESUELTO_HUMANO",
+            })
+            d["decision"] = {**(d.get("decision") or {}), "estado": estado, "motivo_codigo": d["motivo"],
+                             "motivo_llano": ("Registro descartado formalmente en auditoría humana." if descartado
+                                              else "Registro revisado y conciliado por auditor humano.")}
+            d["en_calidad"] = descartado or bool(d.get("es_nuevo_catalogo") or d.get("alerta_abandono"))
+        cat = d.get("categoria_particion")
+        auto_c += cat == "AUTOMATICO"
+        audit_c += cat == "REVISION"
+        inc_c += cat == "INCONSISTENCIA"
+        detalles.append(d)
+    auto_pct, audit_pct, inc_pct = calcular_porcentajes_mayor_residuo(auto_c, audit_c, inc_c)
+    return {**base, "detalles": detalles, "autoCount": auto_c, "auditCount": audit_c, "inconsistenciasCount": inc_c,
+            "autoPct": auto_pct, "auditPct": audit_pct, "inconsistenciasPct": inc_pct}
 
 
 def _evaluacion_lectura(db: Session, docs: List[DimOrigenDocumental]) -> Dict[str, Any]:
@@ -2286,18 +2363,42 @@ def _evaluacion_lectura(db: Session, docs: List[DimOrigenDocumental]) -> Dict[st
     clave = ("evaluacion_lectura", tuple(doc_ids), _huella_evaluacion(db, doc_ids))
 
     def _calcular_con_progreso():
-        # La primera lectura de un lote grande tarda minutos: se registra como tarea para que la SPA muestre avance
+        # Otro worker (o la evaluación post-ingesta) puede haberla dejado en disco
+        en_disco = cache_lectura.leer(clave)
+        if en_disco is not None:
+            return en_disco
         id_lote = next((d.id_lote for d in docs if getattr(d, "id_lote", None)), None)
+        if id_lote:
+            previa = tareas_dataops.ultima(id_lote, "LECTURA_BETO")
+            if previa and previa["estado"] == "EN_CURSO":
+                # Ya se está calculando (tras la ingesta): se espera su resultado en vez de duplicar minutos de trabajo
+                for _ in range(1800):
+                    time.sleep(1)
+                    en_disco = cache_lectura.leer(clave)
+                    if en_disco is not None:
+                        return en_disco
+                    estado = tareas_dataops.obtener(previa["id"])
+                    if not estado or estado["estado"] != "EN_CURSO":
+                        break
+                # La evaluación post-ingesta agrega casos y cambia la huella: su resultado queda con la nueva
+                db.expire_all()
+                en_disco = cache_lectura.leer(("evaluacion_lectura", tuple(doc_ids), _huella_evaluacion(db, doc_ids)))
+                if en_disco is not None:
+                    return en_disco
+        # La primera lectura de un lote grande tarda minutos: se registra como tarea para que la SPA muestre avance
         tarea_id = tareas_dataops.crear("LECTURA_BETO", id_lote)
         try:
-            res = _evaluar_documentos_lote(db, docs, persistir_staging=False, tarea_id=tarea_id)
+            res = _evaluar_documentos_lote(db, docs, persistir_staging=False, tarea_id=tarea_id,
+                                           aplicar_resoluciones=False)
         except Exception as e_lect:
             tareas_dataops.fallar(tarea_id, str(e_lect))
             raise
+        cache_lectura.guardar(clave, res)
         tareas_dataops.terminar(tarea_id, {"total_tuplas": res.get("totalTuplas")})
         return res
 
-    return cache_consultas.obtener(clave, TTL_EVALUACION_LECTURA_SEG, _calcular_con_progreso)
+    base = cache_consultas.obtener(clave, TTL_EVALUACION_LECTURA_SEG, _calcular_con_progreso)
+    return _superponer_resoluciones(db, base, doc_ids)
 
 
 @router.get("/lote/{id_lote}/resumen")
@@ -3387,6 +3488,11 @@ def confirm_dw_insert(
         return _consolidar(payload, db, current_user)
 
     if payload.id_lote:
+        ingesta = tareas_dataops.ultima(payload.id_lote, "INGESTA")
+        if ingesta and ingesta["estado"] == "EN_CURSO":
+            raise HTTPException(status.HTTP_409_CONFLICT,
+                                detail={"mensaje": "La ingesta del lote todavía no termina: consolida cuando acabe.",
+                                        "tarea": ingesta})
         previa = tareas_dataops.ultima(payload.id_lote, "CONSOLIDACION")
         if previa and previa["estado"] == "EN_CURSO":
             raise HTTPException(status.HTTP_409_CONFLICT,
@@ -3419,8 +3525,14 @@ def get_tarea(tarea_id: int, _: User = Depends(require_roles(["ADMIN", "AUDITOR_
     return tarea
 
 
+@router.get("/tareas")
+def get_tareas_activas(_: User = Depends(get_current_user)):
+    """Tareas largas en curso (y las terminadas hace menos de 2 min) para el panel global de la SPA."""
+    return tareas_dataops.activas()
+
+
 @router.get("/lote/{id_lote}/tarea")
-def get_tarea_lote(id_lote: int, tipo: str = Query("CONSOLIDACION", pattern="^(CONSOLIDACION|LECTURA_BETO)$")):
+def get_tarea_lote(id_lote: int, tipo: str = Query("CONSOLIDACION", pattern="^(INGESTA|CONSOLIDACION|LECTURA_BETO)$")):
     """Última tarea del lote de ese tipo (en curso o terminada), o null."""
     return tareas_dataops.ultima(id_lote, tipo)
 
@@ -3476,8 +3588,14 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         for d, filas in filas_por_doc.items()
     }
     total_lineas = sum(len([l for l in (s_reg.texto_plano or "").splitlines() if l.strip()]) for s_reg in stg_records)
+    # Avance en dos fases del mismo peso: índice de BETO de cada línea y carga al DW
     lineas_hechas = 0
-    tareas_dataops.avanzar(tarea_id, 0, total_lineas, forzar=True)
+    indexadas = [0]
+    tareas_dataops.avanzar(tarea_id, 0, total_lineas * 2, forzar=True)
+
+    def _al_indexar(n):
+        indexadas[0] += n
+        tareas_dataops.avanzar(tarea_id, indexadas[0] + lineas_hechas)
 
     for stg in stg_records:
         orig_doc = origenes_map.get(stg.id_documento) if stg.id_documento else None
@@ -3506,10 +3624,10 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         )
 
         # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
-        indices_linea = obtener_indices(lines)
+        indices_linea = obtener_indices(lines, al_avanzar=_al_indexar)
         for line, indice in zip(lines, indices_linea):
             lineas_hechas += 1
-            tareas_dataops.avanzar(tarea_id, lineas_hechas)
+            tareas_dataops.avanzar(tarea_id, indexadas[0] + lineas_hechas)
             campos_linea = campos_por_encabezado([c.strip() for c in line.split("|")])
             motivo_ruido = motivo_fila_sin_entidad(campos_linea, categoria_ruteo)
             if motivo_ruido:

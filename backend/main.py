@@ -50,6 +50,7 @@ MIGRACIONES_EN_ARRANQUE = (
     "007_powerbi_informe_version.sql",
     "008_dataops_tarea.sql",
     "009_cache_indice_beto.sql",
+    "010_dataops_tarea_ingesta.sql",
 )
 MIGRACION_LOTE = "003_dataops_lote_and_facts_alignment.sql"
 MIGRACION_TIPO_FUENTE = "004_extend_tipo_fuente_sources.sql"
