@@ -84,7 +84,7 @@ class TestHoltWinters:
         f_hueco = np.array(entrenar_y_proyectar_hw(con_hueco, "ALUMNOS_GLOBAL", 6)["forecast"])
         assert np.mean(np.abs(f_hueco - f_ok) / np.maximum(f_ok, 1)) < 0.05
 
-    @pytest.mark.xfail(strict=True, reason="Hallazgo HW-PARAM: sin statsmodels los parámetros quedan fijos en 0.2/0.1/0.2")
+    # HW-PARAM resuelto: parámetros estimados correctamente en entorno con statsmodels
     def test_parametros_suavizado_estimados(self):
         res = entrenar_y_proyectar_hw(_serie_mensual(), "ALUMNOS_GLOBAL", horizonte=6)
         assert res["parametros"] != {"alpha": 0.2, "beta": 0.1, "gamma": 0.2}

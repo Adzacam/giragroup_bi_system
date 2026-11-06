@@ -353,6 +353,7 @@ def test_email_service_send_otp_and_reset_unconfigured(monkeypatch):
 
 def test_email_service_send_smtp_success(monkeypatch):
     """Envío real simulado vía smtplib con STARTTLS exitoso."""
+    monkeypatch.setenv("EMAIL_BACKEND", "smtp")  # otro módulo fija EMAIL_BACKEND=console al importarse; aquí smtplib va con mock
     from unittest.mock import MagicMock
     import smtplib
     from services.email_service import email_service
@@ -386,6 +387,7 @@ def test_email_service_send_smtp_success(monkeypatch):
 
 def test_email_service_smtp_resilience_to_failures(monkeypatch):
     """Si el servidor SMTP rechaza credenciales o hace timeout, no se produce excepción hacia el caller."""
+    monkeypatch.setenv("EMAIL_BACKEND", "smtp")  # otro módulo fija EMAIL_BACKEND=console al importarse; aquí smtplib va con mock
     import smtplib
     from unittest.mock import MagicMock
     from services.email_service import email_service
@@ -439,6 +441,7 @@ def test_auth_service_email_service_consistency(monkeypatch):
 
 def test_email_service_send_smtp_ssl_port_465(monkeypatch):
     """Verifica envío directo mediante SMTP_SSL (puerto 465)."""
+    monkeypatch.setenv("EMAIL_BACKEND", "smtp")  # otro módulo fija EMAIL_BACKEND=console al importarse; aquí smtplib va con mock
     from unittest.mock import MagicMock
     import smtplib
     from services.email_service import email_service
@@ -479,6 +482,7 @@ def test_login_step_one_channel_dynamic(monkeypatch):
     Verifica que el endpoint login retorna channel='email' cuando SMTP despacha exitosamente,
     y channel='console' cuando SMTP falla o no está configurado (fallback seguro).
     """
+    monkeypatch.setenv("EMAIL_BACKEND", "smtp")  # otro módulo fija EMAIL_BACKEND=console al importarse; aquí smtplib va con mock
     import smtplib
     from unittest.mock import MagicMock
 

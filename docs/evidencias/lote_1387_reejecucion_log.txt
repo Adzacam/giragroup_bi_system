@@ -1,0 +1,60 @@
+Total registros cargados desde uploads/data/: 1387
+Cargando modelo BETO local y tokenizer...
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 5004.75it/s]
+Dimensiones del DW: dim_estudiante=13487, dim_docente=631
+{
+  "dimensiones_dw_usadas": {
+    "dim_estudiante": 13487,
+    "dim_docente": 631
+  },
+  "personas": {
+    "total": 3726,
+    "resueltas_CI_EXACTA": 2375,
+    "resueltas_FUZZY": 1,
+    "sin_coincidencia_HITL": 1350
+  },
+  "distribucion_bandas_sin_regla_personas": {
+    "directo": {
+      "conteo": 1384,
+      "porcentaje": 99.78
+    },
+    "hitl": {
+      "conteo": 3,
+      "porcentaje": 0.22
+    },
+    "staging": {
+      "conteo": 0,
+      "porcentaje": 0.0
+    }
+  },
+  "distribucion_bandas_con_regla_personas": {
+    "directo": {
+      "conteo": 573,
+      "porcentaje": 41.31
+    },
+    "hitl": {
+      "conteo": 814,
+      "porcentaje": 58.69
+    },
+    "staging": {
+      "conteo": 0,
+      "porcentaje": 0.0
+    }
+  },
+  "kpis": {
+    "KPI_10a_media_todas_las_entidades": 0.9618,
+    "KPI_10a_n_entidades": 11426,
+    "KPI_10b_media_solo_entidades_BETO": 0.9209,
+    "KPI_10b_n_entidades": 3248,
+    "KPI_10_previo_media_por_registro": 0.964,
+    "KPI_11_directo_sin_regla_personas_pct": 99.78,
+    "KPI_11_directo_con_regla_personas_pct": 41.31
+  },
+  "conteos_fuente_resolucion": {
+    "CI_EXACTA": 1850,
+    "ENCABEZADO": 3079,
+    "FUZZY": 146,
+    "REGEX": 3103,
+    "BETO": 3248
+  }
+}

@@ -41,7 +41,6 @@ class CatalogMatcher:
         self._estados_rep_map = {er.lower(): er for er in self.catalogos.get("estados_reprobados", [])}
         self._estados_arca_map = {ar.lower(): ar for ar in self.catalogos.get("estados_arca", [])}
         self._programas = self.catalogos.get("programas", {})
-        self._docentes = self.catalogos.get("docentes", {})
 
     def _cargar_catalogos_defecto(self) -> Dict[str, Any]:
         """Carga los catálogos canónicos delegando en CatalogRepository."""
@@ -55,7 +54,6 @@ class CatalogMatcher:
             "estados_reprobados": repo.estados_reprobados or ["Insuficiencia académica", "Abandono", "Congelamiento", "Tutoría"],
             "estados_arca": repo.estados_arca or ["Titulado", "No Titulado"],
             "programas": repo.programas_meta,
-            "docentes": repo.docentes,
             "carteras": repo.carteras,
         }
 

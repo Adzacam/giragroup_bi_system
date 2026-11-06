@@ -1,0 +1,42 @@
+[
+  {
+    "archivo": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+  },
+  {
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+  },
+  {
+    "archivo": "BD Cobranzas.xlsx",
+    "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+  },
+  {
+    "archivo": "BD Egresos.xlsx",
+    "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+  },
+  {
+    "archivo": "BD Techos.xlsx",
+    "error": "('Connection aborted.', ConnectionAbortedError(10053, 'Se ha anulado una conexión establecida por el software en su equipo host', None, 10053, None))"
+  },
+  {
+    "archivo": "EJECUTADO VS META.xlsx",
+    "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+  },
+  {
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+  },
+  {
+    "archivo": "Experiencia Docente 2.0.xlsx",
+    "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+  },
+  {
+    "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+    "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+  },
+  {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+  }
+]

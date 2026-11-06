@@ -45,8 +45,6 @@ class CatalogRepository:
         # Estructuras maestras en memoria
         self.programas: Dict[str, str] = {}  # pos -> nombre_canonico
         self.programas_meta: Dict[str, Dict[str, Any]] = {}  # pos -> {id, pos, nombre, version}
-        self.docentes: Dict[str, Dict[str, Any]] = {}  # nombre_limpio -> {id, nombre_original, etc}
-        self.docentes_set: set = set()  # Nombres en mayúscula para búsqueda O(1)
         self.modulos: Dict[str, Dict[str, Any]] = {}  # nombre_limpio -> {id, nombre_original}
         
         self.escuelas: List[str] = []
@@ -94,17 +92,6 @@ class CatalogRepository:
                         "pos": pos,
                         "nombre": nombre,
                         "version": version
-                    }
-
-            elif "INSERT INTO public.cat_docente" in line:
-                m = re.search(r"VALUES\s*\(\s*'([^']+)'", line, re.IGNORECASE)
-                if m:
-                    nom_orig = m.group(1).strip()
-                    self.docentes_set.add(nom_orig.upper())
-                    nom_limpio = FuzzyNormalizer.limpiar_nombre(nom_orig)
-                    self.docentes[nom_limpio] = {
-                        "nombre_original": nom_orig,
-                        "nombre_canonico": nom_orig
                     }
 
             elif "INSERT INTO public.cat_modulo" in line:
@@ -335,57 +322,6 @@ class CatalogRepository:
                 "nombre_canonico": self.programas[pos_asociado],
                 "score": round(score, 4),
                 "tipo_match": "FUZZY_NOMBRE_PROGRAMA"
-            }
-
-        return None
-
-    # ── MÉTODOS DE DOCENTES ─────────────────────────────────────────────
-
-    def es_docente_conocido(self, nombre: Optional[str]) -> bool:
-        """Verifica si un nombre corresponde a un docente registrado."""
-        if not nombre:
-            return False
-        nom_upper = nombre.strip().upper()
-        if nom_upper in self.docentes_set:
-            return True
-        nom_limpio = FuzzyNormalizer.limpiar_nombre(nombre)
-        return nom_limpio in self.docentes
-
-    def enlazar_docente(
-        self,
-        nombre_extraido: str,
-        umbral_minimo: float = UMBRAL_CONFIANZA_ALTO
-    ) -> Optional[Dict[str, Any]]:
-        """Grounding de docentes extraídos contra la nómina oficial."""
-        if not nombre_extraido or not str(nombre_extraido).strip():
-            return None
-
-        candidato_norm = FuzzyNormalizer.limpiar_nombre(nombre_extraido)
-        if len(candidato_norm) < 4:
-            return None
-
-        # 1. Coincidencia exacta
-        if candidato_norm in self.docentes:
-            return {
-                "nombre_canonico": self.docentes[candidato_norm]["nombre_canonico"],
-                "score": 1.0,
-                "tipo_match": "EXACTO_DOCENTE"
-            }
-
-        # 2. Búsqueda difusa
-        resultado_fuzzy = FuzzyNormalizer.buscar_mejor_coincidencia(
-            candidato=candidato_norm,
-            opciones=list(self.docentes.keys()),
-            umbral_minimo=umbral_minimo,
-            metodo="wratio"
-        )
-
-        if resultado_fuzzy:
-            nom_match, score = resultado_fuzzy
-            return {
-                "nombre_canonico": self.docentes[nom_match]["nombre_canonico"],
-                "score": round(score, 4),
-                "tipo_match": "FUZZY_DOCENTE"
             }
 
         return None

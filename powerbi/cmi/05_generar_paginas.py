@@ -2,6 +2,8 @@
 
 Uso:  python 05_generar_paginas.py <entrada.pbix> <salida.pbix> [gestion_por_defecto]
 
+gestion_por_defecto: "Actual" (última gestión del DW, recomendado) o un año fijo, p. ej. 2025.
+
 Requiere que el modelo ya tenga las tablas y medidas de 01_power_query.pq / 04_tabular_editor.cs.
 Reemplaza todas las páginas del informe y aplica el tema 03_tema_giragroup_cmi.json.
 """
@@ -165,11 +167,11 @@ def tabla(columnas, fuente_color=(), fondo_color=(), barras=(), fijos=()):
 
 def segmentador(gestion):
     return {"visualType": "slicer",
-            "query": {"queryState": {"Values": {"projections": [proy(("c", "Gestiones", "gestion"))]}}},
+            "query": {"queryState": {"Values": {"projections": [proy(("c", "Gestiones", "Gestion Vista"), "Gestión")]}}},
             "objects": {
                 "data": [{"properties": {"mode": lit("Basic")}}],
                 "general": [{"properties": {"orientation": num(1),
-                                            "filter": {"filter": filtro_in("Gestiones", "gestion", [gestion])}}}],
+                                            "filter": {"filter": filtro_in("Gestiones", "Gestion Vista", [gestion])}}}],
                 "selection": [{"properties": {"singleSelect": lit(True), "strictSingleSelect": lit(True),
                                               "selectAllCheckboxEnabled": lit(False)}}],
                 "header": [{"properties": {"show": lit(False)}}],
@@ -215,7 +217,7 @@ def pagina_resumen(gestion):
     p.add("distribucion", 796, 88, 460, 196, barra_distribucion(), titulo="Distribución del semáforo")
     p.add("nota", 24, 292, 1232, 40, textbox([(NOTA, 9, SUAVE, False)]), marco=False)
     p.add("mapa", 24, 340, 1232, 356, tabla(
-        [(("c", "Perspectivas", "nombre"), "Perspectiva"), (("m", IP, "Objetivo"), "Objetivo estratégico"),
+        [(("c", "Perspectivas", "nombre"), "Perspectiva"), (("m", IP, "Objetivo estratégico"), "Objetivo estratégico"),
          (INDICE_TXT, "Índice"), (("m", IP, "Evaluados Texto"), "Cobertura")],
         fondo_color=[(INDICE_TXT, (IP, "Indice Color"))],
         fijos=[(("m", IP, "Evaluados Texto"), SUAVE)]), titulo="Mapa estratégico")
@@ -239,7 +241,7 @@ def pagina_perspectiva(nombre, titulo, codigo, subtitulo, gestion, alto_tabla):
     encabezado(p, titulo, subtitulo, gestion)
     p.add("indice", 24, 88, 220, 120, tarjeta(INDICE_TXT, 36, color_medida=(IP, "Indice Color")),
           titulo="Índice de la perspectiva")
-    p.add("objetivo", 256, 88, 600, 120, tarjeta(("m", IP, "Objetivo"), 13), titulo="Objetivo estratégico")
+    p.add("objetivo", 256, 88, 600, 120, tarjeta(("m", IP, "Objetivo estratégico"), 13), titulo="Objetivo estratégico")
     p.add("conteos", 868, 88, 388, 120, multitarjeta(CONTEOS), titulo="Indicadores por estado")
     p.add("indicadores", 24, 220, 1232, alto_tabla, tabla_indicadores(), titulo="Indicadores")
     p.filtros.append({"name": f"f_{nombre}", "field": ref_c("Perspectivas", "codigo"), "type": "Categorical",
@@ -288,7 +290,7 @@ def pagina_procesos(g):
     D = "DataOpsDocumento"
     p.add("dataops", 24, 484, 1232, 212, tabla(
         [(("c", D, "nombre_archivo"), "Archivo"), (("c", D, "tipo_fuente"), "Fuente"),
-         (("c", D, "fecha"), "Fecha"), (("m", D, "Registros"), "Registros"),
+         (("c", D, "fecha"), "Fecha"), (("m", D, "Total registros"), "Registros"),
          (("m", D, "Consolidado directo"), "Consolidado directo"), (("m", D, "Revisión humana"), "Revisión humana"),
          (("m", D, "Pendientes"), "Pendientes")]), titulo="Calidad de datos por documento cargado")
     return p
@@ -369,4 +371,4 @@ def generar(entrada, salida, gestion):
 
 
 if __name__ == "__main__":
-    generar(sys.argv[1], sys.argv[2], int(sys.argv[3]) if len(sys.argv) > 3 else 2026)
+    generar(sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else "Actual")

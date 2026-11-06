@@ -22,7 +22,6 @@ class CatalogoGazetteer:
             }
             for pos, meta in self.repo.programas_meta.items()
         }
-        self.docentes: set = self.repo.docentes_set
 
     def normalizar_pos(self, val: Any) -> Optional[str]:
         """Convierte valores como '5308', 'POS 5308', 'POS-5308', 5308.0 a 'POS-5308'."""
@@ -58,10 +57,6 @@ class CatalogoGazetteer:
                     "nombre": prog.get("nombre_programa")
                 }
         return None
-
-    def es_docente_conocido(self, nombre: Optional[str]) -> bool:
-        """Verifica si el nombre de docente coincide con la semilla de catálogo."""
-        return self.repo.es_docente_conocido(nombre)
 
 
 _GAZETTEER_GLOBAL: Optional[CatalogoGazetteer] = None

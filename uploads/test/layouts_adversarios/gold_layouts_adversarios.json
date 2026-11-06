@@ -1,0 +1,1535 @@
+{
+  "metadata": {
+    "etiquetador": "Auditor de Calidad / Tesista (Adzacam - Adriano Daza Arteaga)",
+    "rol": "Ingeniero de Datos y Evaluador de Calidad GiraGroup BI",
+    "fecha_etiquetado": "2026-11-06",
+    "descripcion": "Gold standard etiquetado manualmente para los 5 layouts adversarios con estructuras anomalas.",
+    "total_lineas_anotadas": 25,
+    "total_entidades_ner_core": 72,
+    "total_entidades_regex": 26,
+    "total_entidades": 98,
+    "desglose_por_tipo": {
+      "PER_ESTUDIANTE": 22,
+      "PER_DOCENTE": 18,
+      "MODULO": 17,
+      "PROGRAMA": 15,
+      "NOTA": 20,
+      "FECHA": 4,
+      "CI": 2
+    }
+  },
+  "ejemplos": [
+    {
+      "archivo": "layout1_cabeceras_desconocidas.xlsx",
+      "hoja": "PLANILLA_INEDITA",
+      "fila_idx": 1,
+      "texto": "Dr. Alejandro Siles | Mariana Choquehuanca | Módulo 1 Finanzas | 88 | Maestría en Finanzas",
+      "tokens": [
+        "Dr",
+        ".",
+        "Alejandro",
+        "Siles",
+        "|",
+        "Mariana",
+        "Choquehuanca",
+        "|",
+        "Módulo",
+        "1",
+        "Finanzas",
+        "|",
+        "88",
+        "|",
+        "Maestría",
+        "en",
+        "Finanzas"
+      ],
+      "tags": [
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "O",
+        "B-NOTA",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Dr. Alejandro Siles"
+        },
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Mariana Choquehuanca"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 1 Finanzas"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "88"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Maestría en Finanzas"
+        }
+      ]
+    },
+    {
+      "archivo": "layout1_cabeceras_desconocidas.xlsx",
+      "hoja": "PLANILLA_INEDITA",
+      "fila_idx": 2,
+      "texto": "Lic. Roberto Carlos Duran | Gabriel Alarcón Flores | Módulo 2 Gestión | 92 | Diplomado en BI",
+      "tokens": [
+        "Lic",
+        ".",
+        "Roberto",
+        "Carlos",
+        "Duran",
+        "|",
+        "Gabriel",
+        "Alarcón",
+        "Flores",
+        "|",
+        "Módulo",
+        "2",
+        "Gestión",
+        "|",
+        "92",
+        "|",
+        "Diplomado",
+        "en",
+        "BI"
+      ],
+      "tags": [
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "O",
+        "B-NOTA",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Lic. Roberto Carlos Duran"
+        },
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Gabriel Alarcón Flores"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 2 Gestión"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "92"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Diplomado en BI"
+        }
+      ]
+    },
+    {
+      "archivo": "layout1_cabeceras_desconocidas.xlsx",
+      "hoja": "PLANILLA_INEDITA",
+      "fila_idx": 3,
+      "texto": "Ing. Marcelo Claure | Valeria Gutiérrez Paz | Módulo 3 Big Data | 74 | Maestría en Data Science",
+      "tokens": [
+        "Ing",
+        ".",
+        "Marcelo",
+        "Claure",
+        "|",
+        "Valeria",
+        "Gutiérrez",
+        "Paz",
+        "|",
+        "Módulo",
+        "3",
+        "Big",
+        "Data",
+        "|",
+        "74",
+        "|",
+        "Maestría",
+        "en",
+        "Data",
+        "Science"
+      ],
+      "tags": [
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "O",
+        "B-NOTA",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Ing. Marcelo Claure"
+        },
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Valeria Gutiérrez Paz"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 3 Big Data"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "74"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Maestría en Data Science"
+        }
+      ]
+    },
+    {
+      "archivo": "layout1_cabeceras_desconocidas.xlsx",
+      "hoja": "PLANILLA_INEDITA",
+      "fila_idx": 4,
+      "texto": "Dra. Carmen Rosa Morales | Fernando Torrico Roca | Módulo 4 Auditoría | 81 | Especialidad Tributaria",
+      "tokens": [
+        "Dra",
+        ".",
+        "Carmen",
+        "Rosa",
+        "Morales",
+        "|",
+        "Fernando",
+        "Torrico",
+        "Roca",
+        "|",
+        "Módulo",
+        "4",
+        "Auditoría",
+        "|",
+        "81",
+        "|",
+        "Especialidad",
+        "Tributaria"
+      ],
+      "tags": [
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "O",
+        "B-NOTA",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Dra. Carmen Rosa Morales"
+        },
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Fernando Torrico Roca"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 4 Auditoría"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "81"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Especialidad Tributaria"
+        }
+      ]
+    },
+    {
+      "archivo": "layout1_cabeceras_desconocidas.xlsx",
+      "hoja": "PLANILLA_INEDITA",
+      "fila_idx": 5,
+      "texto": "Prof. Gonzalo Sanchez | Claudia Méndez Vaca | Módulo 1 Fundamentos | 65 | Diplomado Educación",
+      "tokens": [
+        "Prof",
+        ".",
+        "Gonzalo",
+        "Sanchez",
+        "|",
+        "Claudia",
+        "Méndez",
+        "Vaca",
+        "|",
+        "Módulo",
+        "1",
+        "Fundamentos",
+        "|",
+        "65",
+        "|",
+        "Diplomado",
+        "Educación"
+      ],
+      "tags": [
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "O",
+        "B-NOTA",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Prof. Gonzalo Sanchez"
+        },
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Claudia Méndez Vaca"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 1 Fundamentos"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "65"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Diplomado Educación"
+        }
+      ]
+    },
+    {
+      "archivo": "layout2_columnas_invertidas_ruido.xlsx",
+      "hoja": "REGISTRO_COLUMNAS_INVERTIDAS",
+      "fila_idx": 1,
+      "texto": "95 | 70123456 | 2025-03-15 | Módulo 1 Big Data | Lic. Roberto Carlos Duran | Sin mora | Patricia Daza Arteaga",
+      "tokens": [
+        "95",
+        "|",
+        "70123456",
+        "|",
+        "2025",
+        "-",
+        "03",
+        "-",
+        "15",
+        "|",
+        "Módulo",
+        "1",
+        "Big",
+        "Data",
+        "|",
+        "Lic",
+        ".",
+        "Roberto",
+        "Carlos",
+        "Duran",
+        "|",
+        "Sin",
+        "mora",
+        "|",
+        "Patricia",
+        "Daza",
+        "Arteaga"
+      ],
+      "tags": [
+        "B-NOTA",
+        "O",
+        "O",
+        "O",
+        "B-FECHA",
+        "I-FECHA",
+        "I-FECHA",
+        "I-FECHA",
+        "I-FECHA",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "O",
+        "O",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE"
+      ],
+      "spans": [
+        {
+          "tipo": "NOTA",
+          "valor": "95"
+        },
+        {
+          "tipo": "FECHA",
+          "valor": "2025-03-15"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 1 Big Data"
+        },
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Lic. Roberto Carlos Duran"
+        },
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Patricia Daza Arteaga"
+        }
+      ]
+    },
+    {
+      "archivo": "layout2_columnas_invertidas_ruido.xlsx",
+      "hoja": "REGISTRO_COLUMNAS_INVERTIDAS",
+      "fila_idx": 2,
+      "texto": "60 | 71234567 | 2025-03-16 | Módulo 2 Modelado | Ing. Marcelo Claure | Pendiente pago | Rodrigo Fernández Roca",
+      "tokens": [
+        "60",
+        "|",
+        "71234567",
+        "|",
+        "2025",
+        "-",
+        "03",
+        "-",
+        "16",
+        "|",
+        "Módulo",
+        "2",
+        "Modelado",
+        "|",
+        "Ing",
+        ".",
+        "Marcelo",
+        "Claure",
+        "|",
+        "Pendiente",
+        "pago",
+        "|",
+        "Rodrigo",
+        "Fernández",
+        "Roca"
+      ],
+      "tags": [
+        "B-NOTA",
+        "O",
+        "O",
+        "O",
+        "B-FECHA",
+        "I-FECHA",
+        "I-FECHA",
+        "I-FECHA",
+        "I-FECHA",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "O",
+        "O",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE"
+      ],
+      "spans": [
+        {
+          "tipo": "NOTA",
+          "valor": "60"
+        },
+        {
+          "tipo": "FECHA",
+          "valor": "2025-03-16"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 2 Modelado"
+        },
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Ing. Marcelo Claure"
+        },
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Rodrigo Fernández Roca"
+        }
+      ]
+    },
+    {
+      "archivo": "layout2_columnas_invertidas_ruido.xlsx",
+      "hoja": "REGISTRO_COLUMNAS_INVERTIDAS",
+      "fila_idx": 3,
+      "texto": "82 | 72345678 | 2025-03-17 | Módulo 3 ETL | Dra. Carmen Rosa Morales | Regular | Guillermo Justiniano",
+      "tokens": [
+        "82",
+        "|",
+        "72345678",
+        "|",
+        "2025",
+        "-",
+        "03",
+        "-",
+        "17",
+        "|",
+        "Módulo",
+        "3",
+        "ETL",
+        "|",
+        "Dra",
+        ".",
+        "Carmen",
+        "Rosa",
+        "Morales",
+        "|",
+        "Regular",
+        "|",
+        "Guillermo",
+        "Justiniano"
+      ],
+      "tags": [
+        "B-NOTA",
+        "O",
+        "O",
+        "O",
+        "B-FECHA",
+        "I-FECHA",
+        "I-FECHA",
+        "I-FECHA",
+        "I-FECHA",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "O",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE"
+      ],
+      "spans": [
+        {
+          "tipo": "NOTA",
+          "valor": "82"
+        },
+        {
+          "tipo": "FECHA",
+          "valor": "2025-03-17"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 3 ETL"
+        },
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Dra. Carmen Rosa Morales"
+        },
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Guillermo Justiniano"
+        }
+      ]
+    },
+    {
+      "archivo": "layout2_columnas_invertidas_ruido.xlsx",
+      "hoja": "REGISTRO_COLUMNAS_INVERTIDAS",
+      "fila_idx": 4,
+      "texto": "45 | 73456789 | 2025-03-18 | Módulo 4 Visualización | Dr. Alejandro Siles | Riesgo académico | Ana Claudia Torrico",
+      "tokens": [
+        "45",
+        "|",
+        "73456789",
+        "|",
+        "2025",
+        "-",
+        "03",
+        "-",
+        "18",
+        "|",
+        "Módulo",
+        "4",
+        "Visualización",
+        "|",
+        "Dr",
+        ".",
+        "Alejandro",
+        "Siles",
+        "|",
+        "Riesgo",
+        "académico",
+        "|",
+        "Ana",
+        "Claudia",
+        "Torrico"
+      ],
+      "tags": [
+        "B-NOTA",
+        "O",
+        "O",
+        "O",
+        "B-FECHA",
+        "I-FECHA",
+        "I-FECHA",
+        "I-FECHA",
+        "I-FECHA",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "O",
+        "O",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE"
+      ],
+      "spans": [
+        {
+          "tipo": "NOTA",
+          "valor": "45"
+        },
+        {
+          "tipo": "FECHA",
+          "valor": "2025-03-18"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 4 Visualización"
+        },
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Dr. Alejandro Siles"
+        },
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Ana Claudia Torrico"
+        }
+      ]
+    },
+    {
+      "archivo": "layout3_celdas_combinadas_merged.xlsx",
+      "hoja": "ACTA_CON_MERGED_CELLS",
+      "fila_idx": 0,
+      "texto": "PROGRAMA DE POSGRADO: MAESTRÍA EN DATA SCIENCE - GESTIÓN 2026",
+      "tokens": [
+        "PROGRAMA",
+        "DE",
+        "POSGRADO",
+        ":",
+        "MAESTRÍA",
+        "EN",
+        "DATA",
+        "SCIENCE",
+        "-",
+        "GESTIÓN",
+        "2026"
+      ],
+      "tags": [
+        "O",
+        "O",
+        "O",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA",
+        "O",
+        "O",
+        "O"
+      ],
+      "spans": [
+        {
+          "tipo": "PROGRAMA",
+          "valor": "MAESTRÍA EN DATA SCIENCE"
+        }
+      ]
+    },
+    {
+      "archivo": "layout3_celdas_combinadas_merged.xlsx",
+      "hoja": "ACTA_CON_MERGED_CELLS",
+      "fila_idx": 1,
+      "texto": "DOCENTE ASIGNADO: ING. MARCELO CLAURE | MÓDULO 2 ARQUITECTURA ETL",
+      "tokens": [
+        "DOCENTE",
+        "ASIGNADO",
+        ":",
+        "ING",
+        ".",
+        "MARCELO",
+        "CLAURE",
+        "|",
+        "MÓDULO",
+        "2",
+        "ARQUITECTURA",
+        "ETL"
+      ],
+      "tags": [
+        "O",
+        "O",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "I-MODULO"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "ING. MARCELO CLAURE"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "MÓDULO 2 ARQUITECTURA ETL"
+        }
+      ]
+    },
+    {
+      "archivo": "layout3_celdas_combinadas_merged.xlsx",
+      "hoja": "ACTA_CON_MERGED_CELLS",
+      "fila_idx": 3,
+      "texto": "1 | Javier Mendoza Salazar | 90 | Aprobado",
+      "tokens": [
+        "1",
+        "|",
+        "Javier",
+        "Mendoza",
+        "Salazar",
+        "|",
+        "90",
+        "|",
+        "Aprobado"
+      ],
+      "tags": [
+        "O",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-NOTA",
+        "O",
+        "O"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Javier Mendoza Salazar"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "90"
+        }
+      ]
+    },
+    {
+      "archivo": "layout3_celdas_combinadas_merged.xlsx",
+      "hoja": "ACTA_CON_MERGED_CELLS",
+      "fila_idx": 4,
+      "texto": "2 | Maria Elena Ríos | 85 | Aprobado",
+      "tokens": [
+        "2",
+        "|",
+        "Maria",
+        "Elena",
+        "Ríos",
+        "|",
+        "85",
+        "|",
+        "Aprobado"
+      ],
+      "tags": [
+        "O",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-NOTA",
+        "O",
+        "O"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Maria Elena Ríos"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "85"
+        }
+      ]
+    },
+    {
+      "archivo": "layout3_celdas_combinadas_merged.xlsx",
+      "hoja": "ACTA_CON_MERGED_CELLS",
+      "fila_idx": 5,
+      "texto": "3 | Sergio Alarcón Flores | 78 | Aprobado",
+      "tokens": [
+        "3",
+        "|",
+        "Sergio",
+        "Alarcón",
+        "Flores",
+        "|",
+        "78",
+        "|",
+        "Aprobado"
+      ],
+      "tags": [
+        "O",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-NOTA",
+        "O",
+        "O"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Sergio Alarcón Flores"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "78"
+        }
+      ]
+    },
+    {
+      "archivo": "layout3_celdas_combinadas_merged.xlsx",
+      "hoja": "ACTA_CON_MERGED_CELLS",
+      "fila_idx": 6,
+      "texto": "4 | Valeria Gutiérrez Paz | 50 | Reprobado",
+      "tokens": [
+        "4",
+        "|",
+        "Valeria",
+        "Gutiérrez",
+        "Paz",
+        "|",
+        "50",
+        "|",
+        "Reprobado"
+      ],
+      "tags": [
+        "O",
+        "O",
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-NOTA",
+        "O",
+        "O"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Valeria Gutiérrez Paz"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "50"
+        }
+      ]
+    },
+    {
+      "archivo": "layout4_filas_totales_subtotales.xlsx",
+      "hoja": "PLANILLA_CON_TOTALES",
+      "fila_idx": 1,
+      "texto": "Carlos Mamani Quispe | Lic. Roberto Carlos Duran | Diplomado en BI | Módulo 1 | 85",
+      "tokens": [
+        "Carlos",
+        "Mamani",
+        "Quispe",
+        "|",
+        "Lic",
+        ".",
+        "Roberto",
+        "Carlos",
+        "Duran",
+        "|",
+        "Diplomado",
+        "en",
+        "BI",
+        "|",
+        "Módulo",
+        "1",
+        "|",
+        "85"
+      ],
+      "tags": [
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "O",
+        "B-NOTA"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Carlos Mamani Quispe"
+        },
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Lic. Roberto Carlos Duran"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Diplomado en BI"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 1"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "85"
+        }
+      ]
+    },
+    {
+      "archivo": "layout4_filas_totales_subtotales.xlsx",
+      "hoja": "PLANILLA_CON_TOTALES",
+      "fila_idx": 2,
+      "texto": "Ana Claudia Torrico | Lic. Roberto Carlos Duran | Diplomado en BI | Módulo 1 | 90",
+      "tokens": [
+        "Ana",
+        "Claudia",
+        "Torrico",
+        "|",
+        "Lic",
+        ".",
+        "Roberto",
+        "Carlos",
+        "Duran",
+        "|",
+        "Diplomado",
+        "en",
+        "BI",
+        "|",
+        "Módulo",
+        "1",
+        "|",
+        "90"
+      ],
+      "tags": [
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "O",
+        "B-NOTA"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Ana Claudia Torrico"
+        },
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Lic. Roberto Carlos Duran"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Diplomado en BI"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 1"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "90"
+        }
+      ]
+    },
+    {
+      "archivo": "layout4_filas_totales_subtotales.xlsx",
+      "hoja": "PLANILLA_CON_TOTALES",
+      "fila_idx": 4,
+      "texto": "Guillermo Justiniano | Lic. Roberto Carlos Duran | Diplomado en BI | Módulo 1 | 72",
+      "tokens": [
+        "Guillermo",
+        "Justiniano",
+        "|",
+        "Lic",
+        ".",
+        "Roberto",
+        "Carlos",
+        "Duran",
+        "|",
+        "Diplomado",
+        "en",
+        "BI",
+        "|",
+        "Módulo",
+        "1",
+        "|",
+        "72"
+      ],
+      "tags": [
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "O",
+        "B-NOTA"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Guillermo Justiniano"
+        },
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Lic. Roberto Carlos Duran"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Diplomado en BI"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 1"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "72"
+        }
+      ]
+    },
+    {
+      "archivo": "layout4_filas_totales_subtotales.xlsx",
+      "hoja": "PLANILLA_CON_TOTALES",
+      "fila_idx": 5,
+      "texto": "Patricia Daza Arteaga | Lic. Roberto Carlos Duran | Diplomado en BI | Módulo 1 | 98",
+      "tokens": [
+        "Patricia",
+        "Daza",
+        "Arteaga",
+        "|",
+        "Lic",
+        ".",
+        "Roberto",
+        "Carlos",
+        "Duran",
+        "|",
+        "Diplomado",
+        "en",
+        "BI",
+        "|",
+        "Módulo",
+        "1",
+        "|",
+        "98"
+      ],
+      "tags": [
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "O",
+        "B-NOTA"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Patricia Daza Arteaga"
+        },
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Lic. Roberto Carlos Duran"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Diplomado en BI"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 1"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "98"
+        }
+      ]
+    },
+    {
+      "archivo": "layout4_filas_totales_subtotales.xlsx",
+      "hoja": "PLANILLA_CON_TOTALES",
+      "fila_idx": 8,
+      "texto": "Firma y Sello del Director Académico: Lic. René Salinas",
+      "tokens": [
+        "Firma",
+        "y",
+        "Sello",
+        "del",
+        "Director",
+        "Académico",
+        ":",
+        "Lic",
+        ".",
+        "René",
+        "Salinas"
+      ],
+      "tags": [
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Lic. René Salinas"
+        }
+      ]
+    },
+    {
+      "archivo": "layout5_multihoja_anidada.xlsx",
+      "hoja": "ACTA_NOTAS_REAL",
+      "fila_idx": 1,
+      "texto": "Rodrigo Fernández Roca | Dra. Carmen Rosa Morales | Módulo 3 Gestión | Especialidad Tributaria | 89",
+      "tokens": [
+        "Rodrigo",
+        "Fernández",
+        "Roca",
+        "|",
+        "Dra",
+        ".",
+        "Carmen",
+        "Rosa",
+        "Morales",
+        "|",
+        "Módulo",
+        "3",
+        "Gestión",
+        "|",
+        "Especialidad",
+        "Tributaria",
+        "|",
+        "89"
+      ],
+      "tags": [
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "O",
+        "B-NOTA"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Rodrigo Fernández Roca"
+        },
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Dra. Carmen Rosa Morales"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 3 Gestión"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Especialidad Tributaria"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "89"
+        }
+      ]
+    },
+    {
+      "archivo": "layout5_multihoja_anidada.xlsx",
+      "hoja": "ACTA_NOTAS_REAL",
+      "fila_idx": 2,
+      "texto": "Valeria Gutiérrez Paz | Dra. Carmen Rosa Morales | Módulo 3 Gestión | Especialidad Tributaria | 94",
+      "tokens": [
+        "Valeria",
+        "Gutiérrez",
+        "Paz",
+        "|",
+        "Dra",
+        ".",
+        "Carmen",
+        "Rosa",
+        "Morales",
+        "|",
+        "Módulo",
+        "3",
+        "Gestión",
+        "|",
+        "Especialidad",
+        "Tributaria",
+        "|",
+        "94"
+      ],
+      "tags": [
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "O",
+        "B-NOTA"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Valeria Gutiérrez Paz"
+        },
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Dra. Carmen Rosa Morales"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 3 Gestión"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Especialidad Tributaria"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "94"
+        }
+      ]
+    },
+    {
+      "archivo": "layout5_multihoja_anidada.xlsx",
+      "hoja": "ACTA_NOTAS_REAL",
+      "fila_idx": 3,
+      "texto": "Sergio Alarcón Flores | Dra. Carmen Rosa Morales | Módulo 3 Gestión | Especialidad Tributaria | 70",
+      "tokens": [
+        "Sergio",
+        "Alarcón",
+        "Flores",
+        "|",
+        "Dra",
+        ".",
+        "Carmen",
+        "Rosa",
+        "Morales",
+        "|",
+        "Módulo",
+        "3",
+        "Gestión",
+        "|",
+        "Especialidad",
+        "Tributaria",
+        "|",
+        "70"
+      ],
+      "tags": [
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "I-PER_DOCENTE",
+        "O",
+        "B-MODULO",
+        "I-MODULO",
+        "I-MODULO",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "O",
+        "B-NOTA"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Sergio Alarcón Flores"
+        },
+        {
+          "tipo": "PER_DOCENTE",
+          "valor": "Dra. Carmen Rosa Morales"
+        },
+        {
+          "tipo": "MODULO",
+          "valor": "Módulo 3 Gestión"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Especialidad Tributaria"
+        },
+        {
+          "tipo": "NOTA",
+          "valor": "70"
+        }
+      ]
+    },
+    {
+      "archivo": "layout5_multihoja_anidada.xlsx",
+      "hoja": "INSCRIPCIONES_NUEVAS",
+      "fila_idx": 1,
+      "texto": "Javier Mendoza Salazar | Maestría en Data Science | CI-6192831",
+      "tokens": [
+        "Javier",
+        "Mendoza",
+        "Salazar",
+        "|",
+        "Maestría",
+        "en",
+        "Data",
+        "Science",
+        "|",
+        "CI",
+        "-",
+        "6192831"
+      ],
+      "tags": [
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA",
+        "O",
+        "O",
+        "O",
+        "B-CI"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Javier Mendoza Salazar"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Maestría en Data Science"
+        },
+        {
+          "tipo": "CI",
+          "valor": "6192831"
+        }
+      ]
+    },
+    {
+      "archivo": "layout5_multihoja_anidada.xlsx",
+      "hoja": "INSCRIPCIONES_NUEVAS",
+      "fila_idx": 2,
+      "texto": "Maria Elena Ríos | Diplomado en BI | CI-4920192",
+      "tokens": [
+        "Maria",
+        "Elena",
+        "Ríos",
+        "|",
+        "Diplomado",
+        "en",
+        "BI",
+        "|",
+        "CI",
+        "-",
+        "4920192"
+      ],
+      "tags": [
+        "B-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "I-PER_ESTUDIANTE",
+        "O",
+        "B-PROGRAMA",
+        "I-PROGRAMA",
+        "I-PROGRAMA",
+        "O",
+        "O",
+        "O",
+        "B-CI"
+      ],
+      "spans": [
+        {
+          "tipo": "PER_ESTUDIANTE",
+          "valor": "Maria Elena Ríos"
+        },
+        {
+          "tipo": "PROGRAMA",
+          "valor": "Diplomado en BI"
+        },
+        {
+          "tipo": "CI",
+          "valor": "4920192"
+        }
+      ]
+    }
+  ]
+}

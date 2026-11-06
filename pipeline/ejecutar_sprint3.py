@@ -42,6 +42,7 @@ from pipeline.semantic.formatter import (
     CatalogoGazetteer
 )
 from pipeline.semantic.ner_engine import NEREngine
+from pipeline.normalization.person_resolver import resolver_persona, cargar_personas_dw
 from pipeline.semantic.performance_logger import PerformanceLogger
 from pipeline.semantic.ner_schema import ResultadoInferenciaNER, TipoEntidad
 from pipeline.normalization.catalog_repository import obtener_catalogo_repositorio
@@ -115,11 +116,12 @@ class OrquestadorSprint3:
         self.perf_logger = self.ner_engine.telemetria
         self.catalog_repo = obtener_catalogo_repositorio()
         self.fk_resolver = FKResolver()
+        self.docentes_dw = cargar_personas_dw("dim_docente")
         self.quality_evaluator = QualityEvaluator()
         self.audit_logger = AuditLogger(ruta_log=ruta_inconsistencias)
 
         print(f"Catálogos cargados: {len(self.catalog_repo.programas)} programas, "
-              f"{len(self.catalog_repo.docentes)} docentes, {len(self.catalog_repo.modulos)} módulos.")
+              f"{len(self.catalog_repo.modulos)} módulos.")
 
     def procesar_documento(self, doc: Dict[str, Any], doc_id: int) -> Dict[str, Any]:
         """
@@ -184,7 +186,8 @@ class OrquestadorSprint3:
                 }
             elif tipo == TipoEntidad.DOCENTE.value and not resoluciones["docente"]:
                 # GIRA-41 & GIRA-11: Matching Semántico Docente
-                res_doc = self.catalog_repo.enlazar_docente(val)
+                # Sin cat_docente: CI exacta / RapidFuzz contra dim_docente; sin coincidencia -> HITL
+                res_doc = resolver_persona(val, None, self.docentes_dw)
                 resoluciones["docente"] = {
                     "valor_extraido": val,
                     "score_ner": ent.score,

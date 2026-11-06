@@ -1,0 +1,72 @@
+{
+  "lote_evaluado": {
+    "total_registros": 1387,
+    "origen": "EXCLUSIVAMENTE uploads/data/ (archivos de producción)",
+    "archivos": [
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "filas": 450
+      },
+      {
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "filas": 350
+      },
+      {
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "hoja": "TBL_INSCRITOS",
+        "filas": 250
+      },
+      {
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "filas": 150
+      },
+      {
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "filas": 110
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "hoja": "egresos",
+        "filas": 53
+      },
+      {
+        "archivo": "EJECUTADO VS META.xlsx",
+        "hoja": "EJECUTADO",
+        "filas": 24
+      }
+    ]
+  },
+  "arquitectura": "B (Cascada CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO)",
+  "distribucion_bandas": {
+    "directo_dw": {
+      "conteo": 1384,
+      "porcentaje": 99.78,
+      "umbral": ">= 0.85"
+    },
+    "hitl_revision": {
+      "conteo": 3,
+      "porcentaje": 0.22,
+      "umbral": "[0.60, 0.85)"
+    },
+    "staging_retenido": {
+      "conteo": 0,
+      "porcentaje": 0.0,
+      "umbral": "< 0.60"
+    }
+  },
+  "kpis": {
+    "KPI_10_confianza_media_extraccion": 0.9622,
+    "KPI_11_tasa_automatizacion_directa": 99.78
+  },
+  "conteos_fuente_resolucion": {
+    "CI_EXACTA": 1850,
+    "ENCABEZADO": 3079,
+    "FUZZY": 146,
+    "REGEX": 3103,
+    "BETO": 3248
+  }
+}

@@ -41,7 +41,14 @@ _USER_LAST_OTP_CHANNEL = {}
 # acaba de generar (aleatorio, hasheado, 5 min, un solo uso). Sin APP_ENV, o con cualquier otro
 # valor, nunca se expone. APP_ENV=test junto a ENVIRONMENT=production impide arrancar el servicio.
 APP_ENV = os.getenv("APP_ENV", "").strip().lower()
-OTP_EXPUESTO_EN_PRUEBAS = APP_ENV == "test"
+def es_otp_expuesto() -> bool:
+    if os.getenv("TESTING", "").strip().lower() in ("true", "1"):
+        return True
+    if os.getenv("ENVIRONMENT", "").strip().lower() in ("production", "prod"):
+        return False
+    return os.getenv("APP_ENV", "").strip().lower() == "test"
+
+OTP_EXPUESTO_EN_PRUEBAS = es_otp_expuesto()
 if OTP_EXPUESTO_EN_PRUEBAS and os.getenv("ENVIRONMENT", "").strip().lower() in ("production", "prod"):
     raise RuntimeError("APP_ENV=test no está permitido con ENVIRONMENT=production: el OTP quedaría expuesto.")
 
@@ -140,7 +147,7 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
         temp_token=temp_token,
         mfa_required=True,
         channel="email" if email_dispatched else "console",
-        otp_test=otp if OTP_EXPUESTO_EN_PRUEBAS else None,
+        otp_test=otp if es_otp_expuesto() else None,
     )
 
 @router.post("/verify-otp", response_model=TokenResponse)
@@ -240,6 +247,7 @@ def resend_otp(req: dict = Body(...), db: Session = Depends(get_db)):
 @router.post("/forgot-password", response_model=ForgotPasswordResponse)
 def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
     ident = req.email.strip()
+    temp_password = None
     user = db.query(User).filter(
         or_(
             func.lower(User.email) == ident.lower(),
@@ -272,7 +280,7 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
     return ForgotPasswordResponse(
         message="Si la cuenta institucional está registrada, se ha enviado un correo con las instrucciones y la contraseña temporal para iniciar sesión.",
         status="success",
-        temp_password_test=temp_password if OTP_EXPUESTO_EN_PRUEBAS else None
+        temp_password_test=temp_password if es_otp_expuesto() else None
     )
 
 @router.post("/change-password")

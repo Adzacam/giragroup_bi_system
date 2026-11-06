@@ -1,0 +1,374 @@
+...xxF...x.........xx..xx...sssssssssss................................. [ 15%]
+.........................F.............................................. [ 31%]
+........................................................................ [ 47%]
+................................................FF.FF................... [ 63%]
+........................................................................ [ 79%]
+...................FFFF................................................. [ 94%]
+.....................F.                                                  [100%]
+================================== FAILURES ===================================
+_____________ TestHoltWinters.test_parametros_suavizado_estimados _____________
+
+self = <tests.readiness.test_production_readiness.TestHoltWinters object at 0x000001B33A21CE20>
+
+    def test_parametros_suavizado_estimados(self):
+        res = entrenar_y_proyectar_hw(_serie_mensual(), "ALUMNOS_GLOBAL", horizonte=6)
+>       assert res["parametros"] != {"alpha": 0.2, "beta": 0.1, "gamma": 0.2}
+E       AssertionError: assert {'alpha': 0.2, 'beta': 0.1, 'gamma': 0.2} != {'alpha': 0.2, 'beta': 0.1, 'gamma': 0.2}
+
+tests\readiness\test_production_readiness.py:90: AssertionError
+____________________ test_gira41_matching_docente_catalogo ____________________
+
+matcher = <pipeline.normalization.semantic_matcher.SemanticMatcher object at 0x000001B33FBD78C0>
+
+    def test_gira41_matching_docente_catalogo(matcher):
+        """Verifica grounding de docentes extraídos contra la nómina oficial."""
+>       res = matcher.enlazar_docente("Ing. Carlos Rojas")
+              ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SemanticMatcher' object has no attribute 'enlazar_docente'
+
+tests\sprint3\test_area3_normalizacion_matching_fk.py:114: AttributeError
+____________________ test_email_service_send_smtp_success _____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001B38223A8D0>
+
+    def test_email_service_send_smtp_success(monkeypatch):
+        """Envío real simulado vía smtplib con STARTTLS exitoso."""
+        from unittest.mock import MagicMock
+        import smtplib
+        from services.email_service import email_service
+    
+        monkeypatch.setenv("SMTP_HOST", "smtp.testserver.com")
+        monkeypatch.setenv("SMTP_PORT", "587")
+        monkeypatch.setenv("SMTP_USER", "sender@test.com")
+        monkeypatch.setenv("SMTP_PASSWORD", "secret123")
+        monkeypatch.setenv("SMTP_USE_TLS", "True")
+    
+        mock_smtp_inst = MagicMock()
+        mock_smtp_class = MagicMock(return_value=mock_smtp_inst)
+        monkeypatch.setattr(smtplib, "SMTP", mock_smtp_class)
+    
+        res = email_service.send_otp_email(
+            to_email="cliente@giragroup.bo",
+            username="Cliente",
+            otp_code="987654",
+            expires_in_minutes=5
+        )
+    
+        assert res["status"] == "delivered"
+>       assert res["smtp"]["sent"] is True
+E       assert False is True
+
+tests\test_auth_and_rbac.py:378: AssertionError
+---------------------------- Captured stderr call -----------------------------
+\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551                GIRAGROUP BI SYSTEM - C\xd3DIGO OTP                \u2551\n\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563\n\u2551 Destino   : cli********@giragroup.bo                           \u2551\n\u2551 C\xf3digo OTP: 987654                                             \u2551\n\u2551 Vigencia  : 5 minutos                                        \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d
+_______________ test_email_service_smtp_resilience_to_failures ________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001B33FEC39B0>
+
+    def test_email_service_smtp_resilience_to_failures(monkeypatch):
+        """Si el servidor SMTP rechaza credenciales o hace timeout, no se produce excepción hacia el caller."""
+        import smtplib
+        from unittest.mock import MagicMock
+        from services.email_service import email_service
+    
+        monkeypatch.setenv("SMTP_HOST", "smtp.error.com")
+        monkeypatch.setenv("SMTP_USER", "fail@error.com")
+        monkeypatch.setenv("SMTP_PASSWORD", "wrongpass")
+    
+        # Simular error de autenticación SMTP
+        mock_smtp_inst = MagicMock()
+        mock_smtp_inst.login.side_effect = smtplib.SMTPAuthenticationError(535, b"Authentication credentials invalid")
+        mock_smtp_class = MagicMock(return_value=mock_smtp_inst)
+        monkeypatch.setattr(smtplib, "SMTP", mock_smtp_class)
+    
+        res = email_service.send_otp_email(
+            to_email="test@giragroup.bo",
+            username="TestUser",
+            otp_code="111222",
+            expires_in_minutes=5
+        )
+    
+        assert res["status"] == "delivered"
+        assert res["smtp"]["sent"] is False
+>       assert res["smtp"]["error_type"] == "AuthenticationError"
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'error_type'
+
+tests\test_auth_and_rbac.py:412: KeyError
+---------------------------- Captured stderr call -----------------------------
+\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551                GIRAGROUP BI SYSTEM - C\xd3DIGO OTP                \u2551\n\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563\n\u2551 Destino   : te****@giragroup.bo                                \u2551\n\u2551 C\xf3digo OTP: 111222                                             \u2551\n\u2551 Vigencia  : 5 minutos                                        \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d
+__________________ test_email_service_send_smtp_ssl_port_465 __________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001B385B54150>
+
+    def test_email_service_send_smtp_ssl_port_465(monkeypatch):
+        """Verifica envío directo mediante SMTP_SSL (puerto 465)."""
+        from unittest.mock import MagicMock
+        import smtplib
+        from services.email_service import email_service
+    
+        monkeypatch.setenv("SMTP_HOST", "mail.giragroup.bo")
+        monkeypatch.setenv("SMTP_PORT", "465")
+        monkeypatch.setenv("SMTP_USER", "admin@giragroup.bo")
+        monkeypatch.setenv("SMTP_PASSWORD", '"securepass"')
+        monkeypatch.setenv("SMTP_FROM_NAME", '"GiraGroup Notificaciones"')
+    
+        mock_ssl_inst = MagicMock()
+        mock_ssl_class = MagicMock(return_value=mock_ssl_inst)
+        monkeypatch.setattr(smtplib, "SMTP_SSL", mock_ssl_class)
+    
+        res = email_service.send_otp_email(
+            to_email="direct@giragroup.bo",
+            username="DirectUser",
+            otp_code="333444",
+            expires_in_minutes=5
+        )
+    
+        assert res["status"] == "delivered"
+>       assert res["smtp"]["sent"] is True
+E       assert False is True
+
+tests\test_auth_and_rbac.py:464: AssertionError
+---------------------------- Captured stderr call -----------------------------
+\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551                GIRAGROUP BI SYSTEM - C\xd3DIGO OTP                \u2551\n\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563\n\u2551 Destino   : dir********@giragroup.bo                           \u2551\n\u2551 C\xf3digo OTP: 333444                                             \u2551\n\u2551 Vigencia  : 5 minutos                                        \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d
+_____________________ test_login_step_one_channel_dynamic _____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001B385B54050>
+
+    def test_login_step_one_channel_dynamic(monkeypatch):
+        """
+        Verifica que el endpoint login retorna channel='email' cuando SMTP despacha exitosamente,
+        y channel='console' cuando SMTP falla o no está configurado (fallback seguro).
+        """
+        import smtplib
+        from unittest.mock import MagicMock
+    
+        # Caso 1: Sin SMTP configurado -> channel="console"
+        monkeypatch.delenv("SMTP_HOST", raising=False)
+        res_console = client.post("/api/v1/auth/login", json={
+            "email": "admin1@giragroup.bo",
+            "password": "AdminPass123!"
+        })
+        assert res_console.status_code == 200
+        assert res_console.json()["channel"] == "console"
+    
+        # Caso 2: Con SMTP configurado y fallido (bad auth) -> fallback a channel="console"
+        monkeypatch.setenv("SMTP_HOST", "smtp.broken.com")
+        monkeypatch.setenv("SMTP_USER", "fail@broken.com")
+        monkeypatch.setenv("SMTP_PASSWORD", "wrongpass")
+        mock_smtp_inst = MagicMock()
+        mock_smtp_inst.login.side_effect = smtplib.SMTPAuthenticationError(535, b"Invalid credentials")
+        monkeypatch.setattr(smtplib, "SMTP", MagicMock(return_value=mock_smtp_inst))
+    
+        res_fail = client.post("/api/v1/auth/login", json={
+            "email": "admin1@giragroup.bo",
+            "password": "AdminPass123!"
+        })
+        assert res_fail.status_code == 200
+        assert res_fail.json()["channel"] == "console"
+    
+        # Caso 3: Con SMTP configurado y exitoso -> channel="email"
+        monkeypatch.setenv("SMTP_HOST", "smtp.ok.com")
+        monkeypatch.setenv("SMTP_USER", "ok@ok.com")
+        monkeypatch.setenv("SMTP_PASSWORD", "okpass")
+        mock_smtp_ok = MagicMock()
+        monkeypatch.setattr(smtplib, "SMTP", MagicMock(return_value=mock_smtp_ok))
+    
+        res_email = client.post("/api/v1/auth/login", json={
+            "email": "admin1@giragroup.bo",
+            "password": "AdminPass123!"
+        })
+        assert res_email.status_code == 200
+>       assert res_email.json()["channel"] == "email"
+E       AssertionError: assert 'console' == 'email'
+E         
+E         - email
+E         + console
+
+tests\test_auth_and_rbac.py:521: AssertionError
+---------------------------- Captured stderr call -----------------------------
+\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551                GIRAGROUP BI SYSTEM - C\xd3DIGO OTP                \u2551\n\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563\n\u2551 Destino   : adm********@giragroup.bo                           \u2551\n\u2551 C\xf3digo OTP: 199843                                             \u2551\n\u2551 Vigencia  : 5 minutos                                        \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551                GIRAGROUP BI SYSTEM - C\xd3DIGO OTP                \u2551\n\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563\n\u2551 Destino   : adm********@giragroup.bo                           \u2551\n\u2551 C\xf3digo OTP: 032717                                             \u2551\n\u2551 Vigencia  : 5 minutos                                        \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551                GIRAGROUP BI SYSTEM - C\xd3DIGO OTP                \u2551\n\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563\n\u2551 Destino   : adm********@giragroup.bo                           \u2551\n\u2551 C\xf3digo OTP: 124820                                             \u2551\n\u2551 Vigencia  : 5 minutos                                        \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d
+------------------------------ Captured log call ------------------------------
+WARNING  api_main:main.py:163 [SLOW ENDPOINT] POST /api/v1/auth/login tardó 426.9 ms (presupuesto: 300 ms)
+WARNING  api_main:main.py:163 [SLOW ENDPOINT] POST /api/v1/auth/login tardó 419.01 ms (presupuesto: 300 ms)
+WARNING  api_main:main.py:163 [SLOW ENDPOINT] POST /api/v1/auth/login tardó 423.27 ms (presupuesto: 300 ms)
+________________________ test_extractor_series_reales _________________________
+
+    def test_extractor_series_reales():
+        """Valida que el extractor obtenga series consistentes desde las fuentes de datos."""
+        serie_global = extraer_serie_temporal("ALUMNOS_GLOBAL")
+>       assert len(serie_global) >= 24, "La serie global de inscritos debe tener al menos 24 meses"
+E       AssertionError: La serie global de inscritos debe tener al menos 24 meses
+E       assert 0 >= 24
+E        +  where 0 = len(Series([], Name: ALUMNOS_GLOBAL, dtype: float64))
+
+tests\test_forecasting.py:141: AssertionError
+__________________________ test_api_forecast_alumnos __________________________
+
+    def test_api_forecast_alumnos():
+        """Valida endpoint GET /api/v1/forecast/alumnos."""
+        response = client.get("/api/v1/forecast/alumnos?tipo=GLOBAL&horizonte=4")
+        assert response.status_code == 200
+        json_data = response.json()
+        assert json_data["status"] == "success"
+        data = json_data["data"]
+        assert data["caso_uso"] == "ALUMNOS_GLOBAL"
+>       assert data["metodo"] == "HoltWinters"
+E       AssertionError: assert None == 'HoltWinters'
+
+tests\test_forecasting.py:191: AssertionError
+_______________________ test_api_forecast_metas_mensual _______________________
+
+    def test_api_forecast_metas_mensual():
+        """Valida endpoint GET /api/v1/forecast/metas para granularidad mensual."""
+        response = client.get("/api/v1/forecast/metas?granularidad=MENSUAL&horizonte=3")
+        assert response.status_code == 200
+        json_data = response.json()
+        assert json_data["status"] == "success"
+        data = json_data["data"]
+        assert data["granularidad"] == "MENSUAL"
+>       assert data["metodo"] == "HoltWinters"
+E       AssertionError: assert None == 'HoltWinters'
+
+tests\test_forecasting.py:207: AssertionError
+________________________ test_api_forecast_metas_anual ________________________
+
+    def test_api_forecast_metas_anual():
+        """Valida endpoint GET /api/v1/forecast/metas para granularidad anual (OLS N=3)."""
+        response = client.get("/api/v1/forecast/metas?granularidad=ANUAL&horizonte=2")
+        assert response.status_code == 200
+        json_data = response.json()
+        assert json_data["status"] == "success"
+        data = json_data["data"]
+        assert data["granularidad"] == "ANUAL"
+>       assert data["metodo"] == "OLS"
+E       AssertionError: assert None == 'OLS'
+
+tests\test_forecasting.py:219: AssertionError
+__________________ test_loop4_validacion_estricta_contratos ___________________
+
+    def test_loop4_validacion_estricta_contratos():
+        """
+        Itera por todas las combinaciones válidas y valida conformidad estricta
+        contra los esquemas Pydantic v2 (Clean Code y prevención de deformación de datos).
+        """
+        tipos_validos = ["GLOBAL", "DIPLOMADO", "CURSO", "EXPERTO"]
+        horizontes_validos = [1, 2, 3, 4, 5, 6]
+    
+        for tipo in tipos_validos:
+            for h in horizontes_validos:
+                resp = client.get(f"/api/v1/forecast/alumnos?tipo={tipo}&horizonte={h}")
+                assert resp.status_code == 200
+                # Validar con Pydantic directamente (lanza ValidationError si no cumple)
+                obj = ForecastAlumnosResponse.model_validate(resp.json())
+                assert obj.status == "success"
+>               assert obj.data.horizonte_meses == h
+E               AssertionError: assert None == 1
+E                +  where None = ForecastAlumnosData(caso_uso='ALUMNOS_GLOBAL', tipo_solicitado='GLOBAL', metodo=None, origen='sin_datos', horizonte_me...enos 24 meses ingestados en el Data Warehouse para Holt-Winters (disponibles: 0).', n_observaciones=0, proyecciones=[]).horizonte_meses
+E                +    where ForecastAlumnosData(caso_uso='ALUMNOS_GLOBAL', tipo_solicitado='GLOBAL', metodo=None, origen='sin_datos', horizonte_me...enos 24 meses ingestados en el Data Warehouse para Holt-Winters (disponibles: 0).', n_observaciones=0, proyecciones=[]) = ForecastAlumnosResponse(status='success', data=ForecastAlumnosData(caso_uso='ALUMNOS_GLOBAL', tipo_solicitado='GLOBAL'...nos 24 meses ingestados en el Data Warehouse para Holt-Winters (disponibles: 0).', n_observaciones=0, proyecciones=[])).data
+
+tests\test_sprint4_verification_loops.py:236: AssertionError
+============================== warnings summary ===============================
+..\..\..\..\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+backend\main.py:93
+backend\main.py:93
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\backend\main.py:93: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event("startup")
+
+..\..\..\..\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\fastapi\applications.py:4598
+..\..\..\..\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\fastapi\applications.py:4598
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\fastapi\applications.py:4598: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)  # ty: ignore[deprecated]
+
+tests/readiness/test_production_readiness.py::TestResolverRespetaBloqueo::test_rechaza_caso_bloqueado_por_otro_auditor
+tests/readiness/test_production_readiness.py::TestResolverRespetaBloqueo::test_rechaza_caso_ya_resuelto
+tests/readiness/test_production_readiness.py::TestResolverRespetaBloqueo::test_permite_si_el_bloqueo_es_propio
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\tests\readiness\test_production_readiness.py:202: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return ent, datetime.utcnow() + timedelta(minutes=3)
+
+tests/readiness/test_production_readiness.py::TestResolverRespetaBloqueo::test_rechaza_caso_bloqueado_por_otro_auditor
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\backend\routers\dataops.py:4472: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    and ent.lock_expira > datetime.utcnow()
+
+tests/sprint2/test_bloques_detector.py::TestDetectarIslas::test_filas_solo_whitespace_son_vacias
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\tests\sprint2\test_bloques_detector.py:134: Pandas4Warning: Constructing a DataFrame from a list of sequences with mismatched lengths is deprecated and will raise in a future version. The shorter sequences are currently padded with NaN; make all sequences the same length before constructing instead.
+    df = pd.DataFrame(filas)
+
+tests/test_bandeja_hechos_en_revision.py::test_aprobar_un_caso_lo_saca_de_revision_y_queda_en_bitacora
+tests/test_bandeja_hechos_en_revision.py::test_aprobacion_en_bloque_aprueba_solo_los_de_un_clic_y_registra_cada_caso
+tests/test_bandeja_hechos_en_revision.py::test_hecho_sin_fecha_se_aprueba_con_la_fecha_corregida
+tests/test_bandeja_hechos_en_revision.py::test_fecha_invalida_se_rechaza
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\backend\services\revision_hechos.py:119: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    return db.query(FactRendimientoAcademico).get(int(sid[len(PREFIJO_ACA):])), "academico"
+
+tests/test_bandeja_hechos_en_revision.py::test_aprobar_un_caso_lo_saca_de_revision_y_queda_en_bitacora
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\tests\test_bandeja_hechos_en_revision.py:81: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    h = dw.query(FactRendimientoAcademico).get(2)
+
+tests/test_bandeja_hechos_en_revision.py::test_aprobar_un_caso_lo_saca_de_revision_y_queda_en_bitacora
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\tests\test_bandeja_hechos_en_revision.py:83: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    assert dw.query(FactRendimientoAcademico).get(1).requiere_revision is True  # los demás casos siguen pendientes
+
+tests/test_bandeja_hechos_en_revision.py::test_rechazar_un_caso_elimina_el_hecho
+tests/test_bandeja_hechos_en_revision.py::test_aprobacion_en_bloque_aprueba_solo_los_de_un_clic_y_registra_cada_caso
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\backend\services\revision_hechos.py:120: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    return db.query(FactSituacionFinanciera).get(int(sid[len(PREFIJO_FIN):])), "financiero"
+
+tests/test_bandeja_hechos_en_revision.py::test_rechazar_un_caso_elimina_el_hecho
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\tests\test_bandeja_hechos_en_revision.py:95: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    assert dw.query(FactSituacionFinanciera).get(1) is None
+
+tests/test_bandeja_hechos_en_revision.py::test_aprobacion_en_bloque_aprueba_solo_los_de_un_clic_y_registra_cada_caso
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\tests\test_bandeja_hechos_en_revision.py:117: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    assert dw.query(FactRendimientoAcademico).get(1).requiere_revision is False
+
+tests/test_bandeja_hechos_en_revision.py::test_aprobacion_en_bloque_aprueba_solo_los_de_un_clic_y_registra_cada_caso
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\tests\test_bandeja_hechos_en_revision.py:118: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    assert dw.query(FactSituacionFinanciera).get(1).requiere_revision is False
+
+tests/test_bandeja_hechos_en_revision.py::test_hecho_sin_fecha_se_aprueba_con_la_fecha_corregida
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\tests\test_bandeja_hechos_en_revision.py:138: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    h = dw.query(FactRendimientoAcademico).get(4)
+
+tests/test_bandeja_hitl_ruido_y_un_clic.py::test_confirm_descarta_fila_de_estados_y_no_la_manda_a_revision
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\backend\routers\dataops.py:3997: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    resuelto_en=datetime.utcnow(),
+
+tests/test_datos_reales_pipeline.py::TestLoaderSinValoresPorDefecto::test_fecha_de_fila_crea_dim_tiempo_completo
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\tests\test_datos_reales_pipeline.py:154: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    t = db.query(DimTiempo).get(20240201)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] tests\readiness\test_production_readiness.py:259: READINESS_TOKEN no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:264: READINESS_TOKEN no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:270: READINESS_TOKEN y READINESS_TOKEN_2 requeridos
+SKIPPED [1] tests\readiness\test_production_readiness.py:307: READINESS_BETO_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:311: READINESS_BETO_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:318: READINESS_BETO_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:338: READINESS_DB_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:341: READINESS_DB_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:344: READINESS_DB_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:347: READINESS_DB_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:352: READINESS_DB_URL no definido
+XFAIL tests/readiness/test_production_readiness.py::TestHoltWinters::test_banda_95_se_ensancha_con_el_horizonte - Hallazgo HW-IC: banda ±1,96·RMSE constante; la varianza debe crecer con h
+XFAIL tests/readiness/test_production_readiness.py::TestHoltWinters::test_mes_faltante_no_se_interpreta_como_demanda_cero - Hallazgo HW-GAP: asfreq().fillna(0) trata un mes sin carga como demanda cero
+XFAIL tests/readiness/test_production_readiness.py::TestOLSAnual::test_cagr_es_geometrico - Hallazgo OLS-CAGR: se publica la media aritmética de variaciones como CAGR
+XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_estado_a_ci_con_extension_departamental - Hallazgo FK-CI-EXT: el CI con extensión departamental ('4567890 LP') se rechaza y cae a Estado C sintético
+XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_id_sintetico_con_entropia_suficiente - Hallazgo FK-HASH: TEMP-CI usa MD5 truncado a 8 hex (32 bits); homónimos colisionan
+XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_banda_media_deriva_a_staging[0.7] - Hallazgo FK-BANDA: [0.60, 0.85) y confianza None generan TEMP en DimEstudiante en vez de derivar a stg_entidad_no_resuelta
+XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_banda_media_deriva_a_staging[None] - Hallazgo FK-BANDA: [0.60, 0.85) y confianza None generan TEMP en DimEstudiante en vez de derivar a stg_entidad_no_resuelta
+11 failed, 426 passed, 11 skipped, 7 xfailed, 24 warnings in 195.29s (0:03:15)

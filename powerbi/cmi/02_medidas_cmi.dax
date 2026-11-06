@@ -18,7 +18,7 @@ DEFINE
 
 // ---------- Índices (tabla IndicePerspectiva) ----------------------------------
 
-MEASURE IndicePerspectiva[Indice] =
+MEASURE IndicePerspectiva[Indice CMI] =
     // Promedio ponderado por peso de las perspectivas con índice; en el contexto de una
     // perspectiva devuelve su propio índice. Igual que el índice global de la API.
     VAR _t = FILTER ( IndicePerspectiva, NOT ISBLANK ( IndicePerspectiva[indice] ) )
@@ -26,35 +26,35 @@ MEASURE IndicePerspectiva[Indice] =
                             SUMX ( _t, IndicePerspectiva[peso] ) ), 1 )
 
 MEASURE IndicePerspectiva[Indice Banda] =
-    VAR _i = [Indice]
+    VAR _i = [Indice CMI]
     RETURN SWITCH ( TRUE (), ISBLANK ( _i ), "Sin evaluar", _i >= 80, "En meta", _i >= 50, "En alerta", "Crítico" )
 
 MEASURE IndicePerspectiva[Indice Color] =
     SWITCH ( [Indice Banda], "En meta", "#1B8754", "En alerta", "#C27C0E", "Crítico", "#D9383A", "#9A9CA3" )
 
 MEASURE IndicePerspectiva[Indice Texto] =
-    IF ( ISBLANK ( [Indice] ), "—", FORMAT ( [Indice], "0.0" ) )
+    IF ( ISBLANK ( [Indice CMI] ), "—", FORMAT ( [Indice CMI], "0.0" ) )
 
 MEASURE IndicePerspectiva[En meta]     = SUM ( IndicePerspectiva[verdes] )
 MEASURE IndicePerspectiva[En alerta]   = SUM ( IndicePerspectiva[ambar] )
 MEASURE IndicePerspectiva[Críticos]    = SUM ( IndicePerspectiva[rojos] )
 MEASURE IndicePerspectiva[Sin evaluar] = SUM ( IndicePerspectiva[sin_evaluar] )
-MEASURE IndicePerspectiva[Indicadores] = SUM ( IndicePerspectiva[indicadores] )
+MEASURE IndicePerspectiva[Total indicadores] = SUM ( IndicePerspectiva[indicadores] )
 
 MEASURE IndicePerspectiva[Evaluados Texto] =
-    FORMAT ( [En meta] + [En alerta] + [Críticos], "0" ) & " de " & FORMAT ( [Indicadores], "0" ) & " evaluados"
+    FORMAT ( [En meta] + [En alerta] + [Críticos], "0" ) & " de " & FORMAT ( [Total indicadores], "0" ) & " evaluados"
 
-MEASURE IndicePerspectiva[Objetivo] = SELECTEDVALUE ( Perspectivas[objetivo] )
+MEASURE IndicePerspectiva[Objetivo estratégico] = SELECTEDVALUE ( Perspectivas[objetivo] )
 
 MEASURE IndicePerspectiva[Titulo Gestion] =
     "Índice de desempeño · " & FORMAT ( SELECTEDVALUE ( Gestiones[gestion] ), "0" )
 
 // ---------- Indicador (tabla Scorecard; usar con Scorecard[nombre] en filas) ------
 
-MEASURE Scorecard[Valor] = SELECTEDVALUE ( Scorecard[valor] )
+MEASURE Scorecard[Valor actual] = SELECTEDVALUE ( Scorecard[valor] )
 
 MEASURE Scorecard[Valor Texto] =
-    VAR _v = [Valor]
+    VAR _v = [Valor actual]
     VAR _u = SELECTEDVALUE ( Scorecard[unidad] )
     RETURN IF ( ISBLANK ( _v ), "—",
         SWITCH ( _u,
@@ -74,7 +74,7 @@ MEASURE Scorecard[Meta Texto] =
             FORMAT ( _m, "#,0.0" ) ) )
 
 MEASURE Scorecard[Estado] =
-    IF ( ISBLANK ( [Valor] ), "Sin dato",
+    IF ( ISBLANK ( [Valor actual] ), "Sin dato",
         SWITCH ( SELECTEDVALUE ( Scorecard[semaforo] ),
             "VERDE", "En meta", "AMBAR", "En alerta", "ROJO", "Crítico", "Sin evaluar" ) )
 
@@ -101,7 +101,7 @@ MEASURE Scorecard[Tendencia Color] =
 
 MEASURE Scorecard[Avance Meta] =
     // 0–1: MAX → valor/meta; MIN → 1 si valor ≤ meta, si no meta/valor. Igual que la barra de la web.
-    VAR _v = [Valor]
+    VAR _v = [Valor actual]
     VAR _m = SELECTEDVALUE ( Scorecard[meta] )
     RETURN SWITCH ( TRUE (),
         ISBLANK ( _v ) || ISBLANK ( _m ), BLANK (),
@@ -128,11 +128,11 @@ MEASURE RiesgoEstudiante[Estudiantes] = COUNTROWS ( RiesgoEstudiante )
 MEASURE RiesgoEstudiante[Prioridad crítica] =
     CALCULATE ( COUNTROWS ( RiesgoEstudiante ), RiesgoEstudiante[k_reglas] >= 2 )
 
-MEASURE DataOpsDocumento[Registros]          = SUM ( DataOpsDocumento[registros] )
+MEASURE DataOpsDocumento[Total registros]          = SUM ( DataOpsDocumento[registros] )
 MEASURE DataOpsDocumento[Consolidado directo] = SUM ( DataOpsDocumento[consolidado_directo] )
 MEASURE DataOpsDocumento[Revisión humana]     = SUM ( DataOpsDocumento[revision_hitl] )
 MEASURE DataOpsDocumento[Pendientes]          = SUM ( DataOpsDocumento[pendientes_revision] )
 
 EVALUATE
     // Comprobación: debe coincidir con GET /api/v1/cmi/scorecard (índice global y por perspectiva)
-    SUMMARIZECOLUMNS ( Gestiones[gestion], Perspectivas[nombre], "Indice", [Indice], "Evaluados", [Evaluados Texto] )
+    SUMMARIZECOLUMNS ( Gestiones[gestion], Perspectivas[nombre], "Indice", [Indice CMI], "Evaluados", [Evaluados Texto] )

@@ -25,7 +25,6 @@ class SemanticMatcher:
         self.repo: CatalogRepository = obtener_catalogo_repositorio(ruta_seed_sql)
         self.programas_por_pos = self.repo.programas_meta
         self.programas_por_nombre = self.repo._programas_por_nombre
-        self.docentes_canonicos = [d["nombre_canonico"] for d in self.repo.docentes.values()]
         self.modulos_canonicos = [m["nombre_canonico"] for m in self.repo.modulos.values()]
 
     def enlazar_programa(
@@ -35,14 +34,6 @@ class SemanticMatcher:
     ) -> Optional[Dict[str, Any]]:
         """Enlaza un texto de programa o código numérico contra el catálogo oficial."""
         return self.repo.enlazar_programa(texto_o_pos, umbral_minimo)
-
-    def enlazar_docente(
-        self,
-        nombre_extraido: str,
-        umbral_minimo: float = UMBRAL_CONFIANZA_ALTO
-    ) -> Optional[Dict[str, Any]]:
-        """Enlaza un nombre de docente extraído contra el catálogo oficial."""
-        return self.repo.enlazar_docente(nombre_extraido, umbral_minimo)
 
     def enlazar_modulo(
         self,

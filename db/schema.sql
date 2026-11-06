@@ -506,7 +506,7 @@ ALTER TABLE public.fact_cobranzas_proyectadas ADD CONSTRAINT uq_fact_cobranzas_p
 -- Las claves primarias y UNIQUE ya crean su índice: no se repiten (uq_fact_aca_est_mod duplicaba
 -- uq_fact_rendimiento_estudiante_modulo; ver backend/scripts/migrations/005_alinear_esquema_con_ddl.sql).
 -- ==========================================
--- idx_fact_rend_estudiante omitido (cubierto por prefijo de uq_fact_rendimiento_estudiante_modulo)
+CREATE INDEX IF NOT EXISTS idx_fact_rend_estudiante ON public.fact_rendimiento_academico (id_estudiante);
 CREATE INDEX IF NOT EXISTS idx_fact_rend_modulo ON public.fact_rendimiento_academico (id_modulo);
 CREATE INDEX IF NOT EXISTS idx_fact_rend_docente ON public.fact_rendimiento_academico (id_docente);
 CREATE INDEX IF NOT EXISTS idx_fact_rend_tiempo ON public.fact_rendimiento_academico (id_tiempo);
@@ -533,7 +533,7 @@ CREATE INDEX IF NOT EXISTS ix_log_inconsistencias_tipo_regla ON public.log_incon
 CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON public.notifications (user_id, is_read);
 CREATE INDEX IF NOT EXISTS idx_stg_entidad_resuelto ON public.stg_entidad_no_resuelta (resuelto, estado_resolucion);
 CREATE INDEX IF NOT EXISTS idx_stg_entidad_registro ON public.stg_entidad_no_resuelta (registro_origen_id);
--- idx_stg_no_resuelta_estado omitido (cubierto por prefijo de idx_stg_entidad_resuelto)
+CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_estado ON public.stg_entidad_no_resuelta (resuelto);
 CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_tipo ON public.stg_entidad_no_resuelta (tipo_entidad);
 CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_motivo ON public.stg_entidad_no_resuelta (motivo);
 CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_estado_res ON public.stg_entidad_no_resuelta (estado_resolucion);

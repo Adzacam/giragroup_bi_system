@@ -1,0 +1,148 @@
+...xx....x.........xx..xx...sssssssssss................................. [ 15%]
+.........................F.............................................. [ 31%]
+........................................................................ [ 47%]
+........................................................................ [ 63%]
+........................................F............................... [ 79%]
+...................FFFF................................F................ [ 94%]
+.....................F.                                                  [100%]
+================================== FAILURES ===================================
+____________________ test_gira41_matching_docente_catalogo ____________________
+
+matcher = <pipeline.normalization.semantic_matcher.SemanticMatcher object at 0x0000019559583770>
+
+    def test_gira41_matching_docente_catalogo(matcher):
+        """Verifica grounding de docentes extraídos contra la nómina oficial."""
+>       res = matcher.enlazar_docente("Ing. Carlos Rojas")
+              ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SemanticMatcher' object has no attribute 'enlazar_docente'
+
+tests\sprint3\test_area3_normalizacion_matching_fk.py:114: AttributeError
+_________ TestBandasConfianza.test_servicio_caido_no_inventa_indices __________
+
+self = <tests.test_datos_reales_pipeline.TestBandasConfianza object at 0x00000195592BEA80>
+
+    def test_servicio_caido_no_inventa_indices(self):
+        with patch.object(confianza_service.urllib.request, "urlopen", side_effect=OSError("sin red")):
+>           assert confianza_service.obtener_indices(["a: 1", "b: 2"]) == [None, None]
+E           assert [0.91, 0.7] == [None, None]
+E             
+E             At index 0 diff: 0.91 != None
+E             Use -v to get more diff
+
+tests\test_datos_reales_pipeline.py:67: AssertionError
+________________________ test_extractor_series_reales _________________________
+
+    def test_extractor_series_reales():
+        """Valida que el extractor obtenga series consistentes desde las fuentes de datos."""
+        serie_global = extraer_serie_temporal("ALUMNOS_GLOBAL")
+>       assert len(serie_global) >= 24, "La serie global de inscritos debe tener al menos 24 meses"
+E       AssertionError: La serie global de inscritos debe tener al menos 24 meses
+E       assert 0 >= 24
+E        +  where 0 = len(Series([], Name: ALUMNOS_GLOBAL, dtype: float64))
+
+tests\test_forecasting.py:141: AssertionError
+__________________________ test_api_forecast_alumnos __________________________
+
+    def test_api_forecast_alumnos():
+        """Valida endpoint GET /api/v1/forecast/alumnos."""
+        response = client.get("/api/v1/forecast/alumnos?tipo=GLOBAL&horizonte=4")
+        assert response.status_code == 200
+        json_data = response.json()
+        assert json_data["status"] == "success"
+        data = json_data["data"]
+        assert data["caso_uso"] == "ALUMNOS_GLOBAL"
+>       assert data["metodo"] == "HoltWinters"
+E       AssertionError: assert None == 'HoltWinters'
+
+tests\test_forecasting.py:191: AssertionError
+_______________________ test_api_forecast_metas_mensual _______________________
+
+    def test_api_forecast_metas_mensual():
+        """Valida endpoint GET /api/v1/forecast/metas para granularidad mensual."""
+        response = client.get("/api/v1/forecast/metas?granularidad=MENSUAL&horizonte=3")
+        assert response.status_code == 200
+        json_data = response.json()
+        assert json_data["status"] == "success"
+        data = json_data["data"]
+        assert data["granularidad"] == "MENSUAL"
+>       assert data["metodo"] == "HoltWinters"
+E       AssertionError: assert None == 'HoltWinters'
+
+tests\test_forecasting.py:207: AssertionError
+________________________ test_api_forecast_metas_anual ________________________
+
+    def test_api_forecast_metas_anual():
+        """Valida endpoint GET /api/v1/forecast/metas para granularidad anual (OLS N=3)."""
+        response = client.get("/api/v1/forecast/metas?granularidad=ANUAL&horizonte=2")
+        assert response.status_code == 200
+        json_data = response.json()
+        assert json_data["status"] == "success"
+        data = json_data["data"]
+        assert data["granularidad"] == "ANUAL"
+>       assert data["metodo"] == "OLS"
+E       AssertionError: assert None == 'OLS'
+
+tests\test_forecasting.py:219: AssertionError
+_________________ test_app_env_test_en_produccion_no_arranca __________________
+
+    def test_app_env_test_en_produccion_no_arranca():
+        r = _importar_auth(APP_ENV="test", ENVIRONMENT="production")
+        assert r.returncode != 0
+        assert "RuntimeError" in r.stderr
+>       assert "no está permitido con ENVIRONMENT=production" in r.stderr
+E       assert 'no está permitido con ENVIRONMENT=production' in 'Traceback (most recent call last):\n  File "<string>", line 1, in <module>\n    import os; import routers.auth as a; ...expuesto.")\nRuntimeError: APP_ENV=test no estÃ¡ permitido con ENVIRONMENT=production: el OTP quedarÃ\xada expuesto.\n'
+E        +  where 'Traceback (most recent call last):\n  File "<string>", line 1, in <module>\n    import os; import routers.auth as a; ...expuesto.")\nRuntimeError: APP_ENV=test no estÃ¡ permitido con ENVIRONMENT=production: el OTP quedarÃ\xada expuesto.\n' = CompletedProcess(args=['C:\\Users\\DAZA\\Documents\\Universidad\\Proyecto de Grado 7MO semestre\\giragroup_bi_system\\...xpuesto.")\nRuntimeError: APP_ENV=test no estÃ¡ permitido con ENVIRONMENT=production: el OTP quedarÃ\xada expuesto.\n').stderr
+
+tests\test_otp_entorno_pruebas.py:46: AssertionError
+__________________ test_loop4_validacion_estricta_contratos ___________________
+
+    def test_loop4_validacion_estricta_contratos():
+        """
+        Itera por todas las combinaciones válidas y valida conformidad estricta
+        contra los esquemas Pydantic v2 (Clean Code y prevención de deformación de datos).
+        """
+        tipos_validos = ["GLOBAL", "DIPLOMADO", "CURSO", "EXPERTO"]
+        horizontes_validos = [1, 2, 3, 4, 5, 6]
+    
+        for tipo in tipos_validos:
+            for h in horizontes_validos:
+                resp = client.get(f"/api/v1/forecast/alumnos?tipo={tipo}&horizonte={h}")
+                assert resp.status_code == 200
+                # Validar con Pydantic directamente (lanza ValidationError si no cumple)
+                obj = ForecastAlumnosResponse.model_validate(resp.json())
+                assert obj.status == "success"
+>               assert obj.data.horizonte_meses == h
+E               AssertionError: assert None == 1
+E                +  where None = ForecastAlumnosData(caso_uso='ALUMNOS_GLOBAL', tipo_solicitado='GLOBAL', metodo=None, origen='sin_datos', horizonte_me...enos 24 meses ingestados en el Data Warehouse para Holt-Winters (disponibles: 0).', n_observaciones=0, proyecciones=[]).horizonte_meses
+E                +    where ForecastAlumnosData(caso_uso='ALUMNOS_GLOBAL', tipo_solicitado='GLOBAL', metodo=None, origen='sin_datos', horizonte_me...enos 24 meses ingestados en el Data Warehouse para Holt-Winters (disponibles: 0).', n_observaciones=0, proyecciones=[]) = ForecastAlumnosResponse(status='success', data=ForecastAlumnosData(caso_uso='ALUMNOS_GLOBAL', tipo_solicitado='GLOBAL'...nos 24 meses ingestados en el Data Warehouse para Holt-Winters (disponibles: 0).', n_observaciones=0, proyecciones=[])).data
+
+tests\test_sprint4_verification_loops.py:236: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/sprint3/test_area3_normalizacion_matching_fk.py::test_gira41_matching_docente_catalogo
+FAILED tests/test_datos_reales_pipeline.py::TestBandasConfianza::test_servicio_caido_no_inventa_indices
+FAILED tests/test_forecasting.py::test_extractor_series_reales - AssertionErr...
+FAILED tests/test_forecasting.py::test_api_forecast_alumnos - AssertionError:...
+FAILED tests/test_forecasting.py::test_api_forecast_metas_mensual - Assertion...
+FAILED tests/test_forecasting.py::test_api_forecast_metas_anual - AssertionEr...
+FAILED tests/test_otp_entorno_pruebas.py::test_app_env_test_en_produccion_no_arranca
+FAILED tests/test_sprint4_verification_loops.py::test_loop4_validacion_estricta_contratos
+SKIPPED [1] tests\readiness\test_production_readiness.py:259: READINESS_TOKEN no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:264: READINESS_TOKEN no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:270: READINESS_TOKEN y READINESS_TOKEN_2 requeridos
+SKIPPED [1] tests\readiness\test_production_readiness.py:307: READINESS_BETO_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:311: READINESS_BETO_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:318: READINESS_BETO_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:338: READINESS_DB_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:341: READINESS_DB_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:344: READINESS_DB_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:347: READINESS_DB_URL no definido
+SKIPPED [1] tests\readiness\test_production_readiness.py:352: READINESS_DB_URL no definido
+XFAIL tests/readiness/test_production_readiness.py::TestHoltWinters::test_banda_95_se_ensancha_con_el_horizonte - Hallazgo HW-IC: banda ±1,96·RMSE constante; la varianza debe crecer con h
+XFAIL tests/readiness/test_production_readiness.py::TestHoltWinters::test_mes_faltante_no_se_interpreta_como_demanda_cero - Hallazgo HW-GAP: asfreq().fillna(0) trata un mes sin carga como demanda cero
+XFAIL tests/readiness/test_production_readiness.py::TestOLSAnual::test_cagr_es_geometrico - Hallazgo OLS-CAGR: se publica la media aritmética de variaciones como CAGR
+XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_estado_a_ci_con_extension_departamental - Hallazgo FK-CI-EXT: el CI con extensión departamental ('4567890 LP') se rechaza y cae a Estado C sintético
+XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_id_sintetico_con_entropia_suficiente - Hallazgo FK-HASH: TEMP-CI usa MD5 truncado a 8 hex (32 bits); homónimos colisionan
+XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_banda_media_deriva_a_staging[0.7] - Hallazgo FK-BANDA: [0.60, 0.85) y confianza None generan TEMP en DimEstudiante en vez de derivar a stg_entidad_no_resuelta
+XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_banda_media_deriva_a_staging[None] - Hallazgo FK-BANDA: [0.60, 0.85) y confianza None generan TEMP en DimEstudiante en vez de derivar a stg_entidad_no_resuelta
+8 failed, 429 passed, 11 skipped, 7 xfailed in 173.45s (0:02:53)
+done

@@ -1,0 +1,1529 @@
+[
+  {
+    "numero": 1,
+    "indice_en_muestra": 0,
+    "indice_global_lote": 13,
+    "archivo": "Base_Academica_ARCA_TEST.xlsx",
+    "hoja": "",
+    "texto": "N°: 14 | POS - ACTAS: POS-032 | CÉDULA DE IDENTIDAD: 3533224 | MES INICIO: Mayo | AÑO INICIO: 2024 | APELLIDO PATERNO: Torrez | APELLIDO MATERNO: Rojas | NOMBRES: Ana Lucía",
+    "confianza_a": 0.99,
+    "confianza_c": 0.8384,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "3533224",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "Mayo",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "2024",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PER_ESTUDIANTE",
+        "valor": "Ana Lucía",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "14",
+        "score": 0.95,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "Torrez",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.7922
+      },
+      {
+        "token": "Rojas",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.5749
+      },
+      {
+        "token": "Ana",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9971
+      },
+      {
+        "token": "Lucía",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9977
+      }
+    ]
+  },
+  {
+    "numero": 2,
+    "indice_en_muestra": 3,
+    "indice_global_lote": 61,
+    "archivo": "Base_Academica_ARCA_TEST.xlsx",
+    "hoja": "",
+    "texto": "N°: 62 | POS - ACTAS: POS-008 | CÉDULA DE IDENTIDAD: 14820753 | MES INICIO: Octubre | AÑO INICIO: 2025 | APELLIDO PATERNO: Vargas | APELLIDO MATERNO: García | NOMBRES: Juan Carlos",
+    "confianza_a": 0.99,
+    "confianza_c": 0.8094,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "14820753",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "Octubre",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "2025",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PER_ESTUDIANTE",
+        "valor": "Juan Carlos",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "62",
+        "score": 0.95,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "Vargas",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.4978
+      },
+      {
+        "token": "García",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.5567
+      },
+      {
+        "token": "Juan",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9971
+      },
+      {
+        "token": "Carlos",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.998
+      }
+    ]
+  },
+  {
+    "numero": 3,
+    "indice_en_muestra": 15,
+    "indice_global_lote": 191,
+    "archivo": "BD_Cobranzas_giraGroup.xlsx",
+    "hoja": "",
+    "texto": "giraGroup — BD COBRANZAS 2024/2025/2026: CURSO | Unnamed: 1: 2024-12-17 00:00:00 | Unnamed: 2: POS-5048 | Unnamed: 3: CURSO EN MANEJO DEL ABDOMEN AGUDO QUIRÚRGICO 2ª Versión | Unnamed: 4: KATERINE BALDELOMAR | Unnamed: 5: 4554277 | Unnamed: 6: ANA LUCIA | Unnamed: 7: MENDOZA",
+    "confianza_a": 0.9589,
+    "confianza_c": 0.7894,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "4554277",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "FECHA",
+        "valor": "2024-12-17",
+        "score": 0.98,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "1",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "2",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "3",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "4",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "5",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "6",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "7",
+        "score": 0.95,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "BD",
+        "tag": "I-PROGRAMA",
+        "conf": 0.545
+      },
+      {
+        "token": "COBRANZAS",
+        "tag": "I-PROGRAMA",
+        "conf": 0.5063
+      },
+      {
+        "token": "CURSO",
+        "tag": "B-PROGRAMA",
+        "conf": 0.9441
+      },
+      {
+        "token": "EN",
+        "tag": "I-PROGRAMA",
+        "conf": 0.987
+      },
+      {
+        "token": "MANEJO",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9588
+      },
+      {
+        "token": "DEL",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9963
+      },
+      {
+        "token": "ABDOMEN",
+        "tag": "I-PROGRAMA",
+        "conf": 0.997
+      },
+      {
+        "token": "AGUDO",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9968
+      },
+      {
+        "token": "QUIRÚRGICO",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9969
+      },
+      {
+        "token": "2ª",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9905
+      },
+      {
+        "token": "Versión",
+        "tag": "I-PROGRAMA",
+        "conf": 0.5824
+      },
+      {
+        "token": "KATERINE",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.2462
+      },
+      {
+        "token": "BALDELOMAR",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.4548
+      },
+      {
+        "token": "ANA",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.4196
+      },
+      {
+        "token": "LUCIA",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.6682
+      }
+    ]
+  },
+  {
+    "numero": 4,
+    "indice_en_muestra": 16,
+    "indice_global_lote": 198,
+    "archivo": "BD_Cobranzas_giraGroup.xlsx",
+    "hoja": "",
+    "texto": "giraGroup — BD COBRANZAS 2024/2025/2026: DIPLOMADO | Unnamed: 1: 2025-05-15 00:00:00 | Unnamed: 2: POS-5055 | Unnamed: 3: DIPLOMADO EN GESTIÓN EMPRESARIAL CON MICROSOFT EXCEL v.1 | Unnamed: 4: KATERINE BALDELOMAR | Unnamed: 5: 13942452 | Unnamed: 6: GABRIELA INES | Unnamed: 7: BALBOA",
+    "confianza_a": 0.9315,
+    "confianza_c": 0.844,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "13942452",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "FECHA",
+        "valor": "2025-05-15",
+        "score": 0.98,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "1",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "2",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "3",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "4",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "5",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "6",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "7",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "PROGRAMA",
+        "valor": "DIPLOMADO EN BI",
+        "score": 0.8667,
+        "fuente": "FUZZY"
+      },
+      {
+        "tipo": "MODULO",
+        "valor": "MODULO 2 GESTION",
+        "score": 0.75,
+        "fuente": "FUZZY"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "giraGroup",
+        "tag": "I-PROGRAMA",
+        "conf": 0.6493
+      },
+      {
+        "token": "—",
+        "tag": "I-PROGRAMA",
+        "conf": 0.8006
+      },
+      {
+        "token": "BD",
+        "tag": "I-PROGRAMA",
+        "conf": 0.8201
+      },
+      {
+        "token": "COBRANZAS",
+        "tag": "I-PROGRAMA",
+        "conf": 0.8147
+      },
+      {
+        "token": "EN",
+        "tag": "I-PROGRAMA",
+        "conf": 0.6873
+      },
+      {
+        "token": "GESTIÓN",
+        "tag": "B-PROGRAMA",
+        "conf": 0.9129
+      },
+      {
+        "token": "EMPRESARIAL",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9994
+      },
+      {
+        "token": "CON",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9965
+      },
+      {
+        "token": "MICROSOFT",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9912
+      },
+      {
+        "token": "EXCEL",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9981
+      },
+      {
+        "token": "v.1",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9954
+      },
+      {
+        "token": "KATERINE",
+        "tag": "B-PROGRAMA",
+        "conf": 0.3753
+      },
+      {
+        "token": "BALDELOMAR",
+        "tag": "I-PROGRAMA",
+        "conf": 0.7602
+      },
+      {
+        "token": "GABRIELA",
+        "tag": "B-PROGRAMA",
+        "conf": 0.9061
+      }
+    ]
+  },
+  {
+    "numero": 5,
+    "indice_en_muestra": 17,
+    "indice_global_lote": 206,
+    "archivo": "BD_Cobranzas_giraGroup.xlsx",
+    "hoja": "",
+    "texto": "giraGroup — BD COBRANZAS 2024/2025/2026: CURSO | Unnamed: 1: 2025-01-21 00:00:00 | Unnamed: 2: POS-5063 | Unnamed: 3: CURSO EN BIENESTAR Y SALUD MENTAL EN EL TRABAJO 8ª Versión | Unnamed: 4: ALEJANDRO MAMANI | Unnamed: 5: 11351159 | Unnamed: 6: JUAN CARLOS | Unnamed: 7: HERRERA",
+    "confianza_a": 0.9589,
+    "confianza_c": 0.8497,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "11351159",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "FECHA",
+        "valor": "2025-01-21",
+        "score": 0.98,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "1",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "2",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "3",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "4",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "5",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "6",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "7",
+        "score": 0.95,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "BD",
+        "tag": "I-PROGRAMA",
+        "conf": 0.4873
+      },
+      {
+        "token": "COBRANZAS",
+        "tag": "I-PROGRAMA",
+        "conf": 0.4618
+      },
+      {
+        "token": "CURSO",
+        "tag": "B-PROGRAMA",
+        "conf": 0.7692
+      },
+      {
+        "token": "CURSO",
+        "tag": "B-PROGRAMA",
+        "conf": 0.9937
+      },
+      {
+        "token": "EN",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9962
+      },
+      {
+        "token": "BIENESTAR",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9942
+      },
+      {
+        "token": "Y",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9995
+      },
+      {
+        "token": "SALUD",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9996
+      },
+      {
+        "token": "MENTAL",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9996
+      },
+      {
+        "token": "EN",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9994
+      },
+      {
+        "token": "EL",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9994
+      },
+      {
+        "token": "TRABAJO",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9993
+      },
+      {
+        "token": "ALEJANDRO",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9949
+      },
+      {
+        "token": "MAMANI",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9978
+      },
+      {
+        "token": "JUAN",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.8122
+      },
+      {
+        "token": "CARLOS",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.8197
+      }
+    ]
+  },
+  {
+    "numero": 6,
+    "indice_en_muestra": 18,
+    "indice_global_lote": 209,
+    "archivo": "BD_Cobranzas_giraGroup.xlsx",
+    "hoja": "",
+    "texto": "giraGroup — BD COBRANZAS 2024/2025/2026: CURSO | Unnamed: 1: 2024-11-27 00:00:00 | Unnamed: 2: POS-5066 | Unnamed: 3: CURSO EN MANEJO DEL ABDOMEN AGUDO QUIRÚRGICO 2ª Versión | Unnamed: 4: KAREN ULLOA | Unnamed: 5: 4671004 | Unnamed: 6: JUAN CARLOS | Unnamed: 7: FLORES",
+    "confianza_a": 0.9589,
+    "confianza_c": 0.8274,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "4671004",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "FECHA",
+        "valor": "2024-11-27",
+        "score": 0.98,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "1",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "2",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "3",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "4",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "5",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "6",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "7",
+        "score": 0.95,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "—",
+        "tag": "I-PROGRAMA",
+        "conf": 0.3557
+      },
+      {
+        "token": "BD",
+        "tag": "I-PROGRAMA",
+        "conf": 0.4215
+      },
+      {
+        "token": "COBRANZAS",
+        "tag": "I-PROGRAMA",
+        "conf": 0.383
+      },
+      {
+        "token": "CURSO",
+        "tag": "B-PROGRAMA",
+        "conf": 0.943
+      },
+      {
+        "token": "EN",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9878
+      },
+      {
+        "token": "MANEJO",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9741
+      },
+      {
+        "token": "DEL",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9967
+      },
+      {
+        "token": "ABDOMEN",
+        "tag": "I-PROGRAMA",
+        "conf": 0.997
+      },
+      {
+        "token": "AGUDO",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9967
+      },
+      {
+        "token": "QUIRÚRGICO",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9965
+      },
+      {
+        "token": "2ª",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9895
+      },
+      {
+        "token": "Versión",
+        "tag": "I-PROGRAMA",
+        "conf": 0.705
+      },
+      {
+        "token": "KAREN",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.3584
+      },
+      {
+        "token": "ULLOA",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9825
+      },
+      {
+        "token": "JUAN",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.6284
+      },
+      {
+        "token": "CARLOS",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9377
+      }
+    ]
+  },
+  {
+    "numero": 7,
+    "indice_en_muestra": 32,
+    "indice_global_lote": 440,
+    "archivo": "Inscripciones_Google_Forms_TEST.csv",
+    "hoja": "",
+    "texto": "Marca temporal: 2026-08-08 12:45:00 | Dirección de correo electrónico: fernando.torrico@hotmail.com | Nombre Completo: Fernando Torrico Morales | Cédula de Identidad: CI-6294817 | Teléfono: 71829384 | Ciudad: Potosí | Programa de Interés: Maestría en Big Data & Business Analytics | Modalidad: VIRTUAL SINCRÓNICO",
+    "confianza_a": 0.9971,
+    "confianza_c": 0.7826,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "fernando.torrico@hotmail.com",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PER_ESTUDIANTE",
+        "valor": "Fernando Torrico Morales",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "CI",
+        "valor": "CI-6294817",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "Potosí",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PROGRAMA",
+        "valor": "Maestría en Big Data & Business Analytics",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "CI",
+        "valor": "71829384",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "FECHA",
+        "valor": "2026-08-08",
+        "score": 0.98,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "fernando.torrico@hotmail.com",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.8406
+      },
+      {
+        "token": "Fernando",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9965
+      },
+      {
+        "token": "Torrico",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9963
+      },
+      {
+        "token": "Morales",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9953
+      },
+      {
+        "token": "Potosí",
+        "tag": "I-PER_DOCENTE",
+        "conf": 0.3395
+      },
+      {
+        "token": "Maestría",
+        "tag": "B-PROGRAMA",
+        "conf": 0.9975
+      },
+      {
+        "token": "en",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9985
+      },
+      {
+        "token": "Big",
+        "tag": "I-PROGRAMA",
+        "conf": 0.997
+      },
+      {
+        "token": "Data",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9995
+      },
+      {
+        "token": "&",
+        "tag": "I-PROGRAMA",
+        "conf": 0.999
+      },
+      {
+        "token": "Business",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9992
+      },
+      {
+        "token": "Analytics",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9995
+      },
+      {
+        "token": "VIRTUAL",
+        "tag": "B-PROGRAMA",
+        "conf": 0.8452
+      },
+      {
+        "token": "SINCRÓNICO",
+        "tag": "I-PROGRAMA",
+        "conf": 0.7102
+      }
+    ]
+  },
+  {
+    "numero": 8,
+    "indice_en_muestra": 33,
+    "indice_global_lote": 447,
+    "archivo": "Inscripciones_Google_Forms_TEST.csv",
+    "hoja": "",
+    "texto": "Marca temporal: 2026-08-15 10:20:11 | Dirección de correo electrónico: monica.bustamante@gmail.com | Nombre Completo: Monica Bustamante Rocha | Cédula de Identidad: CI-3719284 | Teléfono: 78394051 | Ciudad: Santa Cruz | Programa de Interés: Maestría en Big Data & Business Analytics | Modalidad: VIRTUAL SINCRÓNICO",
+    "confianza_a": 0.9971,
+    "confianza_c": 0.8483,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "monica.bustamante@gmail.com",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PER_ESTUDIANTE",
+        "valor": "Monica Bustamante Rocha",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "CI",
+        "valor": "CI-3719284",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "Santa Cruz",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PROGRAMA",
+        "valor": "Maestría en Big Data & Business Analytics",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "CI",
+        "valor": "78394051",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "FECHA",
+        "valor": "2026-08-15",
+        "score": 0.98,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "monica.bustamante@gmail.com",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.7591
+      },
+      {
+        "token": "Monica",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9974
+      },
+      {
+        "token": "Bustamante",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9986
+      },
+      {
+        "token": "Rocha",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9986
+      },
+      {
+        "token": "Santa",
+        "tag": "I-PER_DOCENTE",
+        "conf": 0.5009
+      },
+      {
+        "token": "Cruz",
+        "tag": "I-PER_DOCENTE",
+        "conf": 0.6564
+      },
+      {
+        "token": "Maestría",
+        "tag": "B-PROGRAMA",
+        "conf": 0.9975
+      },
+      {
+        "token": "en",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9986
+      },
+      {
+        "token": "Big",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9974
+      },
+      {
+        "token": "Data",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9995
+      },
+      {
+        "token": "&",
+        "tag": "I-PROGRAMA",
+        "conf": 0.999
+      },
+      {
+        "token": "Business",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9992
+      },
+      {
+        "token": "Analytics",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9996
+      },
+      {
+        "token": "VIRTUAL",
+        "tag": "B-PROGRAMA",
+        "conf": 0.8599
+      },
+      {
+        "token": "SINCRÓNICO",
+        "tag": "I-PROGRAMA",
+        "conf": 0.7682
+      }
+    ]
+  },
+  {
+    "numero": 9,
+    "indice_en_muestra": 34,
+    "indice_global_lote": 449,
+    "archivo": "Inscripciones_Google_Forms_TEST.csv",
+    "hoja": "",
+    "texto": "Marca temporal: 2026-08-17 08:45:30 | Dirección de correo electrónico: olga.delgado@yahoo.com | Nombre Completo: Olga Delgado Miranda | Cédula de Identidad: CI-4819284 | Teléfono: 70516273 | Ciudad: Cochabamba | Programa de Interés: Diplomado en Educación Superior e Innovación Docente | Modalidad: VIRTUAL SINCRÓNICO",
+    "confianza_a": 0.9971,
+    "confianza_c": 0.8397,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "olga.delgado@yahoo.com",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PER_ESTUDIANTE",
+        "valor": "Olga Delgado Miranda",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "CI",
+        "valor": "CI-4819284",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "Cochabamba",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PROGRAMA",
+        "valor": "Diplomado en Educación Superior e Innovación Docente",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "CI",
+        "valor": "70516273",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "FECHA",
+        "valor": "2026-08-17",
+        "score": 0.98,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "olga.delgado@yahoo.com",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.7094
+      },
+      {
+        "token": "Olga",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9982
+      },
+      {
+        "token": "Delgado",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9987
+      },
+      {
+        "token": "Miranda",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9986
+      },
+      {
+        "token": "Cochabamba",
+        "tag": "I-PER_DOCENTE",
+        "conf": 0.2722
+      },
+      {
+        "token": "Diplomado",
+        "tag": "B-PROGRAMA",
+        "conf": 0.9956
+      },
+      {
+        "token": "en",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9989
+      },
+      {
+        "token": "Educación",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9991
+      },
+      {
+        "token": "Superior",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9996
+      },
+      {
+        "token": "e",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9996
+      },
+      {
+        "token": "Innovación",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9996
+      },
+      {
+        "token": "Docente",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9996
+      },
+      {
+        "token": "VIRTUAL",
+        "tag": "B-PROGRAMA",
+        "conf": 0.9806
+      },
+      {
+        "token": "SINCRÓNICO",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9858
+      }
+    ]
+  },
+  {
+    "numero": 10,
+    "indice_en_muestra": 36,
+    "indice_global_lote": 457,
+    "archivo": "Inscripciones_Google_Forms_TEST.csv",
+    "hoja": "",
+    "texto": "Marca temporal: 2026-08-25 10:35:48 | Dirección de correo electrónico: ximena.medina@gmail.com | Nombre Completo: Ximena Medina Zambrana | Cédula de Identidad: CI-4829105 | Teléfono: 78394051 | Ciudad: Cochabamba | Programa de Interés: Diplomado en Gestión Estratégica | Modalidad: VIRTUAL SINCRÓNICO",
+    "confianza_a": 0.9663,
+    "confianza_c": 0.8368,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "ximena.medina@gmail.com",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PER_ESTUDIANTE",
+        "valor": "Ximena Medina Zambrana",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "CI",
+        "valor": "CI-4829105",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "Cochabamba",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PROGRAMA",
+        "valor": "Diplomado en Gestión Estratégica",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "CI",
+        "valor": "78394051",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "FECHA",
+        "valor": "2026-08-25",
+        "score": 0.98,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "MODULO",
+        "valor": "MODULO 2 GESTION",
+        "score": 0.75,
+        "fuente": "FUZZY"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "ximena.medina@gmail.com",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.5734
+      },
+      {
+        "token": "Ximena",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9979
+      },
+      {
+        "token": "Medina",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9988
+      },
+      {
+        "token": "Zambrana",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9988
+      },
+      {
+        "token": "Cochabamba",
+        "tag": "I-PER_DOCENTE",
+        "conf": 0.3269
+      },
+      {
+        "token": "Diplomado",
+        "tag": "B-PROGRAMA",
+        "conf": 0.9897
+      },
+      {
+        "token": "en",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9966
+      },
+      {
+        "token": "Gestión",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9883
+      },
+      {
+        "token": "Estratégica",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9996
+      },
+      {
+        "token": "VIRTUAL",
+        "tag": "B-PROGRAMA",
+        "conf": 0.976
+      },
+      {
+        "token": "SINCRÓNICO",
+        "tag": "I-PROGRAMA",
+        "conf": 0.9883
+      }
+    ]
+  },
+  {
+    "numero": 11,
+    "indice_en_muestra": 55,
+    "indice_global_lote": 727,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "hoja": "",
+    "texto": "N°: 23 | POS - ACTAS: 5352 | CÉDULA DE IDENTIDAD: 8915593.0 | MES INICO: 1 | AÑO INCIO: 2025 | APELLIDO PATERNO: CRUZ | APELLIDO MATERNO: LEON | NOMBRES: YOSELIN",
+    "confianza_a": 0.98,
+    "confianza_c": 0.8161,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "8915593.0",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "2025",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PER_ESTUDIANTE",
+        "valor": "YOSELIN",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "23",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "1",
+        "score": 0.95,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "CRUZ",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9366
+      },
+      {
+        "token": "LEON",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9644
+      },
+      {
+        "token": "YOSELIN",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9827
+      }
+    ]
+  },
+  {
+    "numero": 12,
+    "indice_en_muestra": 77,
+    "indice_global_lote": 1130,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "hoja": "",
+    "texto": "N°: 10 | POS - ACTAS: 5299 | CÉDULA DE IDENTIDAD: 5724682.0 | MES INICO: 11 | AÑO INCIO: 2024 | APELLIDO PATERNO: QUINTEROS | APELLIDO MATERNO: CORTEZ | NOMBRES: JOSÉ OSCAR",
+    "confianza_a": 0.98,
+    "confianza_c": 0.8238,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "5724682.0",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "2024",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PER_ESTUDIANTE",
+        "valor": "JOSÉ OSCAR",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "10",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "11",
+        "score": 0.95,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "QUINTEROS",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9096
+      },
+      {
+        "token": "CORTEZ",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.8278
+      },
+      {
+        "token": "JOSÉ",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.8848
+      },
+      {
+        "token": "OSCAR",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.8451
+      }
+    ]
+  },
+  {
+    "numero": 13,
+    "indice_en_muestra": 78,
+    "indice_global_lote": 1140,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "hoja": "",
+    "texto": "N°: 4 | POS - ACTAS: 5298 | CÉDULA DE IDENTIDAD: 6770026.0 | MES INICO: 11 | AÑO INCIO: 2024 | APELLIDO PATERNO: HURTADO | APELLIDO MATERNO: TABOADA | NOMBRES: DAIVER EDUARDO",
+    "confianza_a": 0.98,
+    "confianza_c": 0.8017,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "6770026.0",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "2024",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PER_ESTUDIANTE",
+        "valor": "DAIVER EDUARDO",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "4",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "11",
+        "score": 0.95,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "HURTADO",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.6493
+      },
+      {
+        "token": "TABOADA",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.8461
+      },
+      {
+        "token": "DAIVER",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.8983
+      }
+    ]
+  },
+  {
+    "numero": 14,
+    "indice_en_muestra": 85,
+    "indice_global_lote": 1236,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "hoja": "",
+    "texto": "N°: 19 | POS - ACTAS: 5268 | CÉDULA DE IDENTIDAD: 5823097.0 | MES INICO: 10 | AÑO INCIO: 2024 | APELLIDO PATERNO: RASGUIDO | APELLIDO MATERNO: IGNACIO | NOMBRES: WILLMA ANEL",
+    "confianza_a": 0.98,
+    "confianza_c": 0.8489,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "5823097.0",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "2024",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PER_ESTUDIANTE",
+        "valor": "WILLMA ANEL",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "19",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "10",
+        "score": 0.95,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "RASGUIDO",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9286
+      },
+      {
+        "token": "IGNACIO",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.6855
+      },
+      {
+        "token": "WILLMA",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9942
+      },
+      {
+        "token": "ANEL",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9841
+      }
+    ]
+  },
+  {
+    "numero": 15,
+    "indice_en_muestra": 88,
+    "indice_global_lote": 1287,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "hoja": "",
+    "texto": "N°: 4 | POS - ACTAS: 5254 | CÉDULA DE IDENTIDAD: 9104028.0 | MES INICO: 10 | AÑO INCIO: 2024 | APELLIDO PATERNO: FLORES | APELLIDO MATERNO: CARO | NOMBRES: ANGEL GUIDO",
+    "confianza_a": 0.98,
+    "confianza_c": 0.8149,
+    "entidades_a": [
+      {
+        "tipo": "CI",
+        "valor": "9104028.0",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "CI",
+        "valor": "2024",
+        "score": 1.0,
+        "fuente": "CI_EXACTA"
+      },
+      {
+        "tipo": "PER_ESTUDIANTE",
+        "valor": "ANGEL GUIDO",
+        "score": 1.0,
+        "fuente": "ENCABEZADO"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "4",
+        "score": 0.95,
+        "fuente": "REGEX"
+      },
+      {
+        "tipo": "NOTA",
+        "valor": "10",
+        "score": 0.95,
+        "fuente": "REGEX"
+      }
+    ],
+    "tokens_beto_c": [
+      {
+        "token": "FLORES",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.9424
+      },
+      {
+        "token": "CARO",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.3727
+      },
+      {
+        "token": "ANGEL",
+        "tag": "B-PER_ESTUDIANTE",
+        "conf": 0.983
+      },
+      {
+        "token": "GUIDO",
+        "tag": "I-PER_ESTUDIANTE",
+        "conf": 0.9085
+      }
+    ]
+  }
+]

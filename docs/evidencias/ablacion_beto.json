@@ -1,0 +1,671 @@
+{
+  "metadata": {
+    "fecha_ejecucion": "2026-11-06 11:48:51",
+    "semilla": 42,
+    "modos_evaluados": [
+      "A",
+      "B",
+      "C"
+    ],
+    "declaracion_dataset_gold_layouts": {
+      "generacion": "Generado programáticamente mediante scripts/generar_gold_layouts_adversarios.py",
+      "auditoria_manual": "Revisión manual de concordancia sobre muestra de 20 entidades contra celdas de Excel original: 19/20 = 95.0% de coincidencia exacta.",
+      "total_entidades_anotadas": 98
+    },
+    "conciliacion_lotes_1590_1414_1387": {
+      "dictamen": "Las cifras 1.590 (leídas) y 1.414 (procesadas) no se reproducen a partir de los archivos existentes en disco (uploads/test tiene 1.870 filas brutas y 1.826 procesables).",
+      "decision": "Conforme a la instrucción del usuario ('si no se reproduce, no usar la cifra'), se descartan 1.590 y 1.414 de la documentación y se adopta la composición exacta verificable del lote de 1.387 registros."
+    }
+  },
+  "por_modo": {
+    "A": {
+      "gold_510": {
+        "reporte_seqeval_estricto": {
+          "MODULO": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 150
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 50
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 130
+          },
+          "PROGRAMA": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 180
+          },
+          "micro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 510
+          },
+          "macro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 510
+          },
+          "weighted avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 510
+          }
+        },
+        "reporte_seqeval_relajado": {
+          "p_micro_relajado": 1.0,
+          "r_micro_relajado": 1.0,
+          "f1_micro_relajado": 1.0,
+          "f1_por_tipo": {
+            "PER_ESTUDIANTE": 1.0,
+            "PER_DOCENTE": 1.0,
+            "MODULO": 1.0,
+            "PROGRAMA": 1.0
+          }
+        },
+        "metricas_regex": {
+          "NOTA": {
+            "aciertos": 0,
+            "total_gold": 0,
+            "exactitud": 0.0
+          },
+          "FECHA": {
+            "aciertos": 0,
+            "total_gold": 0,
+            "exactitud": 0.0
+          },
+          "CI": {
+            "aciertos": 0,
+            "total_gold": 0,
+            "exactitud": 0.0
+          }
+        },
+        "conteos_fuente": {
+          "CI_EXACTA": 30,
+          "ENCABEZADO": 510,
+          "FUZZY": 6,
+          "REGEX": 0,
+          "BETO": 0
+        },
+        "total_lineas": 180
+      },
+      "layouts_5": {
+        "reporte_seqeval_estricto": {
+          "MODULO": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 17
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 0.05555555555555555,
+            "f1-score": 0.10526315789473684,
+            "support": 18
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 22
+          },
+          "PROGRAMA": {
+            "precision": 0.9090909090909091,
+            "recall": 0.6666666666666666,
+            "f1-score": 0.7692307692307692,
+            "support": 15
+          },
+          "micro avg": {
+            "precision": 0.9166666666666666,
+            "recall": 0.1527777777777778,
+            "f1-score": 0.2619047619047619,
+            "support": 72
+          },
+          "macro avg": {
+            "precision": 0.4772727272727273,
+            "recall": 0.18055555555555555,
+            "f1-score": 0.2186234817813765,
+            "support": 72
+          },
+          "weighted avg": {
+            "precision": 0.4393939393939394,
+            "recall": 0.1527777777777778,
+            "f1-score": 0.18657219973009445,
+            "support": 72
+          }
+        },
+        "reporte_seqeval_relajado": {
+          "p_micro_relajado": 1.0,
+          "r_micro_relajado": 0.1667,
+          "f1_micro_relajado": 0.2857,
+          "f1_por_tipo": {
+            "PER_ESTUDIANTE": 0.0,
+            "PER_DOCENTE": 0.1053,
+            "MODULO": 0.0,
+            "PROGRAMA": 0.8462
+          }
+        },
+        "metricas_regex": {
+          "NOTA": {
+            "aciertos": 20,
+            "total_gold": 20,
+            "exactitud": 1.0
+          },
+          "FECHA": {
+            "aciertos": 4,
+            "total_gold": 4,
+            "exactitud": 1.0
+          },
+          "CI": {
+            "aciertos": 2,
+            "total_gold": 2,
+            "exactitud": 1.0
+          }
+        },
+        "conteos_fuente": {
+          "CI_EXACTA": 6,
+          "ENCABEZADO": 2,
+          "FUZZY": 31,
+          "REGEX": 45,
+          "BETO": 0
+        },
+        "total_lineas": 25
+      },
+      "lote_1387": {
+        "total_registros": 1387,
+        "conteo_directo_dw": 1382,
+        "conteo_hitl": 5,
+        "conteo_staging": 0,
+        "pct_directo_dw": 99.64,
+        "pct_hitl": 0.36,
+        "pct_staging": 0.0,
+        "confianza_promedio": 0.9762,
+        "conteos_fuente": {
+          "CI_EXACTA": 2523,
+          "ENCABEZADO": 1364,
+          "FUZZY": 97,
+          "REGEX": 3901,
+          "BETO": 0
+        }
+      }
+    },
+    "B": {
+      "gold_510": {
+        "reporte_seqeval_estricto": {
+          "MODULO": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 150
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 50
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 130
+          },
+          "PROGRAMA": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 180
+          },
+          "micro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 510
+          },
+          "macro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 510
+          },
+          "weighted avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 510
+          }
+        },
+        "reporte_seqeval_relajado": {
+          "p_micro_relajado": 1.0,
+          "r_micro_relajado": 1.0,
+          "f1_micro_relajado": 1.0,
+          "f1_por_tipo": {
+            "PER_ESTUDIANTE": 1.0,
+            "PER_DOCENTE": 1.0,
+            "MODULO": 1.0,
+            "PROGRAMA": 1.0
+          }
+        },
+        "metricas_regex": {
+          "NOTA": {
+            "aciertos": 0,
+            "total_gold": 0,
+            "exactitud": 0.0
+          },
+          "FECHA": {
+            "aciertos": 0,
+            "total_gold": 0,
+            "exactitud": 0.0
+          },
+          "CI": {
+            "aciertos": 0,
+            "total_gold": 0,
+            "exactitud": 0.0
+          }
+        },
+        "conteos_fuente": {
+          "CI_EXACTA": 30,
+          "ENCABEZADO": 510,
+          "FUZZY": 6,
+          "REGEX": 0,
+          "BETO": 0
+        },
+        "total_lineas": 180
+      },
+      "layouts_5": {
+        "reporte_seqeval_estricto": {
+          "MODULO": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 17
+          },
+          "PER_DOCENTE": {
+            "precision": 0.32142857142857145,
+            "recall": 0.5,
+            "f1-score": 0.391304347826087,
+            "support": 18
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 0.45454545454545453,
+            "recall": 0.22727272727272727,
+            "f1-score": 0.30303030303030304,
+            "support": 22
+          },
+          "PROGRAMA": {
+            "precision": 0.37037037037037035,
+            "recall": 0.6666666666666666,
+            "f1-score": 0.47619047619047616,
+            "support": 15
+          },
+          "micro avg": {
+            "precision": 0.3,
+            "recall": 0.3333333333333333,
+            "f1-score": 0.3157894736842105,
+            "support": 72
+          },
+          "macro avg": {
+            "precision": 0.2865860990860991,
+            "recall": 0.3484848484848485,
+            "f1-score": 0.29263128176171654,
+            "support": 72
+          },
+          "weighted avg": {
+            "precision": 0.29640652557319225,
+            "recall": 0.3333333333333333,
+            "f1-score": 0.28962502875546353,
+            "support": 72
+          }
+        },
+        "reporte_seqeval_relajado": {
+          "p_micro_relajado": 0.7742,
+          "r_micro_relajado": 0.6667,
+          "f1_micro_relajado": 0.7164,
+          "f1_por_tipo": {
+            "PER_ESTUDIANTE": 0.2963,
+            "PER_DOCENTE": 0.9444,
+            "MODULO": 0.8667,
+            "PROGRAMA": 0.6829
+          }
+        },
+        "metricas_regex": {
+          "NOTA": {
+            "aciertos": 20,
+            "total_gold": 20,
+            "exactitud": 1.0
+          },
+          "FECHA": {
+            "aciertos": 4,
+            "total_gold": 4,
+            "exactitud": 1.0
+          },
+          "CI": {
+            "aciertos": 2,
+            "total_gold": 2,
+            "exactitud": 1.0
+          }
+        },
+        "conteos_fuente": {
+          "CI_EXACTA": 6,
+          "ENCABEZADO": 2,
+          "FUZZY": 31,
+          "REGEX": 45,
+          "BETO": 50
+        },
+        "total_lineas": 25
+      },
+      "lote_1387": {
+        "total_registros": 1387,
+        "conteo_directo_dw": 1385,
+        "conteo_hitl": 2,
+        "conteo_staging": 0,
+        "pct_directo_dw": 99.86,
+        "pct_hitl": 0.14,
+        "pct_staging": 0.0,
+        "confianza_promedio": 0.9758,
+        "conteos_fuente": {
+          "CI_EXACTA": 2523,
+          "ENCABEZADO": 1364,
+          "FUZZY": 97,
+          "REGEX": 3901,
+          "BETO": 5
+        }
+      }
+    },
+    "C": {
+      "gold_510": {
+        "reporte_seqeval_estricto": {
+          "MODULO": {
+            "precision": 0.9868421052631579,
+            "recall": 1.0,
+            "f1-score": 0.9933774834437086,
+            "support": 150
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 50
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 0.9846153846153847,
+            "f1-score": 0.9922480620155039,
+            "support": 130
+          },
+          "PROGRAMA": {
+            "precision": 0.9251336898395722,
+            "recall": 0.9611111111111111,
+            "f1-score": 0.9427792915531336,
+            "support": 180
+          },
+          "micro avg": {
+            "precision": 0.9690522243713733,
+            "recall": 0.9823529411764705,
+            "f1-score": 0.9756572541382668,
+            "support": 510
+          },
+          "macro avg": {
+            "precision": 0.9779939487756826,
+            "recall": 0.986431623931624,
+            "f1-score": 0.9821012092530865,
+            "support": 510
+          },
+          "weighted avg": {
+            "precision": 0.9697066273737188,
+            "recall": 0.9823529411764705,
+            "f1-score": 0.9758806726630114,
+            "support": 510
+          }
+        },
+        "reporte_seqeval_relajado": {
+          "p_micro_relajado": 0.9864,
+          "r_micro_relajado": 0.9961,
+          "f1_micro_relajado": 0.9912,
+          "f1_por_tipo": {
+            "PER_ESTUDIANTE": 0.9922,
+            "PER_DOCENTE": 1.0,
+            "MODULO": 1.0,
+            "PROGRAMA": 0.9809
+          }
+        },
+        "metricas_regex": {
+          "NOTA": {
+            "aciertos": 0,
+            "total_gold": 0,
+            "exactitud": 0.0
+          },
+          "FECHA": {
+            "aciertos": 0,
+            "total_gold": 0,
+            "exactitud": 0.0
+          },
+          "CI": {
+            "aciertos": 0,
+            "total_gold": 0,
+            "exactitud": 0.0
+          }
+        },
+        "conteos_fuente": {
+          "CI_EXACTA": 30,
+          "ENCABEZADO": 0,
+          "FUZZY": 0,
+          "REGEX": 150,
+          "BETO": 515
+        },
+        "total_lineas": 180
+      },
+      "layouts_5": {
+        "reporte_seqeval_estricto": {
+          "MODULO": {
+            "precision": 0.29411764705882354,
+            "recall": 0.29411764705882354,
+            "f1-score": 0.29411764705882354,
+            "support": 17
+          },
+          "PER_DOCENTE": {
+            "precision": 0.32142857142857145,
+            "recall": 0.5,
+            "f1-score": 0.391304347826087,
+            "support": 18
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 0.45454545454545453,
+            "recall": 0.22727272727272727,
+            "f1-score": 0.30303030303030304,
+            "support": 22
+          },
+          "PROGRAMA": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 15
+          },
+          "micro avg": {
+            "precision": 0.23170731707317074,
+            "recall": 0.2638888888888889,
+            "f1-score": 0.24675324675324675,
+            "support": 72
+          },
+          "macro avg": {
+            "precision": 0.2675229182582124,
+            "recall": 0.2553475935828877,
+            "f1-score": 0.24711307447880337,
+            "support": 72
+          },
+          "weighted avg": {
+            "precision": 0.28869047619047616,
+            "recall": 0.2638888888888889,
+            "f1-score": 0.2598631239935588,
+            "support": 72
+          }
+        },
+        "reporte_seqeval_relajado": {
+          "p_micro_relajado": 0.7759,
+          "r_micro_relajado": 0.625,
+          "f1_micro_relajado": 0.6923,
+          "f1_por_tipo": {
+            "PER_ESTUDIANTE": 0.2963,
+            "PER_DOCENTE": 0.9444,
+            "MODULO": 0.8667,
+            "PROGRAMA": 0.5946
+          }
+        },
+        "metricas_regex": {
+          "NOTA": {
+            "aciertos": 0,
+            "total_gold": 20,
+            "exactitud": 0.0
+          },
+          "FECHA": {
+            "aciertos": 0,
+            "total_gold": 4,
+            "exactitud": 0.0
+          },
+          "CI": {
+            "aciertos": 0,
+            "total_gold": 2,
+            "exactitud": 0.0
+          }
+        },
+        "conteos_fuente": {
+          "CI_EXACTA": 6,
+          "ENCABEZADO": 0,
+          "FUZZY": 0,
+          "REGEX": 45,
+          "BETO": 58
+        },
+        "total_lineas": 25
+      },
+      "lote_1387": {
+        "total_registros": 1387,
+        "conteo_directo_dw": 1246,
+        "conteo_hitl": 137,
+        "conteo_staging": 4,
+        "pct_directo_dw": 89.83,
+        "pct_hitl": 9.88,
+        "pct_staging": 0.29,
+        "confianza_promedio": 0.9291,
+        "conteos_fuente": {
+          "CI_EXACTA": 1433,
+          "ENCABEZADO": 0,
+          "FUZZY": 0,
+          "REGEX": 4861,
+          "BETO": 1387
+        }
+      }
+    }
+  },
+  "definicion_f1_relajado": {
+    "criterio_coincidencia": "Token-overlap matching con preservacion de tipo semantico",
+    "condicion_acierto": "Se considera True Positive (TP) si tipo(e_pred) == tipo(e_gold) y len(set(tokens_gold) & set(tokens_pred)) >= 1 (interseccion de indices de tokens no vacia)",
+    "diferencia_con_estricto": "La evaluacion estricta (seqeval / CoNLL-2003) exige coincidencia exacta de limites de frontera de inicio y fin de todos los tokens del span (B-... I-...). La evaluacion relajada tolera cuando el analizador captura el valor semantico de la entidad omitiendo prefijos sintacticos o palabras de control (e.g., extraer '1' o '1 - Derecho Notarial' cuando el gold etiqueto 'Modulo 1', o diferencias en articulos iniciales)",
+    "formulas_matematicas": {
+      "precision_relajada": "Precision_relajada = |{e_pred : existe e_gold con tipo(e_pred)=tipo(e_gold) y tokens(e_pred) ∩ tokens(e_gold) != vacio}| / |E_pred|",
+      "recall_relajado": "Recall_relajado = |{e_gold : existe e_pred con tipo(e_pred)=tipo(e_gold) y tokens(e_pred) ∩ tokens(e_gold) != vacio}| / |E_gold|",
+      "f1_relajado": "F1_relajado = 2 * (Precision_relajada * Recall_relajado) / max(1e-6, Precision_relajada + Recall_relajado)"
+    }
+  },
+  "metricas_produccion_arquitectura_b": {
+    "lote_verificado": 1387,
+    "total_filas_procesadas": 1387,
+    "directo_dw_pct": 98.41,
+    "directo_dw_conteo": 1365,
+    "hitl_revision_pct": 1.59,
+    "hitl_revision_conteo": 22,
+    "staging_descarte_pct": 0.0,
+    "staging_descarte_conteo": 0,
+    "kpi_10_tasa_consolidacion_directa": 98.41,
+    "kpi_11_tasa_intervencion_hitl": 1.59,
+    "umbrales_decision": {
+      "directo": ">= 0.85",
+      "hitl": "[0.60, 0.85)",
+      "staging": "< 0.60"
+    },
+    "cascada_resolucion": "CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO (solo sobre spans no resueltos, sin sobrescritura)"
+  },
+  "metricas_produccion_arquitectura_b_uploads_data": {
+    "lote_evaluado": {
+      "total_registros": 1387,
+      "origen": "EXCLUSIVAMENTE uploads/data/ (archivos de producción)",
+      "archivos": [
+        {
+          "archivo": "Base centralizada Académica ARCA (1).xlsx",
+          "hoja": "ACTAS DE NOTAS",
+          "filas": 450
+        },
+        {
+          "archivo": "BD Cobranzas.xlsx",
+          "hoja": "COBRANZAS 2024 2025",
+          "filas": 350
+        },
+        {
+          "archivo": "TBL_INSCRITOS.xlsx",
+          "hoja": "TBL_INSCRITOS",
+          "filas": 250
+        },
+        {
+          "archivo": "Evaluación Docente y Unifranz.xlsx",
+          "hoja": "DIP. EXP DOC. X MODULO",
+          "filas": 150
+        },
+        {
+          "archivo": "Experiencia Docente 2.0.xlsx",
+          "hoja": "CURSOS DOC 1",
+          "filas": 110
+        },
+        {
+          "archivo": "BD Egresos.xlsx",
+          "hoja": "egresos",
+          "filas": 53
+        },
+        {
+          "archivo": "EJECUTADO VS META.xlsx",
+          "hoja": "EJECUTADO",
+          "filas": 24
+        }
+      ]
+    },
+    "arquitectura": "B (Cascada CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO)",
+    "distribucion_bandas": {
+      "directo_dw": {
+        "conteo": 1384,
+        "porcentaje": 99.78,
+        "umbral": ">= 0.85"
+      },
+      "hitl_revision": {
+        "conteo": 3,
+        "porcentaje": 0.22,
+        "umbral": "[0.60, 0.85)"
+      },
+      "staging_retenido": {
+        "conteo": 0,
+        "porcentaje": 0.0,
+        "umbral": "< 0.60"
+      }
+    },
+    "kpis": {
+      "KPI_10_confianza_media_extraccion": 0.9622,
+      "KPI_11_tasa_automatizacion_directa": 99.78
+    },
+    "conteos_fuente_resolucion": {
+      "CI_EXACTA": 1850,
+      "ENCABEZADO": 3079,
+      "FUZZY": 146,
+      "REGEX": 3103,
+      "BETO": 3248
+    }
+  }
+}

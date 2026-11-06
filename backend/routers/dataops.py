@@ -82,6 +82,7 @@ from services.extraccion_por_encabezado import (
 from services.sugerencia_hitl import es_sugerencia_un_clic, nombre_extraido, similitud_nombre_completo
 from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, resolver_caso_hecho
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
+from pipeline.normalization.person_resolver import resolver_persona
 from services.dataops_evaluation_service import (
     strip_accents,
     fuzzy_score,
@@ -923,40 +924,66 @@ def _memo_catalogo(tipo: str, catalogo: list) -> Dict[Any, Any]:
         return memo
 
 
-def _mejor_estudiante(cand: str, estudiantes: list) -> Tuple[Any, float, str]:
-    """Mejor estudiante para el texto (solo los que comparten una palabra válida), como el bucle original."""
-    memo = _memo_catalogo("estudiantes", estudiantes)
-    if ("mejor", cand) in memo:
-        return memo[("mejor", cand)]
-    indice = memo.get("indice")
-    if indice is None:
-        indice = {}
-        for pos, e in enumerate(estudiantes):
-            for t in set(strip_accents(e.nombre_completo).lower().split()):
-                if len(t) >= 3 and t not in _STOP_TOKENS_EST:
-                    indice.setdefault(t, []).append(pos)
-        memo["indice"] = indice
-    tokens_cand = {t for t in strip_accents(cand).lower().split() if len(t) >= 3 and t not in _STOP_TOKENS_EST}
-    mejor = (None, 0.0, "None")
-    for pos in sorted({p for t in tokens_cand for p in indice.get(t, ())}):  # mismo orden que el catálogo
-        e = estudiantes[pos]
-        score, algo = fuzzy_score(cand, e.nombre_completo)
-        if score > mejor[1]:
-            mejor = (e, score, algo)
-    memo[("mejor", cand)] = mejor
-    return mejor
+def _docentes_con_contexto(db) -> list:
+    """dim_docente + módulos/programas asignados (bridge_modulo_docente) como contexto para filtrar candidatos."""
+    docentes = db.query(DimDocente).all()
+    try:
+        filas = db.execute(text(
+            "SELECT b.id_docente, m.nombre_modulo, m.programa FROM bridge_modulo_docente b "
+            "JOIN dim_modulo m ON m.id_modulo = b.id_modulo"
+        )).fetchall()
+    except Exception:
+        filas = []
+    ctx: Dict[int, set] = {}
+    for id_d, mod, prog in filas:
+        ctx.setdefault(id_d, set()).update(x for x in (mod, prog) if x)
+    for d in docentes:
+        d._contextos = sorted(ctx.get(d.id_docente, ()))
+    return docentes
 
 
-def _mejor_docente(cand: str, docentes: list) -> Tuple[Any, float, str]:
-    memo = _memo_catalogo("docentes", docentes)
-    if ("mejor", cand) not in memo:
-        mejor = (None, 0.0, "None")
-        for d in docentes:
-            score, algo = fuzzy_score(cand, d.nombre_completo)
-            if score > mejor[1]:
-                mejor = (d, score, algo)
-        memo[("mejor", cand)] = mejor
-    return memo[("mejor", cand)]
+def _personas_memo(tipo: str, catalogo: list, memo: dict) -> list:
+    """Adapta los objetos ORM de dim_estudiante / dim_docente al formato de person_resolver (una vez por catálogo)."""
+    if "personas" not in memo:
+        if tipo == "estudiantes":
+            memo["personas"] = [
+                {"id": e.id_estudiante, "nombre": e.nombre_completo,
+                 "ci": getattr(e, "ci_numero", None) or getattr(e, "ci", None),
+                 "contextos": [getattr(e, "programa_origen", None)] if getattr(e, "programa_origen", None) else []}
+                for e in catalogo
+            ]
+        else:
+            memo["personas"] = [
+                {"id": d.id_docente, "nombre": d.nombre_completo, "ci": None,
+                 "contextos": list(getattr(d, "_contextos", None) or [])}
+                for d in catalogo
+            ]
+        memo["por_id"] = {p["id"]: o for p, o in zip(memo["personas"], catalogo)}
+    return memo["personas"]
+
+
+def _resolver_persona_cascada(tipo: str, cand: str, catalogo: list, ci: Optional[str], contexto: tuple) -> Tuple[Any, float, str]:
+    """Cascada sin cat_docente: (a) CI exacta -> dim; (b) RapidFuzz en la dim con filtro programa/módulo y apellido; (c) None -> HITL."""
+    memo = _memo_catalogo(tipo, catalogo)
+    clave = ("persona", cand, ci, contexto)
+    if clave in memo:
+        return memo[clave]
+    personas = _personas_memo(tipo, catalogo, memo)
+    res = resolver_persona(cand, ci, personas, contexto=contexto)
+    if res is None:
+        memo[clave] = (None, 0.0, "None")
+    else:
+        algo = "CI Exact Match" if res["fuente"] == "CI_EXACTA" else "RapidFuzz Fuzzy (apellido + programa/módulo)"
+        memo[clave] = (memo["por_id"][res["id"]], round(res["score"] * 100.0, 1), algo)
+    return memo[clave]
+
+
+def _mejor_estudiante(cand: str, estudiantes: list, ci: Optional[str] = None, contexto: tuple = ()) -> Tuple[Any, float, str]:
+    return _resolver_persona_cascada("estudiantes", cand, estudiantes, ci, contexto)
+
+
+def _mejor_docente(cand: str, docentes: list, contexto: tuple = ()) -> Tuple[Any, float, str]:
+    return _resolver_persona_cascada("docentes", cand, docentes, None, contexto)
 
 
 def _mejor_modulo(cand: str, modulos: list) -> Tuple[Any, float, str]:
@@ -1061,11 +1088,18 @@ def extract_entities_from_line(
             if not any(w in nm_clean for w in NON_PERSON_WORDS):
                 est_cands.append(nm)
 
+    # Contexto del propio registro (programa / módulo) para filtrar candidatos, y CI para la resolución exacta
+    contexto_reg = tuple(
+        labeled_data[k] for k in ("PROGRAMA", "MODULO", "MÓDULO", "NOMBRE PROGRAMA", "NOMBRE_PROGRAMA", "NOMBRE MODULO")
+        if labeled_data.get(strip_accents(k).upper())
+    )
+    ci_previo = next((labeled_data[k] for k in ("CI", "C.I.", "IDNUMBER", "CARNET", "DOCUMENTO", "DOC_IDENTIDAD/CI",
+                                                "CI_ESTUDIANTE", "CEDULA DE IDENTIDAD") if labeled_data.get(k)), None)
     best_est, best_est_score, best_est_algo, est_token = None, 0.0, "None", ""
     if est_cands:
         est_token = est_cands[0]
         for cand in est_cands:
-            e, score, algo = _mejor_estudiante(cand, estudiantes)
+            e, score, algo = _mejor_estudiante(cand, estudiantes, ci_previo, contexto_reg)
             if e is not None and score > best_est_score:
                 best_est_score = score
                 best_est_algo = algo
@@ -1095,6 +1129,7 @@ def extract_entities_from_line(
             "ci": getattr(best_est, "codigo_estudiante", None) or f"{best_est.id_estudiante}",
             "fuzzScore": round(best_est_score, 1),
             "algorithm": best_est_algo,
+            "fuente_resolucion": "CI_EXACTA" if "CI Exact" in best_est_algo else "FUZZY",
             "es_nuevo_perfil": False,
         })
     elif est_token:
@@ -1113,6 +1148,7 @@ def extract_entities_from_line(
             "ci": None,
             "fuzzScore": 0.0,
             "algorithm": "Sin coincidencia en catálogo (Perfil Nuevo)",
+            "fuente_resolucion": "BETO",
             "es_nuevo_perfil": True,
         })
 
@@ -1146,6 +1182,7 @@ def extract_entities_from_line(
                 "canonicalId": "CI_DUDOSA",
                 "fuzzScore": 68.0,
                 "algorithm": "Regex Validation Failed (Sufijo ?)",
+                "fuente_resolucion": "REGEX",
             })
         else:
             entities.append({
@@ -1160,6 +1197,7 @@ def extract_entities_from_line(
                 "canonicalId": getattr(best_est, "codigo_estudiante", "EST-CI") if best_est else "EST-CI",
                 "fuzzScore": 100.0,
                 "algorithm": "Regex CI Exact Format",
+                "fuente_resolucion": "CI_EXACTA",
             })
     else:
         entities.append({
@@ -1174,6 +1212,7 @@ def extract_entities_from_line(
             "canonicalId": "CI_NO_PROVISTO",
             "fuzzScore": 85.0,
             "algorithm": "Identificación por Nombre / TEMP-ID",
+            "fuente_resolucion": "REGEX",
         })
 
     # 3. DOCENTE (etiqueta CoNLL PER con marcador/título + Catálogo Maestro)
@@ -1208,7 +1247,7 @@ def extract_entities_from_line(
     if doc_cands:
         doc_token = doc_cands[0]
         for cand in doc_cands:
-            d, score, algo = _mejor_docente(cand, docentes)
+            d, score, algo = _mejor_docente(cand, docentes, contexto_reg)
             if d is not None and score > best_doc_score:
                 best_doc_score = score
                 best_doc_algo = algo
@@ -1248,6 +1287,7 @@ def extract_entities_from_line(
             "canonicalId": f"DOC-{best_doc.id_docente}",
             "fuzzScore": round(best_doc_score, 1),
             "algorithm": best_doc_algo,
+            "fuente_resolucion": "FUZZY" if "Fuzzy" in best_doc_algo else "ENCABEZADO",
             "es_nuevo_perfil": False,
         })
     elif doc_token or doc_cands:
@@ -1266,6 +1306,7 @@ def extract_entities_from_line(
             "canonicalId": "NO_CATALOGADO",
             "fuzzScore": 0.0,
             "algorithm": "Sin coincidencia en catálogo (Perfil Nuevo en Catálogo de Docentes)",
+            "fuente_resolucion": "BETO",
             "es_nuevo_perfil": True,
         })
 
@@ -1323,6 +1364,7 @@ def extract_entities_from_line(
             "canonicalId": best_mod.pos_code or f"MOD-{best_mod.id_modulo}",
             "fuzzScore": round(best_mod_score, 1),
             "algorithm": best_mod_algo,
+            "fuente_resolucion": "FUZZY" if "Fuzzy" in best_mod_algo else "ENCABEZADO",
             "es_nuevo_perfil": False,
         })
     elif mod_token or mod_cands:
@@ -1341,6 +1383,7 @@ def extract_entities_from_line(
             "canonicalId": "NO_CATALOGADO",
             "fuzzScore": 0.0,
             "algorithm": "Sin coincidencia en catálogo (Perfil Nuevo en Catálogo de Módulos)",
+            "fuente_resolucion": "BETO",
             "es_nuevo_perfil": True,
         })
 
@@ -1392,6 +1435,7 @@ def extract_entities_from_line(
             "canonicalId": "CONCEPTO-GEN",
             "fuzzScore": 92.0,
             "algorithm": "Token Sort Similarity",
+            "fuente_resolucion": "FUZZY",
         })
 
     if monto_val:
@@ -1412,6 +1456,7 @@ def extract_entities_from_line(
                 "cuotasImpagas": int(re.search(r"[0-9]+", str(cuotas_impagas_val)).group(0)) if (cuotas_impagas_val and re.search(r"[0-9]+", str(cuotas_impagas_val))) else 0,
                 "fuzzScore": 100.0,
                 "algorithm": "Regex Currency Format",
+                "fuente_resolucion": "REGEX",
             })
         except Exception:
             pass
@@ -1438,6 +1483,7 @@ def extract_entities_from_line(
             "betoConfidence": 0.940,
             "catalogTable": "Catálogo de Programas",
             "matchedCanonical": str(prog_token),
+            "fuente_resolucion": "ENCABEZADO" if (labeled_data and any(k in labeled_data for k in ["PROGRAMA", "CARRERA", "POS", "DIPLOMADO"])) else "REGEX",
             "canonicalId": "PROG-ADM",
             "fuzzScore": 92.0,
             "algorithm": "Token Pattern Matching",
@@ -1509,6 +1555,7 @@ def extract_entities_from_line(
                 ),
                 "fuzzScore": 100.0 if not grade_invalida else 50.0,
                 "algorithm": "Explicit Scale Declared" if not grade_invalida else "Unspecified Scale Error",
+                "fuente_resolucion": "ENCABEZADO" if (labeled_data and any(k in labeled_data for k in ["NOTA", "CALIFICACION", "PUNTAJE"])) else "REGEX",
             })
 
     # 7. ASISTENCIA / INASISTENCIA (Umbral de Abandono)
@@ -1556,6 +1603,7 @@ def extract_entities_from_line(
                 "canonicalId": "ASIST_ALERTA_ABANDONO" if alerta_des else "ASIST_OK",
                 "fuzzScore": 100.0,
                 "algorithm": "Regex Attendance Pattern",
+                "fuente_resolucion": "ENCABEZADO" if (labeled_data and any(k in labeled_data for k in ["ASISTENCIA", "ASIST", "INASISTENCIA"])) else "REGEX",
             })
         except Exception:
             pass
@@ -1573,6 +1621,7 @@ def extract_entities_from_line(
             "canonicalId": "RAW-01",
             "fuzzScore": 85.0,
             "algorithm": "Raw Token Parser",
+            "fuente_resolucion": "REGEX",
         })
 
     # ─── CÁLCULO DEL ÍNDICE DEL REGISTRO & COMPUERTAS DETERMINISTAS (#3, #6) ───
@@ -1724,6 +1773,21 @@ def _serializar_archivos_lote(db: Session, docs_lote: List[DimOrigenDocumental])
     return salida
 
 
+def _cerrar_transaccion_lectura(db: Session) -> None:
+    """
+    Termina la transacción de lectura sin descartar los objetos ya cargados. El análisis de BETO pasa minutos
+    calculando en Python: con la transacción abierta ('idle in transaction') bloqueaba TRUNCATE, ALTER y
+    cualquier operación que pida un lock exclusivo sobre staging o las dimensiones. Los objetos siguen
+    utilizables y una escritura posterior abre una transacción nueva.
+    """
+    previo = db.expire_on_commit
+    db.expire_on_commit = False
+    try:
+        db.commit()
+    finally:
+        db.expire_on_commit = previo
+
+
 def _evaluar_documentos_lote(
     db: Session,
     docs: List[DimOrigenDocumental],
@@ -1752,7 +1816,7 @@ def _evaluar_documentos_lote(
         }
 
     estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
-    docentes = db.query(DimDocente).all()
+    docentes = _docentes_con_contexto(db)
     modulos = db.query(DimModulo).all()
 
     doc_map = {d.id_documento: d for d in docs}
@@ -1774,6 +1838,8 @@ def _evaluar_documentos_lote(
         .filter(StagingEntidadNoResuelta.id_documento.in_(doc_ids))
         .all()
     )
+    _cerrar_transaccion_lectura(db)  # lo que sigue es cálculo en memoria (minutos en lotes grandes)
+
     hitl_map: Dict[Tuple[int, str], StagingEntidadNoResuelta] = {}
     if not aplicar_resoluciones:
         hitl_records = []  # lectura base: las resoluciones se superponen al leer (_superponer_resoluciones)
@@ -2363,6 +2429,7 @@ def _evaluacion_lectura(db: Session, docs: List[DimOrigenDocumental]) -> Dict[st
     clave = ("evaluacion_lectura", tuple(doc_ids), _huella_evaluacion(db, doc_ids))
 
     def _calcular_con_progreso():
+        _cerrar_transaccion_lectura(db)  # la espera o el cálculo pueden durar minutos
         # Otro worker (o la evaluación post-ingesta) puede haberla dejado en disco
         en_disco = cache_lectura.leer(clave)
         if en_disco is not None:
@@ -3306,7 +3373,7 @@ def infer_beto_text(payload: BetoInferRequest, db: Session = Depends(get_db)):
     t_infer_start = _time.perf_counter()
 
     estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
-    docentes = db.query(DimDocente).all()
+    docentes = _docentes_con_contexto(db)
     modulos = db.query(DimModulo).all()
 
     pipeline_service_data = None
@@ -3560,7 +3627,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     stg_records = query.all()
 
     estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
-    docentes = db.query(DimDocente).all()
+    docentes = _docentes_con_contexto(db)
     modulos = db.query(DimModulo).all()
 
     inserted_academico = 0
@@ -4011,7 +4078,7 @@ def get_review_tray(
     entidades_db = query.order_by(StagingEntidadNoResuelta.id_staging.asc()).all()
     resolved_db = resolved_query.order_by(StagingEntidadNoResuelta.resuelto_en.desc().nullslast(), StagingEntidadNoResuelta.id_staging.desc()).all()
     estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
-    docentes = db.query(DimDocente).all()
+    docentes = _docentes_con_contexto(db)
     modulos = db.query(DimModulo).all()
 
     motivo_labels_map = {
@@ -4653,7 +4720,7 @@ def get_plain_text_records(
         ids_list = [int(x.strip()) for x in str(doc_ids).split(",") if x.strip().isdigit()]
 
     estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
-    docentes = db.query(DimDocente).all()
+    docentes = _docentes_con_contexto(db)
     modulos = db.query(DimModulo).all()
 
     query = db.query(StagingRegistroCrudo, DimOrigenDocumental).outerjoin(
@@ -4775,7 +4842,7 @@ def get_plain_text_records(
 def get_master_catalogs(db: Session = Depends(get_db)):
     """Retorna los catálogos maestros institucionales desde PostgreSQL."""
     modulos = db.query(DimModulo).all()
-    docentes = db.query(DimDocente).all()
+    docentes = _docentes_con_contexto(db)
     estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
 
     modulos_list = [

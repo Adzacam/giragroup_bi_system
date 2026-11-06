@@ -3,6 +3,7 @@ from pathlib import Path
 
 os.environ["TESTING"] = "true"
 os.environ["APP_ENV"] = "test"
+os.environ["ENVIRONMENT"] = "test"
 os.environ["EMAIL_BACKEND"] = "console"
 
 import pytest

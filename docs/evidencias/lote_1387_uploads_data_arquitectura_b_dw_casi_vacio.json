@@ -1,0 +1,168 @@
+{
+  "lote_evaluado": {
+    "total_registros": 1387,
+    "origen": "EXCLUSIVAMENTE uploads/data/ (archivos de producción)",
+    "archivos": [
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "filas": 450
+      },
+      {
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "filas": 350
+      },
+      {
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "hoja": "TBL_INSCRITOS",
+        "filas": 250
+      },
+      {
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "filas": 150
+      },
+      {
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "filas": 110
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "hoja": "egresos",
+        "filas": 53
+      },
+      {
+        "archivo": "EJECUTADO VS META.xlsx",
+        "hoja": "EJECUTADO",
+        "filas": 24
+      }
+    ]
+  },
+  "muestreo_por_archivo": {
+    "criterio_documentado": false,
+    "nota": "No existe criterio de muestreo documentado: los topes 450/350/250/150/110/53/24 son constantes escritas en este script (suman 1.387, el tamaño objetivo del lote). La selección es 'primeras N filas no vacías en orden de archivo', sin aleatorización ni estratificación. 'el_tope_agota_la_hoja' indica en qué hojas el tope coincide con (o supera) la hoja completa.",
+    "detalle": [
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "tope_en_codigo": 450,
+        "filas_no_vacias_en_hoja": 8660,
+        "filas_tomadas": 450,
+        "el_tope_agota_la_hoja": false,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      },
+      {
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "tope_en_codigo": 350,
+        "filas_no_vacias_en_hoja": 10017,
+        "filas_tomadas": 350,
+        "el_tope_agota_la_hoja": false,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      },
+      {
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "hoja": "TBL_INSCRITOS",
+        "tope_en_codigo": 250,
+        "filas_no_vacias_en_hoja": 15196,
+        "filas_tomadas": 250,
+        "el_tope_agota_la_hoja": false,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      },
+      {
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "tope_en_codigo": 150,
+        "filas_no_vacias_en_hoja": 4096,
+        "filas_tomadas": 150,
+        "el_tope_agota_la_hoja": false,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      },
+      {
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "tope_en_codigo": 110,
+        "filas_no_vacias_en_hoja": 994,
+        "filas_tomadas": 110,
+        "el_tope_agota_la_hoja": false,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "hoja": "egresos",
+        "tope_en_codigo": 53,
+        "filas_no_vacias_en_hoja": 1373,
+        "filas_tomadas": 53,
+        "el_tope_agota_la_hoja": false,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      },
+      {
+        "archivo": "EJECUTADO VS META.xlsx",
+        "hoja": "EJECUTADO",
+        "tope_en_codigo": 24,
+        "filas_no_vacias_en_hoja": 24,
+        "filas_tomadas": 24,
+        "el_tope_agota_la_hoja": true,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      }
+    ]
+  },
+  "arquitectura": "B (CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO) + personas sin cat_docente (tarea 1)",
+  "dimensiones_dw_usadas": {
+    "dim_estudiante": 1,
+    "dim_docente": 631
+  },
+  "personas": {
+    "total": 3726,
+    "resueltas_CI_EXACTA": 0,
+    "resueltas_FUZZY": 0,
+    "sin_coincidencia_HITL": 3726
+  },
+  "distribucion_bandas_sin_regla_personas": {
+    "directo": {
+      "conteo": 1384,
+      "porcentaje": 99.78
+    },
+    "hitl": {
+      "conteo": 3,
+      "porcentaje": 0.22
+    },
+    "staging": {
+      "conteo": 0,
+      "porcentaje": 0.0
+    }
+  },
+  "distribucion_bandas_con_regla_personas": {
+    "directo": {
+      "conteo": 82,
+      "porcentaje": 5.91
+    },
+    "hitl": {
+      "conteo": 1305,
+      "porcentaje": 94.09
+    },
+    "staging": {
+      "conteo": 0,
+      "porcentaje": 0.0
+    }
+  },
+  "registros_directo_movidos_a_hitl_por_persona_sin_resolver": 1302,
+  "kpis": {
+    "KPI_10a_media_todas_las_entidades": 0.9618,
+    "KPI_10a_n_entidades": 11426,
+    "KPI_10b_media_solo_entidades_BETO": 0.9209,
+    "KPI_10b_n_entidades": 3248,
+    "KPI_10_previo_media_por_registro": 0.964,
+    "KPI_11_directo_sin_regla_personas_pct": 99.78,
+    "KPI_11_directo_con_regla_personas_pct": 5.91
+  },
+  "conteos_fuente_resolucion": {
+    "CI_EXACTA": 1850,
+    "ENCABEZADO": 3079,
+    "FUZZY": 146,
+    "REGEX": 3103,
+    "BETO": 3248
+  }
+}

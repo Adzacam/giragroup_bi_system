@@ -66,6 +66,7 @@ class EntidadExtraida:
     score: float
     origen: str = "BETO_NER"
     metadata: Dict[str, Any] = field(default_factory=dict)
+    fuente_resolucion: Optional[str] = None
 
     def __post_init__(self):
         # Asegurar tipos y normalizaciones básicas
@@ -77,6 +78,22 @@ class EntidadExtraida:
         self.start_char = int(self.start_char)
         self.end_char = int(self.end_char)
         self.score = float(self.score)
+
+        if self.fuente_resolucion is None:
+            if "fuente_resolucion" in self.metadata:
+                self.fuente_resolucion = self.metadata["fuente_resolucion"]
+            elif self.origen in ("BETO_NER", "BETO"):
+                self.fuente_resolucion = "BETO"
+            elif "CI" in self.origen:
+                self.fuente_resolucion = "CI_EXACTA"
+            elif "ENCABEZADO" in self.origen:
+                self.fuente_resolucion = "ENCABEZADO"
+            elif "FUZZY" in self.origen:
+                self.fuente_resolucion = "FUZZY"
+            elif "REGEX" in self.origen or "PATRON" in self.origen:
+                self.fuente_resolucion = "REGEX"
+            else:
+                self.fuente_resolucion = "BETO" 
 
 
     @property
@@ -118,6 +135,7 @@ class EntidadExtraida:
             "nivel_confianza": self.nivel_confianza.value,
             "requiere_revision": self.requiere_revision(),
             "origen": self.origen,
+            "fuente_resolucion": self.fuente_resolucion,
             "metadata": self.metadata
         }
 
@@ -130,7 +148,8 @@ class EntidadExtraida:
             end_char=data.get("end_char", 0),
             score=data.get("score", 0.0),
             origen=data.get("origen", "DESCONOCIDO"),
-            metadata=data.get("metadata", {})
+            metadata=data.get("metadata", {}),
+            fuente_resolucion=data.get("fuente_resolucion", None)
         )
 
 

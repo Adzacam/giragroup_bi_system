@@ -162,3 +162,24 @@ def test_resolucion_de_la_bandeja_se_superpone_sin_releer(dw, monkeypatch, tmp_p
     assert (res["autoCount"], res["auditCount"]) == (2, 0)
     assert base["detalles"][1]["categoria_particion"] == "REVISION"  # la base cacheada no se modifica
     cache_consultas.invalidar()
+
+
+def test_la_lectura_de_beto_no_deja_la_transaccion_abierta(dw, monkeypatch):
+    """Tras cargar los datos, el cálculo corre sin transacción abierta (antes bloqueaba TRUNCATE por minutos)."""
+    from models.dim_origen import DimOrigenDocumental
+    from models.staging_registro import StagingRegistroCrudo
+    from routers import dataops
+
+    dw.add(DimOrigenDocumental(id_documento=11, nombre_archivo="ARCA.xlsx", tipo_fuente="ACTA"))
+    dw.add(StagingRegistroCrudo(id_documento=11, texto_plano="NOMBRES: Ana | MÓDULO 1: 80"))
+    dw.commit()
+    docs = dw.query(DimOrigenDocumental).all()
+    en_transaccion = []
+    original = dataops.extract_entities_from_line
+
+    def _espiar(*a, **kw):
+        en_transaccion.append(dw.in_transaction())
+        return original(*a, **kw)
+    monkeypatch.setattr(dataops, "extract_entities_from_line", _espiar)
+    dataops._evaluar_documentos_lote(dw, docs, persistir_staging=False)
+    assert en_transaccion and not any(en_transaccion)

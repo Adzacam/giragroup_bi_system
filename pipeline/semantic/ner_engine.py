@@ -343,6 +343,7 @@ class BetoNEREngine:
                         end_char=end,
                         score=score,
                         origen="BETO_NER",
+                        fuente_resolucion="BETO",
                         metadata={"etiqueta_original": etiqueta}
                     )
                 )
@@ -390,10 +391,6 @@ class BetoNEREngine:
         if "evaluó" in der_raw or "evaluo" in der_raw or "calificó" in der_raw or "califico" in der_raw:
             return TipoEntidad.DOCENTE
 
-        # 4. Fallback si el nombre está en el catálogo de docentes
-        if self.gazetteer.es_docente_conocido(texto[start:end]):
-            return TipoEntidad.DOCENTE
-
         return TipoEntidad.ESTUDIANTE
 
 
@@ -413,6 +410,7 @@ class BetoNEREngine:
                     end_char=m.end(0),
                     score=0.99,
                     origen="REGEX_SEMANTICO",
+                    fuente_resolucion="REGEX",
                     metadata={"codigo_pos": m.group(1)}
                 )
             )
@@ -423,6 +421,10 @@ class BetoNEREngine:
             valor_nota = m.group(1)
             start_val = m.start(1)
             end_val = m.end(1)
+            # Aislamiento estricto: no capturar números de módulo, materias ni CI
+            contexto_izq = texto[max(0, start_val - 15):start_val].upper()
+            if any(w in contexto_izq for w in ["MODULO", "MÓDULO", "MATERIA", "-", "/", "C.I.", "CI"]):
+                continue
             try:
                 num = float(valor_nota.replace(",", "."))
                 if 0.0 < num <= 10.0:
@@ -437,6 +439,7 @@ class BetoNEREngine:
                             end_char=end_val,
                             score=0.98,
                             origen="REGEX_SEMANTICO",
+                            fuente_resolucion="REGEX",
                             metadata={"valor_numerico": num}
                         )
                     )
@@ -446,8 +449,11 @@ class BetoNEREngine:
 
         # Fallback sobre texto libre con regex de 1-2 dígitos si el texto menciona 'nota' o 'calificacion'
         if not encontro_nota and any(w in texto.lower() for w in ("nota", "calificaci", "puntaje")):
-            m_fb = re.search(r'\b([0-9]{1,2}(?:\.[0-9])?)\b', texto)
-            if m_fb:
+            for m_fb in re.finditer(r'([0-9]{1,2}(?:\.[0-9])?)', texto):
+                start_fb = m_fb.start(1)
+                contexto_izq = texto[max(0, start_fb - 15):start_fb].upper()
+                if any(w in contexto_izq for w in ["MODULO", "MÓDULO", "MATERIA", "-", "/", "CARNET", "C.I.", "CI"]):
+                    continue
                 try:
                     num_fb = float(m_fb.group(1))
                     if 0.0 < num_fb <= 10.0:
@@ -457,13 +463,15 @@ class BetoNEREngine:
                             EntidadExtraida(
                                 tipo=TipoEntidad.NOTA,
                                 valor=str(num_fb),
-                                start_char=m_fb.start(1),
+                                start_char=start_fb,
                                 end_char=m_fb.end(1),
                                 score=0.85,
                                 origen="REGEX_FALLBACK",
+                                fuente_resolucion="REGEX",
                                 metadata={"valor_numerico": num_fb}
                             )
                         )
+                        break
                 except ValueError:
                     pass
 
@@ -480,6 +488,7 @@ class BetoNEREngine:
                     end_char=end_val,
                     score=0.97,
                     origen="REGEX_SEMANTICO",
+                    fuente_resolucion="REGEX",
                     metadata={"moneda": "BOB"}
                 )
             )
@@ -496,7 +505,8 @@ class BetoNEREngine:
                     start_char=start_val,
                     end_char=end_val,
                     score=0.96,
-                    origen="REGEX_SEMANTICO"
+                    origen="REGEX_SEMANTICO",
+                    fuente_resolucion="CI_EXACTA"
                 )
             )
 
@@ -604,7 +614,10 @@ class BetoNEREngine:
             return []
 
         # Ordenar por posición inicial y longitud descendente
-        todas.sort(key=lambda e: (e.start_char, -(e.end_char - e.start_char), -e.score))
+        # Cascada Arquitectura B: Prioridad de fuentes estricta (CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO)
+        # BETO solo actúa sobre entidades no resueltas por las fuentes previas y nunca las sobrescribe.
+        prioridad_fuente = {"CI_EXACTA": 1, "ENCABEZADO": 2, "FUZZY": 3, "REGEX": 4, "BETO": 5}
+        todas.sort(key=lambda e: (prioridad_fuente.get(e.fuente_resolucion or "BETO", 5), e.start_char, -(e.end_char - e.start_char), -e.score))
 
         consolidadas: List[EntidadExtraida] = []
         for cand in todas:
