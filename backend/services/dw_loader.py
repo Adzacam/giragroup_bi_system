@@ -26,6 +26,10 @@ from models.dim_origen import DimOrigenDocumental
 from models.dim_categoria_financiera import DimCategoriaFinanciera
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
+from models.fact_costo_programa import FactCostoPrograma
+from models.bridge_modulo_docente import BridgeModuloDocente
+from models.fact_techo_convenio import FactTechoConvenio
+from models.log_inconsistencia import LogInconsistencia
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.catalogos import CatInstitucion
 from pipeline.config import NOTA_APROBACION
@@ -114,6 +118,58 @@ def calcular_tipo_alerta_financiera(cuotas_impagas: Optional[int]) -> str:
     return "NORMAL"
 
 
+# Títulos y grados que acompañan al nombre del docente ('Fabian Mendivil Mgr.', 'Lic. Ana Pérez'): no son parte
+# del nombre; sin quitarlos, la misma persona queda como dos docentes
+_TITULOS_GRADO = {
+    "MGR": "Magister", "MG": "Magister", "MSC": "Magister", "MAGISTER": "Magister", "MBA": "Magister",
+    "DR": "Doctor", "DRA": "Doctor", "PHD": "Doctor", "DOCTOR": "Doctor",
+    "LIC": "Licenciado", "LICDA": "Licenciado", "LICENCIADO": "Licenciado", "LICENCIADA": "Licenciado",
+    "ING": "Ingeniero", "INGENIERO": "Ingeniero", "INGENIERA": "Ingeniero",
+    "ARQ": "Arquitecto", "ABG": "Abogado", "ABOG": "Abogado",
+    "MGT": "Magister", "ESP": "Especialista", "ECO": "Economista", "AUD": "Auditor",
+    "CONT": "Contador", "CAP": "Capitan", "CNL": "Coronel", "MPM": "Magister", "INVITADO": None,
+}
+_RE_PARENTESIS = re.compile(r"\([^)]*\)")
+
+
+def separar_grado(nombre: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
+    """'Fabian Mendivil Mgr.' -> ('Fabian Mendivil', 'Magister'). Quita títulos al inicio o al final."""
+    if not nombre:
+        return nombre, None
+    # 'Ana Quiroz (La Paz)' -> 'Ana Quiroz'; 'A / B' (dos docentes) -> 'A'; 'Abog.Ing. X' -> 'Abog. Ing. X'
+    texto = _RE_PARENTESIS.sub(" ", nombre).split(" / ")[0]
+    texto = re.sub(r"\.(?=[A-Za-zÁÉÍÓÚÑáéíóúñ])", ". ", texto).replace(" - ", " ")
+    texto = re.sub(r"\bM\.?\s*Sc\b\.?", "MSc", texto, flags=re.I)
+    tokens = [t.strip(".,;:-\"'") for t in texto.replace(",", " ").split()]
+    tokens = [t for t in tokens if t]
+    grado = None
+
+    def _clave(t: str) -> str:
+        return t.replace(".", "").upper()
+
+    while tokens and _clave(tokens[0]) in _TITULOS_GRADO:
+        titulo = _TITULOS_GRADO[_clave(tokens.pop(0))]  # pop siempre, aunque ya haya grado
+        grado = grado or titulo
+    while tokens and _clave(tokens[-1]) in _TITULOS_GRADO:
+        titulo = _TITULOS_GRADO[_clave(tokens.pop())]
+        grado = grado or titulo
+    return (" ".join(tokens) or None), grado
+
+
+def es_nombre_persona(nombre: Optional[str]) -> bool:
+    """
+    Al menos dos palabras con letras ('Claudia Heredia'). Descarta valores que no son personas y que llegaban a
+    dim_docente desde columnas mal alineadas: una sola palabra ('AFEDES', 'España') o una tira de siglas en
+    mayúsculas ('CJA GEM EPC CPMGA IME'). Un nombre real en mayúsculas ('JUAN PEREZ') sí pasa.
+    """
+    palabras = [t for t in (nombre or "").split() if re.search(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}", t)]
+    if len(palabras) < 2:
+        return False
+    siglas = (len(palabras) >= 5 and all(t.isupper() for t in palabras)
+              and sum(len(t) for t in palabras) / len(palabras) <= 4)
+    return not siglas
+
+
 def _tokens_nombre(nombre: str) -> set:
     sin_tildes = "".join(c for c in unicodedata.normalize("NFD", nombre or "") if unicodedata.category(c) != "Mn")
     return set(sin_tildes.upper().split())
@@ -155,6 +211,11 @@ class DWLoaderService:
 
     def __init__(self, db: Session):
         self.db = db
+        # Memoria de una consolidación (una instancia por petición): con 100 mil filas, las mismas búsquedas
+        # de módulo, tiempo y docente se repetían decenas de miles de veces contra la base
+        self._modulo_por_pos: Dict[str, int] = {}
+        self._tiempos: set = set()
+        self._docente_por_modulo: Dict[int, Optional[int]] = {}
 
     def _resolver_id_institucion(self, institucion: Optional[str]) -> Optional[int]:
         if not institucion:
@@ -185,6 +246,12 @@ class DWLoaderService:
         fk_estado: 'A' (directo CI), 'B' (fuzzy rescatado/TEMP), 'C' (derivado a HITL/staging).
         Alineado por ci_numero normalizado, institución y detección de homonimia por programa.
         """
+        # Un "nombre" sin letras ('123456789 123456789') es un relleno de formulario, no una persona; y un CI de
+        # relleno (dígitos en secuencia o repetidos: '123456789', '0000000') no identifica a nadie.
+        if nombre and not re.search(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]", nombre):
+            nombre = None
+        if ci and re.sub(r"\D", "", ci) in ("123456789", "1234567", "12345678") or (ci and len(set(re.sub(r"\D", "", ci))) == 1):
+            ci = None
         if not ci and not nombre:
             return None, "C"
 
@@ -460,7 +527,11 @@ class DWLoaderService:
         if not nombre_docente or not nombre_docente.strip():
             return None
 
-        clean_nombre = nombre_docente.strip()
+        clean_nombre, grado = separar_grado(nombre_docente.strip())
+        # 'Lic. Gomez' es un docente aunque sea una sola palabra: el título lo marca como persona
+        con_titulo = bool(grado) and bool(re.fullmatch(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]{3,}", clean_nombre or ""))
+        if not clean_nombre or not (es_nombre_persona(clean_nombre) or con_titulo):
+            return None
         doc = self.db.query(DimDocente).filter(
             func.lower(DimDocente.nombre_completo) == clean_nombre.lower()
         ).first()
@@ -490,10 +561,24 @@ class DWLoaderService:
     ) -> Optional[int]:
         if not nombre_modulo and not pos_code:
             return None
+        nombre_limpio = (nombre_modulo or "").strip()
+        if "@" in nombre_limpio:
+            nombre_modulo = None  # un correo en la columna del módulo no es un módulo
+            if not pos_code:
+                return None
+        elif not pos_code:
+            # 'POS-5887' o '5077' sin código: el nombre ES el código del programa
+            m_pos = re.fullmatch(r"(?:POS[\s-]?)?(\d{4,5})(?:\.0)?", nombre_limpio, flags=re.I)
+            if m_pos:
+                pos_code = nombre_modulo = f"POS-{m_pos.group(1)}"
 
         if pos_code:
-            mod = self.db.query(DimModulo).filter(DimModulo.pos_code == pos_code.strip()).first()
+            clave_pos = pos_code.strip()
+            if clave_pos in self._modulo_por_pos:
+                return self._modulo_por_pos[clave_pos]
+            mod = self.db.query(DimModulo).filter(DimModulo.pos_code == clave_pos).first()
             if mod:
+                self._modulo_por_pos[clave_pos] = mod.id_modulo
                 return mod.id_modulo
             if nombre_modulo:
                 # El código POS es autoritativo: sin él, el fuzzy fusionaba 'POS-X · Módulo 1' con 'Módulo 2'
@@ -506,6 +591,7 @@ class DWLoaderService:
                 )
                 self.db.add(nuevo_mod)
                 self.db.flush()
+                self._modulo_por_pos[clave_pos] = nuevo_mod.id_modulo
                 return nuevo_mod.id_modulo
 
         if nombre_modulo:
@@ -536,6 +622,134 @@ class DWLoaderService:
 
         return None
 
+    def _docente_unico_del_modulo(self, id_modulo: Optional[int]) -> Optional[int]:
+        """
+        Docente de un módulo: el de bridge_modulo_docente (hoja MODULOS) si hay uno solo, o el único TITULAR si hay
+        varios; si no, el de los hechos académicos ya cargados. None si no se sabe o es ambiguo.
+        """
+        if not id_modulo:
+            return None
+        if id_modulo in self._docente_por_modulo:
+            return self._docente_por_modulo[id_modulo]
+        asignados = self.db.query(BridgeModuloDocente.id_docente, BridgeModuloDocente.tipo_docente).filter(
+            BridgeModuloDocente.id_modulo == id_modulo
+        ).all()
+        # La memoria se borra al cargar una asignación nueva (_cargar_asignacion_docente)
+        if len(asignados) == 1:
+            self._docente_por_modulo[id_modulo] = asignados[0][0]
+            return asignados[0][0]
+        titulares = [d for d, t in asignados if (t or "").upper().startswith("TITULAR")]
+        if len(titulares) == 1:
+            self._docente_por_modulo[id_modulo] = titulares[0]
+            return titulares[0]
+        if asignados:
+            self._docente_por_modulo[id_modulo] = None
+            return None  # varios docentes sin un titular claro: no se adivina
+        ids = [
+            r[0] for r in self.db.query(FactRendimientoAcademico.id_docente)
+            .filter(FactRendimientoAcademico.id_modulo == id_modulo, FactRendimientoAcademico.id_docente.isnot(None))
+            .distinct().limit(2).all()
+        ]
+        # También se memoriza: el docente de los hechos no cambia salvo por una asignación nueva (que borra la memoria)
+        self._docente_por_modulo[id_modulo] = ids[0] if len(ids) == 1 else None
+        return self._docente_por_modulo[id_modulo]
+
+    def _cargar_asignacion_docente(self, resoluciones, nombre_docente, pos_code, doc_id, institucion) -> Dict[str, Any]:
+        """
+        Registra qué docente dictó el módulo POS-XXXX-MNN (idempotente) y completa el docente de las notas y
+        evaluaciones de ese módulo que se cargaron antes sin él.
+        """
+        if not pos_code or not nombre_docente:
+            return {"tipo": "asignacion_docente", "status": "staged", "motivo": "Asignación sin POS o sin docente"}
+        self._docente_por_modulo.clear()  # la asignación nueva puede cambiar el docente único de un módulo
+        nombre_real = resoluciones.get("nombre_modulo_real")
+        id_mod = self.resolver_o_crear_modulo(
+            nombre_real or f"{pos_code}", pos_code=pos_code, doc_id=doc_id, institucion=institucion,
+            programa=pos_code.rsplit("-M", 1)[0],
+        )
+        mod = self.db.query(DimModulo).get(id_mod)
+        if mod and nombre_real and "· Módulo" in (mod.nombre_modulo or ""):
+            mod.nombre_modulo = nombre_real[:200]  # el acta lo creó con un nombre provisional
+        id_doc = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id)
+        _, grado = separar_grado(nombre_docente)
+
+        asig = self.db.query(BridgeModuloDocente).filter_by(id_modulo=id_mod, id_docente=id_doc).first()
+        if asig is None:
+            asig = BridgeModuloDocente(id_modulo=id_mod, id_docente=id_doc)
+            self.db.add(asig)
+        asig.id_documento = doc_id
+        asig.tipo_docente = resoluciones.get("tipo_docente") or asig.tipo_docente
+        asig.grado_academico = grado or asig.grado_academico
+        for campo in ("horas_modulo", "pago_docente", "fecha_inicio", "fecha_fin"):
+            if resoluciones.get(campo) is not None:
+                setattr(asig, campo, resoluciones[campo])
+        self.db.flush()
+
+        # Notas y evaluaciones del módulo que llegaron antes que esta hoja: ahora se sabe su docente
+        completadas = {"notas": 0, "evaluaciones": 0}
+        id_doc_modulo = self._docente_unico_del_modulo(id_mod)
+        if id_doc_modulo:
+            completadas["notas"] = self.db.query(FactRendimientoAcademico).filter(
+                FactRendimientoAcademico.id_modulo == id_mod, FactRendimientoAcademico.id_docente.is_(None)
+            ).update({FactRendimientoAcademico.id_docente: id_doc_modulo}, synchronize_session=False)
+            if FactEvaluacionDocente is not None:
+                completadas["evaluaciones"] = self.db.query(FactEvaluacionDocente).filter(
+                    FactEvaluacionDocente.id_modulo == id_mod,
+                    FactEvaluacionDocente.id_docente.is_(None),
+                    FactEvaluacionDocente.tipo_pregunta == "DOCENTE",
+                ).update({FactEvaluacionDocente.id_docente: id_doc_modulo}, synchronize_session=False)
+        return {
+            "tipo": "asignacion_docente",
+            "status": "loaded",
+            "id_modulo": id_mod,
+            "id_docente": id_doc,
+            "pos_code": pos_code,
+            **{f"{k}_completadas": v for k, v in completadas.items()},
+        }
+
+    def _cargar_techo_convenio(self, resoluciones, nombre_modulo, nombre_programa, pos_code, doc_id, institucion,
+                               id_tiempo, calidad) -> Dict[str, Any]:
+        """Fila de convenio de un programa con una institución; idempotente por clave_convenio."""
+        from services.instituciones_convenio import canonizar_institucion
+
+        if not pos_code or not resoluciones.get("institucion_cliente"):
+            return {"tipo": "techo_convenio", "status": "staged", "motivo": "Convenio sin POS o sin institución"}
+        id_mod = self.resolver_o_crear_modulo(
+            nombre_modulo or pos_code, pos_code=pos_code, doc_id=doc_id, institucion=institucion,
+            programa=nombre_programa,
+        )
+        existentes = [n for (n,) in self.db.query(FactTechoConvenio.institucion).distinct().all()]
+        canon, id_conv, score = canonizar_institucion(resoluciones["institucion_cliente"], existentes)
+        fecha_ini = resoluciones.get("fecha_inicio")
+        # Fila repetida tal cual -> mismo hecho; otro pago del mismo convenio (otro monto) -> otro hecho
+        import hashlib
+        clave = hashlib.sha1("|".join(str(x) for x in (
+            pos_code, canon.upper(), fecha_ini, resoluciones.get("monto_convenio"), resoluciones.get("n_inscritos"),
+        )).encode("utf-8")).hexdigest()
+
+        hecho = self.db.query(FactTechoConvenio).filter(FactTechoConvenio.clave_convenio == clave).first()
+        if hecho is None:
+            hecho = FactTechoConvenio(clave_convenio=clave, id_modulo=id_mod, institucion=canon, fecha_inicio=fecha_ini)
+            self.db.add(hecho)
+        hecho.id_convenio_catalogo = id_conv
+        hecho.id_tiempo = id_tiempo
+        hecho.id_documento = doc_id
+        for campo in ("monto_convenio", "n_inscritos", "gestion", "fecha_fin"):
+            setattr(hecho, campo, resoluciones.get(campo))
+        motivos = [m for m in (resoluciones.get("motivo_techo"),) if m]
+        if score < 100.0:
+            motivos.append(f"INSTITUCION_FUZZY: '{resoluciones['institucion_cliente']}' -> '{canon}' ({score:.0f})")
+        hecho.requiere_revision = bool(resoluciones.get("motivo_techo")) or bool(calidad.get("requiere_revision"))
+        hecho.motivo_revision = ("; ".join(motivos) or None) and "; ".join(motivos)[:300]
+        self.db.flush()
+        return {
+            "tipo": "techo_convenio",
+            "status": "loaded",
+            "id_hecho": hecho.id_hecho_techo,
+            "institucion": canon,
+            "monto_convenio": resoluciones.get("monto_convenio"),
+        }
+
     # ── 4. Resolución DimTiempo ──────────────────────────────────────────────
     def resolver_o_crear_tiempo(self, fecha_val: Optional[Any] = None) -> Optional[int]:
         """
@@ -549,8 +763,11 @@ class DWLoaderService:
             return None
         id_tiempo = int(f"{f.year}{f.month:02d}{f.day:02d}")
 
+        if id_tiempo in self._tiempos:
+            return id_tiempo
         t_existente = self.db.query(DimTiempo).filter(DimTiempo.id_tiempo == id_tiempo).first()
         if t_existente:
+            self._tiempos.add(id_tiempo)
             return t_existente.id_tiempo
 
         iso = f.isocalendar()
@@ -570,6 +787,7 @@ class DWLoaderService:
             periodo_mes=f"{f.year}-{f.month:02d}",
         ))
         self.db.flush()
+        self._tiempos.add(id_tiempo)
         return id_tiempo
 
     # ── 5. Carga de un Registro Procesado Individual ─────────────────────────
@@ -701,7 +919,10 @@ class DWLoaderService:
             monto_pagado = float(resoluciones.get("monto_pagado") or 0.0)
             concepto = resoluciones.get("concepto") or resoluciones.get("concepto_financiero")
             cuotas_impagas = int(resoluciones.get("cuotas_impagas") or 0)
-            estado_cartera = resoluciones.get("estado_cartera") or ("En Mora" if cuotas_impagas > 0 else "Vigente")
+            estado_cartera = resoluciones.get("estado_cartera") or ("Mora" if cuotas_impagas > 0 else "Vigente")
+            # Nombre canónico de config.ESTADOS_CARTERA_VALIDOS ("En mora", "EN MORA" -> "Mora").
+            if "MORA" in str(estado_cartera).upper():
+                estado_cartera = "Mora"
             tipo_alerta_fin = calcular_tipo_alerta_financiera(cuotas_impagas)
 
             if not id_est:
@@ -767,35 +988,99 @@ class DWLoaderService:
                 "fk_estado": fk_estado_est
             }
 
-        # 3c. Ruteo EVALUACION_DOCENTE -> FactEvaluacionDocente
+        # 3c. Ruteo EVALUACION_DOCENTE -> FactEvaluacionDocente (una fila por respuesta)
         if categoria == "evaluacion_docente" and FactEvaluacionDocente:
-            id_doc_eval = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id)
+            puntuacion_raw = resoluciones.get("puntuacion")
+            if puntuacion_raw is None:
+                puntuacion_raw = resoluciones.get("rating")
+            puntuacion = float(puntuacion_raw) if puntuacion_raw is not None else None
+            escala_max = resoluciones.get("escala_max") or (5 if puntuacion is not None else None)
+            comentario = resoluciones.get("comentario")
+            comentario_str = str(comentario)[:1000] if comentario else None
+            if puntuacion is None and not comentario_str:
+                # Sin puntaje ni comentario no hay respuesta que guardar: nunca un 5.0 de relleno
+                return {"tipo": "evaluacion_docente", "status": "skipped", "motivo": "RESPUESTA_VACIA"}
+            pregunta = str(resoluciones.get("pregunta_bloque") or resoluciones.get("criterio") or "Evaluación de desempeño docente")[:500]
+            tipo_preg = resoluciones.get("tipo_pregunta") or "DOCENTE"
+
             id_mod_eval = self.resolver_o_crear_modulo(
                 nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
             ) or self.resolver_o_crear_modulo("Módulo General", pos_code="MOD-GEN", institucion=institucion)
+            id_doc_eval = None
+            if tipo_preg == "DOCENTE":  # plataforma, atención y NPS no son del docente
+                id_doc_eval = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id) \
+                    or self._docente_unico_del_modulo(id_mod_eval)
+            if resoluciones.get("anonima") or not (ci_est or nombre_est):
+                id_est = None  # respuesta anónima: sin estudiante, no se crea uno ficticio
 
-            puntuacion = float(resoluciones.get("puntuacion") or resoluciones.get("rating") or 5.0)
-            pregunta = str(resoluciones.get("pregunta_bloque") or resoluciones.get("criterio") or "Evaluación de desempeño docente")[:500]
-            comentario = resoluciones.get("comentario")
-            comentario_str = str(comentario)[:1000] if comentario else None
-
-            nuevo_eval = FactEvaluacionDocente(
+            clave = resoluciones.get("clave_respuesta")
+            existente_eval = self.db.query(FactEvaluacionDocente).filter(
+                FactEvaluacionDocente.clave_respuesta == clave
+            ).first() if clave else None
+            valores = dict(
                 id_docente=id_doc_eval,
                 id_modulo=id_mod_eval,
                 id_estudiante=id_est,
                 id_tiempo=id_tiempo,
                 pregunta_bloque=pregunta,
+                tipo_pregunta=tipo_preg,
                 puntuacion=puntuacion,
-                comentario=comentario_str
+                escala_max=escala_max,
+                comentario=comentario_str,
             )
-            self.db.add(nuevo_eval)
+            if existente_eval:  # mismo archivo subido otra vez: se actualiza, no se duplica
+                for k, v in valores.items():
+                    setattr(existente_eval, k, v)
+                hecho_eval = existente_eval
+            else:
+                hecho_eval = FactEvaluacionDocente(clave_respuesta=clave, **valores)
+                self.db.add(hecho_eval)
             self.db.flush()
             return {
                 "tipo": "evaluacion_docente",
                 "status": "loaded",
-                "id_hecho": nuevo_eval.id_hecho_eval,
+                "id_hecho": hecho_eval.id_hecho_eval,
                 "id_docente": id_doc_eval,
-                "puntuacion": puntuacion
+                "puntuacion": puntuacion,
+                "escala_max": escala_max,
+            }
+
+        # 3d''. Ruteo CONVENIO / TECHO -> FactTechoConvenio (institución cliente canónica)
+        # Por contenido de la fila, no por cómo se clasificó el documento (BD Techos puede llegar como MARKETING)
+        if resoluciones.get("techo_convenio"):
+            return self._cargar_techo_convenio(resoluciones, nombre_modulo, nombre_programa, pos_code, doc_id,
+                                               institucion, id_tiempo, calidad)
+
+        # 3d'. Ruteo COSTO POR PROGRAMA -> FactCostoPrograma (egreso/ingreso/rentabilidad de un POS)
+        if resoluciones.get("costo_programa"):
+            if not pos_code:
+                return {"tipo": "costo_programa", "status": "staged", "motivo": "Fila de costos sin POS"}
+            id_mod_costo = self.resolver_o_crear_modulo(
+                nombre_modulo or pos_code, pos_code=pos_code, doc_id=doc_id, institucion=institucion,
+                programa=nombre_programa,
+            )
+            motivo_costo = resoluciones.get("motivo_costo")
+            valores = {
+                k: (float(resoluciones[k]) if resoluciones.get(k) is not None else None)
+                for k in ("egreso_anterior", "egreso_real", "ingreso", "rentabilidad")
+            }
+            hecho_costo = self.db.query(FactCostoPrograma).filter(FactCostoPrograma.id_modulo == id_mod_costo).first()
+            if hecho_costo is None:
+                hecho_costo = FactCostoPrograma(id_modulo=id_mod_costo)
+                self.db.add(hecho_costo)
+            for k, v in valores.items():  # recargar el libro actualiza, no duplica
+                setattr(hecho_costo, k, v)
+            hecho_costo.id_documento = doc_id
+            # Los costos por POS no tienen fecha: no se marca revisión por falta de id_tiempo
+            hecho_costo.requiere_revision = bool(motivo_costo) or bool(calidad.get("requiere_revision"))
+            hecho_costo.motivo_revision = (motivo_costo or "")[:300] or None
+            self.db.flush()
+            return {
+                "tipo": "costo_programa",
+                "status": "loaded",
+                "id_hecho": hecho_costo.id_hecho_costo,
+                "pos_code": pos_code,
+                **valores,
             }
 
         # 3d. Ruteo RENTABILIDAD -> FactRentabilidad
@@ -832,7 +1117,28 @@ class DWLoaderService:
             ).first()
 
             if existente_rent:
-                # Misma categoría y mes: el valor nuevo reemplaza al anterior (recargar el libro no duplica montos)
+                # Misma categoría y mes: el valor nuevo reemplaza al anterior (recargar el libro no duplica montos).
+                # Si otra fuente ya había cargado otra cifra para ese mes, queda registrado para revisión.
+                for campo, nuevo in (("monto_ejecutado", m_ejec), ("monto_meta", m_meta)):
+                    previo = getattr(existente_rent, campo)
+                    if nuevo == 0 and previo not in (None, 0):
+                        # Un 0 de otra fuente es un mes aún no ejecutado, no una cifra: no pisa el monto real
+                        if campo == "monto_ejecutado":
+                            m_ejec = None
+                        else:
+                            m_meta = None
+                        nuevo = None
+                    if nuevo is not None and previo not in (None, 0) and abs(float(previo) - nuevo) > max(1.0, 0.01 * abs(float(previo))):
+                        self.db.add(LogInconsistencia(
+                            id_documento=doc_id,
+                            campo_afectado=f"fact_rentabilidad.{campo}",
+                            valor_recibido=str(nuevo),
+                            valor_esperado=str(previo),
+                            tipo_regla="CONFLICTO_FUENTES",
+                            severidad="MEDIA",
+                            estado_resolucion="PENDIENTE",
+                            descripcion=f"{cat_nom} id_tiempo={id_tiempo}: la fuente nueva reemplaza {previo} por {nuevo}",
+                        ))
                 if m_ejec is not None:
                     existente_rent.monto_ejecutado = m_ejec
                 if m_meta is not None:
@@ -850,8 +1156,8 @@ class DWLoaderService:
                     id_modulo=id_mod_rent,
                     id_tiempo=id_tiempo,
                     id_categoria=id_cat,
-                    monto_ejecutado=m_ejec or 0.0,
-                    monto_meta=m_meta or 0.0
+                    monto_ejecutado=m_ejec,  # mes solo con meta (2026): ejecutado vacío, no 0 inventado
+                    monto_meta=m_meta
                 )
                 self.db.add(nuevo_rent)
                 self.db.flush()
@@ -911,6 +1217,10 @@ class DWLoaderService:
                     "inscritos": inscritos
                 }
 
+        # 3f'. Asignación docente-módulo (hoja MODULOS) -> dim_modulo + bridge_modulo_docente
+        if resoluciones.get("asignacion_docente"):
+            return self._cargar_asignacion_docente(resoluciones, nombre_docente, pos_code, doc_id, institucion)
+
         # 3f. Ruteo ACTA / MOODLE -> FactRendimientoAcademico
         id_doc = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id)
         id_mod = self.resolver_o_crear_modulo(
@@ -928,6 +1238,8 @@ class DWLoaderService:
         if not id_mod:
             id_mod = self.resolver_o_crear_modulo("Módulo General", pos_code="MOD-GEN", institucion=institucion)
             requiere_rev = True  # sin módulo identificado
+        if not id_doc:
+            id_doc = self._docente_unico_del_modulo(id_mod)  # el acta no nombra al docente; la hoja MODULOS sí
 
         nota_raw = resoluciones.get("nota_final")
         if resoluciones.get("nota_ya_normalizada"):
@@ -947,7 +1259,14 @@ class DWLoaderService:
 
         asistencia = _pct_valido(resoluciones.get("asistencia_pct"))
         incumplimiento = _pct_valido(resoluciones.get("incumplimiento_actividades_pct")) or 0.00
-        estado_aca = "Aprobado" if (nota is not None and float(nota) >= NOTA_APROBACION) else "Reprobado" if nota is not None else "En Curso"
+        # El estado del acta (Participó, Deserción, En curso…) manda; solo sin estado en la fuente se deduce de la nota
+        estado_aca = resoluciones.get("estado_academico") or (
+            "Aprobado" if (nota is not None and float(nota) >= NOTA_APROBACION) else "Reprobado" if nota is not None else "En curso"
+        )
+        estado_tut = resoluciones.get("estado_tutoria")
+        estado_arca = resoluciones.get("estado_arca")
+        if resoluciones.get("estado_motivo"):
+            requiere_rev = True  # estado fuera de catálogo o combinación no admitida por CRITERIOS
         tipo_alerta_aca = (
             "RIESGO_CRITICO" if (nota is not None and float(nota) < 51.0)
             else "RIESGO_ACADEMICO" if (nota is not None and float(nota) <= 70.0)
@@ -967,6 +1286,8 @@ class DWLoaderService:
             existente.requiere_revision = requiere_rev or (fk_estado_est == "C")
             existente.fk_estado = fk_estado_est
             existente.estado_academico = estado_aca
+            existente.estado_tutoria = estado_tut
+            existente.estado_arca = estado_arca
             existente.tipo_alerta = tipo_alerta_aca
             if id_doc:
                 existente.id_docente = id_doc
@@ -988,6 +1309,8 @@ class DWLoaderService:
                 requiere_revision=requiere_rev or (fk_estado_est == "C"),
                 fk_estado=fk_estado_est,
                 estado_academico=estado_aca,
+                estado_tutoria=estado_tut,
+                estado_arca=estado_arca,
                 tipo_alerta=tipo_alerta_aca
             )
             self.db.add(nuevo_hecho)
@@ -1003,6 +1326,8 @@ class DWLoaderService:
             "id_docente": id_doc,
             "nota_normalizada": nota,
             "tipo_alerta": tipo_alerta_aca,
+            "estado_academico": estado_aca,
+            "estado_motivo": resoluciones.get("estado_motivo"),
             "fk_estado": fk_estado_est
         }
 

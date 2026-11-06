@@ -146,7 +146,7 @@ class KPIService:
                 FactSituacionFinanciera.estado_cartera == "Previsionable"
             ).scalar() or 0
             mora = self.db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).filter(
-                FactSituacionFinanciera.estado_cartera == "Mora"
+                FactSituacionFinanciera.estado_cartera.in_(("Mora", "En Mora"))
             ).scalar() or 0
             vigente = self.db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).filter(
                 FactSituacionFinanciera.estado_cartera == "Vigente"
@@ -158,7 +158,7 @@ class KPIService:
                 func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.cuotas_impagas > 0).label("con_mora"),
                 func.sum(FactSituacionFinanciera.cuotas_impagas).label("sum_cuotas"),
                 func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera == "Previsionable").label("previsionable"),
-                func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera == "Mora").label("mora"),
+                func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera.in_(("Mora", "En Mora"))).label("mora"),
                 func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera == "Vigente").label("vigente"),
             )
             if gestion_filtro:
@@ -865,3 +865,57 @@ class KPIService:
                 "aprendizaje_crecimiento": perspectiva_aprendizaje
             }
         }
+
+
+def costos_por_programa(db: Session, programa: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    Egreso, ingreso y rentabilidad por programa (fact_costo_programa, BD Egresos y similares).
+    Un programa reúne sus series/módulos: 'POS-5377-M01' y 'POS-5377' suman en 'POS-5377'.
+    """
+    from models.fact_costo_programa import FactCostoPrograma
+    pos_programa = func.substring(DimModulo.pos_code, r"^(POS-\d+)")
+    q = db.query(
+        pos_programa.label("pos"),
+        func.max(func.coalesce(func.nullif(DimModulo.programa, ""), DimModulo.nombre_modulo)).label("programa"),
+        func.count(FactCostoPrograma.id_hecho_costo).label("n_series"),
+        func.sum(FactCostoPrograma.ingreso).label("ingreso"),
+        func.sum(FactCostoPrograma.egreso_real).label("egreso"),
+        func.sum(FactCostoPrograma.rentabilidad).label("rentabilidad"),
+        func.count(FactCostoPrograma.id_hecho_costo).filter(FactCostoPrograma.requiere_revision.is_(True)).label("en_revision"),
+    ).join(DimModulo, DimModulo.id_modulo == FactCostoPrograma.id_modulo)
+    if programa:
+        q = q.filter(or_(DimModulo.pos_code.ilike(f"%{programa}%"), DimModulo.programa.ilike(f"%{programa}%")))
+    filas = q.group_by(pos_programa).order_by(func.sum(FactCostoPrograma.rentabilidad).desc().nullslast()).all()
+
+    def _f(v):
+        return round(float(v), 2) if v is not None else None
+
+    return [{
+        "pos": f.pos, "programa": f.programa, "n_series": f.n_series, "ingreso_bs": _f(f.ingreso),
+        "egreso_bs": _f(f.egreso), "rentabilidad_bs": _f(f.rentabilidad),
+        "margen_pct": round(float(f.rentabilidad) / float(f.ingreso) * 100, 1) if f.ingreso and f.rentabilidad is not None else None,
+        "en_revision": f.en_revision,
+    } for f in filas]
+
+
+def techos_por_institucion(db: Session, gestion: Optional[int] = None) -> List[Dict[str, Any]]:
+    """Convenios (techos) por institución cliente: programas, inscritos y monto (fact_techo_convenio)."""
+    from models.fact_techo_convenio import FactTechoConvenio
+    q = db.query(
+        FactTechoConvenio.institucion,
+        func.count(FactTechoConvenio.id_hecho_techo).label("n_convenios"),
+        func.count(func.distinct(FactTechoConvenio.id_modulo)).label("n_programas"),
+        func.sum(FactTechoConvenio.n_inscritos).label("inscritos"),
+        func.sum(FactTechoConvenio.monto_convenio).label("monto"),
+        func.min(FactTechoConvenio.gestion).label("desde"),
+        func.max(FactTechoConvenio.gestion).label("hasta"),
+        func.count(FactTechoConvenio.id_hecho_techo).filter(FactTechoConvenio.requiere_revision.is_(True)).label("en_revision"),
+    )
+    if gestion:
+        q = q.filter(FactTechoConvenio.gestion == gestion)
+    filas = q.group_by(FactTechoConvenio.institucion).order_by(func.sum(FactTechoConvenio.monto_convenio).desc().nullslast()).all()
+    return [{
+        "institucion": f.institucion, "n_convenios": f.n_convenios, "n_programas": f.n_programas,
+        "inscritos": int(f.inscritos or 0), "monto_bs": round(float(f.monto or 0), 2),
+        "gestion_desde": f.desde, "gestion_hasta": f.hasta, "en_revision": f.en_revision,
+    } for f in filas]

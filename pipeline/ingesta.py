@@ -457,6 +457,29 @@ def _contiene_tokens(texto: str, palabras_o_frases: tuple[str, ...]) -> bool:
     return False
 
 
+_RE_LIKERT = re.compile(
+    r"^\s*(\d{1,2}\s*[/\-.]\s*)?(totalmente|muy|parcialmente)?\s*(de acuerdo|en desacuerdo|desacuerdo|neutral|indiferente)\s*$",
+    re.IGNORECASE,
+)
+
+
+def es_encuesta_likert(df: pd.DataFrame, max_filas: int = 40) -> bool:
+    """
+    Bloque de encuesta: varias cabeceras en forma de pregunta/afirmación a calificar y respuestas Likert
+    ('5/Totalmente de acuerdo', 'Muy de acuerdo', 'Neutral'). Decide por contenido, no por el nombre del archivo
+    o de la hoja, y prevalece sobre el tipo de documento: un libro 'ACTA' puede traer hojas de evaluación docente.
+    """
+    if df is None or df.empty:
+        return False
+    muestra = df.iloc[:max_filas]
+    textos = [str(v).strip() for v in muestra.values.flatten() if pd.notna(v) and str(v).strip()]
+    textos += [str(c).strip() for c in df.columns if not str(c).lower().startswith(("unnamed", "col_"))]
+    preguntas = sum(1 for t in set(textos) if len(t) > 25 and ("?" in t or "califique" in t.lower()
+                                                             or t.lower().startswith(("el/la ", "la/el ", "el docente", "los/las "))))
+    likert = sum(1 for t in textos if _RE_LIKERT.match(t))
+    return preguntas >= 3 and likert >= max(5, int(0.15 * len(textos)))
+
+
 def clasificar_contenido_agnostico(
     df: pd.DataFrame,
     cabeceras: Optional[List[str]] = None
@@ -479,6 +502,16 @@ def clasificar_contenido_agnostico(
             "confidence": 0.0,
             "scores": {},
             "criterios": []
+        }
+
+    if es_encuesta_likert(df):
+        return {
+            "categoria": "evaluacion_docente",
+            "fact_table": "fact_evaluacion_docente",
+            "tipo_fuente": "EVALUACION_DOCENTE",
+            "confidence": 0.95,
+            "scores": {"evaluacion_docente": 19.0},
+            "criterios": ["Preguntas a calificar con respuestas Likert"],
         }
 
     tokens_cabecera: List[str] = []

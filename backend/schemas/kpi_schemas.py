@@ -10,9 +10,9 @@ from pydantic import BaseModel, ConfigDict
 
 
 class KpisAcademicos(BaseModel):
-    promedio_general_notas: float
-    tasa_aprobacion_pct: float
-    tasa_reprobacion_pct: float
+    promedio_general_notas: Optional[float] = None
+    tasa_aprobacion_pct: Optional[float] = None
+    tasa_reprobacion_pct: Optional[float] = None
     estudiantes_en_riesgo_academico: int
     estudiantes_en_riesgo_desercion: int
     total_evaluaciones_registradas: int
@@ -21,7 +21,7 @@ class KpisAcademicos(BaseModel):
 
 
 class KpisFinancieros(BaseModel):
-    monto_total_deuda_bs: float
+    monto_total_deuda_bs: Optional[float] = None
     estudiantes_con_cuotas_impagas: int
     total_cuotas_impagas: int
     estudiantes_cartera_previsionable: int
@@ -33,10 +33,10 @@ class KpisFinancieros(BaseModel):
 
 class KpisPipelineCalidad(BaseModel):
     total_documentos_procesados: int
-    promedio_confianza_ia: float
+    promedio_confianza_ia: Optional[float] = None
     registros_requieren_revision: int
     entidades_no_resueltas_staging: int
-    tasa_calidad_nlp_pct: float
+    tasa_calidad_nlp_pct: Optional[float] = None
 
     model_config = ConfigDict(from_attributes=True)
 

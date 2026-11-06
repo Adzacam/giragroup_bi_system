@@ -216,22 +216,72 @@ def get_instituciones(
 
 @router.get(
     "/catalogs/institutional-summary",
-    summary="Resumen del Catálogo Maestro Institucional Estático (18 Programas Activos, Cero PII)"
+    summary="Resumen del Catálogo Maestro Institucional (giragroup_catalog_db, Cero PII)"
 )
 def get_institutional_summary(
+    catalog_db: Session = Depends(get_catalog_db),
     current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "ADMIN", "COORDINADOR_ACADEMICO", "ANALISTA_DATOS_MARKETING", "ANALISTA_MARKETING"]))
 ):
     """
-    Retorna el resumen del Catálogo Maestro Institucional Estático de GiraGroup BI:
-    - 18 programas canónicos activos
-    - Aranceles base (precios de referencia)
-    - Módulos curriculares y puntos de equilibrio
-    - Convenios y metas presupuestarias
-    - Garantía estricta de Cero PII (sin datos de estudiantes).
+    Resumen del Catálogo Maestro leído de giragroup_catalog_db (programas, inversión base, convenios,
+    módulos, punto de equilibrio y metas de la última gestión registrada).
+    Sin datos en el catálogo devuelve listas vacías; no contiene datos de estudiantes.
     """
-    from pipeline.normalization.catalog_repository import obtener_catalogo_repositorio
-    repo = obtener_catalogo_repositorio()
-    return repo.obtener_resumen_institucional()
+    from sqlalchemy import text as _sql
+
+    programas_rows = catalog_db.execute(_sql("""
+        SELECT p.id_programa, p.pos_code, p.nombre_programa, p.version, p.inversion_base,
+               p.punto_equilibrio, p.estado_programa, e.nombre_escuela, m.nombre_modalidad, t.nombre_tipo,
+               COUNT(mo.id_modulo) AS modulos_count,
+               (ARRAY_AGG(mo.nombre_modulo ORDER BY mo.nro_modulo)
+                  FILTER (WHERE mo.id_modulo IS NOT NULL))[1:3] AS modulos_clave
+        FROM cat_programa p
+        LEFT JOIN cat_escuela e ON e.id_escuela = p.id_escuela
+        LEFT JOIN cat_modalidad m ON m.id_modalidad = p.id_modalidad
+        LEFT JOIN cat_tipo_programa t ON t.id_tipo_programa = p.id_tipo_programa
+        LEFT JOIN cat_modulo mo ON mo.id_programa = p.id_programa
+        GROUP BY p.id_programa, e.nombre_escuela, m.nombre_modalidad, t.nombre_tipo
+        ORDER BY p.nombre_programa
+    """)).mappings().all()
+
+    programas = [{
+        "pos_code": r["pos_code"],
+        "nombre": r["nombre_programa"],
+        "version": r["version"],
+        "tipo": r["nombre_tipo"],
+        "arancel_base_bs": float(r["inversion_base"]) if r["inversion_base"] else None,
+        "escuela": r["nombre_escuela"],
+        "modalidad": r["nombre_modalidad"],
+        "modulos_count": int(r["modulos_count"]),
+        "punto_equilibrio": r["punto_equilibrio"] or None,
+        "estado_programa": r["estado_programa"],
+        "modulos_clave": list(r["modulos_clave"] or []),
+    } for r in programas_rows]
+
+    meta = catalog_db.execute(_sql("""
+        SELECT gestion, SUM(monto_meta_ingreso)::float AS meta_anual_bs
+        FROM ref_metas_gestion
+        WHERE gestion = (SELECT MAX(gestion) FROM ref_metas_gestion)
+        GROUP BY gestion
+    """)).mappings().first()
+
+    equilibrios = [p["punto_equilibrio"] for p in programas if p["punto_equilibrio"]]
+    return {
+        "status": "success",
+        "origen": "giragroup_catalog_db",
+        "total_programas": len(programas),
+        "total_programas_activos": sum(1 for p in programas if "BAJA" not in (p["estado_programa"] or "").upper()),
+        "sin_pii": True,
+        "contiene_pii": False,
+        "programas": programas,
+        "modulos_activos_total": sum(p["modulos_count"] for p in programas),
+        "convenios_activos_total": catalog_db.execute(_sql("SELECT count(*) FROM cat_institucion_convenio")).scalar(),
+        "metas_presupuestarias": {
+            "gestion": meta["gestion"] if meta else None,
+            "meta_anual_bs": meta["meta_anual_bs"] if meta else None,
+            "punto_equilibrio_promedio_alumnos": round(sum(equilibrios) / len(equilibrios)) if equilibrios else None,
+        },
+    }
 
 
 # ── Catálogos Maestros Financieros con Soporte Histórico ──────────────
@@ -420,3 +470,93 @@ def detect_financial_anomalies(
         "requiere_revision": len(anomalias) > 0
     }
 
+
+
+# ── Combinaciones válidas de estados de acta (hoja CRITERIOS) ─────────────────
+from pydantic import BaseModel, Field  # noqa: E402
+
+
+class CombinacionEstadoIn(BaseModel):
+    estado_academico: str = Field(..., max_length=100)
+    estado_reprobado: str = Field(..., max_length=100, description="Estado reprobado / tutoría")
+    estado_arca: str = Field(..., max_length=100)
+
+
+def _combinaciones(catalog_db: Session):
+    from models.catalogos import CatCombinacionEstado, CatEstadoAcademico, CatEstadoArca, CatEstadoReprobado
+    return (
+        catalog_db.query(CatCombinacionEstado, CatEstadoAcademico.nombre_estado, CatEstadoReprobado.nombre_detalle,
+                         CatEstadoArca.nombre_arca)
+        .join(CatEstadoAcademico, CatEstadoAcademico.id_estado_academico == CatCombinacionEstado.id_estado_academico)
+        .join(CatEstadoReprobado, CatEstadoReprobado.id_estado_reprobado == CatCombinacionEstado.id_estado_reprobado)
+        .join(CatEstadoArca, CatEstadoArca.id_estado_arca == CatCombinacionEstado.id_estado_arca)
+    )
+
+
+@router.get("/catalogs/estados/combinaciones", summary="Combinaciones válidas (académico, reprobado, ARCA)")
+def listar_combinaciones_estado(
+    catalog_db: Session = Depends(get_catalog_db),
+    current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "DIRECTOR_ACADEMICO", "ADMIN"])),
+):
+    filas = _combinaciones(catalog_db).order_by("nombre_estado", "nombre_detalle", "nombre_arca").all()
+    return {"status": "success", "total": len(filas), "data": [
+        {"id_combinacion": c.id_combinacion, "estado_academico": a, "estado_reprobado": r, "estado_arca": e,
+         "activo": c.activo}
+        for c, a, r, e in filas
+    ]}
+
+
+@router.post("/catalogs/estados/combinaciones", status_code=status.HTTP_201_CREATED,
+             summary="Agregar (o reactivar) una combinación válida de estados")
+def crear_combinacion_estado(
+    payload: CombinacionEstadoIn,
+    catalog_db: Session = Depends(get_catalog_db),
+    current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "ADMIN"])),
+):
+    from models.catalogos import CatCombinacionEstado, CatEstadoAcademico, CatEstadoArca, CatEstadoReprobado
+    from pipeline.normalization.quality_rules import canonizar_estado
+    from services.catalogo_estados import invalidar_cache
+
+    ids = []
+    for valor, modelo, col_id, col_nombre in (
+        (payload.estado_academico, CatEstadoAcademico, "id_estado_academico", "nombre_estado"),
+        (payload.estado_reprobado, CatEstadoReprobado, "id_estado_reprobado", "nombre_detalle"),
+        (payload.estado_arca, CatEstadoArca, "id_estado_arca", "nombre_arca"),
+    ):
+        registros = catalog_db.query(modelo).all()
+        nombre, reconocido = canonizar_estado(valor, tuple(getattr(r, col_nombre) for r in registros))
+        if not reconocido or nombre is None:
+            raise HTTPException(status_code=422, detail=f"'{valor}' no existe en {modelo.__tablename__}")
+        ids.append(next(getattr(r, col_id) for r in registros if getattr(r, col_nombre) == nombre))
+
+    existente = catalog_db.query(CatCombinacionEstado).filter_by(
+        id_estado_academico=ids[0], id_estado_reprobado=ids[1], id_estado_arca=ids[2]
+    ).first()
+    if existente:
+        existente.activo = True
+        comb = existente
+    else:
+        comb = CatCombinacionEstado(id_estado_academico=ids[0], id_estado_reprobado=ids[1], id_estado_arca=ids[2])
+        catalog_db.add(comb)
+    catalog_db.commit()
+    invalidar_cache()
+    return {"status": "success", "id_combinacion": comb.id_combinacion}
+
+
+@router.delete("/catalogs/estados/combinaciones/{id_combinacion}",
+               summary="Desactivar una combinación (deja de ser válida; no se borra)")
+def desactivar_combinacion_estado(
+    id_combinacion: int,
+    catalog_db: Session = Depends(get_catalog_db),
+    current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "ADMIN"])),
+):
+    from models.catalogos import CatCombinacionEstado
+    from services.catalogo_estados import invalidar_cache
+
+    comb = catalog_db.query(CatCombinacionEstado).get(id_combinacion)
+    if not comb:
+        raise HTTPException(status_code=404, detail="Combinación no encontrada.")
+    comb.activo = False
+    catalog_db.commit()
+    invalidar_cache()
+    return {"status": "success", "id_combinacion": id_combinacion, "activo": False}

@@ -77,7 +77,11 @@ def get_forecast_alumnos(
         )
 
     try:
-        resultado = obtener_pronostico_alumnos(db=db, tipo=tipo_sanitizado, horizonte=horizonte)
+        resultado = cache_consultas.obtener(
+            ("forecast_alumnos", tipo_sanitizado, horizonte),
+            TTL_FORECAST_SEG,
+            lambda: obtener_pronostico_alumnos(db=db, tipo=tipo_sanitizado, horizonte=horizonte),
+        )
         return {
             "status": "success",
             "data": resultado
@@ -180,7 +184,11 @@ def get_analitica_macro(
     - Caso 4: Cumplimiento de Metas / Ingresos Anuales (3.8M Bs)
     """
     try:
-        resultado = obtener_analitica_macro_completa(db=db, horizonte=horizonte)
+        resultado = cache_consultas.obtener(
+            ("forecast_analitica_macro", horizonte),
+            TTL_FORECAST_SEG,
+            lambda: obtener_analitica_macro_completa(db=db, horizonte=horizonte),
+        )
         return resultado
     except Exception as e:
         logger.error(f"Error en analítica predictiva macro: {e}", exc_info=True)

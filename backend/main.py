@@ -7,6 +7,7 @@ y manejo centralizado de excepciones sanitizadas.
 """
 
 import os
+import time
 import logging
 from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException, Request, Response, status, UploadFile, File, Form
@@ -32,7 +33,9 @@ from routers import (
     catalogs,
     kpis,
     pipeline,
-    reportes
+    reportes,
+    cmi,
+    powerbi
 )
 from seed_users import seed_default_users
 
@@ -43,6 +46,11 @@ MIGRACIONES_EN_ARRANQUE = (
     "003_dataops_lote_and_facts_alignment.sql",
     "004_extend_tipo_fuente_sources.sql",
     "005_alinear_esquema_con_ddl.sql",
+    "006_capa_semantica_cmi.sql",
+    "007_powerbi_informe_version.sql",
+    "008_dataops_tarea.sql",
+    "009_cache_indice_beto.sql",
+    "010_dataops_tarea_ingesta.sql",
 )
 MIGRACION_LOTE = "003_dataops_lote_and_facts_alignment.sql"
 MIGRACION_TIPO_FUENTE = "004_extend_tipo_fuente_sources.sql"
@@ -84,6 +92,10 @@ app = FastAPI(
 
 @app.on_event("startup")
 def on_startup():
+    import sys
+    if ("pytest" in sys.modules) or (os.getenv("TESTING") == "true") or (os.getenv("APP_ENV") == "test"):
+        return
+
     from pathlib import Path
     from core.database import Base, engine
     import models  # noqa: F401  registro de tablas
@@ -101,6 +113,12 @@ def on_startup():
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto BOOLEAN DEFAULT FALSE;
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_por INTEGER REFERENCES users(id) ON DELETE SET NULL;
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_en TIMESTAMP;
+                        ALTER TABLE fact_rendimiento_academico ADD COLUMN IF NOT EXISTS estado_tutoria VARCHAR(50);
+                        ALTER TABLE fact_rendimiento_academico ADD COLUMN IF NOT EXISTS estado_arca VARCHAR(50);
+                        ALTER TABLE fact_evaluacion_docente ADD COLUMN IF NOT EXISTS tipo_pregunta VARCHAR(20);
+                        ALTER TABLE fact_evaluacion_docente ADD COLUMN IF NOT EXISTS escala_max INTEGER;
+                        ALTER TABLE fact_evaluacion_docente ADD COLUMN IF NOT EXISTS clave_respuesta VARCHAR(64);
+                        CREATE UNIQUE INDEX IF NOT EXISTS uq_fact_eval_clave ON fact_evaluacion_docente (clave_respuesta);
                     """))
                     conn.commit()
 
@@ -137,7 +155,12 @@ _CACHEABLE_GET_PREFIXES = (
 
 @app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
+    t0 = time.perf_counter()
     response: Response = await call_next(request)
+    dur_ms = round((time.perf_counter() - t0) * 1000.0, 2)
+    response.headers["Server-Timing"] = f"app;dur={dur_ms}"
+    if dur_ms > 300.0 and request.url.path.startswith("/api/"):
+        logger.warning(f"[SLOW ENDPOINT] {request.method} {request.url.path} tardó {dur_ms} ms (presupuesto: 300 ms)")
     # Las cabeceras de seguridad OWASP (X-Frame-Options, CSP, etc.) las pone solo el gateway nginx:
     # repetirlas aquí las duplicaba en cada respuesta. Este middleware solo agrega las de caché.
     if request.method == "GET" and response.status_code == 200:
@@ -163,6 +186,8 @@ app.add_middleware(
 # ── Registro de Routers del Monolito Core ─────────────────────────────────────
 app.include_router(dataops.router)
 app.include_router(kpis.router)
+app.include_router(cmi.router)
+app.include_router(powerbi.router)
 app.include_router(forecast.router)
 app.include_router(riesgos.router)
 app.include_router(catalogs.router)

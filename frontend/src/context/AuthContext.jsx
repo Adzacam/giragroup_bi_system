@@ -29,11 +29,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('gira_user');
     localStorage.removeItem('gira_notifications_cache');
     localStorage.removeItem('gira_last_login_date');
-    Object.keys(localStorage).forEach((k) => {
-      if (k.startsWith('gira_trusted_device_')) {
-        localStorage.removeItem(k);
-      }
-    });
+    // Se preserva gira_trusted_device_* para cumplir la vigencia de 30 días del dispositivo confiable
     sessionStorage.clear();
     // Limpieza de todos los cachés en memoria para prevenir retención de datos entre sesiones
     invalidateDataopsCache();

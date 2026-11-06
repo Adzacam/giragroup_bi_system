@@ -176,7 +176,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = ''
               }}
             >
               Ingrese su correo institucional registrado (<strong style={{ color: 'var(--color-ink-black)' }}>@giragroup.bo</strong>).
-              Le remitiremos un código OTP temporal y las instrucciones de seguridad para restablecer el acceso a la plataforma.
+              Generaremos una contraseña temporal segura y se la enviaremos a su correo para que pueda iniciar sesión y luego actualizar su clave desde su perfil.
             </p>
 
             {errorMessage && (
@@ -249,7 +249,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = ''
                   lineHeight: 1.45,
                 }}
               >
-                🔒 Por doctrina de seguridad TLS 1.3, este enlace de recuperación tendrá una caducidad estricta de <strong>15 minutos</strong>.
+                🔒 Por seguridad institucional, le emitiremos una contraseña temporal cifrada para que pueda ingresar a la plataforma y actualizar su clave en su perfil.
               </div>
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
@@ -288,11 +288,11 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = ''
                   {isLoading ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
-                      <span>Enviando...</span>
+                      <span>Generando...</span>
                     </>
                   ) : (
                     <>
-                      <span>Enviar código</span>
+                      <span>Enviar contraseña temporal</span>
                       <ArrowRight size={15} />
                     </>
                   )}
@@ -328,7 +328,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = ''
                 marginBottom: '10px',
               }}
             >
-              Instrucciones Despachadas
+              Contraseña Temporal Enviada
             </h2>
 
             <p
@@ -339,25 +339,26 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = ''
                 marginBottom: '20px',
               }}
             >
-              Si la cuenta <strong style={{ color: 'var(--color-ink-black)' }}>{email}</strong> pertenece al dominio corporativo,
-              hemos remitido una plantilla de verificación con el código OTP y el enlace de restablecimiento a su bandeja de entrada.
+              Hemos generado y enviado una contraseña temporal a tu correo electrónico (<strong style={{ color: 'var(--color-ink-black)' }}>{email}</strong>). Úsala para iniciar sesión y podrás actualizar tu clave desde tu perfil.
             </p>
 
             <div
               style={{
-                padding: '12px 16px',
+                padding: '14px 18px',
                 borderRadius: '12px',
                 backgroundColor: 'var(--color-fog-white)',
                 border: '1px solid var(--color-border)',
-                fontSize: '12px',
+                fontSize: '12.5px',
                 color: 'var(--color-slate-gray)',
-                lineHeight: 1.5,
+                lineHeight: 1.6,
                 marginBottom: '24px',
                 textAlign: 'left',
               }}
             >
-              ⏱ <strong>Tiempo límite:</strong> El código permanecerá activo durante 15 minutos.<br />
-              📁 <strong>Recomendación:</strong> Si no lo visualiza en breve, revise su carpeta de spam o correo institucional.
+              <div style={{ fontWeight: 600, color: 'var(--color-ink-black)', marginBottom: '6px' }}>Pasos para ingresar:</div>
+              1. 📩 Revisa tu bandeja de entrada o carpeta de spam.<br />
+              2. 🔑 Copia la contraseña temporal e inicia sesión.<br />
+              3. ⚙️ Al ingresar a la plataforma, actualiza tu clave desde tu perfil de usuario.
             </div>
 
             <button
@@ -373,7 +374,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = ''
                 fontSize: '14px',
               }}
             >
-              Entendido, volver al inicio
+              Ir a Iniciar Sesión
             </button>
           </div>
         )}

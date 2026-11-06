@@ -181,10 +181,9 @@ class QualityEvaluator:
         if monto is None or str(monto).strip() in ("", "nan", "none", "null", "-"):
             return True, None, None
 
-        try:
-            val_txt = str(monto).strip().replace(",", ".").replace("Bs", "").replace("bs", "").strip()
-            num = float(val_txt)
-        except (ValueError, TypeError):
+        from pipeline.normalization.montos import parsear_monto
+        num = parsear_monto(monto)
+        if num is None:
             return False, f"MONTO_NO_NUMERICO: '{monto}'", None
 
         if num < 0.0:
@@ -519,3 +518,53 @@ class QualityEvaluator:
                 pass
 
         return resultado
+
+
+# ---------------------------------------------------------------------------
+# Estados de acta (hoja CRITERIOS): el estado viene de la fuente, no se deduce de la nota
+# ---------------------------------------------------------------------------
+
+def _clave_estado(valor: Any) -> str:
+    import unicodedata
+    texto = "".join(c for c in unicodedata.normalize("NFD", str(valor or "")) if unicodedata.category(c) != "Mn")
+    return " ".join(texto.lower().split())
+
+
+def canonizar_estado(valor: Any, validos: Tuple[str, ...]) -> Tuple[Optional[str], bool]:
+    """
+    Lleva un estado escrito a mano ('No titulado', 'Tutoría', 'en curso') a su nombre de catálogo.
+    Devuelve (nombre_canonico, reconocido): vacío -> (None, True); valor fuera de catálogo -> (texto, False).
+    """
+    clave = _clave_estado(valor)
+    if not clave:
+        return None, True
+    for v in validos:
+        if _clave_estado(v) == clave:
+            return v, True
+    return str(valor).strip(), False
+
+
+def validar_combinacion_estados(
+    estado_academico: Optional[str], estado_tutoria: Optional[str], estado_arca: Optional[str],
+    combinaciones=None,
+) -> Tuple[bool, Optional[str]]:
+    """
+    Valida (académico, tutoría, ARCA) contra las combinaciones válidas: las que se pasen (las del catálogo
+    cat_combinacion_estado) o, si no, COMBINACIONES_ESTADO_VALIDAS de config. Los estados ausentes no se
+    exigen: la combinación es válida si alguna combinación coincide en los presentes.
+    """
+    if combinaciones is None:
+        from pipeline.config import COMBINACIONES_ESTADO_VALIDAS as combinaciones
+
+    presentes = (estado_academico, estado_tutoria, estado_arca)
+    if not any(presentes):
+        return True, None
+    if any(
+        all(p is None or p == c for p, c in zip(presentes, combo))
+        for combo in combinaciones
+    ):
+        return True, None
+    return False, (
+        f"COMBINACION_ESTADO_INVALIDA: ({estado_academico or '-'}, {estado_tutoria or '-'}, "
+        f"{estado_arca or '-'}) no figura en cat_combinacion_estado"
+    )

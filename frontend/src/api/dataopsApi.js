@@ -464,6 +464,23 @@ export const dataopsApi = {
    * Confirma la inserción de registros al Data Warehouse enrutando por tipo_fuente (#8, #10)
    * o resuelve un caso individual si se provee resolved_item_id.
    */
+  /** Inicia la consolidación del lote en segundo plano; devuelve { tarea_id, tarea } */
+  iniciarConsolidacion: async (payload = {}) => {
+    invalidateDataopsCache();
+    const res = await client.post(`${BASE_URL}/confirm-dw-insert`, { ...payload, en_segundo_plano: true });
+    return res.data;
+  },
+
+  /** Avance de una tarea larga (consolidación o lectura de BETO), sin caché */
+  getTarea: async (tareaId) => (await client.get(`${BASE_URL}/tareas/${tareaId}`)).data,
+
+  /** Tareas largas en curso o recién terminadas (panel global) */
+  getTareasActivas: async () => (await client.get(`${BASE_URL}/tareas`)).data || [],
+
+  /** Última tarea del lote de ese tipo: 'CONSOLIDACION' | 'LECTURA_BETO' (o null) */
+  getTareaLote: async (idLote, tipo = 'CONSOLIDACION') =>
+    (await client.get(`${BASE_URL}/lote/${idLote}/tarea`, { params: { tipo } })).data,
+
   confirmDwInsert: async (payload = {}) => {
     invalidateDataopsCache();
     if (payload && payload.resolved_item_id) {
@@ -474,7 +491,8 @@ export const dataopsApi = {
       });
       return res.data;
     }
-    const res = await client.post(`${BASE_URL}/confirm-dw-insert`, payload);
+    // La consolidación inserta miles de hechos (~2 min con 1.700 registros): 10 min como la subida de lote
+    const res = await client.post(`${BASE_URL}/confirm-dw-insert`, payload, { timeout: 600000 });
     return res.data;
   }
 };

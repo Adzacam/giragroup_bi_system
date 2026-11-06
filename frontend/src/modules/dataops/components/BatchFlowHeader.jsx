@@ -1,9 +1,11 @@
 import React from 'react';
 import { Layers, FileSpreadsheet, Scale, Building2, Shield, Calendar, BookOpen, Sparkles } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import { useCatalogProgramCount } from '../../../hooks/useCatalogProgramCount';
 
 export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelectBatch }) {
   const { role, user } = useAuth();
+  const totalProgramas = useCatalogProgramCount();
   const activeRole = role || user?.role || 'AUDITOR_CALIDAD';
 
   const renderContextualBadges = () => (
@@ -22,7 +24,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
           border: '1px solid var(--dataops-gold-border, rgba(217, 155, 38, 0.35))',
         }}
       >
-        <Calendar size={12} /> Fechas: Reconocimiento Automático (2024–2026+)
+        <Calendar size={12} /> Fechas: Reconocimiento Automático
       </span>
       <span
         style={{
@@ -38,7 +40,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
           border: '1px solid rgba(12, 30, 51, 0.22)',
         }}
       >
-        <BookOpen size={12} /> Catálogo Maestro: 18 Prog. Activos
+        <BookOpen size={12} /> Catálogo Maestro: {totalProgramas ?? '—'} Prog. Activos
       </span>
       <span
         style={{
@@ -100,7 +102,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
     institucion = 'GiraGroup Posgrado',
     tipo_fuente = 'GSHEETS_ACTA_NOTAS',
     escala_label = 'No aplica',
-    periodo = '2024–2026 (Auto)',
+    periodo = 'Por detectar',
     total_archivos = 1,
     total_registros = 0,
     pendientes_revision = 0,

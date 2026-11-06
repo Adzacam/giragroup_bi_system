@@ -224,6 +224,8 @@ CREATE TABLE public.fact_rendimiento_academico (
     requiere_revision BOOLEAN DEFAULT FALSE,
     fk_estado VARCHAR(1) DEFAULT 'A',
     estado_academico VARCHAR(50),
+    estado_tutoria VARCHAR(50),
+    estado_arca VARCHAR(50),
     tipo_alerta VARCHAR(30),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -266,7 +268,10 @@ CREATE TABLE public.fact_evaluacion_docente (
     id_tiempo INTEGER REFERENCES public.dim_tiempo(id_tiempo) ON DELETE CASCADE,
     pregunta_bloque VARCHAR(500),
     puntuacion NUMERIC(4, 2),
-    comentario VARCHAR(1000)
+    comentario VARCHAR(1000),
+    tipo_pregunta VARCHAR(20),
+    escala_max INTEGER,
+    clave_respuesta VARCHAR(64) UNIQUE
 );
 
 -- D. Marketing y Embudo Comercial
@@ -289,6 +294,58 @@ CREATE TABLE public.fact_rentabilidad (
     monto_ejecutado NUMERIC(14, 2),
     monto_meta NUMERIC(14, 2)
 );
+
+-- E2. Costos por programa (grano: un POS; fact_rentabilidad es mensual por categoría)
+CREATE TABLE public.fact_costo_programa (
+    id_hecho_costo SERIAL PRIMARY KEY,
+    id_modulo INTEGER NOT NULL UNIQUE REFERENCES public.dim_modulo(id_modulo) ON DELETE CASCADE,
+    id_documento INTEGER REFERENCES public.dim_origen_documental(id_documento) ON DELETE SET NULL,
+    egreso_anterior NUMERIC(14, 2),
+    egreso_real NUMERIC(14, 2),
+    ingreso NUMERIC(14, 2),
+    rentabilidad NUMERIC(14, 2),
+    requiere_revision BOOLEAN DEFAULT FALSE,
+    motivo_revision VARCHAR(300),
+    actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- E3. Docente(s) de cada módulo (hoja MODULOS)
+CREATE TABLE IF NOT EXISTS public.bridge_modulo_docente (
+    id_asignacion SERIAL PRIMARY KEY,
+    id_modulo INTEGER NOT NULL REFERENCES public.dim_modulo(id_modulo) ON DELETE CASCADE,
+    id_docente INTEGER NOT NULL REFERENCES public.dim_docente(id_docente) ON DELETE CASCADE,
+    id_documento INTEGER REFERENCES public.dim_origen_documental(id_documento) ON DELETE SET NULL,
+    tipo_docente VARCHAR(30),
+    grado_academico VARCHAR(50),
+    horas_modulo NUMERIC(6, 2),
+    pago_docente NUMERIC(12, 2),
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    CONSTRAINT uq_bridge_modulo_docente UNIQUE (id_modulo, id_docente)
+);
+CREATE INDEX IF NOT EXISTS idx_bridge_mod_doc_modulo ON public.bridge_modulo_docente (id_modulo);
+CREATE INDEX IF NOT EXISTS idx_bridge_mod_doc_docente ON public.bridge_modulo_docente (id_docente);
+
+-- E4. Convenios con instituciones (techos)
+CREATE TABLE IF NOT EXISTS public.fact_techo_convenio (
+    id_hecho_techo SERIAL PRIMARY KEY,
+    id_modulo INTEGER NOT NULL REFERENCES public.dim_modulo(id_modulo) ON DELETE CASCADE,
+    id_tiempo INTEGER REFERENCES public.dim_tiempo(id_tiempo) ON DELETE SET NULL,
+    id_documento INTEGER REFERENCES public.dim_origen_documental(id_documento) ON DELETE SET NULL,
+    clave_convenio VARCHAR(40) NOT NULL UNIQUE,
+    institucion VARCHAR(200) NOT NULL,
+    id_convenio_catalogo INTEGER,
+    monto_convenio NUMERIC(14, 2),
+    n_inscritos INTEGER,
+    gestion INTEGER,
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    requiere_revision BOOLEAN DEFAULT FALSE,
+    motivo_revision VARCHAR(300),
+    actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_fact_techo_modulo ON public.fact_techo_convenio (id_modulo);
+CREATE INDEX IF NOT EXISTS idx_fact_techo_institucion ON public.fact_techo_convenio (institucion);
 
 -- F. Pronósticos de Negocio (Forecasting)
 CREATE TABLE public.fact_forecast (
@@ -449,7 +506,7 @@ ALTER TABLE public.fact_cobranzas_proyectadas ADD CONSTRAINT uq_fact_cobranzas_p
 -- Las claves primarias y UNIQUE ya crean su índice: no se repiten (uq_fact_aca_est_mod duplicaba
 -- uq_fact_rendimiento_estudiante_modulo; ver backend/scripts/migrations/005_alinear_esquema_con_ddl.sql).
 -- ==========================================
-CREATE INDEX IF NOT EXISTS idx_fact_rend_estudiante ON public.fact_rendimiento_academico (id_estudiante);
+-- idx_fact_rend_estudiante omitido (cubierto por prefijo de uq_fact_rendimiento_estudiante_modulo)
 CREATE INDEX IF NOT EXISTS idx_fact_rend_modulo ON public.fact_rendimiento_academico (id_modulo);
 CREATE INDEX IF NOT EXISTS idx_fact_rend_docente ON public.fact_rendimiento_academico (id_docente);
 CREATE INDEX IF NOT EXISTS idx_fact_rend_tiempo ON public.fact_rendimiento_academico (id_tiempo);
@@ -476,8 +533,13 @@ CREATE INDEX IF NOT EXISTS ix_log_inconsistencias_tipo_regla ON public.log_incon
 CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON public.notifications (user_id, is_read);
 CREATE INDEX IF NOT EXISTS idx_stg_entidad_resuelto ON public.stg_entidad_no_resuelta (resuelto, estado_resolucion);
 CREATE INDEX IF NOT EXISTS idx_stg_entidad_registro ON public.stg_entidad_no_resuelta (registro_origen_id);
-CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_estado ON public.stg_entidad_no_resuelta (resuelto);
+-- idx_stg_no_resuelta_estado omitido (cubierto por prefijo de idx_stg_entidad_resuelto)
 CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_tipo ON public.stg_entidad_no_resuelta (tipo_entidad);
 CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_motivo ON public.stg_entidad_no_resuelta (motivo);
 CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_estado_res ON public.stg_entidad_no_resuelta (estado_resolucion);
 CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_lock ON public.stg_entidad_no_resuelta (lock_usuario_id, lock_expira);
+
+-- Indices covering para agregaciones rapidas de KPIs y Alertas:
+CREATE INDEX IF NOT EXISTS idx_fact_rend_tiempo_modulo_cov ON public.fact_rendimiento_academico (id_tiempo, id_modulo) INCLUDE (id_estudiante, nota_final, asistencia_pct, incumplimiento_actividades_pct, nivel_confianza_ia, requiere_revision);
+CREATE INDEX IF NOT EXISTS idx_fact_fin_tiempo_modulo_cov ON public.fact_situacion_financiera (id_tiempo, id_modulo) INCLUDE (id_estudiante, monto_pagado, monto_deuda, cuotas_impagas, estado_cartera);
+CREATE INDEX IF NOT EXISTS idx_log_ingesta_etapa_id_desc ON public.log_pipeline_ingesta (etapa, id DESC);

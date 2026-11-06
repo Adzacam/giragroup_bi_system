@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberDevice, setRememberDevice] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(true);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [tempToken, setTempToken] = useState('');
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
@@ -104,12 +104,14 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const savedDeviceToken = localStorage.getItem(`gira_trusted_device_${email}`);
+      const normalizedEmail = email.trim().toLowerCase();
+      const savedDeviceToken = localStorage.getItem(`gira_trusted_device_${normalizedEmail}`) || localStorage.getItem(`gira_trusted_device_${email}`);
       const res = await authApi.loginStep1(email, password, savedDeviceToken, rememberDevice);
 
       // Si el dispositivo ya es de confianza para esta cuenta, ingresa directamente
       if (res.mfa_required === false && res.access_token) {
-        if (res.device_token && rememberDevice) {
+        if (res.device_token) {
+          localStorage.setItem(`gira_trusted_device_${normalizedEmail}`, res.device_token);
           localStorage.setItem(`gira_trusted_device_${email}`, res.device_token);
         }
         const todayStr = new Date().toISOString().split('T')[0];
@@ -210,7 +212,9 @@ export default function LoginPage() {
         description: 'Código 2FA validado mediante canal seguro.',
         icon: <ShieldCheck size={16} color="#60a5fa" />
       });
-      if (res.device_token && rememberDevice) {
+      if (res.device_token) {
+        const normalizedEmail = email.trim().toLowerCase();
+        localStorage.setItem(`gira_trusted_device_${normalizedEmail}`, res.device_token);
         localStorage.setItem(`gira_trusted_device_${email}`, res.device_token);
       }
       const todayStr = new Date().toISOString().split('T')[0];
@@ -285,7 +289,7 @@ export default function LoginPage() {
               gap: '12px',
             }}
           >
-            <GiraLogo />
+            <GiraLogo size={44} showText={true} />
             <button
               type="button"
               onClick={toggleTheme}
@@ -560,6 +564,8 @@ export default function LoginPage() {
                 onResend={handleResend}
                 isLoading={isLoading}
                 formatTime={formatTime}
+                rememberDevice={rememberDevice}
+                onRememberDeviceChange={setRememberDevice}
               />
             )}
           </div>

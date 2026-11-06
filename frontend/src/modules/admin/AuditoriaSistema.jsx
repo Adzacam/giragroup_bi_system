@@ -100,12 +100,16 @@ export default function AuditoriaSistema() {
   };
 
   useEffect(() => {
-    loadAuditData();
-  }, [filterModulo, filterSeveridad]);
+    if (activeTab === 'trazabilidad') {
+      loadAuditData();
+    }
+  }, [activeTab, filterModulo, filterSeveridad]);
 
   useEffect(() => {
-    loadAlertasData();
-  }, []);
+    if (activeTab === 'alertas' && alertas.length === 0) {
+      loadAlertasData();
+    }
+  }, [activeTab]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();

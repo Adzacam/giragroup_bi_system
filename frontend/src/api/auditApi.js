@@ -16,12 +16,12 @@ export const auditApi = {
       return {
         status: 'success',
         kpis: {
-          total_eventos: 148,
-          eventos_seguridad: 42,
-          ingestas_dataops: 38,
-          alertas_criticas: 3,
+          total_eventos: 0,
+          eventos_seguridad: 0,
+          ingestas_dataops: 0,
+          alertas_criticas: 0,
         },
-        total: 148,
+        total: 0,
         data: [],
       };
     }

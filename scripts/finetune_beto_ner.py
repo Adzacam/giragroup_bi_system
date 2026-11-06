@@ -358,7 +358,7 @@ def entrenar_beto_ner(
 ) -> Dict[str, Any]:
     """
     Ejecuta el fine-tuning de BETO para token classification.
-    Si PyTorch o Transformers no están presentes, retorna simulación exitosa.
+    Si faltan dependencias o el modelo base, lanza RuntimeError (sin métricas simuladas).
     """
     os.makedirs(output_dir, exist_ok=True)
 
@@ -367,23 +367,8 @@ def entrenar_beto_ner(
         from torch.utils.data import Dataset, DataLoader
         from transformers import BertTokenizerFast, BertForTokenClassification, AutoTokenizer
     except ImportError as e:
-        logger.warning("Torch o Transformers no disponibles en este entorno (%s). Ejecutando simulación de entrenamiento.", e)
-        # Guardar metadata de entrenamiento
-        info = {
-            "status": "simulated_success",
-            "model_base": model_name,
-            "output_dir": output_dir,
-            "epochs": epochs,
-            "learning_rate": lr,
-            "classes": LABEL_LIST,
-            "loss_final": 0.042,
-            "f1_score": 0.948,
-            "precision": 0.952,
-            "recall": 0.944
-        }
-        with open(os.path.join(output_dir, "training_info.json"), "w", encoding="utf-8") as f:
-            json.dump(info, f, indent=2)
-        return info
+        # Sin dependencias no hay entrenamiento: no se escribe ningún training_info.json
+        raise RuntimeError(f"Torch/Transformers no disponibles: {e}. No se entrenó el modelo.") from e
 
     device = torch.device(device_name if device_name else ("cuda" if torch.cuda.is_available() else "cpu"))
     logger.info("Iniciando fine-tuning de BETO en dispositivo: %s", device)
@@ -402,28 +387,8 @@ def entrenar_beto_ner(
         )
         model.to(device)
     except Exception as e_hub:
-        logger.warning(
-            "No fue posible cargar o descargar '%s' desde HuggingFace Hub (%s). "
-            "Generando artefacto de entrenamiento offline/simulado.",
-            model_name, e_hub
-        )
-        info = {
-            "status": "offline_simulated_success",
-            "model_base": model_name,
-            "output_dir": output_dir,
-            "epochs": epochs,
-            "learning_rate": lr,
-            "classes": LABEL_LIST,
-            "loss_final": 0.042,
-            "f1_score": 0.948,
-            "precision": 0.952,
-            "recall": 0.944,
-            "device": str(device),
-            "offline_reason": str(e_hub)
-        }
-        with open(os.path.join(output_dir, "training_info.json"), "w", encoding="utf-8") as f:
-            json.dump(info, f, indent=2)
-        return info
+        # Sin modelo base no hay entrenamiento: nunca se registran métricas simuladas
+        raise RuntimeError(f"No fue posible cargar '{model_name}': {e_hub}. No se entrenó el modelo.") from e_hub
 
     raw_data = generar_dataset_sintetico_dominio(num_samples)
 
@@ -479,9 +444,11 @@ def entrenar_beto_ner(
         "output_dir": output_dir,
         "epochs": epochs,
         "loss_final": round(total_loss, 4),
-        "f1_score": 0.952,
-        "precision": 0.961,
-        "recall": 0.943,
+        # Este script no evalúa: F1/precisión/recall reales se obtienen con
+        # scripts/entrenar_beto_robusto.py sobre dev y test_gold_real.
+        "f1_score": None,
+        "precision": None,
+        "recall": None,
         "device": str(device)
     }
 

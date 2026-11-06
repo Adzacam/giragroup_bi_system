@@ -49,6 +49,15 @@ def clasificar_banda(indice: Optional[float]) -> str:
 def _cargar_modelo():
     global _MODELO, _TOKENIZER
     if _MODELO is None:
+        try:
+            from pipeline.semantic.inference_server import get_engine_and_tokenizer
+            engine, tok = get_engine_and_tokenizer()
+            if engine is not None and getattr(engine, "_nlp_pipeline", None) is not None:
+                _MODELO = engine._nlp_pipeline.model
+                _TOKENIZER = tok or engine._nlp_pipeline.tokenizer
+                return _MODELO, _TOKENIZER
+        except Exception:
+            pass
         from transformers import BertForTokenClassification, BertTokenizerFast
         from pipeline.config import MODELO_BETO_CACHE_DIR
         from pipeline.semantic.ner_engine import configurar_hilos_torch

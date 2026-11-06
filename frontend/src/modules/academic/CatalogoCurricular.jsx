@@ -30,6 +30,12 @@ export default function CatalogoCurricular() {
     cargarModulos();
   }, [cargarModulos]);
 
+  // Indicadores calculados sobre dim_modulo, sin valores fijos
+  const totalInstituciones = new Set(modulos.map((m) => m.nombre_institucion).filter(Boolean)).size;
+  const pctConCodigo = modulos.length > 0
+    ? Math.round((modulos.filter((m) => m.pos_code).length / modulos.length) * 100)
+    : null;
+
   const filtered = modulos.filter((p) =>
     (p.nombre_modulo || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (p.programa || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -86,16 +92,16 @@ export default function CatalogoCurricular() {
           badgeType="neutral"
         />
         <KpiCard
-          label="Sede de Gestión"
-          number="GiraGroup Posgrado"
-          sublabel="Sede académica central"
+          label="Instituciones"
+          number={String(totalInstituciones)}
+          sublabel="Instituciones con módulos registrados"
           badgeText="Institucional"
           badgeType="success"
         />
         <KpiCard
           label="Calidad Curricular"
-          number="100%"
-          sublabel="Catálogo normalizado con códigos canónicos"
+          number={pctConCodigo != null ? `${pctConCodigo}%` : '—'}
+          sublabel="Módulos con código POS canónico"
           badgeText="Auditado"
           badgeType="success"
         />
@@ -145,7 +151,7 @@ export default function CatalogoCurricular() {
                   <td style={{ fontSize: '13px', color: 'var(--color-slate-gray)' }}>
                     {item.programa || 'Programa General'}
                   </td>
-                  <td style={{ fontSize: '12.5px' }}>{item.nombre_institucion || 'GiraGroup Posgrado'}</td>
+                  <td style={{ fontSize: '12.5px' }}>{item.nombre_institucion || '—'}</td>
                   <td>
                     <span
                       style={{

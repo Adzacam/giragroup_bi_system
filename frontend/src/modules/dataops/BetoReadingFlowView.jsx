@@ -7,6 +7,8 @@ import {
   GraduationCap, CreditCard, ShoppingCart, ShieldAlert, ExternalLink
 } from 'lucide-react';
 import BatchFlowLayout from './components/BatchFlowLayout';
+import ProgresoTarea from './components/ProgresoTarea';
+import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano';
 import { dataopsApi } from '../../api/dataopsApi';
 import { sileoToast } from '../../services/sileoToast';
 
@@ -33,6 +35,58 @@ export default function BetoReadingFlowView() {
   const [showModelDetails, setShowModelDetails] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isInserting, setIsInserting] = useState(false);
+  // Tareas largas: consolidación en segundo plano y primera lectura de BETO de un lote grande
+  const [tareaDw, setTareaDw] = useState(null);
+  const [tareaLectura, setTareaLectura] = useState(null);
+  const [segLectura, setSegLectura] = useState(0);
+  const loteActivo = id || localStorage.getItem('last_active_batch_id');
+  const consolidando = tareaDw?.estado === 'EN_CURSO';
+
+  // Al entrar: ¿hay una consolidación en curso para este lote? (p. ej. se cerró el navegador)
+  useEffect(() => {
+    if (!loteActivo) return;
+    dataopsApi.getTareaLote(loteActivo, 'CONSOLIDACION')
+      .then((t) => { if (t?.estado === 'EN_CURSO') setTareaDw(t); })
+      .catch(() => {});
+  }, [loteActivo]);
+
+  // Seguimiento de la consolidación: cada 2 s hasta que termine
+  useEffect(() => {
+    if (!consolidando) return undefined;
+    const timer = setInterval(async () => {
+      try {
+        const t = await dataopsApi.getTarea(tareaDw.id);
+        setTareaDw(t);
+        if (t.estado === 'COMPLETADA') {
+          const r = t.resultado || {};
+          sileoToast.success({
+            title: `${r.inserted_dw ?? 0} hechos consolidados en el Data Warehouse`,
+            description: `Académicos +${r.inserted_academico ?? 0} · Financieros +${r.inserted_financiero ?? 0} · En revisión ${r.inserted_revision ?? 0} · Tiempo ${Math.round((t.transcurrido_seg || 0) / 60)} min`,
+          });
+          setIsConfirmModalOpen(false);
+          loadReadingData(selectedDocId);
+        } else if (t.estado === 'ERROR') {
+          sileoToast.error({ title: 'La consolidación no terminó', description: t.error || 'Error en la transacción de carga.' });
+        }
+      } catch { /* reintenta en el siguiente ciclo */ }
+    }, 2000);
+    return () => clearInterval(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consolidando, tareaDw?.id]);
+
+  // Mientras carga la lectura de BETO: avance real del servidor y tiempo local
+  useEffect(() => {
+    if (!loading || !loteActivo) { setTareaLectura(null); setSegLectura(0); return undefined; }
+    const inicio = Date.now();
+    const timer = setInterval(async () => {
+      setSegLectura((Date.now() - inicio) / 1000);
+      try {
+        const t = await dataopsApi.getTareaLote(loteActivo, 'LECTURA_BETO');
+        setTareaLectura(t?.estado === 'EN_CURSO' ? t : null);
+      } catch { /* sin dato de avance: se muestra sólo el tiempo */ }
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [loading, loteActivo]);
 
   useEffect(() => {
     let isMounted = true;
@@ -116,6 +170,8 @@ export default function BetoReadingFlowView() {
     sugerencias_catalogo_count: 0
   };
 
+  const consolidado = Boolean(resumen.consolidado);
+
   const areas = data?.areas || {
     academica: { key: 'academica', titulo: 'Académica', total: 0, auto: 0, revision: 0, incidencias: 0 },
     financiera: { key: 'financiera', titulo: 'Financiera', total: 0, auto: 0, revision: 0, incidencias: 0 },
@@ -163,31 +219,22 @@ export default function BetoReadingFlowView() {
   const handleConfirmInsertDw = async () => {
     try {
       setIsInserting(true);
-      const effectiveBatchId = id || localStorage.getItem('last_active_batch_id');
-      const res = await dataopsApi.confirmDwInsert({
-        id_lote: effectiveBatchId ? Number(effectiveBatchId) : undefined,
-        doc_id: selectedDocId ? Number(selectedDocId) : undefined
+      const res = await dataopsApi.iniciarConsolidacion({
+        id_lote: loteActivo ? Number(loteActivo) : undefined,
+        doc_id: selectedDocId ? Number(selectedDocId) : undefined,
       });
-      
-      const totalInserted = res?.inserted_dw ?? resumen.aceptados_automaticamente;
-      const desglose = res?.desglose || {
-        inserted_academico: res?.inserted_academico ?? totalInserted,
-        inserted_financiero: res?.inserted_financiero ?? 0
-      };
-
-      sileoToast.success({
-        title: `${totalInserted} registros consolidados en Data Warehouse`,
-        description: `Académicos: +${desglose.inserted_academico} · Financieros: +${desglose.inserted_financiero}`
-      });
-      setIsConfirmModalOpen(false);
-      loadReadingData(selectedDocId);
+      setTareaDw(res?.tarea || { id: res?.tarea_id, estado: 'EN_CURSO' });
+      avisarTareaIniciada();
     } catch (err) {
-      console.error('Error en confirmación DW:', err);
-      sileoToast.error({
-        title: 'Error al consolidar en Data Warehouse',
-        description: err.response?.data?.detail || err.message || 'Error en la transacción de carga.'
-      });
-      setIsConfirmModalOpen(false);
+      const det = err.response?.data?.detail;
+      if (err.response?.status === 409 && det?.tarea) {
+        setTareaDw(det.tarea); // ya había una en curso: se muestra su avance
+      } else {
+        sileoToast.error({
+          title: 'No se pudo iniciar la consolidación',
+          description: (typeof det === 'string' ? det : det?.mensaje) || err.message || 'Error en la transacción de carga.',
+        });
+      }
     } finally {
       setIsInserting(false);
     }
@@ -267,7 +314,7 @@ export default function BetoReadingFlowView() {
   const totalPages = Math.ceil(filteredRecords.length / tablePageSize) || 1;
   const paginatedRows = filteredRecords.slice((tablePage - 1) * tablePageSize, tablePage * tablePageSize);
 
-  const effectiveBatchId = id || localStorage.getItem('last_active_batch_id') || '01';
+  const effectiveBatchId = id || localStorage.getItem('last_active_batch_id') || null;
 
   return (
     <BatchFlowLayout
@@ -275,6 +322,25 @@ export default function BetoReadingFlowView() {
       selectedDocId={selectedDocId}
       onSelectDocId={setSelectedDocId}
     >
+      {(loading || (consolidando && !isConfirmModalOpen)) && (
+        <div style={{ display: 'grid', gap: '10px', marginBottom: '16px' }}>
+          {loading && (
+            <ProgresoTarea
+              titulo="Analizando el lote con BETO"
+              tarea={tareaLectura}
+              segundosLocal={segLectura}
+              nota={tareaLectura ? null : 'La primera lectura de un lote grande tarda varios minutos; después queda en caché.'}
+            />
+          )}
+          {consolidando && !isConfirmModalOpen && (
+            <button type="button" onClick={() => setIsConfirmModalOpen(true)}
+              style={{ all: 'unset', cursor: 'pointer', display: 'block' }} aria-label="Ver avance de la consolidación">
+              <ProgresoTarea titulo="Consolidando al Data Warehouse" tarea={tareaDw} />
+            </button>
+          )}
+        </div>
+      )}
+
       {/* ── Encabezado Principal ── */}
       <div style={{ marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
@@ -298,7 +364,7 @@ export default function BetoReadingFlowView() {
               </span>
             </div>
             <div style={{ fontSize: '13px', color: 'var(--color-slate-gray)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span>Lote: <strong>LOTE-{effectiveBatchId}</strong></span>
+              <span>Lote: <strong>{effectiveBatchId ? `LOTE-${effectiveBatchId}` : 'Sin lote activo'}</strong></span>
               <span>•</span>
               <span>Modelo: <strong>BETO (Spanish BERT)</strong></span>
               <span>•</span>
@@ -325,19 +391,23 @@ export default function BetoReadingFlowView() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          {/* Orden del flujo: ③ consolidar (acción principal) → ④ bandeja. Tras consolidar, la bandeja pasa a ser la principal */}
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
             <button
               type="button"
-              className="btn-pill-secondary"
+              className={consolidado ? 'btn-pill-secondary' : 'btn-pill-gold'}
               onClick={() => setIsConfirmModalOpen(true)}
-              disabled={resumen.aceptados_automaticamente === 0}
+              disabled={resumen.total_procesados === 0 || consolidando}
+              title="≥ 85 % entran directo al DW; 60–85 % entran marcados para revisión; el resto queda en la bandeja"
             >
-              <Database size={14} /> Consolidar Aceptados al DW ({resumen.aceptados_automaticamente})
+              {consolidado ? <CheckCircle2 size={14} /> : <Database size={14} />}
+              {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? ' Lote consolidado · reconsolidar' : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
             </button>
             <button
               type="button"
-              className="btn-pill-gold"
+              className={consolidado ? 'btn-pill-gold' : 'btn-pill-secondary'}
               onClick={() => navigate(`/dataops/lote/${effectiveBatchId}/revision`)}
+              title={consolidado ? undefined : 'Consolida primero: los hechos marcados para revisión aparecen en la bandeja después de consolidar'}
             >
               <span>Ir a Bandeja ④ Revisión ({resumen.por_revisar + resumen.con_incidencias})</span>
               <ArrowRight size={15} />
@@ -685,7 +755,7 @@ export default function BetoReadingFlowView() {
               {paginatedRows.length === 0 ? (
                 <tr>
                   <td colSpan={9} style={{ textAlign: 'center', padding: '48px 16px', color: 'var(--color-slate-gray)' }}>
-                    No se encontraron registros coincidentes con los filtros aplicados.
+                    {loading ? 'Cargando registros…' : 'No se encontraron registros coincidentes con los filtros aplicados.'}
                   </td>
                 </tr>
               ) : (
@@ -752,9 +822,13 @@ export default function BetoReadingFlowView() {
                           </div>
                         </td>
                         <td>
-                          {rec.nota_normalizada !== undefined && rec.nota_normalizada !== null ? (
-                            <span style={{ fontWeight: '700', color: rec.nota_normalizada >= 51 ? '#1B8754' : '#D9383A' }}>
+                          {rec.nota_normalizada !== undefined && rec.nota_normalizada !== null && rec.nota_normalizada !== '' && !Number.isNaN(Number(rec.nota_normalizada)) ? (
+                            <span style={{ fontWeight: '700', color: Number(rec.nota_normalizada) >= 51 ? '#1B8754' : '#D9383A' }}>
                               Nota: {rec.nota_normalizada}/100
+                            </span>
+                          ) : rec.monto ? (
+                            <span style={{ fontWeight: '700', color: 'var(--color-ink-black)' }}>
+                              Monto: {String(rec.monto).startsWith('Bs') ? rec.monto : `Bs. ${rec.monto}`}
                             </span>
                           ) : rec.monto_deuda ? (
                             <span style={{ fontWeight: '700', color: '#D9383A' }}>
@@ -855,7 +929,7 @@ export default function BetoReadingFlowView() {
 
                                 {/* Desglose de Tokens Reconocidos */}
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                  <span className="chip-cat chip-programa">PROG: {rec.programa || 'POS-2026'}</span>
+                                  <span className="chip-cat chip-programa">PROG: {rec.programa || '—'}</span>
                                   <span className="chip-cat chip-modulo">MOD: {rec.modulo || 'Módulo'}</span>
                                   <span className="chip-cat chip-origen">DOC: {rec.archivo_origen || 'Origen'}</span>
                                 </div>
@@ -883,7 +957,7 @@ export default function BetoReadingFlowView() {
                                 <div className="zero-pii-card">
                                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                                     <span style={{ color: 'var(--color-slate-gray)' }}>Código Oferta:</span>
-                                    <strong>{rec.desglose_relacional?.catalogo_guia?.modulo_codigo || rec.codigo_oferta || 'POS-GEST-2026'}</strong>
+                                    <strong>{rec.desglose_relacional?.catalogo_guia?.modulo_codigo || rec.codigo_oferta || '—'}</strong>
                                   </div>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                                     <span style={{ color: 'var(--color-slate-gray)' }}>Módulo Canónico:</span>
@@ -891,7 +965,7 @@ export default function BetoReadingFlowView() {
                                   </div>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                                     <span style={{ color: 'var(--color-slate-gray)' }}>Arancel Catálogo:</span>
-                                    <span>{rec.desglose_relacional?.catalogo_guia?.arancel_base || 'Bs. 1.500 por cuota/módulo'}</span>
+                                    <span>{rec.desglose_relacional?.catalogo_guia?.arancel_base || 'Sin arancel en catálogo'}</span>
                                   </div>
                                   <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', borderTop: '1px dashed var(--color-border)', paddingTop: '6px', marginTop: '6px' }}>
                                     🛡️ <em>Principio Cero-PII: El Catálogo Guía solo almacena entidades curriculares e institucionales, nunca identidades de personas.</em>
@@ -994,15 +1068,16 @@ export default function BetoReadingFlowView() {
           </button>
           <button
             type="button"
-            className="btn-pill-secondary"
+            className={consolidado ? 'btn-pill-secondary' : 'btn-pill-gold'}
             onClick={() => setIsConfirmModalOpen(true)}
-            disabled={resumen.aceptados_automaticamente === 0}
+            disabled={resumen.total_procesados === 0 || consolidando}
           >
-            <Database size={15} /> Consolidar Aprobados ({resumen.aceptados_automaticamente})
+            {consolidado ? <CheckCircle2 size={15} /> : <Database size={15} />}
+            {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? ' Lote consolidado · reconsolidar' : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
           </button>
           <button
             type="button"
-            className="btn-pill-gold"
+            className={consolidado ? 'btn-pill-gold' : 'btn-pill-secondary'}
             onClick={() => navigate(`/dataops/lote/${effectiveBatchId}/revision`)}
           >
             <span>Ir a Bandeja ④ Revisión Humana y Consolidación DW ({resumen.por_revisar + resumen.con_incidencias})</span>
@@ -1040,12 +1115,31 @@ export default function BetoReadingFlowView() {
               Confirmar consolidación al Data Warehouse
             </h3>
             <p style={{ fontSize: '13.5px', color: 'var(--color-slate-gray)', lineHeight: '1.5', margin: '0 0 16px 0' }}>
-              Se insertarán transaccionalmente <strong>{resumen.aceptados_automaticamente}</strong> registros que superaron el umbral de relación del 85% directamente en las tablas de hechos:
+              Se procesan los <strong>{resumen.total_procesados}</strong> registros del lote según el índice de relación de BETO:
             </p>
             <ul style={{ fontSize: '13px', color: 'var(--color-ink-black)', marginBottom: '20px', paddingLeft: '20px', lineHeight: '1.6' }}>
-              <li><code>fact_rendimiento_academico</code> (calificaciones normalizadas a escala centesimal)</li>
-              <li><code>fact_situacion_financiera</code> (cuotas impagas y cobros conciliados)</li>
+              <li><strong>≥ 85 %</strong> ({resumen.aceptados_automaticamente}): entran directo a las tablas de hechos.</li>
+              <li><strong>60–85 %</strong> o con un dato fuera de catálogo: entran marcados como <em>hecho en revisión</em> y aparecen en la bandeja ④.</li>
+              <li><strong>&lt; 60 %</strong> o sin entidad que enlazar: no entran; quedan en la bandeja o se descartan como ruido.</li>
             </ul>
+            {consolidado && (
+              <p style={{ fontSize: '12.5px', color: '#B8801A', margin: '-8px 0 16px 0' }}>
+                Este lote ya fue consolidado: volver a hacerlo actualiza los hechos existentes, no los duplica.
+              </p>
+            )}
+            {consolidando ? (
+              <div style={{ marginBottom: '16px' }}>
+                <ProgresoTarea
+                  titulo="Consolidando al Data Warehouse"
+                  tarea={tareaDw}
+                  nota="Sigue en el servidor aunque cierres esta ventana o cambies de página."
+                />
+              </div>
+            ) : (
+              <p style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)', margin: '-8px 0 16px 0' }}>
+                Con lotes grandes puede tardar bastante: se ejecuta en segundo plano y verás el avance aquí.
+              </p>
+            )}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button
                 type="button"
@@ -1053,16 +1147,18 @@ export default function BetoReadingFlowView() {
                 onClick={() => setIsConfirmModalOpen(false)}
                 disabled={isInserting}
               >
-                Cancelar
+                {consolidando ? 'Seguir en segundo plano' : 'Cancelar'}
               </button>
-              <button
-                type="button"
-                className="btn-pill-gold"
-                onClick={handleConfirmInsertDw}
-                disabled={isInserting}
-              >
-                {isInserting ? 'Consolidando transaccionalmente...' : 'Confirmar e Insertar'}
-              </button>
+              {!consolidando && (
+                <button
+                  type="button"
+                  className="btn-pill-gold"
+                  onClick={handleConfirmInsertDw}
+                  disabled={isInserting}
+                >
+                  {isInserting ? 'Iniciando…' : 'Confirmar e Insertar'}
+                </button>
+              )}
             </div>
           </div>
         </div>

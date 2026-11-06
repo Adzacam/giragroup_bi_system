@@ -65,6 +65,31 @@ UMBRAL_DESERCION_INCUMPLIMIENTO_PCT = 30.0
 UMBRAL_RIESGO_CUOTAS_IMPAGAS = 2
 ESTADOS_CARTERA_VALIDOS = ("Vigente", "Mora", "Previsionable")
 
+# Estados académicos de un acta. Fuente de verdad: cat_estado_* y cat_combinacion_estado en giragroup_catalog_db
+# (services/catalogo_estados.py). Estos valores son solo el respaldo si el catálogo no responde.
+ESTADOS_ACADEMICOS_VALIDOS = ("Aprobado", "Reprobado", "Deserción", "En curso", "Participó")
+ESTADOS_TUTORIA_VALIDOS = ("Aprobado", "Insuficiencia académica", "Abandono", "Congelamiento", "Tutoria",
+                           "Deserción", "En curso")
+ESTADOS_ARCA_VALIDOS = ("Titulado", "No Titulado")
+# (estado académico, estado tutoría/reprobado, estado ARCA) admitidos por CRITERIOS
+COMBINACIONES_ESTADO_VALIDAS = frozenset({
+    ("Aprobado", "Aprobado", "Titulado"),
+    ("Aprobado", "Aprobado", "No Titulado"),
+    ("Aprobado", "Abandono", "No Titulado"),
+    ("Aprobado", "Congelamiento", "No Titulado"),
+    ("Reprobado", "Tutoria", "Titulado"),
+    ("Reprobado", "Tutoria", "No Titulado"),
+    ("Reprobado", "Insuficiencia académica", "No Titulado"),
+    ("Reprobado", "Abandono", "No Titulado"),
+    ("Reprobado", "Congelamiento", "No Titulado"),
+    ("Participó", "Insuficiencia académica", "Titulado"),
+    ("Participó", "Insuficiencia académica", "No Titulado"),
+    ("Participó", "Abandono", "No Titulado"),
+    ("Participó", "Congelamiento", "No Titulado"),
+    ("Deserción", "Deserción", "No Titulado"),
+    ("En curso", "En curso", "No Titulado"),
+})
+
 # Parámetros de inferencia
 DEFAULT_BATCH_SIZE = 16
 MAX_TOKEN_LENGTH = 512

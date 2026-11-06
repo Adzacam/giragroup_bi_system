@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str
     device_token: Optional[str] = None
     remember_device: Optional[bool] = False
@@ -23,6 +23,7 @@ class LoginStepOneResponse(BaseModel):
     token_type: Optional[str] = None
     device_token: Optional[str] = None
     user: Optional[UserPublic] = None
+    otp_test: Optional[str] = None
 
 class OTPVerifyRequest(BaseModel):
     temp_token: str
@@ -42,8 +43,9 @@ class ChangePasswordRequest(BaseModel):
     confirm_password: str
 
 class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
+    email: str
 
 class ForgotPasswordResponse(BaseModel):
     message: str
     status: str = "success"
+    temp_password_test: Optional[str] = None

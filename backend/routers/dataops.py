@@ -1,6 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, File, Form, Query, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, text
 from typing import Optional, List, Dict, Any, Tuple, Union
 import os
 import math
@@ -9,6 +9,7 @@ import logging
 import json
 import re
 import threading
+import time
 import unicodedata
 import urllib.request
 import urllib.error
@@ -26,6 +27,7 @@ os.makedirs(LANDING_DIR, exist_ok=True)
 UPLOAD_DIR = LANDING_DIR
 
 from core.database import SessionLocal, get_db
+from services import tareas_dataops, cache_lectura
 from core.security import require_roles, get_current_user
 from models.user import User
 from models.lote import Lote
@@ -68,8 +70,14 @@ from services.extraccion_por_encabezado import (
     es_encabezado_metadato_pos,
     fecha_de_fila,
     registros_academicos,
+    registros_evaluacion,
     motivo_fila_sin_entidad,
     registros_rentabilidad,
+    registros_costo_programa,
+    registros_asignacion_docente,
+    registros_techo_convenio,
+    factores_escala_por_programa,
+    normalizar_encabezado,
 )
 from services.sugerencia_hitl import es_sugerencia_un_clic, nombre_extraido, similitud_nombre_completo
 from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, resolver_caso_hecho
@@ -125,6 +133,8 @@ class ConfirmDwInsertRequest(BaseModel):
     accion: Optional[str] = None
     texto_editado: Optional[str] = None
     threshold: Optional[float] = UMBRAL_INDICE_REGISTRO_DEC
+    # Lotes grandes: la consolidación corre en segundo plano y la SPA sigue su avance (GET /tareas/{id})
+    en_segundo_plano: bool = False
 
 
 class BatchResolveRequest(BaseModel):
@@ -378,6 +388,8 @@ def upload_batch(
     )
     db.add(nuevo_lote)
     db.flush()
+    db.commit()  # el lote existe ya para el seguimiento de la ingesta desde otras páginas
+    tarea_ingesta = tareas_dataops.crear("INGESTA", nuevo_lote.id_lote, total=len(files))
 
     batch_landing_dir = os.path.join(LANDING_DIR, str(nuevo_lote.id_lote))
     os.makedirs(batch_landing_dir, exist_ok=True)
@@ -390,6 +402,7 @@ def upload_batch(
     docs_creados_ids: List[int] = []
 
     for idx, f in enumerate(files):
+        tareas_dataops.avanzar(tarea_ingesta, idx, forzar=True)
         raw_name = f.filename or f"archivo_{idx + 1}.xlsx"
         safe_name = IngestionService.sanitizar_nombre_archivo(raw_name)
 
@@ -587,6 +600,9 @@ def upload_batch(
     if not exitosos:
         nuevo_lote.estado = "CON_ERRORES"
     db.commit()
+    tareas_dataops.terminar(tarea_ingesta, {
+        "exitosos": len(exitosos), "fallidos": len(errores), "total_registros": total_registros,
+    })
 
     try:
         from models.log_pipeline import LogPipelineIngesta
@@ -1712,6 +1728,8 @@ def _evaluar_documentos_lote(
     db: Session,
     docs: List[DimOrigenDocumental],
     persistir_staging: bool = True,
+    tarea_id: Optional[int] = None,
+    aplicar_resoluciones: bool = True,
 ) -> Dict[str, Any]:
     """
     Evalúa todas las tuplas de los documentos indicados, actualiza `staging_registros_crudos`
@@ -1757,6 +1775,8 @@ def _evaluar_documentos_lote(
         .all()
     )
     hitl_map: Dict[Tuple[int, str], StagingEntidadNoResuelta] = {}
+    if not aplicar_resoluciones:
+        hitl_records = []  # lectura base: las resoluciones se superponen al leer (_superponer_resoluciones)
     for h in hitl_records:
         if h.registro_origen_id and h.texto_original:
             hitl_map[(h.registro_origen_id, h.texto_original)] = h
@@ -1769,6 +1789,9 @@ def _evaluar_documentos_lote(
     inc_count = 0
     total_entidades = 0
     suma_indices = 0
+    lineas_hechas = 0
+    tareas_dataops.avanzar(tarea_id, 0, sum(len([l for l in (s_reg.texto_plano or "").splitlines() if l.strip()])
+                                            for s_reg in stg_records), forzar=True)
 
     for stg in stg_records:
         orig_doc = doc_map.get(stg.id_documento)
@@ -1790,6 +1813,8 @@ def _evaluar_documentos_lote(
         bloque_requiere_rev = False
 
         for line_idx, line in enumerate(lines):
+            lineas_hechas += 1
+            tareas_dataops.avanzar(tarea_id, lineas_hechas)
             ents, score, req_rev = extract_entities_from_line(
                 line,
                 estudiantes,
@@ -2010,7 +2035,9 @@ def _evaluar_documentos_lote(
                 "ci_enmascarado": ci_masked,
                 "modulo": (ent_mod.get("matchedCanonical") or ent_mod.get("token")) if ent_mod else (ent_con.get("token") if ent_con else "No detectado"),
                 "nota_original": ent_cal.get("notaOriginal") if ent_cal else None,
-                "nota_normalizada": ent_cal.get("matchedCanonical") if ent_cal else (ent_mon.get("matchedCanonical") if ent_mon else "—"),
+                # Nota sólo de una calificación; el monto va aparte (antes la bandeja mostraba 'Nota: Bs. 135/100')
+                "nota_normalizada": (ent_cal.get("notaNormalizada") or ent_cal.get("matchedCanonical")) if ent_cal else None,
+                "monto": ent_mon.get("matchedCanonical") if ent_mon else None,
                 "area": area_reg,
                 "en_calidad": en_calidad,
                 "es_nuevo_catalogo": es_nuevo_cat,
@@ -2224,14 +2251,42 @@ def _evaluar_documentos_lote(
 
 
 def _evaluar_lote_en_segundo_plano(doc_ids: List[int], id_lote: Optional[int]) -> None:
-    """Evaluación post-ingesta con su propia sesión (la del request ya se cerró al responder)."""
+    """
+    Evaluación post-ingesta con su propia sesión (la del request ya se cerró al responder). Registra su avance
+    (LECTURA_BETO), deja el resultado en la caché de disco para que el paso ③ abra al instante desde cualquier
+    worker y avisa cuando el lote está listo para revisar.
+    """
     db_bg = SessionLocal()
+    tarea_id = tareas_dataops.crear("LECTURA_BETO", id_lote)
     try:
         docs = db_bg.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids)).all()
-        if docs:
-            _evaluar_documentos_lote(db_bg, docs, persistir_staging=True)
+        if not docs:
+            tareas_dataops.terminar(tarea_id, {})
+            return
+        res = _evaluar_documentos_lote(db_bg, docs, persistir_staging=True, tarea_id=tarea_id)
+        # Tras persistir sólo se agregan casos sin resolver, que no cambian la lectura: el mismo resultado sirve
+        # como lectura del lote con su huella nueva
+        ids = sorted(d.id_documento for d in docs)
+        clave = ("evaluacion_lectura", tuple(ids), _huella_evaluacion(db_bg, ids))
+        cache_lectura.guardar(clave, res)
+        tareas_dataops.terminar(tarea_id, {"total_tuplas": res.get("totalTuplas")})
+        try:
+            NotificationService.create_notification(
+                db=db_bg,
+                title=f"Lote #{id_lote} listo para revisar",
+                message=(f"BETO terminó de analizar {res.get('totalTuplas', 0)} registros: "
+                         f"{res.get('autoCount', 0)} automáticos, {res.get('auditCount', 0)} a revisión y "
+                         f"{res.get('inconsistenciasCount', 0)} con incidencias."),
+                category="DataOps",
+                severity="SUCCESS",
+                role_target="AUDITOR_CALIDAD",
+                link=f"/dataops/lote/{id_lote}/beto",
+            )
+        except Exception as e_notif:
+            logger.warning("No se pudo notificar el lote %s listo: %s", id_lote, e_notif)
     except Exception as e_eval_batch:
         logger.warning("No se pudo evaluar lote %s post-ingesta: %s", id_lote, e_eval_batch)
+        tareas_dataops.fallar(tarea_id, str(e_eval_batch))
     finally:
         db_bg.close()
 
@@ -2240,22 +2295,61 @@ TTL_EVALUACION_LECTURA_SEG = 1800
 
 
 def _huella_evaluacion(db: Session, doc_ids: List[int]) -> Tuple:
-    """Lo que cambia el resultado de evaluar: staging, casos resueltos y catálogos. Consulta barata."""
+    """
+    Lo que cambia la lectura de BETO de un lote: su staging (textos y bloques). Consulta barata.
+    Las resoluciones de la bandeja no entran: se superponen en cada lectura (_superponer_resoluciones), así
+    revisar un caso o consolidar al DW no obliga a releer el lote entero (minutos con 100 mil registros).
+    """
     stg = db.query(
         func.count(StagingRegistroCrudo.id), func.max(StagingRegistroCrudo.id)
     ).filter(StagingRegistroCrudo.id_documento.in_(doc_ids)).one()
-    hitl = db.query(
-        func.count(StagingEntidadNoResuelta.id_staging),
-        func.max(StagingEntidadNoResuelta.id_staging),
-        func.count(StagingEntidadNoResuelta.id_staging).filter(StagingEntidadNoResuelta.resuelto == True),  # noqa: E712
-        func.max(StagingEntidadNoResuelta.resuelto_en),
-    ).filter(StagingEntidadNoResuelta.id_documento.in_(doc_ids)).one()
-    catalogos = (
-        db.query(func.count(DimEstudiante.id_estudiante), func.max(DimEstudiante.id_estudiante)).one(),
-        db.query(func.count(DimModulo.id_modulo)).scalar(),
-        db.query(func.count(DimDocente.id_docente)).scalar(),
+    return ("v2",) + tuple(stg)
+
+
+def _superponer_resoluciones(db: Session, base: Dict[str, Any], doc_ids: List[int]) -> Dict[str, Any]:
+    """
+    Aplica a la lectura base los casos ya resueltos en la bandeja: aprobado -> AUTOMATICO (RESUELTO_HUMANO),
+    descartado -> INCONSISTENCIA. Misma regla que _evaluar_documentos_lote con exists_hitl.resuelto, pero en
+    memoria y sin volver a leer con BETO. Devuelve un resultado nuevo; la base cacheada no se modifica.
+    """
+    resueltos = (
+        db.query(StagingEntidadNoResuelta.registro_origen_id, StagingEntidadNoResuelta.texto_original,
+                 StagingEntidadNoResuelta.estado_resolucion, StagingEntidadNoResuelta.motivo)
+        .filter(StagingEntidadNoResuelta.id_documento.in_(doc_ids), StagingEntidadNoResuelta.resuelto == True)  # noqa: E712
+        .all()
     )
-    return tuple(stg), tuple(str(x) for x in hitl), catalogos
+    if not resueltos:
+        return base
+    mapa: Dict[Tuple[int, str], Tuple[str, Optional[str]]] = {}
+    for rid, texto, estado, motivo in resueltos:
+        if rid and texto:
+            mapa[(rid, texto)] = (estado or "RESUELTO_HUMANO", motivo)
+            mapa.setdefault((rid, texto[:250]), (estado or "RESUELTO_HUMANO", motivo))
+
+    detalles, auto_c, audit_c, inc_c = [], 0, 0, 0
+    for d in base.get("detalles", []):
+        r = mapa.get((d.get("stg_id"), d.get("raw_text"))) or mapa.get((d.get("stg_id"), (d.get("raw_text") or "")[:250]))
+        if r:
+            estado_res, motivo = r
+            d = dict(d)
+            descartado = estado_res == "DESCARTADO"
+            estado = "INCONSISTENCIA" if descartado else "AUTOMATICO"
+            d.update({
+                "estado": estado, "categoria_particion": estado, "estado_resolucion": estado_res,
+                "motivo": (motivo or "DESCARTADO") if descartado else "RESUELTO_HUMANO",
+            })
+            d["decision"] = {**(d.get("decision") or {}), "estado": estado, "motivo_codigo": d["motivo"],
+                             "motivo_llano": ("Registro descartado formalmente en auditoría humana." if descartado
+                                              else "Registro revisado y conciliado por auditor humano.")}
+            d["en_calidad"] = descartado or bool(d.get("es_nuevo_catalogo") or d.get("alerta_abandono"))
+        cat = d.get("categoria_particion")
+        auto_c += cat == "AUTOMATICO"
+        audit_c += cat == "REVISION"
+        inc_c += cat == "INCONSISTENCIA"
+        detalles.append(d)
+    auto_pct, audit_pct, inc_pct = calcular_porcentajes_mayor_residuo(auto_c, audit_c, inc_c)
+    return {**base, "detalles": detalles, "autoCount": auto_c, "auditCount": audit_c, "inconsistenciasCount": inc_c,
+            "autoPct": auto_pct, "auditPct": audit_pct, "inconsistenciasPct": inc_pct}
 
 
 def _evaluacion_lectura(db: Session, docs: List[DimOrigenDocumental]) -> Dict[str, Any]:
@@ -2267,8 +2361,44 @@ def _evaluacion_lectura(db: Session, docs: List[DimOrigenDocumental]) -> Dict[st
     if not doc_ids:
         return _evaluar_documentos_lote(db, docs, persistir_staging=False)
     clave = ("evaluacion_lectura", tuple(doc_ids), _huella_evaluacion(db, doc_ids))
-    return cache_consultas.obtener(clave, TTL_EVALUACION_LECTURA_SEG,
-                                   lambda: _evaluar_documentos_lote(db, docs, persistir_staging=False))
+
+    def _calcular_con_progreso():
+        # Otro worker (o la evaluación post-ingesta) puede haberla dejado en disco
+        en_disco = cache_lectura.leer(clave)
+        if en_disco is not None:
+            return en_disco
+        id_lote = next((d.id_lote for d in docs if getattr(d, "id_lote", None)), None)
+        if id_lote:
+            previa = tareas_dataops.ultima(id_lote, "LECTURA_BETO")
+            if previa and previa["estado"] == "EN_CURSO":
+                # Ya se está calculando (tras la ingesta): se espera su resultado en vez de duplicar minutos de trabajo
+                for _ in range(1800):
+                    time.sleep(1)
+                    en_disco = cache_lectura.leer(clave)
+                    if en_disco is not None:
+                        return en_disco
+                    estado = tareas_dataops.obtener(previa["id"])
+                    if not estado or estado["estado"] != "EN_CURSO":
+                        break
+                # La evaluación post-ingesta agrega casos y cambia la huella: su resultado queda con la nueva
+                db.expire_all()
+                en_disco = cache_lectura.leer(("evaluacion_lectura", tuple(doc_ids), _huella_evaluacion(db, doc_ids)))
+                if en_disco is not None:
+                    return en_disco
+        # La primera lectura de un lote grande tarda minutos: se registra como tarea para que la SPA muestre avance
+        tarea_id = tareas_dataops.crear("LECTURA_BETO", id_lote)
+        try:
+            res = _evaluar_documentos_lote(db, docs, persistir_staging=False, tarea_id=tarea_id,
+                                           aplicar_resoluciones=False)
+        except Exception as e_lect:
+            tareas_dataops.fallar(tarea_id, str(e_lect))
+            raise
+        cache_lectura.guardar(clave, res)
+        tareas_dataops.terminar(tarea_id, {"total_tuplas": res.get("totalTuplas")})
+        return res
+
+    base = cache_consultas.obtener(clave, TTL_EVALUACION_LECTURA_SEG, _calcular_con_progreso)
+    return _superponer_resoluciones(db, base, doc_ids)
 
 
 @router.get("/lote/{id_lote}/resumen")
@@ -2777,6 +2907,17 @@ def get_lote_beto_reading(
         "alerta_abandono_count": len([r for r in detalles_all if r.get("alerta_abandono")]),
         "sugerencias_catalogo_count": len([r for r in detalles_all if r.get("es_nuevo_catalogo")]),
     }
+
+    # El lote ya pasó por la consolidación si alguno de sus documentos tiene hechos en el DW:
+    # la SPA lo usa para marcar el paso ③ como hecho y destacar la bandeja ④ como siguiente acción
+    ids_docs = [d.id_documento for d in docs_lote]
+    consolidado = bool(ids_docs) and bool(db.execute(text("""
+        SELECT EXISTS (SELECT 1 FROM public.fact_rendimiento_academico WHERE id_documento = ANY(:ids))
+            OR EXISTS (SELECT 1 FROM public.fact_situacion_financiera WHERE id_documento = ANY(:ids))
+            OR EXISTS (SELECT 1 FROM public.fact_techo_convenio      WHERE id_documento = ANY(:ids))
+            OR EXISTS (SELECT 1 FROM public.fact_costo_programa      WHERE id_documento = ANY(:ids))
+    """), {"ids": ids_docs}).scalar())
+    resumen_ejecutivo["consolidado"] = consolidado
 
     archivos_tabs = _serializar_archivos_lote(db, docs_lote)
     return {
@@ -3343,7 +3484,61 @@ def confirm_dw_insert(
             db=db,
             current_user=current_user,
         )
+    if not payload.en_segundo_plano:
+        return _consolidar(payload, db, current_user)
 
+    if payload.id_lote:
+        ingesta = tareas_dataops.ultima(payload.id_lote, "INGESTA")
+        if ingesta and ingesta["estado"] == "EN_CURSO":
+            raise HTTPException(status.HTTP_409_CONFLICT,
+                                detail={"mensaje": "La ingesta del lote todavía no termina: consolida cuando acabe.",
+                                        "tarea": ingesta})
+        previa = tareas_dataops.ultima(payload.id_lote, "CONSOLIDACION")
+        if previa and previa["estado"] == "EN_CURSO":
+            raise HTTPException(status.HTTP_409_CONFLICT,
+                                detail={"mensaje": "Ya hay una consolidación en curso para este lote.", "tarea": previa})
+    tarea_id = tareas_dataops.crear("CONSOLIDACION", payload.id_lote, usuario=current_user.username)
+    user_id = current_user.id
+
+    def _en_segundo_plano():
+        db_tarea = SessionLocal()
+        try:
+            usuario = db_tarea.query(User).filter(User.id == user_id).first()
+            resultado = _consolidar(payload, db_tarea, usuario, tarea_id=tarea_id)
+            tareas_dataops.terminar(tarea_id, resultado)
+        except Exception as e_tarea:
+            db_tarea.rollback()
+            logger.exception("Consolidación en segundo plano falló (tarea %s)", tarea_id)
+            tareas_dataops.fallar(tarea_id, getattr(e_tarea, "detail", None) or str(e_tarea))
+        finally:
+            db_tarea.close()
+
+    threading.Thread(target=_en_segundo_plano, name=f"consolidacion-{tarea_id}", daemon=True).start()
+    return {"status": "accepted", "tarea_id": tarea_id, "tarea": tareas_dataops.obtener(tarea_id)}
+
+
+@router.get("/tareas/{tarea_id}")
+def get_tarea(tarea_id: int, _: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"]))):
+    tarea = tareas_dataops.obtener(tarea_id)
+    if not tarea:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"No existe la tarea {tarea_id}.")
+    return tarea
+
+
+@router.get("/tareas")
+def get_tareas_activas(_: User = Depends(get_current_user)):
+    """Tareas largas en curso (y las terminadas hace menos de 2 min) para el panel global de la SPA."""
+    return tareas_dataops.activas()
+
+
+@router.get("/lote/{id_lote}/tarea")
+def get_tarea_lote(id_lote: int, tipo: str = Query("CONSOLIDACION", pattern="^(INGESTA|CONSOLIDACION|LECTURA_BETO)$")):
+    """Última tarea del lote de ese tipo (en curso o terminada), o null."""
+    return tareas_dataops.ultima(id_lote, tipo)
+
+
+def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Optional[User],
+                tarea_id: Optional[int] = None) -> Dict[str, Any]:
     dw = DWLoaderService(db)
     thresh = payload.threshold or UMBRAL_INDICE_REGISTRO_DEC
 
@@ -3375,20 +3570,42 @@ def confirm_dw_insert(
     inserted_revision = 0
     descartados_ruido = 0
 
+    doc_ids_stg = {s.id_documento for s in stg_records if s.id_documento}
+    origenes_map = {
+        o.id_documento: o
+        for o in db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids_stg)).all()
+    } if doc_ids_stg else {}
+
+    # Escala de notas por programa en cada archivo: un acta mezcla programas sobre 20 y sobre 100
+    filas_por_doc: Dict[Any, List[Dict[str, str]]] = {}
+    for s_reg in stg_records:
+        for l in (s_reg.texto_plano or "").splitlines():
+            if "MODULO" in normalizar_encabezado(l):
+                filas_por_doc.setdefault(s_reg.id_documento, []).append(
+                    campos_por_encabezado([c.strip() for c in l.split("|")]))
+    factores_por_doc = {
+        d: factores_escala_por_programa(filas, (origenes_map.get(d).tipo_escala if origenes_map.get(d) else None))
+        for d, filas in filas_por_doc.items()
+    }
+    total_lineas = sum(len([l for l in (s_reg.texto_plano or "").splitlines() if l.strip()]) for s_reg in stg_records)
+    # Avance en dos fases del mismo peso: índice de BETO de cada línea y carga al DW
+    lineas_hechas = 0
+    indexadas = [0]
+    tareas_dataops.avanzar(tarea_id, 0, total_lineas * 2, forzar=True)
+
+    def _al_indexar(n):
+        indexadas[0] += n
+        tareas_dataops.avanzar(tarea_id, indexadas[0] + lineas_hechas)
+
     for stg in stg_records:
-        orig_doc = (
-            db.query(DimOrigenDocumental)
-            .filter(DimOrigenDocumental.id_documento == stg.id_documento)
-            .first()
-            if stg.id_documento
-            else None
-        )
+        orig_doc = origenes_map.get(stg.id_documento) if stg.id_documento else None
         doc_fuente = (orig_doc.tipo_fuente if (orig_doc and orig_doc.tipo_fuente) else "ACTA").upper().strip()
         doc_escala = orig_doc.tipo_escala if orig_doc else "CENTESIMAL_100"
         if doc_fuente in ("COBRANZA", "ADMISION"):
             doc_escala = None
         elif not doc_escala:
             doc_escala = "CENTESIMAL_100"
+        factores_escala = factores_por_doc.get(stg.id_documento)
 
         institucion = (orig_doc.institucion if orig_doc else None) or "GiraGroup Posgrado"
 
@@ -3407,8 +3624,10 @@ def confirm_dw_insert(
         )
 
         # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
-        indices_linea = obtener_indices(lines)
+        indices_linea = obtener_indices(lines, al_avanzar=_al_indexar)
         for line, indice in zip(lines, indices_linea):
+            lineas_hechas += 1
+            tareas_dataops.avanzar(tarea_id, indexadas[0] + lineas_hechas)
             campos_linea = campos_por_encabezado([c.strip() for c in line.split("|")])
             motivo_ruido = motivo_fila_sin_entidad(campos_linea, categoria_ruteo)
             if motivo_ruido:
@@ -3510,7 +3729,15 @@ def confirm_dw_insert(
                 if categoria_ruteo == "academico" and campos_linea:
                     # Acta con columnas MÓDULO 1..12 (ARCA): un hecho por módulo con su nota real
                     registros_linea = []
-                    for reg_aca in registros_academicos(campos_linea):
+                    # Hoja de asignaciones (POS + módulo + docente, sin estudiante): docente de cada módulo
+                    for reg_asig in registros_asignacion_docente(campos_linea):
+                        reg_asig.pop("requiere_revision")
+                        registros_linea.append({
+                            **reg_dict,
+                            "resoluciones": {**reg_dict["resoluciones"], **reg_asig},
+                            "calidad": {"requiere_revision": en_revision},
+                        })
+                    for reg_aca in registros_academicos(campos_linea, factores_escala):
                         revision_fila = reg_aca.pop("requiere_revision")
                         registros_linea.append({
                             **reg_dict,
@@ -3518,6 +3745,36 @@ def confirm_dw_insert(
                                 **reg_dict["resoluciones"],
                                 **{k: v for k, v in reg_aca.items() if v is not None or k in ("nota_final", "fecha")},
                             },
+                            "calidad": {"requiere_revision": en_revision or revision_fila},
+                        })
+                elif categoria_ruteo == "evaluacion_docente" and campos_linea:
+                    # Encuesta: un hecho por pregunta respondida. La identidad sale de las columnas, no del NER:
+                    # una respuesta anónima queda sin estudiante en vez de crear 'ENTRADA ANONIMA - PERSONA 5'
+                    registros_linea = []
+                    for reg_eval in registros_evaluacion(campos_linea):
+                        revision_fila = reg_eval.pop("requiere_revision")
+                        registros_linea.append({
+                            **reg_dict,
+                            "resoluciones": {
+                                **reg_dict["resoluciones"],
+                                **reg_eval,
+                                "estudiante": reg_eval["estudiante"] or {},
+                                "anonima": reg_eval["estudiante"] is None,
+                                "docente": reg_eval["docente"] or reg_dict["resoluciones"].get("docente"),
+                                "modulo": reg_eval["modulo"] or reg_dict["resoluciones"].get("modulo"),
+                                "programa": reg_eval["programa"] or reg_dict["resoluciones"].get("programa"),
+                            },
+                            "calidad": {"requiere_revision": en_revision or revision_fila},
+                        })
+                elif categoria_ruteo in ("marketing", "admision") and campos_linea and registros_techo_convenio(campos_linea):
+                    # Convenio con institución en un documento clasificado como marketing (p. ej. BD Techos):
+                    # el contenido de la fila decide el hecho, no la clasificación del documento
+                    registros_linea = []
+                    for reg_techo in registros_techo_convenio(campos_linea):
+                        revision_fila = reg_techo.pop("requiere_revision")
+                        registros_linea.append({
+                            **reg_dict,
+                            "resoluciones": {**reg_dict["resoluciones"], **reg_techo},
                             "calidad": {"requiere_revision": en_revision or revision_fila},
                         })
                 elif categoria_ruteo == "rentabilidad" and campos_linea:
@@ -3528,8 +3785,21 @@ def confirm_dw_insert(
                             {**reg_dict, "resoluciones": {**reg_dict["resoluciones"], **reg_rent}}
                             for reg_rent in registros_rent
                         ]
+                    else:
+                        # Costos por programa (egreso, ingreso, rentabilidad por POS): un hecho por programa
+                        registros_linea = []
+                        # Costos por programa o, si no, convenios con instituciones (techos)
+                        for reg_costo in (registros_costo_programa(campos_linea) or registros_techo_convenio(campos_linea)):
+                            revision_fila = reg_costo.pop("requiere_revision")
+                            registros_linea.append({
+                                **reg_dict,
+                                "resoluciones": {**reg_dict["resoluciones"], **reg_costo},
+                                "calidad": {"requiere_revision": en_revision or revision_fila},
+                            })
                 for reg_item in registros_linea:
                     res = dw.cargar_registro(reg_item)
+                    if res.get("status") == "skipped":  # respuesta vacía: nada que guardar ni revisar
+                        continue
                     if res.get("status") != "loaded":
                         sent_hitl += 1
                         continue
@@ -4589,9 +4859,10 @@ def get_telemetry_summary(db: Session = Depends(get_db)):
     return {
         "status": "success",
         "kpis": {
-            "p95_latency_sec": 0.42,
+            # Sin instrumentación de latencia/throughput aún: no se reportan cifras inventadas
+            "p95_latency_sec": None,
             "acceleration_device": "PyTorch Container (pipeline:8006)",
-            "token_throughput": 482,
+            "token_throughput": None,
             "vram_usage_gb": "CPU / CUDA",
             "auto_processed_pct": resumen.get("autoPct", 0.0),
             "human_review_pct": round(resumen.get("auditPct", 0.0) + resumen.get("inconsistenciasPct", 0.0), 1),

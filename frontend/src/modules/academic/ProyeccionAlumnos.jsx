@@ -85,7 +85,7 @@ export default function ProyeccionAlumnos() {
       labels,
       datasets: [
         {
-          label: `Inscritos Históricos (N=43)`,
+          label: 'Inscritos Históricos',
           data: historicalSeries,
           borderColor: isDark ? '#FAF9F6' : '#0C1E33',
           backgroundColor: isDark ? '#FAF9F6' : '#0C1E33',
@@ -216,9 +216,9 @@ export default function ProyeccionAlumnos() {
               }}
             >
               <option value="GLOBAL">Consolidado Global (Caso 1)</option>
-              <option value="DIPLOMADO">Diplomados (N=9,150)</option>
-              <option value="CURSO">Cursos Cortos (N=3,399)</option>
-              <option value="EXPERTO">Programas Expertos (N=2,504)</option>
+              <option value="DIPLOMADO">Diplomados</option>
+              <option value="CURSO">Cursos Cortos</option>
+              <option value="EXPERTO">Programas Expertos</option>
             </select>
           </div>
 
@@ -270,7 +270,7 @@ export default function ProyeccionAlumnos() {
             <Line data={chartData} options={chartOptions} />
           ) : (
             <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
-              Calculando proyecciones con Holt-Winters...
+              {isLoading ? 'Calculando proyecciones con Holt-Winters...' : (macroData?.sin_datos?.caso1 || 'Sin datos de inscripciones en el Data Warehouse.')}
             </div>
           )}
         </div>
@@ -469,12 +469,12 @@ export default function ProyeccionAlumnos() {
                 <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalProgDetail.total_historico}</div>
               </div>
               <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos 2025</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalProgDetail.inscritos_2025}</div>
+                <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos {modalProgDetail.anio_anterior}</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalProgDetail.inscritos_anio_anterior}</div>
               </div>
               <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos 2026</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalProgDetail.inscritos_2026}</div>
+                <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos {modalProgDetail.anio_actual}</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalProgDetail.inscritos_anio_actual}</div>
               </div>
               <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                 <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>CAGR</div>

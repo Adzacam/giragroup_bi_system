@@ -1,0 +1,52 @@
+{
+  "name": "GiraGroup CMI",
+  "dataColors": ["#0C1E33", "#D99B26", "#1B8754", "#5B6B8C", "#C27C0E", "#9A9CA3", "#D9383A", "#F1B844"],
+  "good": "#1B8754",
+  "neutral": "#C27C0E",
+  "bad": "#D9383A",
+  "maximum": "#1B8754",
+  "center": "#C27C0E",
+  "minimum": "#D9383A",
+  "null": "#9A9CA3",
+  "background": "#FFFFFF",
+  "foreground": "#17191C",
+  "foregroundNeutralSecondary": "#777B86",
+  "backgroundLight": "#FAF9F6",
+  "backgroundNeutral": "#F2F2F3",
+  "tableAccent": "#D99B26",
+  "textClasses": {
+    "title":   { "fontFace": "Segoe UI Semibold", "fontSize": 13, "color": "#17191C" },
+    "header":  { "fontFace": "Segoe UI Semibold", "fontSize": 11, "color": "#17191C" },
+    "callout": { "fontFace": "Georgia",           "fontSize": 32, "color": "#17191C" },
+    "label":   { "fontFace": "Segoe UI",          "fontSize": 10, "color": "#777B86" }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "border":     [{ "show": true, "color": { "solid": { "color": "#ECECEC" } }, "radius": 16 }],
+        "background": [{ "show": true, "color": { "solid": { "color": "#FFFFFF" } }, "transparency": 0 }],
+        "dropShadow": [{ "show": false }],
+        "padding":    [{ "top": 12, "bottom": 12, "left": 14, "right": 14 }],
+        "title":      [{ "show": true, "fontSize": 12, "fontColor": { "solid": { "color": "#17191C" } } }]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [{ "color": { "solid": { "color": "#FAF9F6" } }, "transparency": 0 }]
+      }
+    },
+    "slicer": {
+      "*": {
+        "background": [{ "show": true, "color": { "solid": { "color": "#F2F2F3" } } }],
+        "items":      [{ "fontColor": { "solid": { "color": "#17191C" } } }],
+        "header":     [{ "show": false }]
+      }
+    },
+    "tableEx": {
+      "*": {
+        "grid":         [{ "gridHorizontal": true, "gridHorizontalColor": { "solid": { "color": "#ECECEC" } }, "gridVertical": false, "rowPadding": 6 }],
+        "columnHeaders":[{ "fontColor": { "solid": { "color": "#777B86" } }, "backColor": { "solid": { "color": "#FAF9F6" } } }]
+      }
+    }
+  }
+}

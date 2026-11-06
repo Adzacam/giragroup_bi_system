@@ -26,7 +26,8 @@ from services.dw_loader import DWLoaderService
 from services import cache_consultas
 from services.confianza_service import obtener_indices, banda_de
 from services.extraccion_por_encabezado import (
-    campos_por_encabezado, es_encabezado_metadato_pos, estudiante_de_fila, fecha_de_fila, registros_academicos,
+    campos_por_encabezado, es_encabezado_metadato_pos, estudiante_de_fila, fecha_de_fila, registros_academicos, registros_evaluacion, registros_rentabilidad, registros_costo_programa, registros_asignacion_docente, registros_techo_convenio,
+    factores_escala_por_programa,
 )
 from models.staging_entidad import StagingEntidadNoResuelta
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
@@ -86,16 +87,8 @@ def _campos_financieros_por_encabezado(celdas: List[str]) -> Optional[Dict[str, 
 
 
 def _a_numero(valor: Optional[str]) -> Optional[float]:
-    if valor is None:
-        return None
-    v = str(valor).replace("Bs.", "").replace("Bs", "").replace(" ", "").strip()
-    if not v or v.lower() in ("nan", "none"):
-        return None
-    v = v.replace(",", "") if ("," in v and "." in v) else v.replace(",", ".")
-    try:
-        return float(v)
-    except ValueError:
-        return None
+    from pipeline.normalization.montos import parsear_monto
+    return parsear_monto(valor)
 
 
 def _resolver_fila_financiera(campos: Dict[str, str]) -> Dict[str, Any]:
@@ -266,6 +259,10 @@ def process_pipeline(
                 continue  # fila con encabezados pero sin montos: no es un hecho financiero
             lineas.append((linea_str, celdas, campos_fin))
 
+        # Escala de notas por programa en el archivo (un acta mezcla programas sobre 20 y sobre 100)
+        factores_escala = factores_escala_por_programa(
+            [campos_por_encabezado(c) for _, c, _ in lineas]) if categoria == "academico" else None
+
         # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
         indices = obtener_indices([l[0] for l in lineas])
 
@@ -311,11 +308,34 @@ def process_pipeline(
                 if fila_fin["estudiante"]:
                     entidades_fila.append({"tipo": "CI", "valor": fila_fin["estudiante"]["fk_resolucion"]["ci"]})
             elif campos and categoria == "academico":
-                for reg in registros_academicos(campos):
+                for reg in registros_asignacion_docente(campos):
+                    reg.pop("requiere_revision")
+                    resoluciones_lista.append({**base, **reg, "_revision_fila": False})
+                for reg in registros_academicos(campos, factores_escala):
                     revision_fila = reg.pop("requiere_revision")
                     resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
                     if reg["estudiante"]:
                         entidades_fila.append({"tipo": "ESTUDIANTE", "valor": reg["estudiante"]["valor_extraido"]})
+            elif campos and categoria == "rentabilidad" and (
+                registros_rentabilidad(campos) or registros_costo_programa(campos) or registros_techo_convenio(campos)
+            ):
+                for reg in (registros_rentabilidad(campos) or registros_costo_programa(campos)
+                            or registros_techo_convenio(campos)):
+                    revision_fila = reg.pop("requiere_revision", False)
+                    resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
+            elif campos and categoria == "evaluacion_docente":
+                for reg in registros_evaluacion(campos):
+                    revision_fila = reg.pop("requiere_revision")
+                    resoluciones_lista.append({
+                        **base, **reg, "estudiante": reg["estudiante"] or {},
+                        "anonima": reg["estudiante"] is None, "_revision_fila": revision_fila,
+                    })
+                    if reg["estudiante"]:
+                        entidades_fila.append({"tipo": "ESTUDIANTE", "valor": reg["estudiante"]["valor_extraido"]})
+            elif campos and categoria in ("marketing", "admision") and registros_techo_convenio(campos):
+                for reg in registros_techo_convenio(campos):  # convenio en un documento clasificado como marketing
+                    revision_fila = reg.pop("requiere_revision", False)
+                    resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
             elif campos and categoria == "admision":
                 resoluciones_lista.append({**base, "estudiante": estudiante_de_fila(campos)})
             else:

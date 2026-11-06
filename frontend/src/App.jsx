@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useState, useEffect, useRef, useCallback } from 
 import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import TareasSegundoPlano from './components/shared/TareasSegundoPlano';
 import { NotificationProvider } from './context/NotificationContext';
 import { Toaster } from 'sileo';
 import IsometricCanvasBackground from './components/canvas3d/IsometricCanvasBackground';
@@ -158,6 +159,7 @@ function DashboardRedirect() {
 
 /* ─── Main Layout (navbar + top loading bar + sidebar + content) ─── */
 function MainLayout() {
+  const { role } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [topProgress, setTopProgress] = useState(0);
@@ -184,18 +186,13 @@ function MainLayout() {
 
   const triggerLoadingAnimation = useCallback(() => {
     clearTimers();
+    if (!suspenseActiveRef.current) {
+      setIsNavigating(false);
+      setTopProgress(0);
+      return;
+    }
     setIsNavigating(true);
-    setTopProgress(15);
-
-    const t1 = setTimeout(() => setTopProgress(65), 75);
-    const t2 = setTimeout(() => setTopProgress(90), 190);
-    const t3 = setTimeout(() => {
-      if (!suspenseActiveRef.current) {
-        finishLoadingAnimation();
-      }
-    }, 340);
-
-    timersRef.current.push(t1, t2, t3);
+    setTopProgress(65);
   }, [clearTimers, finishLoadingAnimation]);
 
   // Listen for instant clicks on any internal navigation link (<a href="...">)
@@ -341,6 +338,9 @@ function MainLayout() {
           </Suspense>
         </main>
       </div>
+
+      {/* Tareas largas de DataOps: siguen visibles y avisan al terminar aunque se cambie de página */}
+      <TareasSegundoPlano role={role} />
 
       <MobileBottomNav
         onOpenMenu={() => setIsMobileOpen(prev => !prev)}

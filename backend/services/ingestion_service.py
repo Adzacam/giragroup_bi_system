@@ -35,6 +35,7 @@ try:
         detectar_bloques,
         a_texto_plano,
         clasificar_categoria,
+        es_encuesta_likert,
     )
 except ImportError:
     try:
@@ -44,8 +45,10 @@ except ImportError:
             detectar_bloques,
             a_texto_plano,
             clasificar_categoria,
+            es_encuesta_likert,
         )
     except ImportError:
+        def es_encuesta_likert(df): return False
         def leer_archivo(ruta): return {}
         def segmentar_archivo(df): return []
         def detectar_bloques(df): return []
@@ -171,6 +174,21 @@ def normalizar_codigo_tipo_fuente(raw_type: Optional[str]) -> Optional[str]:
     if any(k in val for k in ("ACTA", "CALIFIC", "NOTA", "ACADEMIC", "ARCA")):
         return "ACTA"
     return None
+
+
+# Tipos que el selector de la SPA sabe reconocer; el backend distingue además los especializados
+TIPOS_GENERICOS_CLIENTE = {"ACTA", "COBRANZA", "ADMISION", "MOODLE"}
+
+
+def elegir_tipo_fuente(explicito: Optional[str], detectado: Optional[str]) -> Optional[str]:
+    """
+    El tipo elegido en la SPA manda, salvo que sea uno de sus 4 genéricos y las cabeceras indiquen un
+    tipo especializado: la SPA no conoce EGRESOS, TECHOS, EVALUACION_DOCENTE, etc. y marcaba Egresos o
+    Techos como COBRANZA y la evaluación docente como ACTA (filas sin módulo ni nota en la bandeja).
+    """
+    if explicito in TIPOS_GENERICOS_CLIENTE and detectado and detectado not in TIPOS_GENERICOS_CLIENTE:
+        return detectado
+    return explicito or detectado
 
 
 def _contiene_tokens(texto: str, palabras_o_frases: tuple[str, ...]) -> bool:
@@ -395,6 +413,29 @@ def detectar_tipo_fuente_por_cabeceras(
     return None
 
 
+def _celdas_con_texto(fila) -> List[str]:
+    return [str(v).strip() for v in fila.values
+            if pd.notna(v) and str(v).strip() and not re.match(r"^(col_\d+|unnamed.*)$", str(v).strip(), re.I)]
+
+
+def _fila_subencabezado(b: "pd.DataFrame", idx: int) -> int:
+    """
+    Encabezado de dos niveles: la fila idx trae rótulos de grupo dispersos (celdas combinadas como
+    'Información básica', 'Bloque 1. ...') y la fila siguiente los nombres de columna reales
+    ('Programa - POS', 'Número del módulo'). Se usa la fila siguiente cuando es claramente más densa, solo trae
+    texto (ningún número ni fecha, como sí traería una fila de datos) y la fila de después tiene forma de datos.
+    """
+    if idx + 2 >= len(b):
+        return idx
+    grupo, sub, datos = (_celdas_con_texto(b.iloc[i]) for i in (idx, idx + 1, idx + 2))
+    def _es_numero_o_fecha(v):
+        return bool(re.match(r"^-?[\d.,]+$|^\d{4}-\d{2}-\d{2}", v))
+    if (len(sub) >= len(grupo) + 2 and len(grupo) <= 0.6 * len(sub)
+            and not any(_es_numero_o_fecha(v) for v in sub) and len(datos) >= 0.5 * len(sub)):
+        return idx + 1
+    return idx
+
+
 class IngestionService:
     @staticmethod
     def serializar_bloque_con_encabezados(b: "pd.DataFrame") -> str:
@@ -417,6 +458,7 @@ class IngestionService:
                 (i for i in range(min(len(b) - 1, 5)) if b.iloc[i].notna().sum() >= 2),
                 0
             )
+            header_idx = _fila_subencabezado(b, header_idx)
             headers_row = [str(h).strip() if pd.notna(h) else "" for h in b.iloc[header_idx].values]
             primera_fila = header_idx + 1
         lineas_datos = []
@@ -425,7 +467,9 @@ class IngestionService:
             for col_idx, v in enumerate(b.iloc[row_idx].values):
                 if pd.notna(v) and str(v).strip() != "":
                     val_s = str(v).strip()
-                    hdr_s = headers_row[col_idx] if col_idx < len(headers_row) else ""
+                    # ': ' dentro del encabezado ('1: Docente explica claramente (1-5)') partía la pregunta en dos
+                    # al leer 'ENCABEZADO: valor'; se reemplaza por ' - ' para conservar la pregunta entera
+                    hdr_s = (headers_row[col_idx] if col_idx < len(headers_row) else "").replace(": ", " - ")
                     # Solo ': ' rompe el formato 'ENCABEZADO: valor'; las fechas con hora (00:00:00) llevan su encabezado
                     if hdr_s and ": " not in val_s and not hdr_s.lower().startswith("unnamed"):
                         celdas_fmt.append(f"{hdr_s}: {val_s}")
@@ -596,7 +640,7 @@ class IngestionService:
             # Detectar tipo_fuente: primero por cabeceras reales (#15), o por el parámetro explícito del usuario
             detected_fuente = detectar_tipo_fuente_por_cabeceras(hojas, safe_filename)
             explicit_fuente = normalizar_codigo_tipo_fuente(tipo_fuente) or normalizar_codigo_tipo_fuente(source_type)
-            final_tipo_fuente = explicit_fuente or detected_fuente
+            final_tipo_fuente = elegir_tipo_fuente(explicit_fuente, detected_fuente)
             if not final_tipo_fuente and asym_info.get("origen_detectado"):
                 origen_raw = asym_info["origen_detectado"]
                 if origen_raw == "MOODLE_EXPORT":
@@ -764,7 +808,10 @@ class IngestionService:
                 else None
             )
             for nombre_hoja, b in bloques_validos:
-                categoria = categoria_por_fuente or clasificar_categoria(b, safe_filename, nombre_hoja)
+                # Una hoja de encuesta (preguntas + respuestas Likert) es evaluación docente aunque el libro se haya
+                # clasificado como ACTA o COBRANZA: el contenido del bloque manda sobre el tipo del documento.
+                categoria = ("evaluacion_docente" if es_encuesta_likert(b)
+                             else categoria_por_fuente or clasificar_categoria(b, safe_filename, nombre_hoja))
                 texto = cls.serializar_bloque_con_encabezados(b)
                 n_b_filas = max(1, len(b) - 1) if len(b) > 1 else len(b)
                 payload_data = {

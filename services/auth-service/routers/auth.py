@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session
+from sqlalchemy import func, or_
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 import os
@@ -14,7 +15,7 @@ from schemas.auth_schemas import (
     UserPublic, ChangePasswordRequest, ForgotPasswordRequest, ForgotPasswordResponse
 )
 from core.security import (
-    verify_password, generate_otp, get_password_hash, create_access_token,
+    verify_password, generate_otp, generate_temp_password, get_password_hash, create_access_token,
     get_current_user, invalidate_user_cache, SECRET_KEY, ALGORITHM
 )
 from services.email_service import email_service
@@ -46,7 +47,13 @@ if OTP_EXPUESTO_EN_PRUEBAS and os.getenv("ENVIRONMENT", "").strip().lower() in (
 
 @router.post("/login", response_model=LoginStepOneResponse)
 def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == req.email).first()
+    ident = req.email.strip()
+    user = db.query(User).filter(
+        or_(
+            func.lower(User.email) == ident.lower(),
+            func.lower(User.username) == ident.lower()
+        )
+    ).first()
     if not user:
         raise HTTPException(status_code=401, detail="Credenciales invalidas")
     
@@ -100,42 +107,28 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
 
     now_utc = datetime.now(timezone.utc)
     email_dispatched = False
-    otp = None
 
-    # Cooldown anti-spam de 60 segundos en servidores activos: si ya se emitió un OTP recientemente
-    # que sigue vigente, no generar nuevo código ni enviar correo duplicado. En suite de testing
-    # se permite renovación inmediata para evaluar transiciones dinámicas entre canales.
-    is_testing = ("pytest" in sys.modules) or (os.getenv("TESTING") == "true") or OTP_EXPUESTO_EN_PRUEBAS
-    is_in_cooldown = False
-    if not is_testing and user.otp_expires_at and user.otp_code_hash:
-        dt_exp = user.otp_expires_at if user.otp_expires_at.tzinfo else user.otp_expires_at.replace(tzinfo=timezone.utc)
-        if dt_exp > now_utc + timedelta(minutes=4):
-            is_in_cooldown = True
-            email_dispatched = (_USER_LAST_OTP_CHANNEL.get(user.email) == "email")
-            logger.info(f"⏳ Cooldown activo para {user.email}: reutilizando OTP vigente sin despachar correo repetido.")
+    # Al iniciar sesión con credenciales válidas, SIEMPRE se genera y despacha el OTP inmediatamente por correo
+    otp = generate_otp()
+    user.otp_code_hash = get_password_hash(otp)
+    user.otp_expires_at = now_utc + timedelta(minutes=5)
+    db.commit()
+    
+    logger.info(f"🔑 CÓDIGO OTP PARA {user.email}: {otp} (Válido 5 min)")
 
-    if not is_in_cooldown:
-        otp = generate_otp()
-        user.otp_code_hash = get_password_hash(otp)
-        user.otp_expires_at = now_utc + timedelta(minutes=5)
-        db.commit()
+    try:
+        email_res = email_service.send_otp_email(
+            to_email=user.email,
+            username=user.username,
+            otp_code=otp,
+            expires_in_minutes=5
+        )
+        if email_res and email_res.get("smtp", {}).get("sent") is True:
+            email_dispatched = True
+    except Exception as e:
+        logger.warning(f"No se pudo despachar el correo OTP en login: {e}")
         
-        logger.info(f"🔑 CÓDIGO OTP PARA {user.email}: {otp} (Válido 5 min)")
-
-        try:
-            # En pruebas el OTP viaja en la respuesta: no se envían correos reales en cada login de Postman/Locust
-            email_res = None if OTP_EXPUESTO_EN_PRUEBAS else email_service.send_otp_email(
-                to_email=user.email,
-                username=user.username,
-                otp_code=otp,
-                expires_in_minutes=5
-            )
-            if email_res and email_res.get("smtp", {}).get("sent") is True:
-                email_dispatched = True
-        except Exception as e:
-            logger.warning(f"No se pudo despachar el correo OTP: {e}")
-            
-        _USER_LAST_OTP_CHANNEL[user.email] = "email" if email_dispatched else "console"
+    _USER_LAST_OTP_CHANNEL[user.email] = "email" if email_dispatched else "console"
     
     temp_token = jwt.encode(
         {"sub": str(user.id), "type": "temp", "exp": datetime.now(timezone.utc) + timedelta(minutes=5)},
@@ -246,26 +239,40 @@ def resend_otp(req: dict = Body(...), db: Session = Depends(get_db)):
 
 @router.post("/forgot-password", response_model=ForgotPasswordResponse)
 def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == req.email).first()
+    ident = req.email.strip()
+    user = db.query(User).filter(
+        or_(
+            func.lower(User.email) == ident.lower(),
+            func.lower(User.username) == ident.lower()
+        )
+    ).first()
     if user and user.is_active:
-        reset_code = generate_otp()
-        user.otp_code_hash = get_password_hash(reset_code)
+        temp_password = generate_temp_password()
+        temp_hash = get_password_hash(temp_password)
+        user.hashed_password = temp_hash
+        user.failed_login_attempts = 0
+        user.locked_until = None
+        user.otp_code_hash = temp_hash
         user.otp_expires_at = datetime.now(timezone.utc) + timedelta(minutes=15)
         db.commit()
+        invalidate_user_cache(user.id)
 
-        try:
-            email_service.send_password_reset_email(
-                to_email=user.email,
-                username=user.username,
-                reset_code=reset_code,
-                expires_in_minutes=15
-            )
-        except Exception as e:
-            logger.warning(f"No se pudo despachar el correo de restablecimiento: {e}")
+        logger.info(f"🔑 CONTRASEÑA TEMPORAL GENERADA PARA {user.email}: {temp_password}")
+        if not OTP_EXPUESTO_EN_PRUEBAS:
+            try:
+                email_service.send_password_reset_email(
+                    to_email=user.email,
+                    username=user.username,
+                    temp_password=temp_password,
+                    expires_in_minutes=15
+                )
+            except Exception as e:
+                logger.warning(f"No se pudo despachar el correo de restablecimiento: {e}")
 
     return ForgotPasswordResponse(
-        message="Si la cuenta institucional está registrada, se ha enviado un correo con las instrucciones de restablecimiento.",
-        status="success"
+        message="Si la cuenta institucional está registrada, se ha enviado un correo con las instrucciones y la contraseña temporal para iniciar sesión.",
+        status="success",
+        temp_password_test=temp_password if OTP_EXPUESTO_EN_PRUEBAS else None
     )
 
 @router.post("/change-password")

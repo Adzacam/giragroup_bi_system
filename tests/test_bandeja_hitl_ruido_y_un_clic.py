@@ -100,7 +100,7 @@ def test_confirm_descarta_fila_de_estados_y_no_la_manda_a_revision(sqlite_dw, mo
     from models.staging_registro import StagingRegistroCrudo
     from routers import dataops
 
-    monkeypatch.setattr(dataops, "obtener_indices", lambda lineas: [0.80] * len(lineas))  # banda de revisión
+    monkeypatch.setattr(dataops, "obtener_indices", lambda lineas, **kw: [0.80] * len(lineas))  # banda de revisión
     sqlite_dw.add(DimOrigenDocumental(id_documento=1, nombre_archivo="BD_Cobranzas_giraGroup.xlsx", tipo_fuente="COBRANZA"))
     sqlite_dw.add(StagingRegistroCrudo(id=1, id_documento=1, hoja="ESTADOS", bloque_id=1, categoria="financiero", es_ruido=False,
                                        texto_plano="Estado académico: Aprobado | Estado reprobado: Aprobado | Estado ARCA: Titulado"))

@@ -25,17 +25,22 @@ _CLAVES_NOTA = ("GRADE/100.00", "GRADE/100", "NOTA FINAL", "NOTA_FINAL", "CALIFI
 _CLAVES_FECHA_FINANCIERA = ("FECHA ULTIMA FACTURA", "FECHA DE PAGO", "FECHA PAGO", "FECHA DE VENCIMIENTO",
                             "FECHA VENCIMIENTO", "FECHA DE LA PRIMERA FACTURA", "FECHA INICIO DIPLOMADO")
 _CLAVES_FECHA_ACADEMICA = ("FECHA", "FECHA EVALUACION", "FECHA DE EVALUACION", "FECHA ASENTAMIENTO",
-                           "FECHA DE CIERRE", "FECHA FIN")
+                           "FECHA DE CIERRE", "FECHA FIN", "MARCA TEMPORAL", "FECHA DE ENVIO", "FINALIZADO",
+                           "COMPLETADO", "COMENZADO EL")
 _CLAVES_MES = ("MES INICIO", "MES INICO", "MES")
 _CLAVES_ANIO = ("ANO INICIO", "ANO INCIO", "ANO", "GESTION")
 # Moodle no trae la fecha del curso: la única es la de exportación del reporte, que se toma como fecha de corte
 _CLAVE_DESCARGA_MOODLE = "LAST DOWNLOADED FROM THIS COURSE"
 _RE_MODULO_N = re.compile(r"^MODULO (\d{1,2})$")
+_RE_FECHA_LARGA = re.compile(r"(\d{1,2}) DE ([A-Z]+) DE (\d{4})")
 # Google Forms escribe la cédula como 'CI-4892019' / 'ci 4892019' / 'C.I. 4892019': el prefijo no es parte del número
 _RE_PREFIJO_CI = re.compile(r"^\s*c\.?\s*i\.?\s*[-:]?\s*(?=\d)", re.IGNORECASE)
 # EJECUTADO VS META: una fila por categoría y mes, con columnas EJECUTADO <año> y META POR CATEGORIA <año>
 _RE_EJECUTADO_ANIO = re.compile(r"^EJECUTADO (\d{4})$")
 _RE_META_ANIO = re.compile(r"^META POR CATEGORIA (\d{4})$")
+_RE_META_GENERICA_ANIO = re.compile(r"^META (\d{4})$")
+# Columna que dice a qué serie pertenece la fila: CATEGORIA en EJECUTADO VS META, TIPO DE INGRESO en BD Egresos
+_CLAVES_CATEGORIA_FIN = ("CATEGORIA", "TIPO DE INGRESO", "TIPO INGRESO", "CATEGORIA FINANCIERA", "SERIE")
 
 
 def normalizar_encabezado(texto: str) -> str:
@@ -65,17 +70,25 @@ def _primero(campos: Dict[str, str], claves) -> Optional[str]:
 
 
 def _a_float(valor: Optional[str]) -> Optional[float]:
-    if valor is None:
-        return None
-    v = str(valor).replace("Bs.", "").replace("Bs", "").replace(" ", "").strip()
-    v = v.replace(",", "") if ("," in v and "." in v) else v.replace(",", ".")
-    try:
-        return float(v)
-    except ValueError:
-        return None
+    """Monto o número de la celda ('Bs1.171.260' -> 1171260.0); ver pipeline.normalization.montos."""
+    from pipeline.normalization.montos import parsear_monto
+    return parsear_monto(valor)
+
+
+ANIO_MIN, ANIO_MAX = 2000, 2100  # rango de gestiones de negocio
 
 
 def parsear_fecha(valor: Optional[Any]) -> Optional[date]:
+    """
+    Fecha de negocio de la celda, o None. Fuera de ANIO_MIN..ANIO_MAX se descarta: en las planillas
+    aparecen números de factura tecleados en columnas con formato fecha (10554 -> 1928-11-22) o
+    años mal escritos (205), que antes creaban gestiones falsas en el CMI.
+    """
+    f = _parsear_fecha_cruda(valor)
+    return f if f and ANIO_MIN <= f.year <= ANIO_MAX else None
+
+
+def _parsear_fecha_cruda(valor: Optional[Any]) -> Optional[date]:
     if valor is None:
         return None
     if isinstance(valor, datetime):
@@ -88,6 +101,13 @@ def parsear_fecha(valor: Optional[Any]) -> Optional[date]:
             return datetime.strptime(texto, fmt).date()
         except ValueError:
             continue
+    # Moodle/Forms en español: 'miércoles, 20 de noviembre de 2024, 5:38' (se ignoran el día y la hora)
+    m = _RE_FECHA_LARGA.search(normalizar_encabezado(texto))
+    if m and m.group(2) in MESES:
+        try:
+            return date(int(m.group(3)), MESES[m.group(2)], int(m.group(1)))
+        except ValueError:
+            return None
     return None
 
 
@@ -113,7 +133,7 @@ def fecha_de_fila(campos: Dict[str, str], categoria: str) -> Optional[date]:
             return f
     anio = _a_float(_primero(campos, _CLAVES_ANIO))
     mes = _mes(_primero(campos, _CLAVES_MES))
-    if anio and 2000 <= anio <= 2100 and mes:
+    if anio and ANIO_MIN <= anio <= ANIO_MAX and mes:
         return date(int(anio), mes, 1)
     return fecha_corte_moodle(campos) if categoria != "financiero" else None
 
@@ -156,16 +176,111 @@ def _pos(campos: Dict[str, str]) -> Optional[str]:
         return f"POS-{m.group(1)}"
     for k, v in campos.items():
         if k.startswith("POS") and k not in ("POS-CI", "POS + IBP"):
-            digitos = re.sub(r"^POS-?", "", v.strip().upper())
+            digitos = re.sub(r"\.0+$", "", re.sub(r"^POS-?", "", v.strip().upper()))  # '4244.0' de Excel
             return f"POS-{digitos}" if digitos else None
     return None
 
 
-def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
+def estados_de_fila(campos: Dict[str, str]) -> Dict[str, Any]:
+    """
+    Estados del acta tal como vienen en la fuente (ESTADO ACADEMICO / ESTADO TUTORIA / ESTADO ARCA),
+    llevados a su nombre de catálogo y validados contra las combinaciones de CRITERIOS.
+    'estado_revision' es True si algún estado no está en catálogo o la combinación no es válida.
+    """
+    from services.catalogo_estados import reglas_estado
+    from pipeline.normalization.quality_rules import canonizar_estado, validar_combinacion_estados
+
+    reglas = reglas_estado()  # cat_estado_* y cat_combinacion_estado; config solo si el catálogo no responde
+    aca, ok_aca = canonizar_estado(campos.get("ESTADO ACADEMICO"), reglas.academicos)
+    tut, ok_tut = canonizar_estado(
+        campos.get("ESTADO TUTORIA") or campos.get("ESTADO REPROBADO"), reglas.tutoria
+    )
+    arca, ok_arca = canonizar_estado(campos.get("ESTADO ARCA"), reglas.arca)
+    motivos = [f"ESTADO_FUERA_DE_CATALOGO: '{v}'" for v, ok in ((aca, ok_aca), (tut, ok_tut), (arca, ok_arca)) if not ok]
+    if not motivos:
+        valida, motivo = validar_combinacion_estados(aca, tut, arca, reglas.combinaciones)
+        if not valida:
+            motivos.append(motivo)
+    return {
+        "estado_academico": aca,
+        "estado_tutoria": tut,
+        "estado_arca": arca,
+        "estado_motivo": "; ".join(motivos) or None,
+        "estado_revision": bool(motivos),
+    }
+
+
+NOTA_MINIMA_MODULO = 51.0  # por debajo, un módulo está reprobado sin discusión (base 100)
+_FACTOR_ESCALA_EXPLICITA = {"DECIMAL_10": 10.0, "VIGESIMAL_20": 5.0}
+MIN_FILAS_ESCALA = 3  # estudiantes con nota necesarios para deducir la escala de un programa
+
+
+def factor_escala_fila(notas: List[float]) -> float:
+    """
+    Factor para llevar notas a base 100 según su máximo: <= 10 escala 10 (x10), <= 20 escala 20 (x5, hay
+    programas del ARCA calificados sobre 20), si no base 100. Todo en 0 queda en base 100.
+    Se aplica al máximo de un programa en el archivo (factores_escala_por_programa); una fila suelta sólo
+    cuando no hay archivo de contexto (resolución individual en la bandeja).
+    """
+    tope = max(notas) if notas else 0.0
+    if 0.0 < tope <= 10.0:
+        return 10.0
+    if 10.0 < tope <= 20.0:
+        return 5.0
+    return 1.0
+
+
+def _notas_modulo_validas(campos: Dict[str, str]) -> List[float]:
+    notas = (_a_float(v) for k, v in campos.items() if _RE_MODULO_N.match(k))
+    return [x for x in notas if x is not None and 0.0 <= x <= 100.0]
+
+
+def factores_escala_por_programa(filas: List[Dict[str, str]], tipo_escala: Optional[str] = None) -> Dict[Optional[str], float]:
+    """
+    Escala de cada programa (POS) del archivo: un mismo acta mezcla programas sobre 20 y sobre 100. Si el
+    archivo declara DECIMAL_10 o VIGESIMAL_20, manda para todos; con CENTESIMAL_100 (el valor por defecto del
+    selector) o sin escala, se deduce por programa con la nota más alta de todas sus filas. Así un estudiante
+    con notas bajas en un programa sobre 100 no se confunde con uno sobre 20, como pasaba al decidir por fila.
+    """
+    explicito = _FACTOR_ESCALA_EXPLICITA.get((tipo_escala or "").upper().strip())
+    maximos: Dict[Optional[str], float] = {}
+    con_nota: Dict[Optional[str], int] = {}
+    for campos in filas:
+        notas = _notas_modulo_validas(campos)
+        if notas:
+            pos = _pos(campos)
+            maximos[pos] = max(maximos.get(pos, 0.0), max(notas))
+            con_nota[pos] = con_nota.get(pos, 0) + (max(notas) > 0)
+    # Con menos de MIN_FILAS_ESCALA estudiantes con nota no hay evidencia para deducir otra escala (en el ARCA:
+    # un 'Reprobado' con 9 y el resto deserción en 0): queda en base 100
+    return {pos: explicito or (factor_escala_fila([m]) if con_nota[pos] >= MIN_FILAS_ESCALA else 1.0)
+            for pos, m in maximos.items()}
+
+
+def coherencia_estado_notas(estado_academico: Optional[str], notas: Dict[int, float]) -> Optional[str]:
+    """
+    Un acta 'Aprobado' con algún módulo claramente reprobado (< NOTA_MINIMA_MODULO, en base 100) es una
+    inconsistencia de la fuente: un 0 o un 30 cargado a un estudiante aprobado. Devuelve el motivo, o None.
+    Medido sobre el ARCA real: ~210 de 8.660 filas; entre 51 y 69 hay otras ~115 que se dejan pasar porque
+    pueden venir de recuperación por tutoría. 'Reprobado' con todas las notas altas no se marca: suele ser
+    reprobado por abandono (módulos del programa sin nota), y eso depende de cuántos módulos tiene cada
+    programa, que no se ve en una sola fila.
+    """
+    if not notas or not estado_academico or normalizar_encabezado(estado_academico) != "APROBADO":
+        return None
+    bajos = {n: x for n, x in sorted(notas.items()) if x < NOTA_MINIMA_MODULO}
+    if not bajos:
+        return None
+    detalle = ", ".join(f"módulo {n} = {x:g}" for n, x in bajos.items())
+    return f"APROBADO_CON_MODULO_REPROBADO: {detalle} (< {NOTA_MINIMA_MODULO:g})"
+
+
+def registros_academicos(campos: Dict[str, str],
+                         factores_escala: Optional[Dict[Optional[str], float]] = None) -> List[Dict[str, Any]]:
     """
     Resoluciones académicas de una fila. Acta ARCA (columnas MÓDULO 1..12): un registro por módulo con
     nota, del programa POS de la fila. Otras fuentes: un registro con la columna de nota final.
-    Escala: si todas las notas de la fila son <= 10 se trata como escala 10 y se lleva a base 100.
+    Escala: la del programa en el archivo (factores_escala, ver factores_escala_por_programa); sin ella, la de la fila.
     Cada registro trae 'requiere_revision' si falta nota o fecha.
     """
     estudiante = estudiante_de_fila(campos)
@@ -173,6 +288,8 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
         return []  # hoja sin estudiante (MODULOS, IBP, catálogos): no es un hecho académico
     fecha = fecha_de_fila(campos, "academico")
     pos = _pos(campos)
+    estados = estados_de_fila(campos)
+    revision_estado = estados.pop("estado_revision")
 
     notas_modulo = {}
     for k, v in campos.items():
@@ -194,15 +311,27 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
             "nota_final": None,
             "nota_ya_normalizada": True,
             "fecha": fecha,
+            **estados,
             "requiere_revision": True,
         }]
 
     if notas_modulo:
+        # Cada programa tiene su propio número de módulos (uno llega al 5, otro al 11): las columnas vacías
+        # no son notas faltantes, sólo módulos que ese programa no tiene.
         con_nota = {n: x for n, x in notas_modulo.items() if x is not None}
-        escala_10 = bool(con_nota) and max(con_nota.values()) <= 10.0
+        if factores_escala is not None and pos in factores_escala:
+            factor = factores_escala[pos]  # escala del programa en todo el archivo
+        else:
+            factor = factor_escala_fila(list(con_nota.values()))
+        motivo_notas = coherencia_estado_notas(
+            estados.get("estado_academico"), {n: x * factor for n, x in con_nota.items()},
+        )
+        if motivo_notas:
+            estados["estado_motivo"] = "; ".join(m for m in (estados.get("estado_motivo"), motivo_notas) if m)
+            revision_estado = True
         registros = []
         for n in sorted(con_nota):
-            nota = round(con_nota[n] * 10.0, 2) if escala_10 else round(con_nota[n], 2)
+            nota = round(con_nota[n] * factor, 2)
             codigo = f"{pos}-M{n:02d}" if pos else None
             registros.append({
                 "estudiante": estudiante,
@@ -211,7 +340,8 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
                 "nota_final": nota,
                 "nota_ya_normalizada": True,
                 "fecha": fecha,
-                "requiere_revision": fecha is None or fuera_de_rango,
+                **estados,
+                "requiere_revision": fecha is None or fuera_de_rango or revision_estado,
             })
         return registros
 
@@ -227,7 +357,8 @@ def registros_academicos(campos: Dict[str, str]) -> List[Dict[str, Any]]:
         "nota_final": nota,
         "nota_ya_normalizada": True,
         "fecha": fecha,
-        "requiere_revision": nota is None or fecha is None,
+        **estados,
+        "requiere_revision": nota is None or fecha is None or revision_estado,
     }]
 
 
@@ -238,7 +369,11 @@ def categoria_rentabilidad(valor: Optional[str]) -> Optional[str]:
         return "PROGRAMAS"
     if "TECHO" in v or "CERRADO" in v:
         return "TECHOS_CERRADOS"
-    return None
+    # Cualquier otra categoría de ingreso de la fuente ('Inscripciones', 'Diplomados', 'Cursos cortos') se conserva
+    # con su propio nombre: el cargador la crea en dim_categoria_financiera. Totales y celdas numéricas no son categoría.
+    if not v or v.startswith(("TOTAL", "SUBTOTAL", "ACUMULADO")) or _a_float(v) is not None or len(v) > 60:
+        return None
+    return re.sub(r"[^A-Z0-9]+", "_", v).strip("_")[:50] or None
 
 
 def registros_rentabilidad(campos: Dict[str, str]) -> List[Dict[str, Any]]:
@@ -247,17 +382,30 @@ def registros_rentabilidad(campos: Dict[str, str]) -> List[Dict[str, Any]]:
     Devuelve un registro por año con dato, con la fecha del primer día de ese mes: así cada fila conserva su
     categoría y su mes en fact_rentabilidad (clave id_categoria + id_tiempo) en vez de colapsar en una sola.
     """
-    categoria = categoria_rentabilidad(campos.get("CATEGORIA"))
+    categoria = next(
+        (c for c in (categoria_rentabilidad(campos.get(k)) for k in _CLAVES_CATEGORIA_FIN) if c), None
+    )
     mes = _mes(campos.get("MES NUMERICO")) or _mes(campos.get("MES"))
     if not categoria or not mes:
-        return []
+        return []  # sin categoría: hoja de totales (GESTIONES, acumulados), derivada de las categorías
     por_anio: Dict[int, Dict[str, Optional[float]]] = {}
+    metas_genericas: Dict[int, Optional[float]] = {}
     for k, v in campos.items():
         m_ejec, m_meta = _RE_EJECUTADO_ANIO.match(k), _RE_META_ANIO.match(k)
         if m_ejec or m_meta:
             anio = int((m_ejec or m_meta).group(1))
             por_anio.setdefault(anio, {"monto_ejecutado": None, "monto_meta": None})
             por_anio[anio]["monto_ejecutado" if m_ejec else "monto_meta"] = _a_float(v)
+            continue
+        m_gen = _RE_META_GENERICA_ANIO.match(k)
+        if m_gen:
+            metas_genericas[int(m_gen.group(1))] = _a_float(v)
+    # 'META 2025' solo cuenta si la fila no trae 'META POR CATEGORIA 2025' (en EJECUTADO VS META son la misma
+    # serie; 'META 2026' allí es otra cifra y no debe pisarla)
+    for anio, meta in metas_genericas.items():
+        montos = por_anio.setdefault(anio, {"monto_ejecutado": None, "monto_meta": None})
+        if montos["monto_meta"] is None:
+            montos["monto_meta"] = meta
     return [
         {"categoria_financiera": categoria, "fecha": date(anio, mes, 1), **montos}
         for anio, montos in sorted(por_anio.items())
@@ -265,7 +413,338 @@ def registros_rentabilidad(campos: Dict[str, str]) -> List[Dict[str, Any]]:
     ]
 
 
+_RE_POS_EXACTO = re.compile(r"^\s*POS[\s-]?(\d{3,5})\s*$", re.IGNORECASE)
+_CLAVES_NRO_POS = ("NRO POS", "N° POS", "Nº POS", "NUMERO POS", "POS", "COD POS", "CODIGO POS")
+_CLAVES_NOMBRE_PROGRAMA = ("NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA")
+_TOLERANCIA_RENTABILIDAD_BS = 1.0
+
+
+def _pos_de_valores(campos: Dict[str, str]) -> Optional[str]:
+    """POS de la fila: una celda que es exactamente 'POS-NNNN', o una columna de número de POS ('NRO POS: 4403')."""
+    for v in campos.values():
+        m = _RE_POS_EXACTO.match(str(v or ""))
+        if m:
+            return f"POS-{m.group(1)}"
+    for k in _CLAVES_NRO_POS:
+        valor = str(campos.get(k) or "").strip()
+        numero = _a_float(valor)  # Excel entrega '4244.0': sacar solo dígitos daría '42440'
+        digitos = str(int(numero)) if numero is not None and numero == int(numero) else re.sub(r"\D", "", valor)
+        if 3 <= len(digitos) <= 5:
+            return f"POS-{digitos}"
+    return None
+
+
+def registros_costo_programa(campos: Dict[str, str]) -> List[Dict[str, Any]]:
+    """
+    Fila de costos de un programa (egreso, ingreso, rentabilidad por POS). Las columnas se reconocen por su
+    concepto (services.conceptos_financieros: reglas + sinónimos de cat_historico_equivalencia), no por su nombre
+    exacto; las de moneda secundaria (DOLARES) son derivadas y se ignoran.
+    Valida rentabilidad = ingreso - egreso real; si no viene, la calcula. Lista vacía si no hay POS o montos.
+    """
+    from services.conceptos_financieros import concepto_de_cabecera
+
+    pos = _pos_de_valores(campos)
+    if not pos:
+        return []
+    montos: Dict[str, Optional[float]] = {}
+    for k, v in campos.items():
+        concepto = concepto_de_cabecera(k)
+        if concepto and concepto not in montos:
+            montos[concepto] = _a_float(v)
+    if not any(x is not None for x in montos.values()):
+        return []
+
+    ingreso, egreso = montos.get("INGRESO"), montos.get("EGRESO_REAL")
+    rentabilidad = montos.get("RENTABILIDAD")
+    motivo = None
+    if ingreso is not None and egreso is not None:
+        calculada = round(ingreso - egreso, 2)
+        if rentabilidad is None:
+            rentabilidad = calculada
+        elif abs(rentabilidad - calculada) > _TOLERANCIA_RENTABILIDAD_BS:
+            motivo = f"RENTABILIDAD_INCOHERENTE: {rentabilidad} != ingreso {ingreso} - egreso {egreso} = {calculada}"
+
+    nombre = next(
+        (campos[k] for k in _CLAVES_NOMBRE_PROGRAMA if campos.get(k) and not _RE_POS_EXACTO.match(campos[k])), None
+    )
+    return [{
+        "costo_programa": True,
+        "programa": {"valor_extraido": nombre or pos, "metadata": {"pos_canonico": pos}},
+        "modulo": {"valor_extraido": nombre or pos},
+        "egreso_anterior": montos.get("EGRESO_ANTERIOR"),
+        "egreso_real": egreso,
+        "ingreso": ingreso,
+        "rentabilidad": rentabilidad,
+        "motivo_costo": motivo,
+        "requiere_revision": motivo is not None,
+    }]
+
+
+# ── Asignación docente-módulo (hoja MODULOS y equivalentes) ───────────────────
+_CLAVES_DOCENTE = ("DOCENTE", "DOCENTE TITULAR", "NOMBRE DOCENTE", "NOMBRE DEL DOCENTE", "PROFESOR", "FACILITADOR", "TUTOR")
+_CLAVES_NRO_MODULO = ("MODULO", "N° MODULO", "Nº MODULO", "NRO MODULO", "NUMERO MODULO", "NRO. MODULO")
+_CLAVES_NOMBRE_MODULO = ("NOMBRE DEL MODULO", "NOMBRE MODULO", "MODULO NOMBRE", "MATERIA", "ASIGNATURA")
+_CLAVES_TIPO_DOCENTE = ("TIPO DE DOCENTE", "TIPO DOCENTE", "ROL DOCENTE")
+_CLAVES_HORAS = ("HRS MODULO", "HORAS MODULO", "HORAS", "HRS", "CARGA HORARIA")
+_CLAVES_PAGO_DOCENTE = ("PAGO DOCENTE", "HONORARIO DOCENTE", "HONORARIO", "HONORARIOS")
+_CLAVES_FECHA_INICIO = ("FECHA INICIO", "FECHA DE INICIO", "INICIO")
+_CLAVES_FECHA_FIN = ("FECHA FIN", "FECHA DE FIN", "FECHA FINALIZACION", "FIN")
+_RE_ENTERO_MODULO = re.compile(r"^\s*(?:M(?:OD(?:ULO)?)?\.?\s*)?(\d{1,2})\s*$", re.IGNORECASE)
+
+
+def registros_asignacion_docente(campos: Dict[str, str]) -> List[Dict[str, Any]]:
+    """
+    Fila que dice qué docente dictó qué módulo de qué programa (sin estudiante): POS + número de módulo + docente.
+    El nombre del módulo se toma de su columna; si la planilla lo puso bajo 'NOMBRE DEL PROGRAMA' (pasa en MODULOS
+    de ARCA), una fila con número de módulo usa ese texto como nombre del módulo. Lista vacía si falta algo.
+    """
+    if estudiante_de_fila(campos) is not None:
+        return []  # fila de un estudiante: es un acta, no una asignación
+    docente = _primero(campos, _CLAVES_DOCENTE)
+    pos = _pos_de_valores(campos) or _pos(campos)
+    nro = None
+    for k in _CLAVES_NRO_MODULO:
+        m = _RE_ENTERO_MODULO.match(str(campos.get(k) or ""))
+        if m and 1 <= int(m.group(1)) <= 30:
+            nro = int(m.group(1))
+            break
+    if not (docente and pos and nro):
+        return []
+    nombre_mod = _primero(campos, _CLAVES_NOMBRE_MODULO)
+    if not nombre_mod:
+        candidato = _primero(campos, ("NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA"))
+        if candidato and not _RE_POS_VALOR.search(candidato.upper()):
+            nombre_mod = candidato
+    codigo = f"{pos}-M{nro:02d}"
+    return [{
+        "asignacion_docente": True,
+        "estudiante": {},
+        "docente": {"valor_extraido": docente},
+        "programa": {"valor_extraido": pos, "metadata": {"pos_canonico": codigo}},
+        "modulo": {"valor_extraido": nombre_mod or f"{pos} · Módulo {nro}"},
+        "nombre_modulo_real": nombre_mod,
+        "nro_modulo": nro,
+        "tipo_docente": (_primero(campos, _CLAVES_TIPO_DOCENTE) or "").strip().upper() or None,
+        "horas_modulo": _a_float(_primero(campos, _CLAVES_HORAS)),
+        "pago_docente": _a_float(_primero(campos, _CLAVES_PAGO_DOCENTE)),
+        "fecha_inicio": parsear_fecha(_primero(campos, _CLAVES_FECHA_INICIO)),
+        "fecha_fin": parsear_fecha(_primero(campos, _CLAVES_FECHA_FIN)),
+        "fecha": parsear_fecha(_primero(campos, _CLAVES_FECHA_INICIO)),
+        "requiere_revision": False,
+    }]
+
+
+# ── Convenios corporativos / techos (POS + institución cliente + monto) ───────
+_CABECERAS_INSTITUCION = ("INSTITUCION", "EMPRESA", "CONVENIO", "CLIENTE", "ENTIDAD", "INSTITUCION CONVENIO")
+_PALABRAS_MONTO_CONVENIO = (("PAGO", "MONTO", "IMPORTE", "VALOR"), ("TECHO",))  # por prioridad
+_EXCLUIR_MONTO = ("GESTION", "ANO", "FECHA", "ESCUELA", "N°", "Nº", "NRO", "INSCR", "ID")
+_CLAVES_FECHA_FIN_CONVENIO = ("FECHA CONCLUSION", "FECHA DE CONCLUSION") + _CLAVES_FECHA_FIN
+
+
+def _cabecera_institucion(campos: Dict[str, str]) -> Optional[str]:
+    """Columna de la institución cliente, tolerando erratas ('INSITUCION'); nunca una llave derivada ('ID_INSTITUCION')."""
+    from rapidfuzz import fuzz
+
+    for k in campos:
+        if k.startswith("ID") or not campos.get(k):
+            continue
+        if any(k == c or fuzz.ratio(k, c) >= 85 for c in _CABECERAS_INSTITUCION):
+            return k
+    return None
+
+
+def registros_techo_convenio(campos: Dict[str, str]) -> List[Dict[str, Any]]:
+    """
+    Fila de un convenio con una institución (techo/cerrado): POS + institución cliente, y si hay, monto,
+    inscritos y fechas. El monto se reconoce por el valor (numérico) bajo una cabecera de pago/monto/techo, aunque
+    la cabecera diga 'Estado de Pago'. Lista vacía si falta POS o institución.
+    """
+    if estudiante_de_fila(campos) is not None:
+        return []
+    k_inst = _cabecera_institucion(campos)
+    pos = _pos_de_valores(campos) or _pos(campos)
+    if not (k_inst and pos):
+        return []
+
+    monto = None
+    for palabras in _PALABRAS_MONTO_CONVENIO:
+        for k, v in campos.items():
+            if any(p in k for p in palabras) and not any(x in k.split() or k.startswith(x) for x in _EXCLUIR_MONTO):
+                monto = _a_float(v)
+                if monto is not None:
+                    break
+        if monto is not None:
+            break
+    inscritos = next((_a_float(v) for k, v in campos.items() if "INSCR" in k and _a_float(v) is not None), None)
+    gestion = next((_a_float(v) for k, v in campos.items() if k.startswith("GESTION") and _a_float(v)), None)
+    fecha_ini = parsear_fecha(_primero(campos, _CLAVES_FECHA_INICIO))
+    fecha_fin = parsear_fecha(_primero(campos, _CLAVES_FECHA_FIN_CONVENIO))
+
+    nombre_prog = _primero(campos, ("NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA"))
+    if nombre_prog:
+        nombre_prog = re.sub(r"^\s*POS[\s-]?\d{3,5}\s*", "", nombre_prog).strip() or None
+
+    motivos = []
+    if fecha_ini and fecha_fin and fecha_fin < fecha_ini:
+        motivos.append(f"FECHAS_INVERTIDAS: fin {fecha_fin} anterior al inicio {fecha_ini}")
+    if gestion and fecha_ini and int(gestion) != fecha_ini.year:
+        motivos.append(f"GESTION_DISTINTA_A_INICIO: gestión {int(gestion)} vs inicio {fecha_ini}")
+    return [{
+        "techo_convenio": True,
+        "estudiante": {},
+        "programa": {"valor_extraido": nombre_prog or pos, "metadata": {"pos_canonico": pos}},
+        "modulo": {"valor_extraido": nombre_prog or pos},
+        "institucion_cliente": campos[k_inst].strip(),
+        "monto_convenio": monto,
+        "n_inscritos": int(inscritos) if inscritos is not None else None,
+        "gestion": int(gestion) if gestion else None,
+        "fecha_inicio": fecha_ini,
+        "fecha_fin": fecha_fin,
+        "fecha": fecha_ini,
+        "motivo_techo": "; ".join(motivos) or None,
+        "requiere_revision": bool(motivos),
+    }]
+
+
 _CLAVES_ENTIDAD_PROGRAMA = ("NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA", "CURSO", "COURSE", "MODULO", "MATERIA")
+
+
+# ── Evaluación docente / satisfacción ────────────────────────────────────────
+# Columnas de identidad de una encuesta: nunca son preguntas
+_CLAVES_IDENTIDAD_ENCUESTA = (
+    "NOMBRE", "NOMBRES", "APELLIDO", "APELLIDOS", "APELLIDO(S)", "PATERNO", "MATERNO", "NOMBRE COMPLETO",
+    "ESTUDIANTE", "ALUMNO", "PARTICIPANTE", "CORREO", "CORREO ELECTRONICO", "EMAIL", "E-MAIL",
+    "USUARIO", "PROGRAMA", "NOMBRE DEL PROGRAMA", "CURSO", "COURSE", "MODULO", "N° MODULO", "NRO MODULO",
+    "MATERIA", "DOCENTE", "PROFESOR", "FACILITADOR", "TUTOR", "GRUPO", "SEDE", "CIUDAD", "N°", "Nº", "NRO",
+    "ID", "RESPUESTA", "INSTITUCION",
+) + _CLAVES_CI + _CLAVES_FECHA_ACADEMICA
+# '5/Totalmente de acuerdo', '3 - Adecuada', '8', '4,5'
+_RE_LIKERT = re.compile(r"^\s*(\d{1,2}(?:[.,]\d+)?)\s*(?:[/\-–:.)]\s*\D.*)?$")
+_RE_ANONIMO = re.compile(r"ANONIM|SIN NOMBRE|^PERSONA \d+$")
+_RE_POS_VALOR = re.compile(r"POS[\s-]?(\d{3,5})")
+_RE_NRO_MODULO = re.compile(r"(\d{1,2})")
+# Comentarios sin contenido: no se guardan. 'Todo conforme' sí es una opinión y se conserva.
+_COMENTARIOS_VACIOS = {"", ".", "-", "_", "NINGUNO", "NINGUNA", "NADA", "NO", "N/A", "NA", "SIN COMENTARIOS",
+                       "NINGUN COMENTARIO", "NO HAY", "NO HAY DATOS", "S/C", "X"}
+_PALABRAS_INSTITUCIONAL = ("PLATAFORMA", "MOODLE", "ZOOM", "TEAMS", "AULA VIRTUAL", "ATENCION", "ADMINISTRATIV",
+                           "COORDINACION", "COORDINADOR", "INSTITUCION", "UNIFRANZ", "SOPORTE", "SERVICIO",
+                           "INSCRIPCION", "PAGO", "CERTIFICA", "INFRAESTRUCTURA", "ORGANIZACION", "ASESOR")
+_PALABRAS_NPS = ("RECOMENDAR", "RECOMENDARIA", "RECOMENDACION", "DEL 0 AL 10", "DEL 1 AL 10", "0 A 10", "1 A 10")
+
+
+def _es_columna_identidad(encabezado: str) -> bool:
+    return encabezado in _CLAVES_IDENTIDAD_ENCUESTA or encabezado.startswith(("CORREO", "DIRECCION DE CORREO", "POS"))
+
+
+def _parece_pregunta(encabezado: str) -> bool:
+    return "?" in encabezado or "¿" in encabezado or len(encabezado) >= 30
+
+
+def tipo_pregunta(encabezado: str) -> str:
+    """NPS (recomendación 0-10), INSTITUCIONAL (plataforma, atención, gestión) o DOCENTE."""
+    if any(p in encabezado for p in _PALABRAS_NPS):
+        return "NPS"
+    if "DOCENTE" in encabezado or "PROFESOR" in encabezado or "FACILITADOR" in encabezado:
+        return "DOCENTE"
+    if any(p in encabezado for p in _PALABRAS_INSTITUCIONAL):
+        return "INSTITUCIONAL"
+    return "DOCENTE"
+
+
+def _escala(encabezado: str, valor: float, tipo: str) -> int:
+    """Escala de la pregunta: 10 si es NPS, si la cabecera la menciona o si el valor pasa de 5; si no, 5."""
+    if tipo == "NPS" or "10" in encabezado or valor > 5:
+        return 10
+    return 5
+
+
+def _estudiante_encuesta(campos: Dict[str, str]) -> Optional[Dict[str, Any]]:
+    """Estudiante de la encuesta, o None si es anónima o no trae identidad."""
+    est = estudiante_de_fila(campos)
+    if est is None and campos.get("NOMBRE"):
+        apellido = campos.get("APELLIDO(S)") or campos.get("APELLIDOS") or campos.get("APELLIDO") or ""
+        nombre = " ".join(p for p in (campos.get("NOMBRE"), apellido) if p)
+        est = {"valor_extraido": nombre, "fk_resolucion": {"ci": None, "fk_estado": "B", "nombre_resuelto": nombre}}
+    if est and _RE_ANONIMO.search(normalizar_encabezado(est["valor_extraido"])):
+        return None
+    return est
+
+
+def registros_evaluacion(campos: Dict[str, str]) -> List[Dict[str, Any]]:
+    """
+    Una fila de encuesta -> un registro por pregunta (fact_evaluacion_docente: una fila por respuesta).
+    - Pregunta con puntaje ('5/Totalmente de acuerdo', '8'): puntuacion + escala_max (5 o 10).
+    - Pregunta abierta (cabecera tipo pregunta, valor de texto): comentario, puntuacion NULL.
+    - tipo_pregunta DOCENTE / INSTITUCIONAL / NPS: solo DOCENTE se atribuye al docente.
+    - Anónima ('ENTRADA ANONIMA - PERSONA 5'): sin estudiante, nunca se crea uno ficticio.
+    - clave_respuesta: hash estable de la fila + pregunta, para que volver a subir el archivo no duplique.
+    Lista vacía si la fila no tiene respuestas (listas de comentarios de una hoja de gráficos, totales).
+    """
+    import hashlib
+
+    estudiante = _estudiante_encuesta(campos)
+    # Cabeceras cortas que nombran el programa ('PROGRAMA', 'PROGRAMA - POS', 'PROGRAMA POS', 'CURSO'); las
+    # preguntas largas que mencionan 'el programa' no cuentan.
+    texto_programa = " ".join(v for k, v in campos.items()
+                              if v and len(k) <= 40 and re.search(r"\b(PROGRAMA|CURSO|COURSE|POS)\b", k))
+    m_pos = _RE_POS_VALOR.search(texto_programa.upper())
+    pos = f"POS-{m_pos.group(1)}" if m_pos else _pos(campos)
+    # Número de módulo bajo cualquier cabecera corta con 'MODULO' ('MODULO', 'N° MODULO', 'NUMERO DEL MODULO');
+    # el valor debe ser corto ('1', 'M02', 'Módulo 3'), no el nombre del módulo ni una respuesta.
+    valor_mod = next((v for k, v in campos.items()
+                      if v and len(k) <= 30 and "MODULO" in k and len(v.strip()) <= 12), "")
+    m_mod = _RE_NRO_MODULO.search(valor_mod)
+    nro_modulo = int(m_mod.group(1)) if m_mod else None
+    docente = next((campos[k] for k in ("DOCENTE", "PROFESOR", "FACILITADOR", "TUTOR") if campos.get(k)), None)
+    fecha = fecha_de_fila(campos, "academico")
+
+    respuestas = []
+    for enc, valor in campos.items():
+        if _es_columna_identidad(enc) or valor is None:
+            continue
+        v = str(valor).strip()
+        m = _RE_LIKERT.match(v)
+        # Un número suelto solo es respuesta bajo una cabecera de pregunta (no 'EDAD', 'HORAS', 'GESTION')
+        if m and (_parece_pregunta(enc) or not v.replace(",", ".").replace(".", "", 1).isdigit()):
+            num = float(m.group(1).replace(",", "."))
+            tipo = tipo_pregunta(enc)
+            esc = _escala(enc, num, tipo)
+            if 0.0 <= num <= esc:
+                respuestas.append((enc, num, esc, tipo, None))
+            continue
+        if _parece_pregunta(enc) and normalizar_encabezado(v) not in _COMENTARIOS_VACIOS:
+            respuestas.append((enc, None, None, tipo_pregunta(enc), v[:1000]))
+
+    # Sin puntajes ni identidad: lista suelta de comentarios de una hoja de gráficos, o fila de resumen
+    if not respuestas or (not any(r[1] is not None for r in respuestas) and not (pos or estudiante)):
+        return []
+
+    if pos and nro_modulo:
+        programa = {"valor_extraido": pos, "metadata": {"pos_canonico": f"{pos}-M{nro_modulo:02d}"}}
+        modulo = {"valor_extraido": f"{pos} · Módulo {nro_modulo}"}
+    elif pos:
+        programa = {"valor_extraido": pos, "metadata": {"pos_canonico": pos}}
+        modulo = {"valor_extraido": campos.get("NOMBRE DEL PROGRAMA") or pos}
+    else:
+        programa = None
+        nombre_mod = campos.get("MODULO") or campos.get("CURSO") or campos.get("PROGRAMA")
+        modulo = {"valor_extraido": nombre_mod} if nombre_mod else None
+
+    fila_canonica = "|".join(f"{k}={campos[k]}" for k in sorted(campos))
+    return [{
+        "estudiante": estudiante,
+        "docente": {"valor_extraido": docente} if docente else None,
+        "programa": programa,
+        "modulo": modulo,
+        "fecha": fecha,
+        "pregunta_bloque": enc[:500],
+        "tipo_pregunta": tipo,
+        "puntuacion": num,
+        "escala_max": esc,
+        "comentario": coment,
+        "clave_respuesta": hashlib.sha1(f"{fila_canonica}||{enc}".encode("utf-8")).hexdigest(),
+        "requiere_revision": fecha is None,
+    } for enc, num, esc, tipo, coment in respuestas]
 
 
 def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[str]:
@@ -281,11 +760,15 @@ def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[
     if not campos:
         return "FILA_SIN_CABECERAS"
     if categoria == "rentabilidad":
-        return None if registros_rentabilidad(campos) else "FILA_AGREGADA_SIN_CATEGORIA_MES"
+        if registros_rentabilidad(campos) or registros_costo_programa(campos) or registros_techo_convenio(campos):
+            return None
+        return "FILA_AGREGADA_SIN_CATEGORIA_MES"
+    if categoria == "evaluacion_docente":
+        return None if registros_evaluacion(campos) else "FILA_EVALUACION_SIN_RESPUESTAS"
     if estudiante_de_fila(campos) is not None:
         return None
     if categoria == "academico":
-        return "FILA_ACADEMICA_SIN_ESTUDIANTE"
+        return None if registros_asignacion_docente(campos) else "FILA_ACADEMICA_SIN_ESTUDIANTE"
     if _pos(campos) or any(campos.get(k) for k in _CLAVES_ENTIDAD_PROGRAMA):
         return "FILA_FINANCIERA_SIN_ESTUDIANTE" if categoria == "financiero" else None
     return "FILA_SIN_ENTIDAD"

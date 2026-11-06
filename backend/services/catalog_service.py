@@ -12,6 +12,7 @@ from sqlalchemy import func, or_
 from models.dim_estudiante import DimEstudiante
 from models.dim_docente import DimDocente
 from models.dim_modulo import DimModulo
+from models.fact_evaluacion import FactEvaluacionDocente
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
 
@@ -149,10 +150,37 @@ class CatalogService:
             termino = f"%{busqueda.strip().lower()}%"
             query = query.filter(func.lower(DimDocente.nombre_completo).like(termino))
         docentes = query.order_by(DimDocente.nombre_completo).limit(limit).all()
+
+        # Puntaje real desde fact_evaluacion_docente; sin evaluaciones queda en None
+        ids = [d.id_docente for d in docentes]
+        stats = {}
+        if ids:
+            stats = {
+                r.id_docente: (r.promedio, r.n)
+                for r in self.db.query(
+                    FactEvaluacionDocente.id_docente,
+                    # Likert 1-5 y escalas de 10 llevadas a 1-5; comentarios sin puntaje no cuentan
+                    func.avg(
+                        FactEvaluacionDocente.puntuacion * 5.0 / func.coalesce(FactEvaluacionDocente.escala_max, 5)
+                    ).label("promedio"),
+                    func.count(FactEvaluacionDocente.puntuacion).label("n"),
+                ).filter(FactEvaluacionDocente.id_docente.in_(ids))
+                .group_by(FactEvaluacionDocente.id_docente).all()
+            }
+        data = []
+        for d in docentes:
+            prom, n = stats.get(d.id_docente, (None, 0))
+            data.append({
+                "id_docente": d.id_docente,
+                "nombre_completo": d.nombre_completo,
+                "area_especialidad": d.area_especialidad,
+                "puntaje_promedio": round(float(prom), 2) if prom is not None else None,
+                "n_evaluaciones": int(n),
+            })
         return {
             "status": "success",
-            "total": len(docentes),
-            "data": docentes
+            "total": len(data),
+            "data": data
         }
 
     def listar_modulos(self, busqueda: Optional[str] = None, limit: int = 100) -> Dict[str, Any]:

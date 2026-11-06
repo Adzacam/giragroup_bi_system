@@ -359,7 +359,7 @@ export default function HumanReviewFlowView() {
   const handleAddParameterToCatalog = () => {
     sileoToast.success({
       title: 'Parámetro incorporado al Catálogo Guía (Cero-PII)',
-      description: `Se vinculó "${formModulo || 'Oferta Curricular'}" a la oferta institucional POS-2026.`
+      description: `Se vinculó "${formModulo || 'Oferta Curricular'}" a la oferta institucional del catálogo.`
     });
     setIsCatalogModalOpen(false);
   };
@@ -1005,7 +1005,7 @@ export default function HumanReviewFlowView() {
             type="button"
             className="btn-pill-secondary"
             onClick={() => {
-              const navId = effectiveBatchNumber !== '—' ? effectiveBatchNumber : (localStorage.getItem('last_active_batch_id') || '01');
+              const navId = effectiveBatchNumber !== '—' ? effectiveBatchNumber : (localStorage.getItem('last_active_batch_id') || '');
               navigate(`/dataops/lote/${navId}/beto`);
             }}
           >

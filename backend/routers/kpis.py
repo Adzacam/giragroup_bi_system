@@ -138,3 +138,25 @@ def get_alertas(
         "advertencias": advertencias,
         "data": filtradas
     }
+
+
+@router.get("/kpis/costos-programa", summary="Ingreso, egreso y rentabilidad por programa (fact_costo_programa)")
+def get_costos_programa(
+    programa: Optional[str] = Query(None, description="Filtro por código POS o nombre del programa"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "ANALISTA_FINANCIERO", "AUDITOR_CALIDAD"]))
+):
+    from services.kpi_service import costos_por_programa
+    data = costos_por_programa(db, programa)
+    return {"status": "success", "total": len(data), "data": data}
+
+
+@router.get("/kpis/techos-convenio", summary="Convenios (techos) por institución cliente (fact_techo_convenio)")
+def get_techos_convenio(
+    gestion: Optional[int] = Query(None, description="Filtro por gestión (año)"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "ANALISTA_FINANCIERO", "AUDITOR_CALIDAD"]))
+):
+    from services.kpi_service import techos_por_institucion
+    data = techos_por_institucion(db, gestion)
+    return {"status": "success", "total": len(data), "data": data}

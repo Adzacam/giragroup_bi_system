@@ -5,7 +5,7 @@ const ThemeContext = createContext({
   isDark: false,
   toggleTheme: () => {},
   setTheme: () => {},
-  canvasEnabled: true,
+  canvasEnabled: false,
   toggleCanvas: () => {},
   autoRefresh: '30s',
   setAutoRefresh: () => {},
@@ -18,7 +18,7 @@ export function ThemeProvider({ children }) {
 
   const [canvasEnabled, setCanvasEnabled] = useState(() => {
     const stored = localStorage.getItem('gira_canvas_enabled');
-    return stored !== null ? stored === 'true' : true;
+    return stored !== null ? stored === 'true' : false;
   });
 
   const [autoRefresh, setAutoRefreshState] = useState(() => {

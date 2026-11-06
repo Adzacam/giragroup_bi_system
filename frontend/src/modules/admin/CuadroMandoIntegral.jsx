@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import PageHeader from '../../components/shared/PageHeader';
-import KpiCard from '../../components/shared/KpiCard';
+import CmiScorecard from './cmi/CmiScorecard';
+import CmiConfiguracion from './cmi/CmiConfiguracion';
+import CmiPowerBi from './cmi/CmiPowerBi';
 import useKineticScroll from '../../hooks/useKineticScroll';
 import {
   ShieldCheck,
@@ -28,7 +30,9 @@ import {
   Calendar,
   Sparkles,
   Info,
-  Download
+  Download,
+  SlidersHorizontal,
+  MonitorDown
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -45,7 +49,6 @@ import {
 import { Line, Bar } from 'react-chartjs-2';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import kpiApi from '../../api/kpiApi';
 import forecastApi from '../../api/forecastApi';
 import { reportesApi } from '../../api/reportesApi';
 import { sileoToast } from '../../services/sileoToast';
@@ -62,18 +65,22 @@ ChartJS.register(
   Filler
 );
 
+// Sin dato del backend se muestra '—', nunca una cifra de relleno
+const fmtBs = (v) => (v === null || v === undefined || Number.isNaN(Number(v)) ? '—' : Math.round(Number(v)).toLocaleString('es-BO'));
+
 export default function CuadroMandoIntegral() {
   useKineticScroll();
   const { theme } = useTheme();
   const { role } = useAuth();
   const isDark = theme === 'dark';
-  const isMarketing = role === 'ANALISTA_MARKETING';
+  const isAdmin = role === 'ADMIN';
+  // Power BI Desktop: ADMIN edita y publica versiones; ANALISTA_MARKETING sólo descarga la vigente
+  const veePowerBi = isAdmin || role === 'ANALISTA_MARKETING';
+  const queryClient = useQueryClient();
 
   // Modo Principal: 'A' = Perspectivas Estratégicas Institucionales, 'B' = Analítica Predictiva Macro
   const [activeMode, setActiveMode] = useState('A');
 
-  // Sub-pestaña para Modo A: 'resumen', 'financiera', 'cliente', 'procesos', 'aprendizaje'
-  const [subTabModoA, setSubTabModoA] = useState(isMarketing ? 'cliente' : 'resumen');
 
   // Filtros en Modo B
   const [horizonte, setHorizonte] = useState(6);
@@ -93,7 +100,7 @@ export default function CuadroMandoIntegral() {
       await reportesApi.exportarReporte({
         tipo: 'kpis',
         formato,
-        gestion: '2026',
+        gestion: String(new Date().getFullYear()),
         programa: searchProg || ''
       });
       sileoToast.success(`Reporte CMI ${formato.toUpperCase()} generado y descargado.`);
@@ -104,107 +111,6 @@ export default function CuadroMandoIntegral() {
       setIsExporting(false);
     }
   };
-
-  const FALLBACK_CMI_PERSPECTIVAS = {
-    financiera: {
-      recaudacion_vs_meta_pct: 92.4,
-      monto_total_recaudado_bs: 12907977.61,
-      monto_meta_gestion_bs: 14041718.15,
-      monto_total_deuda_bs: 14200.0,
-      mora_total_pct: 14.2,
-      estudiantes_cartera_vigente: 120,
-      estudiantes_cartera_mora: 14,
-      estudiantes_cartera_previsionable: 4,
-      drilldown_categorias: [
-        { categoria: 'PROGRAMAS REGULARES', recaudado_bs: 12907977.61, meta_bs: 14041718.15, cumplimiento_pct: 91.9, estado: 'Óptimo' },
-        { categoria: 'TECHOS / CERRADOS', recaudado_bs: 1133740.54, meta_bs: 1250000.00, cumplimiento_pct: 90.7, estado: 'En rango' },
-        { categoria: 'INGRESOS DEVENGADOS', recaudado_bs: 14041718.15, meta_bs: 14041718.15, cumplimiento_pct: 100.0, estado: 'Base devengada' }
-      ],
-      drilldown_cartera: [
-        { estado: 'Cartera Vigente', alumnos: 120, pct_total: 85.7, monto_estimado_bs: 0.0, riesgo: 'Bajo' },
-        { estado: 'Mora (30 a 90 días)', alumnos: 14, pct_total: 10.0, monto_estimado_bs: 9800.0, riesgo: 'Medio' },
-        { estado: 'Previsionable (> 90 días)', alumnos: 4, pct_total: 2.9, monto_estimado_bs: 4400.0, riesgo: 'Crítico' }
-      ]
-    },
-    cliente_mercado: {
-      tasa_conversion_admisiones_pct: 34.2,
-      retencion_neta_pct: 88.7,
-      total_matricula_acumulada: 15196,
-      alumnos_libres_alertas_pct: 92.8,
-      drilldown_lineas: [
-        { linea: 'Diplomados', inscritos: 9150, pct: 60.2, crecimiento_anual: '+31.8%' },
-        { linea: 'Cursos Cortos y Especializados', inscritos: 3399, pct: 22.4, crecimiento_anual: '+23.6%' },
-        { linea: 'Programas Expertos', inscritos: 2504, pct: 16.5, crecimiento_anual: '+24.1%' },
-        { linea: 'Maestrías Institucionales', inscritos: 143, pct: 0.9, crecimiento_anual: '+12.4%' }
-      ],
-      drilldown_embudo: [
-        { etapa: '1. Postulaciones en Plataforma Web', cantidad: 44432, pct_conversion: 100.0 },
-        { etapa: '2. Contacto Asesor y Validación', cantidad: 31102, pct_conversion: 70.0 },
-        { etapa: '3. Admisión Aprobada', cantidad: 19755, pct_conversion: 44.5 },
-        { etapa: '4. Pago 1ra Cuota (Matrícula Efectiva)', cantidad: 15196, pct_conversion: 34.2 }
-      ]
-    },
-    procesos_internos: {
-      confianza_media_beto_pct: 98.1,
-      tasa_automatizacion_pct: 94.6,
-      documentos_procesados: 38,
-      registros_derivados_hitl: 7,
-      entidades_no_resueltas: 3,
-      tiempo_medio_procesamiento_ms: 340,
-      drilldown_fuentes: [
-        { tipo_fuente: 'Planillas Excel Institucionales', archivos: 28, confianza_ia_pct: 98.6, latencia_ms: 320 },
-        { tipo_fuente: 'Actas Académicas y Calificaciones PDF', archivos: 6, confianza_ia_pct: 97.4, latencia_ms: 580 },
-        { tipo_fuente: 'Formularios Web Google Forms', archivos: 4, confianza_ia_pct: 99.2, latencia_ms: 190 }
-      ],
-      drilldown_calidad_nlp: [
-        { componente: 'Tokenizador y Embeddings BETO', estado: 'Operativo', score: '98.8%' },
-        { componente: 'Resolución de Nombres RapidFuzz', estado: 'Operativo', score: '96.4%' },
-        { componente: 'Detección IF/THEN de Alertas Tempranas', estado: 'Operativo', score: '100.0%' }
-      ]
-    },
-    aprendizaje_crecimiento: {
-      promedio_general_notas: 79.4,
-      tasa_aprobacion_pct: 94.8,
-      puntualidad_actas_pct: 96.2,
-      cobertura_catalogo_pct: 98.5,
-      estudiantes_en_riesgo: 24,
-      drilldown_distribucion_notas: [
-        { rango: 'Excelente (86 - 100 pts)', cantidad: 412, pct: 33.0, estado: 'Sobresaliente' },
-        { rango: 'Bueno (71 - 85 pts)', cantidad: 635, pct: 50.9, estado: 'Satisfactorio' },
-        { rango: 'Regular (51 - 70 pts)', cantidad: 136, pct: 10.9, estado: 'Riesgo Leve' },
-        { rango: 'Reprobado (< 51 pts)', cantidad: 65, pct: 5.2, estado: 'Riesgo Crítico' }
-      ],
-      drilldown_docentes: [
-        { area: 'Ciencias de la Salud (Medicina Estética)', docentes_activos: 12, puntualidad_pct: 97.5, promedio_notas: 78.2 },
-        { area: 'Tecnología e Inteligencia de Negocios', docentes_activos: 9, puntualidad_pct: 98.0, promedio_notas: 81.4 },
-        { area: 'Gestión Pública y Jurídica', docentes_activos: 8, puntualidad_pct: 94.0, promedio_notas: 75.8 },
-        { area: 'Educación Superior e Innovación', docentes_activos: 6, puntualidad_pct: 96.0, promedio_notas: 79.0 }
-      ]
-    }
-  };
-
-  // Query React Query para Perspectivas del CMI (Modo A)
-  const {
-    data: cmiData = FALLBACK_CMI_PERSPECTIVAS,
-    isLoading: isLoadingCmi,
-    refetch: refetchCmi,
-  } = useQuery({
-    queryKey: ['cmiCompletoPerspectivas'],
-    queryFn: async () => {
-      try {
-        const res = await kpiApi.getCmiCompleto();
-        if (res && res.perspectivas) {
-          return res.perspectivas;
-        }
-      } catch (err) {
-        console.warn('Backend /kpis/cmi-completo no disponible, usando fallback:', err.message);
-      }
-      return FALLBACK_CMI_PERSPECTIVAS;
-    },
-    staleTime: 60_000,
-    gcTime: 300_000,
-    placeholderData: keepPreviousData,
-  });
 
   // Query React Query para Analítica Predictiva Macro (Modo B)
   const {
@@ -229,13 +135,6 @@ export default function CuadroMandoIntegral() {
     gcTime: 300_000,
     placeholderData: keepPreviousData,
   });
-
-  const fetchCmi = async (force = false) => {
-    if (force) {
-      await kpiApi.getCmiCompleto(true).catch(() => null);
-    }
-    return refetchCmi();
-  };
 
   const fetchMacro = () => refetchMacro();
   const handleRecalcularMacro = () => refetchMacro();
@@ -271,7 +170,7 @@ export default function CuadroMandoIntegral() {
       labels,
       datasets: [
         {
-          label: 'Inscritos Históricos (N=43)',
+          label: 'Inscritos Históricos',
           data: historicalSeries,
           borderColor: isDark ? '#FAF9F6' : '#0C1E33',
           backgroundColor: isDark ? '#FAF9F6' : '#0C1E33',
@@ -354,9 +253,14 @@ export default function CuadroMandoIntegral() {
   const chartCaso4Data = React.useMemo(() => {
     if (!macroData?.caso4_metas_anuales) return null;
     const c4 = macroData.caso4_metas_anuales;
-    const labels = ['2023', '2024', '2025', '2026 (Proy OLS)', '2027 (Proy OLS)'];
-    const histData = [...c4.valores_historicos_bs, null, null];
-    const proyData = [null, null, c4.valores_historicos_bs[2], ...(c4.proyecciones_ols || []).map(p => p.monto_proyectado_bs)];
+    const hist = c4.valores_historicos_bs || [];
+    const proy = c4.proyecciones_ols || [];
+    if (hist.length === 0 && proy.length === 0) return null;
+    const labels = [...(c4.anios_historicos || []).map(String), ...proy.map(p => `${p.periodo} (Proy OLS)`)];
+    const histData = [...hist, ...Array(proy.length).fill(null)];
+    const proyData = hist.length
+      ? [...Array(hist.length - 1).fill(null), hist[hist.length - 1], ...proy.map(p => p.monto_proyectado_bs)]
+      : proy.map(p => p.monto_proyectado_bs);
 
     return {
       labels,
@@ -412,12 +316,12 @@ export default function CuadroMandoIntegral() {
           category="ADMINISTRACIÓN ESTRATÉGICA"
           title="Cuadro de Mando Integral"
           italicWord="Macroinstitucional"
-          subtitle="Monitoreo multidimensional del desempeño académico-financiero y suite econométrica de modelos predictivos."
+          subtitle="Desempeño institucional en cuatro perspectivas estratégicas, con metas y semáforo comunes a la web y a Power BI."
         />
         <div style={{ display: 'flex', gap: '10px', marginTop: '24px', position: 'relative' }}>
           <button
-            onClick={() => { fetchCmi(true); if (activeMode === 'B') fetchMacro(); }}
-            disabled={isLoadingCmi || isLoadingMacro}
+            onClick={() => { queryClient.invalidateQueries({ queryKey: ['cmi'] }); if (activeMode === 'B') fetchMacro(); }}
+            disabled={isLoadingMacro}
             className="btn-academic"
             style={{
               display: 'inline-flex',
@@ -433,7 +337,7 @@ export default function CuadroMandoIntegral() {
               color: 'var(--color-ink-black)',
             }}
           >
-            <RefreshCw size={14} className={isLoadingCmi || isLoadingMacro ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={isLoadingMacro ? 'animate-spin' : ''} />
             Actualizar
           </button>
 
@@ -542,6 +446,8 @@ export default function CuadroMandoIntegral() {
           borderRadius: '16px',
           margin: '20px 0 28px 0',
           width: 'fit-content',
+          maxWidth: '100%',
+          flexWrap: 'wrap',
           border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'var(--color-border)'}`
         }}
       >
@@ -572,7 +478,7 @@ export default function CuadroMandoIntegral() {
           }}
         >
           <Layers size={16} color={activeMode === 'A' ? 'var(--color-gira-gold)' : 'currentColor'} />
-          (A) Perspectivas Estratégicas Institucionales
+          Perspectivas estratégicas
         </button>
 
         <button
@@ -602,363 +508,64 @@ export default function CuadroMandoIntegral() {
           }}
         >
           <TrendingUp size={16} color={activeMode === 'B' ? 'var(--color-gira-gold)' : 'currentColor'} />
-          (B) Analítica Predictiva Macro
+          Analítica predictiva
         </button>
+        {isAdmin && (
+          <button
+            onClick={() => setActiveMode('C')}
+            aria-pressed={activeMode === 'C'}
+            style={{
+              padding: '10px 22px',
+              borderRadius: '12px',
+              fontSize: '13.5px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              border: activeMode === 'C' && isDark ? '1px solid rgba(241, 184, 68, 0.45)' : '1px solid transparent',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease',
+              backgroundColor: activeMode === 'C' ? (isDark ? '#232a38' : 'var(--color-paper-white)') : 'transparent',
+              color: activeMode === 'C' ? (isDark ? '#FAF9F6' : '#0C1E33') : (isDark ? '#9ca3af' : 'var(--color-slate-gray)'),
+              boxShadow: activeMode === 'C' ? (isDark ? '0 4px 14px rgba(0,0,0,0.5)' : 'var(--shadow-subtle)') : 'none'
+            }}
+          >
+            <SlidersHorizontal size={16} color={activeMode === 'C' ? 'var(--color-gira-gold)' : 'currentColor'} />
+            Configuración
+          </button>
+        )}
+        {veePowerBi && (
+          <button
+            onClick={() => setActiveMode('D')}
+            aria-pressed={activeMode === 'D'}
+            style={{
+              padding: '10px 22px',
+              borderRadius: '12px',
+              fontSize: '13.5px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              border: activeMode === 'D' && isDark ? '1px solid rgba(241, 184, 68, 0.45)' : '1px solid transparent',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease',
+              backgroundColor: activeMode === 'D' ? (isDark ? '#232a38' : 'var(--color-paper-white)') : 'transparent',
+              color: activeMode === 'D' ? (isDark ? '#FAF9F6' : '#0C1E33') : (isDark ? '#9ca3af' : 'var(--color-slate-gray)'),
+              boxShadow: activeMode === 'D' ? (isDark ? '0 4px 14px rgba(0,0,0,0.5)' : 'var(--shadow-subtle)') : 'none'
+            }}
+          >
+            <MonitorDown size={16} color={activeMode === 'D' ? 'var(--color-gira-gold)' : 'currentColor'} />
+            Power BI
+          </button>
+        )}
       </div>
 
-      {/* ════════════════════════════════════════════════════════════════════════ */}
-      {/* MODO A: PERSPECTIVAS ESTRATÉGICAS INSTITUCIONALES (BALANCED SCORECARD) */}
-      {/* ════════════════════════════════════════════════════════════════════════ */}
-      {activeMode === 'A' && (
-        <div>
-          {/* Sub-selector de Perspectivas con chips */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
-            {[
-              { id: 'resumen', label: 'Resumen Ejecutivo (4 Pilares)' },
-              { id: 'financiera', label: '1. Perspectiva Financiera' },
-              { id: 'cliente', label: '2. Del Cliente / Mercado' },
-              { id: 'procesos', label: '3. Procesos Internos DataOps' },
-              { id: 'aprendizaje', label: '4. Aprendizaje y Crecimiento' },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setSubTabModoA(tab.id)}
-                style={{
-                  padding: '7px 16px',
-                  borderRadius: '9999px',
-                  fontSize: '12.5px',
-                  fontWeight: subTabModoA === tab.id ? 700 : 500,
-                  cursor: 'pointer',
-                  border: subTabModoA === tab.id
-                    ? '1px solid var(--color-gira-gold)'
-                    : (isDark ? '1px solid #2d3748' : '1px solid var(--color-border)'),
-                  backgroundColor: subTabModoA === tab.id
-                    ? (isDark ? 'rgba(217, 155, 38, 0.22)' : 'rgba(217, 155, 38, 0.12)')
-                    : (isDark ? '#1a202c' : 'var(--color-paper-white)'),
-                  color: subTabModoA === tab.id
-                    ? 'var(--color-gira-gold)'
-                    : (isDark ? '#cbd5e1' : 'var(--color-slate-gray)'),
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+      {activeMode === 'A' && <CmiScorecard />}
 
-          {/* ── Vista: Resumen Ejecutivo de 4 Pilares ─────────────────────────── */}
-          {subTabModoA === 'resumen' && cmiData && (
-            <div className="space-y-6">
-              <div className="cmi-kpi-grid">
-                <KpiCard
-                  label="1. PERSPECTIVA FINANCIERA"
-                  numberPrefix="Bs. "
-                  number={cmiData?.financiera?.monto_total_recaudado_bs != null ? `${(cmiData.financiera.monto_total_recaudado_bs / 1000000).toFixed(2)}M` : '0.00M'}
-                  sublabel={cmiData?.financiera?.recaudacion_vs_meta_pct != null ? `Cumplimiento de Meta: ${cmiData.financiera.recaudacion_vs_meta_pct}% · Mora: ${cmiData?.financiera?.mora_total_pct ?? 0}%` : 'Sin registros financieros en DW'}
-                  badgeText={cmiData?.financiera?.recaudacion_vs_meta_pct != null ? (cmiData.financiera.recaudacion_vs_meta_pct >= 90 ? 'Saludable' : 'En Riesgo') : 'Sin datos'}
-                  badgeType={cmiData?.financiera?.recaudacion_vs_meta_pct >= 90 ? 'success' : 'peach'}
-                />
+      {activeMode === 'C' && isAdmin && <CmiConfiguracion />}
 
-                <KpiCard
-                  label="2. DEL CLIENTE / MERCADO"
-                  number={cmiData?.cliente_mercado?.total_matricula_acumulada != null ? cmiData.cliente_mercado.total_matricula_acumulada.toLocaleString() : '0'}
-                  numberSuffix=" Alumnos"
-                  sublabel={cmiData?.cliente_mercado?.tasa_conversion_admisiones_pct != null ? `Conversión Admisión: ${cmiData.cliente_mercado.tasa_conversion_admisiones_pct}%` : 'Sin postulaciones registradas en DW'}
-                  badgeText="Sostenido"
-                  badgeType="success"
-                />
+      {activeMode === 'D' && veePowerBi && <CmiPowerBi />}
 
-                <KpiCard
-                  label="3. PROCESOS INTERNOS DATAOPS"
-                  number={cmiData?.procesos_internos?.confianza_media_beto_pct != null ? cmiData.procesos_internos.confianza_media_beto_pct.toFixed(1) : '0.0'}
-                  numberSuffix="%"
-                  sublabel={cmiData?.procesos_internos?.tasa_automatizacion_pct != null ? `Automatización: ${cmiData.procesos_internos.tasa_automatizacion_pct}% · HITL: ${cmiData?.procesos_internos?.registros_derivados_hitl ?? 0} casos` : 'Sin procesamiento activo en DW'}
-                  badgeText="NLP Activo"
-                  badgeType="peach"
-                />
-
-                <KpiCard
-                  label="4. APRENDIZAJE Y CRECIMIENTO"
-                  number={cmiData?.aprendizaje_crecimiento?.promedio_general_notas != null ? cmiData.aprendizaje_crecimiento.promedio_general_notas.toFixed(1) : '0.0'}
-                  numberSuffix=" pts"
-                  sublabel={cmiData?.aprendizaje_crecimiento?.tasa_aprobacion_pct != null ? `Aprobación: ${cmiData.aprendizaje_crecimiento.tasa_aprobacion_pct}% · En riesgo: ${cmiData?.aprendizaje_crecimiento?.estudiantes_en_riesgo ?? 0} alumnos` : 'Sin evaluaciones registradas en DW'}
-                  badgeText="Vigente"
-                  badgeType="neutral"
-                />
-              </div>
-
-              {/* Tarjetas Expandibles de Desglose Rápido */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
-                <div className="card-mist kinetic-card p-6 rounded-[24px]">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--color-ink-black)' }}>
-                      Desglose de Cartera y Cobranzas
-                    </h3>
-                    <button
-                      onClick={() => setSubTabModoA('financiera')}
-                      style={{ background: 'none', border: 'none', color: 'var(--color-gira-gold)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      Ver Detalle <ChevronRight size={14} />
-                    </button>
-                  </div>
-                  <div className="space-y-3">
-                    {(cmiData?.financiera?.drilldown_cartera || []).map((item, idx) => (
-                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                        <div>
-                          <div style={{ fontSize: '13px', fontWeight: 600 }}>{item.estado}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>{item.alumnos} alumnos ({item.pct_total}%)</div>
-                        </div>
-                        <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '9999px', background: item.riesgo === 'Bajo' ? 'rgba(27,135,84,0.14)' : (item.riesgo === 'Medio' ? 'rgba(217,155,38,0.14)' : 'rgba(217,56,58,0.14)'), color: item.riesgo === 'Bajo' ? 'var(--color-alert-green)' : (item.riesgo === 'Medio' ? 'var(--color-gira-gold)' : 'var(--color-alert-red)') }}>
-                          Riesgo {item.riesgo}
-                        </span>
-                      </div>
-                    ))}
-                    {(!cmiData?.financiera?.drilldown_cartera || cmiData.financiera.drilldown_cartera.length === 0) && (
-                      <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', textAlign: 'center', padding: '12px' }}>Sin registros de cartera en el DW</div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="card-mist kinetic-card p-6 rounded-[24px]">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--color-ink-black)' }}>
-                      Embudo de Conversión de Admisiones
-                    </h3>
-                    <button
-                      onClick={() => setSubTabModoA('cliente')}
-                      style={{ background: 'none', border: 'none', color: 'var(--color-gira-gold)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      Ver Detalle <ChevronRight size={14} />
-                    </button>
-                  </div>
-                  <div className="space-y-3">
-                    {(cmiData?.cliente_mercado?.drilldown_embudo || []).map((e, idx) => (
-                      <div key={idx} style={{ padding: '8px 12px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px' }}>
-                          <span>{e.etapa}</span>
-                          <span style={{ fontFamily: 'var(--font-mono)' }}>{e.cantidad.toLocaleString()} ({e.pct_conversion}%)</span>
-                        </div>
-                        <div style={{ height: '6px', width: '100%', background: 'var(--color-mist-gray)', borderRadius: '9999px', overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${e.pct_conversion}%`, background: 'var(--color-gira-gold)', borderRadius: '9999px' }} />
-                        </div>
-                      </div>
-                    ))}
-                    {(!cmiData?.cliente_mercado?.drilldown_embudo || cmiData.cliente_mercado.drilldown_embudo.length === 0) && (
-                      <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', textAlign: 'center', padding: '12px' }}>Sin datos de embudo en el DW</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Vista: Perspectiva Financiera Detallada ───────────────────────── */}
-          {subTabModoA === 'financiera' && cmiData && (
-            <div className="space-y-6">
-              <div className="card-mist kinetic-card p-6 rounded-[24px]">
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', color: 'var(--color-ink-black)' }}>
-                  1. Perspectiva Financiera: Recaudación vs Metas y Cartera
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Recaudación Total Real</div>
-                    <div style={{ fontSize: '24px', fontWeight: 700, marginTop: '4px' }}>Bs. {(cmiData?.financiera?.monto_total_recaudado_bs ?? 0).toLocaleString()}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-alert-green)', marginTop: '4px', fontWeight: 600 }}>{cmiData?.financiera?.recaudacion_vs_meta_pct ?? 0}% de Meta de Gestión</div>
-                  </div>
-                  <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Meta Total Presupuestada</div>
-                    <div style={{ fontSize: '24px', fontWeight: 700, marginTop: '4px' }}>Bs. {(cmiData?.financiera?.monto_meta_gestion_bs ?? 0).toLocaleString()}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>Catálogo Oficial de Programas</div>
-                  </div>
-                  <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Morosidad Institucional</div>
-                    <div style={{ fontSize: '24px', fontWeight: 700, marginTop: '4px', color: 'var(--color-alert-red)' }}>{cmiData?.financiera?.mora_total_pct ?? 0}%</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>{cmiData?.financiera?.estudiantes_riesgo_financiero ?? 0} alumnos con riesgo financiero</div>
-                  </div>
-                </div>
-
-                <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Desglose por Categoría Presupuestaria</h4>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid var(--color-border)', textAlign: 'left', color: 'var(--color-slate-gray)' }}>
-                        <th style={{ padding: '10px' }}>Categoría</th>
-                        <th style={{ padding: '10px' }}>Recaudado Real</th>
-                        <th style={{ padding: '10px' }}>Meta Presupuestada</th>
-                        <th style={{ padding: '10px' }}>Cumplimiento</th>
-                        <th style={{ padding: '10px' }}>Estado</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(cmiData?.financiera?.drilldown_categorias || []).map((cat, idx) => (
-                        <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                          <td style={{ padding: '12px 10px', fontWeight: 600 }}>{cat.categoria}</td>
-                          <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>Bs. {(cat.recaudado_bs ?? 0).toLocaleString()}</td>
-                          <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>Bs. {(cat.meta_bs ?? 0).toLocaleString()}</td>
-                          <td style={{ padding: '12px 10px', fontWeight: 700, color: (cat.cumplimiento_pct || 0) >= 90 ? 'var(--color-alert-green)' : 'var(--color-gira-gold)' }}>
-                            {cat.cumplimiento_pct ?? 0}%
-                          </td>
-                          <td style={{ padding: '12px 10px' }}>
-                            <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '9999px', background: 'rgba(27,135,84,0.12)', color: 'var(--color-alert-green)', fontWeight: 600 }}>
-                              {cat.estado || 'Activo'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Vista: Perspectiva del Cliente / Mercado ──────────────────────── */}
-          {subTabModoA === 'cliente' && cmiData && (
-            <div className="space-y-6">
-              <div className="card-mist kinetic-card p-6 rounded-[24px]">
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', color: 'var(--color-ink-black)' }}>
-                  2. Perspectiva del Cliente y Mercado: Líneas Formativas y Retención
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '14px' }}>Distribución por Línea de Posgrado</h4>
-                    <div className="space-y-3">
-                      {(cmiData?.cliente_mercado?.drilldown_lineas || []).map((l, idx) => (
-                        <div key={idx} style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, marginBottom: '4px' }}>
-                            <span>{l.linea}</span>
-                            <span style={{ color: 'var(--color-gira-gold)' }}>{l.crecimiento_anual}</span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-slate-gray)', marginBottom: '8px' }}>
-                            <span>{(l.inscritos ?? 0).toLocaleString()} estudiantes matriculados</span>
-                            <span>{l.pct}% del total</span>
-                          </div>
-                          <div style={{ height: '6px', width: '100%', background: 'var(--color-mist-gray)', borderRadius: '9999px', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${l.pct}%`, background: isDark ? 'var(--color-gira-gold)' : 'var(--color-gira-navy)', borderRadius: '9999px' }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '14px' }}>Embudo de Conversión de Matrícula</h4>
-                    <div className="space-y-3">
-                      {(cmiData?.cliente_mercado?.drilldown_embudo || []).map((e, idx) => (
-                        <div key={idx} style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, marginBottom: '4px' }}>
-                            <span>{e.etapa}</span>
-                            <span style={{ fontFamily: 'var(--font-mono)' }}>{(e.cantidad ?? 0).toLocaleString()}</span>
-                          </div>
-                          <div style={{ height: '6px', width: '100%', background: 'var(--color-mist-gray)', borderRadius: '9999px', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${e.pct_conversion}%`, background: 'var(--color-gira-gold)', borderRadius: '9999px' }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Vista: Procesos Internos (DataOps & NLP) ───────────────────────── */}
-          {subTabModoA === 'procesos' && cmiData && (
-            <div className="space-y-6">
-              <div className="card-mist kinetic-card p-6 rounded-[24px]">
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', color: 'var(--color-ink-black)' }}>
-                  3. Perspectiva de Procesos Internos: Cadena DataOps & Telemetría BETO
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Confianza Media BETO</div>
-                    <div style={{ fontSize: '26px', fontWeight: 700, marginTop: '4px', color: 'var(--color-gira-gold)' }}>{cmiData.procesos_internos.confianza_media_beto_pct}%</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>Extracción NER contextual</div>
-                  </div>
-                  <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Tasa de Automatización</div>
-                    <div style={{ fontSize: '26px', fontWeight: 700, marginTop: '4px', color: 'var(--color-alert-green)' }}>{cmiData.procesos_internos.tasa_automatizacion_pct}%</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>Sin intervención humana</div>
-                  </div>
-                  <div style={{ padding: '16px', borderRadius: '16px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Derivados a HITL</div>
-                    <div style={{ fontSize: '26px', fontWeight: 700, marginTop: '4px', color: 'var(--color-ink-black)' }}>{cmiData.procesos_internos.registros_derivados_hitl}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>Revisión humana auditada</div>
-                  </div>
-                </div>
-
-                <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Rendimiento por Fuente Ofimática</h4>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid var(--color-border)', textAlign: 'left', color: 'var(--color-slate-gray)' }}>
-                        <th style={{ padding: '10px' }}>Tipo de Fuente</th>
-                        <th style={{ padding: '10px' }}>Lotes Procesados</th>
-                        <th style={{ padding: '10px' }}>Confianza Media IA</th>
-                        <th style={{ padding: '10px' }}>Latencia Media</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(cmiData?.procesos_internos?.drilldown_fuentes || []).map((f, idx) => (
-                        <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                          <td style={{ padding: '12px 10px', fontWeight: 600 }}>{f.tipo_fuente}</td>
-                          <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>{f.archivos} archivos</td>
-                          <td style={{ padding: '12px 10px', fontWeight: 700, color: 'var(--color-alert-green)' }}>{f.confianza_ia_pct}%</td>
-                          <td style={{ padding: '12px 10px', fontFamily: 'var(--font-mono)' }}>{f.latencia_ms} ms</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Vista: Aprendizaje y Crecimiento ───────────────────────────────── */}
-          {subTabModoA === 'aprendizaje' && cmiData && (
-            <div className="space-y-6">
-              <div className="card-mist kinetic-card p-6 rounded-[24px]">
-                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', color: 'var(--color-ink-black)' }}>
-                  4. Perspectiva de Aprendizaje y Crecimiento: Desempeño Docente & Curricular
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Distribución de Calificaciones</h4>
-                    <div className="space-y-3">
-                      {(cmiData?.aprendizaje_crecimiento?.drilldown_distribucion_notas || []).map((n, idx) => (
-                        <div key={idx} style={{ padding: '10px 14px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div>
-                            <div style={{ fontSize: '13px', fontWeight: 600 }}>{n.rango}</div>
-                            <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>{n.cantidad} estudiantes ({n.pct}%)</div>
-                          </div>
-                          <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '9999px', background: n.estado.includes('Riesgo') ? 'rgba(217,56,58,0.12)' : 'rgba(27,135,84,0.12)', color: n.estado.includes('Riesgo') ? 'var(--color-alert-red)' : 'var(--color-alert-green)', fontWeight: 600 }}>
-                            {n.estado}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Puntualidad y Desempeño por Área Docente</h4>
-                    <div className="space-y-3">
-                      {(cmiData?.aprendizaje_crecimiento?.drilldown_docentes || []).map((d, idx) => (
-                        <div key={idx} style={{ padding: '10px 14px', borderRadius: '12px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                          <div style={{ fontSize: '13px', fontWeight: 600 }}>{d.area}</div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-slate-gray)', marginTop: '4px' }}>
-                            <span>Docentes: {d.docentes_activos} · Nota media: {d.promedio_notas} pts</span>
-                            <span style={{ color: 'var(--color-alert-green)', fontWeight: 700 }}>Actas a tiempo: {d.puntualidad_pct}%</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ════════════════════════════════════════════════════════════════════════ */}
       {/* MODO B: ANALÍTICA PREDICTIVA MACRO (4 CASOS DE NEGOCIO: HW Y OLS)     */}
@@ -985,7 +592,7 @@ export default function CuadroMandoIntegral() {
                 Motor Predictivo: Holt-Winters Aditivo (m=12) & Estimadores OLS
               </div>
               <div style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>
-                Serie longitudinal N = 43 meses (Nov 2022 - May 2026) · Intervalo de Confianza: 95% con cota no negativa (ŷ ≥ 0)
+                {macroData?.caso1_demanda_global ? `Serie longitudinal N = ${macroData.caso1_demanda_global.n_observaciones} meses (${macroData.caso1_demanda_global.periodos_historicos[0]} – ${macroData.caso1_demanda_global.periodos_historicos.at(-1)}) · ` : ''}Intervalo de Confianza: 95% con cota no negativa (ŷ ≥ 0)
               </div>
             </div>
 
@@ -1042,7 +649,7 @@ export default function CuadroMandoIntegral() {
                 </div>
                 <button
                   onClick={() => setModalDetail({
-                    titulo: 'Detalle Longitudinal: Caso 1 (N=43 meses)',
+                    titulo: `Detalle Longitudinal: Caso 1 (N=${macroData?.caso1_demanda_global?.n_observaciones ?? 0} meses)`,
                     tipo: 'caso1',
                     data: macroData?.caso1_demanda_global
                   })}
@@ -1057,10 +664,10 @@ export default function CuadroMandoIntegral() {
               {macroData?.caso1_demanda_global && (
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
                   <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '9999px', background: 'rgba(27,135,84,0.12)', color: 'var(--color-alert-green)' }}>
-                    Tendencia OLS: +{macroData.caso1_demanda_global.pendiente_ols_mes} al/mes
+                    Tendencia OLS: {macroData.caso1_demanda_global.pendiente_ols_mes} al/mes
                   </span>
                   <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '9999px', background: 'rgba(217,155,38,0.12)', color: 'var(--color-gira-gold)' }}>
-                    CAGR: +{macroData.caso1_demanda_global.cagr_historico_pct}%
+                    CAGR: {macroData.caso1_demanda_global.cagr_historico_pct}%
                   </span>
                   <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 9px', borderRadius: '9999px', background: 'var(--color-mist-gray)', color: 'var(--color-slate-gray)' }}>
                     MAPE: {macroData.caso1_demanda_global.mape_pct}% · RMSE: {macroData.caso1_demanda_global.rmse}
@@ -1073,7 +680,7 @@ export default function CuadroMandoIntegral() {
                   <Line data={chartCaso1Data} options={defaultChartOptions} />
                 ) : (
                   <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
-                    Cargando serie temporal histórica...
+                    {isLoadingMacro ? 'Cargando serie temporal histórica...' : (macroData?.sin_datos?.caso1 || 'Sin datos de inscripciones en el Data Warehouse.')}
                   </div>
                 )}
               </div>
@@ -1219,13 +826,13 @@ export default function CuadroMandoIntegral() {
               {macroData?.caso3_metas_mensuales?.mes_actual && (
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
                   <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 9px', borderRadius: '9999px', background: 'var(--color-mist-gray)', color: 'var(--color-ink-black)' }}>
-                    Meta Mes Actual: Bs. {macroData.caso3_metas_mensuales.mes_actual.meta_mes_bs.toLocaleString()}
+                    Meta {macroData.caso3_metas_mensuales.mes_actual.periodo}: Bs. {fmtBs(macroData.caso3_metas_mensuales.mes_actual.meta_mes_bs)}
                   </span>
                   <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '9999px', background: 'rgba(217,155,38,0.14)', color: 'var(--color-gira-gold)' }}>
-                    Cierre HW: Bs. {Math.round(macroData.caso3_metas_mensuales.mes_actual.cierre_proyectado_hw_bs).toLocaleString()}
+                    Cierre HW: Bs. {fmtBs(macroData.caso3_metas_mensuales.mes_actual.cierre_proyectado_hw_bs)}
                   </span>
                   <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '9999px', background: 'rgba(27,135,84,0.14)', color: 'var(--color-alert-green)' }}>
-                    Cumplimiento: {macroData.caso3_metas_mensuales.mes_actual.cumplimiento_proyectado_pct}%
+                    Cumplimiento: {macroData.caso3_metas_mensuales.mes_actual.cumplimiento_proyectado_pct ?? '—'}%
                   </span>
                 </div>
               )}
@@ -1235,7 +842,7 @@ export default function CuadroMandoIntegral() {
                   <Bar data={chartCaso3Data} options={defaultChartOptions} />
                 ) : (
                   <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
-                    Cargando comparativa mensual de metas...
+                    {isLoadingMacro ? 'Cargando comparativa mensual de metas...' : (macroData?.sin_datos?.caso3 || 'Sin metas ni ejecución financiera en el Data Warehouse.')}
                   </div>
                 )}
               </div>
@@ -1249,12 +856,12 @@ export default function CuadroMandoIntegral() {
                     Caso 4 · Planificación Plurianual
                   </span>
                   <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '2px 0 0 0', color: 'var(--color-ink-black)' }}>
-                    Cumplimiento de Meta Anual (3.8M Bs) & Recta OLS
+                    Cumplimiento de Meta Anual & Recta OLS
                   </h3>
                 </div>
                 <button
                   onClick={() => setModalDetail({
-                    titulo: 'Desglose Plurianual: Caso 4 (Trayectoria 2023-2027 hacia 3.8M Bs)',
+                    titulo: 'Desglose Plurianual: Caso 4 (Trayectoria OLS hacia la Meta Anual)',
                     tipo: 'caso4',
                     data: macroData?.caso4_metas_anuales
                   })}
@@ -1265,21 +872,21 @@ export default function CuadroMandoIntegral() {
                 </button>
               </div>
 
-              {/* Medidor de Avance Bullet hacia Meta de 3.8M Bs */}
+              {/* Medidor de Avance Bullet hacia la Meta Anual registrada */}
               {macroData?.caso4_metas_anuales && (
                 <div style={{ marginBottom: '16px', padding: '12px 14px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px' }}>
-                    <span>Meta Institucional: Bs. 3,800,000</span>
+                    <span>Meta {macroData.caso4_metas_anuales.gestion_actual}: Bs. {fmtBs(macroData.caso4_metas_anuales.meta_anual_institucional_bs)}</span>
                     <span style={{ color: 'var(--color-gira-gold)', fontWeight: 700 }}>
-                      {macroData.caso4_metas_anuales.porcentaje_avance_meta}% ejecutado (Bs. {macroData.caso4_metas_anuales.recaudado_acumulado_bs.toLocaleString()})
+                      {macroData.caso4_metas_anuales.porcentaje_avance_meta ?? '—'}% ejecutado (Bs. {fmtBs(macroData.caso4_metas_anuales.recaudado_acumulado_bs)})
                     </span>
                   </div>
                   <div style={{ height: '10px', width: '100%', background: 'var(--color-mist-gray)', borderRadius: '9999px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${Math.min(100, macroData.caso4_metas_anuales.porcentaje_avance_meta)}%`, background: isDark ? 'linear-gradient(90deg, #D99B26, #F1B844)' : 'linear-gradient(90deg, var(--color-gira-navy), var(--color-gira-gold))', borderRadius: '9999px' }} />
+                    <div style={{ height: '100%', width: `${Math.min(100, macroData.caso4_metas_anuales.porcentaje_avance_meta ?? 0)}%`, background: isDark ? 'linear-gradient(90deg, #D99B26, #F1B844)' : 'linear-gradient(90deg, var(--color-gira-navy), var(--color-gira-gold))', borderRadius: '9999px' }} />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-slate-gray)', marginTop: '6px' }}>
-                    <span>Pendiente OLS: +Bs. {Math.round(macroData.caso4_metas_anuales.pendiente_anual_bs).toLocaleString()}/año</span>
-                    <span>CAGR Histórica: +{macroData.caso4_metas_anuales.cagr_historico_pct}%</span>
+                    <span>Pendiente OLS: Bs. {fmtBs(macroData.caso4_metas_anuales.pendiente_anual_bs)}/año</span>
+                    <span>CAGR Histórica: {macroData.caso4_metas_anuales.cagr_historico_pct ?? '—'}%</span>
                   </div>
                 </div>
               )}
@@ -1289,7 +896,7 @@ export default function CuadroMandoIntegral() {
                   <Line data={chartCaso4Data} options={defaultChartOptions} />
                 ) : (
                   <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
-                    Cargando tendencia anual OLS...
+                    {isLoadingMacro ? 'Cargando tendencia anual OLS...' : (macroData?.sin_datos?.caso4 || macroData?.caso4_metas_anuales?.nota_metodologica || 'Sin recaudación anual en el Data Warehouse.')}
                   </div>
                 )}
               </div>
@@ -1344,7 +951,7 @@ export default function CuadroMandoIntegral() {
             {modalDetail.tipo === 'caso1' && modalDetail.data && (
               <div>
                 <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', marginBottom: '16px' }}>
-                  Serie histórica mensual de alumnos matriculados desde Noviembre 2022 hasta Mayo 2026 (N=43 meses),
+                  Serie histórica mensual de alumnos matriculados ({modalDetail.data?.periodos_historicos?.[0]} – {modalDetail.data?.periodos_historicos?.at(-1)}, N={modalDetail.data?.n_observaciones} meses),
                   junto con las proyecciones Holt-Winters aditivas con Intervalo de Confianza al 95%.
                 </p>
                 <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
@@ -1419,13 +1026,13 @@ export default function CuadroMandoIntegral() {
                     <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Matrícula histórica</div>
                   </div>
                   <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos 2025</div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalDetail.data.inscritos_2025}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos {modalDetail.data.anio_anterior}</div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalDetail.data.inscritos_anio_anterior}</div>
                     <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Última gestión cerrada</div>
                   </div>
                   <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos 2026</div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalDetail.data.inscritos_2026}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos {modalDetail.data.anio_actual}</div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalDetail.data.inscritos_anio_actual}</div>
                     <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Gestión en curso</div>
                   </div>
                   <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
@@ -1456,7 +1063,7 @@ export default function CuadroMandoIntegral() {
             {modalDetail.tipo === 'caso3' && modalDetail.data && (
               <div>
                 <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', marginBottom: '16px' }}>
-                  Comparativa presupuestaria mensual: Meta de Catálogo vs Recaudación Ejecutada Real a lo largo de los 17 meses registrados (Gestiones 2025 y 2026).
+                  Comparativa presupuestaria mensual: Meta de Catálogo vs Recaudación Ejecutada Real a lo largo de los {(modalDetail.data.meses_etiquetas || []).length} meses registrados en el Data Warehouse.
                 </p>
                 <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
@@ -1471,10 +1078,10 @@ export default function CuadroMandoIntegral() {
                     </thead>
                     <tbody>
                       {(modalDetail.data.meses_etiquetas || []).map((m, idx) => {
-                        const meta = modalDetail.data.meta_catalogo_bs[idx] || 0;
-                        const ejec = modalDetail.data.ejecutado_real_bs[idx] || 0;
+                        const meta = modalDetail.data.meta_catalogo_bs?.[idx] || 0;
+                        const ejec = modalDetail.data.ejecutado_real_bs?.[idx] || 0;
                         const diff = ejec - meta;
-                        const pct = meta > 0 ? ((ejec / meta) * 100).toFixed(1) : '100.0';
+                        const pct = meta > 0 ? ((ejec / meta) * 100).toFixed(1) : '—';
                         return (
                           <tr key={idx} style={{ borderBottom: '1px solid var(--color-border)' }}>
                             <td style={{ padding: '8px', fontWeight: 600 }}>{m}</td>
@@ -1498,20 +1105,20 @@ export default function CuadroMandoIntegral() {
             {modalDetail.tipo === 'caso4' && modalDetail.data && (
               <div>
                 <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', marginBottom: '16px' }}>
-                  Trayectoria plurianual de ingresos institucionales (2023 - 2027) ajustada por regresión lineal OLS frente a la Meta de 3.8M Bs.
+                  Trayectoria plurianual de ingresos institucionales ajustada por regresión lineal OLS frente a la meta anual registrada en el Data Warehouse.
                 </p>
                 <div style={{ padding: '14px', borderRadius: '14px', background: 'var(--color-mist-gray)', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                   <div>
                     <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Meta Institucional:</span>
-                    <div style={{ fontSize: '16px', fontWeight: 700 }}>Bs. {modalDetail.data.meta_anual_institucional_bs.toLocaleString()}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700 }}>Bs. {fmtBs(modalDetail.data.meta_anual_institucional_bs)}</div>
                   </div>
                   <div>
-                    <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Recaudado Acumulado 2026:</span>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-gira-gold)' }}>Bs. {modalDetail.data.recaudado_acumulado_bs.toLocaleString()} ({modalDetail.data.porcentaje_avance_meta}%)</div>
+                    <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Recaudado Acumulado {modalDetail.data.gestion_actual}:</span>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-gira-gold)' }}>Bs. {fmtBs(modalDetail.data.recaudado_acumulado_bs)} ({modalDetail.data.porcentaje_avance_meta ?? '—'}%)</div>
                   </div>
                   <div>
                     <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>Pendiente OLS Anual:</span>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-alert-green)' }}>+Bs. {Math.round(modalDetail.data.pendiente_anual_bs).toLocaleString()}/año</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-alert-green)' }}>Bs. {fmtBs(modalDetail.data.pendiente_anual_bs)}/año</div>
                   </div>
                   <div>
                     <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>CAGR Histórica:</span>

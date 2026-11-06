@@ -97,3 +97,10 @@ output/backups/
 **/output/email_previews/
 # Actas con CI y nombres de estudiantes
 output/lote*/ARCA_*.xlsx
+
+# Versiones del informe Power BI subidas desde el CMI
+uploads/powerbi/
+
+# Base temporal de test_email_redesign_and_forgot_password
+tests/test_auth_temp.db
+uploads/.cache_lectura/

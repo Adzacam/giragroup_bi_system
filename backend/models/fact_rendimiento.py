@@ -24,6 +24,8 @@ class FactRendimientoAcademico(Base):
     requiere_revision = Column(Boolean, default=False)
     fk_estado = Column(String(1), default="A")
     estado_academico = Column(String(50))
+    estado_tutoria = Column(String(50), nullable=True)   # 'Estado reprobado' de CRITERIOS
+    estado_arca = Column(String(50), nullable=True)      # Titulado / No Titulado
     tipo_alerta = Column(String(30), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

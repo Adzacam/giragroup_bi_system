@@ -1,0 +1,86 @@
+diff --git a/backend/core/database.py b/backend/core/database.py
+--- a/backend/core/database.py
++++ b/backend/core/database.py
+@@ -16,8 +16,16 @@ def _can_resolve(host: str) -> bool:
+ # ── 1. Base de Datos Data Warehouse (Esquema Constelación) ─────────────
+ SQLALCHEMY_DATABASE_URL = os.getenv(
+     "DATABASE_URL", 
+-    "postgresql://giragroup_user:giragroup_secret_2026@localhost:5432/giragroup_db"
++    "postgresql+psycopg2://giragroup_user:giragroup_secret_2026@localhost:5432/giragroup_db"
+ )
++
++# En entorno de prueba, derivar automáticamente a giragroup_db_test para proteger prod/dev
++if os.getenv("APP_ENV") == "test" or os.getenv("TESTING") == "true":
++    if "/giragroup_db" in SQLALCHEMY_DATABASE_URL:
++        SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("/giragroup_db", "/giragroup_db_test")
++
++if SQLALCHEMY_DATABASE_URL.startswith("postgresql://"):
++    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+ 
+ # Ajuste dinámico de host: si estamos dentro de Docker o si giragroup_db es resoluble
+ if os.getenv("DOCKER_ENV") and _can_resolve("giragroup_db"):
+diff --git a/services/auth-service/routers/auth.py b/services/auth-service/routers/auth.py
+--- a/services/auth-service/routers/auth.py
++++ b/services/auth-service/routers/auth.py
+@@ -43,6 +43,7 @@ _USER_LAST_OTP_CHANNEL = {}
+ APP_ENV = os.getenv("APP_ENV", "").strip().lower()
++EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "smtp").strip().lower()
+ OTP_EXPUESTO_EN_PRUEBAS = APP_ENV == "test"
+ if OTP_EXPUESTO_EN_PRUEBAS and os.getenv("ENVIRONMENT", "").strip().lower() in ("production", "prod"):
+     raise RuntimeError("APP_ENV=test no está permitido con ENVIRONMENT=production: el OTP quedaría expuesto.")
+@@ -124,7 +125,7 @@ def login_step_one(req: LoginRequest, db: Session = Depends(get_db)):
+         logger.info(f"🔑 CÓDIGO OTP PARA {user.email}: {otp} (Válido 5 min)")
+ 
+         try:
+-            # En pruebas el OTP viaja en la respuesta: no se envían correos reales en cada login de Postman/Locust
+-            email_res = None if OTP_EXPUESTO_EN_PRUEBAS else email_service.send_otp_email(
++            # Evitar despacho real si estamos en test o backend es consola
++            email_res = None if (OTP_EXPUESTO_EN_PRUEBAS or EMAIL_BACKEND == "console") else email_service.send_otp_email(
+                 to_email=user.email,
+                 username=user.username,
+                 otp_code=otp,
+@@ -228,7 +229,7 @@ def resend_otp(req: dict = Body(...), db: Session = Depends(get_db)):
+     logger.info(f"🔑 CÓDIGO OTP REENVIADO PARA {user.email}: {otp}")
+ 
+     email_dispatched = False
+     try:
+-        email_res = email_service.send_otp_email(
++        email_res = None if (OTP_EXPUESTO_EN_PRUEBAS or EMAIL_BACKEND == "console") else email_service.send_otp_email(
+             to_email=user.email,
+             username=user.username,
+             otp_code=otp,
+diff --git a/frontend/src/context/AuthContext.jsx b/frontend/src/context/AuthContext.jsx
+--- a/frontend/src/context/AuthContext.jsx
++++ b/frontend/src/context/AuthContext.jsx
+@@ -31,10 +31,7 @@ export const AuthProvider = ({ children }) => {
+     localStorage.removeItem('gira_notifications_cache');
+     localStorage.removeItem('gira_last_login_date');
+-    Object.keys(localStorage).forEach((k) => {
+-      if (k.startsWith('gira_trusted_device_')) {
+-        localStorage.removeItem(k);
+-      }
+-    });
++    // NOTA: gira_trusted_device_${email} NO debe removerse en logout
++    // para mantener el equipo recordado (MFA bypass) por 30 días.
+     sessionStorage.clear();
+     // Limpieza de todos los cachés en memoria para prevenir retención de datos entre sesiones
+diff --git a/frontend/src/modules/auth/LoginPage.jsx b/frontend/src/modules/auth/LoginPage.jsx
+--- a/frontend/src/modules/auth/LoginPage.jsx
++++ b/frontend/src/modules/auth/LoginPage.jsx
+@@ -111,7 +111,7 @@ export default function LoginPage() {
+       // Si el dispositivo ya es de confianza para esta cuenta, ingresa directamente
+       if (res.mfa_required === false && res.access_token) {
+-        if (res.device_token && rememberDevice) {
++        if (res.device_token) {
+           localStorage.setItem(`gira_trusted_device_${email}`, res.device_token);
+         }
+         const todayStr = new Date().toISOString().split('T')[0];
+diff --git a/docker-compose.yml b/docker-compose.yml
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -82,6 +82,7 @@ services:
+     volumes:
+       - ./backend:/app
+       - ./pipeline:/app/pipeline
++      - ./tests:/app/tests
+       - ./uploads:/app/uploads
