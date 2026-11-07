@@ -1,0 +1,13 @@
+{
+  "total": 1387,
+  "directo_A": 1380,
+  "directo_B": 1382,
+  "diferencia_B_menos_A": 2,
+  "pct_directo_A": 99.5,
+  "pct_directo_B": 99.64,
+  "registros_rescatados_por_BETO(A_no_resuelve)": 7,
+  "registros_directos_B_con_entidades_BETO": 1239,
+  "entidades_BETO_en_esos_registros": 3248,
+  "registros_con_entidad_BETO_persistida_en_dim": 247,
+  "criterio_persistencia": "valor BETO igual (normalizado) a una celda de dim_estudiante.nombre_completo, dim_docente.nombre_completo, dim_modulo.nombre_modulo/programa/pos_code"
+}
