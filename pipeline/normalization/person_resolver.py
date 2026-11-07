@@ -36,6 +36,16 @@ def es_correo(valor: Optional[str]) -> bool:
     return bool(valor) and bool(_RE_CORREO.match(valor))
 
 
+def parece_nombre_propio(valor: Optional[str]) -> bool:
+    """Forma de nombre de persona: 2 a 5 palabras sin dígitos y cada palabra (salvo partículas) empieza en mayúscula.
+    Evita crear miembros nuevos (estado C) a partir de comentarios libres ('todo bien', 'mas tiempo') etiquetados como persona."""
+    if not valor or es_correo(valor) or re.search(r"\d", valor):
+        return False
+    pal = [t for t in re.split(r"\s+", valor.strip()) if t]
+    nucleo = [t for t in pal if t.lower() not in _STOP and t.lower().rstrip(".") not in ("lic", "ing", "dr", "dra", "msc", "mgr", "ph.d")]
+    return 2 <= len(nucleo) <= 5 and all(t[0].isupper() for t in nucleo)
+
+
 def quitar_titulos(nombre: str) -> str:
     """Quita títulos académicos y normaliza (minúsculas, sin acentos ni puntuación)."""
     s = _sin_acentos(nombre or "").lower()

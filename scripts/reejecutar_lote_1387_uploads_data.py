@@ -35,7 +35,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from pipeline.normalization.person_resolver import (
-    resolver_persona_detalle, cargar_personas_dw, es_correo, quitar_titulos, _candidatos, _tokens, _coincide_contexto)
+    resolver_persona_detalle, cargar_personas_dw, es_correo, parece_nombre_propio, quitar_titulos, _candidatos, _tokens, _coincide_contexto)
 
 
 def _regla_previa(valor, ci, pool, ctx):
@@ -213,13 +213,14 @@ def main():
                 personas["resueltas_" + r["fuente"]] += 1
                 niveles[det["nivel"]] += 1
                 fk_estado[tipo]["A" if r["fuente"] == "CI_EXACTA" else "B"] += 1
-            elif det["motivo"] == "sin_candidatos" and len(_tokens(quitar_titulos(e["valor"]))) >= 2:
+            elif det["motivo"] == "sin_candidatos" and len(_tokens(quitar_titulos(e["valor"]))) >= 2 and parece_nombre_propio(e["valor"]):
                 # Tarea 1 (ronda 2): sin candidatos => miembro nuevo con clave sustituta y fk_estado='C'; la fila sigue su banda
                 personas["nuevos_estado_C"] += 1
                 fk_estado[tipo]["C"] += 1
             else:
                 personas["sin_coincidencia_HITL"] += 1
-                motivo_h = det["motivo"] if det["motivo"] == "empate" else "sin_identidad_un_token"
+                motivo_h = (det["motivo"] if det["motivo"] == "empate" else "sin_identidad_un_token"
+                            if len(_tokens(quitar_titulos(e["valor"]))) < 2 else "no_parece_nombre_de_persona")
                 desglose_despues[tipo][motivo_h] += 1
                 sin_resolver = True
         correos["registros"] += int(correo_en_registro)

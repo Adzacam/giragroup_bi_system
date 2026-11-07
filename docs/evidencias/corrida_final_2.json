@@ -9,12 +9,12 @@
   },
   "carga_final": {
     "directo": {
-      "conteo": 1152,
-      "porcentaje": 83.06
+      "conteo": 1121,
+      "porcentaje": 80.82
     },
     "hitl": {
-      "conteo": 235,
-      "porcentaje": 16.94
+      "conteo": 266,
+      "porcentaje": 19.18
     },
     "staging": {
       "conteo": 0,
@@ -25,26 +25,27 @@
     "total": 3587,
     "resueltas_CI_EXACTA": 2378,
     "resueltas_FUZZY": 127,
-    "nuevos_estado_C": 717,
-    "sin_coincidencia_HITL": 365
+    "nuevos_estado_C": 503,
+    "sin_coincidencia_HITL": 579
   },
   "personas_por_fk_estado": {
     "estudiante": {
       "A": 2378,
-      "B": 127,
-      "C": 63
+      "B": 127
     },
     "docente": {
-      "C": 654
+      "C": 503
     }
   },
   "hitl_personas_por_motivo": {
     "estudiante": {
       "sin_identidad_un_token": 122,
-      "empate": 3
+      "empate": 3,
+      "no_parece_nombre_de_persona": 63
     },
     "docente": {
-      "sin_identidad_un_token": 240
+      "sin_identidad_un_token": 240,
+      "no_parece_nombre_de_persona": 151
     }
   },
   "correos_filtrados": {
@@ -53,7 +54,7 @@
   },
   "KPI_10a_todas": 0.9618,
   "KPI_10b_solo_BETO": 0.9209,
-  "KPI_11_directo_final_pct": 83.06,
+  "KPI_11_directo_final_pct": 80.82,
   "conteos_fuente_resolucion": {
     "CI_EXACTA": 1850,
     "ENCABEZADO": 3079,
