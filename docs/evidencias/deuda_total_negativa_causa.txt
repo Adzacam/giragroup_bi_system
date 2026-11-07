@@ -1,0 +1,6 @@
+deuda_total negativa — causa
+Origen: BD Cobranzas.xlsx, hoja "COBRANZAS 2024 2025", columna DEUDA TOTAL: 629 filas con valor < 0 (min -2.900,00; suma -38.276,07) de 10.017.
+En las 629: TOTAL PAGADO HASTA LA FECHA > MONTO A COBRAR DESPUES DE DESCUENTO (sobrepago / anticipo) y DEUDA TOTAL = MONTO A COBRAR - TOTAL PAGADO (se cumple en 9.982 de 9.983 filas con deuda).
+Es un dato real (saldo a favor), no un defecto de signo ni de carga. En el DW: 627 filas con monto_deuda < 0 (2 de las 629 no estan cargadas).
+Filas afectadas (archivo, hoja, fila Excel, POS, CI, valores de origen): deuda_total_negativa_filas.csv
+Tratamiento: el DW conserva el saldo a favor; risk_service (deuda_total del contrato de riesgos, ge=0) lo expresa como 0 (max(0, suma)).

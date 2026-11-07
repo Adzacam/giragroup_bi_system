@@ -84,7 +84,7 @@ def get_riesgo_cruzado(db: Session, limite_nota: float = 70.0, min_cuotas_mora: 
             },
             "finanzas": {
                 "cuotas_mora": int(row.cuotas_impagas or 0),
-                "deuda_total": float(row.monto_deuda or 0.0),
+                "deuda_total": max(0.0, float(row.monto_deuda or 0.0)),  # saldo a favor (sobrepago en la fuente) no es deuda
                 "estado_cartera": row.estado_cartera or "En Mora"
             },
             "nivel_riesgo_global": "ALTO - REQUIERE INTERVENCIÓN"
