@@ -216,6 +216,26 @@ class DWLoaderService:
         self._modulo_por_pos: Dict[str, int] = {}
         self._tiempos: set = set()
         self._docente_por_modulo: Dict[int, Optional[int]] = {}
+        self._est_nombres: Optional[list] = None  # [(id_estudiante, nombre)] cargado una vez por instancia
+
+    def _candidatos_estudiante_fuzzy(self, nombre_clean: str):
+        """[(DimEstudiante, ratio)] con token_sort_ratio >= 90, mayor primero. La lista de nombres se carga una sola vez
+        por consolidación y la búsqueda es vectorizada (antes: ORM completo + una llamada fuzzy por estudiante y por fila)."""
+        from rapidfuzz import fuzz, process
+        if self._est_nombres is None:
+            self._est_nombres = [(r[0], r[1]) for r in self.db.query(
+                DimEstudiante.id_estudiante, DimEstudiante.nombre_completo
+            ).filter(DimEstudiante.deprecado == False, DimEstudiante.nombre_completo.isnot(None)).all()]
+        if not self._est_nombres:
+            return []
+        hits = process.extract(nombre_clean, [n for _, n in self._est_nombres], scorer=fuzz.token_sort_ratio,
+                               score_cutoff=90.0, limit=None)
+        out = []
+        for _, ratio, idx in hits:
+            e = self.db.get(DimEstudiante, self._est_nombres[idx][0])
+            if e is not None and not e.deprecado:
+                out.append((e, round(ratio, 2)))
+        return out
 
     def _resolver_id_institucion(self, institucion: Optional[str]) -> Optional[int]:
         if not institucion:
@@ -330,21 +350,14 @@ class DWLoaderService:
             )
             self.db.add(nuevo_est)
             self.db.flush()
+            if self._est_nombres is not None:
+                self._est_nombres.append((nuevo_est.id_estudiante, nuevo_est.nombre_completo))
             return nuevo_est.id_estudiante, "A"
 
         # Caso 2: CI sintético o ausente -> Búsqueda con RapidFuzz para homonimia
         if nombre:
             nombre_clean = nombre.strip()
-            estudiantes = self.db.query(DimEstudiante).filter(
-                DimEstudiante.deprecado == False
-            ).all()
-            candidatos_validos = []
-            if estudiantes:
-                for e in estudiantes:
-                    if e.nombre_completo:
-                        ratio = _fuzzy_best_match(nombre_clean, [e.nombre_completo])[1] or 0.0
-                        if ratio >= 90.0:
-                            candidatos_validos.append((e, ratio))
+            candidatos_validos = self._candidatos_estudiante_fuzzy(nombre_clean)
 
             # 2a. Si hay 2 o más candidatos >= 90% -> Conflicto de Homonimia detectado -> Derivación forzada a HITL
             if len(candidatos_validos) >= 2 and not forzar_resolucion_humana:
@@ -430,6 +443,8 @@ class DWLoaderService:
             )
             self.db.add(nuevo_est)
             self.db.flush()
+            if self._est_nombres is not None:
+                self._est_nombres.append((nuevo_est.id_estudiante, nuevo_est.nombre_completo))
             return nuevo_est.id_estudiante, "B"
 
         return None, "C"
