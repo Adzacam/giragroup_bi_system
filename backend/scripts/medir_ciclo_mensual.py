@@ -16,7 +16,8 @@ MES = sys.argv[1] if len(sys.argv) > 1 else "2026-03"
 SALIDA = ROOT / "docs" / "evidencias" / "ciclo_mensual_slices"
 SALIDA.mkdir(parents=True, exist_ok=True)
 (ROOT / "docs" / "evidencias").mkdir(parents=True, exist_ok=True)
-EXCLUIR = ("ANTIGUO RESPUESTAS",)  # el archivo que cuelga el pipeline (30+ min) se informa aparte
+EXCLUIR = ()  # sin exclusiones: se mide también [BBDD] ANTIGUO RESPUESTAS (procesado al final)
+FILAS_SIN_FECHA = 300  # hojas grandes sin columna de fecha: primeras N filas como muestra del ciclo
 
 
 def col_fecha(df):
@@ -37,7 +38,7 @@ def col_fecha(df):
 
 def construir_slices():
     info = []
-    for f in sorted((ROOT / "uploads" / "data").glob("*.xlsx")):
+    for f in sorted((ROOT / "uploads" / "data").glob("*.xlsx"), key=lambda q: ("ANTIGUO" in q.name, q.name)):
         if any(k in f.name for k in EXCLUIR):
             info.append({"archivo": f.name, "omitido": "cuelga el pipeline (>30 min) - fuera de la medición"})
             continue
@@ -61,7 +62,8 @@ def construir_slices():
                 out[h] = df
                 det.append({"hoja": h, "columna_fecha": None, "mes": None, "filas": len(df), "completa": True})
             else:
-                det.append({"hoja": h, "omitida": f"sin columna de fecha y {len(df)} filas"})
+                out[h] = df.head(FILAS_SIN_FECHA)
+                det.append({"hoja": h, "columna_fecha": None, "mes": None, "filas": min(len(df), FILAS_SIN_FECHA), "muestra_primeras_filas": True})
         if out:
             dest = SALIDA / f.name
             with pd.ExcelWriter(dest) as w:
