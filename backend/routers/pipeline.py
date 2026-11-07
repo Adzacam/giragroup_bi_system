@@ -8,6 +8,7 @@ Protegido por RBAC (AUDITOR_CALIDAD, ADMIN).
 
 import os
 import sys
+import hashlib
 import time
 import tempfile
 import logging
@@ -227,6 +228,8 @@ def process_pipeline(
     )
 
     dw_loader = DWLoaderService(db)
+    _doc_origen = db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento == doc_id).first()
+    hash_archivo = (_doc_origen.hash_sha256 if _doc_origen and _doc_origen.hash_sha256 else nombre_archivo)
     detalles_carga = []
     cargados_dw = 0
     staged_entidades = 0
@@ -273,7 +276,10 @@ def process_pipeline(
         indices = obtener_indices([l[0] for l in lineas])
         t_beto_ms += (time.perf_counter() - t_b0) * 1000.0
 
-        for (linea_str, celdas, campos_fin), indice in zip(lineas, indices):
+        for k_fila, ((linea_str, celdas, campos_fin), indice) in enumerate(zip(lineas, indices)):
+            # Clave de idempotencia por fila de origen: hash de archivo + hoja + fila + contenido
+            clave_origen = hashlib.sha256(
+                f"{hash_archivo}|{b.hoja}|{(b.fila_inicio or 0) + k_fila}|{linea_str}".encode("utf-8")).hexdigest()
             banda = banda_de(indice)
             if indice is not None:
                 confianzas.append(indice)
@@ -363,6 +369,7 @@ def process_pipeline(
                     "entidades_ner": entidades_fila,
                     "resoluciones": resoluciones_fila,
                     "calidad": {"requiere_revision": en_revision or revision_fila},
+                    "clave_origen": clave_origen,
                 }
                 t_c0 = time.perf_counter()
                 res_carga = dw_loader.cargar_registro(reg_simulado, id_usuario=current_user.id)

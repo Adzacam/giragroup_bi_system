@@ -1,0 +1,5 @@
+Idempotencia fact_marketing (TBL_INSCRITOS, doc_id=12)
+fact_marketing vaciada; luego POST /api/v1/pipeline/process doc_id=12 dos veces
+corrida 1: filas=8872 inscritos=15055 claves=15196
+corrida 2: filas=8872 inscritos=15055 claves=15196
+(antes del cambio, reprocesar sumaba de nuevo los inscritos)

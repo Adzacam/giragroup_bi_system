@@ -16,7 +16,7 @@ from datetime import datetime, date
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple, List
 from sqlalchemy.orm import Session
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 
 from models.dim_estudiante import DimEstudiante
 from models.dim_docente import DimDocente
@@ -796,6 +796,15 @@ class DWLoaderService:
         return id_tiempo
 
     # ── 5. Carga de un Registro Procesado Individual ─────────────────────────
+    def _reclamar_fila_origen(self, clave: Optional[str], doc_id: Optional[int], tabla: str) -> bool:
+        """True si la fila de origen aún no se cargó (la reclama); False si ya existe. Sin clave: siempre True."""
+        if not clave:
+            return True
+        r = self.db.execute(text(
+            "INSERT INTO carga_fila_origen (clave, id_documento, tabla) VALUES (:c, :d, :t) "
+            "ON CONFLICT (clave) DO NOTHING RETURNING clave"), {"c": clave, "d": doc_id, "t": tabla}).first()
+        return r is not None
+
     def cargar_registro(self, registro: Dict[str, Any], id_usuario: Optional[int] = None) -> Dict[str, Any]:
         """
         Procesa una fila estructurada del pipeline y la persiste en el DW.
@@ -904,6 +913,8 @@ class DWLoaderService:
 
         # 3a. Ruteo ADMISION -> DimEstudiante
         if categoria == "admision":
+            if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing"):
+                return {"tipo": "admision", "status": "duplicado", "motivo": "FILA_YA_CARGADA"}
             if FactMarketing and id_tiempo and (pos_code or nombre_modulo):
                 # Cada inscrito (resuelto o no como persona) suma 1 a fact_marketing del programa y mes (alimenta ALUMNOS_* del forecast)
                 id_mod_adm = self.resolver_o_crear_modulo(nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion)

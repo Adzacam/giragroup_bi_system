@@ -545,3 +545,11 @@ CREATE INDEX IF NOT EXISTS idx_stg_no_resuelta_lock ON public.stg_entidad_no_res
 CREATE INDEX IF NOT EXISTS idx_fact_rend_tiempo_modulo_cov ON public.fact_rendimiento_academico (id_tiempo, id_modulo) INCLUDE (id_estudiante, nota_final, asistencia_pct, incumplimiento_actividades_pct, nivel_confianza_ia, requiere_revision);
 CREATE INDEX IF NOT EXISTS idx_fact_fin_tiempo_modulo_cov ON public.fact_situacion_financiera (id_tiempo, id_modulo) INCLUDE (id_estudiante, monto_pagado, monto_deuda, cuotas_impagas, estado_cartera);
 CREATE INDEX IF NOT EXISTS idx_log_ingesta_etapa_id_desc ON public.log_pipeline_ingesta (etapa, id DESC);
+
+-- Idempotencia por fila de origen (hash de archivo + hoja + fila + contenido): reprocesar un archivo no duplica hechos acumulativos
+CREATE TABLE IF NOT EXISTS public.carga_fila_origen (
+    clave VARCHAR(64) PRIMARY KEY,
+    id_documento INTEGER,
+    tabla VARCHAR(40),
+    creado_en TIMESTAMP DEFAULT NOW()
+);
