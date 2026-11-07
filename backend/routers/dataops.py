@@ -1090,7 +1090,7 @@ def extract_entities_from_line(
 
     # Contexto del propio registro (programa / módulo) para filtrar candidatos, y CI para la resolución exacta
     contexto_reg = tuple(
-        labeled_data[k] for k in ("PROGRAMA", "MODULO", "MÓDULO", "NOMBRE PROGRAMA", "NOMBRE_PROGRAMA", "NOMBRE MODULO")
+        labeled_data[strip_accents(k).upper()] for k in ("PROGRAMA", "MODULO", "MÓDULO", "NOMBRE PROGRAMA", "NOMBRE_PROGRAMA", "NOMBRE MODULO")
         if labeled_data.get(strip_accents(k).upper())
     )
     ci_previo = next((labeled_data[k] for k in ("CI", "C.I.", "IDNUMBER", "CARNET", "DOCUMENTO", "DOC_IDENTIDAD/CI",
@@ -4533,6 +4533,10 @@ def resolve_review_item(
                 ci_clean = str(ci_raw).replace("?", "").strip()
 
             nom_clean = (est_resuelto or ent.texto_original or "Estudiante Validado").strip()
+            if len(nom_clean) > 200:  # el caso trae la línea completa como "nombre": el auditor debe escribir el nombre (antes: 500 por VARCHAR(200))
+                db.rollback()
+                raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                    detail="El caso trae la línea completa; indique el nombre del estudiante en texto_editado.")
             categoria_ruteo = (
                 "financiero" if doc_fuente == "COBRANZA" else ("admision" if doc_fuente == "ADMISION" else "academico")
             )

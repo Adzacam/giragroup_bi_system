@@ -10,8 +10,8 @@ from backend.main import app
 from core.security import get_current_user
 from models.user import User
 app.dependency_overrides[get_current_user] = lambda: User(id=2, username="auditor", email="a@giragroup.bo", role="AUDITOR_CALIDAD", is_active=True)
-c = TestClient(app)
-t = time.perf_counter(); r = c.get("/api/v1/dataops/review-tray", params={"page_size": 20, "estado": "PENDIENTE"}); t_lista = time.perf_counter() - t
+c = TestClient(app, raise_server_exceptions=False)
+t = time.perf_counter(); r = c.get("/api/v1/dataops/review-tray", params={"page_size": 20, "doc_id": 12}); t_lista = time.perf_counter() - t
 print("lista", r.status_code, round(t_lista, 3), "s")
 j = r.json(); items = j.get("items") or j.get("data") or j.get("casos") or []
 print("claves", list(j)[:8], "n", len(items))
