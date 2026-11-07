@@ -23,11 +23,17 @@ _TITULOS = re.compile(
     r"\b(?:lic|licda|ing|dr|dra|msc|mgr|mag|mba|ph\.?\s?d|phd|arq|abg|cpa|m\.?sc)\b\.?",
     re.IGNORECASE,
 )
+_RE_CORREO = re.compile(r"^\s*[^@\s]+@[^@\s]+\.[A-Za-z]{2,}\s*$")
 _STOP = {"de", "del", "la", "las", "los", "y", "san"}
 
 
 def _sin_acentos(s: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
+
+
+def es_correo(valor: Optional[str]) -> bool:
+    """Un correo electrónico no es el nombre de una persona."""
+    return bool(valor) and bool(_RE_CORREO.match(valor))
 
 
 def quitar_titulos(nombre: str) -> str:
@@ -92,6 +98,8 @@ def resolver_persona_detalle(
     personas: [{"id","nombre","ci","modulos"(opcional),"contextos"(programas, opcional)}]
     Retorna {"resultado": dict|None, "motivo": None|"sin_candidatos"|"empate", "nivel": "CI"|"MODULO"|"PROGRAMA"|"DIMENSION"|None}.
     """
+    if es_correo(nombre):  # filtro previo: ni CI ni fuzzy sobre un correo
+        return {"resultado": None, "motivo": "correo", "nivel": None}
     ci_n = _norm_ci(ci)
     if len(ci_n) >= 5:
         for p in personas:

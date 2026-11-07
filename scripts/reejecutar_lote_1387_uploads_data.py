@@ -35,7 +35,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from pipeline.normalization.person_resolver import (
-    resolver_persona_detalle, cargar_personas_dw, quitar_titulos, _candidatos, _tokens, _coincide_contexto)
+    resolver_persona_detalle, cargar_personas_dw, es_correo, quitar_titulos, _candidatos, _tokens, _coincide_contexto)
 
 
 def _regla_previa(valor, ci, pool, ctx):
@@ -155,6 +155,7 @@ def main():
     conf_registro, s_todas, s_beto, ent_beto = [], [], [], []
     fuentes = {"CI_EXACTA": 0, "ENCABEZADO": 0, "FUZZY": 0, "REGEX": 0, "BETO": 0}
     personas = {"total": 0, "resueltas_CI_EXACTA": 0, "resueltas_FUZZY": 0, "nuevos_estado_C": 0, "sin_coincidencia_HITL": 0}
+    correos = {"entidades": 0, "registros": 0}
     fk_estado = {"estudiante": Counter(), "docente": Counter()}
     directo_a_hitl = 0
     desglose_antes = {"estudiante": Counter(), "docente": Counter()}
@@ -188,10 +189,15 @@ def main():
         ci = next((e["valor"] for e in todas if e["tipo"] == "CI"), None)
         ctx = [e["valor"] for e in todas if e["tipo"] in ("PROGRAMA", "MODULO", "POS")]
         sin_resolver = False
+        correo_en_registro = False
         sin_resolver_prev = False
         for e in todas:
             if e["tipo"] not in ("PER_ESTUDIANTE", "PER_DOCENTE"):
                 continue
+            if es_correo(e["valor"]):
+                correos["entidades"] += 1
+                correo_en_registro = True
+                continue  # los correos no son nombres: fuera de la resolución de personas
             personas["total"] += 1
             est = e["tipo"] == "PER_ESTUDIANTE"
             pool = est_dw if est else doc_dw
@@ -216,6 +222,7 @@ def main():
                 motivo_h = det["motivo"] if det["motivo"] == "empate" else "sin_identidad_un_token"
                 desglose_despues[tipo][motivo_h] += 1
                 sin_resolver = True
+        correos["registros"] += int(correo_en_registro)
         bandas["prev"][max(b_pre, 1) if sin_resolver_prev else b_pre] += 1
         b_post = max(b_pre, 1) if sin_resolver else b_pre  # sin coincidencia -> HITL
         if sin_resolver and b_pre == 0:
@@ -250,6 +257,7 @@ def main():
         "personas_hitl_desglose_regla_previa_umbral_085": {k: dict(v) for k, v in desglose_antes.items()},
         "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {k: dict(v) for k, v in desglose_despues.items()},
         "personas_resueltas_por_nivel": dict(niveles),
+        "correos_filtrados_como_no_nombre": correos,
         "personas_por_fk_estado": {k: dict(v) for k, v in fk_estado.items()},
         "distribucion_bandas_sin_regla_personas": dist(bandas["pre"]),
         "distribucion_bandas_con_regla_personas_previa_umbral_085": dist(bandas["prev"]),

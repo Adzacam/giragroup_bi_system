@@ -52,3 +52,9 @@ def test_cero_candidatos_motivo():
 
 def test_un_solo_token_no_resuelve():
     assert resolver_persona("Rojas", None, DOC) is None
+
+
+def test_un_correo_no_es_un_nombre():
+    from pipeline.normalization.person_resolver import es_correo
+    assert es_correo("alanhuarca1@gmail.com") and not es_correo("Alan Huarca")
+    assert resolver_persona_detalle("alanhuarca1@gmail.com", None, DOC)["motivo"] == "correo"

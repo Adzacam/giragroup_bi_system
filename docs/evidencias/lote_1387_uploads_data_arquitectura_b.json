@@ -115,18 +115,18 @@
     "dim_docente": 638
   },
   "personas": {
-    "total": 3726,
+    "total": 3587,
     "resueltas_CI_EXACTA": 2378,
     "resueltas_FUZZY": 127,
-    "nuevos_estado_C": 856,
+    "nuevos_estado_C": 717,
     "sin_coincidencia_HITL": 365
   },
   "personas_hitl_desglose_regla_previa_umbral_085": {
     "estudiante": {
-      "sin_candidatos": 426
+      "sin_candidatos": 314
     },
     "docente": {
-      "sin_candidatos": 921
+      "sin_candidatos": 894
     }
   },
   "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {
@@ -143,14 +143,18 @@
     "DIMENSION": 126,
     "PROGRAMA": 1
   },
+  "correos_filtrados_como_no_nombre": {
+    "entidades": 139,
+    "registros": 139
+  },
   "personas_por_fk_estado": {
     "estudiante": {
       "A": 2378,
       "B": 127,
-      "C": 175
+      "C": 63
     },
     "docente": {
-      "C": 681
+      "C": 654
     }
   },
   "distribucion_bandas_sin_regla_personas": {
@@ -169,12 +173,12 @@
   },
   "distribucion_bandas_con_regla_personas_previa_umbral_085": {
     "directo": {
-      "conteo": 574,
-      "porcentaje": 41.38
+      "conteo": 607,
+      "porcentaje": 43.76
     },
     "hitl": {
-      "conteo": 813,
-      "porcentaje": 58.62
+      "conteo": 780,
+      "porcentaje": 56.24
     },
     "staging": {
       "conteo": 0,

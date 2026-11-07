@@ -250,6 +250,8 @@ class DWLoaderService:
         # relleno (dígitos en secuencia o repetidos: '123456789', '0000000') no identifica a nadie.
         if nombre and not re.search(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]", nombre):
             nombre = None
+        if nombre and re.fullmatch(r"\s*[^@\s]+@[^@\s]+\.[A-Za-z]{2,}\s*", nombre):
+            nombre = None  # un correo no es un nombre de persona
         if ci and re.sub(r"\D", "", ci) in ("123456789", "1234567", "12345678") or (ci and len(set(re.sub(r"\D", "", ci))) == 1):
             ci = None
         if not ci and not nombre:

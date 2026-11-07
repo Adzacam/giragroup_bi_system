@@ -1,6 +1,6 @@
 Total registros cargados desde uploads/data/: 1387
 Cargando modelo BETO local y tokenizer...
-Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 12729.98it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 12142.37it/s]
 Dimensiones del DW: dim_estudiante=14076, dim_docente=638
 {
   "dimensiones_dw_usadas": {
@@ -8,18 +8,18 @@ Dimensiones del DW: dim_estudiante=14076, dim_docente=638
     "dim_docente": 638
   },
   "personas": {
-    "total": 3726,
+    "total": 3587,
     "resueltas_CI_EXACTA": 2378,
     "resueltas_FUZZY": 127,
-    "nuevos_estado_C": 856,
+    "nuevos_estado_C": 717,
     "sin_coincidencia_HITL": 365
   },
   "personas_hitl_desglose_regla_previa_umbral_085": {
     "estudiante": {
-      "sin_candidatos": 426
+      "sin_candidatos": 314
     },
     "docente": {
-      "sin_candidatos": 921
+      "sin_candidatos": 894
     }
   },
   "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {
