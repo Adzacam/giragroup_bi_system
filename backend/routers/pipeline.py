@@ -353,7 +353,7 @@ def process_pipeline(
                 # Inscripción (TBL_INSCRITOS): MARCA TEMPORAL es la fecha del inscrito y NUMEROPROYECTO el programa
                 resoluciones_lista.append({
                     **base, "estudiante": estudiante_de_fila(campos),
-                    "fecha": parsear_fecha(campos.get("MARCA TEMPORAL")) or base["fecha"],
+                    "fecha": parsear_fecha((campos.get("MARCA TEMPORAL") or "")[:10]) or base["fecha"],
                     "programa": {"valor_extraido": campos.get("NOMBRE DEL PROGRAMA"),
                                  "metadata": {"pos_canonico": campos.get("NUMEROPROYECTO")}},
                 })

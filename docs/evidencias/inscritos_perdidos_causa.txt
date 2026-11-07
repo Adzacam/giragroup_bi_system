@@ -1,0 +1,8 @@
+Los 141 inscritos de TBL_INSCRITOS que no llegaban a fact_marketing (15.055 de 15.196)
+Causa 1 (140 filas, 8 codigos POS): al serializar la fila a staging, el valor de "NOMBRE DEL PROGRAMA" contiene ':' ("MENCION: TECNOLOGIAS...") y la etiqueta se pierde;
+  campos["NOMBRE DEL PROGRAMA"] = None. resolver_o_crear_modulo exigia nombre para crear el modulo y devolvia None (descarte silencioso).
+  Codigos POS (inscritos perdidos): POS-4527: 52, POS-4772: 41, POS-4907: 26, POS-4629: 16, POS-4921: 3, POS-4153: 1, POS-6254: 1 (y POS-5361: 1 de la causa 2).
+  Fix: el codigo POS basta (nombre = pos_code); si aun asi no hay modulo => stg_entidad_no_resuelta con motivo POS_NO_EN_DIM_MODULO.
+Causa 2 (1 fila, POS-5361, 2025-01-10): MARCA TEMPORAL con milisegundos ('2025-01-10 09:17:19.521') => parsear_fecha=None => sin id_tiempo.
+  Fix: se usan los 10 primeros caracteres; sin fecha valida => stg_entidad_no_resuelta con motivo FECHA_INSCRIPCION_INVALIDA.
+Resultado tras el fix (dos corridas): filas=8946 inscritos=15196 claves=15196, ambas corridas identicas.

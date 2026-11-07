@@ -913,12 +913,21 @@ class DWLoaderService:
 
         # 3a. Ruteo ADMISION -> DimEstudiante
         if categoria == "admision":
-            if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing"):
-                return {"tipo": "admision", "status": "duplicado", "motivo": "FILA_YA_CARGADA"}
+            if FactMarketing and not id_tiempo and (pos_code or nombre_modulo):
+                self.db.add(StagingEntidadNoResuelta(
+                    id_documento=doc_id, tipo_entidad="MODULO", texto_original=f"{pos_code or nombre_modulo} | sin fecha válida"[:2000],
+                    fk_estado="C", motivo="FECHA_INSCRIPCION_INVALIDA", nivel_confianza=confianza_ia, resuelto=False))
+                self.db.flush()
             if FactMarketing and id_tiempo and (pos_code or nombre_modulo):
                 # Cada inscrito (resuelto o no como persona) suma 1 a fact_marketing del programa y mes (alimenta ALUMNOS_* del forecast)
-                id_mod_adm = self.resolver_o_crear_modulo(nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion)
-                if id_mod_adm:
+                # El nombre del programa puede faltar (la etiqueta se pierde si el valor trae ':'): el código POS basta
+                id_mod_adm = self.resolver_o_crear_modulo(nombre_modulo or pos_code, pos_code=pos_code, doc_id=doc_id, institucion=institucion)
+                if not id_mod_adm:
+                    self.db.add(StagingEntidadNoResuelta(
+                        id_documento=doc_id, tipo_entidad="MODULO", texto_original=f"{pos_code or nombre_modulo} | {fecha_encontrada}"[:2000],
+                        fk_estado="C", motivo="POS_NO_EN_DIM_MODULO", nivel_confianza=confianza_ia, resuelto=False))
+                    self.db.flush()
+                elif self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing"):
                     mkt = self.db.query(FactMarketing).filter_by(id_modulo=id_mod_adm, id_tiempo=id_tiempo).first()
                     if mkt:
                         mkt.inscritos = (mkt.inscritos or 0) + 1
