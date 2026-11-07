@@ -423,7 +423,8 @@ class DWLoaderService:
                 codigo_estudiante=hash_temp,
                 id_institucion=id_inst,
                 programa_origen=programa,
-                deprecado=False
+                deprecado=False,
+                fk_estado="C",  # miembro nuevo sin candidatos: auditable; el hecho carga directo si la confianza >= 0,85
             )
             self.db.add(nuevo_est)
             self.db.flush()
@@ -545,7 +546,7 @@ class DWLoaderService:
             if mejor_cand and score_fuzz is not None and score_fuzz >= 85.0:
                 return doc_map[mejor_cand].id_docente
 
-        nuevo_doc = DimDocente(nombre_completo=clean_nombre)
+        nuevo_doc = DimDocente(nombre_completo=clean_nombre, fk_estado="C")
         self.db.add(nuevo_doc)
         self.db.flush()
         return nuevo_doc.id_docente

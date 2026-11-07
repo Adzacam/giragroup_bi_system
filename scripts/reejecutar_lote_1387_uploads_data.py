@@ -19,6 +19,7 @@ Requiere DATABASE_URL apuntando al DW (docker-compose, p. ej. localhost:5434).
 """
 
 import json
+from collections import Counter
 import os
 import random
 import re
@@ -153,9 +154,9 @@ def main():
     bandas = {"pre": [0, 0, 0], "post": [0, 0, 0], "prev": [0, 0, 0]}
     conf_registro, s_todas, s_beto, ent_beto = [], [], [], []
     fuentes = {"CI_EXACTA": 0, "ENCABEZADO": 0, "FUZZY": 0, "REGEX": 0, "BETO": 0}
-    personas = {"total": 0, "resueltas_CI_EXACTA": 0, "resueltas_FUZZY": 0, "sin_coincidencia_HITL": 0}
+    personas = {"total": 0, "resueltas_CI_EXACTA": 0, "resueltas_FUZZY": 0, "nuevos_estado_C": 0, "sin_coincidencia_HITL": 0}
+    fk_estado = {"estudiante": Counter(), "docente": Counter()}
     directo_a_hitl = 0
-    from collections import Counter
     desglose_antes = {"estudiante": Counter(), "docente": Counter()}
     desglose_despues = {"estudiante": Counter(), "docente": Counter()}
     niveles = Counter()
@@ -205,9 +206,15 @@ def main():
             if r:
                 personas["resueltas_" + r["fuente"]] += 1
                 niveles[det["nivel"]] += 1
+                fk_estado[tipo]["A" if r["fuente"] == "CI_EXACTA" else "B"] += 1
+            elif det["motivo"] == "sin_candidatos" and len(_tokens(quitar_titulos(e["valor"]))) >= 2:
+                # Tarea 1 (ronda 2): sin candidatos => miembro nuevo con clave sustituta y fk_estado='C'; la fila sigue su banda
+                personas["nuevos_estado_C"] += 1
+                fk_estado[tipo]["C"] += 1
             else:
                 personas["sin_coincidencia_HITL"] += 1
-                desglose_despues[tipo][det["motivo"]] += 1
+                motivo_h = det["motivo"] if det["motivo"] == "empate" else "sin_identidad_un_token"
+                desglose_despues[tipo][motivo_h] += 1
                 sin_resolver = True
         bandas["prev"][max(b_pre, 1) if sin_resolver_prev else b_pre] += 1
         b_post = max(b_pre, 1) if sin_resolver else b_pre  # sin coincidencia -> HITL
@@ -243,6 +250,7 @@ def main():
         "personas_hitl_desglose_regla_previa_umbral_085": {k: dict(v) for k, v in desglose_antes.items()},
         "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {k: dict(v) for k, v in desglose_despues.items()},
         "personas_resueltas_por_nivel": dict(niveles),
+        "personas_por_fk_estado": {k: dict(v) for k, v in fk_estado.items()},
         "distribucion_bandas_sin_regla_personas": dist(bandas["pre"]),
         "distribucion_bandas_con_regla_personas_previa_umbral_085": dist(bandas["prev"]),
         "distribucion_bandas_con_regla_personas": dist(bandas["post"]),

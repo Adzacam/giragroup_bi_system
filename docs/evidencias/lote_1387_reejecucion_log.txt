@@ -1,6 +1,6 @@
 Total registros cargados desde uploads/data/: 1387
 Cargando modelo BETO local y tokenizer...
-Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 6395.13it/s]
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 12729.98it/s]
 Dimensiones del DW: dim_estudiante=14076, dim_docente=638
 {
   "dimensiones_dw_usadas": {
@@ -11,7 +11,8 @@ Dimensiones del DW: dim_estudiante=14076, dim_docente=638
     "total": 3726,
     "resueltas_CI_EXACTA": 2378,
     "resueltas_FUZZY": 127,
-    "sin_coincidencia_HITL": 1221
+    "nuevos_estado_C": 856,
+    "sin_coincidencia_HITL": 365
   },
   "personas_hitl_desglose_regla_previa_umbral_085": {
     "estudiante": {
@@ -23,11 +24,11 @@ Dimensiones del DW: dim_estudiante=14076, dim_docente=638
   },
   "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {
     "estudiante": {
-      "sin_candidatos": 297,
+      "sin_identidad_un_token": 122,
       "empate": 3
     },
     "docente": {
-      "sin_candidatos": 921
+      "sin_identidad_un_token": 240
     }
   },
   "personas_resueltas_por_nivel": {
@@ -51,12 +52,12 @@ Dimensiones del DW: dim_estudiante=14076, dim_docente=638
   },
   "distribucion_bandas_con_regla_personas": {
     "directo": {
-      "conteo": 587,
-      "porcentaje": 42.32
+      "conteo": 1152,
+      "porcentaje": 83.06
     },
     "hitl": {
-      "conteo": 800,
-      "porcentaje": 57.68
+      "conteo": 235,
+      "porcentaje": 16.94
     },
     "staging": {
       "conteo": 0,
@@ -70,7 +71,7 @@ Dimensiones del DW: dim_estudiante=14076, dim_docente=638
     "KPI_10b_n_entidades": 3248,
     "KPI_10_previo_media_por_registro": 0.964,
     "KPI_11_directo_sin_regla_personas_pct": 99.78,
-    "KPI_11_directo_con_regla_personas_pct": 42.32
+    "KPI_11_directo_con_regla_personas_pct": 83.06
   },
   "conteos_fuente_resolucion": {
     "CI_EXACTA": 1850,

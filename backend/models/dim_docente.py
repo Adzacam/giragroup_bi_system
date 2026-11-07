@@ -8,3 +8,4 @@ class DimDocente(Base):
     nombre_completo = Column(String(200), nullable=False)
     area_especialidad = Column(String(200))
     id_cat_docente = Column(Integer, ForeignKey("cat_docente.id_docente", ondelete="SET NULL"), nullable=True)
+    fk_estado = Column(String(1), default="A")  # C: nuevo sin candidatos

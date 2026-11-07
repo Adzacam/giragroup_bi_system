@@ -113,6 +113,8 @@ def on_startup():
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto BOOLEAN DEFAULT FALSE;
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_por INTEGER REFERENCES users(id) ON DELETE SET NULL;
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_en TIMESTAMP;
+                        ALTER TABLE dim_estudiante ADD COLUMN IF NOT EXISTS fk_estado CHAR(1) DEFAULT 'A';
+                        ALTER TABLE dim_docente ADD COLUMN IF NOT EXISTS fk_estado CHAR(1) DEFAULT 'A';
                         ALTER TABLE fact_rendimiento_academico ADD COLUMN IF NOT EXISTS estado_tutoria VARCHAR(50);
                         ALTER TABLE fact_rendimiento_academico ADD COLUMN IF NOT EXISTS estado_arca VARCHAR(50);
                         ALTER TABLE fact_evaluacion_docente ADD COLUMN IF NOT EXISTS tipo_pregunta VARCHAR(20);

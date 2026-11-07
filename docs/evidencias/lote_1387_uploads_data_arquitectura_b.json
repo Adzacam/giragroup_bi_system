@@ -118,7 +118,8 @@
     "total": 3726,
     "resueltas_CI_EXACTA": 2378,
     "resueltas_FUZZY": 127,
-    "sin_coincidencia_HITL": 1221
+    "nuevos_estado_C": 856,
+    "sin_coincidencia_HITL": 365
   },
   "personas_hitl_desglose_regla_previa_umbral_085": {
     "estudiante": {
@@ -130,17 +131,27 @@
   },
   "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {
     "estudiante": {
-      "sin_candidatos": 297,
+      "sin_identidad_un_token": 122,
       "empate": 3
     },
     "docente": {
-      "sin_candidatos": 921
+      "sin_identidad_un_token": 240
     }
   },
   "personas_resueltas_por_nivel": {
     "CI": 2378,
     "DIMENSION": 126,
     "PROGRAMA": 1
+  },
+  "personas_por_fk_estado": {
+    "estudiante": {
+      "A": 2378,
+      "B": 127,
+      "C": 175
+    },
+    "docente": {
+      "C": 681
+    }
   },
   "distribucion_bandas_sin_regla_personas": {
     "directo": {
@@ -172,19 +183,19 @@
   },
   "distribucion_bandas_con_regla_personas": {
     "directo": {
-      "conteo": 587,
-      "porcentaje": 42.32
+      "conteo": 1152,
+      "porcentaje": 83.06
     },
     "hitl": {
-      "conteo": 800,
-      "porcentaje": 57.68
+      "conteo": 235,
+      "porcentaje": 16.94
     },
     "staging": {
       "conteo": 0,
       "porcentaje": 0.0
     }
   },
-  "registros_directo_movidos_a_hitl_por_persona_sin_resolver": 797,
+  "registros_directo_movidos_a_hitl_por_persona_sin_resolver": 232,
   "kpis": {
     "KPI_10a_media_todas_las_entidades": 0.9618,
     "KPI_10a_n_entidades": 11426,
@@ -192,7 +203,7 @@
     "KPI_10b_n_entidades": 3248,
     "KPI_10_previo_media_por_registro": 0.964,
     "KPI_11_directo_sin_regla_personas_pct": 99.78,
-    "KPI_11_directo_con_regla_personas_pct": 42.32
+    "KPI_11_directo_con_regla_personas_pct": 83.06
   },
   "conteos_fuente_resolucion": {
     "CI_EXACTA": 1850,

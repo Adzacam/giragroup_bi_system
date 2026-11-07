@@ -119,7 +119,8 @@ CREATE TABLE public.dim_estudiante (
     nivel_academico VARCHAR(100),
     edad INTEGER,
     ocupacion VARCHAR(100),
-    estado_civil VARCHAR(50)
+    estado_civil VARCHAR(50),
+    fk_estado CHAR(1) DEFAULT 'A'  -- A: CI exacta, B: fuzzy, C: miembro nuevo sin candidatos (auditable)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS uq_dim_estudiante_ci_numero 
 ON public.dim_estudiante (ci_numero) 
@@ -146,7 +147,8 @@ CREATE TABLE public.dim_docente (
     id_docente SERIAL PRIMARY KEY,
     nombre_completo VARCHAR(200) NOT NULL DEFAULT 'Docente Generico',
     area_especialidad VARCHAR(200) DEFAULT 'Generico',
-    id_cat_docente INT REFERENCES public.cat_docente(id_docente) ON DELETE SET NULL
+    id_cat_docente INT REFERENCES public.cat_docente(id_docente) ON DELETE SET NULL,
+    fk_estado CHAR(1) DEFAULT 'A'  -- C: docente nuevo sin candidatos en la dimensión (auditable)
 );
 
 CREATE TABLE public.dim_modulo (

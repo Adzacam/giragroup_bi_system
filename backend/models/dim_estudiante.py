@@ -20,5 +20,6 @@ class DimEstudiante(Base):
     edad = Column(Integer)
     ocupacion = Column(String(100))
     estado_civil = Column(String(50))
+    fk_estado = Column(String(1), default="A")  # A: CI exacta, B: fuzzy, C: nuevo sin candidatos
     deprecado = Column(Boolean, default=False)
     fusionado_en = Column(Integer, ForeignKey("dim_estudiante.id_estudiante", ondelete="SET NULL"), nullable=True)
