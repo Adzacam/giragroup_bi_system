@@ -1,0 +1,64 @@
+{
+  "docente": {
+    "entidades_C": 654,
+    "miembros_C_nombres_distintos": 80,
+    "pares_similitud_ge_092": 9,
+    "ejemplos": [
+      [
+        "considero que estuvo bien el estilo de ensenanza del docente",
+        "estuvo bien",
+        1.0
+      ],
+      [
+        "el docente es muy completo ensena bien hace participar y sobre todo es una persona muy educada",
+        "todo bien",
+        1.0
+      ],
+      [
+        "habilitar mas tiempo para realizar mas practicas ya que es muy limitado se necesita practicar mucho mas",
+        "mas tiempo",
+        1.0
+      ],
+      [
+        "las explicaciones que brindo el docente me parecen acertadas quiza podria mostrar ejemplos mas diversos sin embargo el curso se comprendio de la mejor manera",
+        "mas ejemplos",
+        1.0
+      ],
+      [
+        "ningun aspecto",
+        "ningun aspecto ya que el docente domina su materia",
+        1.0
+      ],
+      [
+        "ninguna todo bien",
+        "todo bien",
+        1.0
+      ],
+      [
+        "todo bien",
+        "todo esta bien",
+        1.0
+      ],
+      [
+        "todo bien",
+        "todo esta muy bien explicado",
+        1.0
+      ],
+      [
+        "todo esta bien",
+        "todo esta muy bien explicado",
+        1.0
+      ]
+    ]
+  },
+  "estudiante": {
+    "entidades_C": 63,
+    "miembros_C_nombres_distintos": 2,
+    "pares_similitud_ge_092": 0,
+    "ejemplos": []
+  },
+  "miembros_C_ya_en_el_DW": {
+    "dim_docente": 0,
+    "dim_estudiante": 0
+  }
+}
