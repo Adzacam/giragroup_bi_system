@@ -1,12 +1,12 @@
 {
   "mes_objetivo": "2026-03",
   "cpu": "BETO en el contenedor giragroup_pipeline (docker-compose.yml, sin GPU)",
-  "tiempo_total_s": 554.4,
+  "tiempo_total_s": 230.2,
   "suma_etapas_ms": {
-    "lectura_e_ingesta": 2406.9,
-    "reglas_y_resto": 30107.4,
-    "beto": 7619.9,
-    "carga_dw": 514089.8
+    "lectura_e_ingesta": 3671.8,
+    "reglas_y_resto": 39360.9,
+    "beto": 92156.2,
+    "carga_dw": 94724.3
   },
   "archivos": [
     {
@@ -48,12 +48,12 @@
       ],
       "filas_total": 755,
       "http": 200,
-      "segundos": 44.07,
+      "segundos": 43.15,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 774.3,
-        "beto": 56.7,
-        "carga_dw": 39316.6,
-        "reglas_y_resto": 3872.0
+        "lectura_e_ingesta": 729.0,
+        "beto": 59.5,
+        "carga_dw": 38333.8,
+        "reglas_y_resto": 3873.8
       },
       "filas_procesadas": 746,
       "hechos_cargados_dw": 718
@@ -64,7 +64,10 @@
       "hojas": [
         {
           "hoja": "egresos",
-          "omitida": "sin columna de fecha y 1373 filas"
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 300,
+          "muestra_primeras_filas": true
         },
         {
           "hoja": "Gestiones",
@@ -81,17 +84,17 @@
           "completa": true
         }
       ],
-      "filas_total": 36,
+      "filas_total": 336,
       "http": 200,
-      "segundos": 4.73,
+      "segundos": 5.0,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 60.7,
-        "beto": 37.7,
-        "carga_dw": 893.7,
-        "reglas_y_resto": 3723.4
+        "lectura_e_ingesta": 267.7,
+        "beto": 335.9,
+        "carga_dw": 597.6,
+        "reglas_y_resto": 3780.1
       },
-      "filas_procesadas": 36,
-      "hechos_cargados_dw": 75
+      "filas_procesadas": 336,
+      "hechos_cargados_dw": 324
     },
     {
       "archivo": "BD Techos.xlsx",
@@ -106,12 +109,12 @@
       ],
       "filas_total": 1,
       "http": 200,
-      "segundos": 3.67,
+      "segundos": 3.6,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 50.9,
-        "beto": 17.6,
-        "carga_dw": 31.5,
-        "reglas_y_resto": 3557.3
+        "lectura_e_ingesta": 23.6,
+        "beto": 16.0,
+        "carga_dw": 15.6,
+        "reglas_y_resto": 3530.0
       },
       "filas_procesadas": 1,
       "hechos_cargados_dw": 1
@@ -148,7 +151,10 @@
         },
         {
           "hoja": "IBP",
-          "omitida": "sin columna de fecha y 748 filas"
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 300,
+          "muestra_primeras_filas": true
         },
         {
           "hoja": "Hoja 8",
@@ -165,16 +171,16 @@
           "completa": true
         }
       ],
-      "filas_total": 453,
+      "filas_total": 753,
       "http": 200,
-      "segundos": 9.07,
+      "segundos": 7.11,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 207.4,
-        "beto": 73.7,
-        "carga_dw": 5096.4,
-        "reglas_y_resto": 3680.5
+        "lectura_e_ingesta": 266.4,
+        "beto": 92.5,
+        "carga_dw": 3069.7,
+        "reglas_y_resto": 3670.3
       },
-      "filas_procesadas": 453,
+      "filas_procesadas": 753,
       "hechos_cargados_dw": 1372
     },
     {
@@ -198,33 +204,53 @@
       ],
       "filas_total": 36,
       "http": 200,
-      "segundos": 5.09,
+      "segundos": 4.11,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 34.8,
-        "beto": 389.2,
-        "carga_dw": 1058.1,
-        "reglas_y_resto": 3597.4
+        "lectura_e_ingesta": 32.7,
+        "beto": 308.9,
+        "carga_dw": 188.2,
+        "reglas_y_resto": 3572.9
       },
       "filas_procesadas": 36,
       "hechos_cargados_dw": 99
     },
     {
       "archivo": "Evaluación Docente y Unifranz.xlsx",
+      "slice": "/app/docs/evidencias/ciclo_mensual_slices/Evaluación Docente y Unifranz.xlsx",
       "hojas": [
         {
           "hoja": "DIP. EXP DOC. X MODULO",
-          "omitida": "sin columna de fecha y 4096 filas"
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 300,
+          "muestra_primeras_filas": true
         },
         {
           "hoja": "DIP. EXP UNIFRANZ",
-          "omitida": "sin columna de fecha y 517 filas"
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 300,
+          "muestra_primeras_filas": true
         },
         {
           "hoja": "FINAL EXPERTOCURSO",
-          "omitida": "sin columna de fecha y 276 filas"
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 276,
+          "muestra_primeras_filas": true
         }
       ],
-      "omitido": "sin filas"
+      "filas_total": 876,
+      "http": 200,
+      "segundos": 58.47,
+      "tiempos_etapa_ms": {
+        "lectura_e_ingesta": 601.2,
+        "beto": 26483.5,
+        "carga_dw": 27249.7,
+        "reglas_y_resto": 4116.2
+      },
+      "filas_procesadas": 873,
+      "hechos_cargados_dw": 17804
     },
     {
       "archivo": "Experiencia Docente 2.0.xlsx",
@@ -244,7 +270,10 @@
         },
         {
           "hoja": "CURSOS DOCENTE",
-          "omitida": "sin columna de fecha y 828 filas"
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 300,
+          "muestra_primeras_filas": true
         },
         {
           "hoja": "DIPLOMADOS DOC 2",
@@ -253,16 +282,16 @@
           "filas": 156
         }
       ],
-      "filas_total": 309,
+      "filas_total": 609,
       "http": 200,
-      "segundos": 5.62,
+      "segundos": 10.64,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 277.6,
-        "beto": 58.2,
-        "carga_dw": 1585.0,
-        "reglas_y_resto": 3679.4
+        "lectura_e_ingesta": 368.7,
+        "beto": 76.9,
+        "carga_dw": 4902.2,
+        "reglas_y_resto": 5276.1
       },
-      "filas_procesadas": 309,
+      "filas_procesadas": 609,
       "hechos_cargados_dw": 0
     },
     {
@@ -466,20 +495,23 @@
         },
         {
           "hoja": "Detalle Presupuestado-Proyectad",
-          "omitida": "sin columna de fecha y 300 filas"
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 300,
+          "muestra_primeras_filas": true
         }
       ],
-      "filas_total": 1013,
+      "filas_total": 1313,
       "http": 200,
-      "segundos": 476.87,
+      "segundos": 25.63,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 728.9,
-        "beto": 6966.0,
-        "carga_dw": 464813.4,
-        "reglas_y_resto": 4322.9
+        "lectura_e_ingesta": 810.4,
+        "beto": 6789.6,
+        "carga_dw": 13898.0,
+        "reglas_y_resto": 4115.4
       },
-      "filas_procesadas": 2004,
-      "hechos_cargados_dw": 1821
+      "filas_procesadas": 2303,
+      "hechos_cargados_dw": 2109
     },
     {
       "archivo": "TBL_INSCRITOS.xlsx",
@@ -501,19 +533,51 @@
       ],
       "filas_total": 391,
       "http": 200,
-      "segundos": 5.28,
+      "segundos": 5.13,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 272.3,
-        "beto": 20.8,
-        "carga_dw": 1295.1,
-        "reglas_y_resto": 3674.5
+        "lectura_e_ingesta": 265.8,
+        "beto": 21.4,
+        "carga_dw": 1244.6,
+        "reglas_y_resto": 3584.2
       },
       "filas_procesadas": 391,
       "hechos_cargados_dw": 124
     },
     {
       "archivo": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
-      "omitido": "cuelga el pipeline (>30 min) - fuera de la medición"
+      "slice": "/app/docs/evidencias/ciclo_mensual_slices/[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+      "hojas": [
+        {
+          "hoja": "TBL EVALUACION DOCENTE",
+          "columna_fecha": "Fecha",
+          "mes": "2026-03",
+          "filas": 588
+        },
+        {
+          "hoja": "TBL EXPERIENCIA UNIFRANZ",
+          "columna_fecha": "Fecha",
+          "mes": "2026-03",
+          "filas": 165
+        },
+        {
+          "hoja": "Análisis de Evaluación",
+          "columna_fecha": null,
+          "mes": null,
+          "filas": 131,
+          "muestra_primeras_filas": true
+        }
+      ],
+      "filas_total": 884,
+      "http": 200,
+      "segundos": 67.36,
+      "tiempos_etapa_ms": {
+        "lectura_e_ingesta": 306.3,
+        "beto": 57972.0,
+        "carga_dw": 5224.9,
+        "reglas_y_resto": 3841.9
+      },
+      "filas_procesadas": 883,
+      "hechos_cargados_dw": 3705
     }
   ]
 }
