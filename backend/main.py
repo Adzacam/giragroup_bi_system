@@ -51,7 +51,6 @@ MIGRACIONES_EN_ARRANQUE = (
     "008_dataops_tarea.sql",
     "009_cache_indice_beto.sql",
     "010_dataops_tarea_ingesta.sql",
-    "011_eliminar_tablas_sin_uso.sql",
 )
 MIGRACION_LOTE = "003_dataops_lote_and_facts_alignment.sql"
 MIGRACION_TIPO_FUENTE = "004_extend_tipo_fuente_sources.sql"
@@ -116,6 +115,9 @@ def on_startup():
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_en TIMESTAMP;
                         CREATE TABLE IF NOT EXISTS carga_fila_origen (clave VARCHAR(64) PRIMARY KEY, id_documento INTEGER, tabla VARCHAR(40), creado_en TIMESTAMP DEFAULT NOW());
                         ALTER TABLE stg_entidad_no_resuelta ADD COLUMN IF NOT EXISTS clave_origen VARCHAR(32);
+                        -- Tablas con 0 filas y sin consulta en el código (inventario: docs/evidencias/inventario_tablas.json)
+                        ALTER TABLE IF EXISTS dim_docente DROP COLUMN IF EXISTS id_cat_docente;
+                        DROP TABLE IF EXISTS cat_alias_docente, cat_alias_financiero, cat_alias_modulo, cat_alias_programa, cat_alias, cat_docente, cat_tipo_cartera;
                         ALTER TABLE dim_estudiante ADD COLUMN IF NOT EXISTS fk_estado CHAR(1) DEFAULT 'A';
                         ALTER TABLE dim_docente ADD COLUMN IF NOT EXISTS fk_estado CHAR(1) DEFAULT 'A';
                         ALTER TABLE fact_rendimiento_academico ADD COLUMN IF NOT EXISTS estado_tutoria VARCHAR(50);

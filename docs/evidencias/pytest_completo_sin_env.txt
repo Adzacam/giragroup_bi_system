@@ -1,35 +1,22 @@
-...xx....x.........xx..xx...sssssssssss................................. [ 15%]
-........................................................................ [ 31%]
-........................................................................ [ 46%]
-........................................................................ [ 62%]
-........................................................................ [ 78%]
-........................................................................ [ 93%]
-............................C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000012A040EC5E0>
-  result = tuple_new(cls, iterable)
-ResourceWarning: Enable tracemalloc to get the object allocation traceback
-C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000012A079447C0>
-  result = tuple_new(cls, iterable)
-ResourceWarning: Enable tracemalloc to get the object allocation traceback
-C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000012A092BB3D0>
-  result = tuple_new(cls, iterable)
-ResourceWarning: Enable tracemalloc to get the object allocation traceback
-C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000012A084B48B0>
-  result = tuple_new(cls, iterable)
-ResourceWarning: Enable tracemalloc to get the object allocation traceback
-C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000012A09CF3A60>
-  result = tuple_new(cls, iterable)
-ResourceWarning: Enable tracemalloc to get the object allocation traceback
-C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000012A09343D30>
-  result = tuple_new(cls, iterable)
-ResourceWarning: Enable tracemalloc to get the object allocation traceback
-C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000012A078C76A0>
-  result = tuple_new(cls, iterable)
-ResourceWarning: Enable tracemalloc to get the object allocation traceback
-                                             [100%]
-=============================== tests coverage ================================
-_______________ coverage: platform win32, python 3.14.6-final-0 _______________
+    assert dw.query(FactRendimientoAcademico).get(1).requiere_revision is False
 
-Coverage JSON written to file docs/evidencias/cobertura.json
+tests/test_bandeja_hechos_en_revision.py::test_aprobacion_en_bloque_aprueba_solo_los_de_un_clic_y_registra_cada_caso
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\tests\test_bandeja_hechos_en_revision.py:118: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    assert dw.query(FactSituacionFinanciera).get(1).requiere_revision is False
+
+tests/test_bandeja_hechos_en_revision.py::test_hecho_sin_fecha_se_aprueba_con_la_fecha_corregida
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\tests\test_bandeja_hechos_en_revision.py:138: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    h = dw.query(FactRendimientoAcademico).get(4)
+
+tests/test_bandeja_hitl_ruido_y_un_clic.py::test_confirm_descarta_fila_de_estados_y_no_la_manda_a_revision
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\backend\routers\dataops.py:3997: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    resuelto_en=datetime.utcnow(),
+
+tests/test_datos_reales_pipeline.py::TestLoaderSinValoresPorDefecto::test_fecha_de_fila_crea_dim_tiempo_completo
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\tests\test_datos_reales_pipeline.py:154: LegacyAPIWarning: The Query.get() method is considered legacy as of the 1.x series of SQLAlchemy and becomes a legacy construct in 2.0. The method is now available as Session.get() (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    t = db.query(DimTiempo).get(20240201)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 =========================== short test summary info ===========================
 SKIPPED [1] tests\readiness\test_production_readiness.py:259: READINESS_TOKEN no definido
 SKIPPED [1] tests\readiness\test_production_readiness.py:264: READINESS_TOKEN no definido
@@ -49,4 +36,5 @@ XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_e
 XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_id_sintetico_con_entropia_suficiente - Hallazgo FK-HASH: TEMP-CI usa MD5 truncado a 8 hex (32 bits); homónimos colisionan
 XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_banda_media_deriva_a_staging[0.7] - Hallazgo FK-BANDA: [0.60, 0.85) y confianza None generan TEMP en DimEstudiante en vez de derivar a stg_entidad_no_resuelta
 XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_banda_media_deriva_a_staging[None] - Hallazgo FK-BANDA: [0.60, 0.85) y confianza None generan TEMP en DimEstudiante en vez de derivar a stg_entidad_no_resuelta
-442 passed, 11 skipped, 7 xfailed in 197.78s (0:03:17)
+FAILED tests/test_migraciones_arranque.py::test_con_004_aplicada_no_se_reaplica_003
+1 failed, 443 passed, 11 skipped, 7 xfailed, 36 warnings in 182.65s (0:03:02)

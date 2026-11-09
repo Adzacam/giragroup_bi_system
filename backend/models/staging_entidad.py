@@ -9,7 +9,7 @@ from sqlalchemy import (
     Column, Integer, String, Text, Numeric,
     Boolean, DateTime, ForeignKey
 )
-from sqlalchemy import event, text
+from sqlalchemy import bindparam, event, text
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from core.database import Base
@@ -81,7 +81,7 @@ def _deduplicar_staging(session, flush_context, instances):
     hashes = {}
     if ids:
         hashes = {r[0]: r[1] for r in con.execute(
-            text("SELECT id_documento, hash_sha256 FROM dim_origen_documental WHERE id_documento = ANY(:ids)"),
+            text("SELECT id_documento, hash_sha256 FROM dim_origen_documental WHERE id_documento IN :ids").bindparams(bindparam("ids", expanding=True)),
             {"ids": list(ids)})}
     vistas = set()
     for o in nuevos:
@@ -89,7 +89,7 @@ def _deduplicar_staging(session, flush_context, instances):
         o.clave_origen = clave_staging(h, o.tipo_entidad, o.motivo, o.texto_original)
     claves = list({o.clave_origen for o in nuevos})
     existentes = {r[0] for r in con.execute(
-        text("SELECT clave_origen FROM stg_entidad_no_resuelta WHERE clave_origen = ANY(:c)"), {"c": claves})}
+        text("SELECT clave_origen FROM stg_entidad_no_resuelta WHERE clave_origen IN :c").bindparams(bindparam("c", expanding=True)), {"c": claves})}
     for o in nuevos:
         if o.clave_origen in existentes or o.clave_origen in vistas:
             session.expunge(o)
