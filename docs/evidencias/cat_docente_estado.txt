@@ -1,0 +1,6 @@
+cat_docente: NO se eliminó del DDL; quedó SIN USO en la lógica.
+- Sigue en db/schema.sql (CREATE TABLE cat_docente; FK dim_docente.id_cat_docente), backend/models/catalogos.py, backend/models/dim_docente.py y migraciones 002/005 (los tests de esquema alineado la esperan).
+- Datos en giragroup_db: cat_docente = 0 filas; dim_docente.id_cat_docente no nulo = 0 filas.
+- Código: ningún resolver de personas la consulta (person_resolver, dataops, ejecutar_sprint3 solo la mencionan en comentarios).
+Tablas de giragroup_db (esquema public, 55) por capa: ver tablas_por_capa.json (clasificación por prefijo de nombre, hecha por mí):
+hechos 9 | dimensiones 8 | catálogos 25 (24 cat_* + ref_metas_gestion) | staging 3 | auditoría 4 | seguridad 2 | control 4.
