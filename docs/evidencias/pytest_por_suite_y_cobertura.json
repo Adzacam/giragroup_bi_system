@@ -27,8 +27,8 @@
       "pruebas": 23
     },
     "transversales": {
-      "pasadas": 221,
-      "pruebas": 221
+      "pasadas": 231,
+      "pruebas": 231
     }
   },
   "cobertura_por_archivo": {
@@ -46,9 +46,9 @@
     },
     "fk_resolver": {
       "archivo": "pipeline/normalization/fk_resolver.py",
-      "lineas": 77,
-      "cubiertas": 68,
-      "pct": 88.3
+      "lineas": 89,
+      "cubiertas": 78,
+      "pct": 87.6
     },
     "fuzzy_normalizer": {
       "archivo": "pipeline/normalization/fuzzy_normalizer.py",
@@ -58,9 +58,9 @@
     },
     "person_resolver": {
       "archivo": "pipeline/normalization/person_resolver.py",
-      "lineas": 98,
-      "cubiertas": 91,
-      "pct": 92.9
+      "lineas": 125,
+      "cubiertas": 116,
+      "pct": 92.8
     },
     "alert_engine": {
       "archivo": "backend/services/alert_engine.py",
@@ -112,15 +112,57 @@
     },
     "dataops": {
       "archivo": "backend/routers/dataops.py",
-      "lineas": 2129,
-      "cubiertas": 909,
-      "pct": 42.7
+      "lineas": 2170,
+      "cubiertas": 924,
+      "pct": 42.6
+    },
+    "dw_loader": {
+      "archivo": "backend/services/dw_loader.py",
+      "lineas": 870,
+      "cubiertas": 384,
+      "pct": 44.1
+    },
+    "pipeline_router": {
+      "archivo": "backend/routers/pipeline.py",
+      "lineas": 269,
+      "cubiertas": 96,
+      "pct": 35.7
+    },
+    "bandeja_grupos": {
+      "archivo": "backend/services/bandeja_grupos.py",
+      "lineas": 149,
+      "cubiertas": 31,
+      "pct": 20.8
+    },
+    "revision_hechos": {
+      "archivo": "backend/services/revision_hechos.py",
+      "lineas": 210,
+      "cubiertas": 185,
+      "pct": 88.1
+    },
+    "confianza_service": {
+      "archivo": "backend/services/confianza_service.py",
+      "lineas": 87,
+      "cubiertas": 49,
+      "pct": 56.3
+    },
+    "indice_confianza": {
+      "archivo": "pipeline/semantic/indice_confianza.py",
+      "lineas": 70,
+      "cubiertas": 23,
+      "pct": 32.9
+    },
+    "extraccion_por_encabezado": {
+      "archivo": "backend/services/extraccion_por_encabezado.py",
+      "lineas": 421,
+      "cubiertas": 342,
+      "pct": 81.2
     }
   },
   "cobertura_global": {
-    "lineas": 12709,
-    "cubiertas": 7699,
-    "pct": 60.6,
+    "lineas": 13243,
+    "cubiertas": 7907,
+    "pct": 59.7,
     "alcance": "--cov=backend --cov=pipeline"
   }
 }

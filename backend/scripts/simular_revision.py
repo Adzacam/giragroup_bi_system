@@ -29,7 +29,7 @@ for g in grupos:
     accion = g.get("accion_grupo") or "APROBAR"
     v0 = virtual + timedelta(seconds=LECTURA_S)
     t0 = time.perf_counter()
-    if accion == "MANUAL":
+    if accion == "MANUAL":  # sin acción de grupo: caso por caso
         manuales += 1
         n_ok = 0
         for i in g["ids"]:  # caso por caso: aprobar el hecho tal cual (el humano corregiría; aquí solo se mide el flujo)
@@ -40,6 +40,8 @@ for g in grupos:
     else:
         bloque += 1
         body = {"clave": g["clave"], "doc_ids": None, "accion": "MAPEAR_ESTADO" if accion == "MAPEAR_ESTADO" else None}
+        if accion == "CORREGIR_FECHA":
+            body.update({"mes": 3, "gestion": 2026})  # el usuario indica el mes y la gestión del ciclo para todo el grupo
         rr = cli.post("/api/v1/dataops/review-tray/approve-group", json=body)
         res = {"resueltos": (rr.json() or {}).get("resolved_count"), "http": rr.status_code}
         dur_h = ACCION_S

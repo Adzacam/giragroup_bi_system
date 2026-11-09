@@ -1,15 +1,15 @@
 {
   "mes_objetivo": "2026-03",
   "filas_sin_fecha": "completas",
-  "tiempo_total_s": 63.31,
+  "tiempo_total_s": 65.78,
   "suma_etapas_s": {
-    "lectura_e_ingesta": 5.1,
-    "reglas_y_resto": 5.5,
-    "beto": 5.5,
-    "carga_dw": 47.1
+    "lectura_e_ingesta": 5.3,
+    "reglas_y_resto": 5.6,
+    "beto": 5.4,
+    "carga_dw": 49.3
   },
   "bandeja_antes": 1606,
-  "bandeja_despues": 1839,
+  "bandeja_despues": 1775,
   "archivos": [
     {
       "archivo": "BD Cobranzas.xlsx",
@@ -50,12 +50,12 @@
       ],
       "filas_total": 755,
       "http": 200,
-      "segundos": 5.84,
+      "segundos": 5.8,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 596.9,
-        "beto": 48.3,
-        "carga_dw": 2178.5,
-        "reglas_y_resto": 2997.1
+        "lectura_e_ingesta": 596.3,
+        "beto": 45.9,
+        "carga_dw": 2152.3,
+        "reglas_y_resto": 2994.3
       },
       "filas_procesadas": 746,
       "hechos_cargados_dw": 718
@@ -88,12 +88,12 @@
       ],
       "filas_total": 1409,
       "http": 200,
-      "segundos": 2.12,
+      "segundos": 2.45,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 255.9,
-        "beto": 56.4,
-        "carga_dw": 1646.6,
-        "reglas_y_resto": 157.4
+        "lectura_e_ingesta": 305.8,
+        "beto": 58.9,
+        "carga_dw": 1912.5,
+        "reglas_y_resto": 169.1
       },
       "filas_procesadas": 1409,
       "hechos_cargados_dw": 1448
@@ -111,12 +111,12 @@
       ],
       "filas_total": 1,
       "http": 200,
-      "segundos": 0.14,
+      "segundos": 0.15,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 99.2,
-        "beto": 15.1,
-        "carga_dw": 16.6,
-        "reglas_y_resto": 7.0
+        "lectura_e_ingesta": 115.3,
+        "beto": 15.6,
+        "carga_dw": 11.2,
+        "reglas_y_resto": 4.1
       },
       "filas_procesadas": 1,
       "hechos_cargados_dw": 1
@@ -175,12 +175,12 @@
       ],
       "filas_total": 1201,
       "http": 200,
-      "segundos": 3.2,
+      "segundos": 3.4,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 332.0,
-        "beto": 86.8,
-        "carga_dw": 2670.9,
-        "reglas_y_resto": 102.2
+        "lectura_e_ingesta": 332.4,
+        "beto": 90.8,
+        "carga_dw": 2860.0,
+        "reglas_y_resto": 110.5
       },
       "filas_procesadas": 1201,
       "hechos_cargados_dw": 1415
@@ -206,12 +206,12 @@
       ],
       "filas_total": 36,
       "http": 200,
-      "segundos": 1.34,
+      "segundos": 1.27,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 33.5,
-        "beto": 1100.9,
-        "carga_dw": 190.7,
-        "reglas_y_resto": 10.1
+        "lectura_e_ingesta": 33.8,
+        "beto": 1023.2,
+        "carga_dw": 192.4,
+        "reglas_y_resto": 10.4
       },
       "filas_procesadas": 36,
       "hechos_cargados_dw": 99
@@ -244,12 +244,12 @@
       ],
       "filas_total": 4889,
       "http": 200,
-      "segundos": 29.5,
+      "segundos": 30.75,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 1964.1,
-        "beto": 71.6,
-        "carga_dw": 26109.6,
-        "reglas_y_resto": 1337.2
+        "lectura_e_ingesta": 2027.3,
+        "beto": 73.2,
+        "carga_dw": 27217.4,
+        "reglas_y_resto": 1415.3
       },
       "filas_procesadas": 4886,
       "hechos_cargados_dw": 71458
@@ -286,12 +286,12 @@
       ],
       "filas_total": 1137,
       "http": 200,
-      "segundos": 9.78,
+      "segundos": 10.86,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 578.4,
-        "beto": 76.7,
-        "carga_dw": 8591.6,
-        "reglas_y_resto": 521.5
+        "lectura_e_ingesta": 581.0,
+        "beto": 76.2,
+        "carga_dw": 9667.9,
+        "reglas_y_resto": 523.6
       },
       "filas_procesadas": 1137,
       "hechos_cargados_dw": 0
@@ -505,12 +505,12 @@
       ],
       "filas_total": 1313,
       "http": 200,
-      "segundos": 8.06,
+      "segundos": 7.83,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 720.4,
-        "beto": 3965.7,
-        "carga_dw": 3097.3,
-        "reglas_y_resto": 270.2
+        "lectura_e_ingesta": 743.0,
+        "beto": 3972.6,
+        "carga_dw": 2836.4,
+        "reglas_y_resto": 265.9
       },
       "filas_procesadas": 2303,
       "hechos_cargados_dw": 1869
@@ -535,12 +535,12 @@
       ],
       "filas_total": 391,
       "http": 200,
-      "segundos": 1.3,
+      "segundos": 1.37,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 225.8,
-        "beto": 19.7,
-        "carga_dw": 1018.6,
-        "reglas_y_resto": 30.5
+        "lectura_e_ingesta": 230.9,
+        "beto": 19.9,
+        "carga_dw": 1078.6,
+        "reglas_y_resto": 32.1
       },
       "filas_procesadas": 391,
       "hechos_cargados_dw": 391
@@ -571,12 +571,12 @@
       ],
       "filas_total": 884,
       "http": 200,
-      "segundos": 2.03,
+      "segundos": 1.9,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 342.1,
-        "beto": 38.2,
-        "carga_dw": 1536.6,
-        "reglas_y_resto": 102.6
+        "lectura_e_ingesta": 350.7,
+        "beto": 38.4,
+        "carga_dw": 1419.6,
+        "reglas_y_resto": 84.4
       },
       "filas_procesadas": 883,
       "hechos_cargados_dw": 3708
@@ -590,7 +590,7 @@
     },
     "fact_costo_programa": {
       "filas": 1371,
-      "hash": "923b928bf598a9b84653a12cc49f4b27",
+      "hash": "75f4ad9446b8db636ed008243846ef6b",
       "nivel_confianza_ia_nulos": null
     },
     "fact_evaluacion_docente": {
@@ -610,7 +610,7 @@
     },
     "fact_rendimiento_academico": {
       "filas": 22649,
-      "hash": "c2193d743358884a4cf507dc8304c860",
+      "hash": "01c97cfd1d8bee7e8fef7fb7bbe877c6",
       "nivel_confianza_ia_nulos": 132
     },
     "fact_rentabilidad": {
@@ -625,7 +625,7 @@
     },
     "fact_techo_convenio": {
       "filas": 206,
-      "hash": "a52e39074acae1c583e9ac72af74a484",
+      "hash": "89c95d6ef07fe618f841a591d6fb61c1",
       "nivel_confianza_ia_nulos": null
     },
     "dim_categoria_financiera": {
@@ -664,5 +664,5 @@
       "nivel_confianza_ia_nulos": null
     }
   },
-  "casos_hitl_nuevos": 233
+  "casos_hitl_nuevos": 169
 }

@@ -21,7 +21,10 @@ objetivo = {"security": "backend/core/security.py", "ingestion_service": "backen
             "fuzzy_normalizer": "pipeline/normalization/fuzzy_normalizer.py", "person_resolver": "pipeline/normalization/person_resolver.py",
             "alert_engine": "backend/services/alert_engine.py", "financial_rules_engine": "backend/services/financial_rules_engine.py", "risk_service": "backend/services/risk_service.py",
             "forecasting_holtwinters": "pipeline/analytics/forecasting_holtwinters.py", "forecasting_ols": "pipeline/analytics/forecasting_ols.py",
-            "forecast_service": "backend/services/forecast_service.py", "kpi_service": "backend/services/kpi_service.py", "reportes": "backend/routers/reportes.py", "dataops": "backend/routers/dataops.py"}
+            "forecast_service": "backend/services/forecast_service.py", "kpi_service": "backend/services/kpi_service.py", "reportes": "backend/routers/reportes.py", "dataops": "backend/routers/dataops.py",
+            "dw_loader": "backend/services/dw_loader.py", "pipeline_router": "backend/routers/pipeline.py", "bandeja_grupos": "backend/services/bandeja_grupos.py",
+            "revision_hechos": "backend/services/revision_hechos.py", "confianza_service": "backend/services/confianza_service.py", "indice_confianza": "pipeline/semantic/indice_confianza.py",
+            "extraccion_por_encabezado": "backend/services/extraccion_por_encabezado.py"}
 files = {k.replace("\\", "/"): v for k, v in cov["files"].items()}
 cob = {}
 for n, f in objetivo.items():
