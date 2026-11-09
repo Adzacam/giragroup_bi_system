@@ -7,6 +7,9 @@ import useKineticScroll from '../../hooks/useKineticScroll';
 import { catalogApi } from '../../api/catalogApi';
 import { useTheme } from '../../context/ThemeContext';
 
+// Las respuestas de la evaluación docente no traen el nombre del docente: es un límite de la fuente, no un error ni un dato vacío.
+const LIMITACION_DOCENTE = 'Sin vinculación de docente en la fuente (limitación)';
+
 export default function DesempenoDocente() {
   useKineticScroll();
   const { theme } = useTheme();
@@ -107,7 +110,7 @@ export default function DesempenoDocente() {
         <KpiCard
           label="Satisfacción Estudiantil"
           number={promedioGlobal ?? '—'}
-          sublabel={promedioGlobal ? 'Puntaje promedio ponderado por evaluación' : 'Sin evaluaciones docentes ingestadas'}
+          sublabel={promedioGlobal ? 'Puntaje promedio ponderado por evaluación' : LIMITACION_DOCENTE}
           badgeText={promedioGlobal ? "Calculado" : "Sin datos"}
           badgeType="neutral"
         />
@@ -169,7 +172,7 @@ export default function DesempenoDocente() {
                         color: 'var(--color-alert-green)',
                       }}
                     >
-                      {doc.puntaje_promedio != null ? `★ ${doc.puntaje_promedio} (${doc.n_evaluaciones})` : 'Sin evaluaciones'}
+                      {doc.puntaje_promedio != null ? `★ ${doc.puntaje_promedio} (${doc.n_evaluaciones})` : LIMITACION_DOCENTE}
                     </span>
                   </td>
                   <td>
