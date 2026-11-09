@@ -388,6 +388,8 @@ class EvaluadorAblacion:
         self.model = BertForTokenClassification.from_pretrained(model_dir)
         self.model.to(self.device)
         self.model.eval()
+        from pipeline.semantic.indice_confianza import cuantizar_int8
+        self.model = cuantizar_int8(self.model)  # BETO_INT8=1: cuantización dinámica int8 (comparación de F1)
         self.id2label = self.model.config.id2label
 
     def inferir_beto_tokens(self, tokens: List[str]) -> Tuple[List[str], List[float]]:
@@ -396,7 +398,7 @@ class EvaluadorAblacion:
             truncation=True, max_length=128
         )
         word_ids = enc.word_ids(batch_index=0)
-        with torch.no_grad():
+        with torch.inference_mode():
             outputs = self.model(
                 input_ids=enc["input_ids"].to(self.device),
                 attention_mask=enc["attention_mask"].to(self.device)

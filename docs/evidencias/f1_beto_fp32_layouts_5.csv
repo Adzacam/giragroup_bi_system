@@ -1,0 +1,4 @@
+modo,dataset,precision_micro,recall_micro,f1_micro,f1_micro_relajado,f1_per_estudiante,f1_per_docente,f1_modulo,f1_modulo_relajado,f1_programa,pct_directo_dw,pct_hitl,pct_staging,fuente_BETO,fuente_ENCABEZADO,fuente_FUZZY,fuente_CI_EXACTA,fuente_REGEX
+A,layouts_5,0.9167,0.1528,0.2619,0.2857,0.0,0.1053,0.0,0.0,0.7692,-,-,-,0,2,31,6,45
+B,layouts_5,0.3,0.3333,0.3158,0.7164,0.303,0.3913,0.0,0.8667,0.4762,-,-,-,50,2,31,6,45
+C,layouts_5,0.2317,0.2639,0.2468,0.6923,0.303,0.3913,0.2941,0.8667,0.0,-,-,-,58,0,0,6,45

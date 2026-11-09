@@ -1,0 +1,274 @@
+{
+  "metadata": {
+    "fecha_ejecucion": "2026-11-09 13:36:41",
+    "semilla": 42,
+    "modos_evaluados": [
+      "A",
+      "B",
+      "C"
+    ],
+    "declaracion_dataset_gold_layouts": {
+      "generacion": "Generado programáticamente mediante scripts/generar_gold_layouts_adversarios.py",
+      "auditoria_manual": "Revisión manual de concordancia sobre muestra de 20 entidades contra celdas de Excel original: 19/20 = 95.0% de coincidencia exacta.",
+      "total_entidades_anotadas": 98
+    },
+    "conciliacion_lotes_1590_1414_1387": {
+      "dictamen": "Las cifras 1.590 (leídas) y 1.414 (procesadas) no se reproducen a partir de los archivos existentes en disco (uploads/test tiene 1.870 filas brutas y 1.826 procesables).",
+      "decision": "Conforme a la instrucción del usuario ('si no se reproduce, no usar la cifra'), se descartan 1.590 y 1.414 de la documentación y se adopta la composición exacta verificable del lote de 1.387 registros."
+    }
+  },
+  "por_modo": {
+    "A": {
+      "layouts_5": {
+        "reporte_seqeval_estricto": {
+          "MODULO": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 17
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 0.05555555555555555,
+            "f1-score": 0.10526315789473684,
+            "support": 18
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 22
+          },
+          "PROGRAMA": {
+            "precision": 0.9090909090909091,
+            "recall": 0.6666666666666666,
+            "f1-score": 0.7692307692307692,
+            "support": 15
+          },
+          "micro avg": {
+            "precision": 0.9166666666666666,
+            "recall": 0.1527777777777778,
+            "f1-score": 0.2619047619047619,
+            "support": 72
+          },
+          "macro avg": {
+            "precision": 0.4772727272727273,
+            "recall": 0.18055555555555555,
+            "f1-score": 0.2186234817813765,
+            "support": 72
+          },
+          "weighted avg": {
+            "precision": 0.4393939393939394,
+            "recall": 0.1527777777777778,
+            "f1-score": 0.18657219973009445,
+            "support": 72
+          }
+        },
+        "reporte_seqeval_relajado": {
+          "p_micro_relajado": 1.0,
+          "r_micro_relajado": 0.1667,
+          "f1_micro_relajado": 0.2857,
+          "f1_por_tipo": {
+            "PER_ESTUDIANTE": 0.0,
+            "PER_DOCENTE": 0.1053,
+            "MODULO": 0.0,
+            "PROGRAMA": 0.8462
+          }
+        },
+        "metricas_regex": {
+          "NOTA": {
+            "aciertos": 20,
+            "total_gold": 20,
+            "exactitud": 1.0
+          },
+          "FECHA": {
+            "aciertos": 4,
+            "total_gold": 4,
+            "exactitud": 1.0
+          },
+          "CI": {
+            "aciertos": 2,
+            "total_gold": 2,
+            "exactitud": 1.0
+          }
+        },
+        "conteos_fuente": {
+          "CI_EXACTA": 6,
+          "ENCABEZADO": 2,
+          "FUZZY": 31,
+          "REGEX": 45,
+          "BETO": 0
+        },
+        "total_lineas": 25
+      }
+    },
+    "B": {
+      "layouts_5": {
+        "reporte_seqeval_estricto": {
+          "MODULO": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 17
+          },
+          "PER_DOCENTE": {
+            "precision": 0.36,
+            "recall": 0.5,
+            "f1-score": 0.41860465116279066,
+            "support": 18
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 0.6111111111111112,
+            "recall": 0.5,
+            "f1-score": 0.55,
+            "support": 22
+          },
+          "PROGRAMA": {
+            "precision": 0.38461538461538464,
+            "recall": 0.6666666666666666,
+            "f1-score": 0.4878048780487804,
+            "support": 15
+          },
+          "micro avg": {
+            "precision": 0.3488372093023256,
+            "recall": 0.4166666666666667,
+            "f1-score": 0.379746835443038,
+            "support": 72
+          },
+          "macro avg": {
+            "precision": 0.33893162393162396,
+            "recall": 0.41666666666666663,
+            "f1-score": 0.36410238230289277,
+            "support": 72
+          },
+          "weighted avg": {
+            "precision": 0.3568566001899336,
+            "recall": 0.4166666666666667,
+            "f1-score": 0.3743327346064158,
+            "support": 72
+          }
+        },
+        "reporte_seqeval_relajado": {
+          "p_micro_relajado": 0.8033,
+          "r_micro_relajado": 0.6806,
+          "f1_micro_relajado": 0.7368,
+          "f1_por_tipo": {
+            "PER_ESTUDIANTE": 0.2963,
+            "PER_DOCENTE": 0.9143,
+            "MODULO": 0.9697,
+            "PROGRAMA": 0.6842
+          }
+        },
+        "metricas_regex": {
+          "NOTA": {
+            "aciertos": 20,
+            "total_gold": 20,
+            "exactitud": 1.0
+          },
+          "FECHA": {
+            "aciertos": 4,
+            "total_gold": 4,
+            "exactitud": 1.0
+          },
+          "CI": {
+            "aciertos": 2,
+            "total_gold": 2,
+            "exactitud": 1.0
+          }
+        },
+        "conteos_fuente": {
+          "CI_EXACTA": 6,
+          "ENCABEZADO": 2,
+          "FUZZY": 31,
+          "REGEX": 45,
+          "BETO": 49
+        },
+        "total_lineas": 25
+      }
+    },
+    "C": {
+      "layouts_5": {
+        "reporte_seqeval_estricto": {
+          "MODULO": {
+            "precision": 0.3125,
+            "recall": 0.29411764705882354,
+            "f1-score": 0.30303030303030304,
+            "support": 17
+          },
+          "PER_DOCENTE": {
+            "precision": 0.34615384615384615,
+            "recall": 0.5,
+            "f1-score": 0.40909090909090906,
+            "support": 18
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 0.6111111111111112,
+            "recall": 0.5,
+            "f1-score": 0.55,
+            "support": 22
+          },
+          "PROGRAMA": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 15
+          },
+          "micro avg": {
+            "precision": 0.30120481927710846,
+            "recall": 0.3472222222222222,
+            "f1-score": 0.3225806451612903,
+            "support": 72
+          },
+          "macro avg": {
+            "precision": 0.31744123931623935,
+            "recall": 0.3235294117647059,
+            "f1-score": 0.31553030303030305,
+            "support": 72
+          },
+          "weighted avg": {
+            "precision": 0.34705157882241217,
+            "recall": 0.3472222222222222,
+            "f1-score": 0.3418771043771044,
+            "support": 72
+          }
+        },
+        "reporte_seqeval_relajado": {
+          "p_micro_relajado": 0.8077,
+          "r_micro_relajado": 0.5833,
+          "f1_micro_relajado": 0.6774,
+          "f1_por_tipo": {
+            "PER_ESTUDIANTE": 0.2963,
+            "PER_DOCENTE": 0.9143,
+            "MODULO": 0.9697,
+            "PROGRAMA": 0.4138
+          }
+        },
+        "metricas_regex": {
+          "NOTA": {
+            "aciertos": 0,
+            "total_gold": 20,
+            "exactitud": 0.0
+          },
+          "FECHA": {
+            "aciertos": 0,
+            "total_gold": 4,
+            "exactitud": 0.0
+          },
+          "CI": {
+            "aciertos": 0,
+            "total_gold": 2,
+            "exactitud": 0.0
+          }
+        },
+        "conteos_fuente": {
+          "CI_EXACTA": 6,
+          "ENCABEZADO": 0,
+          "FUZZY": 0,
+          "REGEX": 45,
+          "BETO": 52
+        },
+        "total_lineas": 25
+      }
+    }
+  }
+}

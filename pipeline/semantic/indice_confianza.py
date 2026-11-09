@@ -46,6 +46,15 @@ def clasificar_banda(indice: Optional[float]) -> str:
     return BANDA_CONSOLIDADO
 
 
+def cuantizar_int8(modelo):
+    """Cuantización dinámica int8 de las capas Linear (solo CPU). Se activa con BETO_INT8=1; sin la variable devuelve el modelo tal cual."""
+    import os
+    if os.getenv("BETO_INT8") != "1":
+        return modelo
+    import torch
+    return torch.quantization.quantize_dynamic(modelo, {torch.nn.Linear}, dtype=torch.qint8)
+
+
 def _cargar_modelo():
     global _MODELO, _TOKENIZER
     if _MODELO is None:
@@ -53,7 +62,7 @@ def _cargar_modelo():
             from pipeline.semantic.inference_server import get_engine_and_tokenizer
             engine, tok = get_engine_and_tokenizer()
             if engine is not None and getattr(engine, "_nlp_pipeline", None) is not None:
-                _MODELO = engine._nlp_pipeline.model
+                _MODELO = cuantizar_int8(engine._nlp_pipeline.model)
                 _TOKENIZER = tok or engine._nlp_pipeline.tokenizer
                 return _MODELO, _TOKENIZER
         except Exception:
@@ -67,6 +76,7 @@ def _cargar_modelo():
         _TOKENIZER = BertTokenizerFast.from_pretrained(str(MODELO_BETO_CACHE_DIR))
         _MODELO = BertForTokenClassification.from_pretrained(str(MODELO_BETO_CACHE_DIR))
         _MODELO.eval()
+        _MODELO = cuantizar_int8(_MODELO)
         import torch
         if torch.cuda.is_available():  # con docker-compose.gpu.yml: ~4x más rápido, mismo resultado
             _MODELO.to("cuda")
@@ -86,7 +96,7 @@ def calcular_indices(textos: List[str]) -> List[float]:
     for i in range(0, len(textos), BATCH_SIZE):
         lote = textos[i:i + BATCH_SIZE]
         inputs = tokenizer(lote, return_tensors="pt", padding=True, truncation=True, max_length=MAX_LENGTH_TOKENS)
-        with torch.no_grad():
+        with torch.inference_mode():
             en_dispositivo = {k: v.to(modelo.device) for k, v in inputs.items()}
             probs = torch.softmax(modelo(**en_dispositivo).logits, dim=-1).cpu()
 
