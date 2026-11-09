@@ -51,18 +51,50 @@ def _por_que(confianza: Optional[float], faltantes: List[str]) -> str:
     return " ".join(partes) or "Marcado para revisión en la carga."
 
 
-def items_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = None) -> List[Dict[str, Any]]:
-    """Casos de la bandeja para los hechos en revisión (de los documentos dados, o de todos)."""
-    estudiantes = {e.id_estudiante: e for e in db.query(DimEstudiante).all()}
-    modulos = {m.id_modulo: m for m in db.query(DimModulo).all()}
-    docs = {d.id_documento: d for d in db.query(DimOrigenDocumental).all()}
-    fechas = {t.id_tiempo: t.fecha for t in db.query(DimTiempo.id_tiempo, DimTiempo.fecha).all()}
+def _q_hechos(db: Session, modelo, col_id, doc_ids: Optional[Sequence[int]]):
+    q = db.query(modelo).filter(modelo.requiere_revision == True)  # noqa: E712
+    if doc_ids is not None:
+        q = q.filter(modelo.id_documento.in_(list(doc_ids)))
+    return q.order_by(col_id)
 
-    def _q(modelo, col_id):
-        q = db.query(modelo).filter(modelo.requiere_revision == True)  # noqa: E712
-        if doc_ids is not None:
-            q = q.filter(modelo.id_documento.in_(list(doc_ids)))
-        return q.order_by(col_id).all()
+
+def contar_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = None) -> int:
+    return (_q_hechos(db, FactRendimientoAcademico, FactRendimientoAcademico.id_hecho_aca, doc_ids).count()
+            + _q_hechos(db, FactSituacionFinanciera, FactSituacionFinanciera.id_hecho_fin, doc_ids).count())
+
+
+def items_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = None,
+                             offset: int = 0, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    """Casos de la bandeja para los hechos en revisión (de los documentos dados, o de todos). offset/limit se aplican
+    en SQL sobre la secuencia académicos + financieros y solo se cargan las dimensiones de esa página."""
+    q_aca = _q_hechos(db, FactRendimientoAcademico, FactRendimientoAcademico.id_hecho_aca, doc_ids)
+    q_fin = _q_hechos(db, FactSituacionFinanciera, FactSituacionFinanciera.id_hecho_fin, doc_ids)
+    n_aca = q_aca.count() if (offset or limit is not None) else 0
+    restante = limit
+    if offset < n_aca or not (offset or limit is not None):
+        h_aca = (q_aca.offset(offset).limit(restante).all() if restante is not None else q_aca.offset(offset).all())
+    else:
+        h_aca = []
+    if restante is not None:
+        restante -= len(h_aca)
+    off_fin = max(0, offset - n_aca)
+    if restante is None:
+        h_fin = q_fin.offset(off_fin).all()
+    elif restante > 0:
+        h_fin = q_fin.offset(off_fin).limit(restante).all()
+    else:
+        h_fin = []
+    ids_est = {h.id_estudiante for h in h_aca + h_fin if h.id_estudiante}
+    ids_mod = {h.id_modulo for h in h_aca if h.id_modulo}
+    ids_doc = {h.id_documento for h in h_aca + h_fin if h.id_documento}
+    ids_tie = {h.id_tiempo for h in h_aca + h_fin if h.id_tiempo}
+    estudiantes = {e.id_estudiante: e for e in db.query(DimEstudiante).filter(DimEstudiante.id_estudiante.in_(ids_est)).all()} if ids_est else {}
+    modulos = {m.id_modulo: m for m in db.query(DimModulo).filter(DimModulo.id_modulo.in_(ids_mod)).all()} if ids_mod else {}
+    docs = {d.id_documento: d for d in db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(ids_doc)).all()} if ids_doc else {}
+    fechas = {t.id_tiempo: t.fecha for t in db.query(DimTiempo.id_tiempo, DimTiempo.fecha).filter(DimTiempo.id_tiempo.in_(ids_tie)).all()} if ids_tie else {}
+
+    def _q(modelo, col_id):  # compatibilidad con el cuerpo: devuelve los hechos ya paginados
+        return h_aca if modelo is FactRendimientoAcademico else h_fin
 
     items = []
     for h in _q(FactRendimientoAcademico, FactRendimientoAcademico.id_hecho_aca):

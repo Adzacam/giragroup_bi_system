@@ -80,7 +80,7 @@ from services.extraccion_por_encabezado import (
     normalizar_encabezado,
 )
 from services.sugerencia_hitl import es_sugerencia_un_clic, nombre_extraido, similitud_nombre_completo
-from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, resolver_caso_hecho
+from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, contar_hechos_en_revision, resolver_caso_hecho
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
 from pipeline.normalization.person_resolver import resolver_persona
 from services.dataops_evaluation_service import (
@@ -4006,6 +4006,22 @@ def _registrar_descarte_ruido(db: Session, stg, line: str, indice, motivo: str, 
 # BANDEJA DE REVISIÓN HUMANA (PASO ④) CON FUENTE ÚNICA Y CI ENMASCARADO (#12, #13)
 # =============================================================================
 
+_CACHE_DIMS_BANDEJA: Dict[str, Any] = {"t": 0.0, "v": None}
+
+
+def _dimensiones_bandeja(db: Session):
+    """Estudiantes, docentes y módulos para reconocer entidades en la bandeja; en memoria 60 s (se leían completos en cada página)."""
+    ahora = time.time()
+    if _CACHE_DIMS_BANDEJA["v"] is None or ahora - _CACHE_DIMS_BANDEJA["t"] > 60.0:
+        _CACHE_DIMS_BANDEJA["v"] = (
+            db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all(),
+            _docentes_con_contexto(db),
+            db.query(DimModulo).all(),
+        )
+        _CACHE_DIMS_BANDEJA["t"] = ahora
+    return _CACHE_DIMS_BANDEJA["v"]
+
+
 @router.get("/review-tray")
 def get_review_tray(
     doc_id: Optional[int] = Query(None),
@@ -4075,11 +4091,13 @@ def get_review_tray(
     if estado and estado.upper() not in ("ALL", "TODOS"):
         query = query.filter(func.upper(StagingEntidadNoResuelta.estado_resolucion) == estado.upper())
 
-    entidades_db = query.order_by(StagingEntidadNoResuelta.id_staging.asc()).all()
-    resolved_db = resolved_query.order_by(StagingEntidadNoResuelta.resuelto_en.desc().nullslast(), StagingEntidadNoResuelta.id_staging.desc()).all()
-    estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
-    docentes = _docentes_con_contexto(db)
-    modulos = db.query(DimModulo).all()
+    # Paginación en SQL: antes se armaban los casos de TODA la cola (decenas de miles) y luego se recortaba la página
+    start_idx = (page - 1) * page_size
+    n_stg = query.count()
+    entidades_db = query.order_by(StagingEntidadNoResuelta.id_staging.asc()).offset(start_idx).limit(page_size).all()
+    resolved_total = resolved_query.count()
+    resolved_db = resolved_query.order_by(StagingEntidadNoResuelta.resuelto_en.desc().nullslast(), StagingEntidadNoResuelta.id_staging.desc()).limit(200).all()
+    estudiantes, docentes, modulos = _dimensiones_bandeja(db)
 
     motivo_labels_map = {
         "BAJA_CONFIANZA": "Baja confianza",
@@ -4204,12 +4222,16 @@ def get_review_tray(
         })
 
     # HU-06 / RF-06: también los hechos cargados con requiere_revision (índice 0,60–0,85, nota o fecha faltante)
+    n_hechos = 0
     estado_pendiente = not estado or estado.upper() in ("ALL", "TODOS", "PENDIENTE")
     motivo_hechos = not motivo or motivo.upper() in ("ALL", "TODOS", MOTIVO_HECHO)
     if estado_pendiente and motivo_hechos:
         doc_ids_hechos = [d.id_documento for d in target_docs] if target_docs else (
             [doc_id] if doc_id is not None else None)
-        items.extend(items_hechos_en_revision(db, doc_ids_hechos))
+        n_hechos = contar_hechos_en_revision(db, doc_ids_hechos)
+        restante_pag = page_size - len(items)
+        if restante_pag > 0:
+            items.extend(items_hechos_en_revision(db, doc_ids_hechos, offset=max(0, start_idx - n_stg), limit=restante_pag))
 
     resolved_history = []
     for r_ent in resolved_db:
@@ -4231,9 +4253,8 @@ def get_review_tray(
             "accion": r_ent.estado_resolucion or "RESUELTO_HUMANO",
         })
 
-    total_items = len(items)
-    start_idx = (page - 1) * page_size
-    paginated_items = items[start_idx : start_idx + page_size]
+    total_items = n_stg + n_hechos
+    paginated_items = items  # ya paginados en SQL
 
     target_ids = [d.id_documento for d in target_docs] if target_docs else []
     dw_acad_q = db.query(func.count(FactRendimientoAcademico.id_hecho_aca))
@@ -4249,7 +4270,7 @@ def get_review_tray(
         "total_aprobados": dw_acad_count + dw_fin_count,
         "fact_rendimiento_academico": dw_acad_count,
         "fact_situacion_financiera": dw_fin_count,
-        "resueltos_hitl_count": len(resolved_history),
+        "resueltos_hitl_count": resolved_total,
     }
 
     return {
@@ -4257,7 +4278,7 @@ def get_review_tray(
         "total": total_items,
         "pendientes": total_items,
         "un_clic_total": sum(1 for it in items if it.get("un_clic")),
-        "resueltos_count": len(resolved_history),
+        "resueltos_count": resolved_total,
         "resolved_history": resolved_history,
         "aprobados_resumen": aprobados_resumen,
         "pagination": {

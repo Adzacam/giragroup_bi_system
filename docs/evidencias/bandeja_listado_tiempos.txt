@@ -1,0 +1,7 @@
+GET /api/v1/dataops/review-tray?page_size=20 (115.544 casos pendientes), TestClient contra el DW real, medido:
+Antes : 110,5 s por pagina (doc_id=12) / 161,7 s (sin filtro) - armaba los casos de TODA la cola y recortaba despues.
+Ahora : paginacion en SQL (count + offset/limit sobre staging y hechos en revision), historial limitado a 200, dimensiones en memoria 60 s.
+  6 paginas sin filtro: 1,84 / 0,91 / 0,85 / 0,18 / 0,10 / 0,02 s (la primera incluye la carga en frio de las dimensiones)
+  doc_id=12: 0,30 s | doc_id=9: 0,21 s | pagina 3000: 0,38 s
+Nota: un_clic_total ahora cuenta solo los casos de la pagina; resueltos_count/resueltos_hitl_count salen de un COUNT.
+No se guardaron entidades en la ingesta: la extraccion se hace solo para los 20 casos de la pagina (~40 ms cada uno).
