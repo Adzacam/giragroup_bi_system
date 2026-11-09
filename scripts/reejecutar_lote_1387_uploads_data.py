@@ -158,6 +158,26 @@ def _presencia_en_dw(valores):
     return out
 
 
+def _registrar_descartes(descartadas):
+    """Registra cada entidad PER descartada por forma en log_inconsistencias (tipo_regla PER_SIN_FORMA_NOMBRE); idempotente:
+    reemplaza las filas previas de esa regla. Devuelve cuántas quedaron. Sin DATABASE_URL no escribe."""
+    from sqlalchemy import create_engine, text
+    url = os.getenv("DATABASE_URL")
+    if not url:
+        return None
+    with create_engine(url).begin() as c:
+        ids = {r[0]: r[1] for r in c.execute(text("SELECT nombre_archivo, max(id_documento) FROM dim_origen_documental GROUP BY 1"))}
+        c.execute(text("DELETE FROM log_inconsistencias WHERE tipo_regla = 'PER_SIN_FORMA_NOMBRE'"))
+        filas = [{"d": ids.get(x["archivo"]), "f": x["fila_origen"], "c": x["tipo"], "v": x["valor"][:2000], "h": x["hecho_sin_persona"],
+                  "ds": f"{x['archivo']} / {x['hoja']}: entidad {x['tipo']} sin CI ni coincidencia y sin forma de nombre propio; "
+                        + ("el registro quedó sin persona: va a HITL" if x["hecho_sin_persona"] else "el registro conserva otra persona")}
+                 for x in descartadas]
+        if filas:
+            c.execute(text("INSERT INTO log_inconsistencias (id_documento, fila_origen, campo_afectado, valor_recibido, tipo_regla, severidad, estado_resolucion, descripcion) "
+                           "VALUES (:d, :f, :c, :v, 'PER_SIN_FORMA_NOMBRE', 'MEDIA', 'DESCARTADO', :ds)"), filas)
+        return c.execute(text("SELECT count(*) FROM log_inconsistencias WHERE tipo_regla = 'PER_SIN_FORMA_NOMBRE'")).scalar()
+
+
 def _banda(c):
     return 0 if c >= 0.85 else (1 if c >= 0.60 else 2)
 
@@ -178,6 +198,7 @@ def main():
     texto_libre = Counter()
     fk_estado = {"estudiante": Counter(), "docente": Counter()}
     directo_a_hitl = 0
+    descartadas, hechos_sin_persona = [], []  # PER_SIN_FORMA_NOMBRE y registros que quedaron sin ninguna persona
     desglose_antes = {"estudiante": Counter(), "docente": Counter()}
     desglose_despues = {"estudiante": Counter(), "docente": Counter()}
     niveles = Counter()
@@ -214,6 +235,7 @@ def main():
         sin_resolver = False
         correo_en_registro = False
         sin_resolver_prev = False
+        descartadas_reg, personas_reg = [], 0
         for e in todas:
             if e["tipo"] not in ("PER_ESTUDIANTE", "PER_DOCENTE"):
                 continue
@@ -239,7 +261,9 @@ def main():
                 # sin CI ni fuzzy y con forma de texto, no de nombre: se descarta (no va a HITL). Si hay CI exacta se resuelve igual
                 personas["total"] -= 1
                 texto_libre["entidades_PER_descartadas_no_parece_nombre"] += 1
+                descartadas_reg.append({"tipo": e["tipo"], "valor": e["valor"], "archivo": item["archivo"], "hoja": item["hoja"], "fila_origen": item["fila_origen"]})
                 continue
+            personas_reg += 1
             if r:
                 personas["resueltas_" + r["fuente"]] += 1
                 niveles[det["nivel"]] += 1
@@ -255,6 +279,15 @@ def main():
                 desglose_despues[tipo][motivo_h] += 1
                 sin_resolver = True
         correos["registros"] += int(correo_en_registro)
+        if descartadas_reg:
+            # Un hecho que pierde su única persona por el descarte no puede cargarse directo: va a HITL
+            pierde = personas_reg == 0
+            for d in descartadas_reg:
+                d["hecho_sin_persona"] = pierde
+            descartadas += descartadas_reg
+            if pierde:
+                hechos_sin_persona.append(descartadas_reg[0])
+                sin_resolver = True
         bandas["prev"][max(b_pre, 1) if sin_resolver_prev else b_pre] += 1
         b_post = max(b_pre, 1) if sin_resolver else b_pre  # sin coincidencia -> HITL
         if sin_resolver and b_pre == 0:
@@ -290,6 +323,12 @@ def main():
         "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {k: dict(v) for k, v in desglose_despues.items()},
         "personas_resueltas_por_nivel": dict(niveles),
         "correos_filtrados_como_no_nombre": correos,
+        "descartadas_PER_SIN_FORMA_NOMBRE": {
+            "entidades": len(descartadas), "registros_afectados": len({(d['archivo'], d['hoja'], d['fila_origen']) for d in descartadas}),
+            "hechos_sin_persona_van_a_hitl": len(hechos_sin_persona),
+            "ejemplos_20": [{k: d[k] for k in ("valor", "archivo", "hoja", "fila_origen", "hecho_sin_persona")} for d in descartadas[:20]],
+            "ejemplos_20_hecho_sin_persona": [{k: d[k] for k in ("valor", "archivo", "hoja", "fila_origen")} for d in hechos_sin_persona[:20]]},
+        "log_inconsistencias_PER_SIN_FORMA_NOMBRE_registradas": _registrar_descartes(descartadas),
         "texto_libre": dict(texto_libre),
         "personas_por_fk_estado": {k: dict(v) for k, v in fk_estado.items()},
         "distribucion_bandas_sin_regla_personas": dist(bandas["pre"]),

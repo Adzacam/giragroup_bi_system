@@ -9,12 +9,12 @@
   },
   "carga_final": {
     "directo": {
-      "conteo": 1381,
-      "porcentaje": 99.57
+      "conteo": 1259,
+      "porcentaje": 90.77
     },
     "hitl": {
-      "conteo": 6,
-      "porcentaje": 0.43
+      "conteo": 128,
+      "porcentaje": 9.23
     },
     "staging": {
       "conteo": 0,
@@ -43,6 +43,277 @@
     },
     "docente": {}
   },
+  "descartadas_PER_SIN_FORMA_NOMBRE": {
+    "entidades": 494,
+    "registros_afectados": 261,
+    "hechos_sin_persona_van_a_hitl": 122,
+    "ejemplos_20": [
+      {
+        "valor": "CACERES",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 94,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "VARGAS",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 94,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "CARLOS",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 96,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "CAREAGA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 96,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "HERRERA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 96,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "DAVALOS",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 97,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "ESCOBAR",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 97,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "FERREL",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 98,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "ROCHA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 98,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "PORCEL",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 103,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "ALEGRÍA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 103,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "SOLÍZ",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 107,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "CHAVARRÍA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 107,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "TORRICO",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 108,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "BUKOVIC",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 108,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "VALENZUELA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 109,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "TAPIA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 109,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "VARGAS",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 110,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "TORRICO",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 110,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "ARAUJO",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 111,
+        "hecho_sin_persona": false
+      }
+    ],
+    "ejemplos_20_hecho_sin_persona": [
+      {
+        "valor": "CARLOS",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 96
+      },
+      {
+        "valor": "JADIYE",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 301
+      },
+      {
+        "valor": "MARLENE",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 302
+      },
+      {
+        "valor": "CARMEN",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 307
+      },
+      {
+        "valor": "JHOVANA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 311
+      },
+      {
+        "valor": "GRISELDA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 316
+      },
+      {
+        "valor": "SERGIO",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 324
+      },
+      {
+        "valor": "RUBEN",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 327
+      },
+      {
+        "valor": "BRANDON",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 57
+      },
+      {
+        "valor": "IRVING",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 64
+      },
+      {
+        "valor": "SERGIO",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 69
+      },
+      {
+        "valor": "JONATHAN",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 79
+      },
+      {
+        "valor": "CINTHYA",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 84
+      },
+      {
+        "valor": "MARÍA",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 88
+      },
+      {
+        "valor": "MARÍA",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 96
+      },
+      {
+        "valor": "IRVING",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 111
+      },
+      {
+        "valor": "JOSE",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 143
+      },
+      {
+        "valor": "ALFREDO",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 145
+      },
+      {
+        "valor": "5/Totalmente de acuerdo",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 2
+      },
+      {
+        "valor": "5/Totalmente de acuerdo",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 3
+      }
+    ]
+  },
+  "log_inconsistencias_registradas": 494,
+  "registros_directo_movidos_a_hitl_por_persona_sin_resolver": 125,
   "correos_filtrados": {
     "entidades": 139,
     "registros": 139
@@ -55,7 +326,7 @@
   },
   "KPI_10a_todas": 0.9618,
   "KPI_10b_solo_BETO": 0.9209,
-  "KPI_11_directo_final_pct": 99.57,
+  "KPI_11_directo_final_pct": 90.77,
   "conteos_fuente_resolucion": {
     "CI_EXACTA": 1850,
     "ENCABEZADO": 3079,
