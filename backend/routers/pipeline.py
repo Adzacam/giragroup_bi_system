@@ -163,6 +163,21 @@ def _resolver_fila_sin_encabezados(
 
 
 
+_ENCABEZADOS_NUMERACION = {"N°", "Nº", "NRO", "N", "ID", "#", "NUMERO", "NÚMERO", "NO", "NO."}
+
+
+def _motivo_no_aplicable(celdas):
+    """Línea sin hecho posible: solo numeración ('N°: 1498') o texto libre sin ningún 'ENCABEZADO: valor'. None si no aplica."""
+    con_valor = [c for c in celdas if c.strip()]
+    pares = [c.partition(": ") for c in con_valor]
+    estructuradas = [(h.strip(), v.strip()) for h, sep, v in pares if sep and h.strip() and v.strip()]
+    if not estructuradas:
+        return "TEXTO_LIBRE_SIN_ENCABEZADO"
+    if all(h.upper() in _ENCABEZADOS_NUMERACION for h, _ in estructuradas) and len(estructuradas) == len(con_valor):
+        return "SOLO_NUMERACION"
+    return None
+
+
 def _resolver_linea(categoria, celdas, campos, campos_fin, factores_escala):
     """Resoluciones de una línea por las reglas (cascada por encabezado). Devuelve (resoluciones, entidades, por_reglas):
     por_reglas es True si las reglas dejaron resueltos los campos que necesita el hecho (no hace falta BETO)."""
@@ -303,6 +318,7 @@ def process_pipeline(
     )
 
     dw_loader = DWLoaderService(db)
+    dw_loader.diferir_eval = True  # evaluación docente: inserción en bloque al final del documento
     _doc_origen = db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento == doc_id).first()
     hash_archivo = (_doc_origen.hash_sha256 if _doc_origen and _doc_origen.hash_sha256 else nombre_archivo)
     detalles_carga = []
@@ -314,6 +330,7 @@ def process_pipeline(
     cargados_revision = 0
     beto_lineas = 0
     reglas_lineas = 0
+    lineas_no_aplicables = 0
 
     # Importes tolerantes para PLN / Calidad
     try:
@@ -350,28 +367,39 @@ def process_pipeline(
 
         # Pasada 1 (reglas): cada línea se resuelve con la cascada de reglas antes de consultar BETO
         preparadas = []
-        for linea_str, celdas, campos_fin in lineas:
+        no_aplicables = {}
+        for k_orig, (linea_str, celdas, campos_fin) in enumerate(lineas):
             campos = campos_por_encabezado(celdas)
             res_l, ents_l, por_reglas = _resolver_linea(categoria, celdas, campos, campos_fin, factores_escala)
-            preparadas.append((linea_str, celdas, campos_fin, campos, res_l, ents_l, por_reglas))
+            if not por_reglas:
+                motivo_na = _motivo_no_aplicable(celdas)
+                if motivo_na:  # ni BETO ni bandeja: no hay hecho ni entidad que resolver; queda un registro agregado en el log
+                    no_aplicables[motivo_na] = no_aplicables.get(motivo_na, 0) + 1
+                    continue
+            preparadas.append((linea_str, celdas, campos_fin, campos, res_l, ents_l, por_reglas, k_orig))
+        for motivo_na, n_na in no_aplicables.items():
+            db.add(LogInconsistencia(id_documento=doc_id, campo_afectado=b.hoja or "", valor_recibido=str(n_na), tipo_regla="LINEAS_NO_APLICABLES",
+                                     severidad="BAJA", estado_resolucion="REGISTRADO",
+                                     descripcion=f"{n_na} líneas sin hecho posible ({motivo_na}) en la hoja '{b.hoja}'; no pasan por BETO ni por la bandeja"))
+            lineas_no_aplicables += n_na
 
         # Pasada 2 (BETO): solo las líneas que las reglas no resolvieron; las demás reutilizan el índice de la caché si existe
         # (nunca se calcula uno nuevo para ellas). Banda: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
         t_b0 = time.perf_counter()
-        indices = [None] * len(lineas)
+        indices = [None] * len(preparadas)
         necesitan = [k for k, pr in enumerate(preparadas) if not pr[6]]
         if necesitan:
-            for k, v in zip(necesitan, obtener_indices([lineas[k][0] for k in necesitan])):
+            for k, v in zip(necesitan, obtener_indices([preparadas[k][0] for k in necesitan])):
                 indices[k] = v
         resueltas = [k for k, pr in enumerate(preparadas) if pr[6]]
         if resueltas:
-            for k, v in zip(resueltas, indices_en_cache([lineas[k][0] for k in resueltas])):
+            for k, v in zip(resueltas, indices_en_cache([preparadas[k][0] for k in resueltas])):
                 indices[k] = v
         t_beto_ms += (time.perf_counter() - t_b0) * 1000.0
         beto_lineas += len(necesitan)
         reglas_lineas += len(resueltas)
 
-        for k_fila, ((linea_str, celdas, campos_fin, campos, resoluciones_lista, entidades_fila, por_reglas), indice) in enumerate(zip(preparadas, indices)):
+        for ((linea_str, celdas, campos_fin, campos, resoluciones_lista, entidades_fila, por_reglas, k_fila), indice) in zip(preparadas, indices):
             # Clave de idempotencia por fila de origen: hash de archivo + hoja + fila + contenido
             clave_origen = hashlib.sha256(
                 f"{hash_archivo}|{b.hoja}|{(b.fila_inicio or 0) + k_fila}|{linea_str}".encode("utf-8")).hexdigest()
@@ -425,6 +453,9 @@ def process_pipeline(
                 elif res_carga.get("status") == "staged":
                     staged_entidades += 1
 
+    t_f0 = time.perf_counter()
+    dw_loader.finalizar_cargas()
+    t_carga_ms += (time.perf_counter() - t_f0) * 1000.0
     db.commit()
     cache_consultas.invalidar()  # el DW cambió: alertas, CMI y forecast se recalculan
 
@@ -451,5 +482,6 @@ def process_pipeline(
         },
         "lineas_beto": beto_lineas,
         "lineas_resueltas_por_reglas": reglas_lineas,
+        "lineas_no_aplicables": lineas_no_aplicables,
         "detalles_carga": detalles_carga[:20]  # Primeros 20 para no sobrecargar el payload
     }

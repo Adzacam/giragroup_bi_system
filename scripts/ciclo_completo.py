@@ -19,13 +19,21 @@ def huella(engine):
     out = {}
     with engine.connect() as c:
         for t in TABLAS_HUELLA:
-            n, h = c.execute(text(f"SELECT count(*), md5(coalesce(string_agg(x::text, '|' ORDER BY x::text), '')) FROM {t} x")).one()
-            # sin columnas de id_documento/clave ni serial no se puede abstraer de forma genérica: se registra tal cual
-            out[t] = {"filas": n, "hash": h}
+            # hash sobre la fila como jsonb sin nivel_confianza_ia (el índice BETO ya no se calcula para líneas resueltas por reglas;
+            # se cuenta aparte cuántas filas lo tienen nulo)
+            n, h = c.execute(text(f"SELECT count(*), md5(coalesce(string_agg((to_jsonb(x) - 'nivel_confianza_ia')::text, '|' ORDER BY (to_jsonb(x) - 'nivel_confianza_ia')::text), '')) FROM {t} x")).one()
+            nulos = None
+            if t in ("fact_rendimiento_academico", "fact_situacion_financiera"):
+                nulos = c.execute(text(f"SELECT count(*) FROM {t} WHERE nivel_confianza_ia IS NULL")).scalar()
+            out[t] = {"filas": n, "hash": h, "nivel_confianza_ia_nulos": nulos}
     return out
 
 
 def main():
+    if os.environ.get("SOLO_HUELLA"):
+        from core.database import engine as _e
+        Path(salida).write_text(json.dumps(huella(_e), indent=1), encoding="utf-8")
+        return
     info = m.construir_slices()
     from fastapi.testclient import TestClient
     from main import app

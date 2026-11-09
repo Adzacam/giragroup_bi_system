@@ -25,4 +25,5 @@ class PipelineExecutionResponse(BaseModel):
     tiempos_etapa_ms: Dict[str, float] = {}
     lineas_beto: int = 0
     lineas_resueltas_por_reglas: int = 0
+    lineas_no_aplicables: int = 0
     detalles_carga: List[Dict[str, Any]] = []

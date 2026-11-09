@@ -181,6 +181,17 @@ def _es_nombre_incompleto(guardado: str, entrante: str) -> bool:
     return bool(t_guardado) and t_guardado < t_entrante
 
 
+def _es_variante_de_nombre(guardado: str, entrante: str) -> bool:
+    """Misma persona con distinta escritura: placeholder de la dimensión ('Estudiante CI 123') o token_set_ratio >= 85 tras
+    normalizar y quitar títulos, con al menos un apellido/nombre (token de 3+ letras) en común."""
+    from rapidfuzz import fuzz
+    from pipeline.normalization.person_resolver import quitar_titulos, _tokens
+    if re.match(r"^\s*estudiante\s+ci\b", guardado or "", re.I):
+        return True
+    a, b = quitar_titulos(guardado or ""), quitar_titulos(entrante or "")
+    return bool(set(_tokens(a)) & set(_tokens(b))) and fuzz.token_set_ratio(a, b) >= 85
+
+
 def _fuzzy_best_match(query_str: str, candidates: list):
     """Búsqueda difusa compatible con rapidfuzz o difflib como fallback."""
     if not query_str or not candidates:
@@ -220,6 +231,8 @@ class DWLoaderService:
         self._mod_por_nombre: Optional[Dict[str, int]] = None  # nombre normalizado (minúsculas) -> id_modulo, una carga por instancia
         self._mod_nombre_id: Dict[str, int] = {}  # nombre exacto -> id_modulo (para el fuzzy)
         self._memo_modulo_nombre: Dict[str, Optional[int]] = {}
+        self.diferir_eval = False  # True: la evaluación docente se inserta en bloque al llamar finalizar_cargas()
+        self._eval_pendientes: Dict[str, Dict[str, Any]] = {}
         self._cache_base_programa: Dict[Any, Optional[str]] = {}
         self._cache_docente_programa: Dict[Any, Optional[int]] = {}
         self._cache_tiempo_programa: Dict[Any, Optional[int]] = {}
@@ -399,7 +412,15 @@ class DWLoaderService:
                 # Regla CI_NOMBRE_DISCORDANTE: si el nombre no coincide léxicamente (WRatio < 70) -> HITL
                 elif not forzar_resolucion_humana and nombre and est.nombre_completo:
                     match_ratio = _fuzzy_best_match(nombre.strip(), [est.nombre_completo])[1] or 0.0
-                    if match_ratio < 70.0:
+                    if match_ratio < 70.0 and _es_variante_de_nombre(est.nombre_completo, nombre):
+                        # CI exacta y apellido coincidente: variante de escritura, no un conflicto; queda en el log
+                        self.db.add(LogInconsistencia(
+                            id_documento=doc_id, campo_afectado="nombre_completo", valor_recibido=nombre.strip()[:2000],
+                            valor_esperado=est.nombre_completo, tipo_regla="CI_NOMBRE_VARIANTE", severidad="BAJA",
+                            estado_resolucion="REGISTRADO", descripcion=f"CI {ci_clean}: nombre resuelto automáticamente (variante)"))
+                        if re.match(r"^\s*estudiante\s+ci\b", est.nombre_completo or "", re.I):
+                            est.nombre_completo = nombre.strip()  # el nombre guardado era un marcador
+                    elif match_ratio < 70.0:
                         stg = StagingEntidadNoResuelta(
                             id_documento=doc_id,
                             tipo_entidad="ESTUDIANTE",
@@ -735,6 +756,26 @@ class DWLoaderService:
             return nuevo_mod.id_modulo
 
         return None
+
+    def finalizar_cargas(self, pagina: int = 2000) -> int:
+        """Inserta en bloque (execute_values, páginas de `pagina` filas) las respuestas de evaluación acumuladas. Idempotente por
+        clave_respuesta: ON CONFLICT actualiza la fila, salvo las ya resueltas por la bandeja (RESUELTO_HUMANO). Devuelve las filas enviadas."""
+        if not self._eval_pendientes:
+            return 0
+        from psycopg2.extras import execute_values
+        cols = ["clave_respuesta", "id_docente", "id_modulo", "id_estudiante", "id_tiempo", "pregunta_bloque", "tipo_pregunta",
+                "puntuacion", "escala_max", "comentario", "id_documento", "requiere_revision", "motivo_revision"]
+        filas = [tuple([k] + [v[c] for c in cols[1:]]) for k, v in self._eval_pendientes.items()]
+        self._eval_pendientes = {}
+        self.db.flush()
+        cur = self.db.connection().connection.cursor()
+        sql = (f"INSERT INTO fact_evaluacion_docente ({', '.join(cols)}) VALUES %s ON CONFLICT (clave_respuesta) DO UPDATE SET "
+               + ", ".join(f"{c}=EXCLUDED.{c}" for c in cols[1:])
+               + " WHERE fact_evaluacion_docente.motivo_revision IS DISTINCT FROM 'RESUELTO_HUMANO'")
+        for i in range(0, len(filas), pagina):
+            execute_values(cur, sql, filas[i:i + pagina], page_size=pagina)
+        cur.close()
+        return len(filas)
 
     def _cargar_nombres_modulo(self) -> None:
         """Una sola consulta de (id, nombre) por instancia: antes cada módulo por nombre traía todos los DimModulo como objetos ORM."""
@@ -1190,15 +1231,12 @@ class DWLoaderService:
             if tipo_preg == "DOCENTE" and not id_doc_eval:
                 id_doc_eval = self._docente_del_programa(id_mod_eval)  # único docente del programa en bridge_modulo_docente
                 if not id_doc_eval:
-                    motivos_rev.append("DOCENTE_SIN_VINCULAR")
+                    motivos_rev.append("LIMITACION_FUENTE")  # la encuesta no nombra al docente: no es un caso de revisión
             if not id_tiempo:
-                id_tiempo = self._tiempo_del_programa(id_mod_eval)  # último período con actas del programa (a confirmar)
-                motivos_rev.append("FECHA_ESTIMADA_DEL_PROGRAMA" if id_tiempo else "SIN_FECHA")
+                id_tiempo = self._tiempo_del_programa(id_mod_eval)  # último período con actas del programa
+                motivos_rev.append("TIEMPO_IMPUTADO" if id_tiempo else "LIMITACION_FUENTE")
 
             clave = resoluciones.get("clave_respuesta")
-            existente_eval = self.db.query(FactEvaluacionDocente).filter(
-                FactEvaluacionDocente.clave_respuesta == clave
-            ).first() if clave else None
             valores = dict(
                 id_docente=id_doc_eval,
                 id_modulo=id_mod_eval,
@@ -1210,9 +1248,17 @@ class DWLoaderService:
                 escala_max=escala_max,
                 comentario=comentario_str,
                 id_documento=doc_id,
-                requiere_revision=bool(motivos_rev),
-                motivo_revision=", ".join(motivos_rev)[:300] or None,
+                requiere_revision=False,  # informativo: se excluye del conteo de la bandeja (motivo en motivo_revision)
+                motivo_revision=", ".join(dict.fromkeys(motivos_rev))[:300] or None,
             )
+            if self.diferir_eval and clave:
+                # Carga masiva: las respuestas se acumulan y se insertan en páginas al cerrar el documento (finalizar_cargas)
+                self._eval_pendientes[clave] = valores
+                return {"tipo": "evaluacion_docente", "status": "loaded", "id_hecho": None, "id_docente": id_doc_eval,
+                        "puntuacion": puntuacion, "escala_max": escala_max}
+            existente_eval = self.db.query(FactEvaluacionDocente).filter(
+                FactEvaluacionDocente.clave_respuesta == clave
+            ).first() if clave else None
             if existente_eval:  # mismo archivo subido otra vez: se actualiza, no se duplica
                 if existente_eval.motivo_revision == "RESUELTO_HUMANO":  # lo que decidió la bandeja no se pisa
                     for k in ("id_docente", "id_tiempo", "requiere_revision", "motivo_revision"):

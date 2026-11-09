@@ -80,6 +80,7 @@ from services.extraccion_por_encabezado import (
     normalizar_encabezado,
 )
 from services.sugerencia_hitl import es_sugerencia_un_clic, nombre_extraido, similitud_nombre_completo
+from services.bandeja_grupos import grupos_pendientes, ids_del_grupo
 from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, contar_hechos_en_revision, resolver_caso_hecho
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
 from pipeline.normalization.person_resolver import resolver_persona
@@ -4290,6 +4291,40 @@ def get_review_tray(
         "data": paginated_items,
         "items": paginated_items,
     }
+
+
+@router.get("/review-tray/grupos")
+def get_review_tray_groups(
+    doc_id: Optional[int] = Query(None),
+    limite: int = Query(100, ge=1, le=1000),
+    db: Session = Depends(get_db),
+):
+    """Casos de staging pendientes agrupados por (motivo, valor normalizado): cada grupo se aprueba con una sola acción."""
+    return grupos_pendientes(db, [doc_id] if doc_id is not None else None, limite=limite)
+
+
+class AprobarGrupoRequest(BaseModel):
+    clave: str
+    doc_id: Optional[int] = None
+    estudiante_resuelto: Optional[str] = None
+
+
+@router.post("/review-tray/approve-group")
+def approve_review_group(
+    payload: AprobarGrupoRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
+):
+    """Aprueba todos los casos pendientes de un grupo (misma resolución en lote que /batch-resolve)."""
+    ids = ids_del_grupo(db, payload.clave, [payload.doc_id] if payload.doc_id is not None else None)
+    if not ids:
+        return {"status": "success", "resolved_count": 0, "message": "El grupo no tiene casos pendientes."}
+    res = batch_resolve_review_items(
+        BatchResolveRequest(item_ids=[str(i) for i in ids], estudiante_resuelto=payload.estudiante_resuelto),
+        db=db, current_user=current_user)
+    res["grupo"] = payload.clave
+    res["casos_del_grupo"] = len(ids)
+    return res
 
 
 @router.post("/review-tray/batch-resolve")

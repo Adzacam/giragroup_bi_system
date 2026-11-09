@@ -1,0 +1,82 @@
+{
+ "fact_cobranzas_proyectadas": {
+  "filas": 0,
+  "hash": "d41d8cd98f00b204e9800998ecf8427e",
+  "nivel_confianza_ia_nulos": null
+ },
+ "fact_costo_programa": {
+  "filas": 1320,
+  "hash": "b8fffdb83e0f2f4facbd258cc2d8ec12",
+  "nivel_confianza_ia_nulos": null
+ },
+ "fact_evaluacion_docente": {
+  "filas": 77096,
+  "hash": "6346ba230b33b1129c1e5d231dac967f",
+  "nivel_confianza_ia_nulos": null
+ },
+ "fact_forecast": {
+  "filas": 23,
+  "hash": "6687d7120b9c50f96a43e457123b5416",
+  "nivel_confianza_ia_nulos": null
+ },
+ "fact_marketing": {
+  "filas": 8946,
+  "hash": "2f5244295b2e7797af9fc068a5be6c32",
+  "nivel_confianza_ia_nulos": null
+ },
+ "fact_rendimiento_academico": {
+  "filas": 22491,
+  "hash": "00903d4ea1b9d59e2e0e3852b13aa90a",
+  "nivel_confianza_ia_nulos": 0
+ },
+ "fact_rentabilidad": {
+  "filas": 108,
+  "hash": "938fbb267eb6129fc39005b2162bc0b6",
+  "nivel_confianza_ia_nulos": null
+ },
+ "fact_situacion_financiera": {
+  "filas": 10483,
+  "hash": "6feb7074786e6237705542efee746de6",
+  "nivel_confianza_ia_nulos": 0
+ },
+ "fact_techo_convenio": {
+  "filas": 202,
+  "hash": "ce8a15b9de24273f141dbcce0cde60bf",
+  "nivel_confianza_ia_nulos": null
+ },
+ "dim_categoria_financiera": {
+  "filas": 15,
+  "hash": "657ebaa8315cad57027cc0a9702b5738",
+  "nivel_confianza_ia_nulos": null
+ },
+ "dim_docente": {
+  "filas": 638,
+  "hash": "353a12ec5760a5512ed55658be3c63a0",
+  "nivel_confianza_ia_nulos": null
+ },
+ "dim_estudiante": {
+  "filas": 14183,
+  "hash": "11eaec1b3cfdf465ca001b06431bcc5a",
+  "nivel_confianza_ia_nulos": null
+ },
+ "dim_meta": {
+  "filas": 0,
+  "hash": "d41d8cd98f00b204e9800998ecf8427e",
+  "nivel_confianza_ia_nulos": null
+ },
+ "dim_modulo": {
+  "filas": 3762,
+  "hash": "19df4e9da53afe08413339f45db31b4a",
+  "nivel_confianza_ia_nulos": null
+ },
+ "dim_tiempo": {
+  "filas": 2230,
+  "hash": "15ed1fea98a6bbe370fed08c721e7cd1",
+  "nivel_confianza_ia_nulos": null
+ },
+ "bridge_modulo_docente": {
+  "filas": 1922,
+  "hash": "bc7a70661cacf73fca224a8743d01300",
+  "nivel_confianza_ia_nulos": null
+ }
+}
