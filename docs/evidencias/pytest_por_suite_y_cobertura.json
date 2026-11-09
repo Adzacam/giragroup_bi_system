@@ -27,8 +27,8 @@
       "pruebas": 23
     },
     "transversales": {
-      "pasadas": 242,
-      "pruebas": 242
+      "pasadas": 243,
+      "pruebas": 243
     }
   },
   "cobertura_por_archivo": {
@@ -112,15 +112,15 @@
     },
     "dataops": {
       "archivo": "backend/routers/dataops.py",
-      "lineas": 2170,
+      "lineas": 2176,
       "cubiertas": 942,
-      "pct": 43.4
+      "pct": 43.3
     },
     "dw_loader": {
       "archivo": "backend/services/dw_loader.py",
       "lineas": 870,
-      "cubiertas": 386,
-      "pct": 44.4
+      "cubiertas": 387,
+      "pct": 44.5
     },
     "pipeline_router": {
       "archivo": "backend/routers/pipeline.py",
@@ -160,8 +160,8 @@
     }
   },
   "cobertura_global": {
-    "lineas": 13243,
-    "cubiertas": 8040,
+    "lineas": 13249,
+    "cubiertas": 8041,
     "pct": 60.7,
     "alcance": "--cov=backend --cov=pipeline"
   }

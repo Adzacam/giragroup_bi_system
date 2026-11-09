@@ -2,12 +2,14 @@
 // Uso: E2E_PASSWORD=... node e2e/ciclo_ui.mjs   (Playwright instalado fuera del repo: NODE_PATH)
 import { chromium } from 'playwright';
 import fs from 'node:fs';
+import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { URL_APP, EMAIL, PASSWORD, SALIDA, paso, pasos, otpDelLog } from './lib.mjs';
 
 const CARPETA = process.env.E2E_ARCHIVOS;
 const archivos = fs.readdirSync(CARPETA).filter((f) => f.endsWith('.xlsx')).map((f) => path.join(CARPETA, f));
 const tiempos = { grupos: [] };
+console.log('salida:', SALIDA);
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await ctx.newPage();
@@ -49,6 +51,8 @@ try {
     await page.click('button:has-text("Confirmar e Insertar")');
     await page.waitForFunction(() => document.body.innerText.includes('Lote consolidado'), null, { timeout: 1500000 });
   });
+  // Caso de prueba en el clon: un hecho ya cargado con una combinación de estados no admitida (Aprobado / Tutoria / Titulado) para ejercitar 'Mapear a estado canónico'
+  execSync(`docker exec giragroup_db psql -U giragroup_user -d giragroup_e2e -c "UPDATE fact_rendimiento_academico SET estado_academico='Aprobado', estado_tutoria='Tutoria', estado_arca='Titulado', requiere_revision=TRUE WHERE id_hecho_aca IN (SELECT id_hecho_aca FROM fact_rendimiento_academico WHERE id_documento > (SELECT max(id_documento)-10 FROM dim_origen_documental) AND nota_final IS NOT NULL ORDER BY id_hecho_aca LIMIT 3)"`);
   await paso('bandeja: abrir revisión por grupos', async () => {
     await page.goto(`${URL_APP}/dataops/lote/${lote}/revision`);
     await page.waitForSelector('[data-testid="bandeja-grupos"]');

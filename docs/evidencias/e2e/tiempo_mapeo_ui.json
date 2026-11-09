@@ -1,0 +1,6 @@
+{
+ "accion": "MAPEAR_ESTADO",
+ "n_casos": 3,
+ "ms_ui_medido": 1261,
+ "nota": "incluye abrir el diálogo, escribir el estado canónico y aplicar"
+}

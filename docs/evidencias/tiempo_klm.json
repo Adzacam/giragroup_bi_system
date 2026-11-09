@@ -300,5 +300,213 @@
    "resueltos": 1,
    "segundos_maquina_real": 0.024
   }
- ]
+ ],
+ "ui_medido_ronda9": {
+  "nota": "Tiempos de respuesta de la UI real (Playwright, Chromium headless, clon del DW, lote de 10 archivos por la UI). Reemplazan los supuestos de maquina; el tiempo humano de lectura/decision sigue siendo supuesto.",
+  "pasos": [
+   {
+    "paso": "login: credenciales + OTP",
+    "segundos": 7.487,
+    "ok": true,
+    "error": null
+   },
+   {
+    "paso": "ingesta: abrir pantalla",
+    "segundos": 0.091,
+    "ok": true,
+    "error": null
+   },
+   {
+    "paso": "ingesta: seleccionar 10 archivos",
+    "segundos": 1.515,
+    "ok": true,
+    "error": null
+   },
+   {
+    "paso": "ingesta: procesar lote de 10 archivos (hasta pre-etiquetado)",
+    "segundos": 8.749,
+    "ok": true,
+    "error": null
+   },
+   {
+    "paso": "BETO: abrir lectura del lote",
+    "segundos": 0.571,
+    "ok": true,
+    "error": null
+   },
+   {
+    "paso": "DW: consolidar el lote (carga al DW)",
+    "segundos": 612.816,
+    "ok": true,
+    "error": null
+   },
+   {
+    "paso": "bandeja: abrir revisión por grupos",
+    "segundos": 0.169,
+    "ok": true,
+    "error": null
+   },
+   {
+    "paso": "bandeja: aprobar 16 grupos (suma de la UI)",
+    "segundos": 5.87,
+    "ok": true,
+    "error": null
+   },
+   {
+    "paso": "CMI: abrir el cuadro de mando actualizado",
+    "segundos": 0.416,
+    "ok": true,
+    "error": null
+   }
+  ],
+  "bandeja_inicial": {
+   "total": "185 casos en 12 grupos",
+   "en_bloque": "Aprobables en bloque: 185 casos en 12 grupos"
+  },
+  "grupos": [
+   {
+    "orden": 1,
+    "motivo": "Hecho cargado que necesita revisión",
+    "valor": "Académico · documento 17 · campos completos · estados Aprobado / Aprobado / Titulado",
+    "accion": "APROBAR",
+    "n_casos": 101,
+    "ms_ui_medido": 608
+   },
+   {
+    "orden": 2,
+    "motivo": "Lectura con baja confianza",
+    "valor": "programa | egreso anterior | egreso real | ingreso | rentabilidad | nro pos | egreso anterior dolare",
+    "accion": "APROBAR",
+    "n_casos": 51,
+    "ms_ui_medido": 1156
+   },
+   {
+    "orden": 3,
+    "motivo": "Hecho cargado que necesita revisión",
+    "valor": "Académico · documento 17 · campos completos · estados Aprobado / Tutoria / Titulado",
+    "accion": "APROBAR",
+    "n_casos": 10,
+    "ms_ui_medido": 158
+   },
+   {
+    "orden": 4,
+    "motivo": "Hecho cargado que necesita revisión",
+    "valor": "Financiero · documento 18 · falta fecha",
+    "accion": "CORREGIR_FECHA",
+    "n_casos": 8,
+    "ms_ui_medido": 548
+   },
+   {
+    "orden": 5,
+    "motivo": "Hecho cargado que necesita revisión",
+    "valor": "Académico · documento 17 · campos completos · estados Participó / Insuficiencia académica / Titulado",
+    "accion": "APROBAR",
+    "n_casos": 6,
+    "ms_ui_medido": 125
+   },
+   {
+    "orden": 6,
+    "motivo": "Lectura con baja confianza",
+    "valor": "n° | pos - actas | cedula de identidad | mes inico | ano incio | apellido paterno | apellido materno",
+    "accion": "APROBAR",
+    "n_casos": 2,
+    "ms_ui_medido": 117
+   },
+   {
+    "orden": 7,
+    "motivo": "Cédula dudosa",
+    "valor": "marca temporal | numeroproyecto | nombre del programa | asesor | ci | nombres | paterno | materno | ",
+    "accion": "APROBAR",
+    "n_casos": 2,
+    "ms_ui_medido": 363
+   },
+   {
+    "orden": 8,
+    "motivo": "Hecho cargado que necesita revisión",
+    "valor": "Académico · documento 17 · falta fecha · estados Aprobado / None / None",
+    "accion": "CORREGIR_FECHA",
+    "n_casos": 2,
+    "ms_ui_medido": 385
+   },
+   {
+    "orden": 9,
+    "motivo": "Posible homonimia: nombre parecido a otra persona",
+    "valor": "no hay facturacion",
+    "accion": "APROBAR",
+    "n_casos": 1,
+    "ms_ui_medido": 133
+   },
+   {
+    "orden": 10,
+    "motivo": "La cédula coincide pero el nombre es distinto",
+    "valor": "0991254",
+    "accion": "APROBAR",
+    "n_casos": 1,
+    "ms_ui_medido": 132
+   },
+   {
+    "orden": 11,
+    "motivo": "La cédula coincide pero el nombre es distinto",
+    "valor": "5889213",
+    "accion": "APROBAR",
+    "n_casos": 1,
+    "ms_ui_medido": 138
+   },
+   {
+    "orden": 12,
+    "motivo": "Lectura con baja confianza",
+    "valor": "rosalia dina aviles mamani | lia.rosa#@gmail.com | #-#-# #:#:# | pos-# | # | #/totalmente de acuerdo",
+    "accion": "APROBAR",
+    "n_casos": 1,
+    "ms_ui_medido": 335
+   },
+   {
+    "orden": 13,
+    "motivo": "fecha inscripcion invalida",
+    "valor": "diplomado en derecho notarial en bolivia v. # | sin fecha valida",
+    "accion": "APROBAR",
+    "n_casos": 1,
+    "ms_ui_medido": 138
+   },
+   {
+    "orden": 14,
+    "motivo": "fecha inscripcion invalida",
+    "valor": "diplomado en etica digital, inteligencia artificial y compliance v.# | sin fecha valida",
+    "accion": "APROBAR",
+    "n_casos": 1,
+    "ms_ui_medido": 353
+   },
+   {
+    "orden": 15,
+    "motivo": "fecha inscripcion invalida",
+    "valor": "modulo academico | sin fecha valida",
+    "accion": "APROBAR",
+    "n_casos": 1,
+    "ms_ui_medido": 188
+   },
+   {
+    "orden": 16,
+    "motivo": "Hecho cargado que necesita revisión",
+    "valor": "Financiero · documento 18 · campos completos",
+    "accion": "APROBAR",
+    "n_casos": 1,
+    "ms_ui_medido": 993
+   },
+   {
+    "orden": 17,
+    "motivo": "Hecho cargado que necesita revision",
+    "valor": "estado fuera de catalogo (Retirado)",
+    "accion": "MAPEAR_ESTADO",
+    "n_casos": 3,
+    "ms_ui_medido": 1261,
+    "nota": "incluye abrir el diálogo, escribir el estado canónico y aplicar"
+   }
+  ],
+  "resumen_grupos": {
+   "n_grupos": 16,
+   "ms_total": 5870,
+   "ms_mediana": 261.5,
+   "ms_max": 1156
+  }
+ }
 }
