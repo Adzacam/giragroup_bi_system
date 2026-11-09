@@ -114,6 +114,7 @@ def on_startup():
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_por INTEGER REFERENCES users(id) ON DELETE SET NULL;
                         ALTER TABLE staging_registros_crudos ADD COLUMN IF NOT EXISTS resuelto_en TIMESTAMP;
                         CREATE TABLE IF NOT EXISTS carga_fila_origen (clave VARCHAR(64) PRIMARY KEY, id_documento INTEGER, tabla VARCHAR(40), creado_en TIMESTAMP DEFAULT NOW());
+                        ALTER TABLE stg_entidad_no_resuelta ADD COLUMN IF NOT EXISTS clave_origen VARCHAR(32);
                         ALTER TABLE dim_estudiante ADD COLUMN IF NOT EXISTS fk_estado CHAR(1) DEFAULT 'A';
                         ALTER TABLE dim_docente ADD COLUMN IF NOT EXISTS fk_estado CHAR(1) DEFAULT 'A';
                         ALTER TABLE fact_rendimiento_academico ADD COLUMN IF NOT EXISTS estado_tutoria VARCHAR(50);

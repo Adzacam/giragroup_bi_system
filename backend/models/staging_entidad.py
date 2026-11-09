@@ -9,6 +9,8 @@ from sqlalchemy import (
     Column, Integer, String, Text, Numeric,
     Boolean, DateTime, ForeignKey
 )
+from sqlalchemy import event, text
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from core.database import Base
 from models.staging_registro import FlexibleJSONB
@@ -55,5 +57,41 @@ class StagingEntidadNoResuelta(Base):
     )
     lock_expira = Column(DateTime, nullable=True)
     version = Column(Integer, default=1)
+    # Idempotencia: md5(hash del archivo | tipo | motivo | valor normalizado); índice único uq_stg_entidad_clave_origen
+    clave_origen = Column(String(32), nullable=True)
 
     created_at = Column(DateTime, server_default=func.now())
+
+
+def clave_staging(hash_doc, tipo, motivo, texto):
+    """Clave de idempotencia de una entidad en cola: mismo archivo (por hash), tipo, motivo y valor normalizado."""
+    import hashlib
+    valor = " ".join((texto or "").split()).lower()
+    return hashlib.md5("|".join([hash_doc or "", tipo or "", motivo or "", valor]).encode("utf-8")).hexdigest()
+
+
+@event.listens_for(Session, "before_flush")
+def _deduplicar_staging(session, flush_context, instances):
+    """Reprocesar el mismo archivo no vuelve a encolar la misma entidad (una sola por clave_origen)."""
+    nuevos = [o for o in session.new if isinstance(o, StagingEntidadNoResuelta)]
+    if not nuevos:
+        return
+    con = session.connection()
+    ids = {o.id_documento for o in nuevos if o.id_documento is not None}
+    hashes = {}
+    if ids:
+        hashes = {r[0]: r[1] for r in con.execute(
+            text("SELECT id_documento, hash_sha256 FROM dim_origen_documental WHERE id_documento = ANY(:ids)"),
+            {"ids": list(ids)})}
+    vistas = set()
+    for o in nuevos:
+        h = hashes.get(o.id_documento) or (f"doc{o.id_documento}" if o.id_documento is not None else "")
+        o.clave_origen = clave_staging(h, o.tipo_entidad, o.motivo, o.texto_original)
+    claves = list({o.clave_origen for o in nuevos})
+    existentes = {r[0] for r in con.execute(
+        text("SELECT clave_origen FROM stg_entidad_no_resuelta WHERE clave_origen = ANY(:c)"), {"c": claves})}
+    for o in nuevos:
+        if o.clave_origen in existentes or o.clave_origen in vistas:
+            session.expunge(o)
+        else:
+            vistas.add(o.clave_origen)

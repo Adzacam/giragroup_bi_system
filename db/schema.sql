@@ -412,9 +412,11 @@ CREATE TABLE IF NOT EXISTS public.stg_entidad_no_resuelta (
     lock_usuario_id INT REFERENCES public.users(id) ON DELETE SET NULL,
     lock_expira TIMESTAMP,
     version INT DEFAULT 1,
+    clave_origen VARCHAR(32),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS idx_stg_entidad_doc ON public.stg_entidad_no_resuelta(id_documento);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_stg_entidad_clave_origen ON public.stg_entidad_no_resuelta(clave_origen);
 
 CREATE TABLE IF NOT EXISTS public.log_inconsistencias (
     id_inconsistencia SERIAL PRIMARY KEY,

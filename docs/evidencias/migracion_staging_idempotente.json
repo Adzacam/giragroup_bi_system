@@ -1,0 +1,23 @@
+{
+  "antes": {
+    "total": 111854,
+    "pendientes": 111850,
+    "archivos": 9,
+    "por_motivo": {
+      "ESTUDIANTE/CI_NOMBRE_DISCORDANTE": 104266,
+      "ESTUDIANTE/BAJA_CONFIANZA_IA": 6758,
+      "ESTUDIANTE/HOMONIMIA": 826
+    }
+  },
+  "despues": {
+    "total": 23125,
+    "pendientes": 23121,
+    "archivos": 9,
+    "por_motivo": {
+      "ESTUDIANTE/CI_NOMBRE_DISCORDANTE": 20707,
+      "ESTUDIANTE/BAJA_CONFIANZA_IA": 1844,
+      "ESTUDIANTE/HOMONIMIA": 570
+    }
+  },
+  "filas_duplicadas_eliminadas": 88729
+}
