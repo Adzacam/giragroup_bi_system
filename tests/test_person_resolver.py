@@ -64,3 +64,11 @@ def test_comentario_libre_no_parece_nombre_de_persona():
     from pipeline.normalization.person_resolver import parece_nombre_propio
     assert parece_nombre_propio("KAREN ULLOA") and parece_nombre_propio("Carla de la Vega") and parece_nombre_propio("Ing. Juan Pérez")
     assert not parece_nombre_propio("todo bien") and not parece_nombre_propio("Mas tiempo") and not parece_nombre_propio("5 Totalmente de acuerdo")
+
+
+def test_nombre_partido_en_columnas_se_compone_y_likert_no_es_persona():
+    from pipeline.normalization.person_resolver import componer_nombre_partido, es_etiqueta_likert
+    c = componer_nombre_partido(["N°: 5.0", "APELLIDO PATERNO: CACERES", "APELLIDO MATERNO: VARGAS", "NOMBRES: RENE ALVARO"])
+    assert c["nombre"] == "RENE ALVARO CACERES VARGAS" and c["partes"] == ["RENE ALVARO", "CACERES", "VARGAS"]
+    assert componer_nombre_partido(["NOMBRE COMPLETO: Juan Perez"]) is None
+    assert es_etiqueta_likert("5/Totalmente de acuerdo") and not es_etiqueta_likert("Maria Perez")

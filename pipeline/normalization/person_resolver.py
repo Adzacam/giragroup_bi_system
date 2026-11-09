@@ -46,6 +46,45 @@ def parece_nombre_propio(valor: Optional[str]) -> bool:
     return 2 <= len(nucleo) <= 5 and all(t[0].isupper() for t in nucleo)
 
 
+_RE_LIKERT = re.compile(r"^\s*\d+\s*/")
+_RE_HDR_PATERNO = re.compile(r"^(apellido\s+)?paterno|^primer\s+apellido", re.I)
+_RE_HDR_MATERNO = re.compile(r"^(apellido\s+)?materno|^segundo\s+apellido", re.I)
+_RE_HDR_NOMBRES = re.compile(r"^(nombres?|nombre\(s\)|primer\s+nombre)\s*$", re.I)
+_RE_HDR_APELLIDOS = re.compile(r"^apellidos?(\(s\))?\s*$", re.I)
+
+
+def es_etiqueta_likert(valor: Optional[str]) -> bool:
+    """'5/Totalmente de acuerdo', '3 / Adecuada': etiqueta de escala, no una persona."""
+    return bool(valor) and bool(_RE_LIKERT.match(valor))
+
+
+def componer_nombre_partido(celdas: Iterable[str]) -> Optional[Dict[str, Any]]:
+    """
+    Nombre completo de una fila cuyas columnas lo parten ('APELLIDO PATERNO: X | APELLIDO MATERNO: Y | NOMBRES: Z').
+    celdas: textos 'ENCABEZADO: valor'. Devuelve {"nombre": "Z X Y", "partes": [valores usados]} si hay NOMBRES y al
+    menos un apellido; None si no (la fila ya trae el nombre entero o no trae nombre).
+    """
+    nombres, paterno, materno, apellidos = None, None, None, None
+    for c in celdas:
+        hdr, sep, val = c.partition(": ")
+        val = val.strip()
+        if not sep or not val or val.lower() == "nan":
+            continue
+        h = hdr.strip()
+        if _RE_HDR_PATERNO.match(h):
+            paterno = paterno or val
+        elif _RE_HDR_MATERNO.match(h):
+            materno = materno or val
+        elif _RE_HDR_NOMBRES.match(h):
+            nombres = nombres or val
+        elif _RE_HDR_APELLIDOS.match(h):
+            apellidos = apellidos or val
+    ap = [x for x in (paterno, materno) if x] or ([apellidos] if apellidos else [])
+    if not nombres or not ap:
+        return None
+    return {"nombre": " ".join([nombres] + ap), "partes": [nombres] + ap}
+
+
 def quitar_titulos(nombre: str) -> str:
     """Quita títulos académicos y normaliza (minúsculas, sin acentos ni puntuación)."""
     s = _sin_acentos(nombre or "").lower()

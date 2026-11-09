@@ -115,230 +115,182 @@
     "dim_docente": 638
   },
   "personas": {
-    "total": 3006,
-    "resueltas_CI_EXACTA": 2378,
-    "resueltas_FUZZY": 127,
+    "total": 1658,
+    "resueltas_CI_EXACTA": 1021,
+    "resueltas_FUZZY": 135,
     "nuevos_estado_C": 498,
-    "sin_coincidencia_HITL": 3
+    "sin_coincidencia_HITL": 4
   },
   "personas_hitl_desglose_regla_previa_umbral_085": {
     "estudiante": {
-      "sin_candidatos": 314
+      "sin_candidatos": 148,
+      "umbral": 1
     },
     "docente": {
-      "sin_candidatos": 807
+      "sin_candidatos": 535
     }
   },
   "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {
     "estudiante": {
-      "empate": 3
+      "empate": 4
     },
     "docente": {}
   },
   "personas_resueltas_por_nivel": {
-    "CI": 2378,
-    "DIMENSION": 126,
-    "PROGRAMA": 1
+    "CI": 1021,
+    "DIMENSION": 135
   },
   "correos_filtrados_como_no_nombre": {
     "entidades": 139,
     "registros": 139
   },
   "descartadas_PER_SIN_FORMA_NOMBRE": {
-    "entidades": 494,
-    "registros_afectados": 261,
-    "hechos_sin_persona_van_a_hitl": 122,
+    "entidades": 48,
+    "registros_afectados": 48,
+    "hechos_sin_persona_van_a_hitl": 26,
     "ejemplos_20": [
       {
-        "valor": "CACERES",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 94,
+        "valor": "PATRICIA DEL",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 5,
         "hecho_sin_persona": false
       },
       {
-        "valor": "VARGAS",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 94,
+        "valor": "PATRICIA DEL",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 7,
         "hecho_sin_persona": false
       },
       {
-        "valor": "CARLOS",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 96,
-        "hecho_sin_persona": true
-      },
-      {
-        "valor": "CAREAGA",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 96,
-        "hecho_sin_persona": true
-      },
-      {
-        "valor": "HERRERA",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 96,
-        "hecho_sin_persona": true
-      },
-      {
-        "valor": "DAVALOS",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 97,
+        "valor": "PATRICIA DEL",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 27,
         "hecho_sin_persona": false
       },
       {
-        "valor": "ESCOBAR",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 97,
+        "valor": "PATRICIA DEL",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 32,
         "hecho_sin_persona": false
       },
       {
-        "valor": "FERREL",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 98,
+        "valor": "PATRICIA",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 88,
         "hecho_sin_persona": false
       },
       {
-        "valor": "ROCHA",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 98,
+        "valor": "PATRICIA DEL",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 124,
         "hecho_sin_persona": false
       },
       {
-        "valor": "PORCEL",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 103,
+        "valor": "PATRICIA DEL",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 125,
         "hecho_sin_persona": false
       },
       {
-        "valor": "ALEGRÍA",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 103,
+        "valor": "PATRICIA",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 164,
         "hecho_sin_persona": false
       },
       {
-        "valor": "SOLÍZ",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 107,
+        "valor": "PATRICIA",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 184,
         "hecho_sin_persona": false
       },
       {
-        "valor": "CHAVARRÍA",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 107,
+        "valor": "PATRICIA DEL",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 197,
         "hecho_sin_persona": false
       },
       {
-        "valor": "TORRICO",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 108,
+        "valor": "PATRICIA DEL",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 203,
         "hecho_sin_persona": false
       },
       {
-        "valor": "BUKOVIC",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 108,
+        "valor": "PATRICIA DEL",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 214,
         "hecho_sin_persona": false
       },
       {
-        "valor": "VALENZUELA",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 109,
+        "valor": "PATRICIA DEL",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 228,
         "hecho_sin_persona": false
       },
       {
-        "valor": "TAPIA",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 109,
+        "valor": "PATRICIA",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 337,
         "hecho_sin_persona": false
       },
       {
-        "valor": "VARGAS",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 110,
+        "valor": "PATRICIA DEL",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 339,
         "hecho_sin_persona": false
       },
       {
-        "valor": "TORRICO",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 110,
+        "valor": "PATRICIA DEL",
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "fila_origen": 340,
         "hecho_sin_persona": false
       },
       {
-        "valor": "ARAUJO",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 111,
+        "valor": "PATRICIA DEL",
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "hoja": "TBL_INSCRITOS",
+        "fila_origen": 2,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "PATRICIA",
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "hoja": "TBL_INSCRITOS",
+        "fila_origen": 11,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "PATRICIA",
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "hoja": "TBL_INSCRITOS",
+        "fila_origen": 19,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "MARIA",
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "hoja": "TBL_INSCRITOS",
+        "fila_origen": 127,
         "hecho_sin_persona": false
       }
     ],
     "ejemplos_20_hecho_sin_persona": [
-      {
-        "valor": "CARLOS",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 96
-      },
-      {
-        "valor": "JADIYE",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 301
-      },
-      {
-        "valor": "MARLENE",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 302
-      },
-      {
-        "valor": "CARMEN",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 307
-      },
-      {
-        "valor": "JHOVANA",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 311
-      },
-      {
-        "valor": "GRISELDA",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 316
-      },
-      {
-        "valor": "SERGIO",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 324
-      },
-      {
-        "valor": "RUBEN",
-        "archivo": "Base centralizada Académica ARCA (1).xlsx",
-        "hoja": "ACTAS DE NOTAS",
-        "fila_origen": 327
-      },
       {
         "valor": "BRANDON",
         "archivo": "Evaluación Docente y Unifranz.xlsx",
@@ -400,30 +352,81 @@
         "fila_origen": 145
       },
       {
-        "valor": "5/Totalmente de acuerdo",
+        "valor": "Ninguno",
         "archivo": "Experiencia Docente 2.0.xlsx",
         "hoja": "CURSOS DOC 1",
-        "fila_origen": 2
+        "fila_origen": 11
       },
       {
-        "valor": "5/Totalmente de acuerdo",
+        "valor": "NINGUNO",
         "archivo": "Experiencia Docente 2.0.xlsx",
         "hoja": "CURSOS DOC 1",
-        "fila_origen": 3
+        "fila_origen": 12
+      },
+      {
+        "valor": "Ninguna",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 44
+      },
+      {
+        "valor": "Ninguna",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 55
+      },
+      {
+        "valor": "ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 57
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 65
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 66
+      },
+      {
+        "valor": "-",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 67
+      },
+      {
+        "valor": "ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 76
+      },
+      {
+        "valor": "NINGUNA",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 79
       }
     ]
   },
-  "log_inconsistencias_PER_SIN_FORMA_NOMBRE_registradas": 494,
+  "log_inconsistencias_PER_SIN_FORMA_NOMBRE_registradas": 48,
   "texto_libre": {
+    "nombres_compuestos_desde_columnas_partidas": 1050,
+    "entidades_PER_partidas_reemplazadas": 2561,
     "comentarios_en_columnas_de_texto_libre": 87,
     "registros_con_comentarios": 87,
-    "entidades_PER_descartadas_no_parece_nombre": 494,
+    "entidades_PER_descartadas_no_parece_nombre": 48,
+    "entidades_excluidas_etiqueta_likert": 283,
     "entidades_excluidas_por_columna_de_comentario": 87
   },
   "personas_por_fk_estado": {
     "estudiante": {
-      "A": 2378,
-      "B": 127
+      "A": 1021,
+      "B": 135
     },
     "docente": {
       "C": 498
@@ -445,12 +448,12 @@
   },
   "distribucion_bandas_con_regla_personas_previa_umbral_085": {
     "directo": {
-      "conteo": 607,
-      "porcentaje": 43.76
+      "conteo": 702,
+      "porcentaje": 50.61
     },
     "hitl": {
-      "conteo": 780,
-      "porcentaje": 56.24
+      "conteo": 685,
+      "porcentaje": 49.39
     },
     "staging": {
       "conteo": 0,
@@ -459,19 +462,19 @@
   },
   "distribucion_bandas_con_regla_personas": {
     "directo": {
-      "conteo": 1259,
-      "porcentaje": 90.77
+      "conteo": 1354,
+      "porcentaje": 97.62
     },
     "hitl": {
-      "conteo": 128,
-      "porcentaje": 9.23
+      "conteo": 33,
+      "porcentaje": 2.38
     },
     "staging": {
       "conteo": 0,
       "porcentaje": 0.0
     }
   },
-  "registros_directo_movidos_a_hitl_por_persona_sin_resolver": 125,
+  "registros_directo_movidos_a_hitl_por_persona_sin_resolver": 30,
   "kpis": {
     "KPI_10a_media_todas_las_entidades": 0.9618,
     "KPI_10a_n_entidades": 11426,
@@ -479,7 +482,7 @@
     "KPI_10b_n_entidades": 3248,
     "KPI_10_previo_media_por_registro": 0.964,
     "KPI_11_directo_sin_regla_personas_pct": 99.78,
-    "KPI_11_directo_con_regla_personas_pct": 90.77
+    "KPI_11_directo_con_regla_personas_pct": 97.62
   },
   "conteos_fuente_resolucion": {
     "CI_EXACTA": 1850,

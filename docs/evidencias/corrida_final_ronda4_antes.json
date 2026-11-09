@@ -1,0 +1,643 @@
+{
+  "extraccion_A_vs_B": {
+    "total": 1387,
+    "directo_A": 1380,
+    "pct_directo_A": 99.5,
+    "directo_B": 1382,
+    "pct_directo_B": 99.64,
+    "diferencia_B_menos_A": 2
+  },
+  "carga_final": {
+    "directo": {
+      "conteo": 1259,
+      "porcentaje": 90.77
+    },
+    "hitl": {
+      "conteo": 128,
+      "porcentaje": 9.23
+    },
+    "staging": {
+      "conteo": 0,
+      "porcentaje": 0.0
+    }
+  },
+  "personas": {
+    "total": 3006,
+    "resueltas_CI_EXACTA": 2378,
+    "resueltas_FUZZY": 127,
+    "nuevos_estado_C": 498,
+    "sin_coincidencia_HITL": 3
+  },
+  "personas_por_fk_estado": {
+    "estudiante": {
+      "A": 2378,
+      "B": 127
+    },
+    "docente": {
+      "C": 498
+    }
+  },
+  "hitl_personas_por_motivo": {
+    "estudiante": {
+      "empate": 3
+    },
+    "docente": {}
+  },
+  "descartadas_PER_SIN_FORMA_NOMBRE": {
+    "entidades": 494,
+    "registros_afectados": 261,
+    "hechos_sin_persona_van_a_hitl": 122,
+    "ejemplos_20": [
+      {
+        "valor": "CACERES",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 94,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "VARGAS",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 94,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "CARLOS",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 96,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "CAREAGA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 96,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "HERRERA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 96,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "DAVALOS",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 97,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "ESCOBAR",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 97,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "FERREL",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 98,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "ROCHA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 98,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "PORCEL",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 103,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "ALEGRÍA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 103,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "SOLÍZ",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 107,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "CHAVARRÍA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 107,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "TORRICO",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 108,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "BUKOVIC",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 108,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "VALENZUELA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 109,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "TAPIA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 109,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "VARGAS",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 110,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "TORRICO",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 110,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "ARAUJO",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 111,
+        "hecho_sin_persona": false
+      }
+    ],
+    "ejemplos_20_hecho_sin_persona": [
+      {
+        "valor": "CARLOS",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 96
+      },
+      {
+        "valor": "JADIYE",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 301
+      },
+      {
+        "valor": "MARLENE",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 302
+      },
+      {
+        "valor": "CARMEN",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 307
+      },
+      {
+        "valor": "JHOVANA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 311
+      },
+      {
+        "valor": "GRISELDA",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 316
+      },
+      {
+        "valor": "SERGIO",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 324
+      },
+      {
+        "valor": "RUBEN",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "fila_origen": 327
+      },
+      {
+        "valor": "BRANDON",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 57
+      },
+      {
+        "valor": "IRVING",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 64
+      },
+      {
+        "valor": "SERGIO",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 69
+      },
+      {
+        "valor": "JONATHAN",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 79
+      },
+      {
+        "valor": "CINTHYA",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 84
+      },
+      {
+        "valor": "MARÍA",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 88
+      },
+      {
+        "valor": "MARÍA",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 96
+      },
+      {
+        "valor": "IRVING",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 111
+      },
+      {
+        "valor": "JOSE",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 143
+      },
+      {
+        "valor": "ALFREDO",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 145
+      },
+      {
+        "valor": "5/Totalmente de acuerdo",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 2
+      },
+      {
+        "valor": "5/Totalmente de acuerdo",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 3
+      }
+    ]
+  },
+  "log_inconsistencias_registradas": 494,
+  "registros_directo_movidos_a_hitl_por_persona_sin_resolver": 125,
+  "correos_filtrados": {
+    "entidades": 139,
+    "registros": 139
+  },
+  "texto_libre": {
+    "comentarios_en_columnas_de_texto_libre": 87,
+    "registros_con_comentarios": 87,
+    "entidades_PER_descartadas_no_parece_nombre": 494,
+    "entidades_excluidas_por_columna_de_comentario": 87
+  },
+  "KPI_10a_todas": 0.9618,
+  "KPI_10b_solo_BETO": 0.9209,
+  "KPI_11_directo_final_pct": 90.77,
+  "conteos_fuente_resolucion": {
+    "CI_EXACTA": 1850,
+    "ENCABEZADO": 3079,
+    "FUZZY": 146,
+    "REGEX": 3103,
+    "BETO": 3248
+  },
+  "muestra_50_BETO_semilla42": [
+    [
+      "PER_ESTUDIANTE",
+      "Aranda",
+      "TBL_INSCRITOS.xlsx",
+      204
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "AGUILERA",
+      "Base centralizada Académica ARCA (1).xlsx",
+      237
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "PEÑALOZA",
+      "Base centralizada Académica ARCA (1).xlsx",
+      54
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "DEISY HERRERA ROJAS",
+      "Evaluación Docente y Unifranz.xlsx",
+      97
+    ],
+    [
+      "PER_DOCENTE",
+      "MARIANA NEGRETE",
+      "BD Cobranzas.xlsx",
+      92
+    ],
+    [
+      "PER_DOCENTE",
+      "CARLA DE LA VEGA",
+      "BD Cobranzas.xlsx",
+      50
+    ],
+    [
+      "PER_DOCENTE",
+      "MARIANA NEGRETE",
+      "BD Cobranzas.xlsx",
+      17
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "RUEDA",
+      "Base centralizada Académica ARCA (1).xlsx",
+      297
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "borisjr2008@gmail.com",
+      "Evaluación Docente y Unifranz.xlsx",
+      89
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "CRESPO",
+      "Base centralizada Académica ARCA (1).xlsx",
+      218
+    ],
+    [
+      "MODULO",
+      "modulo",
+      "Evaluación Docente y Unifranz.xlsx",
+      2
+    ],
+    [
+      "PROGRAMA",
+      "Contenido y Relevancia Estratégica",
+      "Evaluación Docente y Unifranz.xlsx",
+      95
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "Jarro",
+      "TBL_INSCRITOS.xlsx",
+      93
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "RENGEL",
+      "Base centralizada Académica ARCA (1).xlsx",
+      187
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "Rojas",
+      "TBL_INSCRITOS.xlsx",
+      147
+    ],
+    [
+      "PER_DOCENTE",
+      "JOSE ZABALA",
+      "BD Cobranzas.xlsx",
+      295
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "BARRERA",
+      "Base centralizada Académica ARCA (1).xlsx",
+      68
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "RODRIGUEZ",
+      "Base centralizada Académica ARCA (1).xlsx",
+      64
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "BARJAS",
+      "Base centralizada Académica ARCA (1).xlsx",
+      200
+    ],
+    [
+      "PER_DOCENTE",
+      "MARIANA NEGRETE",
+      "BD Cobranzas.xlsx",
+      11
+    ],
+    [
+      "PROGRAMA",
+      "DIPLOMADO EN ECOGRAFÍA DOPPLER VASCULAR v.3",
+      "BD Cobranzas.xlsx",
+      30
+    ],
+    [
+      "PROGRAMA",
+      "DIPLOMADO EN CUIDADOS PALIATIVOS v.8",
+      "TBL_INSCRITOS.xlsx",
+      45
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "Altamirano",
+      "TBL_INSCRITOS.xlsx",
+      160
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "POPPE VILLA",
+      "Base centralizada Académica ARCA (1).xlsx",
+      57
+    ],
+    [
+      "PER_DOCENTE",
+      "FABIOLA NUÑEZ",
+      "TBL_INSCRITOS.xlsx",
+      115
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "LAGUNA",
+      "Base centralizada Académica ARCA (1).xlsx",
+      425
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "lyanne.nina.m@gmail.com",
+      "Evaluación Docente y Unifranz.xlsx",
+      59
+    ],
+    [
+      "PROGRAMA",
+      "DIPLOMADO EN EDUCACIÓN SUPERIOR MENCIÓN:",
+      "TBL_INSCRITOS.xlsx",
+      216
+    ],
+    [
+      "PROGRAMA",
+      "Contenido y Relevancia Estratégica",
+      "Evaluación Docente y Unifranz.xlsx",
+      37
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "Chacon",
+      "TBL_INSCRITOS.xlsx",
+      93
+    ],
+    [
+      "PER_DOCENTE",
+      "ANDREA DELGADILLO",
+      "BD Cobranzas.xlsx",
+      291
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "CARRASCO",
+      "BD Cobranzas.xlsx",
+      13
+    ],
+    [
+      "PER_DOCENTE",
+      "MARIANA NEGRETE",
+      "BD Cobranzas.xlsx",
+      331
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "Troche",
+      "TBL_INSCRITOS.xlsx",
+      146
+    ],
+    [
+      "PROGRAMA",
+      "ROCHA",
+      "BD Cobranzas.xlsx",
+      96
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "ULLOA",
+      "Base centralizada Académica ARCA (1).xlsx",
+      15
+    ],
+    [
+      "PROGRAMA",
+      "Contenido y Relevancia Estratégica",
+      "Evaluación Docente y Unifranz.xlsx",
+      120
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "RAMOS",
+      "Base centralizada Académica ARCA (1).xlsx",
+      340
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "herreradeisy15@gmail.com",
+      "Evaluación Docente y Unifranz.xlsx",
+      33
+    ],
+    [
+      "PROGRAMA",
+      "EN",
+      "BD Cobranzas.xlsx",
+      297
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "LLANOS",
+      "BD Cobranzas.xlsx",
+      182
+    ],
+    [
+      "PER_DOCENTE",
+      "KAREN ULLOA",
+      "BD Cobranzas.xlsx",
+      96
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "FUENTES",
+      "Base centralizada Académica ARCA (1).xlsx",
+      330
+    ],
+    [
+      "PROGRAMA",
+      "SEGURONDO",
+      "BD Cobranzas.xlsx",
+      6
+    ],
+    [
+      "PROGRAMA",
+      "Contenido y Relevancia Estratégica",
+      "Evaluación Docente y Unifranz.xlsx",
+      127
+    ],
+    [
+      "PROGRAMA",
+      "DIPLOMADO EN FARMACOLOGÍA TERAPÉUTICA v.1",
+      "BD Cobranzas.xlsx",
+      177
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "SARAVIA",
+      "Base centralizada Académica ARCA (1).xlsx",
+      218
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "RUIZ",
+      "Base centralizada Académica ARCA (1).xlsx",
+      198
+    ],
+    [
+      "PER_DOCENTE",
+      "CÁCERES",
+      "BD Cobranzas.xlsx",
+      238
+    ],
+    [
+      "PER_ESTUDIANTE",
+      "HERNÁNDEZ",
+      "Base centralizada Académica ARCA (1).xlsx",
+      207
+    ]
+  ],
+  "dimensiones_dw": {
+    "dim_estudiante": 14076,
+    "dim_docente": 638
+  }
+}

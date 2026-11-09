@@ -35,7 +35,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from pipeline.normalization.person_resolver import (
-    resolver_persona_detalle, cargar_personas_dw, es_correo, parece_nombre_propio, quitar_titulos, _candidatos, _tokens, _coincide_contexto)
+    resolver_persona_detalle, cargar_personas_dw, es_correo, parece_nombre_propio, es_etiqueta_likert, componer_nombre_partido, quitar_titulos, _candidatos, _tokens, _coincide_contexto)
 
 
 def _regla_previa(valor, ci, pool, ctx):
@@ -230,6 +230,16 @@ def main():
         ci = next((e["valor"] for e in todas if e["tipo"] == "CI"), None)
         ctx = [e["valor"] for e in todas if e["tipo"] in ("PROGRAMA", "MODULO", "POS")]
         comentarios_reg = _comentarios_del_registro(txt)
+        # Nombre partido en columnas (APELLIDO PATERNO / MATERNO / NOMBRES): una sola persona con el nombre completo
+        comp = componer_nombre_partido(txt.split(" | "))
+        if comp:
+            partes = {_norm(x) for x in comp["partes"]}
+            quitadas = [e for e in todas if e["tipo"] in ("PER_ESTUDIANTE", "PER_DOCENTE") and _norm(e["valor"]) in partes]
+            if quitadas:
+                todas = [e for e in todas if e not in quitadas] + [
+                    {"tipo": quitadas[0]["tipo"], "valor": comp["nombre"], "score": float(np.mean([e["score"] for e in quitadas])), "fuente": "ENCABEZADO"}]
+                texto_libre["nombres_compuestos_desde_columnas_partidas"] += 1
+                texto_libre["entidades_PER_partidas_reemplazadas"] += len(quitadas)
         texto_libre["comentarios_en_columnas_de_texto_libre"] += len(comentarios_reg)
         texto_libre["registros_con_comentarios"] += int(bool(comentarios_reg))
         sin_resolver = False
@@ -239,6 +249,9 @@ def main():
         for e in todas:
             if e["tipo"] not in ("PER_ESTUDIANTE", "PER_DOCENTE"):
                 continue
+            if es_etiqueta_likert(e["valor"]):
+                texto_libre["entidades_excluidas_etiqueta_likert"] += 1
+                continue  # '5/Totalmente de acuerdo': escala de respuesta, no una persona
             if _en_comentario(e["valor"], comentarios_reg):
                 texto_libre["entidades_excluidas_por_columna_de_comentario"] += 1
                 continue  # tomada de una columna de comentario/sugerencia/observación/opinión: no es una persona
