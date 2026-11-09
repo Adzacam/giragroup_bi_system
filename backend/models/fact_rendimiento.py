@@ -22,7 +22,7 @@ class FactRendimientoAcademico(Base):
     incumplimiento_actividades_pct = Column(Numeric(5, 2), server_default="0.00")
     nivel_confianza_ia = Column(Numeric(5, 4))
     requiere_revision = Column(Boolean, default=False)
-    fk_estado = Column(String(1), default="A")
+    fk_estado = Column(String(1), default="A")  # vínculo del estudiante: A: CI exacta, B: sin CI exacta; C no se persiste (sin vincular = staging)
     estado_academico = Column(String(50))
     estado_tutoria = Column(String(50), nullable=True)   # 'Estado reprobado' de CRITERIOS
     estado_arca = Column(String(50), nullable=True)      # Titulado / No Titulado

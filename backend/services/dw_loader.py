@@ -366,7 +366,7 @@ class DWLoaderService:
     ) -> Tuple[Optional[int], str]:
         """
         Retorna (id_estudiante, fk_estado).
-        fk_estado: 'A' (directo CI), 'B' (fuzzy rescatado/TEMP), 'C' (derivado a HITL/staging).
+        fk_estado: 'A' (CI exacta), 'B' (vinculado sin CI exacta: fuzzy rescatado o miembro nuevo TEMP), 'C' (sin vincular: derivado a staging/HITL, id None).
         Alineado por ci_numero normalizado, institución y detección de homonimia por programa.
         """
         # Un "nombre" sin letras ('123456789 123456789') es un relleno de formulario, no una persona; y un CI de
@@ -555,7 +555,7 @@ class DWLoaderService:
                 id_institucion=id_inst,
                 programa_origen=programa,
                 deprecado=False,
-                fk_estado="C",  # miembro nuevo sin candidatos: auditable; el hecho carga directo si la confianza >= 0,85
+                fk_estado="B",  # miembro nuevo sin candidatos (TEMP): vinculado sin CI exacta; el hecho carga directo si la confianza >= 0,85
             )
             self.db.add(nuevo_est)
             self.db.flush()
@@ -679,7 +679,7 @@ class DWLoaderService:
             if mejor_cand and score_fuzz is not None and score_fuzz >= 85.0:
                 return doc_map[mejor_cand].id_docente
 
-        nuevo_doc = DimDocente(nombre_completo=clean_nombre, fk_estado="C")
+        nuevo_doc = DimDocente(nombre_completo=clean_nombre, fk_estado="B")  # sin CI exacta ni candidato
         self.db.add(nuevo_doc)
         self.db.flush()
         return nuevo_doc.id_docente
@@ -1167,7 +1167,7 @@ class DWLoaderService:
                 existente.estado_cartera = estado_cartera
                 existente.tipo_alerta = tipo_alerta_fin
                 existente.nivel_confianza_ia = confianza_ia
-                existente.requiere_revision = requiere_rev or (fk_estado_est == "C")
+                existente.requiere_revision = requiere_rev
                 existente.fk_estado = fk_estado_est
                 if id_mod_fin:
                     existente.id_modulo = id_mod_fin
@@ -1187,7 +1187,7 @@ class DWLoaderService:
                     estado_cartera=estado_cartera,
                     tipo_alerta=tipo_alerta_fin,
                     nivel_confianza_ia=confianza_ia,
-                    requiere_revision=requiere_rev or (fk_estado_est == "C"),
+                    requiere_revision=requiere_rev,
                     fk_estado=fk_estado_est
                 )
                 self.db.add(nuevo_hecho)
@@ -1527,7 +1527,7 @@ class DWLoaderService:
             existente.asistencia_pct = asistencia
             existente.incumplimiento_actividades_pct = incumplimiento
             existente.nivel_confianza_ia = confianza_ia
-            existente.requiere_revision = requiere_rev or (fk_estado_est == "C")
+            existente.requiere_revision = requiere_rev
             existente.fk_estado = fk_estado_est
             existente.estado_academico = estado_aca
             existente.estado_tutoria = estado_tut
@@ -1550,7 +1550,7 @@ class DWLoaderService:
                 asistencia_pct=asistencia,
                 incumplimiento_actividades_pct=incumplimiento,
                 nivel_confianza_ia=confianza_ia,
-                requiere_revision=requiere_rev or (fk_estado_est == "C"),
+                requiere_revision=requiere_rev,
                 fk_estado=fk_estado_est,
                 estado_academico=estado_aca,
                 estado_tutoria=estado_tut,

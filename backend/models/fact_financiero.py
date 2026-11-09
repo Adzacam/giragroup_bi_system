@@ -20,5 +20,5 @@ class FactSituacionFinanciera(Base):
     tipo_alerta = Column(String(30), default="NORMAL")
     nivel_confianza_ia = Column(Numeric(5, 4), default=1.0000)
     requiere_revision = Column(Boolean, default=False)
-    fk_estado = Column(String(1), default="A")
+    fk_estado = Column(String(1), default="A")  # vínculo del estudiante: A: CI exacta, B: sin CI exacta; C no se persiste (sin vincular = staging)
     fecha_registro = Column(DateTime(timezone=True), server_default=func.now())

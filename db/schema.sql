@@ -120,7 +120,7 @@ CREATE TABLE public.dim_estudiante (
     edad INTEGER,
     ocupacion VARCHAR(100),
     estado_civil VARCHAR(50),
-    fk_estado CHAR(1) DEFAULT 'A'  -- A: CI exacta, B: fuzzy, C: miembro nuevo sin candidatos (auditable)
+    fk_estado CHAR(1) DEFAULT 'A'  -- A: CI exacta; B: vinculado sin CI exacta (fuzzy o miembro nuevo con TEMP-hash); C: sin vincular (solo en stg_entidad_no_resuelta, nunca en dim_* ni en hechos)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS uq_dim_estudiante_ci_numero 
 ON public.dim_estudiante (ci_numero) 
@@ -139,7 +139,7 @@ CREATE TABLE public.dim_docente (
     id_docente SERIAL PRIMARY KEY,
     nombre_completo VARCHAR(200) NOT NULL DEFAULT 'Docente Generico',
     area_especialidad VARCHAR(200) DEFAULT 'Generico',
-    fk_estado CHAR(1) DEFAULT 'A'  -- C: docente nuevo sin candidatos en la dimensión (auditable)
+    fk_estado CHAR(1) DEFAULT 'A'  -- A: CI exacta; B: vinculado sin CI exacta (fuzzy o miembro nuevo con TEMP-hash); C: sin vincular (solo en stg_entidad_no_resuelta, nunca en dim_* ni en hechos)
 );
 
 CREATE TABLE public.dim_modulo (
@@ -215,7 +215,7 @@ CREATE TABLE public.fact_rendimiento_academico (
     incumplimiento_actividades_pct NUMERIC(5, 2) DEFAULT 0.00,
     nivel_confianza_ia NUMERIC(5, 4),
     requiere_revision BOOLEAN DEFAULT FALSE,
-    fk_estado VARCHAR(1) DEFAULT 'A',
+    fk_estado VARCHAR(1) DEFAULT 'A',  -- vínculo del estudiante: A: CI exacta, B: sin CI exacta (C no se persiste: sin vincular = staging)
     estado_academico VARCHAR(50),
     estado_tutoria VARCHAR(50),
     estado_arca VARCHAR(50),
@@ -239,7 +239,7 @@ CREATE TABLE public.fact_situacion_financiera (
     tipo_alerta VARCHAR(30) DEFAULT 'NORMAL',
     nivel_confianza_ia NUMERIC(5, 4) DEFAULT 1.0000,
     requiere_revision BOOLEAN DEFAULT FALSE,
-    fk_estado VARCHAR(1) DEFAULT 'A',
+    fk_estado VARCHAR(1) DEFAULT 'A',  -- vínculo del estudiante: A: CI exacta, B: sin CI exacta (C no se persiste: sin vincular = staging)
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -394,7 +394,7 @@ CREATE TABLE IF NOT EXISTS public.stg_entidad_no_resuelta (
     ci_temporal VARCHAR(150),
     mejor_candidato TEXT,
     score_fuzzy NUMERIC(5, 2),
-    fk_estado VARCHAR(1) DEFAULT 'C',
+    fk_estado VARCHAR(1) DEFAULT 'C',  -- C: sin vincular (toda fila de staging)
     nivel_confianza NUMERIC(5, 4),
     resuelto BOOLEAN DEFAULT FALSE,
     resuelto_por INT REFERENCES public.users(id) ON DELETE SET NULL,
