@@ -1,0 +1,49 @@
+{
+  "serie": "META_MENSUAL_PROGRAMAS ejecutado (fact_rentabilidad, categoria PROGRAMAS), 2023-01..2025-12",
+  "nota_2026": "los 12 meses de 2026 del extractor son metas (suma 15.960.170,68), no recaudación; se excluyen",
+  "N": 36,
+  "desde": "2023-01",
+  "hasta": "2025-12",
+  "hold_out_6m": {
+    "entrenamiento_N": 30,
+    "pendiente_Bs_por_mes": 13580.51,
+    "R2_entrenamiento": 0.4949,
+    "RMSE_holdout": 134809.62,
+    "MAPE_holdout_pct": 11.51,
+    "media_holdout": 1076955.47
+  },
+  "serie_completa": {
+    "pendiente_Bs_por_mes": 13911.94,
+    "incremento_anual_implicito_del_total_Bs": 2003318.72,
+    "R2": 0.5861,
+    "RMSE_ajuste": 121438.48
+  },
+  "OLS_anual_N3": {
+    "N": 3,
+    "pendiente_Bs_por_anio": 2267633.83,
+    "R2": 0.9937,
+    "RMSE_ajuste": 147831.51,
+    "proyeccion_2_anios": null,
+    "claves_devueltas": [
+      "caso_uso",
+      "metodo",
+      "tipo_estimacion",
+      "horizonte_anios",
+      "n_observaciones",
+      "anios_historicos",
+      "valores_historicos",
+      "periodos",
+      "forecast",
+      "ic_lower",
+      "ic_upper",
+      "pendiente_anual_bs",
+      "cagr_historico_pct",
+      "nota_metodologica"
+    ]
+  },
+  "serie_anual": {
+    "2023": 8035694.25,
+    "2024": 9989730.09,
+    "2025": 12570961.91
+  }
+}
