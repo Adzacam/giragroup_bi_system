@@ -26,3 +26,14 @@ def test_marcador_de_ci_en_cualquier_lado_es_variante_y_encabezados_genericos_no
     assert _es_variante_de_nombre("WENDY LEEN GONZALES EL HAGE", "Estudiante CI 5337187")
     assert _motivo_no_aplicable(["(1 = Nada satisfecho/a): 5", "col_1: 3", "col_2: 4"]) == "ENCABEZADO_GENERICO"
     assert _motivo_no_aplicable(["True: False", "True: False"]) == "ENCABEZADO_GENERICO"
+
+
+def test_un_comentario_libre_no_se_toma_como_nombre_de_docente():
+    """Defecto hallado en el E2E de la UI: un comentario de más de 200 caracteres en la columna de docente abortaba toda la consolidación."""
+    from unittest.mock import MagicMock
+    from services.dw_loader import DWLoaderService
+    db = MagicMock()
+    comentario = "No hubo presentación por ende nada de networking " * 6
+    assert len(comentario) > 200
+    assert DWLoaderService(db).resolver_o_crear_docente(comentario) is None
+    db.add.assert_not_called()

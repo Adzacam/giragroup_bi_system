@@ -664,8 +664,8 @@ class DWLoaderService:
         clean_nombre, grado = separar_grado(nombre_docente.strip())
         # 'Lic. Gomez' es un docente aunque sea una sola palabra: el título lo marca como persona
         con_titulo = bool(grado) and bool(re.fullmatch(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]{3,}", clean_nombre or ""))
-        if not clean_nombre or not (es_nombre_persona(clean_nombre) or con_titulo):
-            return None
+        if not clean_nombre or len(clean_nombre) > 200 or not (es_nombre_persona(clean_nombre) or con_titulo):
+            return None  # un comentario libre (más largo que dim_docente.nombre_completo, 200) no es un docente
         doc = self.db.query(DimDocente).filter(
             func.lower(DimDocente.nombre_completo) == clean_nombre.lower()
         ).first()
