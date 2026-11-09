@@ -111,13 +111,14 @@
       "capa": "dimensiones",
       "filas": 1922,
       "fk_entrantes": 0,
-      "n_archivos": 5,
+      "n_archivos": 6,
       "archivos": [
         "backend/models/__init__.py",
         "backend/models/bridge_modulo_docente.py",
         "backend/routers/dataops.py",
         "backend/services/dw_loader.py",
-        "pipeline/normalization/person_resolver.py"
+        "pipeline/normalization/person_resolver.py",
+        "scripts/vincular_evaluacion_docente.py"
       ]
     },
     {
@@ -440,7 +441,7 @@
       "capa": "dimensiones",
       "filas": 15,
       "fk_entrantes": 2,
-      "n_archivos": 21,
+      "n_archivos": 23,
       "archivos": [
         "backend/models/__init__.py",
         "backend/models/dim_categoria_financiera.py",
@@ -455,6 +456,8 @@
         "pipeline/analytics/time_series_extractor.py",
         "scripts/generar_figura_3_5_constelacion.py",
         "scripts/generar_figuras_sprint1_alta_definicion.py",
+        "scripts/ols_hw_proyecciones.py",
+        "scripts/ols_reajuste.py",
         "services/audit-service/models/__init__.py",
         "services/audit-service/models/dim_categoria_financiera.py",
         "services/audit-service/models/fact_rentabilidad.py",
@@ -470,7 +473,7 @@
       "capa": "dimensiones",
       "filas": 638,
       "fk_entrantes": 3,
-      "n_archivos": 46,
+      "n_archivos": 48,
       "archivos": [
         "backend/main.py",
         "backend/models/__init__.py",
@@ -483,6 +486,7 @@
         "backend/services/catalog_service.py",
         "backend/services/dw_loader.py",
         "backend/services/ingestion_service.py",
+        "backend/services/revision_hechos.py",
         "backend/services/risk_service.py",
         "backend/tests_root/sprint1/test_esquema_constelacion_hefesto.py",
         "backend/tests_root/sprint1/test_modelos_orm_sqlalchemy.py",
@@ -494,6 +498,7 @@
         "pipeline/ejecutar_sprint3.py",
         "pipeline/normalization/person_resolver.py",
         "scripts/beto_cifra_unica.py",
+        "scripts/ciclo_idempotencia_hitl.py",
         "scripts/desglose_hitl_personas.py",
         "scripts/duplicados_estado_c.py",
         "scripts/generar_figura_3_17_logs.py",
@@ -525,7 +530,7 @@
       "capa": "dimensiones",
       "filas": 14076,
       "fk_entrantes": 5,
-      "n_archivos": 59,
+      "n_archivos": 60,
       "archivos": [
         "backend/main.py",
         "backend/models/__init__.py",
@@ -553,6 +558,7 @@
         "frontend/src/api/academicApi.js",
         "pipeline/normalization/person_resolver.py",
         "scripts/beto_cifra_unica.py",
+        "scripts/ciclo_idempotencia_hitl.py",
         "scripts/desglose_hitl_personas.py",
         "scripts/duplicados_estado_c.py",
         "scripts/generar_figura_3_17_logs.py",
@@ -678,15 +684,17 @@
     {
       "tabla": "dim_origen_documental",
       "capa": "dimensiones",
-      "filas": 14,
-      "fk_entrantes": 9,
-      "n_archivos": 38,
+      "filas": 16,
+      "fk_entrantes": 11,
+      "n_archivos": 41,
       "archivos": [
         "backend/models/bridge_modulo_docente.py",
         "backend/models/dim_origen.py",
         "backend/models/fact_costo_programa.py",
+        "backend/models/fact_evaluacion.py",
         "backend/models/fact_financiero.py",
         "backend/models/fact_rendimiento.py",
+        "backend/models/fact_rentabilidad.py",
         "backend/models/fact_techo_convenio.py",
         "backend/models/log_inconsistencia.py",
         "backend/models/log_pipeline.py",
@@ -703,6 +711,7 @@
         "scripts/generar_figuras_sprint1_alta_definicion.py",
         "scripts/generar_figuras_tesis_sprint2_3.py",
         "scripts/migrar_staging_idempotente.py",
+        "scripts/reejecutar_lote_1387_uploads_data.py",
         "scripts/reset_dw.py",
         "services/audit-service/models/dim_origen.py",
         "services/audit-service/models/fact_financiero.py",
@@ -727,7 +736,7 @@
       "capa": "dimensiones",
       "filas": 2230,
       "fk_entrantes": 9,
-      "n_archivos": 68,
+      "n_archivos": 70,
       "archivos": [
         "README.md",
         "backend/models/__init__.py",
@@ -764,6 +773,8 @@
         "scripts/generar_figura_3_5_constelacion.py",
         "scripts/generar_figuras_sprint1_alta_definicion.py",
         "scripts/hw_desde_dw.py",
+        "scripts/ols_hw_proyecciones.py",
+        "scripts/ols_reajuste.py",
         "scripts/reset_dw.py",
         "services/audit-service/models/__init__.py",
         "services/audit-service/models/dim_meta.py",
@@ -834,7 +845,7 @@
       "capa": "hechos",
       "filas": 14234,
       "fk_entrantes": 0,
-      "n_archivos": 15,
+      "n_archivos": 17,
       "archivos": [
         "backend/main.py",
         "backend/models/fact_evaluacion.py",
@@ -845,9 +856,11 @@
         "frontend/src/modules/academic/DesempenoDocente.jsx",
         "output/figura_arquitectura_ner_rapidfuzz.svg",
         "pipeline/ingesta.py",
+        "scripts/ciclo_idempotencia_hitl.py",
         "scripts/generar_png_arquitectura.py",
         "scripts/generar_svg_arquitectura.py",
         "scripts/reset_dw.py",
+        "scripts/vincular_evaluacion_docente.py",
         "services/audit-service/models/fact_evaluacion.py",
         "services/notifications-service/models/fact_evaluacion.py",
         "tests/test_agnostic_classifier_and_dw_reset.py"
@@ -882,7 +895,7 @@
       "capa": "hechos",
       "filas": 8946,
       "fk_entrantes": 0,
-      "n_archivos": 21,
+      "n_archivos": 22,
       "archivos": [
         "backend/models/__init__.py",
         "backend/models/fact_marketing.py",
@@ -897,6 +910,7 @@
         "powerbi/dashboards/guia_integracion_powerbi_forecasting.md",
         "scripts/auditoria_pipeline_kpi.py",
         "scripts/hw_desde_dw.py",
+        "scripts/ols_hw_proyecciones.py",
         "scripts/reset_dw.py",
         "services/audit-service/models/__init__.py",
         "services/audit-service/models/fact_marketing.py",
@@ -912,7 +926,7 @@
       "capa": "hechos",
       "filas": 22475,
       "fk_entrantes": 0,
-      "n_archivos": 34,
+      "n_archivos": 35,
       "archivos": [
         "backend/main.py",
         "backend/models/fact_rendimiento.py",
@@ -932,6 +946,7 @@
         "pipeline/ejecutar_sprint3.py",
         "pipeline/ingesta.py",
         "scripts/arreglar_ultimos_dos.py",
+        "scripts/ciclo_idempotencia_hitl.py",
         "scripts/corregir_tests.py",
         "scripts/generar_figura_3_17_logs.py",
         "scripts/generar_figura_3_2_arquitectura.py",
@@ -955,7 +970,7 @@
       "capa": "hechos",
       "filas": 108,
       "fk_entrantes": 0,
-      "n_archivos": 23,
+      "n_archivos": 25,
       "archivos": [
         "backend/models/__init__.py",
         "backend/models/fact_costo_programa.py",
@@ -972,7 +987,9 @@
         "pipeline/ingesta.py",
         "powerbi/dashboards/guia_integracion_powerbi_forecasting.md",
         "scripts/auditoria_pipeline_kpi.py",
+        "scripts/ols_hw_proyecciones.py",
         "scripts/ols_mensual_vs_anual.py",
+        "scripts/ols_reajuste.py",
         "scripts/reset_dw.py",
         "services/audit-service/models/__init__.py",
         "services/audit-service/models/fact_rentabilidad.py",
@@ -987,7 +1004,7 @@
       "capa": "hechos",
       "filas": 10483,
       "fk_entrantes": 0,
-      "n_archivos": 31,
+      "n_archivos": 32,
       "archivos": [
         "backend/models/fact_financiero.py",
         "backend/routers/dataops.py",
@@ -1007,6 +1024,7 @@
         "frontend/src/modules/finance/RecaudacionCobranzas.jsx",
         "pipeline/ejecutar_sprint3.py",
         "pipeline/ingesta.py",
+        "scripts/ciclo_idempotencia_hitl.py",
         "scripts/generar_figura_3_2_arquitectura.py",
         "scripts/generar_figura_3_5_constelacion.py",
         "scripts/generar_figuras_sprint1_alta_definicion.py",
@@ -1063,18 +1081,20 @@
     {
       "tabla": "log_inconsistencias",
       "capa": "auditoria",
-      "filas": 10,
+      "filas": 78,
       "fk_entrantes": 0,
-      "n_archivos": 2,
+      "n_archivos": 4,
       "archivos": [
         "backend/models/log_inconsistencia.py",
+        "scripts/ols_hw_proyecciones.py",
+        "scripts/reejecutar_lote_1387_uploads_data.py",
         "scripts/reset_dw.py"
       ]
     },
     {
       "tabla": "log_pipeline_ingesta",
       "capa": "auditoria",
-      "filas": 103,
+      "filas": 117,
       "fk_entrantes": 0,
       "n_archivos": 11,
       "archivos": [
@@ -1228,7 +1248,7 @@
     {
       "tabla": "schema_migrations",
       "capa": "control",
-      "filas": 10,
+      "filas": 11,
       "fk_entrantes": 0,
       "n_archivos": 3,
       "archivos": [
@@ -1240,7 +1260,7 @@
     {
       "tabla": "staging_registros_crudos",
       "capa": "staging",
-      "filas": 86,
+      "filas": 91,
       "fk_entrantes": 2,
       "n_archivos": 11,
       "archivos": [
@@ -1262,7 +1282,7 @@
       "capa": "staging",
       "filas": 23125,
       "fk_entrantes": 0,
-      "n_archivos": 27,
+      "n_archivos": 29,
       "archivos": [
         "backend/main.py",
         "backend/models/staging_entidad.py",
@@ -1276,6 +1296,7 @@
         "db/seeds/populate_catalogos.py",
         "pipeline/semantic/indice_confianza.py",
         "scripts/arreglar_ultimos_dos.py",
+        "scripts/ciclo_idempotencia_hitl.py",
         "scripts/corregir_tests.py",
         "scripts/evaluar_robustez_layouts.py",
         "scripts/generar_figura_3_17_logs.py",
@@ -1290,7 +1311,8 @@
         "tests/sprint3/test_catalogos_db.py",
         "tests/sprint4/test_dw_loader.py",
         "tests/test_agnostic_classifier_and_dw_reset.py",
-        "tests/test_esquema_alineado_ddl.py"
+        "tests/test_esquema_alineado_ddl.py",
+        "tests/test_staging_idempotente.py"
       ]
     },
     {

@@ -1,0 +1,49 @@
+﻿tabla,capa,filas,pk,descripcion,archivo_que_la_alimenta,motivo_si_vacia
+bridge_modulo_docente,dimensiones,1922,id_asignacion,Asignación de docentes a módulos (titular/tutor),backend/services/dw_loader.py (_cargar_asignacion_docente; hoja MODULOS de ARCA),
+cache_indice_beto,staging,90215,"hash_texto,modelo",Caché del índice de confianza BETO por línea,pipeline/semantic/indice_confianza.py,
+carga_fila_origen,control,15196,clave,Claves de idempotencia por fila de origen,backend/services/dw_loader.py (_reclamar_fila_origen),
+cat_categoria_financiera,catalogos,5,id_categoria_fin,Catálogo de categorías financieras,db/seeds/seed_catalogos.sql,
+cat_combinacion_estado,catalogos,0,id_combinacion,Combinaciones válidas de estado académico/tutoría/ARCA,backend/services/catalogo_estados.py,Sin filas aquí: las reglas se leen de giragroup_catalog_db (catalogs.py / catalog_repository.py); esta copia no se consulta
+cat_concepto_financiero,catalogos,0,id_concepto,Conceptos financieros canónicos,backend/scripts/seed_financial_catalogs.py,Sin filas aquí: financial_catalog_service lee giragroup_catalog_db (catalogs.py / catalog_repository.py)
+cat_escuela,catalogos,0,id_escuela,Escuelas académicas,db/seeds/seed_catalogos.sql,Sin filas aquí: routers/catalogs.py consulta giragroup_catalog_db (catalogs.py / catalog_repository.py)
+cat_estado_academico,catalogos,0,id_estado_academico,Estados académicos válidos,db/seeds/seed_catalogos.sql,Sin filas aquí: catalog_repository lee el SQL semilla y giragroup_catalog_db (catalogs.py / catalog_repository.py)
+cat_estado_arca,catalogos,0,id_estado_arca,Estados ARCA válidos,db/seeds/seed_catalogos.sql,Sin filas aquí: se lee de giragroup_catalog_db (catalogs.py / catalog_repository.py); FK de cat_combinacion_estado impide eliminarla
+cat_estado_reprobado,catalogos,0,id_estado_reprobado,Estados de reprobación válidos,db/seeds/seed_catalogos.sql,Sin filas aquí: se lee de giragroup_catalog_db (catalogs.py / catalog_repository.py); FK de cat_combinacion_estado impide eliminarla
+cat_etiqueta_clasificacion,catalogos,0,id_etiqueta,Etiquetas para clasificar hojas por contenido,db/seeds/seed_catalogos.sql,Sin filas aquí: pipeline/semantic/formatter.py usa giragroup_catalog_db (catalogs.py / catalog_repository.py)
+cat_guia_texto_plano,catalogos,0,id_guia,Guías de texto plano para el formateador semántico,db/seeds/seed_catalogos.sql,Sin filas aquí: pipeline/semantic/formatter.py usa giragroup_catalog_db (catalogs.py / catalog_repository.py)
+cat_historico_equivalencia,catalogos,0,id_equivalencia,Sinónimos de cabeceras financieras aprendidos,backend/services/conceptos_financieros.py,Sin filas aquí: se lee y escribe en giragroup_catalog_db (catalogs.py / catalog_repository.py)
+cat_institucion,catalogos,4,id_institucion,Instituciones (catálogo maestro),db/seeds/seed_catalogos.sql,
+cat_institucion_convenio,catalogos,0,id_convenio,Instituciones con convenio (variantes de nombre),backend/services/instituciones_convenio.py,Sin filas aquí: se consulta en giragroup_catalog_db (catalogs.py / catalog_repository.py)
+cat_mapeo_columna,catalogos,0,id_mapeo,Mapeo de columnas de origen a campos canónicos,db/seeds/seed_catalogos.sql,Sin filas aquí: pipeline/semantic/formatter.py usa giragroup_catalog_db (catalogs.py / catalog_repository.py)
+cat_modalidad,catalogos,0,id_modalidad,Modalidades de programa,db/seeds/seed_catalogos.sql,Sin filas aquí: routers/catalogs.py consulta giragroup_catalog_db (catalogs.py / catalog_repository.py)
+cat_modulo,catalogos,0,id_modulo,Catálogo canónico de módulos (FK de dim_modulo),db/seeds/seed_catalogos.sql,Sin filas aquí: routers/catalogs.py consulta giragroup_catalog_db (catalogs.py / catalog_repository.py); dim_modulo.id_cat_modulo la referencia
+cat_programa,catalogos,4,id_programa,Catálogo de programas,db/seeds/seed_catalogos.sql,
+cat_tipo_programa,catalogos,0,id_tipo_programa,Tipos de programa,db/seeds/seed_catalogos.sql,Sin filas aquí: routers/catalogs.py consulta giragroup_catalog_db (catalogs.py / catalog_repository.py)
+dataops_tarea,control,7,id,Tareas de ingesta/lectura BETO/consolidación de DataOps,backend/routers/dataops.py,
+dim_categoria_financiera,dimensiones,15,id_categoria,"Categorías de ingreso/egreso (PROGRAMAS, TECHOS_CERRADOS...)",backend/services/dw_loader.py (rama rentabilidad),
+dim_docente,dimensiones,638,id_docente,Docentes (con fk_estado A/B/C),backend/services/dw_loader.py (resolver_o_crear_docente),
+dim_estudiante,dimensiones,14076,id_estudiante,Estudiantes (con fk_estado A/B/C),backend/services/dw_loader.py (resolver_o_crear_estudiante),
+dim_meta,dimensiones,0,id_meta,Metas por indicador (modelo previo),backend/models/dim_meta.py,Sin filas: ningún cargador la escribe; las metas viven en fact_rentabilidad.monto_meta y bi.ref_kpi
+dim_modulo,dimensiones,3580,id_modulo,Módulos y programas (POS),backend/services/dw_loader.py (resolver_o_crear_modulo),
+dim_origen_documental,dimensiones,16,id_documento,"Un registro por archivo subido (hash, tipo de fuente)",backend/services/ingestion_service.py,
+dim_tiempo,dimensiones,2230,id_tiempo,"Calendario diario (gestión, mes, periodo_mes)",backend/services/dw_loader.py (resolver_o_crear_tiempo),
+fact_cobranzas_proyectadas,hechos,0,id_hecho_cobro,Cobranzas proyectadas por estudiante y mes,ninguno (solo scripts/reset_dw.py y fix_sequences.sql la nombran),Sin filas: ningún cargador escribe en ella; se conserva porque tests/test_agnostic_classifier_and_dw_reset.py exige que reset_dw la trunque
+fact_costo_programa,hechos,1320,id_hecho_costo,"Egreso, ingreso y rentabilidad por POS",backend/services/dw_loader.py (_cargar costo; hoja egresos de BD Egresos),
+fact_evaluacion_docente,hechos,14234,id_hecho_eval,Una fila por respuesta de encuesta docente/institucional,backend/services/dw_loader.py (rama evaluación) con backend/services/extraccion_por_encabezado.py,
+fact_forecast,hechos,23,id_forecast,Pronósticos guardados (Holt-Winters/OLS),backend/services/forecast_service.py,
+fact_marketing,hechos,8946,id_hecho_mkt,"Inscritos, reservas y leads por módulo y mes",backend/services/dw_loader.py (rama admisión/marketing; TBL_INSCRITOS),
+fact_rendimiento_academico,hechos,22475,id_hecho_aca,Notas y estados de acta por estudiante y módulo,backend/services/dw_loader.py (rama académico; ACTAS DE NOTAS),
+fact_rentabilidad,hechos,108,id_hecho_rent,Recaudación mensual ejecutada y meta por categoría,backend/services/dw_loader.py (rama rentabilidad; EJECUTADO VS META),
+fact_situacion_financiera,hechos,10483,id_hecho_fin,"Deuda, pagos y cuotas por estudiante",backend/services/dw_loader.py (rama financiero; BD Cobranzas),
+fact_techo_convenio,hechos,202,id_hecho_techo,Techos y convenios por institución,backend/services/dw_loader.py (_cargar_techo_convenio; BD Techos),
+log_auditoria_nlp,auditoria,4,id_log,Bitácora de decisiones humanas sobre predicciones BETO,backend/routers/dataops.py y services/revision_hechos.py,
+log_inconsistencias,auditoria,78,id_inconsistencia,"Inconsistencias detectadas (conflictos de fuentes, descartes de personas)","backend/services/dw_loader.py, scripts/reejecutar_lote_1387_uploads_data.py",
+log_pipeline_ingesta,auditoria,117,id,Bitácora de etapas del pipeline por documento,backend/services/ingestion_service.py,
+lote,control,1,id_lote,Lotes de carga,backend/routers/dataops.py,
+notifications,seguridad,2,id,Notificaciones a usuarios,services/notifications-service,
+powerbi_informe_version,auditoria,1,id,Versiones del informe de Power BI,backend/scripts/migrations/007_powerbi_informe_version.sql,
+ref_metas_gestion,catalogos,0,id_meta,Metas anuales por gestión (catálogo),db/seeds/seed_catalogos.sql,Sin filas aquí: routers/catalogs.py consulta giragroup_catalog_db (catalogs.py / catalog_repository.py)
+schema_migrations,control,11,version,Migraciones aplicadas,backend/main.py (arranque),
+staging_registros_crudos,staging,91,id,Líneas leídas antes de la carga (staging),backend/routers/dataops.py,
+stg_entidad_no_resuelta,staging,23125,id_staging,Cola HITL de entidades sin resolver (clave_origen única),"backend/services/dw_loader.py, backend/routers/pipeline.py",
+users,seguridad,5,id,Usuarios y roles,backend/seed_users.py,
