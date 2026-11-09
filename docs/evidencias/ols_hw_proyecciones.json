@@ -1,0 +1,204 @@
+{
+  "a_recaudacion_anual": {
+    "DW_suma_monto_ejecutado": {
+      "2023": 8035694.25,
+      "2024": 9989730.09,
+      "2025": 12570961.91
+    },
+    "recaudacion_csv": {
+      "2023": 8035694.25,
+      "2024": 9989730.09,
+      "2025": 12907977.61
+    },
+    "tesis_millones": {
+      "2023": 8.03,
+      "2024": 9.98,
+      "2025": 12.9
+    },
+    "diferencia_DW_menos_tesis_Bs": {
+      "2023": 5694.25,
+      "2024": 9730.09,
+      "2025": -329038.09
+    },
+    "diferencia_DW_menos_csv_Bs": {
+      "2023": 0.0,
+      "2024": 0.0,
+      "2025": -337015.7
+    },
+    "marzo_2025_PROGRAMAS_DW": 660209.0,
+    "conflictos_fuentes_en_log": [
+      {
+        "id_documento": 8,
+        "valor_recibido": "660209.0",
+        "valor_esperado": "997224.70",
+        "descripcion": "PROGRAMAS id_tiempo=20250301: la fuente nueva reemplaza 997224.70 por 660209.0"
+      }
+    ]
+  },
+  "b_OLS_mensual_h6": {
+    "serie": "PROGRAMAS monto_ejecutado, 2023-01..2025-12 (valores del DW)",
+    "N": 36,
+    "pendiente_Bs_mes": 13911.94,
+    "intercepto": 606440.75,
+    "R2": 0.5861,
+    "RMSE_ajuste": 121438.48,
+    "t_critico": 2.0322,
+    "proyeccion": [
+      {
+        "mes": "2026-01",
+        "pronostico": 1107270.43,
+        "ic95_inf": 839013.17,
+        "ic95_sup": 1375527.68
+      },
+      {
+        "mes": "2026-02",
+        "pronostico": 1121182.36,
+        "ic95_inf": 851751.96,
+        "ic95_sup": 1390612.76
+      },
+      {
+        "mes": "2026-03",
+        "pronostico": 1135094.3,
+        "ic95_inf": 864434.51,
+        "ic95_sup": 1405754.09
+      },
+      {
+        "mes": "2026-04",
+        "pronostico": 1149006.23,
+        "ic95_inf": 877061.56,
+        "ic95_sup": 1420950.9
+      },
+      {
+        "mes": "2026-05",
+        "pronostico": 1162918.17,
+        "ic95_inf": 889633.91,
+        "ic95_sup": 1436202.43
+      },
+      {
+        "mes": "2026-06",
+        "pronostico": 1176830.1,
+        "ic95_inf": 902152.35,
+        "ic95_sup": 1451507.85
+      }
+    ]
+  },
+  "b_OLS_mensual_h6_sensibilidad_marzo_2025_de_EJECUTADO_VS_META": {
+    "marzo_2025": 997224.7,
+    "N": 36,
+    "pendiente_Bs_mes": 14649.29,
+    "intercepto": 602898.54,
+    "R2": 0.6589,
+    "RMSE_ajuste": 109500.47,
+    "t_critico": 2.0322,
+    "proyeccion": [
+      {
+        "mes": "2026-01",
+        "pronostico": 1130273.08,
+        "ic95_inf": 888386.87,
+        "ic95_sup": 1372159.3
+      },
+      {
+        "mes": "2026-02",
+        "pronostico": 1144922.38,
+        "ic95_inf": 901978.34,
+        "ic95_sup": 1387866.41
+      },
+      {
+        "mes": "2026-03",
+        "pronostico": 1159571.67,
+        "ic95_inf": 915519.1,
+        "ic95_sup": 1403624.24
+      },
+      {
+        "mes": "2026-04",
+        "pronostico": 1174220.96,
+        "ic95_inf": 929009.82,
+        "ic95_sup": 1419432.11
+      },
+      {
+        "mes": "2026-05",
+        "pronostico": 1188870.26,
+        "ic95_inf": 942451.21,
+        "ic95_sup": 1435289.3
+      },
+      {
+        "mes": "2026-06",
+        "pronostico": 1203519.55,
+        "ic95_inf": 955844.0,
+        "ic95_sup": 1451195.1
+      }
+    ]
+  },
+  "b_ejecutado_2026_en_DW": {
+    "2026-01": 1307697.23,
+    "2026-02": 984911.79,
+    "2026-03": 1353826.01,
+    "2026-04": 1410779.33,
+    "2026-05": 252233.32
+  },
+  "b_validacion_con_ejecutado_2026": {
+    "meses": "2026-01..2026-04 (2026-05 excluido: mes parcial, 252.233,32)",
+    "error_abs_pct_por_mes": [
+      15.33,
+      13.84,
+      16.16,
+      18.56
+    ],
+    "MAPE_pct": 15.97
+  },
+  "c_HoltWinters_DW": {
+    "N": 33,
+    "desde": "2023-09-01",
+    "hasta": "2026-05-01",
+    "alpha": 0.6358,
+    "beta": 0.0,
+    "gamma": 0.1918,
+    "RMSE_ajuste": 65.85,
+    "AIC": 308.37,
+    "RMSE_holdout6": 53.38,
+    "MAPE_holdout6_pct": 10.27,
+    "parametros_modelo_hold_out_(entrenado_en_27)": {
+      "smoothing_level": 0.7641,
+      "smoothing_trend": 0.0,
+      "smoothing_seasonal": 0.1199
+    },
+    "proyeccion_h6": [
+      {
+        "mes": "2026-06",
+        "pronostico": 448.0,
+        "ic95_inf": 318.9,
+        "ic95_sup": 577.1
+      },
+      {
+        "mes": "2026-07",
+        "pronostico": 468.4,
+        "ic95_inf": 339.3,
+        "ic95_sup": 597.5
+      },
+      {
+        "mes": "2026-08",
+        "pronostico": 602.2,
+        "ic95_inf": 473.1,
+        "ic95_sup": 731.3
+      },
+      {
+        "mes": "2026-09",
+        "pronostico": 561.9,
+        "ic95_inf": 432.9,
+        "ic95_sup": 691.0
+      },
+      {
+        "mes": "2026-10",
+        "pronostico": 534.5,
+        "ic95_inf": 405.4,
+        "ic95_sup": 663.6
+      },
+      {
+        "mes": "2026-11",
+        "pronostico": 514.3,
+        "ic95_inf": 385.2,
+        "ic95_sup": 643.4
+      }
+    ]
+  }
+}
