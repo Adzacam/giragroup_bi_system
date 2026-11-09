@@ -1,0 +1,126 @@
+{
+  "por_suite": {
+    "loops": {
+      "pasadas": 9,
+      "pruebas": 9
+    },
+    "readiness": {
+      "pasadas": 21,
+      "pruebas": 39,
+      "xfail": 7,
+      "omitidas": 11
+    },
+    "sprint1": {
+      "pasadas": 16,
+      "pruebas": 16
+    },
+    "sprint2": {
+      "pasadas": 32,
+      "pruebas": 32
+    },
+    "sprint3": {
+      "pasadas": 120,
+      "pruebas": 120
+    },
+    "sprint4": {
+      "pasadas": 23,
+      "pruebas": 23
+    },
+    "transversales": {
+      "pasadas": 221,
+      "pruebas": 221
+    }
+  },
+  "cobertura_por_archivo": {
+    "security": {
+      "archivo": "backend/core/security.py",
+      "lineas": 87,
+      "cubiertas": 76,
+      "pct": 87.4
+    },
+    "ingestion_service": {
+      "archivo": "backend/services/ingestion_service.py",
+      "lineas": 587,
+      "cubiertas": 360,
+      "pct": 61.3
+    },
+    "fk_resolver": {
+      "archivo": "pipeline/normalization/fk_resolver.py",
+      "lineas": 77,
+      "cubiertas": 68,
+      "pct": 88.3
+    },
+    "fuzzy_normalizer": {
+      "archivo": "pipeline/normalization/fuzzy_normalizer.py",
+      "lineas": 71,
+      "cubiertas": 59,
+      "pct": 83.1
+    },
+    "person_resolver": {
+      "archivo": "pipeline/normalization/person_resolver.py",
+      "lineas": 98,
+      "cubiertas": 91,
+      "pct": 92.9
+    },
+    "alert_engine": {
+      "archivo": "backend/services/alert_engine.py",
+      "lineas": 71,
+      "cubiertas": 65,
+      "pct": 91.5
+    },
+    "financial_rules_engine": {
+      "archivo": "backend/services/financial_rules_engine.py",
+      "lineas": 85,
+      "cubiertas": 83,
+      "pct": 97.6
+    },
+    "risk_service": {
+      "archivo": "backend/services/risk_service.py",
+      "lineas": 337,
+      "cubiertas": 318,
+      "pct": 94.4
+    },
+    "forecasting_holtwinters": {
+      "archivo": "pipeline/analytics/forecasting_holtwinters.py",
+      "lineas": 71,
+      "cubiertas": 37,
+      "pct": 52.1
+    },
+    "forecasting_ols": {
+      "archivo": "pipeline/analytics/forecasting_ols.py",
+      "lineas": 28,
+      "cubiertas": 28,
+      "pct": 100.0
+    },
+    "forecast_service": {
+      "archivo": "backend/services/forecast_service.py",
+      "lineas": 253,
+      "cubiertas": 113,
+      "pct": 44.7
+    },
+    "kpi_service": {
+      "archivo": "backend/services/kpi_service.py",
+      "lineas": 374,
+      "cubiertas": 253,
+      "pct": 67.6
+    },
+    "reportes": {
+      "archivo": "backend/routers/reportes.py",
+      "lineas": 261,
+      "cubiertas": 221,
+      "pct": 84.7
+    },
+    "dataops": {
+      "archivo": "backend/routers/dataops.py",
+      "lineas": 2129,
+      "cubiertas": 909,
+      "pct": 42.7
+    }
+  },
+  "cobertura_global": {
+    "lineas": 12709,
+    "cubiertas": 7699,
+    "pct": 60.6,
+    "alcance": "--cov=backend --cov=pipeline"
+  }
+}
