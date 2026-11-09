@@ -115,30 +115,25 @@
     "dim_docente": 638
   },
   "personas": {
-    "total": 3587,
+    "total": 3006,
     "resueltas_CI_EXACTA": 2378,
     "resueltas_FUZZY": 127,
-    "nuevos_estado_C": 503,
-    "sin_coincidencia_HITL": 579
+    "nuevos_estado_C": 498,
+    "sin_coincidencia_HITL": 3
   },
   "personas_hitl_desglose_regla_previa_umbral_085": {
     "estudiante": {
       "sin_candidatos": 314
     },
     "docente": {
-      "sin_candidatos": 894
+      "sin_candidatos": 807
     }
   },
   "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {
     "estudiante": {
-      "sin_identidad_un_token": 122,
-      "empate": 3,
-      "no_parece_nombre_de_persona": 63
+      "empate": 3
     },
-    "docente": {
-      "sin_identidad_un_token": 240,
-      "no_parece_nombre_de_persona": 151
-    }
+    "docente": {}
   },
   "personas_resueltas_por_nivel": {
     "CI": 2378,
@@ -149,13 +144,19 @@
     "entidades": 139,
     "registros": 139
   },
+  "texto_libre": {
+    "comentarios_en_columnas_de_texto_libre": 87,
+    "registros_con_comentarios": 87,
+    "entidades_PER_descartadas_no_parece_nombre": 494,
+    "entidades_excluidas_por_columna_de_comentario": 87
+  },
   "personas_por_fk_estado": {
     "estudiante": {
       "A": 2378,
       "B": 127
     },
     "docente": {
-      "C": 503
+      "C": 498
     }
   },
   "distribucion_bandas_sin_regla_personas": {
@@ -188,19 +189,19 @@
   },
   "distribucion_bandas_con_regla_personas": {
     "directo": {
-      "conteo": 1121,
-      "porcentaje": 80.82
+      "conteo": 1381,
+      "porcentaje": 99.57
     },
     "hitl": {
-      "conteo": 266,
-      "porcentaje": 19.18
+      "conteo": 6,
+      "porcentaje": 0.43
     },
     "staging": {
       "conteo": 0,
       "porcentaje": 0.0
     }
   },
-  "registros_directo_movidos_a_hitl_por_persona_sin_resolver": 263,
+  "registros_directo_movidos_a_hitl_por_persona_sin_resolver": 3,
   "kpis": {
     "KPI_10a_media_todas_las_entidades": 0.9618,
     "KPI_10a_n_entidades": 11426,
@@ -208,7 +209,7 @@
     "KPI_10b_n_entidades": 3248,
     "KPI_10_previo_media_por_registro": 0.964,
     "KPI_11_directo_sin_regla_personas_pct": 99.78,
-    "KPI_11_directo_con_regla_personas_pct": 80.82
+    "KPI_11_directo_con_regla_personas_pct": 99.57
   },
   "conteos_fuente_resolucion": {
     "CI_EXACTA": 1850,

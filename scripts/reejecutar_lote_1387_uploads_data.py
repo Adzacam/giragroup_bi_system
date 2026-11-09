@@ -105,6 +105,25 @@ def _norm(s):
     return re.sub(r"\s+", " ", "".join(c for c in s if unicodedata.category(c) != "Mn")).strip()
 
 
+_RE_COL_COMENTARIO = re.compile(r"comentari|sugerenc|observaci|opini|mejorar|aspectos|otro contenido|explorar|libre", re.I)
+_VACIOS = {"", "nan", "none", "n/a", "na", "ninguno", "ninguna", "-", "sin comentarios", "no"}
+
+
+def _comentarios_del_registro(texto):
+    """Textos de las celdas 'encabezado: valor' cuyo encabezado es de comentario/sugerencia/observación/opinión (no vacíos)."""
+    out = []
+    for celda in texto.split(" | "):
+        hdr, sep, val = celda.partition(": ")
+        if sep and _RE_COL_COMENTARIO.search(hdr) and val.strip().lower() not in _VACIOS:
+            out.append(val.strip())
+    return out
+
+
+def _en_comentario(valor, comentarios):
+    v = (valor or "").strip().lower()
+    return bool(v) and any(v in c.lower() for c in comentarios)
+
+
 def _spans_beto(tokens, pred_a, pred_beto, probs_beto):
     """Spans B-/I- cuyo primer token dejó sin resolver el parser (A) y etiquetó BETO."""
     spans, i = [], 0
@@ -156,6 +175,7 @@ def main():
     fuentes = {"CI_EXACTA": 0, "ENCABEZADO": 0, "FUZZY": 0, "REGEX": 0, "BETO": 0}
     personas = {"total": 0, "resueltas_CI_EXACTA": 0, "resueltas_FUZZY": 0, "nuevos_estado_C": 0, "sin_coincidencia_HITL": 0}
     correos = {"entidades": 0, "registros": 0}
+    texto_libre = Counter()
     fk_estado = {"estudiante": Counter(), "docente": Counter()}
     directo_a_hitl = 0
     desglose_antes = {"estudiante": Counter(), "docente": Counter()}
@@ -188,12 +208,18 @@ def main():
         # Tarea 1: CI exacta -> dim_estudiante; sin CI: RapidFuzz en la dim (programa/módulo + apellido); si no -> HITL
         ci = next((e["valor"] for e in todas if e["tipo"] == "CI"), None)
         ctx = [e["valor"] for e in todas if e["tipo"] in ("PROGRAMA", "MODULO", "POS")]
+        comentarios_reg = _comentarios_del_registro(txt)
+        texto_libre["comentarios_en_columnas_de_texto_libre"] += len(comentarios_reg)
+        texto_libre["registros_con_comentarios"] += int(bool(comentarios_reg))
         sin_resolver = False
         correo_en_registro = False
         sin_resolver_prev = False
         for e in todas:
             if e["tipo"] not in ("PER_ESTUDIANTE", "PER_DOCENTE"):
                 continue
+            if _en_comentario(e["valor"], comentarios_reg):
+                texto_libre["entidades_excluidas_por_columna_de_comentario"] += 1
+                continue  # tomada de una columna de comentario/sugerencia/observación/opinión: no es una persona
             if es_correo(e["valor"]):
                 correos["entidades"] += 1
                 correo_en_registro = True
@@ -209,6 +235,11 @@ def main():
             if rp is None:
                 sin_resolver_prev = True
                 desglose_antes[tipo][mot_prev] += 1
+            if not r and not parece_nombre_propio(e["valor"]):
+                # sin CI ni fuzzy y con forma de texto, no de nombre: se descarta (no va a HITL). Si hay CI exacta se resuelve igual
+                personas["total"] -= 1
+                texto_libre["entidades_PER_descartadas_no_parece_nombre"] += 1
+                continue
             if r:
                 personas["resueltas_" + r["fuente"]] += 1
                 niveles[det["nivel"]] += 1
@@ -259,6 +290,7 @@ def main():
         "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {k: dict(v) for k, v in desglose_despues.items()},
         "personas_resueltas_por_nivel": dict(niveles),
         "correos_filtrados_como_no_nombre": correos,
+        "texto_libre": dict(texto_libre),
         "personas_por_fk_estado": {k: dict(v) for k, v in fk_estado.items()},
         "distribucion_bandas_sin_regla_personas": dist(bandas["pre"]),
         "distribucion_bandas_con_regla_personas_previa_umbral_085": dist(bandas["prev"]),

@@ -9,12 +9,12 @@
   },
   "carga_final": {
     "directo": {
-      "conteo": 1121,
-      "porcentaje": 80.82
+      "conteo": 1381,
+      "porcentaje": 99.57
     },
     "hitl": {
-      "conteo": 266,
-      "porcentaje": 19.18
+      "conteo": 6,
+      "porcentaje": 0.43
     },
     "staging": {
       "conteo": 0,
@@ -22,11 +22,11 @@
     }
   },
   "personas": {
-    "total": 3587,
+    "total": 3006,
     "resueltas_CI_EXACTA": 2378,
     "resueltas_FUZZY": 127,
-    "nuevos_estado_C": 503,
-    "sin_coincidencia_HITL": 579
+    "nuevos_estado_C": 498,
+    "sin_coincidencia_HITL": 3
   },
   "personas_por_fk_estado": {
     "estudiante": {
@@ -34,27 +34,28 @@
       "B": 127
     },
     "docente": {
-      "C": 503
+      "C": 498
     }
   },
   "hitl_personas_por_motivo": {
     "estudiante": {
-      "sin_identidad_un_token": 122,
-      "empate": 3,
-      "no_parece_nombre_de_persona": 63
+      "empate": 3
     },
-    "docente": {
-      "sin_identidad_un_token": 240,
-      "no_parece_nombre_de_persona": 151
-    }
+    "docente": {}
   },
   "correos_filtrados": {
     "entidades": 139,
     "registros": 139
   },
+  "texto_libre": {
+    "comentarios_en_columnas_de_texto_libre": 87,
+    "registros_con_comentarios": 87,
+    "entidades_PER_descartadas_no_parece_nombre": 494,
+    "entidades_excluidas_por_columna_de_comentario": 87
+  },
   "KPI_10a_todas": 0.9618,
   "KPI_10b_solo_BETO": 0.9209,
-  "KPI_11_directo_final_pct": 80.82,
+  "KPI_11_directo_final_pct": 99.57,
   "conteos_fuente_resolucion": {
     "CI_EXACTA": 1850,
     "ENCABEZADO": 3079,

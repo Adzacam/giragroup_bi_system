@@ -15,7 +15,7 @@ out = {
     "carga_final": l["distribucion_bandas_con_regla_personas"],
     "personas": l["personas"], "personas_por_fk_estado": l["personas_por_fk_estado"],
     "hitl_personas_por_motivo": l["personas_hitl_desglose_bloqueo_escalonado_umbral_092"],
-    "correos_filtrados": l["correos_filtrados_como_no_nombre"],
+    "correos_filtrados": l["correos_filtrados_como_no_nombre"], "texto_libre": l.get("texto_libre"),
     "KPI_10a_todas": l["kpis"]["KPI_10a_media_todas_las_entidades"], "KPI_10b_solo_BETO": l["kpis"]["KPI_10b_media_solo_entidades_BETO"],
     "KPI_11_directo_final_pct": l["kpis"]["KPI_11_directo_con_regla_personas_pct"],
     "conteos_fuente_resolucion": l["conteos_fuente_resolucion"],
