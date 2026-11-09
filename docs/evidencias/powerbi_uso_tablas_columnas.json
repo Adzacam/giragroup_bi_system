@@ -1,0 +1,140 @@
+{
+ "uploads/powerbi/giragroup_cmi_v1.pbix": {
+  "columnas": {
+   "Gestiones": [
+    "gestion"
+   ],
+   "Perspectivas": [
+    "codigo",
+    "nombre"
+   ],
+   "Scorecard": [
+    "codigo",
+    "nombre"
+   ],
+   "MetasMensual": [
+    "fecha_mes"
+   ],
+   "CarteraEstado": [
+    "deuda_bs",
+    "estado_cartera"
+   ],
+   "DataOpsDocumento": [
+    "fecha",
+    "nombre_archivo",
+    "tipo_fuente"
+   ],
+   "RiesgoEstudiante": [
+    "nivel_prioridad",
+    "programa"
+   ]
+  },
+  "medidas": {
+   "IndicePerspectiva": [
+    "Críticos",
+    "En alerta",
+    "En meta",
+    "Evaluados Texto",
+    "Indice Color",
+    "Indice Texto",
+    "Objetivo",
+    "Sin evaluar",
+    "Titulo Gestion"
+   ],
+   "Scorecard": [
+    "Avance Meta",
+    "Estado Color",
+    "Estado Icono",
+    "Meta Texto",
+    "Tendencia Color",
+    "Tendencia Texto",
+    "Valor Anterior Texto",
+    "Valor Texto"
+   ],
+   "MetasMensual": [
+    "Ejecutado Año Anterior Bs",
+    "Ejecutado Bs",
+    "Meta Bs"
+   ],
+   "DataOpsDocumento": [
+    "Consolidado directo",
+    "Pendientes",
+    "Registros",
+    "Revisión humana"
+   ],
+   "RiesgoEstudiante": [
+    "Estudiantes",
+    "Prioridad crítica"
+   ]
+  }
+ },
+ "powerbi/dashboards/giragroup_cmi.pbix": {
+  "columnas": {
+   "Gestiones": [
+    "Gestion Vista"
+   ],
+   "Perspectivas": [
+    "codigo",
+    "nombre"
+   ],
+   "CarteraEstado": [
+    "deuda_bs",
+    "estado_cartera"
+   ],
+   "Scorecard": [
+    "codigo",
+    "nombre"
+   ],
+   "MetasMensual": [
+    "fecha_mes"
+   ],
+   "DataOpsDocumento": [
+    "fecha",
+    "nombre_archivo",
+    "tipo_fuente"
+   ],
+   "RiesgoEstudiante": [
+    "nivel_prioridad",
+    "programa"
+   ]
+  },
+  "medidas": {
+   "IndicePerspectiva": [
+    "Críticos",
+    "En alerta",
+    "En meta",
+    "Evaluados Texto",
+    "Indice Color",
+    "Indice Texto",
+    "Objetivo estratégico",
+    "Sin evaluar",
+    "Titulo Gestion"
+   ],
+   "Scorecard": [
+    "Avance Meta",
+    "Estado Color",
+    "Estado Icono",
+    "Meta Texto",
+    "Tendencia Color",
+    "Tendencia Texto",
+    "Valor Anterior Texto",
+    "Valor Texto"
+   ],
+   "MetasMensual": [
+    "Ejecutado Año Anterior Bs",
+    "Ejecutado Bs",
+    "Meta Bs"
+   ],
+   "DataOpsDocumento": [
+    "Consolidado directo",
+    "Pendientes",
+    "Revisión humana",
+    "Total registros"
+   ],
+   "RiesgoEstudiante": [
+    "Estudiantes",
+    "Prioridad crítica"
+   ]
+  }
+ }
+}
