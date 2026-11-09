@@ -23,4 +23,6 @@ class PipelineExecutionResponse(BaseModel):
     requiere_revision_humana: bool
     tiempo_total_ms: float
     tiempos_etapa_ms: Dict[str, float] = {}
+    lineas_beto: int = 0
+    lineas_resueltas_por_reglas: int = 0
     detalles_carga: List[Dict[str, Any]] = []

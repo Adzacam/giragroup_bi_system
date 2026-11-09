@@ -25,13 +25,14 @@ from models.staging_registro import StagingRegistroCrudo
 from services.ingestion_service import IngestionService
 from services.dw_loader import DWLoaderService
 from services import cache_consultas
-from services.confianza_service import obtener_indices, banda_de
+from services.confianza_service import obtener_indices, indices_en_cache, banda_de
 from services.extraccion_por_encabezado import (
     parsear_fecha,
     campos_por_encabezado, es_encabezado_metadato_pos, estudiante_de_fila, fecha_de_fila, registros_academicos, registros_evaluacion, registros_rentabilidad, registros_costo_programa, registros_asignacion_docente, registros_techo_convenio,
     factores_escala_por_programa,
 )
 from models.staging_entidad import StagingEntidadNoResuelta
+from models.log_inconsistencia import LogInconsistencia
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
 from schemas.pipeline_schemas import PipelineExecutionResponse
 
@@ -161,6 +162,80 @@ def _resolver_fila_sin_encabezados(
     return res
 
 
+
+def _resolver_linea(categoria, celdas, campos, campos_fin, factores_escala):
+    """Resoluciones de una línea por las reglas (cascada por encabezado). Devuelve (resoluciones, entidades, por_reglas):
+    por_reglas es True si las reglas dejaron resueltos los campos que necesita el hecho (no hace falta BETO)."""
+    base = {
+        "categoria": categoria,
+        "nota_final": None,
+        "asistencia_pct": None,
+        "incumplimiento_actividades_pct": None,
+        "monto_deuda": None,
+        "cuotas_impagas": None,
+        "estado_cartera": "Vigente",
+        "nivel_confianza_ia": None,
+        "estudiante": None,
+        "docente": None,
+        "modulo": None,
+        "fecha": fecha_de_fila(campos, categoria) if campos else None,
+    }
+    entidades_fila = []
+    resoluciones_lista = []
+    por_reglas = False
+    if campos_fin is not None:
+        fila_fin = _resolver_fila_financiera(campos_fin)
+        resoluciones_lista.append({**base, **fila_fin, "estado_cartera": None})  # el loader deriva la cartera
+        if fila_fin["estudiante"]:
+            entidades_fila.append({"tipo": "CI", "valor": fila_fin["estudiante"]["fk_resolucion"]["ci"]})
+        por_reglas = bool(fila_fin["estudiante"])
+    elif campos and categoria == "academico":
+        for reg in registros_asignacion_docente(campos):
+            reg.pop("requiere_revision")
+            resoluciones_lista.append({**base, **reg, "_revision_fila": False})
+        for reg in registros_academicos(campos, factores_escala):
+            revision_fila = reg.pop("requiere_revision")
+            resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
+            if reg["estudiante"]:
+                entidades_fila.append({"tipo": "ESTUDIANTE", "valor": reg["estudiante"]["valor_extraido"]})
+        por_reglas = bool(entidades_fila)
+    elif campos and categoria == "rentabilidad" and (
+        registros_rentabilidad(campos) or registros_costo_programa(campos) or registros_techo_convenio(campos)
+    ):
+        for reg in (registros_rentabilidad(campos) or registros_costo_programa(campos)
+                    or registros_techo_convenio(campos)):
+            revision_fila = reg.pop("requiere_revision", False)
+            resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
+        por_reglas = True
+    elif campos and categoria == "evaluacion_docente":
+        for reg in registros_evaluacion(campos):
+            revision_fila = reg.pop("requiere_revision")
+            resoluciones_lista.append({
+                **base, **reg, "estudiante": reg["estudiante"] or {},
+                "anonima": reg["estudiante"] is None, "_revision_fila": revision_fila,
+            })
+            if reg["estudiante"]:
+                entidades_fila.append({"tipo": "ESTUDIANTE", "valor": reg["estudiante"]["valor_extraido"]})
+        por_reglas = bool(resoluciones_lista) and any(r.get("modulo") or r.get("programa") for r in resoluciones_lista)
+    elif campos and categoria in ("marketing", "admision") and registros_techo_convenio(campos):
+        for reg in registros_techo_convenio(campos):  # convenio en un documento clasificado como marketing
+            revision_fila = reg.pop("requiere_revision", False)
+            resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
+        por_reglas = True
+    elif campos and (categoria == "admision" or (categoria == "marketing" and "MARCA TEMPORAL" in campos)):
+        # Inscripción (TBL_INSCRITOS): MARCA TEMPORAL es la fecha del inscrito y NUMEROPROYECTO el programa
+        resoluciones_lista.append({
+            **base, "estudiante": estudiante_de_fila(campos),
+            "fecha": parsear_fecha((campos.get("MARCA TEMPORAL") or "")[:10]) or base["fecha"],
+            "programa": {"valor_extraido": campos.get("NOMBRE DEL PROGRAMA"),
+                         "metadata": {"pos_canonico": campos.get("NUMEROPROYECTO")}},
+        })
+        por_reglas = bool(resoluciones_lista[0]["estudiante"]) or bool(campos.get("NUMEROPROYECTO"))
+    else:
+        resoluciones_lista.append(_resolver_fila_sin_encabezados(celdas, categoria, base, entidades_fila))
+    return resoluciones_lista, entidades_fila, por_reglas
+
+
 @router.post(
     "/process",
     response_model=PipelineExecutionResponse,
@@ -237,6 +312,8 @@ def process_pipeline(
     total_entidades = 0
     confianzas = []
     cargados_revision = 0
+    beto_lineas = 0
+    reglas_lineas = 0
 
     # Importes tolerantes para PLN / Calidad
     try:
@@ -271,18 +348,45 @@ def process_pipeline(
         factores_escala = factores_escala_por_programa(
             [campos_por_encabezado(c) for _, c, _ in lineas]) if categoria == "academico" else None
 
-        # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
-        t_b0 = time.perf_counter()
-        indices = obtener_indices([l[0] for l in lineas])
-        t_beto_ms += (time.perf_counter() - t_b0) * 1000.0
+        # Pasada 1 (reglas): cada línea se resuelve con la cascada de reglas antes de consultar BETO
+        preparadas = []
+        for linea_str, celdas, campos_fin in lineas:
+            campos = campos_por_encabezado(celdas)
+            res_l, ents_l, por_reglas = _resolver_linea(categoria, celdas, campos, campos_fin, factores_escala)
+            preparadas.append((linea_str, celdas, campos_fin, campos, res_l, ents_l, por_reglas))
 
-        for k_fila, ((linea_str, celdas, campos_fin), indice) in enumerate(zip(lineas, indices)):
+        # Pasada 2 (BETO): solo las líneas que las reglas no resolvieron; las demás reutilizan el índice de la caché si existe
+        # (nunca se calcula uno nuevo para ellas). Banda: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
+        t_b0 = time.perf_counter()
+        indices = [None] * len(lineas)
+        necesitan = [k for k, pr in enumerate(preparadas) if not pr[6]]
+        if necesitan:
+            for k, v in zip(necesitan, obtener_indices([lineas[k][0] for k in necesitan])):
+                indices[k] = v
+        resueltas = [k for k, pr in enumerate(preparadas) if pr[6]]
+        if resueltas:
+            for k, v in zip(resueltas, indices_en_cache([lineas[k][0] for k in resueltas])):
+                indices[k] = v
+        t_beto_ms += (time.perf_counter() - t_b0) * 1000.0
+        beto_lineas += len(necesitan)
+        reglas_lineas += len(resueltas)
+
+        for k_fila, ((linea_str, celdas, campos_fin, campos, resoluciones_lista, entidades_fila, por_reglas), indice) in enumerate(zip(preparadas, indices)):
             # Clave de idempotencia por fila de origen: hash de archivo + hoja + fila + contenido
             clave_origen = hashlib.sha256(
                 f"{hash_archivo}|{b.hoja}|{(b.fila_inicio or 0) + k_fila}|{linea_str}".encode("utf-8")).hexdigest()
-            banda = banda_de(indice)
             if indice is not None:
                 confianzas.append(indice)
+            if por_reglas:
+                # Las reglas resolvieron los campos que necesita el hecho: se carga; la baja confianza (caché) queda en el log
+                banda = "CONSOLIDADO"
+                if indice is not None and indice < 0.60:
+                    db.add(LogInconsistencia(
+                        id_documento=doc_id, fila_origen=(b.fila_inicio or 0) + k_fila, campo_afectado="indice_confianza_beto",
+                        valor_recibido=str(indice), valor_esperado=">= 0.60", tipo_regla="BAJA_CONFIANZA_CARGADA", severidad="BAJA",
+                        estado_resolucion="REGISTRADO", descripcion="Campos resueltos por reglas; el hecho se cargó pese al índice BETO bajo"))
+            else:
+                banda = banda_de(indice)
             if banda == BANDA_STAGING:
                 db.add(StagingEntidadNoResuelta(
                     id_documento=doc_id,
@@ -296,69 +400,8 @@ def process_pipeline(
                 staged_entidades += 1
                 continue
             en_revision = banda == BANDA_REVISION
-
-            campos = campos_por_encabezado(celdas)
-            base = {
-                "categoria": categoria,
-                "nota_final": None,
-                "asistencia_pct": None,
-                "incumplimiento_actividades_pct": None,
-                "monto_deuda": None,
-                "cuotas_impagas": None,
-                "estado_cartera": "Vigente",
-                "nivel_confianza_ia": indice,
-                "estudiante": None,
-                "docente": None,
-                "modulo": None,
-                "fecha": fecha_de_fila(campos, categoria) if campos else None,
-            }
-            entidades_fila = []
-            resoluciones_lista = []
-
-            if campos_fin is not None:
-                fila_fin = _resolver_fila_financiera(campos_fin)
-                resoluciones_lista.append({**base, **fila_fin, "estado_cartera": None})  # el loader deriva la cartera
-                if fila_fin["estudiante"]:
-                    entidades_fila.append({"tipo": "CI", "valor": fila_fin["estudiante"]["fk_resolucion"]["ci"]})
-            elif campos and categoria == "academico":
-                for reg in registros_asignacion_docente(campos):
-                    reg.pop("requiere_revision")
-                    resoluciones_lista.append({**base, **reg, "_revision_fila": False})
-                for reg in registros_academicos(campos, factores_escala):
-                    revision_fila = reg.pop("requiere_revision")
-                    resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
-                    if reg["estudiante"]:
-                        entidades_fila.append({"tipo": "ESTUDIANTE", "valor": reg["estudiante"]["valor_extraido"]})
-            elif campos and categoria == "rentabilidad" and (
-                registros_rentabilidad(campos) or registros_costo_programa(campos) or registros_techo_convenio(campos)
-            ):
-                for reg in (registros_rentabilidad(campos) or registros_costo_programa(campos)
-                            or registros_techo_convenio(campos)):
-                    revision_fila = reg.pop("requiere_revision", False)
-                    resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
-            elif campos and categoria == "evaluacion_docente":
-                for reg in registros_evaluacion(campos):
-                    revision_fila = reg.pop("requiere_revision")
-                    resoluciones_lista.append({
-                        **base, **reg, "estudiante": reg["estudiante"] or {},
-                        "anonima": reg["estudiante"] is None, "_revision_fila": revision_fila,
-                    })
-                    if reg["estudiante"]:
-                        entidades_fila.append({"tipo": "ESTUDIANTE", "valor": reg["estudiante"]["valor_extraido"]})
-            elif campos and categoria in ("marketing", "admision") and registros_techo_convenio(campos):
-                for reg in registros_techo_convenio(campos):  # convenio en un documento clasificado como marketing
-                    revision_fila = reg.pop("requiere_revision", False)
-                    resoluciones_lista.append({**base, **reg, "_revision_fila": revision_fila})
-            elif campos and (categoria == "admision" or (categoria == "marketing" and "MARCA TEMPORAL" in campos)):
-                # Inscripción (TBL_INSCRITOS): MARCA TEMPORAL es la fecha del inscrito y NUMEROPROYECTO el programa
-                resoluciones_lista.append({
-                    **base, "estudiante": estudiante_de_fila(campos),
-                    "fecha": parsear_fecha((campos.get("MARCA TEMPORAL") or "")[:10]) or base["fecha"],
-                    "programa": {"valor_extraido": campos.get("NOMBRE DEL PROGRAMA"),
-                                 "metadata": {"pos_canonico": campos.get("NUMEROPROYECTO")}},
-                })
-            else:
-                resoluciones_lista.append(_resolver_fila_sin_encabezados(celdas, categoria, base, entidades_fila))
+            for r_l in resoluciones_lista:
+                r_l["nivel_confianza_ia"] = indice
 
             total_entidades += len(entidades_fila)
             for resoluciones_fila in resoluciones_lista:
@@ -406,5 +449,7 @@ def process_pipeline(
             "lectura_e_ingesta": round(t_lectura_ms, 1), "beto": round(t_beto_ms, 1), "carga_dw": round(t_carga_ms, 1),
             "reglas_y_resto": round(tiempo_total_ms - t_lectura_ms - t_beto_ms - t_carga_ms, 1),
         },
+        "lineas_beto": beto_lineas,
+        "lineas_resueltas_por_reglas": reglas_lineas,
         "detalles_carga": detalles_carga[:20]  # Primeros 20 para no sobrecargar el payload
     }

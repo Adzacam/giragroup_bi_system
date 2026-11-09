@@ -127,3 +127,15 @@ def obtener_indices(lineas: List[str], al_avanzar=None) -> List[Optional[float]]
 def banda_de(indice: Optional[float]) -> str:
     """Banda del registro; sin índice (servicio caído) se trata como revisión, no como consolidado."""
     return clasificar_banda(indice) if indice is not None else BANDA_REVISION
+
+
+def indices_en_cache(lineas: List[str]) -> List[Optional[float]]:
+    """Índice ya calculado de cada línea (cache_indice_beto) o None: nunca llama a BETO. Para líneas que las reglas ya resolvieron."""
+    textos = [texto_para_indice(l) for l in lineas]
+    hashes = [hashlib.sha256(t.encode("utf-8")).hexdigest() for t in textos]
+    try:
+        en_cache = _leer_cache(sorted(set(hashes)))
+    except Exception as e:
+        logger.warning(f"Caché de índices BETO no disponible ({e}).")
+        return [None] * len(lineas)
+    return [en_cache.get(h) for h in hashes]

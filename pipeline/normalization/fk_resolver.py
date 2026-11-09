@@ -18,6 +18,9 @@ from pipeline.config import DATA_DIR, UMBRAL_CONFIANZA_ALTO, UMBRAL_CONFIANZA_BA
 from pipeline.normalization.fuzzy_normalizer import FuzzyNormalizer
 
 
+_PADRON_CACHE: dict = {}
+
+
 class FKResolver:
     """
     Resolvedor de llaves foráneas de estudiantes y participantes.
@@ -28,7 +31,20 @@ class FKResolver:
         self.ruta_inscritos = ruta_inscritos or (DATA_DIR / "TBL_INSCRITOS.xlsx")
         self.padron_nombres: Dict[str, str] = {}  # nombre_limpio -> ci
         self.nombres_originales: Dict[str, str] = {}  # nombre_limpio -> nombre_original
+        # El padrón (15 mil filas de un xlsx) se leía en cada /pipeline/process (~3 s por archivo): se reutiliza mientras
+        # el archivo no cambie (ruta + fecha de modificación + tamaño)
+        try:
+            st = self.ruta_inscritos.stat()
+            clave = (str(self.ruta_inscritos), st.st_mtime_ns, st.st_size)
+        except OSError:
+            clave = None
+        if clave is not None and clave in _PADRON_CACHE:
+            self.padron_nombres, self.nombres_originales = _PADRON_CACHE[clave]
+            return
         self._cargar_padron()
+        if clave is not None:
+            _PADRON_CACHE.clear()
+            _PADRON_CACHE[clave] = (self.padron_nombres, self.nombres_originales)
 
     def _cargar_padron(self):
         """Carga el padrón de TBL_INSCRITOS en memoria mapeando nombre a CI."""

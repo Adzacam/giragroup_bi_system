@@ -6,18 +6,18 @@ Tarea 5: tiempo de un ciclo mensual típico (filas de UN mes de cada archivo, no
    y suma tiempos por etapa (response.tiempos_etapa_ms). Escribe docs/evidencias/tiempos_ciclo_mensual.json
 Uso: DATABASE_URL=<clon> python scripts/medir_ciclo_mensual.py [AAAA-MM]
 """
-import json, sys, time, re
+import json, os, sys, time, re
 from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path[:0] = [str(ROOT), str(ROOT / "backend")]
 MES = sys.argv[1] if len(sys.argv) > 1 else "2026-03"
-SALIDA = ROOT / "docs" / "evidencias" / "ciclo_mensual_slices"
+SALIDA = Path(os.environ.get("CICLO_SLICES") or ROOT / "docs" / "evidencias" / "ciclo_mensual_slices")
 SALIDA.mkdir(parents=True, exist_ok=True)
 (ROOT / "docs" / "evidencias").mkdir(parents=True, exist_ok=True)
 EXCLUIR = ()  # sin exclusiones: se mide también [BBDD] ANTIGUO RESPUESTAS (procesado al final)
-FILAS_SIN_FECHA = 300  # hojas grandes sin columna de fecha: primeras N filas como muestra del ciclo
+FILAS_SIN_FECHA = int(os.environ.get("CICLO_FILAS_SIN_FECHA", "300")) or None  # 0 = hoja completa; # hojas grandes sin columna de fecha: primeras N filas como muestra del ciclo
 
 
 def col_fecha(df):
@@ -62,8 +62,8 @@ def construir_slices():
                 out[h] = df
                 det.append({"hoja": h, "columna_fecha": None, "mes": None, "filas": len(df), "completa": True})
             else:
-                out[h] = df.head(FILAS_SIN_FECHA)
-                det.append({"hoja": h, "columna_fecha": None, "mes": None, "filas": min(len(df), FILAS_SIN_FECHA), "muestra_primeras_filas": True})
+                out[h] = df.head(FILAS_SIN_FECHA) if FILAS_SIN_FECHA else df
+                det.append({"hoja": h, "columna_fecha": None, "mes": None, "filas": min(len(df), FILAS_SIN_FECHA or len(df)), "muestra_primeras_filas": bool(FILAS_SIN_FECHA)})
         if out:
             dest = SALIDA / f.name
             with pd.ExcelWriter(dest) as w:

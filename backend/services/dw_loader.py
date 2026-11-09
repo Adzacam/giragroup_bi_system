@@ -217,6 +217,13 @@ class DWLoaderService:
         self._tiempos: set = set()
         self._docente_por_modulo: Dict[int, Optional[int]] = {}
         self._est_nombres: Optional[list] = None  # [(id_estudiante, nombre)] cargado una vez por instancia
+        self._mod_por_nombre: Optional[Dict[str, int]] = None  # nombre normalizado (minúsculas) -> id_modulo, una carga por instancia
+        self._mod_nombre_id: Dict[str, int] = {}  # nombre exacto -> id_modulo (para el fuzzy)
+        self._memo_modulo_nombre: Dict[str, Optional[int]] = {}
+        self._cache_base_programa: Dict[Any, Optional[str]] = {}
+        self._cache_docente_programa: Dict[Any, Optional[int]] = {}
+        self._cache_tiempo_programa: Dict[Any, Optional[int]] = {}
+        self._cache_estudiante: Dict[Any, Tuple[Optional[int], str]] = {}
 
     def _candidatos_estudiante_fuzzy(self, nombre_clean: str):
         """[(DimEstudiante, ratio)] con token_sort_ratio >= 90, mayor primero. La lista de nombres se carga una sola vez
@@ -288,9 +295,11 @@ class DWLoaderService:
         """'POS-5887' de un módulo 'POS-5887-M01' (o del propio programa); None si no se sabe."""
         if not id_modulo:
             return None
-        pos = self.db.query(DimModulo.pos_code).filter(DimModulo.id_modulo == id_modulo).scalar()
-        m = re.match(r"(POS-\d+)", pos or "")
-        return m.group(1) if m else None
+        if id_modulo not in self._cache_base_programa:
+            pos = self.db.query(DimModulo.pos_code).filter(DimModulo.id_modulo == id_modulo).scalar()
+            m = re.match(r"(POS-\d+)", pos or "")
+            self._cache_base_programa[id_modulo] = m.group(1) if m else None
+        return self._cache_base_programa[id_modulo]
 
     def _docente_del_programa(self, id_modulo: Optional[int]) -> Optional[int]:
         """Docente de un programa cuando la encuesta no nombra módulo ni docente: el único de bridge_modulo_docente en
@@ -298,19 +307,23 @@ class DWLoaderService:
         base = self._base_programa(id_modulo)
         if not base:
             return None
-        docs = {r[0] for r in self.db.query(BridgeModuloDocente.id_docente).join(
-            DimModulo, BridgeModuloDocente.id_modulo == DimModulo.id_modulo).filter(
-            DimModulo.pos_code.like(f"{base}-M%")).all()}
-        return next(iter(docs)) if len(docs) == 1 else None
+        if base not in self._cache_docente_programa:
+            docs = {r[0] for r in self.db.query(BridgeModuloDocente.id_docente).join(
+                DimModulo, BridgeModuloDocente.id_modulo == DimModulo.id_modulo).filter(
+                DimModulo.pos_code.like(f"{base}-M%")).all()}
+            self._cache_docente_programa[base] = next(iter(docs)) if len(docs) == 1 else None
+        return self._cache_docente_programa[base]
 
     def _tiempo_del_programa(self, id_modulo: Optional[int]) -> Optional[int]:
         """Último período con actas del programa (fact_rendimiento_academico): fecha de apoyo para encuestas sin fecha."""
         base = self._base_programa(id_modulo)
         if not base:
             return None
-        return self.db.query(func.max(FactRendimientoAcademico.id_tiempo)).join(
-            DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo).filter(
-            DimModulo.pos_code.like(f"{base}%")).scalar()
+        if base not in self._cache_tiempo_programa:
+            self._cache_tiempo_programa[base] = self.db.query(func.max(FactRendimientoAcademico.id_tiempo)).join(
+                DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo).filter(
+                DimModulo.pos_code.like(f"{base}%")).scalar()
+        return self._cache_tiempo_programa[base]
 
     def _resolver_id_institucion(self, institucion: Optional[str]) -> Optional[int]:
         if not institucion:
@@ -692,22 +705,22 @@ class DWLoaderService:
                 self.db.add(nuevo_mod)
                 self.db.flush()
                 self._modulo_por_pos[clave_pos] = nuevo_mod.id_modulo
+                self._registrar_nombre_modulo(nuevo_mod.id_modulo, nuevo_mod.nombre_modulo)
                 return nuevo_mod.id_modulo
 
         if nombre_modulo:
             clean_name = nombre_modulo.strip()
-            mod = self.db.query(DimModulo).filter(
-                func.lower(DimModulo.nombre_modulo) == clean_name.lower()
-            ).first()
-            if mod:
-                return mod.id_modulo
-
-            modulos = self.db.query(DimModulo).all()
-            if modulos:
-                mod_map = {m.nombre_modulo: m for m in modulos if m.nombre_modulo}
-                mejor_cand, score_fuzz = _fuzzy_best_match(clean_name, list(mod_map.keys()))
+            clave_nom = clean_name.lower()
+            if clave_nom not in self._memo_modulo_nombre:  # una consulta por nombre distinto y por instancia
+                mod = self.db.query(DimModulo).filter(func.lower(DimModulo.nombre_modulo) == clave_nom).first()
+                self._memo_modulo_nombre[clave_nom] = mod.id_modulo if mod else None
+            if self._memo_modulo_nombre[clave_nom]:
+                return self._memo_modulo_nombre[clave_nom]
+            self._cargar_nombres_modulo()
+            if self._mod_nombre_id:
+                mejor_cand, score_fuzz = _fuzzy_best_match(clean_name, list(self._mod_nombre_id.keys()))
                 if mejor_cand and score_fuzz is not None and score_fuzz >= 80.0:
-                    return mod_map[mejor_cand].id_modulo
+                    return self._mod_nombre_id[mejor_cand]
 
             id_inst = self._resolver_id_institucion(institucion)
             nuevo_mod = DimModulo(
@@ -718,9 +731,27 @@ class DWLoaderService:
             )
             self.db.add(nuevo_mod)
             self.db.flush()
+            self._registrar_nombre_modulo(nuevo_mod.id_modulo, clean_name)
             return nuevo_mod.id_modulo
 
         return None
+
+    def _cargar_nombres_modulo(self) -> None:
+        """Una sola consulta de (id, nombre) por instancia: antes cada módulo por nombre traía todos los DimModulo como objetos ORM."""
+        if self._mod_por_nombre is not None:
+            return
+        self._mod_por_nombre, self._mod_nombre_id = {}, {}
+        for id_m, nom in self.db.query(DimModulo.id_modulo, DimModulo.nombre_modulo).order_by(DimModulo.id_modulo).all():
+            if nom:
+                self._mod_por_nombre.setdefault(nom.strip().lower(), id_m)
+                self._mod_nombre_id[nom] = id_m
+
+    def _registrar_nombre_modulo(self, id_m: int, nombre: Optional[str]) -> None:
+        if nombre:
+            self._memo_modulo_nombre[nombre.strip().lower()] = self._memo_modulo_nombre.get(nombre.strip().lower()) or id_m
+            if self._mod_por_nombre is not None:
+                self._mod_por_nombre.setdefault(nombre.strip().lower(), id_m)
+                self._mod_nombre_id[nombre] = id_m
 
     def _docente_unico_del_modulo(self, id_modulo: Optional[int]) -> Optional[int]:
         """
@@ -762,6 +793,7 @@ class DWLoaderService:
         if not pos_code or not nombre_docente:
             return {"tipo": "asignacion_docente", "status": "staged", "motivo": "Asignación sin POS o sin docente"}
         self._docente_por_modulo.clear()  # la asignación nueva puede cambiar el docente único de un módulo
+        self._cache_docente_programa.clear()
         nombre_real = resoluciones.get("nombre_modulo_real")
         id_mod = self.resolver_o_crear_modulo(
             nombre_real or f"{pos_code}", pos_code=pos_code, doc_id=doc_id, institucion=institucion,
@@ -995,17 +1027,24 @@ class DWLoaderService:
                     break
 
         # 2. Resolver FKs
-        id_est, fk_estado_est = self.resolver_o_crear_estudiante(
-            ci=ci_est,
-            nombre=nombre_est,
-            doc_id=doc_id,
-            confianza_ia=confianza_ia,
-            institucion=institucion,
-            programa=nombre_programa or nombre_modulo,
-            forzar_resolucion_humana=es_resuelto_humano,
-            modulo=nombre_modulo,
-            fecha=fecha_encontrada,
-        )
+        # Una fila de encuesta genera ~15 registros con el mismo estudiante: la misma entrada da el mismo resultado
+        clave_est = (ci_est, nombre_est, doc_id, confianza_ia, institucion, nombre_programa or nombre_modulo,
+                     es_resuelto_humano, nombre_modulo, str(fecha_encontrada))
+        if clave_est in self._cache_estudiante:
+            id_est, fk_estado_est = self._cache_estudiante[clave_est]
+        else:
+            id_est, fk_estado_est = self.resolver_o_crear_estudiante(
+                ci=ci_est,
+                nombre=nombre_est,
+                doc_id=doc_id,
+                confianza_ia=confianza_ia,
+                institucion=institucion,
+                programa=nombre_programa or nombre_modulo,
+                forzar_resolucion_humana=es_resuelto_humano,
+                modulo=nombre_modulo,
+                fecha=fecha_encontrada,
+            )
+            self._cache_estudiante[clave_est] = (id_est, fk_estado_est)
         id_tiempo = self.resolver_o_crear_tiempo(fecha_encontrada)
         if id_tiempo is None:
             requiere_rev = True  # hecho sin fecha: no se le asigna un período inventado
