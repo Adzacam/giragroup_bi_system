@@ -44,9 +44,11 @@ def test_con_004_aplicada_no_se_reaplica_003():
     tarea = "008_dataops_tarea.sql"
     cache = "009_cache_indice_beto.sql"
     ingesta = "010_dataops_tarea_ingesta.sql"
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache, ingesta]
-    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache, ingesta]
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, alineacion, cmi, pbi, tarea, cache, ingesta}) == []
+    drops = "011_eliminar_tablas_sin_uso.sql"  # requisito nuevo: la lista de arranque incluye 011 y 012
+    revision = "012_evaluacion_revision_y_fuente_rentabilidad.sql"
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision]
+    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision]
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision}) == []
 
 
 def test_capa_cmi_no_pisa_la_configuracion_editada():

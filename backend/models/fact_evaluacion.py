@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Numeric, String, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, Numeric, String, ForeignKey
 from core.database import Base
 
 
@@ -16,3 +16,6 @@ class FactEvaluacionDocente(Base):
     tipo_pregunta = Column(String(20))             # DOCENTE / INSTITUCIONAL / NPS
     escala_max = Column(Integer)                   # 5 (Likert) o 10 (NPS); el promedio se lleva a 1-5
     clave_respuesta = Column(String(64), unique=True, index=True)  # idempotencia de la carga
+    id_documento = Column(Integer, ForeignKey("dim_origen_documental.id_documento", ondelete="SET NULL"))
+    requiere_revision = Column(Boolean, default=False)  # docente sin vincular o sin fecha: entra a la bandeja HITL
+    motivo_revision = Column(String(300))

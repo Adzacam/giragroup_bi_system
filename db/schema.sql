@@ -126,15 +126,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_dim_estudiante_ci_numero
 ON public.dim_estudiante (ci_numero) 
 WHERE deprecado = FALSE AND ci_numero IS NOT NULL AND length(ci_numero) >= 5;
 
--- Catálogos canónicos de docentes y módulos (migración 002): dim_docente y dim_modulo los referencian
-CREATE TABLE public.cat_docente (
-    id_docente SERIAL PRIMARY KEY,
-    codigo_docente VARCHAR(50),
-    nombre_canonico VARCHAR(200) NOT NULL,
-    area VARCHAR(100) DEFAULT 'Académico',
-    nombre_completo VARCHAR(200)
-);
-
+-- Catálogo canónico de módulos (migración 002): dim_modulo lo referencia (cat_docente se eliminó: migración 011)
 CREATE TABLE public.cat_modulo (
     id_modulo SERIAL PRIMARY KEY,
     codigo_modulo VARCHAR(50),
@@ -147,7 +139,6 @@ CREATE TABLE public.dim_docente (
     id_docente SERIAL PRIMARY KEY,
     nombre_completo VARCHAR(200) NOT NULL DEFAULT 'Docente Generico',
     area_especialidad VARCHAR(200) DEFAULT 'Generico',
-    id_cat_docente INT REFERENCES public.cat_docente(id_docente) ON DELETE SET NULL,
     fk_estado CHAR(1) DEFAULT 'A'  -- C: docente nuevo sin candidatos en la dimensión (auditable)
 );
 
@@ -273,7 +264,10 @@ CREATE TABLE public.fact_evaluacion_docente (
     comentario VARCHAR(1000),
     tipo_pregunta VARCHAR(20),
     escala_max INTEGER,
-    clave_respuesta VARCHAR(64) UNIQUE
+    clave_respuesta VARCHAR(64) UNIQUE,
+    id_documento INTEGER REFERENCES public.dim_origen_documental(id_documento) ON DELETE SET NULL,
+    requiere_revision BOOLEAN DEFAULT FALSE,
+    motivo_revision VARCHAR(300)
 );
 
 -- D. Marketing y Embudo Comercial
@@ -294,7 +288,8 @@ CREATE TABLE public.fact_rentabilidad (
     id_tiempo INTEGER REFERENCES public.dim_tiempo(id_tiempo) ON DELETE CASCADE,
     id_categoria INTEGER REFERENCES public.dim_categoria_financiera(id_categoria) ON DELETE CASCADE,
     monto_ejecutado NUMERIC(14, 2),
-    monto_meta NUMERIC(14, 2)
+    monto_meta NUMERIC(14, 2),
+    id_documento INTEGER REFERENCES public.dim_origen_documental(id_documento) ON DELETE SET NULL
 );
 
 -- E2. Costos por programa (grano: un POS; fact_rentabilidad es mensual por categoría)

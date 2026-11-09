@@ -1,0 +1,26 @@
+{
+  "antes": {
+    "total": 14234,
+    "docente_pregs": 11210,
+    "con_docente": 0,
+    "con_tiempo": 12264,
+    "en_revision": 0
+  },
+  "despues": {
+    "total": 14234,
+    "docente_pregs": 11210,
+    "con_docente": 0,
+    "con_tiempo": 12264,
+    "en_revision": 11210
+  },
+  "modulos_evaluados": 48,
+  "modulos_con_docente_unico": 0,
+  "modulos_con_periodo_del_programa": 1,
+  "pct_filas_docente_vinculadas": 0.0,
+  "pct_filas_con_tiempo": 86.16,
+  "casos_en_bandeja_(documento,modulo)": 48,
+  "motivos": {
+    "DOCENTE_SIN_VINCULAR": 9240,
+    "DOCENTE_SIN_VINCULAR, SIN_FECHA": 1970
+  }
+}

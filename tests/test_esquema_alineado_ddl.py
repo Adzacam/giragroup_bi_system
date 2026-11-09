@@ -69,11 +69,11 @@ def test_indices_declarados_en_ddl_y_en_005_coinciden():
     assert en_005 <= en_ddl, en_005 - en_ddl
 
 
-def test_ddl_declara_catalogos_de_docente_y_modulo_con_sus_fk():
-    """Sin cat_docente/cat_modulo en el DDL, las FK de dim_docente y dim_modulo no podían declararse."""
+def test_ddl_declara_catalogo_de_modulo_con_su_fk_y_ya_no_cat_docente():
+    """cat_modulo sigue en el DDL (FK de dim_modulo). Cambio de requisito: cat_docente (0 filas, sin uso) se eliminó con la
+    migración 011 y dim_docente ya no tiene id_cat_docente."""
     ddl = _sin_comentarios(DDL)
-    assert ddl.index("CREATE TABLE public.cat_docente") < ddl.index("CREATE TABLE public.dim_docente")
+    assert "CREATE TABLE public.cat_docente" not in ddl and "id_cat_docente" not in ddl
     assert ddl.index("CREATE TABLE public.cat_modulo") < ddl.index("CREATE TABLE public.dim_modulo")
-    assert "id_cat_docente INT REFERENCES public.cat_docente(id_docente) ON DELETE SET NULL" in ddl
     assert "id_cat_modulo INT REFERENCES public.cat_modulo(id_modulo) ON DELETE SET NULL" in ddl
     assert "'cat_docente', 'cat_modulo'" in _sin_comentarios(MIG_005)  # RLS y políticas también en esas tablas

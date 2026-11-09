@@ -237,6 +237,81 @@ class DWLoaderService:
                 out.append((e, round(ratio, 2)))
         return out
 
+    def _desempatar_homonimos(self, candidatos, ci, programa, modulo, fecha):
+        """Entre >=2 candidatos con el mismo nombre elige uno solo si, aplicando en orden CI parcial, programa, módulo y
+        mes del registro (cada criterio solo estrecha si algún candidato lo cumple), queda exactamente uno. Si no, None (HITL)."""
+        pool = [e for e, _ in candidatos]
+
+        def estrechar(pred):
+            nonlocal pool
+            sel = [e for e in pool if pred(e)]
+            if sel:
+                pool = sel
+
+        def norm(t):
+            return re.sub(r"[^a-z0-9]+", " ", unicodedata.normalize("NFD", str(t or "")).encode("ascii", "ignore").decode().lower()).strip()
+
+        digitos = re.sub(r"\D", "", ci or "") if ci and "TEMP" not in ci else ""
+        if len(digitos) >= 3:
+            estrechar(lambda e: bool(e.ci_numero) and (e.ci_numero.endswith(digitos) or e.ci_numero.startswith(digitos)))
+        if len(pool) > 1 and programa:
+            p = norm(programa)
+            estrechar(lambda e: bool(p) and bool(norm(e.programa_origen)) and (p in norm(e.programa_origen) or norm(e.programa_origen) in p))
+        ids = [e.id_estudiante for e in pool]
+        if len(pool) > 1 and modulo:
+            m = f"%{modulo.strip()}%"
+            con = {r[0] for r in self.db.query(FactRendimientoAcademico.id_estudiante).join(
+                DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo).filter(
+                FactRendimientoAcademico.id_estudiante.in_(ids), DimModulo.nombre_modulo.ilike(m)).all()}
+            estrechar(lambda e: e.id_estudiante in con)
+        periodo = str(fecha)[:7] if fecha and re.match(r"\d{4}-\d{2}", str(fecha)) else None
+        if len(pool) > 1 and periodo:
+            ids = [e.id_estudiante for e in pool]
+            con = {r[0] for r in self.db.query(FactRendimientoAcademico.id_estudiante).join(
+                DimTiempo, FactRendimientoAcademico.id_tiempo == DimTiempo.id_tiempo).filter(
+                FactRendimientoAcademico.id_estudiante.in_(ids), DimTiempo.periodo_mes == periodo).all()}
+            estrechar(lambda e: e.id_estudiante in con)
+        return pool[0] if len(pool) == 1 else None
+
+    @staticmethod
+    def _prioridad_fuente(nombre_archivo: Optional[str]) -> int:
+        """Precedencia de fuentes para la recaudación mensual: 'EJECUTADO VS META' es la fuente de referencia (2); el resto,
+        p. ej. la hoja 'Gestiones' de 'BD Egresos' (corte parcial del mismo dato), tiene prioridad 1."""
+        return 2 if "EJECUTADO VS META" in (nombre_archivo or "").upper() else 1
+
+    def _nombre_documento(self, id_documento: Optional[int]) -> Optional[str]:
+        if not id_documento:
+            return None
+        return self.db.query(DimOrigenDocumental.nombre_archivo).filter(DimOrigenDocumental.id_documento == id_documento).scalar()
+
+    def _base_programa(self, id_modulo: Optional[int]) -> Optional[str]:
+        """'POS-5887' de un módulo 'POS-5887-M01' (o del propio programa); None si no se sabe."""
+        if not id_modulo:
+            return None
+        pos = self.db.query(DimModulo.pos_code).filter(DimModulo.id_modulo == id_modulo).scalar()
+        m = re.match(r"(POS-\d+)", pos or "")
+        return m.group(1) if m else None
+
+    def _docente_del_programa(self, id_modulo: Optional[int]) -> Optional[int]:
+        """Docente de un programa cuando la encuesta no nombra módulo ni docente: el único de bridge_modulo_docente en
+        los módulos 'POS-xxxx-Mnn' de ese programa. None si no hay ninguno o hay varios (no se adivina)."""
+        base = self._base_programa(id_modulo)
+        if not base:
+            return None
+        docs = {r[0] for r in self.db.query(BridgeModuloDocente.id_docente).join(
+            DimModulo, BridgeModuloDocente.id_modulo == DimModulo.id_modulo).filter(
+            DimModulo.pos_code.like(f"{base}-M%")).all()}
+        return next(iter(docs)) if len(docs) == 1 else None
+
+    def _tiempo_del_programa(self, id_modulo: Optional[int]) -> Optional[int]:
+        """Último período con actas del programa (fact_rendimiento_academico): fecha de apoyo para encuestas sin fecha."""
+        base = self._base_programa(id_modulo)
+        if not base:
+            return None
+        return self.db.query(func.max(FactRendimientoAcademico.id_tiempo)).join(
+            DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo).filter(
+            DimModulo.pos_code.like(f"{base}%")).scalar()
+
     def _resolver_id_institucion(self, institucion: Optional[str]) -> Optional[int]:
         if not institucion:
             return None
@@ -260,6 +335,8 @@ class DWLoaderService:
         institucion: Optional[str] = "GiraGroup Posgrado",
         programa: Optional[str] = None,
         forzar_resolucion_humana: bool = False,
+        modulo: Optional[str] = None,
+        fecha: Optional[Any] = None,
     ) -> Tuple[Optional[int], str]:
         """
         Retorna (id_estudiante, fk_estado).
@@ -361,6 +438,9 @@ class DWLoaderService:
 
             # 2a. Si hay 2 o más candidatos >= 90% -> Conflicto de Homonimia detectado -> Derivación forzada a HITL
             if len(candidatos_validos) >= 2 and not forzar_resolucion_humana:
+                ganador = self._desempatar_homonimos(candidatos_validos, ci, programa, modulo, fecha)
+                if ganador is not None:  # desempatado por CI parcial / programa / módulo / mes: un solo candidato
+                    return ganador.id_estudiante, "B"
                 stg = StagingEntidadNoResuelta(
                     id_documento=doc_id,
                     tipo_entidad="ESTUDIANTE",
@@ -921,6 +1001,8 @@ class DWLoaderService:
             institucion=institucion,
             programa=nombre_programa or nombre_modulo,
             forzar_resolucion_humana=es_resuelto_humano,
+            modulo=nombre_modulo,
+            fecha=fecha_encontrada,
         )
         id_tiempo = self.resolver_o_crear_tiempo(fecha_encontrada)
         if id_tiempo is None:
@@ -1063,6 +1145,14 @@ class DWLoaderService:
                     or self._docente_unico_del_modulo(id_mod_eval)
             if resoluciones.get("anonima") or not (ci_est or nombre_est):
                 id_est = None  # respuesta anónima: sin estudiante, no se crea uno ficticio
+            motivos_rev = []
+            if tipo_preg == "DOCENTE" and not id_doc_eval:
+                id_doc_eval = self._docente_del_programa(id_mod_eval)  # único docente del programa en bridge_modulo_docente
+                if not id_doc_eval:
+                    motivos_rev.append("DOCENTE_SIN_VINCULAR")
+            if not id_tiempo:
+                id_tiempo = self._tiempo_del_programa(id_mod_eval)  # último período con actas del programa (a confirmar)
+                motivos_rev.append("FECHA_ESTIMADA_DEL_PROGRAMA" if id_tiempo else "SIN_FECHA")
 
             clave = resoluciones.get("clave_respuesta")
             existente_eval = self.db.query(FactEvaluacionDocente).filter(
@@ -1078,8 +1168,14 @@ class DWLoaderService:
                 puntuacion=puntuacion,
                 escala_max=escala_max,
                 comentario=comentario_str,
+                id_documento=doc_id,
+                requiere_revision=bool(motivos_rev),
+                motivo_revision=", ".join(motivos_rev)[:300] or None,
             )
             if existente_eval:  # mismo archivo subido otra vez: se actualiza, no se duplica
+                if existente_eval.motivo_revision == "RESUELTO_HUMANO":  # lo que decidió la bandeja no se pisa
+                    for k in ("id_docente", "id_tiempo", "requiere_revision", "motivo_revision"):
+                        valores.pop(k)
                 for k, v in valores.items():
                     setattr(existente_eval, k, v)
                 hecho_eval = existente_eval
@@ -1170,6 +1266,10 @@ class DWLoaderService:
             if existente_rent:
                 # Misma categoría y mes: el valor nuevo reemplaza al anterior (recargar el libro no duplica montos).
                 # Si otra fuente ya había cargado otra cifra para ese mes, queda registrado para revisión.
+                # Precedencia: una fuente de menor prioridad no reemplaza la cifra de una de mayor prioridad.
+                prio_nueva = self._prioridad_fuente(self._nombre_documento(doc_id))
+                prio_previa = self._prioridad_fuente(self._nombre_documento(existente_rent.id_documento))
+                cede = prio_nueva < prio_previa
                 for campo, nuevo in (("monto_ejecutado", m_ejec), ("monto_meta", m_meta)):
                     previo = getattr(existente_rent, campo)
                     if nuevo == 0 and previo not in (None, 0):
@@ -1188,12 +1288,17 @@ class DWLoaderService:
                             tipo_regla="CONFLICTO_FUENTES",
                             severidad="MEDIA",
                             estado_resolucion="PENDIENTE",
-                            descripcion=f"{cat_nom} id_tiempo={id_tiempo}: la fuente nueva reemplaza {previo} por {nuevo}",
+                            descripcion=(f"{cat_nom} id_tiempo={id_tiempo}: se conserva {previo}; la fuente de menor precedencia trae {nuevo}" if cede
+                                         else f"{cat_nom} id_tiempo={id_tiempo}: la fuente nueva reemplaza {previo} por {nuevo}"),
                         ))
+                if cede:
+                    m_ejec = m_meta = None  # la cifra vigente viene de la fuente de referencia
                 if m_ejec is not None:
                     existente_rent.monto_ejecutado = m_ejec
                 if m_meta is not None:
                     existente_rent.monto_meta = m_meta
+                if (m_ejec is not None or m_meta is not None) and doc_id:
+                    existente_rent.id_documento = doc_id
                 self.db.flush()
                 return {
                     "tipo": "rentabilidad",
@@ -1208,7 +1313,8 @@ class DWLoaderService:
                     id_tiempo=id_tiempo,
                     id_categoria=id_cat,
                     monto_ejecutado=m_ejec,  # mes solo con meta (2026): ejecutado vacío, no 0 inventado
-                    monto_meta=m_meta
+                    monto_meta=m_meta,
+                    id_documento=doc_id,
                 )
                 self.db.add(nuevo_rent)
                 self.db.flush()

@@ -6,30 +6,34 @@ Hechos cargados con requiere_revision = True (índice 0,60–0,85, nota o fecha 
 Al aprobar: requiere_revision = False y registro en la bitácora (log_auditoria_nlp + log_pipeline_ingesta).
 Al rechazar: se elimina el hecho y queda el registro en la bitácora.
 
-Identificadores de caso: HECHO-ACA-<id_hecho_aca> y HECHO-FIN-<id_hecho_fin>.
+Identificadores de caso: HECHO-ACA-<id_hecho_aca>, HECHO-FIN-<id_hecho_fin> y HECHO-EVA-<id_documento>-<id_modulo>
+(evaluación docente: un caso por documento y módulo con respuestas sin docente vinculado o sin fecha).
 """
 
 from datetime import date
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from models.dim_estudiante import DimEstudiante
 from models.dim_modulo import DimModulo
 from models.dim_origen import DimOrigenDocumental
 from models.dim_tiempo import DimTiempo
+from models.fact_evaluacion import FactEvaluacionDocente
 from models.fact_financiero import FactSituacionFinanciera
+from models.dim_docente import DimDocente
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.log_auditoria_nlp import LogAuditoriaNlp
 from models.log_pipeline import LogPipelineIngesta
 from pipeline.config import NOTA_APROBACION
 
 MOTIVO_HECHO = "HECHO_EN_REVISION"
-PREFIJO_ACA, PREFIJO_FIN = "HECHO-ACA-", "HECHO-FIN-"
+PREFIJO_ACA, PREFIJO_FIN, PREFIJO_EVA = "HECHO-ACA-", "HECHO-FIN-", "HECHO-EVA-"
 
 
 def es_caso_hecho(item_id: Any) -> bool:
-    return str(item_id).startswith((PREFIJO_ACA, PREFIJO_FIN))
+    return str(item_id).startswith((PREFIJO_ACA, PREFIJO_FIN, PREFIJO_EVA))
 
 
 def _faltantes_aca(h: FactRendimientoAcademico) -> List[str]:
@@ -58,9 +62,21 @@ def _q_hechos(db: Session, modelo, col_id, doc_ids: Optional[Sequence[int]]):
     return q.order_by(col_id)
 
 
+def _q_eval(db: Session, doc_ids: Optional[Sequence[int]]):
+    """Grupos (documento, módulo) de evaluación docente con respuestas en revisión: (id_documento, id_modulo, n, motivos)."""
+    q = db.query(FactEvaluacionDocente.id_documento, FactEvaluacionDocente.id_modulo,
+                 func.count(FactEvaluacionDocente.id_hecho_eval), func.min(FactEvaluacionDocente.motivo_revision)).filter(
+        FactEvaluacionDocente.requiere_revision == True)  # noqa: E712
+    if doc_ids is not None:
+        q = q.filter(FactEvaluacionDocente.id_documento.in_(list(doc_ids)))
+    return q.group_by(FactEvaluacionDocente.id_documento, FactEvaluacionDocente.id_modulo).order_by(
+        FactEvaluacionDocente.id_documento, FactEvaluacionDocente.id_modulo)
+
+
 def contar_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = None) -> int:
     return (_q_hechos(db, FactRendimientoAcademico, FactRendimientoAcademico.id_hecho_aca, doc_ids).count()
-            + _q_hechos(db, FactSituacionFinanciera, FactSituacionFinanciera.id_hecho_fin, doc_ids).count())
+            + _q_hechos(db, FactSituacionFinanciera, FactSituacionFinanciera.id_hecho_fin, doc_ids).count()
+            + _q_eval(db, doc_ids).count())
 
 
 def items_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = None,
@@ -70,6 +86,7 @@ def items_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = Non
     q_aca = _q_hechos(db, FactRendimientoAcademico, FactRendimientoAcademico.id_hecho_aca, doc_ids)
     q_fin = _q_hechos(db, FactSituacionFinanciera, FactSituacionFinanciera.id_hecho_fin, doc_ids)
     n_aca = q_aca.count() if (offset or limit is not None) else 0
+    n_fin_total = q_fin.count() if (offset or limit is not None) else 0
     restante = limit
     if offset < n_aca or not (offset or limit is not None):
         h_aca = (q_aca.offset(offset).limit(restante).all() if restante is not None else q_aca.offset(offset).all())
@@ -84,6 +101,16 @@ def items_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = Non
         h_fin = q_fin.offset(off_fin).limit(restante).all()
     else:
         h_fin = []
+    if restante is not None:
+        restante -= len(h_fin)
+    q_eva = _q_eval(db, doc_ids)
+    off_eva = max(0, offset - n_aca - n_fin_total)
+    if restante is None:
+        g_eva = q_eva.offset(off_eva).all()
+    elif restante > 0:
+        g_eva = q_eva.offset(off_eva).limit(restante).all()
+    else:
+        g_eva = []
     ids_est = {h.id_estudiante for h in h_aca + h_fin if h.id_estudiante}
     ids_mod = {h.id_modulo for h in h_aca if h.id_modulo}
     ids_doc = {h.id_documento for h in h_aca + h_fin if h.id_documento}
@@ -121,6 +148,22 @@ def items_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = Non
                        f"pagado {h.monto_pagado} · cuotas {h.cuotas_impagas} · {fechas.get(h.id_tiempo) or 'sin fecha'}",
             "destino_dw": "Situación Financiera y Cobranzas",
         }))
+    docs_eva = {d.id_documento: d for d in db.query(DimOrigenDocumental).filter(
+        DimOrigenDocumental.id_documento.in_({g[0] for g in g_eva if g[0]})).all()} if g_eva else {}
+    mods_eva = {m.id_modulo: m for m in db.query(DimModulo).filter(
+        DimModulo.id_modulo.in_({g[1] for g in g_eva if g[1]})).all()} if g_eva else {}
+    for id_doc, id_mod, n, motivos in g_eva:
+        mod, doc = mods_eva.get(id_mod), docs_eva.get(id_doc)
+        faltan = [f for f, m in (("docente", "DOCENTE_SIN_VINCULAR"), ("fecha", "SIN_FECHA")) if m in (motivos or "")]
+        it = _item(f"{PREFIJO_EVA}{id_doc or 0}-{id_mod or 0}", "evaluacion_docente", doc, None, None, faltan, {
+            "modulo_detectado": mod.nombre_modulo if mod else "",
+            "respuestas": int(n),
+            "motivo_revision": motivos or "",
+            "que_vio": f"{n} respuestas de evaluación · {mod.nombre_modulo if mod else 'Sin módulo'} · {motivos or 'en revisión'}",
+            "destino_dw": "Evaluación Docente",
+        })
+        it["por_que_detuvo"] = f"Evaluación docente en revisión ({motivos or 'sin motivo'})."
+        items.append(it)
     return items
 
 
@@ -157,6 +200,8 @@ def resolver_caso_hecho(db: Session, item_id: str, payload: Dict[str, Any], user
     APROBAR (con correcciones opcionales: nota_final, monto_deuda, cuotas_impagas, estudiante_resuelto,
     mes + gestion) o DESCARTAR. Con aprobacion_en_bloque = True la bitácora registra "Aprobación en bloque".
     """
+    if str(item_id).startswith(PREFIJO_EVA):
+        return _resolver_caso_evaluacion(db, str(item_id), payload, user_id, user_name)
     hecho, tipo = _cargar(db, item_id)
     if hecho is None:
         return {"status": "error", "message": f"Caso {item_id} no existe."}
@@ -189,6 +234,54 @@ def resolver_caso_hecho(db: Session, item_id: str, payload: Dict[str, Any], user
                        "antes": antes, "correcciones": correcciones,
                        "nota_auditor": payload.get("nota_auditor")},
     ))
+    db.commit()
+    return {"status": "success", "message": f"Caso {item_id}: {resultado}.", "item_id": item_id, "accion": accion}
+
+
+def _resolver_caso_evaluacion(db: Session, item_id: str, payload: Dict[str, Any], user_id: Optional[int], user_name: str) -> Dict[str, Any]:
+    """Caso de evaluación docente = todas las respuestas en revisión de un (documento, módulo). APROBAR (con docente_resuelto
+    opcional: se vincula a las respuestas del docente) o DESCARTAR (se eliminan). Las aprobadas quedan con motivo RESUELTO_HUMANO."""
+    try:
+        id_doc, id_mod = (int(x) for x in item_id[len(PREFIJO_EVA):].split("-"))
+    except ValueError:
+        return {"status": "error", "message": f"Caso {item_id} no válido."}
+    q = db.query(FactEvaluacionDocente).filter(FactEvaluacionDocente.requiere_revision == True,  # noqa: E712
+                                               FactEvaluacionDocente.id_modulo == (id_mod or None))
+    q = q.filter(FactEvaluacionDocente.id_documento == id_doc) if id_doc else q.filter(FactEvaluacionDocente.id_documento.is_(None))
+    filas = q.all()
+    if not filas:
+        return {"status": "success", "message": f"Caso {item_id} ya estaba resuelto.", "item_id": item_id}
+    accion = (payload.get("accion") or "APROBAR").upper()
+    cambios, docente = {}, None
+    if "DESCARTAR" in accion:
+        for f in filas:
+            db.delete(f)
+        resultado = f"Descartado ({len(filas)} respuestas)"
+    else:
+        nombre = (payload.get("docente_resuelto") or "").strip()
+        if nombre:
+            docente = db.query(DimDocente).filter(DimDocente.nombre_completo.ilike(nombre)).first()
+            if docente is not None:
+                cambios["docente"] = docente.nombre_completo
+        fecha = _fecha_corregida(payload)
+        id_tiempo = None
+        if fecha is not None:
+            from services.dw_loader import DWLoaderService
+            id_tiempo = DWLoaderService(db).resolver_o_crear_tiempo(fecha)
+            cambios["fecha"] = fecha.isoformat()
+        for f in filas:
+            if docente is not None and f.tipo_pregunta == "DOCENTE":
+                f.id_docente = docente.id_docente
+            if id_tiempo:
+                f.id_tiempo = id_tiempo
+            f.requiere_revision = False
+            f.motivo_revision = "RESUELTO_HUMANO"
+        resultado = f"Aprobado ({len(filas)} respuestas)" + (f" con corrección ({', '.join(cambios)})" if cambios else " sin cambios")
+    db.add(LogAuditoriaNlp(texto_original=f"{item_id}: {len(filas)} respuestas de evaluación docente"[:500],
+                           prediccion_beto="Evaluación docente en revisión", correccion_humana=resultado[:200], usuario_auditor=user_id))
+    db.add(LogPipelineIngesta(id_documento=id_doc or None, etapa="HITL_RESOLUCION_INDIVIDUAL", nivel="SUCCESS", modulo="Bandeja HITL",
+                              mensaje=f"{user_name} resolvió {item_id}: {resultado}.",
+                              metadata_json={"item_id": item_id, "accion": accion, "usuario": user_name, "correcciones": cambios}))
     db.commit()
     return {"status": "success", "message": f"Caso {item_id}: {resultado}.", "item_id": item_id, "accion": accion}
 

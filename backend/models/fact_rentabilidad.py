@@ -11,3 +11,4 @@ class FactRentabilidad(Base):
     id_categoria = Column(Integer, ForeignKey("dim_categoria_financiera.id_categoria", ondelete="CASCADE"))
     monto_ejecutado = Column(Numeric(14, 2))
     monto_meta = Column(Numeric(14, 2))
+    id_documento = Column(Integer, ForeignKey("dim_origen_documental.id_documento", ondelete="SET NULL"))  # fuente de la cifra vigente
