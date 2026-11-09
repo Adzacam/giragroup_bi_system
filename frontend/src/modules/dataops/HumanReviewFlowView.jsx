@@ -11,6 +11,8 @@ import BatchFlowLayout from './components/BatchFlowLayout';
 import { dataopsApi } from '../../api/dataopsApi';
 import { sileo } from 'sileo';
 import { sileoToast } from '../../services/sileoToast';
+import GruposBandeja from './components/GruposBandeja';
+import { ESTADOS_VINCULO, textoFuente, textoMotivo } from '../../constants/motivosBandeja';
 
 export default function HumanReviewFlowView() {
   const { id } = useParams();
@@ -40,6 +42,7 @@ export default function HumanReviewFlowView() {
   const [formGestion, setFormGestion] = useState('');
   const [unClicTotal, setUnClicTotal] = useState(0);
   const [isAprobandoBloque, setIsAprobandoBloque] = useState(false);
+  const [vista, setVista] = useState('GRUPOS'); // 'GRUPOS' | 'INDIVIDUAL'
 
   // Modales
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
@@ -375,7 +378,7 @@ export default function HumanReviewFlowView() {
         rows.push([
           `REV-${item.id}`,
           item.area || 'General',
-          item.motivo_label || item.motivo,
+          textoMotivo(item.motivo, item.motivo_label),
           `"${(item.estudiante || '').replace(/"/g, '""')}"`,
           item.ci || item.ci_enmascarado || '',
           `"${(item.modulo_detectado || '').replace(/"/g, '""')}"`,
@@ -528,6 +531,12 @@ export default function HumanReviewFlowView() {
       {/* ── Filtros por Área de Trabajo ── */}
       {activeTab === 'PENDIENTES' && (
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
+          <button type="button" className={`pill-filter ${vista === 'GRUPOS' ? 'active' : ''}`} data-testid="vista-grupos" onClick={() => setVista('GRUPOS')}>
+            Por grupos
+          </button>
+          <button type="button" className={`pill-filter ${vista === 'INDIVIDUAL' ? 'active' : ''}`} data-testid="vista-individual" onClick={() => setVista('INDIVIDUAL')}>
+            Caso por caso
+          </button>
           <button
             type="button"
             className="btn-pill-gold"
@@ -535,7 +544,7 @@ export default function HumanReviewFlowView() {
             disabled={unClicTotal === 0 || isAprobandoBloque}
             onClick={handleAprobarUnClic}
           >
-            {isAprobandoBloque ? 'Aprobando…' : `Aprobar casos de un clic (${unClicTotal})`}
+            {isAprobandoBloque ? 'Aprobando…' : `Aprobar casos de un clic (${unClicTotal} en la cola cargada)`}
           </button>
           <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-slate-gray)' }}>Área:</span>
           <button
@@ -622,7 +631,9 @@ export default function HumanReviewFlowView() {
       ) : (
         /* Pestaña: Pendientes con Layout Split-Screen Desktop / Mobile */
         <div>
-          {isLoading ? (
+          {vista === 'GRUPOS' ? (
+            <GruposBandeja docId={selectedDocId} onVerIndividual={() => setVista('INDIVIDUAL')} onCambio={() => loadReviewQueue(selectedDocId)} />
+          ) : isLoading ? (
             <div className="floating-artifact" style={{ padding: '64px', textAlign: 'center', color: 'var(--color-slate-gray)' }}>
               Cargando casos derivados a revisión humana...
             </div>
@@ -688,7 +699,7 @@ export default function HumanReviewFlowView() {
                           {item.estudiante || 'Sin nombre'}
                         </div>
                         <div style={{ fontSize: '11px', color: '#D9383A' }}>
-                          {item.motivo_label || item.motivo}
+                          {textoMotivo(item.motivo, item.motivo_label)}
                         </div>
                       </div>
                     );
@@ -798,8 +809,22 @@ export default function HumanReviewFlowView() {
                         Resolución y conciliación
                       </h4>
                       <span style={{ fontSize: '11px', fontWeight: '700', color: '#B8801A', backgroundColor: 'rgba(217, 155, 38, 0.12)', padding: '2px 8px', borderRadius: '4px' }}>
-                        Motivo: {selectedItem.motivo_label || selectedItem.motivo}
+                        Motivo: {textoMotivo(selectedItem.motivo, selectedItem.motivo_label)}
                       </span>
+                    </div>
+
+                    {/* Cómo se resolvió cada entidad del caso y estado de vínculo (fk_estado) */}
+                    <div data-testid="fuente-resolucion" style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', marginBottom: '12px' }}>
+                      {(selectedItem.entidades || []).length === 0 ? (
+                        <span>Fuente de resolución: sin entidades resueltas.</span>
+                      ) : (
+                        (selectedItem.entidades || []).map((e, i) => (
+                          <div key={`${e.label}-${i}`}>{e.label}: <strong>{e.token}</strong> · resuelta por {textoFuente(e.fuente_resolucion)}</div>
+                        ))
+                      )}
+                      <div style={{ marginTop: '4px' }}>
+                        Vínculo: <strong>{(ESTADOS_VINCULO.find((v) => v.codigo === (selectedItem.fk_estado || 'C')) || ESTADOS_VINCULO[2]).texto}</strong>
+                      </div>
                     </div>
 
                     {/* Formulario de corrección */}

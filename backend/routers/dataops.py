@@ -4208,6 +4208,8 @@ def get_review_tray(
             "modulo_detectado": modulo_detectado,
             "sugerencia_catalogo": ent.mejor_candidato,
             "nombre_extraido": nombre_caso,
+            "fk_estado": ent.fk_estado or "C",
+            "entidades": [{"label": e.get("label"), "token": e.get("token"), "fuente_resolucion": e.get("fuente_resolucion")} for e in ents_line],
             "un_clic": es_sugerencia_un_clic(nombre_caso, ent.mejor_candidato),
             "similitud_nombre_completo": similitud_nombre_completo(nombre_caso, ent.mejor_candidato),
             "ner_confidence": float(ent.nivel_confianza) if ent.nivel_confianza else 0.72,
