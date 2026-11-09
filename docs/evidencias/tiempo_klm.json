@@ -1,0 +1,304 @@
+{
+ "nota": "tiempos humanos NO medidos: el KLM los calcula con n_casos y accion; casos y grupos salen de la ejecucion real",
+ "corridas_con_mismos_grupos": true,
+ "casos": 188,
+ "grupos": 37,
+ "grupos_detalle": [
+  {
+   "orden": 1,
+   "clave": "BAJA_CONFIANZA_IA::leads | p/ejecutado | p/asignado | fecha de inicio - ads | fecha de fin - ads | d",
+   "n_casos": 30,
+   "accion": "APROBAR",
+   "resueltos": 60,
+   "segundos_maquina_real": 0.254
+  },
+  {
+   "orden": 2,
+   "clave": "BAJA_CONFIANZA_IA::leads",
+   "n_casos": 26,
+   "accion": "APROBAR",
+   "resueltos": 58,
+   "segundos_maquina_real": 0.149
+  },
+  {
+   "orden": 3,
+   "clave": "BAJA_CONFIANZA_IA::leads | p/ejecutado | p/asignado | fecha de inicio - ads | fecha de fin - ads | d",
+   "n_casos": 14,
+   "accion": "APROBAR",
+   "resueltos": 28,
+   "segundos_maquina_real": 0.155
+  },
+  {
+   "orden": 4,
+   "clave": "BAJA_CONFIANZA_IA::estado | n° inscritos | reservas",
+   "n_casos": 13,
+   "accion": "APROBAR",
+   "resueltos": 26,
+   "segundos_maquina_real": 0.09
+  },
+  {
+   "orden": 5,
+   "clave": "BAJA_CONFIANZA_IA::mes numerico | mes | ejecutado # | ejecutado # | ejecutado # | meta #",
+   "n_casos": 9,
+   "accion": "APROBAR",
+   "resueltos": 18,
+   "segundos_maquina_real": 0.073
+  },
+  {
+   "orden": 6,
+   "clave": "BAJA_CONFIANZA_IA::proyecto (pos) | mes | fecha de notificacion del programa | fecha de inicio del p",
+   "n_casos": 9,
+   "accion": "APROBAR",
+   "resueltos": 18,
+   "segundos_maquina_real": 0.131
+  },
+  {
+   "orden": 7,
+   "clave": "BAJA_CONFIANZA_IA::mes | ejecutado # | ejecutado # | ejecutado # | meta #",
+   "n_casos": 8,
+   "accion": "APROBAR",
+   "resueltos": 17,
+   "segundos_maquina_real": 0.077
+  },
+  {
+   "orden": 8,
+   "clave": "BAJA_CONFIANZA_IA::leads | p/ejecutado | p/asignado | fecha de inicio - ads | fecha de fin - ads | d",
+   "n_casos": 7,
+   "accion": "APROBAR",
+   "resueltos": 14,
+   "segundos_maquina_real": 0.139
+  },
+  {
+   "orden": 9,
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | estado | n° inscritos | reservas",
+   "n_casos": 7,
+   "accion": "APROBAR",
+   "resueltos": 14,
+   "segundos_maquina_real": 0.079
+  },
+  {
+   "orden": 10,
+   "clave": "BAJA_CONFIANZA_IA::mes",
+   "n_casos": 7,
+   "accion": "APROBAR",
+   "resueltos": 14,
+   "segundos_maquina_real": 0.153
+  },
+  {
+   "orden": 11,
+   "clave": "HECHO_EN_REVISION::academico|doc20|falta:ninguno|Aprobado|Aprobado|Titulado|estado:OK",
+   "n_casos": 7,
+   "accion": "APROBAR",
+   "resueltos": 7,
+   "segundos_maquina_real": 0.064
+  },
+  {
+   "orden": 12,
+   "clave": "BAJA_CONFIANZA_IA::a",
+   "n_casos": 6,
+   "accion": "APROBAR",
+   "resueltos": 12,
+   "segundos_maquina_real": 0.038
+  },
+  {
+   "orden": 13,
+   "clave": "BAJA_CONFIANZA_IA::leads | fecha de inicio - ads | dias activos hasta hoy",
+   "n_casos": 5,
+   "accion": "APROBAR",
+   "resueltos": 10,
+   "segundos_maquina_real": 0.136
+  },
+  {
+   "orden": 14,
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | comentarios | estado | n° inscritos | reservas",
+   "n_casos": 5,
+   "accion": "APROBAR",
+   "resueltos": 10,
+   "segundos_maquina_real": 0.073
+  },
+  {
+   "orden": 15,
+   "clave": "BAJA_CONFIANZA_IA::fecha inicio - mes | counta de programa",
+   "n_casos": 4,
+   "accion": "APROBAR",
+   "resueltos": 8,
+   "segundos_maquina_real": 0.069
+  },
+  {
+   "orden": 16,
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | comentarios",
+   "n_casos": 3,
+   "accion": "APROBAR",
+   "resueltos": 6,
+   "segundos_maquina_real": 0.144
+  },
+  {
+   "orden": 17,
+   "clave": "BAJA_CONFIANZA_IA::leads | ciudad",
+   "n_casos": 2,
+   "accion": "APROBAR",
+   "resueltos": 4,
+   "segundos_maquina_real": 0.02
+  },
+  {
+   "orden": 18,
+   "clave": "BAJA_CONFIANZA_IA::leads | fecha de inicio - ads | dias activos de la campana hasta hoy",
+   "n_casos": 2,
+   "accion": "APROBAR",
+   "resueltos": 4,
+   "segundos_maquina_real": 0.02
+  },
+  {
+   "orden": 19,
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | comentarios | estado | n° inscritos | reservas",
+   "n_casos": 2,
+   "accion": "APROBAR",
+   "resueltos": 4,
+   "segundos_maquina_real": 0.02
+  },
+  {
+   "orden": 20,
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | estado | n° inscritos | reservas",
+   "n_casos": 2,
+   "accion": "APROBAR",
+   "resueltos": 4,
+   "segundos_maquina_real": 0.019
+  },
+  {
+   "orden": 21,
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | comentarios",
+   "n_casos": 2,
+   "accion": "APROBAR",
+   "resueltos": 4,
+   "segundos_maquina_real": 0.018
+  },
+  {
+   "orden": 22,
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | comentarios | n° inscritos | reservas",
+   "n_casos": 2,
+   "accion": "APROBAR",
+   "resueltos": 4,
+   "segundos_maquina_real": 0.02
+  },
+  {
+   "orden": 23,
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | comentarios | n° inscritos | reservas",
+   "n_casos": 2,
+   "accion": "APROBAR",
+   "resueltos": 4,
+   "segundos_maquina_real": 0.021
+  },
+  {
+   "orden": 24,
+   "clave": "BAJA_CONFIANZA_IA::estado academico | estado reprobado | estado arca | combinaciones",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 2,
+   "segundos_maquina_real": 0.014
+  },
+  {
+   "orden": 25,
+   "clave": "BAJA_CONFIANZA_IA::p/ejecutado | p/asignado | fecha de inicio - ads",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 1,
+   "segundos_maquina_real": 0.013
+  },
+  {
+   "orden": 26,
+   "clave": "BAJA_CONFIANZA_IA::leads | p/ejecutado | p/asignado",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 2,
+   "segundos_maquina_real": 0.014
+  },
+  {
+   "orden": 27,
+   "clave": "BAJA_CONFIANZA_IA::leads | comentario digital / video solicitado",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 3,
+   "segundos_maquina_real": 0.091
+  },
+  {
+   "orden": 28,
+   "clave": "BAJA_CONFIANZA_IA::leads | fecha de inicio - ads | dias activos de la campana hasta hoy | comentario",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 2,
+   "segundos_maquina_real": 0.015
+  },
+  {
+   "orden": 29,
+   "clave": "BAJA_CONFIANZA_IA::leads | dias activos de la campana hasta hoy",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 3,
+   "segundos_maquina_real": 0.017
+  },
+  {
+   "orden": 30,
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | n° inscritos",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 2,
+   "segundos_maquina_real": 0.015
+  },
+  {
+   "orden": 31,
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | estado | n° inscritos",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 2,
+   "segundos_maquina_real": 0.016
+  },
+  {
+   "orden": 32,
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | comentarios | estado | n° inscritos",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 2,
+   "segundos_maquina_real": 0.015
+  },
+  {
+   "orden": 33,
+   "clave": "BAJA_CONFIANZA_IA::leads | fecha de inicio - ads",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 2,
+   "segundos_maquina_real": 0.015
+  },
+  {
+   "orden": 34,
+   "clave": "BAJA_CONFIANZA_IA::mes | cantidad de programas | cantidad de programas | fecha inicio - mes",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 2,
+   "segundos_maquina_real": 0.015
+  },
+  {
+   "orden": 35,
+   "clave": "BAJA_CONFIANZA_IA::proyecto (pos) | fecha de notificacion del programa | costo de programa | costo d",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 2,
+   "segundos_maquina_real": 0.014
+  },
+  {
+   "orden": 36,
+   "clave": "BAJA_CONFIANZA_IA::proyecto (pos) | fecha de notificacion del programa | fecha de inicio del program",
+   "n_casos": 1,
+   "accion": "APROBAR",
+   "resueltos": 2,
+   "segundos_maquina_real": 0.014
+  },
+  {
+   "orden": 37,
+   "clave": "HECHO_EN_REVISION::financiero|doc17|falta:fecha",
+   "n_casos": 1,
+   "accion": "CORREGIR_FECHA",
+   "resueltos": 1,
+   "segundos_maquina_real": 0.024
+  }
+ ]
+}

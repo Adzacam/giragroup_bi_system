@@ -1,0 +1,631 @@
+{
+ "corridas": 3,
+ "tiempo_total_s": {
+  "media": 60.0,
+  "de": 0.8,
+  "corridas": [
+   60.84,
+   59.24,
+   59.92
+  ]
+ },
+ "por_etapa_s": {
+  "lectura_e_ingesta": {
+   "media": 5.17,
+   "de": 0.06,
+   "corridas": [
+    5.2,
+    5.2,
+    5.1
+   ]
+  },
+  "reglas_y_resto": {
+   "media": 5.43,
+   "de": 0.06,
+   "corridas": [
+    5.5,
+    5.4,
+    5.4
+   ]
+  },
+  "beto": {
+   "media": 5.4,
+   "de": 0.2,
+   "corridas": [
+    5.4,
+    5.6,
+    5.2
+   ]
+  },
+  "carga_dw": {
+   "media": 43.97,
+   "de": 0.87,
+   "corridas": [
+    44.7,
+    43.0,
+    44.2
+   ]
+  }
+ },
+ "por_archivo": {
+  "BD Cobranzas.xlsx": {
+   "filas_total": 755,
+   "segundos": {
+    "media": 5.79,
+    "de": 0.17,
+    "corridas": [
+     5.94,
+     5.6,
+     5.83
+    ]
+   },
+   "etapas_ms": {
+    "lectura_e_ingesta": {
+     "media": 600.23,
+     "de": 28.47,
+     "corridas": [
+      633.0,
+      581.5,
+      586.2
+     ]
+    },
+    "beto": {
+     "media": 45.77,
+     "de": 2.25,
+     "corridas": [
+      48.3,
+      45.0,
+      44.0
+     ]
+    },
+    "carga_dw": {
+     "media": 2194.43,
+     "de": 107.21,
+     "corridas": [
+      2213.7,
+      2078.9,
+      2290.7
+     ]
+    },
+    "reglas_y_resto": {
+     "media": 2936.3,
+     "de": 83.97,
+     "corridas": [
+      3032.5,
+      2877.7,
+      2898.7
+     ]
+    }
+   },
+   "hechos_cargados_dw": [
+    718,
+    718,
+    718
+   ]
+  },
+  "BD Egresos.xlsx": {
+   "filas_total": 1409,
+   "segundos": {
+    "media": 2.24,
+    "de": 0.07,
+    "corridas": [
+     2.18,
+     2.32,
+     2.23
+    ]
+   },
+   "etapas_ms": {
+    "lectura_e_ingesta": {
+     "media": 282.73,
+     "de": 21.52,
+     "corridas": [
+      263.2,
+      305.8,
+      279.2
+     ]
+    },
+    "beto": {
+     "media": 56.77,
+     "de": 0.25,
+     "corridas": [
+      57.0,
+      56.5,
+      56.8
+     ]
+    },
+    "carga_dw": {
+     "media": 1719.23,
+     "de": 20.57,
+     "corridas": [
+      1697.0,
+      1723.1,
+      1737.6
+     ]
+    },
+    "reglas_y_resto": {
+     "media": 180.13,
+     "de": 42.85,
+     "corridas": [
+      158.4,
+      229.5,
+      152.5
+     ]
+    }
+   },
+   "hechos_cargados_dw": [
+    1448,
+    1448,
+    1448
+   ]
+  },
+  "BD Techos.xlsx": {
+   "filas_total": 1,
+   "segundos": {
+    "media": 0.18,
+    "de": 0.04,
+    "corridas": [
+     0.15,
+     0.22,
+     0.17
+    ]
+   },
+   "etapas_ms": {
+    "lectura_e_ingesta": {
+     "media": 128.17,
+     "de": 43.37,
+     "corridas": [
+      107.5,
+      178.0,
+      99.0
+     ]
+    },
+    "beto": {
+     "media": 15.0,
+     "de": 0.26,
+     "corridas": [
+      15.3,
+      14.8,
+      14.9
+     ]
+    },
+    "carga_dw": {
+     "media": 14.37,
+     "de": 2.15,
+     "corridas": [
+      12.0,
+      14.9,
+      16.2
+     ]
+    },
+    "reglas_y_resto": {
+     "media": 17.3,
+     "de": 18.1,
+     "corridas": [
+      6.9,
+      6.8,
+      38.2
+     ]
+    }
+   },
+   "hechos_cargados_dw": [
+    1,
+    1,
+    1
+   ]
+  },
+  "Base centralizada Académica ARCA (1).xlsx": {
+   "filas_total": 1201,
+   "segundos": {
+    "media": 3.17,
+    "de": 0.13,
+    "corridas": [
+     3.18,
+     3.29,
+     3.04
+    ]
+   },
+   "etapas_ms": {
+    "lectura_e_ingesta": {
+     "media": 381.47,
+     "de": 33.93,
+     "corridas": [
+      346.3,
+      414.0,
+      384.1
+     ]
+    },
+    "beto": {
+     "media": 85.5,
+     "de": 0.4,
+     "corridas": [
+      85.5,
+      85.9,
+      85.1
+     ]
+    },
+    "carga_dw": {
+     "media": 2591.17,
+     "de": 115.91,
+     "corridas": [
+      2637.8,
+      2676.5,
+      2459.2
+     ]
+    },
+    "reglas_y_resto": {
+     "media": 104.93,
+     "de": 3.8,
+     "corridas": [
+      102.4,
+      109.3,
+      103.1
+     ]
+    }
+   },
+   "hechos_cargados_dw": [
+    1415,
+    1415,
+    1415
+   ]
+  },
+  "EJECUTADO VS META.xlsx": {
+   "filas_total": 36,
+   "segundos": {
+    "media": 1.24,
+    "de": 0.08,
+    "corridas": [
+     1.33,
+     1.21,
+     1.18
+    ]
+   },
+   "etapas_ms": {
+    "lectura_e_ingesta": {
+     "media": 32.53,
+     "de": 1.27,
+     "corridas": [
+      31.7,
+      31.9,
+      34.0
+     ]
+    },
+    "beto": {
+     "media": 1006.97,
+     "de": 55.32,
+     "corridas": [
+      1065.8,
+      999.1,
+      956.0
+     ]
+    },
+    "carga_dw": {
+     "media": 185.27,
+     "de": 32.92,
+     "corridas": [
+      222.7,
+      160.8,
+      172.3
+     ]
+    },
+    "reglas_y_resto": {
+     "media": 9.2,
+     "de": 0.5,
+     "corridas": [
+      8.7,
+      9.2,
+      9.7
+     ]
+    }
+   },
+   "hechos_cargados_dw": [
+    99,
+    99,
+    99
+   ]
+  },
+  "Evaluación Docente y Unifranz.xlsx": {
+   "filas_total": 4889,
+   "segundos": {
+    "media": 27.29,
+    "de": 1.15,
+    "corridas": [
+     28.27,
+     26.03,
+     27.57
+    ]
+   },
+   "etapas_ms": {
+    "lectura_e_ingesta": {
+     "media": 1932.17,
+     "de": 63.71,
+     "corridas": [
+      2001.4,
+      1876.0,
+      1919.1
+     ]
+    },
+    "beto": {
+     "media": 72.8,
+     "de": 1.84,
+     "corridas": [
+      74.9,
+      71.5,
+      72.0
+     ]
+    },
+    "carga_dw": {
+     "media": 23977.0,
+     "de": 1076.11,
+     "corridas": [
+      24882.7,
+      22787.4,
+      24260.9
+     ]
+    },
+    "reglas_y_resto": {
+     "media": 1289.57,
+     "de": 11.76,
+     "corridas": [
+      1294.2,
+      1276.2,
+      1298.3
+     ]
+    }
+   },
+   "hechos_cargados_dw": [
+    71458,
+    71458,
+    71458
+   ]
+  },
+  "Experiencia Docente 2.0.xlsx": {
+   "filas_total": 1137,
+   "segundos": {
+    "media": 9.16,
+    "de": 0.05,
+    "corridas": [
+     9.1,
+     9.18,
+     9.2
+    ]
+   },
+   "etapas_ms": {
+    "lectura_e_ingesta": {
+     "media": 564.8,
+     "de": 1.39,
+     "corridas": [
+      566.4,
+      563.9,
+      564.1
+     ]
+    },
+    "beto": {
+     "media": 75.4,
+     "de": 0.2,
+     "corridas": [
+      75.2,
+      75.4,
+      75.6
+     ]
+    },
+    "carga_dw": {
+     "media": 8026.23,
+     "de": 51.0,
+     "corridas": [
+      7967.7,
+      8049.9,
+      8061.1
+     ]
+    },
+    "reglas_y_resto": {
+     "media": 485.5,
+     "de": 5.94,
+     "corridas": [
+      486.3,
+      479.2,
+      491.0
+     ]
+    }
+   },
+   "hechos_cargados_dw": [
+    0,
+    0,
+    0
+   ]
+  },
+  "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx": {
+   "filas_total": 1313,
+   "segundos": {
+    "media": 7.86,
+    "de": 0.28,
+    "corridas": [
+     7.7,
+     8.19,
+     7.7
+    ]
+   },
+   "etapas_ms": {
+    "lectura_e_ingesta": {
+     "media": 700.87,
+     "de": 5.67,
+     "corridas": [
+      707.1,
+      699.5,
+      696.0
+     ]
+    },
+    "beto": {
+     "media": 3970.07,
+     "de": 176.9,
+     "corridas": [
+      3927.4,
+      4164.4,
+      3818.4
+     ]
+    },
+    "carga_dw": {
+     "media": 2919.6,
+     "de": 123.1,
+     "corridas": [
+      2796.1,
+      3042.3,
+      2920.4
+     ]
+    },
+    "reglas_y_resto": {
+     "media": 266.0,
+     "de": 7.48,
+     "corridas": [
+      262.4,
+      274.6,
+      261.0
+     ]
+    }
+   },
+   "hechos_cargados_dw": [
+    1869,
+    1869,
+    1869
+   ]
+  },
+  "TBL_INSCRITOS.xlsx": {
+   "filas_total": 391,
+   "segundos": {
+    "media": 1.31,
+    "de": 0.03,
+    "corridas": [
+     1.29,
+     1.34,
+     1.31
+    ]
+   },
+   "etapas_ms": {
+    "lectura_e_ingesta": {
+     "media": 225.67,
+     "de": 2.42,
+     "corridas": [
+      228.4,
+      223.8,
+      224.8
+     ]
+    },
+    "beto": {
+     "media": 19.23,
+     "de": 0.15,
+     "corridas": [
+      19.4,
+      19.1,
+      19.2
+     ]
+    },
+    "carga_dw": {
+     "media": 1033.23,
+     "de": 24.66,
+     "corridas": [
+      1010.0,
+      1059.1,
+      1030.6
+     ]
+    },
+    "reglas_y_resto": {
+     "media": 30.2,
+     "de": 0.26,
+     "corridas": [
+      29.9,
+      30.4,
+      30.3
+     ]
+    }
+   },
+   "hechos_cargados_dw": [
+    391,
+    391,
+    391
+   ]
+  },
+  "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx": {
+   "filas_total": 884,
+   "segundos": {
+    "media": 1.75,
+    "de": 0.1,
+    "corridas": [
+     1.69,
+     1.87,
+     1.69
+    ]
+   },
+   "etapas_ms": {
+    "lectura_e_ingesta": {
+     "media": 340.3,
+     "de": 9.84,
+     "corridas": [
+      338.8,
+      350.8,
+      331.3
+     ]
+    },
+    "beto": {
+     "media": 36.53,
+     "de": 0.12,
+     "corridas": [
+      36.6,
+      36.4,
+      36.6
+     ]
+    },
+    "carga_dw": {
+     "media": 1285.07,
+     "de": 90.44,
+     "corridas": [
+      1229.0,
+      1389.4,
+      1236.8
+     ]
+    },
+    "reglas_y_resto": {
+     "media": 79.67,
+     "de": 3.15,
+     "corridas": [
+      79.7,
+      82.8,
+      76.5
+     ]
+    }
+   },
+   "hechos_cargados_dw": [
+    3708,
+    3708,
+    3708
+   ]
+  }
+ },
+ "hitl_por_corrida": [
+  {
+   "corrida": 1,
+   "casos": 188,
+   "grupos": 37,
+   "grupos_aprobables_en_bloque": 37,
+   "grupos_manuales": 0,
+   "tiempo_maquina_aprobaciones_s": 2.25,
+   "tiempo_humano_simulado_s": 296.0
+  },
+  {
+   "corrida": 2,
+   "casos": 188,
+   "grupos": 37,
+   "grupos_aprobables_en_bloque": 37,
+   "grupos_manuales": 0,
+   "tiempo_maquina_aprobaciones_s": 1.42,
+   "tiempo_humano_simulado_s": 296.0
+  },
+  {
+   "corrida": 3,
+   "casos": 188,
+   "grupos": 37,
+   "grupos_aprobables_en_bloque": 37,
+   "grupos_manuales": 0,
+   "tiempo_maquina_aprobaciones_s": 1.45,
+   "tiempo_humano_simulado_s": 296.0
+  }
+ ]
+}
