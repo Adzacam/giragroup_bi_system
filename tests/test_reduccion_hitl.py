@@ -20,3 +20,9 @@ def test_grupos_por_motivo_y_valor_normalizado():
     assert clave_grupo("CI_NOMBRE_DISCORDANTE", "CI: 123 | Nombre: A (Discordante con: B)") == clave_grupo("CI_NOMBRE_DISCORDANTE", "CI: 123 | Nombre: C (Discordante con: D)")
     assert valor_normalizado("BAJA_CONFIANZA_IA", "A: 5 | FECHA INICIO: 2026-01-02 | ESTADO: x") == valor_normalizado("BAJA_CONFIANZA_IA", "A: 9 | FECHA INICIO: 2026-03-04 | ESTADO: y")
     assert clave_grupo("HOMONIMIA", "Ing. Ana Rojas") == clave_grupo("HOMONIMIA", "ANA ROJAS")
+
+
+def test_marcador_de_ci_en_cualquier_lado_es_variante_y_encabezados_genericos_no_son_registros():
+    assert _es_variante_de_nombre("WENDY LEEN GONZALES EL HAGE", "Estudiante CI 5337187")
+    assert _motivo_no_aplicable(["(1 = Nada satisfecho/a): 5", "col_1: 3", "col_2: 4"]) == "ENCABEZADO_GENERICO"
+    assert _motivo_no_aplicable(["True: False", "True: False"]) == "ENCABEZADO_GENERICO"

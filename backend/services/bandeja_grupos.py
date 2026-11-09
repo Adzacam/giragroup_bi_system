@@ -61,6 +61,19 @@ def grupos_pendientes(db: Session, doc_ids: Optional[List[int]] = None, limite: 
     return {"total_casos": n_casos, "total_grupos": len(ordenados), "grupos": ordenados[:limite]}
 
 
+def motivo_estado(aca, tut, arca) -> str:
+    """OK, ESTADO_FUERA_DE_CATALOGO o COMBINACION_INVALIDA según el catálogo vigente de estados de acta."""
+    from services.catalogo_estados import reglas_estado
+    from pipeline.normalization.quality_rules import canonizar_estado, validar_combinacion_estados
+    r = reglas_estado()
+    ca, oka = canonizar_estado(aca, r.academicos)
+    ct, okt = canonizar_estado(tut, r.tutoria)
+    car, okar = canonizar_estado(arca, r.arca)
+    if not (oka and okt and okar):
+        return "ESTADO_FUERA_DE_CATALOGO"
+    return "OK" if validar_combinacion_estados(ca, ct, car, r.combinaciones)[0] else "COMBINACION_INVALIDA"
+
+
 def _faltan_aca(h) -> str:
     return ",".join(f for f, falta in (("estudiante", not h[2]), ("modulo", not h[3]), ("nota", h[4] is None), ("fecha", not h[5])) if falta) or "ninguno"
 
@@ -70,14 +83,17 @@ def _grupos_hechos(db: Session, doc_ids: Optional[List[int]] = None) -> Dict[str
     out: Dict[str, Dict[str, Any]] = {}
     q = db.query(FactRendimientoAcademico.id_hecho_aca, FactRendimientoAcademico.id_documento, FactRendimientoAcademico.id_estudiante,
                  FactRendimientoAcademico.id_modulo, FactRendimientoAcademico.nota_final, FactRendimientoAcademico.id_tiempo,
-                 FactRendimientoAcademico.estado_academico, FactRendimientoAcademico.estado_arca).filter(
+                 FactRendimientoAcademico.estado_academico, FactRendimientoAcademico.estado_arca,
+                 FactRendimientoAcademico.estado_tutoria).filter(
         FactRendimientoAcademico.requiere_revision == True)  # noqa: E712
     if doc_ids is not None:
         q = q.filter(FactRendimientoAcademico.id_documento.in_(list(doc_ids)))
     for h in q.all():
-        v = f"academico|doc{h[1]}|falta:{_faltan_aca(h)}|{h[6]}|{h[7]}"
+        me = motivo_estado(h[6], h[8], h[7])
+        v = f"academico|doc{h[1]}|falta:{_faltan_aca(h)}|{h[6]}|{h[8]}|{h[7]}|estado:{me}"
+        accion = "MAPEAR_ESTADO" if me != "OK" else ("APROBAR" if _faltan_aca(h) == "ninguno" else "MANUAL")
         g = out.setdefault(f"HECHO_EN_REVISION::{v}", {"clave": f"HECHO_EN_REVISION::{v}", "motivo": "HECHO_EN_REVISION", "valor": v, "n": 0,
-                                                      "ejemplo": f"HECHO-ACA-{h[0]}", "ids": [], "un_clic": _faltan_aca(h) == "ninguno"})
+                                                      "ejemplo": f"HECHO-ACA-{h[0]}", "ids": [], "un_clic": accion == "APROBAR", "accion_grupo": accion})
         g["n"] += 1
         if len(g["ids"]) < 50:
             g["ids"].append(f"HECHO-ACA-{h[0]}")
@@ -117,10 +133,12 @@ def _ids_hechos(db: Session, clave: str, doc_ids: Optional[List[int]]) -> List[s
     if v.startswith("academico"):
         q = db.query(FactRendimientoAcademico.id_hecho_aca, FactRendimientoAcademico.id_documento, FactRendimientoAcademico.id_estudiante,
                      FactRendimientoAcademico.id_modulo, FactRendimientoAcademico.nota_final, FactRendimientoAcademico.id_tiempo,
-                     FactRendimientoAcademico.estado_academico, FactRendimientoAcademico.estado_arca).filter(FactRendimientoAcademico.requiere_revision == True)  # noqa: E712
+                     FactRendimientoAcademico.estado_academico, FactRendimientoAcademico.estado_arca,
+                     FactRendimientoAcademico.estado_tutoria).filter(FactRendimientoAcademico.requiere_revision == True)  # noqa: E712
         if doc_ids is not None:
             q = q.filter(FactRendimientoAcademico.id_documento.in_(list(doc_ids)))
-        ids = [f"HECHO-ACA-{h[0]}" for h in q.all() if f"academico|doc{h[1]}|falta:{_faltan_aca(h)}|{h[6]}|{h[7]}" == v]
+        ids = [f"HECHO-ACA-{h[0]}" for h in q.all()
+               if f"academico|doc{h[1]}|falta:{_faltan_aca(h)}|{h[6]}|{h[8]}|{h[7]}|estado:{motivo_estado(h[6], h[8], h[7])}" == v]
     else:
         q = db.query(FactSituacionFinanciera.id_hecho_fin, FactSituacionFinanciera.id_documento, FactSituacionFinanciera.id_estudiante,
                      FactSituacionFinanciera.id_tiempo, FactSituacionFinanciera.monto_deuda).filter(FactSituacionFinanciera.requiere_revision == True)  # noqa: E712
@@ -131,3 +149,61 @@ def _ids_hechos(db: Session, clave: str, doc_ids: Optional[List[int]]) -> List[s
             if f"financiero|doc{h[1]}|falta:{faltan}" == v:
                 ids.append(f"HECHO-FIN-{h[0]}")
     return ids
+
+
+def mapear_estado_grupo(db: Session, clave: str, doc_ids: Optional[List[int]], canonico: Optional[str] = None) -> Dict[str, Any]:
+    """Acción de grupo 'mapear a estado canónico' (grupos de hechos con estado fuera de catálogo o combinación no admitida).
+    - COMBINACION_INVALIDA: se agrega la combinación (academico, tutoria, arca) a cat_combinacion_estado.
+    - ESTADO_FUERA_DE_CATALOGO: con `canonico` (nombre del estado del catálogo) se reescribe el estado del grupo; sin él, el valor
+      se agrega al catálogo cat_estado_* correspondiente.
+    Después se invalida la caché del catálogo y se aprueban los hechos del grupo (requiere_revision = False)."""
+    from core.database import CatalogSessionLocal
+    from models.catalogos import CatCombinacionEstado, CatEstadoAcademico, CatEstadoArca, CatEstadoReprobado
+    from services.catalogo_estados import invalidar_cache
+    partes = clave.split("::", 1)[1].split("|")
+    aca, tut, arca, motivo = partes[3], partes[4], partes[5], partes[6].split(":", 1)[1]
+    ids = [int(i.replace("HECHO-ACA-", "")) for i in _ids_hechos(db, clave, doc_ids)]
+    if motivo == "OK" or not ids:
+        return {"mapeados": 0, "motivo": motivo}
+    cdb = CatalogSessionLocal()
+    try:
+        def _id(modelo, col_id, col_nom, valor, crear):
+            fila = cdb.query(modelo).filter(getattr(modelo, col_nom) == valor).first()
+            if fila is None and crear:
+                fila = modelo(**{col_nom: valor})
+                cdb.add(fila)
+                cdb.flush()
+            return getattr(fila, col_id) if fila is not None else None
+        if motivo == "COMBINACION_INVALIDA":
+            ia = _id(CatEstadoAcademico, "id_estado_academico", "nombre_estado", aca, False)
+            it = _id(CatEstadoReprobado, "id_estado_reprobado", "nombre_detalle", tut, False)
+            ir = _id(CatEstadoArca, "id_estado_arca", "nombre_arca", arca, False)
+            existe = cdb.query(CatCombinacionEstado).filter_by(id_estado_academico=ia, id_estado_reprobado=it, id_estado_arca=ir).first()
+            if existe is None:
+                cdb.add(CatCombinacionEstado(id_estado_academico=ia, id_estado_reprobado=it, id_estado_arca=ir, activo=True))
+            elif not existe.activo:
+                existe.activo = True
+            accion = f"combinación ({aca}, {tut}, {arca}) agregada a cat_combinacion_estado"
+        else:
+            campos = (("estado_academico", aca, CatEstadoAcademico, "id_estado_academico", "nombre_estado"),
+                      ("estado_tutoria", tut, CatEstadoReprobado, "id_estado_reprobado", "nombre_detalle"),
+                      ("estado_arca", arca, CatEstadoArca, "id_estado_arca", "nombre_arca"))
+            accion = []
+            for campo, valor, modelo, cid, cnom in campos:
+                if valor and cdb.query(modelo).filter(getattr(modelo, cnom) == valor).first() is None:
+                    if canonico:
+                        db.query(FactRendimientoAcademico).filter(FactRendimientoAcademico.id_hecho_aca.in_(ids)).update(
+                            {campo: canonico}, synchronize_session=False)
+                        accion.append(f"{campo}: '{valor}' -> '{canonico}'")
+                    else:
+                        cdb.add(modelo(**{cnom: valor}))
+                        accion.append(f"'{valor}' agregado a catálogo de {campo}")
+            accion = "; ".join(accion)
+        cdb.commit()
+    finally:
+        cdb.close()
+    invalidar_cache()
+    db.query(FactRendimientoAcademico).filter(FactRendimientoAcademico.id_hecho_aca.in_(ids)).update(
+        {"requiere_revision": False}, synchronize_session=False)
+    db.commit()
+    return {"mapeados": len(ids), "motivo": motivo, "accion": accion}

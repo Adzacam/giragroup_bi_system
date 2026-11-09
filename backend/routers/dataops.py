@@ -80,7 +80,7 @@ from services.extraccion_por_encabezado import (
     normalizar_encabezado,
 )
 from services.sugerencia_hitl import es_sugerencia_un_clic, nombre_extraido, similitud_nombre_completo
-from services.bandeja_grupos import grupos_pendientes, ids_del_grupo
+from services.bandeja_grupos import grupos_pendientes, ids_del_grupo, mapear_estado_grupo
 from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, contar_hechos_en_revision, resolver_caso_hecho
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
 from pipeline.normalization.person_resolver import resolver_persona
@@ -4308,6 +4308,8 @@ class AprobarGrupoRequest(BaseModel):
     doc_id: Optional[int] = None
     doc_ids: Optional[List[int]] = None  # alcance: solo los casos de estos documentos (p. ej. los del ciclo)
     estudiante_resuelto: Optional[str] = None
+    accion: Optional[str] = None  # APROBAR (por defecto) o MAPEAR_ESTADO (grupos con estado fuera de catálogo / combinación no admitida)
+    canonico: Optional[str] = None  # estado canónico al que se reescribe el valor fuera de catálogo (MAPEAR_ESTADO)
 
 
 @router.post("/review-tray/approve-group")
@@ -4321,9 +4323,12 @@ def approve_review_group(
     ids = ids_del_grupo(db, payload.clave, alcance)
     if not ids:
         return {"status": "success", "resolved_count": 0, "message": "El grupo no tiene casos pendientes."}
+    if payload.clave.startswith("HECHO_EN_REVISION::") and (payload.accion or "").upper() == "MAPEAR_ESTADO":
+        res_m = mapear_estado_grupo(db, payload.clave, alcance, payload.canonico)
+        return {"status": "success", "resolved_count": res_m["mapeados"], "casos_del_grupo": len(ids), "grupo": payload.clave, **res_m}
     if payload.clave.startswith("HECHO_EN_REVISION::"):
         # Hechos ya cargados: el grupo se aprueba sin cambios solo si no les falta ningún campo (si falta, se corrigen uno a uno)
-        if "|falta:ninguno" not in payload.clave:
+        if "|falta:ninguno" not in payload.clave or "|estado:OK" not in payload.clave:
             return {"status": "error", "resolved_count": 0, "message": "Al grupo le faltan campos: hay que corregirlo caso por caso."}
         n_ok = sum(1 for i in ids if resolver_caso_hecho(db, str(i), {"accion": "APROBAR", "aprobacion_en_bloque": True},
                    user_id=getattr(current_user, "id", None), user_name=getattr(current_user, "username", None) or "Auditor Calidad")["status"] == "success")

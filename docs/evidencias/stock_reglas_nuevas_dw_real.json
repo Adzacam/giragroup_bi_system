@@ -1,0 +1,38 @@
+{
+ "antes": {
+  "staging_pendiente": 23121,
+  "staging_por_motivo": {
+   "CI_NOMBRE_DISCORDANTE": 20707,
+   "BAJA_CONFIANZA_IA": 1844,
+   "HOMONIMIA": 570
+  },
+  "hechos_aca_en_revision": 3678,
+  "hechos_fin_en_revision": 16,
+  "hechos_aca": 22475,
+  "hechos_fin": 10483,
+  "estudiantes": 14076
+ },
+ "acciones": {
+  "BAJA_CONFIANZA_IA -> LINEA_CARGADA_POR_REGLAS": 156,
+  "HOMONIMIA -> NO_ES_PERSONA": 570,
+  "BAJA_CONFIANZA_IA -> LINEAS_NO_APLICABLES": 1400,
+  "CI_NOMBRE_DISCORDANTE -> CI_NOMBRE_VARIANTE": 19953,
+  "hecho_aca_se_queda: falta estudiante, modulo o fecha": 61,
+  "hecho_aca_se_queda: combinacion/estado": 498,
+  "hecho_aca_liberado_por_reglas": 3208,
+  "hecho_fin_liberado_por_reglas": 13
+ },
+ "despues": {
+  "staging_pendiente": 1044,
+  "staging_por_motivo": {
+   "CI_NOMBRE_DISCORDANTE": 756,
+   "BAJA_CONFIANZA_IA": 288
+  },
+  "hechos_aca_en_revision": 559,
+  "hechos_fin_en_revision": 3,
+  "hechos_aca": 22618,
+  "hechos_fin": 10483,
+  "estudiantes": 14078
+ },
+ "segundos": 37.6
+}

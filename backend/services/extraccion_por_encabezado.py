@@ -310,9 +310,10 @@ def registros_academicos(campos: Dict[str, str],
             "programa": {"valor_extraido": pos, "metadata": {"pos_canonico": f"{pos}-M00"}} if pos else None,
             "nota_final": None,
             "nota_ya_normalizada": True,
+            "sin_nota_por_acta": True,  # el acta no trae ninguna nota (Deserción, Reprobado, En curso): límite de la fuente, no un error
             "fecha": fecha,
             **estados,
-            "requiere_revision": True,
+            "requiere_revision": fecha is None or revision_estado,
         }]
 
     if notas_modulo:

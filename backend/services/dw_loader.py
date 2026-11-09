@@ -186,8 +186,8 @@ def _es_variante_de_nombre(guardado: str, entrante: str) -> bool:
     normalizar y quitar títulos, con al menos un apellido/nombre (token de 3+ letras) en común."""
     from rapidfuzz import fuzz
     from pipeline.normalization.person_resolver import quitar_titulos, _tokens
-    if re.match(r"^\s*estudiante\s+ci\b", guardado or "", re.I):
-        return True
+    if re.match(r"^\s*estudiante\s+ci\b", guardado or "", re.I) or re.match(r"^\s*estudiante\s+ci\b", entrante or "", re.I):
+        return True  # un lado es el marcador generado desde la CI: no trae otro nombre con el que discrepar
     a, b = quitar_titulos(guardado or ""), quitar_titulos(entrante or "")
     return bool(set(_tokens(a)) & set(_tokens(b))) and fuzz.token_set_ratio(a, b) >= 85
 
@@ -1492,8 +1492,8 @@ class DWLoaderService:
             nota = normalizar_nota_base_100(nota_raw, tipo_escala)
         if nota is not None and not (0.0 <= float(nota) <= 100.0):
             nota = None  # no es una nota en base 100 (desbordaba numeric(5,2) y abortaba toda la consolidación)
-        if nota is None:
-            requiere_rev = True  # fila sin nota: queda null, nunca un valor de relleno
+        if nota is None and not resoluciones.get("sin_nota_por_acta"):
+            requiere_rev = True  # fila sin nota: queda null, nunca un valor de relleno (el acta sin notas con estado válido no es un error)
 
         def _pct_valido(v):
             try:

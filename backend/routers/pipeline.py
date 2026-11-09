@@ -7,6 +7,7 @@ Protegido por RBAC (AUDITOR_CALIDAD, ADMIN).
 """
 
 import os
+import re
 import sys
 import hashlib
 import time
@@ -175,6 +176,9 @@ def _motivo_no_aplicable(celdas):
         return "TEXTO_LIBRE_SIN_ENCABEZADO"
     if all(h.upper() in _ENCABEZADOS_NUMERACION for h, _ in estructuradas) and len(estructuradas) == len(con_valor):
         return "SOLO_NUMERACION"
+    genericos = [h for h, v in estructuradas if re.match(r"^(col_\d+|unnamed.*|true|false|informaci[oó]n b[aá]sica.*)$", h.strip(), re.I)]
+    if len(genericos) * 2 >= len(estructuradas):
+        return "ENCABEZADO_GENERICO"  # fila de títulos de columna o de casillas sin nombre: no es un registro
     return None
 
 
