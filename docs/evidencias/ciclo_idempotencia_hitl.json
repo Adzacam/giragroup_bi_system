@@ -1,0 +1,265 @@
+{
+  "mes_objetivo": "2026-03",
+  "estados": {
+    "inicial": {
+      "stg_total": 23125,
+      "stg_pendientes": 23121,
+      "stg_por_tipo_motivo": {
+        "ESTUDIANTE/CI_NOMBRE_DISCORDANTE": 20707,
+        "ESTUDIANTE/BAJA_CONFIANZA_IA": 1844,
+        "ESTUDIANTE/HOMONIMIA": 570
+      },
+      "hechos_revision_aca": 3678,
+      "hechos_revision_fin": 16,
+      "eval_docente_filas": 14234,
+      "eval_docente_sin_docente_o_modulo": 14234,
+      "hechos_aca": 22475,
+      "hechos_fin": 10483,
+      "dim_estudiante": 14076,
+      "dim_docente": 638,
+      "bandeja_total_items": 26815,
+      "bandeja_claves": [
+        "status",
+        "total",
+        "pendientes",
+        "un_clic_total",
+        "resueltos_count",
+        "resolved_history",
+        "aprobados_resumen",
+        "pagination",
+        "data",
+        "items"
+      ]
+    },
+    "tras_pasada_1": {
+      "stg_total": 24290,
+      "stg_pendientes": 24286,
+      "stg_por_tipo_motivo": {
+        "ESTUDIANTE/CI_NOMBRE_DISCORDANTE": 20975,
+        "ESTUDIANTE/BAJA_CONFIANZA_IA": 2144,
+        "ESTUDIANTE/HOMONIMIA": 1167
+      },
+      "hechos_revision_aca": 3678,
+      "hechos_revision_fin": 16,
+      "eval_docente_filas": 23442,
+      "eval_docente_sin_docente_o_modulo": 23442,
+      "hechos_aca": 22475,
+      "hechos_fin": 10483,
+      "dim_estudiante": 14196,
+      "dim_docente": 638,
+      "bandeja_total_items": 27980,
+      "bandeja_claves": [
+        "status",
+        "total",
+        "pendientes",
+        "un_clic_total",
+        "resueltos_count",
+        "resolved_history",
+        "aprobados_resumen",
+        "pagination",
+        "data",
+        "items"
+      ]
+    },
+    "tras_pasada_2": {
+      "stg_total": 24290,
+      "stg_pendientes": 24286,
+      "stg_por_tipo_motivo": {
+        "ESTUDIANTE/CI_NOMBRE_DISCORDANTE": 20975,
+        "ESTUDIANTE/BAJA_CONFIANZA_IA": 2144,
+        "ESTUDIANTE/HOMONIMIA": 1167
+      },
+      "hechos_revision_aca": 3678,
+      "hechos_revision_fin": 16,
+      "eval_docente_filas": 23442,
+      "eval_docente_sin_docente_o_modulo": 23442,
+      "hechos_aca": 22475,
+      "hechos_fin": 10483,
+      "dim_estudiante": 14196,
+      "dim_docente": 638,
+      "bandeja_total_items": 27980,
+      "bandeja_claves": [
+        "status",
+        "total",
+        "pendientes",
+        "un_clic_total",
+        "resueltos_count",
+        "resolved_history",
+        "aprobados_resumen",
+        "pagination",
+        "data",
+        "items"
+      ]
+    }
+  },
+  "pasadas": [
+    {
+      "n": 1,
+      "segundos": 159.0,
+      "archivos": [
+        {
+          "archivo": "BD Cobranzas.xlsx",
+          "http": 200,
+          "filas": 746,
+          "hechos": 718
+        },
+        {
+          "archivo": "BD Egresos.xlsx",
+          "http": 200,
+          "filas": 336,
+          "hechos": 324
+        },
+        {
+          "archivo": "BD Techos.xlsx",
+          "http": 200,
+          "filas": 1,
+          "hechos": 1
+        },
+        {
+          "archivo": "Base centralizada Académica ARCA (1).xlsx",
+          "http": 200,
+          "filas": 753,
+          "hechos": 1372
+        },
+        {
+          "archivo": "EJECUTADO VS META.xlsx",
+          "http": 200,
+          "filas": 36,
+          "hechos": 99
+        },
+        {
+          "archivo": "Evaluación Docente y Unifranz.xlsx",
+          "http": 200,
+          "filas": 873,
+          "hechos": 17804
+        },
+        {
+          "archivo": "Experiencia Docente 2.0.xlsx",
+          "http": 200,
+          "filas": 609,
+          "hechos": 0
+        },
+        {
+          "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+          "http": 200,
+          "filas": 2303,
+          "hechos": 2109
+        },
+        {
+          "archivo": "TBL_INSCRITOS.xlsx",
+          "http": 200,
+          "filas": 391,
+          "hechos": 124
+        },
+        {
+          "archivo": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+          "http": 200,
+          "filas": 883,
+          "hechos": 3705
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "segundos": 97.6,
+      "archivos": [
+        {
+          "archivo": "BD Cobranzas.xlsx",
+          "http": 200,
+          "filas": 746,
+          "hechos": 718
+        },
+        {
+          "archivo": "BD Egresos.xlsx",
+          "http": 200,
+          "filas": 336,
+          "hechos": 324
+        },
+        {
+          "archivo": "BD Techos.xlsx",
+          "http": 200,
+          "filas": 1,
+          "hechos": 1
+        },
+        {
+          "archivo": "Base centralizada Académica ARCA (1).xlsx",
+          "http": 200,
+          "filas": 753,
+          "hechos": 1372
+        },
+        {
+          "archivo": "EJECUTADO VS META.xlsx",
+          "http": 200,
+          "filas": 36,
+          "hechos": 99
+        },
+        {
+          "archivo": "Evaluación Docente y Unifranz.xlsx",
+          "http": 200,
+          "filas": 873,
+          "hechos": 17804
+        },
+        {
+          "archivo": "Experiencia Docente 2.0.xlsx",
+          "http": 200,
+          "filas": 609,
+          "hechos": 0
+        },
+        {
+          "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+          "http": 200,
+          "filas": 2303,
+          "hechos": 2109
+        },
+        {
+          "archivo": "TBL_INSCRITOS.xlsx",
+          "http": 200,
+          "filas": 391,
+          "hechos": 124
+        },
+        {
+          "archivo": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+          "http": 200,
+          "filas": 883,
+          "hechos": 3705
+        }
+      ]
+    }
+  ],
+  "delta_pasada_1": {
+    "stg_total": 1165,
+    "stg_pendientes": 1165,
+    "hechos_revision_aca": 0,
+    "hechos_revision_fin": 0,
+    "eval_docente_filas": 9208,
+    "eval_docente_sin_docente_o_modulo": 9208,
+    "hechos_aca": 0,
+    "hechos_fin": 0,
+    "dim_estudiante": 120,
+    "dim_docente": 0,
+    "bandeja_total_items": 1165,
+    "stg_por_tipo_motivo": {
+      "ESTUDIANTE/CI_NOMBRE_DISCORDANTE": 268,
+      "ESTUDIANTE/BAJA_CONFIANZA_IA": 300,
+      "ESTUDIANTE/HOMONIMIA": 597
+    }
+  },
+  "delta_pasada_2": {
+    "stg_total": 0,
+    "stg_pendientes": 0,
+    "hechos_revision_aca": 0,
+    "hechos_revision_fin": 0,
+    "eval_docente_filas": 0,
+    "eval_docente_sin_docente_o_modulo": 0,
+    "hechos_aca": 0,
+    "hechos_fin": 0,
+    "dim_estudiante": 0,
+    "dim_docente": 0,
+    "bandeja_total_items": 0,
+    "stg_por_tipo_motivo": {
+      "ESTUDIANTE/CI_NOMBRE_DISCORDANTE": 0,
+      "ESTUDIANTE/BAJA_CONFIANZA_IA": 0,
+      "ESTUDIANTE/HOMONIMIA": 0
+    }
+  }
+}
