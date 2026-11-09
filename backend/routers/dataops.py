@@ -4300,6 +4300,7 @@ def get_review_tray(
 def get_review_tray_groups(
     doc_id: Optional[int] = Query(None),
     doc_desde: Optional[int] = Query(None, description="Solo los documentos con id_documento >= doc_desde (los de un ciclo)"),
+    id_lote: Optional[str] = Query(None, description="Solo los documentos de este lote"),
     limite: int = Query(100, ge=1, le=1000),
     db: Session = Depends(get_db),
 ):
@@ -4307,7 +4308,13 @@ def get_review_tray_groups(
     docs = [doc_id] if doc_id is not None else None
     if doc_desde is not None:
         docs = [r[0] for r in db.query(DimOrigenDocumental.id_documento).filter(DimOrigenDocumental.id_documento >= doc_desde).all()]
-    return grupos_pendientes(db, docs, limite=limite)
+    if id_lote is not None and docs is None:
+        _, docs_lote, _ = _resolver_documentos_lote(db, str(id_lote))
+        docs = [d.id_documento for d in docs_lote] if docs_lote else [-1]
+    res = grupos_pendientes(db, docs, limite=limite)
+    if docs is not None:
+        res["doc_ids"] = docs  # alcance con el que se listó: el front lo reenvía al aprobar el grupo
+    return res
 
 
 class AprobarGrupoRequest(BaseModel):

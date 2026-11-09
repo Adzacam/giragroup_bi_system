@@ -9,8 +9,8 @@ const accionDe = (g) => g.accion_grupo || 'APROBAR';
  * Bandeja por grupos: casos pendientes agrupados por (motivo, valor normalizado). Cada grupo se resuelve con una sola acción:
  * Aprobar grupo (APROBAR), Mapear a estado canónico (MAPEAR_ESTADO) o Corregir fecha (CORREGIR_FECHA); los MANUAL se revisan en la vista individual.
  */
-export default function GruposBandeja({ docId = null, onVerIndividual, onCambio }) {
-  const [data, setData] = useState({ total_casos: 0, total_grupos: 0, grupos: [] });
+export default function GruposBandeja({ docId = null, idLote = null, onVerIndividual, onCambio }) {
+  const [data, setData] = useState({ total_casos: 0, total_grupos: 0, grupos: [], doc_ids: null });
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [enCurso, setEnCurso] = useState(null);
@@ -23,13 +23,13 @@ export default function GruposBandeja({ docId = null, onVerIndividual, onCambio 
     try {
       setCargando(true);
       setError('');
-      setData(await dataopsApi.getGruposBandeja({ docId }));
+      setData(await dataopsApi.getGruposBandeja({ docId, idLote: docId ? null : idLote }));
     } catch (e) {
       setError(e.response?.data?.detail || e.message || 'No se pudieron cargar los grupos.');
     } finally {
       setCargando(false);
     }
-  }, [docId]);
+  }, [docId, idLote]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -43,7 +43,7 @@ export default function GruposBandeja({ docId = null, onVerIndividual, onCambio 
     try {
       setEnCurso(g.clave);
       const accion = accionDe(g);
-      const res = await dataopsApi.aprobarGrupo({ clave: g.clave, accion: accion === 'MAPEAR_ESTADO' ? 'MAPEAR_ESTADO' : null, docIds: docId ? [docId] : null, ...extra });
+      const res = await dataopsApi.aprobarGrupo({ clave: g.clave, accion: accion === 'MAPEAR_ESTADO' ? 'MAPEAR_ESTADO' : null, docIds: data.doc_ids || (docId ? [docId] : null), ...extra });
       if (res.status === 'error') {
         sileoToast.error({ title: 'No se pudo resolver el grupo', description: res.message });
       } else {

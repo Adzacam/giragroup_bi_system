@@ -370,8 +370,9 @@ export const dataopsApi = {
    * Casos pendientes agrupados por (motivo, valor normalizado): cada grupo se resuelve con una sola acción.
    * Cada grupo trae accion_grupo: APROBAR | MAPEAR_ESTADO | CORREGIR_FECHA | MANUAL (ausente en los de staging).
    */
-  getGruposBandeja: async ({ docDesde = null, docId = null, limite = 1000 } = {}) => {
+  getGruposBandeja: async ({ docDesde = null, docId = null, idLote = null, limite = 1000 } = {}) => {
     const params = { limite };
+    if (idLote) params.id_lote = idLote;
     if (docDesde) params.doc_desde = docDesde;
     if (docId) params.doc_id = docId;
     const res = await client.get(`${BASE_URL}/review-tray/grupos`, { params, timeout: LECTURA_LOTE_TIMEOUT_MS });

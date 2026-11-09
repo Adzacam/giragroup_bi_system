@@ -632,7 +632,7 @@ export default function HumanReviewFlowView() {
         /* Pestaña: Pendientes con Layout Split-Screen Desktop / Mobile */
         <div>
           {vista === 'GRUPOS' ? (
-            <GruposBandeja docId={selectedDocId} onVerIndividual={() => setVista('INDIVIDUAL')} onCambio={() => loadReviewQueue(selectedDocId)} />
+            <GruposBandeja docId={selectedDocId} idLote={batchId || localStorage.getItem('last_active_batch_id')} onVerIndividual={() => setVista('INDIVIDUAL')} onCambio={() => loadReviewQueue(selectedDocId)} />
           ) : isLoading ? (
             <div className="floating-artifact" style={{ padding: '64px', textAlign: 'center', color: 'var(--color-slate-gray)' }}>
               Cargando casos derivados a revisión humana...
