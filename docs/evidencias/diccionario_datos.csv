@@ -1,0 +1,415 @@
+﻿tabla,columna,tipo,nulo,pk_fk,referencia,descripcion
+bi.ref_kpi,codigo,character varying(10),NO,PK,,Código del indicador o perspectiva
+bi.ref_kpi,perspectiva,character varying(30),NO,FK,bi.ref_perspectiva.codigo,Columna perspectiva (derivada del nombre)
+bi.ref_kpi,nombre,character varying(120),NO,,,Nombre
+bi.ref_kpi,descripcion,character varying(300),SI,,,Descripción
+bi.ref_kpi,unidad,character varying(6),NO,,,Columna unidad (derivada del nombre)
+bi.ref_kpi,sentido,character varying(3),NO,,,Columna sentido (derivada del nombre)
+bi.ref_kpi,meta,"numeric(14,2)",SI,,,Meta del indicador
+bi.ref_kpi,umbral_verde,"numeric(14,2)",SI,,,Umbral del semáforo verde
+bi.ref_kpi,umbral_ambar,"numeric(14,2)",SI,,,Umbral del semáforo ámbar
+bi.ref_kpi,peso,"numeric(5,2)",NO,,,Columna peso (derivada del nombre)
+bi.ref_kpi,orden,smallint,NO,,,Orden de presentación
+bi.ref_kpi,activo,boolean,NO,,,True si el registro está vigente
+bi.ref_kpi,actualizado_en,timestamp with time zone,NO,,,Columna actualizado en (derivada del nombre)
+bi.ref_kpi,actualizado_por,character varying(120),SI,,,Columna actualizado por (derivada del nombre)
+bi.ref_perspectiva,codigo,character varying(30),NO,PK,,Código del indicador o perspectiva
+bi.ref_perspectiva,nombre,character varying(80),NO,,,Nombre
+bi.ref_perspectiva,objetivo,character varying(300),NO,,,Columna objetivo (derivada del nombre)
+bi.ref_perspectiva,pregunta,character varying(200),NO,,,Columna pregunta (derivada del nombre)
+bi.ref_perspectiva,peso,"numeric(5,2)",NO,,,Columna peso (derivada del nombre)
+bi.ref_perspectiva,orden,smallint,NO,,,Orden de presentación
+bi.ref_perspectiva,activa,boolean,NO,,,Columna activa (derivada del nombre)
+bi.ref_perspectiva,actualizado_en,timestamp with time zone,NO,,,Columna actualizado en (derivada del nombre)
+bi.ref_perspectiva,actualizado_por,character varying(120),SI,,,Columna actualizado por (derivada del nombre)
+public.bridge_modulo_docente,id_asignacion,integer,NO,PK,,Columna id asignacion (derivada del nombre)
+public.bridge_modulo_docente,id_modulo,integer,NO,FK,public.dim_modulo.id_modulo,Módulo o programa (dim_modulo)
+public.bridge_modulo_docente,id_docente,integer,NO,FK,public.dim_docente.id_docente,Docente (dim_docente)
+public.bridge_modulo_docente,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.bridge_modulo_docente,tipo_docente,character varying(30),SI,,,Columna tipo docente (derivada del nombre)
+public.bridge_modulo_docente,grado_academico,character varying(50),SI,,,Columna grado academico (derivada del nombre)
+public.bridge_modulo_docente,horas_modulo,"numeric(6,2)",SI,,,Columna horas modulo (derivada del nombre)
+public.bridge_modulo_docente,pago_docente,"numeric(12,2)",SI,,,Columna pago docente (derivada del nombre)
+public.bridge_modulo_docente,fecha_inicio,date,SI,,,Columna fecha inicio (derivada del nombre)
+public.bridge_modulo_docente,fecha_fin,date,SI,,,Columna fecha fin (derivada del nombre)
+public.cache_indice_beto,hash_texto,character(64),NO,PK,,Columna hash texto (derivada del nombre)
+public.cache_indice_beto,modelo,character varying(40),NO,PK,,Columna modelo (derivada del nombre)
+public.cache_indice_beto,indice,"numeric(6,4)",NO,,,Columna indice (derivada del nombre)
+public.cache_indice_beto,creado_en,timestamp with time zone,NO,,,Columna creado en (derivada del nombre)
+public.carga_fila_origen,clave,character varying(64),NO,PK,,Clave de idempotencia por fila de origen
+public.carga_fila_origen,id_documento,integer,SI,,,Documento de origen (dim_origen_documental) del que viene el dato
+public.carga_fila_origen,tabla,character varying(40),SI,,,Columna tabla (derivada del nombre)
+public.carga_fila_origen,creado_en,timestamp without time zone,SI,,,Columna creado en (derivada del nombre)
+public.cat_categoria_financiera,id_categoria_fin,integer,NO,PK,,Columna id categoria fin (derivada del nombre)
+public.cat_categoria_financiera,codigo,character varying(50),NO,,,Código del indicador o perspectiva
+public.cat_categoria_financiera,nombre_categoria,character varying(100),NO,,,Columna nombre categoria (derivada del nombre)
+public.cat_categoria_financiera,tipo_flujo,character varying(30),NO,,,Columna tipo flujo (derivada del nombre)
+public.cat_categoria_financiera,created_at,timestamp without time zone,SI,,,Fecha y hora de creación
+public.cat_combinacion_estado,id_combinacion,integer,NO,PK,,Columna id combinacion (derivada del nombre)
+public.cat_combinacion_estado,id_estado_academico,integer,NO,FK,public.cat_estado_academico.id_estado_academico,Columna id estado academico (derivada del nombre)
+public.cat_combinacion_estado,id_estado_reprobado,integer,NO,FK,public.cat_estado_reprobado.id_estado_reprobado,Columna id estado reprobado (derivada del nombre)
+public.cat_combinacion_estado,id_estado_arca,integer,NO,FK,public.cat_estado_arca.id_estado_arca,Columna id estado arca (derivada del nombre)
+public.cat_combinacion_estado,activo,boolean,NO,,,True si el registro está vigente
+public.cat_concepto_financiero,id_concepto,integer,NO,PK,,Columna id concepto (derivada del nombre)
+public.cat_concepto_financiero,codigo_concepto,character varying(50),SI,,,Columna codigo concepto (derivada del nombre)
+public.cat_concepto_financiero,nombre_canonico,character varying(200),NO,,,Columna nombre canonico (derivada del nombre)
+public.cat_concepto_financiero,tipo_categoria,character varying(50),SI,,,Columna tipo categoria (derivada del nombre)
+public.cat_escuela,id_escuela,integer,NO,PK,,Columna id escuela (derivada del nombre)
+public.cat_escuela,nombre_escuela,character varying(100),NO,,,Columna nombre escuela (derivada del nombre)
+public.cat_escuela,sigla,character varying(20),SI,,,Columna sigla (derivada del nombre)
+public.cat_estado_academico,id_estado_academico,integer,NO,PK,,Columna id estado academico (derivada del nombre)
+public.cat_estado_academico,nombre_estado,character varying(100),NO,,,Columna nombre estado (derivada del nombre)
+public.cat_estado_arca,id_estado_arca,integer,NO,PK,,Columna id estado arca (derivada del nombre)
+public.cat_estado_arca,nombre_arca,character varying(100),NO,,,Columna nombre arca (derivada del nombre)
+public.cat_estado_reprobado,id_estado_reprobado,integer,NO,PK,,Columna id estado reprobado (derivada del nombre)
+public.cat_estado_reprobado,nombre_detalle,character varying(100),NO,,,Columna nombre detalle (derivada del nombre)
+public.cat_etiqueta_clasificacion,id_etiqueta,integer,NO,PK,,Columna id etiqueta (derivada del nombre)
+public.cat_etiqueta_clasificacion,categoria,character varying(50),NO,,,Columna categoria (derivada del nombre)
+public.cat_etiqueta_clasificacion,subtipo,character varying(50),SI,,,Columna subtipo (derivada del nombre)
+public.cat_etiqueta_clasificacion,palabra_clave,character varying(100),NO,,,Columna palabra clave (derivada del nombre)
+public.cat_etiqueta_clasificacion,ambito,character varying(30),SI,,,Columna ambito (derivada del nombre)
+public.cat_etiqueta_clasificacion,peso,integer,SI,,,Columna peso (derivada del nombre)
+public.cat_guia_texto_plano,id_guia,integer,NO,PK,,Columna id guia (derivada del nombre)
+public.cat_guia_texto_plano,subtipo,character varying(50),NO,,,Columna subtipo (derivada del nombre)
+public.cat_guia_texto_plano,descripcion,character varying(255),SI,,,Descripción
+public.cat_guia_texto_plano,plantilla_texto,text,NO,,,Columna plantilla texto (derivada del nombre)
+public.cat_guia_texto_plano,campos_requeridos,text,SI,,,Columna campos requeridos (derivada del nombre)
+public.cat_guia_texto_plano,prioridad,integer,SI,,,Columna prioridad (derivada del nombre)
+public.cat_historico_equivalencia,id_equivalencia,integer,NO,PK,,Columna id equivalencia (derivada del nombre)
+public.cat_historico_equivalencia,id_concepto,integer,NO,FK,public.cat_concepto_financiero.id_concepto,Columna id concepto (derivada del nombre)
+public.cat_historico_equivalencia,termino_origen,character varying(150),NO,,,Columna termino origen (derivada del nombre)
+public.cat_historico_equivalencia,periodo_historico,character varying(50),SI,,,Columna periodo historico (derivada del nombre)
+public.cat_historico_equivalencia,confianza_mapeo,"numeric(5,4)",SI,,,Columna confianza mapeo (derivada del nombre)
+public.cat_historico_equivalencia,fuente_referencia,character varying(100),SI,,,Columna fuente referencia (derivada del nombre)
+public.cat_institucion,id_institucion,integer,NO,PK,,Columna id institucion (derivada del nombre)
+public.cat_institucion,nombre_institucion,character varying(100),NO,,,Columna nombre institucion (derivada del nombre)
+public.cat_institucion,sigla,character varying(30),SI,,,Columna sigla (derivada del nombre)
+public.cat_institucion,tipo_escala_default,character varying(20),SI,,,Columna tipo escala default (derivada del nombre)
+public.cat_institucion,created_at,timestamp without time zone,SI,,,Fecha y hora de creación
+public.cat_institucion_convenio,id_convenio,integer,NO,PK,,Columna id convenio (derivada del nombre)
+public.cat_institucion_convenio,nombre_institucion,character varying(200),NO,,,Columna nombre institucion (derivada del nombre)
+public.cat_institucion_convenio,variantes_origen,text,SI,,,Columna variantes origen (derivada del nombre)
+public.cat_institucion_convenio,fuente_referencia,character varying(150),SI,,,Columna fuente referencia (derivada del nombre)
+public.cat_mapeo_columna,id_mapeo,integer,NO,PK,,Columna id mapeo (derivada del nombre)
+public.cat_mapeo_columna,campo_canonico,character varying(50),NO,,,Columna campo canonico (derivada del nombre)
+public.cat_mapeo_columna,alias_columna,character varying(100),NO,,,Columna alias columna (derivada del nombre)
+public.cat_mapeo_columna,tipo_entidad,character varying(50),NO,,,Columna tipo entidad (derivada del nombre)
+public.cat_modalidad,id_modalidad,integer,NO,PK,,Columna id modalidad (derivada del nombre)
+public.cat_modalidad,nombre_modalidad,character varying(100),NO,,,Columna nombre modalidad (derivada del nombre)
+public.cat_modulo,id_modulo,integer,NO,PK,,Módulo o programa (dim_modulo)
+public.cat_modulo,codigo_modulo,character varying(50),SI,,,Columna codigo modulo (derivada del nombre)
+public.cat_modulo,nombre_canonico,character varying(200),NO,,,Columna nombre canonico (derivada del nombre)
+public.cat_modulo,area,character varying(100),SI,,,Columna area (derivada del nombre)
+public.cat_modulo,nombre_modulo,character varying(255),SI,,,Nombre del módulo o programa
+public.cat_programa,id_programa,integer,NO,PK,,Columna id programa (derivada del nombre)
+public.cat_programa,pos_code,character varying(50),NO,,,Código POS del programa o módulo (POS-xxxx[-Mnn])
+public.cat_programa,nombre_programa,character varying(255),NO,,,Columna nombre programa (derivada del nombre)
+public.cat_programa,version,integer,SI,,,Versión del registro (control optimista)
+public.cat_programa,nombre_completo_raw,character varying(300),SI,,,Columna nombre completo raw (derivada del nombre)
+public.cat_programa,id_escuela,integer,SI,,,Columna id escuela (derivada del nombre)
+public.cat_programa,id_tipo_programa,integer,SI,,,Columna id tipo programa (derivada del nombre)
+public.cat_programa,id_modalidad,integer,SI,,,Columna id modalidad (derivada del nombre)
+public.cat_programa,inversion_base,"numeric(12,2)",SI,,,Columna inversion base (derivada del nombre)
+public.cat_programa,punto_equilibrio,integer,SI,,,Columna punto equilibrio (derivada del nombre)
+public.cat_programa,horas_totales,integer,SI,,,Columna horas totales (derivada del nombre)
+public.cat_programa,created_at,timestamp without time zone,SI,,,Fecha y hora de creación
+public.cat_programa,tipo_escala,character varying(20),SI,,,Columna tipo escala (derivada del nombre)
+public.cat_tipo_programa,id_tipo_programa,integer,NO,PK,,Columna id tipo programa (derivada del nombre)
+public.cat_tipo_programa,nombre_tipo,character varying(100),NO,,,Columna nombre tipo (derivada del nombre)
+public.dataops_tarea,id,integer,NO,PK,,Columna id (derivada del nombre)
+public.dataops_tarea,tipo,character varying(20),NO,,,Columna tipo (derivada del nombre)
+public.dataops_tarea,id_lote,integer,SI,,,Columna id lote (derivada del nombre)
+public.dataops_tarea,estado,character varying(15),NO,,,Columna estado (derivada del nombre)
+public.dataops_tarea,total,integer,NO,,,Columna total (derivada del nombre)
+public.dataops_tarea,procesados,integer,NO,,,Columna procesados (derivada del nombre)
+public.dataops_tarea,resultado,jsonb,SI,,,Columna resultado (derivada del nombre)
+public.dataops_tarea,error,text,SI,,,Columna error (derivada del nombre)
+public.dataops_tarea,iniciado_por,character varying(100),SI,,,Columna iniciado por (derivada del nombre)
+public.dataops_tarea,iniciado_en,timestamp with time zone,NO,,,Columna iniciado en (derivada del nombre)
+public.dataops_tarea,actualizado_en,timestamp with time zone,NO,,,Columna actualizado en (derivada del nombre)
+public.dataops_tarea,terminado_en,timestamp with time zone,SI,,,Columna terminado en (derivada del nombre)
+public.dim_categoria_financiera,id_categoria,integer,NO,PK,,Categoría financiera (dim_categoria_financiera)
+public.dim_categoria_financiera,nombre_categoria,character varying(200),NO,,,Columna nombre categoria (derivada del nombre)
+public.dim_categoria_financiera,tipo,character varying(50),SI,,,Columna tipo (derivada del nombre)
+public.dim_categoria_financiera,id_cat_categoria_fin,integer,SI,FK,public.cat_categoria_financiera.id_categoria_fin,Columna id cat categoria fin (derivada del nombre)
+public.dim_docente,id_docente,integer,NO,PK,,Docente (dim_docente)
+public.dim_docente,nombre_completo,character varying(200),NO,,,Nombre completo de la persona
+public.dim_docente,area_especialidad,character varying(200),SI,,,Columna area especialidad (derivada del nombre)
+public.dim_docente,fk_estado,character(1),SI,,,"Estado de la llave: A CI exacta, B coincidencia aproximada, C miembro nuevo sin candidatos"
+public.dim_estudiante,id_estudiante,integer,NO,PK,,Estudiante (dim_estudiante)
+public.dim_estudiante,nombre_completo,character varying(200),NO,,,Nombre completo de la persona
+public.dim_estudiante,codigo_estudiante,character varying(50),SI,,,Columna codigo estudiante (derivada del nombre)
+public.dim_estudiante,genero,character varying(20),SI,,,Columna genero (derivada del nombre)
+public.dim_estudiante,ciudad,character varying(100),SI,,,Columna ciudad (derivada del nombre)
+public.dim_estudiante,nivel_academico,character varying(100),SI,,,Columna nivel academico (derivada del nombre)
+public.dim_estudiante,edad,integer,SI,,,Columna edad (derivada del nombre)
+public.dim_estudiante,ocupacion,character varying(100),SI,,,Columna ocupacion (derivada del nombre)
+public.dim_estudiante,estado_civil,character varying(50),SI,,,Columna estado civil (derivada del nombre)
+public.dim_estudiante,ci,character varying(50),SI,,,Cédula de identidad con complemento
+public.dim_estudiante,id_temporal,character varying(100),SI,,,Columna id temporal (derivada del nombre)
+public.dim_estudiante,deprecado,boolean,SI,,,Columna deprecado (derivada del nombre)
+public.dim_estudiante,fusionado_en,integer,SI,FK,public.dim_estudiante.id_estudiante,Columna fusionado en (derivada del nombre)
+public.dim_estudiante,ci_numero,character varying(30),SI,,,Número de la cédula normalizado
+public.dim_estudiante,ci_complemento,character varying(10),SI,,,Columna ci complemento (derivada del nombre)
+public.dim_estudiante,identidad_verificada,boolean,SI,,,Columna identidad verificada (derivada del nombre)
+public.dim_estudiante,id_institucion,integer,SI,FK,public.cat_institucion.id_institucion,Columna id institucion (derivada del nombre)
+public.dim_estudiante,programa_origen,character varying(200),SI,,,Columna programa origen (derivada del nombre)
+public.dim_estudiante,fk_estado,character(1),SI,,,"Estado de la llave: A CI exacta, B coincidencia aproximada, C miembro nuevo sin candidatos"
+public.dim_meta,id_meta,integer,NO,PK,,Columna id meta (derivada del nombre)
+public.dim_meta,categoria,character varying(50),NO,,,Columna categoria (derivada del nombre)
+public.dim_meta,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Día del calendario (dim_tiempo)
+public.dim_meta,monto_meta,"numeric(14,2)",SI,,,Meta del mes en Bs
+public.dim_meta,tipo_programa,character varying(50),SI,,,Columna tipo programa (derivada del nombre)
+public.dim_modulo,id_modulo,integer,NO,PK,,Módulo o programa (dim_modulo)
+public.dim_modulo,nombre_modulo,character varying(200),NO,,,Nombre del módulo o programa
+public.dim_modulo,nombre_institucion,character varying(200),NO,,,Columna nombre institucion (derivada del nombre)
+public.dim_modulo,programa,character varying(200),SI,,,Programa al que pertenece
+public.dim_modulo,pos_code,character varying(50),SI,,,Código POS del programa o módulo (POS-xxxx[-Mnn])
+public.dim_modulo,id_cat_modulo,integer,SI,FK,public.cat_modulo.id_modulo,Columna id cat modulo (derivada del nombre)
+public.dim_modulo,id_institucion,integer,SI,FK,public.cat_institucion.id_institucion,Columna id institucion (derivada del nombre)
+public.dim_origen_documental,id_documento,integer,NO,PK,,Documento de origen (dim_origen_documental) del que viene el dato
+public.dim_origen_documental,tipo_documento,character varying(50),SI,,,Columna tipo documento (derivada del nombre)
+public.dim_origen_documental,nombre_archivo,character varying(500),SI,,,Nombre del archivo subido
+public.dim_origen_documental,fecha_procesamiento,timestamp without time zone,SI,,,Columna fecha procesamiento (derivada del nombre)
+public.dim_origen_documental,tipo_escala,character varying(20),SI,,,Columna tipo escala (derivada del nombre)
+public.dim_origen_documental,id_lote,integer,SI,FK,public.lote.id_lote,Columna id lote (derivada del nombre)
+public.dim_origen_documental,tipo_fuente,character varying(30),SI,,,"Tipo de fuente detectado (ACTA, COBRANZA, RENTABILIDAD...)"
+public.dim_origen_documental,institucion,character varying(100),SI,,,Columna institucion (derivada del nombre)
+public.dim_origen_documental,periodo,character varying(30),SI,,,Columna periodo (derivada del nombre)
+public.dim_origen_documental,hash_sha256,character varying(64),SI,,,Hash SHA-256 del archivo
+public.dim_tiempo,id_tiempo,integer,NO,PK,,Día del calendario (dim_tiempo)
+public.dim_tiempo,gestion,integer,NO,,,Año (gestión)
+public.dim_tiempo,semestre,integer,NO,,,Columna semestre (derivada del nombre)
+public.dim_tiempo,mes,integer,NO,,,Mes (1-12)
+public.dim_tiempo,nombre_mes,character varying(20),NO,,,Columna nombre mes (derivada del nombre)
+public.dim_tiempo,periodo_mes,character varying(7),NO,,,Período AAAA-MM
+public.dim_tiempo,fecha,date,NO,,,Fecha
+public.dim_tiempo,trimestre,integer,NO,,,Columna trimestre (derivada del nombre)
+public.dim_tiempo,semana_iso,integer,NO,,,Columna semana iso (derivada del nombre)
+public.dim_tiempo,dia_mes,integer,NO,,,Columna dia mes (derivada del nombre)
+public.dim_tiempo,dia_semana,integer,NO,,,Columna dia semana (derivada del nombre)
+public.dim_tiempo,nombre_dia,character varying(20),NO,,,Columna nombre dia (derivada del nombre)
+public.dim_tiempo,es_fin_semana,boolean,NO,,,Columna es fin semana (derivada del nombre)
+public.fact_cobranzas_proyectadas,id_hecho_cobro,integer,NO,PK,,Columna id hecho cobro (derivada del nombre)
+public.fact_cobranzas_proyectadas,id_estudiante,integer,SI,FK,public.dim_estudiante.id_estudiante,Estudiante (dim_estudiante)
+public.fact_cobranzas_proyectadas,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Día del calendario (dim_tiempo)
+public.fact_cobranzas_proyectadas,monto_esperado,"numeric(10,2)",SI,,,Columna monto esperado (derivada del nombre)
+public.fact_cobranzas_proyectadas,estado_pago,character varying(50),SI,,,Columna estado pago (derivada del nombre)
+public.fact_cobranzas_proyectadas,created_at,timestamp without time zone,SI,,,Fecha y hora de creación
+public.fact_costo_programa,id_hecho_costo,integer,NO,PK,,Columna id hecho costo (derivada del nombre)
+public.fact_costo_programa,id_modulo,integer,NO,FK,public.dim_modulo.id_modulo,Módulo o programa (dim_modulo)
+public.fact_costo_programa,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.fact_costo_programa,egreso_anterior,"numeric(14,2)",SI,,,Columna egreso anterior (derivada del nombre)
+public.fact_costo_programa,egreso_real,"numeric(14,2)",SI,,,Columna egreso real (derivada del nombre)
+public.fact_costo_programa,ingreso,"numeric(14,2)",SI,,,Columna ingreso (derivada del nombre)
+public.fact_costo_programa,rentabilidad,"numeric(14,2)",SI,,,Columna rentabilidad (derivada del nombre)
+public.fact_costo_programa,requiere_revision,boolean,SI,,,True si el hecho espera revisión humana
+public.fact_costo_programa,motivo_revision,character varying(300),SI,,,"Motivo de la marca de revisión o nota informativa (LIMITACION_FUENTE, TIEMPO_IMPUTADO, RESUELTO_HUMANO)"
+public.fact_costo_programa,actualizado_en,timestamp with time zone,SI,,,Columna actualizado en (derivada del nombre)
+public.fact_evaluacion_docente,id_hecho_eval,integer,NO,PK,,Columna id hecho eval (derivada del nombre)
+public.fact_evaluacion_docente,id_docente,integer,SI,FK,public.dim_docente.id_docente,Docente (dim_docente)
+public.fact_evaluacion_docente,id_modulo,integer,SI,FK,public.dim_modulo.id_modulo,Módulo o programa (dim_modulo)
+public.fact_evaluacion_docente,id_estudiante,integer,SI,FK,public.dim_estudiante.id_estudiante,Estudiante (dim_estudiante)
+public.fact_evaluacion_docente,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Día del calendario (dim_tiempo)
+public.fact_evaluacion_docente,pregunta_bloque,character varying(500),SI,,,Columna pregunta bloque (derivada del nombre)
+public.fact_evaluacion_docente,puntuacion,"numeric(4,2)",SI,,,Puntaje de la respuesta
+public.fact_evaluacion_docente,comentario,character varying(1000),SI,,,Comentario libre de la respuesta
+public.fact_evaluacion_docente,tipo_pregunta,character varying(20),SI,,,"DOCENTE, INSTITUCIONAL o NPS"
+public.fact_evaluacion_docente,escala_max,integer,SI,,,Máximo de la escala de la pregunta (5 o 10)
+public.fact_evaluacion_docente,clave_respuesta,character varying(64),SI,,,Hash estable de la fila y la pregunta (idempotencia)
+public.fact_evaluacion_docente,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.fact_evaluacion_docente,requiere_revision,boolean,SI,,,True si el hecho espera revisión humana
+public.fact_evaluacion_docente,motivo_revision,character varying(300),SI,,,"Motivo de la marca de revisión o nota informativa (LIMITACION_FUENTE, TIEMPO_IMPUTADO, RESUELTO_HUMANO)"
+public.fact_forecast,id_forecast,integer,NO,PK,,Columna id forecast (derivada del nombre)
+public.fact_forecast,caso_uso,character varying(50),NO,,,Columna caso uso (derivada del nombre)
+public.fact_forecast,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Día del calendario (dim_tiempo)
+public.fact_forecast,valor_forecast,"numeric(14,2)",NO,,,Columna valor forecast (derivada del nombre)
+public.fact_forecast,ic_lower,"numeric(14,2)",SI,,,Columna ic lower (derivada del nombre)
+public.fact_forecast,ic_upper,"numeric(14,2)",SI,,,Columna ic upper (derivada del nombre)
+public.fact_forecast,metodo,character varying(30),NO,,,Columna metodo (derivada del nombre)
+public.fact_forecast,horizonte_meses,integer,NO,,,Columna horizonte meses (derivada del nombre)
+public.fact_forecast,generado_en,timestamp without time zone,SI,,,Columna generado en (derivada del nombre)
+public.fact_marketing,id_hecho_mkt,integer,NO,PK,,Columna id hecho mkt (derivada del nombre)
+public.fact_marketing,id_modulo,integer,SI,FK,public.dim_modulo.id_modulo,Módulo o programa (dim_modulo)
+public.fact_marketing,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Día del calendario (dim_tiempo)
+public.fact_marketing,leads,integer,SI,,,Interesados del mes
+public.fact_marketing,reservas,integer,SI,,,Reservas del mes
+public.fact_marketing,inscritos,integer,SI,,,Inscritos del mes en el módulo
+public.fact_marketing,costo_programa,"numeric(12,2)",SI,,,Columna costo programa (derivada del nombre)
+public.fact_rendimiento_academico,id_hecho_aca,integer,NO,PK,,Columna id hecho aca (derivada del nombre)
+public.fact_rendimiento_academico,id_estudiante,integer,SI,FK,public.dim_estudiante.id_estudiante,Estudiante (dim_estudiante)
+public.fact_rendimiento_academico,id_docente,integer,SI,FK,public.dim_docente.id_docente,Docente (dim_docente)
+public.fact_rendimiento_academico,id_modulo,integer,SI,FK,public.dim_modulo.id_modulo,Módulo o programa (dim_modulo)
+public.fact_rendimiento_academico,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Día del calendario (dim_tiempo)
+public.fact_rendimiento_academico,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.fact_rendimiento_academico,id_usuario_carga,integer,SI,FK,public.users.id,Columna id usuario carga (derivada del nombre)
+public.fact_rendimiento_academico,nota_final,"numeric(5,2)",SI,,,Nota final normalizada a base 100
+public.fact_rendimiento_academico,asistencia_pct,"numeric(5,2)",SI,,,Porcentaje de asistencia
+public.fact_rendimiento_academico,incumplimiento_actividades_pct,"numeric(5,2)",SI,,,Columna incumplimiento actividades pct (derivada del nombre)
+public.fact_rendimiento_academico,nivel_confianza_ia,"numeric(5,4)",SI,,,Índice de confianza BETO del registro (nulo si las reglas resolvieron la línea sin consultar el modelo)
+public.fact_rendimiento_academico,requiere_revision,boolean,SI,,,True si el hecho espera revisión humana
+public.fact_rendimiento_academico,estado_academico,character varying(50),SI,,,Columna estado academico (derivada del nombre)
+public.fact_rendimiento_academico,created_at,timestamp without time zone,SI,,,Fecha y hora de creación
+public.fact_rendimiento_academico,fk_estado,character varying(1),SI,,,"Estado de la llave: A CI exacta, B coincidencia aproximada, C miembro nuevo sin candidatos"
+public.fact_rendimiento_academico,tipo_alerta,character varying(30),SI,,,Columna tipo alerta (derivada del nombre)
+public.fact_rendimiento_academico,estado_tutoria,character varying(50),SI,,,Columna estado tutoria (derivada del nombre)
+public.fact_rendimiento_academico,estado_arca,character varying(50),SI,,,Columna estado arca (derivada del nombre)
+public.fact_rentabilidad,id_hecho_rent,integer,NO,PK,,Columna id hecho rent (derivada del nombre)
+public.fact_rentabilidad,id_modulo,integer,SI,FK,public.dim_modulo.id_modulo,Módulo o programa (dim_modulo)
+public.fact_rentabilidad,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Día del calendario (dim_tiempo)
+public.fact_rentabilidad,id_categoria,integer,SI,FK,public.dim_categoria_financiera.id_categoria,Categoría financiera (dim_categoria_financiera)
+public.fact_rentabilidad,monto_ejecutado,"numeric(14,2)",SI,,,Monto ejecutado (recaudación) en Bs
+public.fact_rentabilidad,monto_meta,"numeric(14,2)",SI,,,Meta del mes en Bs
+public.fact_rentabilidad,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.fact_situacion_financiera,id_hecho_fin,integer,NO,PK,,Columna id hecho fin (derivada del nombre)
+public.fact_situacion_financiera,id_estudiante,integer,SI,FK,public.dim_estudiante.id_estudiante,Estudiante (dim_estudiante)
+public.fact_situacion_financiera,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Día del calendario (dim_tiempo)
+public.fact_situacion_financiera,monto_deuda,"numeric(12,2)",SI,,,Deuda del estudiante en Bs
+public.fact_situacion_financiera,cuotas_impagas,integer,SI,,,Cuotas impagas
+public.fact_situacion_financiera,estado_cartera,character varying(20),SI,,,"Estado de la cartera (Vigente, Mora...)"
+public.fact_situacion_financiera,tipo_alerta,character varying(30),SI,,,Columna tipo alerta (derivada del nombre)
+public.fact_situacion_financiera,fecha_registro,timestamp without time zone,SI,,,Columna fecha registro (derivada del nombre)
+public.fact_situacion_financiera,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.fact_situacion_financiera,nivel_confianza_ia,"numeric(5,4)",SI,,,Índice de confianza BETO del registro (nulo si las reglas resolvieron la línea sin consultar el modelo)
+public.fact_situacion_financiera,requiere_revision,boolean,SI,,,True si el hecho espera revisión humana
+public.fact_situacion_financiera,fk_estado,character varying(1),SI,,,"Estado de la llave: A CI exacta, B coincidencia aproximada, C miembro nuevo sin candidatos"
+public.fact_situacion_financiera,id_modulo,integer,SI,FK,public.dim_modulo.id_modulo,Módulo o programa (dim_modulo)
+public.fact_situacion_financiera,id_categoria_fin,integer,SI,FK,public.dim_categoria_financiera.id_categoria,Columna id categoria fin (derivada del nombre)
+public.fact_situacion_financiera,monto_pagado,"numeric(12,2)",SI,,,Monto pagado en Bs
+public.fact_situacion_financiera,concepto,character varying(150),SI,,,Columna concepto (derivada del nombre)
+public.fact_techo_convenio,id_hecho_techo,integer,NO,PK,,Columna id hecho techo (derivada del nombre)
+public.fact_techo_convenio,id_modulo,integer,NO,FK,public.dim_modulo.id_modulo,Módulo o programa (dim_modulo)
+public.fact_techo_convenio,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Día del calendario (dim_tiempo)
+public.fact_techo_convenio,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.fact_techo_convenio,clave_convenio,character varying(40),NO,,,Columna clave convenio (derivada del nombre)
+public.fact_techo_convenio,institucion,character varying(200),NO,,,Columna institucion (derivada del nombre)
+public.fact_techo_convenio,id_convenio_catalogo,integer,SI,,,Columna id convenio catalogo (derivada del nombre)
+public.fact_techo_convenio,monto_convenio,"numeric(14,2)",SI,,,Columna monto convenio (derivada del nombre)
+public.fact_techo_convenio,n_inscritos,integer,SI,,,Columna n inscritos (derivada del nombre)
+public.fact_techo_convenio,gestion,integer,SI,,,Año (gestión)
+public.fact_techo_convenio,fecha_inicio,date,SI,,,Columna fecha inicio (derivada del nombre)
+public.fact_techo_convenio,fecha_fin,date,SI,,,Columna fecha fin (derivada del nombre)
+public.fact_techo_convenio,requiere_revision,boolean,SI,,,True si el hecho espera revisión humana
+public.fact_techo_convenio,motivo_revision,character varying(300),SI,,,"Motivo de la marca de revisión o nota informativa (LIMITACION_FUENTE, TIEMPO_IMPUTADO, RESUELTO_HUMANO)"
+public.fact_techo_convenio,actualizado_en,timestamp with time zone,SI,,,Columna actualizado en (derivada del nombre)
+public.log_auditoria_nlp,id_log,integer,NO,PK,,Columna id log (derivada del nombre)
+public.log_auditoria_nlp,texto_original,character varying(500),NO,,,Texto original del caso
+public.log_auditoria_nlp,prediccion_beto,character varying(200),SI,,,Columna prediccion beto (derivada del nombre)
+public.log_auditoria_nlp,confianza_ia,"numeric(5,4)",SI,,,Columna confianza ia (derivada del nombre)
+public.log_auditoria_nlp,correccion_humana,character varying(200),NO,,,Columna correccion humana (derivada del nombre)
+public.log_auditoria_nlp,usuario_auditor,integer,SI,FK,public.users.id,Columna usuario auditor (derivada del nombre)
+public.log_auditoria_nlp,created_at,timestamp without time zone,SI,,,Fecha y hora de creación
+public.log_inconsistencias,id_inconsistencia,integer,NO,PK,,Columna id inconsistencia (derivada del nombre)
+public.log_inconsistencias,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.log_inconsistencias,fila_origen,integer,SI,,,Columna fila origen (derivada del nombre)
+public.log_inconsistencias,campo_afectado,character varying(100),NO,,,Columna campo afectado (derivada del nombre)
+public.log_inconsistencias,valor_recibido,text,SI,,,Columna valor recibido (derivada del nombre)
+public.log_inconsistencias,valor_esperado,text,SI,,,Columna valor esperado (derivada del nombre)
+public.log_inconsistencias,tipo_regla,character varying(50),NO,,,Regla que generó el registro del log
+public.log_inconsistencias,severidad,character varying(20),NO,,,Columna severidad (derivada del nombre)
+public.log_inconsistencias,estado_resolucion,character varying(30),NO,,,Estado de resolución del caso
+public.log_inconsistencias,descripcion,text,SI,,,Descripción
+public.log_inconsistencias,detectado_en,timestamp without time zone,SI,,,Columna detectado en (derivada del nombre)
+public.log_inconsistencias,resuelto_en,timestamp without time zone,SI,,,Columna resuelto en (derivada del nombre)
+public.log_inconsistencias,resuelto_por,integer,SI,FK,public.users.id,Columna resuelto por (derivada del nombre)
+public.log_pipeline_ingesta,id,integer,NO,PK,,Columna id (derivada del nombre)
+public.log_pipeline_ingesta,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.log_pipeline_ingesta,etapa,character varying(50),NO,,,Columna etapa (derivada del nombre)
+public.log_pipeline_ingesta,nivel,character varying(10),NO,,,Columna nivel (derivada del nombre)
+public.log_pipeline_ingesta,modulo,character varying(100),SI,,,Columna modulo (derivada del nombre)
+public.log_pipeline_ingesta,mensaje,text,NO,,,Columna mensaje (derivada del nombre)
+public.log_pipeline_ingesta,tiempo_ms,integer,SI,,,Columna tiempo ms (derivada del nombre)
+public.log_pipeline_ingesta,metadata,jsonb,SI,,,Columna metadata (derivada del nombre)
+public.log_pipeline_ingesta,created_at,timestamp with time zone,SI,,,Fecha y hora de creación
+public.lote,id_lote,integer,NO,PK,,Columna id lote (derivada del nombre)
+public.lote,institucion,character varying(100),NO,,,Columna institucion (derivada del nombre)
+public.lote,periodo,character varying(30),NO,,,Columna periodo (derivada del nombre)
+public.lote,estado,character varying(30),SI,,,Columna estado (derivada del nombre)
+public.lote,total_archivos,integer,SI,,,Columna total archivos (derivada del nombre)
+public.lote,creado_en,timestamp without time zone,SI,,,Columna creado en (derivada del nombre)
+public.notifications,id,integer,NO,PK,,Columna id (derivada del nombre)
+public.notifications,user_id,integer,SI,FK,public.users.id,Columna user id (derivada del nombre)
+public.notifications,role_target,character varying(50),SI,,,Columna role target (derivada del nombre)
+public.notifications,title,character varying(200),NO,,,Columna title (derivada del nombre)
+public.notifications,message,text,NO,,,Columna message (derivada del nombre)
+public.notifications,category,character varying(50),NO,,,Columna category (derivada del nombre)
+public.notifications,severity,character varying(20),NO,,,Columna severity (derivada del nombre)
+public.notifications,is_read,boolean,SI,,,Columna is read (derivada del nombre)
+public.notifications,link,character varying(255),SI,,,Columna link (derivada del nombre)
+public.notifications,created_at,timestamp with time zone,SI,,,Fecha y hora de creación
+public.powerbi_informe_version,id,integer,NO,PK,,Columna id (derivada del nombre)
+public.powerbi_informe_version,version,integer,NO,,,Versión del registro (control optimista)
+public.powerbi_informe_version,nombre_archivo,character varying(255),NO,,,Nombre del archivo subido
+public.powerbi_informe_version,ruta,character varying(500),NO,,,Columna ruta (derivada del nombre)
+public.powerbi_informe_version,tamano_bytes,bigint,NO,,,Columna tamano bytes (derivada del nombre)
+public.powerbi_informe_version,sha256,character(64),NO,,,Columna sha256 (derivada del nombre)
+public.powerbi_informe_version,nota,character varying(300),SI,,,Columna nota (derivada del nombre)
+public.powerbi_informe_version,vigente,boolean,NO,,,Columna vigente (derivada del nombre)
+public.powerbi_informe_version,subido_por,character varying(100),NO,,,Columna subido por (derivada del nombre)
+public.powerbi_informe_version,subido_en,timestamp with time zone,NO,,,Columna subido en (derivada del nombre)
+public.ref_metas_gestion,id_meta,integer,NO,PK,,Columna id meta (derivada del nombre)
+public.ref_metas_gestion,gestion,integer,NO,,,Año (gestión)
+public.ref_metas_gestion,mes,integer,NO,,,Mes (1-12)
+public.ref_metas_gestion,categoria,character varying(100),NO,,,Columna categoria (derivada del nombre)
+public.ref_metas_gestion,monto_meta_ingreso,"numeric(14,2)",SI,,,Columna monto meta ingreso (derivada del nombre)
+public.ref_metas_gestion,monto_ejecutado,"numeric(14,2)",SI,,,Monto ejecutado (recaudación) en Bs
+public.ref_metas_gestion,ebitda_meta_pct,"numeric(6,4)",SI,,,Columna ebitda meta pct (derivada del nombre)
+public.ref_metas_gestion,ebitda_ejecutado_pct,"numeric(6,4)",SI,,,Columna ebitda ejecutado pct (derivada del nombre)
+public.schema_migrations,version,character varying(255),NO,PK,,Versión del registro (control optimista)
+public.schema_migrations,applied_at,timestamp with time zone,SI,,,Fecha de aplicación de la migración
+public.staging_registros_crudos,id,integer,NO,PK,,Columna id (derivada del nombre)
+public.staging_registros_crudos,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.staging_registros_crudos,hoja,character varying(200),SI,,,Columna hoja (derivada del nombre)
+public.staging_registros_crudos,bloque_id,integer,SI,,,Columna bloque id (derivada del nombre)
+public.staging_registros_crudos,categoria,character varying(50),SI,,,Columna categoria (derivada del nombre)
+public.staging_registros_crudos,texto_plano,text,SI,,,Columna texto plano (derivada del nombre)
+public.staging_registros_crudos,n_filas,integer,SI,,,Columna n filas (derivada del nombre)
+public.staging_registros_crudos,fila_inicio,integer,SI,,,Columna fila inicio (derivada del nombre)
+public.staging_registros_crudos,fila_fin,integer,SI,,,Columna fila fin (derivada del nombre)
+public.staging_registros_crudos,es_ruido,boolean,SI,,,Columna es ruido (derivada del nombre)
+public.staging_registros_crudos,created_at,timestamp with time zone,SI,,,Fecha y hora de creación
+public.staging_registros_crudos,requiere_revision,boolean,SI,,,True si el hecho espera revisión humana
+public.staging_registros_crudos,score_confianza,"numeric(5,4)",SI,,,Columna score confianza (derivada del nombre)
+public.staging_registros_crudos,resuelto,boolean,SI,,,True si el caso ya fue resuelto
+public.staging_registros_crudos,resuelto_por,integer,SI,FK,public.users.id,Columna resuelto por (derivada del nombre)
+public.staging_registros_crudos,resuelto_en,timestamp without time zone,SI,,,Columna resuelto en (derivada del nombre)
+public.staging_registros_crudos,motivo,character varying(100),SI,,,Motivo por el que el caso llegó a la cola
+public.staging_registros_crudos,payload_json,jsonb,SI,,,Columna payload json (derivada del nombre)
+public.staging_registros_crudos,registro_origen_id,integer,SI,FK,public.staging_registros_crudos.id,Columna registro origen id (derivada del nombre)
+public.staging_registros_crudos,estado_resolucion,character varying(30),SI,,,Estado de resolución del caso
+public.stg_entidad_no_resuelta,id_staging,integer,NO,PK,,Columna id staging (derivada del nombre)
+public.stg_entidad_no_resuelta,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.stg_entidad_no_resuelta,tipo_entidad,character varying(50),NO,,,Columna tipo entidad (derivada del nombre)
+public.stg_entidad_no_resuelta,texto_original,text,NO,,,Texto original del caso
+public.stg_entidad_no_resuelta,ci_temporal,character varying(150),SI,,,Columna ci temporal (derivada del nombre)
+public.stg_entidad_no_resuelta,mejor_candidato,text,SI,,,Columna mejor candidato (derivada del nombre)
+public.stg_entidad_no_resuelta,score_fuzzy,"numeric(5,2)",SI,,,Columna score fuzzy (derivada del nombre)
+public.stg_entidad_no_resuelta,fk_estado,character varying(1),SI,,,"Estado de la llave: A CI exacta, B coincidencia aproximada, C miembro nuevo sin candidatos"
+public.stg_entidad_no_resuelta,nivel_confianza,"numeric(5,4)",SI,,,Índice de confianza BETO asociado al caso
+public.stg_entidad_no_resuelta,resuelto,boolean,SI,,,True si el caso ya fue resuelto
+public.stg_entidad_no_resuelta,resuelto_por,integer,SI,FK,public.users.id,Columna resuelto por (derivada del nombre)
+public.stg_entidad_no_resuelta,resuelto_en,timestamp without time zone,SI,,,Columna resuelto en (derivada del nombre)
+public.stg_entidad_no_resuelta,id_dimension_resuelta,integer,SI,,,Columna id dimension resuelta (derivada del nombre)
+public.stg_entidad_no_resuelta,created_at,timestamp without time zone,SI,,,Fecha y hora de creación
+public.stg_entidad_no_resuelta,motivo,character varying(100),SI,,,Motivo por el que el caso llegó a la cola
+public.stg_entidad_no_resuelta,payload_json,jsonb,SI,,,Columna payload json (derivada del nombre)
+public.stg_entidad_no_resuelta,registro_origen_id,integer,SI,FK,public.staging_registros_crudos.id,Columna registro origen id (derivada del nombre)
+public.stg_entidad_no_resuelta,estado_resolucion,character varying(30),SI,,,Estado de resolución del caso
+public.stg_entidad_no_resuelta,lock_usuario_id,integer,SI,FK,public.users.id,Columna lock usuario id (derivada del nombre)
+public.stg_entidad_no_resuelta,lock_expira,timestamp without time zone,SI,,,Columna lock expira (derivada del nombre)
+public.stg_entidad_no_resuelta,version,integer,SI,,,Versión del registro (control optimista)
+public.stg_entidad_no_resuelta,clave_origen,character varying(32),SI,,,"Clave de idempotencia (hash del archivo, tipo, motivo y valor)"
+public.users,id,integer,NO,PK,,Columna id (derivada del nombre)
+public.users,username,character varying(100),NO,,,Nombre de usuario
+public.users,hashed_password,character varying(255),NO,,,Columna hashed password (derivada del nombre)
+public.users,role,character varying(50),NO,,,Rol del usuario
+public.users,created_at,timestamp with time zone,SI,,,Fecha y hora de creación
+public.users,email,character varying(150),NO,,,Correo electrónico
+public.users,phone,character varying(30),SI,,,Columna phone (derivada del nombre)
+public.users,is_active,boolean,SI,,,Columna is active (derivada del nombre)
+public.users,is_mfa_enabled,boolean,SI,,,Columna is mfa enabled (derivada del nombre)
+public.users,otp_code_hash,character varying(255),SI,,,Columna otp code hash (derivada del nombre)
+public.users,otp_expires_at,timestamp with time zone,SI,,,Columna otp expires at (derivada del nombre)
+public.users,failed_login_attempts,integer,SI,,,Columna failed login attempts (derivada del nombre)
+public.users,locked_until,timestamp with time zone,SI,,,Columna locked until (derivada del nombre)
+public.users,created_by_id,integer,SI,FK,public.users.id,Columna created by id (derivada del nombre)

@@ -4306,6 +4306,7 @@ def get_review_tray_groups(
 class AprobarGrupoRequest(BaseModel):
     clave: str
     doc_id: Optional[int] = None
+    doc_ids: Optional[List[int]] = None  # alcance: solo los casos de estos documentos (p. ej. los del ciclo)
     estudiante_resuelto: Optional[str] = None
 
 
@@ -4316,9 +4317,17 @@ def approve_review_group(
     current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
 ):
     """Aprueba todos los casos pendientes de un grupo (misma resolución en lote que /batch-resolve)."""
-    ids = ids_del_grupo(db, payload.clave, [payload.doc_id] if payload.doc_id is not None else None)
+    alcance = payload.doc_ids if payload.doc_ids is not None else ([payload.doc_id] if payload.doc_id is not None else None)
+    ids = ids_del_grupo(db, payload.clave, alcance)
     if not ids:
         return {"status": "success", "resolved_count": 0, "message": "El grupo no tiene casos pendientes."}
+    if payload.clave.startswith("HECHO_EN_REVISION::"):
+        # Hechos ya cargados: el grupo se aprueba sin cambios solo si no les falta ningún campo (si falta, se corrigen uno a uno)
+        if "|falta:ninguno" not in payload.clave:
+            return {"status": "error", "resolved_count": 0, "message": "Al grupo le faltan campos: hay que corregirlo caso por caso."}
+        n_ok = sum(1 for i in ids if resolver_caso_hecho(db, str(i), {"accion": "APROBAR", "aprobacion_en_bloque": True},
+                   user_id=getattr(current_user, "id", None), user_name=getattr(current_user, "username", None) or "Auditor Calidad")["status"] == "success")
+        return {"status": "success", "resolved_count": n_ok, "casos_del_grupo": len(ids), "grupo": payload.clave}
     res = batch_resolve_review_items(
         BatchResolveRequest(item_ids=[str(i) for i in ids], estudiante_resuelto=payload.estudiante_resuelto),
         db=db, current_user=current_user)
