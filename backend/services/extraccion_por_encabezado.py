@@ -357,9 +357,11 @@ def registros_academicos(campos: Dict[str, str],
         "programa": {"valor_extraido": pos} if pos else None,
         "nota_final": nota,
         "nota_ya_normalizada": True,
+        # acta con estado de origen (Aprobado/Titulado...) pero sin nota: límite de la fuente, no un error de lectura
+        "sin_nota_por_acta": nota is None and bool(estados.get("estado_academico") or estados.get("estado_arca")),
         "fecha": fecha,
         **estados,
-        "requiere_revision": nota is None or fecha is None or revision_estado,
+        "requiere_revision": (nota is None and not (estados.get("estado_academico") or estados.get("estado_arca"))) or fecha is None or revision_estado,
     }]
 
 

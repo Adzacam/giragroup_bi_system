@@ -91,7 +91,8 @@ def _grupos_hechos(db: Session, doc_ids: Optional[List[int]] = None) -> Dict[str
     for h in q.all():
         me = motivo_estado(h[6], h[8], h[7])
         v = f"academico|doc{h[1]}|falta:{_faltan_aca(h)}|{h[6]}|{h[8]}|{h[7]}|estado:{me}"
-        accion = "MAPEAR_ESTADO" if me != "OK" else ("APROBAR" if _faltan_aca(h) == "ninguno" else "MANUAL")
+        accion = ("MAPEAR_ESTADO" if me != "OK" else "APROBAR" if _faltan_aca(h) == "ninguno"
+                  else "CORREGIR_FECHA" if _faltan_aca(h) == "fecha" else "MANUAL")
         g = out.setdefault(f"HECHO_EN_REVISION::{v}", {"clave": f"HECHO_EN_REVISION::{v}", "motivo": "HECHO_EN_REVISION", "valor": v, "n": 0,
                                                       "ejemplo": f"HECHO-ACA-{h[0]}", "ids": [], "un_clic": accion == "APROBAR", "accion_grupo": accion})
         g["n"] += 1
@@ -105,7 +106,8 @@ def _grupos_hechos(db: Session, doc_ids: Optional[List[int]] = None) -> Dict[str
         faltan = ",".join(f for f, falta in (("estudiante", not h[2]), ("fecha", not h[3]), ("monto", h[4] is None)) if falta) or "ninguno"
         v = f"financiero|doc{h[1]}|falta:{faltan}"
         g = out.setdefault(f"HECHO_EN_REVISION::{v}", {"clave": f"HECHO_EN_REVISION::{v}", "motivo": "HECHO_EN_REVISION", "valor": v, "n": 0,
-                                                      "ejemplo": f"HECHO-FIN-{h[0]}", "ids": [], "un_clic": faltan == "ninguno"})
+                                                      "ejemplo": f"HECHO-FIN-{h[0]}", "ids": [], "un_clic": faltan == "ninguno",
+                                                      "accion_grupo": "APROBAR" if faltan == "ninguno" else "CORREGIR_FECHA" if faltan == "fecha" else "MANUAL"})
         g["n"] += 1
         if len(g["ids"]) < 50:
             g["ids"].append(f"HECHO-FIN-{h[0]}")

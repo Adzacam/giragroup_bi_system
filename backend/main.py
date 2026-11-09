@@ -160,6 +160,19 @@ _CACHEABLE_GET_PREFIXES = (
 )
 
 @app.middleware("http")
+async def cronometraje_middleware(request: Request, call_next):
+    """Con CRONOMETRAJE_LOG activo, registra inicio y fin de cada acción POST de la bandeja HITL (approve-group lo registra el endpoint)."""
+    ruta = request.url.path
+    if request.method != "POST" or "/dataops/review-tray" not in ruta or ruta.endswith("/approve-group") or not os.getenv("CRONOMETRAJE_LOG"):
+        return await call_next(request)
+    from services.cronometraje import ahora, registrar_aprobacion
+    t0 = ahora()
+    resp = await call_next(request)
+    registrar_aprobacion("resolver", t0, {"ruta": ruta, "http": resp.status_code})
+    return resp
+
+
+@app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
     t0 = time.perf_counter()
     response: Response = await call_next(request)

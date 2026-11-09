@@ -80,6 +80,7 @@ from services.extraccion_por_encabezado import (
     normalizar_encabezado,
 )
 from services.sugerencia_hitl import es_sugerencia_un_clic, nombre_extraido, similitud_nombre_completo
+from services.cronometraje import ahora, registrar_aprobacion
 from services.bandeja_grupos import grupos_pendientes, ids_del_grupo, mapear_estado_grupo
 from services.revision_hechos import MOTIVO_HECHO, es_caso_hecho, items_hechos_en_revision, contar_hechos_en_revision, resolver_caso_hecho
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
@@ -4296,11 +4297,15 @@ def get_review_tray(
 @router.get("/review-tray/grupos")
 def get_review_tray_groups(
     doc_id: Optional[int] = Query(None),
+    doc_desde: Optional[int] = Query(None, description="Solo los documentos con id_documento >= doc_desde (los de un ciclo)"),
     limite: int = Query(100, ge=1, le=1000),
     db: Session = Depends(get_db),
 ):
-    """Casos de staging pendientes agrupados por (motivo, valor normalizado): cada grupo se aprueba con una sola acción."""
-    return grupos_pendientes(db, [doc_id] if doc_id is not None else None, limite=limite)
+    """Casos pendientes (staging y hechos en revisión) agrupados por (motivo, valor normalizado): cada grupo se aprueba con una sola acción."""
+    docs = [doc_id] if doc_id is not None else None
+    if doc_desde is not None:
+        docs = [r[0] for r in db.query(DimOrigenDocumental.id_documento).filter(DimOrigenDocumental.id_documento >= doc_desde).all()]
+    return grupos_pendientes(db, docs, limite=limite)
 
 
 class AprobarGrupoRequest(BaseModel):
@@ -4310,6 +4315,8 @@ class AprobarGrupoRequest(BaseModel):
     estudiante_resuelto: Optional[str] = None
     accion: Optional[str] = None  # APROBAR (por defecto) o MAPEAR_ESTADO (grupos con estado fuera de catálogo / combinación no admitida)
     canonico: Optional[str] = None  # estado canónico al que se reescribe el valor fuera de catálogo (MAPEAR_ESTADO)
+    mes: Optional[int] = None  # CORREGIR_FECHA: mes y gestión que se asignan a todos los hechos del grupo (les falta solo la fecha)
+    gestion: Optional[int] = None
 
 
 @router.post("/review-tray/approve-group")
@@ -4319,6 +4326,15 @@ def approve_review_group(
     current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
 ):
     """Aprueba todos los casos pendientes de un grupo (misma resolución en lote que /batch-resolve)."""
+    t_ini = ahora()
+    res = _aprobar_grupo(payload, db, current_user)
+    registrar_aprobacion("approve-group" + ("/" + payload.accion if payload.accion else ""), t_ini,
+                         {"clave": payload.clave, "casos": res.get("casos_del_grupo"), "resueltos": res.get("resolved_count")},
+                         getattr(current_user, "username", None))
+    return res
+
+
+def _aprobar_grupo(payload: AprobarGrupoRequest, db: Session, current_user: User):
     alcance = payload.doc_ids if payload.doc_ids is not None else ([payload.doc_id] if payload.doc_id is not None else None)
     ids = ids_del_grupo(db, payload.clave, alcance)
     if not ids:
@@ -4328,9 +4344,11 @@ def approve_review_group(
         return {"status": "success", "resolved_count": res_m["mapeados"], "casos_del_grupo": len(ids), "grupo": payload.clave, **res_m}
     if payload.clave.startswith("HECHO_EN_REVISION::"):
         # Hechos ya cargados: el grupo se aprueba sin cambios solo si no les falta ningún campo (si falta, se corrigen uno a uno)
-        if "|falta:ninguno" not in payload.clave or "|estado:OK" not in payload.clave:
+        solo_fecha = "|falta:fecha" in payload.clave and payload.mes and payload.gestion
+        if ("|falta:ninguno" not in payload.clave and not solo_fecha) or ("|estado:" in payload.clave and "|estado:OK" not in payload.clave):
             return {"status": "error", "resolved_count": 0, "message": "Al grupo le faltan campos: hay que corregirlo caso por caso."}
-        n_ok = sum(1 for i in ids if resolver_caso_hecho(db, str(i), {"accion": "APROBAR", "aprobacion_en_bloque": True},
+        correccion = {"mes": payload.mes, "gestion": payload.gestion} if solo_fecha else {}
+        n_ok = sum(1 for i in ids if resolver_caso_hecho(db, str(i), {"accion": "APROBAR", "aprobacion_en_bloque": True, **correccion},
                    user_id=getattr(current_user, "id", None), user_name=getattr(current_user, "username", None) or "Auditor Calidad")["status"] == "success")
         return {"status": "success", "resolved_count": n_ok, "casos_del_grupo": len(ids), "grupo": payload.clave}
     res = batch_resolve_review_items(
