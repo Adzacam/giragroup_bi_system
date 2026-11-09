@@ -349,6 +349,8 @@ class DWLoaderService:
             nombre = None
         if nombre and re.fullmatch(r"\s*[^@\s]+@[^@\s]+\.[A-Za-z]{2,}\s*", nombre):
             nombre = None  # un correo no es un nombre de persona
+        if nombre and (re.search(r"\d", nombre) or re.match(r"^[^:]{1,40}:\s", nombre.strip())):
+            nombre = None  # 'TOTAL GASTOS: Bs. 2170', 'PROYECTO (POS): 5510', 'Fecha Inicio - Mes: ago': celdas de planilla, no personas
         if ci and re.sub(r"\D", "", ci) in ("123456789", "1234567", "12345678") or (ci and len(set(re.sub(r"\D", "", ci))) == 1):
             ci = None
         if not ci and not nombre:
