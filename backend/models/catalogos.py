@@ -58,17 +58,6 @@ class CatPrograma(CatalogBase):
     modulos = relationship("CatModulo", back_populates="programa", cascade="all, delete-orphan")
 
 
-class CatDocente(CatalogBase):
-    __tablename__ = "cat_docente"
-
-    id_docente = Column(Integer, primary_key=True, index=True)
-    nombre_completo = Column(String(200), nullable=False, unique=True, index=True)
-    email = Column(String(150))
-    celular = Column(String(50))
-    grado_academico = Column(String(100))
-    tipo_docente = Column(String(50), default="TITULAR")
-
-
 class CatModulo(CatalogBase):
     __tablename__ = "cat_modulo"
 
@@ -119,16 +108,6 @@ class CatCombinacionEstado(CatalogBase):
     id_estado_reprobado = Column(Integer, ForeignKey("cat_estado_reprobado.id_estado_reprobado", ondelete="CASCADE"), nullable=False)
     id_estado_arca = Column(Integer, ForeignKey("cat_estado_arca.id_estado_arca", ondelete="CASCADE"), nullable=False)
     activo = Column(Boolean, nullable=False, default=True)
-
-
-class CatTipoCartera(CatalogBase):
-    __tablename__ = "cat_tipo_cartera"
-
-    id_cartera = Column(Integer, primary_key=True, index=True)
-    nombre_cartera = Column(String(100), nullable=False, unique=True)
-    dias_mora_min = Column(Integer, nullable=False)
-    dias_mora_max = Column(Integer, nullable=False)
-    descripcion = Column(String(255))
 
 
 class RefMetasGestion(CatalogBase):
@@ -222,45 +201,6 @@ class CatInstitucion(CatalogBase):
     nombre_institucion = Column(String(100), nullable=False, unique=True, index=True)
     sigla = Column(String(30))
     tipo_escala_default = Column(String(20), default="CENTESIMAL_100")
-
-
-class CatAliasModulo(CatalogBase):
-    __tablename__ = "cat_alias_modulo"
-
-    id_alias = Column(Integer, primary_key=True, index=True)
-    id_modulo = Column(Integer, ForeignKey("cat_modulo.id_modulo", ondelete="CASCADE"), nullable=False)
-    id_programa = Column(Integer, ForeignKey("cat_programa.id_programa", ondelete="CASCADE"), nullable=False)
-    alias_texto = Column(String(255), nullable=False, index=True)
-
-    __table_args__ = (
-        UniqueConstraint("id_programa", "alias_texto", name="uq_cat_alias_modulo_prog_alias"),
-    )
-
-
-class CatAliasDocente(CatalogBase):
-    __tablename__ = "cat_alias_docente"
-
-    id_alias = Column(Integer, primary_key=True, index=True)
-    id_docente = Column(Integer, ForeignKey("cat_docente.id_docente", ondelete="CASCADE"), nullable=False)
-    alias_texto = Column(String(255), nullable=False, unique=True, index=True)
-
-
-class CatAliasPrograma(CatalogBase):
-    __tablename__ = "cat_alias_programa"
-
-    id_alias = Column(Integer, primary_key=True, index=True)
-    id_programa = Column(Integer, ForeignKey("cat_programa.id_programa", ondelete="CASCADE"), nullable=False)
-    alias_texto = Column(String(255), nullable=False, unique=True, index=True)
-
-
-class CatAliasFinanciero(CatalogBase):
-    __tablename__ = "cat_alias_financiero"
-
-    id_alias = Column(Integer, primary_key=True, index=True)
-    id_categoria_fin = Column(Integer, ForeignKey("cat_categoria_financiera.id_categoria_fin", ondelete="CASCADE"), nullable=False)
-    alias_texto = Column(String(255), nullable=False, unique=True, index=True)
-
-
 
 
 class CatInstitucionConvenio(CatalogBase):
