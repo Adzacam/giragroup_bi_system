@@ -1,0 +1,18 @@
+[
+  {
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "http": 200,
+    "segundos": 194.6,
+    "total_filas_procesadas": 27189,
+    "hechos_cargados_dw": 53432,
+    "hechos_en_revision": 50151,
+    "entidades_derivadas_staging": 3373,
+    "tiempos_etapa_ms": {
+      "lectura_e_ingesta": 8958.9,
+      "beto": 475.0,
+      "carga_dw": 169071.9,
+      "reglas_y_resto": 15869.3
+    },
+    "error": null
+  }
+]

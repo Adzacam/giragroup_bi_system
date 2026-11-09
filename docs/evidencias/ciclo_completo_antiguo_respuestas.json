@@ -1,0 +1,18 @@
+[
+  {
+    "archivo": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "http": 200,
+    "segundos": 958.1,
+    "total_filas_procesadas": 19119,
+    "hechos_cargados_dw": 206729,
+    "hechos_en_revision": 91909,
+    "entidades_derivadas_staging": 1,
+    "tiempos_etapa_ms": {
+      "lectura_e_ingesta": 9047.8,
+      "beto": 137694.6,
+      "carga_dw": 802913.7,
+      "reglas_y_resto": 8334.8
+    },
+    "error": null
+  }
+]

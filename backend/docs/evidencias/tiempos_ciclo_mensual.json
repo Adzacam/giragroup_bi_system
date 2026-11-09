@@ -1,12 +1,12 @@
 {
   "mes_objetivo": "2026-03",
   "cpu": "BETO en el contenedor giragroup_pipeline (docker-compose.yml, sin GPU)",
-  "tiempo_total_s": 230.2,
+  "tiempo_total_s": 156.91,
   "suma_etapas_ms": {
-    "lectura_e_ingesta": 3671.8,
-    "reglas_y_resto": 39360.9,
-    "beto": 92156.2,
-    "carga_dw": 94724.3
+    "lectura_e_ingesta": 2939.0,
+    "reglas_y_resto": 30683.1,
+    "beto": 63783.2,
+    "carga_dw": 59307.2
   },
   "archivos": [
     {
@@ -48,12 +48,12 @@
       ],
       "filas_total": 755,
       "http": 200,
-      "segundos": 43.15,
+      "segundos": 25.89,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 729.0,
-        "beto": 59.5,
-        "carga_dw": 38333.8,
-        "reglas_y_resto": 3873.8
+        "lectura_e_ingesta": 605.1,
+        "beto": 50.7,
+        "carga_dw": 22121.8,
+        "reglas_y_resto": 3035.5
       },
       "filas_procesadas": 746,
       "hechos_cargados_dw": 718
@@ -86,12 +86,12 @@
       ],
       "filas_total": 336,
       "http": 200,
-      "segundos": 5.0,
+      "segundos": 3.81,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 267.7,
-        "beto": 335.9,
-        "carga_dw": 597.6,
-        "reglas_y_resto": 3780.1
+        "lectura_e_ingesta": 130.7,
+        "beto": 248.9,
+        "carga_dw": 488.1,
+        "reglas_y_resto": 2926.0
       },
       "filas_procesadas": 336,
       "hechos_cargados_dw": 324
@@ -109,12 +109,12 @@
       ],
       "filas_total": 1,
       "http": 200,
-      "segundos": 3.6,
+      "segundos": 3.01,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 23.6,
-        "beto": 16.0,
-        "carga_dw": 15.6,
-        "reglas_y_resto": 3530.0
+        "lectura_e_ingesta": 23.5,
+        "beto": 16.2,
+        "carga_dw": 17.0,
+        "reglas_y_resto": 2939.6
       },
       "filas_procesadas": 1,
       "hechos_cargados_dw": 1
@@ -173,12 +173,12 @@
       ],
       "filas_total": 753,
       "http": 200,
-      "segundos": 7.11,
+      "segundos": 6.23,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 266.4,
-        "beto": 92.5,
-        "carga_dw": 3069.7,
-        "reglas_y_resto": 3670.3
+        "lectura_e_ingesta": 229.8,
+        "beto": 86.5,
+        "carga_dw": 2851.3,
+        "reglas_y_resto": 3044.9
       },
       "filas_procesadas": 753,
       "hechos_cargados_dw": 1372
@@ -204,12 +204,12 @@
       ],
       "filas_total": 36,
       "http": 200,
-      "segundos": 4.11,
+      "segundos": 3.34,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 32.7,
-        "beto": 308.9,
-        "carga_dw": 188.2,
-        "reglas_y_resto": 3572.9
+        "lectura_e_ingesta": 31.0,
+        "beto": 273.2,
+        "carga_dw": 170.7,
+        "reglas_y_resto": 2855.3
       },
       "filas_procesadas": 36,
       "hechos_cargados_dw": 99
@@ -242,12 +242,12 @@
       ],
       "filas_total": 876,
       "http": 200,
-      "segundos": 58.47,
+      "segundos": 33.93,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 601.2,
-        "beto": 26483.5,
-        "carga_dw": 27249.7,
-        "reglas_y_resto": 4116.2
+        "lectura_e_ingesta": 480.3,
+        "beto": 15336.5,
+        "carga_dw": 14795.8,
+        "reglas_y_resto": 3305.2
       },
       "filas_procesadas": 873,
       "hechos_cargados_dw": 17804
@@ -284,12 +284,12 @@
       ],
       "filas_total": 609,
       "http": 200,
-      "segundos": 10.64,
+      "segundos": 7.85,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 368.7,
-        "beto": 76.9,
-        "carga_dw": 4902.2,
-        "reglas_y_resto": 5276.1
+        "lectura_e_ingesta": 261.4,
+        "beto": 71.6,
+        "carga_dw": 4304.4,
+        "reglas_y_resto": 3201.2
       },
       "filas_procesadas": 609,
       "hechos_cargados_dw": 0
@@ -503,12 +503,12 @@
       ],
       "filas_total": 1313,
       "http": 200,
-      "segundos": 25.63,
+      "segundos": 18.82,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 810.4,
-        "beto": 6789.6,
-        "carga_dw": 13898.0,
-        "reglas_y_resto": 4115.4
+        "lectura_e_ingesta": 694.8,
+        "beto": 5411.4,
+        "carga_dw": 9333.5,
+        "reglas_y_resto": 3363.7
       },
       "filas_procesadas": 2303,
       "hechos_cargados_dw": 2109
@@ -533,12 +533,12 @@
       ],
       "filas_total": 391,
       "http": 200,
-      "segundos": 5.13,
+      "segundos": 4.4,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 265.8,
-        "beto": 21.4,
-        "carga_dw": 1244.6,
-        "reglas_y_resto": 3584.2
+        "lectura_e_ingesta": 231.8,
+        "beto": 19.7,
+        "carga_dw": 1118.3,
+        "reglas_y_resto": 3015.8
       },
       "filas_procesadas": 391,
       "hechos_cargados_dw": 124
@@ -569,12 +569,12 @@
       ],
       "filas_total": 884,
       "http": 200,
-      "segundos": 67.36,
+      "segundos": 49.64,
       "tiempos_etapa_ms": {
-        "lectura_e_ingesta": 306.3,
-        "beto": 57972.0,
-        "carga_dw": 5224.9,
-        "reglas_y_resto": 3841.9
+        "lectura_e_ingesta": 250.6,
+        "beto": 42268.5,
+        "carga_dw": 4106.3,
+        "reglas_y_resto": 2995.9
       },
       "filas_procesadas": 883,
       "hechos_cargados_dw": 3705
