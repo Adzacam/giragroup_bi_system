@@ -56,7 +56,7 @@ ARCHIVO_COBRANZAS = "BD Cobranzas.xlsx"
 # Tablas que se vacían con --reset (stg_entidad_no_resuelta es trabajo operativo: no se toca)
 TABLAS_CATALOGO = [
     "cat_convenio_programa", "cat_institucion_convenio", "cat_historico_equivalencia",
-    "cat_concepto_financiero", "cat_modulo", "cat_programa", "cat_docente", "cat_escuela",
+    "cat_concepto_financiero", "cat_modulo", "cat_programa", "cat_escuela",
     "cat_tipo_programa", "cat_modalidad", "cat_combinacion_estado", "cat_estado_academico", "cat_estado_reprobado",
     "cat_estado_arca", "cat_tipo_cartera", "ref_metas_gestion", "cat_categoria_financiera",
     "cat_etiqueta_clasificacion", "cat_mapeo_columna", "cat_guia_texto_plano",
@@ -565,15 +565,6 @@ def generar_sql(cat: Dict[str, Any], ruta_salida: Path, ruta_config: Path) -> Di
             f"VALUES ({sql(nombre)}, {mn}, {mx}, {sql(desc)}) ON CONFLICT (nombre_cartera) DO UPDATE SET "
             f"dias_mora_min = EXCLUDED.dias_mora_min, dias_mora_max = EXCLUDED.dias_mora_max, descripcion = EXCLUDED.descripcion;")
 
-    L += ["", "-- 6. Docentes (ARCA · MODULOS; sin celular ni e-mail)"]
-    for d in sorted(cat["docentes"].values(), key=lambda x: x["nombre_completo"]):
-        grado = d["grado"].most_common(1)[0][0] if d["grado"] else None
-        tipo = d["tipo"].most_common(1)[0][0] if d["tipo"] else None
-        ins("docentes",
-            f"INSERT INTO public.cat_docente (nombre_completo, grado_academico, tipo_docente) "
-            f"VALUES ({sql(d['nombre_completo'])}, {sql(grado)}, {sql(tipo)}) ON CONFLICT (nombre_completo) DO UPDATE SET "
-            f"grado_academico = EXCLUDED.grado_academico, tipo_docente = EXCLUDED.tipo_docente, email = NULL, celular = NULL;")
-
     L += ["", "-- 7. Programas (ARCA · IBP + Planificación · Programas Notificados + BD Techos)"]
     for p in sorted(cat["programas"].values(), key=lambda x: x["pos_code"]):
         if not p.get("nombre_programa"):
@@ -716,7 +707,7 @@ def cargar(ruta_sql: Path, reset: bool) -> None:
         conn.exec_driver_sql(ruta_sql.read_text(encoding="utf-8"))
         totales = conn.execute(text(
             "SELECT 'programas', count(*) FROM cat_programa UNION ALL SELECT 'modulos', count(*) FROM cat_modulo "
-            "UNION ALL SELECT 'docentes', count(*) FROM cat_docente UNION ALL SELECT 'convenios', count(*) FROM cat_institucion_convenio "
+            "UNION ALL SELECT 'convenios', count(*) FROM cat_institucion_convenio "
             "UNION ALL SELECT 'metas', count(*) FROM ref_metas_gestion UNION ALL SELECT 'conceptos', count(*) FROM cat_concepto_financiero "
             "UNION ALL SELECT 'equivalencias', count(*) FROM cat_historico_equivalencia")).fetchall()
     print("-> Cargado en giragroup_catalog_db:", ", ".join(f"{k}={v}" for k, v in totales))

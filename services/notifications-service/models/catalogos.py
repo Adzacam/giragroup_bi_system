@@ -52,17 +52,6 @@ class CatPrograma(CatalogBase):
     modulos = relationship("CatModulo", back_populates="programa", cascade="all, delete-orphan")
 
 
-class CatDocente(CatalogBase):
-    __tablename__ = "cat_docente"
-
-    id_docente = Column(Integer, primary_key=True, index=True)
-    nombre_completo = Column(String(200), nullable=False, unique=True, index=True)
-    email = Column(String(150))
-    celular = Column(String(50))
-    grado_academico = Column(String(100))
-    tipo_docente = Column(String(50), default="TITULAR")
-
-
 class CatModulo(CatalogBase):
     __tablename__ = "cat_modulo"
 

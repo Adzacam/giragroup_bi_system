@@ -39,17 +39,6 @@ CREATE TABLE IF NOT EXISTS public.cat_programa (
 CREATE INDEX IF NOT EXISTS idx_cat_prg_pos ON public.cat_programa(pos_code);
 CREATE INDEX IF NOT EXISTS idx_cat_prg_nombre ON public.cat_programa(nombre_programa);
 
--- 5. Docentes Institucionales
-CREATE TABLE IF NOT EXISTS public.cat_docente (
-    id_docente SERIAL PRIMARY KEY,
-    nombre_completo VARCHAR(200) NOT NULL UNIQUE,
-    email VARCHAR(150),
-    celular VARCHAR(50),
-    grado_academico VARCHAR(100),
-    tipo_docente VARCHAR(50) DEFAULT 'TITULAR'
-);
-CREATE INDEX IF NOT EXISTS idx_cat_doc_nombre ON public.cat_docente(nombre_completo);
-
 -- 6. Módulos por Programa
 CREATE TABLE IF NOT EXISTS public.cat_modulo (
     id_modulo SERIAL PRIMARY KEY,

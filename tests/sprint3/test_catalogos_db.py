@@ -90,8 +90,6 @@ class TestSeedCatalogosSQL:
         for linea in contenido.splitlines():
             if linea.startswith("INSERT INTO public.ref_metas_gestion"):
                 assert "monto_ejecutado = NULL" in linea and ", NULL, " in linea
-            if linea.startswith("INSERT INTO public.cat_docente"):
-                assert "email" not in linea.split("VALUES")[0], "El seed no debe incluir e-mail de docentes"
 
     def test_metas_gestion_presentes(self):
         with open(RUTA_SEED, "r", encoding="utf-8") as f:
@@ -108,11 +106,9 @@ class TestSeedCatalogosSQL:
             contenido = f.read()
 
         n_programas = len(re.findall(r"INSERT INTO public\.cat_programa", contenido))
-        n_docentes = len(re.findall(r"INSERT INTO public\.cat_docente", contenido))
         n_modulos = len(re.findall(r"INSERT INTO public\.cat_modulo", contenido))
 
         assert n_programas >= 700, f"Esperados >= 700 programas, encontrados: {n_programas}"
-        assert n_docentes >= 700, f"Esperados >= 700 docentes, encontrados: {n_docentes}"
         assert n_modulos >= 1500, f"Esperados >= 1500 módulos, encontrados: {n_modulos}"
 
 

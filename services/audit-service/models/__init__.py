@@ -23,7 +23,6 @@ from .catalogos import (
     CatTipoPrograma,
     CatModalidad,
     CatPrograma,
-    CatDocente,
     CatModulo,
     CatEstadoAcademico,
     CatEstadoReprobado,

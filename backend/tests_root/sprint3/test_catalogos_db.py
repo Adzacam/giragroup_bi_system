@@ -98,11 +98,9 @@ class TestSeedCatalogosSQL:
             contenido = f.read()
 
         n_programas = len(re.findall(r"INSERT INTO public\.cat_programa", contenido))
-        n_docentes = len(re.findall(r"INSERT INTO public\.cat_docente", contenido))
         n_modulos = len(re.findall(r"INSERT INTO public\.cat_modulo", contenido))
 
         assert n_programas >= 700, f"Esperados >= 700 programas, encontrados: {n_programas}"
-        assert n_docentes >= 700, f"Esperados >= 700 docentes, encontrados: {n_docentes}"
         assert n_modulos >= 1500, f"Esperados >= 1500 módulos, encontrados: {n_modulos}"
 
 
