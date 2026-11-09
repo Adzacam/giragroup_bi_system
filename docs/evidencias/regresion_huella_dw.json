@@ -1,0 +1,112 @@
+{
+ "fact_costo_programa": {
+  "filas_a": 1320,
+  "filas_b": 1371,
+  "solo_en_a": 71,
+  "solo_en_b": 122,
+  "columnas_que_difieren_(muestra)": {
+   "requiere_revision": 71
+  }
+ },
+ "fact_evaluacion_docente": {
+  "filas_a": 77096,
+  "filas_b": 77099,
+  "solo_en_a": 67475,
+  "solo_en_b": 67478,
+  "columnas_que_difieren_(muestra)": {
+   "requiere_revision": 300,
+   "motivo_revision": 300,
+   "id_modulo": 1,
+   "id_tiempo": 1,
+   "clave_respuesta": 1
+  }
+ },
+ "fact_forecast": {
+  "filas_a": 23,
+  "filas_b": 23,
+  "solo_en_a": 0,
+  "solo_en_b": 0,
+  "columnas_que_difieren_(muestra)": {}
+ },
+ "fact_marketing": {
+  "filas_a": 8946,
+  "filas_b": 8946,
+  "solo_en_a": 0,
+  "solo_en_b": 0,
+  "columnas_que_difieren_(muestra)": {}
+ },
+ "fact_rendimiento_academico": {
+  "filas_a": 22491,
+  "filas_b": 22517,
+  "solo_en_a": 125,
+  "solo_en_b": 151,
+  "columnas_que_difieren_(muestra)": {
+   "requiere_revision": 125
+  }
+ },
+ "fact_rentabilidad": {
+  "filas_a": 108,
+  "filas_b": 108,
+  "solo_en_a": 0,
+  "solo_en_b": 0,
+  "columnas_que_difieren_(muestra)": {}
+ },
+ "fact_situacion_financiera": {
+  "filas_a": 10483,
+  "filas_b": 10483,
+  "solo_en_a": 1,
+  "solo_en_b": 1,
+  "columnas_que_difieren_(muestra)": {
+   "requiere_revision": 1
+  }
+ },
+ "fact_techo_convenio": {
+  "filas_a": 202,
+  "filas_b": 202,
+  "solo_en_a": 0,
+  "solo_en_b": 0,
+  "columnas_que_difieren_(muestra)": {}
+ },
+ "dim_categoria_financiera": {
+  "filas_a": 15,
+  "filas_b": 15,
+  "solo_en_a": 0,
+  "solo_en_b": 0,
+  "columnas_que_difieren_(muestra)": {}
+ },
+ "dim_docente": {
+  "filas_a": 638,
+  "filas_b": 638,
+  "solo_en_a": 0,
+  "solo_en_b": 0,
+  "columnas_que_difieren_(muestra)": {}
+ },
+ "dim_estudiante": {
+  "filas_a": 14183,
+  "filas_b": 14077,
+  "solo_en_a": 127,
+  "solo_en_b": 21,
+  "columnas_que_difieren_(muestra)": {
+   "nombre_completo": 127,
+   "codigo_estudiante": 106,
+   "ci": 106,
+   "ci_numero": 106,
+   "id_temporal": 76,
+   "identidad_verificada": 76
+  }
+ },
+ "dim_modulo": {
+  "filas_a": 3762,
+  "filas_b": 3766,
+  "solo_en_a": 0,
+  "solo_en_b": 4,
+  "columnas_que_difieren_(muestra)": {}
+ },
+ "bridge_modulo_docente": {
+  "filas_a": 1922,
+  "filas_b": 1922,
+  "solo_en_a": 0,
+  "solo_en_b": 0,
+  "columnas_que_difieren_(muestra)": {}
+ }
+}

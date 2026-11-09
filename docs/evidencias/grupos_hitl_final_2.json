@@ -1,0 +1,590 @@
+{
+ "documentos": 10,
+ "casos": 252,
+ "grupos": 38,
+ "tiempo_listar_grupos_s": 0.021,
+ "grupos_detalle": [
+  {
+   "clave": "HECHO_EN_REVISION::academico|doc20|falta:nota|Aprobado|Titulado",
+   "motivo": "HECHO_EN_REVISION",
+   "valor": "academico|doc20|falta:nota|Aprobado|Titulado",
+   "n": 46,
+   "ejemplo": "HECHO-ACA-42435",
+   "un_clic": false
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | p/ejecutado | p/asignado | fecha de inicio - ads | fecha de fin - ads | dias activos | dias totales",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "leads | p/ejecutado | p/asignado | fecha de inicio - ads | fecha de fin - ads | dias activos | dias totales",
+   "n": 30,
+   "ejemplo": "INICIA | LEADS: 66 | P/EJECUTADO: 82 | P/ASIGNADO: 100 | Fecha de Inicio - ADs: 2025-06-17 00:00:00 | Fecha de Fin - ADs: 2025-07-28 00:00:00 | Días Activos: 42"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "leads",
+   "n": 26,
+   "ejemplo": "INICIA | LEADS: 293"
+  },
+  {
+   "clave": "HECHO_EN_REVISION::academico|doc20|falta:ninguno|Aprobado|Titulado",
+   "motivo": "HECHO_EN_REVISION",
+   "valor": "academico|doc20|falta:ninguno|Aprobado|Titulado",
+   "n": 25,
+   "ejemplo": "HECHO-ACA-22662",
+   "un_clic": true
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | p/ejecutado | p/asignado | fecha de inicio - ads | fecha de fin - ads | dias activos | dias totales | ciudad",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "leads | p/ejecutado | p/asignado | fecha de inicio - ads | fecha de fin - ads | dias activos | dias totales | ciudad",
+   "n": 14,
+   "ejemplo": "INICIA | LEADS: 277 | P/EJECUTADO: 237.65 | P/ASIGNADO: 252.155 | Fecha de Inicio - ADs: 2025-09-05 00:00:00 | Fecha de Fin - ADs: 2025-10-28 00:00:00 | Días Ac"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::estado | n° inscritos | reservas",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "estado | n° inscritos | reservas",
+   "n": 13,
+   "ejemplo": "8/12/2025 inicio | ESTADO: Inicio Confirmado | N° INSCRITOS: 5 | RESERVAS: 1 | SE TIENE 5 FACTURAS REGISTRADAS"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::mes numerico | mes | ejecutado # | ejecutado # | ejecutado # | meta #",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "mes numerico | mes | ejecutado # | ejecutado # | ejecutado # | meta #",
+   "n": 9,
+   "ejemplo": "MES NUMERICO: 1 | MES: ENERO | EJECUTADO 2023: Bs679.446 | EJECUTADO 2024: Bs800.355 | EJECUTADO 2025: Bs1.123.296 | META 2025: Bs828.875"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::proyecto (pos) | mes | fecha de notificacion del programa | fecha de inicio del programa | tipo de programa | costo de p",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "proyecto (pos) | mes | fecha de notificacion del programa | fecha de inicio del programa | tipo de programa | costo de p",
+   "n": 9,
+   "ejemplo": "PROYECTO (POS): 5377 | MES: Enero | FECHA DE NOTIFICACIÓN DEL PROGRAMA: 45629 | FECHA DE INICIO DEL PROGRAMA: 2025-01-20 00:00:00 | TIPO DE PROGRAMA: 1 | COSTO "
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::mes | ejecutado # | ejecutado # | ejecutado # | meta #",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "mes | ejecutado # | ejecutado # | ejecutado # | meta #",
+   "n": 8,
+   "ejemplo": "MES: ENERO | EJECUTADO 2023: Bs679.446 | EJECUTADO 2024: Bs800.355 | EJECUTADO 2025: 1123296 | META 2025: 828875 | 135.520555"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | p/ejecutado | p/asignado | fecha de inicio - ads | fecha de fin - ads | dias activos | dias totales | comentario",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "leads | p/ejecutado | p/asignado | fecha de inicio - ads | fecha de fin - ads | dias activos | dias totales | comentario",
+   "n": 7,
+   "ejemplo": "NO INICIA HASTA TENER POR LO MENOS 10 INSCRITOS O SE REVISE NUEVAMENTE LOS INGRESOS | LEADS: 190 | P/EJECUTADO: 99.75 | P/ASIGNADO: 100 | Fecha de Inicio - ADs:"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | estado | n° inscritos | reservas",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "a | fecha inicio | fecha fin | estado | n° inscritos | reservas",
+   "n": 7,
+   "ejemplo": "A: 8 | FECHA INICIO: 2026-05-16 00:00:00 | FECHA FIN: 2026-12-19 00:00:00 | ESTADO: Inicio Confirmado | N° INSCRITOS: 17 | RESERVAS: 1 | SE TIENE 17 FACTURAS RE"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::mes",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "mes",
+   "n": 7,
+   "ejemplo": "MES: Julio"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "a",
+   "n": 6,
+   "ejemplo": "A: 14 | PE"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | fecha de inicio - ads | dias activos hasta hoy",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "leads | fecha de inicio - ads | dias activos hasta hoy",
+   "n": 5,
+   "ejemplo": "NO INICIA HASTA TENER POR LO MENOS 9 INSCRITOS O SE REVISE NUEVAMENTE LOS INGRESOS | LEADS: 276 | Fecha de Inicio - ADs: 2026-04-02 00:00:00 | Días Activos HAST"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | comentarios | estado | n° inscritos | reservas",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "ibp | fecha inicio | fecha fin | comentarios | estado | n° inscritos | reservas",
+   "n": 5,
+   "ejemplo": "IBP: 10 | FECHA INICIO: 2026-05-18 00:00:00 | FECHA FIN: 2026-06-20 00:00:00 | COMENTARIOS: 2026-05-25 00:00:00 | ESTADO: Inicio Confirmado | N° INSCRITOS: 8 | "
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::fecha inicio - mes | counta de programa",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "fecha inicio - mes | counta de programa",
+   "n": 4,
+   "ejemplo": "Fecha Inicio - Mes: feb | COUNTA de Programa: 0.08042488619119878"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | comentarios",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "ibp | fecha inicio | fecha fin | comentarios",
+   "n": 3,
+   "ejemplo": "IBP: 6 | FECHA INICIO: 2026-05-04 00:00:00 | FECHA FIN: 2026-07-15 00:00:00 | COMENTARIOS: 18/05/2026"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | ciudad",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "leads | ciudad",
+   "n": 2,
+   "ejemplo": "INICIA | LEADS: 190 | Ciudad: La Paz"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | fecha de inicio - ads | dias activos de la campana hasta hoy",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "leads | fecha de inicio - ads | dias activos de la campana hasta hoy",
+   "n": 2,
+   "ejemplo": "NO INICIA HASTA TENER POR LO MENOS 9 INSCRITOS O SE REVISE NUEVAMENTE LOS INGRESOS | LEADS: 177 | Fecha de Inicio - ADs: 2026-02-20 00:00:00 | Días activos de l"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | comentarios | estado | n° inscritos | reservas",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "a | fecha inicio | fecha fin | comentarios | estado | n° inscritos | reservas",
+   "n": 2,
+   "ejemplo": "A: 5 | FECHA INICIO: 2026-05-11 00:00:00 | FECHA FIN: 2026-09-12 00:00:00 | COMENTARIOS: 2026-05-25 00:00:00 | ESTADO: Inicio Confirmado | N° INSCRITOS: 6 | RES"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | estado | n° inscritos | reservas",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "ibp | fecha inicio | fecha fin | estado | n° inscritos | reservas",
+   "n": 2,
+   "ejemplo": "IBP: 9 | FECHA INICIO: 2026-05-19 00:00:00 | FECHA FIN: 2026-06-07 00:00:00 | ESTADO: Inicio Confirmado | N° INSCRITOS: 7 | RESERVAS: 7 | SE TIENE 7 FACTURAS RE"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | comentarios",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "a | fecha inicio | fecha fin | comentarios",
+   "n": 2,
+   "ejemplo": "A: 6 | FECHA INICIO: 2026-05-26 00:00:00 | FECHA FIN: 2026-10-01 00:00:00 | COMENTARIOS: CLASE INTRO 26 DE MAYO"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | comentarios | n° inscritos | reservas",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "a | fecha inicio | fecha fin | comentarios | n° inscritos | reservas",
+   "n": 2,
+   "ejemplo": "A: 9 | FECHA INICIO: 2026-05-29 00:00:00 | FECHA FIN: 2027-01-18 00:00:00 | COMENTARIOS: REPROGRAMAR PARA EL 15 DE JUNIO | N° INSCRITOS: 6 | RESERVAS: 1 | SE TI"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | comentarios | n° inscritos | reservas",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "ibp | fecha inicio | fecha fin | comentarios | n° inscritos | reservas",
+   "n": 2,
+   "ejemplo": "IBP: 8 | FECHA INICIO: 2026-06-08 00:00:00 | FECHA FIN: 2026-09-30 00:00:00 | COMENTARIOS: REVISAR MARTES | N° INSCRITOS: 1 | RESERVAS: 0 | SE TIENE 1 FACTURAS "
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::estado academico | estado reprobado | estado arca | combinaciones",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "estado academico | estado reprobado | estado arca | combinaciones",
+   "n": 1,
+   "ejemplo": "Estado academico: Aprobado | Estado reprobado: Aprobado | Estado ARCA: Titulado | Combinaciones: Aprobado | Aprobado | Titulado"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::p/ejecutado | p/asignado | fecha de inicio - ads",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "p/ejecutado | p/asignado | fecha de inicio - ads",
+   "n": 1,
+   "ejemplo": "NO INICIA HASTA TENER POR LO MENOS 10 INSCRITOS O SE REVISE NUEVAMENTE LOS INGRESOS | P/EJECUTADO: 204 | P/ASIGNADO: 2026-02-24 00:00:00 | Fecha de Inicio - ADs"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | p/ejecutado | p/asignado",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "leads | p/ejecutado | p/asignado",
+   "n": 1,
+   "ejemplo": "NO INICIA HASTA TENER POR LO MENOS 11 INSCRITOS O SE REVISE NUEVAMENTE LOS INGRESOS | LEADS: 241 | P/EJECUTADO: 0 | P/ASIGNADO: 200"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | comentario digital / video solicitado",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "leads | comentario digital / video solicitado",
+   "n": 1,
+   "ejemplo": "INICIA | LEADS: 289 | Comentario Digital / Video solicitado: https://www.facebook.com/share/r/1C6GsPFNka/"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | fecha de inicio - ads | dias activos de la campana hasta hoy | comentario digital / video solicitado",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "leads | fecha de inicio - ads | dias activos de la campana hasta hoy | comentario digital / video solicitado",
+   "n": 1,
+   "ejemplo": "NO INICIA HASTA TENER POR LO MENOS 9 INSCRITOS O SE REVISE NUEVAMENTE LOS INGRESOS | LEADS: 141 | Fecha de Inicio - ADs: 2026-03-12 00:00:00 | Días activos de l"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | dias activos de la campana hasta hoy",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "leads | dias activos de la campana hasta hoy",
+   "n": 1,
+   "ejemplo": "NO INICIA HASTA TENER POR LO MENOS 11 INSCRITOS O SE REVISE NUEVAMENTE LOS INGRESOS | LEADS: 693 | Días activos de la campaña HASTA HOY: 46171"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | n° inscritos",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "a | fecha inicio | fecha fin | n° inscritos",
+   "n": 1,
+   "ejemplo": "A: 14 | FECHA INICIO: 2026-05-04 00:00:00 | FECHA FIN: 2026-05-15 00:00:00 | N° INSCRITOS: 0 | SE TIENE 0 FACTURAS REGISTRADAS"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | estado | n° inscritos",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "a | fecha inicio | fecha fin | estado | n° inscritos",
+   "n": 1,
+   "ejemplo": "A: 14 | FECHA INICIO: 2026-05-04 00:00:00 | FECHA FIN: 2026-09-30 00:00:00 | ESTADO: Inicio Confirmado | N° INSCRITOS: 5 | SE TIENE 51 FACTURAS REGISTRADAS"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | comentarios | estado | n° inscritos",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "ibp | fecha inicio | fecha fin | comentarios | estado | n° inscritos",
+   "n": 1,
+   "ejemplo": "IBP: 8 | FECHA INICIO: 2026-05-06 00:00:00 | FECHA FIN: 2026-08-17 00:00:00 | COMENTARIOS: 2026-05-25 00:00:00 | ESTADO: Inicio Confirmado | N° INSCRITOS: 6 | S"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | fecha de inicio - ads",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "leads | fecha de inicio - ads",
+   "n": 1,
+   "ejemplo": "NO INICIA HASTA TENER POR LO MENOS 10 INSCRITOS O SE REVISE NUEVAMENTE LOS INGRESOS | LEADS: 200 | Fecha de Inicio - ADs: 2026-05-13 00:00:00 | Nuevo área comer"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::mes | cantidad de programas | cantidad de programas | fecha inicio - mes",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "mes | cantidad de programas | cantidad de programas | fecha inicio - mes",
+   "n": 1,
+   "ejemplo": "MES: mar | CANTIDAD DE PROGRAMAS: 20 | CANTIDAD DE PROGRAMAS: Curso | Fecha Inicio - Mes: 12 | 6 | 6 | 10 | 8 | 13 | 7 | 9 | 10 | 12 | 5 | 8 | 4"
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::proyecto (pos) | fecha de notificacion del programa | costo de programa | costo del programa al #% de desc. | punto de e",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "proyecto (pos) | fecha de notificacion del programa | costo de programa | costo del programa al #% de desc. | punto de e",
+   "n": 1,
+   "ejemplo": "PROYECTO (POS): 5560 | FECHA DE NOTIFICACIÓN DEL PROGRAMA: 45748 | COSTO DE PROGRAMA: 4300 | COSTO DEL PROGRAMA AL 20% DE DESC.: 3440 | PUNTO DE EQUILIBRIO: 13 "
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::proyecto (pos) | fecha de notificacion del programa | fecha de inicio del programa | tipo de programa | costo de program",
+   "motivo": "BAJA_CONFIANZA_IA",
+   "valor": "proyecto (pos) | fecha de notificacion del programa | fecha de inicio del programa | tipo de programa | costo de program",
+   "n": 1,
+   "ejemplo": "PROYECTO (POS): 5660 | FECHA DE NOTIFICACIÓN DEL PROGRAMA: 45783 | FECHA DE INICIO DEL PROGRAMA: 2025-07-21 00:00:00 | TIPO DE PROGRAMA: 14 | COSTO DE PROGRAMA:"
+  },
+  {
+   "clave": "HECHO_EN_REVISION::financiero|doc17|falta:fecha",
+   "motivo": "HECHO_EN_REVISION",
+   "valor": "financiero|doc17|falta:fecha",
+   "n": 1,
+   "ejemplo": "HECHO-FIN-3821",
+   "un_clic": false
+  }
+ ],
+ "aprobar_grupo": [
+  {
+   "clave": "HECHO_EN_REVISION::academico|doc20|falta:nota|Aprobado|Titulado",
+   "casos": 46,
+   "http": 200,
+   "segundos": 0.031,
+   "resueltos": 0,
+   "detalle": "Al grupo le faltan campos: hay que corregirlo caso por caso."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | p/ejecutado | p/asignado | fecha de inicio - ads | fecha de fin",
+   "casos": 30,
+   "http": 200,
+   "segundos": 0.096,
+   "resueltos": 30,
+   "detalle": "Se resolvieron y consolidaron 30 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads",
+   "casos": 26,
+   "http": 200,
+   "segundos": 0.063,
+   "resueltos": 26,
+   "detalle": "Se resolvieron y consolidaron 26 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "HECHO_EN_REVISION::academico|doc20|falta:ninguno|Aprobado|Titulado",
+   "casos": 25,
+   "http": 200,
+   "segundos": 0.062,
+   "resueltos": 25,
+   "detalle": null
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | p/ejecutado | p/asignado | fecha de inicio - ads | fecha de fin",
+   "casos": 14,
+   "http": 200,
+   "segundos": 0.04,
+   "resueltos": 14,
+   "detalle": "Se resolvieron y consolidaron 14 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::estado | n° inscritos | reservas",
+   "casos": 13,
+   "http": 200,
+   "segundos": 0.043,
+   "resueltos": 13,
+   "detalle": "Se resolvieron y consolidaron 13 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::mes numerico | mes | ejecutado # | ejecutado # | ejecutado # | meta #",
+   "casos": 9,
+   "http": 200,
+   "segundos": 0.029,
+   "resueltos": 9,
+   "detalle": "Se resolvieron y consolidaron 9 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::proyecto (pos) | mes | fecha de notificacion del programa | fecha de in",
+   "casos": 9,
+   "http": 200,
+   "segundos": 0.031,
+   "resueltos": 9,
+   "detalle": "Se resolvieron y consolidaron 9 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::mes | ejecutado # | ejecutado # | ejecutado # | meta #",
+   "casos": 8,
+   "http": 200,
+   "segundos": 0.029,
+   "resueltos": 8,
+   "detalle": "Se resolvieron y consolidaron 8 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | p/ejecutado | p/asignado | fecha de inicio - ads | fecha de fin",
+   "casos": 7,
+   "http": 200,
+   "segundos": 0.025,
+   "resueltos": 7,
+   "detalle": "Se resolvieron y consolidaron 7 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | estado | n° inscritos | reservas",
+   "casos": 7,
+   "http": 200,
+   "segundos": 0.029,
+   "resueltos": 7,
+   "detalle": "Se resolvieron y consolidaron 7 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::mes",
+   "casos": 7,
+   "http": 200,
+   "segundos": 0.03,
+   "resueltos": 7,
+   "detalle": "Se resolvieron y consolidaron 7 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a",
+   "casos": 6,
+   "http": 200,
+   "segundos": 0.023,
+   "resueltos": 6,
+   "detalle": "Se resolvieron y consolidaron 6 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | fecha de inicio - ads | dias activos hasta hoy",
+   "casos": 5,
+   "http": 200,
+   "segundos": 0.02,
+   "resueltos": 5,
+   "detalle": "Se resolvieron y consolidaron 5 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | comentarios | estado | n° inscritos | ",
+   "casos": 5,
+   "http": 200,
+   "segundos": 0.022,
+   "resueltos": 5,
+   "detalle": "Se resolvieron y consolidaron 5 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::fecha inicio - mes | counta de programa",
+   "casos": 4,
+   "http": 200,
+   "segundos": 0.018,
+   "resueltos": 4,
+   "detalle": "Se resolvieron y consolidaron 4 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | comentarios",
+   "casos": 3,
+   "http": 200,
+   "segundos": 0.016,
+   "resueltos": 3,
+   "detalle": "Se resolvieron y consolidaron 3 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | ciudad",
+   "casos": 2,
+   "http": 200,
+   "segundos": 0.014,
+   "resueltos": 2,
+   "detalle": "Se resolvieron y consolidaron 2 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | fecha de inicio - ads | dias activos de la campana hasta hoy",
+   "casos": 2,
+   "http": 200,
+   "segundos": 0.013,
+   "resueltos": 2,
+   "detalle": "Se resolvieron y consolidaron 2 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | comentarios | estado | n° inscritos | re",
+   "casos": 2,
+   "http": 200,
+   "segundos": 0.013,
+   "resueltos": 2,
+   "detalle": "Se resolvieron y consolidaron 2 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | estado | n° inscritos | reservas",
+   "casos": 2,
+   "http": 200,
+   "segundos": 0.014,
+   "resueltos": 2,
+   "detalle": "Se resolvieron y consolidaron 2 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | comentarios",
+   "casos": 2,
+   "http": 200,
+   "segundos": 0.013,
+   "resueltos": 2,
+   "detalle": "Se resolvieron y consolidaron 2 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | comentarios | n° inscritos | reservas",
+   "casos": 2,
+   "http": 200,
+   "segundos": 0.013,
+   "resueltos": 2,
+   "detalle": "Se resolvieron y consolidaron 2 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | comentarios | n° inscritos | reservas",
+   "casos": 2,
+   "http": 200,
+   "segundos": 0.015,
+   "resueltos": 2,
+   "detalle": "Se resolvieron y consolidaron 2 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::estado academico | estado reprobado | estado arca | combinaciones",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.011,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::p/ejecutado | p/asignado | fecha de inicio - ads",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.011,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | p/ejecutado | p/asignado",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.011,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | comentario digital / video solicitado",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.011,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | fecha de inicio - ads | dias activos de la campana hasta hoy | ",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.011,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | dias activos de la campana hasta hoy",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.012,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | n° inscritos",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.012,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::a | fecha inicio | fecha fin | estado | n° inscritos",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.012,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::ibp | fecha inicio | fecha fin | comentarios | estado | n° inscritos",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.054,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::leads | fecha de inicio - ads",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.013,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::mes | cantidad de programas | cantidad de programas | fecha inicio - me",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.011,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::proyecto (pos) | fecha de notificacion del programa | costo de programa",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.011,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "BAJA_CONFIANZA_IA::proyecto (pos) | fecha de notificacion del programa | fecha de inicio d",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.011,
+   "resueltos": 1,
+   "detalle": "Se resolvieron y consolidaron 1 caso(s) en el Data Warehouse."
+  },
+  {
+   "clave": "HECHO_EN_REVISION::financiero|doc17|falta:fecha",
+   "casos": 1,
+   "http": 200,
+   "segundos": 0.005,
+   "resueltos": 0,
+   "detalle": "Al grupo le faltan campos: hay que corregirlo caso por caso."
+  }
+ ],
+ "resumen_aprobar_grupo": {
+  "grupos_intentados": 38,
+  "con_casos_resueltos": 36,
+  "casos_resueltos": 205,
+  "segundos_total": 0.9,
+  "segundos_mediana": 0.015
+ }
+}

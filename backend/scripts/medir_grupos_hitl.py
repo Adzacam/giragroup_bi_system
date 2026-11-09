@@ -21,7 +21,7 @@ res = {"documentos": len(docs), "casos": g["total_casos"], "grupos": g["total_gr
        "grupos_detalle": [{k: v for k, v in x.items() if k != "ids"} for x in g["grupos"]], "aprobar_grupo": []}
 for x in g["grupos"]:
     t1 = time.perf_counter()
-    r = cli.post("/api/v1/dataops/review-tray/approve-group", json={"clave": x["clave"], "doc_id": None})
+    r = cli.post("/api/v1/dataops/review-tray/approve-group", json={"clave": x["clave"], "doc_ids": docs})
     dt = time.perf_counter() - t1
     j = r.json() if r.status_code == 200 else {"error": r.text[:150]}
     res["aprobar_grupo"].append({"clave": x["clave"][:90], "casos": x["n"], "http": r.status_code, "segundos": round(dt, 3), "resueltos": j.get("resolved_count"), "detalle": j.get("message") or j.get("error")})
