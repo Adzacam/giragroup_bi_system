@@ -1,0 +1,556 @@
+{
+ "serie": {
+  "fuente": "fact_marketing.inscritos por mes (DW real)",
+  "n": 43,
+  "desde": "2022-11-01",
+  "hasta": "2026-05-01",
+  "nota": "2022-11 y 2022-12 son meses de arranque con pocos inscritos"
+ },
+ "diseno": {
+  "origenes": 12,
+  "h": "1..6, truncado a los meses con dato real (los ultimos 5 origenes tienen menos de 6)",
+  "sarima_grilla": 48
+ },
+ "modelos": {
+  "actual_HW_aditivo": {
+   "mape_medio_origenes": 21.49,
+   "de_origenes": 9.54,
+   "mape_agrupado_todos_los_pasos": 23.07,
+   "pasos_evaluados": 57,
+   "mape_por_h": {
+    "1": 25.83,
+    "2": 28.99,
+    "3": 28.31,
+    "4": 23.02,
+    "5": 12.48,
+    "6": 13.75
+   },
+   "por_origen": [
+    {
+     "origen": "2025-06-01",
+     "n_entrenamiento": 31,
+     "h_disponibles": 6,
+     "mape": 40.6
+    },
+    {
+     "origen": "2025-07-01",
+     "n_entrenamiento": 32,
+     "h_disponibles": 6,
+     "mape": 38.63
+    },
+    {
+     "origen": "2025-08-01",
+     "n_entrenamiento": 33,
+     "h_disponibles": 6,
+     "mape": 28.48
+    },
+    {
+     "origen": "2025-09-01",
+     "n_entrenamiento": 34,
+     "h_disponibles": 6,
+     "mape": 24.54
+    },
+    {
+     "origen": "2025-10-01",
+     "n_entrenamiento": 35,
+     "h_disponibles": 6,
+     "mape": 15.74
+    },
+    {
+     "origen": "2025-11-01",
+     "n_entrenamiento": 36,
+     "h_disponibles": 6,
+     "mape": 15.55
+    },
+    {
+     "origen": "2025-12-01",
+     "n_entrenamiento": 37,
+     "h_disponibles": 6,
+     "mape": 16.18
+    },
+    {
+     "origen": "2026-01-01",
+     "n_entrenamiento": 38,
+     "h_disponibles": 5,
+     "mape": 15.98
+    },
+    {
+     "origen": "2026-02-01",
+     "n_entrenamiento": 39,
+     "h_disponibles": 4,
+     "mape": 18.01
+    },
+    {
+     "origen": "2026-03-01",
+     "n_entrenamiento": 40,
+     "h_disponibles": 3,
+     "mape": 13.68
+    },
+    {
+     "origen": "2026-04-01",
+     "n_entrenamiento": 41,
+     "h_disponibles": 2,
+     "mape": 13.48
+    },
+    {
+     "origen": "2026-05-01",
+     "n_entrenamiento": 42,
+     "h_disponibles": 1,
+     "mape": 17.02
+    }
+   ]
+  },
+  "HW_amortiguado": {
+   "mape_medio_origenes": 16.88,
+   "de_origenes": 8.64,
+   "mape_agrupado_todos_los_pasos": 19.16,
+   "pasos_evaluados": 57,
+   "mape_por_h": {
+    "1": 20.02,
+    "2": 22.88,
+    "3": 22.42,
+    "4": 19.69,
+    "5": 13.46,
+    "6": 12.99
+   },
+   "por_origen": [
+    {
+     "origen": "2025-06-01",
+     "n_entrenamiento": 31,
+     "h_disponibles": 6,
+     "mape": 28.76
+    },
+    {
+     "origen": "2025-07-01",
+     "n_entrenamiento": 32,
+     "h_disponibles": 6,
+     "mape": 30.82
+    },
+    {
+     "origen": "2025-08-01",
+     "n_entrenamiento": 33,
+     "h_disponibles": 6,
+     "mape": 26.04
+    },
+    {
+     "origen": "2025-09-01",
+     "n_entrenamiento": 34,
+     "h_disponibles": 6,
+     "mape": 21.5
+    },
+    {
+     "origen": "2025-10-01",
+     "n_entrenamiento": 35,
+     "h_disponibles": 6,
+     "mape": 13.76
+    },
+    {
+     "origen": "2025-11-01",
+     "n_entrenamiento": 36,
+     "h_disponibles": 6,
+     "mape": 17.83
+    },
+    {
+     "origen": "2025-12-01",
+     "n_entrenamiento": 37,
+     "h_disponibles": 6,
+     "mape": 15.67
+    },
+    {
+     "origen": "2026-01-01",
+     "n_entrenamiento": 38,
+     "h_disponibles": 5,
+     "mape": 13.06
+    },
+    {
+     "origen": "2026-02-01",
+     "n_entrenamiento": 39,
+     "h_disponibles": 4,
+     "mape": 10.27
+    },
+    {
+     "origen": "2026-03-01",
+     "n_entrenamiento": 40,
+     "h_disponibles": 3,
+     "mape": 10.28
+    },
+    {
+     "origen": "2026-04-01",
+     "n_entrenamiento": 41,
+     "h_disponibles": 2,
+     "mape": 13.72
+    },
+    {
+     "origen": "2026-05-01",
+     "n_entrenamiento": 42,
+     "h_disponibles": 1,
+     "mape": 0.89
+    }
+   ]
+  },
+  "HW_log": {
+   "mape_medio_origenes": 64.06,
+   "de_origenes": 24.35,
+   "mape_agrupado_todos_los_pasos": 67.03,
+   "pasos_evaluados": 57,
+   "mape_por_h": {
+    "1": 61.5,
+    "2": 79.12,
+    "3": 79.3,
+    "4": 74.64,
+    "5": 56.55,
+    "6": 42.17
+   },
+   "por_origen": [
+    {
+     "origen": "2025-06-01",
+     "n_entrenamiento": 31,
+     "h_disponibles": 6,
+     "mape": 114.79
+    },
+    {
+     "origen": "2025-07-01",
+     "n_entrenamiento": 32,
+     "h_disponibles": 6,
+     "mape": 100.47
+    },
+    {
+     "origen": "2025-08-01",
+     "n_entrenamiento": 33,
+     "h_disponibles": 6,
+     "mape": 81.97
+    },
+    {
+     "origen": "2025-09-01",
+     "n_entrenamiento": 34,
+     "h_disponibles": 6,
+     "mape": 33.93
+    },
+    {
+     "origen": "2025-10-01",
+     "n_entrenamiento": 35,
+     "h_disponibles": 6,
+     "mape": 53.37
+    },
+    {
+     "origen": "2025-11-01",
+     "n_entrenamiento": 36,
+     "h_disponibles": 6,
+     "mape": 45.53
+    },
+    {
+     "origen": "2025-12-01",
+     "n_entrenamiento": 37,
+     "h_disponibles": 6,
+     "mape": 56.42
+    },
+    {
+     "origen": "2026-01-01",
+     "n_entrenamiento": 38,
+     "h_disponibles": 5,
+     "mape": 67.31
+    },
+    {
+     "origen": "2026-02-01",
+     "n_entrenamiento": 39,
+     "h_disponibles": 4,
+     "mape": 69.56
+    },
+    {
+     "origen": "2026-03-01",
+     "n_entrenamiento": 40,
+     "h_disponibles": 3,
+     "mape": 50.78
+    },
+    {
+     "origen": "2026-04-01",
+     "n_entrenamiento": 41,
+     "h_disponibles": 2,
+     "mape": 40.24
+    },
+    {
+     "origen": "2026-05-01",
+     "n_entrenamiento": 42,
+     "h_disponibles": 1,
+     "mape": 54.33
+    }
+   ]
+  },
+  "SARIMA_AIC": {
+   "mape_medio_origenes": 18.52,
+   "de_origenes": 10.37,
+   "mape_agrupado_todos_los_pasos": 19.82,
+   "pasos_evaluados": 57,
+   "mape_por_h": {
+    "1": 18.76,
+    "2": 23.47,
+    "3": 25.37,
+    "4": 23.82,
+    "5": 13.73,
+    "6": 9.78
+   },
+   "por_origen": [
+    {
+     "origen": "2025-06-01",
+     "n_entrenamiento": 31,
+     "h_disponibles": 6,
+     "mape": 41.75
+    },
+    {
+     "origen": "2025-07-01",
+     "n_entrenamiento": 32,
+     "h_disponibles": 6,
+     "mape": 32.69
+    },
+    {
+     "origen": "2025-08-01",
+     "n_entrenamiento": 33,
+     "h_disponibles": 6,
+     "mape": 24.06
+    },
+    {
+     "origen": "2025-09-01",
+     "n_entrenamiento": 34,
+     "h_disponibles": 6,
+     "mape": 17.22
+    },
+    {
+     "origen": "2025-10-01",
+     "n_entrenamiento": 35,
+     "h_disponibles": 6,
+     "mape": 22.84
+    },
+    {
+     "origen": "2025-11-01",
+     "n_entrenamiento": 36,
+     "h_disponibles": 6,
+     "mape": 13.06
+    },
+    {
+     "origen": "2025-12-01",
+     "n_entrenamiento": 37,
+     "h_disponibles": 6,
+     "mape": 9.81
+    },
+    {
+     "origen": "2026-01-01",
+     "n_entrenamiento": 38,
+     "h_disponibles": 5,
+     "mape": 9.26
+    },
+    {
+     "origen": "2026-02-01",
+     "n_entrenamiento": 39,
+     "h_disponibles": 4,
+     "mape": 9.59
+    },
+    {
+     "origen": "2026-03-01",
+     "n_entrenamiento": 40,
+     "h_disponibles": 3,
+     "mape": 12.45
+    },
+    {
+     "origen": "2026-04-01",
+     "n_entrenamiento": 41,
+     "h_disponibles": 2,
+     "mape": 9.55
+    },
+    {
+     "origen": "2026-05-01",
+     "n_entrenamiento": 42,
+     "h_disponibles": 1,
+     "mape": 19.97
+    }
+   ]
+  },
+  "referencia_naive_estacional": {
+   "mape_medio_origenes": 14.07,
+   "de_origenes": 6.63,
+   "mape_agrupado_todos_los_pasos": 15.42,
+   "pasos_evaluados": 57,
+   "mape_por_h": {
+    "1": 17.17,
+    "2": 17.77,
+    "3": 18.07,
+    "4": 15.06,
+    "5": 10.67,
+    "6": 10.81
+   },
+   "por_origen": [
+    {
+     "origen": "2025-06-01",
+     "n_entrenamiento": 31,
+     "h_disponibles": 6,
+     "mape": 24.02
+    },
+    {
+     "origen": "2025-07-01",
+     "n_entrenamiento": 32,
+     "h_disponibles": 6,
+     "mape": 24.12
+    },
+    {
+     "origen": "2025-08-01",
+     "n_entrenamiento": 33,
+     "h_disponibles": 6,
+     "mape": 24.7
+    },
+    {
+     "origen": "2025-09-01",
+     "n_entrenamiento": 34,
+     "h_disponibles": 6,
+     "mape": 17.38
+    },
+    {
+     "origen": "2025-10-01",
+     "n_entrenamiento": 35,
+     "h_disponibles": 6,
+     "mape": 10.77
+    },
+    {
+     "origen": "2025-11-01",
+     "n_entrenamiento": 36,
+     "h_disponibles": 6,
+     "mape": 11.43
+    },
+    {
+     "origen": "2025-12-01",
+     "n_entrenamiento": 37,
+     "h_disponibles": 6,
+     "mape": 10.32
+    },
+    {
+     "origen": "2026-01-01",
+     "n_entrenamiento": 38,
+     "h_disponibles": 5,
+     "mape": 10.14
+    },
+    {
+     "origen": "2026-02-01",
+     "n_entrenamiento": 39,
+     "h_disponibles": 4,
+     "mape": 8.11
+    },
+    {
+     "origen": "2026-03-01",
+     "n_entrenamiento": 40,
+     "h_disponibles": 3,
+     "mape": 10.41
+    },
+    {
+     "origen": "2026-04-01",
+     "n_entrenamiento": 41,
+     "h_disponibles": 2,
+     "mape": 10.37
+    },
+    {
+     "origen": "2026-05-01",
+     "n_entrenamiento": 42,
+     "h_disponibles": 1,
+     "mape": 7.07
+    }
+   ]
+  }
+ },
+ "sarima_ordenes_elegidos": [
+  [
+   1,
+   0,
+   1,
+   0,
+   1,
+   1
+  ],
+  [
+   1,
+   0,
+   1,
+   0,
+   1,
+   1
+  ],
+  [
+   1,
+   0,
+   1,
+   0,
+   1,
+   1
+  ],
+  [
+   1,
+   0,
+   1,
+   0,
+   1,
+   1
+  ],
+  [
+   1,
+   0,
+   1,
+   0,
+   1,
+   1
+  ],
+  [
+   1,
+   0,
+   1,
+   0,
+   1,
+   1
+  ],
+  [
+   1,
+   0,
+   1,
+   0,
+   1,
+   1
+  ],
+  [
+   1,
+   0,
+   1,
+   0,
+   1,
+   1
+  ],
+  [
+   1,
+   0,
+   1,
+   0,
+   1,
+   1
+  ],
+  [
+   1,
+   0,
+   1,
+   0,
+   1,
+   1
+  ],
+  [
+   1,
+   0,
+   1,
+   0,
+   1,
+   1
+  ],
+  [
+   1,
+   0,
+   1,
+   1,
+   1,
+   1
+  ]
+ ],
+ "mejor_mape_medio": "HW_amortiguado",
+ "adoptar_distinto_del_actual": true
+}

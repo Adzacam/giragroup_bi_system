@@ -87,7 +87,7 @@ def entrenar_y_proyectar_hw(
     seasonal_periods: int = 12
 ) -> Dict[str, Any]:
     """
-    Ajusta un modelo Holt-Winters aditivo (tendencia aditiva + estacionalidad aditiva de 12 meses)
+    Ajusta un modelo Holt-Winters aditivo (tendencia aditiva amortiguada + estacionalidad aditiva de 12 meses)
     y proyecta hasta `horizonte` meses futuros (máximo 6 meses).
     """
     if horizonte < 1 or horizonte > 6:
@@ -115,6 +115,7 @@ def entrenar_y_proyectar_hw(
             modelo = ExponentialSmoothing(
                 serie_ts,
                 trend="add",
+                damped_trend=True,  # amortiguado: menor MAPE en origen movil (docs/evidencias/holtwinters_origen_movil.json)
                 seasonal="add",
                 seasonal_periods=seasonal_periods,
                 initialization_method="estimated"
