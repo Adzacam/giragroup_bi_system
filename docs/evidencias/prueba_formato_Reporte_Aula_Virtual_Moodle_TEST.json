@@ -1,0 +1,92 @@
+{
+ "archivo": "Reporte_Aula_Virtual_Moodle_TEST.csv",
+ "http": 200,
+ "segundos": 3.37,
+ "id_documento": 17,
+ "filas_procesadas": 35,
+ "bloques": 1,
+ "entidades_extraidas": 35,
+ "lineas_beto": 0,
+ "lineas_resueltas_por_reglas": 35,
+ "lineas_no_aplicables": 0,
+ "hechos_cargados_dw": 35,
+ "directo": 35,
+ "hitl_hechos_en_revision": 0,
+ "staging_entidades": 0,
+ "staging_filas_en_tabla": 0,
+ "bandeja_casos": 0,
+ "bandeja_grupos": 0,
+ "filas_en_dw_por_tabla": {
+  "fact_rendimiento_academico": 35,
+  "fact_situacion_financiera": 0,
+  "fact_evaluacion_docente": 0
+ },
+ "nivel_confianza_promedio": 0.9102,
+ "detalles_carga": [
+  {
+   "tipo": "academico",
+   "status": "loaded",
+   "id_hecho": 45094,
+   "id_estudiante": 14780,
+   "id_modulo": 4530,
+   "id_docente": null,
+   "nota_normalizada": 88.5,
+   "tipo_alerta": "NORMAL",
+   "estado_academico": "Aprobado",
+   "estado_motivo": null,
+   "fk_estado": "A"
+  },
+  {
+   "tipo": "academico",
+   "status": "loaded",
+   "id_hecho": 45095,
+   "id_estudiante": 14781,
+   "id_modulo": 4530,
+   "id_docente": null,
+   "nota_normalizada": 92.0,
+   "tipo_alerta": "NORMAL",
+   "estado_academico": "Aprobado",
+   "estado_motivo": null,
+   "fk_estado": "A"
+  },
+  {
+   "tipo": "academico",
+   "status": "loaded",
+   "id_hecho": 45096,
+   "id_estudiante": 14782,
+   "id_modulo": 4530,
+   "id_docente": null,
+   "nota_normalizada": 95.5,
+   "tipo_alerta": "NORMAL",
+   "estado_academico": "Aprobado",
+   "estado_motivo": null,
+   "fk_estado": "A"
+  },
+  {
+   "tipo": "academico",
+   "status": "loaded",
+   "id_hecho": 45097,
+   "id_estudiante": 14783,
+   "id_modulo": 4530,
+   "id_docente": null,
+   "nota_normalizada": 74.0,
+   "tipo_alerta": "NORMAL",
+   "estado_academico": "Aprobado",
+   "estado_motivo": null,
+   "fk_estado": "A"
+  },
+  {
+   "tipo": "academico",
+   "status": "loaded",
+   "id_hecho": 45098,
+   "id_estudiante": 14784,
+   "id_modulo": 4530,
+   "id_docente": null,
+   "nota_normalizada": 81.0,
+   "tipo_alerta": "NORMAL",
+   "estado_academico": "Aprobado",
+   "estado_motivo": null,
+   "fk_estado": "A"
+  }
+ ]
+}

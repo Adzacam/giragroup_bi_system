@@ -1,0 +1,62 @@
+{
+ "archivo": "Inscripciones_Google_Forms_TEST.csv",
+ "http": 200,
+ "segundos": 3.37,
+ "id_documento": 17,
+ "filas_procesadas": 35,
+ "bloques": 1,
+ "entidades_extraidas": 0,
+ "lineas_beto": 0,
+ "lineas_resueltas_por_reglas": 35,
+ "lineas_no_aplicables": 0,
+ "hechos_cargados_dw": 35,
+ "directo": 35,
+ "hitl_hechos_en_revision": 0,
+ "staging_entidades": 0,
+ "staging_filas_en_tabla": 0,
+ "bandeja_casos": 0,
+ "bandeja_grupos": 0,
+ "filas_en_dw_por_tabla": {
+  "fact_rendimiento_academico": 0,
+  "fact_situacion_financiera": 0,
+  "fact_evaluacion_docente": 0
+ },
+ "nivel_confianza_promedio": 0.8609,
+ "detalles_carga": [
+  {
+   "tipo": "marketing",
+   "status": "loaded",
+   "id_hecho": 26692,
+   "leads": 1,
+   "inscritos": 1
+  },
+  {
+   "tipo": "marketing",
+   "status": "loaded",
+   "id_hecho": 26692,
+   "leads": 2,
+   "inscritos": 2
+  },
+  {
+   "tipo": "marketing",
+   "status": "loaded",
+   "id_hecho": 26693,
+   "leads": 1,
+   "inscritos": 1
+  },
+  {
+   "tipo": "marketing",
+   "status": "loaded",
+   "id_hecho": 26694,
+   "leads": 1,
+   "inscritos": 1
+  },
+  {
+   "tipo": "marketing",
+   "status": "loaded",
+   "id_hecho": 26695,
+   "leads": 1,
+   "inscritos": 1
+  }
+ ]
+}
