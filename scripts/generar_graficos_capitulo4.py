@@ -29,7 +29,7 @@ plt.rcParams['figure.titlesize'] = 11
 
 OUTPUT_DIR = pathlib.Path("docs/images")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-ARTIFACT_DIR = pathlib.Path(r"C:\Users\DAZA\.gemini\antigravity\brain\f930e363-4cdd-4e0f-bee8-dd23f1e3b7d0")
+ARTIFACT_DIR = pathlib.Path(r"C:\Users\DAZA\.gemini\antigravity\brain\79040f08-dd80-48f6-8bdb-1ac2e5db47d6")
 
 def formato_coma(x, pos):
     """Formateador de coma decimal para ejes."""
@@ -238,17 +238,17 @@ def generar_grafico_4_4():
 
 def generar_grafico_4_5():
     """Gráfico 4.5: Impacto en el tiempo de consolidación de reportes de gestión (Pretest vs Postest) en escala semilogarítmica."""
-    fig, ax = plt.subplots(figsize=(6.3, 3.2))
+    fig, ax = plt.subplots(figsize=(6.3, 3.4))
     
     escenarios = [
         "Pretest: Consolidación manual\n(Rango 8 a 12 horas)", 
-        "Postest: Pipeline automatizado\n(Ejecución batch ETL + NER)"
+        "Postest: Pipeline automatizado\n(estimado (KLM))"
     ]
     
-    # Pretest punto medio: 600 min con rango [480, 720]
-    # Postest media: 4.5 min con DE: 0.1 min
-    valores = [600.0, 4.5]
-    yerr = [[120.0, 0.1], [120.0, 0.1]]  # Pretest -120/+120 min, Postest ±0.1 min
+    # Pretest punto medio: 600,0 min con rango [480, 720] min
+    # Postest: 9,2 min estimado puntual por KLM
+    valores = [600.0, 9.2]
+    yerr = [[120.0, 0.0], [120.0, 0.0]]  # Pretest -120/+120 min, Postest sin dispersión empírica (KLM)
     
     x = np.arange(len(escenarios))
     
@@ -260,23 +260,23 @@ def generar_grafico_4_5():
     ax.set_ylabel("Tiempo de consolidación (minutos, escala logarítmica)")
     ax.set_xticks(x)
     ax.set_xticklabels(escenarios)
-    ax.set_ylim(1, 1500)
+    ax.set_ylim(1, 2500)
     
-    # Formato de eje logarítmico legible
+    # Formato de eje logarítmico legible con puntos para miles
     ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda y, _: f"{int(y):,}".replace(',', '.')))
     ax.grid(axis='y', linestyle='--', alpha=0.5, color='#888888', which='both')
     
     # Textos explicativos en las barras
-    ax.text(0, 680, "600,0 min\n(10,0 h)", ha='center', va='bottom', fontsize=8.5, weight='bold')
-    ax.text(1, 5.2, "4,5 min\n(± 0,1 min)", ha='center', va='bottom', fontsize=8.5, weight='bold')
+    ax.text(0, 800, "600,0 min\n(10,0 h)", ha='center', va='bottom', fontsize=8.5, weight='bold')
+    ax.text(1, 11.5, "9,2 min\nestimado (KLM)", ha='center', va='bottom', fontsize=8.5, weight='bold')
     
-    # Flecha y etiqueta de reducción del -99,25 %
+    # Flecha y etiqueta de reducción del -98,47 % (Δ = −590,8 min)
     ax.annotate(
-        "Reducción del 99,25 %\n(Δ = −595,5 min)",
-        xy=(1, 12), xytext=(0.55, 60),
+        "Reducción del 98,47 %\n(Δ = −590,8 min)",
+        xy=(0.92, 32), xytext=(0.52, 110),
         arrowprops=dict(facecolor='#111111', shrink=0.08, width=1.2, headwidth=6),
         ha='center', va='center', fontsize=8.5, weight='bold',
-        bbox=dict(boxstyle="round,pad=0.3", fc="#FFFFFF", ec="#222222", lw=1)
+        bbox=dict(boxstyle="round,pad=0.35", fc="#FFFFFF", ec="#222222", lw=1)
     )
     
     ax.spines['top'].set_visible(False)

@@ -1,0 +1,415 @@
+﻿tabla,columna,tipo,nulo,pk_fk,referencia,descripcion
+bi.ref_kpi,codigo,character varying(10),NO,PK,,"Código único identificador del KPI (ej. FIN-01, ACA-02)"
+bi.ref_kpi,perspectiva,character varying(30),NO,FK,bi.ref_perspectiva.codigo,Perspectiva del CMI a la que pertenece el KPI (FK a bi.ref_perspectiva)
+bi.ref_kpi,nombre,character varying(120),NO,,,Nombre formal del indicador de desempeño institucional
+bi.ref_kpi,descripcion,character varying(300),SI,,,"Descripción conceptual, propósito institucional y método de cálculo del KPI"
+bi.ref_kpi,unidad,character varying(6),NO,,,"Unidad de medida del indicador (%, Bs, al, score)"
+bi.ref_kpi,sentido,character varying(3),NO,,,"Sentido de optimización del indicador (MAX para maximizar, MIN para minimizar)"
+bi.ref_kpi,meta,"numeric(14,2)",SI,,,Valor meta institucional definido para el KPI
+bi.ref_kpi,umbral_verde,"numeric(14,2)",SI,,,Umbral límite para estado óptimo / satisfactorio (semáforo verde)
+bi.ref_kpi,umbral_ambar,"numeric(14,2)",SI,,,Umbral límite para estado preventivo / advertencia (semáforo ámbar)
+bi.ref_kpi,peso,"numeric(5,2)",NO,,,Ponderación porcentual del KPI dentro de su perspectiva (suma 100%)
+bi.ref_kpi,orden,smallint,NO,,,Orden secuencial de presentación del indicador en el tablero del CMI
+bi.ref_kpi,activo,boolean,NO,,,Indica si el KPI se encuentra vigente para evaluación estratégica
+bi.ref_kpi,actualizado_en,timestamp with time zone,NO,,,"Fecha y hora del último ajuste de umbrales, metas o parámetros"
+bi.ref_kpi,actualizado_por,character varying(120),SI,,,Usuario o rol responsable de la última actualización del indicador
+bi.ref_perspectiva,codigo,character varying(30),NO,PK,,"Código identificador de la perspectiva del CMI (FINANCIERA, CLIENTES, PROCESOS, APRENDIZAJE)"
+bi.ref_perspectiva,nombre,character varying(80),NO,,,Nombre formal de la perspectiva estratégica institucional
+bi.ref_perspectiva,objetivo,character varying(300),NO,,,Objetivo estratégico global formulado para la perspectiva
+bi.ref_perspectiva,pregunta,character varying(200),NO,,,Pregunta guía estratégica del Cuadro de Mando Integral
+bi.ref_perspectiva,peso,"numeric(5,2)",NO,,,Ponderación porcentual de la perspectiva en el índice institucional global
+bi.ref_perspectiva,orden,smallint,NO,,,Orden canónico de presentación en el Cuadro de Mando Integral
+bi.ref_perspectiva,activa,boolean,NO,,,Indica si la perspectiva estratégica está activa en el sistema
+bi.ref_perspectiva,actualizado_en,timestamp with time zone,NO,,,Fecha y hora de última modificación de la perspectiva
+bi.ref_perspectiva,actualizado_por,character varying(120),SI,,,Usuario responsable del cambio de configuración de la perspectiva
+public.bridge_modulo_docente,id_asignacion,integer,NO,PK,,Identificador único de la asignación docente al módulo
+public.bridge_modulo_docente,id_modulo,integer,NO,FK,public.dim_modulo.id_modulo,Módulo cursado o programado (FK a dim_modulo)
+public.bridge_modulo_docente,id_docente,integer,NO,FK,public.dim_docente.id_docente,Docente asignado para el dictado del módulo (FK a dim_docente)
+public.bridge_modulo_docente,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento fuente que certifica la asignación académica (FK a dim_origen_documental)
+public.bridge_modulo_docente,tipo_docente,character varying(30),SI,,,"Modalidad de contratación o rol docente (TITULAR, INVITADO, AUXILIAR)"
+public.bridge_modulo_docente,grado_academico,character varying(50),SI,,,"Máximo grado académico del docente (MAESTRÍA, DOCTORADO, ESPECIALIDAD)"
+public.bridge_modulo_docente,horas_modulo,"numeric(6,2)",SI,,,Carga horaria académica asignada al módulo en horas reloj
+public.bridge_modulo_docente,pago_docente,"numeric(12,2)",SI,,,Honorario o monto liquidado al docente por el módulo en Bs
+public.bridge_modulo_docente,fecha_inicio,date,SI,,,Fecha de inicio del dictado del módulo
+public.bridge_modulo_docente,fecha_fin,date,SI,,,Fecha de conclusión del dictado del módulo
+public.cache_indice_beto,hash_texto,character(64),NO,PK,,Hash SHA-256 del texto preprocesado para consulta idempotente
+public.cache_indice_beto,modelo,character varying(40),NO,PK,,Identificador del modelo NLP utilizado (BETO-uncased-v1)
+public.cache_indice_beto,indice,"numeric(6,4)",NO,,,Puntuación de confianza semántica inferida (rango 0.0000 a 1.0000)
+public.cache_indice_beto,creado_en,timestamp with time zone,NO,,,Marca temporal de indexación del resultado en caché
+public.carga_fila_origen,clave,character varying(64),NO,PK,,Clave de idempotencia única generada por hash SHA-256 de la fila fuente
+public.carga_fila_origen,id_documento,integer,SI,,,Documento de origen al que pertenece la fila procesada
+public.carga_fila_origen,tabla,character varying(40),SI,,,Tabla de destino en el Data Warehouse donde se persistió el hecho
+public.carga_fila_origen,creado_en,timestamp without time zone,SI,,,Marca temporal de inserción de la fila en el almacén
+public.cat_categoria_financiera,id_categoria_fin,integer,NO,PK,,Identificador de la categoría estándar
+public.cat_categoria_financiera,codigo,character varying(50),NO,,,"Código de la categoría (ING-MAT-01, ING-COB-01, ING-CER-01, EGR-DOC-01, EGR-OPE-01)"
+public.cat_categoria_financiera,nombre_categoria,character varying(100),NO,,,Nombre de la categoría
+public.cat_categoria_financiera,tipo_flujo,character varying(30),NO,,,Tipo de flujo: INGRESO o EGRESO
+public.cat_categoria_financiera,created_at,timestamp without time zone,SI,,,Fecha y hora de registro de la categoría
+public.cat_combinacion_estado,id_combinacion,integer,NO,PK,,Identificador único de la regla de combinación de estados académicos
+public.cat_combinacion_estado,id_estado_academico,integer,NO,FK,public.cat_estado_academico.id_estado_academico,Estado académico base (FK a cat_estado_academico)
+public.cat_combinacion_estado,id_estado_reprobado,integer,NO,FK,public.cat_estado_reprobado.id_estado_reprobado,Causa o subestado de reprobación (FK a cat_estado_reprobado)
+public.cat_combinacion_estado,id_estado_arca,integer,NO,FK,public.cat_estado_arca.id_estado_arca,Estado de trámite ARCA asociado (FK a cat_estado_arca)
+public.cat_combinacion_estado,activo,boolean,NO,,,True si el registro está vigente
+public.cat_concepto_financiero,id_concepto,integer,NO,PK,,Identificador del concepto
+public.cat_concepto_financiero,codigo_concepto,character varying(50),SI,,,"Código mnemotécnico del concepto de cobro (ej. MAT, CUO-01)"
+public.cat_concepto_financiero,nombre_canonico,character varying(200),NO,,,"Nombre canónico: CUOTA, MATRICULA, CONTADO, REINCORPORACION, DESCUENTO, MORA, DEUDA_TOTAL, TOTAL_PAGADO, EGRESO_REAL, EGRESO_ANTERIOR, HONORARIO_DOCENTE, TECHO_CONVENIO, META_PROGRAMAS, META_TECHOS"
+public.cat_concepto_financiero,tipo_categoria,character varying(50),SI,,,"Tipo de concepto financiero (MATRÍCULA, COLEGIATURA, TRÁMITE)"
+public.cat_escuela,id_escuela,integer,NO,PK,,Identificador de la escuela
+public.cat_escuela,nombre_escuela,character varying(100),NO,,,Nombre de la escuela académica
+public.cat_escuela,sigla,character varying(20),SI,,,Sigla de la escuela
+public.cat_estado_academico,id_estado_academico,integer,NO,PK,,Identificador del estado académico
+public.cat_estado_academico,nombre_estado,character varying(100),NO,,,"Estado académico: INSCRITO, REGULAR_ACTIVO, CONCLUIDO_PENDIENTE_MONOGRAFIA, GRADUADO_TITULADO, REPROBADO, RETIRADO_ABANDONO"
+public.cat_estado_arca,id_estado_arca,integer,NO,PK,,Identificador del estado ARCA
+public.cat_estado_arca,nombre_arca,character varying(100),NO,,,"Estado del título: HOMOLOGADO_SISTEMA_NACIONAL, EN_TRAMITE_MINISTERIAL, NO_APLICA_FORMACION_CONTINUA, REGISTRO_ARCHIVADO"
+public.cat_estado_reprobado,id_estado_reprobado,integer,NO,PK,,Identificador del motivo de reprobación
+public.cat_estado_reprobado,nombre_detalle,character varying(100),NO,,,"Motivo: REPROBADO_POR_NOTA, REPROBADO_POR_ASISTENCIA, BAJA_POR_INCUMPLIMIENTO_PAGOS, REPROBADO_POR_PLAGIO_ACADEMICO"
+public.cat_etiqueta_clasificacion,id_etiqueta,integer,NO,PK,,Identificador de la etiqueta
+public.cat_etiqueta_clasificacion,categoria,character varying(50),NO,,,"Categoría del documento: academico, financiero, comercial"
+public.cat_etiqueta_clasificacion,subtipo,character varying(50),SI,,,"Subtipo de documento (ACTAS_NOTAS, COBRANZAS, EVALUACION_DOCENTE…)"
+public.cat_etiqueta_clasificacion,palabra_clave,character varying(100),NO,,,Palabra clave que identifica la categoría o subtipo
+public.cat_etiqueta_clasificacion,ambito,character varying(30),SI,,,"Dónde se busca la palabra: ARCHIVO, HOJA, CONTENIDO, AMBOS"
+public.cat_etiqueta_clasificacion,peso,integer,SI,,,Peso de la palabra en el puntaje de clasificación
+public.cat_guia_texto_plano,id_guia,integer,NO,PK,,Identificador de la guía
+public.cat_guia_texto_plano,subtipo,character varying(50),NO,,,"Subtipo de documento al que aplica (ACTAS_NOTAS, COBRANZAS…)"
+public.cat_guia_texto_plano,descripcion,character varying(255),SI,,,Descripción de la guía
+public.cat_guia_texto_plano,plantilla_texto,text,NO,,,Plantilla para convertir una fila a texto plano
+public.cat_guia_texto_plano,campos_requeridos,text,SI,,,Lista de campos obligatorios en formato JSON para la serialización a texto plano
+public.cat_guia_texto_plano,prioridad,integer,SI,,,Prioridad de la plantilla frente a otras del mismo subtipo
+public.cat_historico_equivalencia,id_equivalencia,integer,NO,PK,,Identificador de la equivalencia
+public.cat_historico_equivalencia,id_concepto,integer,NO,FK,public.cat_concepto_financiero.id_concepto,Concepto canónico equivalente
+public.cat_historico_equivalencia,termino_origen,character varying(150),NO,,,Término usado en las planillas que equivale al concepto
+public.cat_historico_equivalencia,periodo_historico,character varying(50),SI,,,"Periodo en que se usó el término (HISTORICO, 2023-2025, 2024-2025)"
+public.cat_historico_equivalencia,confianza_mapeo,"numeric(5,4)",SI,,,Confianza de la equivalencia (0–1)
+public.cat_historico_equivalencia,fuente_referencia,character varying(100),SI,,,"Planilla de origen del término (BD Cobranzas.xlsx, BD Egresos.xlsx, BD Techos.xlsx, EJECUTADO VS META.xlsx)"
+public.cat_institucion,id_institucion,integer,NO,PK,,Identificador de la institución
+public.cat_institucion,nombre_institucion,character varying(100),NO,,,Nombre de la institución
+public.cat_institucion,sigla,character varying(30),SI,,,"Sigla de la institución (GG, ENP, FCS)"
+public.cat_institucion,tipo_escala_default,character varying(20),SI,,,"Escala de calificación predeterminada (CENTESIMAL_100, DECIMAL_10, VIGESIMAL_20)"
+public.cat_institucion,created_at,timestamp without time zone,SI,,,Fecha y hora de registro de la institución
+public.cat_institucion_convenio,id_convenio,integer,NO,PK,,Identificador único del convenio interinstitucional
+public.cat_institucion_convenio,nombre_institucion,character varying(200),NO,,,Nombre de la empresa o institución contraparte del convenio
+public.cat_institucion_convenio,variantes_origen,text,SI,,,Variantes textuales y alias del nombre del convenio encontradas en planillas
+public.cat_institucion_convenio,fuente_referencia,character varying(150),SI,,,Documento o resolución formal de aprobación del convenio
+public.cat_mapeo_columna,id_mapeo,integer,NO,PK,,Identificador del mapeo
+public.cat_mapeo_columna,campo_canonico,character varying(50),NO,,,Nombre canónico del campo al que se estandariza el encabezado del archivo
+public.cat_mapeo_columna,alias_columna,character varying(100),NO,,,Encabezado alternativo con el que el campo aparece en las planillas
+public.cat_mapeo_columna,tipo_entidad,character varying(50),NO,,,Tipo de entidad NER al que corresponde el campo
+public.cat_modalidad,id_modalidad,integer,NO,PK,,Identificador de la modalidad
+public.cat_modalidad,nombre_modalidad,character varying(100),NO,,,"Modalidad de dictado (Presencial, Virtual Sincrónica, Virtual Asincrónica, Semipresencial / Híbrida)"
+public.cat_modulo,id_modulo,integer,NO,PK,,Identificador del módulo
+public.cat_modulo,codigo_modulo,character varying(50),SI,,,Código alfanumérico estandarizado del módulo académico
+public.cat_modulo,nombre_canonico,character varying(200),NO,,,Nombre canónico del módulo en el catálogo
+public.cat_modulo,area,character varying(100),SI,,,Por documentar (por defecto General)
+public.cat_modulo,nombre_modulo,character varying(255),SI,,,Nombre del módulo
+public.cat_programa,id_programa,integer,NO,PK,,Identificador del programa
+public.cat_programa,pos_code,character varying(50),NO,,,Código único del programa (POS-…)
+public.cat_programa,nombre_programa,character varying(255),NO,,,"Nombre canónico del programa, sin sufijo de versión"
+public.cat_programa,version,integer,SI,,,"Versión del programa, tomada del nombre (v. N) o de la columna VERSIÓN"
+public.cat_programa,nombre_completo_raw,character varying(300),SI,,,"Nombre del programa tal como figura en la fuente, con la versión"
+public.cat_programa,id_escuela,integer,SI,,,Escuela a la que pertenece el programa
+public.cat_programa,id_tipo_programa,integer,SI,,,Tipo de programa
+public.cat_programa,id_modalidad,integer,SI,,,Modalidad de dictado del programa
+public.cat_programa,inversion_base,"numeric(12,2)",SI,,,Inversión base del programa según la planilla de programas
+public.cat_programa,punto_equilibrio,integer,SI,,,Número de inscritos necesario para cubrir los costos del programa
+public.cat_programa,horas_totales,integer,SI,,,Carga horaria total del programa
+public.cat_programa,created_at,timestamp without time zone,SI,,,Fecha y hora de creación
+public.cat_programa,tipo_escala,character varying(20),SI,,,Escala de notas aplicable al programa (CENTESIMAL_100 por defecto)
+public.cat_tipo_programa,id_tipo_programa,integer,NO,PK,,Identificador del tipo de programa
+public.cat_tipo_programa,nombre_tipo,character varying(100),NO,,,"Tipo de programa (Diplomado, Maestría, Especialidad, Curso, Curso Experto / Certificación, Formación Continua…)"
+public.dataops_tarea,id,integer,NO,PK,,Identificador único secuencial de la tarea DataOps
+public.dataops_tarea,tipo,character varying(20),NO,,,"Tipo de proceso ejecutado (INGESTA, NER_BETO, RESOLUCION_HITL, CARGA_DW)"
+public.dataops_tarea,id_lote,integer,SI,,,Lote documental asociado a la ejecución de la tarea
+public.dataops_tarea,estado,character varying(15),NO,,,"Estado de ejecución del trabajo (PENDIENTE, EN_PROCESO, EXITOSO, FALLIDO)"
+public.dataops_tarea,total,integer,NO,,,Total de registros o filas a procesar en la tarea
+public.dataops_tarea,procesados,integer,NO,,,Cantidad de registros procesados con éxito
+public.dataops_tarea,resultado,jsonb,SI,,,Resumen cuantitativo del resultado del procesamiento
+public.dataops_tarea,error,text,SI,,,Detalle o traza técnica del error en caso de fallo
+public.dataops_tarea,iniciado_por,character varying(100),SI,,,Usuario o servicio que disparó la ejecución de la tarea
+public.dataops_tarea,iniciado_en,timestamp with time zone,NO,,,Fecha y hora de inicio de ejecución de la tarea
+public.dataops_tarea,actualizado_en,timestamp with time zone,NO,,,Marca temporal del último cambio de estado de la tarea
+public.dataops_tarea,terminado_en,timestamp with time zone,SI,,,Fecha y hora de finalización del proceso
+public.dim_categoria_financiera,id_categoria,integer,NO,PK,,Identificador de la categoría financiera
+public.dim_categoria_financiera,nombre_categoria,character varying(200),NO,,,"Nombre de la categoría (PROGRAMAS, TECHOS_CERRADOS, FINANCIERO_ANUAL…)"
+public.dim_categoria_financiera,tipo,character varying(50),SI,,,"Tipo de flujo: INGRESO, EGRESO, RENTABILIDAD, EBITDA"
+public.dim_categoria_financiera,id_cat_categoria_fin,integer,SI,FK,public.cat_categoria_financiera.id_categoria_fin,Categoría equivalente del catálogo estándar (cat_categoria_financiera)
+public.dim_docente,id_docente,integer,NO,PK,,Identificador del docente en el almacén
+public.dim_docente,nombre_completo,character varying(200),NO,,,Nombre completo del docente (Docente Generico si la fuente no lo trae)
+public.dim_docente,area_especialidad,character varying(200),SI,,,Área de especialidad del docente
+public.dim_docente,fk_estado,character(1),SI,,,"Estado de la llave: A CI exacta, B coincidencia aproximada, C miembro nuevo sin candidatos"
+public.dim_estudiante,id_estudiante,integer,NO,PK,,Identificador del estudiante en el almacén
+public.dim_estudiante,nombre_completo,character varying(200),NO,,,Nombre completo del estudiante
+public.dim_estudiante,codigo_estudiante,character varying(50),SI,,,Código del estudiante (número de CI o identificador temporal)
+public.dim_estudiante,genero,character varying(20),SI,,,"Género del estudiante (M, F u OTRO)"
+public.dim_estudiante,ciudad,character varying(100),SI,,,Ciudad del estudiante
+public.dim_estudiante,nivel_academico,character varying(100),SI,,,Nivel académico del estudiante
+public.dim_estudiante,edad,integer,SI,,,Edad calculada del estudiante en años
+public.dim_estudiante,ocupacion,character varying(100),SI,,,Ocupación o profesión declarada por el estudiante
+public.dim_estudiante,estado_civil,character varying(50),SI,,,Estado civil declarado por el estudiante
+public.dim_estudiante,ci,character varying(50),SI,,,Cédula de identidad tal como llegó en la fuente
+public.dim_estudiante,id_temporal,character varying(100),SI,,,Identificador temporal (TEMP-…) asignado al estudiante que llega sin CI
+public.dim_estudiante,deprecado,boolean,SI,,,Marca un registro duplicado que se fusionó en otro estudiante
+public.dim_estudiante,fusionado_en,integer,SI,FK,public.dim_estudiante.id_estudiante,Estudiante que absorbió a este registro al fusionar duplicados
+public.dim_estudiante,ci_numero,character varying(30),SI,,,Parte numérica normalizada del CI (única entre estudiantes vigentes)
+public.dim_estudiante,ci_complemento,character varying(10),SI,,,Complemento o extensión del CI
+public.dim_estudiante,identidad_verificada,boolean,SI,,,Indica que la identidad se confirmó con un CI válido
+public.dim_estudiante,id_institucion,integer,SI,FK,public.cat_institucion.id_institucion,Institución a la que pertenece el estudiante
+public.dim_estudiante,programa_origen,character varying(200),SI,,,Programa con el que se registró por primera vez al estudiante
+public.dim_estudiante,fk_estado,character(1),SI,,,"Estado de la llave: A CI exacta, B coincidencia aproximada, C miembro nuevo sin candidatos"
+public.dim_meta,id_meta,integer,NO,PK,,Identificador de la meta
+public.dim_meta,categoria,character varying(50),NO,,,"Categoría de la meta (PROGRAMAS, TECHOS_CERRADOS)"
+public.dim_meta,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Mes al que corresponde la meta
+public.dim_meta,monto_meta,"numeric(14,2)",SI,,,Monto presupuestado como meta
+public.dim_meta,tipo_programa,character varying(50),SI,,,"Tipo de programa de la meta (PROGRAMAS, TECHOS_CERRADOS)"
+public.dim_modulo,id_modulo,integer,NO,PK,,Identificador del módulo en el almacén
+public.dim_modulo,nombre_modulo,character varying(200),NO,,,Nombre del módulo
+public.dim_modulo,nombre_institucion,character varying(200),NO,,,Nombre de la institución que dicta el módulo
+public.dim_modulo,programa,character varying(200),SI,,,Programa al que pertenece el módulo
+public.dim_modulo,pos_code,character varying(50),SI,,,Código del programa (POS-…; ADM-GEN para administración general)
+public.dim_modulo,id_cat_modulo,integer,SI,FK,public.cat_modulo.id_modulo,Módulo equivalente en el catálogo institucional (cat_modulo)
+public.dim_modulo,id_institucion,integer,SI,FK,public.cat_institucion.id_institucion,Institución que dicta el módulo
+public.dim_origen_documental,id_documento,integer,NO,PK,,Identificador del documento fuente
+public.dim_origen_documental,tipo_documento,character varying(50),SI,,,"Formato del archivo (SHEET, CSV)"
+public.dim_origen_documental,nombre_archivo,character varying(500),SI,,,Nombre del archivo cargado
+public.dim_origen_documental,fecha_procesamiento,timestamp without time zone,SI,,,Fecha y hora en que se procesó el documento
+public.dim_origen_documental,tipo_escala,character varying(20),SI,,,"Escala de calificación del documento: CENTESIMAL_100, DECIMAL_10, VIGESIMAL_20"
+public.dim_origen_documental,id_lote,integer,SI,FK,public.lote.id_lote,Lote de carga al que pertenece el documento
+public.dim_origen_documental,tipo_fuente,character varying(30),SI,,,"Tipo de fuente: ACTA, COBRANZA, ADMISION, MOODLE, EVALUACION_DOCENTE, EGRESOS, TECHOS, PLANIFICACION, MARKETING, RENTABILIDAD, ERROR, RECHAZADO, DUPLICADO, SIN_RECONOCER"
+public.dim_origen_documental,institucion,character varying(100),SI,,,Institución a la que pertenece el documento
+public.dim_origen_documental,periodo,character varying(30),SI,,,Periodo que cubre el documento
+public.dim_origen_documental,hash_sha256,character varying(64),SI,,,"Huella SHA-256 del archivo, para detectar cargas duplicadas"
+public.dim_tiempo,id_tiempo,integer,NO,PK,,Clave de la fecha en formato AAAAMMDD
+public.dim_tiempo,gestion,integer,NO,,,Año (gestión)
+public.dim_tiempo,semestre,integer,NO,,,"Semestre del año (1, 2)"
+public.dim_tiempo,mes,integer,NO,,,Mes del año (1 a 12)
+public.dim_tiempo,nombre_mes,character varying(20),NO,,,Nombre del mes en español (Enero … Diciembre)
+public.dim_tiempo,periodo_mes,character varying(7),NO,,,Año y mes en formato AAAA-MM
+public.dim_tiempo,fecha,date,NO,,,Fecha calendario
+public.dim_tiempo,trimestre,integer,NO,,,Trimestre del año (1 a 4)
+public.dim_tiempo,semana_iso,integer,NO,,,Semana ISO del año (1 a 53)
+public.dim_tiempo,dia_mes,integer,NO,,,Día del mes (1 a 31)
+public.dim_tiempo,dia_semana,integer,NO,,,Día de la semana (1 = Lunes … 7 = Domingo)
+public.dim_tiempo,nombre_dia,character varying(20),NO,,,Nombre del día en español (Lunes … Domingo)
+public.dim_tiempo,es_fin_semana,boolean,NO,,,Indica si la fecha cae sábado o domingo
+public.fact_cobranzas_proyectadas,id_hecho_cobro,integer,NO,PK,,Identificador de la cobranza proyectada
+public.fact_cobranzas_proyectadas,id_estudiante,integer,SI,FK,public.dim_estudiante.id_estudiante,Estudiante al que corresponde el cobro proyectado
+public.fact_cobranzas_proyectadas,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Fecha del cobro proyectado
+public.fact_cobranzas_proyectadas,monto_esperado,"numeric(10,2)",SI,,,Monto proyectado a cobrar en la fecha programada en Bs
+public.fact_cobranzas_proyectadas,estado_pago,character varying(50),SI,,,"Estado de la cobranza proyectada (PENDIENTE, COBRADO, VENCIDO)"
+public.fact_cobranzas_proyectadas,created_at,timestamp without time zone,SI,,,Fecha y hora de creación del registro
+public.fact_costo_programa,id_hecho_costo,integer,NO,PK,,Identificador único del registro de costo operativo del programa
+public.fact_costo_programa,id_modulo,integer,NO,FK,public.dim_modulo.id_modulo,Programa o módulo académico al que se imputa el costo
+public.fact_costo_programa,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.fact_costo_programa,egreso_anterior,"numeric(14,2)",SI,,,Monto de egreso acumulado en el periodo previo en Bs
+public.fact_costo_programa,egreso_real,"numeric(14,2)",SI,,,Egreso real devengado en el periodo en Bs
+public.fact_costo_programa,ingreso,"numeric(14,2)",SI,,,Total ingreso devengado por el programa en Bs
+public.fact_costo_programa,rentabilidad,"numeric(14,2)",SI,,,Margen de rentabilidad operativo del programa (ingreso - egreso) en Bs
+public.fact_costo_programa,requiere_revision,boolean,SI,,,True si el hecho espera revisión humana
+public.fact_costo_programa,motivo_revision,character varying(300),SI,,,"Motivo de la marca de revisión o nota informativa (LIMITACION_FUENTE, TIEMPO_IMPUTADO, RESUELTO_HUMANO)"
+public.fact_costo_programa,actualizado_en,timestamp with time zone,SI,,,Fecha y hora de la última actualización del balance de costos
+public.fact_evaluacion_docente,id_hecho_eval,integer,NO,PK,,Identificador de la respuesta de evaluación
+public.fact_evaluacion_docente,id_docente,integer,SI,FK,public.dim_docente.id_docente,Docente evaluado
+public.fact_evaluacion_docente,id_modulo,integer,SI,FK,public.dim_modulo.id_modulo,Módulo en el que se evaluó al docente
+public.fact_evaluacion_docente,id_estudiante,integer,SI,FK,public.dim_estudiante.id_estudiante,Estudiante que respondió la evaluación (opcional)
+public.fact_evaluacion_docente,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Fecha de la evaluación
+public.fact_evaluacion_docente,pregunta_bloque,character varying(500),SI,,,Pregunta o criterio evaluado de la encuesta docente
+public.fact_evaluacion_docente,puntuacion,"numeric(4,2)",SI,,,Puntuación otorgada al docente en el criterio
+public.fact_evaluacion_docente,comentario,character varying(1000),SI,,,Comentario libre del estudiante sobre el docente
+public.fact_evaluacion_docente,tipo_pregunta,character varying(20),SI,,,"DOCENTE, INSTITUCIONAL o NPS"
+public.fact_evaluacion_docente,escala_max,integer,SI,,,Máximo de la escala de la pregunta (5 o 10)
+public.fact_evaluacion_docente,clave_respuesta,character varying(64),SI,,,Hash estable de la fila y la pregunta (idempotencia)
+public.fact_evaluacion_docente,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.fact_evaluacion_docente,requiere_revision,boolean,SI,,,True si el hecho espera revisión humana
+public.fact_evaluacion_docente,motivo_revision,character varying(300),SI,,,"Motivo de la marca de revisión o nota informativa (LIMITACION_FUENTE, TIEMPO_IMPUTADO, RESUELTO_HUMANO)"
+public.fact_forecast,id_forecast,integer,NO,PK,,Identificador del valor pronosticado
+public.fact_forecast,caso_uso,character varying(50),NO,,,"Serie pronosticada: ALUMNOS_GLOBAL, ALUMNOS_DIPLOMADO, ALUMNOS_CURSO, ALUMNOS_EXPERTO, META_ANUAL, META_MENSUAL_PROGRAMAS"
+public.fact_forecast,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Mes proyectado
+public.fact_forecast,valor_forecast,"numeric(14,2)",NO,,,Valor pronosticado para el mes
+public.fact_forecast,ic_lower,"numeric(14,2)",SI,,,Límite inferior del intervalo de confianza del pronóstico
+public.fact_forecast,ic_upper,"numeric(14,2)",SI,,,Límite superior del intervalo de confianza del pronóstico
+public.fact_forecast,metodo,character varying(30),NO,,,Modelo de pronóstico usado: HoltWinters u OLS
+public.fact_forecast,horizonte_meses,integer,NO,,,Cantidad de meses proyectados (1 a 6)
+public.fact_forecast,generado_en,timestamp without time zone,SI,,,Fecha y hora en que se generó el pronóstico
+public.fact_marketing,id_hecho_mkt,integer,NO,PK,,Identificador del registro de marketing
+public.fact_marketing,id_modulo,integer,SI,FK,public.dim_modulo.id_modulo,Programa o módulo promocionado
+public.fact_marketing,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Mes de la campaña
+public.fact_marketing,leads,integer,SI,,,Número de interesados (leads) captados
+public.fact_marketing,reservas,integer,SI,,,Número de reservas de cupo
+public.fact_marketing,inscritos,integer,SI,,,Número de inscritos efectivos
+public.fact_marketing,costo_programa,"numeric(12,2)",SI,,,Costo del programa ofertado
+public.fact_rendimiento_academico,id_hecho_aca,integer,NO,PK,,Identificador del registro de rendimiento académico
+public.fact_rendimiento_academico,id_estudiante,integer,SI,FK,public.dim_estudiante.id_estudiante,Estudiante que cursó el módulo
+public.fact_rendimiento_academico,id_docente,integer,SI,FK,public.dim_docente.id_docente,Docente que dictó el módulo
+public.fact_rendimiento_academico,id_modulo,integer,SI,FK,public.dim_modulo.id_modulo,Módulo cursado
+public.fact_rendimiento_academico,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Fecha a la que se imputa la calificación
+public.fact_rendimiento_academico,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento fuente del que se extrajo la calificación
+public.fact_rendimiento_academico,id_usuario_carga,integer,SI,FK,public.users.id,Usuario que ejecutó la carga del registro
+public.fact_rendimiento_academico,nota_final,"numeric(5,2)",SI,,,Promedio final del módulo en escala 0–100 (las escalas 0–10 y 0–20 se convierten al cargar)
+public.fact_rendimiento_academico,asistencia_pct,"numeric(5,2)",SI,,,Porcentaje de asistencia del estudiante al módulo (0–100)
+public.fact_rendimiento_academico,incumplimiento_actividades_pct,"numeric(5,2)",SI,,,Porcentaje de actividades no cumplidas en el módulo (0–100)
+public.fact_rendimiento_academico,nivel_confianza_ia,"numeric(5,4)",SI,,,Confianza del modelo BETO en la extracción del registro (0–1)
+public.fact_rendimiento_academico,requiere_revision,boolean,SI,,,Indica que el registro debe pasar por la bandeja de revisión humana (HITL)
+public.fact_rendimiento_academico,estado_academico,character varying(50),SI,,,"Resultado del módulo: Aprobado (nota ≥ 70), Reprobado o En Curso (sin nota)"
+public.fact_rendimiento_academico,created_at,timestamp without time zone,SI,,,Fecha y hora de carga del registro
+public.fact_rendimiento_academico,fk_estado,character varying(1),SI,,,"Calidad del enlace al estudiante: A (CI válido, enlace directo), B (rescatado por coincidencia de nombre), C (no resuelto, a revisión humana)"
+public.fact_rendimiento_academico,tipo_alerta,character varying(30),SI,,,"Alerta temprana académica: NORMAL, RIESGO_ACADEMICO (nota ≤ 70), RIESGO_CRITICO (nota < 51)"
+public.fact_rendimiento_academico,estado_tutoria,character varying(50),SI,,,"Estado del seguimiento de tutoría académica (ACTIVO, FINALIZADO, ABANDONO)"
+public.fact_rendimiento_academico,estado_arca,character varying(50),SI,,,"Estado del registro del acta ante el sistema ARCA (PENDIENTE, REGISTRADO)"
+public.fact_rentabilidad,id_hecho_rent,integer,NO,PK,,Identificador del registro de rentabilidad
+public.fact_rentabilidad,id_modulo,integer,SI,FK,public.dim_modulo.id_modulo,Programa o centro de costo (ADM-GEN cuando el monto es general)
+public.fact_rentabilidad,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Mes del registro
+public.fact_rentabilidad,id_categoria,integer,SI,FK,public.dim_categoria_financiera.id_categoria,"Categoría financiera del monto (PROGRAMAS, TECHOS_CERRADOS, FINANCIERO_ANUAL…)"
+public.fact_rentabilidad,monto_ejecutado,"numeric(14,2)",SI,,,Ingreso o gasto ejecutado en el mes
+public.fact_rentabilidad,monto_meta,"numeric(14,2)",SI,,,Meta presupuestaria del mes
+public.fact_rentabilidad,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.fact_situacion_financiera,id_hecho_fin,integer,NO,PK,,Identificador del registro de situación financiera
+public.fact_situacion_financiera,id_estudiante,integer,SI,FK,public.dim_estudiante.id_estudiante,Estudiante titular de la deuda
+public.fact_situacion_financiera,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Fecha de corte de la cartera
+public.fact_situacion_financiera,monto_deuda,"numeric(12,2)",SI,,,Saldo pendiente de pago del estudiante
+public.fact_situacion_financiera,cuotas_impagas,integer,SI,,,Número de cuotas vencidas sin pagar (≥ 2 dispara la alerta de riesgo financiero)
+public.fact_situacion_financiera,estado_cartera,character varying(20),SI,,,"Clasificación de la cartera: Vigente, En Mora, Previsionable"
+public.fact_situacion_financiera,tipo_alerta,character varying(30),SI,,,"Alerta de mora: NORMAL (0 cuotas impagas), MORA_TEMPRANA (1), RIESGO_CARTERA (≥ 2)"
+public.fact_situacion_financiera,fecha_registro,timestamp without time zone,SI,,,Fecha y hora de carga del registro
+public.fact_situacion_financiera,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento fuente del que se extrajo el registro
+public.fact_situacion_financiera,nivel_confianza_ia,"numeric(5,4)",SI,,,Confianza del modelo BETO en la extracción del registro (0–1)
+public.fact_situacion_financiera,requiere_revision,boolean,SI,,,Indica que el registro debe pasar por la bandeja de revisión humana (HITL)
+public.fact_situacion_financiera,fk_estado,character varying(1),SI,,,"Calidad del enlace al estudiante: A (CI válido, enlace directo), B (rescatado por coincidencia de nombre), C (no resuelto, a revisión humana)"
+public.fact_situacion_financiera,id_modulo,integer,SI,FK,public.dim_modulo.id_modulo,Módulo o programa al que corresponde el cobro
+public.fact_situacion_financiera,id_categoria_fin,integer,SI,FK,public.dim_categoria_financiera.id_categoria,Categoría financiera del movimiento
+public.fact_situacion_financiera,monto_pagado,"numeric(12,2)",SI,,,Monto pagado por el estudiante a la fecha de corte
+public.fact_situacion_financiera,concepto,character varying(150),SI,,,Concepto de cobro informado en el documento fuente
+public.fact_techo_convenio,id_hecho_techo,integer,NO,PK,,Identificador único del registro de ejecución de techo presupuestario
+public.fact_techo_convenio,id_modulo,integer,NO,FK,public.dim_modulo.id_modulo,Módulo o programa (dim_modulo)
+public.fact_techo_convenio,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Fecha de evaluación del cumplimiento del convenio
+public.fact_techo_convenio,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.fact_techo_convenio,clave_convenio,character varying(40),NO,,,Clave única del convenio corporativo evaluado
+public.fact_techo_convenio,institucion,character varying(200),NO,,,Nombre de la institución o empresa titular del convenio
+public.fact_techo_convenio,id_convenio_catalogo,integer,SI,,,Enlace al catálogo institucional de convenios (cat_institucion_convenio)
+public.fact_techo_convenio,monto_convenio,"numeric(14,2)",SI,,,Monto total acordado en el convenio en Bs
+public.fact_techo_convenio,n_inscritos,integer,SI,,,Número de estudiantes matriculados bajo el convenio
+public.fact_techo_convenio,gestion,integer,SI,,,Año (gestión)
+public.fact_techo_convenio,fecha_inicio,date,SI,,,Fecha de inicio de vigencia del convenio
+public.fact_techo_convenio,fecha_fin,date,SI,,,Fecha de finalización de vigencia del convenio
+public.fact_techo_convenio,requiere_revision,boolean,SI,,,True si el hecho espera revisión humana
+public.fact_techo_convenio,motivo_revision,character varying(300),SI,,,"Motivo de la marca de revisión o nota informativa (LIMITACION_FUENTE, TIEMPO_IMPUTADO, RESUELTO_HUMANO)"
+public.fact_techo_convenio,actualizado_en,timestamp with time zone,SI,,,Fecha y hora de la última actualización del techo de convenio
+public.log_auditoria_nlp,id_log,integer,NO,PK,,Identificador de la corrección
+public.log_auditoria_nlp,texto_original,character varying(500),NO,,,Texto revisado por el auditor
+public.log_auditoria_nlp,prediccion_beto,character varying(200),SI,,,Entidad que propuso el modelo BETO
+public.log_auditoria_nlp,confianza_ia,"numeric(5,4)",SI,,,Confianza del modelo BETO en su predicción (0–1)
+public.log_auditoria_nlp,correccion_humana,character varying(200),NO,,,Valor corregido por el auditor
+public.log_auditoria_nlp,usuario_auditor,integer,SI,FK,public.users.id,Auditor que hizo la corrección
+public.log_auditoria_nlp,created_at,timestamp without time zone,SI,,,Fecha y hora de la corrección
+public.log_inconsistencias,id_inconsistencia,integer,NO,PK,,Identificador de la inconsistencia
+public.log_inconsistencias,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento en el que se detectó la inconsistencia
+public.log_inconsistencias,fila_origen,integer,SI,,,Fila del documento con la inconsistencia
+public.log_inconsistencias,campo_afectado,character varying(100),NO,,,Nombre de la columna o campo que originó la inconsistencia de datos
+public.log_inconsistencias,valor_recibido,text,SI,,,Valor encontrado en la fuente
+public.log_inconsistencias,valor_esperado,text,SI,,,Valor o formato esperado
+public.log_inconsistencias,tipo_regla,character varying(50),NO,,,Regla que generó el registro del log
+public.log_inconsistencias,severidad,character varying(20),NO,,,Por documentar (por defecto ALTA)
+public.log_inconsistencias,estado_resolucion,character varying(30),NO,,,Por documentar (por defecto BLOQUEADO)
+public.log_inconsistencias,descripcion,text,SI,,,Detalle de la inconsistencia
+public.log_inconsistencias,detectado_en,timestamp without time zone,SI,,,Fecha y hora de detección
+public.log_inconsistencias,resuelto_en,timestamp without time zone,SI,,,Fecha y hora de la resolución
+public.log_inconsistencias,resuelto_por,integer,SI,FK,public.users.id,Usuario que resolvió la inconsistencia
+public.log_pipeline_ingesta,id,integer,NO,PK,,Identificador del evento
+public.log_pipeline_ingesta,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento procesado
+public.log_pipeline_ingesta,etapa,character varying(50),NO,,,"Etapa del pipeline: UPLOAD, INGESTA, CLEAN, NORMALIZE, VALIDATE, STAGE, DISPATCH, DW_CONSOLIDACION, SUMMARY"
+public.log_pipeline_ingesta,nivel,character varying(10),NO,,,"Nivel del evento: INFO, WARN, ERROR, SUCCESS"
+public.log_pipeline_ingesta,modulo,character varying(100),SI,,,Componente que emitió el evento
+public.log_pipeline_ingesta,mensaje,text,NO,,,Descripción del evento
+public.log_pipeline_ingesta,tiempo_ms,integer,SI,,,Duración de la etapa en milisegundos
+public.log_pipeline_ingesta,metadata,jsonb,SI,,,"Datos adicionales del evento, en JSON"
+public.log_pipeline_ingesta,created_at,timestamp with time zone,SI,,,Fecha y hora del evento
+public.lote,id_lote,integer,NO,PK,,Identificador del lote de carga
+public.lote,institucion,character varying(100),NO,,,Institución a la que pertenece el lote
+public.lote,periodo,character varying(30),NO,,,Periodo que cubre el lote
+public.lote,estado,character varying(30),SI,,,Estado del lote (PROCESADO por defecto)
+public.lote,total_archivos,integer,SI,,,Cantidad de archivos del lote
+public.lote,creado_en,timestamp without time zone,SI,,,Fecha y hora de creación del lote
+public.notifications,id,integer,NO,PK,,Identificador de la notificación
+public.notifications,user_id,integer,SI,FK,public.users.id,Usuario destinatario (vacío si se dirige a un rol)
+public.notifications,role_target,character varying(50),SI,,,"Rol destinatario: ADMIN, AUDITOR_CALIDAD, DIRECTOR_ACADEMICO, ANALISTA_FINANCIERO"
+public.notifications,title,character varying(200),NO,,,Título de la notificación
+public.notifications,message,text,NO,,,Texto de la notificación
+public.notifications,category,character varying(50),NO,,,"Origen: DataOps, Predictivo o tipo de alerta (ACADEMICO, DESERCION, FINANCIERO, RIESGO_CRUZADO, DATAOPS_CALIDAD)"
+public.notifications,severity,character varying(20),NO,,,"Severidad: INFO, SUCCESS, WARNING, CRITICAL"
+public.notifications,is_read,boolean,SI,,,Indica si el destinatario ya la leyó
+public.notifications,link,character varying(255),SI,,,Ruta de la pantalla relacionada con la notificación
+public.notifications,created_at,timestamp with time zone,SI,,,Fecha y hora de emisión
+public.powerbi_informe_version,id,integer,NO,PK,,Identificador secuencial de la versión del reporte Power BI
+public.powerbi_informe_version,version,integer,NO,,,Versión del registro (control optimista)
+public.powerbi_informe_version,nombre_archivo,character varying(255),NO,,,Nombre del archivo subido
+public.powerbi_informe_version,ruta,character varying(500),NO,,,Ruta relativa del archivo .pbix en el repositorio o contenedor
+public.powerbi_informe_version,tamano_bytes,bigint,NO,,,Tamaño en bytes del archivo del informe Power BI
+public.powerbi_informe_version,sha256,character(64),NO,,,Hash SHA-256 de verificación de integridad del archivo .pbix
+public.powerbi_informe_version,nota,character varying(300),SI,,,Comentario o bitácora de control de cambios de la versión del informe
+public.powerbi_informe_version,vigente,boolean,NO,,,True si esta versión es la actualmente desplegada en producción
+public.powerbi_informe_version,subido_por,character varying(100),NO,,,Usuario responsable de subir y versionar el informe
+public.powerbi_informe_version,subido_en,timestamp with time zone,NO,,,Fecha y hora en que se subió la versión del reporte
+public.ref_metas_gestion,id_meta,integer,NO,PK,,Identificador de la meta
+public.ref_metas_gestion,gestion,integer,NO,,,Año de la meta
+public.ref_metas_gestion,mes,integer,NO,,,Mes de la meta (1 a 12)
+public.ref_metas_gestion,categoria,character varying(100),NO,,,"Línea de negocio de la meta (POSTGRADO_REGULAR, CONVENIOS_CORPORATIVOS)"
+public.ref_metas_gestion,monto_meta_ingreso,"numeric(14,2)",SI,,,Meta de ingreso del mes
+public.ref_metas_gestion,monto_ejecutado,"numeric(14,2)",SI,,,Ingreso ejecutado en el mes
+public.ref_metas_gestion,ebitda_meta_pct,"numeric(6,4)",SI,,,"Meta de margen EBITDA como fracción (0,30 = 30 %)"
+public.ref_metas_gestion,ebitda_ejecutado_pct,"numeric(6,4)",SI,,,Margen EBITDA ejecutado como fracción
+public.schema_migrations,version,character varying(255),NO,PK,,Nombre del archivo de migración aplicado
+public.schema_migrations,applied_at,timestamp with time zone,SI,,,Fecha y hora en que se aplicó la migración
+public.staging_registros_crudos,id,integer,NO,PK,,Identificador del registro crudo
+public.staging_registros_crudos,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento del que se extrajo el registro
+public.staging_registros_crudos,hoja,character varying(200),SI,,,Hoja de cálculo de origen
+public.staging_registros_crudos,bloque_id,integer,SI,,,Número del bloque tabular dentro de la hoja
+public.staging_registros_crudos,categoria,character varying(50),SI,,,"Categoría del bloque: academico, financiero, marketing, rentabilidad, evaluacion_docente"
+public.staging_registros_crudos,texto_plano,text,SI,,,Contenido del bloque serializado a texto para el modelo BETO
+public.staging_registros_crudos,n_filas,integer,SI,,,Número de filas del bloque
+public.staging_registros_crudos,fila_inicio,integer,SI,,,Primera fila del bloque en la hoja
+public.staging_registros_crudos,fila_fin,integer,SI,,,Última fila del bloque en la hoja
+public.staging_registros_crudos,es_ruido,boolean,SI,,,Marca el bloque como ruido; no se carga al almacén
+public.staging_registros_crudos,created_at,timestamp with time zone,SI,,,Fecha y hora de extracción del registro
+public.staging_registros_crudos,requiere_revision,boolean,SI,,,Indica que el registro debe pasar por la bandeja de revisión humana (HITL)
+public.staging_registros_crudos,score_confianza,"numeric(5,4)",SI,,,Confianza de la extracción del registro (0–1)
+public.staging_registros_crudos,resuelto,boolean,SI,,,Indica que el registro ya fue resuelto
+public.staging_registros_crudos,resuelto_por,integer,SI,FK,public.users.id,Usuario que resolvió el registro
+public.staging_registros_crudos,resuelto_en,timestamp without time zone,SI,,,Fecha y hora de la resolución
+public.staging_registros_crudos,motivo,character varying(100),SI,,,"Motivo del estado del registro (por ejemplo, APROBADO_AUTOMATICO)"
+public.staging_registros_crudos,payload_json,jsonb,SI,,,"Datos estructurados extraídos del registro, en JSON"
+public.staging_registros_crudos,registro_origen_id,integer,SI,FK,public.staging_registros_crudos.id,Registro crudo del que deriva este registro
+public.staging_registros_crudos,estado_resolucion,character varying(30),SI,,,"Estado del registro: PENDIENTE, APROBADO_AUTOMATICO, RESUELTO_HUMANO, DESCARTADO"
+public.stg_entidad_no_resuelta,id_staging,integer,NO,PK,,Identificador de la entidad pendiente
+public.stg_entidad_no_resuelta,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento en el que se detectó la entidad
+public.stg_entidad_no_resuelta,tipo_entidad,character varying(50),NO,,,"Tipo de entidad no resuelta (ESTUDIANTE, RUIDO)"
+public.stg_entidad_no_resuelta,texto_original,text,NO,,,Texto de la entidad tal como se extrajo
+public.stg_entidad_no_resuelta,ci_temporal,character varying(150),SI,,,CI leído en la fuente o CI temporal asignado a la entidad
+public.stg_entidad_no_resuelta,mejor_candidato,text,SI,,,Mejor coincidencia encontrada en la dimensión
+public.stg_entidad_no_resuelta,score_fuzzy,"numeric(5,2)",SI,,,"Similitud difusa (RapidFuzz) con el mejor candidato, de 0 a 100"
+public.stg_entidad_no_resuelta,fk_estado,character varying(1),SI,,,Estado de la FK; las entidades ingresan con C (no resuelto)
+public.stg_entidad_no_resuelta,nivel_confianza,"numeric(5,4)",SI,,,Confianza del modelo BETO en la extracción del registro (0–1)
+public.stg_entidad_no_resuelta,resuelto,boolean,SI,,,Indica que la entidad ya fue resuelta
+public.stg_entidad_no_resuelta,resuelto_por,integer,SI,FK,public.users.id,Auditor que resolvió la entidad
+public.stg_entidad_no_resuelta,resuelto_en,timestamp without time zone,SI,,,Fecha y hora de la resolución
+public.stg_entidad_no_resuelta,id_dimension_resuelta,integer,SI,,,Estudiante (id_estudiante) asignado al resolver la entidad
+public.stg_entidad_no_resuelta,created_at,timestamp without time zone,SI,,,Fecha y hora de detección de la entidad
+public.stg_entidad_no_resuelta,motivo,character varying(100),SI,,,"Motivo del envío a revisión: BAJA_CONFIANZA_IA, CI_NOMBRE_DISCORDANTE, FILA_ACADEMICA_SIN_ESTUDIANTE, FILA_SIN_ENTIDAD"
+public.stg_entidad_no_resuelta,payload_json,jsonb,SI,,,"Fila original en JSON, para recargarla al resolver"
+public.stg_entidad_no_resuelta,registro_origen_id,integer,SI,FK,public.staging_registros_crudos.id,Registro crudo del que proviene la entidad
+public.stg_entidad_no_resuelta,estado_resolucion,character varying(30),SI,,,"Estado de la revisión: PENDIENTE, RESUELTO_HUMANO, DESCARTADO"
+public.stg_entidad_no_resuelta,lock_usuario_id,integer,SI,FK,public.users.id,Auditor que tiene tomada la entidad mientras la revisa
+public.stg_entidad_no_resuelta,lock_expira,timestamp without time zone,SI,,,Vencimiento del bloqueo de revisión (5 minutos desde que se toma)
+public.stg_entidad_no_resuelta,version,integer,SI,,,Versión del registro (control optimista)
+public.stg_entidad_no_resuelta,clave_origen,character varying(32),SI,,,"Clave de idempotencia (hash del archivo, tipo, motivo y valor)"
+public.users,id,integer,NO,PK,,Identificador del usuario
+public.users,username,character varying(100),NO,,,Nombre de usuario para iniciar sesión
+public.users,hashed_password,character varying(255),NO,,,Contraseña almacenada como hash
+public.users,role,character varying(50),NO,,,"Rol RBAC: ADMIN, AUDITOR_CALIDAD, DIRECTOR_ACADEMICO, ANALISTA_FINANCIERO, ANALISTA_MARKETING"
+public.users,created_at,timestamp with time zone,SI,,,Fecha y hora de creación de la cuenta
+public.users,email,character varying(150),NO,,,"Correo del usuario, al que se envía el código OTP"
+public.users,phone,character varying(30),SI,,,Teléfono de contacto del usuario
+public.users,is_active,boolean,SI,,,Indica si la cuenta está habilitada
+public.users,is_mfa_enabled,boolean,SI,,,Indica si se exige el segundo factor (código OTP)
+public.users,otp_code_hash,character varying(255),SI,,,Hash del código OTP vigente
+public.users,otp_expires_at,timestamp with time zone,SI,,,Vencimiento del código OTP vigente
+public.users,failed_login_attempts,integer,SI,,,Intentos fallidos consecutivos de inicio de sesión
+public.users,locked_until,timestamp with time zone,SI,,,Fecha y hora hasta la que la cuenta queda bloqueada
+public.users,created_by_id,integer,SI,FK,public.users.id,Usuario administrador que creó la cuenta
