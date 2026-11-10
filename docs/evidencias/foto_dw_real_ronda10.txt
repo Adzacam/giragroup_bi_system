@@ -1,0 +1,30 @@
+# Foto del DW real - 2026-11-09T22:22:24-04:00
+           tabla            | filas | en_revision 
+----------------------------+-------+-------------
+ fact_rendimiento_academico | 22618 |         559
+ fact_situacion_financiera  | 10483 |           3
+(2 rows)
+
+        motivo         | estado_resolucion | count 
+-----------------------+-------------------+-------
+ CI_NOMBRE_DISCORDANTE | PENDIENTE         |   756
+ BAJA_CONFIANZA_IA     | PENDIENTE         |   288
+(2 rows)
+
+ staging_pendiente_total 
+-------------------------
+                    1044
+(1 row)
+
+        motivo         | estado_resolucion | resuelto | count 
+-----------------------+-------------------+----------+-------
+ CI_NOMBRE_DISCORDANTE | RESUELTO_VARIANTE | t        | 19953
+ BAJA_CONFIANZA_IA     | DESCARTADO_REGLA  | t        |  1400
+ CI_NOMBRE_DISCORDANTE | PENDIENTE         | f        |   756
+ HOMONIMIA             | DESCARTADO_REGLA  | t        |   570
+ BAJA_CONFIANZA_IA     | PENDIENTE         | f        |   288
+ BAJA_CONFIANZA_IA     | RESUELTO_REGLAS   | t        |   156
+ CI_DUDOSA             | DESCARTADO        | t        |     3
+ CI_DUDOSA             | RESUELTO_HUMANO   | t        |     1
+(8 rows)
+
