@@ -73,7 +73,7 @@ class TestHoltWinters:
     @pytest.mark.xfail(strict=True, reason="Hallazgo HW-IC: banda ±1,96·RMSE constante; la varianza debe crecer con h")
     def test_banda_95_se_ensancha_con_el_horizonte(self):
         res = entrenar_y_proyectar_hw(_serie_mensual(), "ALUMNOS_GLOBAL", horizonte=6)
-        anchos = [hi - lo for lo, hi in zip(res["ic_lower"], res["ic_upper"])]
+        anchos = [round(hi - lo, 2) for lo, hi in zip(res["ic_lower"], res["ic_upper"])]  # redondeo: el ruido de coma flotante (1e-14) daba un XPASS falso
         assert anchos[-1] > anchos[0]
 
     @pytest.mark.xfail(strict=True, reason="Hallazgo HW-GAP: asfreq().fillna(0) trata un mes sin carga como demanda cero")

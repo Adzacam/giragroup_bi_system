@@ -27,8 +27,8 @@
       "pruebas": 23
     },
     "transversales": {
-      "pasadas": 243,
-      "pruebas": 243
+      "pasadas": 254,
+      "pruebas": 254
     }
   },
   "cobertura_por_archivo": {
@@ -83,8 +83,8 @@
     "forecasting_holtwinters": {
       "archivo": "pipeline/analytics/forecasting_holtwinters.py",
       "lineas": 71,
-      "cubiertas": 37,
-      "pct": 52.1
+      "cubiertas": 68,
+      "pct": 95.8
     },
     "forecasting_ols": {
       "archivo": "pipeline/analytics/forecasting_ols.py",
@@ -95,8 +95,8 @@
     "forecast_service": {
       "archivo": "backend/services/forecast_service.py",
       "lineas": 253,
-      "cubiertas": 113,
-      "pct": 44.7
+      "cubiertas": 90,
+      "pct": 35.6
     },
     "kpi_service": {
       "archivo": "backend/services/kpi_service.py",
@@ -161,8 +161,8 @@
   },
   "cobertura_global": {
     "lineas": 13249,
-    "cubiertas": 8041,
-    "pct": 60.7,
+    "cubiertas": 8049,
+    "pct": 60.8,
     "alcance": "--cov=backend --cov=pipeline"
   }
 }

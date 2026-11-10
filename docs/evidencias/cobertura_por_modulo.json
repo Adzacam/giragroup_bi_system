@@ -1,0 +1,176 @@
+{
+ "modulos": {
+  "Infraestructura y RBAC": {
+   "archivos": [
+    {
+     "archivo": "backend/core/security.py",
+     "sentencias": 87,
+     "no_cubiertas": 11,
+     "pct": 87.4
+    }
+   ],
+   "sentencias": 87,
+   "cubiertas": 76,
+   "pct_ponderado": 87.4
+  },
+  "Ingesta": {
+   "archivos": [
+    {
+     "archivo": "backend/services/ingestion_service.py",
+     "sentencias": 587,
+     "no_cubiertas": 227,
+     "pct": 61.3
+    }
+   ],
+   "sentencias": 587,
+   "cubiertas": 360,
+   "pct_ponderado": 61.3
+  },
+  "PLN y resolucion": {
+   "archivos": [
+    {
+     "archivo": "pipeline/semantic/ner_engine.py",
+     "sentencias": 301,
+     "no_cubiertas": 108,
+     "pct": 64.1
+    },
+    {
+     "archivo": "pipeline/semantic/indice_confianza.py",
+     "sentencias": 70,
+     "no_cubiertas": 47,
+     "pct": 32.9
+    },
+    {
+     "archivo": "backend/services/confianza_service.py",
+     "sentencias": 87,
+     "no_cubiertas": 38,
+     "pct": 56.3
+    },
+    {
+     "archivo": "pipeline/normalization/fk_resolver.py",
+     "sentencias": 89,
+     "no_cubiertas": 11,
+     "pct": 87.6
+    },
+    {
+     "archivo": "pipeline/normalization/fuzzy_normalizer.py",
+     "sentencias": 71,
+     "no_cubiertas": 12,
+     "pct": 83.1
+    },
+    {
+     "archivo": "pipeline/normalization/person_resolver.py",
+     "sentencias": 125,
+     "no_cubiertas": 9,
+     "pct": 92.8
+    }
+   ],
+   "sentencias": 743,
+   "cubiertas": 518,
+   "pct_ponderado": 69.7
+  },
+  "API, alertas y pronostico": {
+   "archivos": [
+    {
+     "archivo": "backend/services/dw_loader.py",
+     "sentencias": 870,
+     "no_cubiertas": 483,
+     "pct": 44.5
+    },
+    {
+     "archivo": "backend/routers/pipeline.py",
+     "sentencias": 269,
+     "no_cubiertas": 173,
+     "pct": 35.7
+    },
+    {
+     "archivo": "backend/services/alert_engine.py",
+     "sentencias": 71,
+     "no_cubiertas": 6,
+     "pct": 91.5
+    },
+    {
+     "archivo": "backend/services/financial_rules_engine.py",
+     "sentencias": 85,
+     "no_cubiertas": 2,
+     "pct": 97.6
+    },
+    {
+     "archivo": "backend/services/risk_service.py",
+     "sentencias": 337,
+     "no_cubiertas": 19,
+     "pct": 94.4
+    },
+    {
+     "archivo": "pipeline/analytics/forecasting_holtwinters.py",
+     "sentencias": 71,
+     "no_cubiertas": 3,
+     "pct": 95.8
+    },
+    {
+     "archivo": "pipeline/analytics/forecasting_ols.py",
+     "sentencias": 28,
+     "no_cubiertas": 0,
+     "pct": 100.0
+    },
+    {
+     "archivo": "backend/services/forecast_service.py",
+     "sentencias": 253,
+     "no_cubiertas": 163,
+     "pct": 35.6
+    }
+   ],
+   "sentencias": 1984,
+   "cubiertas": 1135,
+   "pct_ponderado": 57.2
+  },
+  "Plataforma, CMI y HITL": {
+   "archivos": [
+    {
+     "archivo": "backend/routers/dataops.py",
+     "sentencias": 2176,
+     "no_cubiertas": 1234,
+     "pct": 43.3
+    },
+    {
+     "archivo": "backend/services/bandeja_grupos.py",
+     "sentencias": 149,
+     "no_cubiertas": 7,
+     "pct": 95.3
+    },
+    {
+     "archivo": "backend/services/revision_hechos.py",
+     "sentencias": 210,
+     "no_cubiertas": 25,
+     "pct": 88.1
+    },
+    {
+     "archivo": "backend/services/kpi_service.py",
+     "sentencias": 374,
+     "no_cubiertas": 121,
+     "pct": 67.6
+    },
+    {
+     "archivo": "backend/routers/reportes.py",
+     "sentencias": 261,
+     "no_cubiertas": 40,
+     "pct": 84.7
+    }
+   ],
+   "sentencias": 3170,
+   "cubiertas": 1743,
+   "pct_ponderado": 55.0
+  }
+ },
+ "claves_total": {
+  "sentencias": 6571,
+  "cubiertas": 3832,
+  "pct": 58.3
+ },
+ "global": {
+  "sentencias": 13249,
+  "cubiertas": 8049,
+  "pct": 60.8,
+  "alcance": "--cov=backend --cov=pipeline"
+ }
+}
