@@ -111,15 +111,15 @@
   },
   "arquitectura": "B (CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO) + personas sin cat_docente (tarea 1)",
   "dimensiones_dw_usadas": {
-    "dim_estudiante": 14076,
+    "dim_estudiante": 14078,
     "dim_docente": 638
   },
   "personas": {
     "total": 1658,
     "resueltas_CI_EXACTA": 1021,
-    "resueltas_FUZZY": 135,
+    "resueltas_FUZZY": 134,
     "nuevos_estado_C": 498,
-    "sin_coincidencia_HITL": 4
+    "sin_coincidencia_HITL": 5
   },
   "personas_hitl_desglose_regla_previa_umbral_085": {
     "estudiante": {
@@ -132,13 +132,13 @@
   },
   "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {
     "estudiante": {
-      "empate": 4
+      "empate": 5
     },
     "docente": {}
   },
   "personas_resueltas_por_nivel": {
     "CI": 1021,
-    "DIMENSION": 135
+    "DIMENSION": 134
   },
   "correos_filtrados_como_no_nombre": {
     "entidades": 139,
@@ -426,7 +426,7 @@
   "personas_por_fk_estado": {
     "estudiante": {
       "A": 1021,
-      "B": 135
+      "B": 134
     },
     "docente": {
       "C": 498
@@ -462,19 +462,19 @@
   },
   "distribucion_bandas_con_regla_personas": {
     "directo": {
-      "conteo": 1354,
-      "porcentaje": 97.62
+      "conteo": 1353,
+      "porcentaje": 97.55
     },
     "hitl": {
-      "conteo": 33,
-      "porcentaje": 2.38
+      "conteo": 34,
+      "porcentaje": 2.45
     },
     "staging": {
       "conteo": 0,
       "porcentaje": 0.0
     }
   },
-  "registros_directo_movidos_a_hitl_por_persona_sin_resolver": 30,
+  "registros_directo_movidos_a_hitl_por_persona_sin_resolver": 31,
   "kpis": {
     "KPI_10a_media_todas_las_entidades": 0.9618,
     "KPI_10a_n_entidades": 11426,
@@ -482,7 +482,7 @@
     "KPI_10b_n_entidades": 3248,
     "KPI_10_previo_media_por_registro": 0.964,
     "KPI_11_directo_sin_regla_personas_pct": 99.78,
-    "KPI_11_directo_con_regla_personas_pct": 97.62
+    "KPI_11_directo_con_regla_personas_pct": 97.55
   },
   "conteos_fuente_resolucion": {
     "CI_EXACTA": 1850,
@@ -490,5 +490,155 @@
     "FUZZY": 146,
     "REGEX": 3103,
     "BETO": 3248
+  },
+  "distribucion_por_archivo": {
+    "Base centralizada Académica ARCA (1).xlsx": {
+      "directo": {
+        "conteo": 448,
+        "porcentaje": 99.56
+      },
+      "hitl": {
+        "conteo": 2,
+        "porcentaje": 0.44
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 450
+    },
+    "BD Cobranzas.xlsx": {
+      "directo": {
+        "conteo": 349,
+        "porcentaje": 99.71
+      },
+      "hitl": {
+        "conteo": 1,
+        "porcentaje": 0.29
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 350
+    },
+    "TBL_INSCRITOS.xlsx": {
+      "directo": {
+        "conteo": 248,
+        "porcentaje": 99.2
+      },
+      "hitl": {
+        "conteo": 2,
+        "porcentaje": 0.8
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 250
+    },
+    "Evaluación Docente y Unifranz.xlsx": {
+      "directo": {
+        "conteo": 137,
+        "porcentaje": 91.33
+      },
+      "hitl": {
+        "conteo": 13,
+        "porcentaje": 8.67
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 150
+    },
+    "Experiencia Docente 2.0.xlsx": {
+      "directo": {
+        "conteo": 95,
+        "porcentaje": 86.36
+      },
+      "hitl": {
+        "conteo": 15,
+        "porcentaje": 13.64
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 110
+    },
+    "BD Egresos.xlsx": {
+      "directo": {
+        "conteo": 53,
+        "porcentaje": 100.0
+      },
+      "hitl": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 53
+    },
+    "EJECUTADO VS META.xlsx": {
+      "directo": {
+        "conteo": 23,
+        "porcentaje": 95.83
+      },
+      "hitl": {
+        "conteo": 1,
+        "porcentaje": 4.17
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 24
+    }
+  },
+  "excepciones": {
+    "total_entidades": 562,
+    "registros_afectados": 268,
+    "de_registros": 1387,
+    "por_regla": {
+      "COLUMNA_DE_COMENTARIO": {
+        "entidades": 87,
+        "registros": 87,
+        "destino": "descarte",
+        "registros_con_banda_hitl": 0
+      },
+      "CORREO_NO_ES_NOMBRE": {
+        "entidades": 139,
+        "registros": 139,
+        "destino": "descarte",
+        "registros_con_banda_hitl": 12
+      },
+      "ETIQUETA_LIKERT": {
+        "entidades": 283,
+        "registros": 110,
+        "destino": "descarte",
+        "registros_con_banda_hitl": 15
+      },
+      "PERSONA_SIN_COINCIDENCIA": {
+        "entidades": 5,
+        "registros": 5,
+        "destino": "hitl",
+        "registros_con_banda_hitl": 5
+      },
+      "PER_SIN_FORMA_NOMBRE": {
+        "entidades": 48,
+        "registros": 48,
+        "destino": "log+descarte",
+        "registros_con_banda_hitl": 27
+      }
+    },
+    "por_destino": {
+      "descarte": 509,
+      "hitl": 5,
+      "log+descarte": 48
+    },
+    "habrian_ingresado_al_dw_sin_control": 0
   }
 }

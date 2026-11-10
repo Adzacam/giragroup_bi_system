@@ -182,6 +182,24 @@ def _banda(c):
     return 0 if c >= 0.85 else (1 if c >= 0.60 else 2)
 
 
+def _resumen_excepciones(exc, total_registros):
+    """Ronda 10: excepciones del lote por regla y destino. 'sin_control' = excepcion que exigia HITL (persona sin coincidencia o hecho sin persona)
+    y cuyo registro quedo en la banda directo."""
+    por_regla = {}
+    for e in exc:
+        r = por_regla.setdefault(e["regla"], {"entidades": 0, "destino": e["destino"], "registros": set(), "registros_en_hitl": set()})
+        r["entidades"] += 1
+        r["registros"].add(e["registro"])
+        if e["banda_final"] >= 1:
+            r["registros_en_hitl"].add(e["registro"])
+    sin_control = [e for e in exc if (e["destino"] == "hitl" or e["hecho_sin_persona"]) and e["banda_final"] == 0]
+    return {"total_entidades": len(exc), "registros_afectados": len({e["registro"] for e in exc}), "de_registros": total_registros,
+            "por_regla": {k: {"entidades": v["entidades"], "registros": len(v["registros"]), "destino": v["destino"], "registros_con_banda_hitl": len(v["registros_en_hitl"])}
+                          for k, v in sorted(por_regla.items())},
+            "por_destino": {d: sum(1 for e in exc if e["destino"] == d) for d in sorted({e["destino"] for e in exc})},
+            "habrian_ingresado_al_dw_sin_control": len(sin_control)}
+
+
 def main():
     lote = cargar_lote_1387_uploads_data()
     assert len(lote) == 1387, f"Se esperaban 1.387 registros, se obtuvieron {len(lote)}"
@@ -202,6 +220,8 @@ def main():
     desglose_antes = {"estudiante": Counter(), "docente": Counter()}
     desglose_despues = {"estudiante": Counter(), "docente": Counter()}
     niveles = Counter()
+    por_archivo = {}  # archivo -> [directo, hitl, staging] (arquitectura final)
+    excepciones = []  # ronda 10: cada entidad/registro con excepcion, su regla y su destino
 
     for item in lote:
         txt = item["texto"]
@@ -246,17 +266,21 @@ def main():
         correo_en_registro = False
         sin_resolver_prev = False
         descartadas_reg, personas_reg = [], 0
+        exc_reg = []
         for e in todas:
             if e["tipo"] not in ("PER_ESTUDIANTE", "PER_DOCENTE"):
                 continue
             if es_etiqueta_likert(e["valor"]):
                 texto_libre["entidades_excluidas_etiqueta_likert"] += 1
+                exc_reg.append(("ETIQUETA_LIKERT", "descarte"))
                 continue  # '5/Totalmente de acuerdo': escala de respuesta, no una persona
             if _en_comentario(e["valor"], comentarios_reg):
                 texto_libre["entidades_excluidas_por_columna_de_comentario"] += 1
+                exc_reg.append(("COLUMNA_DE_COMENTARIO", "descarte"))
                 continue  # tomada de una columna de comentario/sugerencia/observación/opinión: no es una persona
             if es_correo(e["valor"]):
                 correos["entidades"] += 1
+                exc_reg.append(("CORREO_NO_ES_NOMBRE", "descarte"))
                 correo_en_registro = True
                 continue  # los correos no son nombres: fuera de la resolución de personas
             personas["total"] += 1
@@ -274,6 +298,7 @@ def main():
                 # sin CI ni fuzzy y con forma de texto, no de nombre: se descarta (no va a HITL). Si hay CI exacta se resuelve igual
                 personas["total"] -= 1
                 texto_libre["entidades_PER_descartadas_no_parece_nombre"] += 1
+                exc_reg.append(("PER_SIN_FORMA_NOMBRE", "log+descarte"))
                 descartadas_reg.append({"tipo": e["tipo"], "valor": e["valor"], "archivo": item["archivo"], "hoja": item["hoja"], "fila_origen": item["fila_origen"]})
                 continue
             personas_reg += 1
@@ -291,6 +316,7 @@ def main():
                             if len(_tokens(quitar_titulos(e["valor"]))) < 2 else "no_parece_nombre_de_persona")
                 desglose_despues[tipo][motivo_h] += 1
                 sin_resolver = True
+                exc_reg.append(("PERSONA_SIN_COINCIDENCIA", "hitl"))
         correos["registros"] += int(correo_en_registro)
         if descartadas_reg:
             # Un hecho que pierde su única persona por el descarte no puede cargarse directo: va a HITL
@@ -306,6 +332,10 @@ def main():
         if sin_resolver and b_pre == 0:
             directo_a_hitl += 1
         bandas["post"][b_post] += 1
+        por_archivo.setdefault(item["archivo"], [0, 0, 0])[b_post] += 1
+        for regla, destino in exc_reg:
+            excepciones.append({"regla": regla, "destino": destino, "archivo": item["archivo"], "registro": item["registro"],
+                                "banda_final": b_post, "hecho_sin_persona": bool(descartadas_reg and personas_reg == 0)})
 
     total = len(lote)
 
@@ -358,6 +388,9 @@ def main():
             "KPI_11_directo_con_regla_personas_pct": dist(bandas["post"])["directo"]["porcentaje"],
         },
         "conteos_fuente_resolucion": fuentes,
+        "distribucion_por_archivo": {a: {**{k: {"conteo": n, "porcentaje": round(n / sum(v) * 100.0, 2)} for k, n in zip(("directo", "hitl", "staging"), v)}, "total": sum(v)}
+                                     for a, v in por_archivo.items()},
+        "excepciones": _resumen_excepciones(excepciones, total),
     }
     out = ROOT_DIR / "docs" / "evidencias"
     out.mkdir(parents=True, exist_ok=True)
