@@ -56,14 +56,17 @@ class TestBandasConfianza:
 
     def test_obtener_indices_usa_el_servicio_beto(self):
         respuesta = io.BytesIO(json.dumps({"indices": [0.91, 0.7, 0.4]}).encode("utf-8"))
-        with patch.object(confianza_service.urllib.request, "urlopen") as urlopen:
+        with patch.object(confianza_service, "_leer_cache", return_value={}), \
+             patch.object(confianza_service, "_guardar_cache"), \
+             patch.object(confianza_service.urllib.request, "urlopen") as urlopen:
             urlopen.return_value.__enter__.return_value = respuesta
             indices = confianza_service.obtener_indices(["a: 1", "b: 2", "c: 3"])
         assert indices == [0.91, 0.7, 0.4]
         assert [confianza_service.banda_de(i) for i in indices] == [BANDA_CONSOLIDADO, BANDA_REVISION, BANDA_STAGING]
 
     def test_servicio_caido_no_inventa_indices(self):
-        with patch.object(confianza_service.urllib.request, "urlopen", side_effect=OSError("sin red")):
+        with patch.object(confianza_service, "_leer_cache", return_value={}), \
+             patch.object(confianza_service.urllib.request, "urlopen", side_effect=OSError("sin red")):
             assert confianza_service.obtener_indices(["a: 1", "b: 2"]) == [None, None]
 
 
