@@ -6,7 +6,7 @@ import { useNotifications } from '../../context/NotificationContext';
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
-  const { notifications, unreadCount, markAllRead } = useNotifications();
+  const { notifications, unreadCount, markAllRead, refreshNotifications } = useNotifications();
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -30,6 +30,7 @@ export default function NotificationBell() {
 
   const togglePopover = () => {
     requestBrowserPermission();
+    if (!isOpen) refreshNotifications();
     setIsOpen((prev) => !prev);
   };
 

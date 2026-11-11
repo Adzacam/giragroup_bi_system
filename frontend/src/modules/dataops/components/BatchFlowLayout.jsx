@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle2, FileSpreadsheet, Layers, PlusCircle } from 'lucide-react';
 import GlosarioFlotante from '../../../components/shared/GlosarioFlotante';
+import Button from '../../../components/shared/Button';
 import { GLOSARIO_DATAOPS } from '../../../constants/glosarioDataops';
 import BatchFlowHeader from './BatchFlowHeader';
 import BatchFlowStepper from './BatchFlowStepper';
@@ -20,10 +21,10 @@ export default function BatchFlowLayout({
   const effectiveRouteId = id || searchParams.get('lote');
   let ultimoActivo = null;
   try { ultimoActivo = localStorage.getItem('last_active_batch_id'); } catch { /* sin storage */ }
-  const targetId = effectiveRouteId || ultimoActivo;
+  const targetId = effectiveRouteId || (currentStep === 1 ? null : ultimoActivo);
 
   // Contexto del lote en React Query: se comparte entre pasos (sin recargas al retroceder) y se invalida al mutar
-  const { data: batchContext = null } = useLoteContext(targetId);
+  const { data: batchContext = null, isPending, error, refetch } = useLoteContext(targetId);
   const readOnly = batchContext?.estado_flujo === 'CONSOLIDADO';
 
   // Flujo cerrado: se limpia el lote activo para que Ingesta arranque en blanco con archivos nuevos
@@ -132,18 +133,21 @@ export default function BatchFlowLayout({
       )}
 
       <div className="batch-flow-content">
-        {readOnly ? (
+        {targetId && isPending ? <p className="floating-artifact" role="status" style={{ padding: 24 }}>Comprobando el estado del lote…</p>
+          : targetId && error ? <div className="floating-artifact" role="alert" style={{ padding: 24 }}>
+            <p>No se pudo comprobar el estado del lote.</p><Button variant="ghost" onClick={() => refetch()}>Reintentar</Button>
+          </div> : readOnly ? (
           <div className="floating-artifact" role="status" style={{ padding: '48px 24px', textAlign: 'center' }}>
-            <CheckCircle2 size={48} color="#1B8754" style={{ margin: '0 auto 16px auto', display: 'block' }} />
+            <CheckCircle2 size={48} color="var(--dataops-success-text)" style={{ margin: '0 auto 16px auto', display: 'block' }} />
             <h3 className="serif-heading" style={{ fontSize: '20px', margin: '0 0 8px 0', color: 'var(--color-ink-black)' }}>
-              ¡Flujo completado!
+              Lote consolidado
             </h3>
             <p style={{ fontSize: '13.5px', color: 'var(--color-slate-gray)', maxWidth: '520px', margin: '0 auto 20px auto' }}>
               {`Ingesta, lectura de BETO y revisión humana terminaron: ${batchContext?.total_registros ?? 0} registros de ${archivosLote.length} archivo(s) ya están en el Data Warehouse. Este lote quedó cerrado.`}
             </p>
-            <button type="button" className="btn-pill-gold" onClick={handleNuevoLote}>
+            <Button variant="ghost" className="btn-pill-gold" onClick={handleNuevoLote}>
               <PlusCircle size={15} /> Iniciar nuevo lote
-            </button>
+            </Button>
           </div>
         ) : children}
       </div>

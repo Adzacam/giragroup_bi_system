@@ -1,12 +1,15 @@
 import React from 'react';
 import { Layers, FileSpreadsheet, Scale, Building2, Shield, Calendar, BookOpen, Sparkles } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import Button from '../../../components/shared/Button';
 import { useCatalogProgramCount } from '../../../hooks/useCatalogProgramCount';
 
 export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelectBatch }) {
   const { role, user } = useAuth();
   const totalProgramas = useCatalogProgramCount();
-  const activeRole = role || user?.role || 'AUDITOR_CALIDAD';
+  const activeRole = role || user?.role;
+  const roleLabel = { ADMIN: 'Administrador', AUDITOR_CALIDAD: 'Auditor de calidad', DIRECTOR_ACADEMICO: 'Director académico', ANALISTA_FINANCIERO: 'Analista financiero', ANALISTA_MARKETING: 'Analista de marketing' }[activeRole] || 'Sin dato';
+  const stepTitle = { 1: 'Carga de archivos', 2: 'Texto preparado', 3: 'Lectura de BETO', 4: 'Revisión de registros' }[currentStep];
 
   const renderContextualBadges = () => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -35,12 +38,12 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
           borderRadius: '999px',
           fontSize: '11.5px',
           fontWeight: 700,
-          backgroundColor: 'rgba(12, 30, 51, 0.08)',
+          backgroundColor: 'var(--dataops-info-bg)',
           color: 'var(--color-ink-black)',
-          border: '1px solid rgba(12, 30, 51, 0.22)',
+          border: '1px solid var(--dataops-info-border)',
         }}
       >
-        <BookOpen size={12} /> Catálogo Maestro: {totalProgramas ?? '—'} Prog. Activos
+        <BookOpen size={12} /> Programas activos: {totalProgramas?.toLocaleString('es-BO') ?? 'Sin dato'}
       </span>
       <span
         style={{
@@ -56,7 +59,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
           border: '1px solid var(--color-border)',
         }}
       >
-        <Shield size={12} color="#1B8754" /> Rol: {activeRole === 'AUDITOR_CALIDAD' ? 'Coordinador ACRA' : activeRole}
+        <Shield size={12} color="var(--dataops-success-text)" /> Rol: {roleLabel}
       </span>
     </div>
   );
@@ -81,11 +84,11 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
             <Layers size={18} />
           </div>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-ink-black)', fontFamily: 'var(--font-sohne)' }}>
-              Flujo de Ingesta & Procesamiento de Lote
-            </div>
+            <h1 className="serif-heading" style={{ fontSize: '20px', color: 'var(--color-ink-black)' }}>
+              {stepTitle}
+            </h1>
             <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>
-              Carga multifuente (1 a N archivos .xlsx, .csv) y aplanamiento asimétrico
+              Carga archivos .xlsx o .csv y sigue su procesamiento en cuatro pasos.
             </div>
           </div>
         </div>
@@ -100,7 +103,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
     id_documento,
     nombre_archivo = 'Lote sin nombre',
     institucion = 'GiraGroup Posgrado',
-    tipo_fuente = 'GSHEETS_ACTA_NOTAS',
+    tipo_fuente_label = 'Sin dato',
     escala_label = 'No aplica',
     periodo = 'Por detectar',
     total_archivos = 1,
@@ -119,6 +122,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
       gap: '16px',
       borderLeft: '4px solid var(--color-gira-gold, #D99B26)'
     }}>
+      <h1 className="serif-heading" style={{ flexBasis: '100%', fontSize: '20px', margin: 0 }}>{stepTitle}</h1>
       {/* Información del Lote */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
         <div style={{
@@ -141,7 +145,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
             </span>
             <span style={{ color: 'var(--color-border)' }}>·</span>
             <span style={{ fontSize: '13px', color: 'var(--color-slate-gray)' }}>
-              {tipo_fuente}
+              {tipo_fuente_label}
             </span>
             <span style={{ color: 'var(--color-border)' }}>·</span>
             <span style={{
@@ -193,7 +197,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
         {renderContextualBadges()}
 
         {onSelectBatch && (
-          <button
+          <Button variant="ghost"
             onClick={onSelectBatch}
             className="sileo-btn"
             style={{
@@ -207,7 +211,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
             }}
           >
             Cambiar Lote
-          </button>
+          </Button>
         )}
       </div>
     </div>

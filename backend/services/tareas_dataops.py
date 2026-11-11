@@ -74,12 +74,8 @@ def avanzar(tid: Optional[int], procesados: int, total: Optional[int] = None, fo
 def terminar(tid: Optional[int], resultado: Optional[Dict[str, Any]] = None) -> None:
     if not tid:
         return
-    import json
     _ultima_escritura.pop(tid, None)
-    _ejecutar("""
-        UPDATE public.dataops_tarea SET estado = 'COMPLETADA', procesados = GREATEST(procesados, total),
-               resultado = CAST(:r AS jsonb), actualizado_en = CURRENT_TIMESTAMP, terminado_en = CURRENT_TIMESTAMP
-         WHERE id = :id""", {"r": json.dumps(resultado or {}, default=str), "id": tid})
+    _finalizar(tid, "COMPLETADA", resultado or {})
 
 
 @_sin_romper
@@ -87,9 +83,45 @@ def fallar(tid: Optional[int], error: str) -> None:
     if not tid:
         return
     _ultima_escritura.pop(tid, None)
-    _ejecutar("""
-        UPDATE public.dataops_tarea SET estado = 'ERROR', error = :e, actualizado_en = CURRENT_TIMESTAMP,
-               terminado_en = CURRENT_TIMESTAMP WHERE id = :id""", {"e": str(error)[:2000], "id": tid})
+    _finalizar(tid, "ERROR", {}, str(error)[:2000])
+
+
+def _finalizar(tid: int, estado: str, resultado: dict, error: Optional[str] = None):
+    """Termina una sola vez y persiste el aviso para los dos roles de DataOps."""
+    import json
+    from models.notification import Notification
+
+    db = SessionLocal()
+    try:
+        fila = db.execute(text("""
+            UPDATE public.dataops_tarea SET estado = :estado,
+                procesados = CASE WHEN :estado = 'COMPLETADA' THEN GREATEST(procesados, total) ELSE procesados END,
+                resultado = CAST(:resultado AS jsonb), error = :error,
+                actualizado_en = CURRENT_TIMESTAMP, terminado_en = CURRENT_TIMESTAMP
+            WHERE id = :id AND estado = 'EN_CURSO' RETURNING tipo, id_lote
+        """), {"id": tid, "estado": estado, "resultado": json.dumps(resultado, default=str), "error": error}).first()
+        if fila:
+            nombre, paso = {
+                "INGESTA": ("Carga de archivos", "texto"),
+                "LECTURA_BETO": ("Lectura de BETO", "beto"),
+                "CONSOLIDACION": ("Consolidación de registros", "revision"),
+            }.get(fila.tipo, ("Procesamiento", "revision"))
+            ok = estado == "COMPLETADA"
+            mensaje = "El proceso terminó. Abre el lote para revisar los resultados." if ok else "El proceso se interrumpió. Revisa el lote antes de reintentarlo."
+            if ok and fila.tipo == "INGESTA":
+                mensaje = f"{resultado.get('exitosos', 0)} archivo(s) procesados y {resultado.get('fallidos', 0)} sin procesar."
+            for rol in ("ADMIN", "AUDITOR_CALIDAD"):
+                db.add(Notification(
+                    title=f"{nombre} {'terminada' if ok else 'interrumpida'} · Lote #{fila.id_lote}",
+                    message=mensaje, category="DataOps", severity="SUCCESS" if ok else "ERROR",
+                    role_target=rol, link=f"/dataops/lote/{fila.id_lote}/{paso}" if ok else "/dataops/ingesta",
+                ))
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
 
 
 _COLS = """id, tipo, id_lote, estado, total, procesados, resultado, error, iniciado_por,
@@ -104,6 +136,7 @@ def _serializar(r) -> Optional[Dict[str, Any]]:
     estado = d["estado"]
     if estado == "EN_CURSO" and float(d.pop("sin_latido")) > SIN_LATIDO_SEG:
         estado, d["error"] = "ERROR", "La tarea se interrumpió (la API se reinició). Vuelve a ejecutarla."
+        fallar(d["id"], d["error"])
     d.pop("sin_latido", None)
     transcurrido = float(d["transcurrido"] or 0)
     total, hechos = d["total"] or 0, d["procesados"] or 0

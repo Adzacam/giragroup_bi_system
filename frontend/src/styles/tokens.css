@@ -11,6 +11,7 @@
   --color-pure-white: #FFFFFF;
 
   --color-paper-white: #FFFFFF;
+  --color-toast-background: #17191C;
   --color-fog-white: #FAF9F6;
   --color-slate-gray: #777b86;
   --color-ash-gray: #979799;
@@ -56,6 +57,7 @@
   --color-alabaster: #161920;
   --color-pure-white: #161920;
   --color-paper-white: #161920;
+  --color-toast-background: #161920;
   --color-mist-gray: #20252e;
   --color-fog-white: #0c0e12;
   --color-slate-gray: #9ca3af;
@@ -177,6 +179,7 @@ em, i, cite, .serif-heading em, .serif-display em {
 
 /* Título de Sileo: Visible, brillante y legible en cualquier modo */
 [data-sileo-title] {
+  text-transform: none !important;
   font-family: var(--font-sohne) !important;
   font-size: 13px !important;
   font-weight: 600 !important;

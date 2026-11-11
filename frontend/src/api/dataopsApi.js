@@ -78,6 +78,10 @@ export const invalidateDataopsCache = (keyPrefix = null) => {
 export const dataopsApi = {
   invalidateCache: invalidateDataopsCache,
 
+  getBatchHistory: async (page = 1) => (await client.get(`${BASE_URL}/historial-lotes`, { params: { page, page_size: 5 } })).data,
+  retryBatchReading: async (id) => mutar(async () => (await client.post(`${BASE_URL}/lote/${id}/reintentar-lectura`)).data),
+  deleteFailedBatch: async (id) => mutar(async () => (await client.delete(`${BASE_URL}/lote/${id}/fallido`)).data),
+
   /**
    * Obtiene la lista de fuentes documentales y métricas KPI de ingesta (con caché en memoria)
    */
@@ -225,13 +229,8 @@ export const dataopsApi = {
    */
   getLogs: async (docId) => {
     return cachedGet(`logs_${docId}`, async () => {
-      try {
-        const res = await client.get(`${BASE_URL}/logs/${docId}`);
-        return res.data;
-      } catch (err) {
-        console.warn('Backend dataops/logs no disponible:', err.message);
-        return { status: 'success', data: [] };
-      }
+      const res = await client.get(`${BASE_URL}/logs/${docId}`);
+      return res.data;
     }, 30_000);
   },
 

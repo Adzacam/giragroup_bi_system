@@ -39,6 +39,10 @@ from models.dim_modulo import DimModulo
 from models.dim_origen import DimOrigenDocumental
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
+from models.fact_evaluacion import FactEvaluacionDocente
+from models.fact_rentabilidad import FactRentabilidad
+from models.fact_costo_programa import FactCostoPrograma
+from models.fact_techo_convenio import FactTechoConvenio
 from models.dim_tiempo import DimTiempo
 from models.log_auditoria_nlp import LogAuditoriaNlp
 from models.log_pipeline import LogPipelineIngesta
@@ -175,6 +179,83 @@ def get_sources(db: Session = Depends(get_db)):
     return IngestionService.obtener_fuentes(db)
 
 
+@router.get("/historial-lotes")
+def get_historial_lotes(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(5, ge=1, le=30),
+    db: Session = Depends(get_db),
+):
+    """Historial por lote, paginado y sin ejecutar inferencia ni cargar textos."""
+    consulta = db.query(Lote)
+    total = consulta.count()
+    lotes = consulta.order_by(Lote.id_lote.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    items = []
+    for lote in lotes:
+        docs = db.query(DimOrigenDocumental).filter_by(id_lote=lote.id_lote).order_by(DimOrigenDocumental.id_documento).all()
+        ids = [d.id_documento for d in docs]
+        pendientes = db.query(StagingEntidadNoResuelta).filter(
+            StagingEntidadNoResuelta.id_documento.in_(ids), StagingEntidadNoResuelta.resuelto == False,
+        ).count() if ids else 0
+        registros = db.query(func.sum(StagingRegistroCrudo.n_filas)).filter(
+            StagingRegistroCrudo.id_documento.in_(ids), StagingRegistroCrudo.es_ruido == False,
+        ).scalar() if ids else None
+        lectura = tareas_dataops.ultima(lote.id_lote, "LECTURA_BETO")
+        if _estado_flujo_lote(db, ids, pendientes) == "CONSOLIDADO":
+            estado = "CONSOLIDADO"
+        elif lote.estado == "CON_ERRORES" or (lectura and lectura["estado"] == "ERROR"):
+            estado = "ERROR"
+        elif pendientes or (ids and contar_hechos_en_revision(db, ids)):
+            estado = "EN_REVISION"
+        elif lectura and lectura["estado"] == "COMPLETADA":
+            estado = "LEIDO_BETO"
+        elif ids:
+            estado = "TEXTO_LISTO"
+        else:
+            estado = "CARGADO"
+        items.append({
+            "id_lote": lote.id_lote,
+            "id_documento": ids[0] if ids else None,
+            "name": docs[0].nombre_archivo if len(docs) == 1 else f"Lote #{lote.id_lote}",
+            "total_archivos": len(docs),
+            "tipo_fuente": docs[0].tipo_fuente if len({d.tipo_fuente for d in docs}) == 1 else None,
+            "records": int(registros) if registros is not None else None,
+            "date": lote.creado_en.isoformat() if lote.creado_en else None,
+            "status": estado,
+            "puede_reintentar_lectura": bool(ids and lectura and lectura["estado"] == "ERROR"),
+            "puede_eliminar": lote.estado == "CON_ERRORES" and not ids,
+        })
+    return {"data": items, "total": total, "page": page, "page_size": page_size}
+
+
+@router.post("/lote/{id_lote}/reintentar-lectura")
+def reintentar_lectura_lote(id_lote: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    docs = db.query(DimOrigenDocumental).filter_by(id_lote=id_lote).all()
+    bloqueo = db.query(Lote).filter_by(id_lote=id_lote).with_for_update().first()
+    tarea = tareas_dataops.ultima(id_lote, "LECTURA_BETO")
+    _asegurar_lote_editable(db, id_lote)
+    if not docs or not tarea or tarea["estado"] != "ERROR":
+        raise HTTPException(status_code=409, detail="Solo se puede reintentar una lectura interrumpida. Actualiza el historial.")
+    # Reservar antes de responder impide programar dos reintentos concurrentes.
+    if not bloqueo or bloqueo.estado == "REINTENTANDO":
+        raise HTTPException(status_code=409, detail="El reintento ya está en curso.")
+    bloqueo.estado = "REINTENTANDO"
+    db.commit()
+    background_tasks.add_task(_evaluar_lote_en_segundo_plano, [d.id_documento for d in docs], id_lote)
+    return {"status": "success", "message": "La lectura se reanudará en segundo plano."}
+
+
+@router.delete("/lote/{id_lote}/fallido")
+def eliminar_lote_fallido(id_lote: int, db: Session = Depends(get_db)):
+    lote = db.query(Lote).filter_by(id_lote=id_lote).first()
+    if not lote:
+        raise HTTPException(status_code=404, detail="El lote no existe.")
+    if lote.estado != "CON_ERRORES" or db.query(DimOrigenDocumental).filter_by(id_lote=id_lote).first():
+        raise HTTPException(status_code=409, detail="Solo se pueden eliminar desde aquí los lotes fallidos sin archivos procesados.")
+    db.delete(lote)
+    db.commit()
+    return {"status": "success"}
+
+
 @router.delete("/sources/clear-completed")
 def clear_all_sources(db: Session = Depends(get_db)):
     """Elimina todas las fuentes procesadas de la cola activa."""
@@ -248,6 +329,11 @@ def upload_file(
 
     safe_name = IngestionService.sanitizar_nombre_archivo(file.filename or "archivo.xlsx")
     sha256_full = IngestionService.calcular_sha256_completo(content)
+    if db.query(DimOrigenDocumental).filter(
+        DimOrigenDocumental.hash_sha256 == sha256_full,
+        DimOrigenDocumental.institucion == (institucion or "GiraGroup Posgrado").strip(),
+    ).first():
+        raise HTTPException(status_code=409, detail="Este archivo ya fue cargado para esta institución. Revisa el historial.")
 
     # Crear lote para el archivo
     nuevo_lote = Lote(
@@ -461,13 +547,12 @@ def upload_batch(
         dup_db = db.query(DimOrigenDocumental).filter(
             DimOrigenDocumental.hash_sha256 == sha256_full,
             DimOrigenDocumental.institucion == inst_clean,
-            DimOrigenDocumental.periodo == per_clean,
         ).first()
 
         if sha256_full in hashes_en_lote or dup_db is not None:
             dup_msg = (
-                f"Archivo duplicado detectado por firma SHA-256 ({sha256_full[:12]}...) "
-                f"en institución '{inst_clean}' y periodo '{per_clean}'."
+                f"El archivo '{safe_name}' ya fue cargado para esta institución. "
+                "Revisa el historial antes de volver a cargarlo."
             )
             existing_doc_id = dup_db.id_documento if dup_db else None
             archivos_procesados.append({
@@ -492,8 +577,6 @@ def upload_batch(
                 mensaje=dup_msg,
             ))
             continue
-
-        hashes_en_lote.add(sha256_full)
 
         # Extraer metadatos individuales del archivo (tipo_fuente y tipo_escala)
         meta_item = meta_list[idx] if idx < len(meta_list) and isinstance(meta_list[idx], dict) else {}
@@ -531,6 +614,7 @@ def upload_batch(
                 hash_sha256=sha256_full,
             )
 
+            hashes_en_lote.add(sha256_full)
             n_regs = resultado.get("kpis", {}).get("total_registros_procesados", 0)
             total_registros += n_regs
             doc_id_created = resultado.get("id_documento")
@@ -607,9 +691,12 @@ def upload_batch(
     if not exitosos:
         nuevo_lote.estado = "CON_ERRORES"
     db.commit()
-    tareas_dataops.terminar(tarea_ingesta, {
-        "exitosos": len(exitosos), "fallidos": len(errores), "total_registros": total_registros,
-    })
+    if exitosos:
+        tareas_dataops.terminar(tarea_ingesta, {
+            "exitosos": len(exitosos), "fallidos": len(files) - len(exitosos), "total_registros": total_registros,
+        })
+    else:
+        tareas_dataops.fallar(tarea_ingesta, "No se procesó ningún archivo. Revisa los mensajes de cada archivo.")
 
     try:
         from models.log_pipeline import LogPipelineIngesta
@@ -642,13 +729,13 @@ def upload_batch(
             _evaluar_lote_en_segundo_plano(list(docs_creados_ids), nuevo_lote.id_lote)
 
     return BatchUploadResponse(
-        status="success" if exitosos else ("partial" if archivos_procesados else "error"),
+        status=("partial" if len(exitosos) < len(files) else "success") if exitosos else "error",
         message=f"{len(exitosos)} de {len(files)} archivo(s) procesados exitosamente en el Lote #{nuevo_lote.id_lote}.",
         id_lote=nuevo_lote.id_lote,
         total_archivos=len(files),
         archivos_exitosos=len(exitosos),
         files_processed=len(exitosos),
-        archivos_fallidos=len(errores),
+        archivos_fallidos=len(files) - len(exitosos),
         total_registros_detectados=total_registros,
         resultados=resultados,
         archivos_procesados=archivos_procesados,
@@ -2346,24 +2433,15 @@ def _evaluar_lote_en_segundo_plano(doc_ids: List[int], id_lote: Optional[int]) -
         clave = ("evaluacion_lectura", tuple(ids), _huella_evaluacion(db_bg, ids))
         cache_lectura.guardar(clave, res)
         tareas_dataops.terminar(tarea_id, {"total_tuplas": res.get("totalTuplas")})
-        try:
-            NotificationService.create_notification(
-                db=db_bg,
-                title=f"Lote #{id_lote} listo para revisar",
-                message=(f"BETO terminó de analizar {res.get('totalTuplas', 0)} registros: "
-                         f"{res.get('autoCount', 0)} automáticos, {res.get('auditCount', 0)} a revisión y "
-                         f"{res.get('inconsistenciasCount', 0)} con incidencias."),
-                category="DataOps",
-                severity="SUCCESS",
-                role_target="AUDITOR_CALIDAD",
-                link=f"/dataops/lote/{id_lote}/beto",
-            )
-        except Exception as e_notif:
-            logger.warning("No se pudo notificar el lote %s listo: %s", id_lote, e_notif)
     except Exception as e_eval_batch:
+        db_bg.rollback()
         logger.warning("No se pudo evaluar lote %s post-ingesta: %s", id_lote, e_eval_batch)
         tareas_dataops.fallar(tarea_id, str(e_eval_batch))
     finally:
+        lote = db_bg.query(Lote).filter_by(id_lote=id_lote).first()
+        if lote and lote.estado == "REINTENTANDO":
+            lote.estado = "PROCESADO"
+            db_bg.commit()
         db_bg.close()
 
 
@@ -2553,12 +2631,9 @@ def _lote_consolidado_en_dw(db: Session, ids_docs: List[int]) -> bool:
     """
     if not ids_docs:
         return False
-    hay_hechos = bool(db.execute(text("""
-        SELECT EXISTS (SELECT 1 FROM public.fact_rendimiento_academico WHERE id_documento = ANY(:ids))
-            OR EXISTS (SELECT 1 FROM public.fact_situacion_financiera WHERE id_documento = ANY(:ids))
-            OR EXISTS (SELECT 1 FROM public.fact_techo_convenio      WHERE id_documento = ANY(:ids))
-            OR EXISTS (SELECT 1 FROM public.fact_costo_programa      WHERE id_documento = ANY(:ids))
-    """), {"ids": ids_docs}).scalar())
+    hay_hechos = any(db.query(modelo).filter(modelo.id_documento.in_(ids_docs)).first() is not None
+                     for modelo in (FactRendimientoAcademico, FactSituacionFinanciera,
+                                    FactEvaluacionDocente, FactRentabilidad, FactTechoConvenio, FactCostoPrograma))
     if hay_hechos:
         return True
     return db.query(LogPipelineIngesta.id).filter(

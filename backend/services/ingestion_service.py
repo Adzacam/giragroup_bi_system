@@ -520,10 +520,10 @@ class IngestionService:
 
         if ext == ".xlsx":
             if not file_bytes.startswith(b"PK\x03\x04"):
-                return "Firma binaria inválida para .xlsx (se esperaba contenedor ZIP/OpenXML PK\\x03\\x04)."
+                return "El contenido no corresponde a un archivo Excel válido. Guarda el archivo como .xlsx e inténtalo de nuevo."
         elif ext == ".csv":
             if file_bytes.startswith(b"PK\x03\x04") or file_bytes.startswith(b"\xd0\xcf\x11\xe0") or b"\x00" in file_bytes[:1024]:
-                return "El archivo .csv contiene bytes binarios no válidos para texto plano."
+                return "El contenido no corresponde a un CSV de texto. Exporta el archivo como .csv e inténtalo de nuevo."
             try:
                 file_bytes[:4096].decode("utf-8")
             except UnicodeDecodeError:
@@ -663,6 +663,8 @@ class IngestionService:
             else:
                 escala_clean = (tipo_escala or "").strip().upper()
                 final_tipo_escala = escala_clean if escala_clean in ("CENTESIMAL_100", "DECIMAL_10", "VIGESIMAL_20") else None
+            if final_tipo_fuente in ("ACTA", "MOODLE") and final_tipo_escala is None:
+                raise HTTPException(status_code=422, detail="Selecciona la escala de notas del archivo: sobre 100, sobre 10 o sobre 20.")
 
             # Crear un registro en dim_origen_documental para este archivo del lote
             origen = DimOrigenDocumental(

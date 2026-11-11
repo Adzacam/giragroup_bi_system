@@ -23,7 +23,7 @@ export default function UserProfileDropdown() {
 
   const displayName = user?.name || user?.username || 'Usuario Conectado';
   const displayEmail = user?.email || (user?.username ? `${user.username}@giragroup.bo` : 'usuario@giragroup.bo');
-  const displayRole = user?.role || 'ROL ACTIVO';
+  const displayRole = { ADMIN: 'Administrador', AUDITOR_CALIDAD: 'Auditor de calidad', DIRECTOR_ACADEMICO: 'Director académico', ANALISTA_FINANCIERO: 'Analista financiero', ANALISTA_MARKETING: 'Analista de marketing' }[user?.role] || 'Sin dato';
   const avatarInitials = (user?.name || user?.username || 'US')
     .split(' ')
     .map((p) => p[0])

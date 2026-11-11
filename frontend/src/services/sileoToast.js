@@ -12,10 +12,13 @@ const DEFAULT_OPTIONS = {
   },
 };
 
+let nextToastId = 0;
 const mergeOptions = (opts = {}) => {
   const { styles, ...rest } = opts;
   return {
     ...DEFAULT_OPTIONS,
+    id: `gira-aviso-${Date.now()}-${++nextToastId}`,
+    fill: typeof document === 'undefined' ? DEFAULT_OPTIONS.fill : getComputedStyle(document.documentElement).getPropertyValue('--color-toast-background').trim() || DEFAULT_OPTIONS.fill,
     ...rest,
     styles: {
       ...DEFAULT_OPTIONS.styles,
