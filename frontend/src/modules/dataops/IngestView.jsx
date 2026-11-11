@@ -70,7 +70,15 @@ export default function IngestView() {
       }
 
       const lastId = localStorage.getItem('last_active_batch_id');
-      if (lastId && res?.data?.some(d => String(d.id_lote || d.id) === String(lastId))) {
+      let reanudable = !!lastId && !!res?.data?.some(d => String(d.id_lote || d.id) === String(lastId));
+      if (reanudable) {
+        // Un lote ya consolidado cierra el flujo: Ingesta arranca en blanco para cargar archivos nuevos
+        try {
+          const ctx = await dataopsApi.getLoteContext(lastId);
+          if (ctx?.estado_flujo === 'CONSOLIDADO') reanudable = false;
+        } catch { /* sin contexto: se reanuda como antes */ }
+      }
+      if (reanudable) {
         setActiveBatchId(Number(lastId));
         await loadBatchInspection(Number(lastId));
       } else {

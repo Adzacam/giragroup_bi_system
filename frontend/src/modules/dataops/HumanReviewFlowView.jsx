@@ -67,7 +67,7 @@ export default function HumanReviewFlowView() {
   const { data: trayRes, isFetching: isLoading, dataUpdatedAt, refetch: refetchTray } = useQuery({
     queryKey: ['dataops', 'review-tray', String(effectiveBatchId), selectedDocId],
     queryFn: () => dataopsApi.getReviewTray(Number(effectiveBatchId), { docId: selectedDocId, pageSize: 500 }),
-    enabled: !!effectiveBatchId,
+    enabled: !!effectiveBatchId && !readOnly,
     refetchOnMount: true,
   });
 
@@ -115,7 +115,7 @@ export default function HumanReviewFlowView() {
 
   // Aprobación en bloque de los casos de un clic: los manuales quedan en la bandeja
   const handleAprobarUnClic = async () => {
-    if (unClicTotal === 0 || readOnly) return;
+    if (unClicTotal === 0) return;
     if (!window.confirm(`Se aprobarán ${unClicTotal} casos de un clic (el candidato coincide por nombre o el hecho está completo). Los casos manuales seguirán en la bandeja. ¿Continuar?`)) {
       return;
     }
@@ -451,7 +451,7 @@ export default function HumanReviewFlowView() {
               type="button"
               className="btn-pill-gold"
               onClick={handleConsolidateDw}
-              disabled={isConsolidatingDw || readOnly || aprobadosResumen.total_aprobados === 0}
+              disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
             >
               <Database size={15} /> Consolidar Aprobados al DW ({aprobadosResumen.total_aprobados})
             </button>
@@ -608,21 +608,19 @@ export default function HumanReviewFlowView() {
             <div className="floating-artifact" style={{ padding: '48px', textAlign: 'center' }}>
               <CheckCircle2 size={48} color="#1B8754" style={{ margin: '0 auto 16px auto', display: 'block' }} />
               <h3 className="serif-heading" style={{ fontSize: '20px', margin: '0 0 8px 0', color: 'var(--color-ink-black)' }}>
-                {readOnly ? '¡Flujo completado!' : '¡Bandeja de revisión completada!'}
+                ¡Bandeja de revisión completada!
               </h3>
               <p style={{ fontSize: '13.5px', color: 'var(--color-slate-gray)', maxWidth: '480px', margin: '0 auto 20px auto' }}>
-                {readOnly
-                  ? 'Ingesta, lectura de BETO y revisión humana terminaron: todos los hechos ya están en el Data Warehouse. El lote queda en solo lectura.'
-                  : 'Todos los registros han sido aprobados o resueltos. Ya puedes consolidar los hechos en el Data Warehouse.'}
+                Todos los registros han sido aprobados o resueltos. Ya puedes consolidar los hechos en el Data Warehouse.
               </p>
-              {!readOnly && <button
+              <button
                 type="button"
                 className="btn-pill-gold"
                 onClick={handleConsolidateDw}
-                disabled={isConsolidatingDw || readOnly || aprobadosResumen.total_aprobados === 0}
+                disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
               >
                 <Database size={15} /> Consolidar al Data Warehouse ({aprobadosResumen.total_aprobados})
-              </button>}
+              </button>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '20px', alignItems: 'start' }}>
@@ -1010,7 +1008,7 @@ export default function HumanReviewFlowView() {
             type="button"
             className="btn-pill-gold"
             onClick={handleConsolidateDw}
-            disabled={isConsolidatingDw || readOnly || aprobadosResumen.total_aprobados === 0}
+            disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
           >
             {isConsolidatingDw ? 'Consolidando transaccionalmente...' : 'Consolidar Aprobados al DW →'}
           </button>

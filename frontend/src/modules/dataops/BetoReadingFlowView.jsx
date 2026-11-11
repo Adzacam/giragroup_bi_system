@@ -54,7 +54,7 @@ export default function BetoReadingFlowView() {
       tipoEntidad: selectedEntityType !== 'TODOS' ? selectedEntityType : undefined,
       pageSize: 300,
     }),
-    enabled: !!loteActivo,
+    enabled: !!loteActivo && !readOnly, // con el flujo cerrado no se vuelve a leer el lote
     refetchOnMount: true, // respeta staleTime pero refetchea si una mutación invalidó la query
   });
   const data = lecturaRaw || null;
@@ -327,11 +327,11 @@ export default function BetoReadingFlowView() {
               type="button"
               className={consolidado ? 'btn-pill-secondary' : 'btn-pill-gold'}
               onClick={() => setIsConfirmModalOpen(true)}
-              disabled={resumen.total_procesados === 0 || consolidando || readOnly}
+              disabled={resumen.total_procesados === 0 || consolidando}
               title="≥ 85 % entran directo al DW; 60–85 % entran marcados para revisión; el resto queda en la bandeja"
             >
               {consolidado ? <CheckCircle2 size={14} /> : <Database size={14} />}
-              {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? (readOnly ? ' Lote consolidado · solo lectura' : ' Lote consolidado · reconsolidar') : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
+              {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? ' Lote consolidado · reconsolidar' : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
             </button>
             <button
               type="button"
@@ -1000,10 +1000,10 @@ export default function BetoReadingFlowView() {
             type="button"
             className={consolidado ? 'btn-pill-secondary' : 'btn-pill-gold'}
             onClick={() => setIsConfirmModalOpen(true)}
-            disabled={resumen.total_procesados === 0 || consolidando || readOnly}
+            disabled={resumen.total_procesados === 0 || consolidando}
           >
             {consolidado ? <CheckCircle2 size={15} /> : <Database size={15} />}
-            {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? (readOnly ? ' Lote consolidado · solo lectura' : ' Lote consolidado · reconsolidar') : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
+            {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? ' Lote consolidado · reconsolidar' : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
           </button>
           <button
             type="button"
