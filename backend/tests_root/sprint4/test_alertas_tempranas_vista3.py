@@ -7,7 +7,6 @@ Monitoreo de Reglas de Umbral y Alertas Tempranas (IF/THEN determinístico).
 
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 if str(BACKEND_DIR) not in sys.path:
@@ -177,30 +176,25 @@ def _crear_mock_db_constelacion():
         ),
     ]
 
-    db = MagicMock()
+    from sqlalchemy import create_engine, event
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
+    from core.database import Base
 
-    def query_side_effect(model):
-        q = MagicMock()
-        if model is DimEstudiante:
-            q.filter.return_value.all.return_value = [est1, est2, est3, est4]
-            q.filter.return_value.first.return_value = est1
-        elif model is DimModulo:
-            q.all.return_value = [mod1, mod2]
-        elif model is DimDocente:
-            q.all.return_value = [doc1]
-        elif model is DimTiempo:
-            q.all.return_value = [tiempo1]
-        elif model is DimOrigenDocumental:
-            q.all.return_value = [orig1]
-        elif model is FactRendimientoAcademico:
-            q.all.return_value = aca_rows
-            q.filter.return_value.order_by.return_value.all.return_value = [aca_rows[0]]
-        elif model is FactSituacionFinanciera:
-            q.all.return_value = fin_rows
-            q.filter.return_value.order_by.return_value.all.return_value = [fin_rows[0]]
-        return q
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False}, poolclass=StaticPool)
 
-    db.query.side_effect = query_side_effect
+    @event.listens_for(engine, "connect")
+    def adjuntar_public(conn, _):
+        cur = conn.cursor()
+        cur.execute("ATTACH DATABASE ':memory:' AS public")
+        cur.close()
+
+    Base.metadata.create_all(bind=engine)
+    db = sessionmaker(bind=engine)()
+    db.add_all([est1, est2, est3, est4, mod1, mod2, doc1, tiempo1, orig1])
+    db.flush()
+    db.add_all(aca_rows + fin_rows)
+    db.commit()
     return db
 
 
