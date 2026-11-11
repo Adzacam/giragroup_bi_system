@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, Upload, RotateCcw, Copy, MonitorDown } from 'lucide-react';
+import usePaginacion from '../../../hooks/usePaginacion';
+import Paginacion from '../../../components/shared/Paginacion';
 import powerbiApi from '../../../api/powerbiApi';
 import { sileoToast } from '../../../services/sileoToast';
 import './cmi.css';
@@ -47,6 +49,7 @@ function Versiones({ vigente }) {
   const descargar = (v) =>
     powerbiApi.descargar(v).catch(async (e) => sileoToast.error({ title: 'No se descargó', description: await mensajeError(e) }));
 
+  const pag = usePaginacion(data);
   if (isLoading) return <div className="cmi-skeleton" style={{ height: 120 }} />;
   if (!data.length) return null;
   return (
@@ -58,7 +61,7 @@ function Versiones({ vigente }) {
             <tr><th>Versión</th><th>Subida</th><th>Por</th><th>Nota</th><th>Tamaño</th><th aria-label="Acciones" /></tr>
           </thead>
           <tbody>
-            {data.map((v) => (
+            {pag.visibles.map((v) => (
               <tr key={v.version}>
                 <td style={{ whiteSpace: 'nowrap' }}>
                   <b>v{v.version}</b>{v.vigente && <span className="cmi-pill cmi-pbi-vigente">Vigente</span>}
@@ -82,6 +85,7 @@ function Versiones({ vigente }) {
             ))}
           </tbody>
         </table>
+        <Paginacion {...pag} onChange={pag.setPagina} />
       </div>
       {vigente && <p className="cmi-pbi-nota">Restaurar no borra ninguna versión: sólo cambia cuál descargan los demás roles.</p>}
     </section>

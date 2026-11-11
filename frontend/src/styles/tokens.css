@@ -1615,3 +1615,21 @@ em, i, cite, .serif-heading em, .serif-display em {
 }
 
 
+
+/* ── Botones: estados de interacción y carga ── */
+.btn-base { display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .2s, transform .1s, background-color .2s; }
+.btn-base:active:not(:disabled) { transform: scale(0.97); }
+.btn-base:disabled { opacity: .55; cursor: not-allowed; }
+.btn-base:focus-visible { outline: 2px solid var(--color-border); outline-offset: 2px; }
+.btn-spinner { animation: spin 1s linear infinite; }
+.btn-pill-dark:active:not(:disabled), .btn-pill-ghost:active:not(:disabled) { transform: scale(0.97); }
+
+/* ── Paginación de tablas (5 filas por defecto) ── */
+.paginacion { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--color-border); font-size: 13px; color: var(--color-slate-gray); flex-wrap: wrap; }
+.paginacion-controles { display: flex; align-items: center; gap: 10px; }
+.paginacion-btn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 9999px; border: 1px solid var(--color-border); background: transparent; color: var(--color-ink-black); cursor: pointer; transition: background-color .2s, transform .1s; }
+.paginacion-btn:hover:not(:disabled) { background-color: var(--color-mist-gray); }
+.paginacion-btn:active:not(:disabled) { transform: scale(0.94); }
+.paginacion-btn:disabled { opacity: .4; cursor: not-allowed; }
+[data-theme="dark"] .paginacion-btn { color: #f8fafc; border-color: #2d3442; }
+[data-theme="dark"] .paginacion-btn:hover:not(:disabled) { background-color: #20252e; }

@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import usePaginacion from '../../../hooks/usePaginacion';
+import Paginacion from '../../../components/shared/Paginacion';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Save, RotateCcw } from 'lucide-react';
 import cmiApi from '../../../api/cmiApi';
@@ -109,6 +111,7 @@ function FilaKpi({ kpi }) {
 }
 
 function PanelPerspectiva({ p, color }) {
+  const pag = usePaginacion(p.kpis);
   const inicial = useMemo(() => ({
     nombre: p.nombre, objetivo: p.objetivo, pregunta: p.pregunta, peso: aTexto(p.peso), activa: p.activa,
   }), [p]);
@@ -190,8 +193,9 @@ function PanelPerspectiva({ p, color }) {
               <th scope="col"><span style={{ position: 'absolute', left: -9999 }}>Acciones</span></th>
             </tr>
           </thead>
-          <tbody>{p.kpis.map((k) => <FilaKpi key={k.codigo} kpi={k} />)}</tbody>
+          <tbody>{pag.visibles.map((k) => <FilaKpi key={k.codigo} kpi={k} />)}</tbody>
         </table>
+        <Paginacion {...pag} onChange={pag.setPagina} />
       </div>
     </section>
   );

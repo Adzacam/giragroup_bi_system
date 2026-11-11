@@ -65,5 +65,16 @@ export const sileoToast = {
   clear: (position) => sileo.clear(position),
 };
 
+export const confirmar = ({ title, description, confirmText = 'Confirmar' } = {}) =>
+  new Promise((resolve) => {
+    let resuelto = false;
+    const fin = (v) => { if (!resuelto) { resuelto = true; resolve(v); } };
+    sileo.action(mergeOptions({
+      title, description, duration: 15000,
+      button: { title: confirmText, onClick: () => fin(true) },
+    }));
+    setTimeout(() => fin(false), 15500);
+  });
+
 export { sileo };
 export default sileoToast;

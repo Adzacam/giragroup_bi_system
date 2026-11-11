@@ -6,6 +6,7 @@ import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import useKineticScroll from '../../hooks/useKineticScroll';
 import { useTheme } from '../../context/ThemeContext';
 import { catalogApi } from '../../api/catalogApi';
+import { sileoToast } from '../../services/sileoToast';
 
 export default function CatalogosMaestros() {
   useKineticScroll();
@@ -96,7 +97,7 @@ export default function CatalogosMaestros() {
       await loadData();
     } catch (err) {
       console.error('Error al crear registro de catálogo:', err);
-      alert('Error al registrar en PostgreSQL: ' + (err.response?.data?.detail || err.message));
+      sileoToast.error({ title: 'No se pudo guardar el registro', description: err.response?.data?.detail || err.message });
     } finally {
       setSaving(false);
     }

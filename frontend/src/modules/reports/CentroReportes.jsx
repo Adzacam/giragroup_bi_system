@@ -60,6 +60,9 @@ const GESTIONES = ['Todas', ...Array.from(
   (_, i) => String(new Date().getFullYear() - i)
 )];
 
+import usePaginacion from '../../hooks/usePaginacion';
+import Paginacion from '../../components/shared/Paginacion';
+
 export default function CentroReportes() {
   const { user, role } = useAuth();
   const [tipoSeleccionado, setTipoSeleccionado] = useState('kpis');
@@ -69,6 +72,7 @@ export default function CentroReportes() {
   const [loadingExport, setLoadingExport] = useState(false);
   const [loadingHistorial, setLoadingHistorial] = useState(false);
   const [historial, setHistorial] = useState([]);
+  const pagHist = usePaginacion(historial);
   const [programas, setProgramas] = useState(['Todos']);
 
   // Programas del Catálogo Maestro institucional (sin lista local de relleno)
@@ -550,7 +554,7 @@ export default function CentroReportes() {
                 </tr>
               </thead>
               <tbody>
-                {historial.map((item, idx) => (
+                {pagHist.visibles.map((item, idx) => (
                   <tr
                     key={item.id || idx}
                     style={{
@@ -630,6 +634,7 @@ export default function CentroReportes() {
                 ))}
               </tbody>
             </table>
+            <Paginacion {...pagHist} onChange={pagHist.setPagina} />
           </div>
         )}
       </div>

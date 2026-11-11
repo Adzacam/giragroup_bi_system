@@ -7,7 +7,7 @@ import PageHeader from '../../components/shared/PageHeader';
 import { useTheme } from '../../context/ThemeContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { dataopsApi } from '../../api/dataopsApi';
-import { sileoToast } from '../../services/sileoToast';
+import { sileoToast, confirmar } from '../../services/sileoToast';
 import useKineticScroll from '../../hooks/useKineticScroll';
 
 export default function AjustesSistema() {
@@ -127,7 +127,7 @@ export default function AjustesSistema() {
   };
 
   const handleFullReset = async () => {
-    if (window.confirm('¿Deseas restablecer todas las preferencias locales de la interfaz y purgar lotes en staging? (Esto cerrará tu sesión activa y purgará todo el almacenamiento).')) {
+    if (await confirmar({ title: 'Restablecer preferencias', description: 'Se borrarán las preferencias locales y los lotes en preparación. Tu sesión se cerrará.', confirmText: 'Restablecer' })) {
       try {
         await dataopsApi.purgeStagingCache();
       } catch (e) {}

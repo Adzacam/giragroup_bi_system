@@ -18,6 +18,9 @@ import forecastApi from '../../api/forecastApi';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
+import usePaginacion from '../../hooks/usePaginacion';
+import Paginacion from '../../components/shared/Paginacion';
+
 export default function ProyeccionAlumnos() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -160,6 +163,7 @@ export default function ProyeccionAlumnos() {
     const matchText = searchProg === '' || item.programa.toLowerCase().includes(searchProg.toLowerCase());
     return matchTipo && matchText;
   });
+  const pag = usePaginacion(viabilidadList);
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', paddingBottom: '70px' }}>
@@ -343,7 +347,7 @@ export default function ProyeccionAlumnos() {
               </tr>
             </thead>
             <tbody>
-              {viabilidadList.map((item, idx) => (
+              {pag.visibles.map((item, idx) => (
                 <tr
                   key={idx}
                   onClick={() => setModalProgDetail(item)}
@@ -386,6 +390,7 @@ export default function ProyeccionAlumnos() {
               ))}
             </tbody>
           </table>
+          <Paginacion {...pag} onChange={pag.setPagina} />
         </div>
       </div>
 

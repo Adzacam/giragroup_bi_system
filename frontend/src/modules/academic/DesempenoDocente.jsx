@@ -10,6 +10,9 @@ import { useTheme } from '../../context/ThemeContext';
 // Las respuestas de la evaluación docente no traen el nombre del docente: es un límite de la fuente, no un error ni un dato vacío.
 const LIMITACION_DOCENTE = 'Sin vinculación de docente en la fuente (limitación)';
 
+import usePaginacion from '../../hooks/usePaginacion';
+import Paginacion from '../../components/shared/Paginacion';
+
 export default function DesempenoDocente() {
   useKineticScroll();
   const { theme } = useTheme();
@@ -49,6 +52,10 @@ export default function DesempenoDocente() {
       (d.area_especialidad || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (d.codigo_docente || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const pag = usePaginacion(filtered);
+  const { setPagina } = pag;
+  useEffect(() => { setPagina(1); }, [filtered.length, setPagina]);
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
@@ -154,7 +161,7 @@ export default function DesempenoDocente() {
                 </td>
               </tr>
             ) : (
-              filtered.map((doc) => (
+              pag.visibles.map((doc) => (
                 <tr key={doc.id_docente}>
                   <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '12px' }}>
                     DOC-{doc.id_docente}
@@ -195,6 +202,7 @@ export default function DesempenoDocente() {
             )}
           </tbody>
         </table>
+        <Paginacion {...pag} onChange={pag.setPagina} />
       </ResponsiveTable>
     </div>
   );

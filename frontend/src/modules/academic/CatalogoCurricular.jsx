@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import usePaginacion from '../../hooks/usePaginacion';
+import Paginacion from '../../components/shared/Paginacion';
 import { BookOpen, Search, RefreshCw, Layers } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import KpiCard from '../../components/shared/KpiCard';
@@ -41,6 +43,9 @@ export default function CatalogoCurricular() {
     (p.programa || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (p.pos_code || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const pag = usePaginacion(filtered);
+  const { setPagina } = pag;
+  useEffect(() => { setPagina(1); }, [searchTerm, setPagina]);
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
@@ -142,7 +147,7 @@ export default function CatalogoCurricular() {
                 </td>
               </tr>
             ) : (
-              filtered.map((item) => (
+              pag.visibles.map((item) => (
                 <tr key={item.id_modulo}>
                   <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '12px' }}>
                     {item.pos_code || `MOD-${item.id_modulo}`}
@@ -172,6 +177,7 @@ export default function CatalogoCurricular() {
             )}
           </tbody>
         </table>
+        <Paginacion {...pag} onChange={pag.setPagina} />
       </ResponsiveTable>
     </div>
   );

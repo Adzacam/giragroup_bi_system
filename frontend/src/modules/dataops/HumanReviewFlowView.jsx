@@ -8,7 +8,7 @@ import {
 import BatchFlowLayout from './components/BatchFlowLayout';
 import { dataopsApi } from '../../api/dataopsApi';
 import { sileo } from 'sileo';
-import { sileoToast } from '../../services/sileoToast';
+import { sileoToast, confirmar } from '../../services/sileoToast';
 import GruposBandeja from './components/GruposBandeja';
 import { useDraftState, useLoteFlow } from './context/LoteFlowContext';
 import { useRevealCi } from './hooks/useRevealCi';
@@ -116,7 +116,7 @@ export default function HumanReviewFlowView() {
   // Aprobación en bloque de los casos de un clic: los manuales quedan en la bandeja
   const handleAprobarUnClic = async () => {
     if (unClicTotal === 0) return;
-    if (!window.confirm(`Se aprobarán ${unClicTotal} casos de un clic (el candidato coincide por nombre o el hecho está completo). Los casos manuales seguirán en la bandeja. ¿Continuar?`)) {
+    if (!(await confirmar({ title: 'Aprobar casos de un clic', description: `Se aprobarán ${unClicTotal} casos cuyo candidato coincide por nombre o cuyo dato está completo. Los casos manuales siguen en la bandeja.`, confirmText: 'Aprobar' }))) {
       return;
     }
     try {

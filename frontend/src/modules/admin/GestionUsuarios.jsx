@@ -6,7 +6,7 @@ import { usersApi } from '../../api/usersApi';
 import { useAuth } from '../../context/AuthContext';
 import useKineticScroll from '../../hooks/useKineticScroll';
 import ProfileModal from '../../components/profile/ProfileModal';
-import { sileoToast } from '../../services/sileoToast';
+import { sileoToast, confirmar } from '../../services/sileoToast';
 
 export default function GestionUsuarios() {
   useKineticScroll();
@@ -83,7 +83,7 @@ export default function GestionUsuarios() {
       return;
     }
 
-    if (!window.confirm(`¿Estás seguro de revocar y eliminar a ${userToDelete.username} (${userToDelete.email})?`)) {
+    if (!(await confirmar({ title: 'Eliminar usuario', description: `Se revocará el acceso de ${userToDelete.username} (${userToDelete.email}).`, confirmText: 'Eliminar' }))) {
       return;
     }
 
