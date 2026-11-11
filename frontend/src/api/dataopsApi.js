@@ -1,4 +1,5 @@
 import client from './client';
+import { queryClient, DATAOPS_QUERY_KEY } from './queryClient';
 import { UMBRAL_INDICE_REGISTRO_DEC } from '../constants/dataopsConfig';
 
 const BASE_URL = '/api/v1/dataops';
@@ -10,10 +11,28 @@ const apiCache = new Map();
 const inFlightRequests = new Map();
 const DEFAULT_CACHE_TTL = 45_000; // 45 segundos
 
+// ─── Mutaciones en vuelo: las lecturas esperan su commit y la caché se invalida también AL TERMINAR ───
+const mutacionesEnVuelo = new Set();
+const esperarMutaciones = () => (mutacionesEnVuelo.size ? Promise.allSettled([...mutacionesEnVuelo]) : undefined);
+
+/** Ejecuta una mutación de la bandeja: invalida antes y después, y bloquea lecturas hasta que termine. */
+const mutar = async (fn) => {
+  invalidateDataopsCache();
+  const promesa = fn();
+  mutacionesEnVuelo.add(promesa);
+  try {
+    return await promesa;
+  } finally {
+    mutacionesEnVuelo.delete(promesa);
+    invalidateDataopsCache();
+  }
+};
+
 /**
  * Envoltorio para peticiones GET con caché en memoria y deduplicación en vuelo
  */
 const cachedGet = async (key, fetcher, ttl = DEFAULT_CACHE_TTL, forceRefresh = false) => {
+  await esperarMutaciones(); // una lectura nunca se adelanta a una mutación en vuelo (p. ej. aprobación diferida al salir de la vista)
   const now = Date.now();
   if (!forceRefresh && apiCache.has(key)) {
     const entry = apiCache.get(key);
@@ -44,6 +63,9 @@ const cachedGet = async (key, fetcher, ttl = DEFAULT_CACHE_TTL, forceRefresh = f
 export const invalidateDataopsCache = (keyPrefix = null) => {
   if (!keyPrefix) {
     apiCache.clear();
+    // Marca como obsoletas las queries del flujo (contexto de lote, bandeja, lectura BETO) sin refetch inmediato:
+    // se recargan al remontar el paso o con refetch() explícito, nunca antes de que termine la mutación.
+    queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY, refetchType: 'none' });
   } else {
     for (const k of apiCache.keys()) {
       if (k.startsWith(keyPrefix)) {
@@ -347,24 +369,22 @@ export const dataopsApi = {
   /**
    * Resuelve y confirma un registro individual de la bandeja de revisión humana
    */
-  resolveReviewItem: async (itemId, payload = {}) => {
-    invalidateDataopsCache();
+  resolveReviewItem: async (itemId, payload = {}) => mutar(async () => {
     const res = await client.post(`${BASE_URL}/review-tray/${itemId}/resolve`, payload);
     return res.data;
-  },
+  }),
 
   /**
    * Aprueba en bloque los casos de un clic de la bandeja (el servidor exige confirmar = true)
    */
-  aprobarCasosUnClic: async (idLote = null, docId = null) => {
-    invalidateDataopsCache();
+  aprobarCasosUnClic: async (idLote = null, docId = null) => mutar(async () => {
     const res = await client.post(
       `${BASE_URL}/review-tray/aprobar-un-clic`,
       { id_lote: idLote ? String(idLote) : null, doc_id: docId || null, confirmar: true },
       { timeout: LECTURA_LOTE_TIMEOUT_MS }
     );
     return res.data;
-  },
+  }),
 
   /**
    * Casos pendientes agrupados por (motivo, valor normalizado): cada grupo se resuelve con una sola acción.
@@ -382,24 +402,22 @@ export const dataopsApi = {
   /**
    * Resuelve un grupo: accion APROBAR (por defecto), MAPEAR_ESTADO (con canonico opcional) o CORREGIR_FECHA (mes y gestion).
    */
-  aprobarGrupo: async ({ clave, accion = null, canonico = null, mes = null, gestion = null, docIds = null, estudianteResuelto = null }) => {
-    invalidateDataopsCache();
+  aprobarGrupo: async ({ clave, accion = null, canonico = null, mes = null, gestion = null, docIds = null, estudianteResuelto = null }) => mutar(async () => {
     const res = await client.post(
       `${BASE_URL}/review-tray/approve-group`,
       { clave, accion, canonico, mes, gestion, doc_ids: docIds, estudiante_resuelto: estudianteResuelto },
       { timeout: LECTURA_LOTE_TIMEOUT_MS }
     );
     return res.data;
-  },
+  }),
 
   /**
    * Resuelve en lote múltiples registros de revisión humana
    */
-  batchResolveReviewItems: async (payload = {}) => {
-    invalidateDataopsCache();
+  batchResolveReviewItems: async (payload = {}) => mutar(async () => {
     const res = await client.post(`${BASE_URL}/review-tray/batch-resolve`, payload);
     return res.data;
-  },
+  }),
 
   /**
    * Obtiene entidades no resueltas

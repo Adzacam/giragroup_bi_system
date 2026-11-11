@@ -1,37 +1,38 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Cpu, CheckCircle2, AlertTriangle, AlertCircle, ArrowRight, ShieldCheck,
-  HelpCircle, ChevronDown, ChevronUp, Eye, EyeOff, Database,
-  User, BookOpen, Award, FileText, Check, Sparkles, Search,
-  GraduationCap, CreditCard, ShoppingCart, ShieldAlert, ExternalLink
+  Cpu, CheckCircle2, AlertTriangle, AlertCircle, ArrowRight, HelpCircle,
+  ChevronDown, ChevronUp, Eye, EyeOff, Database, FileText,
+  Search, GraduationCap, CreditCard, ShoppingCart, ShieldAlert
 } from 'lucide-react';
 import BatchFlowLayout from './components/BatchFlowLayout';
 import ProgresoTarea from './components/ProgresoTarea';
 import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano';
 import { dataopsApi } from '../../api/dataopsApi';
+import { useDraftState, useLoteFlow } from './context/LoteFlowContext';
+import { useRevealCi } from './hooks/useRevealCi';
 import { sileoToast } from '../../services/sileoToast';
 
 export default function BetoReadingFlowView() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState(null);
-  const [selectedDocId, setSelectedDocId] = useState(null);
-  
-  // Filtros
-  const [activeArea, setActiveArea] = useState('TODAS'); // 'TODAS' | 'academica' | 'financiera' | 'comercial' | 'calidad'
-  const [filterCondition, setFilterCondition] = useState('ALL'); // 'ALL' | 'BAJA_CONFIANZA' | 'CONFLICTOS' | 'CATALOGO' | 'ABANDONO'
-  const [selectedFileFilter, setSelectedFileFilter] = useState('TODOS');
-  const [selectedEntityType, setSelectedEntityType] = useState('TODOS');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [tablePage, setTablePage] = useState(1);
+  const { readOnly } = useLoteFlow();
+  const [selectedDocId, setSelectedDocId] = useDraftState('beto.selectedDocId', null);
+
+  // Filtros (borradores por lote: sobreviven a cambiar de paso y a F5)
+  const [activeArea, setActiveArea] = useDraftState('beto.activeArea', 'TODAS'); // 'TODAS' | 'academica' | 'financiera' | 'comercial' | 'calidad'
+  const [filterCondition, setFilterCondition] = useDraftState('beto.filterCondition', 'ALL'); // 'ALL' | 'BAJA_CONFIANZA' | 'CONFLICTOS' | 'CATALOGO' | 'ABANDONO'
+  const [selectedFileFilter, setSelectedFileFilter] = useDraftState('beto.selectedFileFilter', 'TODOS');
+  const [selectedEntityType, setSelectedEntityType] = useDraftState('beto.selectedEntityType', 'TODOS');
+  const [searchQuery, setSearchQuery] = useDraftState('beto.searchQuery', '');
+  const [tablePage, setTablePage] = useDraftState('beto.tablePage', 1);
   const tablePageSize = 10;
 
   // Estados de expansión y modales
-  const [expandedRows, setExpandedRows] = useState({});
-  const [revealedCis, setRevealedCis] = useState({});
+  const [expandedRows, setExpandedRows] = useDraftState('beto.expandedRows', {});
+  const [revealedCis, toggleCiReveal] = useRevealCi();
   const [showModelDetails, setShowModelDetails] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isInserting, setIsInserting] = useState(false);
@@ -41,6 +42,23 @@ export default function BetoReadingFlowView() {
   const [segLectura, setSegLectura] = useState(0);
   const loteActivo = id || localStorage.getItem('last_active_batch_id');
   const consolidando = tareaDw?.estado === 'EN_CURSO';
+
+  // Lectura BETO vía React Query: volver a este paso reutiliza lo ya traído (staleTime 60 s) y una mutación lo invalida
+  const { data: lecturaRaw, isFetching: loading, refetch: refetchLectura } = useQuery({
+    queryKey: ['dataops', 'beto-reading', String(loteActivo), selectedDocId, activeArea, filterCondition, selectedEntityType],
+    queryFn: () => dataopsApi.getLoteBetoReading(loteActivo, {
+      docId: selectedDocId,
+      area: activeArea !== 'TODAS' ? activeArea : undefined,
+      filtroGlobal: filterCondition !== 'ALL' ? filterCondition : undefined,
+      tipoEntidad: selectedEntityType !== 'TODOS' ? selectedEntityType : undefined,
+      pageSize: 300,
+    }),
+    enabled: !!loteActivo,
+    refetchOnMount: true, // respeta staleTime pero refetchea si una mutación invalidó la query
+  });
+  const data = lecturaRaw || null;
+  const loadReadingData = () => refetchLectura();
+
 
   // Al entrar: ¿hay una consolidación en curso para este lote? (p. ej. se cerró el navegador)
   useEffect(() => {
@@ -88,76 +106,15 @@ export default function BetoReadingFlowView() {
     return () => clearInterval(timer);
   }, [loading, loteActivo]);
 
+  // Al cambiar un filtro se vuelve a la página 1 (sin pisar la página restaurada al montar)
+  const claveFiltros = [id, selectedDocId, activeArea, filterCondition, selectedEntityType].join('|');
+  const claveAnterior = useRef(claveFiltros);
   useEffect(() => {
-    let isMounted = true;
-    setTablePage(1);
-
-    const run = async () => {
-      try {
-        setLoading(true);
-        let batchIdToLoad = id || localStorage.getItem('last_active_batch_id');
-        if (!batchIdToLoad) {
-          if (isMounted) {
-            setData(null);
-            setLoading(false);
-          }
-          return;
-        }
-
-        const res = await dataopsApi.getLoteBetoReading(batchIdToLoad, {
-          docId: selectedDocId,
-          area: activeArea !== 'TODAS' ? activeArea : undefined,
-          filtroGlobal: filterCondition !== 'ALL' ? filterCondition : undefined,
-          tipoEntidad: selectedEntityType !== 'TODOS' ? selectedEntityType : undefined,
-          pageSize: 300,
-        });
-        if (isMounted) {
-          setData(res || null);
-        }
-      } catch (err) {
-        if (isMounted) {
-          console.warn('Error al cargar beto-reading:', err);
-          setData(null);
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    run();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [id, selectedDocId, activeArea, filterCondition, selectedEntityType]);
-
-  const loadReadingData = async (docFilter = null) => {
-    try {
-      setLoading(true);
-      let batchIdToLoad = id || localStorage.getItem('last_active_batch_id');
-      if (!batchIdToLoad) {
-        setData(null);
-        setLoading(false);
-        return;
-      }
-
-      const res = await dataopsApi.getLoteBetoReading(batchIdToLoad, {
-        docId: docFilter,
-        area: activeArea !== 'TODAS' ? activeArea : undefined,
-        filtroGlobal: filterCondition !== 'ALL' ? filterCondition : undefined,
-        tipoEntidad: selectedEntityType !== 'TODOS' ? selectedEntityType : undefined,
-        pageSize: 300,
-      });
-      setData(res || null);
-    } catch (err) {
-      console.warn('Error al cargar beto-reading:', err);
-      setData(null);
-    } finally {
-      setLoading(false);
+    if (claveAnterior.current !== claveFiltros) {
+      claveAnterior.current = claveFiltros;
+      setTablePage(1);
     }
-  };
+  }, [claveFiltros, setTablePage]);
 
   const resumen = data?.resumen_ejecutivo || {
     total_procesados: data?.registros?.length || 0,
@@ -186,34 +143,6 @@ export default function BetoReadingFlowView() {
       ...prev,
       [recId]: !prev[recId]
     }));
-  };
-
-  const toggleCiReveal = async (recordId) => {
-    if (revealedCis[recordId]) {
-      setRevealedCis(prev => {
-        const copy = { ...prev };
-        delete copy[recordId];
-        return copy;
-      });
-      return;
-    }
-
-    try {
-      const res = await dataopsApi.revelarCi(recordId);
-      const ciRevealed = res?.ci_real || res?.ci;
-      if (ciRevealed) {
-        setRevealedCis(prev => ({
-          ...prev,
-          [recordId]: ciRevealed
-        }));
-      }
-    } catch (err) {
-      const status = err.response?.status;
-      sileoToast.error({
-        title: status === 403 ? 'Permiso denegado (RBAC)' : 'No se pudo revelar el CI',
-        description: err.response?.data?.detail || 'Se requiere rol ADMIN o AUDITOR_CALIDAD para revelar datos personales.'
-      });
-    }
   };
 
   const handleConfirmInsertDw = async () => {
@@ -397,11 +326,11 @@ export default function BetoReadingFlowView() {
               type="button"
               className={consolidado ? 'btn-pill-secondary' : 'btn-pill-gold'}
               onClick={() => setIsConfirmModalOpen(true)}
-              disabled={resumen.total_procesados === 0 || consolidando}
+              disabled={resumen.total_procesados === 0 || consolidando || readOnly}
               title="≥ 85 % entran directo al DW; 60–85 % entran marcados para revisión; el resto queda en la bandeja"
             >
               {consolidado ? <CheckCircle2 size={14} /> : <Database size={14} />}
-              {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? ' Lote consolidado · reconsolidar' : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
+              {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? (readOnly ? ' Lote consolidado · solo lectura' : ' Lote consolidado · reconsolidar') : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
             </button>
             <button
               type="button"
@@ -1070,10 +999,10 @@ export default function BetoReadingFlowView() {
             type="button"
             className={consolidado ? 'btn-pill-secondary' : 'btn-pill-gold'}
             onClick={() => setIsConfirmModalOpen(true)}
-            disabled={resumen.total_procesados === 0 || consolidando}
+            disabled={resumen.total_procesados === 0 || consolidando || readOnly}
           >
             {consolidado ? <CheckCircle2 size={15} /> : <Database size={15} />}
-            {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? ' Lote consolidado · reconsolidar' : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
+            {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? (readOnly ? ' Lote consolidado · solo lectura' : ' Lote consolidado · reconsolidar') : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
           </button>
           <button
             type="button"

@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useState, useEffect, useRef, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import TareasSegundoPlano from './components/shared/TareasSegundoPlano';
 import { NotificationProvider } from './context/NotificationContext';
@@ -43,18 +43,8 @@ const CentroReportes      = lazy(() => import('./modules/reports/CentroReportes'
 
 import { ThemeProvider } from './context/ThemeContext';
 
-/* ─── React Query Client Optimizado para Navegación Instantánea ─── */
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60_000,
-      gcTime: 300_000,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      retry: 1,
-    },
-  },
-});
+import { queryClient } from './api/queryClient';
+import { LoteFlowRoute } from './modules/dataops/context/LoteFlowContext';
 
 /* ─── Structured Institutional Section Loading Fallback ─── */
 function LoadingFallback() {
@@ -411,6 +401,8 @@ function App() {
                     <IngestView />
                   </RoleRoute>
                 } />
+                {/* Pasos ②③④ comparten borradores y estado de solo lectura (LoteFlowContext) */}
+                <Route element={<LoteFlowRoute />}>
                 <Route path="dataops/texto" element={
                   <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
                     <PlainTextTransformationView />
@@ -441,6 +433,7 @@ function App() {
                     <HumanReviewFlowView />
                   </RoleRoute>
                 } />
+                </Route>
 
                 {/* Vistas Avanzadas y de Soporte */}
                 <Route path="dataops/datos-maestros" element={

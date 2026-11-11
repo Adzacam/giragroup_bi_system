@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import {
-  UserCheck, AlertTriangle, AlertCircle, CheckCircle2, RotateCcw, XCircle,
-  HelpCircle, Eye, EyeOff, ShieldCheck, ArrowRight, CornerDownRight,
-  Sparkles, Keyboard, History, Clock, Check, Edit3, Merge, UserX,
-  FileDown, Database, GraduationCap, CreditCard, ShoppingCart, ShieldAlert,
-  ChevronDown, ChevronUp, FileText, Download
+  AlertTriangle, CheckCircle2, XCircle, Eye, EyeOff, ShieldCheck,
+  Sparkles, Keyboard, Database, FileText, Download
 } from 'lucide-react';
 import BatchFlowLayout from './components/BatchFlowLayout';
 import { dataopsApi } from '../../api/dataopsApi';
 import { sileo } from 'sileo';
 import { sileoToast } from '../../services/sileoToast';
 import GruposBandeja from './components/GruposBandeja';
+import { useDraftState, useLoteFlow } from './context/LoteFlowContext';
+import { useRevealCi } from './hooks/useRevealCi';
 import { ESTADOS_VINCULO, textoFuente, textoMotivo } from '../../constants/motivosBandeja';
 
 export default function HumanReviewFlowView() {
@@ -22,93 +22,85 @@ export default function HumanReviewFlowView() {
   // Soporta id por params (:id) o por query (?lote=)
   const batchId = id || searchParams.get('lote');
 
-  const [activeTab, setActiveTab] = useState('PENDIENTES'); // 'PENDIENTES' | 'RESUELTOS'
-  const [selectedDocId, setSelectedDocId] = useState(null);
-  const [selectedArea, setSelectedArea] = useState('TODAS'); // 'TODAS' | 'academica' | 'financiera' | 'comercial' | 'calidad'
-  const [selectedReason, setSelectedReason] = useState('ALL');
+  const [activeTab, setActiveTab] = useDraftState('review.activeTab', 'PENDIENTES'); // 'PENDIENTES' | 'RESUELTOS'
+  const [selectedDocId, setSelectedDocId] = useDraftState('review.selectedDocId', null);
+  const [selectedArea, setSelectedArea] = useDraftState('review.selectedArea', 'TODAS'); // 'TODAS' | 'academica' | 'financiera' | 'comercial' | 'calidad'
+  const [selectedReason] = useDraftState('review.selectedReason', 'ALL');
   const [selectedItem, setSelectedItem] = useState(null);
-  const [revealedCis, setRevealedCis] = useState({});
   const [isMobileEvidenceOpen, setIsMobileEvidenceOpen] = useState(false);
 
   // Formulario de edición del caso seleccionado
-  const [formEstudiante, setFormEstudiante] = useState('');
-  const [formCi, setFormCi] = useState('');
-  const [formModulo, setFormModulo] = useState('');
-  const [formNota, setFormNota] = useState('');
-  const [formMonto, setFormMonto] = useState('');
-  const [formCuotas, setFormCuotas] = useState('');
-  const [formNotaAuditor, setFormNotaAuditor] = useState('');
-  const [formMes, setFormMes] = useState('');
-  const [formGestion, setFormGestion] = useState('');
-  const [unClicTotal, setUnClicTotal] = useState(0);
+  const [formEstudiante, setFormEstudiante] = useDraftState('review.formEstudiante', '');
+  const [formCi, setFormCi] = useState(''); // fuera de borradores: puede contener el CI revelado (dato personal)
+  const [revealedCis, toggleCi] = useRevealCi(setFormCi);
+  const [formModulo, setFormModulo] = useDraftState('review.formModulo', '');
+  const [formNota, setFormNota] = useDraftState('review.formNota', '');
+  const [formMonto, setFormMonto] = useDraftState('review.formMonto', '');
+  const [formCuotas, setFormCuotas] = useDraftState('review.formCuotas', '');
+  const [formNotaAuditor, setFormNotaAuditor] = useDraftState('review.formNotaAuditor', '');
+  const [formMes, setFormMes] = useDraftState('review.formMes', '');
+  const [formGestion, setFormGestion] = useDraftState('review.formGestion', '');
   const [isAprobandoBloque, setIsAprobandoBloque] = useState(false);
-  const [vista, setVista] = useState('GRUPOS'); // 'GRUPOS' | 'INDIVIDUAL'
+  const [vista, setVista] = useDraftState('review.vista', 'GRUPOS'); // 'GRUPOS' | 'INDIVIDUAL'
 
   // Modales
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
-  const [discardNote, setDiscardNote] = useState('');
+  const [discardNote, setDiscardNote] = useDraftState('review.discardNote', '');
   const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
   const [isConsolidatingDw, setIsConsolidatingDw] = useState(false);
 
   // Cola y Datos
-  const [isLoading, setIsLoading] = useState(true);
+  const { readOnly, getDraft, setDraft } = useLoteFlow();
+  const idItemRestaurar = useRef(getDraft('review.selectedItemId')); // caso que estaba abierto al salir de este paso
   const [queueItems, setQueueItems] = useState([]);
   const [resolvedHistory, setResolvedHistory] = useState([]);
+  const [unClicTotal, setUnClicTotal] = useState(0);
   const [aprobadosResumen, setAprobadosResumen] = useState({
     total_aprobados: 0,
     fact_rendimiento_academico: 0,
     fact_situacion_financiera: 0,
   });
 
+  // Bandeja vía React Query: volver a este paso reutiliza lo ya traído (staleTime 60 s) y una mutación lo invalida
+  const effectiveBatchId = batchId || localStorage.getItem('last_active_batch_id');
+  const { data: trayRes, isFetching: isLoading, dataUpdatedAt, refetch: refetchTray } = useQuery({
+    queryKey: ['dataops', 'review-tray', String(effectiveBatchId), selectedDocId],
+    queryFn: () => dataopsApi.getReviewTray(Number(effectiveBatchId), { docId: selectedDocId, pageSize: 500 }),
+    enabled: !!effectiveBatchId,
+    refetchOnMount: true,
+  });
+
+  // Vuelca la respuesta al estado local (que mantiene las actualizaciones optimistas de la vista)
   useEffect(() => {
-    loadReviewQueue(selectedDocId);
-  }, [batchId, selectedDocId]);
-
-  const loadReviewQueue = async (docFilter = null) => {
-    try {
-      setIsLoading(true);
-      let effectiveId = batchId || localStorage.getItem('last_active_batch_id');
-      if (!effectiveId) {
-        setQueueItems([]);
-        setSelectedItem(null);
-        setIsLoading(false);
-        return;
-      }
-
-      const res = await dataopsApi.getReviewTray(
-        effectiveId ? Number(effectiveId) : null,
-        { docId: docFilter, pageSize: 500 }
-      );
-
-      if (res && res.data) {
-        setQueueItems(res.data);
-        setUnClicTotal(res.un_clic_total ?? res.data.filter((q) => q.un_clic).length);
-        if (Array.isArray(res.resolved_history)) {
-          setResolvedHistory(res.resolved_history);
-        }
-        if (res.aprobados_resumen) {
-          setAprobadosResumen(res.aprobados_resumen);
-        }
-        if (res.data.length > 0) {
-          selectItemForEdit(res.data[0]);
-        } else {
-          setSelectedItem(null);
-        }
-      } else {
-        setQueueItems([]);
-        setSelectedItem(null);
-      }
-    } catch (err) {
-      console.warn('Error cargando bandeja de revisión:', err);
+    if (!effectiveBatchId) {
       setQueueItems([]);
       setSelectedItem(null);
-    } finally {
-      setIsLoading(false);
+      return;
     }
-  };
+    if (!trayRes || !trayRes.data) return;
+    setQueueItems(trayRes.data);
+    setUnClicTotal(trayRes.un_clic_total ?? trayRes.data.filter((q) => q.un_clic).length);
+    if (Array.isArray(trayRes.resolved_history)) setResolvedHistory(trayRes.resolved_history);
+    if (trayRes.aprobados_resumen) setAprobadosResumen(trayRes.aprobados_resumen);
+    const restaurar = idItemRestaurar.current != null
+      ? trayRes.data.find((q) => String(q.id) === String(idItemRestaurar.current))
+      : null;
+    idItemRestaurar.current = null;
+    if (restaurar) {
+      setSelectedItem(restaurar); // los campos del formulario ya vienen restaurados como borrador
+    } else if (trayRes.data.length > 0) {
+      selectItemForEdit(trayRes.data[0]);
+    } else {
+      setSelectedItem(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataUpdatedAt, effectiveBatchId]);
+
+  const loadReviewQueue = async () => { await refetchTray(); };
 
   const selectItemForEdit = (item) => {
     setSelectedItem(item);
+    setDraft('review.selectedItemId', item?.id ?? null);
     setFormEstudiante(item.estudiante || '');
     setFormCi(item.ci || item.ci_enmascarado || '');
     setFormModulo(item.modulo_detectado || item.modulo || '');
@@ -122,7 +114,7 @@ export default function HumanReviewFlowView() {
 
   // Aprobación en bloque de los casos de un clic: los manuales quedan en la bandeja
   const handleAprobarUnClic = async () => {
-    if (unClicTotal === 0) return;
+    if (unClicTotal === 0 || readOnly) return;
     if (!window.confirm(`Se aprobarán ${unClicTotal} casos de un clic (el candidato coincide por nombre o el hecho está completo). Los casos manuales seguirán en la bandeja. ¿Continuar?`)) {
       return;
     }
@@ -139,32 +131,6 @@ export default function HumanReviewFlowView() {
       });
     } finally {
       setIsAprobandoBloque(false);
-    }
-  };
-
-  const toggleCi = async (id) => {
-    if (revealedCis[id]) {
-      setRevealedCis(prev => {
-        const copy = { ...prev };
-        delete copy[id];
-        return copy;
-      });
-      return;
-    }
-
-    try {
-      const res = await dataopsApi.revelarCi(id);
-      const ciRevealed = res?.ci_real || res?.ci;
-      if (ciRevealed) {
-        setRevealedCis(prev => ({ ...prev, [id]: ciRevealed }));
-        setFormCi(ciRevealed);
-      }
-    } catch (err) {
-      const status = err.response?.status;
-      sileoToast.error({
-        title: status === 403 ? 'Permiso denegado (RBAC)' : 'No se pudo revelar el CI',
-        description: err.response?.data?.detail || 'Se requiere rol ADMIN o AUDITOR_CALIDAD para revelar datos personales.'
-      });
     }
   };
 

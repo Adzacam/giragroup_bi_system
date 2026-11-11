@@ -2538,6 +2538,49 @@ def get_lote_resumen(
     }
 
 
+def _lote_tiene_hechos_dw(db: Session, ids_docs: List[int]) -> bool:
+    """True si algún documento del lote ya tiene hechos consolidados en el DW."""
+    if not ids_docs:
+        return False
+    return bool(db.execute(text("""
+        SELECT EXISTS (SELECT 1 FROM public.fact_rendimiento_academico WHERE id_documento = ANY(:ids))
+            OR EXISTS (SELECT 1 FROM public.fact_situacion_financiera WHERE id_documento = ANY(:ids))
+            OR EXISTS (SELECT 1 FROM public.fact_techo_convenio      WHERE id_documento = ANY(:ids))
+            OR EXISTS (SELECT 1 FROM public.fact_costo_programa      WHERE id_documento = ANY(:ids))
+    """), {"ids": ids_docs}).scalar())
+
+
+def _estado_flujo_lote(db: Session, ids_docs: List[int], pendientes_revision: int) -> str:
+    """
+    Fuente única del ciclo de vida del lote: 'CONSOLIDADO' cuando ya hay hechos en el DW y no quedan
+    casos por revisar (entidades sin resolver + hechos del DW marcados en revisión); en cualquier otro caso
+    'EN_CURSO' (la bandeja ④ sigue consolidando casos sueltos).
+    """
+    if ids_docs and pendientes_revision == 0 and contar_hechos_en_revision(db, ids_docs) == 0             and _lote_tiene_hechos_dw(db, ids_docs):
+        return "CONSOLIDADO"
+    return "EN_CURSO"
+
+
+def _asegurar_lote_editable(db: Session, id_lote: Optional[int]) -> None:
+    """409 si el lote ya está CONSOLIDADO (flujo cerrado, solo lectura)."""
+    if not id_lote:
+        return
+    docs = db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_lote == int(id_lote)).all()
+    ids_docs = [d.id_documento for d in docs]
+    if not ids_docs:
+        return
+    pendientes = (
+        db.query(StagingEntidadNoResuelta)
+        .filter(StagingEntidadNoResuelta.id_documento.in_(ids_docs), StagingEntidadNoResuelta.resuelto == False)
+        .count()
+    )
+    if _estado_flujo_lote(db, ids_docs, pendientes) == "CONSOLIDADO":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"mensaje": "El lote ya fue consolidado y está en modo solo lectura.", "estado_flujo": "CONSOLIDADO"},
+        )
+
+
 @router.get("/lote/{id_lote}/context")
 def get_lote_context(
     id_lote: str,
@@ -2607,6 +2650,12 @@ def get_lote_context(
     escala_activa = active_doc.tipo_escala if active_doc else None
     escala_label = escala_map.get(escala_activa, "No aplica (Finanzas/Admisión)" if not escala_activa else escala_activa)
 
+    estado_flujo = _estado_flujo_lote(db, doc_ids, total_hitl)
+    if estado_flujo == "CONSOLIDADO" or total_hitl > 0 or (doc_ids and contar_hechos_en_revision(db, doc_ids) > 0):
+        ultimo_paso = 4
+    else:
+        ultimo_paso = 3 if total_tuplas > 0 else 1
+
     return {
         "status": "success",
         "id_lote": lote_obj.id_lote if lote_obj else (active_doc.id_lote if active_doc else None),
@@ -2624,6 +2673,8 @@ def get_lote_context(
         "pendientes_revision": total_hitl,
         "archivos": archivos_tabs,
         "paso_sugerido": 4 if total_hitl > 0 else 3,
+        "estado_flujo": estado_flujo,
+        "ultimo_paso": ultimo_paso,
     }
 
 
@@ -2980,12 +3031,7 @@ def get_lote_beto_reading(
     # El lote ya pasó por la consolidación si alguno de sus documentos tiene hechos en el DW:
     # la SPA lo usa para marcar el paso ③ como hecho y destacar la bandeja ④ como siguiente acción
     ids_docs = [d.id_documento for d in docs_lote]
-    consolidado = bool(ids_docs) and bool(db.execute(text("""
-        SELECT EXISTS (SELECT 1 FROM public.fact_rendimiento_academico WHERE id_documento = ANY(:ids))
-            OR EXISTS (SELECT 1 FROM public.fact_situacion_financiera WHERE id_documento = ANY(:ids))
-            OR EXISTS (SELECT 1 FROM public.fact_techo_convenio      WHERE id_documento = ANY(:ids))
-            OR EXISTS (SELECT 1 FROM public.fact_costo_programa      WHERE id_documento = ANY(:ids))
-    """), {"ids": ids_docs}).scalar())
+    consolidado = _lote_tiene_hechos_dw(db, ids_docs)
     resumen_ejecutivo["consolidado"] = consolidado
 
     archivos_tabs = _serializar_archivos_lote(db, docs_lote)
@@ -3553,6 +3599,7 @@ def confirm_dw_insert(
             db=db,
             current_user=current_user,
         )
+    _asegurar_lote_editable(db, payload.id_lote)
     if not payload.en_segundo_plano:
         return _consolidar(payload, db, current_user)
 

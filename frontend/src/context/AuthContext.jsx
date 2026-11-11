@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { invalidateDataopsCache } from '../api/dataopsApi';
 import { clearKpiMemoryCache } from '../api/kpiApi';
 import { limpiarCacheApi } from '../services/pwa';
+import { queryClient } from '../api/queryClient';
+import { clearLoteFlowSession } from '../modules/dataops/context/LoteFlowContext';
 
 const AuthContext = createContext(null);
 
@@ -29,12 +31,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('gira_user');
     localStorage.removeItem('gira_notifications_cache');
     localStorage.removeItem('gira_last_login_date');
+    localStorage.removeItem('last_active_batch_id');
     // Se preserva gira_trusted_device_* para cumplir la vigencia de 30 días del dispositivo confiable
     sessionStorage.clear();
     // Limpieza de todos los cachés en memoria para prevenir retención de datos entre sesiones
     invalidateDataopsCache();
     clearKpiMemoryCache();
     limpiarCacheApi();
+    clearLoteFlowSession(); // borradores del flujo de lote (ya cubiertos por sessionStorage.clear, explícito por claridad)
+    queryClient.clear(); // contexto de lote, bandeja y lecturas BETO en caché de React Query
     setToken(null);
     setUser(null);
   }, []);
