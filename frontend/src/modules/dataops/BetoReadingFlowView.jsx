@@ -330,10 +330,10 @@ export default function BetoReadingFlowView() {
               className={consolidado ? 'btn-pill-secondary' : 'btn-pill-gold'}
               onClick={() => setIsConfirmModalOpen(true)}
               disabled={resumen.total_procesados === 0 || consolidando}
-              title="≥ 85 % entran directo al DW; 60–85 % entran marcados para revisión; el resto queda en la bandeja"
+              title="≥ 85 % entran directo; 60–85 % entran marcados para revisión; el resto queda en la bandeja"
             >
               {consolidado ? <CheckCircle2 size={14} /> : <Database size={14} />}
-              {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? ' Lote consolidado · reconsolidar' : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
+              {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? ' Lote consolidado · reconsolidar' : ` ③ Consolidar lote (${resumen.aceptados_automaticamente} directos)`}
             </button>
             <button
               type="button"
@@ -597,14 +597,14 @@ export default function BetoReadingFlowView() {
             className={`pill-filter ${filterCondition === 'CATALOGO' ? 'active' : ''}`}
             onClick={() => setFilterCondition('CATALOGO')}
           >
-            💡 Sugerencias Catálogo ({resumen.sugerencias_catalogo_count})
+            Sugerencias de catálogo ({resumen.sugerencias_catalogo_count})
           </button>
           <button
             type="button"
             className={`pill-filter ${filterCondition === 'ABANDONO' ? 'active' : ''}`}
             onClick={() => setFilterCondition('ABANDONO')}
           >
-            ⚠️ Alerta Abandono ({resumen.alerta_abandono_count})
+            Alerta de abandono ({resumen.alerta_abandono_count})
           </button>
 
           {/* Filtro Archivo de Origen */}
@@ -620,7 +620,7 @@ export default function BetoReadingFlowView() {
               title="Filtrar por archivo de origen"
               aria-label="Archivo de origen"
             >
-              <option value="TODOS">📁 Todos los archivos ({availableFiles.length})</option>
+              <option value="TODOS">Todos los archivos ({availableFiles.length})</option>
               {availableFiles.map(f => (
                 <option key={f} value={f}>{f}</option>
               ))}
@@ -639,7 +639,7 @@ export default function BetoReadingFlowView() {
             title="Filtrar por tipo de entidad"
             aria-label="Tipo de entidad"
           >
-            <option value="TODOS">🏷️ Todas las entidades</option>
+            <option value="TODOS">Todas las entidades</option>
             <option value="ESTUDIANTE">Estudiante / Persona</option>
             <option value="MODULO">Módulo / Materia</option>
             <option value="DOCENTE">Docente</option>
@@ -726,7 +726,7 @@ export default function BetoReadingFlowView() {
                         </td>
                         <td>
                           <span style={{ fontSize: '12px', fontWeight: '600', textTransform: 'capitalize' }}>
-                            {rec.area === 'academica' ? '🎓 Académica' : (rec.area === 'financiera' ? '💳 Financiera' : (rec.area === 'comercial' ? '🛒 Comercial' : '🛡️ Calidad'))}
+                            {rec.area === 'academica' ? 'Académica' : (rec.area === 'financiera' ? 'Financiera' : (rec.area === 'comercial' ? 'Comercial' : 'Calidad'))}
                           </span>
                         </td>
                         <td>
@@ -796,7 +796,7 @@ export default function BetoReadingFlowView() {
                                 color: '#D9383A'
                               }}
                             >
-                              ⚠️ Alerta Abandono
+                              Alerta de abandono
                             </span>
                           ) : rec.es_nuevo_catalogo ? (
                             <span
@@ -812,7 +812,7 @@ export default function BetoReadingFlowView() {
                                 color: '#B8801A'
                               }}
                             >
-                              💡 Nuevo Catálogo
+                              Nuevo en el catálogo
                             </span>
                           ) : (
                             <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }}>Normal</span>
@@ -900,7 +900,7 @@ export default function BetoReadingFlowView() {
                                     <span>{rec.desglose_relacional?.catalogo_guia?.arancel_base || 'Sin arancel en catálogo'}</span>
                                   </div>
                                   <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', borderTop: '1px dashed var(--color-border)', paddingTop: '6px', marginTop: '6px' }}>
-                                    🛡️ <em>Principio Cero-PII: El Catálogo Guía solo almacena entidades curriculares e institucionales, nunca identidades de personas.</em>
+                                    <em>Datos personales protegidos: El Catálogo Guía solo almacena entidades curriculares e institucionales, nunca identidades de personas.</em>
                                   </div>
                                 </div>
 
@@ -1005,7 +1005,7 @@ export default function BetoReadingFlowView() {
             disabled={resumen.total_procesados === 0 || consolidando}
           >
             {consolidado ? <CheckCircle2 size={15} /> : <Database size={15} />}
-            {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? ' Lote consolidado · reconsolidar' : ` ③ Consolidar lote al DW (${resumen.aceptados_automaticamente} directos)`}
+            {consolidando ? ` Consolidando… ${(tareaDw?.porcentaje ?? 0).toFixed(0)} %` : consolidado ? ' Lote consolidado · reconsolidar' : ` ③ Consolidar lote (${resumen.aceptados_automaticamente} directos)`}
           </button>
           <button
             type="button"

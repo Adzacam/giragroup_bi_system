@@ -1633,3 +1633,18 @@ em, i, cite, .serif-heading em, .serif-display em {
 .paginacion-btn:disabled { opacity: .4; cursor: not-allowed; }
 [data-theme="dark"] .paginacion-btn { color: #f8fafc; border-color: #2d3442; }
 [data-theme="dark"] .paginacion-btn:hover:not(:disabled) { background-color: #20252e; }
+
+/* ── Glosario flotante (ayuda contextual) ── */
+.glosario-barra { display: flex; justify-content: flex-end; margin: 0 0 12px; }
+.glosario-abrir { padding: 6px 14px; font-size: 12.5px; }
+.glosario-fondo { position: fixed; inset: 0; z-index: 1000; background: rgba(12, 14, 18, 0.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.glosario-ventana { position: relative; width: min(640px, 100%); max-height: 90vh; overflow: auto; padding: 22px; border-radius: 20px; background: var(--color-paper-white); color: var(--color-ink-black); border: 1px solid var(--color-border); box-shadow: var(--shadow-subtle); }
+.glosario-ventana h3 { margin: 4px 0 6px; }
+.glosario-cerrar { position: absolute; top: 12px; right: 12px; }
+.glosario-etiqueta { font-size: 11px; font-weight: 600; letter-spacing: 1.1px; text-transform: uppercase; color: var(--color-slate-gray); }
+.glosario-intro { font-size: 13px; color: var(--color-slate-gray); margin: 0; }
+.glosario-lista { margin: 14px 0 0; display: grid; gap: 12px; }
+.glosario-lista dt { font-weight: 700; font-size: 13.5px; }
+.glosario-lista dd { margin: 2px 0 0; font-size: 13px; color: var(--color-slate-gray); line-height: 1.5; }
+[data-theme="dark"] .glosario-ventana { background: #161920; color: #faf9f6; border-color: #2d3442; }
+

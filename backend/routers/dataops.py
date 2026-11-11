@@ -91,6 +91,10 @@ from services.dataops_evaluation_service import (
     calcular_porcentajes_mayor_residuo,
     calcular_indice_entidad_con_bonos,
     enmascarar_ci,
+    cis_en_entidades,
+    entidad_sin_ci,
+    registro_sin_ci,
+    texto_sin_ci,
     NON_PERSON_WORDS,
     MOTIVOS_REGLA_DURA,
 )
@@ -1908,6 +1912,10 @@ def _evaluar_documentos_lote(
             if ci_val == "No provisto":
                 ci_val = None
             ci_masked = enmascarar_ci(ci_val)
+            # Lo que viaja al navegador nunca lleva el CI completo (ni en la línea, ni en las entidades)
+            cis_linea = cis_en_entidades(ents, ci_val)
+            ents_pub = [entidad_sin_ci(e, cis_linea) for e in ents]
+            line_pub = texto_sin_ci(line, cis_linea)
 
             ci_dudosa = bool(ci_val and ("?" in ci_val or len(re.sub(r"[^0-9]", "", ci_val)) < 5))
             nota_invalida = bool(
@@ -2071,7 +2079,7 @@ def _evaluar_documentos_lote(
                         else ("#10b981" if e.get("label") == "MÓDULO" else ("#f59e0b" if e.get("label") == "CALIFICACIÓN" else "#8b5cf6"))
                     ),
                 }
-                for e in ents
+                for e in ents_pub
             ]
 
             ent_prog = next((e for e in ents if e.get("label") == "PROGRAMA"), None)
@@ -2092,7 +2100,7 @@ def _evaluar_documentos_lote(
                 "tipo_fuente": doc_fuente,
                 "tipo_escala": doc_escala,
                 "line_number": line_idx + 1,
-                "raw_text": line,
+                "raw_text": line_pub,
                 "estado": estado_reg,
                 "categoria_particion": categoria_particion,
                 "estado_resolucion": estado_res_row,
@@ -2111,9 +2119,9 @@ def _evaluar_documentos_lote(
                 "es_nuevo_catalogo": es_nuevo_cat,
                 "alerta_abandono": False,
                 "lectura": {
-                    "texto": line,
+                    "texto": line_pub,
                     "tokens": tokens_visuales,
-                    "entidades": ents,
+                    "entidades": ents_pub,
                 },
                 "confianza_elementos": confianza_elementos,
                 "verificacion_reglas": reglas,
@@ -3061,7 +3069,7 @@ def get_lote_beto_reading(
             "total_items": total_filtrados,
             "total_pages": max(1, math.ceil(total_filtrados / page_size)),
         },
-        "registros": paginados,
+        "registros": [registro_sin_ci(r) for r in paginados],
         "modelo_info": {
             "nombre": "mrm8488/bert-spanish-cased-finetuned-ner (base: dccuchile/bert-base-spanish-wwm-cased)",
             "f1_validacion": 0.942,
@@ -4241,6 +4249,9 @@ def get_review_tray(
 
         # Un clic: nombre extraído vs nombre del candidato (no la línea completa del acta)
         nombre_caso = nombre_extraido(ent.texto_original, payload_data.get("raw_line"))
+        # Al navegador solo llega la línea y las entidades con el CI enmascarado
+        cis_item = cis_en_entidades(ents_line, ci_val)
+        contexto_publico = texto_sin_ci(contexto_raw, cis_item)
         items.append({
             "id": ent.id_staging,
             "db_id": ent.id_staging,
@@ -4248,7 +4259,7 @@ def get_review_tray(
             "motivo_label": motivo_labels_map.get(motivo_slug, motivo_slug.replace("_", " ").title()),
             "tipo_entidad": ent.tipo_entidad or "ESTUDIANTE",
             "tipo_fuente": doc_fuente,
-            "que_vio": contexto_raw,
+            "que_vio": contexto_publico,
             "ci": ci_masked,
             "ci_enmascarado": ci_masked,
             "por_que_detuvo": por_que,
@@ -4261,12 +4272,12 @@ def get_review_tray(
             "id_documento": ent.id_documento,
             "archivo_origen": doc_name,
             "estudiante": estudiante_clean,
-            "contexto_raw": contexto_raw,
+            "contexto_raw": contexto_publico,
             "modulo_detectado": modulo_detectado,
             "sugerencia_catalogo": ent.mejor_candidato,
             "nombre_extraido": nombre_caso,
             "fk_estado": ent.fk_estado or "C",
-            "entidades": [{"label": e.get("label"), "token": e.get("token"), "fuente_resolucion": e.get("fuente_resolucion")} for e in ents_line],
+            "entidades": [{"label": e.get("label"), "token": entidad_sin_ci(e, cis_item).get("token"), "fuente_resolucion": e.get("fuente_resolucion")} for e in ents_line],
             "un_clic": es_sugerencia_un_clic(nombre_caso, ent.mejor_candidato),
             "similitud_nombre_completo": similitud_nombre_completo(nombre_caso, ent.mejor_candidato),
             "ner_confidence": float(ent.nivel_confianza) if ent.nivel_confianza else 0.72,

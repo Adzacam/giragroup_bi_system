@@ -1,6 +1,8 @@
 import React from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle2, FileSpreadsheet, Layers, PlusCircle } from 'lucide-react';
+import GlosarioFlotante from '../../../components/shared/GlosarioFlotante';
+import { GLOSARIO_DATAOPS } from '../../../constants/glosarioDataops';
 import BatchFlowHeader from './BatchFlowHeader';
 import BatchFlowStepper from './BatchFlowStepper';
 import { useLoteContext } from '../hooks/useLoteContext';
@@ -44,6 +46,7 @@ export default function BatchFlowLayout({
         currentStep={currentStep}
         onSelectBatch={handleSelectBatch}
       />
+      <GlosarioFlotante contenido={GLOSARIO_DATAOPS} />
       <BatchFlowStepper
         currentStep={currentStep}
         batchId={effectiveRouteId || batchContext?.id_lote || batchContext?.id_documento}

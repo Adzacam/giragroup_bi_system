@@ -843,7 +843,7 @@ export default function IngestView() {
               <thead>
                 <tr style={{ backgroundColor: 'var(--color-mist-gray)', borderBottom: '1px solid var(--color-border)' }}>
                   <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Archivo</th>
-                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Origen Detectado (dim_origen)</th>
+                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Origen detectado</th>
                   <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Filas</th>
                   <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Anonimización</th>
                   <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Estado</th>
@@ -906,7 +906,7 @@ export default function IngestView() {
                             fontWeight: isSelected ? 700 : 500
                           }}
                         >
-                          {isSelected ? '✓ Seleccionado' : 'Ver en C'}
+                          {isSelected ? 'Seleccionado' : 'Ver en C'}
                         </button>
                       </td>
                     </tr>
@@ -1208,7 +1208,7 @@ export default function IngestView() {
                 } else {
                   sileoToast.warning({
                     title: 'Procese un lote primero',
-                    description: 'Debe cargar y procesar un lote antes de ejecutar la extracción NER con BETO.'
+                    description: 'Debe cargar y procesar un lote antes de ejecutar la lectura con BETO.'
                   });
                 }
               }}
@@ -1285,7 +1285,7 @@ export default function IngestView() {
                   borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600
                 }}
               >
-                <Terminal size={12} color="var(--color-gira-gold, #D99B26)" /> 📋 Bitácora Técnica (.MD)
+                <Terminal size={12} color="var(--color-gira-gold, #D99B26)" /> Bitácora técnica
               </button>
               <button
                 type="button"
@@ -1349,7 +1349,7 @@ export default function IngestView() {
                                 className="sileo-btn"
                                 style={{ padding: '4px 8px', fontSize: '11px', borderRadius: '4px', backgroundColor: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
                               >
-                                Cargar en Vista 1
+                                Ver en Ingesta
                               </button>
                               <button
                                 type="button"

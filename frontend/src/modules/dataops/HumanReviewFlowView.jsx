@@ -338,7 +338,7 @@ export default function HumanReviewFlowView() {
   const handleExportIncidentsCsv = () => {
     try {
       const rows = [
-        ['ID', 'Area', 'Motivo', 'Estudiante', 'CI', 'Modulo', 'Archivo Origen', 'Destino DW', 'Texto Detectado', 'Estado']
+        ['ID', 'Area', 'Motivo', 'Estudiante', 'CI', 'Modulo', 'Archivo Origen', 'Destino', 'Texto Detectado', 'Estado']
       ];
 
       queueItems.forEach(item => {
@@ -360,7 +360,7 @@ export default function HumanReviewFlowView() {
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement('a');
       link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `log_incidencias_lote_${batchId || 'activo'}.csv`);
+      link.setAttribute('download', `incidencias_lote_${batchId || 'activo'}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -394,9 +394,9 @@ export default function HumanReviewFlowView() {
       });
       loadReviewQueue(selectedDocId);
     } catch (err) {
-      console.error('Error consolidando DW:', err);
+      console.error('No se pudo consolidar:', err);
       sileoToast.error({
-        title: 'Error al consolidar DW',
+        title: 'No se pudo consolidar el lote',
         description: mensajeError(err)
       });
     } finally {
@@ -453,7 +453,7 @@ export default function HumanReviewFlowView() {
               onClick={handleConsolidateDw}
               disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
             >
-              <Database size={15} /> Consolidar Aprobados al DW ({aprobadosResumen.total_aprobados})
+              <Database size={15} /> Consolidar aprobados ({aprobadosResumen.total_aprobados})
             </button>
           </div>
         </div>
@@ -526,28 +526,28 @@ export default function HumanReviewFlowView() {
             className={`pill-filter ${selectedArea === 'academica' ? 'active' : ''}`}
             onClick={() => setSelectedArea('academica')}
           >
-            🎓 Académica
+            Académica
           </button>
           <button
             type="button"
             className={`pill-filter ${selectedArea === 'financiera' ? 'active' : ''}`}
             onClick={() => setSelectedArea('financiera')}
           >
-            💳 Financiera
+            Financiera
           </button>
           <button
             type="button"
             className={`pill-filter ${selectedArea === 'comercial' ? 'active' : ''}`}
             onClick={() => setSelectedArea('comercial')}
           >
-            🛒 Comercial
+            Comercial
           </button>
           <button
             type="button"
             className={`pill-filter ${selectedArea === 'calidad' ? 'active' : ''}`}
             onClick={() => setSelectedArea('calidad')}
           >
-            🛡️ Calidad / Catálogo
+            Calidad y catálogo
           </button>
         </div>
       )}
@@ -687,7 +687,7 @@ export default function HumanReviewFlowView() {
                       aria-label="Ver u ocultar evidencia en texto plano"
                     >
                       <FileText size={16} />
-                      <span>{isMobileEvidenceOpen ? '📄 Ocultar evidencia documental ▲' : '📄 Ver oración en texto plano ▼'}</span>
+                      <span>{isMobileEvidenceOpen ? 'Ocultar evidencia documental' : 'Ver oración en texto plano'}</span>
                     </button>
                   </div>
 
@@ -940,7 +940,7 @@ export default function HumanReviewFlowView() {
                         onClick={() => setIsDiscardModalOpen(true)}
                         aria-label="Rechazar caso"
                       >
-                        <XCircle size={19} /> ❌ Rechazar
+                        <XCircle size={19} /> Rechazar
                       </button>
                       <button
                         type="button"
@@ -949,7 +949,7 @@ export default function HumanReviewFlowView() {
                         aria-label="Aprobar caso"
                         aria-keyshortcuts="A"
                       >
-                        <CheckCircle2 size={19} /> ✅ Aprobar
+                        <CheckCircle2 size={19} /> Aprobar
                       </button>
                     </div>
                     <p className="hitl-atajos" aria-label="Atajos de teclado">
@@ -987,8 +987,8 @@ export default function HumanReviewFlowView() {
           </div>
           <div style={{ fontSize: '13px', color: 'var(--color-slate-gray)' }}>
             Total aprobados listos: <strong>{aprobadosResumen.total_aprobados}</strong> (
-            Académicos: <code>fact_rendimiento_academico</code> +{aprobadosResumen.fact_rendimiento_academico} · 
-            Financieros: <code>fact_situacion_financiera</code> +{aprobadosResumen.fact_situacion_financiera})
+            Académicos: +{aprobadosResumen.fact_rendimiento_academico} · 
+            Financieros: +{aprobadosResumen.fact_situacion_financiera})
           </div>
         </div>
 
@@ -1010,7 +1010,7 @@ export default function HumanReviewFlowView() {
             onClick={handleConsolidateDw}
             disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
           >
-            {isConsolidatingDw ? 'Consolidando transaccionalmente...' : 'Consolidar Aprobados al DW →'}
+            {isConsolidatingDw ? 'Consolidando transaccionalmente...' : 'Consolidar aprobados →'}
           </button>
         </div>
       </div>

@@ -246,3 +246,58 @@ def enmascarar_ci(ci_raw: Optional[str]) -> str:
         masked_num = f"••••{num_part}{trailing_q}"
 
     return f"{masked_num}{suffix}"
+
+
+_CLAVES_CI = ("ci", "ci_real", "ci_numero", "ci_temporal")
+
+
+def cis_en_entidades(entidades: list, ci_extra: Optional[str] = None) -> set:
+    """CI completos presentes en una línea: el de la entidad DOCUMENTO / CI y cualquier campo ci de otras entidades."""
+    cis = {ci_extra} if ci_extra else set()
+    for e in entidades or []:
+        if e.get("label") == "DOCUMENTO / CI" and e.get("token"):
+            cis.add(str(e["token"]).strip())
+        for clave in _CLAVES_CI:
+            if e.get(clave):
+                cis.add(str(e[clave]).strip())
+    cis = {c for c in cis if c and c.lower() not in ("no provisto", "no especificado", "none", "null", "—")}
+    # El número suelto también puede aparecer sin la extensión departamental ('7391044 LP' -> '7391044')
+    cis |= {c.split()[0] for c in cis if c.split() and sum(ch.isdigit() for ch in c.split()[0]) >= 5}
+    return cis
+
+
+def texto_sin_ci(texto, cis: set):
+    """Reemplaza cada CI completo que aparezca dentro de un texto por su versión enmascarada."""
+    if not isinstance(texto, str) or not cis:
+        return texto
+    for ci in sorted(cis, key=len, reverse=True):
+        if ci in texto:
+            texto = texto.replace(ci, enmascarar_ci(ci))
+    return texto
+
+
+def entidad_sin_ci(entidad: dict, cis: set) -> dict:
+    """Copia de la entidad apta para enviar al navegador: sin CI completo en ningún campo."""
+    publica = {}
+    for clave, valor in entidad.items():
+        publica[clave] = enmascarar_ci(valor) if clave in _CLAVES_CI and valor else texto_sin_ci(valor, cis)
+    return publica
+
+
+def registro_sin_ci(registro: dict) -> dict:
+    """Registro de lectura de BETO apto para el navegador. Se aplica al responder, también sobre evaluaciones en caché."""
+    lectura = registro.get("lectura") or {}
+    cis = cis_en_entidades(lectura.get("entidades"), registro.get("ci_real"))
+    if not cis:
+        return registro
+    publico = {k: v for k, v in registro.items() if k != "ci_real"}
+    if "raw_text" in publico:
+        publico["raw_text"] = texto_sin_ci(publico["raw_text"], cis)
+    publico["lectura"] = {
+        **lectura,
+        "texto": texto_sin_ci(lectura.get("texto"), cis),
+        "tokens": [{**t, "text": texto_sin_ci(t.get("text"), cis)} for t in lectura.get("tokens", [])],
+        "entidades": [entidad_sin_ci(e, cis) for e in lectura.get("entidades", [])],
+    }
+    return publico
+

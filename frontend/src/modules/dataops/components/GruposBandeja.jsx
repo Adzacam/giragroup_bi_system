@@ -126,9 +126,9 @@ export default function GruposBandeja({ docId = null, idLote = null, onVerIndivi
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <span style={{ fontSize: '11px', color: '#1B8754', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            🔒 Privacidad: CI enmascaradas (***) y PII anonimizado
+            Privacidad: la cédula se muestra enmascarada
           </span>
-          <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }} title="fk_estado: vínculo del estudiante con la dimensión">
+          <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }} title="Estado del vínculo del estudiante con el catálogo">
             {ESTADOS_VINCULO.map((e) => e.texto).join('  ·  ')}
           </span>
         </div>
