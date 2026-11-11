@@ -12,6 +12,7 @@ import { sileoToast } from '../../services/sileoToast';
 import GruposBandeja from './components/GruposBandeja';
 import { useDraftState, useLoteFlow } from './context/LoteFlowContext';
 import { useRevealCi } from './hooks/useRevealCi';
+import { mensajeError } from '../../utils/mensajeError';
 import { ESTADOS_VINCULO, textoFuente, textoMotivo } from '../../constants/motivosBandeja';
 
 export default function HumanReviewFlowView() {
@@ -191,7 +192,7 @@ export default function HumanReviewFlowView() {
       setQueueItems(prev => (prev.some(q => q.id === item.id) ? prev : [item, ...prev]));
       sileoToast.error({
         title: `Caso #${item.id} no se consolidó`,
-        description: err.response?.data?.detail || err.message || 'Volvió a la bandeja.'
+        description: mensajeError(err, 'Volvió a la bandeja.')
       });
     }
   };
@@ -319,7 +320,7 @@ export default function HumanReviewFlowView() {
       console.error('Error descartando registro:', err);
       sileoToast.error({
         title: 'Error al descartar registro',
-        description: err.response?.data?.detail || err.message
+        description: mensajeError(err)
       });
     }
   };
@@ -396,7 +397,7 @@ export default function HumanReviewFlowView() {
       console.error('Error consolidando DW:', err);
       sileoToast.error({
         title: 'Error al consolidar DW',
-        description: err.response?.data?.detail || err.message
+        description: mensajeError(err)
       });
     } finally {
       setIsConsolidatingDw(false);
@@ -450,7 +451,7 @@ export default function HumanReviewFlowView() {
               type="button"
               className="btn-pill-gold"
               onClick={handleConsolidateDw}
-              disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
+              disabled={isConsolidatingDw || readOnly || aprobadosResumen.total_aprobados === 0}
             >
               <Database size={15} /> Consolidar Aprobados al DW ({aprobadosResumen.total_aprobados})
             </button>
@@ -607,19 +608,21 @@ export default function HumanReviewFlowView() {
             <div className="floating-artifact" style={{ padding: '48px', textAlign: 'center' }}>
               <CheckCircle2 size={48} color="#1B8754" style={{ margin: '0 auto 16px auto', display: 'block' }} />
               <h3 className="serif-heading" style={{ fontSize: '20px', margin: '0 0 8px 0', color: 'var(--color-ink-black)' }}>
-                ¡Bandeja de revisión completada!
+                {readOnly ? '¡Flujo completado!' : '¡Bandeja de revisión completada!'}
               </h3>
               <p style={{ fontSize: '13.5px', color: 'var(--color-slate-gray)', maxWidth: '480px', margin: '0 auto 20px auto' }}>
-                Todos los registros han sido aprobados o resueltos. Ya puedes consolidar los hechos en el Data Warehouse.
+                {readOnly
+                  ? 'Ingesta, lectura de BETO y revisión humana terminaron: todos los hechos ya están en el Data Warehouse. El lote queda en solo lectura.'
+                  : 'Todos los registros han sido aprobados o resueltos. Ya puedes consolidar los hechos en el Data Warehouse.'}
               </p>
-              <button
+              {!readOnly && <button
                 type="button"
                 className="btn-pill-gold"
                 onClick={handleConsolidateDw}
-                disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
+                disabled={isConsolidatingDw || readOnly || aprobadosResumen.total_aprobados === 0}
               >
                 <Database size={15} /> Consolidar al Data Warehouse ({aprobadosResumen.total_aprobados})
-              </button>
+              </button>}
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '20px', alignItems: 'start' }}>
@@ -1007,7 +1010,7 @@ export default function HumanReviewFlowView() {
             type="button"
             className="btn-pill-gold"
             onClick={handleConsolidateDw}
-            disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
+            disabled={isConsolidatingDw || readOnly || aprobadosResumen.total_aprobados === 0}
           >
             {isConsolidatingDw ? 'Consolidando transaccionalmente...' : 'Consolidar Aprobados al DW →'}
           </button>

@@ -12,6 +12,7 @@ import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano'
 import { dataopsApi } from '../../api/dataopsApi';
 import { useDraftState, useLoteFlow } from './context/LoteFlowContext';
 import { useRevealCi } from './hooks/useRevealCi';
+import { mensajeError } from '../../utils/mensajeError';
 import { sileoToast } from '../../services/sileoToast';
 
 export default function BetoReadingFlowView() {
@@ -161,7 +162,7 @@ export default function BetoReadingFlowView() {
       } else {
         sileoToast.error({
           title: 'No se pudo iniciar la consolidación',
-          description: (typeof det === 'string' ? det : det?.mensaje) || err.message || 'Error en la transacción de carga.',
+          description: mensajeError(err, 'Error en la transacción de carga.'),
         });
       }
     } finally {

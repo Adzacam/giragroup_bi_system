@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UploadCloud, FileText, Cpu, UserCheck, CheckCircle2 } from 'lucide-react';
 
-export default function BatchFlowStepper({ currentStep = 1, batchId = null, pendientesCount = 0 }) {
+export default function BatchFlowStepper({ currentStep = 1, batchId = null, pendientesCount = 0, allCompleted = false }) {
   const navigate = useNavigate();
   const effectiveBatchId = batchId || localStorage.getItem('last_active_batch_id');
 
@@ -74,8 +74,8 @@ export default function BatchFlowStepper({ currentStep = 1, batchId = null, pend
         }} />
 
         {steps.map((step) => {
-          const isCompleted = step.num < currentStep;
-          const isCurrent = step.num === currentStep;
+          const isCompleted = allCompleted || step.num < currentStep;
+          const isCurrent = !allCompleted && step.num === currentStep;
           const Icon = step.icon;
 
           return (

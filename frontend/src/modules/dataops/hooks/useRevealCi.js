@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { dataopsApi } from '../../../api/dataopsApi';
+import { mensajeError } from '../../../utils/mensajeError';
 import { sileoToast } from '../../../services/sileoToast';
 
 /**
@@ -25,7 +26,7 @@ export function useRevealCi(onReveal) {
     } catch (err) {
       sileoToast.error({
         title: err.response?.status === 403 ? 'Permiso denegado (RBAC)' : 'No se pudo revelar el CI',
-        description: err.response?.data?.detail || 'Se requiere rol ADMIN o AUDITOR_CALIDAD para revelar datos personales.',
+        description: mensajeError(err, 'Se requiere rol ADMIN o AUDITOR_CALIDAD para revelar datos personales.'),
       });
     }
   }, [revealedCis, onReveal]);

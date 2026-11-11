@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { dataopsApi } from '../../../api/dataopsApi';
 import { sileoToast } from '../../../services/sileoToast';
+import { mensajeError } from '../../../utils/mensajeError';
 import { describirGrupo, ESTADOS_VINCULO, maskTexto, textoAccion, textoMotivo } from '../../../constants/motivosBandeja';
 
 const accionDe = (g) => g.accion_grupo || 'APROBAR';
@@ -25,7 +26,7 @@ export default function GruposBandeja({ docId = null, idLote = null, onVerIndivi
       setError('');
       setData(await dataopsApi.getGruposBandeja({ docId, idLote: docId ? null : idLote }));
     } catch (e) {
-      setError(e.response?.data?.detail || e.message || 'No se pudieron cargar los grupos.');
+      setError(mensajeError(e, 'No se pudieron cargar los grupos.'));
     } finally {
       setCargando(false);
     }
@@ -63,7 +64,7 @@ export default function GruposBandeja({ docId = null, idLote = null, onVerIndivi
       await cargar();
       if (onCambio) onCambio();
     } catch (e) {
-      sileoToast.error({ title: 'No se pudo resolver el grupo', description: e.response?.data?.detail || e.message });
+      sileoToast.error({ title: 'No se pudo resolver el grupo', description: mensajeError(e) });
     } finally {
       setEnCurso(null);
     }

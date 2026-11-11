@@ -40,6 +40,7 @@ export default function BatchFlowLayout({
         currentStep={currentStep}
         batchId={effectiveRouteId || batchContext?.id_lote || batchContext?.id_documento}
         pendientesCount={batchContext?.pendientes_revision || 0}
+        allCompleted={readOnly}
       />
 
       {readOnly && (
@@ -52,7 +53,7 @@ export default function BatchFlowLayout({
             border: '1px solid var(--color-border)',
           }}
         >
-          <Lock size={14} /> Lote consolidado en el Data Warehouse: modo solo lectura (auditoría).
+          <Lock size={14} /> Flujo completado: ingesta, lectura de BETO y revisión humana terminaron y los datos ya están en el Data Warehouse. Lote en modo solo lectura (auditoría).
         </div>
       )}
 
