@@ -13,7 +13,7 @@ const TIPOS_REPORTE = [
   {
     id: 'kpis',
     titulo: 'Cuadro de Mando Integral (CMI)',
-    subtitulo: 'Indicadores estratégicos de las 4 perspectivas según alcance RBAC',
+    subtitulo: 'Indicadores estratégicos de las 4 perspectivas según tu rol',
     icono: Layers,
     color: '#2563EB',
     badge: 'ESTRATÉGICO',
@@ -62,6 +62,14 @@ const GESTIONES = ['Todas', ...Array.from(
 
 import usePaginacion from '../../hooks/usePaginacion';
 import Paginacion from '../../components/shared/Paginacion';
+
+const ROL_LEGIBLE = {
+  ADMIN: 'Administrador',
+  DIRECTOR_ACADEMICO: 'Director Académico',
+  ANALISTA_FINANCIERO: 'Analista Financiero',
+  ANALISTA_MARKETING: 'Analista de Marketing',
+  AUDITOR_CALIDAD: 'Auditor de Calidad',
+};
 
 export default function CentroReportes() {
   const { user, role } = useAuth();
@@ -142,7 +150,7 @@ export default function CentroReportes() {
       case 'DIRECTOR_ACADEMICO':
         return {
           titulo: 'Alcance Académico & Pedagógico',
-          descripcion: 'Tiene acceso a notas, promedios, alertas de riesgo y matrícula. Por Principio de Menor Privilegio (PoLP), los montos financieros en Bs. se exportan enmascarados como [RESTRINGIDO PoLP].',
+          descripcion: 'Tiene acceso a notas, promedios, alertas de riesgo y matrícula. Por seguridad, los montos financieros se exportan ocultos como [RESTRINGIDO].',
           badgeColor: '#2563EB',
         };
       case 'ANALISTA_FINANCIERO':
@@ -154,7 +162,7 @@ export default function CentroReportes() {
       case 'AUDITOR_CALIDAD':
         return {
           titulo: 'Alcance de Calidad DataOps & Auditoría',
-          descripcion: 'Tiene acceso a métricas de procesamiento ETL, confianza probabilística BETO NER, registros derivados a HITL y logs de auditoría.',
+          descripcion: 'Tiene acceso a las métricas del procesamiento de datos, la confianza de la lectura automática, los registros enviados a revisión humana y la auditoría.',
           badgeColor: '#D97706',
         };
       case 'ANALISTA_MARKETING':
@@ -194,7 +202,7 @@ export default function CentroReportes() {
                   letterSpacing: '0.05em',
                 }}
               >
-                HU-12 · GOBERNANZA & EXPORTACIÓN
+                GOBERNANZA Y EXPORTACIÓN
               </span>
               <span
                 style={{
@@ -207,7 +215,7 @@ export default function CentroReportes() {
                   color: '#2563EB',
                 }}
               >
-                RBAC: {role || 'INVITADO'}
+                Rol: {ROL_LEGIBLE[role] || 'Invitado'}
               </span>
             </div>
             <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-ink-black)', margin: '8px 0 4px 0' }}>
@@ -278,11 +286,11 @@ export default function CentroReportes() {
                 color: polpInfo.badgeColor,
               }}
             >
-              POLP ACTIVO
+              ACCESO POR ROL
             </span>
           </div>
           <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', margin: 0, lineHeight: 1.5 }}>
-            {polpInfo.descripcion} Cada exportación queda registrada en la bitácora institucional <code style={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }}>log_pipeline_ingesta</code> con etiqueta <strong style={{ color: 'var(--color-ink-black)' }}>EXPORT</strong>.
+            {polpInfo.descripcion} Cada exportación queda registrada en la bitácora de auditoría.
           </p>
         </div>
       </div>
@@ -443,9 +451,13 @@ export default function CentroReportes() {
                 <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-slate-gray)', display: 'block', marginBottom: '6px' }}>
                   Programa Académico
                 </label>
-                <select
-                  value={programa}
-                  onChange={(e) => setPrograma(e.target.value)}
+                <input
+                  type="text"
+                  list="programas-reportes"
+                  value={programa === 'Todos' ? '' : programa}
+                  onChange={(e) => setPrograma(e.target.value.trim() === '' ? 'Todos' : e.target.value)}
+                  placeholder="Todos los programas · escribe para buscar"
+                  aria-label="Programa académico"
                   style={{
                     width: '100%',
                     padding: '8px 12px',
@@ -455,11 +467,12 @@ export default function CentroReportes() {
                     color: 'var(--color-ink-black)',
                     fontSize: '13px',
                   }}
-                >
-                  {programas.map((p) => (
-                    <option key={p} value={p}>{p}</option>
+                />
+                <datalist id="programas-reportes">
+                  {programas.filter((p) => p !== 'Todos').map((p) => (
+                    <option key={p} value={p} />
                   ))}
-                </select>
+                </datalist>
               </div>
             </div>
           </div>
@@ -509,7 +522,7 @@ export default function CentroReportes() {
               Bitácora de Auditoría de Exportaciones Recientes
             </h2>
             <p style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)', margin: '4px 0 0 0' }}>
-              Registros trazables en log_pipeline_ingesta (etapa=EXPORT) con telemetría de latencia y alcance PoLP.
+              Registro de cada exportación: quién la generó, cuándo y con qué alcance, según el rol de cada usuario.
             </p>
           </div>
           <span

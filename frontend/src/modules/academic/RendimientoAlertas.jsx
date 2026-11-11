@@ -347,7 +347,7 @@ export default function RendimientoAlertas() {
           category="DIRECCIÓN ACADÉMICA & FINANCIERA · VISTA 3"
           title="Monitoreo de Reglas de Umbral y"
           italicWord="Alertas Tempranas"
-          subtitle="Auditoría determinística estricta (IF/THEN) sobre tablas de hechos consolidadas (fact_rendimiento_academico y fact_situacion_financiera) sin incertidumbre estadística individual."
+          subtitle="Alertas por reglas fijas sobre el rendimiento académico y la situación financiera consolidados, sin estimaciones estadísticas por estudiante."
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '16px', flexWrap: 'wrap' }}>
           {canRevealPii && (

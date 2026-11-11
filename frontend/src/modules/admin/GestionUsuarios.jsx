@@ -122,8 +122,8 @@ export default function GestionUsuarios() {
       <PageHeader
         category="GOBERNANZA &amp; SEGURIDAD"
         title="Gestión de Usuarios y Control"
-        italicWord="RBAC"
-        subtitle="Administración de credenciales de acceso institucional bajo el Principio de Mínimo Privilegio (PoLP) con salvaguardas anti-huérfano."
+        italicWord="de Accesos"
+        subtitle="Administración de las cuentas institucionales. Cada rol accede solo a lo que necesita y el sistema siempre conserva un administrador."
         action={
           <button
             onClick={() => setIsModalOpen(true)}
@@ -307,7 +307,7 @@ export default function GestionUsuarios() {
         }}
       >
         <Shield size={14} color="var(--color-sienna-brown)" />
-        <span>Salvaguarda anti-huérfano activa: El sistema prohíbe eliminar al último administrador registrado.</span>
+        <span>El sistema no permite eliminar al último administrador.</span>
       </div>
 
       {/* ── Modal de Creación de Usuario ────────────────────── */}

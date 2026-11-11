@@ -164,7 +164,7 @@ class TestExportReportesRBAC:
 
     def test_export_cierre_polp_segregacion(self, client):
         """
-        DIRECTOR_ACADEMICO y AUDITOR_CALIDAD exportando Cierre reciben montos financieros restringidos [RESTRINGIDO PoLP],
+        DIRECTOR_ACADEMICO y AUDITOR_CALIDAD exportando Cierre reciben montos financieros restringidos [RESTRINGIDO],
         mientras ANALISTA_FINANCIERO recibe montos expresados en Bs.
         """
         # 1. DIRECTOR_ACADEMICO
@@ -176,7 +176,7 @@ class TestExportReportesRBAC:
             ws_aca = wb_aca.active
             # Buscar en las celdas de recaudación
             valores_aca = [str(cell.value) for row in ws_aca.iter_rows() for cell in row]
-            assert any("[RESTRINGIDO PoLP]" in v for v in valores_aca)
+            assert any("[RESTRINGIDO]" in v for v in valores_aca)
             assert not any("Bs." in v for v in valores_aca)
         finally:
             app.dependency_overrides.pop(get_current_user, None)
@@ -189,7 +189,7 @@ class TestExportReportesRBAC:
             wb_aud = openpyxl.load_workbook(io.BytesIO(res_aud.content))
             ws_aud = wb_aud.active
             valores_aud = [str(cell.value) for row in ws_aud.iter_rows() for cell in row]
-            assert any("[RESTRINGIDO PoLP]" in v for v in valores_aud)
+            assert any("[RESTRINGIDO]" in v for v in valores_aud)
             assert not any("Bs." in v for v in valores_aud)
         finally:
             app.dependency_overrides.pop(get_current_user, None)
@@ -203,13 +203,13 @@ class TestExportReportesRBAC:
             ws_fin = wb_fin.active
             valores_fin = [str(cell.value) for row in ws_fin.iter_rows() for cell in row]
             assert any("Bs." in v for v in valores_fin)
-            assert not any("[RESTRINGIDO PoLP]" in v for v in valores_fin)
+            assert not any("[RESTRINGIDO]" in v for v in valores_fin)
         finally:
             app.dependency_overrides.pop(get_current_user, None)
 
     def test_export_kpis_polp_segregacion(self, client):
         """
-        DIRECTOR_ACADEMICO exportando KPIs recibe montos financieros restringidos [RESTRINGIDO PoLP],
+        DIRECTOR_ACADEMICO exportando KPIs recibe montos financieros restringidos [RESTRINGIDO],
         mientras ANALISTA_FINANCIERO ve cifras en Bs.
         """
         # DIRECTOR_ACADEMICO
@@ -220,7 +220,7 @@ class TestExportReportesRBAC:
             wb = openpyxl.load_workbook(io.BytesIO(res.content))
             ws = wb.active
             valores = [str(cell.value) for row in ws.iter_rows() for cell in row]
-            assert any("[RESTRINGIDO PoLP]" in v for v in valores)
+            assert any("[RESTRINGIDO]" in v for v in valores)
         finally:
             app.dependency_overrides.pop(get_current_user, None)
 
@@ -233,7 +233,7 @@ class TestExportReportesRBAC:
             ws = wb.active
             valores = [str(cell.value) for row in ws.iter_rows() for cell in row]
             assert any("Bs." in v for v in valores)
-            assert not any("[RESTRINGIDO PoLP]" in v for v in valores)
+            assert not any("[RESTRINGIDO]" in v for v in valores)
         finally:
             app.dependency_overrides.pop(get_current_user, None)
 

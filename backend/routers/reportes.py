@@ -352,11 +352,11 @@ def exportar_reporte(
             if current_user.role not in ("ADMIN", "ANALISTA_FINANCIERO"):
                 if a.get("tipo") in ("FINANCIERO", "RIESGO_CRUZADO") or "Bs" in metrica_val or "Bs" in mensaje_val or "Bs" in umbral_val:
                     if a.get("tipo") in ("FINANCIERO", "RIESGO_CRUZADO") or "Bs" in metrica_val:
-                        metrica_val = "[RESTRINGIDO PoLP]"
+                        metrica_val = "[RESTRINGIDO]"
                     if "Bs" in umbral_val or a.get("tipo") == "FINANCIERO":
-                        umbral_val = "[RESTRINGIDO PoLP]"
-                    mensaje_val = re.sub(r'Bs\.?\s*[\d,]+(\.\d+)?', '[RESTRINGIDO PoLP]', mensaje_val)
-                    mensaje_val = re.sub(r'deuda de\s+[\d,]+(\.\d+)?', 'deuda de [RESTRINGIDO PoLP]', mensaje_val)
+                        umbral_val = "[RESTRINGIDO]"
+                    mensaje_val = re.sub(r'Bs\.?\s*[\d,]+(\.\d+)?', '[RESTRINGIDO]', mensaje_val)
+                    mensaje_val = re.sub(r'deuda de\s+[\d,]+(\.\d+)?', 'deuda de [RESTRINGIDO]', mensaje_val)
 
             filas.append([
                 a.get("regla", ""),
@@ -381,7 +381,7 @@ def exportar_reporte(
         cabeceras = ["Perspectiva CMI", "Indicador Clave (KPI)", "Valor Calculado", "Meta / Referencia", "Estado"]
 
         # Perspectiva Financiera: solo ADMIN y ANALISTA_FINANCIERO ven montos reales.
-        # Todo otro rol ve [RESTRINGIDO PoLP] (# PoLP).
+        # Todo otro rol ve [RESTRINGIDO] (# PoLP).
         fin = cmi_data.get("financiera", {})
         if current_user.role in ("ADMIN", "ANALISTA_FINANCIERO"):
             rec_pct_val = fin.get('recaudacion_vs_meta_pct')
@@ -411,18 +411,18 @@ def exportar_reporte(
                     "Normal" if prog.get('matricula', 0) > 0 else "Sin Matrícula"
                 ])
         else:
-            filas.append(["Financiera", "Cumplimiento Recaudación vs Meta", "[RESTRINGIDO PoLP]", "100.0%", "[RESTRINGIDO PoLP]"])
-            filas.append(["Financiera", "Monto Total Recaudado (Bs)", "[RESTRINGIDO PoLP]", "[RESTRINGIDO PoLP]", "[RESTRINGIDO PoLP]"])
-            filas.append(["Financiera", "Mora Total de Cartera (%)", "[RESTRINGIDO PoLP]", "< 15.0%", "[RESTRINGIDO PoLP]"])
-            filas.append(["Financiera", "KPI Ticket Promedio Global (Bs)", "[RESTRINGIDO PoLP]", "[RESTRINGIDO PoLP]", "[RESTRINGIDO PoLP]"])
+            filas.append(["Financiera", "Cumplimiento Recaudación vs Meta", "[RESTRINGIDO]", "100.0%", "[RESTRINGIDO]"])
+            filas.append(["Financiera", "Monto Total Recaudado (Bs)", "[RESTRINGIDO]", "[RESTRINGIDO]", "[RESTRINGIDO]"])
+            filas.append(["Financiera", "Mora Total de Cartera (%)", "[RESTRINGIDO]", "< 15.0%", "[RESTRINGIDO]"])
+            filas.append(["Financiera", "KPI Ticket Promedio Global (Bs)", "[RESTRINGIDO]", "[RESTRINGIDO]", "[RESTRINGIDO]"])
 
             for prog in ticket_programas:
                 filas.append([
                     "Financiera (Ticket Prog.)",
                     f"Ticket Promedio: {prog['programa']}",
-                    "[RESTRINGIDO PoLP]",
-                    f"Rec: [RESTRINGIDO PoLP] | Mat: {prog['matricula']}",
-                    "[RESTRINGIDO PoLP]"
+                    "[RESTRINGIDO]",
+                    f"Rec: [RESTRINGIDO] | Mat: {prog['matricula']}",
+                    "[RESTRINGIDO]"
                 ])
 
         # Perspectiva Aprendizaje / Académica (Solo ADMIN y DIRECTOR_ACADEMICO)
@@ -461,8 +461,8 @@ def exportar_reporte(
         gestion_label = gestion or "2026-I"
 
         if not ticket_programas:
-            rec_str = "[RESTRINGIDO PoLP]" if current_user.role not in ("ADMIN", "ANALISTA_FINANCIERO") else "Bs. 0.00"
-            ticket_str = "[RESTRINGIDO PoLP]" if current_user.role not in ("ADMIN", "ANALISTA_FINANCIERO") else "Bs. 0.00"
+            rec_str = "[RESTRINGIDO]" if current_user.role not in ("ADMIN", "ANALISTA_FINANCIERO") else "Bs. 0.00"
+            ticket_str = "[RESTRINGIDO]" if current_user.role not in ("ADMIN", "ANALISTA_FINANCIERO") else "Bs. 0.00"
             filas.append([
                 "Consolidado General",
                 gestion_label,
@@ -473,10 +473,10 @@ def exportar_reporte(
             ])
         else:
             for prog in ticket_programas:
-                # Solo ADMIN y ANALISTA_FINANCIERO ven montos financieros. Todo otro rol ve [RESTRINGIDO PoLP] (# PoLP).
+                # Solo ADMIN y ANALISTA_FINANCIERO ven montos financieros. Todo otro rol ve [RESTRINGIDO] (# PoLP).
                 if current_user.role not in ("ADMIN", "ANALISTA_FINANCIERO"):
-                    rec_str = "[RESTRINGIDO PoLP]"
-                    ticket_str = "[RESTRINGIDO PoLP]"
+                    rec_str = "[RESTRINGIDO]"
+                    ticket_str = "[RESTRINGIDO]"
                 else:
                     rec_str = f"Bs. {prog['recaudacion_bs']:,.2f}" if prog.get('recaudacion_bs') is not None else "Bs. 0.00"
                     ticket_str = f"Bs. {prog['ticket_promedio_bs']:,.2f}" if prog.get('ticket_promedio_bs') is not None else "Bs. 0.00"

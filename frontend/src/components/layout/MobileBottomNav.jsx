@@ -28,7 +28,7 @@ export default function MobileBottomNav({ onOpenMenu, onCloseMenu, isMenuOpen = 
         { to: '/dashboard', label: 'CMI', icon: LayoutDashboard, matchPrefix: '/dashboard' },
         { to: '/dataops/ingesta', label: 'Ingesta', icon: FileUp, matchPrefix: '/dataops/ingesta' },
         { to: '/dataops/beto', label: 'BETO', icon: Wand2, matchPrefix: '/dataops/beto' },
-        { to: '/dataops/revision', label: 'HITL', icon: CheckSquare, matchPrefix: '/dataops/revision' },
+        { to: '/dataops/revision', label: 'Revisión', icon: CheckSquare, matchPrefix: '/dataops/revision' },
         { to: '/ajustes', label: 'Ajustes', icon: SlidersHorizontal, matchPrefix: '/ajustes' },
       ];
     }

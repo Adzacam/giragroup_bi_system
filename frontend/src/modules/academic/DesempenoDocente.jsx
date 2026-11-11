@@ -64,7 +64,7 @@ export default function DesempenoDocente() {
           category="DIRECCIÓN ACADÉMICA · CLAUSTRO DE POSGRADO"
           title="Evaluación y Desempeño"
           italicWord="Docente"
-          subtitle="Claustro académico registrado en el Data Warehouse (dim_docente), área de especialidad y seguimiento pedagógico."
+          subtitle="Claustro académico registrado, con su área de especialidad y seguimiento pedagógico."
         />
         <button
           type="button"
@@ -103,14 +103,14 @@ export default function DesempenoDocente() {
           label="Docentes Registrados"
           number={String(docentes.length)}
           numberSuffix=" docentes"
-          sublabel="Claustro activo en la dimensión dim_docente"
+          sublabel="Docentes activos en el claustro"
           badgeText="Verificado"
           badgeType="neutral"
         />
         <KpiCard
           label="Evaluaciones Registradas"
           number={String(totalEvaluaciones)}
-          sublabel="Respuestas en fact_evaluacion_docente"
+          sublabel="Respuestas de evaluación docente"
           badgeText={totalEvaluaciones > 0 ? 'Con datos' : 'Sin datos'}
           badgeType="neutral"
         />

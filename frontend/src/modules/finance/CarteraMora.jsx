@@ -103,7 +103,7 @@ export default function CarteraMora() {
           category="ANÁLISIS FINANCIERO · DATOS REALES DW"
           title="Gestión de Cartera, Mora y"
           italicWord="Riesgo"
-          subtitle="Control de cuentas por cobrar vencidas consolidado desde fact_situacion_financiera y acoplado al Motor Determinístico de Alertas Tempranas."
+          subtitle="Control de las cuentas por cobrar vencidas, vinculado a las alertas tempranas."
         />
         <div style={{ display: 'flex', gap: '10px', marginTop: '18px' }}>
           <button
@@ -172,7 +172,7 @@ export default function CarteraMora() {
           numberPrefix="Bs. "
           number={Number(resumenFin.saldoVencidoBs || 0).toLocaleString()}
           numberSuffix=""
-          sublabel="Total deuda consolidada en fact_situacion_financiera"
+          sublabel="Deuda total consolidada"
           badgeText="Cartera Vencida"
           badgeType="warning"
         />

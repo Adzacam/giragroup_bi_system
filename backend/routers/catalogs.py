@@ -162,12 +162,15 @@ def delete_docente(
     summary="Listar módulos curriculares y programas"
 )
 def get_modulos(
-    q: Optional[str] = Query(None, description="Búsqueda por nombre o código POS", max_length=100),
+    q: Optional[str] = Query(None, description="Búsqueda por nombre, código POS o programa", max_length=100),
+    gestion: Optional[int] = Query(None, ge=2000, le=2100, description="Solo módulos con actividad en esa gestión"),
+    pagina: Optional[int] = Query(None, ge=1),
+    por_pagina: Optional[int] = Query(None, ge=1, le=100, description="Activa la paginación en el servidor"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["AUDITOR_CALIDAD", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "ADMIN", "ANALISTA_MARKETING"]))
 ):
     service = CatalogService(db)
-    return service.listar_modulos(busqueda=q)
+    return service.listar_modulos(busqueda=q, gestion=gestion, pagina=pagina, por_pagina=por_pagina)
 
 
 @router.post(

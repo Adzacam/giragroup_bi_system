@@ -82,6 +82,8 @@ class ModulosListResponse(BaseModel):
     status: str = "success"
     total: int
     data: List[ModuloItem]
+    resumen: Optional[Dict[str, int]] = None
+    gestiones: Optional[List[int]] = None
 
 
 class InstitucionItem(BaseModel):

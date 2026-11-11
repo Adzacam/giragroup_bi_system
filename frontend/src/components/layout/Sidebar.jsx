@@ -14,7 +14,7 @@ const ROLE_MENUS = {
     { id: 'ingesta',          path: '/dataops/ingesta',          label: '① Ingesta de Archivos',            icon: FileUp },
     { id: 'texto',            path: '/dataops/texto',            label: '② Texto Plano Estructurado',        icon: FileText },
     { id: 'beto',             path: '/dataops/beto',             label: '③ Lectura de BETO',                 icon: Wand2 },
-    { id: 'revision',         path: '/dataops/revision',         label: '④ Revisión Humana (HITL)',         icon: CheckSquare },
+    { id: 'revision',         path: '/dataops/revision',         label: '④ Revisión Humana',         icon: CheckSquare },
     { id: 'datos-maestros',   path: '/dataops/datos-maestros',   label: 'Datos Maestros & Catálogo',        icon: GitMerge },
     { id: 'auditoria',        path: '/admin/auditoria',          label: 'Auditoría del Sistema',             icon: ShieldCheck },
   ],
@@ -45,7 +45,7 @@ const ADMIN_OPERATIVE_CLUSTERS = [
       { path: '/dataops/ingesta',          label: '① Ingesta de Archivos',            icon: FileUp },
       { path: '/dataops/texto',            label: '② Texto Plano Estructurado',        icon: FileText },
       { path: '/dataops/beto',             label: '③ Lectura de BETO',                 icon: Wand2 },
-      { path: '/dataops/revision',         label: '④ Revisión Humana (HITL)',         icon: CheckSquare },
+      { path: '/dataops/revision',         label: '④ Revisión Humana',         icon: CheckSquare },
       { path: '/dataops/datos-maestros',   label: 'Datos Maestros & Catálogo',        icon: GitMerge },
     ],
   },
@@ -475,12 +475,12 @@ export default function Sidebar({ collapsed, isOpen, onClose, onToggle }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--color-slate-gray)', minWidth: 0 }}>
               <Activity size={13} color="var(--color-alert-green)" style={{ flexShrink: 0 }} />
               <div style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                <div>PostgreSQL: <strong style={{ color: 'var(--color-alert-green)' }}>Conectado</strong></div>
-                <div style={{ fontSize: '10px', color: 'var(--color-ash-gray)' }}>PoLP Enforced · JWT Secure</div>
+                <div>Base de datos: <strong style={{ color: 'var(--color-alert-green)' }}>Conectada</strong></div>
+                <div style={{ fontSize: '10px', color: 'var(--color-ash-gray)' }}>Acceso protegido por rol</div>
               </div>
             </div>
           ) : (
-            <Activity size={15} color="var(--color-alert-green)" style={{ margin: '0 auto', display: 'block' }} title="PostgreSQL Conectado (PoLP Enforced)" />
+            <Activity size={15} color="var(--color-alert-green)" style={{ margin: '0 auto', display: 'block' }} title="Base de datos conectada. Acceso protegido por rol" />
           )}
         </div>
       </div>

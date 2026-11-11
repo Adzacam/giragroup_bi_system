@@ -5,13 +5,16 @@ Servicio de consulta para catálogos dimensionales: Estudiantes, Docentes y Mód
 Aplica filtrado por Mínimo Privilegio (PoLP) en la vista de detalle.
 """
 
+from datetime import date
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session, load_only
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, select
 
 from models.dim_estudiante import DimEstudiante
 from models.dim_docente import DimDocente
 from models.dim_modulo import DimModulo
+from models.dim_tiempo import DimTiempo
+from models.fact_marketing import FactMarketing
 from models.fact_evaluacion import FactEvaluacionDocente
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
@@ -183,30 +186,77 @@ class CatalogService:
             "data": data
         }
 
-    def listar_modulos(self, busqueda: Optional[str] = None, limit: int = 100) -> Dict[str, Any]:
-        query = _apply_options(
-            self.db.query(DimModulo),
-            load_only(
-                DimModulo.id_modulo,
-                DimModulo.nombre_modulo,
-                DimModulo.nombre_institucion,
-                DimModulo.programa,
-                DimModulo.pos_code,
-            ),
-        )
+    @staticmethod
+    def _filtrar_modulos(query, busqueda: Optional[str], gestion: Optional[int]):
+        """Búsqueda por nombre, código POS o programa y, opcionalmente, por gestión con actividad registrada."""
         if busqueda:
             termino = f"%{busqueda.strip().lower()}%"
             query = query.filter(
                 or_(
                     func.lower(DimModulo.nombre_modulo).like(termino),
-                    func.lower(DimModulo.pos_code).like(termino)
+                    func.lower(DimModulo.pos_code).like(termino),
+                    func.lower(DimModulo.programa).like(termino),
                 )
             )
-        modulos = query.order_by(DimModulo.nombre_modulo).limit(limit).all()
+        if gestion:
+            def con_actividad(hecho):
+                return (select(hecho.id_modulo)
+                        .join(DimTiempo, hecho.id_tiempo == DimTiempo.id_tiempo)
+                        .where(DimTiempo.gestion == gestion))
+            query = query.filter(or_(
+                DimModulo.id_modulo.in_(con_actividad(FactMarketing)),
+                DimModulo.id_modulo.in_(con_actividad(FactRendimientoAcademico)),
+            ))
+        return query
+
+    def listar_modulos(
+        self,
+        busqueda: Optional[str] = None,
+        limit: int = 100,
+        gestion: Optional[int] = None,
+        pagina: Optional[int] = None,
+        por_pagina: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """Sin `por_pagina` devuelve hasta `limit` módulos (uso de los demás módulos).
+        Con `por_pagina` pagina en el servidor y agrega totales reales y las gestiones disponibles."""
+        filtrada = self._filtrar_modulos(self.db.query(DimModulo), busqueda, gestion)
+        columnas = load_only(
+            DimModulo.id_modulo,
+            DimModulo.nombre_modulo,
+            DimModulo.nombre_institucion,
+            DimModulo.programa,
+            DimModulo.pos_code,
+        )
+        orden = (DimModulo.nombre_modulo, DimModulo.id_modulo)
+
+        if not por_pagina:
+            modulos = _apply_options(filtrada, columnas).order_by(*orden).limit(limit).all()
+            return {"status": "success", "total": len(modulos), "data": modulos}
+
+        pagina = max(1, pagina or 1)
+        total = filtrada.with_entities(func.count(DimModulo.id_modulo)).scalar() or 0
+        instituciones = filtrada.with_entities(func.count(func.distinct(DimModulo.nombre_institucion))).scalar() or 0
+        con_codigo = (
+            filtrada.filter(DimModulo.pos_code.isnot(None), DimModulo.pos_code != "")
+            .with_entities(func.count(DimModulo.id_modulo)).scalar() or 0
+        )
+        modulos = (
+            _apply_options(filtrada, columnas).order_by(*orden)
+            .offset((pagina - 1) * por_pagina).limit(por_pagina).all()
+        )
+        # Solo gestiones con actividad registrada y no posteriores al año en curso (fechas fuera de rango)
+        con_actividad = select(FactMarketing.id_tiempo).union(select(FactRendimientoAcademico.id_tiempo))
+        gestiones = [
+            g for (g,) in self.db.query(DimTiempo.gestion)
+            .filter(DimTiempo.id_tiempo.in_(con_actividad), DimTiempo.gestion <= date.today().year)
+            .distinct().order_by(DimTiempo.gestion).all() if g
+        ]
         return {
             "status": "success",
-            "total": len(modulos),
-            "data": modulos
+            "total": total,
+            "data": modulos,
+            "resumen": {"instituciones": instituciones, "con_codigo_pos": con_codigo},
+            "gestiones": gestiones,
         }
 
 

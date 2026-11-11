@@ -46,7 +46,7 @@ export default function CatalogosMaestros() {
     placeholderData: keepPreviousData,
   });
 
-  const error = queryError ? 'No se pudieron recuperar los catálogos dimensionales desde PostgreSQL.' : null;
+  const error = queryError ? 'No se pudieron cargar los catálogos. Intenta actualizar la página.' : null;
   const modulosList = catalogData?.modulos || [];
   const docentesList = catalogData?.docentes || [];
   const conceptosList = catalogData?.conceptos || [];
@@ -114,7 +114,7 @@ export default function CatalogosMaestros() {
         category="DIMENSIONES CANÓNICAS POSTGRESQL"
         title="Catálogos Maestros"
         italicWord="Dimensionales"
-        subtitle="Mantenimiento y sincronización de tablas dimensionales canónicas (dim_modulo, dim_docente, cat_conceptos_financieros) que alimentan el esquema constelación."
+        subtitle="Mantenimiento de los catálogos maestros de módulos, docentes y conceptos financieros que alimentan todos los reportes."
         action={
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
@@ -376,7 +376,7 @@ export default function CatalogosMaestros() {
                   Cancelar
                 </button>
                 <button type="submit" className="btn-pill-dark" disabled={saving}>
-                  {saving ? 'Guardando...' : 'Guardar en PostgreSQL'}
+                  {saving ? 'Guardando...' : 'Guardar registro'}
                 </button>
               </div>
             </form>

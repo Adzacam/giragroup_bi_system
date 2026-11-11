@@ -903,7 +903,7 @@ export default function CuadroMandoIntegral() {
                   <Line data={chartCaso4Data} options={defaultChartOptions} />
                 ) : (
                   <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
-                    {isLoadingMacro ? 'Cargando tendencia anual OLS...' : (macroData?.sin_datos?.caso4 || macroData?.caso4_metas_anuales?.nota_metodologica || 'Sin recaudación anual en el Data Warehouse.')}
+                    {isLoadingMacro ? 'Cargando tendencia anual...' : (macroData?.sin_datos?.caso4 || macroData?.caso4_metas_anuales?.nota_metodologica || 'Sin recaudación anual en el Data Warehouse.')}
                   </div>
                 )}
               </div>

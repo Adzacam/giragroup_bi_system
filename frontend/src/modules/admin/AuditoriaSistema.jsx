@@ -1604,7 +1604,7 @@ export default function AuditoriaSistema() {
                   </div>
 
                   <div style={{ padding: '12px', borderRadius: '12px', backgroundColor: '#dcfce7', border: '1px solid #86efac', textAlign: 'center' }}>
-                    <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>CARGADOS AL DW</div>
+                    <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>CARGADOS AL DATA WAREHOUSE</div>
                     <div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--color-alert-green)', marginTop: '2px' }}>
                       {pipelineResult.hechos_cargados_dw}
                     </div>
