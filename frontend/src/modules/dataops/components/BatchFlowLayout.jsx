@@ -13,6 +13,7 @@ export default function BatchFlowLayout({
   currentStep = 1,
   selectedDocId = null,
   onSelectDocId = null,
+  showReadOnlyContent = false,
   children,
 }) {
   const { id } = useParams();
@@ -56,7 +57,7 @@ export default function BatchFlowLayout({
       />
 
       {/* Barra de pestañas por archivo dentro del lote para pasos ②, ③ y ④ (#17) */}
-      {!readOnly && currentStep >= 2 && archivosLote.length > 0 && typeof onSelectDocId === 'function' && (
+      {(!readOnly || showReadOnlyContent) && currentStep >= 2 && archivosLote.length > 0 && typeof onSelectDocId === 'function' && (
         <div
           className="floating-artifact"
           style={{
@@ -70,10 +71,10 @@ export default function BatchFlowLayout({
           }}
         >
           <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-slate-gray)', display: 'inline-flex', alignItems: 'center', gap: '6px', marginRight: '4px', whiteSpace: 'nowrap' }}>
-            <Layers size={14} color="#2563eb" /> Archivos del lote:
+            <Layers size={14} color="var(--color-gira-gold)" /> Archivos del lote:
           </span>
 
-          <button
+          <Button variant="ghost"
             type="button"
             onClick={() => onSelectDocId(null)}
             style={{
@@ -82,20 +83,20 @@ export default function BatchFlowLayout({
               fontSize: '12px',
               fontWeight: selectedDocId === null ? '700' : '600',
               border: '1px solid',
-              borderColor: selectedDocId === null ? '#2563eb' : 'var(--color-border)',
-              backgroundColor: selectedDocId === null ? '#2563eb' : 'var(--color-mist-gray)',
-              color: selectedDocId === null ? '#ffffff' : 'var(--color-ink-black)',
+              borderColor: selectedDocId === null ? 'var(--color-gira-gold)' : 'var(--color-border)',
+              backgroundColor: selectedDocId === null ? 'var(--color-gira-gold)' : 'var(--color-mist-gray)',
+              color: selectedDocId === null ? 'var(--color-paper-white)' : 'var(--color-ink-black)',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
             }}
           >
             Todos los archivos ({archivosLote.length})
-          </button>
+          </Button>
 
           {archivosLote.map((arc) => {
             const isSelected = Number(selectedDocId) === Number(arc.id_documento);
             return (
-              <button
+              <Button variant="ghost"
                 key={arc.id_documento}
                 type="button"
                 onClick={() => onSelectDocId(arc.id_documento)}
@@ -105,7 +106,7 @@ export default function BatchFlowLayout({
                   fontSize: '12px',
                   fontWeight: isSelected ? '700' : '600',
                   border: '1px solid',
-                  borderColor: isSelected ? '#2563eb' : 'var(--color-border)',
+                  borderColor: isSelected ? 'var(--color-gira-gold)' : 'var(--color-border)',
                   backgroundColor: isSelected ? 'var(--dataops-info-bg)' : 'var(--color-paper-white)',
                   color: isSelected ? 'var(--dataops-info-text)' : 'var(--color-slate-gray)',
                   cursor: 'pointer',
@@ -124,9 +125,9 @@ export default function BatchFlowLayout({
                   backgroundColor: 'var(--color-mist-gray)',
                   color: 'var(--color-ink-black)',
                 }}>
-                  {arc.tipo_fuente} · {arc.total_registros} reg.
+                  {arc.total_registros?.toLocaleString('es-BO') ?? 'Sin dato'} registros
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -136,7 +137,7 @@ export default function BatchFlowLayout({
         {targetId && isPending ? <p className="floating-artifact" role="status" style={{ padding: 24 }}>Comprobando el estado del lote…</p>
           : targetId && error ? <div className="floating-artifact" role="alert" style={{ padding: 24 }}>
             <p>No se pudo comprobar el estado del lote.</p><Button variant="ghost" onClick={() => refetch()}>Reintentar</Button>
-          </div> : readOnly ? (
+          </div> : readOnly && !showReadOnlyContent ? (
           <div className="floating-artifact" role="status" style={{ padding: '48px 24px', textAlign: 'center' }}>
             <CheckCircle2 size={48} color="var(--dataops-success-text)" style={{ margin: '0 auto 16px auto', display: 'block' }} />
             <h3 className="serif-heading" style={{ fontSize: '20px', margin: '0 0 8px 0', color: 'var(--color-ink-black)' }}>
@@ -149,7 +150,13 @@ export default function BatchFlowLayout({
               <PlusCircle size={15} /> Iniciar nuevo lote
             </Button>
           </div>
-        ) : children}
+        ) : <>
+          {readOnly && showReadOnlyContent && <div className="dataops-banner-info" role="status" style={{ marginBottom: 20 }}>
+            <span>Lote consolidado. Puedes consultar el texto; los datos no se pueden modificar.</span>
+            <Button variant="ghost" onClick={handleNuevoLote}>Iniciar nuevo lote</Button>
+          </div>}
+          {children}
+        </>}
       </div>
     </div>
   );

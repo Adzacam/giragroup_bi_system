@@ -291,12 +291,10 @@ export const dataopsApi = {
   /**
    * Paso ②: Obtiene el mapeo fila origen vs oración que lee BETO (#17)
    */
-  getLoteRawVsText: async (idLote, docId = null) => {
-    return cachedGet(`lote_raw_vs_text_${idLote}_${docId || ''}`, async () => {
-      const params = docId ? { doc_id: docId } : {};
-      const res = await client.get(`${BASE_URL}/lote/${idLote}/raw-vs-text`, { params });
-      return res.data;
-    }, 60_000);
+  getLoteRawVsText: async (idLote, docId = null, page = 1) => {
+    const params = { page, page_size: 5, ...(docId ? { doc_id: docId } : {}) };
+    const res = await client.get(`${BASE_URL}/lote/${idLote}/raw-vs-text`, { params });
+    return res.data;
   },
 
   /**

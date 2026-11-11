@@ -6,6 +6,7 @@ export const GLOSARIO_DATAOPS = {
     ['Lote', 'Conjunto de archivos que se cargan y se procesan juntos. Un lote avanza por los cuatro pasos y se cierra al consolidarlo.'],
     ['① Ingesta', 'Se sube el archivo y el sistema revisa su estructura, su tipo (actas, cobranzas, admisiones) y que no esté repetido.'],
     ['② Texto plano', 'Cada fila del archivo se convierte en una oración ordenada que el modelo puede leer.'],
+    ['Privacidad en el paso ②', 'El servidor oculta nombres, cédula, celular, correo, NIT, dirección y fecha de nacimiento antes de mostrar el texto. Los códigos que repiten la cédula también se protegen.'],
     ['③ Lectura de BETO', 'El modelo identifica estudiante, módulo, nota y montos en cada fila y calcula qué tan seguro está.'],
     ['④ Revisión humana', 'Una persona decide los casos en que el modelo no estuvo lo bastante seguro.'],
     ['Índice de confianza', 'Porcentaje de seguridad del modelo sobre cada registro, de 0 a 100.'],

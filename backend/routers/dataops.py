@@ -2776,152 +2776,17 @@ def get_lote_raw_vs_text(
     id_lote: str,
     doc_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(5, ge=1, le=5),
 ):
-    """
-    Paso ②: Mapeo interactivo Fila original -> Oración que lee BETO.
-    Soporta navegación multi-archivo mediante pestañas por `doc_id` o lote completo (#17).
-    """
-    lote_obj, docs_lote, docs_filtrados = _resolver_documentos_lote(db, id_lote, doc_id_filter=doc_id)
-    if not docs_lote:
-        raise HTTPException(status_code=404, detail=f"Lote con ID {id_lote} no encontrado.")
-
-    doc_map = {d.id_documento: d for d in docs_filtrados}
-    target_doc_ids = list(doc_map.keys())
-    stg_records = (
-        db.query(StagingRegistroCrudo)
-        .filter(
-            StagingRegistroCrudo.id_documento.in_(target_doc_ids),
-            StagingRegistroCrudo.es_ruido == False,
-        )
-        .order_by(StagingRegistroCrudo.id.asc())
-        .all()
-        if target_doc_ids
-        else []
-    )
-
-    items = []
-    line_counter = 1
-    total_omitidas = 0
-    alertas = []
-
-    diagnostico_global = {}
-    chips_global = {}
-    origen_global = "GSHEETS_ACTA_NOTAS"
-    rango_fechas_global = "2024–2026 (Auto)"
-
-    for stg in stg_records:
-        orig_doc = doc_map.get(stg.id_documento)
-        payload = stg.payload_json or {}
-        if isinstance(payload, str):
-            try:
-                payload = json.loads(payload)
-            except Exception:
-                payload = {}
-
-        stg_diag = payload.get("diagnostico_estructural") or {}
-        stg_chips = payload.get("chips_catalogo") or {}
-        stg_origen = payload.get("origen_detectado") or (orig_doc.tipo_fuente if orig_doc else "GSHEETS_ACTA_NOTAS")
-        stg_rango = payload.get("rango_fechas") or (orig_doc.periodo if orig_doc else "2024–2026 (Auto)")
-
-        if stg_diag and not diagnostico_global:
-            diagnostico_global = stg_diag
-        if stg_chips and not chips_global:
-            chips_global = stg_chips
-        if stg_origen:
-            origen_global = stg_origen
-        if stg_rango:
-            rango_fechas_global = stg_rango
-
-        raw_text = (stg.texto_plano or "").strip()
-        lines = [l.strip() for l in raw_text.split("\n") if l.strip()]
-        if not lines:
-            total_omitidas += 1
-            continue
-
-        for line in lines:
-            cols = [c.strip() for c in line.split("|")] if "|" in line else [c.strip() for c in line.split(",")]
-            sentence = line
-            if len(cols) >= 3 and ":" not in line:
-                sentence = f"{cols[0]}, CI {cols[1] if len(cols) > 1 else ''}, {cols[2] if len(cols) > 2 else ''}"
-                if len(cols) >= 4:
-                    sentence += f", nota {cols[3]}"
-
-            item_alert = None
-            if "?" in line:
-                item_alert = "Carácter dudoso o ilegible detectado (?)"
-                alertas.append({"line": line_counter, "motivo": item_alert, "archivo": orig_doc.nombre_archivo if orig_doc else ""})
-            elif len(cols) < 2:
-                item_alert = "Fila con menos columnas de las esperadas"
-                alertas.append({"line": line_counter, "motivo": item_alert, "archivo": orig_doc.nombre_archivo if orig_doc else ""})
-
-            # Chips canónicos si el registro o lote los posee
-            chips_item = stg_chips or {
-                "programa_cat": None,
-                "modulo_cat": None,
-                "precio_base_cat": None,
-                "fecha_detectada": stg_rango or None
-            }
-
-            items.append({
-                "line_number": line_counter,
-                "stg_id": stg.id,
-                "id_documento": stg.id_documento,
-                "nombre_archivo": orig_doc.nombre_archivo if orig_doc else f"Archivo_{stg.id_documento}",
-                "tipo_fuente": orig_doc.tipo_fuente if orig_doc else "ACTA",
-                "origen_detectado": stg_origen,
-                "tipo_escala": orig_doc.tipo_escala if orig_doc else None,
-                "fila_original": cols if len(cols) > 1 else [line],
-                "fila_original_raw": line,
-                "oracion_beto": sentence,
-                "texto_crudo": sentence,
-                "alerta": item_alert,
-                "chips": chips_item,
-                "rango_fechas": stg_rango
-            })
-            line_counter += 1
-
-    # Estructura limpia si el lote no tiene diagnóstico específico aún
-    if not diagnostico_global:
-        diagnostico_global = {
-            "celdas_combinadas": [],
-            "fila_cabecera_desplazada": None,
-            "encabezados_multinivel_aplanados": 0,
-            "filas_subtotales_descartadas": 0,
-            "advertencias_estructurales": [],
-            "columnas_dinamicas": [],
-            "fechas_reconocidas": [],
-            "rango_fechas": rango_fechas_global if rango_fechas_global != "2024–2026 (Auto)" else None,
-            "origen_detectado": origen_global,
-            "mini_grid": []
-        }
-
-    if not chips_global:
-        chips_global = {
-            "programa_cat": None,
-            "modulo_cat": None,
-            "precio_base_cat": None,
-            "fecha_detectada": rango_fechas_global if rango_fechas_global != "2024–2026 (Auto)" else None
-        }
-
-    archivos_tabs = _serializar_archivos_lote(db, docs_lote)
-    return {
-        "status": "success",
-        "id_lote": lote_obj.id_lote if lote_obj else None,
-        "id_documento": doc_id or (docs_filtrados[0].id_documento if docs_filtrados else None),
-        "archivos": archivos_tabs,
-        "kpis": {
-            "filas_leidas": len(items),
-            "filas_omitidas": total_omitidas,
-            "columnas_detectadas": len(diagnostico_global.get("columnas_dinamicas", [])) or 5,
-            "total_alertas": len(alertas),
-        },
-        "alertas": alertas[:15],
-        "diagnostico_estructural": diagnostico_global,
-        "chips_catalogo": chips_global,
-        "origen_detectado": origen_global,
-        "rango_fechas": rango_fechas_global,
-        "registros": items,
-    }
+    """Paso ②: cinco filas protegidas por página, sin ejecutar inferencia."""
+    from services.texto_preparado_service import obtener_texto_preparado
+    lote, docs, filtrados = _resolver_documentos_lote(db, id_lote, doc_id_filter=doc_id)
+    if not docs or (doc_id is not None and doc_id not in {d.id_documento for d in docs}):
+        raise HTTPException(status_code=404, detail="El lote o el archivo seleccionado no existe en este lote.")
+    resultado = obtener_texto_preparado(db, filtrados, page=page, page_size=page_size)
+    resultado.update({"id_lote": lote.id_lote if lote else None, "id_documento": doc_id})
+    return resultado
 
 
 @router.get("/PlainText/{id_lote}")
@@ -2929,12 +2794,11 @@ def get_lote_plain_text_alias(
     id_lote: str,
     doc_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(5, ge=1, le=5),
 ):
-    """
-    Endpoint compatible para obtener el texto plano estructurado,
-    diagnóstico de aplanamiento asimétrico y chips pre-etiquetados con el Catálogo.
-    """
-    return get_lote_raw_vs_text(id_lote=id_lote, doc_id=doc_id, db=db)
+    """Alias del paso ②: conserva la misma paginación y protección."""
+    return get_lote_raw_vs_text(id_lote=id_lote, doc_id=doc_id, db=db, page=page, page_size=page_size)
 
 
 @router.get("/lote/{id_lote}/beto-reading")

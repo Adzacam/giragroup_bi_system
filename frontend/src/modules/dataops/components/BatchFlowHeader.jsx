@@ -137,7 +137,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-ink-black)', fontFamily: 'var(--font-mono)' }}>
-              {id_lote ? `Lote #${id_lote}: ` : 'Lote: '}{nombre_archivo}
+              {id_lote && !nombre_archivo.startsWith(`Lote #${id_lote}`) ? `Lote #${id_lote}: ` : ''}{nombre_archivo}
             </span>
             <span style={{ color: 'var(--color-border)' }}>·</span>
             <span style={{ fontSize: '13px', color: 'var(--color-slate-gray)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -145,7 +145,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
             </span>
             <span style={{ color: 'var(--color-border)' }}>·</span>
             <span style={{ fontSize: '13px', color: 'var(--color-slate-gray)' }}>
-              {tipo_fuente_label}
+              {tipo_fuente_label?.startsWith('Multi-fuente') ? 'Varios tipos de archivo' : tipo_fuente_label}
             </span>
             <span style={{ color: 'var(--color-border)' }}>·</span>
             <span style={{
