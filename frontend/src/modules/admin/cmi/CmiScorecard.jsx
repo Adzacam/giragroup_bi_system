@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { ArrowUp, ArrowDown, Minus, ChevronUp } from 'lucide-react';
 import cmiApi from '../../../api/cmiApi';
+import CmiDetalleKpi from './CmiDetalleKpi';
 import { SEMAFORO, fmtValor, fmtDelta, bandaIndice, MAPA_ESTRATEGICO } from './cmiFormat';
 import './cmi.css';
 
@@ -123,12 +124,15 @@ function avance(kpi) {
   return valor > 0 && meta > 0 ? Math.max(0, Math.min(1, meta / valor)) : 0;
 }
 
-function TarjetaKpi({ kpi }) {
+function TarjetaKpi({ kpi, onAbrir }) {
   const sem = SEMAFORO[kpi.semaforo] || SEMAFORO.SIN_UMBRAL;
   const sinDato = kpi.valor === null;
   const pct = avance(kpi);
   return (
-    <article className="cmi-card cmi-kpi" aria-label={`${kpi.nombre}: ${fmtValor(kpi.valor, kpi.unidad)}, ${sinDato ? 'sin dato' : sem.label}`}>
+    <article className="cmi-card cmi-kpi" role="button" tabIndex={0}
+      onClick={() => onAbrir(kpi.codigo)}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onAbrir(kpi.codigo))}
+      aria-label={`${kpi.nombre}: ${fmtValor(kpi.valor, kpi.unidad)}, ${sinDato ? 'sin dato' : sem.label}`}>
       <div className="cmi-kpi-top">
         <div style={{ minWidth: 0 }}>
           <div className="cmi-kpi-code">{kpi.codigo}</div>
@@ -156,11 +160,12 @@ function TarjetaKpi({ kpi }) {
         {kpi.valor_anterior !== null && <span>Anterior {fmtValor(kpi.valor_anterior, kpi.unidad, { compacto: true })}</span>}
       </div>
       {kpi.descripcion && <p className="cmi-kpi-desc">{kpi.descripcion}</p>}
+      <span className="cmi-kpi-ver">Ver evolución</span>
     </article>
   );
 }
 
-function SeccionPerspectiva({ p }) {
+function SeccionPerspectiva({ p, onAbrir }) {
   const banda = bandaIndice(p.indice);
   return (
     <section className="cmi-section" id={`cmi-${p.codigo}`} aria-labelledby={`cmi-h-${p.codigo}`}>
@@ -178,7 +183,7 @@ function SeccionPerspectiva({ p }) {
       </header>
       {p.kpis.length === 0
         ? <div className="cmi-card cmi-empty">No hay indicadores activos en esta perspectiva.</div>
-        : <div className="cmi-kpis">{p.kpis.map((k) => <TarjetaKpi key={k.codigo} kpi={k} />)}</div>}
+        : <div className="cmi-kpis">{p.kpis.map((k) => <TarjetaKpi key={k.codigo} kpi={k} onAbrir={onAbrir} />)}</div>}
     </section>
   );
 }
@@ -186,6 +191,7 @@ function SeccionPerspectiva({ p }) {
 export default function CmiScorecard() {
   const [gestion, setGestion] = useState(null);
   const [activa, setActiva] = useState(null);
+  const [detalle, setDetalle] = useState(null);
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['cmi', 'scorecard', gestion],
@@ -244,7 +250,8 @@ export default function CmiScorecard() {
         <MapaEstrategico perspectivas={data.perspectivas} activa={activa} onSelect={irA} />
       </div>
 
-      {data.perspectivas.map((p) => <SeccionPerspectiva key={p.codigo} p={p} />)}
+      {data.perspectivas.map((p) => <SeccionPerspectiva key={p.codigo} p={p} onAbrir={setDetalle} />)}
+      {detalle && <CmiDetalleKpi codigo={detalle} onClose={() => setDetalle(null)} />}
     </div>
   );
 }

@@ -90,6 +90,29 @@ def get_scorecard(
     )
 
 
+@router.get("/kpis/{codigo}/historial", summary="Evolución de un indicador por gestión (detalle del scorecard)")
+def get_historial_kpi(
+    codigo: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_roles(list(VISIBILIDAD))),
+):
+    permitidas = sorted(VISIBILIDAD[user.role])
+    filas = _filas(db, """
+        SELECT gestion, perspectiva, nombre, descripcion, unidad, sentido, valor, meta,
+               umbral_verde, umbral_ambar, semaforo
+        FROM bi.vw_cmi_scorecard
+        WHERE codigo = :c AND perspectiva = ANY(:p)
+        ORDER BY gestion""", {"c": codigo, "p": permitidas})
+    if not filas:
+        raise HTTPException(status_code=404, detail="Indicador no encontrado o sin acceso para tu rol.")
+    ultima = filas[-1]
+    return {
+        "codigo": codigo, "nombre": ultima["nombre"], "descripcion": ultima["descripcion"],
+        "unidad": ultima["unidad"], "sentido": ultima["sentido"],
+        "serie": [{k: f[k] for k in ("gestion", "valor", "meta", "semaforo")} for f in filas],
+    }
+
+
 # ── Configuración (solo ADMIN) ────────────────────────────────────────────────
 
 @router.get("/config", summary="Perspectivas e indicadores configurables del CMI")

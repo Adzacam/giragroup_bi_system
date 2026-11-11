@@ -308,3 +308,15 @@
   .cmi-pbi-hero { grid-template-columns: 1fr; }
   .cmi-pbi-grid, .cmi-pbi-form { grid-template-columns: 1fr; }
 }
+
+/* Detalle de indicador (drilldown) */
+.cmi-kpi[role="button"] { cursor: pointer; transition: border-color .2s, transform .1s; }
+.cmi-kpi[role="button"]:hover { border-color: var(--color-gira-gold); }
+.cmi-kpi[role="button"]:active { transform: scale(0.99); }
+.cmi-kpi[role="button"]:focus-visible { outline: 2px solid var(--color-gira-gold); outline-offset: 2px; }
+.cmi-kpi-ver { font-size: 12px; color: var(--cmi-muted); }
+.cmi-modal-fondo { position: fixed; inset: 0; z-index: 1000; background: rgba(12, 14, 18, 0.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.cmi-modal { position: relative; width: min(640px, 100%); max-height: 90vh; overflow: auto; padding: 22px; }
+.cmi-modal-cerrar { position: absolute; top: 12px; right: 12px; }
+.cmi-evolucion { width: 100%; height: auto; margin: 12px 0; }
+.cmi-evolucion-txt { font-size: 11px; fill: var(--cmi-muted); }
