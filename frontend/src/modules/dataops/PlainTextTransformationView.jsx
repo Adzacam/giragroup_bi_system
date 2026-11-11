@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   FileText, ArrowRight, AlertTriangle, CheckCircle2,
   HelpCircle, ChevronLeft, ChevronRight, Sparkles, Layers,
@@ -8,9 +8,29 @@ import {
 import BatchFlowLayout from './components/BatchFlowLayout';
 import { dataopsApi } from '../../api/dataopsApi';
 
+// Modo demo para capturas de la tesis: oculta nombres y correos de personas.
+// Se activa con ?demo=1 en la URL o con VITE_DEMO_MASK=true. Apagado por defecto; no altera datos.
+const EMAIL_RE = /[^\s@,|]+@[^\s@,|]+\.[A-Za-z]{2,}/g;
+const maskEmail = (t) => String(t).replace(EMAIL_RE, (m) => `${m[0]}***@***`);
+const maskNombre = (t) => String(t).split(/\s+/).map((w) => (w ? `${w[0]}${'*'.repeat(Math.max(2, w.length - 1))}` : w)).join(' ');
+// Celdas rotuladas, p. ej. "Nombre Completo: EDWIN BRAVO MORALES" (formato de las encuestas y planillas)
+const NOMBRE_ROTULADO_RE = /((?:Nombre(?: Completo)?|Estudiante|Docente|Participante)\s*:\s*)([^|]+?)(?=\s*(?:\||$))/gi;
+const maskRotulado = (t) => String(t).replace(NOMBRE_ROTULADO_RE, (_, rot, nom) => rot + maskNombre(nom));
+const esNombre = (v) => /^[A-Za-zÁÉÍÓÚÑÜáéíóúñü.' -]{3,}$/.test(String(v).trim()) && String(v).trim().split(/\s+/).length >= 2;
+
 export default function PlainTextTransformationView() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const demoMask = searchParams.get('demo') === '1' || import.meta.env.VITE_DEMO_MASK === 'true';
+  const maskCell = (v, idx) => (!demoMask ? v : maskEmail(maskRotulado(idx === 0 && esNombre(v) ? maskNombre(v) : v)));
+  const maskLine = (line, row) => {
+    if (!demoMask) return line;
+    const nombre = row?.fila_original?.[0];
+    let out = String(line ?? '');
+    if (nombre && esNombre(nombre)) out = out.split(nombre).join(maskNombre(nombre));
+    return maskEmail(maskRotulado(out));
+  };
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
@@ -368,9 +388,9 @@ const formatMergedCell = (c) => {
                                   color: val.includes('?') ? 'var(--dataops-warning-text)' : 'var(--color-ink-black)'
                                 }}
                               >
-                                {val}
+                                {maskCell(val, idx)}
                               </span>
-                            )) : row.fila_original_raw}
+                            )) : maskLine(row.fila_original_raw, row)}
 
                             {row.alerta && (
                               <span style={{ color: '#f59e0b', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '2px' }} title={row.alerta}>
@@ -389,7 +409,7 @@ const formatMergedCell = (c) => {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                               {(() => {
-                                const oracion = row.oracion_beto || row.texto_crudo || '';
+                                const oracion = maskLine(row.oracion_beto || row.texto_crudo || '', row);
                                 const posMatch = oracion.match(/POS-[A-Za-z0-9_-]+/i)?.[0];
                                 const modMatch = oracion.match(/MÓDULO\s*[0-9]+/i)?.[0];
                                 const progVal = row.chips?.programa_cat || row.chips?.programa || posMatch || 'POS-034';
@@ -411,7 +431,7 @@ const formatMergedCell = (c) => {
                               })()}
                             </div>
                             <div style={{ fontWeight: isHovered ? 600 : 400 }}>
-                              "{row.oracion_beto}"
+                              "{maskLine(row.oracion_beto, row)}"
                             </div>
                           </div>
                         </td>

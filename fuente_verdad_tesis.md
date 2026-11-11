@@ -5,8 +5,7 @@
 **Snapshot ID:** `snapshot_dw_20261110_1201`  
 **Archivo de Respaldo Físico:** `docs/evidencias/snapshot_dw_20261110_1201.dump`  
 **Hash SHA-256 del Snapshot:** `14D45F5A128F44543927911DC0AD453F681D524AC05037203F5C0C2787E3A2EB`  
-**Cadena de Conexión Snapshot DW:** `postgresql://giragroup_user:giragroup_secret_2026@localhost:5434/snapshot_dw_20261110_1201`  
-**Cadena de Conexión Catálogo:** `postgresql://giragroup_user:giragroup_secret_2026@localhost:5433/giragroup_catalog_db`  
+**Acceso a las bases:** las cadenas de conexión y credenciales se retiraron de este documento (S-13). Se leen de la variable de entorno `DATABASE_URL` / `docker-compose.yml` en el equipo de ejecución. Snapshot DW: contenedor `giragroup_db`, base `snapshot_dw_20261110_1201`; catálogo: contenedor `giragroup_catalog_db`, base `giragroup_catalog_db`.  
 
 ---
 
@@ -54,24 +53,35 @@ El lote de validación de producción se compone de **1.387 registros procesados
 ### Detalle A.1: Desglose por Archivo de Origen del Lote 1.387
 1. **Base centralizada Académica ARCA (1).xlsx** (Hoja `ACTAS DE NOTAS`):
    - Filas leídas: 450 | Filas cargadas directo: 448 (99,56 %) | Derivadas a HITL: 2 (0,44 %) | Staging: 0.
-   - Motivo de HITL: Conflicto de resolución difusa de módulo en posgrados antiguos sin código POS estandarizado.
+   - Motivo de HITL: N/D (el JSON de evidencia no registra el motivo por archivo; ver Detalle A.2).
 2. **BD Cobranzas.xlsx** (Hoja `COBRANZAS 2024 2025`):
    - Filas leídas: 350 | Filas cargadas directo: 349 (99,71 %) | Derivadas a HITL: 1 (0,29 %) | Staging: 0.
-   - Motivo de HITL: Nombre incompleto de titular con duplicidad de cuota.
+   - Motivo de HITL: N/D (el JSON de evidencia no registra el motivo por archivo; ver Detalle A.2).
 3. **TBL_INSCRITOS.xlsx** (Hoja `TBL_INSCRITOS`):
    - Filas leídas: 250 | Filas cargadas directo: 248 (99,20 %) | Derivadas a HITL: 2 (0,80 %) | Staging: 0.
-   - Motivo de HITL: Formato de cédula de identidad con caracteres de complementariedad departamental discordantes.
-4. **Evaluación Docente y Unifranz.xlsx** (Hoja `DIP. EXP DOC. X MODULO`):
+   - Motivo de HITL: N/D (el JSON de evidencia no registra el motivo por archivo; ver Detalle A.2).
+4. **Evaluación Docente Institución A.xlsx** (Hoja `DIP. EXP DOC. X MODULO`):
    - Filas leídas: 150 | Filas cargadas directo: 137 (91,33 %) | Derivadas a HITL: 13 (8,67 %) | Staging: 0.
-   - Motivo de HITL: Docentes con un solo nombre de pila sin apellido registrable (`BRANDON`, `IRVING`, `SERGIO`).
+   - Motivo de HITL: N/D (el JSON de evidencia no registra el motivo por archivo; ver Detalle A.2).
 5. **Experiencia Docente 2.0.xlsx** (Hoja `CURSOS DOC 1`):
    - Filas leídas: 110 | Filas cargadas directo: 95 (86,36 %) | Derivadas a HITL: 15 (13,64 %) | Staging: 0.
-   - Motivo de HITL: Entidades no personales en campos abiertos de encuesta (`Ninguno`, `NINGUNA`, `-`).
+   - Motivo de HITL: N/D (el JSON de evidencia no registra el motivo por archivo; ver Detalle A.2).
 6. **BD Egresos.xlsx** (Hoja `egresos`):
    - Filas leídas: 53 | Filas cargadas directo: 53 (100,00 %) | Derivadas a HITL: 0 (0,00 %) | Staging: 0.
 7. **EJECUTADO VS META.xlsx** (Hoja `EJECUTADO`):
    - Filas leídas: 24 | Filas cargadas directo: 23 (95,83 %) | Derivadas a HITL: 1 (4,17 %) | Staging: 0.
-   - Motivo de HITL: Desalineación de categoría de egreso en convenio interinstitucional.
+   - Motivo de HITL: N/D (el JSON de evidencia no registra el motivo por archivo; ver Detalle A.2).
+
+### Detalle A.2: Composición de los 34 registros HITL y criterio de muestreo (S-08)
+- **34 HITL = 3 + 31** (`lote_1387_uploads_data_arquitectura_b.json`): 3 por banda de confianza intermedia y 31 registros que iban a carga directa pero se movieron a HITL por persona sin resolver (`registros_directo_movidos_a_hitl_por_persona_sin_resolver = 31`: 5 `PERSONA_SIN_COINCIDENCIA` + 26 hechos sin persona por `PER_SIN_FORMA_NOMBRE`).
+- **Los 15 casos de Experiencia Docente 2.0:** el JSON da el recuento por archivo (95 directo / 15 HITL) pero **no su motivo**. La afirmación previa de que eran «Ninguno / NINGUNA / -» **no tiene evidencia** y se retiró. Comprobación de código (`pipeline/normalization/person_resolver.py`): `es_etiqueta_likert`, `parece_nombre_propio` y `es_correo` devuelven `False` para `Ninguno`, `NINGUNA` y `-`, es decir, **ninguna regla de calidad los descarta**; por eso no podían ir «al descarte por regla». Además, en `CURSOS DOC 1` la segunda fila trae códigos `POS-xxxx` en la columna «Nombre completo del usuario» (columnas desplazadas), causa candidata aún no verificada fila a fila.
+- **Muestreo:** `muestreo_por_archivo.criterio_documentado = false`. Los topes 450/350/250/150/110/53/24 son constantes del script (`scripts/reejecutar_lote_1387_uploads_data.py`); la selección es «primeras N filas no vacías en orden de archivo», **sin aleatorización ni estratificación**. El texto de la tesis («muestra estratificada») debe corregirse.
+
+### Detalle A.3: Corridas del ciclo mensual (S-09)
+- `docs/evidencias/ciclo_completo_final_1/2/3.json` (13:46 del 09-nov-2026; `mes_objetivo` 2026-03): procesan **10 archivos** (BD Cobranzas, BD Egresos, BD Techos, Base centralizada Académica ARCA (1), EJECUTADO VS META, Evaluación Docente Institución A, Experiencia Docente 2.0, PLANIFICACION Y EJECUCION ACADÉMICA, TBL_INSCRITOS, [BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE), 12.016 filas de entrada, 81.107 hechos cargados. Tiempos 58,42 / 59,73 / 59,26 s. Casos HITL nuevos por corrida: **32** (bandeja 26.863 → 26.895); `grupos_hitl_final_1.json` lista **252 casos / 38 grupos**.
+- **188 casos / 37 grupos** NO proviene de `ciclo_completo_final_*`: sale de `ciclo_r8_*`/`revision_r8_*` y `tiempo_klm.json` (`casos: 188`, `grupos: 37`; RESUMEN_RONDA8.md). Las corridas `ciclo_r8_1/2/3.json` (15:12, posteriores) dan 60,84 / 59,24 / 59,92 s → media 60,0 s, DE 0,8 s (`ciclo_r8_resumen.json`).
+- **Inconsistencia abierta:** la SFV usa los tiempos de `final_*` (A-26: 59,14 s) pero el KLM de la tesis usa 188/37 de `r8`. Son dos series distintas; hay que elegir una (la tesis hoy cita 60,0 s de `r8`). Decisión pendiente del autor.
+- **KLM 490,5 s** (aritmética reproducible; `tiempo_klm.json` solo guarda casos y grupos, los tiempos humanos no se midieron): 37 grupos × 5,3 s (2 × [1,35 decisión + 1,10 desplazamiento + 0,20 clic]) = 196,1 s; 188 casos × 1,35 s = 253,8 s; 2 acciones adicionales × 5,3 s = 10,6 s; ingreso y filtrado 30,0 s. Total 490,5 s = 8,2 min.
 
 ---
 
@@ -88,10 +98,10 @@ El sistema mantiene mecanismos de aislamiento para resguardar la consistencia tr
 | B-05 | Conflicto precedencia Marzo 2025: Fuente prevaleciente | `EJECUTADO VS META` | `EJECUTADO VS META` | Sí | `SELECT * FROM log_inconsistencias WHERE id_inconsistencia = 1527` | Cap. IV, Sec. 4.2.3 |
 | B-06 | Stock histórico pendiente en bandeja HITL | 1.606 casos en 786 grupos | 1.606 casos / 786 grupos | Sí | `docs/evidencias/remanente_stock_grupos.json` / `backend/services/bandeja_grupos.py` | Cap. IV, Sec. 4.3.3; Gráfico 4.1 |
 | B-07 | Subconjunto de stock: Conflictos de CI | 756 casos en 725 grupos | 756 casos / 725 grupos | Sí | `stg_entidad_no_resuelta` filtrado por `CI_NOMBRE_DISCORDANTE` | Cap. IV, Sec. 4.3.3 |
-| B-08 | Subconjunto de stock: Baja confianza y hechos en revisión | 850 casos en 61 grupos | 850 casos en 61 grupos | Sí | 288 `BAJA_CONFIANZA_IA` + 562 hechos en revisión académica/financiera | Cap. IV, Sec. 4.3.3 |
+| B-08 | Subconjunto de stock: Baja confianza y hechos en revisión | 850 casos en 61 grupos | 850 casos en 61 grupos | Sí | 288 `BAJA_CONFIANZA_IA` + 562 hechos en revisión: `SELECT count(*) FROM fact_rendimiento_academico WHERE requiere_revision` = 559 y `... FROM fact_situacion_financiera WHERE requiere_revision` = 3 (S-07). Por tipo en `remanente_stock_grupos.json`: 498 `MAPEAR_ESTADO` + 61 `MANUAL` + 3 sin acción. **El 562 coincide por azar con las 562 entidades de B-02** (283+139+87+48+5): son magnitudes distintas | Cap. IV, Sec. 4.3.3 |
 | B-09 | Extensiones admitidas por el pipeline | `.xlsx`, `.csv` | `.xlsx`, `.csv` | Sí | `backend/services/ingestion_service.py:17` (`ALLOWED_EXTENSIONS`) | Cap. III, Sec. 3.2.1 |
 | B-10 | Procesamiento real de Google Forms | Sí (exportación Excel/CSV) | Sí | Sí | `TBL_INSCRITOS.xlsx` (`MARCA TEMPORAL`, 250 filas en lote 1.387) | Cap. III, Sec. 3.2.1; Cap. IV, Sec. 4.1 |
-| B-11 | Procesamiento real de Moodle | Sí (exportación encuestas/notas) | Sí | Sí | `Evaluación Docente y Unifranz.xlsx`, `Experiencia Docente 2.0.xlsx` | Cap. III, Sec. 3.2.1; Cap. IV, Sec. 4.1 |
+| B-11 | Procesamiento real de Moodle | Sí (exportación encuestas/notas) | Sí | Sí | `Evaluación Docente Institución A.xlsx`, `Experiencia Docente 2.0.xlsx`. Encabezados reales (openpyxl): «N°», «Nombre completo del usuario», «Grupos», «Dirección de correo», «Fecha», «Programa - POS», «Número del modulo», preguntas Likert («5/Totalmente de acuerdo»). Son columnas típicas de una exportación de actividad de Moodle; el origen exacto (Moodle) se **infiere de los encabezados**, el archivo no trae metadatos de plataforma (S-12) | Cap. III, Sec. 3.2.1; Cap. IV, Sec. 4.1 |
 
 ### Detalle B.1: Interpretación de los Denominadores 268 y 562
 - **Denominador 562 (Nivel Entidad):** Representa el número total de celdas o entidades anómalas interceptadas preventivamente por las reglas de calidad en el lote de 1.387:
@@ -126,11 +136,15 @@ La evaluación experimental de ablación compara la capacidad de extracción de 
 | C-10 | Tamaño dataset adverso (`layouts_5`) | 72 entidades (98 totales) | 72 / 98 | Sí | 5 layouts sintéticos de alta distorsión | Cap. IV, Sec. 4.1.1 |
 | C-11 | Aporte marginal de BETO en lote 1.387 | 3.248 entidades (28,43 %) | 3.248 entidades | Sí | `conteos_fuente_resolucion.BETO` | Cap. IV, Sec. 4.1.4 |
 
+**Nota S-11 (97,47 % vs 97,57 %):** 97,57 % (P 96,91 / R 98,24) es el Modo C medido en `f1_beto_fp32_gold_510.json` (semilla 42, 09-nov-2026 22:22, `por_modo.C.gold_510.reporte_seqeval_estricto["micro avg"]`). El 97,47 % (P 96,72 / R 98,24) de la Tabla 3.20 no figura en ningún archivo de `docs/evidencias`; con el mismo recall equivale a un falso positivo adicional (≈ 518 vs 517 predichas sobre 510). Es una corrida anterior de `evaluar_subsets_test_gold.py`. Vigente y reproducible: 97,57 %; la Tabla 3.20 y la Tabla 4.5 deben actualizarse o rehacerse con el mismo script.
+
 ### Detalle C.1: Umbrales Numéricos Exactos Vigentes en el Código Fuente
 1. **Resolución de personas por bloqueo escalonado (0,92):**
    - *Ubicación:* `pipeline/normalization/person_resolver.py`, líneas 111 y 141-175.
    - *Código:* `UMBRAL_PERSONA = 0.92`.
-   - *Regla:* Escalonamiento estricto a tres niveles: Módulo $ightarrow$ Programa $ightarrow$ Dimensión Completa. Exige que el candidato posea al menos dos tokens y que el apellido esté explícitamente presente en el nombre canónico (`toks_c[-1] in toks_p[1:]`).
+   - *Regla:* Escalonamiento estricto a tres niveles: Módulo $
+ightarrow$ Programa $
+ightarrow$ Dimensión Completa. Exige que el candidato posea al menos dos tokens y que el apellido esté explícitamente presente en el nombre canónico (`toks_c[-1] in toks_p[1:]`).
 2. **Coincidencia difusa de homónimos de estudiante (90 %):**
    - *Ubicación:* `backend/services/dw_loader.py`, líneas 241-253 y 473-486.
    - *Código:* `score_cutoff=90.0`.
@@ -170,6 +184,8 @@ La verificación automatizada del sistema se ejecuta mediante `pytest` integrand
 | D-12 | Pruebas suite `loops` (Ciclos cerrados) | 9 pasadas de 9 (100 %) | 9 | Sí | `pytest tests/loops/` | Tabla 3.29 |
 | D-13 | Pruebas suite `readiness` (Despliegue Docker) | 21 pasadas, 11 skip, 7 xfail | 39 pruebas | Sí | `pytest tests/readiness/` | Tabla 3.29 |
 
+**Nota S-18/S-19:** por suite (`pytest_por_suite_y_cobertura.json`): sprint1 16, sprint2 32, sprint3 120, sprint4 23, loops 9, readiness 39 (21 pasadas, 11 omitidas, 7 xfail), transversales 254 = 493. La Tabla 3.29 de la tesis agrupa «sprint4 + loops» = 32 y debe llevar transversales = 254.
+
 ### Tabla D.2: Desglose de Cobertura por Componente de Software (Base para Tabla 3.30)
 | Módulo / Archivo Fuente | Líneas Totales | Líneas Cubiertas | Cobertura (%) | Responsabilidad Arquitectónica |
 |---|---|---|---|---|
@@ -194,103 +210,112 @@ La verificación automatizada del sistema se ejecuta mediante `pytest` integrand
 | `backend/routers/pipeline.py` | 269 | 96 | 35,7 % | Orquestación asíncrona de tareas del pipeline |
 | `backend/services/forecast_service.py` | 253 | 90 | 35,6 % | Servicio de persistencia y exposición de pronósticos |
 | `pipeline/semantic/indice_confianza.py` | 70 | 23 | 32,9 % | Cálculo vectorial de entropía de predicción BETO |
+| `pipeline/semantic/ner_engine.py` | 301 | 193 | 64,1 % | Motor NER BETO (S-17; `docs/evidencias/cobertura.json`, 09-nov 22:30, mismo total 13.249/8.049) |
 | **TOTAL SISTEMA (--cov=backend --cov=pipeline)** | **13.249** | **8.049** | **60,8 %** | **Alcance global de pruebas automatizadas** |
 
 ---
 
 ## E. PRONÓSTICO DE MATRÍCULA (HOLT-WINTERS Y BENCHMARKS)
-El módulo de proyección de demanda académica se encuentra formalmente implementado bajo el método **Holt-Winters con Tendencia Amortiguada (Damped Holt-Winters)** y estacionalidad aditiva.
+Método vigente: **Holt-Winters con tendencia aditiva amortiguada y estacionalidad aditiva (m = 12)**. Serie: `SELECT dt.periodo_mes, sum(fm.inscritos) FROM fact_marketing fm JOIN dim_tiempo dt USING(id_tiempo) GROUP BY 1 ORDER BY 1` (snapshot). **Todos los valores de esta sección se recalcularon el 10-nov-2026 sobre el snapshot** con el mismo `ExponentialSmoothing` del código (statsmodels 0.15.0, `initialization_method="estimated"`); el script de recálculo no se versionó en el repositorio. Los valores del borrador anterior mezclaban dos ajustes distintos (ver nota).
 
-### Tabla E.1: Parámetros y Evaluación del Modelo Predictivo
-| ID | Métrica | Valor | Ref. ronda 10 | ¿Coincide? | Fuente (Código / Script) | Dónde va en el documento |
-|---|---|---|---|---|---|---|
-| E-01 | Modelo vigente en código fuente | Tendencia Amortiguada (`damped_trend=True`) | HW Amortiguado | Sí | `pipeline/analytics/forecasting_holtwinters.py:97` | Cap. III, Sec. 3.5.2; Cap. IV, Sec. 4.5 |
-| E-02 | Nombre real de la fuente documental | `TBL_INSCRITOS.xlsx` (hoja `TBL_INSCRITOS`) | `TBL_INSCRITOS.xlsx` | Sí | `uploads/data/TBL_INSCRITOS.xlsx` (en texto decía `inscritos.csv`) | Cap. III, Sec. 3.5.1; Defectos Sec. H |
-| E-03 | Meses disponibles en la serie de matrícula | 33 meses (`2023-09` a `2026-05`) | 33 meses | Sí | `SELECT dt.periodo_mes, count(*) FROM fact_rendimiento_academico ...` | Cap. IV, Sec. 4.5.1 |
-| E-04 | Serie extendida de captación en marketing | 43 meses (`2022-01` a `2025-07`) | 43 meses | Sí | `SELECT count(DISTINCT dt.periodo_mes) FROM fact_marketing ...` | Cap. IV, Sec. 4.5.1 |
-| E-05 | Partición: Rango de entrenamiento | 27 meses (`2023-09` a `2025-11`) | 27 meses | Sí | Partición cronológica antes del corte de validación | Cap. IV, Sec. 4.5.2 |
-| E-06 | Partición: Rango de hold-out (prueba) | 6 meses (`2025-12` a `2026-05`) | 6 meses | Sí | Corte de hold-out fijado al `2025-11-01` | Cap. IV, Sec. 4.5.2 |
-| E-07 | Nivel de suavizado ($lpha$) | 0,6978 | 0,6978 | Sí | Ajuste `ExponentialSmoothing` sobre la serie | Cap. IV, Sec. 4.5.2; Cuadro 4.6 |
-| E-08 | Suavizado de tendencia ($eta$) | 0,0000 | 0,0000 | Sí | Convergencia numérica del estimador | Cap. IV, Sec. 4.5.2; Cuadro 4.6 |
-| E-09 | Suavizado estacional ($\gamma$) | 0,0000 | 0,0000 | Sí | Convergencia numérica del estimador | Cap. IV, Sec. 4.5.2; Cuadro 4.6 |
-| E-10 | Factor de amortiguamiento ($\phi$) | 0,9950 | 0,9950 | Sí | Parámetro `damping_trend` optimizado | Cap. IV, Sec. 4.5.2; Cuadro 4.6 |
-| E-11 | Error cuadrático medio in-sample (RMSE ajuste) | 48,36 estudiantes | 48,36 | Sí | `np.sqrt(mean_squared_error(y_train, y_fit))` | Cap. IV, Sec. 4.5.2; Cuadro 4.6 |
-| E-12 | Criterio de Información de Akaike (AIC) | 290,00 | 290,00 | Sí | Métrica de bondad de ajuste del modelo HW | Cap. IV, Sec. 4.5.2; Cuadro 4.6 |
-| E-13 | Error cuadrático medio en test (RMSE hold-out) | 75,03 estudiantes | 75,03 | Sí | `np.sqrt(mean_squared_error(y_test, y_pred))` | Cap. IV, Sec. 4.5.2; Cuadro 4.6 |
-| E-14 | Error porcentual absoluto medio (MAPE hold-out) | 13,89 % | 13,89 % | Sí | `mean_absolute_percentage_error(y_test, y_pred)` | Cap. IV, Sec. 4.5.2; Gráfico 4.5 |
-| E-15 | MAPE del Benchmark Naive Estacional | 18,22 % | 18,22 % | Sí | Persistencia interanual ($y_{t} = y_{t-12}$) | Cap. IV, Sec. 4.5.3; Cuadro 4.7 |
-| E-16 | Reducción de error frente al Naive Estacional | 4,33 puntos porcentuales | 4,33 pp | Sí | Mejora del 23,76 % en precisión relativa | Cap. IV, Sec. 4.5.3 |
-| E-17 | Coeficiente de determinación OLS mensual ($R^2$) | 0,0854 | 0,0854 | Sí | `statsmodels.api.OLS` (modelo puramente lineal) | Cap. IV, Sec. 4.5.3; Gráfico 3.5 |
-| E-18 | Pendiente de tendencia OLS mensual | +2,95 estudiantes/mes | +2,95 | Sí | Pendiente positiva global de expansión | Cap. IV, Sec. 4.5.3 |
-| E-19 | p-valor del ajuste lineal OLS | 0,098 | 0,098 | Sí | No significativo al 5 % (confirma estacionalidad) | Cap. IV, Sec. 4.5.3 |
+### Tabla E.1: Parámetros y evaluación del modelo predictivo
+| ID | Métrica | Valor | Evidencia (SQL / archivo:línea) | Dónde va |
+|---|---|---|---|---|
+| E-01 | Modelo vigente | Tendencia amortiguada | `pipeline/analytics/forecasting_holtwinters.py:117-119` (`trend="add"`, **`damped_trend=True` en la línea 118**, `seasonal="add"`). La línea 97 citada antes era errónea (S-02) | Cap. III Sec. Pronóstico; Tabla 3.24 |
+| E-02 | Fuente de la serie | `TBL_INSCRITOS.xlsx` (hoja `TBL_INSCRITOS`) → `fact_marketing.inscritos`. No existe `inscritos.csv` | consulta de arriba; `holtwinters_dw_vs_csv.json` | Tabla 3.24 |
+| E-03 | Ventana de ajuste | 33 meses (2023-09 a 2026-05), suma 12.810 inscritos. (Antes decía `fact_rendimiento_academico`: era incorrecto) | consulta de arriba | Tabla 3.24 |
+| E-04 | Serie completa en `fact_marketing` | 43 meses, **2022-11 a 2026-05** (antes: «2022-01 a 2025-07», incorrecto) | consulta de arriba (43 filas) | Cap. IV |
+| E-05 | Entrenamiento (validación) | 27 meses (2023-09 a 2025-11) | partición cronológica | Tabla 3.24 |
+| E-06 | Hold-out | 6 meses (2025-12 a 2026-05) | idem | Tabla 3.24 |
+| E-07 | Ajuste sobre 27 meses (validación): α / β / γ / φ | 0,7010 / 0,0000 / 0,0000 / 0,9858 | `modelo.params` del ajuste `serie[:27]` | Tabla 3.24 |
+| E-08 | Ajuste sobre 27 meses: RMSE ajuste / AIC | 45,00 / 239,56 | idem | Tabla 3.24 |
+| E-09 | **Hold-out: RMSE / MAPE** | **75,03 / 13,89 %** | `forecast(6)` del ajuste de 27 meses frente a los 6 reales | Tabla 3.24; Tabla 4.1; Tabla 4.7 |
+| E-10 | Ajuste sobre 33 meses (**el que usa el servicio para proyectar**): α / β / γ / φ | 0,6978 / 0,0000 / 0,0000 / 0,9950 | `modelo.params` del ajuste de la serie completa | Tabla 3.24 |
+| E-11 | Ajuste sobre 33 meses: RMSE ajuste / AIC | 48,36 / 290,00 | `rmse = sqrt(mean(residuos²))` (`forecasting_holtwinters.py:126`); `modelo.aic` | Tabla 3.24 |
+| E-12 | MAPE naive estacional (ŷₜ = yₜ₋₁₂) en el mismo hold-out | **10,32 %** | recalculado; reemplaza el 18,22 % del borrador, que **no se reproduce** | Cap. IV; cuadro de benchmarks |
+| E-13 | HW amortiguado − naive estacional | **+3,57 pp (HW peor)** | 13,89 % − 10,32 %. La «reducción de 4,33 pp / 23,77 %» (4,33/18,22; el 23,76 % era error de redondeo) **no se sostiene** | Cap. IV |
+| E-14 | OLS lineal de matrícula (N = 33, t = 0..32) | pendiente +3,6541 est./mes; R² = 0,1921; p = 0,0107 | `statsmodels.OLS` sobre la misma serie. Los valores del borrador (+2,95; 0,0854; 0,098) **no se reproducen** (S-10) | Cap. IV; Gráfico 3.5 |
+| E-15 | OLS mensual de recaudación (PROGRAMAS, N = 40, 2023-01 a 2026-04) | pendiente +16.212,88 Bs/mes; R² = 0,7128; RMSE ajuste 118.783,06; hold-out MAPE 17,01 % | `docs/evidencias/ols_reajuste.json` | Tabla 3.24 (fila OLS) |
+| E-16 | OLS anual de recaudación (N = 3) con valores del **DW** | pendiente +2.267.633,83 Bs/año; R² = 0,9937 (2023: 8.035.694,25; 2024: 9.989.730,09; 2025: 12.570.961,91) | `docs/evidencias/ols_mensual_vs_anual.json` | Cap. IV, Tabla 4.7 |
+| E-17 | OLS anual con valores **CSV** (los que usa hoy la tesis) | pendiente +2.436.141,68 Bs/año; R² = 0,987 (2025 = 12.907.977,61) | `docs/evidencias/ols_hw_proyecciones.json` (`recaudacion_csv`); R² recalculado a mano | Tabla 4.7: **las cifras de la tesis vienen del CSV, no del DW**; elegir una fuente |
 
-### Detalle E.1: Proyección de Matrícula a Horizonte $h = 6$ Meses (Junio a Noviembre 2026)
-- **Junio 2026:** 426,37 estudiantes (IC 95 %: [331,58; 521,16])
-- **Julio 2026:** 414,22 estudiantes (IC 95 %: [319,43; 509,01])
-- **Agosto 2026:** 498,55 estudiantes (IC 95 %: [403,76; 593,34])
-- **Septiembre 2026:** 454,48 estudiantes (IC 95 %: [359,69; 549,27])
-- **Octubre 2026:** 428,85 estudiantes (IC 95 %: [334,06; 523,64])
-- **Noviembre 2026:** 461,97 estudiantes (IC 95 %: [367,18; 556,76])
-- *Margen de error del intervalo:* $\pm 94,79$ estudiantes ($1,96 	imes 	ext{RMSE}_{	ext{hold-out}}$).
+**Nota (mezcla del borrador):** α = 0,6978, φ = 0,9950, RMSE 48,36 y AIC 290,00 pertenecen al ajuste de 33 meses; el RMSE 75,03 y el MAPE 13,89 % pertenecen al ajuste de 27 meses. Presentarlos juntos como «un único modelo» era incorrecto.
+**Nota:** `fact_forecast` del snapshot (24 filas, generadas 2026-11-06/10) no contiene esta proyección (p. ej. `ALUMNOS_GLOBAL` 2026-06 = 435,21, con 4 meses); no se usó como fuente.
+
+### Detalle E.1: Proyección h = 6 (jun-nov 2026) y bandas de confianza (S-01)
+El código calcula la banda como `v ± 1,96 × rmse`, con `rmse` = RMSE **in-sample del ajuste completo (33 meses) = 48,36** (`forecasting_holtwinters.py:126,141-142`), es decir **±94,79**, no el RMSE de hold-out. El texto previo («1,96 × RMSE hold-out = ±94,79») era erróneo. Con el RMSE de hold-out (75,03) la banda honesta sería **±147,06**.
+
+| Mes | Pronóstico | IC 95 % del código (±94,79) | IC 95 % con RMSE hold-out (±147,06) |
+|---|---|---|---|
+| 2026-06 | 426,37 | [331,58; 521,16] | [279,31; 573,43] |
+| 2026-07 | 414,22 | [319,43; 509,01] | [267,16; 561,28] |
+| 2026-08 | 498,55 | [403,76; 593,34] | [351,49; 645,61] |
+| 2026-09 | 454,48 | [359,69; 549,27] | [307,42; 601,54] |
+| 2026-10 | 428,85 | [334,06; 523,64] | [281,79; 575,91] |
+| 2026-11 | 461,97 | [367,18; 556,76] | [314,91; 609,03] |
 
 ---
 
 ## F. INDICADORES (KPI) Y SISTEMA DE ALERTAS TEMPRANAS
-El diseño conceptual del Cuadro de Mando Integral contempla 22 KPI registrados en el catálogo formal, de los cuales 11 indicadores clave se encuentran implementados y desplegados en el endpoint ejecutivo `/kpis/cmi-completo`.
+`bi.ref_kpi` cataloga **22 KPI**; el endpoint `/kpis/cmi-completo` (`backend/services/kpi_service.py`, diccionario `kpis_exactos_11`) calcula **11**. Los nombres y fórmulas de la tabla F.1 del borrador anterior **no coincidían** con `bi.ref_kpi` y se reemplazaron por el contenido real de la tabla (S-04).
 
-### Tabla F.1: Catálogo Formal de 22 KPI en `bi.ref_kpi`
-| ID | Código | Nombre del Indicador | Perspectiva CMI | Fórmula de Cálculo | Tabla de Origen DW |
+### Tabla F.1: Catálogo real de 22 KPI en `bi.ref_kpi` (`SELECT * FROM bi.ref_kpi ORDER BY 1`)
+| Código | Perspectiva | Nombre | Descripción | Unidad | ¿En `/cmi-completo`? |
 |---|---|---|---|---|---|
-| F-01 | KPI-01 | Ticket promedio por programa | Financiera | `Recaudación / Matriculados` | `fact_situacion_financiera` |
-| F-02 | KPI-02 | Cumplimiento de metas mensual | Financiera | `(Ejecutado / Meta) * 100` | `fact_rentabilidad` |
-| F-03 | KPI-03 | Cumplimiento de metas anual | Financiera | `(Ejecutado_Anual / Meta_Anual) * 100` | `fact_rentabilidad` |
-| F-04 | KPI-04 | Margen operativo por programa | Financiera | `Recaudación - Costos_Directos` | `fact_rentabilidad` |
-| F-05 | KPI-05 | Estudiantes en mora | Financiera | `Conteo por estado_financiero` | `fact_situacion_financiera` |
-| F-06 | KPI-06 | Tasa de conversión postulantes | Clientes | `(Inscritos / Postulantes) * 100` | `fact_marketing` |
-| F-07 | KPI-07 | Satisfacción del estudiante (NPS) | Clientes | `Media de puntaje_satisfaccion` | `fact_evaluacion_docente` |
-| F-08 | KPI-08 | Tasa de aprobación por programa | Clientes | `(Aprobados / Evaluados) * 100` | `fact_rendimiento_academico` |
-| F-09 | KPI-09 | Tasa de retención interanual | Clientes | `(Activos_T / Activos_T_1) * 100` | `fact_rendimiento_academico` |
-| F-10 | KPI-10 | Confianza de extracción IA | Procesos Internos | `Media de nivel_confianza_ia` | `fact_rendimiento_academico` |
-| F-11 | KPI-11 | Extracción directa sin HITL | Procesos Internos | `(Cargados_Directo / Total) * 100` | `fact_rendimiento_academico` |
-| F-12 | KPI-12 | Eficiencia en recaudación proyectada | Financiera | `(Recaudado / Proyectado) * 100` | `fact_cobranzas_proyectadas` |
-| F-13 | KPI-13 | Costo por postulante captado | Financiera | `Gasto_Marketing / Postulantes` | `fact_marketing` |
-| F-14 | KPI-14 | Índice de rotación de docentes | Aprendizaje | `(Docentes_Baja / Total_Docentes) * 100` | `bridge_modulo_docente` |
-| F-15 | KPI-15 | Horas de capacitación docente | Aprendizaje | `Suma de horas_capacitacion` | `fact_evaluacion_docente` |
-| F-16 | KPI-16 | Cumplimiento del plan de estudios | Procesos Internos | `(Modulos_Dictados / Programados) * 100` | `dim_modulo` |
-| F-17 | KPI-17 | Tiempo medio de resolución HITL | Procesos Internos | `Media de tiempo_resolucion_min` | `stg_entidad_no_resuelta` |
-| F-18 | KPI-18 | Cobertura de becas y convenios | Financiera | `(Alumnos_Beca / Total_Alumnos) * 100` | `fact_situacion_financiera` |
-| F-19 | KPI-19 | Nivel de ejecución presupuestaria | Financiera | `(Gasto_Real / Presupuesto) * 100` | `fact_costo_programa` |
-| F-20 | KPI-20 | Reclamos estudiantiles resueltos | Clientes | `(Reclamos_Cerrados / Total) * 100` | `fact_evaluacion_docente` |
-| F-21 | KPI-21 | Adopción de plataformas virtuales | Aprendizaje | `(Usuarios_Moodle_Activos / Total) * 100` | `fact_rendimiento_academico` |
-| F-22 | KPI-22 | Desempeño docente promedio | Aprendizaje | `Media de evaluacion_promedio` | `fact_evaluacion_docente` |
+| KPI-01 | Financiera | Ticket promedio por estudiante | Recaudación de la gestión entre la matrícula efectiva | Bs | Sí (1) |
+| KPI-02 | Financiera | Cumplimiento de meta del último mes | Ejecutado frente a la meta del último mes con ejecución | % | Sí (2) |
+| KPI-03 | Financiera | Cumplimiento de meta a la fecha | Ejecutado frente a la meta de los meses ya ejecutados | % | Sí (3) |
+| KPI-04 | Financiera | Estudiantes con riesgo financiero | ≥ 2 cuotas impagas o cartera previsionable | Cantidad | Sí (4) |
+| KPI-05 | Financiera | Estudiantes en mora | Estudiantes en mora o previsionables sobre el total con cartera | % | Sí (5) |
+| KPI-06 | Clientes | Conversión de admisiones | Inscritos sobre leads de marketing | % | Sí (6) |
+| KPI-07 | Aprendizaje | Promedio de calificaciones | Nota final promedio sobre 100 | Puntos | Sí (7) |
+| KPI-08 | Aprendizaje | Tasa de aprobación | Calificaciones con nota final ≥ 70 | % | Sí (8) |
+| KPI-09 | Aprendizaje | Estudiantes en riesgo académico | Estudiantes con promedio ≤ 70 | Cantidad | Sí (9) |
+| KPI-10 | Procesos internos | Confianza media de extracción | Confianza promedio de la extracción automática | % | Sí (10) |
+| KPI-11 | Procesos internos | Automatización directa | Registros consolidados sin revisión humana (confianza ≥ 85 %) | % | Sí (11) |
+| KPI-12 | Financiera | Variación interanual de ingresos | Ingreso de la gestión frente a los mismos meses de la anterior | % | No |
+| KPI-13 | Financiera | Avance sobre la meta anual | Ejecutado frente a la meta de los 12 meses | % | No |
+| KPI-14 | Financiera | Brecha a la meta anual | Monto que falta recaudar para la meta anual | Bs | No |
+| KPI-15 | Financiera | Cartera vencida | Deuda en mora o previsionable sobre la deuda total | % | No |
+| KPI-16 | Clientes | Tasa de deserción | Incumplimiento o inasistencia > 30 % | % | No |
+| KPI-17 | Aprendizaje | Estudiantes en prioridad crítica | ≥ 2 reglas de riesgo | Cantidad | No |
+| KPI-18 | Procesos internos | Pendientes de revisión humana | Entidades no resueltas en espera | Cantidad | No |
+| KPI-19 | Aprendizaje | Satisfacción con los docentes | Puntaje medio de preguntas sobre el docente | % | No |
+| KPI-20 | Clientes | Satisfacción institucional | Puntaje medio de preguntas institucionales | % | No |
+| KPI-21 | Clientes | Matrícula efectiva | Estudiantes distintos con calificaciones en la gestión | Cantidad | No |
+| KPI-22 | Clientes | Inscritos por convenio | Inscritos mediante convenios | Cantidad | No |
 
-### Tabla F.2: Valores Actuales de los 11 KPI Ejecutivos (Gestión 2025 y Lote 1.387)
-| Código | Indicador | Valor en Snapshot 2025 | Valor en Lote 1.387 | Origen en Snapshot DW |
+La lista de 11 implementados **coincide con la Tabla 3.27 de la tesis** (KPI-04 riesgo financiero, KPI-05 estado de cartera, KPI-07 promedio acumulado, KPI-09 riesgo académico). El borrador de esta SFV los había rotulado mal (margen operativo, NPS, retención).
+
+### Tabla F.2: Valores de los 11 KPI ejecutivos (ejecución de `obtener_perspectivas_cmi_completo` sobre el snapshot, 10-nov-2026)
+| Código | Indicador | Gestión 2025 | Todas las gestiones | Evidencia |
 |---|---|---|---|---|
-| KPI-01 | Ticket promedio por programa | 1.610,13 Bs | 1.610,13 Bs | `fact_situacion_financiera` (12 programas en desglose) |
-| KPI-02 | Cumplimiento de metas mensual | 157,48 % | N/A | `fact_rentabilidad.monto_meta` (mes 12) |
-| KPI-03 | Cumplimiento de metas anual | 110,54 % | N/A | `fact_rentabilidad.monto_meta` (recaudación total vs meta anual) |
-| KPI-04 | Margen operativo por programa | 623 | 623 | `fact_rentabilidad` (desglose por categoría de programa) |
-| KPI-05 | Estudiantes en mora | 3.691 Vigente / 830 Mora / 0 Prejudicial | N/A | `fact_situacion_financiera` (conteo por `estado_financiero`) |
-| KPI-06 | Conversión de postulantes | 100,0 % | 100,0 % | `fact_marketing` (captación efectiva en corpus disponible) |
-| KPI-07 | Satisfacción del estudiante (NPS) | 79,02 puntos | N/A | `fact_evaluacion_docente` (media sobre 14.234 encuestas) |
-| KPI-08 | Tasa de aprobación por programa | 85,61 % apr / 14,39 % rep | 85,61 % | `fact_rendimiento_academico` (19.363 apr, 3.255 rep; nota min = 51) |
-| KPI-09 | Tasa de retención interanual | 588 estudiantes | N/A | `fact_rendimiento_academico` (cohorte activa consecutiva) |
-| KPI-10 | Confianza de extracción IA | **0,9269** (DW general) | **KPI-10a: 0,9618** (Todas)<br>**KPI-10b: 0,9209** (Solo BETO) | `fact_rendimiento_academico.nivel_confianza_ia` (N=11.426 en lote) |
-| KPI-11 | Extracción directa sin HITL | **90,10 %** (DW general) | **97,55 %** (Lote 1.387) | 1.353 directo / 34 HITL / 0 staging sobre 1.387 registros |
+| KPI-01 | Ticket promedio (Bs) | 1.610,13 | 1.626,99 | `kpi_service.py`, clave `1_ticket_promedio_por_programa` |
+| KPI-02 | Cumplimiento meta del último mes con ejecución | 157,48 % | 0,0 % (sin ejecución en el mes final) | `fact_rentabilidad.monto_ejecutado / monto_meta` |
+| KPI-03 | Cumplimiento meta a la fecha | 110,54 % (14.041.718,15 / 12.703.204,29 Bs) | 96,67 % (40.019.707,17 / 41.396.298,29 Bs) | idem |
+| KPI-04 | Estudiantes con riesgo financiero (**cantidad**, no Bs ni %) | 623 | 1.765 | `fact_situacion_financiera`: ≥ 2 cuotas impagas o previsionable |
+| KPI-05 | Estado de cartera / mora | 3.691 vigente · 830 en mora · 0 previsionable (total 4.521; mora 18,36 %) | 6.886 · 2.498 · 0 (total 9.384; mora 26,62 %) | `estado_financiero` |
+| KPI-06 | Conversión de admisiones | 100,0 % (4.737 inscritos / 4.737 leads) | 100,0 % (15.196 / 15.196) | ver Detalle F.3: valor tautológico |
+| KPI-07 | Promedio de calificaciones (**media de `nota_final`**, no NPS) | 79,02 pts | 78,98 pts | `fact_rendimiento_academico` |
+| KPI-08 | Tasa de aprobación (nota ≥ 70) | 85,61 % (8.502 aprob. / 1.429 repro.) | 85,55 % (18.650 / 3.150 con nota; 818 filas sin nota) | `NOTA_APROBACION = 70.0` (`pipeline/config.py:58`) |
+| KPI-09 | Estudiantes en riesgo académico (**cantidad**, promedio ≤ 70) | 588 | 1.224 | `kpi_service.py` |
+| KPI-10 | Confianza media de extracción | 0,9269 | 0,9308 | lote 1.387: **0,9618** (todas, N = 11.426) / **0,9209** (solo BETO, N = 3.248) |
+| KPI-11 | Automatización directa | 90,10 % | 91,06 % | lote 1.387: **97,55 %** (1.353/1.387) |
 
-### Detalle F.1: Origen Real de Metas Presupuestarias (KPI-02 y KPI-03)
-- La tabla `dim_meta` se encuentra vacía (**0 filas**) en el esquema físico del DW.
-- El origen verídico de las metas ejecutadas y presupuestadas es la columna `monto_meta` de la tabla de hechos **`fact_rentabilidad`**, la cual cuenta con **48 filas no nulas** alimentadas desde el archivo institucional `EJECUTADO VS META.xlsx`.
+(El borrador marcaba 0,9269 y 90,10 % como «DW general»; son de la gestión 2025. «General» = 0,9308 y 91,06 %. Las columnas «Valor en Lote 1.387» del borrador repetían los valores del DW y se eliminaron: solo KPI-10 y KPI-11 tienen valor propio del lote.)
 
-### Detalle F.2: Auditoría del Sistema de Alertas Tempranas
-Las cifras reportadas en etapas tempranas de desarrollo (10.707 matrícula / 1.698 riesgo académico / 1.451 riesgo financiero / 103 alertas críticas) **no están vigentes**, dado que se originaron en pruebas de estrés con datasets sintéticos. Los valores reales y vigentes obtenidos desde el snapshot (`evaluar_alertas_tempranas_deterministicas`) son:
-- **Población de matrícula activa analizada:** 9.603 estudiantes.
-- **Riesgo Académico (Alerta Temprana):** 1.224 estudiantes (calificaciones menores a 51 puntos en módulos evaluados).
-- **Riesgo de Deserción (Inactividad Aula Virtual):** 0 estudiantes (debido a que `incumplimiento_actividades_pct = 0.00` en las actas consolidadas).
-- **Riesgo Financiero (Cartera en Mora):** 1.765 estudiantes (monto total adeudado: 867.811,89 Bs).
-- **Alerta Crítica Multidimensional (2 o más factores simultáneos):** 238 estudiantes.
-- **Total neto de estudiantes con al menos una alerta:** 2.751 estudiantes únicos.
+### Detalle F.1: Origen real de metas (KPI-02 y KPI-03)
+`dim_meta` tiene 0 filas. Las metas salen de `fact_rentabilidad.monto_meta` (48 filas no nulas desde `EJECUTADO VS META.xlsx`).
+
+### Detalle F.2: Alertas tempranas (S-03)
+Las cifras 10.707 / 1.698 / 1.451 / 103 pertenecen a corridas sintéticas y no están vigentes. Valores vigentes (`evaluar_alertas_tempranas_deterministicas`, snapshot):
+- Matrícula activa analizada: 9.603.
+- **Riesgo académico: 1.224 estudiantes con promedio de notas ≤ 70.** Evidencia: `SELECT count(*) FILTER (WHERE p <= 70) FROM (SELECT avg(nota_final) p FROM fact_rendimiento_academico WHERE nota_final IS NOT NULL GROUP BY id_estudiante) a` = **1.224** (5.751 estudiantes con nota); con `< 51` serían 805. Umbral en código: `alert_engine.py:6,96,115` y `risk_service.py:402` (`<= umbral_nota`, 70,0). El «< 51» del borrador era incorrecto; `NOTA_APROBACION = 70.0` (`pipeline/config.py:58`). El mínimo de `nota_final` en la tabla es 0,00 (no 51).
+- Riesgo de deserción: 0 (`incumplimiento_actividades_pct = 0,00` en las 22.618 filas).
+- Riesgo financiero: 1.765 (monto adeudado 867.811,89 Bs). Alerta crítica (≥ 2 reglas): 238. Estudiantes con al menos una alerta: 2.751.
+
+### Detalle F.3: KPI-06 = 100 % (S-04)
+`kpi_service.py:572` filtra `FactMarketing.leads > 0` y `:583` calcula `inscritos / leads × 100`. En el snapshot, **ninguna fila con `leads > 0` tiene `leads <> inscritos`** (`SELECT count(*) FROM fact_marketing WHERE leads > 0 AND leads <> inscritos` = 0): el cargador escribe `leads = inscritos` para `TBL_INSCRITOS`. Postulantes = inscritos, por lo que el 100 % es un artefacto del dato y no una conversión real. Debe declararse **N/D (sin embudo real de postulantes)** en la tesis.
 
 ---
 
@@ -300,17 +325,32 @@ La arquitectura de despliegue opera bajo contenedores Docker orquestados mediant
 ### Tabla G.1: Inventario de Contenedores Docker en Ejecución (`docker compose ps`)
 | Nombre del Contenedor | Imagen | Servicio | Puerto(s) Publicado(s) | Estado Operativo |
 |---|---|---|---|---|
-| `giragroup_gateway` | `giragroup_bi_system-gateway` | `gateway` | `0.0.0.0:80->80/tcp` | Up (Saludable) |
-| `giragroup_web` | `giragroup_bi_system-web` | `web` | `0.0.0.0:5173->5173/tcp` | Up (Saludable) |
-| `giragroup_api` | `giragroup_bi_system-api` | `api` | `0.0.0.0:8000->8000/tcp` | Up (Saludable) |
-| `giragroup_auth_svc` | `giragroup_bi_system-auth-service` | `auth-service` | `8001/tcp` (interno) | Up (Saludable) |
-| `giragroup_notifications_svc` | `giragroup_bi_system-notifications-service` | `notifications-service` | `8002/tcp` (interno) | Up (Saludable) |
-| `giragroup_audit_svc` | `giragroup_bi_system-audit-service` | `audit-service` | `8004/tcp` (interno) | Up (Saludable) |
-| `giragroup_pipeline` | `giragroup_bi_system-pipeline` | `pipeline` | `8006/tcp` (interno) | Up (Saludable) |
-| `giragroup_catalog_db` | `giragroup_bi_system-catalog_db` | `catalog_db` | `127.0.0.1:5433->5432/tcp` | Up (healthy) |
-| `giragroup_db` | `postgres:16-alpine` | `db` | `127.0.0.1:5434->5432/tcp` | Up (healthy) |
+| `giragroup_gateway` | `giragroup_bi_system-gateway` | `gateway` | `0.0.0.0:80->80/tcp` | Up 3 hours (sin healthcheck) |
+| `giragroup_web` | `giragroup_bi_system-web` | `web` | `0.0.0.0:5173->5173/tcp` | Up 3 hours (sin healthcheck) |
+| `giragroup_api` | `giragroup_bi_system-api` | `api` | `0.0.0.0:8000->8000/tcp` | Up 3 hours (sin healthcheck) |
+| `giragroup_auth_svc` | `giragroup_bi_system-auth-service` | `auth-service` | `8001/tcp` (interno) | Up 3 hours (sin healthcheck) |
+| `giragroup_notifications_svc` | `giragroup_bi_system-notifications-service` | `notifications-service` | `8002/tcp` (interno) | Up 3 hours (sin healthcheck) |
+| `giragroup_audit_svc` | `giragroup_bi_system-audit-service` | `audit-service` | `8004/tcp` (interno) | Up 3 hours (sin healthcheck) |
+| `giragroup_pipeline` | `giragroup_bi_system-pipeline` | `pipeline` | `8006/tcp` (interno) | Up 3 hours (sin healthcheck) |
+| `giragroup_catalog_db` | `giragroup_bi_system-catalog_db` | `catalog_db` | `127.0.0.1:5433->5432/tcp` | Up 3 hours (healthy) |
+| `giragroup_db` | `postgres:16-alpine` | `db` | `127.0.0.1:5434->5432/tcp` | Up 3 hours (healthy) |
 
-### Tabla G.2: Inventario Físico de Tablas y Vistas del Data Warehouse (59 Objetos)
+Salida literal de `docker compose ps` (S-05):
+```
+NAME                          IMAGE                                       COMMAND                   SERVICE                 CREATED        STATUS                 PORTS
+giragroup_api                 giragroup_bi_system-api                     "sh -c 'if [ \"${API_…"   api                     18 hours ago   Up 3 hours             0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+giragroup_audit_svc           giragroup_bi_system-audit-service           "uvicorn main:app --…"    audit-service           18 hours ago   Up 3 hours             8004/tcp
+giragroup_auth_svc            giragroup_bi_system-auth-service            "uvicorn main:app --…"    auth-service            18 hours ago   Up 3 hours             8001/tcp
+giragroup_catalog_db          giragroup_bi_system-catalog_db              "docker-entrypoint.s…"    catalog_db              20 hours ago   Up 3 hours (healthy)   127.0.0.1:5433->5432/tcp
+giragroup_db                  postgres:16-alpine                          "docker-entrypoint.s…"    db                      6 days ago     Up 3 hours (healthy)   127.0.0.1:5434->5432/tcp
+giragroup_gateway             giragroup_bi_system-gateway                 "/docker-entrypoint.…"    gateway                 20 hours ago   Up 3 hours             0.0.0.0:80->80/tcp, [::]:80->80/tcp
+giragroup_notifications_svc   giragroup_bi_system-notifications-service   "uvicorn main:app --…"    notifications-service   18 hours ago   Up 3 hours             8002/tcp
+giragroup_pipeline            giragroup_bi_system-pipeline                "python -m pipeline.…"    pipeline                18 hours ago   Up 3 hours             8006/tcp
+giragroup_web                 giragroup_bi_system-web                     "docker-entrypoint.s…"    web                     19 hours ago   Up 3 hours             0.0.0.0:5173->5173/tcp, [::]:5173->5173/tcp
+```
+**Healthchecks (`docker-compose.yml`):** solo `catalog_db` (línea 17) y `db` (línea 41), ambos `pg_isready`. Los otros 7 servicios **no tienen healthcheck**, por eso `docker compose ps` no muestra «healthy» para ellos; el «Up (Saludable)» del borrador era incorrecto.
+
+### Tabla G.2: Inventario Físico de Tablas y Vistas del Data Warehouse (59 objetos = 50 tablas base + 9 vistas)
 | Esquema | Objeto | Tipo | Filas | Propósito y Contenido |
 |---|---|---|---|---|
 | `bi` | `ref_kpi` | BASE TABLE | 22 | Catálogo maestro de indicadores del CMI |
@@ -358,7 +398,9 @@ La arquitectura de despliegue opera bajo contenedores Docker orquestados mediant
 | `public` | `staging_registros_crudos` | BASE TABLE | 91 | Buffer temporal de ingesta sin normalizar |
 | `public` | `stg_entidad_no_resuelta` | BASE TABLE | 23.127 | Entidades pendientes de resolución (1.044 activas) |
 | `public` | `users` | BASE TABLE | 5 | Usuarios autenticados bajo el modelo RBAC |
-| `public` | *Tablas cat_* auxiliares (13)| BASE TABLE | 0 c/u | Catálogos locales replicados desde la base de catálogo |
+| `public` | *Tablas cat_* auxiliares (**14**): `cat_combinacion_estado`, `cat_concepto_financiero`, `cat_escuela`, `cat_estado_academico`, `cat_estado_arca`, `cat_estado_reprobado`, `cat_etiqueta_clasificacion`, `cat_guia_texto_plano`, `cat_historico_equivalencia`, `cat_institucion_convenio`, `cat_mapeo_columna`, `cat_modalidad`, `cat_modulo`, `cat_tipo_programa` | BASE TABLE | 0 c/u | Catálogos locales replicados desde la base de catálogo |
+
+**Conteo (S-06), `SELECT table_schema, table_type, count(*) FROM information_schema.tables ... GROUP BY 1,2`:** `bi` BASE TABLE 2 + `bi` VIEW 9 + `public` BASE TABLE 48 = 59. Las filas explícitas del borrador sumaban 58 porque el grupo de catálogos auxiliares figuraba como 13 y son 14. Total confirmado: **50 tablas base + 9 vistas**.
 
 ### Tabla G.3: Inventario de Tablas en Base de Catálogo (`giragroup_catalog_db`, 20 Tablas)
 | Objeto | Filas | Propósito Funcional |
@@ -383,6 +425,9 @@ La arquitectura de despliegue opera bajo contenedores Docker orquestados mediant
 | `cat_tipo_programa` | 6 | Clasificación de programas de estudio |
 | `ref_metas_gestion` | 59 | Metas históricas presupuestadas por gestión |
 | `stg_entidad_no_resuelta` | 0 | Buffer de soporte de catálogo |
+
+### Detalle G.0: Rutas de la API (S-16)
+Decoradores de ruta en código (`grep -rhoE '@[a-z_]+\.(get|post|put|patch|delete)\('`): `backend/routers` 107 + `backend/main.py` 2 + `services/auth-service` 11 + `services/notifications-service` 6 + `services/audit-service` 2 = **128**. La Tabla 3.22 de la tesis lista 20 filas (rutas/familias principales), no el total.
 
 ### Detalle G.1: Arquitectura RBAC (Role-Based Access Control)
 El sistema protege cada recurso mediante dependencias `require_roles(...)` en FastAPI (`backend/core/security.py`):
@@ -422,6 +467,12 @@ En estricto cumplimiento de la regla de no alteración y reporte honesto de disc
 7. **Obsolescencia de cifras de alertas previas:**
    - *Hallazgo:* Las cifras 10.707 / 1.698 / 1.451 / 103 pertenecen a corridas sintéticas del Sprint 4 y deben sustituirse por las del snapshot (9.603 analizados, 1.224 académico, 0 deserción, 1.765 financiero, 238 críticas, 2.751 únicos).
 
+8. **Parámetros de HW mezclados:** el borrador unía el ajuste de 33 meses (α 0,6978, φ 0,9950, RMSE 48,36, AIC 290,00) con el hold-out del ajuste de 27 meses (RMSE 75,03, MAPE 13,89 %). El benchmark naive (18,22 %) y el OLS de matrícula (R² 0,0854) no se reproducen; recalculados en la sección E.
+9. **KPI mal rotulados:** KPI-04/05/07/09 del borrador (margen operativo, mora, NPS, retención) no correspondían a `bi.ref_kpi` ni al código. Corregido en la sección F.
+10. **KPI-06 tautológico:** leads = inscritos en el 100 % de las filas con leads > 0 (Detalle F.3).
+11. **Healthchecks:** solo 2 de 9 contenedores tienen (Tabla G.1).
+12. **Muestreo del lote 1.387:** primeras N filas por archivo, sin aleatorización (Detalle A.2). `748 programas` (S-20): **N/D**; `cat_programa` del catálogo = 1.229 `pos_code` (583 nombres distintos; 379 con módulos) y `dim_modulo` del DW = 1.719 programas distintos; ninguna consulta da 748.
+
 ---
 
 ## I. GRÁFICOS Y FIGURAS ACADÉMICAS REGENERADAS (300 DPI)
@@ -447,8 +498,8 @@ Todos los gráficos y figuras han sido regenerados exclusivamente a partir de lo
 2. **Valores que cambiaron respecto de la ronda 10:** El tiempo medio de ciclo automático se precisó en 59,14 s (frente a 60,00 s); las alertas tempranas se actualizaron al DW real (9.603 analizados, 1.224 académico, 0 deserción, 1.765 financiero, 238 críticas, sustituyendo a las obsoletas 10.707 / 1.698 / 1.451 / 103); y se aclaró que 22.618 y 10.483 son recuentos de hechos de notas y cobranzas, no de personas totales y únicas (que son 14.078 y 13.667).
 3. **Métricas en N/D:** Se consignaron como N/D la tasa de retención y desglose de mora en el lote 1.387 aislado (porque se calculan a nivel anual/DW completo en gestión 2025) y los registros de `dim_meta` (que tiene 0 filas).
 4. **Respuestas con evidencia técnica:**
-   - **¿HW es amortiguado? SÍ.** Evidencia: `pipeline/analytics/forecasting_holtwinters.py:97` (`damped_trend=True`, factor $\phi = 0,9950$).
-   - **¿Son 22 KPI o 11? AMBOS.** Evidencia: `bi.ref_kpi` almacena 22 indicadores diseñados formalmente, mientras que `/kpis/cmi-completo` implementa y calcula dinámicamente 11 KPIs en el dashboard.
-   - **¿Se procesan Forms y Moodle? SÍ.** Evidencia: `backend/services/ingestion_service.py:17` acepta `.xlsx` y `.csv`; `TBL_INSCRITOS.xlsx` procesa respuestas de Forms y `Evaluación Docente y Unifranz.xlsx` procesa encuestas de Moodle.
+   - **¿HW es amortiguado? SÍ.** Evidencia: `pipeline/analytics/forecasting_holtwinters.py:118` (`damped_trend=True`, factor φ = 0,9950 en el ajuste de 33 meses).
+   - **¿Son 22 KPI o 11? AMBOS.** `bi.ref_kpi` almacena 22 KPI; `/kpis/cmi-completo` calcula 11 (KPI-01 a KPI-11 del catálogo).
+   - **¿Se procesan Forms y Moodle? SÍ.** Evidencia: `backend/services/ingestion_service.py:17` acepta `.xlsx` y `.csv`; `TBL_INSCRITOS.xlsx` procesa respuestas de Forms y `Evaluación Docente Institución A.xlsx` procesa encuestas de Moodle.
    - **¿Los descartes van a una bitácora? PARCIALMENTE.** Evidencia: 509 entidades se descartan en memoria por regex sin bitácora en BD; solo las 48 de `PER_SIN_FORMA_NOMBRE` se persisten en `log_inconsistencias`.
    - **¿Están integradas en el frontend la bandeja y Power BI? SÍ.** Evidencia: `HumanReviewFlowView.jsx` integra `BandejaGrupos` y `CuadroMandoIntegral.jsx` integra el iframe de `giragroup_cmi.pbix`.

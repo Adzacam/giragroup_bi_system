@@ -589,7 +589,7 @@ export default function CuadroMandoIntegral() {
             <div>
               <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Sparkles size={15} color="var(--color-gira-gold)" />
-                Motor Predictivo: Holt-Winters Aditivo (m=12) & Estimadores OLS
+                Motor Predictivo: Holt-Winters Amortiguado (damped_trend=True, m=12) & Estimador OLS
               </div>
               <div style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>
                 {macroData?.caso1_demanda_global ? `Serie longitudinal N = ${macroData.caso1_demanda_global.n_observaciones} meses (${macroData.caso1_demanda_global.periodos_historicos[0]} – ${macroData.caso1_demanda_global.periodos_historicos.at(-1)}) · ` : ''}Intervalo de Confianza: 95% con cota no negativa (ŷ ≥ 0)

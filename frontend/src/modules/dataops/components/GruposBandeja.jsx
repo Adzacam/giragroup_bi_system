@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { dataopsApi } from '../../../api/dataopsApi';
 import { sileoToast } from '../../../services/sileoToast';
-import { describirGrupo, ESTADOS_VINCULO, textoAccion, textoMotivo } from '../../../constants/motivosBandeja';
+import { describirGrupo, ESTADOS_VINCULO, maskTexto, textoAccion, textoMotivo } from '../../../constants/motivosBandeja';
 
 const accionDe = (g) => g.accion_grupo || 'APROBAR';
 
@@ -36,7 +36,16 @@ export default function GruposBandeja({ docId = null, idLote = null, onVerIndivi
   // Casos que se resuelven en bloque: todos los grupos con una acción de grupo (no los MANUAL)
   const resumen = useMemo(() => {
     const enBloque = data.grupos.filter((g) => accionDe(g) !== 'MANUAL');
-    return { casosEnBloque: enBloque.reduce((s, g) => s + g.n, 0), gruposEnBloque: enBloque.length };
+    const discordantes = data.grupos.filter((g) => g.motivo === 'CI_NOMBRE_DISCORDANTE');
+    const bajaConfianza = data.grupos.filter((g) => g.motivo === 'BAJA_CONFIANZA_IA' || g.motivo === 'HECHO_EN_REVISION');
+    return {
+      casosEnBloque: enBloque.reduce((s, g) => s + g.n, 0),
+      gruposEnBloque: enBloque.length,
+      casosDiscordantes: discordantes.reduce((s, g) => s + g.n, 0),
+      gruposDiscordantes: discordantes.length,
+      casosBajaConfianza: bajaConfianza.reduce((s, g) => s + g.n, 0),
+      gruposBajaConfianza: bajaConfianza.length,
+    };
   }, [data]);
 
   const ejecutar = async (g, extra = {}) => {
@@ -102,12 +111,26 @@ export default function GruposBandeja({ docId = null, idLote = null, onVerIndivi
 
   return (
     <div data-testid="bandeja-grupos">
-      <div className="floating-artifact" style={{ padding: '12px 16px', marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
-        <span data-testid="grupos-total"><strong>{data.total_casos}</strong> casos en <strong>{data.total_grupos}</strong> grupos</span>
-        <span data-testid="grupos-en-bloque">Aprobables en bloque: <strong>{resumen.casosEnBloque}</strong> casos en <strong>{resumen.gruposEnBloque}</strong> grupos</span>
-        <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }} title="fk_estado: vínculo del estudiante con la dimensión">
-          {ESTADOS_VINCULO.map((e) => e.texto).join('  ·  ')}
-        </span>
+      <div className="floating-artifact" style={{ padding: '14px 18px', marginBottom: '14px', display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+          <span data-testid="grupos-total" style={{ fontSize: '13.5px' }}>
+            Stock total: <strong>{Number(data.total_casos).toLocaleString('es-BO')}</strong> casos agrupados en <strong>{Number(data.total_grupos).toLocaleString('es-BO')}</strong> grupos
+          </span>
+          <span style={{ fontSize: '12px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'rgba(217, 155, 38, 0.15)', color: '#B8801A', fontWeight: 600 }}>
+            {Number(resumen.casosDiscordantes).toLocaleString('es-BO')} discordantes ({Number(resumen.gruposDiscordantes).toLocaleString('es-BO')} grupos)
+          </span>
+          <span style={{ fontSize: '12px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'rgba(12, 30, 51, 0.08)', color: '#0C1E33', fontWeight: 600 }}>
+            {Number(resumen.casosBajaConfianza).toLocaleString('es-BO')} baja confianza ({Number(resumen.gruposBajaConfianza).toLocaleString('es-BO')} grupos)
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <span style={{ fontSize: '11px', color: '#1B8754', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            🔒 Privacidad: CI enmascaradas (***) y PII anonimizado
+          </span>
+          <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }} title="fk_estado: vínculo del estudiante con la dimensión">
+            {ESTADOS_VINCULO.map((e) => e.texto).join('  ·  ')}
+          </span>
+        </div>
       </div>
 
       {data.grupos.length === 0 ? (
@@ -122,8 +145,8 @@ export default function GruposBandeja({ docId = null, idLote = null, onVerIndivi
               {data.grupos.map((g) => (
                 <tr key={g.clave} data-testid="fila-grupo">
                   <td>{textoMotivo(g.motivo)}</td>
-                  <td style={{ maxWidth: '420px', overflowWrap: 'anywhere' }} title={g.ejemplo}>{describirGrupo(g)}</td>
-                  <td style={{ textAlign: 'right', fontWeight: 700 }}>{g.n}</td>
+                  <td style={{ maxWidth: '420px', overflowWrap: 'anywhere' }} title={maskTexto(g.ejemplo)}>{describirGrupo(g)}</td>
+                  <td style={{ textAlign: 'right', fontWeight: 700 }}>{Number(g.n).toLocaleString('es-BO')}</td>
                   <td>{botonAccion(g)}</td>
                 </tr>
               ))}

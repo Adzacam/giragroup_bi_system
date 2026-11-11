@@ -133,6 +133,13 @@ export default function AuditoriaSistema() {
     return `${str.slice(0, 2)}***${str.slice(-2)}`;
   };
 
+  const maskNombre = (nombre) => {
+    if (!nombre) return 'Estudiante Anonimizado';
+    const parts = String(nombre).trim().split(/\s+/);
+    if (parts.length === 1) return `${parts[0][0]}.***`;
+    return parts.map((p) => (p ? `${p[0]}.` : '')).join(' ') + ' (Anonimizado)';
+  };
+
   const getSeverityBadge = (sev) => {
     switch ((sev || '').toUpperCase()) {
       case 'CRITICAL':
@@ -1310,7 +1317,7 @@ export default function AuditoriaSistema() {
                             </span>
                           </td>
                           <td>
-                            <strong>{al.estudiante}</strong>
+                            <strong>{maskNombre(al.estudiante)}</strong>
                             {al.codigo_estudiante && (
                               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-slate-gray)' }}>
                                 {maskCi(al.codigo_estudiante)}
@@ -1318,7 +1325,15 @@ export default function AuditoriaSistema() {
                             )}
                           </td>
                           <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
-                            {al.metrica_valor}
+                            {typeof al.metrica_valor === 'object' && al.metrica_valor !== null
+                              ? (al.metrica_valor.cuotas_impagas !== undefined
+                                  ? `${al.metrica_valor.cuotas_impagas} ctas · Bs. ${Number(al.metrica_valor.deuda || 0).toLocaleString('es-BO')}`
+                                  : al.metrica_valor.score_fuzzy !== undefined
+                                  ? `${al.metrica_valor.score_fuzzy}%${al.metrica_valor.mejor_candidato ? ` (${maskNombre ? maskNombre(al.metrica_valor.mejor_candidato) : al.metrica_valor.mejor_candidato})` : ''}`
+                                  : al.metrica_valor.nota_actual !== undefined
+                                  ? `Nota ${al.metrica_valor.nota_actual} · ${al.metrica_valor.cuotas_mora} ctas`
+                                  : JSON.stringify(al.metrica_valor))
+                              : String(al.metrica_valor ?? '—')}
                           </td>
                           <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-slate-gray)' }}>
                             {al.umbral_disparador}

@@ -536,6 +536,16 @@ function App() {
                     <AuditoriaSistema />
                   </RoleRoute>
                 } />
+                <Route path="admin/human-review" element={
+                  <RoleRoute allowedRoles={['ADMIN', 'AUDITOR_CALIDAD']}>
+                    <HumanReviewFlowView />
+                  </RoleRoute>
+                } />
+                <Route path="admin/revision" element={
+                  <RoleRoute allowedRoles={['ADMIN', 'AUDITOR_CALIDAD']}>
+                    <HumanReviewFlowView />
+                  </RoleRoute>
+                } />
               </Route>
 
               {/* Catch-all */}

@@ -6,6 +6,7 @@ Recupera los datos precalculados de fact_forecast o ejecuta el motor on-demand
 si aún no se ha ejecutado el batch de persistencia.
 """
 
+import os
 import sys
 import logging
 import re
@@ -24,13 +25,31 @@ if _project_root not in sys.path:
 
 logger = logging.getLogger("forecast_service")
 
+# Configuración: primer mes de la serie longitudinal canónica de alumnos usada en la tesis
+# (ventana sep-2023 a may-2026 = 33 meses). Los meses previos son ingestas parciales sin
+# cobertura completa. Se puede sobrescribir con la variable de entorno SERIE_ALUMNOS_INICIO.
+SERIE_ALUMNOS_INICIO = os.getenv("SERIE_ALUMNOS_INICIO", "2023-09")
+HOLDOUT_MESES = 6  # meses de validación hold-out para el MAPE
+
+
+def _recortar_serie_alumnos(serie: pd.Series) -> pd.Series:
+    """Descarta meses anteriores a SERIE_ALUMNOS_INICIO (solo si la serie contiene ese mes)."""
+    if len(serie) == 0:
+        return serie
+    corte = pd.Period(SERIE_ALUMNOS_INICIO, freq="M")
+    idx = pd.PeriodIndex(serie.index, freq="M") if not isinstance(serie.index, pd.PeriodIndex) else serie.index
+    if corte not in idx:
+        return serie
+    return serie[idx >= corte]
+
 try:
     from pipeline.analytics.time_series_extractor import extraer_serie_temporal
-    from pipeline.analytics.forecasting_holtwinters import entrenar_y_proyectar_hw
+    from pipeline.analytics.forecasting_holtwinters import entrenar_y_proyectar_hw, calcular_mape_holdout
     from pipeline.analytics.forecasting_ols import estimar_tendencia_anual_ols
 except ImportError:
     extraer_serie_temporal = None
     entrenar_y_proyectar_hw = None
+    calcular_mape_holdout = None
     estimar_tendencia_anual_ols = None
 
 try:
@@ -106,6 +125,8 @@ def obtener_pronostico_alumnos(
     # 2. On-demand: solo con datos reales del DW y observaciones suficientes
     engine = db.get_bind() if db is not None else None
     serie = extraer_serie_temporal(caso_uso, engine=engine)
+    if caso_uso == "ALUMNOS_GLOBAL":
+        serie = _recortar_serie_alumnos(serie)
     res, motivo = _proyectar_hw_seguro(serie, caso_uso, horizonte)
     if res is None:
         return _respuesta_sin_datos(caso_uso, motivo, tipo_solicitado=tipo_upper, n_observaciones=len(serie))
@@ -452,6 +473,7 @@ def obtener_analitica_macro_completa(
 
     # ── CASO 1: Demanda Global de Alumnos ──────────────────────────────
     serie_global = extraer_serie_temporal("ALUMNOS_GLOBAL", engine=engine)
+    serie_global = _recortar_serie_alumnos(serie_global)
     hw_alumnos, motivo = _proyectar_hw_seguro(serie_global, "ALUMNOS_GLOBAL", h_safe)
     caso1 = None
     if hw_alumnos is None:
@@ -473,12 +495,13 @@ def obtener_analitica_macro_completa(
             "ic_lower_95": hw_alumnos["ic_lower"],
             "ic_upper_95": hw_alumnos["ic_upper"],
             "recta_ols_full": [max(0.0, float(round(poly[0] * i + poly[1], 1))) for i in x_full],
-            "pendiente_ols_mes": float(round(poly[0], 2)),
+            "pendiente_ols_mes": float(round(poly[0], 4)),
             "intercepto_ols": float(round(poly[1], 2)),
             "cagr_historico_pct": float(round(((y_arr[-1] / max(1.0, y_arr[0])) ** (12.0 / n_meses) - 1.0) * 100.0, 2)),
-            "mape_pct": float(round(np.mean(np.abs(residuos / np.maximum(y_arr, 1.0))) * 100.0, 2)),
+            "mape_pct": (calcular_mape_holdout(serie_global, h=HOLDOUT_MESES)
+                         if calcular_mape_holdout is not None else None),
             "rmse": hw_alumnos["rmse"],
-            "modelo": "Holt-Winters Aditivo (m=12) con cota no negativa y Banda 95%"
+            "modelo": "Holt-Winters Amortiguado (damped_trend=True, m=12)"
         }
 
     # ── CASO 2: Demanda por Programa y Matriz de Viabilidad ─────────────

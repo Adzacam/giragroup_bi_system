@@ -238,7 +238,7 @@ El módulo de proyección de demanda académica se encuentra formalmente impleme
 - **Septiembre 2026:** 454,48 estudiantes (IC 95 %: [359,69; 549,27])
 - **Octubre 2026:** 428,85 estudiantes (IC 95 %: [334,06; 523,64])
 - **Noviembre 2026:** 461,97 estudiantes (IC 95 %: [367,18; 556,76])
-- *Margen de error del intervalo:* $\pm 94,79$ estudiantes ($1,96 \times \text{RMSE}_{\text{hold-out}}$).
+- *Margen de error del intervalo:* $\pm 94,79$ estudiantes ($1,96 \times \text{RMSE}_{\text{ajuste 33 m}}$ = 1,96 × 48,36).
 
 ---
 

@@ -46,11 +46,43 @@ export const ESTADOS_VINCULO = [
 const ACCIONES = { APROBAR: 'Aprobar grupo', MAPEAR_ESTADO: 'Mapear a estado canónico', CORREGIR_FECHA: 'Corregir fecha', MANUAL: 'Revisar caso a caso' };
 export const textoAccion = (a) => ACCIONES[a] || ACCIONES.APROBAR;
 
+export const maskCi = (ci) => {
+  if (!ci) return '—';
+  const str = String(ci).trim();
+  if (str.length <= 4) return '***';
+  return `${str.slice(0, 2)}***${str.slice(-2)}`;
+};
+
+export const maskNombre = (nombre) => {
+  if (!nombre) return 'Estudiante Anonimizado';
+  const parts = String(nombre).trim().split(/\s+/);
+  if (parts.length === 1) return `${parts[0][0]}.***`;
+  return parts.map((p) => (p ? `${p[0]}.` : '')).join(' ') + ' (Anonimizado)';
+};
+
+export const maskTexto = (t) => {
+  if (!t) return '';
+  return String(t)
+    .replace(/CI:\s*([0-9A-Za-z\-]+)/gi, (m, ci) => `CI: ${maskCi(ci)}`)
+    .replace(/Nombre:\s*([^()|]+)/gi, (m, nom) => `Nombre: ${maskNombre(nom)}`)
+    .replace(/Discordante con:\s*([^()|]+)/gi, (m, nom) => `Discordante con: ${maskNombre(nom)}`)
+    .replace(/\b\d{6,10}\b/g, (m) => maskCi(m));
+};
+
 const FALTAN = { estudiante: 'estudiante', modulo: 'módulo', nota: 'nota', fecha: 'fecha', monto: 'monto' };
 
 /** Descripción legible del valor normalizado de un grupo (los de hechos traen documento, campos faltantes y estados). */
 export function describirGrupo(g) {
-  if (g.motivo !== 'HECHO_EN_REVISION') return g.valor;
+  if (!g) return '';
+  if (g.motivo === 'CI_NOMBRE_DISCORDANTE') {
+    return `Cédula: ${maskCi(g.valor)}`;
+  }
+  if (g.motivo === 'HOMONIMIA') {
+    return `Candidato: ${maskNombre(g.valor)}`;
+  }
+  if (g.motivo !== 'HECHO_EN_REVISION') {
+    return maskTexto(g.valor);
+  }
   const p = String(g.valor).split('|');
   const area = p[0] === 'academico' ? 'Académico' : 'Financiero';
   const doc = (p[1] || '').replace('doc', 'documento ');

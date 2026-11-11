@@ -168,3 +168,24 @@ def entrenar_y_proyectar_hw(
         f"Proyección={forecast_vals[:3]}..."
     )
     return resultado
+
+
+def calcular_mape_holdout(serie: pd.Series, h: int = 6, seasonal_periods: int = 12) -> Optional[float]:
+    """MAPE (%) de validación hold-out: entrena con serie[:-h], proyecta h meses y compara
+    contra los h últimos reales. Calculado, no fijo. None si no hay observaciones suficientes
+    (se exigen 2 ciclos estacionales completos en el tramo de entrenamiento)."""
+    s = serie.dropna().astype(float)
+    if len(s) - h < 2 * seasonal_periods or not HAS_STATSMODELS:
+        return None
+    train, test = s.iloc[:-h], s.iloc[-h:]
+    idx = train.index.to_timestamp(how="start") if isinstance(train.index, pd.PeriodIndex) else pd.to_datetime(train.index)
+    tr = pd.Series(train.values, index=idx).asfreq("MS").fillna(0.0)
+    try:
+        m = ExponentialSmoothing(tr, trend="add", damped_trend=True, seasonal="add",
+                                 seasonal_periods=seasonal_periods,
+                                 initialization_method="estimated").fit(optimized=True)
+        pred = m.forecast(h).values
+    except Exception:
+        return None
+    y = test.values
+    return float(round(np.mean(np.abs((y - pred) / np.maximum(y, 1.0))) * 100.0, 2))

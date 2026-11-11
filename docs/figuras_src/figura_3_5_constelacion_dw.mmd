@@ -1,0 +1,235 @@
+erDiagram
+    %% =========================================================================
+    %% FIGURA 3.5: ESQUEMA FÍSICO DE LA CONSTELACIÓN DEL DATA WAREHOUSE
+    %% GiraGroup S.R.L. - Snapshot snapshot_dw_20261110_1201
+    %% 9 Tablas de Hechos, 7 Dimensiones y 1 Tabla Puente (Bridge)
+    %% =========================================================================
+
+    %% --- DIMENSIONES CONFORMADAS (7) ---
+    dim_tiempo {
+        INTEGER id_tiempo PK
+        DATE fecha
+        INTEGER anio
+        INTEGER mes
+        VARCHAR nombre_mes
+        VARCHAR periodo_mes
+        INTEGER trimestre
+        INTEGER semestre
+        INTEGER dia
+        VARCHAR dia_semana
+    }
+
+    dim_estudiante {
+        INTEGER id_estudiante PK
+        VARCHAR codigo_estudiante
+        VARCHAR nombre_completo
+        VARCHAR ci_numero
+        VARCHAR ci_expedido
+        VARCHAR email
+        VARCHAR celular
+        VARCHAR programa_origen
+        BOOLEAN deprecado
+        BOOLEAN identidad_verificada
+    }
+
+    dim_docente {
+        INTEGER id_docente PK
+        VARCHAR nombre_completo
+        VARCHAR ci_numero
+        VARCHAR email
+        VARCHAR telefono
+        VARCHAR profesion
+        VARCHAR grado_academico
+        BOOLEAN activo
+    }
+
+    dim_modulo {
+        INTEGER id_modulo PK
+        VARCHAR codigo_modulo
+        VARCHAR nombre_modulo
+        VARCHAR programa
+        VARCHAR tipo_programa
+        VARCHAR escuela
+        VARCHAR modalidad
+        INTEGER creditos
+        INTEGER horas_academicas
+        BOOLEAN activo
+    }
+
+    dim_categoria_financiera {
+        INTEGER id_categoria PK
+        VARCHAR codigo
+        VARCHAR nombre_categoria
+        VARCHAR tipo_flujo
+        BOOLEAN activo
+    }
+
+    dim_origen_documental {
+        INTEGER id_documento PK
+        VARCHAR nombre_archivo
+        VARCHAR tipo_fuente
+        VARCHAR hash_sha256
+        INTEGER total_registros
+    }
+
+    dim_meta {
+        INTEGER id_meta PK
+        INTEGER gestion
+        INTEGER mes
+        INTEGER meta_matriculados
+        NUMERIC meta_recaudacion
+        BOOLEAN activo
+    }
+
+    %% --- TABLA PUENTE (BRIDGE M:N) ---
+    bridge_modulo_docente {
+        INTEGER id_modulo PK,FK
+        INTEGER id_docente PK,FK
+        DATE fecha_asignacion
+        BOOLEAN es_titular
+    }
+
+    %% --- TABLAS DE HECHOS (9) ---
+    fact_rendimiento_academico {
+        INTEGER id_rendimiento PK
+        INTEGER id_estudiante FK
+        INTEGER id_docente FK
+        INTEGER id_modulo FK
+        INTEGER id_tiempo FK
+        INTEGER id_documento FK
+        NUMERIC nota_final
+        NUMERIC asistencia_pct
+        NUMERIC incumplimiento_act_pct
+        NUMERIC calificacion_docente
+        VARCHAR fk_estado
+        NUMERIC nivel_confianza_ia
+        BOOLEAN requiere_revision
+        VARCHAR tipo_alerta
+        INTEGER id_usuario_carga
+    }
+
+    fact_situacion_financiera {
+        INTEGER id_situacion PK
+        INTEGER id_estudiante FK
+        INTEGER id_modulo FK
+        INTEGER id_categoria_fin FK
+        INTEGER id_tiempo FK
+        INTEGER id_documento FK
+        NUMERIC monto_total_deuda
+        NUMERIC monto_total_pagado
+        NUMERIC monto_pendiente_pago
+        INTEGER dias_mora
+        INTEGER cuotas_impagas
+        VARCHAR estado_cartera
+        VARCHAR fk_estado
+        NUMERIC nivel_confianza_ia
+        BOOLEAN requiere_revision
+    }
+
+    fact_evaluacion_docente {
+        INTEGER id_evaluacion PK
+        INTEGER id_docente FK
+        INTEGER id_modulo FK
+        INTEGER id_estudiante FK
+        INTEGER id_tiempo FK
+        NUMERIC puntaje_promedio
+        NUMERIC nivel_confianza_ia
+    }
+
+    fact_marketing {
+        INTEGER id_mkt PK
+        INTEGER id_modulo FK
+        INTEGER id_tiempo FK
+        INTEGER leads
+        INTEGER inscritos
+        NUMERIC tasa_conversion
+        NUMERIC inversion_bs
+    }
+
+    fact_rentabilidad {
+        INTEGER id_rentabilidad PK
+        INTEGER id_modulo FK
+        INTEGER id_categoria FK
+        INTEGER id_tiempo FK
+        NUMERIC monto_ejecutado
+        NUMERIC monto_meta
+        VARCHAR tipo_flujo
+        INTEGER gestion
+    }
+
+    fact_costo_programa {
+        INTEGER id_costo PK
+        INTEGER id_modulo FK
+        INTEGER id_documento FK
+        NUMERIC costo_modulo
+        NUMERIC pago_docente
+        NUMERIC costo_refrigerios
+    }
+
+    fact_techo_convenio {
+        INTEGER id_techo PK
+        INTEGER id_modulo FK
+        INTEGER id_tiempo FK
+        INTEGER id_documento FK
+        NUMERIC monto_techo_bs
+        NUMERIC porcentaje_ejecutado
+    }
+
+    fact_forecast {
+        INTEGER id_forecast PK
+        INTEGER id_tiempo FK
+        VARCHAR serie
+        INTEGER horizonte_meses
+        NUMERIC valor_proyectado
+        NUMERIC limite_inf_95
+        NUMERIC limite_sup_95
+    }
+
+    fact_cobranzas_proyectadas {
+        INTEGER id_proyeccion PK
+        INTEGER id_estudiante FK
+        INTEGER id_tiempo FK
+        NUMERIC monto_proyectado
+        NUMERIC probabilidad_pago
+        INTEGER gestion
+    }
+
+    %% --- RELACIONES REFERENCIALES (FK) ---
+    dim_estudiante ||--o{ fact_rendimiento_academico : "registra calificaciones"
+    dim_docente ||--o{ fact_rendimiento_academico : "evalua"
+    dim_modulo ||--o{ fact_rendimiento_academico : "cursado en"
+    dim_tiempo ||--o{ fact_rendimiento_academico : "ocurrido en"
+    dim_origen_documental ||--o{ fact_rendimiento_academico : "extraido de"
+
+    dim_estudiante ||--o{ fact_situacion_financiera : "mantiene deuda"
+    dim_modulo ||--o{ fact_situacion_financiera : "asociado a"
+    dim_categoria_financiera ||--o{ fact_situacion_financiera : "clasificado en"
+    dim_tiempo ||--o{ fact_situacion_financiera : "fecha transaccion"
+    dim_origen_documental ||--o{ fact_situacion_financiera : "fuente contable"
+
+    dim_docente ||--o{ fact_evaluacion_docente : "calificado"
+    dim_modulo ||--o{ fact_evaluacion_docente : "materia"
+    dim_estudiante ||--o{ fact_evaluacion_docente : "respondido por"
+    dim_tiempo ||--o{ fact_evaluacion_docente : "periodo evaluacion"
+
+    dim_modulo ||--o{ fact_marketing : "programa promocionado"
+    dim_tiempo ||--o{ fact_marketing : "mes captacion"
+
+    dim_modulo ||--o{ fact_rentabilidad : "programa"
+    dim_categoria_financiera ||--o{ fact_rentabilidad : "rubro"
+    dim_tiempo ||--o{ fact_rentabilidad : "periodo ejecucion"
+
+    dim_modulo ||--o{ fact_costo_programa : "modulo ejecutado"
+    dim_origen_documental ||--o{ fact_costo_programa : "comprobante"
+
+    dim_modulo ||--o{ fact_techo_convenio : "modulo bajo convenio"
+    dim_tiempo ||--o{ fact_techo_convenio : "vigencia"
+    dim_origen_documental ||--o{ fact_techo_convenio : "adenda"
+
+    dim_tiempo ||--o{ fact_forecast : "mes pronosticado"
+
+    dim_estudiante ||--o{ fact_cobranzas_proyectadas : "deudor"
+    dim_tiempo ||--o{ fact_cobranzas_proyectadas : "periodo vencimiento"
+
+    dim_modulo ||--o{ bridge_modulo_docente : "asignado a"
+    dim_docente ||--o{ bridge_modulo_docente : "docente asignado"
