@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Paginacion from '../../components/shared/Paginacion';
+import Button from '../../components/shared/Button';
 import usePaginacion from '../../hooks/usePaginacion';
 import { Plus, Trash2, Shield, UserCheck, AlertTriangle, X, User } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
@@ -48,10 +49,14 @@ export default function GestionUsuarios() {
     loadUsers();
   }, []);
 
+  const [creating, setCreating] = useState(false);
+
   const handleCreateUser = async (e) => {
     e.preventDefault();
+    if (creating) return;
     setErrorMsg('');
     setSuccessMsg('');
+    setCreating(true);
 
     try {
       const created = await usersApi.createUser(formData);
@@ -60,7 +65,9 @@ export default function GestionUsuarios() {
       setFormData({ username: '', email: '', phone: '', password: '', role: 'AUDITOR_CALIDAD' });
       loadUsers();
     } catch (err) {
-      setErrorMsg(err.response?.data?.detail || 'Error al crear el usuario en la base de datos.');
+      setErrorMsg(err.response?.data?.detail || 'No se pudo crear el usuario. Intenta de nuevo.');
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -68,7 +75,7 @@ export default function GestionUsuarios() {
     // Anti-orphan client-side checks
     if (userToDelete.id === currentUser?.id || userToDelete.email === currentUser?.email) {
       sileoToast.error({
-        title: 'Violación de Política RBAC',
+        title: 'Acción no permitida',
         description: 'No se puede eliminar el único administrador activo del sistema.'
       });
       setErrorMsg('No puedes auto-eliminar tu propia cuenta de administrador.');
@@ -78,7 +85,7 @@ export default function GestionUsuarios() {
     const adminCount = users.filter((u) => u.role === 'ADMIN').length;
     if (userToDelete.role === 'ADMIN' && adminCount <= 1) {
       sileoToast.error({
-        title: 'Violación de Política RBAC',
+        title: 'Acción no permitida',
         description: 'No se puede eliminar el único administrador activo del sistema.'
       });
       setErrorMsg('Acción denegada: No se puede dejar el sistema sin al menos un Administrador activo.');
@@ -408,7 +415,7 @@ export default function GestionUsuarios() {
 
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
-                  Rol del Sistema (PoLP)
+                  Rol del usuario
                 </label>
                 <select
                   value={formData.role}
@@ -425,16 +432,12 @@ export default function GestionUsuarios() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '12px' }}>
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="btn-pill-ghost"
-                >
+                <Button variant="ghost" onClick={() => setIsModalOpen(false)} disabled={creating}>
                   Cancelar
-                </button>
-                <button type="submit" className="btn-pill-dark">
+                </Button>
+                <Button type="submit" isLoading={creating} loadingText="Guardando…">
                   Guardar Usuario
-                </button>
+                </Button>
               </div>
             </form>
           </div>

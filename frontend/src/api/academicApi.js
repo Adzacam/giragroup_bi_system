@@ -1,21 +1,6 @@
 import client from './client';
 
 /**
- * Obtiene la proyección mensual de alumnos inscritos
- * @param {string} tipo - 'GLOBAL', 'DIPLOMADO', 'CURSO', 'EXPERTO'
- * @param {number} horizonte - Cantidad de meses (1 a 6)
- */
-export const getForecastAlumnos = async (tipo = 'GLOBAL', horizonte = 6) => {
-  const res = await client.get('/api/v1/forecast/alumnos', {
-    params: {
-      tipo,
-      horizonte,
-    },
-  });
-  return res.data;
-};
-
-/**
  * Obtiene alertas de riesgo multidimensional cruzado (académico + mora)
  * @param {number} limiteNota - Umbral máximo de nota (default: 70.0)
  * @param {number} minCuotas - Mínimo de cuotas impagas (default: 2)
@@ -58,7 +43,6 @@ export const getFichaCruzadaEstudiante = async (idEstudiante) => {
 };
 
 export const academicApi = {
-  getForecastAlumnos,
   getRiesgoCruzado,
   getAlertasTempranas,
   getFichaCruzadaEstudiante,

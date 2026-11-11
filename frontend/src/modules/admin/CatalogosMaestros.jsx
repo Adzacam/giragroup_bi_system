@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Paginacion from '../../components/shared/Paginacion';
+import Button from '../../components/shared/Button';
 import usePaginacion from '../../hooks/usePaginacion';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { Database, Plus, Search, CheckCircle, RefreshCw, X, Trash2, AlertCircle } from 'lucide-react';
@@ -122,7 +123,7 @@ export default function CatalogosMaestros() {
               className="btn-pill-ghost"
               type="button"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}
-              title="Recargar desde base de datos"
+              title="Actualizar listado"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refrescar
             </button>
@@ -367,17 +368,12 @@ export default function CatalogosMaestros() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="btn-pill-ghost"
-                  disabled={saving}
-                >
+                <Button variant="ghost" onClick={() => setIsModalOpen(false)} disabled={saving}>
                   Cancelar
-                </button>
-                <button type="submit" className="btn-pill-dark" disabled={saving}>
-                  {saving ? 'Guardando...' : 'Guardar registro'}
-                </button>
+                </Button>
+                <Button type="submit" isLoading={saving} loadingText="Guardando…">
+                  Guardar registro
+                </Button>
               </div>
             </form>
           </div>

@@ -1,16 +1,10 @@
 """
-backend/tests_root/sprint4/test_alertas_tempranas_vista3.py
+tests/sprint4/test_alertas_tempranas_vista3.py
 -----------------------------------------------------------
 Pruebas unitarias e integración para la Vista 3:
 Monitoreo de Reglas de Umbral y Alertas Tempranas (IF/THEN determinístico).
 """
 
-import sys
-from pathlib import Path
-
-BACKEND_DIR = Path(__file__).resolve().parents[2]
-if str(BACKEND_DIR) not in sys.path:
-    sys.path.insert(0, str(BACKEND_DIR))
 
 from models.dim_estudiante import DimEstudiante
 from models.dim_modulo import DimModulo

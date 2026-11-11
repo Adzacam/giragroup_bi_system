@@ -1,5 +1,5 @@
 """
-backend/tests_root/sprint4/test_cmi_y_laboratorio_predictivo.py
+tests/sprint4/test_cmi_y_laboratorio_predictivo.py
 --------------------------------------------------------------
 Pruebas de verificación automatizada para Vista 4:
 - Cuadro de Mando Integral (Perspectivas Estratégicas Institucionales)
@@ -7,8 +7,6 @@ Pruebas de verificación automatizada para Vista 4:
 - Matriz de Viabilidad de Programas (Foco Marketing)
 """
 
-import sys
-from pathlib import Path
 from unittest.mock import MagicMock
 import numpy as np
 import pandas as pd
@@ -16,13 +14,6 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
-
-BACKEND_DIR = ROOT_DIR / "backend"
-if str(BACKEND_DIR) not in sys.path:
-    sys.path.insert(0, str(BACKEND_DIR))
 
 from main import app
 from core.security import get_current_user
