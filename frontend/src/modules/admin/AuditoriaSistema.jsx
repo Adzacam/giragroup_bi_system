@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import usePaginacion from '../../hooks/usePaginacion';
+import Paginacion from '../../components/shared/Paginacion';
 import {
   ShieldCheck, Shield, AlertTriangle, FileSpreadsheet,
   Activity, Search, Download, RefreshCw, Filter, CheckCircle2,
@@ -353,6 +355,8 @@ export default function AuditoriaSistema() {
       return true;
     });
   }, [alertas, filterTipoAlerta, filterSeveridadAlerta, searchAlertas]);
+  const pagLogs = usePaginacion(logs);
+  const pagAlertas = usePaginacion(filteredAlertas);
 
   const totalCriticasAlertas = alertas.filter((a) => a.severidad === 'CRITICAL').length;
   const totalWarningAlertas = alertas.filter((a) => a.severidad === 'WARNING').length;
@@ -906,7 +910,7 @@ export default function AuditoriaSistema() {
                       </td>
                     </tr>
                   ) : (
-                    logs.map((log) => {
+                    pagLogs.visibles.map((log) => {
                       const sBadge = getSeverityBadge(log.severidad);
                       const mBadge = getModuleBadge(log.modulo);
                       const ModIcon = mBadge.icon;
@@ -972,6 +976,7 @@ export default function AuditoriaSistema() {
                   )}
                 </tbody>
               </table>
+              <Paginacion {...pagLogs} onChange={pagLogs.setPagina} />
             </ResponsiveTable>
           </div>
         </>
@@ -1291,7 +1296,7 @@ export default function AuditoriaSistema() {
                       </td>
                     </tr>
                   ) : (
-                    filteredAlertas.map((al, idx) => {
+                    pagAlertas.visibles.map((al, idx) => {
                       const sBadge = getSeverityBadge(al.severidad);
                       const rBadge = getRoleBadge(al.role_target);
 
@@ -1362,6 +1367,7 @@ export default function AuditoriaSistema() {
                   )}
                 </tbody>
               </table>
+              <Paginacion {...pagAlertas} onChange={pagAlertas.setPagina} />
             </ResponsiveTable>
           </div>
         </>

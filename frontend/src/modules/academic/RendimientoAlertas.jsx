@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import usePaginacion from '../../hooks/usePaginacion';
+import Paginacion from '../../components/shared/Paginacion';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import {
   AlertCircle,
@@ -147,6 +149,7 @@ export default function RendimientoAlertas() {
       setSelectedStudentId(datosAlertas.estudiantes[0].id_estudiante);
     }
   }, [datosAlertas.estudiantes, selectedStudentId]);
+  const pagEst = usePaginacion(datosAlertas.estudiantes || []);
 
   // Query separada e independiente para la ficha del estudiante seleccionado
   const {
@@ -1188,7 +1191,7 @@ export default function RendimientoAlertas() {
                       </td>
                     </tr>
                   ) : (
-                    datosAlertas.estudiantes.map((est) => {
+                    pagEst.visibles.map((est) => {
                       const isRowSelected = selectedStudentId === est.id_estudiante;
                       const promStr =
                         est.promedio_notas !== null && est.promedio_notas !== undefined
@@ -1322,6 +1325,7 @@ export default function RendimientoAlertas() {
                   )}
                 </tbody>
               </table>
+              <Paginacion {...pagEst} onChange={pagEst.setPagina} />
             </ResponsiveTable>
 
             {/* Barra de acciones al pie de la Tabla Nominal */}

@@ -1,4 +1,6 @@
 import React from 'react';
+import usePaginacion from '../../hooks/usePaginacion';
+import Paginacion from '../../components/shared/Paginacion';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { DollarSign, TrendingUp, CreditCard, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
@@ -59,6 +61,7 @@ export default function RecaudacionCobranzas() {
     gcTime: 300_000,
     placeholderData: keepPreviousData,
   });
+  const pagHist = usePaginacion(datosCobro.historicoMeses);
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
@@ -154,7 +157,7 @@ export default function RecaudacionCobranzas() {
                 </td>
               </tr>
             ) : (
-              datosCobro.historicoMeses.map((m, idx) => (
+              pagHist.visibles.map((m, idx) => (
                 <tr key={idx}>
                   <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '13px' }}>
                     {m.periodo}
@@ -191,6 +194,7 @@ export default function RecaudacionCobranzas() {
             )}
           </tbody>
         </table>
+        <Paginacion {...pagHist} onChange={pagHist.setPagina} />
       </ResponsiveTable>
     </div>
   );

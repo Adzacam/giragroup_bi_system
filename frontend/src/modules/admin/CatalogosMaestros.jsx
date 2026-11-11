@@ -1,4 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import Paginacion from '../../components/shared/Paginacion';
+import usePaginacion from '../../hooks/usePaginacion';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { Database, Plus, Search, CheckCircle, RefreshCw, X, Trash2, AlertCircle } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
@@ -73,6 +75,9 @@ export default function CatalogosMaestros() {
     }
     return [];
   }, [activeTab, searchTerm, modulosList, docentesList, conceptosList]);
+  const pag = usePaginacion(currentList);
+  const { setPagina } = pag;
+  useEffect(() => { setPagina(1); }, [activeTab, searchTerm, setPagina]);
 
 
   const handleAdd = async (e) => {
@@ -215,7 +220,7 @@ export default function CatalogosMaestros() {
             </thead>
             <tbody>
               {currentList.length > 0 ? (
-                currentList.map((row, idx) => {
+                pag.visibles.map((row, idx) => {
                   const id = row.id_modulo || row.id_docente || row.id_concepto || idx;
                   const codigo = row.pos_code || `DOC-${row.id_docente}` || row.codigo_canonico || `CAT-${id}`;
                   const nombre = row.nombre_modulo || row.nombre_completo || row.nombre_canonico || 'Sin nombre';
@@ -273,6 +278,7 @@ export default function CatalogosMaestros() {
               )}
             </tbody>
           </table>
+          <Paginacion {...pag} onChange={pag.setPagina} />
         </ResponsiveTable>
       )}
 

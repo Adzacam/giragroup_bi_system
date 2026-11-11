@@ -1,4 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import usePaginacion from '../../hooks/usePaginacion';
+import Paginacion from '../../components/shared/Paginacion';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Search, RefreshCw, ExternalLink } from 'lucide-react';
@@ -89,6 +91,9 @@ export default function CarteraMora() {
         (m.programa || '').toLowerCase().includes(q)
     );
   }, [registrosMora, searchTerm]);
+  const pag = usePaginacion(filtered);
+  const { setPagina } = pag;
+  useEffect(() => { setPagina(1); }, [searchTerm, setPagina]);
 
 
   return (
@@ -219,7 +224,7 @@ export default function CarteraMora() {
                 </td>
               </tr>
             ) : (
-              filtered.map((item) => (
+              pag.visibles.map((item) => (
                 <tr key={item.id_estudiante} className={item.cantidad_reglas >= 2 ? 'row-critical-alert' : ''}>
                   <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '13px' }}>
                     {maskCi(item.ci)}
@@ -256,6 +261,7 @@ export default function CarteraMora() {
             )}
           </tbody>
         </table>
+        <Paginacion {...pag} onChange={pag.setPagina} />
       </ResponsiveTable>
     </div>
   );

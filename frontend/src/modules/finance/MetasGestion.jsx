@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import usePaginacion from '../../hooks/usePaginacion';
+import Paginacion from '../../components/shared/Paginacion';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { Target, TrendingUp, CheckCircle2, AlertCircle, RefreshCw, Layers, Calendar, Award } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
@@ -74,6 +76,8 @@ export default function MetasGestion() {
   }, [caso3]);
 
   const matrizViabilidad = useMemo(() => caso2?.matriz_viabilidad || [], [caso2]);
+  const pagMeses = usePaginacion(mesesComparativo);
+  const pagMatriz = usePaginacion(matrizViabilidad);
 
   const formatBs = (num) => {
     if (num === undefined || num === null || isNaN(num)) return '—';
@@ -200,7 +204,7 @@ export default function MetasGestion() {
                   </thead>
                   <tbody>
                     {mesesComparativo.length > 0 ? (
-                      mesesComparativo.map((row, idx) => {
+                      pagMeses.visibles.map((row, idx) => {
                         const meta = Number(row.meta_presupuestada || 0);
                         const real = Number(row.ingreso_real || 0);
                         const hw = row.proyeccion_holt_winters ?? null;
@@ -279,6 +283,7 @@ export default function MetasGestion() {
                     )}
                   </tbody>
                 </table>
+                <Paginacion {...pagMeses} onChange={pagMeses.setPagina} />
               </ResponsiveTable>
             </div>
           ) : (
@@ -312,7 +317,7 @@ export default function MetasGestion() {
                   </thead>
                   <tbody>
                     {matrizViabilidad.length > 0 ? (
-                      matrizViabilidad.map((prog, idx) => {
+                      pagMatriz.visibles.map((prog, idx) => {
                         const matchingCat = catalogPrograms.find(c => 
                           c.nombre.toLowerCase().includes(prog.programa.toLowerCase().slice(0, 15)) ||
                           prog.programa.toLowerCase().includes(c.nombre.toLowerCase().slice(0, 15))
@@ -368,6 +373,7 @@ export default function MetasGestion() {
                     )}
                   </tbody>
                 </table>
+                <Paginacion {...pagMatriz} onChange={pagMatriz.setPagina} />
               </ResponsiveTable>
             </div>
           )}

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import usePaginacion from '../../hooks/usePaginacion';
+import Paginacion from '../../components/shared/Paginacion';
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import PageHeader from '../../components/shared/PageHeader';
 import CmiScorecard from './cmi/CmiScorecard';
@@ -148,6 +150,7 @@ export default function CuadroMandoIntegral() {
       return matchTipo && matchText;
     });
   }, [macroData, filtroTipoProg, searchProg]);
+  const pagViab = usePaginacion(filteredViabilidad);
 
 
   // Configuración de colores para Chart.js
@@ -755,7 +758,7 @@ export default function CuadroMandoIntegral() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredViabilidad.slice(0, 8).map((p, idx) => (
+                    {pagViab.visibles.map((p, idx) => (
                       <tr
                         key={idx}
                         onClick={() => setModalDetail({
@@ -798,6 +801,7 @@ export default function CuadroMandoIntegral() {
                     ))}
                   </tbody>
                 </table>
+                <Paginacion {...pagViab} onChange={pagViab.setPagina} />
               </div>
             </div>
 

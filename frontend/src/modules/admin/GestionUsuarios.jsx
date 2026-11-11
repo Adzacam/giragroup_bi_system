@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Paginacion from '../../components/shared/Paginacion';
+import usePaginacion from '../../hooks/usePaginacion';
 import { Plus, Trash2, Shield, UserCheck, AlertTriangle, X, User } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
@@ -113,6 +115,8 @@ export default function GestionUsuarios() {
     }
   };
 
+  const pag = usePaginacion(users);
+
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '60px' }}>
       <PageHeader
@@ -186,7 +190,7 @@ export default function GestionUsuarios() {
             </tr>
           </thead>
           <tbody>
-            {users.map((u) => {
+            {pag.visibles.map((u) => {
               const badge = getRoleBadge(u.role);
               const isSelf = u.id === currentUser?.id || u.email === currentUser?.email;
               return (
@@ -289,6 +293,7 @@ export default function GestionUsuarios() {
             })}
           </tbody>
         </table>
+        <Paginacion {...pag} onChange={pag.setPagina} />
       </ResponsiveTable>
 
       <div
