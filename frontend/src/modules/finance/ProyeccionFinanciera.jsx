@@ -160,7 +160,7 @@ export default function ProyeccionFinanciera() {
           category="ÁREA FINANCIERA · MODELOS PREDICTIVOS MACRO"
           title="Proyección Financiera y Metas"
           italicWord="Institucionales"
-          subtitle="Proyección econométrica de recaudación y flujos de caja mediante Holt-Winters aditivo (m=12) y ajuste lineal plurianual OLS."
+          subtitle="Proyección econométrica de recaudación y flujos de caja mediante Holt-Winters amortiguado (m=12) y ajuste lineal plurianual OLS."
         />
         <button
           onClick={fetchData}

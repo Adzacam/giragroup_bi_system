@@ -172,7 +172,7 @@ export default function ProyeccionAlumnos() {
           category="ÁREA ACADÉMICA · MODELOS PREDICTIVOS MACRO"
           title="Proyección de Alumnos y Demanda"
           italicWord="Académica"
-          subtitle="Modelado cuantitativo de matrícula mediante Holt-Winters aditivo (m=12) y Matriz de Viabilidad Estratégica de Cursos."
+          subtitle="Modelado cuantitativo de matrícula mediante Holt-Winters amortiguado (m=12) y Matriz de Viabilidad Estratégica de Cursos."
         />
         <button
           onClick={fetchData}

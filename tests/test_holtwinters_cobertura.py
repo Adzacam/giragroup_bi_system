@@ -17,7 +17,7 @@ def test_motor_nativo_devuelve_pronostico_ajuste_y_rmse():
     y = _serie(36).values
     fc, fitted, rmse, params = hw._holt_winters_nativo(y, m=12, h=6)
     assert len(fc) == 6 and len(fitted) == 36 - 12
-    assert rmse >= 0 and set(params) == {"alpha", "beta", "gamma"}
+    assert rmse >= 0 and set(params) == {"alpha", "beta", "gamma", "phi"}
     # serie con tendencia positiva: el pronostico queda cerca del nivel final
     assert fc.mean() > y[:12].mean()
 
@@ -54,7 +54,8 @@ def test_sin_statsmodels_usa_el_motor_nativo(monkeypatch):
     monkeypatch.setattr(hw, "HAS_STATSMODELS", False)
     r = hw.entrenar_y_proyectar_hw(_serie(30), "sin_sm", horizonte=4)
     assert r["aic"] is None
-    assert r["parametros"] == {"alpha": 0.2, "beta": 0.1, "gamma": 0.2}
+    assert {k: r["parametros"][k] for k in ("alpha", "beta", "gamma")} == {"alpha": 0.2, "beta": 0.1, "gamma": 0.2}
+    assert r["parametros"]["phi"] in hw.PHI_CANDIDATOS
     assert len(r["forecast"]) == 4
 
 
@@ -80,3 +81,24 @@ def test_serie_corta_se_rechaza_y_los_nulos_no_cuentan():
     s.iloc[:10] = np.nan  # quedan 20 observaciones validas
     with pytest.raises(ValueError, match="al menos 24"):
         hw.entrenar_y_proyectar_hw(s, "corta")
+
+
+def test_motor_nativo_amortigua_la_tendencia():
+    """Con tendencia creciente, phi < 1 proyecta menos que la tendencia sin amortiguar (phi = 1)."""
+    t = np.arange(36)
+    y = 100 + 5.0 * t + 6 * np.sin(2 * np.pi * t / 12)
+    amortiguado, _, _ = hw._hw_amortiguado_fijo(y, 12, 6, 0.2, 0.1, 0.2, phi=0.8)
+    sin_amortiguar, _, _ = hw._hw_amortiguado_fijo(y, 12, 6, 0.2, 0.1, 0.2, phi=1.0)
+    assert amortiguado[-1] < sin_amortiguar[-1]
+    assert (sin_amortiguar - amortiguado)[-1] > (sin_amortiguar - amortiguado)[0]
+
+
+def test_phi_se_elige_entre_los_candidatos():
+    fc, _, _, params = hw._holt_winters_nativo(_serie(36).values, m=12, h=3)
+    assert params["phi"] in hw.PHI_CANDIDATOS
+
+
+def test_mape_holdout_se_calcula_sin_statsmodels(monkeypatch):
+    monkeypatch.setattr(hw, "HAS_STATSMODELS", False)
+    mape = hw.calcular_mape_holdout(_serie(36, periodo=True), h=6)
+    assert mape is not None and mape >= 0.0

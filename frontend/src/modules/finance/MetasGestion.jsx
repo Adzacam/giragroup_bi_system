@@ -177,7 +177,7 @@ export default function MetasGestion() {
                     Seguimiento Mensual: Meta Presupuestada vs. Ejecutado Real
                   </h3>
                   <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-slate-gray)' }}>
-                    Modelo predictivo Holt-Winters aditivo mensual con banda de confianza y cálculo de desvíos en bolivianos.
+                    Modelo predictivo Holt-Winters amortiguado mensual con banda de confianza y cálculo de desvíos en bolivianos.
                   </p>
                 </div>
                 <span className="badge-status badge-status-completed" style={{ fontSize: '12px' }}>

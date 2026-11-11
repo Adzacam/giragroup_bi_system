@@ -320,3 +320,9 @@
 .cmi-modal-cerrar { position: absolute; top: 12px; right: 12px; }
 .cmi-evolucion { width: 100%; height: auto; margin: 12px 0; }
 .cmi-evolucion-txt { font-size: 11px; fill: var(--cmi-muted); }
+
+/* Glosario flotante */
+.cmi-glosario-barra { display: flex; justify-content: flex-end; margin: 0 0 12px; }
+.cmi-glosario { margin: 14px 0 0; display: grid; gap: 12px; }
+.cmi-glosario dt { font-weight: 700; font-size: 13.5px; }
+.cmi-glosario dd { margin: 2px 0 0; font-size: 13px; color: var(--color-slate-gray); line-height: 1.5; }

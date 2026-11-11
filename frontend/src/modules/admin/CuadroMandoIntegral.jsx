@@ -3,6 +3,7 @@ import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-quer
 import PageHeader from '../../components/shared/PageHeader';
 import CmiScorecard from './cmi/CmiScorecard';
 import CmiConfiguracion from './cmi/CmiConfiguracion';
+import GlosarioCmi from './cmi/GlosarioCmi';
 import CmiPowerBi from './cmi/CmiPowerBi';
 import useKineticScroll from '../../hooks/useKineticScroll';
 import {
@@ -179,7 +180,7 @@ export default function CuadroMandoIntegral() {
           tension: 0.2,
         },
         {
-          label: 'Proyección Holt-Winters Aditivo (m=12)',
+          label: 'Proyección Holt-Winters Amortiguado (m=12)',
           data: hwSeries,
           borderColor: '#D99B26',
           backgroundColor: '#D99B26',
@@ -560,6 +561,8 @@ export default function CuadroMandoIntegral() {
         )}
       </div>
 
+      {activeMode === 'B' && <GlosarioCmi tema="prediccion" />}
+      {activeMode === 'C' && isAdmin && <GlosarioCmi tema="configuracion" />}
       {activeMode === 'A' && <CmiScorecard />}
 
       {activeMode === 'C' && isAdmin && <CmiConfiguracion />}

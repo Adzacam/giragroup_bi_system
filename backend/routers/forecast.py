@@ -67,7 +67,7 @@ def get_forecast_alumnos(
 ):
     """
     Retorna la proyección mensual de alumnos inscritos para el segmento solicitado
-    utilizando el modelo Holt-Winters aditivo con estacionalidad anual de 12 meses.
+    utilizando el modelo Holt-Winters amortiguado con estacionalidad anual de 12 meses.
     """
     tipo_sanitizado = tipo.strip().upper()
     if tipo_sanitizado not in TIPOS_PERMITIDOS:
@@ -124,7 +124,7 @@ def get_forecast_metas(
 ):
     """
     Retorna la proyección de recaudación y metas financieras:
-    - MENSUAL: Holt-Winters aditivo para ingresos mensuales en Programas.
+    - MENSUAL: Holt-Winters amortiguado para ingresos mensuales en Programas.
     - ANUAL: Proyección indicativa de tendencia lineal (OLS) 2026-2027 sin IC espurio.
     """
     gran_sanitizada = granularidad.strip().upper()

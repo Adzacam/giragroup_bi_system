@@ -1,7 +1,7 @@
 """
 pipeline/analytics/forecasting_holtwinters.py
 ---------------------------------------------
-GIRA-54: Motor predictivo Holt-Winters (Exponential Smoothing) aditivo con estacionalidad anual.
+GIRA-54: Motor predictivo Holt-Winters amortiguado (tendencia damped + estacionalidad anual aditiva).
 Diseñado para series mensuales (N >= 24) con horizonte acotado a h <= 6 meses.
 Aplica a:
 - ALUMNOS_GLOBAL
@@ -27,57 +27,61 @@ except ImportError:
     logger.warning("statsmodels no está disponible. Se utilizará el motor nativo de Holt-Winters (NumPy).")
 
 
-def _holt_winters_nativo(
-    y: np.ndarray, 
-    m: int = 12, 
-    h: int = 6, 
-    alpha: float = 0.2, 
-    beta: float = 0.1, 
-    gamma: float = 0.2
-) -> tuple[np.ndarray, np.ndarray, float, dict]:
-    """
-    Implementación analítica de Holt-Winters aditivo (Nivel, Tendencia y Estacionalidad).
-    Retorna: (forecast, fitted_values, rmse, params)
-    """
+PHI_CANDIDATOS = (0.80, 0.85, 0.90, 0.95, 0.98, 0.99)
+
+
+def _hw_amortiguado_fijo(y: np.ndarray, m: int, h: int, alpha: float, beta: float, gamma: float, phi: float):
+    """Holt-Winters con tendencia aditiva amortiguada (phi) y estacionalidad aditiva, parámetros fijos."""
     n = len(y)
-    
-    # Inicialización estándar
     l = np.zeros(n)
     b = np.zeros(n)
     s = np.zeros(n + m)
     fitted = np.zeros(n)
 
-    # Nivel inicial y tendencia inicial
     l[m - 1] = np.mean(y[:m])
     b[m - 1] = np.mean((y[m:2 * m] - y[:m]) / m)
-    
-    # Índices estacionales iniciales normalizados
     s_init = y[:m] - l[m - 1]
     s_init -= np.mean(s_init)
     s[:m] = s_init
 
     for t in range(m, n):
         s_idx = t - m
-        fitted[t] = l[t - 1] + b[t - 1] + s[s_idx]
-        
-        # Actualización de Nivel
-        l[t] = alpha * (y[t] - s[s_idx]) + (1.0 - alpha) * (l[t - 1] + b[t - 1])
-        # Actualización de Tendencia
-        b[t] = beta * (l[t] - l[t - 1]) + (1.0 - beta) * b[t - 1]
-        # Actualización de Estacionalidad
+        fitted[t] = l[t - 1] + phi * b[t - 1] + s[s_idx]
+        l[t] = alpha * (y[t] - s[s_idx]) + (1.0 - alpha) * (l[t - 1] + phi * b[t - 1])
+        b[t] = beta * (l[t] - l[t - 1]) + (1.0 - beta) * phi * b[t - 1]
         s[t] = gamma * (y[t] - l[t]) + (1.0 - gamma) * s[s_idx]
 
-    # Proyección a h pasos
     forecast = np.zeros(h)
     for i in range(1, h + 1):
-        s_target = s[n - m + ((i - 1) % m)]
-        forecast[i - 1] = l[-1] + i * b[-1] + s_target
+        # Tendencia acumulada amortiguada: phi + phi^2 + ... + phi^i (se aplana, no crece sin límite)
+        tendencia = b[-1] * sum(phi ** k for k in range(1, i + 1))
+        forecast[i - 1] = l[-1] + tendencia + s[n - m + ((i - 1) % m)]
 
     residuos = y[m:] - fitted[m:]
     rmse = float(np.sqrt(np.mean(residuos ** 2)))
-    params = {"alpha": alpha, "beta": beta, "gamma": gamma}
+    return forecast, fitted[m:], rmse
 
-    return forecast, fitted[m:], rmse, params
+
+def _holt_winters_nativo(
+    y: np.ndarray,
+    m: int = 12,
+    h: int = 6,
+    alpha: float = 0.2,
+    beta: float = 0.1,
+    gamma: float = 0.2
+) -> tuple[np.ndarray, np.ndarray, float, dict]:
+    """
+    Motor Holt-Winters amortiguado en NumPy (respaldo cuando statsmodels no está instalado).
+    El factor de amortiguación phi se elige entre PHI_CANDIDATOS por menor RMSE en la muestra.
+    Retorna: (forecast, fitted_values, rmse, params)
+    """
+    mejor = None
+    for phi in PHI_CANDIDATOS:
+        forecast, fitted, rmse = _hw_amortiguado_fijo(y, m, h, alpha, beta, gamma, phi)
+        if mejor is None or rmse < mejor[2]:
+            mejor = (forecast, fitted, rmse, phi)
+    forecast, fitted, rmse, phi = mejor
+    return forecast, fitted, rmse, {"alpha": alpha, "beta": beta, "gamma": gamma, "phi": phi}
 
 
 def entrenar_y_proyectar_hw(
@@ -87,7 +91,7 @@ def entrenar_y_proyectar_hw(
     seasonal_periods: int = 12
 ) -> Dict[str, Any]:
     """
-    Ajusta un modelo Holt-Winters aditivo (tendencia aditiva amortiguada + estacionalidad aditiva de 12 meses)
+    Ajusta un modelo Holt-Winters con tendencia amortiguada (damped) y estacionalidad aditiva de 12 meses
     y proyecta hasta `horizonte` meses futuros (máximo 6 meses).
     """
     if horizonte < 1 or horizonte > 6:
@@ -129,6 +133,7 @@ def entrenar_y_proyectar_hw(
                 "alpha": float(round(modelo.params.get("smoothing_level", 0.0), 4)),
                 "beta": float(round(modelo.params.get("smoothing_trend", 0.0), 4)),
                 "gamma": float(round(modelo.params.get("smoothing_seasonal", 0.0), 4)),
+                "phi": float(round(modelo.params.get("damping_trend", 1.0), 4)),
             }
         except Exception as ex:
             logger.warning(f"Falla en statsmodels ExponentialSmoothing ({ex}). Usando motor nativo...")
@@ -175,16 +180,19 @@ def calcular_mape_holdout(serie: pd.Series, h: int = 6, seasonal_periods: int = 
     contra los h últimos reales. Calculado, no fijo. None si no hay observaciones suficientes
     (se exigen 2 ciclos estacionales completos en el tramo de entrenamiento)."""
     s = serie.dropna().astype(float)
-    if len(s) - h < 2 * seasonal_periods or not HAS_STATSMODELS:
+    if len(s) - h < 2 * seasonal_periods:
         return None
     train, test = s.iloc[:-h], s.iloc[-h:]
     idx = train.index.to_timestamp(how="start") if isinstance(train.index, pd.PeriodIndex) else pd.to_datetime(train.index)
     tr = pd.Series(train.values, index=idx).asfreq("MS").fillna(0.0)
     try:
-        m = ExponentialSmoothing(tr, trend="add", damped_trend=True, seasonal="add",
-                                 seasonal_periods=seasonal_periods,
-                                 initialization_method="estimated").fit(optimized=True)
-        pred = m.forecast(h).values
+        if HAS_STATSMODELS:
+            m = ExponentialSmoothing(tr, trend="add", damped_trend=True, seasonal="add",
+                                     seasonal_periods=seasonal_periods,
+                                     initialization_method="estimated").fit(optimized=True)
+            pred = m.forecast(h).values
+        else:
+            pred = _holt_winters_nativo(tr.values, m=seasonal_periods, h=h)[0]
     except Exception:
         return None
     y = test.values

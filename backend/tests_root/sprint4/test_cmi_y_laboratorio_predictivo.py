@@ -10,6 +10,8 @@ Pruebas de verificación automatizada para Vista 4:
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock
+import numpy as np
+import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -32,7 +34,53 @@ from services.forecast_service import (
     obtener_pronostico_alumnos,
     obtener_pronostico_metas
 )
+from services import forecast_service
 from services.kpi_service import KPIService
+
+ANIO = pd.Timestamp.now().year
+
+
+def _serie_alumnos() -> pd.Series:
+    """33 meses (sep-2023 a may-2026) con estacionalidad anual y tendencia suave."""
+    idx = pd.period_range("2023-09", periods=33, freq="M")
+    vals = [60 + 0.8 * i + 12 * np.sin(2 * np.pi * i / 12) for i in range(33)]
+    return pd.Series(vals, index=idx)
+
+
+def _serie_meta_mensual() -> pd.Series:
+    idx = pd.period_range(f"{ANIO - 2}-01", periods=30, freq="M")
+    return pd.Series([260_000 + 3_000 * i + 25_000 * np.sin(2 * np.pi * i / 12) for i in range(30)], index=idx)
+
+
+def _serie_meta_anual() -> pd.Series:
+    return pd.Series([2_900_000.0, 3_300_000.0, 3_600_000.0], index=[ANIO - 3, ANIO - 2, ANIO - 1])
+
+
+def _inscritos() -> pd.DataFrame:
+    filas = []
+    for prog, base in (("DIPLOMADO EN GESTIÓN PÚBLICA", 40), ("MAESTRÍA EN FINANZAS", 30),
+                       ("CURSO DE EXCEL AVANZADO", 15), ("PROGRAMA EXPERTO EN DATOS", 22)):
+        for k, g in enumerate((ANIO - 3, ANIO - 2, ANIO - 1, ANIO)):
+            filas.append({"programa": prog, "gestion": g, "inscritos": base + 4 * k})
+    return pd.DataFrame(filas)
+
+
+def _meta_vs_ejecutado() -> pd.DataFrame:
+    filas = [{"gestion": g, "mes": m, "meta": 300_000.0, "ejecutado": 250_000.0 + 8_000 * m}
+             for g in (ANIO - 1, ANIO) for m in range(1, 13)]
+    return pd.DataFrame(filas)
+
+
+@pytest.fixture
+def dw_controlado(monkeypatch):
+    """Sustituye las lecturas al DW por datos deterministas (el servicio es solo-DW)."""
+    def serie(caso, engine=None):
+        if caso.startswith("ALUMNOS"):
+            return _serie_alumnos()
+        return _serie_meta_mensual() if caso == "META_MENSUAL_PROGRAMAS" else _serie_meta_anual()
+    monkeypatch.setattr(forecast_service, "extraer_serie_temporal", serie)
+    monkeypatch.setattr(forecast_service, "_inscritos_por_programa", lambda db: _inscritos())
+    monkeypatch.setattr(forecast_service, "_meta_vs_ejecutado", lambda db: _meta_vs_ejecutado())
 
 
 @pytest.fixture(autouse=True)
@@ -65,7 +113,7 @@ def client():
 # 1. PRUEBAS DE SERVICIO: MATRIZ DE VIABILIDAD Y NO NEGATIVIDAD
 # ─────────────────────────────────────────────────────────────────────────────
 
-def test_matriz_viabilidad_programas_estructura_y_reglas():
+def test_matriz_viabilidad_programas_estructura_y_reglas(dw_controlado):
     """Valida que la Matriz de Viabilidad clasifique correctamente con chips válidos."""
     datos = obtener_matriz_viabilidad_programas()
     assert len(datos) > 0, "La matriz de viabilidad debe retornar programas evaluados"
@@ -86,7 +134,7 @@ def test_matriz_viabilidad_programas_estructura_y_reglas():
         assert len(item["justificacion"]) > 10
 
 
-def test_analitica_macro_4_casos_completitud():
+def test_analitica_macro_4_casos_completitud(dw_controlado):
     """Valida que el servicio consolide los 4 Casos Predictivos Macro con invariantes matemáticas."""
     res = obtener_analitica_macro_completa(horizonte=6)
 
@@ -95,9 +143,10 @@ def test_analitica_macro_4_casos_completitud():
 
     # Caso 1: Demanda Global de Alumnos
     c1 = res["caso1_demanda_global"]
-    assert c1["n_observaciones"] == 43, f"Se esperaban 43 meses históricos, recibidos: {c1['n_observaciones']}"
-    assert len(c1["periodos_historicos"]) == 43
-    assert len(c1["valores_historicos"]) == 43
+    assert c1["n_observaciones"] == 33
+    assert len(c1["periodos_historicos"]) == 33
+    assert len(c1["valores_historicos"]) == 33
+    assert "Amortiguado" in c1["modelo"]
     assert len(c1["forecast_hw"]) == 6
     assert len(c1["ic_lower_95"]) == 6
     assert len(c1["ic_upper_95"]) == 6
@@ -105,7 +154,8 @@ def test_analitica_macro_4_casos_completitud():
         assert f >= 0.0, "Forecast alumnos no puede ser negativo"
         assert l >= 0.0, "Banda inferior no puede ser negativa"
         assert l <= f <= u, "Invariante de bandas: lower <= forecast <= upper"
-    assert c1["mape_pct"] >= 0.0
+    # Sin statsmodels (entorno mínimo) el MAPE de hold-out no se calcula y llega como None
+    assert c1["mape_pct"] is None or c1["mape_pct"] >= 0.0
     assert c1["rmse"] >= 0.0
     assert "pendiente_ols_mes" in c1
 
@@ -115,6 +165,7 @@ def test_analitica_macro_4_casos_completitud():
     assert len(c2["matriz_viabilidad"]) > 0
     assert "resumen_cartera" in c2
     assert "DIPLOMADO" in c2["resumen_cartera"]
+    assert res["sin_datos"] == {}
 
     # Caso 3: Cumplimiento de Metas / Ingresos Mensuales
     c3 = res["caso3_metas_mensuales"]
@@ -126,15 +177,38 @@ def test_analitica_macro_4_casos_completitud():
 
     # Caso 4: Cumplimiento de Metas / Ingresos Anuales
     c4 = res["caso4_metas_anuales"]
-    assert c4["meta_anual_institucional_bs"] == 3800000.0
+    assert c4["meta_anual_institucional_bs"] == 3_600_000.0
     assert c4["recaudado_acumulado_bs"] > 0
     assert len(c4["anios_historicos"]) == 3
     assert c4["cierre_anual_proyectado_ols_bs"] > 0
 
 
-def test_perspectivas_cmi_completo_estructura():
-    """Valida que KPIService retorne las 4 Perspectivas Estratégicas con drilldowns."""
-    service = KPIService(db=MagicMock(spec=Session))
+@pytest.fixture
+def dw_vacio():
+    """DW SQLite en memoria sin datos: el CMI debe responder con estructura y listas vacías."""
+    from sqlalchemy import create_engine, event
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
+    from core.database import Base
+    import models.dim_modulo, models.dim_tiempo, models.fact_marketing  # noqa: F401
+
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+
+    @event.listens_for(engine, "connect")
+    def adjuntar_public(conn, _):
+        cur = conn.cursor()
+        cur.execute("ATTACH DATABASE ':memory:' AS public")
+        cur.close()
+
+    Base.metadata.create_all(bind=engine)
+    sesion = sessionmaker(bind=engine)()
+    yield sesion
+    sesion.close()
+
+
+def test_perspectivas_cmi_completo_estructura(dw_vacio):
+    """Valida que KPIService retorne las 4 Perspectivas Estratégicas con sus drilldowns (vacíos sin datos)."""
+    service = KPIService(db=dw_vacio)
     res = service.obtener_perspectivas_cmi_completo()
 
     assert res["status"] == "success"
@@ -144,20 +218,20 @@ def test_perspectivas_cmi_completo_estructura():
     assert "procesos_internos" in p
     assert "aprendizaje_crecimiento" in p
 
-    # Validar drilldowns
-    assert len(p["financiera"]["drilldown_categorias"]) > 0
-    assert len(p["financiera"]["drilldown_cartera"]) > 0
-    assert len(p["cliente_mercado"]["drilldown_lineas"]) > 0
-    assert len(p["cliente_mercado"]["drilldown_embudo"]) > 0
-    assert len(p["procesos_internos"]["drilldown_fuentes"]) > 0
-    assert len(p["aprendizaje_crecimiento"]["drilldown_distribucion_notas"]) > 0
+    # Sin datos ingestados no se inventan cifras: los valores son None/0 y la cartera una lista vacía
+    assert p["financiera"]["drilldown_cartera"] == []
+    assert p["financiera"]["ticket_promedio_bs"] is None
+    assert p["cliente_mercado"]["total_matricula_acumulada"] in (None, 0)
+    assert p["aprendizaje_crecimiento"]["promedio_general_notas"] is None
+    for clave in ("confianza_media_beto_pct", "tasa_automatizacion_pct", "documentos_procesados"):
+        assert clave in p["procesos_internos"]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. PRUEBAS DE INTEGRACIÓN DE ENDPOINTS REST
 # ─────────────────────────────────────────────────────────────────────────────
 
-def test_endpoint_analitica_macro(client):
+def test_endpoint_analitica_macro(client, dw_controlado):
     """Valida endpoint GET /api/v1/forecast/analitica-macro."""
     resp = client.get("/api/v1/forecast/analitica-macro?horizonte=4")
     assert resp.status_code == 200
@@ -170,7 +244,7 @@ def test_endpoint_analitica_macro(client):
     assert "caso4_metas_anuales" in data
 
 
-def test_endpoint_viabilidad_programas(client):
+def test_endpoint_viabilidad_programas(client, dw_controlado):
     """Valida endpoint GET /api/v1/forecast/viabilidad-programas."""
     resp = client.get("/api/v1/forecast/viabilidad-programas?tipo=DIPLOMADO")
     assert resp.status_code == 200
@@ -181,7 +255,8 @@ def test_endpoint_viabilidad_programas(client):
         assert "DIPLOMADO" in prog["tipo"].upper()
 
 
-def test_endpoint_kpis_cmi_completo(client):
+def test_endpoint_kpis_cmi_completo(client, dw_vacio):
+    app.dependency_overrides[get_db] = lambda: dw_vacio
     """Valida endpoint GET /api/v1/kpis/cmi-completo."""
     resp = client.get("/api/v1/kpis/cmi-completo")
     assert resp.status_code == 200
@@ -207,7 +282,7 @@ def test_endpoint_analitica_macro_frontera_horizonte_invalido(client):
     assert resp_str.status_code == 422
 
 
-def test_endpoint_viabilidad_programas_normalizacion_acentos(client):
+def test_endpoint_viabilidad_programas_normalizacion_acentos(client, dw_controlado):
     """Valida que la consulta maneje diacríticos y acentos URI encoded de forma insensible."""
     # Con tilde explícita
     resp_tilde = client.get("/api/v1/forecast/viabilidad-programas?tipo=MAESTR%C3%8DA")
@@ -231,7 +306,7 @@ def test_endpoint_viabilidad_programas_normalizacion_acentos(client):
     assert data_min["total_programas"] > 0
 
 
-def test_servicio_horizonte_boundary_safe():
+def test_servicio_horizonte_boundary_safe(dw_controlado):
     """Valida que invocar el servicio directamente con horizontes extremos se acote con seguridad."""
     res_cero = obtener_analitica_macro_completa(horizonte=0)
     assert res_cero["status"] == "success"
