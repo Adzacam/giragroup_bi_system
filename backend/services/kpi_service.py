@@ -33,72 +33,40 @@ class KPIService:
         gestion_filtro: Optional[int] = None,
         programa_filtro: Optional[str] = None
     ) -> Dict[str, Any]:
-        q_test = getattr(self.db, "query", None)
-        is_unit_test_mock = False
-        if q_test and hasattr(q_test, "return_value"):
-            ret = q_test.return_value
-            if hasattr(ret, "scalar") and hasattr(ret.scalar, "side_effect") and ret.scalar.side_effect:
-                is_unit_test_mock = True
-
         prog_label = func.coalesce(func.nullif(DimModulo.programa, ""), DimModulo.nombre_modulo, "Programa General")
 
-        if is_unit_test_mock:
-            total_eval = self.db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).scalar() or 0
-            if total_eval == 0:
-                return {
-                    "promedio_general_notas": None,
-                    "tasa_aprobacion_pct": None,
-                    "tasa_reprobacion_pct": None,
-                    "estudiantes_en_riesgo_academico": 0,
-                    "estudiantes_en_riesgo_desercion": 0,
-                    "total_evaluaciones_registradas": 0
-                }
-            avg_nota = self.db.query(func.avg(FactRendimientoAcademico.nota_final)).filter(
-                FactRendimientoAcademico.nota_final.isnot(None)
-            ).scalar()
-            aprobados = self.db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).filter(
-                FactRendimientoAcademico.nota_final >= NOTA_APROBACION
-            ).scalar() or 0
-            riesgo_aca = self.db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).filter(
+        q = self.db.query(
+            func.count(FactRendimientoAcademico.id_hecho_aca).label("total"),
+            func.avg(FactRendimientoAcademico.nota_final).label("avg_nota"),
+            func.count(FactRendimientoAcademico.id_hecho_aca).filter(FactRendimientoAcademico.nota_final >= NOTA_APROBACION).label("aprobados"),
+            func.count(FactRendimientoAcademico.id_hecho_aca).filter(
                 FactRendimientoAcademico.nota_final.isnot(None),
                 FactRendimientoAcademico.nota_final <= 70.0
-            ).scalar() or 0
-            riesgo_des = self.db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).filter(
+            ).label("riesgo_aca"),
+            func.count(FactRendimientoAcademico.id_hecho_aca).filter(
                 FactRendimientoAcademico.incumplimiento_actividades_pct > 30.0
-            ).scalar() or 0
-        else:
-            q = self.db.query(
-                func.count(FactRendimientoAcademico.id_hecho_aca).label("total"),
-                func.avg(FactRendimientoAcademico.nota_final).label("avg_nota"),
-                func.count(FactRendimientoAcademico.id_hecho_aca).filter(FactRendimientoAcademico.nota_final >= NOTA_APROBACION).label("aprobados"),
-                func.count(FactRendimientoAcademico.id_hecho_aca).filter(
-                    FactRendimientoAcademico.nota_final.isnot(None),
-                    FactRendimientoAcademico.nota_final <= 70.0
-                ).label("riesgo_aca"),
-                func.count(FactRendimientoAcademico.id_hecho_aca).filter(
-                    FactRendimientoAcademico.incumplimiento_actividades_pct > 30.0
-                ).label("riesgo_des"),
-            )
-            if gestion_filtro:
-                q = q.join(DimTiempo, FactRendimientoAcademico.id_tiempo == DimTiempo.id_tiempo).filter(DimTiempo.gestion == gestion_filtro)
-            if programa_filtro:
-                q = q.join(DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo).filter(prog_label.ilike(f"%{programa_filtro}%"))
+            ).label("riesgo_des"),
+        )
+        if gestion_filtro:
+            q = q.join(DimTiempo, FactRendimientoAcademico.id_tiempo == DimTiempo.id_tiempo).filter(DimTiempo.gestion == gestion_filtro)
+        if programa_filtro:
+            q = q.join(DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo).filter(prog_label.ilike(f"%{programa_filtro}%"))
 
-            row = q.first()
-            total_eval = row.total or 0 if row else 0
-            if total_eval == 0:
-                return {
-                    "promedio_general_notas": None,
-                    "tasa_aprobacion_pct": None,
-                    "tasa_reprobacion_pct": None,
-                    "estudiantes_en_riesgo_academico": 0,
-                    "estudiantes_en_riesgo_desercion": 0,
-                    "total_evaluaciones_registradas": 0
-                }
-            avg_nota = row.avg_nota
-            aprobados = row.aprobados or 0
-            riesgo_aca = row.riesgo_aca or 0
-            riesgo_des = row.riesgo_des or 0
+        row = q.first()
+        total_eval = row.total or 0 if row else 0
+        if total_eval == 0:
+            return {
+                "promedio_general_notas": None,
+                "tasa_aprobacion_pct": None,
+                "tasa_reprobacion_pct": None,
+                "estudiantes_en_riesgo_academico": 0,
+                "estudiantes_en_riesgo_desercion": 0,
+                "total_evaluaciones_registradas": 0
+            }
+        avg_nota = row.avg_nota
+        aprobados = row.aprobados or 0
+        riesgo_aca = row.riesgo_aca or 0
+        riesgo_des = row.riesgo_des or 0
 
         tasa_apr = round((aprobados / total_eval) * 100.0, 2) if total_eval > 0 else None
         tasa_rep = round(100.0 - tasa_apr, 2) if tasa_apr is not None else None
@@ -117,72 +85,39 @@ class KPIService:
         gestion_filtro: Optional[int] = None,
         programa_filtro: Optional[str] = None
     ) -> Dict[str, Any]:
-        q_test = getattr(self.db, "query", None)
-        is_unit_test_mock = False
-        if q_test and hasattr(q_test, "return_value"):
-            ret = q_test.return_value
-            if hasattr(ret, "scalar") and hasattr(ret.scalar, "side_effect") and ret.scalar.side_effect:
-                is_unit_test_mock = True
-
         prog_label = func.coalesce(func.nullif(DimModulo.programa, ""), DimModulo.nombre_modulo, "Programa General")
 
-        if is_unit_test_mock:
-            total_fin = self.db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).scalar() or 0
-            if total_fin == 0:
-                return {
-                    "monto_total_deuda_bs": None,
-                    "estudiantes_con_cuotas_impagas": 0,
-                    "total_cuotas_impagas": 0,
-                    "estudiantes_cartera_previsionable": 0,
-                    "estudiantes_cartera_mora": 0,
-                    "estudiantes_cartera_vigente": 0
-                }
-            total_deuda = self.db.query(func.sum(FactSituacionFinanciera.monto_deuda)).scalar()
-            con_mora = self.db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).filter(
-                FactSituacionFinanciera.cuotas_impagas > 0
-            ).scalar() or 0
-            sum_cuotas = self.db.query(func.sum(FactSituacionFinanciera.cuotas_impagas)).scalar() or 0
-            previsionable = self.db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).filter(
-                FactSituacionFinanciera.estado_cartera == "Previsionable"
-            ).scalar() or 0
-            mora = self.db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).filter(
-                FactSituacionFinanciera.estado_cartera.in_(("Mora", "En Mora"))
-            ).scalar() or 0
-            vigente = self.db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).filter(
-                FactSituacionFinanciera.estado_cartera == "Vigente"
-            ).scalar() or 0
-        else:
-            q = self.db.query(
-                func.count(FactSituacionFinanciera.id_hecho_fin).label("total"),
-                func.sum(FactSituacionFinanciera.monto_deuda).label("total_deuda"),
-                func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.cuotas_impagas > 0).label("con_mora"),
-                func.sum(FactSituacionFinanciera.cuotas_impagas).label("sum_cuotas"),
-                func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera == "Previsionable").label("previsionable"),
-                func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera.in_(("Mora", "En Mora"))).label("mora"),
-                func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera == "Vigente").label("vigente"),
-            )
-            if gestion_filtro:
-                q = q.join(DimTiempo, FactSituacionFinanciera.id_tiempo == DimTiempo.id_tiempo).filter(DimTiempo.gestion == gestion_filtro)
-            if programa_filtro:
-                q = q.join(DimModulo, FactSituacionFinanciera.id_modulo == DimModulo.id_modulo).filter(prog_label.ilike(f"%{programa_filtro}%"))
+        q = self.db.query(
+            func.count(FactSituacionFinanciera.id_hecho_fin).label("total"),
+            func.sum(FactSituacionFinanciera.monto_deuda).label("total_deuda"),
+            func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.cuotas_impagas > 0).label("con_mora"),
+            func.sum(FactSituacionFinanciera.cuotas_impagas).label("sum_cuotas"),
+            func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera == "Previsionable").label("previsionable"),
+            func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera.in_(("Mora", "En Mora"))).label("mora"),
+            func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera == "Vigente").label("vigente"),
+        )
+        if gestion_filtro:
+            q = q.join(DimTiempo, FactSituacionFinanciera.id_tiempo == DimTiempo.id_tiempo).filter(DimTiempo.gestion == gestion_filtro)
+        if programa_filtro:
+            q = q.join(DimModulo, FactSituacionFinanciera.id_modulo == DimModulo.id_modulo).filter(prog_label.ilike(f"%{programa_filtro}%"))
 
-            row = q.first()
-            total_fin = row.total or 0 if row else 0
-            if total_fin == 0:
-                return {
-                    "monto_total_deuda_bs": None,
-                    "estudiantes_con_cuotas_impagas": 0,
-                    "total_cuotas_impagas": 0,
-                    "estudiantes_cartera_previsionable": 0,
-                    "estudiantes_cartera_mora": 0,
-                    "estudiantes_cartera_vigente": 0
-                }
-            total_deuda = row.total_deuda
-            con_mora = row.con_mora or 0
-            sum_cuotas = row.sum_cuotas or 0
-            previsionable = row.previsionable or 0
-            mora = row.mora or 0
-            vigente = row.vigente or 0
+        row = q.first()
+        total_fin = row.total or 0 if row else 0
+        if total_fin == 0:
+            return {
+                "monto_total_deuda_bs": None,
+                "estudiantes_con_cuotas_impagas": 0,
+                "total_cuotas_impagas": 0,
+                "estudiantes_cartera_previsionable": 0,
+                "estudiantes_cartera_mora": 0,
+                "estudiantes_cartera_vigente": 0
+            }
+        total_deuda = row.total_deuda
+        con_mora = row.con_mora or 0
+        sum_cuotas = row.sum_cuotas or 0
+        previsionable = row.previsionable or 0
+        mora = row.mora or 0
+        vigente = row.vigente or 0
 
         return {
             "monto_total_deuda_bs": round(float(total_deuda), 2) if total_deuda is not None else None,
@@ -273,51 +208,29 @@ class KPIService:
         gestion_filtro: Optional[int] = None,
         programa_filtro: Optional[str] = None
     ) -> Dict[str, Any]:
-        q_test = getattr(self.db, "query", None)
-        is_unit_test_mock = False
-        if q_test and hasattr(q_test, "return_value"):
-            ret = q_test.return_value
-            if hasattr(ret, "scalar") and hasattr(ret.scalar, "side_effect") and ret.scalar.side_effect:
-                is_unit_test_mock = True
-
         prog_label = func.coalesce(func.nullif(DimModulo.programa, ""), DimModulo.nombre_modulo, "Programa General")
         docs_proc = self.db.query(func.count(DimOrigenDocumental.id_documento)).scalar() or 0
 
-        if is_unit_test_mock:
-            avg_conf = self.db.query(func.avg(FactRendimientoAcademico.nivel_confianza_ia)).filter(
-                FactRendimientoAcademico.nivel_confianza_ia.isnot(None)
-            ).scalar() or 0.85
-
-            req_rev = self.db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).filter(
+        q_aca = self.db.query(
+            func.avg(FactRendimientoAcademico.nivel_confianza_ia).label("avg_conf"),
+            func.count(FactRendimientoAcademico.id_hecho_aca).filter(
                 FactRendimientoAcademico.requiere_revision == True
-            ).scalar() or 0
+            ).label("req_rev"),
+            func.count(FactRendimientoAcademico.id_hecho_aca).label("total_hechos"),
+        )
+        if gestion_filtro:
+            q_aca = q_aca.join(DimTiempo, FactRendimientoAcademico.id_tiempo == DimTiempo.id_tiempo).filter(DimTiempo.gestion == gestion_filtro)
+        if programa_filtro:
+            q_aca = q_aca.join(DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo).filter(prog_label.ilike(f"%{programa_filtro}%"))
 
-            stg_count = self.db.query(func.count(StagingEntidadNoResuelta.id_staging)).filter(
-                StagingEntidadNoResuelta.resuelto == False
-            ).scalar() or 0
+        row_aca = q_aca.first()
+        avg_conf = row_aca.avg_conf if row_aca and row_aca.avg_conf is not None else None
+        req_rev = row_aca.req_rev if row_aca and row_aca.req_rev is not None else 0
+        total_hechos = row_aca.total_hechos if row_aca and row_aca.total_hechos else 0
 
-            total_hechos = self.db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).scalar() or 1
-        else:
-            q_aca = self.db.query(
-                func.avg(FactRendimientoAcademico.nivel_confianza_ia).label("avg_conf"),
-                func.count(FactRendimientoAcademico.id_hecho_aca).filter(
-                    FactRendimientoAcademico.requiere_revision == True
-                ).label("req_rev"),
-                func.count(FactRendimientoAcademico.id_hecho_aca).label("total_hechos"),
-            )
-            if gestion_filtro:
-                q_aca = q_aca.join(DimTiempo, FactRendimientoAcademico.id_tiempo == DimTiempo.id_tiempo).filter(DimTiempo.gestion == gestion_filtro)
-            if programa_filtro:
-                q_aca = q_aca.join(DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo).filter(prog_label.ilike(f"%{programa_filtro}%"))
-
-            row_aca = q_aca.first()
-            avg_conf = row_aca.avg_conf if row_aca and row_aca.avg_conf is not None else None
-            req_rev = row_aca.req_rev if row_aca and row_aca.req_rev is not None else 0
-            total_hechos = row_aca.total_hechos if row_aca and row_aca.total_hechos else 0
-
-            stg_count = self.db.query(func.count(StagingEntidadNoResuelta.id_staging)).filter(
-                StagingEntidadNoResuelta.resuelto == False
-            ).scalar() or 0
+        stg_count = self.db.query(func.count(StagingEntidadNoResuelta.id_staging)).filter(
+            StagingEntidadNoResuelta.resuelto == False
+        ).scalar() or 0
 
         if total_hechos > 0:
             tasa_calidad = round(max(0.0, 100.0 - ((req_rev / total_hechos) * 100.0)), 2)
@@ -379,22 +292,8 @@ class KPIService:
         total_rec_prog = sum(p.get("recaudacion_bs", 0.0) for p in ticket_programas)
         total_mat_prog = sum(p.get("matricula", 0) for p in ticket_programas)
 
-        # Si no hay desglose por programa pero hay llamadas mock / escalares de prueba
-        q_test = getattr(self.db, "query", None)
-        is_mock_scalar = False
-        mock_scalar_val = None
-        if q_test and hasattr(q_test, "return_value"):
-            ret = q_test.return_value
-            if hasattr(ret, "scalar") and not hasattr(ret.scalar, "side_effect"):
-                mock_scalar_val = ret.scalar()
-                if mock_scalar_val is not None:
-                    is_mock_scalar = True
-
         if total_mat_prog > 0:
             ticket_promedio_general = self.calcular_ticket_promedio(total_rec_prog, total_mat_prog)
-        elif is_mock_scalar:
-            # Compatibilidad con pruebas unitarias que inyectan MagicMock escalar
-            ticket_promedio_general = float(mock_scalar_val or 0.0)
         else:
             # Consulta agregada directa al DW
             q_rec_global = self.db.query(func.sum(FactSituacionFinanciera.monto_pagado))
@@ -474,7 +373,7 @@ class KPIService:
 
         has_fin_data = (q_fin_base.first() is not None)
 
-        if not has_fin_data and not is_mock_scalar:
+        if not has_fin_data:
             estudiantes_riesgo_financiero = None
         else:
             q_riesgo_fin = self.db.query(
@@ -498,7 +397,7 @@ class KPIService:
         # Desglose de estudiantes distintos por estado_cartera (Vigente, En Mora, Previsionable)
         # Tablas: fact_situacion_financiera, dim_tiempo, dim_modulo
         # ─────────────────────────────────────────────────────────────────────────
-        if not has_fin_data and not is_mock_scalar:
+        if not has_fin_data:
             estado_cartera_desglose = None
             vigente_count = None
             mora_count = None
@@ -599,7 +498,7 @@ class KPIService:
 
         has_notas = (q_notas_base.first() is not None)
 
-        if not has_notas and not is_mock_scalar:
+        if not has_notas:
             promedio_acumulado_general = None
             promedio_programas = []
         else:
@@ -641,7 +540,7 @@ class KPIService:
         # aprobados / evaluados × 100 y reprobados / evaluados × 100
         # Tablas: fact_rendimiento_academico, dim_modulo, dim_tiempo
         # ─────────────────────────────────────────────────────────────────────────
-        if not has_notas and not is_mock_scalar:
+        if not has_notas:
             tasa_aprobacion_global = None
             tasa_reprobacion_global = None
             desglose_modulos = []
@@ -690,7 +589,7 @@ class KPIService:
         # nº de estudiantes DISTINTOS con promedio ≤ 70
         # Tablas: fact_rendimiento_academico, dim_tiempo, dim_modulo
         # ─────────────────────────────────────────────────────────────────────────
-        if not has_notas and not is_mock_scalar:
+        if not has_notas:
             estudiantes_riesgo_academico = None
         else:
             subq_riesgo_aca = self.db.query(

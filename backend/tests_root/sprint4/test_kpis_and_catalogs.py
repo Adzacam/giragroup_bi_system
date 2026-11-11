@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 """
 tests/sprint4/test_kpis_and_catalogs.py
 ---------------------------------------
@@ -75,13 +76,9 @@ class TestKPIServiceCalculations:
         db = MagicMock(spec=Session)
         q_mock = MagicMock()
         q_mock.filter.return_value = q_mock
-        q_mock.scalar.side_effect = [
-            100,    # total evaluaciones
-            75.5,   # promedio notas
-            80,     # aprobados
-            20,     # en riesgo <= 70
-            5       # en riesgo deserción
-        ]
+        q_mock.first.return_value = SimpleNamespace(
+            total=100, avg_nota=75.5, aprobados=80, riesgo_aca=20, riesgo_des=5,
+        )
         db.query.return_value = q_mock
 
         service = KPIService(db)
@@ -97,15 +94,10 @@ class TestKPIServiceCalculations:
         db = MagicMock(spec=Session)
         q_mock = MagicMock()
         q_mock.filter.return_value = q_mock
-        q_mock.scalar.side_effect = [
-            50,        # total hechos fin
-            150000.0,  # total deuda
-            15,        # con mora
-            35,        # sum cuotas
-            3,         # previsionable
-            7,         # mora
-            40         # vigente
-        ]
+        q_mock.first.return_value = SimpleNamespace(
+            total=50, total_deuda=150000.0, con_mora=15, sum_cuotas=35,
+            previsionable=3, mora=7, vigente=40,
+        )
         db.query.return_value = q_mock
 
         service = KPIService(db)

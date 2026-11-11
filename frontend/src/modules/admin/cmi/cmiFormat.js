@@ -5,7 +5,7 @@ export const SEMAFORO = {
   VERDE: { label: 'En meta', color: 'var(--cmi-ok)' },
   AMBAR: { label: 'En alerta', color: 'var(--cmi-warn)' },
   ROJO: { label: 'Crítico', color: 'var(--cmi-bad)' },
-  SIN_UMBRAL: { label: 'Sin evaluar', color: 'var(--cmi-muted)' },
+  SIN_UMBRAL: { label: 'Informativo', color: 'var(--cmi-muted)' },
 };
 
 export const UNIDAD = { PCT: '%', BS: 'Bs', CANT: 'estudiantes', PTS: 'pts' };

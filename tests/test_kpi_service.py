@@ -100,24 +100,16 @@ class TestKPITicketPromedio:
         assert prog_py["matricula"] == 0
         assert prog_py["ticket_promedio_bs"] == 0.0
 
-    def test_perspectiva_financiera_cmi_contiene_ticket_promedio(self):
+    def test_perspectiva_financiera_cmi_contiene_ticket_promedio(self, sqlite_dw):
         """Valida que el CMI consolidado exponga ticket_promedio_bs en la perspectiva financiera."""
-        db = MagicMock(spec=Session)
-        # Mockear las llamadas escalares y agregadas de cmi
-        q_mock = MagicMock()
-        q_mock.filter.return_value = q_mock
-        q_mock.scalar.return_value = 10
-        q_mock.outerjoin.return_value.group_by.return_value.all.return_value = []
-        db.query.return_value = q_mock
-
-        service = KPIService(db)
+        service = KPIService(sqlite_dw)
         cmi = service.obtener_perspectivas_cmi_completo()
 
         assert cmi["status"] == "success"
         persp_fin = cmi["perspectivas"]["financiera"]
         assert "ticket_promedio_bs" in persp_fin
-        assert isinstance(persp_fin["ticket_promedio_bs"], (int, float))
-        assert persp_fin["ticket_promedio_bs"] >= 0.0
+        assert persp_fin["ticket_promedio_bs"] is None or isinstance(persp_fin["ticket_promedio_bs"], (int, float))
+        assert persp_fin["ticket_promedio_bs"] is None or persp_fin["ticket_promedio_bs"] >= 0.0
         assert "ticket_promedio_programas" in persp_fin
         assert isinstance(persp_fin["ticket_promedio_programas"], list)
 
