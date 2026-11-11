@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle2, AlertTriangle, X } from 'lucide-react';
 import { dataopsApi } from '../../api/dataopsApi';
 import { sileoToast } from '../../services/sileoToast';
+import { resumenConsolidacion } from '../../utils/resumenConsolidacion';
+import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
 import { fmtDuracion } from '../../modules/dataops/components/ProgresoTarea';
 
 // Las páginas avisan aquí cuando lanzan una tarea larga, para empezar a seguirla al instante
@@ -25,7 +27,8 @@ function mensajeFinal(t) {
   const r = t.resultado || {};
   if (t.tipo === 'INGESTA') return `${r.exitosos ?? 0} archivo(s) procesados, ${r.total_registros ?? 0} registros. BETO empieza a analizarlos.`;
   if (t.tipo === 'LECTURA_BETO') return `${r.total_tuplas ?? t.total} registros analizados: el paso ③ ya muestra los resultados.`;
-  return `${r.inserted_dw ?? 0} hechos consolidados (${r.inserted_revision ?? 0} en revisión).`;
+  const { total, detalle } = resumenConsolidacion(r);
+  return `${total} registros consolidados. ${detalle}.`;
 }
 
 /**
@@ -55,6 +58,7 @@ export default function TareasSegundoPlano({ role }) {
           const titulo = `${TITULO[t.tipo] || 'Tarea'} · Lote #${t.id_lote ?? '—'}`;
           if (t.estado === 'COMPLETADA') {
             sileoToast.success({ title: `${titulo} terminada`, description: mensajeFinal(t) });
+            queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY }); // el lote pudo cambiar de estado
             if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
               new Notification(`${titulo} terminada`, { body: mensajeFinal(t) });
             }

@@ -13,6 +13,8 @@ import { dataopsApi } from '../../api/dataopsApi';
 import { useDraftState, useLoteFlow } from './context/LoteFlowContext';
 import { useRevealCi } from './hooks/useRevealCi';
 import { mensajeError } from '../../utils/mensajeError';
+import { resumenConsolidacion } from '../../utils/resumenConsolidacion';
+import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
 import { sileoToast } from '../../services/sileoToast';
 
 export default function BetoReadingFlowView() {
@@ -45,7 +47,7 @@ export default function BetoReadingFlowView() {
   const consolidando = tareaDw?.estado === 'EN_CURSO';
 
   // Lectura BETO vía React Query: volver a este paso reutiliza lo ya traído (staleTime 60 s) y una mutación lo invalida
-  const { data: lecturaRaw, isFetching: loading, refetch: refetchLectura } = useQuery({
+  const { data: lecturaRaw, isFetching: loading } = useQuery({
     queryKey: ['dataops', 'beto-reading', String(loteActivo), selectedDocId, activeArea, filterCondition, selectedEntityType],
     queryFn: () => dataopsApi.getLoteBetoReading(loteActivo, {
       docId: selectedDocId,
@@ -58,7 +60,6 @@ export default function BetoReadingFlowView() {
     refetchOnMount: true, // respeta staleTime pero refetchea si una mutación invalidó la query
   });
   const data = lecturaRaw || null;
-  const loadReadingData = () => refetchLectura();
 
 
   // Al entrar: ¿hay una consolidación en curso para este lote? (p. ej. se cerró el navegador)
@@ -77,13 +78,14 @@ export default function BetoReadingFlowView() {
         const t = await dataopsApi.getTarea(tareaDw.id);
         setTareaDw(t);
         if (t.estado === 'COMPLETADA') {
-          const r = t.resultado || {};
+          const { total, detalle } = resumenConsolidacion(t.resultado);
           sileoToast.success({
-            title: `${r.inserted_dw ?? 0} hechos consolidados en el Data Warehouse`,
-            description: `Académicos +${r.inserted_academico ?? 0} · Financieros +${r.inserted_financiero ?? 0} · En revisión ${r.inserted_revision ?? 0} · Tiempo ${Math.round((t.transcurrido_seg || 0) / 60)} min`,
+            title: `${total} registros consolidados en el Data Warehouse`,
+            description: `${detalle} · Tiempo ${Math.round((t.transcurrido_seg || 0) / 60)} min`,
           });
           setIsConfirmModalOpen(false);
-          loadReadingData(selectedDocId);
+          // El lote pudo quedar CONSOLIDADO: se recarga su estado (y la lectura si sigue abierto) sin salir de la vista
+          queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY });
         } else if (t.estado === 'ERROR') {
           sileoToast.error({ title: 'La consolidación no terminó', description: t.error || 'Error en la transacción de carga.' });
         }

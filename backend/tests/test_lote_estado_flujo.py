@@ -30,7 +30,7 @@ class _Db:
 
 
 def _preparar(monkeypatch, hechos_dw, hechos_en_revision):
-    monkeypatch.setattr(d, "_lote_tiene_hechos_dw", lambda db, ids: hechos_dw)
+    monkeypatch.setattr(d, "_lote_consolidado_en_dw", lambda db, ids: hechos_dw)
     monkeypatch.setattr(d, "contar_hechos_en_revision", lambda db, ids: hechos_en_revision)
 
 

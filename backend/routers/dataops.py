@@ -2538,16 +2538,26 @@ def get_lote_resumen(
     }
 
 
-def _lote_tiene_hechos_dw(db: Session, ids_docs: List[int]) -> bool:
-    """True si algún documento del lote ya tiene hechos consolidados en el DW."""
+def _lote_consolidado_en_dw(db: Session, ids_docs: List[int]) -> bool:
+    """
+    True si el lote ya pasó por una consolidación al DW: hechos cargados, o una consolidación exitosa registrada.
+    Lo segundo cubre las fuentes que no generan hechos (ADMISION carga estudiantes a dim_estudiante).
+    """
     if not ids_docs:
         return False
-    return bool(db.execute(text("""
+    hay_hechos = bool(db.execute(text("""
         SELECT EXISTS (SELECT 1 FROM public.fact_rendimiento_academico WHERE id_documento = ANY(:ids))
             OR EXISTS (SELECT 1 FROM public.fact_situacion_financiera WHERE id_documento = ANY(:ids))
             OR EXISTS (SELECT 1 FROM public.fact_techo_convenio      WHERE id_documento = ANY(:ids))
             OR EXISTS (SELECT 1 FROM public.fact_costo_programa      WHERE id_documento = ANY(:ids))
     """), {"ids": ids_docs}).scalar())
+    if hay_hechos:
+        return True
+    return db.query(LogPipelineIngesta.id).filter(
+        LogPipelineIngesta.id_documento.in_(ids_docs),
+        LogPipelineIngesta.etapa == "DW_CONSOLIDACION",
+        LogPipelineIngesta.nivel == "SUCCESS",
+    ).first() is not None
 
 
 def _estado_flujo_lote(db: Session, ids_docs: List[int], pendientes_revision: int) -> str:
@@ -2556,7 +2566,7 @@ def _estado_flujo_lote(db: Session, ids_docs: List[int], pendientes_revision: in
     casos por revisar (entidades sin resolver + hechos del DW marcados en revisión); en cualquier otro caso
     'EN_CURSO' (la bandeja ④ sigue consolidando casos sueltos).
     """
-    if ids_docs and pendientes_revision == 0 and contar_hechos_en_revision(db, ids_docs) == 0             and _lote_tiene_hechos_dw(db, ids_docs):
+    if ids_docs and pendientes_revision == 0 and contar_hechos_en_revision(db, ids_docs) == 0             and _lote_consolidado_en_dw(db, ids_docs):
         return "CONSOLIDADO"
     return "EN_CURSO"
 
@@ -3031,7 +3041,7 @@ def get_lote_beto_reading(
     # El lote ya pasó por la consolidación si alguno de sus documentos tiene hechos en el DW:
     # la SPA lo usa para marcar el paso ③ como hecho y destacar la bandeja ④ como siguiente acción
     ids_docs = [d.id_documento for d in docs_lote]
-    consolidado = _lote_tiene_hechos_dw(db, ids_docs)
+    consolidado = _lote_consolidado_en_dw(db, ids_docs)
     resumen_ejecutivo["consolidado"] = consolidado
 
     archivos_tabs = _serializar_archivos_lote(db, docs_lote)
