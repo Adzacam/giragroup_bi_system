@@ -33,6 +33,8 @@ LECTORES = ["ADMIN", "ANALISTA_MARKETING"]
 MAX_BYTES = 150 * 1024 * 1024  # igual que client_max_body_size del gateway
 DIR_INFORMES = Path(os.environ.get("POWERBI_DIR", Path(__file__).resolve().parents[1] / "uploads" / "powerbi"))
 NOMBRE_BASE = "giragroup_cmi"
+# Versiones que se conservan en disco (la vigente siempre se conserva); las más antiguas se eliminan al publicar
+MAX_VERSIONES = max(1, int(os.environ.get("POWERBI_MAX_VERSIONES", "3")))
 
 CONEXION = {
     "servidor": f"{os.environ.get('POWERBI_DB_HOST', '127.0.0.1')}:{os.environ.get('POWERBI_DB_PORT', '5434')}",
@@ -58,6 +60,20 @@ def _version(db: Session, version: Optional[int]):
     return db.execute(text(f"SELECT {_COLS}, ruta FROM public.powerbi_informe_version {q}"), p).first()
 
 
+def _aplicar_retencion(db: Session, max_versiones: int = MAX_VERSIONES) -> int:
+    """Elimina archivo y registro de las versiones que exceden la retención. Nunca toca la vigente."""
+    filas = db.execute(text("SELECT version, ruta, vigente FROM public.powerbi_informe_version ORDER BY version DESC")).all()
+    conservar = {f.version for f in filas[:max_versiones]} | {f.version for f in filas if f.vigente}
+    eliminadas = 0
+    for f in filas:
+        if f.version in conservar:
+            continue
+        Path(f.ruta).unlink(missing_ok=True)
+        db.execute(text("DELETE FROM public.powerbi_informe_version WHERE version = :v"), {"v": f.version})
+        eliminadas += 1
+    return eliminadas
+
+
 @router.get("/informe")
 def get_informe(db: Session = Depends(get_db), user: User = Depends(require_roles(LECTORES))):
     r = _version(db, None)
@@ -65,7 +81,8 @@ def get_informe(db: Session = Depends(get_db), user: User = Depends(require_role
     if r:
         vigente = _fila(r)
         vigente.pop("ruta")
-    return {"vigente": vigente, "conexion": CONEXION, "puede_editar": user.role in EDITORES}
+    return {"vigente": vigente, "conexion": CONEXION, "puede_editar": user.role in EDITORES,
+            "max_versiones": MAX_VERSIONES}
 
 
 @router.get("/informe/descargar")
@@ -135,6 +152,7 @@ async def subir(archivo: UploadFile = File(...), nota: Optional[str] = Form(None
             VALUES (:v, :n, :r, :t, :s, :nota, TRUE, :u)"""),
             {"v": nueva, "n": re.sub(r"[^\w.\- ]", "_", archivo.filename)[:255], "r": str(destino),
              "t": total, "s": digest, "nota": (nota or "").strip() or None, "u": user.username})
+        _aplicar_retencion(db)
         db.commit()
     except Exception:
         db.rollback()

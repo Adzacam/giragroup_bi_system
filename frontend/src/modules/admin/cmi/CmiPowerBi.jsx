@@ -35,7 +35,7 @@ function DatoConexion({ etiqueta, valor }) {
   );
 }
 
-function Versiones({ vigente }) {
+function Versiones({ vigente, maxVersiones }) {
   const qc = useQueryClient();
   const { data = [], isLoading } = useQuery({ queryKey: ['powerbi', 'versiones'], queryFn: powerbiApi.getVersiones });
   const restaurar = useMutation({
@@ -87,12 +87,12 @@ function Versiones({ vigente }) {
         </table>
         <Paginacion {...pag} onChange={pag.setPagina} />
       </div>
-      {vigente && <p className="cmi-pbi-nota">Restaurar no borra ninguna versión: sólo cambia cuál descargan los demás roles.</p>}
+      {vigente && <p className="cmi-pbi-nota">Restaurar sólo cambia cuál descargan los demás roles. Para ahorrar espacio se conservan las últimas {maxVersiones} versiones: al publicar una nueva, las más antiguas se eliminan.</p>}
     </section>
   );
 }
 
-function SubirVersion() {
+function SubirVersion({ maxVersiones }) {
   const qc = useQueryClient();
   const input = useRef(null);
   const [archivo, setArchivo] = useState(null);
@@ -111,7 +111,7 @@ function SubirVersion() {
   return (
     <section className="cmi-card cmi-pbi-bloque" aria-labelledby="pbi-subir">
       <h3 id="pbi-subir">Publicar una nueva versión</h3>
-      <p className="cmi-pbi-nota">Edita el informe en Power BI Desktop, guárdalo y súbelo aquí. Se convierte en la versión que descargan los demás roles.</p>
+      <p className="cmi-pbi-nota">Edita el informe en Power BI Desktop, guárdalo y súbelo aquí. Se convierte en la versión que descargan los demás roles. Se conservan las últimas {maxVersiones} versiones.</p>
       <div className="cmi-pbi-form">
         <label className="cmi-field">Archivo .pbix
           <input ref={input} className="cmi-input" type="file" accept=".pbix" onChange={(e) => setArchivo(e.target.files?.[0] || null)} />
@@ -186,14 +186,13 @@ export default function CmiPowerBi() {
           <DatoConexion etiqueta="Base de datos" valor={conexion.base_datos} />
           <DatoConexion etiqueta="Usuario" valor={conexion.usuario} />
           <p className="cmi-pbi-nota">
-            Usuario de sólo lectura sobre la capa <code>{conexion.esquema}</code>, sin datos personales. El servidor sólo
-            acepta conexiones desde el equipo donde corre el sistema.
+            Usuario de sólo lectura, sin datos personales. El servidor sólo acepta conexiones desde el equipo donde corre el sistema.
           </p>
         </section>
       </div>
 
-      {puedeEditar && <SubirVersion />}
-      {puedeEditar && <Versiones vigente={vigente} />}
+      {puedeEditar && <SubirVersion maxVersiones={data.max_versiones} />}
+      {puedeEditar && <Versiones vigente={vigente} maxVersiones={data.max_versiones} />}
     </div>
   );
 }
