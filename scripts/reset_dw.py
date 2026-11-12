@@ -22,6 +22,15 @@ import os
 import subprocess
 import sys
 from typing import Dict, Any, List, Optional, Tuple
+from urllib.parse import urlparse
+
+URL_POR_DEFECTO = "postgresql://giragroup_user:giragroup_secret_2026@127.0.0.1:5432/giragroup_db"
+
+
+def destino_del_reset() -> Tuple[str, str, str]:
+    """Base y usuario a los que apunta DATABASE_URL. El respaldo por Docker debe actuar sobre esa misma base, nunca sobre otra."""
+    u = urlparse(os.getenv("DATABASE_URL", URL_POR_DEFECTO))
+    return u.path.lstrip("/") or "giragroup_db", u.username or "giragroup_user", u.hostname or "127.0.0.1"
 
 TABLAS_TRUNCAR = [
     "fact_rendimiento_academico",
@@ -137,7 +146,7 @@ def reset_data_warehouse(confirm: bool = False, use_docker_fallback: bool = True
     # 1. Intentar conexión directa vía SQLAlchemy / psycopg2
     try:
         import psycopg2
-        url = os.getenv("DATABASE_URL", "postgresql://giragroup_user:giragroup_secret_2026@127.0.0.1:5432/giragroup_db")
+        url = os.getenv("DATABASE_URL", URL_POR_DEFECTO)
         # Parsear o conectar directamente
         conn = psycopg2.connect(url, connect_timeout=2)
         res = ejecutar_reset_via_psycopg2(conn)
@@ -149,7 +158,8 @@ def reset_data_warehouse(confirm: bool = False, use_docker_fallback: bool = True
 
     # 2. Fallback a docker exec
     try:
-        return ejecutar_reset_via_docker()
+        base, usuario, _ = destino_del_reset()
+        return ejecutar_reset_via_docker(db_user=usuario, db_name=base)
     except Exception as e_docker:
         raise RuntimeError(f"Fallo al ejecutar reset tanto directo como vía Docker: {e_docker}")
 
@@ -172,7 +182,8 @@ def main():
 
     try:
         if args.docker_only:
-            resultado = ejecutar_reset_via_docker()
+            base, usuario, _ = destino_del_reset()
+            resultado = ejecutar_reset_via_docker(db_user=usuario, db_name=base)
         else:
             resultado = reset_data_warehouse(confirm=True)
 

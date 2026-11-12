@@ -54,7 +54,8 @@ export default function BatchHistory({ onInspect, onLogs, onNewBatch, loadingLog
   return (
     <details className="floating-artifact" style={{ padding: '20px 24px' }}>
       <summary style={{ cursor: 'pointer', color: 'var(--color-ink-black)' }}>Historial de lotes ({total})</summary>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '12px 0' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, margin: '12px 0' }}>
+        <Button variant="ghost" disabled={locked} onClick={onNewBatch}>Iniciar nuevo lote</Button>
         <Button variant="ghost" onClick={() => refetch()} isLoading={isFetching} loadingText="Actualizando…">Actualizar</Button>
       </div>
       {error ? <p role="alert">No se pudo cargar el historial. Pulsa Actualizar para reintentarlo.</p> : !data ? <p role="status">Cargando historial…</p> : rows.length === 0 ? <p>No hay lotes registrados.</p> : (
@@ -73,7 +74,6 @@ export default function BatchHistory({ onInspect, onLogs, onNewBatch, loadingLog
                   {src.id_documento && steps.map(step => <Button key={step} disabled={locked} variant="ghost" onClick={() => navigate(`/dataops/lote/${src.id_lote}/${step}`)}>{PASOS[step]}</Button>)}
                   {src.status === 'CONSOLIDADO' && <>
                     <Button variant="ghost" disabled={locked} onClick={() => navigate(`/dataops/lote/${src.id_lote}/revision`)}>Ver resumen</Button>
-                    <Button variant="ghost" disabled={locked} onClick={onNewBatch}>Iniciar nuevo lote</Button>
                   </>}
                   {src.status === 'ERROR' && <>
                     <Button variant="ghost" disabled={locked} isLoading={busy === src.id_lote} onClick={() => src.puede_reintentar_lectura ? mutate(src, 'retry') : onNewBatch()}>Reintentar {src.puede_reintentar_lectura ? 'lectura' : 'carga'}</Button>

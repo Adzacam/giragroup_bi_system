@@ -15,6 +15,7 @@ MIGRATIONS_DIR = Path(__file__).resolve().parent / "migrations"
 sys.path.insert(0, str(BASE_DIR))
 
 from core.database import SQLALCHEMY_DATABASE_URL
+from core.migraciones import migraciones_a_aplicar
 
 
 def run_migrations():
@@ -33,7 +34,11 @@ def run_migrations():
         result = conn.execute(text("SELECT version FROM public.schema_migrations;"))
         applied = {row[0] for row in result.fetchall()}
 
-    sql_files = sorted(list(MIGRATIONS_DIR.glob("*.sql")))
+    # Mismo orden y misma regla que el arranque de la API: con la 004 aplicada no se reaplica la 003
+    por_nombre = {p.name: p for p in MIGRATIONS_DIR.glob("*.sql")}
+    ordenadas = migraciones_a_aplicar(applied)
+    sql_files = [por_nombre[n] for n in ordenadas if n in por_nombre]
+    sql_files += sorted(p for n, p in por_nombre.items() if n not in ordenadas and n not in applied and not n.startswith("003_"))
     if not sql_files:
         print("[!] No se encontraron archivos de migración en backend/scripts/migrations.")
         return
@@ -53,7 +58,7 @@ def run_migrations():
         with engine.begin() as conn:
             conn.execute(text(sql_content))
             conn.execute(
-                text("INSERT INTO public.schema_migrations (version) VALUES (:ver);"),
+                text("INSERT INTO public.schema_migrations (version) VALUES (:ver) ON CONFLICT (version) DO NOTHING;"),
                 {"ver": version_name}
             )
         print(f"  [✔] {version_name} aplicada con éxito.")

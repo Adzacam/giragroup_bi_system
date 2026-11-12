@@ -970,14 +970,26 @@ class DWLoaderService:
         return id_tiempo
 
     # ── 5. Carga de un Registro Procesado Individual ─────────────────────────
-    def _reclamar_fila_origen(self, clave: Optional[str], doc_id: Optional[int], tabla: str) -> bool:
-        """True si la fila de origen aún no se cargó (la reclama); False si ya existe. Sin clave: siempre True."""
-        if not clave:
+    def _reclamar_fila_origen(self, clave: Optional[str], doc_id: Optional[int], tabla: str,
+                              clave_contenido: Optional[str] = None) -> bool:
+        """True si la fila de origen aún no se cargó (la reclama); False si ya existe. Sin clave: siempre True.
+
+        La fila cuenta como ya cargada si existe su clave por archivo o su clave por contenido; así un archivo
+        re-exportado (otra huella, mismo contenido) no vuelve a sumar. Se registran ambas claves."""
+        claves = [c for c in (clave, clave_contenido) if c]
+        if not claves:
             return True
-        r = self.db.execute(text(
-            "INSERT INTO carga_fila_origen (clave, id_documento, tabla) VALUES (:c, :d, :t) "
-            "ON CONFLICT (clave) DO NOTHING RETURNING clave"), {"c": clave, "d": doc_id, "t": tabla}).first()
-        return r is not None
+        existe = self.db.execute(text("SELECT 1 FROM carga_fila_origen WHERE clave = ANY(:cs) LIMIT 1")
+                                 if self.db.get_bind().dialect.name == "postgresql"
+                                 else text("SELECT 1 FROM carga_fila_origen WHERE clave IN (" + ",".join(f":c{i}" for i in range(len(claves))) + ") LIMIT 1"),
+                                 {"cs": claves} if self.db.get_bind().dialect.name == "postgresql" else {f"c{i}": c for i, c in enumerate(claves)}).first()
+        nuevas = False
+        for c in claves:
+            r = self.db.execute(text(
+                "INSERT INTO carga_fila_origen (clave, id_documento, tabla) VALUES (:c, :d, :t) "
+                "ON CONFLICT (clave) DO NOTHING RETURNING clave"), {"c": c, "d": doc_id, "t": tabla}).first()
+            nuevas = nuevas or r is not None
+        return existe is None and nuevas
 
     def cargar_registro(self, registro: Dict[str, Any], id_usuario: Optional[int] = None) -> Dict[str, Any]:
         """
@@ -1110,7 +1122,7 @@ class DWLoaderService:
                         id_documento=doc_id, tipo_entidad="MODULO", texto_original=f"{pos_code or nombre_modulo} | {fecha_encontrada}"[:2000],
                         fk_estado="C", motivo="POS_NO_EN_DIM_MODULO", nivel_confianza=confianza_ia, resuelto=False))
                     self.db.flush()
-                elif not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing"):
+                elif not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing", registro.get("clave_contenido")):
                     return {"tipo": "admision", "status": "skipped", "motivo": "Fila de origen ya cargada"}
                 else:
                     mkt = self.db.query(FactMarketing).filter_by(id_modulo=id_mod_adm, id_tiempo=id_tiempo).first()
@@ -1420,7 +1432,7 @@ class DWLoaderService:
 
         # 3e. Ruteo MARKETING -> FactMarketing
         if categoria == "marketing" and FactMarketing:
-            if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing"):
+            if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing", registro.get("clave_contenido")):
                 return {"tipo": "marketing", "status": "skipped", "motivo": "Fila de origen ya cargada"}
             id_mod_mkt = self.resolver_o_crear_modulo(
                 nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion

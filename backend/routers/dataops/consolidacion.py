@@ -6,6 +6,7 @@ import threading
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Any, Dict, List, Optional
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
+from services.clave_fila import ContadorOcurrencias, clave_contenido
 from services.dw_loader import DWLoaderService, normalizar_nota_base_100
 from models.dim_estudiante import DimEstudiante
 from models.dim_modulo import DimModulo
@@ -160,6 +161,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         indexadas[0] += n
         tareas_dataops.avanzar(tarea_id, indexadas[0] + lineas_hechas)
 
+    ocurrencias = ContadorOcurrencias()
     for stg in stg_records:
         orig_doc = origenes_map.get(stg.id_documento) if stg.id_documento else None
         doc_fuente = (orig_doc.tipo_fuente if (orig_doc and orig_doc.tipo_fuente) else "ACTA").upper().strip()
@@ -266,6 +268,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     "tipo_escala": doc_escala,
                     "institucion": institucion,
                     "doc_id": stg.id_documento,
+                    "clave_contenido": clave_contenido(doc_fuente, stg.hoja, line, ocurrencias.siguiente(stg.hoja, line)),
                     "clave_origen": hashlib.sha256(
                         f"{(orig_doc.hash_sha256 or orig_doc.nombre_archivo) if orig_doc else stg.id_documento}|{stg.hoja}|{(stg.fila_inicio or 0) + k_fila}|{line}".encode("utf-8")).hexdigest(),
                     "resoluciones": {

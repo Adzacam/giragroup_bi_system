@@ -36,6 +36,7 @@ from models.staging_entidad import StagingEntidadNoResuelta
 from models.log_inconsistencia import LogInconsistencia
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
 from schemas.pipeline_schemas import PipelineExecutionResponse
+from services.clave_fila import ContadorOcurrencias, clave_contenido
 
 logger = logging.getLogger("pipeline_router")
 
@@ -329,6 +330,7 @@ def process_pipeline(
     dw_loader.diferir_eval = True  # evaluación docente: inserción en bloque al final del documento
     _doc_origen = db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento == doc_id).first()
     hash_archivo = (_doc_origen.hash_sha256 if _doc_origen and _doc_origen.hash_sha256 else nombre_archivo)
+    tipo_fuente_doc = (_doc_origen.tipo_fuente if _doc_origen and _doc_origen.tipo_fuente else "")
     detalles_carga = []
     cargados_dw = 0
     staged_entidades = 0
@@ -353,6 +355,7 @@ def process_pipeline(
         logger.warning(f"Módulos semánticos de pipeline no disponibles directamente: {e}")
         pln_disponible = False
 
+    ocurrencias = ContadorOcurrencias()
     for b in bloques_stg:
         texto_lineas = (b.texto_plano or "").split("\n")
         total_filas += len(texto_lineas)
@@ -449,6 +452,7 @@ def process_pipeline(
                     "resoluciones": resoluciones_fila,
                     "calidad": {"requiere_revision": en_revision or revision_fila},
                     "clave_origen": clave_origen,
+                    "clave_contenido": clave_contenido(tipo_fuente_doc, b.hoja, linea_str, ocurrencias.siguiente(b.hoja, linea_str)),
                 }
                 t_c0 = time.perf_counter()
                 res_carga = dw_loader.cargar_registro(reg_simulado, id_usuario=current_user.id)
