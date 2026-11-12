@@ -71,13 +71,23 @@ def main(salida):
         time.sleep(2)
     t["espera_lectura_beto_s"] = round(time.perf_counter() - t0, 2)
 
-    revision = rev.simular(cli, str(id_lote))
-    t["revision_maquina_s"] = revision["resumen"]["tiempo_maquina_real_aprobaciones_s"]
-    t["revision_humana_simulada_s"] = revision["resumen"]["tiempo_humano_simulado_s"]
+    with __import__("core.database", fromlist=["SessionLocal"]).SessionLocal() as ses:
+        fila = ses.execute(text("SELECT total, EXTRACT(EPOCH FROM (terminado_en - iniciado_en)) FROM dataops_tarea "
+                                "WHERE id_lote = :l AND tipo = 'LECTURA_BETO' ORDER BY id DESC LIMIT 1"), {"l": id_lote}).first()
+    if fila and fila[1]:
+        t["lectura_beto_s"] = round(float(fila[1]), 2)
+        t["lineas_leidas_beto"] = int(fila[0])
+        t["lineas_por_s_beto"] = round(int(fila[0]) / float(fila[1]), 2)
+        t["carga_s"] = round(t["carga_y_lectura_s"] + t["espera_lectura_beto_s"] - t["lectura_beto_s"], 2)
 
     t0 = time.perf_counter()
     rc = cli.post(f"{BASE}/confirm-dw-insert", json={"id_lote": id_lote, "en_segundo_plano": False})
     t["consolidacion_s"] = round(time.perf_counter() - t0, 2)
+
+    # los casos de la bandeja se generan al consolidar: la revisión se simula después
+    revision = rev.simular(cli, str(id_lote))
+    t["revision_maquina_s"] = revision["resumen"]["tiempo_maquina_real_aprobaciones_s"]
+    t["revision_humana_simulada_s"] = revision["resumen"]["tiempo_humano_simulado_s"]
 
     despues = conteos()
     maquina = t["carga_y_lectura_s"] + t["espera_lectura_beto_s"] + t["revision_maquina_s"] + t["consolidacion_s"]
@@ -88,7 +98,7 @@ def main(salida):
     out = {"carga": resumen_carga, "etapas_s": t, "total": total, "consolidacion_http": rc.status_code,
            "consolidacion": {k: v for k, v in (rc.json() if rc.headers.get("content-type", "").startswith("application/json") else {}).items()
                              if not isinstance(v, (list, dict))},
-           "revision": revision["resumen"], "dw_antes": antes, "dw_despues": despues}
+           "revision": revision["resumen"], "revision_eventos": revision["eventos"], "dw_antes": antes, "dw_despues": despues}
     Path(salida).write_text(json.dumps(out, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
     print(json.dumps({"etapas_s": t, "total": total, "revision": revision["resumen"]}, ensure_ascii=False, default=str))
     return 0
