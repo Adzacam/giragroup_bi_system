@@ -1,0 +1,62 @@
+{
+  "base": "clon_correccion",
+  "serie": {
+    "meses": 33,
+    "desde": "2023-09",
+    "hasta": "2026-05",
+    "suma": 12810
+  },
+  "entrenamiento": {
+    "meses": 27,
+    "desde": "2023-09",
+    "hasta": "2025-11"
+  },
+  "holdout": {
+    "desde": "2025-12",
+    "hasta": "2026-05"
+  },
+  "mape_pct": 13.89,
+  "rmse": 75.03,
+  "aic": 239.56,
+  "parametros": {
+    "smoothing_level": 0.701,
+    "smoothing_trend": 0.0,
+    "smoothing_seasonal": 0.0,
+    "damping_trend": 0.9858
+  },
+  "pares_real_pronostico": [
+    [
+      357,
+      267.3
+    ],
+    [
+      553,
+      440.2
+    ],
+    [
+      403,
+      395.7
+    ],
+    [
+      391,
+      345.2
+    ],
+    [
+      549,
+      447.3
+    ],
+    [
+      396,
+      418.9
+    ]
+  ],
+  "ingenuo_ultimo_valor_mape_pct": 16.51,
+  "ingenuo_estacional_mape_pct": 10.32,
+  "entorno": {
+    "python": "3.14.6",
+    "statsmodels": "0.15.0",
+    "scipy": "1.18.1",
+    "numpy": "2.5.1",
+    "pandas": "3.0.3"
+  }
+}
