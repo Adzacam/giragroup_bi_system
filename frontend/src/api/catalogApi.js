@@ -1,27 +1,6 @@
 import client from './client';
 
 export const catalogApi = {
-  // Estudiantes
-  getEstudiantes: async (params = {}) => {
-    try {
-      const res = await client.get('/api/v1/estudiantes', { params });
-      return res.data;
-    } catch (err) {
-      console.warn('Fallback estudiantes:', err.message);
-      return { status: 'success', total: 0, data: [] };
-    }
-  },
-
-  createEstudiante: async (data) => {
-    const res = await client.post('/api/v1/estudiantes', data);
-    return res.data;
-  },
-
-  deleteEstudiante: async (id) => {
-    const res = await client.delete(`/api/v1/estudiantes/${id}`);
-    return res.data;
-  },
-
   // Docentes
   getDocentes: async (params = {}) => {
     try {
@@ -31,16 +10,6 @@ export const catalogApi = {
       console.warn('Fallback docentes:', err.message);
       return { status: 'success', total: 0, data: [] };
     }
-  },
-
-  createDocente: async (data) => {
-    const res = await client.post('/api/v1/docentes', data);
-    return res.data;
-  },
-
-  deleteDocente: async (id) => {
-    const res = await client.delete(`/api/v1/docentes/${id}`);
-    return res.data;
   },
 
   // Módulos
@@ -64,27 +33,9 @@ export const catalogApi = {
     return res.data;
   },
 
-  // Instituciones
-  getInstituciones: async (params = {}) => {
-    try {
-      const res = await client.get('/api/v1/instituciones', { params });
-      return res.data;
-    } catch (err) {
-      console.warn('Fallback instituciones:', err.message);
-      return { status: 'success', total: 0, data: [] };
-    }
-  },
-
   // Catálogos Financieros
-  getFinancialConcepts: async (params = {}) => {
-    try {
-      const res = await client.get('/api/v1/catalogs/financial/concepts', { params });
-      return res.data;
-    } catch (err) {
-      console.warn('Fallback financial concepts:', err.message);
-      return { status: 'success', data: [] };
-    }
-  },
+  getFinancialConcepts: async (params = {}) =>
+    (await client.get('/api/v1/catalogs/financial/concepts', { params })).data,
 
   matchFinancialConcept: async (data) => {
     const res = await client.post('/api/v1/catalogs/financial/match', data);

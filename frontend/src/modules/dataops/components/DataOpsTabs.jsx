@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from '../../../components/shared/Button';
 
 /**
  * Componente de navegación por pestañas de alta fidelidad para el módulo DataOps.
@@ -8,7 +9,7 @@ import React from 'react';
  * @param {string} activeTab
  * @param {Function} onChangeTab
  */
-export default function DataOpsTabs({ tabs = [], activeTab, onChangeTab }) {
+export default function DataOpsTabs({ tabs = [], activeTab, onChangeTab, disabled = false }) {
   return (
     <div
       role="tablist"
@@ -30,7 +31,7 @@ export default function DataOpsTabs({ tabs = [], activeTab, onChangeTab }) {
         const IconComponent = tab.icon;
 
         return (
-          <button
+          <Button variant="ghost" disabled={disabled}
             key={tab.id}
             role="tab"
             aria-selected={isActive}
@@ -92,7 +93,7 @@ export default function DataOpsTabs({ tabs = [], activeTab, onChangeTab }) {
                 {tab.count}
               </span>
             )}
-          </button>
+          </Button>
         );
       })}
     </div>

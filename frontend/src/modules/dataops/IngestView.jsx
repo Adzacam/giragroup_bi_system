@@ -58,9 +58,6 @@ export default function IngestView() {
   // ─── Estados del Drawer de Bitácora Técnica y Reporte Markdown (.MD) ───
   const [telemetryOpen, setTelemetryOpen] = useState(false);
   const [telemetryDoc, setTelemetryDoc] = useState(null);
-  const [telemetryLogs, setTelemetryLogs] = useState([]);
-  const [telemetryMarkdown, setTelemetryMarkdown] = useState('');
-  const [telemetryMetrics, setTelemetryMetrics] = useState(null);
 
   const loadInitialData = async () => {
     try {
@@ -110,15 +107,10 @@ export default function IngestView() {
     const docId = src?.id_documento;
     if (!docId || loadingLogs) return;
     setLoadingLogs(docId);
-    setTelemetryLogs([]);
-    setTelemetryMarkdown('');
-    setTelemetryMetrics(null);
     try {
       const res = await dataopsApi.getLogs(docId);
-      setTelemetryDoc({ ...src, id: docId });
-      setTelemetryLogs(res.data || []);
-      setTelemetryMarkdown(res.markdown_report || '');
-      setTelemetryMetrics(res.summary_metrics || null);
+      setTelemetryDoc(res.document_meta);
+      queryClient.setQueryData([...DATAOPS_QUERY_KEY, 'bitacora', docId, 1, 1], res);
       setTelemetryOpen(true);
     } catch {
       sileoToast.error({ title: 'No se pudo abrir la bitácora', description: 'Inténtalo de nuevo.' });
@@ -773,16 +765,10 @@ export default function IngestView() {
 
       {/* ─── DRAWER DE BITÁCORA TÉCNICA Y REPORTE MARKDOWN (.MD) ─── */}
       <PipelineTelemetryDrawer
+        key={telemetryDoc?.id_documento || 'sin-documento'}
         isOpen={telemetryOpen}
         onClose={() => setTelemetryOpen(false)}
-        logs={telemetryLogs}
-        onClearLogs={() => setTelemetryLogs([])}
-        isProcessing={isProcessing}
-        lotName={(telemetryDoc?.nombre_archivo || telemetryDoc?.name) ? `Archivo: ${telemetryDoc.nombre_archivo || telemetryDoc.name}` : 'Lote Activo'}
-        sources={telemetryDoc ? [telemetryDoc] : []}
-        activeDocId={telemetryDoc?.id_documento ?? null}
-        markdownReport={telemetryMarkdown}
-        summaryMetrics={telemetryMetrics}
+        docId={telemetryDoc?.id_documento}
       />
     </BatchFlowLayout>
   );

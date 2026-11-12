@@ -228,42 +228,11 @@ export const dataopsApi = {
   /**
    * Obtiene la bitácora técnica de logs para un documento
    */
-  getLogs: async (docId) => {
-    return cachedGet(`logs_${docId}`, async () => {
-      const res = await client.get(`${BASE_URL}/logs/${docId}`);
-      return res.data;
-    }, 30_000);
-  },
+  getLogs: async (docId, page = 1, mapPage = 1) =>
+    (await client.get(`${BASE_URL}/logs/${docId}`, { params: { page, map_page: mapPage } })).data,
 
-  /**
-   * Alias de getLogs para obtener la bitácora técnica y reporte Markdown de un documento
-   */
-  getDocumentLogs: async (docId) => {
-    return cachedGet(`logs_${docId}`, async () => {
-      try {
-        const res = await client.get(`${BASE_URL}/logs/${docId}`);
-        return res.data;
-      } catch (err) {
-        console.warn('Backend dataops/logs no disponible:', err.message);
-        return { status: 'success', data: [] };
-      }
-    }, 30_000);
-  },
-
-  /**
-   * Obtiene la matriz de normalización canónica
-   */
-  getNormalizationMatrix: async (docId) => {
-    return cachedGet(`norm_matrix_${docId}`, async () => {
-      try {
-        const res = await client.get(`${BASE_URL}/normalization-matrix/${docId}`);
-        return res.data;
-      } catch (err) {
-        console.warn('Backend dataops/normalization-matrix no disponible:', err.message);
-        return { status: 'success', data: [] };
-      }
-    }, 60_000);
-  },
+  downloadLogs: async docId =>
+    (await client.get(`${BASE_URL}/logs/${docId}/export`, { responseType: 'blob' })).data,
 
   /**
    * Obtiene resumen agregado y KPIs server-side de un lote (#1, #2)
@@ -401,18 +370,6 @@ export const dataopsApi = {
   }),
 
   /**
-   * Obtiene entidades no resueltas
-   */
-  getUnresolvedEntities: async () => {
-    try {
-      const res = await client.get(`${BASE_URL}/entities/unresolved`);
-      return res.data;
-    } catch (err) {
-      return { status: 'success', data: [] };
-    }
-  },
-
-  /**
    * Vincula una entidad detectada con el catálogo maestro
    */
   linkEntity: async (id, payload = {}) => {
@@ -462,15 +419,8 @@ export const dataopsApi = {
   /**
    * Obtiene los catálogos maestros (Módulos, Docentes, Estudiantes) de PostgreSQL
    */
-  getCatalogs: async () => {
-    try {
-      const res = await client.get(`${BASE_URL}/catalogs`);
-      return res.data;
-    } catch (err) {
-      console.warn('Backend catalogs no disponible:', err.message);
-      return { status: 'success', data: null };
-    }
-  },
+  getCatalogs: async ({ tipo = 'modulos', page = 1, search = '' } = {}) =>
+    (await client.get(`${BASE_URL}/catalogs`, { params: { tipo, page, search } })).data,
 
   /**
    * Ejecuta inferencia BETO NER y matching sobre texto libre (#5, #6)

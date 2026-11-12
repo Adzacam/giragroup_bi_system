@@ -46,6 +46,26 @@ from schemas.catalog_schemas import (
 router = APIRouter(prefix="/api/v1", tags=["Catálogos Dimensionales"])
 
 
+def _avisar_cambio_modulo(db, usuario, accion, id_modulo):
+    from models.log_pipeline import LogPipelineIngesta
+    from services.notification_service import NotificationService
+    from services import cache_consultas
+    cache_consultas.invalidar()
+    try:
+        db.add(LogPipelineIngesta(etapa='CATALOGO_MODULO', nivel='INFO', modulo='Catálogo de referencia',
+            mensaje=f'{accion} de módulo {id_modulo}.',
+            metadata_json={'accion': accion, 'id_modulo': id_modulo, 'usuario': getattr(usuario, 'id', None)}))
+        db.commit()
+        for rol in ('ADMIN', 'AUDITOR_CALIDAD'):
+            NotificationService.create_notification(db=db, title='Catálogo de referencia actualizado',
+                message='Se guardó un cambio de módulos. Abre el catálogo para consultarlo.',
+                category='DataOps', severity='SUCCESS', role_target=rol, link='/dataops/datos-maestros')
+    except Exception:
+        db.rollback()
+        import logging
+        logging.getLogger(__name__).exception('No se pudo registrar el aviso del catálogo')
+
+
 @router.get(
     "/estudiantes",
     response_model=EstudiantesListResponse,
@@ -184,6 +204,7 @@ def create_modulo(
 ):
     service = CatalogService(db)
     mod = service.crear_modulo(payload.model_dump())
+    _avisar_cambio_modulo(db, current_user, 'Alta', mod.id_modulo)
     return {"status": "success", "message": "Módulo curricular creado exitosamente", "data": {"id_modulo": mod.id_modulo, "nombre_modulo": mod.nombre_modulo}}
 
 
@@ -200,6 +221,7 @@ def delete_modulo(
     ok = service.eliminar_registro("modulo", id_modulo)
     if not ok:
         raise HTTPException(status_code=404, detail="Módulo no encontrado.")
+    _avisar_cambio_modulo(db, current_user, 'Baja', id_modulo)
     return {"status": "success", "message": "Módulo eliminado exitosamente"}
 
 

@@ -315,12 +315,26 @@ class CatalogService:
         return doc
 
     def crear_modulo(self, data: dict) -> DimModulo:
-        mod = DimModulo(
-            nombre_modulo=data["nombre_modulo"],
-            nombre_institucion=data.get("nombre_institucion") or "GiraGroup Posgrado",
-            programa=data.get("programa") or "Programa General",
-            pos_code=data.get("pos_code") or f"MOD-{self.db.query(DimModulo).count() + 101}"
-        )
+        import hashlib
+        import json
+        from fastapi import HTTPException
+        from sqlalchemy import text
+        campos = {k: str(data.get(k) or '').strip() or None for k in
+                  ('nombre_modulo', 'nombre_institucion', 'programa', 'pos_code')}
+        if not campos['nombre_modulo'] or not campos['nombre_institucion']:
+            raise HTTPException(422, 'Indica el nombre del módulo y su institución.')
+        # Serializa dos altas idénticas, también cuando todavía no hay una fila que bloquear.
+        if self.db.get_bind().dialect.name == 'postgresql':
+            clave = int.from_bytes(hashlib.sha256(json.dumps(campos, sort_keys=True).lower().encode()).digest()[:8], signed=True)
+            self.db.execute(text('SELECT pg_advisory_xact_lock(:clave)'), {'clave': clave})
+        q = self.db.query(DimModulo)
+        for campo, valor in campos.items():
+            col = getattr(DimModulo, campo)
+            q = q.filter(func.lower(col) == valor.lower() if valor else or_(col.is_(None), col == ''))
+        if q.first():
+            self.db.rollback()
+            raise HTTPException(409, 'Este módulo ya está registrado con los mismos datos.')
+        mod = DimModulo(**campos)
         self.db.add(mod)
         self.db.commit()
         self.db.refresh(mod)
@@ -335,10 +349,25 @@ class CatalogService:
         if modelo not in model_map:
             return False
         cls, id_col = model_map[modelo]
-        row = self.db.query(cls).filter(id_col == record_id).first()
+        row = self.db.query(cls).filter(id_col == record_id).with_for_update().first()
         if not row:
             return False
-        self.db.delete(row)
-        self.db.commit()
+        if modelo == 'modulo':
+            from core.database import Base
+            from fastapi import HTTPException
+            for tabla in Base.metadata.tables.values():
+                for fk in tabla.foreign_keys:
+                    if fk.target_fullname == 'dim_modulo.id_modulo':
+                        if self.db.query(fk.parent).filter(fk.parent == record_id).first() is not None:
+                            self.db.rollback()
+                            raise HTTPException(409, 'El módulo tiene datos vinculados y debe conservarse para mantener el historial.')
+        from sqlalchemy.exc import IntegrityError
+        from fastapi import HTTPException
+        try:
+            self.db.delete(row)
+            self.db.commit()
+        except IntegrityError as exc:
+            self.db.rollback()
+            raise HTTPException(409, 'El registro tiene datos vinculados y no se puede eliminar.') from exc
         return True
 

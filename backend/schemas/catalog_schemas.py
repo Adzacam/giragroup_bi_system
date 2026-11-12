@@ -6,7 +6,7 @@ Estudiantes, Docentes y Módulos curriculares.
 """
 
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class EstudianteItem(BaseModel):
@@ -116,10 +116,11 @@ class DocenteCreate(BaseModel):
 
 
 class ModuloCreate(BaseModel):
-    nombre_modulo: str
-    nombre_institucion: str = "GiraGroup Posgrado"
-    programa: Optional[str] = None
-    pos_code: Optional[str] = None
+    model_config = ConfigDict(str_strip_whitespace=True)
+    nombre_modulo: str = Field(min_length=1, max_length=200)
+    nombre_institucion: str = Field(min_length=1, max_length=200)
+    programa: Optional[str] = Field(None, max_length=200)
+    pos_code: Optional[str] = Field(None, max_length=50)
 
 
 class InstitucionCreate(BaseModel):

@@ -854,140 +854,30 @@ def reprocess_document(doc_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/logs/{doc_id}")
-def get_logs(doc_id: int, db: Session = Depends(get_db)):
-    logs = IngestionService.obtener_logs_documento(db, doc_id)
-    doc = db.query(DimOrigenDocumental).filter_by(id_documento=doc_id).first()
-    if not doc:
-        doc = db.query(DimOrigenDocumental).order_by(DimOrigenDocumental.id_documento.desc()).first()
-
-    target_id = doc.id_documento if doc else doc_id
-    stg_records = db.query(StagingRegistroCrudo).filter_by(id_documento=target_id).all() if doc else []
-    matrix_db = IngestionService.obtener_matriz_normalizacion(db, target_id) if doc else []
-
-    total_filas = sum((r.n_filas or 0) for r in stg_records) or len(stg_records)
-    inconsistencias = sum(1 for r in stg_records if r.requiere_revision)
-    ruido_eliminado = sum(1 for r in stg_records if r.es_ruido)
-    normalizadas = max(0, total_filas - inconsistencias)
-    tasa_limpieza = round((normalizadas / (total_filas or 1)) * 100.0, 1) if total_filas > 0 else 100.0
-    latencia_total_ms = sum(int(l.get("tiempo_ms") or 0) for l in logs) if logs else 185
-    celdas_combinadas = sum(
-        1 for l in (logs or []) if "combinada" in str(l.get("mensaje", "")).lower() or "unmerge" in str(l.get("mensaje", "")).lower()
-    )
-
-    fuente_clean = (doc.tipo_fuente or doc.tipo_documento or "ACTA") if doc else "ACTA"
-    escala_clean = (doc.tipo_escala or "No aplica (Finanzas/Admisión)") if doc else "CENTESIMAL_100"
-    nombre_arch = doc.nombre_archivo if doc else f"Documento_{doc_id}.xlsx"
-    sha_val = (doc.hash_sha256 or "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855") if doc else "N/A"
-    institucion_val = (doc.institucion or "GiraGroup Posgrado") if doc else "GiraGroup Posgrado"
-    periodo_val = (doc.periodo or "2026-1") if doc else "2026-1"
-    fecha_proc = (
-        doc.fecha_procesamiento.strftime("%Y-%m-%d %H:%M:%S")
-        if (doc and doc.fecha_procesamiento)
-        else datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-    )
-
-    document_meta = {
-        "id_documento": target_id,
-        "id_lote": doc.id_lote if doc else None,
-        "nombre_archivo": nombre_arch,
-        "tipo_fuente": fuente_clean,
-        "tipo_escala": doc.tipo_escala if doc else None,
-        "escala_label": escala_clean,
-        "institucion": institucion_val,
-        "periodo": periodo_val,
-        "hash_sha256": sha_val,
-        "fecha_procesamiento": fecha_proc,
-    }
-
-    summary_metrics = {
-        "total_registros": total_filas,
-        "total_filas": total_filas,
-        "total_rows": total_filas,
-        "registros_limpios": normalizadas,
-        "valid_rows": normalizadas,
-        "registros_aprobados_dw": normalizadas,
-        "registros_observados": inconsistencias,
-        "review_rows": inconsistencias,
-        "registros_derivados_hitl": inconsistencias,
-        "ruido_descartado": ruido_eliminado,
-        "celdas_combinadas_desagrupadas": celdas_combinadas,
-        "columnas_mapeadas": len(matrix_db),
-        "tasa_calidad_pct": tasa_limpieza,
-        "avg_confidence": round(tasa_limpieza / 100.0, 4),
-        "latencia_total_ms": latencia_total_ms,
-    }
-
-    md_lines = [
-        "# REPORTE TÉCNICO DE AUDITORÍA E INGESTA DATAOPS",
-        f"## Bitácora Técnica de Procesamiento — {nombre_arch}",
-        "",
-        "## 1. Identificación y Trazabilidad del Origen Documental",
-        f"- **Documento ID:** `{target_id}`" + (f" (Lote `#{doc.id_lote}`)" if (doc and doc.id_lote) else ""),
-        f"- **Archivo Fuente:** `{nombre_arch}`",
-        f"- **Dominio Documental:** `{fuente_clean}`",
-        f"- **Escala Declarada:** `{escala_clean}`",
-        f"- **Institución / Periodo:** `{institucion_val}` · `{periodo_val}`",
-        f"- **Huella Criptográfica (SHA-256):** `{sha_val}`",
-        f"- **Fecha de Ejecución:** `{fecha_proc}`",
-        "",
-        "## 2. Métricas de Calidad y Normalización del Lote",
-        "| Indicador Operativo | Valor Registrado |",
-        "| :--- | :--- |",
-        f"| **Registros leídos del archivo** | `{total_filas}` |",
-        f"| **Registros normalizados sin observaciones** | `{normalizadas}` |",
-        f"| **Registros derivados a revisión de calidad** | `{inconsistencias}` |",
-        f"| **Filas de ruido o formato descartadas** | `{ruido_eliminado}` |",
-        f"| **Columnas homologadas al contrato canónico** | `{len(matrix_db)}` |",
-        f"| **Índice de limpieza documental** | `{tasa_limpieza}%` |",
-        f"| **Tiempo total de ejecución del pipeline** | `{latencia_total_ms} ms` |",
-        "",
-        "## 3. Secuencia de Etapas del Pipeline de Ingesta",
-        "| # | Etapa | Nivel | Tiempo (ms) | Detalle de Ejecución |",
-        "| :--- | :--- | :--- | :--- | :--- |",
-    ]
-
-    if logs:
-        for idx, l_row in enumerate(logs, start=1):
-            etapa_str = l_row.get("etapa", "STEP")
-            nivel_str = l_row.get("nivel", "INFO")
-            t_ms = l_row.get("tiempo_ms", 0)
-            msg_str = str(l_row.get("mensaje", "")).replace("|", "\\|")
-            md_lines.append(f"| {idx} | `{etapa_str}` | **{nivel_str}** | `{t_ms} ms` | {msg_str} |")
-    else:
-        md_lines.append("| 1 | `PIPELINE` | **INFO** | `185 ms` | Procesamiento y serialización a texto plano completados. |")
-
-    if matrix_db:
-        md_lines.extend([
-            "",
-            "## 4. Homologación de Cabeceras hacia el Esquema Canónico",
-            "| Columna Original Detectada | Campo Canónico Asignado | Confianza | Regla Aplicada |",
-            "| :--- | :--- | :--- | :--- |",
-        ])
-        for m_row in matrix_db:
-            orig_c = m_row.get("original_col") or m_row.get("columna_original") or "Columna"
-            canon_c = m_row.get("mapped_col") or m_row.get("campo_canonico") or "Texto"
-            conf_c = m_row.get("confidence") or m_row.get("confianza") or "100%"
-            rule_c = m_row.get("rule") or m_row.get("regla") or "Homologación Léxica"
-            md_lines.append(f"| `{orig_c}` | `{canon_c}` | `{conf_c}` | {rule_c} |")
-
-    markdown_report = "\n".join(md_lines)
-
-    return {
-        "status": "success",
-        "data": logs,
-        "document_meta": document_meta,
-        "summary_metrics": summary_metrics,
-        "markdown_report": markdown_report,
-    }
+def get_logs(doc_id: int, page: int = Query(1, ge=1), map_page: int = Query(1, ge=1), db: Session = Depends(get_db)):
+    from services.bitacora_dataops import consultar
+    return consultar(db, doc_id, page if isinstance(page, int) else 1, map_page if isinstance(map_page, int) else 1)
 
 
 get_pipeline_logs = get_logs
 
 
+@router.get("/logs/{doc_id}/export")
+def export_logs(doc_id: int, db: Session = Depends(get_db)):
+    from fastapi.responses import StreamingResponse
+    from services.bitacora_dataops import documento, reporte
+    doc = documento(db, doc_id)
+    return StreamingResponse(reporte(db, doc), media_type='text/markdown; charset=utf-8',
+                             headers={'Content-Disposition': f'attachment; filename="bitacora_documento_{doc_id}.md"'})
+
+
 @router.get("/normalization-matrix/{doc_id}")
-def get_normalization_matrix(doc_id: int, db: Session = Depends(get_db)):
-    matrix = IngestionService.obtener_matriz_normalizacion(db, doc_id)
-    return {"status": "success", "data": matrix}
+def get_normalization_matrix(doc_id: int, page: int = Query(1, ge=1), db: Session = Depends(get_db)):
+    from services.bitacora_dataops import documento, matriz_registrada, paginacion
+    documento(db, doc_id)
+    matriz = matriz_registrada(db, doc_id)
+    page = page if isinstance(page, int) else 1
+    return {'status': 'success', 'data': matriz[(page - 1) * 5:page * 5], 'pagination': paginacion(page, len(matriz))}
 
 
 # =============================================================================
@@ -4671,70 +4561,11 @@ def get_plain_text_records(
 
 
 @router.get("/catalogs")
-def get_master_catalogs(db: Session = Depends(get_db)):
-    """Retorna los catálogos maestros institucionales desde PostgreSQL."""
-    modulos = db.query(DimModulo).all()
-    docentes = _docentes_con_contexto(db)
-    estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
-
-    modulos_list = [
-        {
-            "id": m.pos_code or f"MOD-{m.id_modulo}",
-            "name": m.nombre_modulo,
-            "alias": f"Modulo {m.id_modulo}, {m.pos_code or ''}".strip(", "),
-            "area": m.programa or "General",
-        }
-        for m in modulos
-    ]
-    docentes_list = [
-        {
-            "id": f"DOC-{d.id_docente}",
-            "name": d.nombre_completo,
-            "alias": d.nombre_completo.replace("Dr. ", "").replace("MSc. ", ""),
-            "area": d.area_especialidad or "Académico",
-        }
-        for d in docentes
-    ]
-    estudiantes_list = [
-        {
-            "id": f"EST-{e.id_estudiante}",
-            "name": e.nombre_completo,
-            "ci": enmascarar_ci(e.ci or e.codigo_estudiante),
-            "estado": "REGULAR",
-            "ciudad": e.ciudad or "La Paz",
-        }
-        for e in estudiantes
-    ]
-
-    return {
-        "status": "success",
-        "data": {
-            "modulos": modulos_list,
-            "docentes": docentes_list,
-            "estudiantes": estudiantes_list,
-            "dim_modulo": modulos_list,
-            "dim_docente": docentes_list,
-            "dim_estudiante": estudiantes_list,
-        },
-    }
-
-
-@router.get("/entities/unresolved")
-def get_unresolved_entities(db: Session = Depends(get_db)):
-    entidades_db = db.query(StagingEntidadNoResuelta).filter(StagingEntidadNoResuelta.resuelto == False).all()
-    data = [
-        {
-            "id": ent.id_staging,
-            "raw_text": ent.texto_original,
-            "entity_type": ent.tipo_entidad,
-            "suggested_canonical": ent.mejor_candidato or "Sin candidato",
-            "canonical_code": f"CAT-{ent.id_staging}",
-            "score": float(ent.score_fuzzy) if ent.score_fuzzy else 80.0,
-            "status": "PENDING",
-        }
-        for ent in entidades_db
-    ]
-    return {"status": "success", "total": len(data), "data": data}
+def get_master_catalogs(tipo: str = Query('modulos', pattern='^(modulos|instituciones)$'),
+                        page: int = Query(1, ge=1), search: str = Query('', max_length=100),
+                        db: Session = Depends(get_db)):
+    from services.catalogo_dataops import consultar
+    return consultar(db, tipo, page, search.strip())
 
 
 @router.post("/entities/{entity_id}/link")
