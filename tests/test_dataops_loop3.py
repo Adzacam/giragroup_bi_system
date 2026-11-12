@@ -7,6 +7,7 @@ from models.dim_origen import DimOrigenDocumental
 from models.lote import Lote
 from models.staging_registro import StagingRegistroCrudo
 from routers import dataops
+from tests.dataops_parches import parchear
 from services import cache_consultas, cache_lectura
 
 
@@ -15,7 +16,7 @@ def lectura(dw_sqlite, monkeypatch, tmp_path):
     cache_consultas.invalidar()
     monkeypatch.setattr(cache_lectura, 'DIR', tmp_path)
     monkeypatch.setattr(dataops.tareas_dataops, 'ultima', lambda *a, **kw: None)
-    monkeypatch.setattr(dataops, '_evaluar_documentos_lote', lambda *a, **kw: pytest.fail('Un GET no ejecuta BETO'))
+    parchear(monkeypatch, '_evaluar_documentos_lote', lambda *a, **kw: pytest.fail('Un GET no ejecuta BETO'))
     db = dw_sqlite
     lote = Lote(institucion='Prueba', periodo='2026')
     db.add(lote)
@@ -124,7 +125,7 @@ def test_get_sin_cache_no_calcula_no_espera_ni_crea_tareas(lectura, monkeypatch)
     _, _, _, _, clave = lectura
     cache_lectura._ruta(clave).unlink()
     monkeypatch.setattr(dataops.tareas_dataops, 'crear', lambda *a, **kw: pytest.fail('El GET no crea tareas'))
-    monkeypatch.setattr(dataops, '_cerrar_transaccion_lectura', lambda *a: pytest.fail('El GET no espera un cálculo'))
+    parchear(monkeypatch, '_cerrar_transaccion_lectura', lambda *a: pytest.fail('El GET no espera un cálculo'))
     assert leer(lectura)['status'] == 'pending'
     db, lote, *_ = lectura
     assert dataops.get_lote_resumen(str(lote.id_lote), doc_id=None, db=db)['status'] == 'pending'
@@ -211,7 +212,7 @@ def test_worker_reutiliza_reserva_guarda_resultado_y_finaliza(lectura, monkeypat
     terminadas = []
     ids = [d.id_documento for d in docs]
     lote_id = lote.id_lote
-    monkeypatch.setattr(dataops, 'SessionLocal', lambda: db)
+    parchear(monkeypatch, 'SessionLocal', lambda: db)
     monkeypatch.setattr(dataops.tareas_dataops, 'crear', lambda *a, **kw: pytest.fail('La tarea ya está reservada'))
     monkeypatch.setattr(dataops.tareas_dataops, 'terminar', lambda tid, r: terminadas.append((tid, r)))
     monkeypatch.setattr(dataops.tareas_dataops, 'fallar', lambda *a: pytest.fail('El worker no debe fallar'))
@@ -219,7 +220,7 @@ def test_worker_reutiliza_reserva_guarda_resultado_y_finaliza(lectura, monkeypat
         assert persistir_staging and tarea_id == 77
         assert [d.id_documento for d in docs_worker] == ids
         return base
-    monkeypatch.setattr(dataops, '_evaluar_documentos_lote', evaluar)
+    parchear(monkeypatch, '_evaluar_documentos_lote', evaluar)
     dataops._evaluar_lote_en_segundo_plano(ids, lote_id, 77)
     assert terminadas == [(77, {'total_tuplas': 14})]
     assert cache_lectura.leer(clave)['totalTuplas'] == 14
@@ -243,8 +244,8 @@ def test_no_notifica_exito_si_no_se_pueden_guardar_resultados(lectura, monkeypat
     db, lote, docs, base, _ = lectura
     errores = []
     ids, lote_id = [d.id_documento for d in docs], lote.id_lote
-    monkeypatch.setattr(dataops, 'SessionLocal', lambda: db)
-    monkeypatch.setattr(dataops, '_evaluar_documentos_lote', lambda *a, **kw: base)
+    parchear(monkeypatch, 'SessionLocal', lambda: db)
+    parchear(monkeypatch, '_evaluar_documentos_lote', lambda *a, **kw: base)
     monkeypatch.setattr(cache_lectura, 'guardar', lambda *a: False)
     monkeypatch.setattr(dataops.tareas_dataops, 'terminar', lambda *a: pytest.fail('No se deben anunciar resultados que no se guardaron'))
     monkeypatch.setattr(dataops.tareas_dataops, 'fallar', lambda tid, mensaje: errores.append((tid, mensaje)))

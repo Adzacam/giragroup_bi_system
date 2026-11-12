@@ -11,6 +11,7 @@ from models.lote import Lote
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.fact_rendimiento import FactRendimientoAcademico
 from routers import dataops
+from tests.dataops_parches import parchear
 from services import revision_consulta as revision
 
 
@@ -33,8 +34,8 @@ def revision_db(dw_sqlite, monkeypatch):
             ci_temporal=str(8401000+i), resuelto=True, estado_resolucion='RESUELTO_HUMANO'))
     db.add(StagingEntidadNoResuelta(id_staging=200, id_documento=2, tipo_entidad='ESTUDIANTE', texto_original='Caso ajeno'))
     db.commit()
-    monkeypatch.setattr(dataops, '_evaluar_documentos_lote', lambda *a, **kw: pytest.fail('Un GET no ejecuta BETO'))
-    monkeypatch.setattr(dataops, 'extract_entities_from_line', lambda *a, **kw: pytest.fail('No se infiere al consultar'))
+    parchear(monkeypatch, '_evaluar_documentos_lote', lambda *a, **kw: pytest.fail('Un GET no ejecuta BETO'))
+    parchear(monkeypatch, 'extract_entities_from_line', lambda *a, **kw: pytest.fail('No se infiere al consultar'))
     return db
 
 
@@ -108,7 +109,7 @@ def test_presupuesto_permanece_manual_y_no_se_aprueba_en_bloque(revision_db, mon
         dataops.resolve_review_item('1', {'accion': 'APROBAR'}, db=revision_db, current_user=None)
     assert exc.value.status_code == 422
     llamados = []
-    monkeypatch.setattr(dataops, 'resolve_review_item', lambda item_id, *a, **kw: llamados.append(item_id) or {'status': 'success'})
+    parchear(monkeypatch, 'resolve_review_item', lambda item_id, *a, **kw: llamados.append(item_id) or {'status': 'success'})
     dataops.aprobar_casos_un_clic(dataops.AprobacionEnBloqueRequest(id_lote='1', confirmar=True), db=revision_db, current_user=None)
     assert '1' not in llamados and len(llamados) == 13
     doc = revision_db.get(DimOrigenDocumental, 1)

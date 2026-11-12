@@ -13,7 +13,7 @@ MODULOS = {
     "API, alertas y pronostico": ["backend/services/dw_loader.py", "backend/routers/pipeline.py", "backend/services/alert_engine.py",
                                   "backend/services/financial_rules_engine.py", "backend/services/risk_service.py", "pipeline/analytics/forecasting_holtwinters.py",
                                   "pipeline/analytics/forecasting_ols.py", "backend/services/forecast_service.py"],
-    "Plataforma, CMI y HITL": ["backend/routers/dataops.py", "backend/services/bandeja_grupos.py", "backend/services/revision_hechos.py",
+    "Plataforma, CMI y HITL": ["backend/routers/dataops/__init__.py", "backend/routers/dataops/_comun.py", "backend/routers/dataops/extraccion.py", "backend/routers/dataops/evaluacion.py", "backend/routers/dataops/ingesta.py", "backend/routers/dataops/lectura.py", "backend/routers/dataops/revision.py", "backend/routers/dataops/consolidacion.py", "backend/routers/dataops/maestros.py", "backend/services/bandeja_grupos.py", "backend/services/revision_hechos.py",
                                "backend/services/kpi_service.py", "backend/routers/reportes.py"],
 }
 out, tot_s, tot_c = {}, 0, 0

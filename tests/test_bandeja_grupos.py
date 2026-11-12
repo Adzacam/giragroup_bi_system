@@ -1,3 +1,4 @@
+from tests.dataops_parches import parchear
 """Bandeja agrupada: agrupación de casos y acciones de grupo (APROBAR, MAPEAR_ESTADO, CORREGIR_FECHA) de approve-group."""
 from types import SimpleNamespace
 
@@ -228,7 +229,7 @@ def test_aprobar_grupo_de_staging_delega_en_la_resolucion_en_lote(dw, monkeypatc
         visto["estudiante"] = payload.estudiante_resuelto
         return {"status": "success", "resolved_count": len(payload.item_ids)}
 
-    monkeypatch.setattr(d, "batch_resolve_review_items", falso)
+    parchear(monkeypatch, "batch_resolve_review_items", falso)
     from services.bandeja_grupos import clave_grupo
     clave = clave_grupo("CI_NOMBRE_DISCORDANTE", "CI: 123 | Nombre: A (Discordante con: B)")
     r = d._aprobar_grupo(d.AprobarGrupoRequest(clave=clave, estudiante_resuelto="Ana Rojas"), dw, _usuario())

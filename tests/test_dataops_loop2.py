@@ -1,3 +1,4 @@
+from tests.dataops_parches import parchear
 import json
 
 import pytest
@@ -82,7 +83,7 @@ def test_pagina_fuera_de_rango_y_archivo_sin_filas(texto_lote):
 def test_lectura_no_inicia_beto_ni_escribe(texto_lote, monkeypatch):
     from routers import dataops
     db, lote, _ = texto_lote
-    monkeypatch.setattr(dataops, '_evaluar_documentos_lote', lambda *a, **kw: pytest.fail('El paso ② no ejecuta BETO'))
+    parchear(monkeypatch, '_evaluar_documentos_lote', lambda *a, **kw: pytest.fail('El paso ② no ejecuta BETO'))
     antes = db.query(StagingRegistroCrudo).count()
     leer(db, lote)
     assert db.query(StagingRegistroCrudo).count() == antes

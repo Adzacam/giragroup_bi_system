@@ -1,3 +1,4 @@
+from tests.dataops_parches import parchear
 """
 tests/test_ingesta_sin_timeout.py
 ---------------------------------
@@ -73,7 +74,7 @@ def test_upload_batch_no_evalua_antes_de_responder(dw, monkeypatch):
     def _no_sincrono(*_a, **_k):
         raise AssertionError("upload-batch no debe evaluar el lote antes de responder")
 
-    monkeypatch.setattr(dataops, "_evaluar_documentos_lote", _no_sincrono)
+    parchear(monkeypatch, "_evaluar_documentos_lote", _no_sincrono)
     contenido = "Nombre Completo,Cédula de Identidad,Ciudad\nAdriano Daza Camargo,CI-4892019,Cochabamba\n".encode("utf-8")
     archivo = UploadFile(file=BytesIO(contenido), filename="inscripciones.csv", headers=Headers({"content-type": "text/csv"}))
     tareas = BackgroundTasks()
@@ -131,7 +132,7 @@ def test_lectura_calculada_por_otro_worker_se_lee_del_disco(dw, monkeypatch, tmp
 
     def _no_recalcular(*a, **kw):
         raise AssertionError("no debía recalcular")
-    monkeypatch.setattr(dataops, "_evaluar_documentos_lote", _no_recalcular)
+    parchear(monkeypatch, "_evaluar_documentos_lote", _no_recalcular)
     assert dataops._evaluacion_lectura(dw, docs)["totalTuplas"] == 42
     cache_consultas.invalidar()
 
@@ -150,7 +151,7 @@ def test_resolucion_de_la_bandeja_se_superpone_sin_releer(dw, monkeypatch, tmp_p
         {"stg_id": 5, "raw_text": "fila A", "categoria_particion": "AUTOMATICO", "estado": "AUTOMATICO"},
         {"stg_id": 5, "raw_text": "fila B", "categoria_particion": "REVISION", "estado": "REVISION"},
     ]}
-    monkeypatch.setattr(dataops, "_evaluar_documentos_lote", lambda *a, **kw: llamadas.append(1) or base)
+    parchear(monkeypatch, "_evaluar_documentos_lote", lambda *a, **kw: llamadas.append(1) or base)
     dw.add(DimOrigenDocumental(id_documento=9, nombre_archivo="ARCA.xlsx", tipo_fuente="ACTA"))
     dw.commit()
     docs = dw.query(DimOrigenDocumental).all()
@@ -183,6 +184,6 @@ def test_la_lectura_de_beto_no_deja_la_transaccion_abierta(dw, monkeypatch):
     def _espiar(*a, **kw):
         en_transaccion.append(dw.in_transaction())
         return original(*a, **kw)
-    monkeypatch.setattr(dataops, "extract_entities_from_line", _espiar)
+    parchear(monkeypatch, "extract_entities_from_line", _espiar)
     dataops._evaluar_documentos_lote(dw, docs, persistir_staging=False)
     assert en_transaccion and not any(en_transaccion)

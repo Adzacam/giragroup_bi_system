@@ -15,6 +15,7 @@ from models.log_pipeline import LogPipelineIngesta
 from models.staging_registro import StagingRegistroCrudo
 from models.fact_rendimiento import FactRendimientoAcademico
 from routers import dataops, catalogs
+from tests.dataops_parches import parchear
 from services import bitacora_dataops
 
 
@@ -41,7 +42,7 @@ def datos(dw_sqlite, monkeypatch):
             tiempo_ms=0 if i == 1 else None, metadata_json={'matriz': matriz} if i == 1 else {}))
     db.add(LogPipelineIngesta(id=100, id_documento=2, etapa='UPLOAD', nivel='ERROR', mensaje='Solo de otro documento'))
     db.commit()
-    monkeypatch.setattr(dataops, '_evaluar_documentos_lote', lambda *a, **kw: pytest.fail('No debe ejecutar BETO'))
+    parchear(monkeypatch, '_evaluar_documentos_lote', lambda *a, **kw: pytest.fail('No debe ejecutar BETO'))
     yield db, db
 
 

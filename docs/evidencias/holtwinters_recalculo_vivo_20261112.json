@@ -1,0 +1,62 @@
+{
+  "base": "giragroup_db",
+  "serie": {
+    "meses": 33,
+    "desde": "2023-09",
+    "hasta": "2026-05",
+    "suma": 38410
+  },
+  "entrenamiento": {
+    "meses": 27,
+    "desde": "2023-09",
+    "hasta": "2025-11"
+  },
+  "holdout": {
+    "desde": "2025-12",
+    "hasta": "2026-05"
+  },
+  "mape_pct": 14.26,
+  "rmse": 231.5,
+  "aic": 298.95,
+  "parametros": {
+    "smoothing_level": 0.6828,
+    "smoothing_trend": 0.0,
+    "smoothing_seasonal": 0.0,
+    "damping_trend": 0.9755
+  },
+  "pares_real_pronostico": [
+    [
+      1071,
+      795.3
+    ],
+    [
+      1659,
+      1312.7
+    ],
+    [
+      1209,
+      1179.4
+    ],
+    [
+      1173,
+      1026.7
+    ],
+    [
+      1647,
+      1330.6
+    ],
+    [
+      1188,
+      1245.1
+    ]
+  ],
+  "ingenuo_ultimo_valor_mape_pct": 16.51,
+  "ingenuo_estacional_mape_pct": 10.36,
+  "entorno": {
+    "python": "3.14.6",
+    "statsmodels": "0.15.0",
+    "scipy": "1.18.1",
+    "numpy": "2.5.1",
+    "pandas": "3.0.3"
+  }
+}

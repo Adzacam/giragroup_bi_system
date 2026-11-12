@@ -1,3 +1,4 @@
+from tests.dataops_parches import parchear
 """
 tests/test_bandeja_hitl_ruido_y_un_clic.py
 ------------------------------------------
@@ -100,7 +101,7 @@ def test_confirm_descarta_fila_de_estados_y_no_la_manda_a_revision(sqlite_dw, mo
     from models.staging_registro import StagingRegistroCrudo
     from routers import dataops
 
-    monkeypatch.setattr(dataops, "obtener_indices", lambda lineas, **kw: [0.80] * len(lineas))  # banda de revisión
+    parchear(monkeypatch, "obtener_indices", lambda lineas, **kw: [0.80] * len(lineas))  # banda de revisión
     sqlite_dw.add(DimOrigenDocumental(id_documento=1, nombre_archivo="BD_Cobranzas_giraGroup.xlsx", tipo_fuente="COBRANZA"))
     sqlite_dw.add(StagingRegistroCrudo(id=1, id_documento=1, hoja="ESTADOS", bloque_id=1, categoria="financiero", es_ruido=False,
                                        texto_plano="Estado académico: Aprobado | Estado reprobado: Aprobado | Estado ARCA: Titulado"))
@@ -134,7 +135,7 @@ def test_un_clic_compara_nombre_extraido_y_no_la_linea_completa(sqlite_dw, monke
     from models.staging_entidad import StagingEntidadNoResuelta
     from routers import dataops
 
-    monkeypatch.setattr(dataops, "_evaluar_documentos_lote", lambda *a, **k: None)
+    parchear(monkeypatch, "_evaluar_documentos_lote", lambda *a, **k: None)
     sqlite_dw.add(DimOrigenDocumental(id_documento=1, nombre_archivo="ARCA_lote1387_860_filas.xlsx", tipo_fuente="ACTA"))
     sqlite_dw.add_all([
         StagingEntidadNoResuelta(id_staging=1, id_documento=1, tipo_entidad="ESTUDIANTE", texto_original=LINEA_STAGING_EDGAR[:250],

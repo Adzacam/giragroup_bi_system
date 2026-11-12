@@ -14,6 +14,7 @@ from models.staging_registro import StagingRegistroCrudo
 from models.fact_marketing import FactMarketing
 from models.fact_rendimiento import FactRendimientoAcademico
 from routers import dataops
+from tests.dataops_parches import parchear
 from services import integridad_dataops, cache_consultas
 from services.dw_loader import DWLoaderService
 from services.kpi_service import KPIService
@@ -121,7 +122,7 @@ def test_archivo_lectura_consolidacion_dw_y_kpi(dw_sqlite, monkeypatch, tmp_path
     monkeypatch.setattr(cache_lectura, 'DIR', tmp_path)
     # Solo sustituye el servicio externo del modelo y el diagnóstico opcional que consulta catálogos externos.
     monkeypatch.setattr(ingestion_service, 'AsymmetricFlattener', None)
-    monkeypatch.setattr(dataops, 'obtener_indices', lambda lineas, **kw: [.95] * len(lineas))
+    parchear(monkeypatch, 'obtener_indices', lambda lineas, **kw: [.95] * len(lineas))
     lote = Lote(institucion='Prueba', periodo='2025')
     db.add(lote); db.flush()
     alumnos = [('ANA TORREZ SALINAS', '13727801', 90, 80), ('LUIS PEREZ ROJAS', '13727802', 60, 70)]
@@ -166,8 +167,8 @@ def test_integridad_pagina_cinco_y_es_lectura_pura(dw_sqlite, monkeypatch):
     for i in range(7):
         db.add(DimOrigenDocumental(id_lote=lote.id_lote, nombre_archivo=f'archivo-{i}.csv', tipo_fuente='ACTA'))
     db.commit()
-    monkeypatch.setattr(dataops, '_evaluacion_lectura', lambda *a: None)
-    monkeypatch.setattr(dataops, '_evaluar_documentos_lote', lambda *a, **kw: pytest.fail('Un GET no ejecuta el modelo'))
+    parchear(monkeypatch, '_evaluacion_lectura', lambda *a: None)
+    parchear(monkeypatch, '_evaluar_documentos_lote', lambda *a, **kw: pytest.fail('Un GET no ejecuta el modelo'))
     monkeypatch.setattr(db, 'commit', lambda: pytest.fail('Un GET no guarda datos'))
     primero = dataops.get_lote_integridad(str(lote.id_lote), page=1, db=db, user=None)
     segundo = dataops.get_lote_integridad(str(lote.id_lote), page=2, db=db, user=None)
@@ -187,7 +188,7 @@ def test_integridad_respeta_roles(dw_sqlite, monkeypatch, role, esperado):
     db.add(lote); db.flush()
     db.add(DimOrigenDocumental(id_lote=lote.id_lote, nombre_archivo='prueba.csv', tipo_fuente='ACTA'))
     db.commit()
-    monkeypatch.setattr(dataops, '_evaluacion_lectura', lambda *a: None)
+    parchear(monkeypatch, '_evaluacion_lectura', lambda *a: None)
     app = FastAPI(); app.include_router(dataops.router)
     app.dependency_overrides[get_db] = lambda: db
     app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id=1, role=role, is_active=True)

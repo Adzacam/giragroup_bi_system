@@ -1,3 +1,4 @@
+from tests.dataops_parches import parchear
 """
 tests/test_bandeja_hechos_en_revision.py
 ----------------------------------------
@@ -34,7 +35,7 @@ def dw(monkeypatch):
 
     Base.metadata.create_all(bind=engine)
     s = sessionmaker(bind=engine)()
-    monkeypatch.setattr(dataops, "_evaluar_documentos_lote", lambda *a, **k: None)
+    parchear(monkeypatch, "_evaluar_documentos_lote", lambda *a, **k: None)
     s.add_all([
         DimOrigenDocumental(id_documento=1, nombre_archivo="ARCA_lote1387_860_filas.xlsx", tipo_fuente="ACTA"),
         DimEstudiante(id_estudiante=1, nombre_completo="NATALY CAERO FORONDA", ci="9453509", codigo_estudiante="E1"),

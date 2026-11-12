@@ -8,12 +8,13 @@ from models.dim_origen import DimOrigenDocumental
 from models.lote import Lote
 from models.staging_registro import StagingRegistroCrudo
 from routers import dataops
+from tests.dataops_parches import parchear
 from services.ingestion_service import IngestionService
 
 
 @pytest.fixture
 def ingesta_aislada(dw_sqlite, monkeypatch, tmp_path):
-    monkeypatch.setattr(dataops, 'LANDING_DIR', str(tmp_path))
+    parchear(monkeypatch, 'LANDING_DIR', str(tmp_path))
     for metodo in ('crear', 'avanzar', 'terminar', 'fallar', 'ultima'):
         monkeypatch.setattr(dataops.tareas_dataops, metodo, lambda *a, **kw: None)
     return dw_sqlite
