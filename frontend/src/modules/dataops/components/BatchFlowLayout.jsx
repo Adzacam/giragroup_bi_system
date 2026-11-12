@@ -152,7 +152,7 @@ export default function BatchFlowLayout({
           </div>
         ) : <>
           {readOnly && showReadOnlyContent && <div className="dataops-banner-info" role="status" style={{ marginBottom: 20 }}>
-            <span>Lote consolidado. Puedes consultar el texto; los datos no se pueden modificar.</span>
+            <span>Lote consolidado. Puedes consultar los resultados; los datos no se pueden modificar.</span>
             <Button variant="ghost" onClick={handleNuevoLote}>Iniciar nuevo lote</Button>
           </div>}
           {children}

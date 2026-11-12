@@ -29,3 +29,10 @@ def obtener(clave: Hashable, ttl_seg: float, calcular: Callable[[], Any]) -> Any
 def invalidar() -> None:
     with _lock:
         _entradas.clear()
+
+
+def consultar(clave: Hashable) -> Any:
+    """Consulta sin calcular ni guardar ausencias: una tarea puede terminar en otro worker."""
+    with _lock:
+        entrada = _entradas.get(clave)
+        return entrada[1] if entrada and entrada[0] > time.monotonic() else None

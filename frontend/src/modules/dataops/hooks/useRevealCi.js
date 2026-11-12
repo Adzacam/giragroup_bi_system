@@ -25,8 +25,8 @@ export function useRevealCi(onReveal) {
       }
     } catch (err) {
       sileoToast.error({
-        title: err.response?.status === 403 ? 'Permiso denegado (RBAC)' : 'No se pudo revelar el CI',
-        description: mensajeError(err, 'Se requiere rol ADMIN o AUDITOR_CALIDAD para revelar datos personales.'),
+        title: err.response?.status === 403 ? 'No tienes permiso para revelar la cédula' : 'No se pudo revelar la cédula',
+        description: mensajeError(err, 'Esta consulta está disponible para Administrador y Auditor de calidad.'),
       });
     }
   }, [revealedCis, onReveal]);

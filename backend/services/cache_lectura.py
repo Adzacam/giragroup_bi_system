@@ -39,7 +39,7 @@ def leer(clave: Hashable) -> Optional[Any]:
         return None
 
 
-def guardar(clave: Hashable, valor: Any) -> None:
+def guardar(clave: Hashable, valor: Any) -> bool:
     """Escritura atómica (tmp + rename) para que otro worker nunca lea un archivo a medias."""
     try:
         DIR.mkdir(parents=True, exist_ok=True)
@@ -49,8 +49,10 @@ def guardar(clave: Hashable, valor: Any) -> None:
             pickle.dump(valor, f, protocol=pickle.HIGHEST_PROTOCOL)
         tmp.replace(ruta)
         _purgar_viejos()
+        return True
     except Exception as e:
         logger.warning("No se pudo guardar la caché de lectura: %s", e)
+        return False
 
 
 def _purgar_viejos() -> None:

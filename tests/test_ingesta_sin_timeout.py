@@ -86,7 +86,7 @@ def test_upload_batch_no_evalua_antes_de_responder(dw, monkeypatch):
     assert [t.func for t in tareas.tasks] == [dataops._evaluar_lote_en_segundo_plano]
 
 
-def test_lectura_del_lote_reutiliza_la_evaluacion_hasta_que_cambia(dw, monkeypatch, tmp_path):
+def test_lectura_del_lote_no_calcula_ni_recalcula_una_cache_ausente(dw, monkeypatch, tmp_path):
     from models.dim_origen import DimOrigenDocumental
     from models.staging_entidad import StagingEntidadNoResuelta
     from routers import dataops
@@ -101,15 +101,17 @@ def test_lectura_del_lote_reutiliza_la_evaluacion_hasta_que_cambia(dw, monkeypat
     dw.commit()
     docs = dw.query(DimOrigenDocumental).all()
 
-    dataops._evaluacion_lectura(dw, docs)
-    dataops._evaluacion_lectura(dw, docs)
-    assert len(llamadas) == 1  # el segundo GET no recalcula
+    assert dataops._evaluacion_lectura(dw, docs) is None
+    clave = ('evaluacion_lectura', (1,), dataops._huella_evaluacion(dw, [1]))
+    cache_lectura.guardar(clave, {'totalTuplas': 0, 'detalles': []})
+    assert dataops._evaluacion_lectura(dw, docs)['totalTuplas'] == 0
+    assert llamadas == []
 
     from models.staging_registro import StagingRegistroCrudo
     dw.add(StagingRegistroCrudo(id_documento=1, texto_plano="x"))
     dw.commit()
-    dataops._evaluacion_lectura(dw, docs)
-    assert len(llamadas) == 2  # cambió el staging del lote: se recalcula
+    assert dataops._evaluacion_lectura(dw, docs) is None
+    assert llamadas == []  # la nueva lectura requiere una acción explícita
     cache_consultas.invalidar()
 
 
@@ -152,13 +154,14 @@ def test_resolucion_de_la_bandeja_se_superpone_sin_releer(dw, monkeypatch, tmp_p
     dw.add(DimOrigenDocumental(id_documento=9, nombre_archivo="ARCA.xlsx", tipo_fuente="ACTA"))
     dw.commit()
     docs = dw.query(DimOrigenDocumental).all()
+    cache_lectura.guardar(('evaluacion_lectura', (9,), dataops._huella_evaluacion(dw, [9])), base)
     assert dataops._evaluacion_lectura(dw, docs)["auditCount"] == 1
 
     dw.add(StagingEntidadNoResuelta(id_documento=9, tipo_entidad="ESTUDIANTE", texto_original="fila B",
                                     registro_origen_id=5, resuelto=True, estado_resolucion="RESUELTO_HUMANO"))
     dw.commit()
     res = dataops._evaluacion_lectura(dw, docs)
-    assert len(llamadas) == 1  # no se releyó
+    assert llamadas == []  # no se releyó
     assert (res["autoCount"], res["auditCount"]) == (2, 0)
     assert base["detalles"][1]["categoria_particion"] == "REVISION"  # la base cacheada no se modifica
     cache_consultas.invalidar()

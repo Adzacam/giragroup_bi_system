@@ -80,6 +80,7 @@ export const dataopsApi = {
 
   getBatchHistory: async (page = 1) => (await client.get(`${BASE_URL}/historial-lotes`, { params: { page, page_size: 5 } })).data,
   retryBatchReading: async (id) => mutar(async () => (await client.post(`${BASE_URL}/lote/${id}/reintentar-lectura`)).data),
+  startBatchReading: async (id) => mutar(async () => (await client.post(`${BASE_URL}/lote/${id}/iniciar-lectura`)).data),
   deleteFailedBatch: async (id) => mutar(async () => (await client.delete(`${BASE_URL}/lote/${id}/fallido`)).data),
 
   /**
@@ -301,22 +302,18 @@ export const dataopsApi = {
    * Paso ③: Obtiene la lectura estructurada de BETO (Capas A, B y C) con filtro opcional por archivo y paginación (#13, #17)
    */
   getLoteBetoReading: async (idLote, options = {}) => {
-    const key = `lote_beto_${idLote}_${options.docId || ''}_${options.area || ''}_${options.page || 1}_${options.pageSize || 100}_${options.search || ''}_${options.estado || options.filtroEstado || ''}_${options.motivo || ''}_${options.filtroGlobal || ''}_${options.tipoEntidad || ''}`;
-    return cachedGet(key, async () => {
-      const params = {};
+      const params = { page: options.page || 1, page_size: 5 };
       if (options.docId) params.doc_id = options.docId;
       if (options.area && options.area !== 'TODAS') params.area = options.area;
       if (options.page) params.page = options.page;
-      if (options.pageSize) params.page_size = options.pageSize;
       if (options.search) params.search = options.search;
       if (options.filtroGlobal && options.filtroGlobal !== 'ALL') params.filtro_global = options.filtroGlobal;
       if (options.tipoEntidad && options.tipoEntidad !== 'TODOS') params.tipo_entidad = options.tipoEntidad;
       const estadoVal = options.estado || options.filtroEstado;
       if (estadoVal && estadoVal !== 'ALL') params.estado = estadoVal;
       if (options.motivo && options.motivo !== 'ALL') params.motivo = options.motivo;
-      const res = await client.get(`${BASE_URL}/lote/${idLote}/beto-reading`, { params, timeout: LECTURA_LOTE_TIMEOUT_MS });
+      const res = await client.get(`${BASE_URL}/lote/${idLote}/beto-reading`, { params });
       return res.data;
-    }, 60_000);
   },
 
   /**

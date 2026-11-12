@@ -227,21 +227,36 @@ def get_historial_lotes(
     return {"data": items, "total": total, "page": page, "page_size": page_size}
 
 
+@router.post("/lote/{id_lote}/iniciar-lectura")
+def iniciar_lectura_lote(id_lote: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    lote = db.query(Lote).filter_by(id_lote=id_lote).with_for_update().first()
+    if not lote:
+        raise HTTPException(status_code=404, detail="El lote no existe.")
+    _asegurar_lote_editable(db, id_lote)
+    docs = db.query(DimOrigenDocumental).filter_by(id_lote=id_lote).all()
+    if not docs:
+        raise HTTPException(status_code=409, detail="Carga archivos antes de iniciar la lectura.")
+    previa = tareas_dataops.ultima_en_sesion(db, id_lote, "LECTURA_BETO")
+    if previa and previa["estado"] == "EN_CURSO":
+        return {"status": "processing", "tarea": previa}
+    if _evaluacion_lectura(db, docs) is not None:
+        return {"status": "ready"}
+    try:
+        tarea_id = tareas_dataops.crear_en_sesion(db, "LECTURA_BETO", id_lote)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=503, detail="No se pudo iniciar la lectura. Inténtalo de nuevo.")
+    background_tasks.add_task(_evaluar_lote_en_segundo_plano, [d.id_documento for d in docs], id_lote, tarea_id)
+    return {"status": "processing", "tarea_id": tarea_id, "tarea": tareas_dataops.obtener(tarea_id)}
+
+
 @router.post("/lote/{id_lote}/reintentar-lectura")
 def reintentar_lectura_lote(id_lote: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    docs = db.query(DimOrigenDocumental).filter_by(id_lote=id_lote).all()
-    bloqueo = db.query(Lote).filter_by(id_lote=id_lote).with_for_update().first()
     tarea = tareas_dataops.ultima(id_lote, "LECTURA_BETO")
-    _asegurar_lote_editable(db, id_lote)
-    if not docs or not tarea or tarea["estado"] != "ERROR":
+    if not tarea or tarea["estado"] != "ERROR":
         raise HTTPException(status_code=409, detail="Solo se puede reintentar una lectura interrumpida. Actualiza el historial.")
-    # Reservar antes de responder impide programar dos reintentos concurrentes.
-    if not bloqueo or bloqueo.estado == "REINTENTANDO":
-        raise HTTPException(status_code=409, detail="El reintento ya está en curso.")
-    bloqueo.estado = "REINTENTANDO"
-    db.commit()
-    background_tasks.add_task(_evaluar_lote_en_segundo_plano, [d.id_documento for d in docs], id_lote)
-    return {"status": "success", "message": "La lectura se reanudará en segundo plano."}
+    return iniciar_lectura_lote(id_lote, background_tasks, db)
 
 
 @router.delete("/lote/{id_lote}/fallido")
@@ -723,10 +738,11 @@ def upload_batch(
     if docs_creados_ids:
         # La evaluación línea a línea de un lote grande tarda minutos: se hace después de responder.
         # Antes se hacía aquí y el gateway cortaba la subida con 504 aunque la ingesta ya estuviera completa.
+        tarea_lectura = tareas_dataops.crear("LECTURA_BETO", nuevo_lote.id_lote)
         if background_tasks is not None:
-            background_tasks.add_task(_evaluar_lote_en_segundo_plano, list(docs_creados_ids), nuevo_lote.id_lote)
+            background_tasks.add_task(_evaluar_lote_en_segundo_plano, list(docs_creados_ids), nuevo_lote.id_lote, tarea_lectura)
         else:
-            _evaluar_lote_en_segundo_plano(list(docs_creados_ids), nuevo_lote.id_lote)
+            _evaluar_lote_en_segundo_plano(list(docs_creados_ids), nuevo_lote.id_lote, tarea_lectura)
 
     return BatchUploadResponse(
         status=("partial" if len(exitosos) < len(files) else "success") if exitosos else "error",
@@ -2413,14 +2429,14 @@ def _evaluar_documentos_lote(
     }
 
 
-def _evaluar_lote_en_segundo_plano(doc_ids: List[int], id_lote: Optional[int]) -> None:
+def _evaluar_lote_en_segundo_plano(doc_ids: List[int], id_lote: Optional[int], tarea_id: Optional[int] = None) -> None:
     """
     Evaluación post-ingesta con su propia sesión (la del request ya se cerró al responder). Registra su avance
     (LECTURA_BETO), deja el resultado en la caché de disco para que el paso ③ abra al instante desde cualquier
     worker y avisa cuando el lote está listo para revisar.
     """
     db_bg = SessionLocal()
-    tarea_id = tareas_dataops.crear("LECTURA_BETO", id_lote)
+    tarea_id = tarea_id or tareas_dataops.crear("LECTURA_BETO", id_lote)
     try:
         docs = db_bg.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids)).all()
         if not docs:
@@ -2431,7 +2447,8 @@ def _evaluar_lote_en_segundo_plano(doc_ids: List[int], id_lote: Optional[int]) -
         # como lectura del lote con su huella nueva
         ids = sorted(d.id_documento for d in docs)
         clave = ("evaluacion_lectura", tuple(ids), _huella_evaluacion(db_bg, ids))
-        cache_lectura.guardar(clave, res)
+        if cache_lectura.guardar(clave, res) is False:
+            raise RuntimeError("No se pudieron guardar los resultados de la lectura. Inténtalo de nuevo.")
         tareas_dataops.terminar(tarea_id, {"total_tuplas": res.get("totalTuplas")})
     except Exception as e_eval_batch:
         db_bg.rollback()
@@ -2506,54 +2523,18 @@ def _superponer_resoluciones(db: Session, base: Dict[str, Any], doc_ids: List[in
             "autoPct": auto_pct, "auditPct": audit_pct, "inconsistenciasPct": inc_pct}
 
 
-def _evaluacion_lectura(db: Session, docs: List[DimOrigenDocumental]) -> Dict[str, Any]:
-    """
-    Evaluación de solo lectura para /resumen y /beto-reading: se recalcula cuando cambia la huella
-    (no en cada GET). Recalcularla en cada pedido tardaba minutos en lotes grandes y terminaba en 504.
-    """
+def _evaluacion_lectura(db: Session, docs: List[DimOrigenDocumental]) -> Optional[Dict[str, Any]]:
+    """Consulta pura: nunca ejecuta BETO, espera tareas ni registra cálculos en un GET."""
     doc_ids = sorted(d.id_documento for d in docs)
     if not doc_ids:
-        return _evaluar_documentos_lote(db, docs, persistir_staging=False)
+        return None
     clave = ("evaluacion_lectura", tuple(doc_ids), _huella_evaluacion(db, doc_ids))
-
-    def _calcular_con_progreso():
-        _cerrar_transaccion_lectura(db)  # la espera o el cálculo pueden durar minutos
-        # Otro worker (o la evaluación post-ingesta) puede haberla dejado en disco
-        en_disco = cache_lectura.leer(clave)
-        if en_disco is not None:
-            return en_disco
-        id_lote = next((d.id_lote for d in docs if getattr(d, "id_lote", None)), None)
-        if id_lote:
-            previa = tareas_dataops.ultima(id_lote, "LECTURA_BETO")
-            if previa and previa["estado"] == "EN_CURSO":
-                # Ya se está calculando (tras la ingesta): se espera su resultado en vez de duplicar minutos de trabajo
-                for _ in range(1800):
-                    time.sleep(1)
-                    en_disco = cache_lectura.leer(clave)
-                    if en_disco is not None:
-                        return en_disco
-                    estado = tareas_dataops.obtener(previa["id"])
-                    if not estado or estado["estado"] != "EN_CURSO":
-                        break
-                # La evaluación post-ingesta agrega casos y cambia la huella: su resultado queda con la nueva
-                db.expire_all()
-                en_disco = cache_lectura.leer(("evaluacion_lectura", tuple(doc_ids), _huella_evaluacion(db, doc_ids)))
-                if en_disco is not None:
-                    return en_disco
-        # La primera lectura de un lote grande tarda minutos: se registra como tarea para que la SPA muestre avance
-        tarea_id = tareas_dataops.crear("LECTURA_BETO", id_lote)
-        try:
-            res = _evaluar_documentos_lote(db, docs, persistir_staging=False, tarea_id=tarea_id,
-                                           aplicar_resoluciones=False)
-        except Exception as e_lect:
-            tareas_dataops.fallar(tarea_id, str(e_lect))
-            raise
-        cache_lectura.guardar(clave, res)
-        tareas_dataops.terminar(tarea_id, {"total_tuplas": res.get("totalTuplas")})
-        return res
-
-    base = cache_consultas.obtener(clave, TTL_EVALUACION_LECTURA_SEG, _calcular_con_progreso)
-    return _superponer_resoluciones(db, base, doc_ids)
+    base = cache_consultas.consultar(clave)
+    if base is None:
+        base = cache_lectura.leer(clave)
+        if base is not None:
+            cache_consultas.obtener(clave, TTL_EVALUACION_LECTURA_SEG, lambda: base)
+    return _superponer_resoluciones(db, base, doc_ids) if base is not None else None
 
 
 @router.get("/lote/{id_lote}/resumen")
@@ -2571,7 +2552,11 @@ def get_lote_resumen(
         doc_id = None
     lote_obj, docs_lote, docs_filtrados = _resolver_documentos_lote(db, id_lote, doc_id_filter=doc_id)
     # Lectura pura: si los registros ya tienen payload_json evaluado, no persistir ni hacer commit en GET
-    eval_res = _evaluacion_lectura(db, docs_filtrados)
+    from services.lectura_beto_service import seleccionar_documento
+    eval_res = _evaluacion_lectura(db, docs_lote)
+    if eval_res is None:
+        return {"status": "pending", "empty": False, "mensaje_vacio": "La lectura de BETO aún no está disponible. Ábrela en el paso ③.", "id_lote": lote_obj.id_lote if lote_obj else None}
+    eval_res = seleccionar_documento(eval_res, doc_id)
     archivos_tabs = _serializar_archivos_lote(db, docs_lote)
 
     total_tuplas = eval_res["totalTuplas"]
@@ -2811,7 +2796,8 @@ def get_lote_beto_reading(
     filtro_global: Optional[str] = Query(None),
     tipo_entidad: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
-    page_size: int = Query(100, ge=1, le=500),
+    page_size: int = Query(5, ge=1, le=5),
+    search: Optional[str] = Query(None, max_length=200),
     db: Session = Depends(get_db),
 ):
     """
@@ -2835,14 +2821,20 @@ def get_lote_beto_reading(
     if not isinstance(page, int):
         page = 1
     if not isinstance(page_size, int):
-        page_size = 100
+        page_size = 5
 
     lote_obj, docs_lote, docs_filtrados = _resolver_documentos_lote(db, id_lote, doc_id_filter=doc_id)
-    if not docs_lote:
-        raise HTTPException(status_code=404, detail=f"Lote con ID {id_lote} no encontrado.")
-
-    # Lectura pura en GET: persistir_staging=False
-    eval_res = _evaluacion_lectura(db, docs_filtrados)
+    if not docs_lote or (doc_id is not None and doc_id not in {d.id_documento for d in docs_lote}):
+        raise HTTPException(status_code=404, detail="El lote o el archivo seleccionado no existe en este lote.")
+    from services.lectura_beto_service import seleccionar_documento, coincide_entidad
+    from services.dataops_privacy import registro_beto_publico
+    eval_res = _evaluacion_lectura(db, docs_lote)
+    if eval_res is None:
+        tarea = tareas_dataops.ultima(lote_obj.id_lote, "LECTURA_BETO") if lote_obj else None
+        return {"status": "processing" if tarea and tarea["estado"] == "EN_CURSO" else "pending",
+                "id_lote": lote_obj.id_lote if lote_obj else None, "tarea": tarea,
+                "registros": [], "pagination": {"page": page, "page_size": page_size, "total_items": 0, "total_pages": 1}}
+    eval_res = seleccionar_documento(eval_res, doc_id)
     detalles_all = eval_res["detalles"]
 
     # 1. Filtro por Área de Trabajo
@@ -2858,7 +2850,7 @@ def get_lote_beto_reading(
     if filtro_global and filtro_global.upper() not in ("ALL", "TODOS"):
         fg = filtro_global.upper()
         if "CONFIANZA" in fg or "< 85" in fg or "BAJA" in fg:
-            filtrados = [r for r in filtrados if r.get("indice_registro", 100) < 85]
+            filtrados = [r for r in filtrados if isinstance(r.get("indice_registro"), (int, float)) and r["indice_registro"] < 85]
         elif "CONFLICTO" in fg or "INCIDENCIA" in fg:
             filtrados = [r for r in filtrados if r.get("estado") in ("INCONSISTENCIA", "REVISION")]
         elif "CATALOGO" in fg or "SUGERENCIA" in fg:
@@ -2869,13 +2861,7 @@ def get_lote_beto_reading(
     # 3. Filtro por Tipo de Entidad
     if tipo_entidad and tipo_entidad.upper() not in ("ALL", "TODAS", "TODOS"):
         te_up = tipo_entidad.upper()
-        filtrados = [
-            r for r in filtrados
-            if any(
-                te_up in (e.get("label") or "").upper() or te_up in (e.get("tag") or "").upper()
-                for e in r.get("lectura", {}).get("entidades", [])
-            )
-        ]
+        filtrados = [r for r in filtrados if coincide_entidad(r, te_up)]
 
     # 4. Filtrado server-side por estado o motivo (#12, #13)
     if estado and estado.upper() not in ("ALL", "TODOS"):
@@ -2889,6 +2875,9 @@ def get_lote_beto_reading(
         mot_up = motivo.upper()
         filtrados = [r for r in filtrados if (r.get("motivo") or "").upper() == mot_up]
 
+    if isinstance(search, str) and search.strip():
+        q = strip_accents(search.strip()).lower()
+        filtrados = [r for r in filtrados if q in strip_accents(" ".join(str(r.get(k) or '') for k in ('modulo', 'nombre_archivo', 'ci_enmascarado', 'raw_text'))).lower()]
     total_filtrados = len(filtrados)
     start_idx = (page - 1) * page_size
     paginados = filtrados[start_idx : start_idx + page_size]
@@ -2935,7 +2924,6 @@ def get_lote_beto_reading(
         "academica": {
             "key": "academica",
             "titulo": "Académica",
-            "icono": "🎓",
             "total": count_acad,
             "auto": auto_acad,
             "revision": rev_acad,
@@ -2945,7 +2933,6 @@ def get_lote_beto_reading(
         "financiera": {
             "key": "financiera",
             "titulo": "Financiera",
-            "icono": "💳",
             "total": count_fin,
             "auto": auto_fin,
             "revision": rev_fin,
@@ -2955,7 +2942,6 @@ def get_lote_beto_reading(
         "comercial": {
             "key": "comercial",
             "titulo": "Comercial",
-            "icono": "🛒",
             "total": count_com,
             "auto": auto_com,
             "revision": rev_com,
@@ -2965,7 +2951,6 @@ def get_lote_beto_reading(
         "calidad": {
             "key": "calidad",
             "titulo": "Calidad (Capa Transversal)",
-            "icono": "🛡️",
             "total": count_cal,
             "auto": 0,
             "revision": rev_cal,
@@ -3008,10 +2993,9 @@ def get_lote_beto_reading(
             "total_items": total_filtrados,
             "total_pages": max(1, math.ceil(total_filtrados / page_size)),
         },
-        "registros": [registro_sin_ci(r) for r in paginados],
+        "registros": [registro_beto_publico(r) for r in paginados],
         "modelo_info": {
-            "nombre": "mrm8488/bert-spanish-cased-finetuned-ner (base: dccuchile/bert-base-spanish-wwm-cased)",
-            "f1_validacion": 0.942,
+            "nombre": "BETO",
             "compuerta_lectura_modelo": COMPUERTA_LECTURA_MODELO_PCT,
             "umbral_vigente": UMBRAL_INDICE_REGISTRO,
         },

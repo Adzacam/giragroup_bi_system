@@ -17,6 +17,7 @@ from core.database import SessionLocal
 
 INTERVALO_SEG = 1.0      # como mucho una escritura de avance por segundo y tarea
 SIN_LATIDO_SEG = 180     # EN_CURSO sin avance en 3 min: la API se reinició y la tarea no terminará
+MENSAJE_ERROR_PUBLICO = "El proceso se interrumpió. Revisa el lote antes de reintentarlo."
 
 _ultima_escritura: Dict[int, float] = {}
 logger = logging.getLogger("tareas_dataops")
@@ -55,6 +56,14 @@ def crear(tipo: str, id_lote: Optional[int], total: int = 0, usuario: Optional[s
         return tid
     finally:
         db.close()
+
+
+def crear_en_sesion(db, tipo, id_lote):
+    """Reserva bajo el bloqueo del lote; el llamador confirma la misma transacción."""
+    return db.execute(text("""
+        INSERT INTO public.dataops_tarea (tipo, id_lote, total)
+        VALUES (:t, :l, 0) RETURNING id
+    """), {'t': tipo, 'l': id_lote}).scalar()
 
 
 @_sin_romper
@@ -129,15 +138,25 @@ _COLS = """id, tipo, id_lote, estado, total, procesados, resultado, error, inici
            EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - actualizado_en)) AS sin_latido"""
 
 
+def ultima_en_sesion(db, id_lote, tipo):
+    """Consulta obligatoria para reservar trabajo; un fallo no debe permitir otro análisis."""
+    fila = db.execute(text(f"""SELECT {_COLS} FROM public.dataops_tarea
+        WHERE id_lote = :l AND tipo = :t ORDER BY id DESC LIMIT 1"""), {'l': id_lote, 't': tipo}).first()
+    return _serializar(fila)
+
+
 def _serializar(r) -> Optional[Dict[str, Any]]:
     if r is None:
         return None
     d = dict(r._mapping)
     estado = d["estado"]
     if estado == "EN_CURSO" and float(d.pop("sin_latido")) > SIN_LATIDO_SEG:
-        estado, d["error"] = "ERROR", "La tarea se interrumpió (la API se reinició). Vuelve a ejecutarla."
+        estado, d["error"] = "ERROR", MENSAJE_ERROR_PUBLICO
         fallar(d["id"], d["error"])
     d.pop("sin_latido", None)
+    if estado == "ERROR":
+        # El detalle técnico queda en el servidor; puede contener filas o parámetros de SQL.
+        d["error"] = MENSAJE_ERROR_PUBLICO
     transcurrido = float(d["transcurrido"] or 0)
     total, hechos = d["total"] or 0, d["procesados"] or 0
     restante = None
