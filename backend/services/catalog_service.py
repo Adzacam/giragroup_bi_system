@@ -323,6 +323,8 @@ class CatalogService:
                   ('nombre_modulo', 'nombre_institucion', 'programa', 'pos_code')}
         if not campos['nombre_modulo'] or not campos['nombre_institucion']:
             raise HTTPException(422, 'Indica el nombre del módulo y su institución.')
+        if not any(c.isalnum() for c in campos['nombre_modulo']):
+            raise HTTPException(422, 'Escribe un nombre de módulo que incluya letras o números.')
         # Serializa dos altas idénticas, también cuando todavía no hay una fila que bloquear.
         if self.db.get_bind().dialect.name == 'postgresql':
             clave = int.from_bytes(hashlib.sha256(json.dumps(campos, sort_keys=True).lower().encode()).digest()[:8], signed=True)

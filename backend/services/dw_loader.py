@@ -696,6 +696,10 @@ class DWLoaderService:
         if not nombre_modulo and not pos_code:
             return None
         nombre_limpio = (nombre_modulo or "").strip()
+        if nombre_limpio and not any(c.isalnum() for c in nombre_limpio):
+            nombre_modulo = pos_code or None
+            if not nombre_modulo:
+                return None
         if "@" in nombre_limpio:
             nombre_modulo = None  # un correo en la columna del módulo no es un módulo
             if not pos_code:
@@ -1106,13 +1110,14 @@ class DWLoaderService:
                         id_documento=doc_id, tipo_entidad="MODULO", texto_original=f"{pos_code or nombre_modulo} | {fecha_encontrada}"[:2000],
                         fk_estado="C", motivo="POS_NO_EN_DIM_MODULO", nivel_confianza=confianza_ia, resuelto=False))
                     self.db.flush()
-                elif self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing"):
+                elif not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing"):
+                    return {"tipo": "admision", "status": "skipped", "motivo": "Fila de origen ya cargada"}
+                else:
                     mkt = self.db.query(FactMarketing).filter_by(id_modulo=id_mod_adm, id_tiempo=id_tiempo).first()
                     if mkt:
                         mkt.inscritos = (mkt.inscritos or 0) + 1
-                        mkt.leads = max(mkt.leads or 0, mkt.inscritos)
                     else:
-                        self.db.add(FactMarketing(id_modulo=id_mod_adm, id_tiempo=id_tiempo, leads=1, reservas=0, inscritos=1, costo_programa=0.0))
+                        self.db.add(FactMarketing(id_modulo=id_mod_adm, id_tiempo=id_tiempo, leads=0, reservas=0, inscritos=1, costo_programa=0.0))
                     self.db.flush()
             if not id_est:
                 return {
@@ -1415,14 +1420,20 @@ class DWLoaderService:
 
         # 3e. Ruteo MARKETING -> FactMarketing
         if categoria == "marketing" and FactMarketing:
+            if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing"):
+                return {"tipo": "marketing", "status": "skipped", "motivo": "Fila de origen ya cargada"}
             id_mod_mkt = self.resolver_o_crear_modulo(
                 nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
             ) or self.resolver_o_crear_modulo("Difusión Institucional", pos_code="MKT-GEN", institucion=institucion)
 
             reservas = int(resoluciones.get("reservas") or 0)
-            inscritos = int(resoluciones.get("inscritos") or (1 if id_est else 0))
-            # Todo inscrito proviene de un lead: evita conversiones > 100 % por fila
-            leads = max(int(resoluciones.get("leads") or 1), inscritos)
+            inscritos = int(resoluciones.get("inscritos") if resoluciones.get("inscritos") is not None else (1 if id_est else 0))
+            leads = int(resoluciones.get("leads") or 0)
+            # Una inscripción no demuestra cuántos interesados hubo. La conversión
+            # usa únicamente parejas explícitas, válidas y del mismo registro.
+            captacion = (resoluciones.get("leads") is not None
+                         and resoluciones.get("inscritos") is not None
+                         and 0 <= inscritos <= leads and leads > 0)
             costo_prog = float(resoluciones.get("costo_programa") or 0.0)
 
             existente_mkt = self.db.query(FactMarketing).filter(
@@ -1434,6 +1445,9 @@ class DWLoaderService:
                 existente_mkt.leads = (existente_mkt.leads or 0) + leads
                 existente_mkt.reservas = (existente_mkt.reservas or 0) + reservas
                 existente_mkt.inscritos = (existente_mkt.inscritos or 0) + inscritos
+                if captacion:
+                    existente_mkt.leads_captacion = (existente_mkt.leads_captacion or 0) + leads
+                    existente_mkt.inscritos_captacion = (existente_mkt.inscritos_captacion or 0) + inscritos
                 self.db.flush()
                 return {
                     "tipo": "marketing",
@@ -1449,6 +1463,8 @@ class DWLoaderService:
                     leads=leads,
                     reservas=reservas,
                     inscritos=inscritos,
+                    leads_captacion=leads if captacion else None,
+                    inscritos_captacion=inscritos if captacion else None,
                     costo_programa=costo_prog
                 )
                 self.db.add(nuevo_mkt)

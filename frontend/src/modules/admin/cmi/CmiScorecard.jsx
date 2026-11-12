@@ -159,7 +159,7 @@ function TarjetaKpi({ kpi, onAbrir }) {
         <span>Meta {kpi.meta === null ? 'no definida' : `${kpi.sentido === 'MIN' ? '≤' : '≥'} ${fmtValor(kpi.meta, kpi.unidad, { compacto: true })}`}</span>
         {kpi.valor_anterior !== null && <span>Anterior {fmtValor(kpi.valor_anterior, kpi.unidad, { compacto: true })}</span>}
       </div>
-      {kpi.descripcion && <p className="cmi-kpi-desc">{kpi.descripcion}</p>}
+      {(kpi.motivo_sin_dato || kpi.descripcion) && <p className="cmi-kpi-desc">{sinDato && kpi.motivo_sin_dato ? kpi.motivo_sin_dato : kpi.descripcion}</p>}
       <span className="cmi-kpi-ver">Ver evolución</span>
     </article>
   );

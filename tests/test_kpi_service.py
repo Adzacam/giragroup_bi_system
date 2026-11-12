@@ -153,7 +153,8 @@ class TestKPIConversionAdmisiones:
             DimTiempo(id_tiempo=1, gestion=2026, periodo_mes="2026-05"),
         ])
         sqlite_dw.add_all([
-            FactMarketing(id_modulo=1, id_tiempo=1, leads=40, reservas=0, inscritos=10),
+            FactMarketing(id_modulo=1, id_tiempo=1, leads=40, reservas=0, inscritos=10,
+                          leads_captacion=40, inscritos_captacion=10),
             FactMarketing(id_modulo=1, id_tiempo=1, leads=0, reservas=0, inscritos=500),  # seed histórico
         ])
         sqlite_dw.commit()

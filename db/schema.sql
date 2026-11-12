@@ -278,6 +278,8 @@ CREATE TABLE public.fact_marketing (
     leads INTEGER DEFAULT 0,
     reservas INTEGER DEFAULT 0,
     inscritos INTEGER DEFAULT 0,
+    leads_captacion INTEGER,
+    inscritos_captacion INTEGER,
     costo_programa NUMERIC(12, 2)
 );
 

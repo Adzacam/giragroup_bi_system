@@ -82,6 +82,7 @@ from services.extraccion_por_encabezado import (
     registros_techo_convenio,
     factores_escala_por_programa,
     normalizar_encabezado,
+    metricas_captacion,
 )
 from services.sugerencia_hitl import es_sugerencia_un_clic, nombre_extraido, similitud_nombre_completo
 from services.cronometraje import ahora, registrar_aprobacion
@@ -1753,6 +1754,7 @@ def _serializar_archivos_lote(db: Session, docs_lote: List[DimOrigenDocumental])
         stgs = db.query(StagingRegistroCrudo).filter(
             StagingRegistroCrudo.id_documento == d.id_documento,
             StagingRegistroCrudo.es_ruido == False,
+            StagingRegistroCrudo.registro_origen_id.is_(None),
         ).all()
         n_tuplas = 0
         for s in stgs:
@@ -2425,6 +2427,20 @@ def _evaluacion_lectura(db: Session, docs: List[DimOrigenDocumental]) -> Optiona
         if base is not None:
             cache_consultas.obtener(clave, TTL_EVALUACION_LECTURA_SEG, lambda: base)
     return _superponer_resoluciones(db, base, doc_ids) if base is not None else None
+
+
+@router.get("/lote/{id_lote}/integridad")
+def get_lote_integridad(id_lote: str, page: int = Query(1, ge=1),
+                       db: Session = Depends(get_db),
+                       user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"]))):
+    from services.integridad_dataops import consultar
+    _, docs, _ = _resolver_documentos_lote(db, id_lote)
+    lectura = _evaluacion_lectura(db, docs)
+    pagina = docs[(page - 1) * 5:page * 5]
+    resultado = consultar(db, pagina, lectura)
+    resultado['pagination'] = {'page': page, 'page_size': 5, 'total_items': len(docs),
+                               'total_pages': max(1, math.ceil(len(docs) / 5))}
+    return resultado
 
 
 @router.get("/lote/{id_lote}/resumen")
@@ -3581,7 +3597,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
 
         # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
         indices_linea = obtener_indices(lines, al_avanzar=_al_indexar)
-        for line, indice in zip(lines, indices_linea):
+        for k_fila, (line, indice) in enumerate(zip(lines, indices_linea)):
             lineas_hechas += 1
             tareas_dataops.avanzar(tarea_id, indexadas[0] + lineas_hechas)
             campos_linea = campos_por_encabezado([c.strip() for c in line.split("|")])
@@ -3659,6 +3675,8 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     "tipo_escala": doc_escala,
                     "institucion": institucion,
                     "doc_id": stg.id_documento,
+                    "clave_origen": hashlib.sha256(
+                        f"{(orig_doc.hash_sha256 or orig_doc.nombre_archivo) if orig_doc else stg.id_documento}|{stg.hoja}|{(stg.fila_inicio or 0) + k_fila}|{line}".encode("utf-8")).hexdigest(),
                     "resoluciones": {
                         "estudiante": {
                             "fk_resolucion": {
@@ -3752,6 +3770,9 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                                 "resoluciones": {**reg_dict["resoluciones"], **reg_costo},
                                 "calidad": {"requiere_revision": en_revision or revision_fila},
                             })
+                if categoria_ruteo == "marketing" and campos_linea:
+                    for reg_item in registros_linea:
+                        reg_item["resoluciones"].update(metricas_captacion(campos_linea))
                 for reg_item in registros_linea:
                     res = dw.cargar_registro(reg_item)
                     if res.get("status") == "skipped":  # respuesta vacía: nada que guardar ni revisar

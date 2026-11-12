@@ -76,6 +76,7 @@ export const invalidateDataopsCache = (keyPrefix = null) => {
 };
 
 export const dataopsApi = {
+  getIntegridad: async (id, page = 1) => (await client.get(`${BASE_URL}/lote/${id}/integridad`, { params: { page } })).data,
   invalidateCache: invalidateDataopsCache,
 
   getBatchHistory: async (page = 1) => (await client.get(`${BASE_URL}/historial-lotes`, { params: { page, page_size: 5 } })).data,

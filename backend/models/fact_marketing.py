@@ -11,4 +11,8 @@ class FactMarketing(Base):
     leads = Column(Integer, default=0)
     reservas = Column(Integer, default=0)
     inscritos = Column(Integer, default=0)
+    # Pareja informada por la misma fuente de captación. NULL significa no comprobada.
+    # No incluye inscripciones sueltas ni reconstruye cifras históricas.
+    leads_captacion = Column(Integer, nullable=True)
+    inscritos_captacion = Column(Integer, nullable=True)
     costo_programa = Column(Numeric(12, 2))

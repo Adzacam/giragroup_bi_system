@@ -252,6 +252,10 @@ def _resolver_linea(categoria, celdas, campos, campos_fin, factores_escala):
         por_reglas = bool(resoluciones_lista[0]["estudiante"]) or bool(campos.get("NUMEROPROYECTO"))
     else:
         resoluciones_lista.append(_resolver_fila_sin_encabezados(celdas, categoria, base, entidades_fila))
+    if categoria == "marketing" and campos:
+        from services.extraccion_por_encabezado import metricas_captacion
+        for resolucion in resoluciones_lista:
+            resolucion.update(metricas_captacion(campos))
     return resoluciones_lista, entidades_fila, por_reglas
 
 

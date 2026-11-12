@@ -54,6 +54,7 @@ MIGRACIONES_EN_ARRANQUE = (
     "011_eliminar_tablas_sin_uso.sql",
     "012_evaluacion_revision_y_fuente_rentabilidad.sql",
     "013_renombrar_kpi10_confianza_extraccion.sql",
+    "014_conversion_captacion_comprobable.sql",
 )
 MIGRACION_LOTE = "003_dataops_lote_and_facts_alignment.sql"
 MIGRACION_TIPO_FUENTE = "004_extend_tipo_fuente_sources.sql"

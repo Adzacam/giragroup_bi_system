@@ -26,6 +26,17 @@ router = APIRouter(prefix="/api/v1/cmi", tags=["Cuadro de Mando Integral"])
 TTL_SEG = 60
 TODAS = ("FINANCIERA", "CLIENTES", "PROCESOS_INTERNOS", "APRENDIZAJE")
 
+FALTANTES = {
+    'KPI-06': 'No hay cifras comprobables de interesados e inscritos en una misma fuente de captación para esta gestión.',
+    'KPI-07': 'No hay calificaciones con fecha de esta gestión para calcular el promedio.',
+    'KPI-08': 'No hay calificaciones con fecha de esta gestión para calcular la aprobación.',
+    'KPI-10': 'No hay registros académicos con índice de confianza y fecha de esta gestión.',
+    'KPI-11': 'No hay registros académicos con índice de confianza y fecha de esta gestión.',
+    'KPI-16': 'No hay registros académicos con fecha de esta gestión para calcular este indicador.',
+    'KPI-21': 'No hay estudiantes vinculados a registros académicos con fecha de esta gestión.',
+    'KPI-22': 'No hay cifras de inscritos en convenios vinculados a esta gestión.',
+}
+
 # PoLP (HU-12): perspectivas visibles por rol
 VISIBILIDAD: Dict[str, set] = {
     "ADMIN": set(TODAS),
@@ -66,6 +77,8 @@ def _scorecard(db: Session, gestion: Optional[int], permitidas: List[str]) -> di
         ORDER BY orden""", params)
     for p in perspectivas:
         p["kpis"] = [k for k in kpis if k["perspectiva"] == p["codigo"]]
+        for k in p['kpis']:
+            k['motivo_sin_dato'] = FALTANTES.get(k['codigo']) if k['valor'] is None else None
 
     # Índice global sólo sobre las perspectivas visibles para el rol
     con_indice = [p for p in perspectivas if p["indice"] is not None]

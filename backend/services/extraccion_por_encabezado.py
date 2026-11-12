@@ -75,6 +75,20 @@ def _a_float(valor: Optional[str]) -> Optional[float]:
     return parsear_monto(valor)
 
 
+def metricas_captacion(campos: Dict[str, str]) -> Dict[str, int]:
+    """Contadores explícitos; no deduce interesados a partir de personas o inscripciones."""
+    resultado = {}
+    for campo, claves in {
+        "leads": ("LEADS", "INTERESADOS", "TOTAL INTERESADOS"),
+        "inscritos": ("INSCRITOS", "TOTAL INSCRITOS"),
+        "reservas": ("RESERVAS", "TOTAL RESERVAS"),
+    }.items():
+        valor = _a_float(_primero(campos, claves))
+        if valor is not None and valor >= 0 and valor == int(valor):
+            resultado[campo] = int(valor)
+    return resultado
+
+
 ANIO_MIN, ANIO_MAX = 2000, 2100  # rango de gestiones de negocio
 
 

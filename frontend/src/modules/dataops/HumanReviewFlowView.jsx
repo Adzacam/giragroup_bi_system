@@ -4,6 +4,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import BatchFlowLayout from './components/BatchFlowLayout';
 import GruposBandeja from './components/GruposBandeja';
 import ProgresoTarea from './components/ProgresoTarea';
+import IntegridadLote from './components/IntegridadLote';
 import Button from '../../components/shared/Button';
 import Paginacion from '../../components/shared/Paginacion';
 import { useDraftState, useLoteFlow } from './context/LoteFlowContext';
@@ -119,11 +120,12 @@ function Revision({ batchId }) {
       <h2 className="serif-heading" style={{ fontSize: 22 }}>Revisión y consolidación</h2>
       <p style={{ fontSize: 13, color: 'var(--color-slate-gray)', margin: '10px 0' }}>Comprueba los casos pendientes. Aprobar un caso guarda su corrección e incorpora el registro; consolidar procesa las filas del lote completo.</p>
       <p style={{ fontSize: 12 }}>85 % o más: directo cuando cumple las reglas · Desde 60 % y menos de 85 %: marcado para revisión · Menos de 60 %: bandeja.</p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, margin: '16px 0' }}><span>Registros de origen: <strong>{fmt(contexto?.total_registros)}</strong></span><span>Casos en la selección: <strong>{isFetching ? 'Consultando…' : fmt(total)}</strong></span><span>Aceptación directa en la lectura: <strong>{fmt(summary?.autoCount)}</strong></span></div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, margin: '16px 0' }}><span>Filas de texto: <strong>{fmt(contexto?.total_registros)}</strong></span><span>Casos en la selección: <strong>{isFetching ? 'Consultando…' : fmt(total)}</strong></span><span>Aceptación directa en la lectura: <strong>{fmt(summary?.autoCount)}</strong></span></div>
       {!readOnly && <Button disabled={busy || summary?.status !== 'success'} isLoading={actions.sending || processing} loadingText="Procesando…" onClick={consolidate}>Consolidar lote</Button>}
       {!readOnly && summary?.status !== 'success' && <p style={{ marginTop: 10 }}>Primero consulta o inicia la lectura de BETO en el paso ③.</p>}
       {readOnly && <p>El lote está cerrado. Las consultas y exportaciones siguen disponibles.</p>}
     </div>
+    <IntegridadLote key={batchId} batchId={batchId} />
     {actions.pending && <div className="dataops-banner-info" role="status" style={{ marginBottom: 20 }}><span>{actions.pending.title}: se enviará en {actions.pending.seconds} s. Salir de esta pantalla cancela la espera.</span><Button variant="ghost" onClick={actions.cancel}>Deshacer</Button></div>}
     {processing && <ProgresoTarea titulo="Consolidando el lote" tarea={task} nota="El proceso continúa en segundo plano y avisará al terminar." />}
     <div className="floating-artifact" style={{ padding: 20, marginBottom: 20 }}>

@@ -1,0 +1,1614 @@
+{
+  "estado": "PROPUESTA_SIN_APLICAR",
+  "documento_admision": {
+    "id_documento": 19,
+    "hash_sha256": "5b72c61c436fd5d7e7332ae734001aaee52f9fb24645400d253a6c64b3d8b572"
+  },
+  "documentos_mismo_archivo": [
+    12,
+    19
+  ],
+  "edades": {
+    "accion": "Crear una copia de corrección, conservar el original y dejar vacía la edad sin nacimiento comprobable. No actualizar dim_estudiante.",
+    "filas": [
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3,
+        "huella_fila": "02a8698e89b4ccb29876bd6edc3f1ca951416ae90f44a911a37db676140b64aa",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 10,
+        "huella_fila": "f7648714254c6771de754eb63d72b6a8e46c50d73bec10eafcc161ecc8717249",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 16,
+        "huella_fila": "1a34b6f5abb9bb4aa39130d9d7827e4365cc3a66573193e548fea69572b30495",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 37,
+        "huella_fila": "f07a2e18ad68593d09e6966fbf1189cdebf3fde05a31f472dd513faa6fd91f69",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 43,
+        "huella_fila": "6384388ebc4a3cd392028d1ab078b93bb253f00cdcc75bdc96941ebe75e62da7",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 51,
+        "huella_fila": "59bd3fc7030fe75a016f98bffb01a41aa6600b1e82554831a9ac8451f1a32dfb",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 60,
+        "huella_fila": "ab75e80e0e994eb8d790189dfcb185a0fe2b27a2b4e1617348d6eb6f0c1b42b0",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 64,
+        "huella_fila": "cd5b01402d7aa0f58beb10770c93facf56501bbf0ab1a4bcf1bbbd32de6ad0f4",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 74,
+        "huella_fila": "c027a2dbd2f98a9bb6155914371ed1bdf2f7308e27766cdd561540f9efd6876c",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 81,
+        "huella_fila": "39e67195fb4fe21b72b24d133ef4f00e1fbb2a753d02b2875e9a8b378db12d4c",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 90,
+        "huella_fila": "d3d8317de4d97299828bdd9685f75c8078ce0396162f195871c6eaa246b1b23c",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 100,
+        "huella_fila": "33a817c2264ea0e3c72d612aa283b748bdd863498446dc09d75b881b96a7a0ec",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 114,
+        "huella_fila": "638d3cb0bc9a94d74669e558f274af65257d2a8c26c6304ac6734687adafab39",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 115,
+        "huella_fila": "2c0ec74ce98154df5c47ebc3653b5ce3421265f969c6a5d3d52514edf9578b76",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 150,
+        "huella_fila": "27728c4ba459a72a1ae982f982623bb7a9f2be1bf86135469bef86908107a818",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 171,
+        "huella_fila": "1c80b81e6969befbd968214a3c50d3725babca13c13343250c1a28a7d61d9e10",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 197,
+        "huella_fila": "49d2462ab7c6685fe7d69cefb82618806934dbb70cf132116887df55710320da",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 274,
+        "huella_fila": "9ce7df5ad225d74f540f0288f88ca9717409168fd41ce23f59440b1e084a6fd5",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 280,
+        "huella_fila": "8011774cf3b82ce504cf068eafa048f060ecd28012b9d3375bb93796a928873e",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 294,
+        "huella_fila": "cfec3d6e2976f69b7565374d0d7819b2db46bb965f4bf4ca6e3a99b07e7dfd61",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 316,
+        "huella_fila": "58fe7f92a2fff606d03ccd245a6ab3dbbcf7d372329c434ba086fa9dada2bd23",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 358,
+        "huella_fila": "95ff3fc031bcc8b1f96502b4bd0c3900f9616d995bb204fbc9146d51eeb561b5",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 445,
+        "huella_fila": "dd6f2277e00dbe1b633c01bdbf62b88c5b5458ecbe907998626b74d763325795",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 473,
+        "huella_fila": "726977c045ba064388bc890352b3af3a9891cd18667007cdd24188fcf12ae643",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 493,
+        "huella_fila": "73ca7ffa40e1a028078db76916d144b50d4d968fb8a09edfa3e9a9cb609ca672",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 561,
+        "huella_fila": "2ef100d8759944425bd041a81392ce5694935fb22c618f5c6746261f74945ae9",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 672,
+        "huella_fila": "9700ff72ad7e434cb1a4876bf262bcb4e269d8e61ee70c2b813ff103902a22ea",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 673,
+        "huella_fila": "f53fe333f3db4daaebc5219c89e36deaab091562c0c4a843fbf8301f9142ae70",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 697,
+        "huella_fila": "0a3714b0710ecb3dee0fa02d9edfb0db42d99ac54e72f966447104fde4909a55",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 698,
+        "huella_fila": "0cf21cb2a1500500f0868d311483306eb0a65f2dd131b79e637f18af6c08b661",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 700,
+        "huella_fila": "aa29c06744a65b55460e3120a6c94bc38ab43406a4c82044a1ec4b934b6425f2",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 704,
+        "huella_fila": "8c1fa77ccf0503d76d6a2fdc38da47a604491bd04370cf2fc669482d0de482d9",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 707,
+        "huella_fila": "5a71855a42089d1893f3650238c53a9fa08856fcba85a3116848c5b60a5c85da",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 708,
+        "huella_fila": "5d98742227028c95d8d3112957099751ac0affac59a753b08c4b407642575148",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 713,
+        "huella_fila": "a6eeedcd10d3e596c7672d72e3b7f1c87c19cbe6a5562af7fbd6c0017d3bbb6e",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 790,
+        "huella_fila": "481d1d5232395b3e9a43dea979a247b62cdc8b15a7d7d5eb5d833bd9030dbfa1",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1100,
+        "huella_fila": "c26f427b474db51b5d256eb264474830404d2f3cfca8be5c238544b816b17996",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1106,
+        "huella_fila": "a694553e7b945a9f7b2c2d59a2509f937405f0506e100a80b6079ada9c92c44b",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1117,
+        "huella_fila": "0946844a230736dcea382a6c6fa7954cd613039b0fb375a4b5c1849657bc083b",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1120,
+        "huella_fila": "827ab3991b7887febbab60a24e40d892f613c560e4223a17fc5fb39065244d69",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1121,
+        "huella_fila": "1bcb58970c880d012a64467ad4f4c66bbbd25d2bbf9977e0b26555812607bc9b",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1221,
+        "huella_fila": "4f497a57c0b611a7fc8c1b930cc70325847d81eee35b23338a0cec62c05d065d",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1265,
+        "huella_fila": "8b9f008a4d6bdcf35ec51d0f9fa4941f709ffccdfe3e07a19b8444c52550177c",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1403,
+        "huella_fila": "4f45496cfe07820c17b0c0df25c59752c0f6d0bf8e766de5a2ab89126ca6e122",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1428,
+        "huella_fila": "bcca4e3d18797ff4f3309c4b06ad888908261399195139d79f2a01755c60e614",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1485,
+        "huella_fila": "defb6e3f2bb49ce8378e0ef3d1c026c04820fee110ec8347e9e88652eabd0eee",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1504,
+        "huella_fila": "09c8563151c9d6983b5a80b4f7f8db04bc1b0dbf56ee2d48e1ae2dc887983bde",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1520,
+        "huella_fila": "aa305266788b7994b4697794ec44ea72b323765c2fbd5d23f8bbfd78ff883243",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1536,
+        "huella_fila": "f8edcdda64f28336619928b73f67558e3e4495eab90c9a8178d0f0d5f3a21d14",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1561,
+        "huella_fila": "1841fc751e964ec3ea41a80fa35ddee002da2484060a35b192e5ec44ede24ca8",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1563,
+        "huella_fila": "db4009cb6ba1d73b694ea7d034c4f515b57e67eb820329c9b9201aca213959c6",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1809,
+        "huella_fila": "3aacbcccac8da46320a84fd496a0d447fd1e111a069b8e0c583554a0ebe7b847",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1873,
+        "huella_fila": "6115b537d5aa47136c81138d924d054631563cfc3d0bc0b764440f35d511dcf9",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1909,
+        "huella_fila": "84fbeee8490fd5e042c6c1f3ebc299c3dbcfb34f2d7d065d283eed54301a5dae",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1915,
+        "huella_fila": "ec496b6ad318b41e3a7d793a4a4a84a426561a259ec8c39630841e7cdced6052",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 1928,
+        "huella_fila": "77534496876139b4ee43aa4e38e5354ee5f7f1dbf4d6a9e42aaa8c469c8e88a9",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2005,
+        "huella_fila": "1727b9924a96855c3fc37364188255b3a0ccff19538634f2e8208e5e15321952",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2009,
+        "huella_fila": "f5ede4649ba03ac6563223b5f59a85870c34c6da4090b5e83981cc3d6aa7aae6",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2063,
+        "huella_fila": "0041662dda8b0b7d9cb1041d9ff29631c3dbe43e0dfd1b32fc84e40c99364cce",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2139,
+        "huella_fila": "7786aaed2b754c84d492a77c6bf82308546a241664a4b6a1a17be5019fdd1f9d",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2142,
+        "huella_fila": "7df6dde7ae45c4da4536c375ed74cd1d937b8f4dad552adab1fc379fd04731c2",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2151,
+        "huella_fila": "2fd8085caffae1d3b895c999ccbb8781e3ed0464772a397f6e25a14b208f7e89",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2154,
+        "huella_fila": "48c44cf989c99e94ab174eb77d9fe87af916bf8c1523fbf2e2752ee2261dcd2f",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2184,
+        "huella_fila": "8447b119947b8a6bf16cb176a16be8a5841273b27d3dfebba8f5430d4cd43845",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2188,
+        "huella_fila": "8037cb657a5484b3282f787d356bf1b684b9dafc46fa0dd30d58a67dc2372107",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2198,
+        "huella_fila": "70122371b9a0a87707796b209af60d0233b3f8497c8a81a12f302381cdd44b64",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2200,
+        "huella_fila": "684b4dcaffaf006505562cb0dba8ba6f8c31c865bdb49b652aab1dca7f65d7d3",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2203,
+        "huella_fila": "9c372846681c698b1517380c7d50f5ba1a9cfc4c4eb80e2ae5707a55b7215df0",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2207,
+        "huella_fila": "711196210a2ebfb68c7b763ce65d7841abfc6e5c60c4ce7fab9e7ad2cb2406b9",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2229,
+        "huella_fila": "0e06659e0c4619813f158447760668f8d76c61ecff63286d84bbb896a2494e52",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2390,
+        "huella_fila": "35d23626c3bd88789cc8cb24afe8270168527bcf64e108a740c476ebf3892de5",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2391,
+        "huella_fila": "e16cb6bf2230dc296121fc0e5f9d7433471c70b9c8fe56c65a239fdaae017768",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2463,
+        "huella_fila": "aa3f9259238d96e3f67d1213e3937f64f8566681fef6988545f24065348cb405",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2467,
+        "huella_fila": "b762fa87e44fddbc249f5abb78c66ed681eb0a35900b074e68bb948659e07ca1",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2468,
+        "huella_fila": "c2bf2ff0330a2fe68325e827e0dfeef44771f16ca9b84964a03f9097d690c132",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2483,
+        "huella_fila": "fd080723e95492c74fcccde64173b9e2678b4e4732cf16acab4fa8b895ec2fb1",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2576,
+        "huella_fila": "4e0eafaa1e0602d8cc5c9cb43b41c3c3972acc471c5c9766290c2bea90f8bd40",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2578,
+        "huella_fila": "975b918e05795bfba4d7f22f62e4659434ca67de6eae62c42c79b8c91647a0bc",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2605,
+        "huella_fila": "eab8203ef7ae0257d06e1b5ea0bdc8f76d33e75b89c89cd6dd909008b8a553e2",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2641,
+        "huella_fila": "d917c55684985d35a8595e0136ed2ee81b842a3dd659b0faaf791a0c91a52f93",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2706,
+        "huella_fila": "7cca07e907a2388c9d2f94d5cb7096751ea89385609066a6cc7060f31ff2a4d8",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2774,
+        "huella_fila": "40ea26bcef312791c997b24ed1d3112b0111e6f2dc64da3c0cada9933e707164",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2775,
+        "huella_fila": "6f31d35a1749a9b4d13b56c73cc87bbf3e9a4c2e07a4fae33d66fa55def8f8ba",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2777,
+        "huella_fila": "a2265446ea0a536d85792424e39e156795cf8951fd465bb8298a0d8134937e7b",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2795,
+        "huella_fila": "dfa185c78898a78d4376912a7c4a608e3201cb532f162a80692bab3311c2e770",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2799,
+        "huella_fila": "d4c99317974cf3cdabafb18a86e0ab907b906ceac42b6e05abd815cc230c97ef",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2823,
+        "huella_fila": "c57e3c642a04f7fc21a02cb35b9bae5a81ef8d34862ac6c7dfb9a3b438d9075e",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 2931,
+        "huella_fila": "e83fedb95b2a43b8a8ff3b1bed9b7e5a46118595fba1a7ec8c6956a8c185f206",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3063,
+        "huella_fila": "55853d85b960ed4530e193d68bb3584b07c874d079682f7b79f7f479990e699e",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3073,
+        "huella_fila": "e342092dd2dc898ac3bf8b5bf9c3004ee771b2be25dba7446ee79f323086325a",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3151,
+        "huella_fila": "913241b5c8319879ebcdc0fc9afa39f50572fc5f1f98f33e23cc02ed8dedb441",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3173,
+        "huella_fila": "2f6769e902eef49912825e56065bae7fd984976248a993e77aa6899b5cb98fad",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3264,
+        "huella_fila": "4501c9ee962dd448436d001d14dd2aa804167387cd0f54a252fa6fdc7c8f3f95",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3297,
+        "huella_fila": "ef7b855a94d29e5ada86ab8e455f22642717471713cd105b62b182c5832f5bec",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3312,
+        "huella_fila": "6dde05f7d30639e40afb941dd304088b68b3c8d86bc7f0801680e08137582493",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3373,
+        "huella_fila": "858f1d5269036599e96ee5011dce917d0328a8bf86c50da01f48a21ed3fb8ad3",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3381,
+        "huella_fila": "a50117d43f1621d5f04e126e56a41e2fa2e2687353c9c2b1ff13c0430458f309",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3398,
+        "huella_fila": "785e5c29a8da7fbb94b1109e8298a756eb7825cf66dbdf31d99820a1a672b63e",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3404,
+        "huella_fila": "151a8898f16132d1e06882a62cb30d42fbe1ece0ef2d759d69308fc12ea82787",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3414,
+        "huella_fila": "f856765c2c4932f152765e42cec49ea77728fd9b0466c2dec17e0fcdd50685d1",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3461,
+        "huella_fila": "221586474931a3109da27507919591c6651fe9b6b81612f89b9502366eca4d55",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3521,
+        "huella_fila": "c69543bfc062826ac163aee36caba333f9d8695c190e4096e9b15d23e35930bd",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3522,
+        "huella_fila": "ca1db1ecb61b7e2361b7649d1789ddb502a5651d686dc6ffa83f7f901f633a9e",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3524,
+        "huella_fila": "15a5ff78d67dee847a93b7eaa585449c8b57a3733513c363e96677ecce9c0f8e",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3540,
+        "huella_fila": "06a680bb02a67da65099b37e441db19907f4a85957ce1aa28fdd2c0b7549e7af",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3595,
+        "huella_fila": "19b734da84e4e5b7a61199cf15a6bedbd28b7b7871c7b1cf839e4a564ddf4b75",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3601,
+        "huella_fila": "e6a5a4df338214884f0d5ef833385a5fa5c50be8a83d3ea3a822d9a56edfe4a1",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3602,
+        "huella_fila": "1521e9960ef0cf2daeac29973a5c17fb3db5727a179ac81f6e90881043a6d753",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3604,
+        "huella_fila": "fb87b59e3c97162a0696499be7db39d2cff95e4f8e18c54f39126d485d835dd3",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3605,
+        "huella_fila": "8a9723c7aa6565632817b0c8eb4c11e7abae70acc217eba3aac9957b8933fe82",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3611,
+        "huella_fila": "877c6dc9ae4e47974c5fcc6ea9d92e1c4d6e905f673bc83ec3714220c290a4e9",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3618,
+        "huella_fila": "89ad2a1424a49e756baf10b039a315f3f2cd87c5de2dd8bd1529ac7f106574f8",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3641,
+        "huella_fila": "310d8214a1dd964f19063d949b62de03ba39cca6276a48e73d4335f16a3f2ec5",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3649,
+        "huella_fila": "3ebaedd5b938bf82130859c74df0e8ac631cf8475ba3d1e62f3d789258738677",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3661,
+        "huella_fila": "59e37a9f1ae95d696b4d037cf02e25c9b4b2429a2341a4e0fe67a1b86b086bde",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3662,
+        "huella_fila": "da97c49cabd154de7aecbcc9918459ee69d391b05eb6f8ff2dbf305600d9776d",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3701,
+        "huella_fila": "ca6699e0264b14454c786c85f777d4e8f8d3676d0f785b7b024dccb59a318526",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3709,
+        "huella_fila": "b49efe8f1553c15cb8baa2d4aa71cccd2d71daecc02b65204e0c0b573795e806",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3838,
+        "huella_fila": "a1efbdb5902d990dc3097e3c09f3601662e7d7fbbba5bfbdc83bc8e338675b28",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3899,
+        "huella_fila": "ee9543d66a3b6a2d7915d8be8bfdea590b36751bd7b5ed9cd3a558d870fb6018",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3914,
+        "huella_fila": "c362469084b563ded81d8411898f8c7095ea2382aa0456a83da250e50a1c3d02",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 3922,
+        "huella_fila": "8a0bf7ec3566fd60c86d4eed81a751ec9239b4653dbe3f66ab1a1962d24c51fd",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4009,
+        "huella_fila": "38e84b33ca761f794653510195179ddca2bc6a2f2112495190c90aea538561f4",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4022,
+        "huella_fila": "d53616d4429ab6e79f4f731eb37e911e629c2662c618eb9218c2f7b225c20b01",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4098,
+        "huella_fila": "a17520a6eb002d43da924fae362c51cacf33ea337d81fb2d37f4f0117ef38340",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4100,
+        "huella_fila": "ca8d967cc206cf32f12af59d61d1545d24ba088d15b455428c34e05387a9340e",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4102,
+        "huella_fila": "31028da9c079402fd5fa371b32325e743dc133f0e6bf117c4a64a07a3b120439",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4149,
+        "huella_fila": "a326888fb5f261d71b73b30bde2be42f396480ed1e33d7606eaa3470b4760439",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4197,
+        "huella_fila": "aec55b1ebd63e3f0bae74913ae21821a4fd4e1234e173b20c0d670dadf566281",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4240,
+        "huella_fila": "cfa3c34ec8edd99ae62e686992b6f86dd86d83a1feee7f04e467e152c450b573",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4250,
+        "huella_fila": "8358e5ae7a37c5d449196ee3ebb37591ced3dc43bd7a401d1d553efbf2343885",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4300,
+        "huella_fila": "4f20b6af2dde02995b167a1495bdcea46ea46239115feb4be35562be88826aac",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4307,
+        "huella_fila": "58b4ad1a1dc0feed13195d60b8e6789c2f5e5bbca4f4998bbf62a4277c56cc92",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4316,
+        "huella_fila": "aac95c7db9b66865ec8bdc19bc40d6fce46b53cda3609fa10b7e579f51cf487e",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4318,
+        "huella_fila": "6ebb1bb519463ec7f93695a6e5207a9c48743a838c0167649375d7fd1f14114b",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4323,
+        "huella_fila": "8979c7cd27651bfb0a0cea343f07953cedbe1e21de52a0e1a94665bd9bcc6bcd",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4325,
+        "huella_fila": "7569f3b9358797efc3578108d91f2e1238f71c76950ece4f5ba316ed119e2d4b",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4326,
+        "huella_fila": "2881dad72f5a26589fe33f5724013fca897fe9016548c3ecf724812ff7298bed",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4344,
+        "huella_fila": "699f7bdea12db8e16ef5b1654799ea6c32dca47952dc7d2a90caaccb061b54d8",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4345,
+        "huella_fila": "7acb1738313815a81f2e996c8edf58112257df2a4556cf08abc2b6b663ee8c0a",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4352,
+        "huella_fila": "48bd56af13623dbe41d74c8570ac5e14cbd92553380bdbddc73d0d5dacb9304a",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4356,
+        "huella_fila": "d8204ba7ebb36d7414f27c68b5f17a95421acb030f0b578bcee5aeae61857ff1",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4371,
+        "huella_fila": "4a3ce2584645fc4b552c2cd43324ae4a6f0cc5ba17c3f8f4b1a1c9681e8628f1",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4372,
+        "huella_fila": "ac194849a1b76803a823a7d181511e0497f43644fac1573787dea9d523822182",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4394,
+        "huella_fila": "79ce9e4f85136a1effaedbc29abba00afadcae399c605ed766885aec3dcd1abf",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4426,
+        "huella_fila": "36f5bcfa5ccd56965b82fc3e65bd3e808ac3f49f5229241f7518a1d0bbe1deef",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4457,
+        "huella_fila": "3c7d2879b8a91ef485973d237a4798e9400b1d234dc4947a40e77e59b6305dce",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4466,
+        "huella_fila": "5396098570acc714ce10862d78ac0dd3261f0f21b1ad7b5430437b9708215549",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4468,
+        "huella_fila": "e6beee05a7ca3c6a4ebf1f80ada37b46ee6db31b4ff60a3370308929413130e2",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4475,
+        "huella_fila": "6313ac1f49938e645f49f55278c69722e217af50e20151af0735dcdf50919c02",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4485,
+        "huella_fila": "769adb0593ad7eb0738347f7ba57cc840ad9942475ffe08893ade5966e27ee41",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4490,
+        "huella_fila": "a1f8f3a263f4af15ef9d9c90461970c0229306ff306b59f68ca4988d8563dace",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4586,
+        "huella_fila": "0b44f4280bc8d14d3e683e45a12a2bc1eadcb46828a7fc95b410b4baccd7b636",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4587,
+        "huella_fila": "a8cc441a632ddec86201590b4507367e325b393b5ed2e7e933eb57fd389c1af2",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4601,
+        "huella_fila": "de9cbe862f5a89e4830d2dc2c09dd014b31b8f728272af734d3f86d0f63b5fe2",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4623,
+        "huella_fila": "7f1b7d0c6e58b00503ad5a98d6d7e1a472b7fecac4dee55540cf3dda5143b10d",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4666,
+        "huella_fila": "697d5735f83512583ae2cd366e29877a7834341d5647cbb5c72c625c1939fc11",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4682,
+        "huella_fila": "9befc27206c4287e43940bc41b87851a3acb400ed2faa57dace6bb9ea61b5330",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4687,
+        "huella_fila": "027be78c7dd3682135a7bed51b5df69e662342b818f81e9355bd0c8cf94c0dda",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4722,
+        "huella_fila": "5ee1dc688bea84f01fcf5d743dd51aeaa4c1b2971896ea7890fdd1bf5239710f",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4730,
+        "huella_fila": "42b44f365ae6925bcb1eae50b63ded9181e2ff284b534241586024ebbbe46cfb",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4734,
+        "huella_fila": "a5fa9710961dcdd47d47920be15485e3436ea4babc971f96490539aae835695d",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4774,
+        "huella_fila": "5564d24ee70bf906bf76d39f0a5770abf639d7f439b375948ebc3fd6b64a3290",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4833,
+        "huella_fila": "db8d5c663becd4447f6d96a2987aa5bc8957123c6c0facbc6e32e2b25f22130f",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4849,
+        "huella_fila": "8816caf2ec1c01bf11b00f102bd0bab06ca5ecea574c9b48b2a7969c8f3a74b6",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4852,
+        "huella_fila": "8a9a0088adfeefe077de8fa1182a68f0f3cea10323ccebecbde77b88bba39aa1",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4853,
+        "huella_fila": "92e2fa574fd037dd9ace0f5693083458e492cb62d87de39c63902624b463e096",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4886,
+        "huella_fila": "39bf691eba33bd09bdc9e4cf1cb3383e853a0f0a70fb77aea5b3867b811a9e4c",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4895,
+        "huella_fila": "5bce7f6040a1c2ea5251ca1c31e744de11a9e87c819d31db866d02a92146de48",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 4947,
+        "huella_fila": "2479c02e3f32262fd386fce80ae87ac04ea9ef17eb0ad2c182d56e25a311cca2",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5002,
+        "huella_fila": "699df38797d4e69bc3f3d98ebd37660a6dbd13a9b4f76c4009157cdabfaa52db",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5025,
+        "huella_fila": "2a7bc4fc858c5d39ca4199ca21389893fc2bcd9022bb826aa958fbdbd99ff23f",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5114,
+        "huella_fila": "d8bab70c96b0df803702a0f095175c552bb78cf954cea67e8ba081819b8d3f7a",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5139,
+        "huella_fila": "74b9d779f5629426b7ff6f8cdb2400ee6d66c679dcb543ec454d128ee2a6bbc2",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5147,
+        "huella_fila": "ff8eb758f6650d2e9a1c84d03c8204c532ac0ca1e3e0f02fc20525d2ad2f20e1",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5205,
+        "huella_fila": "755ece2723946bbf5ffa4327beb744c756054e110e543deeeb674bf3b0dca7ee",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5212,
+        "huella_fila": "b1589fa3a8a098d0b794e0e17997371320f737f97fd42ed78ad286fb0282bb3a",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5223,
+        "huella_fila": "7a24ff73e0bf7332dd55135a783fe5edb38c0bc835fb1ade3d5d9920d288bf29",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5224,
+        "huella_fila": "ea8600f1110d9f7aed7643b31a63bb8f2dc87dd258a6dc864bc84f13d3704aae",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5236,
+        "huella_fila": "9373461581b173100fc05b6c2b4f2e1be09fa8cd486d732a2e4410264fcf0e56",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5270,
+        "huella_fila": "cb933586153e1ce6d1a5283a4e9921aa226ed20c1aa0f541ea8b230d4105dbb5",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5315,
+        "huella_fila": "06de8d8fb223a6a587973b5312e449a4e88463f79afafb5e8228df8e9d32c218",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5377,
+        "huella_fila": "68aa3b83c1a4b1aa72421c7ec2f84efea6493736f6ed842ed048bed1ab500342",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5410,
+        "huella_fila": "ee8f42f466bb487bee45dd813f6dfd651e603f177e94f174328ae4188e4664f9",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5441,
+        "huella_fila": "8c1db05468fead51375ea036c103bf00ae556570f79248b2a738c7e4b80f9190",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5792,
+        "huella_fila": "f197fb0957bd216643e0d5e2ca71c7b12b9a65d8be2200b10a50ff62d91b2223",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 5991,
+        "huella_fila": "1fdcc6d6a3176d268bdc4ea336ee39df4aba5a32a2158f9292371a924f56bd55",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 6125,
+        "huella_fila": "a28eb994b28533f2a45eb709cc93d061566b30bcb4b4a2c351230374c3e81223",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 6576,
+        "huella_fila": "556077233e86433cabb9b0a367e41de7da86b1f34183da859f06db407675d5e0",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 6995,
+        "huella_fila": "6d9c98cb3d65e025ccc5f3309a162c16d8bd68f7f69e2d7227eab8ee8bf751f0",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 7124,
+        "huella_fila": "c73a78559aa7c83228b44f2fde3da0f8d5733cf9625881a50df273f2bdfded41",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 7453,
+        "huella_fila": "f4874d8b71d3a0543e459cbd7ff16ffeccc454e433d642897ca46dd36b959dd1",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      },
+      {
+        "staging_id": 96,
+        "linea_en_bloque": 7551,
+        "huella_fila": "b0acc806a46664fc234c0cc2921b903256780d3523c38c0dc61cf9bc351845cf",
+        "edad_original": 127.0,
+        "edad_propuesta_en_copia": null,
+        "nacimiento_interpretable": false
+      }
+    ]
+  },
+  "modulos": [
+    {
+      "id_modulo": 4937,
+      "nombre_modulo": ".",
+      "pos_code": "MOD-GEN",
+      "propuesto": {
+        "nombre_modulo": "Programa por identificar (4937)",
+        "pos_code": null
+      },
+      "inscripciones_conservadas": [
+        {
+          "id_hecho_mkt": 29915,
+          "inscritos": 2
+        },
+        {
+          "id_hecho_mkt": 30613,
+          "inscritos": 2
+        }
+      ]
+    },
+    {
+      "id_modulo": 4957,
+      "nombre_modulo": "......",
+      "pos_code": "MOD-GEN",
+      "propuesto": {
+        "nombre_modulo": "Programa por identificar (4957)",
+        "pos_code": null
+      },
+      "inscripciones_conservadas": [
+        {
+          "id_hecho_mkt": 30276,
+          "inscritos": 2
+        }
+      ]
+    }
+  ],
+  "convenio": {
+    "id_hecho_techo": 25,
+    "id_documento": 7,
+    "id_tiempo": 20340112,
+    "gestion": 2024,
+    "fecha_inicio": "2034-01-12",
+    "fecha_fin": "2024-03-02",
+    "requiere_revision": true,
+    "motivo_revision": "FECHAS_INVERTIDAS: fin 2024-03-02 anterior al inicio 2034-01-12; GESTION_DISTINTA_A_INICIO: gestión 2024 vs inicio 2034-01-12",
+    "propuesto": {
+      "fecha_inicio": null,
+      "id_tiempo": null,
+      "requiere_revision": true,
+      "motivo_revision": "FECHA_INICIO_PENDIENTE: confirmar contra el convenio original; fecha recibida 2034-01-12"
+    }
+  },
+  "resguardo": "Antes de aplicar: respaldo de filas afectadas, comparación de valores y huellas, transacción, auditoría y verificación de conteos. Sin fusiones ni borrados.",
+  "reconstruccion_inscripciones": "Preparar en base aislada una reconstrucción por huella, hoja y fila de la fuente única. Comparar antes de proponer reemplazo; no dividir ni deduplicar agregados por suposición."
+}

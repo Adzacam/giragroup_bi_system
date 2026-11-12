@@ -461,14 +461,15 @@ class KPIService:
         # ─────────────────────────────────────────────────────────────────────────
         # 6. KPI 6: TASA DE CONVERSIÓN DE ADMISIONES (Perspectiva Cliente y Mercado)
         # tasa_conversion_admisiones = total matriculados / total postulantes (o leads) × 100
-        # Solo cuenta filas con leads > 0: el seed histórico carga inscritos sin datos de
-        # captación (leads = 0) y, mezclados, inflan la tasa por encima del 100 %.
+        # Solo parejas explícitas de captación: las admisiones no acreditan leads.
         # Tablas: fact_marketing, dim_tiempo, dim_modulo
         # ─────────────────────────────────────────────────────────────────────────
         q_mkt = self.db.query(
-            func.sum(FactMarketing.inscritos).label("total_inscritos"),
-            func.sum(FactMarketing.leads).label("total_leads")
-        ).filter(FactMarketing.leads > 0)
+            func.sum(FactMarketing.inscritos_captacion).label("total_inscritos"),
+            func.sum(FactMarketing.leads_captacion).label("total_leads")
+        ).filter(FactMarketing.leads_captacion > 0,
+                 FactMarketing.inscritos_captacion >= 0,
+                 FactMarketing.inscritos_captacion <= FactMarketing.leads_captacion)
         if gestion_filtro:
             q_mkt = q_mkt.join(DimTiempo, FactMarketing.id_tiempo == DimTiempo.id_tiempo).filter(DimTiempo.gestion == gestion_filtro)
         if prog_filtro:
