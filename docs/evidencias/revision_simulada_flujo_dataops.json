@@ -1,0 +1,164 @@
+{
+ "resumen": {
+  "casos": 194,
+  "grupos": 12,
+  "grupos_aprobables_en_bloque": 5,
+  "grupos_manuales": 7,
+  "casos_rechazados_por_regla": 20,
+  "pct_grupos_aprobables_en_bloque": 41.7,
+  "tiempo_humano_simulado_s": 2262.0,
+  "supuestos": {
+   "lectura_por_grupo_s": 6.0,
+   "accion_por_grupo_s": 2.0,
+   "por_caso_manual_s": 20.0,
+   "espera_deshacer_por_accion_s": 10.0
+  },
+  "tiempo_maquina_real_aprobaciones_s": 1.01
+ },
+ "eventos": [
+  {
+   "grupo": "grupo-eeb97aecd34d409b58",
+   "titulo": "Hecho cargado que necesita revisión",
+   "accion": "APROBAR",
+   "casos": 101,
+   "inicio_humano_simulado": "2026-11-12T15:48:34.071519+00:00",
+   "fin_humano_simulado": "2026-11-12T15:48:46.071519+00:00",
+   "segundos_humano_simulado": 12.0,
+   "segundos_maquina_real": 0.325,
+   "resueltos": 101,
+   "http": 200
+  },
+  {
+   "grupo": "grupo-5039c42781c099d61a",
+   "titulo": "Lectura con baja confianza",
+   "accion": "MANUAL",
+   "casos": 51,
+   "inicio_humano_simulado": "2026-11-12T15:48:52.071519+00:00",
+   "fin_humano_simulado": "2026-11-12T16:14:22.071519+00:00",
+   "segundos_humano_simulado": 1530.0,
+   "segundos_maquina_real": 0.2,
+   "resueltos": 0,
+   "rechazados_por_regla": 5
+  },
+  {
+   "grupo": "grupo-5ea82d70e33abf794a",
+   "titulo": "Lectura con baja confianza",
+   "accion": "MANUAL",
+   "casos": 10,
+   "inicio_humano_simulado": "2026-11-12T16:14:28.071519+00:00",
+   "fin_humano_simulado": "2026-11-12T16:19:28.071519+00:00",
+   "segundos_humano_simulado": 300.0,
+   "segundos_maquina_real": 0.087,
+   "resueltos": 0,
+   "rechazados_por_regla": 5
+  },
+  {
+   "grupo": "grupo-d2ec7470dbdd602054",
+   "titulo": "Hecho cargado que necesita revisión",
+   "accion": "CORREGIR_FECHA",
+   "casos": 8,
+   "inicio_humano_simulado": "2026-11-12T16:19:34.071519+00:00",
+   "fin_humano_simulado": "2026-11-12T16:19:46.071519+00:00",
+   "segundos_humano_simulado": 12.0,
+   "segundos_maquina_real": 0.054,
+   "resueltos": 8,
+   "http": 200
+  },
+  {
+   "grupo": "grupo-3168c07273db6d12db",
+   "titulo": "Hecho cargado que necesita revisión",
+   "accion": "APROBAR",
+   "casos": 7,
+   "inicio_humano_simulado": "2026-11-12T16:19:52.071519+00:00",
+   "fin_humano_simulado": "2026-11-12T16:20:04.071519+00:00",
+   "segundos_humano_simulado": 12.0,
+   "segundos_maquina_real": 0.046,
+   "resueltos": 7,
+   "http": 200
+  },
+  {
+   "grupo": "grupo-3d630e02eb42631e08",
+   "titulo": "Hecho cargado que necesita revisión",
+   "accion": "APROBAR",
+   "casos": 6,
+   "inicio_humano_simulado": "2026-11-12T16:20:10.071519+00:00",
+   "fin_humano_simulado": "2026-11-12T16:20:22.071519+00:00",
+   "segundos_humano_simulado": 12.0,
+   "segundos_maquina_real": 0.042,
+   "resueltos": 6,
+   "http": 200
+  },
+  {
+   "grupo": "grupo-1a626979d064bc0906",
+   "titulo": "Lectura con baja confianza",
+   "accion": "MANUAL",
+   "casos": 5,
+   "inicio_humano_simulado": "2026-11-12T16:20:28.071519+00:00",
+   "fin_humano_simulado": "2026-11-12T16:22:58.071519+00:00",
+   "segundos_humano_simulado": 150.0,
+   "segundos_maquina_real": 0.09,
+   "resueltos": 0,
+   "rechazados_por_regla": 5
+  },
+  {
+   "grupo": "grupo-47eb53d9da1f99e311",
+   "titulo": "Lectura con baja confianza",
+   "accion": "MANUAL",
+   "casos": 2,
+   "inicio_humano_simulado": "2026-11-12T16:23:04.071519+00:00",
+   "fin_humano_simulado": "2026-11-12T16:24:04.071519+00:00",
+   "segundos_humano_simulado": 60.0,
+   "segundos_maquina_real": 0.05,
+   "resueltos": 0,
+   "rechazados_por_regla": 2
+  },
+  {
+   "grupo": "grupo-0824c6fb74d5d634f6",
+   "titulo": "Posible homonimia: nombre parecido a otra persona",
+   "accion": "MANUAL",
+   "casos": 1,
+   "inicio_humano_simulado": "2026-11-12T16:24:10.071519+00:00",
+   "fin_humano_simulado": "2026-11-12T16:24:40.071519+00:00",
+   "segundos_humano_simulado": 30.0,
+   "segundos_maquina_real": 0.034,
+   "resueltos": 0,
+   "rechazados_por_regla": 1
+  },
+  {
+   "grupo": "grupo-b4babd3ec1108cf0ba",
+   "titulo": "La cédula coincide pero el nombre es distinto",
+   "accion": "MANUAL",
+   "casos": 1,
+   "inicio_humano_simulado": "2026-11-12T16:24:46.071519+00:00",
+   "fin_humano_simulado": "2026-11-12T16:25:16.071519+00:00",
+   "segundos_humano_simulado": 30.0,
+   "segundos_maquina_real": 0.032,
+   "resueltos": 0,
+   "rechazados_por_regla": 1
+  },
+  {
+   "grupo": "grupo-6d470fa8561ec27905",
+   "titulo": "La cédula coincide pero el nombre es distinto",
+   "accion": "MANUAL",
+   "casos": 1,
+   "inicio_humano_simulado": "2026-11-12T16:25:22.071519+00:00",
+   "fin_humano_simulado": "2026-11-12T16:25:52.071519+00:00",
+   "segundos_humano_simulado": 30.0,
+   "segundos_maquina_real": 0.032,
+   "resueltos": 0,
+   "rechazados_por_regla": 1
+  },
+  {
+   "grupo": "grupo-89de0bd8085529376e",
+   "titulo": "Hecho cargado que necesita revisión",
+   "accion": "APROBAR",
+   "casos": 1,
+   "inicio_humano_simulado": "2026-11-12T16:25:58.071519+00:00",
+   "fin_humano_simulado": "2026-11-12T16:26:10.071519+00:00",
+   "segundos_humano_simulado": 12.0,
+   "segundos_maquina_real": 0.02,
+   "resueltos": 1,
+   "http": 200
+  }
+ ]
+}
