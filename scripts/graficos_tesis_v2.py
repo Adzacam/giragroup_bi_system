@@ -25,8 +25,12 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-import statsmodels.api as sm
-from statsmodels.tsa.holtwinters import ExponentialSmoothing as ES
+try:
+    import statsmodels.api as sm
+    from statsmodels.tsa.holtwinters import ExponentialSmoothing as ES
+except ImportError:
+    sm = None
+    ES = None
 
 # Configuración global tipográfica y de estilo
 plt.rcParams['font.family'] = 'serif'
@@ -552,70 +556,70 @@ def generar_g4_3():
 def generar_g4_4():
     """
     G4.4: Disponibilidad de KPI por perspectiva estratégica de Kaplan y Norton (Pretest vs Postest).
-    Estructurado en las 4 perspectivas oficiales:
-    - Financiera (5 KPI operativos): KPI-01 a KPI-05
-    - Clientes / Estudiantes y mercado (0 evaluados + 1 N/D*): KPI-06
-    - Procesos Internos (2 KPI operativos): KPI-10 y KPI-11
-    - Aprendizaje y Crecimiento (3 KPI operativos): KPI-07 a KPI-09
-    Total: 10 KPI operativos (+ 1 N/D) = 11 KPI de la tesis.
-    Escala de grises con tramas, tipografía serif 10 pt, sin título interno, leyenda fuera abajo.
+    Estructurado en las 4 perspectivas oficiales (Total 22 KPI):
+    - Financiera (9 KPI): 01-05, 12-15
+    - Clientes (5 KPI): 06, 16, 20, 21, 22
+    - Procesos Internos (3 KPI): 10, 11, 18
+    - Aprendizaje y Crecimiento (5 KPI): 07, 08, 09, 17, 19
+    Pretest: 0 en las cuatro perspectivas.
+    Barras agrupadas, estilo de graficos_v2.
+    Etiquetas de valor sobre las barras, leyenda Pretest/Postest, sin título interno.
+    Pie: «Fuente: Elaboración propia (2026)».
     """
-    fig, ax = plt.subplots(figsize=(ANCHO_16CM, 4.3), dpi=300)
-    fig.subplots_adjust(left=0.10, right=0.96, top=0.94, bottom=0.28)
+    fig, ax = plt.subplots(figsize=(ANCHO_16CM, 4.6), dpi=300)
+    fig.subplots_adjust(left=0.09, right=0.96, top=0.94, bottom=0.24)
     
     perspectivas = [
-        "1. Perspectiva\nFinanciera",
-        "2. Clientes\n(Estudiantes y mercado)",
-        "3. Procesos\nInternos",
-        "4. Aprendizaje\ny Crecimiento"
+        "Perspectiva\nFinanciera",
+        "Perspectiva de\nClientes",
+        "Perspectiva de\nProcesos Internos",
+        "Aprendizaje y\nCrecimiento"
     ]
     x = np.arange(len(perspectivas))
-    width = 0.32
+    width = 0.34
     
     pretest = [0, 0, 0, 0]
-    postest_op = [5, 0, 2, 3]
-    postest_nd = [0, 1, 0, 0]
+    postest = [9, 5, 3, 5]
     
     b_pre = ax.bar(x - width/2, pretest, width,
-                   label='Pretest (Línea base: sistemas aislados, 0 KPI centralizados)',
+                   label='Pretest',
                    color='#E5E5E5', edgecolor='#222222', hatch='..', linewidth=1.1)
     
-    b_post_op = ax.bar(x + width/2, postest_op, width,
-                       label='Postest (KPI operativos en CMI / DW - Gestión 2025)',
-                       color='#555555', edgecolor='#111111', hatch='///', linewidth=1.1)
+    b_post = ax.bar(x + width/2, postest, width,
+                    label='Postest',
+                    color='#4A4A4A', edgecolor='#111111', hatch='///', linewidth=1.1)
     
-    b_post_nd = ax.bar(x + width/2, postest_nd, width, bottom=postest_op,
-                       label='Postest (KPI no determinado: KPI-06 N/D*)',
-                       color='#B0B0B0', edgecolor='#111111', hatch='xxx', linewidth=1.1)
-    
-    ax.set_ylabel("Cantidad de KPI estratégicos disponibles")
+    ax.set_ylabel("Cantidad de KPI disponibles")
     ax.set_xticks(x)
     ax.set_xticklabels(perspectivas, fontsize=8.8)
-    ax.set_ylim(0, 6.5)
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    ax.set_ylim(0, 11)
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(2))
+    ax.yaxis.set_minor_locator(ticker.MultipleLocator(1))
     ax.yaxis.set_major_formatter(formatter_bo)
     ax.grid(axis='y', linestyle=':', alpha=0.6, color='#888888')
     
     # Anotar pretest
     for r in b_pre:
-        ax.text(r.get_x() + r.get_width()/2, 0.15, "0", ha='center', va='bottom', fontsize=8.5, color='#444444')
+        ax.text(r.get_x() + r.get_width()/2, 0.20, "0", ha='center', va='bottom', fontsize=8.5, color='#444444')
         
-    # Anotar postest
+    # Anotar postest con desglose solicitado
     labels_post = [
-        "5 KPI\n(KPI-01 a 05)",
-        "0 (+1 N/D*)\n(KPI-06)",
-        "2 KPI\n(KPI-10 y 11)",
-        "3 KPI\n(KPI-07 a 09)"
+        "9\n(01-05, 12-15)",
+        "5\n(06, 16, 20, 21, 22)",
+        "3\n(10, 11, 18)",
+        "5\n(07, 08, 09, 17, 19)"
     ]
-    totales_post = [5, 1, 2, 3]
-    for r, tot, lbl in zip(b_post_op, totales_post, labels_post):
-        ax.text(r.get_x() + r.get_width()/2, tot + 0.18, lbl,
+    for r, val, lbl in zip(b_post, postest, labels_post):
+        ax.text(r.get_x() + r.get_width()/2, val + 0.22, lbl,
                 ha='center', va='bottom', fontsize=8.2, weight='bold', color='#111111')
         
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.20), ncol=2,
-              frameon=True, facecolor='#FFFFFF', edgecolor='#AAAAAA', fontsize=7.8)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2,
+              frameon=True, facecolor='#FFFFFF', edgecolor='#AAAAAA', fontsize=8.5)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
+    
+    # Pie: «Fuente: Elaboración propia (2026)»
+    fig.text(0.09, 0.02, "Fuente: Elaboración propia (2026)", fontsize=8.2, style='italic', color='#333333')
     
     guardar_figura_exacta(fig, "grafico_4_4_kpi_cmi_perspectivas.png")
     shutil.copy2(OUTPUT_DIR / "grafico_4_4_kpi_cmi_perspectivas.png",
