@@ -14,6 +14,7 @@ export default function BatchFlowLayout({
   selectedDocId = null,
   onSelectDocId = null,
   showReadOnlyContent = false,
+  selectionDisabled = false,
   children,
 }) {
   const { id } = useParams();
@@ -76,6 +77,7 @@ export default function BatchFlowLayout({
 
           <Button variant="ghost"
             type="button"
+            disabled={selectionDisabled}
             onClick={() => onSelectDocId(null)}
             style={{
               padding: '6px 12px',
@@ -99,6 +101,7 @@ export default function BatchFlowLayout({
               <Button variant="ghost"
                 key={arc.id_documento}
                 type="button"
+                disabled={selectionDisabled}
                 onClick={() => onSelectDocId(arc.id_documento)}
                 style={{
                   padding: '6px 12px',

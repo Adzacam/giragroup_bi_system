@@ -2,6 +2,8 @@
  * Textos legibles de los motivos de la bandeja HITL, de la fuente de resolución de cada entidad y del estado de vínculo (fk_estado).
  */
 export const MOTIVOS_BANDEJA = {
+  FECHA_INSCRIPCION_INVALIDA: 'Fecha de inscripción no válida',
+  POS_NO_EN_DIM_MODULO: 'Programa sin coincidencia en el catálogo',
   CI_NOMBRE_DISCORDANTE: 'La cédula coincide pero el nombre es distinto',
   CI_NOMBRE_VARIANTE: 'Misma cédula con otra escritura del nombre (resuelto automáticamente)',
   HOMONIMIA: 'Posible homonimia: nombre parecido a otra persona',

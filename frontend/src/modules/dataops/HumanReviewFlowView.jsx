@@ -1,1146 +1,153 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import {
-  AlertTriangle, CheckCircle2, XCircle, Eye, EyeOff, ShieldCheck,
-  Sparkles, Keyboard, Database, FileText, Download
-} from 'lucide-react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import BatchFlowLayout from './components/BatchFlowLayout';
-import { dataopsApi } from '../../api/dataopsApi';
-import { sileo } from 'sileo';
-import { sileoToast, confirmar } from '../../services/sileoToast';
 import GruposBandeja from './components/GruposBandeja';
+import ProgresoTarea from './components/ProgresoTarea';
+import Button from '../../components/shared/Button';
+import Paginacion from '../../components/shared/Paginacion';
 import { useDraftState, useLoteFlow } from './context/LoteFlowContext';
 import { useRevealCi } from './hooks/useRevealCi';
+import useRevision from './hooks/useRevision';
+import useRevisionAcciones from './hooks/useRevisionAcciones';
+import { dataopsApi } from '../../api/dataopsApi';
+import { sileoToast } from '../../services/sileoToast';
 import { mensajeError } from '../../utils/mensajeError';
-import { ESTADOS_VINCULO, textoFuente, textoMotivo } from '../../constants/motivosBandeja';
+import { textoMotivo } from '../../constants/motivosBandeja';
+import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano';
+import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
+
+const INITIAL = { docId: null, vista: 'GRUPOS', search: '', area: 'TODAS', page: 1, grupo: null };
+const AREAS = { academica: 'Académica', financiera: 'Financiera', comercial: 'Comercial', calidad: 'Calidad', evaluacion_docente: 'Evaluación docente' };
+const fmt = value => typeof value === 'number' ? value.toLocaleString('es-BO') : 'Sin dato';
+
+function CasoRevision({ item, readOnly, busy, schedule }) {
+  const [revealed, toggleCi] = useRevealCi();
+  const [revealing, setRevealing] = useState(false);
+  const revealLock = useRef(false);
+  const [form, setForm] = useState(() => ({ estudiante_resuelto: item.estudiante || '', ci_corregida: '', modulo_resuelto: item.modulo_detectado || '', nota_final: item.nota_final ?? '', monto_deuda: item.monto_deuda ?? '', cuotas_impagas: item.cuotas_impagas ?? '', mes: item.mes ?? '', gestion: item.gestion ?? '', nota_auditor: '', motivo_descarte: '', docente_resuelto: '' }));
+  const [discard, setDiscard] = useState(false);
+  const field = (key, label, type = 'text', limits = {}) => <label style={{ fontSize: 12 }}>{label}<input aria-label={`${label} del caso ${item.id}`} className="dataops-input" type={type} value={form[key]} onChange={e => setForm(prev => ({ ...prev, [key]: e.target.value }))} disabled={busy || readOnly} maxLength={type === 'text' ? 200 : undefined} {...limits} /></label>;
+  const approve = () => {
+    const payload = { accion: 'APROBAR' };
+    for (const [key, value] of Object.entries(form)) {
+      if (value !== '' && key !== 'motivo_descarte') payload[key] = ['nota_final','monto_deuda','cuotas_impagas','mes','gestion'].includes(key) ? Number(value) : value.trim();
+    }
+    schedule(`Aprobar caso ${item.id}`, () => dataopsApi.resolveReviewItem(item.id, payload));
+  };
+  const reveal = async () => {
+    if (revealLock.current) return;
+    revealLock.current = true;
+    setRevealing(true);
+    try { await toggleCi(item.id); } finally { revealLock.current = false; setRevealing(false); }
+  };
+  const hasCi = item.ci_enmascarado && item.ci_enmascarado !== 'No provisto';
+  return <details className="floating-artifact" style={{ padding: 18, marginBottom: 12 }}>
+    <summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}><strong>Caso {item.id}</strong> · {textoMotivo(item.motivo)} · {item.estudiante || 'Sin nombre identificado'}</summary>
+    <p style={{ fontSize: 12, color: 'var(--color-slate-gray)', margin: '12px 0' }}>{item.archivo_origen || 'Sin archivo'} · {AREAS[item.area] || 'Sin área'} · Índice: {item.indice_registro == null ? 'Sin dato' : `${item.indice_registro} %`}</p>
+    <p>{item.por_que_detuvo}</p>
+    <p style={{ margin: '12px 0' }}>Cédula: {revealed[item.id] || item.ci_enmascarado || 'Sin dato'} {hasCi && <Button variant="ghost" isLoading={revealing} loadingText="Consultando…" onClick={reveal}>{revealed[item.id] ? 'Ocultar cédula' : 'Revelar con auditoría'}</Button>}</p>
+    <details style={{ marginBottom: 12 }}><summary style={{ cursor: 'pointer' }}>Ver texto original protegido</summary><p style={{ fontSize: 12, overflowWrap: 'anywhere', padding: '12px 0' }}>{item.que_vio || 'Sin texto disponible'}</p></details>
+    {item.sugerencia && <p style={{ marginBottom: 12 }}>Sugerencia guardada: {item.sugerencia}</p>}
+    {readOnly ? <p>Estado: {item.estado_resolucion === 'DESCARTADO' ? 'Descartado' : item.estado_resolucion === 'RESUELTO_HUMANO' ? 'Resuelto' : 'Pendiente de revisión'}</p> : <>
+      {item.manual_presupuesto && <p className="dataops-banner-info">Esta fila requiere revisar su clasificación. La aprobación como persona está bloqueada.</p>}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12, margin: '16px 0' }}>
+        {item.area !== 'evaluacion_docente' && field('estudiante_resuelto', 'Nombre del estudiante')}
+        {item.tipo_entidad !== 'HECHO' && field('ci_corregida', 'Cédula corregida (opcional)')}
+        {item.area !== 'evaluacion_docente' ? field('modulo_resuelto', 'Módulo') : <p>Módulo: {item.modulo_detectado || 'Sin dato'}</p>}
+        {item.area === 'academica' && field('nota_final', 'Nota sobre 100', 'number', { min: 0, max: 100, step: 'any' })}
+        {item.area === 'financiera' && <>{field('monto_deuda', 'Monto de deuda', 'number', { min: 0, step: 'any' })}{field('cuotas_impagas', 'Cuotas impagas', 'number', { min: 0 })}</>}
+        {item.area === 'evaluacion_docente' && field('docente_resuelto', 'Docente')}
+        {field('mes', 'Mes', 'number', { min: 1, max: 12 })}{field('gestion', 'Gestión', 'number', { min: 2000, max: 2100 })}
+        {field('nota_auditor', 'Justificación de la corrección')}
+      </div>
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}><Button disabled={busy || item.locked || item.manual_presupuesto} onClick={approve}>Programar aprobación</Button><Button variant="ghost" disabled={busy || item.locked} onClick={() => setDiscard(value => !value)}>Descartar caso</Button></div>
+      {item.locked && <p>Otro auditor está revisando este caso.</p>}
+      {discard && <div style={{ marginTop: 16 }}>{field('motivo_descarte', 'Motivo del descarte')}<p style={{ fontSize: 12, margin: '8px 0' }}>El caso quedará registrado como descartado. Revisa el motivo antes de continuar.</p><Button variant="ghost" disabled={busy || !form.motivo_descarte.trim()} onClick={() => schedule(`Descartar caso ${item.id}`, () => dataopsApi.resolveReviewItem(item.id, { accion: 'DESCARTAR', motivo_descarte: form.motivo_descarte.trim() }))}>Programar descarte</Button></div>}
+    </>}
+  </details>;
+}
+
+function Revision({ batchId }) {
+  const navigate = useNavigate();
+  const { contexto, readOnly } = useLoteFlow();
+  const [filters, setFilters] = useDraftState('review.filters.v4', INITIAL);
+  const [input, setInput] = useState(filters.search);
+  const [exporting, setExporting] = useState(false);
+  const exportLock = useRef(false);
+  const actions = useRevisionAcciones();
+  const { data, error, isFetching, refetch } = useRevision(batchId, filters, !!contexto);
+  const { data: summary } = useQuery({ queryKey: [...DATAOPS_QUERY_KEY, 'review-summary', batchId], queryFn: () => dataopsApi.getLoteResumen(batchId), enabled: !!batchId && !!contexto });
+  const { data: task } = useQuery({ queryKey: [...DATAOPS_QUERY_KEY, 'review-task', batchId], queryFn: () => dataopsApi.getTareaLote(batchId), enabled: !!batchId && !!contexto, refetchInterval: query => query.state.data?.estado === 'EN_CURSO' ? 2000 : false });
+  const processing = task?.estado === 'EN_CURSO';
+  const busy = actions.busy || processing;
+  const previousTask = useRef(null);
+  useEffect(() => {
+    if (previousTask.current === 'EN_CURSO' && task?.estado !== 'EN_CURSO') queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY });
+    previousTask.current = task?.estado;
+  }, [task?.estado]);
+  const setFilter = (key, value) => setFilters(prev => ({ ...prev, [key]: value, page: 1, ...(key === 'vista' || key === 'docId' ? { grupo: null } : {}) }));
+  useEffect(() => {
+    const timer = setTimeout(() => { if (input.trim() !== filters.search) setFilters(prev => ({ ...prev, search: input.trim(), page: 1 })); }, 300);
+    return () => clearTimeout(timer);
+  }, [input, filters.search, setFilters]);
+  useEffect(() => { if (error) sileoToast.error({ title: 'No se pudo consultar la revisión', description: mensajeError(error) }); }, [error]);
+  useEffect(() => {
+    if (data?.pagination && filters.page > data.pagination.total_pages) setFilters(prev => ({ ...prev, page: data.pagination.total_pages }));
+  }, [data, filters.page, setFilters]);
+  const refresh = async () => { const result = await refetch(); if (!result.error) sileoToast.success({ title: 'Bandeja actualizada', description: 'Se consultaron los casos guardados.' }); };
+  const exportCsv = async () => {
+    if (exportLock.current) return;
+    exportLock.current = true; setExporting(true);
+    try {
+      const blob = await dataopsApi.exportIncidencias(batchId, filters);
+      const url = URL.createObjectURL(blob); const link = document.createElement('a');
+      link.href = url; link.download = `incidencias_lote_${batchId}.csv`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      sileoToast.success({ title: 'Exportación descargada', description: 'Incluye todos los casos de la selección y las cédulas protegidas.' });
+    } catch (err) { sileoToast.error({ title: 'No se pudo exportar', description: mensajeError(err) }); }
+    finally { exportLock.current = false; setExporting(false); }
+  };
+  const consolidate = () => actions.schedule('Consolidar el lote completo', async () => {
+    const result = await dataopsApi.iniciarConsolidacion({ id_lote: Number(batchId) });
+    avisarTareaIniciada();
+    sileoToast.info({ title: 'Consolidación en curso', description: 'Puedes seguir el avance y su resultado desde las notificaciones.' });
+    return result;
+  });
+  const total = filters.vista === 'GRUPOS' ? data?.total_casos : data?.total;
+  return <BatchFlowLayout currentStep={4} showReadOnlyContent selectionDisabled={actions.busy} selectedDocId={filters.docId} onSelectDocId={value => { if (!actions.busy) setFilter('docId', value); }}>
+    <div className="floating-artifact" style={{ padding: 24, marginBottom: 20 }}>
+      <h2 className="serif-heading" style={{ fontSize: 22 }}>Revisión y consolidación</h2>
+      <p style={{ fontSize: 13, color: 'var(--color-slate-gray)', margin: '10px 0' }}>Comprueba los casos pendientes. Aprobar un caso guarda su corrección e incorpora el registro; consolidar procesa las filas del lote completo.</p>
+      <p style={{ fontSize: 12 }}>85 % o más: directo cuando cumple las reglas · Desde 60 % y menos de 85 %: marcado para revisión · Menos de 60 %: bandeja.</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, margin: '16px 0' }}><span>Registros de origen: <strong>{fmt(contexto?.total_registros)}</strong></span><span>Casos en la selección: <strong>{isFetching ? 'Consultando…' : fmt(total)}</strong></span><span>Aceptación directa en la lectura: <strong>{fmt(summary?.autoCount)}</strong></span></div>
+      {!readOnly && <Button disabled={busy || summary?.status !== 'success'} isLoading={actions.sending || processing} loadingText="Procesando…" onClick={consolidate}>Consolidar lote</Button>}
+      {!readOnly && summary?.status !== 'success' && <p style={{ marginTop: 10 }}>Primero consulta o inicia la lectura de BETO en el paso ③.</p>}
+      {readOnly && <p>El lote está cerrado. Las consultas y exportaciones siguen disponibles.</p>}
+    </div>
+    {actions.pending && <div className="dataops-banner-info" role="status" style={{ marginBottom: 20 }}><span>{actions.pending.title}: se enviará en {actions.pending.seconds} s. Salir de esta pantalla cancela la espera.</span><Button variant="ghost" onClick={actions.cancel}>Deshacer</Button></div>}
+    {processing && <ProgresoTarea titulo="Consolidando el lote" tarea={task} nota="El proceso continúa en segundo plano y avisará al terminar." />}
+    <div className="floating-artifact" style={{ padding: 20, marginBottom: 20 }}>
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>{[['GRUPOS','Por grupos'],['PENDIENTES','Casos pendientes'],['RESUELTOS','Casos resueltos']].map(([value,label]) => <Button variant="ghost" key={value} style={{ borderColor: filters.vista === value ? 'var(--color-gira-gold)' : 'var(--color-border)', background: filters.vista === value ? 'var(--dataops-info-bg)' : undefined, color: filters.vista === value ? 'var(--dataops-info-text)' : undefined }} disabled={actions.busy} aria-pressed={filters.vista === value} onClick={() => setFilter('vista',value)}>{label}</Button>)}</div>
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'end' }}>
+        <label style={{ flex: '1 1 240px', fontSize: 12 }}>Buscar en la selección<input className="dataops-input" aria-label="Buscar casos" value={input} onChange={e => setInput(e.target.value)} maxLength={200} disabled={actions.busy} placeholder="Nombre, módulo, archivo o motivo" /></label>
+        {filters.vista !== 'GRUPOS' && <label style={{ fontSize: 12 }}>Área<select aria-label="Área de revisión" className="dataops-select" value={filters.area} disabled={actions.busy} onChange={e => setFilter('area',e.target.value)}><option value="TODAS">Todas</option>{Object.entries(AREAS).map(([value,label]) => <option key={value} value={value}>{label}</option>)}</select></label>}
+        <Button variant="ghost" disabled={actions.busy} onClick={() => { setFilters(INITIAL); setInput(''); }}>Limpiar filtros</Button>
+        <Button variant="ghost" isLoading={isFetching} loadingText="Consultando…" disabled={actions.busy} onClick={refresh}>Actualizar</Button>
+        <Button variant="ghost" isLoading={exporting} loadingText="Exportando…" disabled={!data || actions.busy || isFetching || filters.vista === 'GRUPOS'} onClick={exportCsv}>Exportar incidencias</Button>
+      </div>
+      {filters.grupo && <p style={{ marginTop: 12 }}>Mostrando los casos del grupo seleccionado. <Button variant="ghost" disabled={actions.busy} onClick={() => setFilter('grupo',null)}>Ver todos los casos</Button></p>}
+      {!readOnly && filters.vista === 'PENDIENTES' && !filters.grupo && !filters.search && filters.area === 'TODAS' && <Button variant="ghost" style={{ marginTop: 14 }} disabled={busy || isFetching || !data?.un_clic_total} onClick={() => actions.schedule(`Aprobar ${data.un_clic_total} casos con datos completos o coincidencia de nombre`, () => dataopsApi.aprobarCasosUnClic(batchId, filters.docId))}>Aprobar casos verificados ({fmt(data?.un_clic_total)})</Button>}
+    </div>
+    <div aria-busy={isFetching} className="floating-artifact" style={{ padding: 20 }}>
+      {error ? <p role="alert">No se pudo consultar la bandeja. Pulsa Actualizar para reintentarlo.</p> : isFetching || !data ? <p role="status">Consultando casos…</p> : filters.vista === 'GRUPOS' ? <GruposBandeja data={data} readOnly={readOnly} busy={busy} onVerIndividual={clave => { setInput(''); setFilters(prev => ({ ...prev, vista: 'PENDIENTES', grupo: clave, page: 1, search: '', area: 'TODAS' })); }} onResolver={(group, extra = {}) => actions.schedule(`Resolver grupo de ${group.n} casos`, () => dataopsApi.aprobarGrupo({ clave: group.clave, accion: group.accion_grupo, docIds: data.doc_ids, ...extra }))} /> : !data.items?.length ? <p role="status">No hay casos para esta selección.</p> : data.items.map(item => <CasoRevision key={`${item.id}-${filters.vista}`} item={item} readOnly={readOnly || filters.vista === 'RESUELTOS'} busy={busy} schedule={actions.schedule} />)}
+      <Paginacion pagina={filters.page} totalPaginas={data?.pagination?.total_pages || 1} total={data?.pagination?.total_items || 0} filasPorPagina={5} disabled={isFetching || actions.busy} onChange={page => setFilters(prev => ({ ...prev, page }))} />
+    </div>
+    <Button variant="ghost" style={{ marginTop: 20 }} disabled={actions.busy} onClick={() => navigate(`/dataops/lote/${batchId}/beto`)}>Volver a lectura de BETO</Button>
+  </BatchFlowLayout>;
+}
 
 export default function HumanReviewFlowView() {
-  const { id } = useParams();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-
-  // Soporta id por params (:id) o por query (?lote=)
-  const batchId = id || searchParams.get('lote');
-
-  const [activeTab, setActiveTab] = useDraftState('review.activeTab', 'PENDIENTES'); // 'PENDIENTES' | 'RESUELTOS'
-  const [selectedDocId, setSelectedDocId] = useDraftState('review.selectedDocId', null);
-  const [selectedArea, setSelectedArea] = useDraftState('review.selectedArea', 'TODAS'); // 'TODAS' | 'academica' | 'financiera' | 'comercial' | 'calidad'
-  const [selectedReason] = useDraftState('review.selectedReason', 'ALL');
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isMobileEvidenceOpen, setIsMobileEvidenceOpen] = useState(false);
-
-  // Formulario de edición del caso seleccionado
-  const [formEstudiante, setFormEstudiante] = useDraftState('review.formEstudiante', '');
-  const [formCi, setFormCi] = useState(''); // fuera de borradores: puede contener el CI revelado (dato personal)
-  const [revealedCis, toggleCi] = useRevealCi(setFormCi);
-  const [formModulo, setFormModulo] = useDraftState('review.formModulo', '');
-  const [formNota, setFormNota] = useDraftState('review.formNota', '');
-  const [formMonto, setFormMonto] = useDraftState('review.formMonto', '');
-  const [formCuotas, setFormCuotas] = useDraftState('review.formCuotas', '');
-  const [formNotaAuditor, setFormNotaAuditor] = useDraftState('review.formNotaAuditor', '');
-  const [formMes, setFormMes] = useDraftState('review.formMes', '');
-  const [formGestion, setFormGestion] = useDraftState('review.formGestion', '');
-  const [isAprobandoBloque, setIsAprobandoBloque] = useState(false);
-  const [vista, setVista] = useDraftState('review.vista', 'GRUPOS'); // 'GRUPOS' | 'INDIVIDUAL'
-
-  // Modales
-  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
-  const [discardNote, setDiscardNote] = useDraftState('review.discardNote', '');
-  const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
-  const [isConsolidatingDw, setIsConsolidatingDw] = useState(false);
-
-  // Cola y Datos
-  const { readOnly, getDraft, setDraft } = useLoteFlow();
-  const idItemRestaurar = useRef(getDraft('review.selectedItemId')); // caso que estaba abierto al salir de este paso
-  const [queueItems, setQueueItems] = useState([]);
-  const [resolvedHistory, setResolvedHistory] = useState([]);
-  const [unClicTotal, setUnClicTotal] = useState(0);
-  const [aprobadosResumen, setAprobadosResumen] = useState({
-    total_aprobados: 0,
-    fact_rendimiento_academico: 0,
-    fact_situacion_financiera: 0,
-  });
-
-  // Bandeja vía React Query: volver a este paso reutiliza lo ya traído (staleTime 60 s) y una mutación lo invalida
-  const effectiveBatchId = batchId || localStorage.getItem('last_active_batch_id');
-  const { data: trayRes, isFetching: isLoading, dataUpdatedAt, refetch: refetchTray } = useQuery({
-    queryKey: ['dataops', 'review-tray', String(effectiveBatchId), selectedDocId],
-    queryFn: () => dataopsApi.getReviewTray(Number(effectiveBatchId), { docId: selectedDocId, pageSize: 500 }),
-    enabled: !!effectiveBatchId && !readOnly,
-    refetchOnMount: true,
-  });
-
-  // Vuelca la respuesta al estado local (que mantiene las actualizaciones optimistas de la vista)
-  useEffect(() => {
-    if (!effectiveBatchId) {
-      setQueueItems([]);
-      setSelectedItem(null);
-      return;
-    }
-    if (!trayRes || !trayRes.data) return;
-    setQueueItems(trayRes.data);
-    setUnClicTotal(trayRes.un_clic_total ?? trayRes.data.filter((q) => q.un_clic).length);
-    if (Array.isArray(trayRes.resolved_history)) setResolvedHistory(trayRes.resolved_history);
-    if (trayRes.aprobados_resumen) setAprobadosResumen(trayRes.aprobados_resumen);
-    const restaurar = idItemRestaurar.current != null
-      ? trayRes.data.find((q) => String(q.id) === String(idItemRestaurar.current))
-      : null;
-    idItemRestaurar.current = null;
-    if (restaurar) {
-      setSelectedItem(restaurar); // los campos del formulario ya vienen restaurados como borrador
-    } else if (trayRes.data.length > 0) {
-      selectItemForEdit(trayRes.data[0]);
-    } else {
-      setSelectedItem(null);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataUpdatedAt, effectiveBatchId]);
-
-  const loadReviewQueue = async () => { await refetchTray(); };
-
-  const selectItemForEdit = (item) => {
-    setSelectedItem(item);
-    setDraft('review.selectedItemId', item?.id ?? null);
-    setFormEstudiante(item.estudiante || '');
-    setFormCi(item.ci || item.ci_enmascarado || '');
-    setFormModulo(item.modulo_detectado || item.modulo || '');
-    setFormNota(item.nota_final !== undefined ? String(item.nota_final) : '');
-    setFormMonto(item.monto_deuda !== undefined ? String(item.monto_deuda) : '');
-    setFormCuotas(item.cuotas_impagas !== undefined ? String(item.cuotas_impagas) : '0');
-    setFormNotaAuditor('');
-    setFormMes(item.mes ? String(item.mes) : '');
-    setFormGestion(item.gestion ? String(item.gestion) : '');
-  };
-
-  // Aprobación en bloque de los casos de un clic: los manuales quedan en la bandeja
-  const handleAprobarUnClic = async () => {
-    if (unClicTotal === 0) return;
-    if (!(await confirmar({ title: 'Aprobar casos de un clic', description: `Se aprobarán ${unClicTotal} casos cuyo candidato coincide por nombre o cuyo dato está completo. Los casos manuales siguen en la bandeja.`, confirmText: 'Aprobar' }))) {
-      return;
-    }
-    try {
-      setIsAprobandoBloque(true);
-      const effectiveId = batchId || localStorage.getItem('last_active_batch_id');
-      const res = await dataopsApi.aprobarCasosUnClic(effectiveId, selectedDocId);
-      sileoToast.success({ title: 'Aprobación en bloque', description: res.message });
-      await loadReviewQueue(selectedDocId);
-    } catch (err) {
-      sileoToast.error({
-        title: 'No se pudo aprobar en bloque',
-        description: err.response?.data?.detail || err.message,
-      });
-    } finally {
-      setIsAprobandoBloque(false);
-    }
-  };
-
-  // Filtrado de elementos en la bandeja
-  const filteredQueue = useMemo(() => {
-    return queueItems.filter(item => {
-      if (selectedArea !== 'TODAS') {
-        if (selectedArea === 'calidad') {
-          if (!item.en_calidad && item.area !== 'calidad') return false;
-        } else if (item.area !== selectedArea) {
-          return false;
-        }
-      }
-      if (selectedReason !== 'ALL' && item.motivo !== selectedReason) {
-        return false;
-      }
-      return true;
-    });
-  }, [queueItems, selectedArea, selectedReason]);
-
-  // Aprobación diferida (Heurística 3, control y libertad): la API se llama a los 10 s y
-  // mientras tanto el toast ofrece "Deshacer". Al salir de la vista se envían las pendientes.
-  const DESHACER_MS = 10000;
-  const aprobacionesPendientes = useRef(new Map());
-  const campoEstudianteRef = useRef(null);
-
-  useEffect(() => () => {
-    aprobacionesPendientes.current.forEach(({ timer, enviar }) => {
-      clearTimeout(timer);
-      enviar();
-    });
-  }, []);
-
-  const enviarAprobacion = async (item, payload, estudiante) => {
-    aprobacionesPendientes.current.delete(item.id);
-    try {
-      await dataopsApi.resolveReviewItem(item.id, payload);
-      setResolvedHistory(prev => [
-        {
-          id: item.id,
-          quien: 'Auditor Calidad (Tú)',
-          cuando: 'Recién resuelto',
-          antes: item.que_vio,
-          despues: estudiante || item.sugerencia,
-          motivo: item.motivo_label,
-          accion: 'RESUELTO_HUMANO'
-        },
-        ...prev
-      ]);
-      setAprobadosResumen(prev => ({
-        ...prev,
-        total_aprobados: prev.total_aprobados + 1,
-        fact_rendimiento_academico: item.area === 'academica' ? prev.fact_rendimiento_academico + 1 : prev.fact_rendimiento_academico,
-        fact_situacion_financiera: item.area === 'financiera' ? prev.fact_situacion_financiera + 1 : prev.fact_situacion_financiera,
-      }));
-    } catch (err) {
-      console.error('Error resolviendo caso:', err);
-      setQueueItems(prev => (prev.some(q => q.id === item.id) ? prev : [item, ...prev]));
-      sileoToast.error({
-        title: `Caso #${item.id} no se consolidó`,
-        description: mensajeError(err, 'Volvió a la bandeja.')
-      });
-    }
-  };
-
-  // Resolver caso individual: Aprobar y Consolidar
-  const handleResolveApprove = () => {
-    if (!selectedItem) return;
-    const item = selectedItem;
-    const estudiante = formEstudiante.trim();
-    const payload = {
-      accion: 'APROBAR',
-      estudiante_resuelto: estudiante,
-      ci_corregida: formCi.trim(),
-      modulo_resuelto: formModulo.trim(),
-      nota_final: formNota ? parseFloat(formNota) : undefined,
-      monto_deuda: formMonto ? parseFloat(formMonto) : undefined,
-      cuotas_impagas: formCuotas ? parseInt(formCuotas, 10) : undefined,
-      nota_auditor: formNotaAuditor.trim(),
-      mes: formMes ? parseInt(formMes, 10) : undefined,
-      gestion: formGestion ? parseInt(formGestion, 10) : undefined
-    };
-
-    const indice = queueItems.findIndex(q => q.id === item.id);
-    const updatedQueue = queueItems.filter(q => q.id !== item.id);
-    setQueueItems(updatedQueue);
-    const nextItem = updatedQueue[0];
-    if (nextItem) {
-      selectItemForEdit(nextItem);
-    } else {
-      setSelectedItem(null);
-    }
-
-    const enviar = () => enviarAprobacion(item, payload, estudiante);
-    const timer = setTimeout(enviar, DESHACER_MS);
-    aprobacionesPendientes.current.set(item.id, { timer, enviar });
-
-    const toastId = sileoToast.action({
-      title: `Caso #${item.id} aprobado`,
-      description: `${estudiante || 'Estudiante'} se consolidará en el Data Warehouse en 10 s.`,
-      duration: DESHACER_MS,
-      button: {
-        title: 'Deshacer',
-        onClick: () => {
-          clearTimeout(timer);
-          aprobacionesPendientes.current.delete(item.id);
-          setQueueItems(prev => {
-            const copia = prev.filter(q => q.id !== item.id);
-            copia.splice(Math.max(indice, 0), 0, item);
-            return copia;
-          });
-          selectItemForEdit(item);
-          sileo.dismiss(toastId);
-        }
-      }
-    });
-  };
-
-  // Atajos de teclado de la bandeja: A aprobar, E editar, J siguiente, K anterior
-  useEffect(() => {
-    const onKeyDown = (e) => {
-      if (e.ctrlKey || e.metaKey || e.altKey || isDiscardModalOpen || isCatalogModalOpen) return;
-      const destino = e.target;
-      if (destino?.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(destino?.tagName)) return;
-      const tecla = e.key.toLowerCase();
-      if (tecla === 'j' || tecla === 'k') {
-        if (!filteredQueue.length) return;
-        const actual = filteredQueue.findIndex(q => q.id === selectedItem?.id);
-        const siguiente = tecla === 'j' ? actual + 1 : actual - 1;
-        e.preventDefault();
-        selectItemForEdit(filteredQueue[Math.max(0, Math.min(siguiente, filteredQueue.length - 1))]);
-      } else if (tecla === 'a' && selectedItem) {
-        e.preventDefault();
-        handleResolveApprove();
-      } else if (tecla === 'e' && selectedItem) {
-        e.preventDefault();
-        campoEstudianteRef.current?.focus();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  });
-
-  // Descartar registro
-  const handleConfirmDiscard = async () => {
-    if (!selectedItem) return;
-    const currentId = selectedItem.id;
-
-    try {
-      await dataopsApi.resolveReviewItem(currentId, {
-        accion: 'DESCARTAR',
-        motivo_descarte: discardNote.trim()
-      });
-
-      sileoToast.info({
-        title: `Registro #${currentId} descartado`,
-        description: 'Se ha archivado en el log de incidencias.'
-      });
-
-      setResolvedHistory(prev => [
-        {
-          id: currentId,
-          quien: 'Auditor Calidad (Tú)',
-          cuando: 'Descartado',
-          antes: selectedItem.que_vio,
-          despues: 'Descartado por auditor',
-          motivo: selectedItem.motivo_label,
-          accion: 'DESCARTADO'
-        },
-        ...prev
-      ]);
-
-      const updatedQueue = queueItems.filter(q => q.id !== currentId);
-      setQueueItems(updatedQueue);
-
-      const nextItem = updatedQueue.find(q => q.id !== currentId);
-      if (nextItem) {
-        selectItemForEdit(nextItem);
-      } else {
-        setSelectedItem(null);
-      }
-
-      setIsDiscardModalOpen(false);
-      setDiscardNote('');
-    } catch (err) {
-      console.error('Error descartando registro:', err);
-      sileoToast.error({
-        title: 'Error al descartar registro',
-        description: mensajeError(err)
-      });
-    }
-  };
-
-  // Agregar parámetro a Catálogo Guía (Cero-PII)
-  const handleAddParameterToCatalog = () => {
-    sileoToast.success({
-      title: 'Parámetro incorporado al Catálogo Guía (Cero-PII)',
-      description: `Se vinculó "${formModulo || 'Oferta Curricular'}" a la oferta institucional del catálogo.`
-    });
-    setIsCatalogModalOpen(false);
-  };
-
-  // Exportar Log de Incidencias a CSV
-  const handleExportIncidentsCsv = () => {
-    try {
-      const rows = [
-        ['ID', 'Area', 'Motivo', 'Estudiante', 'CI', 'Modulo', 'Archivo Origen', 'Destino', 'Texto Detectado', 'Estado']
-      ];
-
-      queueItems.forEach(item => {
-        rows.push([
-          `REV-${item.id}`,
-          item.area || 'General',
-          textoMotivo(item.motivo, item.motivo_label),
-          `"${(item.estudiante || '').replace(/"/g, '""')}"`,
-          item.ci || item.ci_enmascarado || '',
-          `"${(item.modulo_detectado || '').replace(/"/g, '""')}"`,
-          `"${(item.archivo_origen || '').replace(/"/g, '""')}"`,
-          `"${(item.destino_dw || '').replace(/"/g, '""')}"`,
-          `"${(item.que_vio || '').replace(/"/g, '""')}"`,
-          'PENDIENTE_REVISION'
-        ]);
-      });
-
-      const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + rows.map(e => e.join(';')).join('\n');
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `incidencias_lote_${batchId || 'activo'}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      sileoToast.success({
-        title: 'Log de incidencias exportado exitosamente',
-        description: `Se descargó el archivo con ${queueItems.length} casos para auditoría.`
-      });
-    } catch (err) {
-      console.error('Error exportando CSV:', err);
-      sileoToast.error({
-        title: 'Error al exportar CSV',
-        description: 'No se pudo generar el archivo de incidencias.'
-      });
-    }
-  };
-
-  // Consolidar Aprobados en DW
-  const handleConsolidateDw = async () => {
-    try {
-      setIsConsolidatingDw(true);
-      const effectiveBatchId = batchId || localStorage.getItem('last_active_batch_id');
-      const res = await dataopsApi.confirmDwInsert({
-        id_lote: effectiveBatchId ? Number(effectiveBatchId) : undefined,
-        doc_id: selectedDocId ? Number(selectedDocId) : undefined
-      });
-
-      sileoToast.success({
-        title: 'Data Warehouse Consolidado',
-        description: `${res?.inserted_dw || aprobadosResumen.total_aprobados} registros consolidados exitosamente.`
-      });
-      loadReviewQueue(selectedDocId);
-    } catch (err) {
-      console.error('No se pudo consolidar:', err);
-      sileoToast.error({
-        title: 'No se pudo consolidar el lote',
-        description: mensajeError(err)
-      });
-    } finally {
-      setIsConsolidatingDw(false);
-    }
-  };
-
-  const effectiveBatchNumber = batchId || localStorage.getItem('last_active_batch_id') || '—';
-
-  return (
-    <BatchFlowLayout
-      currentStep={4}
-      selectedDocId={selectedDocId}
-      onSelectDocId={setSelectedDocId}
-    >
-      {/* ── Encabezado Principal ── */}
-      <div style={{ marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-              <h2 className="serif-heading" style={{ fontSize: '24px', margin: 0, color: 'var(--color-ink-black)' }}>
-                Bandeja de revisión humana y conciliación
-              </h2>
-              <span
-                style={{
-                  fontSize: '11.5px',
-                  fontWeight: '700',
-                  padding: '4px 10px',
-                  borderRadius: '999px',
-                  backgroundColor: queueItems.length === 0 ? 'rgba(27, 135, 84, 0.12)' : 'rgba(217, 155, 38, 0.14)',
-                  color: queueItems.length === 0 ? '#1B8754' : '#B8801A',
-                  border: `1px solid ${queueItems.length === 0 ? 'rgba(27, 135, 84, 0.3)' : 'rgba(217, 155, 38, 0.35)'}`,
-                }}
-              >
-                {queueItems.length === 0 ? 'Bandeja al día' : `${queueItems.length} pendientes`}
-              </span>
-            </div>
-            <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', margin: 0 }}>
-              Lote: <strong>LOTE-{effectiveBatchNumber}</strong> · Resuelve discrepancias y consolida registros en el Data Warehouse.
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              className="btn-pill-secondary"
-              onClick={handleExportIncidentsCsv}
-            >
-              <Download size={14} /> Exportar Log de Incidencias (.CSV)
-            </button>
-            <button
-              type="button"
-              className="btn-pill-gold"
-              onClick={handleConsolidateDw}
-              disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
-            >
-              <Database size={15} /> Consolidar aprobados ({aprobadosResumen.total_aprobados})
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Barra de Pestañas: Pendientes vs Resueltos ── */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', borderBottom: '1px solid var(--color-border)', paddingBottom: '8px' }}>
-        <button
-          type="button"
-          onClick={() => setActiveTab('PENDIENTES')}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: '8px 16px',
-            fontSize: '13.5px',
-            fontWeight: activeTab === 'PENDIENTES' ? '700' : '500',
-            color: activeTab === 'PENDIENTES' ? 'var(--color-ink-black)' : 'var(--color-slate-gray)',
-            borderBottom: activeTab === 'PENDIENTES' ? '2px solid var(--color-gira-gold, #D99B26)' : 'none',
-            cursor: 'pointer'
-          }}
-        >
-          Pendientes ({queueItems.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('RESUELTOS')}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: '8px 16px',
-            fontSize: '13.5px',
-            fontWeight: activeTab === 'RESUELTOS' ? '700' : '500',
-            color: activeTab === 'RESUELTOS' ? 'var(--color-ink-black)' : 'var(--color-slate-gray)',
-            borderBottom: activeTab === 'RESUELTOS' ? '2px solid var(--color-gira-gold, #D99B26)' : 'none',
-            cursor: 'pointer'
-          }}
-        >
-          Historial de Resueltos ({resolvedHistory.length})
-        </button>
-      </div>
-
-      {/* ── Filtros por Área de Trabajo ── */}
-      {activeTab === 'PENDIENTES' && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
-          <button type="button" className={`pill-filter ${vista === 'GRUPOS' ? 'active' : ''}`} data-testid="vista-grupos" onClick={() => setVista('GRUPOS')}>
-            Por grupos
-          </button>
-          <button type="button" className={`pill-filter ${vista === 'INDIVIDUAL' ? 'active' : ''}`} data-testid="vista-individual" onClick={() => setVista('INDIVIDUAL')}>
-            Caso por caso
-          </button>
-          <button
-            type="button"
-            className="btn-pill-gold"
-            style={{ padding: '6px 14px', fontSize: '12px' }}
-            disabled={unClicTotal === 0 || isAprobandoBloque}
-            onClick={handleAprobarUnClic}
-          >
-            {isAprobandoBloque ? 'Aprobando…' : `Aprobar casos de un clic (${unClicTotal} en la cola cargada)`}
-          </button>
-          <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-slate-gray)' }}>Área:</span>
-          <button
-            type="button"
-            className={`pill-filter ${selectedArea === 'TODAS' ? 'active' : ''}`}
-            onClick={() => setSelectedArea('TODAS')}
-          >
-            Todas ({queueItems.length})
-          </button>
-          <button
-            type="button"
-            className={`pill-filter ${selectedArea === 'academica' ? 'active' : ''}`}
-            onClick={() => setSelectedArea('academica')}
-          >
-            Académica
-          </button>
-          <button
-            type="button"
-            className={`pill-filter ${selectedArea === 'financiera' ? 'active' : ''}`}
-            onClick={() => setSelectedArea('financiera')}
-          >
-            Financiera
-          </button>
-          <button
-            type="button"
-            className={`pill-filter ${selectedArea === 'comercial' ? 'active' : ''}`}
-            onClick={() => setSelectedArea('comercial')}
-          >
-            Comercial
-          </button>
-          <button
-            type="button"
-            className={`pill-filter ${selectedArea === 'calidad' ? 'active' : ''}`}
-            onClick={() => setSelectedArea('calidad')}
-          >
-            Calidad y catálogo
-          </button>
-        </div>
-      )}
-
-      {/* ── Vista Principal de Pestañas ── */}
-      {activeTab === 'RESUELTOS' ? (
-        /* Pestaña: Historial de Resueltos */
-        <div className="floating-artifact" style={{ padding: '0', overflow: 'hidden' }}>
-          <table className="dataops-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Auditor</th>
-                <th>Fecha / Hora</th>
-                <th>Texto Original</th>
-                <th>Resolución / Destino</th>
-                <th>Motivo</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {resolvedHistory.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: 'var(--color-slate-gray)' }}>
-                    No se han resuelto registros en esta sesión todavía.
-                  </td>
-                </tr>
-              ) : (
-                resolvedHistory.map((item, idx) => (
-                  <tr key={idx}>
-                    <td><code>REV-{item.id}</code></td>
-                    <td>{item.quien}</td>
-                    <td>{item.cuando}</td>
-                    <td><div style={{ maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.antes}</div></td>
-                    <td><strong>{item.despues}</strong></td>
-                    <td>{item.motivo}</td>
-                    <td>
-                      <span style={{ fontSize: '11px', fontWeight: '700', color: item.accion === 'DESCARTADO' ? '#D9383A' : '#1B8754' }}>
-                        {item.accion}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        /* Pestaña: Pendientes con Layout Split-Screen Desktop / Mobile */
-        <div>
-          {vista === 'GRUPOS' ? (
-            <GruposBandeja docId={selectedDocId} idLote={batchId || localStorage.getItem('last_active_batch_id')} onVerIndividual={() => setVista('INDIVIDUAL')} onCambio={() => loadReviewQueue(selectedDocId)} />
-          ) : isLoading ? (
-            <div className="floating-artifact" style={{ padding: '64px', textAlign: 'center', color: 'var(--color-slate-gray)' }}>
-              Cargando casos derivados a revisión humana...
-            </div>
-          ) : queueItems.length === 0 ? (
-            <div className="floating-artifact" style={{ padding: '48px', textAlign: 'center' }}>
-              <CheckCircle2 size={48} color="#1B8754" style={{ margin: '0 auto 16px auto', display: 'block' }} />
-              <h3 className="serif-heading" style={{ fontSize: '20px', margin: '0 0 8px 0', color: 'var(--color-ink-black)' }}>
-                ¡Bandeja de revisión completada!
-              </h3>
-              <p style={{ fontSize: '13.5px', color: 'var(--color-slate-gray)', maxWidth: '480px', margin: '0 auto 20px auto' }}>
-                Todos los registros han sido aprobados o resueltos. Ya puedes consolidar los hechos en el Data Warehouse.
-              </p>
-              <button
-                type="button"
-                className="btn-pill-gold"
-                onClick={handleConsolidateDw}
-                disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
-              >
-                <Database size={15} /> Consolidar al Data Warehouse ({aprobadosResumen.total_aprobados})
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '20px', alignItems: 'start' }}>
-              {/* Columna Izquierda: Cola de Casos Pendientes */}
-              <div className="floating-artifact" style={{ padding: '12px' }}>
-                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-slate-gray)', textTransform: 'uppercase', marginBottom: '8px', padding: '4px 6px' }}>
-                  Cola de Casos ({filteredQueue.length})
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '560px', overflowY: 'auto' }}>
-                  {filteredQueue.map(item => {
-                    const isSelected = selectedItem && selectedItem.id === item.id;
-                    return (
-                      <div
-                        key={item.id}
-                        onClick={() => selectItemForEdit(item)}
-                        style={{
-                          padding: '10px 12px',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          backgroundColor: isSelected ? 'var(--dataops-row-selected, rgba(217, 155, 38, 0.12))' : 'var(--color-paper-white)',
-                          border: `1px solid ${isSelected ? 'var(--color-gira-gold, #D99B26)' : 'var(--color-border)'}`,
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--color-slate-gray)' }}>
-                            REV-{item.id}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: '10px',
-                              fontWeight: '700',
-                              padding: '1px 5px',
-                              borderRadius: '4px',
-                              backgroundColor: item.area === 'academica' ? 'rgba(12, 30, 51, 0.08)' : 'rgba(217, 155, 38, 0.15)',
-                              color: item.area === 'academica' ? '#0C1E33' : '#B8801A'
-                            }}
-                          >
-                            {item.area || 'General'}
-                          </span>
-                        </div>
-                        <div style={{ fontWeight: '600', fontSize: '12.5px', color: 'var(--color-ink-black)', marginBottom: '2px' }}>
-                          {item.estudiante || 'Sin nombre'}
-                        </div>
-                        <div style={{ fontSize: '11px', color: '#D9383A' }}>
-                          {textoMotivo(item.motivo, item.motivo_label)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Columna Derecha: Split-Screen Desktop de Resolución */}
-              {selectedItem && (
-                <div>
-                  {/* Botón Móvil Colapsable de Evidencia Documental */}
-                  <div className="mobile-only-toggle" style={{ marginBottom: '14px' }}>
-                    <button
-                      type="button"
-                      className="btn-pill-secondary"
-                      style={{ width: '100%', justifyContent: 'center', padding: '12px 16px', fontWeight: '700', fontSize: '13px' }}
-                      onClick={() => setIsMobileEvidenceOpen(prev => !prev)}
-                      aria-label="Ver u ocultar evidencia en texto plano"
-                    >
-                      <FileText size={16} />
-                      <span>{isMobileEvidenceOpen ? 'Ocultar evidencia documental' : 'Ver oración en texto plano'}</span>
-                    </button>
-                  </div>
-
-                  <div className="split-screen-review">
-                    {/* Panel Izquierdo: Evidencia & Cruce Multifuente */}
-                    <div className={`floating-artifact review-evidence-panel ${!isMobileEvidenceOpen ? 'mobile-hidden' : ''}`} style={{ padding: '20px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <span className="chip-cat chip-origen">
-                          {selectedItem.archivo_origen || 'Documento Origen'}
-                        </span>
-                      <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }}>
-                        ID Doc: {selectedItem.id_documento || 'Lote'}
-                      </span>
-                    </div>
-
-                    <h4 className="serif-heading" style={{ fontSize: '16px', margin: '0 0 10px 0', color: 'var(--color-ink-black)' }}>
-                      Evidencia documental original
-                    </h4>
-
-                    {/* Texto Extraído Original con Tokens */}
-                    <div
-                      style={{
-                        padding: '14px',
-                        borderRadius: '10px',
-                        backgroundColor: 'var(--color-mist-gray)',
-                        border: '1px solid var(--color-border)',
-                        fontFamily: 'var(--font-mono, monospace)',
-                        fontSize: '12px',
-                        lineHeight: '1.6',
-                        color: 'var(--color-ink-black)',
-                        marginBottom: '16px'
-                      }}
-                    >
-                      {selectedItem.que_vio || selectedItem.contexto_raw || 'No se dispone del texto original.'}
-                    </div>
-
-                    {/* Alerta de Cruce Multifuente (Abandono escolar / mora) */}
-                    {(selectedItem.alerta_abandono || selectedItem.cruce_multifuente) && (
-                      <div className="multi-source-alert">
-                        <AlertTriangle size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
-                        <div>
-                          <strong style={{ fontSize: '13px' }}>Cruce Multifuente de Abandono Detectado:</strong>
-                          <div style={{ marginTop: '4px', fontSize: '12.5px' }}>
-                            {selectedItem.cruce_multifuente?.descripcion || (
-                              'El estudiante presenta inasistencia crítica (>20%) en actas académicas correlacionada con mora financiera (≥2 cuotas impagas en cobranzas).'
-                            )}
-                          </div>
-                          {selectedItem.cruce_multifuente?.archivo_cruzado && (
-                            <div style={{ fontSize: '11.5px', marginTop: '4px', opacity: 0.9 }}>
-                              Archivo cruzado: <em>{selectedItem.cruce_multifuente.archivo_cruzado}</em>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Sugerencia de Catálogo Guía (Cero-PII) */}
-                    <div className="zero-pii-card" style={{ marginTop: '16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: 'var(--color-ink-black)', fontWeight: '700' }}>
-                        <ShieldCheck size={16} color="#1B8754" /> Catálogo Guía Institucional (Cero-PII)
-                      </div>
-                      <p style={{ fontSize: '12px', color: 'var(--color-slate-gray)', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                        {selectedItem.es_nuevo_catalogo ? (
-                          'Se detectó un módulo no registrado en la oferta académica. Puedes incorporar este término al catálogo curricular.'
-                        ) : (
-                          'Este registro se vincula determinísticamente a la oferta curricular sin persistir PII personal en las dimensiones maestras.'
-                        )}
-                      </p>
-                      {selectedItem.es_nuevo_catalogo && (
-                        <button
-                          type="button"
-                          className="btn-pill-secondary"
-                          style={{ fontSize: '11.5px', padding: '6px 12px' }}
-                          onClick={() => setIsCatalogModalOpen(true)}
-                        >
-                          <Sparkles size={13} color="var(--color-gira-gold, #D99B26)" /> Incorporar término al Catálogo Guía
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Panel Derecho: Resolución, Conciliación y Acciones */}
-                  <div className="floating-artifact" style={{ padding: '20px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                      <h4 className="serif-heading" style={{ fontSize: '16px', margin: 0, color: 'var(--color-ink-black)' }}>
-                        Resolución y conciliación
-                      </h4>
-                      <span style={{ fontSize: '11px', fontWeight: '700', color: '#B8801A', backgroundColor: 'rgba(217, 155, 38, 0.12)', padding: '2px 8px', borderRadius: '4px' }}>
-                        Motivo: {textoMotivo(selectedItem.motivo, selectedItem.motivo_label)}
-                      </span>
-                    </div>
-
-                    {/* Cómo se resolvió cada entidad del caso y estado de vínculo (fk_estado) */}
-                    <div data-testid="fuente-resolucion" style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)', marginBottom: '12px' }}>
-                      {(selectedItem.entidades || []).length === 0 ? (
-                        <span>Fuente de resolución: sin entidades resueltas.</span>
-                      ) : (
-                        (selectedItem.entidades || []).map((e, i) => (
-                          <div key={`${e.label}-${i}`}>{e.label}: <strong>{e.token}</strong> · resuelta por {textoFuente(e.fuente_resolucion)}</div>
-                        ))
-                      )}
-                      <div style={{ marginTop: '4px' }}>
-                        Vínculo: <strong>{(ESTADOS_VINCULO.find((v) => v.codigo === (selectedItem.fk_estado || 'C')) || ESTADOS_VINCULO[2]).texto}</strong>
-                      </div>
-                    </div>
-
-                    {/* Formulario de corrección */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div>
-                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>
-                          Nombre de Estudiante / Entidad:
-                        </label>
-                        <input
-                          type="text"
-                          className="dataops-input"
-                          ref={campoEstudianteRef}
-                          aria-keyshortcuts="E"
-                          value={formEstudiante}
-                          onChange={(e) => setFormEstudiante(e.target.value)}
-                        />
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        <div>
-                          <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                            <span>Cédula de Identidad:</span>
-                            <button
-                              type="button"
-                              onClick={() => toggleCi(selectedItem.id)}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-gira-gold, #D99B26)', padding: 0 }}
-                              title="Revelar Cédula"
-                            >
-                              {revealedCis[selectedItem.id] ? <EyeOff size={13} /> : <Eye size={13} />}
-                            </button>
-                          </label>
-                          <input
-                            type="text"
-                            className="dataops-input"
-                            value={formCi}
-                            onChange={(e) => setFormCi(e.target.value)}
-                          />
-                        </div>
-
-                        <div>
-                          <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>
-                            Módulo Académico:
-                          </label>
-                          <input
-                            type="text"
-                            className="dataops-input"
-                            value={formModulo}
-                            onChange={(e) => setFormModulo(e.target.value)}
-                          />
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        {selectedItem.area === 'academica' ? (
-                          <div>
-                            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>
-                              Nota Final (Base 100):
-                            </label>
-                            <input
-                              type="number"
-                              className="dataops-input"
-                              placeholder="Ej: 85"
-                              value={formNota}
-                              onChange={(e) => setFormNota(e.target.value)}
-                            />
-                          </div>
-                        ) : (
-                          <>
-                            <div>
-                              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>
-                                Monto Deuda (Bs.):
-                              </label>
-                              <input
-                                type="number"
-                                className="dataops-input"
-                                placeholder="Ej: 1200"
-                                value={formMonto}
-                                onChange={(e) => setFormMonto(e.target.value)}
-                              />
-                            </div>
-                            <div>
-                              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>
-                                Cuotas Impagas:
-                              </label>
-                              <input
-                                type="number"
-                                className="dataops-input"
-                                placeholder="Ej: 2"
-                                value={formCuotas}
-                                onChange={(e) => setFormCuotas(e.target.value)}
-                              />
-                            </div>
-                          </>
-                        )}
-                      </div>
-
-                      {selectedItem.tipo_entidad === 'HECHO' && (
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                          <div>
-                            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>
-                              Mes{(selectedItem.campos_faltantes || []).includes('fecha') ? ' (falta)' : ''}:
-                            </label>
-                            <select className="dataops-input" value={formMes} onChange={(e) => setFormMes(e.target.value)}>
-                              <option value="">—</option>
-                              {['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'].map((m, i) => (
-                                <option key={m} value={i + 1}>{m}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>
-                              Gestión:
-                            </label>
-                            <input
-                              type="number"
-                              className="dataops-input"
-                              placeholder="Ej: 2025"
-                              min="2000"
-                              max="2100"
-                              value={formGestion}
-                              onChange={(e) => setFormGestion(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      <div>
-                        <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>
-                          Nota de Auditoría / Justificación:
-                        </label>
-                        <input
-                          type="text"
-                          className="dataops-input"
-                          placeholder="Ej: Corregido según acta física firmada por dirección de posgrado..."
-                          value={formNotaAuditor}
-                          onChange={(e) => setFormNotaAuditor(e.target.value)}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Botones de Acción (52px Touch Ergonomics en Mobile) */}
-                    <div className="thumb-action-bar">
-                      <button
-                        type="button"
-                        className="thumb-action-btn reject"
-                        onClick={() => setIsDiscardModalOpen(true)}
-                        aria-label="Rechazar caso"
-                      >
-                        <XCircle size={19} /> Rechazar
-                      </button>
-                      <button
-                        type="button"
-                        className="thumb-action-btn approve"
-                        onClick={handleResolveApprove}
-                        aria-label="Aprobar caso"
-                        aria-keyshortcuts="A"
-                      >
-                        <CheckCircle2 size={19} /> Aprobar
-                      </button>
-                    </div>
-                    <p className="hitl-atajos" aria-label="Atajos de teclado">
-                      <Keyboard size={13} aria-hidden="true" />
-                      <kbd>A</kbd> aprobar · <kbd>E</kbd> editar · <kbd>J</kbd>/<kbd>K</kbd> siguiente/anterior · deshacer 10 s
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Resumen de Hechos Consolidados en DW (Bloque Inferior) ── */}
-      <div
-        className="floating-artifact"
-        style={{
-          marginTop: '24px',
-          padding: '20px 24px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px'
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <Database size={18} color="var(--color-gira-gold, #D99B26)" />
-            <strong style={{ fontSize: '15px', color: 'var(--color-ink-black)' }}>
-              Consolidación en Data Warehouse
-            </strong>
-          </div>
-          <div style={{ fontSize: '13px', color: 'var(--color-slate-gray)' }}>
-            Total aprobados listos: <strong>{aprobadosResumen.total_aprobados}</strong> (
-            Académicos: +{aprobadosResumen.fact_rendimiento_academico} · 
-            Financieros: +{aprobadosResumen.fact_situacion_financiera})
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            className="btn-pill-secondary"
-            onClick={() => {
-              const navId = effectiveBatchNumber !== '—' ? effectiveBatchNumber : (localStorage.getItem('last_active_batch_id') || '');
-              navigate(`/dataops/lote/${navId}/beto`);
-            }}
-          >
-            ← Volver a ③ Lectura de BETO
-          </button>
-
-          <button
-            type="button"
-            className="btn-pill-gold"
-            onClick={handleConsolidateDw}
-            disabled={isConsolidatingDw || aprobadosResumen.total_aprobados === 0}
-          >
-            {isConsolidatingDw ? 'Consolidando transaccionalmente...' : 'Consolidar aprobados →'}
-          </button>
-        </div>
-      </div>
-
-      {/* ── Modal de Descarte ── */}
-      {isDiscardModalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(12, 30, 51, 0.65)',
-            backdropFilter: 'blur(3px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '16px'
-          }}
-        >
-          <div
-            className="floating-artifact"
-            style={{
-              maxWidth: '440px',
-              width: '100%',
-              padding: '24px',
-              backgroundColor: 'var(--color-paper-white)',
-              borderRadius: '16px'
-            }}
-          >
-            <h3 className="serif-heading" style={{ fontSize: '18px', margin: '0 0 10px 0', color: '#D9383A' }}>
-              Confirmar descarte de caso REV-{selectedItem?.id}
-            </h3>
-            <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', lineHeight: '1.45', margin: '0 0 14px 0' }}>
-              Este registro no será insertado en el Data Warehouse y quedará asentado en el log de incidencias con marca de descartado.
-            </p>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>
-                Motivo de descarte (Obligatorio para auditoría):
-              </label>
-              <input
-                type="text"
-                className="dataops-input"
-                placeholder="Ej: Registro duplicado o dato ilegible..."
-                value={discardNote}
-                onChange={(e) => setDiscardNote(e.target.value)}
-              />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button
-                type="button"
-                className="btn-pill-secondary"
-                onClick={() => setIsDiscardModalOpen(false)}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                className="thumb-action-btn reject"
-                style={{ minHeight: '38px', padding: '8px 16px', fontSize: '13px' }}
-                onClick={handleConfirmDiscard}
-              >
-                Confirmar Descarte
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Modal de Incorporación a Catálogo Guía ── */}
-      {isCatalogModalOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(12, 30, 51, 0.65)',
-            backdropFilter: 'blur(3px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '16px'
-          }}
-        >
-          <div
-            className="floating-artifact"
-            style={{
-              maxWidth: '460px',
-              width: '100%',
-              padding: '24px',
-              backgroundColor: 'var(--color-paper-white)',
-              borderRadius: '16px'
-            }}
-          >
-            <h3 className="serif-heading" style={{ fontSize: '18px', margin: '0 0 10px 0', color: 'var(--color-ink-black)' }}>
-              Incorporar al Catálogo Guía (Cero-PII)
-            </h3>
-            <p style={{ fontSize: '13px', color: 'var(--color-slate-gray)', lineHeight: '1.45', margin: '0 0 14px 0' }}>
-              Se agregará el término curricular al catálogo institucional para resolver futuras apariciones automáticamente.
-            </p>
-            <div style={{ marginBottom: '14px' }}>
-              <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-gray)', display: 'block', marginBottom: '4px' }}>
-                Módulo a registrar:
-              </label>
-              <input
-                type="text"
-                className="dataops-input"
-                value={formModulo}
-                onChange={(e) => setFormModulo(e.target.value)}
-              />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button
-                type="button"
-                className="btn-pill-secondary"
-                onClick={() => setIsCatalogModalOpen(false)}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                className="btn-pill-gold"
-                style={{ fontSize: '13px', padding: '8px 16px' }}
-                onClick={handleAddParameterToCatalog}
-              >
-                Guardar en Catálogo
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </BatchFlowLayout>
-  );
+  const { id } = useParams(); const [search] = useSearchParams();
+  const batchId = id || search.get('lote') || localStorage.getItem('last_active_batch_id');
+  return batchId ? <Revision key={batchId} batchId={batchId} /> : <BatchFlowLayout currentStep={4}><p>Selecciona un lote desde el historial de carga.</p></BatchFlowLayout>;
 }

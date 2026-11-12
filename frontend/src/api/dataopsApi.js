@@ -319,24 +319,17 @@ export const dataopsApi = {
   /**
    * Paso ④: Obtiene los casos derivados a la bandeja de revisión humana (#12, #17)
    */
-  getReviewTray: async (idLote = null, options = {}) => {
-    const key = `review_tray_${idLote || 'all'}_${options.docId || ''}_${options.motivo || ''}_${options.estado || ''}_${options.page || 1}`;
-    return cachedGet(key, async () => {
-      const params = {};
-      if (idLote) {
-        params.id_lote = idLote;
-      }
-      if (options.docId) {
-        params.doc_id = options.docId;
-      }
-      if (options.motivo && options.motivo !== 'ALL') params.motivo = options.motivo;
-      if (options.estado && options.estado !== 'ALL') params.estado = options.estado;
-      if (options.page) params.page = options.page;
-      if (options.pageSize) params.page_size = options.pageSize;
-      const res = await client.get(`${BASE_URL}/review-tray`, { params });
-      return res.data;
-    }, 45_000);
-  },
+  getReviewTray: async (idLote, options = {}) => (await client.get(`${BASE_URL}/review-tray`, {
+    params: { id_lote: idLote, doc_id: options.docId || undefined, page: options.page || 1,
+      page_size: 5, search: options.search || undefined, area: options.area,
+      vista: options.vista === 'RESUELTOS' ? 'RESUELTOS' : 'PENDIENTES', grupo: options.grupo || undefined },
+  })).data,
+
+  exportIncidencias: async (idLote, options = {}) => (await client.get(`${BASE_URL}/review-tray/export`, {
+    params: { id_lote: idLote, doc_id: options.docId || undefined, search: options.search || undefined,
+      area: options.area, vista: options.vista === 'RESUELTOS' ? 'RESUELTOS' : 'PENDIENTES', grupo: options.grupo || undefined },
+    responseType: 'blob',
+  })).data,
 
   /**
    * Revela el CI completo de un registro bajo demanda con auditoría (#13)
@@ -384,14 +377,8 @@ export const dataopsApi = {
    * Casos pendientes agrupados por (motivo, valor normalizado): cada grupo se resuelve con una sola acción.
    * Cada grupo trae accion_grupo: APROBAR | MAPEAR_ESTADO | CORREGIR_FECHA | MANUAL (ausente en los de staging).
    */
-  getGruposBandeja: async ({ docDesde = null, docId = null, idLote = null, limite = 1000 } = {}) => {
-    const params = { limite };
-    if (idLote) params.id_lote = idLote;
-    if (docDesde) params.doc_desde = docDesde;
-    if (docId) params.doc_id = docId;
-    const res = await client.get(`${BASE_URL}/review-tray/grupos`, { params, timeout: LECTURA_LOTE_TIMEOUT_MS });
-    return res.data;
-  },
+  getGruposBandeja: async ({ docId = null, idLote, page = 1, search = '' } = {}) =>
+    (await client.get(`${BASE_URL}/review-tray/grupos`, { params: { id_lote: idLote, doc_id: docId || undefined, page, search } })).data,
 
   /**
    * Resuelve un grupo: accion APROBAR (por defecto), MAPEAR_ESTADO (con canonico opcional) o CORREGIR_FECHA (mes y gestion).

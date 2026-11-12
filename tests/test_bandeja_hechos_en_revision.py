@@ -141,14 +141,16 @@ def test_hecho_sin_fecha_se_aprueba_con_la_fecha_corregida(dw):
 
 
 def test_fecha_invalida_se_rechaza(dw):
+    from fastapi import HTTPException
     from models.fact_rendimiento import FactRendimientoAcademico
     from routers import dataops
 
     dw.add(FactRendimientoAcademico(id_hecho_aca=5, id_estudiante=1, id_modulo=1, id_documento=1, nota_final=70,
                                     requiere_revision=True))
     dw.commit()
-    with pytest.raises(ValueError):
+    with pytest.raises(HTTPException) as exc:
         dataops.resolve_review_item("HECHO-ACA-5", {"accion": "APROBAR", "mes": 13, "gestion": 2025}, db=dw, current_user=None)
+    assert exc.value.status_code == 422
 
 
 def test_aprobar_entidad_de_acta_carga_las_notas_reales_y_no_inventa_75(dw):

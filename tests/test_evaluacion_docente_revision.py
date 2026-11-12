@@ -14,6 +14,7 @@ def dw():
     from models.dim_docente import DimDocente
     from models.dim_modulo import DimModulo
     from models.dim_origen import DimOrigenDocumental
+    from models.dim_tiempo import DimTiempo
     from models.fact_evaluacion import FactEvaluacionDocente
 
     engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False}, poolclass=StaticPool)
@@ -28,8 +29,9 @@ def dw():
         DimOrigenDocumental(id_documento=1, nombre_archivo="Experiencia Docente 2.0.xlsx", tipo_fuente="EVALUACION_DOCENTE"),
         DimModulo(id_modulo=7, nombre_modulo="POS-5908 · Módulo 1"),
         DimDocente(id_docente=3, nombre_completo="Ana Rojas"),
-        FactEvaluacionDocente(id_hecho_eval=1, id_modulo=7, id_documento=1, tipo_pregunta="DOCENTE", puntuacion=5, requiere_revision=True, motivo_revision="DOCENTE_SIN_VINCULAR"),
-        FactEvaluacionDocente(id_hecho_eval=2, id_modulo=7, id_documento=1, tipo_pregunta="DOCENTE", puntuacion=4, requiere_revision=True, motivo_revision="DOCENTE_SIN_VINCULAR"),
+        DimTiempo(id_tiempo=20250101, fecha=date(2025, 1, 1), gestion=2025),
+        FactEvaluacionDocente(id_hecho_eval=1, id_modulo=7, id_documento=1, id_tiempo=20250101, tipo_pregunta="DOCENTE", puntuacion=5, requiere_revision=True, motivo_revision="DOCENTE_SIN_VINCULAR"),
+        FactEvaluacionDocente(id_hecho_eval=2, id_modulo=7, id_documento=1, id_tiempo=20250101, tipo_pregunta="DOCENTE", puntuacion=4, requiere_revision=True, motivo_revision="DOCENTE_SIN_VINCULAR"),
         FactEvaluacionDocente(id_hecho_eval=3, id_modulo=7, id_documento=1, tipo_pregunta="INSTITUCIONAL", puntuacion=4, requiere_revision=False),
     ])
     s.commit()
@@ -57,3 +59,17 @@ def test_fuente_de_referencia_tiene_precedencia_sobre_bd_egresos():
     from services.dw_loader import DWLoaderService
     p = DWLoaderService._prioridad_fuente
     assert p("EJECUTADO VS META.xlsx") > p("BD Egresos.xlsx") and p(None) == p("BD Egresos.xlsx")
+
+
+def test_evaluacion_sin_fecha_continua_pendiente_aunque_se_indique_docente(dw):
+    from fastapi import HTTPException
+    from models.fact_evaluacion import FactEvaluacionDocente
+    from services.revision_hechos import items_hechos_en_revision, resolver_caso_hecho
+    fila = dw.get(FactEvaluacionDocente, 1)
+    fila.id_tiempo = None
+    dw.commit()
+    assert 'fecha' in items_hechos_en_revision(dw, [1], limit=5)[0]['campos_faltantes']
+    with pytest.raises(HTTPException) as exc:
+        resolver_caso_hecho(dw, 'HECHO-EVA-1-7', {'accion': 'APROBAR', 'docente_resuelto': 'Ana Rojas'}, None, 'auditor')
+    assert exc.value.status_code == 422
+    assert dw.get(FactEvaluacionDocente, 1).requiere_revision

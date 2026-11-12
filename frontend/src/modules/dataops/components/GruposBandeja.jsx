@@ -1,197 +1,31 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { dataopsApi } from '../../../api/dataopsApi';
-import { sileoToast } from '../../../services/sileoToast';
-import { mensajeError } from '../../../utils/mensajeError';
-import { describirGrupo, ESTADOS_VINCULO, maskTexto, textoAccion, textoMotivo } from '../../../constants/motivosBandeja';
+import React, { useState } from 'react';
+import Button from '../../../components/shared/Button';
+import { textoMotivo } from '../../../constants/motivosBandeja';
 
-const accionDe = (g) => g.accion_grupo || 'APROBAR';
-
-/**
- * Bandeja por grupos: casos pendientes agrupados por (motivo, valor normalizado). Cada grupo se resuelve con una sola acción:
- * Aprobar grupo (APROBAR), Mapear a estado canónico (MAPEAR_ESTADO) o Corregir fecha (CORREGIR_FECHA); los MANUAL se revisan en la vista individual.
- */
-export default function GruposBandeja({ docId = null, idLote = null, onVerIndividual, onCambio }) {
-  const [data, setData] = useState({ total_casos: 0, total_grupos: 0, grupos: [], doc_ids: null });
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState('');
-  const [enCurso, setEnCurso] = useState(null);
-  const [dialogo, setDialogo] = useState(null); // { tipo: 'MAPEAR_ESTADO' | 'CORREGIR_FECHA', grupo }
+export default function GruposBandeja({ data, readOnly, busy, onVerIndividual, onResolver }) {
+  const [dialog, setDialog] = useState(null);
+  const [mes, setMes] = useState('');
+  const [gestion, setGestion] = useState('');
   const [canonico, setCanonico] = useState('');
-  const [mes, setMes] = useState(String(new Date().getMonth() + 1));
-  const [gestion, setGestion] = useState(String(new Date().getFullYear()));
-
-  const cargar = useCallback(async () => {
-    try {
-      setCargando(true);
-      setError('');
-      setData(await dataopsApi.getGruposBandeja({ docId, idLote: docId ? null : idLote }));
-    } catch (e) {
-      setError(mensajeError(e, 'No se pudieron cargar los grupos.'));
-    } finally {
-      setCargando(false);
-    }
-  }, [docId, idLote]);
-
-  useEffect(() => { cargar(); }, [cargar]);
-
-  // Casos que se resuelven en bloque: todos los grupos con una acción de grupo (no los MANUAL)
-  const resumen = useMemo(() => {
-    const enBloque = data.grupos.filter((g) => accionDe(g) !== 'MANUAL');
-    const discordantes = data.grupos.filter((g) => g.motivo === 'CI_NOMBRE_DISCORDANTE');
-    const bajaConfianza = data.grupos.filter((g) => g.motivo === 'BAJA_CONFIANZA_IA' || g.motivo === 'HECHO_EN_REVISION');
-    return {
-      casosEnBloque: enBloque.reduce((s, g) => s + g.n, 0),
-      gruposEnBloque: enBloque.length,
-      casosDiscordantes: discordantes.reduce((s, g) => s + g.n, 0),
-      gruposDiscordantes: discordantes.length,
-      casosBajaConfianza: bajaConfianza.reduce((s, g) => s + g.n, 0),
-      gruposBajaConfianza: bajaConfianza.length,
-    };
-  }, [data]);
-
-  const ejecutar = async (g, extra = {}) => {
-    try {
-      setEnCurso(g.clave);
-      const accion = accionDe(g);
-      const res = await dataopsApi.aprobarGrupo({ clave: g.clave, accion: accion === 'MAPEAR_ESTADO' ? 'MAPEAR_ESTADO' : null, docIds: data.doc_ids || (docId ? [docId] : null), ...extra });
-      if (res.status === 'error') {
-        sileoToast.error({ title: 'No se pudo resolver el grupo', description: res.message });
-      } else {
-        sileoToast.success({ title: 'Grupo resuelto', description: `${res.resolved_count ?? 0} casos resueltos (${textoAccion(accion).toLowerCase()}).` });
-      }
-      setDialogo(null);
-      setCanonico('');
-      await cargar();
-      if (onCambio) onCambio();
-    } catch (e) {
-      sileoToast.error({ title: 'No se pudo resolver el grupo', description: mensajeError(e) });
-    } finally {
-      setEnCurso(null);
-    }
-  };
-
-  const abrirDialogo = (tipo, grupo) => { setCanonico(''); setDialogo({ tipo, grupo }); };
-
-  const confirmarDialogo = () => {
-    if (!dialogo) return;
-    if (dialogo.tipo === 'MAPEAR_ESTADO') ejecutar(dialogo.grupo, { canonico: canonico.trim() || null });
-    else ejecutar(dialogo.grupo, { mes: Number(mes), gestion: Number(gestion) });
-  };
-
-  const botonAccion = (g) => {
-    const accion = accionDe(g);
-    const ocupado = enCurso === g.clave;
-    if (accion === 'MANUAL') {
-      return (
-        <button type="button" className="pill-filter" data-testid="grupo-manual" onClick={() => onVerIndividual && onVerIndividual()}>
-          {textoAccion('MANUAL')}
-        </button>
-      );
-    }
-    if (accion === 'MAPEAR_ESTADO' || accion === 'CORREGIR_FECHA') {
-      return (
-        <button type="button" className="btn-pill-gold" style={{ padding: '5px 12px', fontSize: '12px' }} disabled={ocupado} data-testid={`grupo-${accion.toLowerCase()}`}
-          onClick={() => abrirDialogo(accion, g)}>
-          {ocupado ? 'Aplicando…' : `${textoAccion(accion)}…`}
-        </button>
-      );
-    }
-    return (
-      <button type="button" className="btn-pill-gold" style={{ padding: '5px 12px', fontSize: '12px' }} disabled={ocupado} data-testid="grupo-aprobar" onClick={() => ejecutar(g)}>
-        {ocupado ? 'Aprobando…' : textoAccion('APROBAR')}
-      </button>
-    );
-  };
-
-  if (cargando) {
-    return <div className="floating-artifact" style={{ padding: '48px', textAlign: 'center', color: 'var(--color-slate-gray)' }}>Cargando grupos de la bandeja…</div>;
-  }
-  if (error) {
-    return <div className="floating-artifact" role="alert" style={{ padding: '24px', color: '#D9383A' }}>{error} <button type="button" className="pill-filter" onClick={cargar}>Reintentar</button></div>;
-  }
-
-  return (
-    <div data-testid="bandeja-grupos">
-      <div className="floating-artifact" style={{ padding: '14px 18px', marginBottom: '14px', display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
-          <span data-testid="grupos-total" style={{ fontSize: '13.5px' }}>
-            Stock total: <strong>{Number(data.total_casos).toLocaleString('es-BO')}</strong> casos agrupados en <strong>{Number(data.total_grupos).toLocaleString('es-BO')}</strong> grupos
-          </span>
-          <span style={{ fontSize: '12px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'rgba(217, 155, 38, 0.15)', color: '#B8801A', fontWeight: 600 }}>
-            {Number(resumen.casosDiscordantes).toLocaleString('es-BO')} discordantes ({Number(resumen.gruposDiscordantes).toLocaleString('es-BO')} grupos)
-          </span>
-          <span style={{ fontSize: '12px', padding: '3px 8px', borderRadius: '4px', backgroundColor: 'rgba(12, 30, 51, 0.08)', color: '#0C1E33', fontWeight: 600 }}>
-            {Number(resumen.casosBajaConfianza).toLocaleString('es-BO')} baja confianza ({Number(resumen.gruposBajaConfianza).toLocaleString('es-BO')} grupos)
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <span style={{ fontSize: '11px', color: '#1B8754', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            Privacidad: la cédula se muestra enmascarada
-          </span>
-          <span style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }} title="Estado del vínculo del estudiante con el catálogo">
-            {ESTADOS_VINCULO.map((e) => e.texto).join('  ·  ')}
-          </span>
-        </div>
-      </div>
-
-      {data.grupos.length === 0 ? (
-        <div className="floating-artifact" style={{ padding: '36px', textAlign: 'center' }} data-testid="grupos-vacio">No hay casos pendientes.</div>
-      ) : (
-        <div className="floating-artifact" style={{ padding: 0, overflow: 'hidden' }}>
-          <table className="dataops-table">
-            <thead>
-              <tr><th>Motivo</th><th>Valor normalizado</th><th style={{ textAlign: 'right' }}>Casos</th><th>Acción</th></tr>
-            </thead>
-            <tbody>
-              {data.grupos.map((g) => (
-                <tr key={g.clave} data-testid="fila-grupo">
-                  <td>{textoMotivo(g.motivo)}</td>
-                  <td style={{ maxWidth: '420px', overflowWrap: 'anywhere' }} title={maskTexto(g.ejemplo)}>{describirGrupo(g)}</td>
-                  <td style={{ textAlign: 'right', fontWeight: 700 }}>{Number(g.n).toLocaleString('es-BO')}</td>
-                  <td>{botonAccion(g)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {dialogo && (
-        <div role="dialog" aria-modal="true" aria-label={textoAccion(dialogo.tipo)} data-testid="dialogo-grupo"
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div className="floating-artifact" style={{ padding: '22px', width: 'min(480px, 92vw)', background: 'var(--color-paper-white, #fff)' }}>
-            <h4 className="serif-heading" style={{ margin: '0 0 8px 0' }}>{textoAccion(dialogo.tipo)}</h4>
-            <p style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)', margin: '0 0 12px 0' }}>
-              {describirGrupo(dialogo.grupo)} — {dialogo.grupo.n} casos.
-            </p>
-            {dialogo.tipo === 'MAPEAR_ESTADO' ? (
-              <>
-                <label style={{ fontSize: '12px', fontWeight: 600 }} htmlFor="canonico-estado">Estado canónico (opcional)</label>
-                <input id="canonico-estado" className="dataops-input" value={canonico} onChange={(e) => setCanonico(e.target.value)} placeholder="Ej.: Deserción" />
-                <p style={{ fontSize: '11.5px', color: 'var(--color-slate-gray)' }}>
-                  Con estado canónico, el valor fuera de catálogo se reescribe a ese estado. Sin él, una combinación no admitida se agrega al catálogo
-                  de combinaciones y un estado desconocido se agrega al catálogo de estados.
-                </p>
-              </>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: 600 }} htmlFor="fecha-mes">Mes</label>
-                  <input id="fecha-mes" type="number" min="1" max="12" className="dataops-input" value={mes} onChange={(e) => setMes(e.target.value)} />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: 600 }} htmlFor="fecha-gestion">Gestión</label>
-                  <input id="fecha-gestion" type="number" min="2000" max="2100" className="dataops-input" value={gestion} onChange={(e) => setGestion(e.target.value)} />
-                </div>
-              </div>
-            )}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
-              <button type="button" className="pill-filter" onClick={() => setDialogo(null)}>Cancelar</button>
-              <button type="button" className="btn-pill-gold" data-testid="dialogo-confirmar" onClick={confirmarDialogo} disabled={enCurso !== null}>Aplicar a {dialogo.grupo.n} casos</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  const open = group => { setMes(''); setGestion(''); setCanonico(''); setDialog(group); };
+  return <>
+    {!data?.grupos?.length ? <p role="status">No hay grupos para esta selección.</p> : <div style={{ overflowX: 'auto' }}><table className="dataops-table" style={{ width: '100%' }}>
+      <thead><tr><th>Motivo</th><th>Casos</th><th>Revisión</th></tr></thead>
+      <tbody>{data.grupos.map(group => <tr key={group.clave}>
+        <td><details><summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>{textoMotivo(group.motivo, group.titulo)}</summary><p style={{ maxWidth: 580, overflowWrap: 'anywhere', padding: '12px 0', fontSize: 12 }}>{group.ejemplo || 'Sin ejemplo disponible'}</p></details></td>
+        <td>{group.n.toLocaleString('es-BO')}</td>
+        <td><Button variant="ghost" disabled={busy} onClick={() => onVerIndividual(group.clave)}>Ver casos</Button>
+          {!readOnly && group.accion_grupo !== 'MANUAL' && <Button variant="ghost" disabled={busy} onClick={() => group.accion_grupo === 'APROBAR' ? onResolver(group) : open(group)}>{group.accion_grupo === 'APROBAR' ? 'Aprobar grupo' : group.accion_grupo === 'CORREGIR_FECHA' ? 'Corregir fecha' : 'Revisar estado'}</Button>}</td>
+      </tr>)}</tbody>
+    </table></div>}
+    {dialog && <div className="floating-artifact" role="dialog" aria-label="Corregir grupo" style={{ padding: 20, marginTop: 16 }}>
+      <p>La corrección se aplicará a los {dialog.n} casos del grupo.</p>
+      {dialog.accion_grupo === 'CORREGIR_FECHA' ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+        <label>Mes<input aria-label="Mes del grupo" className="dataops-input" type="number" min="1" max="12" value={mes} onChange={e => setMes(e.target.value)} /></label>
+        <label>Gestión<input aria-label="Gestión del grupo" className="dataops-input" type="number" min="2000" max="2100" value={gestion} onChange={e => setGestion(e.target.value)} /></label>
+      </div> : <><label>Estado correcto<input className="dataops-input" value={canonico} onChange={e => setCanonico(e.target.value)} maxLength={100} /></label><p style={{ fontSize: 12 }}>Indica el estado que corresponde antes de aprobar el grupo.</p></>}
+      <div style={{ display: 'flex', gap: 12, marginTop: 12 }}><Button variant="ghost" onClick={() => setDialog(null)}>Cancelar</Button>
+        <Button disabled={busy || (dialog.accion_grupo === 'CORREGIR_FECHA' ? !(Number(mes) >= 1 && Number(mes) <= 12 && Number(gestion) >= 2000 && Number(gestion) <= 2100) : !canonico.trim())} onClick={() => { onResolver(dialog, dialog.accion_grupo === 'CORREGIR_FECHA' ? { mes: Number(mes), gestion: Number(gestion) } : { canonico: canonico.trim() }); setDialog(null); }}>Programar corrección</Button></div>
+    </div>}
+  </>;
 }

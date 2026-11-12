@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 
 from models.dim_estudiante import DimEstudiante
 from models.dim_modulo import DimModulo
@@ -65,7 +66,8 @@ def _q_hechos(db: Session, modelo, col_id, doc_ids: Optional[Sequence[int]]):
 def _q_eval(db: Session, doc_ids: Optional[Sequence[int]]):
     """Grupos (documento, módulo) de evaluación docente con respuestas en revisión: (id_documento, id_modulo, n, motivos)."""
     q = db.query(FactEvaluacionDocente.id_documento, FactEvaluacionDocente.id_modulo,
-                 func.count(FactEvaluacionDocente.id_hecho_eval), func.min(FactEvaluacionDocente.motivo_revision)).filter(
+                 func.count(FactEvaluacionDocente.id_hecho_eval), func.min(FactEvaluacionDocente.motivo_revision),
+                 func.count(FactEvaluacionDocente.id_tiempo)).filter(
         FactEvaluacionDocente.requiere_revision == True)  # noqa: E712
     if doc_ids is not None:
         q = q.filter(FactEvaluacionDocente.id_documento.in_(list(doc_ids)))
@@ -152,9 +154,11 @@ def items_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = Non
         DimOrigenDocumental.id_documento.in_({g[0] for g in g_eva if g[0]})).all()} if g_eva else {}
     mods_eva = {m.id_modulo: m for m in db.query(DimModulo).filter(
         DimModulo.id_modulo.in_({g[1] for g in g_eva if g[1]})).all()} if g_eva else {}
-    for id_doc, id_mod, n, motivos in g_eva:
+    for id_doc, id_mod, n, motivos, n_fechas in g_eva:
         mod, doc = mods_eva.get(id_mod), docs_eva.get(id_doc)
         faltan = [f for f, m in (("docente", "DOCENTE_SIN_VINCULAR"), ("fecha", "SIN_FECHA")) if m in (motivos or "")]
+        if n_fechas < n and 'fecha' not in faltan:
+            faltan.append('fecha')
         it = _item(f"{PREFIJO_EVA}{id_doc or 0}-{id_mod or 0}", "evaluacion_docente", doc, None, None, faltan, {
             "modulo_detectado": mod.nombre_modulo if mod else "",
             "respuestas": int(n),
@@ -217,6 +221,10 @@ def resolver_caso_hecho(db: Session, item_id: str, payload: Dict[str, Any], user
         resultado = "Descartado"
     else:
         correcciones = _aplicar_correcciones(db, hecho, tipo, payload)
+        faltan = _faltantes_aca(hecho) if tipo == 'academico' else _faltantes_fin(hecho)
+        if faltan:
+            db.rollback()
+            raise HTTPException(422, 'Completa los datos obligatorios antes de aprobar: ' + ', '.join(faltan) + '.')
         hecho.requiere_revision = False
         resultado = ("Aprobación en bloque" if en_bloque else "Aprobado") + (
             f" con corrección ({', '.join(correcciones)})" if correcciones else " sin cambios")
@@ -260,7 +268,9 @@ def _resolver_caso_evaluacion(db: Session, item_id: str, payload: Dict[str, Any]
     else:
         nombre = (payload.get("docente_resuelto") or "").strip()
         if nombre:
-            docente = db.query(DimDocente).filter(DimDocente.nombre_completo.ilike(nombre)).first()
+            docente = db.query(DimDocente).filter(func.lower(DimDocente.nombre_completo) == nombre.lower()).first()
+            if docente is None:
+                raise HTTPException(422, 'El docente indicado no existe en el catálogo.')
             if docente is not None:
                 cambios["docente"] = docente.nombre_completo
         fecha = _fecha_corregida(payload)
@@ -274,6 +284,9 @@ def _resolver_caso_evaluacion(db: Session, item_id: str, payload: Dict[str, Any]
                 f.id_docente = docente.id_docente
             if id_tiempo:
                 f.id_tiempo = id_tiempo
+            if not f.id_tiempo or (f.tipo_pregunta == 'DOCENTE' and not f.id_docente):
+                db.rollback()
+                raise HTTPException(422, 'Completa la fecha y la vinculación del docente antes de aprobar.')
             f.requiere_revision = False
             f.motivo_revision = "RESUELTO_HUMANO"
         resultado = f"Aprobado ({len(filas)} respuestas)" + (f" con corrección ({', '.join(cambios)})" if cambios else " sin cambios")
@@ -290,10 +303,20 @@ def _aplicar_correcciones(db: Session, hecho, tipo: str, payload: Dict[str, Any]
     cambios = {}
     nombre = (payload.get("estudiante_resuelto") or "").strip()
     if nombre:
-        est = db.query(DimEstudiante).filter(DimEstudiante.nombre_completo.ilike(nombre)).first()
+        est = db.query(DimEstudiante).filter(func.lower(DimEstudiante.nombre_completo) == nombre.lower()).first()
+        if not est:
+            raise HTTPException(422, 'El estudiante indicado no existe en el catálogo.')
         if est and est.id_estudiante != hecho.id_estudiante:
             hecho.id_estudiante = est.id_estudiante
             cambios["estudiante"] = est.nombre_completo
+    modulo = (payload.get('modulo_resuelto') or '').strip()
+    if tipo == 'academico' and modulo:
+        mod = db.query(DimModulo).filter(func.lower(DimModulo.nombre_modulo) == modulo.lower()).first()
+        if not mod:
+            raise HTTPException(422, 'El módulo indicado no existe en el catálogo.')
+        if mod.id_modulo != hecho.id_modulo:
+            hecho.id_modulo = mod.id_modulo
+            cambios['modulo'] = mod.nombre_modulo
     if tipo == "academico" and payload.get("nota_final") not in (None, ""):
         nota = float(payload["nota_final"])
         if nota != (float(hecho.nota_final) if hecho.nota_final is not None else None):

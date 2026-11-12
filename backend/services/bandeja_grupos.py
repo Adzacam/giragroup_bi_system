@@ -47,7 +47,7 @@ def grupos_pendientes(db: Session, doc_ids: Optional[List[int]] = None, limite: 
         q = q.filter(StagingEntidadNoResuelta.id_documento.in_(list(doc_ids)))
     grupos: Dict[str, Dict[str, Any]] = {}
     n_casos = 0
-    for id_stg, motivo, texto in q.order_by(StagingEntidadNoResuelta.id_staging).all():
+    for id_stg, motivo, texto in q.order_by(StagingEntidadNoResuelta.id_staging).yield_per(200):
         n_casos += 1
         k = clave_grupo(motivo, texto)
         g = grupos.setdefault(k, {"clave": k, "motivo": motivo, "valor": valor_normalizado(motivo, texto), "n": 0, "ejemplo": (texto or "")[:160], "ids": []})
@@ -111,6 +111,13 @@ def _grupos_hechos(db: Session, doc_ids: Optional[List[int]] = None) -> Dict[str
         g["n"] += 1
         if len(g["ids"]) < 50:
             g["ids"].append(f"HECHO-FIN-{h[0]}")
+    from services.revision_hechos import _q_eval
+    for id_doc, id_mod, _, _, _ in _q_eval(db, doc_ids).all():
+        v = f'evaluacion|doc{id_doc or 0}|mod{id_mod or 0}'
+        clave = f'HECHO_EN_REVISION::{v}'
+        out[clave] = {'clave': clave, 'motivo': 'HECHO_EN_REVISION', 'valor': v, 'n': 1,
+                      'ejemplo': 'Evaluación docente pendiente de vinculación o fecha.',
+                      'ids': [f'HECHO-EVA-{id_doc or 0}-{id_mod or 0}'], 'accion_grupo': 'MANUAL', 'un_clic': False}
     return out
 
 
@@ -132,6 +139,9 @@ def ids_del_grupo(db: Session, clave: str, doc_ids: Optional[List[int]] = None) 
 def _ids_hechos(db: Session, clave: str, doc_ids: Optional[List[int]]) -> List[str]:
     v = clave.split("::", 1)[1]
     ids = []
+    if v.startswith('evaluacion|'):
+        grupo = _grupos_hechos(db, doc_ids).get(clave)
+        return grupo['ids'] if grupo else []
     if v.startswith("academico"):
         q = db.query(FactRendimientoAcademico.id_hecho_aca, FactRendimientoAcademico.id_documento, FactRendimientoAcademico.id_estudiante,
                      FactRendimientoAcademico.id_modulo, FactRendimientoAcademico.nota_final, FactRendimientoAcademico.id_tiempo,

@@ -122,7 +122,7 @@ except ImportError:
     TOPE_INDICE_BONIFICADO = 99
     TOPE_INDICE_BONIFICADO_DEC = 0.99
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class DeleteBatchRequest(BaseModel):
@@ -155,7 +155,7 @@ class BatchResolveRequest(BaseModel):
     estudiante_resuelto: Optional[str] = None
     email: Optional[str] = None
     modulo_resuelto: Optional[str] = None
-    nota_final: Optional[float] = 80.0
+    nota_final: Optional[float] = None
     monto_deuda: Optional[float] = None
     monto_pagado: Optional[float] = None
     cuotas_impagas: Optional[int] = None
@@ -3540,21 +3540,27 @@ def confirm_dw_insert(
             db=db,
             current_user=current_user,
         )
-    _asegurar_lote_editable(db, payload.id_lote)
+    from services import revision_consulta as revision
+    if payload.en_segundo_plano and not payload.id_lote:
+        raise HTTPException(422, 'Selecciona un lote para consolidar.')
+    docs = revision.documentos(db, payload.id_lote, payload.doc_id) if (payload.id_lote or payload.doc_id) else []
+    _bloquear_documentos_editables(db, docs)
     if not payload.en_segundo_plano:
         return _consolidar(payload, db, current_user)
-
-    if payload.id_lote:
-        ingesta = tareas_dataops.ultima(payload.id_lote, "INGESTA")
-        if ingesta and ingesta["estado"] == "EN_CURSO":
-            raise HTTPException(status.HTTP_409_CONFLICT,
-                                detail={"mensaje": "La ingesta del lote todavía no termina: consolida cuando acabe.",
-                                        "tarea": ingesta})
-        previa = tareas_dataops.ultima(payload.id_lote, "CONSOLIDACION")
-        if previa and previa["estado"] == "EN_CURSO":
-            raise HTTPException(status.HTTP_409_CONFLICT,
-                                detail={"mensaje": "Ya hay una consolidación en curso para este lote.", "tarea": previa})
-    tarea_id = tareas_dataops.crear("CONSOLIDACION", payload.id_lote, usuario=current_user.username)
+    for tipo in ('INGESTA', 'LECTURA_BETO', 'CONSOLIDACION'):
+        previa = tareas_dataops.ultima_en_sesion(db, payload.id_lote, tipo)
+        if previa and previa['estado'] == 'EN_CURSO':
+            if tipo == 'CONSOLIDACION':
+                return {'status': 'accepted', 'tarea_id': previa['id'], 'tarea': previa}
+            raise HTTPException(409, 'Espera a que termine la carga y lectura del lote.')
+    try:
+        tarea_id = tareas_dataops.crear_en_sesion(db, 'CONSOLIDACION', payload.id_lote)
+        if not tarea_id:
+            raise RuntimeError('No se reservó una tarea')
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(503, 'No se pudo iniciar la consolidación. Inténtalo de nuevo.') from exc
     user_id = current_user.id
 
     def _en_segundo_plano():
@@ -3596,6 +3602,8 @@ def get_tarea_lote(id_lote: int, tipo: str = Query("CONSOLIDACION", pattern="^(I
 
 def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Optional[User],
                 tarea_id: Optional[int] = None) -> Dict[str, Any]:
+    if payload.id_lote:
+        _bloquear_documentos_editables(db, db.query(DimOrigenDocumental).filter_by(id_lote=payload.id_lote).all())
     dw = DWLoaderService(db)
     thresh = payload.threshold or UMBRAL_INDICE_REGISTRO_DEC
 
@@ -3611,8 +3619,9 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         query = query.filter(StagingRegistroCrudo.id_documento == effective_doc_id)
     elif payload.id_lote:
         _, docs_lote, _ = _resolver_documentos_lote(db, payload.id_lote)
-        if docs_lote:
-            query = query.filter(StagingRegistroCrudo.id_documento.in_([d.id_documento for d in docs_lote]))
+        if not docs_lote:
+            raise HTTPException(404, 'El lote no existe.')
+        query = query.filter(StagingRegistroCrudo.id_documento.in_([d.id_documento for d in docs_lote]))
 
     stg_records = query.all()
 
@@ -3935,15 +3944,6 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         db.add(audit_pipe)
         db.commit()
 
-        NotificationService.create_notification(
-            db=db,
-            title="Consolidación a Data Warehouse Completada",
-            message=f"Se consolidaron transaccionalmente {inserted_total} registros aprobados en el DW (+{inserted_academico} académicos, +{inserted_financiero} financieros) por {user_name}.",
-            category="DataOps",
-            severity="SUCCESS",
-            role_target="AUDITOR_CALIDAD",
-            link="/dataops/revision"
-        )
     except Exception as e_aud_dw:
         logger.warning("No se pudo registrar auditoría/notificación de consolidación DW: %s", e_aud_dw)
 
@@ -3996,316 +3996,65 @@ def _registrar_descarte_ruido(db: Session, stg, line: str, indice, motivo: str, 
 # BANDEJA DE REVISIÓN HUMANA (PASO ④) CON FUENTE ÚNICA Y CI ENMASCARADO (#12, #13)
 # =============================================================================
 
-_CACHE_DIMS_BANDEJA: Dict[str, Any] = {"t": 0.0, "v": None}
-
-
-def _dimensiones_bandeja(db: Session):
-    """Estudiantes, docentes y módulos para reconocer entidades en la bandeja; en memoria 60 s (se leían completos en cada página)."""
-    ahora = time.time()
-    if _CACHE_DIMS_BANDEJA["v"] is None or ahora - _CACHE_DIMS_BANDEJA["t"] > 60.0:
-        _CACHE_DIMS_BANDEJA["v"] = (
-            db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all(),
-            _docentes_con_contexto(db),
-            db.query(DimModulo).all(),
-        )
-        _CACHE_DIMS_BANDEJA["t"] = ahora
-    return _CACHE_DIMS_BANDEJA["v"]
-
-
 @router.get("/review-tray")
 def get_review_tray(
-    doc_id: Optional[int] = Query(None),
-    id_lote: Optional[str] = Query(None),
-    motivo: Optional[str] = Query(None),
-    estado: Optional[str] = Query(None),
-    page: int = Query(1, ge=1),
-    page_size: int = Query(100, ge=1, le=500),
-    db: Session = Depends(get_db),
+    doc_id: Optional[int] = Query(None), id_lote: Optional[str] = Query(None),
+    motivo: Optional[str] = Query(None), estado: Optional[str] = Query(None),
+    page: int = Query(1, ge=1), page_size: int = Query(5, ge=1, le=5),
+    search: Optional[str] = Query(None, max_length=200), area: Optional[str] = Query(None),
+    vista: str = Query("PENDIENTES", pattern="^(PENDIENTES|RESUELTOS)$"),
+    grupo: Optional[str] = Query(None, max_length=80), db: Session = Depends(get_db),
 ):
-    """
-    Obtiene los casos derivados a la Bandeja de Revisión Humana (#12, #13):
-    - Entrega siempre `ci` enmascarado por defecto (`••••019 LP`).
-    - Soporta filtrado por `id_lote`, `doc_id`, `motivo`, `estado` y paginación (`page`, `page_size`).
-    """
-    if not isinstance(doc_id, int):
-        doc_id = None
-    if not isinstance(id_lote, (str, int)):
-        id_lote = None
-    if not isinstance(motivo, str):
-        motivo = None
-    if not isinstance(estado, str):
-        estado = None
-    if not isinstance(page, int):
-        page = 1
-    if not isinstance(page_size, int):
-        page_size = 100
-
-    target_docs: List[DimOrigenDocumental] = []
-    if doc_id is not None:
-        doc_single = db.query(DimOrigenDocumental).filter_by(id_documento=doc_id).first()
-        if doc_single:
-            target_docs = [doc_single]
-    elif id_lote is not None:
-        _, docs_lote, _ = _resolver_documentos_lote(db, str(id_lote))
-        if docs_lote:
-            target_docs = docs_lote
-
-    if target_docs:
-        target_doc_ids = [d.id_documento for d in target_docs]
-        existing_count = (
-            db.query(func.count(StagingEntidadNoResuelta.id_staging))
-            .filter(StagingEntidadNoResuelta.id_documento.in_(target_doc_ids))
-            .scalar()
-            or 0
-        )
-        if existing_count == 0:
-            try:
-                _evaluar_documentos_lote(db, target_docs, persistir_staging=True)
-            except Exception as e_auto_eval:
-                logger.warning("No se pudo auto-evaluar documentos en get_review_tray: %s", e_auto_eval)
-
-    query = db.query(StagingEntidadNoResuelta).filter(StagingEntidadNoResuelta.resuelto == False)
-    resolved_query = db.query(StagingEntidadNoResuelta).filter(StagingEntidadNoResuelta.resuelto == True)
-
-    if doc_id is not None:
-        query = query.filter(StagingEntidadNoResuelta.id_documento == doc_id)
-        resolved_query = resolved_query.filter(StagingEntidadNoResuelta.id_documento == doc_id)
-    elif id_lote is not None and target_docs:
-        t_ids = [d.id_documento for d in target_docs]
-        query = query.filter(StagingEntidadNoResuelta.id_documento.in_(t_ids))
-        resolved_query = resolved_query.filter(StagingEntidadNoResuelta.id_documento.in_(t_ids))
-
-    if motivo and motivo.upper() not in ("ALL", "TODOS"):
-        query = query.filter(func.upper(StagingEntidadNoResuelta.motivo) == motivo.upper())
-
-    if estado and estado.upper() not in ("ALL", "TODOS"):
-        query = query.filter(func.upper(StagingEntidadNoResuelta.estado_resolucion) == estado.upper())
-
-    # Paginación en SQL: antes se armaban los casos de TODA la cola (decenas de miles) y luego se recortaba la página
-    start_idx = (page - 1) * page_size
-    n_stg = query.count()
-    entidades_db = query.order_by(StagingEntidadNoResuelta.id_staging.asc()).offset(start_idx).limit(page_size).all()
-    resolved_total = resolved_query.count()
-    resolved_db = resolved_query.order_by(StagingEntidadNoResuelta.resuelto_en.desc().nullslast(), StagingEntidadNoResuelta.id_staging.desc()).limit(200).all()
-    estudiantes, docentes, modulos = _dimensiones_bandeja(db)
-
-    motivo_labels_map = {
-        "BAJA_CONFIANZA": "Baja confianza",
-        "CI_DUDOSA": "CI dudosa",
-        "CI_ILEGIBLE": "CI ilegible",
-        "NOTA_FUERA_ESCALA": "Nota fuera de escala",
-        "NOTA_INVALIDA": "Nota inválida",
-        "ESCALA_AMBIGUA": "Escala no declarada",
-        "CI_NOMBRE_DISCORDANTE": "CI ≠ nombre",
-        "HOMONIMIA": "Posible homonimia",
-        "HOMONIMO_POTENCIAL": "Posible homónimo",
-        "ENTIDAD_NUEVA": "Entidad nueva",
-        "REVISION_GENERAL": "Revisión general",
-    }
-
-    # Precarga de documentos en memoria para eliminar N+1 en la bandeja de revisión
-    origen_docs = db.query(DimOrigenDocumental).filter(
-        DimOrigenDocumental.id_documento.in_(
-            [ent.id_documento for ent in entidades_db if ent.id_documento] +
-            [r_ent.id_documento for r_ent in resolved_db if r_ent.id_documento]
-        )
-    ).all() if (entidades_db or resolved_db) else []
-    origen_doc_map = {d.id_documento: d for d in origen_docs}
-
-    items = []
-    for ent in entidades_db:
-        doc = origen_doc_map.get(ent.id_documento)
-        doc_name = doc.nombre_archivo if doc else f"Documento_{ent.id_documento or 'Lote'}"
-        doc_fuente = (doc.tipo_fuente if doc and doc.tipo_fuente else "ACTA").upper()
-
-        payload_data = {}
-        if ent.payload_json:
-            if isinstance(ent.payload_json, dict):
-                payload_data = ent.payload_json
-            elif isinstance(ent.payload_json, str):
-                try:
-                    payload_data = json.loads(ent.payload_json)
-                except Exception:
-                    payload_data = {}
-
-        contexto_raw = payload_data.get("raw_line") or ent.texto_original or ""
-        estudiante_clean = payload_data.get("estudiante") or ent.texto_original or ""
-
-        if "|" in estudiante_clean:
-            for ch in estudiante_clean.split("|"):
-                ch_s = ch.strip()
-                val = ch_s.split(":", 1)[1].strip() if ":" in ch_s else ch_s
-                words = val.split()
-                if not re.search(r"\d", val) and "@" not in val and 2 <= len(words) <= 4:
-                    if not any(w in strip_accents(val).lower() for w in NON_PERSON_WORDS):
-                        estudiante_clean = val
-                        break
-
-        ci_val = ent.ci_temporal or payload_data.get("ci_real") or payload_data.get("ci")
-        ci_masked = enmascarar_ci(ci_val)
-        fuzz_score = float(ent.score_fuzzy or 80.0)
-        motivo_slug = ent.motivo or "BAJA_CONFIANZA"
-
-        por_que = payload_data.get("motivo_llano") or (
-            f"Cédula enmascarada '{ci_masked}' requiere validación."
-            if "CI" in motivo_slug
-            else f"Índice del registro ({int(round(fuzz_score))}) inferior al umbral ({UMBRAL_INDICE_REGISTRO})."
-        )
-
-        ents_line, _, _ = extract_entities_from_line(
-            contexto_raw, estudiantes, docentes, modulos, tipo_escala=(doc.tipo_escala if doc else "CENTESIMAL_100"), tipo_fuente=doc_fuente
-        )
-        ent_mod = next((e for e in ents_line if e.get("label") == "MÓDULO"), None)
-        modulo_detectado = payload_data.get("modulo") or (ent_mod.get("token") if ent_mod else "Módulo Académico")
-
-        destino_dw = (
-            "Catálogo de Estudiantes, Situación Financiera y Cobranzas"
-            if doc_fuente == "COBRANZA"
-            else ("Catálogo de Estudiantes" if doc_fuente == "ADMISION" else "Catálogo de Estudiantes, Rendimiento Académico")
-        )
-
-        item_area = payload_data.get("area") or (
-            "financiera" if doc_fuente == "COBRANZA" else ("comercial" if doc_fuente == "ADMISION" else "academica")
-        )
-        if payload_data.get("en_calidad") or "CATALOGO" in motivo_slug:
-            item_area = "calidad"
-
-        # Un clic: nombre extraído vs nombre del candidato (no la línea completa del acta)
-        nombre_caso = nombre_extraido(ent.texto_original, payload_data.get("raw_line"))
-        # Al navegador solo llega la línea y las entidades con el CI enmascarado
-        cis_item = cis_en_entidades(ents_line, ci_val)
-        contexto_publico = texto_sin_ci(contexto_raw, cis_item)
-        items.append({
-            "id": ent.id_staging,
-            "db_id": ent.id_staging,
-            "motivo": motivo_slug,
-            "motivo_label": motivo_labels_map.get(motivo_slug, motivo_slug.replace("_", " ").title()),
-            "tipo_entidad": ent.tipo_entidad or "ESTUDIANTE",
-            "tipo_fuente": doc_fuente,
-            "que_vio": contexto_publico,
-            "ci": ci_masked,
-            "ci_enmascarado": ci_masked,
-            "por_que_detuvo": por_que,
-            "sugerencia": ent.mejor_candidato or f"{estudiante_clean} (Verificar catálogo)",
-            "similitud": int(round(fuzz_score)) if fuzz_score > 0 else 80,
-            "indice_registro": int(round(fuzz_score)) if fuzz_score > 0 else 80,
-            "destino_dw": destino_dw,
-            "locked": bool(ent.lock_usuario_id and ent.lock_expira and ent.lock_expira > datetime.utcnow()),
-            "estado_resolucion": ent.estado_resolucion or "PENDIENTE",
-            "id_documento": ent.id_documento,
-            "archivo_origen": doc_name,
-            "estudiante": estudiante_clean,
-            "contexto_raw": contexto_publico,
-            "modulo_detectado": modulo_detectado,
-            "sugerencia_catalogo": ent.mejor_candidato,
-            "nombre_extraido": nombre_caso,
-            "fk_estado": ent.fk_estado or "C",
-            "entidades": [{"label": e.get("label"), "token": entidad_sin_ci(e, cis_item).get("token"), "fuente_resolucion": e.get("fuente_resolucion")} for e in ents_line],
-            "un_clic": es_sugerencia_un_clic(nombre_caso, ent.mejor_candidato),
-            "similitud_nombre_completo": similitud_nombre_completo(nombre_caso, ent.mejor_candidato),
-            "ner_confidence": float(ent.nivel_confianza) if ent.nivel_confianza else 0.72,
-            "estado": "REQUIERE_REVISION",
-            "area": item_area,
-            "en_calidad": bool(payload_data.get("en_calidad") or item_area == "calidad"),
-            "cruce_multifuente": payload_data.get("cruce_multifuente"),
-            "alerta_abandono": bool(payload_data.get("alerta_abandono")),
-            "desglose_relacional": payload_data.get("desglose_relacional") or [],
-            "es_nuevo_catalogo": bool(payload_data.get("es_nuevo_catalogo")),
-            "sugerencia_parametro_catalogo": payload_data.get("sugerencia_parametro_catalogo") or (
-                modulo_detectado if payload_data.get("es_nuevo_catalogo") else None
-            ),
-        })
-
-    # HU-06 / RF-06: también los hechos cargados con requiere_revision (índice 0,60–0,85, nota o fecha faltante)
-    n_hechos = 0
-    estado_pendiente = not estado or estado.upper() in ("ALL", "TODOS", "PENDIENTE")
-    motivo_hechos = not motivo or motivo.upper() in ("ALL", "TODOS", MOTIVO_HECHO)
-    if estado_pendiente and motivo_hechos:
-        doc_ids_hechos = [d.id_documento for d in target_docs] if target_docs else (
-            [doc_id] if doc_id is not None else None)
-        n_hechos = contar_hechos_en_revision(db, doc_ids_hechos)
-        restante_pag = page_size - len(items)
-        if restante_pag > 0:
-            items.extend(items_hechos_en_revision(db, doc_ids_hechos, offset=max(0, start_idx - n_stg), limit=restante_pag))
-
-    resolved_history = []
-    for r_ent in resolved_db:
-        r_doc = origen_doc_map.get(r_ent.id_documento)
-        r_fuente = (r_doc.tipo_fuente if r_doc and r_doc.tipo_fuente else "ACTA").upper()
-        r_destino = (
-            "Catálogo de Estudiantes, Situación Financiera y Cobranzas"
-            if r_fuente == "COBRANZA"
-            else ("Catálogo de Estudiantes" if r_fuente == "ADMISION" else "Catálogo de Estudiantes, Rendimiento Académico")
-        )
-        r_motivo_slug = r_ent.motivo or "BAJA_CONFIANZA"
-        resolved_history.append({
-            "id": r_ent.id_staging,
-            "quien": "Auditor Calidad",
-            "cuando": r_ent.resuelto_en.strftime("%Y-%m-%d %H:%M") if r_ent.resuelto_en else "Resuelto",
-            "antes": r_ent.texto_original,
-            "despues": "Descartado" if r_ent.estado_resolucion == "DESCARTADO" else (r_ent.mejor_candidato or r_destino),
-            "motivo": motivo_labels_map.get(r_motivo_slug, r_motivo_slug.replace("_", " ").title()),
-            "accion": r_ent.estado_resolucion or "RESUELTO_HUMANO",
-        })
-
-    total_items = n_stg + n_hechos
-    paginated_items = items  # ya paginados en SQL
-
-    target_ids = [d.id_documento for d in target_docs] if target_docs else []
-    dw_acad_q = db.query(func.count(FactRendimientoAcademico.id_hecho_aca))
-    dw_fin_q = db.query(func.count(FactSituacionFinanciera.id_hecho_fin))
-    if target_ids:
-        dw_acad_count = dw_acad_q.filter(FactRendimientoAcademico.id_documento.in_(target_ids)).scalar() or 0
-        dw_fin_count = dw_fin_q.filter(FactSituacionFinanciera.id_documento.in_(target_ids)).scalar() or 0
-    else:
-        dw_acad_count = dw_acad_q.scalar() or 0
-        dw_fin_count = dw_fin_q.scalar() or 0
-
-    aprobados_resumen = {
-        "total_aprobados": dw_acad_count + dw_fin_count,
-        "fact_rendimiento_academico": dw_acad_count,
-        "fact_situacion_financiera": dw_fin_count,
-        "resueltos_hitl_count": resolved_total,
-    }
-
-    return {
-        "status": "success",
-        "total": total_items,
-        "pendientes": total_items,
-        "un_clic_total": sum(1 for it in items if it.get("un_clic")),
-        "resueltos_count": resolved_total,
-        "resolved_history": resolved_history,
-        "aprobados_resumen": aprobados_resumen,
-        "pagination": {
-            "page": page,
-            "page_size": page_size,
-            "total_items": total_items,
-            "total_pages": max(1, math.ceil(total_items / page_size)),
-        },
-        "data": paginated_items,
-        "items": paginated_items,
-    }
+    from services import revision_consulta as revision
+    valor = lambda v, tipo, defecto=None: v if isinstance(v, tipo) else defecto
+    docs = revision.documentos(db, valor(id_lote, (str, int)), valor(doc_id, int))
+    return revision.consultar(db, docs, valor(page, int, 1), valor(page_size, int, 5),
+        valor(search, str, ''), valor(area, str), valor(motivo, str), valor(estado, str),
+        valor(vista, str, 'PENDIENTES'), valor(grupo, str))
 
 
 @router.get("/review-tray/grupos")
 def get_review_tray_groups(
-    doc_id: Optional[int] = Query(None),
-    doc_desde: Optional[int] = Query(None, description="Solo los documentos con id_documento >= doc_desde (los de un ciclo)"),
-    id_lote: Optional[str] = Query(None, description="Solo los documentos de este lote"),
-    limite: int = Query(100, ge=1, le=1000),
+    doc_id: Optional[int] = Query(None), id_lote: Optional[str] = Query(None),
+    page: int = Query(1, ge=1), search: Optional[str] = Query(None, max_length=200),
     db: Session = Depends(get_db),
 ):
-    """Casos pendientes (staging y hechos en revisión) agrupados por (motivo, valor normalizado): cada grupo se aprueba con una sola acción."""
-    docs = [doc_id] if doc_id is not None else None
-    if doc_desde is not None:
-        docs = [r[0] for r in db.query(DimOrigenDocumental.id_documento).filter(DimOrigenDocumental.id_documento >= doc_desde).all()]
-    if id_lote is not None and docs is None:
-        _, docs_lote, _ = _resolver_documentos_lote(db, str(id_lote))
-        docs = [d.id_documento for d in docs_lote] if docs_lote else [-1]
-    res = grupos_pendientes(db, docs, limite=limite)
-    if docs is not None:
-        res["doc_ids"] = docs  # alcance con el que se listó: el front lo reenvía al aprobar el grupo
-    return res
+    from services import revision_consulta as revision
+    docs = revision.documentos(db, id_lote if isinstance(id_lote, (str, int)) else None,
+                               doc_id if isinstance(doc_id, int) else None)
+    return revision.grupos_publicos(db, docs, page if isinstance(page, int) else 1,
+                                    search if isinstance(search, str) else '')
+
+
+@router.get("/review-tray/export")
+def export_review_tray(id_lote: str, doc_id: Optional[int] = None,
+                       search: str = Query('', max_length=200), area: Optional[str] = None,
+                       vista: str = Query('PENDIENTES', pattern='^(PENDIENTES|RESUELTOS)$'),
+                       grupo: Optional[str] = None, db: Session = Depends(get_db)):
+    import csv
+    import io
+    from fastapi.responses import StreamingResponse
+    from services import revision_consulta as revision
+    docs = revision.documentos(db, id_lote, doc_id)
+    ids_grupo = set(str(i) for i in ids_del_grupo(db, revision.clave_interna(db, grupo, [d.id_documento for d in docs]), [d.id_documento for d in docs])) if grupo else None
+    def filas():
+        salida = io.StringIO()
+        escritor = csv.writer(salida, delimiter=';')
+        def fila(valores):
+            salida.seek(0)
+            salida.truncate(0)
+            # Evita fórmulas al abrir el archivo en una hoja de cálculo.
+            escritor.writerow([("'" + str(v)) if str(v).lstrip().startswith(('=', '+', '-', '@')) else v for v in valores])
+            return salida.getvalue()
+        yield '\ufeff' + fila(['Caso', 'Área', 'Motivo', 'Estudiante', 'Cédula protegida', 'Módulo', 'Archivo', 'Texto', 'Estado'])
+        for caso, clave in revision.iterar_casos(db, docs, vista == 'RESUELTOS'):
+            if ids_grupo is not None and str(caso['id']) not in ids_grupo:
+                continue
+            if revision.coincide(caso, search, area):
+                yield fila([caso.get(k) if caso.get(k) is not None else '' for k in
+                    ('id', 'area', 'motivo_label', 'estudiante', 'ci_enmascarado', 'modulo_detectado', 'archivo_origen', 'que_vio', 'estado_resolucion')])
+    return StreamingResponse(filas(), media_type='text/csv; charset=utf-8',
+        headers={'Content-Disposition': 'attachment; filename="incidencias.csv"'})
 
 
 class AprobarGrupoRequest(BaseModel):
@@ -4315,8 +4064,8 @@ class AprobarGrupoRequest(BaseModel):
     estudiante_resuelto: Optional[str] = None
     accion: Optional[str] = None  # APROBAR (por defecto) o MAPEAR_ESTADO (grupos con estado fuera de catálogo / combinación no admitida)
     canonico: Optional[str] = None  # estado canónico al que se reescribe el valor fuera de catálogo (MAPEAR_ESTADO)
-    mes: Optional[int] = None  # CORREGIR_FECHA: mes y gestión que se asignan a todos los hechos del grupo (les falta solo la fecha)
-    gestion: Optional[int] = None
+    mes: Optional[int] = Field(None, ge=1, le=12)
+    gestion: Optional[int] = Field(None, ge=2000, le=2100)
 
 
 @router.post("/review-tray/approve-group")
@@ -4331,15 +4080,23 @@ def approve_review_group(
     registrar_aprobacion("approve-group" + ("/" + payload.accion if payload.accion else ""), t_ini,
                          {"clave": payload.clave, "casos": res.get("casos_del_grupo"), "resueltos": res.get("resolved_count")},
                          getattr(current_user, "username", None))
+    if res.get('resolved_count'):
+        _notificar_revision(db, 'Grupo revisado', f"{res['resolved_count']} casos guardados. Abre Revisión para consultar el resultado.")
     return res
 
 
 def _aprobar_grupo(payload: AprobarGrupoRequest, db: Session, current_user: User):
+    from services import revision_consulta as revision
     alcance = payload.doc_ids if payload.doc_ids is not None else ([payload.doc_id] if payload.doc_id is not None else None)
+    docs = db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(alcance)).all() if alcance is not None else db.query(DimOrigenDocumental).all()
+    _bloquear_documentos_editables(db, docs)
+    payload.clave = revision.clave_interna(db, payload.clave, alcance)
     ids = ids_del_grupo(db, payload.clave, alcance)
     if not ids:
         return {"status": "success", "resolved_count": 0, "message": "El grupo no tiene casos pendientes."}
     if payload.clave.startswith("HECHO_EN_REVISION::") and (payload.accion or "").upper() == "MAPEAR_ESTADO":
+        if '|falta:ninguno|' not in payload.clave:
+            raise HTTPException(422, 'Completa los datos obligatorios de los casos antes de aprobar el estado del grupo.')
         res_m = mapear_estado_grupo(db, payload.clave, alcance, payload.canonico)
         return {"status": "success", "resolved_count": res_m["mapeados"], "casos_del_grupo": len(ids), "grupo": payload.clave, **res_m}
     if payload.clave.startswith("HECHO_EN_REVISION::"):
@@ -4366,110 +4123,21 @@ def batch_resolve_review_items(
     current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
 ):
     """Resuelve y consolida en lote múltiples casos de la bandeja de revisión humana."""
+    # Una sola implementación de validación, auditoría e idempotencia por caso.
     resolved_count = 0
-    dw = DWLoaderService(db)
-
-    for item_id in payload.item_ids:
-        clean_id = str(item_id).replace("REV-", "").strip()
-        if not clean_id.isdigit():
-            continue
-        ent = db.query(StagingEntidadNoResuelta).filter(StagingEntidadNoResuelta.id_staging == int(clean_id)).first()
-        if not ent or ent.resuelto:
-            continue
-
-        orig_doc = db.query(DimOrigenDocumental).filter_by(id_documento=ent.id_documento).first() if ent.id_documento else None
-        doc_fuente = (orig_doc.tipo_fuente if orig_doc and orig_doc.tipo_fuente else "ACTA").upper()
-        doc_escala = orig_doc.tipo_escala if orig_doc else "CENTESIMAL_100"
-
-        p_json = ent.payload_json if isinstance(ent.payload_json, dict) else {}
-        nom_est = payload.estudiante_resuelto or p_json.get("estudiante") or ent.texto_original
-        ci_raw = payload.ci_corregida or ent.ci_temporal or p_json.get("ci_real")
-        if not ci_raw or str(ci_raw).strip().lower() in ("no especificado", "no provisto", "none", "null", ""):
-            ci_est = f"TEMP-{ent.id_staging}"
-        else:
-            ci_est = str(ci_raw).replace("?", "").strip()
-
-        categoria_ruteo = (
-            "financiero" if doc_fuente == "COBRANZA" else ("admision" if doc_fuente == "ADMISION" else "academico")
-        )
-
-        try:
-            res_load = dw.cargar_registro({
-                "categoria": categoria_ruteo,
-                "tipo_fuente": doc_fuente,
-                "tipo_escala": doc_escala,
-                "doc_id": ent.id_documento,
-                "resoluciones": {
-                    "estudiante": {
-                        "fk_resolucion": {
-                            "ci": ci_est,
-                            "nombre_resuelto": nom_est,
-                        },
-                        "valor_extraido": nom_est,
-                    },
-                    "modulo": {
-                        "valor_extraido": payload.modulo_resuelto or p_json.get("modulo") or "Módulo Académico"
-                    },
-                    "nota_final": payload.nota_final or p_json.get("nota_normalizada"),  # sin nota no se inventa una
-                    "monto_deuda": payload.monto_deuda or p_json.get("monto_deuda") or 0.0,
-                    "monto_pagado": payload.monto_pagado or 0.0,
-                    "cuotas_impagas": payload.cuotas_impagas if payload.cuotas_impagas is not None else (p_json.get("cuotas_impagas") or 0),
-                    "concepto": payload.concepto or "Cuota Mensual",
-                    "nivel_confianza_ia": 0.99,
-                },
-                "calidad": {"requiere_revision": False, "resuelto_por_humano": True},
-            })
-            ent.id_dimension_resuelta = res_load.get("id_estudiante")
-        except Exception as e_dw:
-            logger.warning("Error cargando item %s al DW: %s", item_id, e_dw)
-
-        ent.resuelto = True
-        ent.estado_resolucion = "RESUELTO_HUMANO"
-        ent.resuelto_en = datetime.now()
-        if ent.registro_origen_id:
-            stg_parent = db.query(StagingRegistroCrudo).filter_by(id=ent.registro_origen_id).first()
-            if stg_parent:
-                stg_parent.resuelto = True
-                stg_parent.estado_resolucion = "RESUELTO_HUMANO"
-                stg_parent.resuelto_en = datetime.now()
-        resolved_count += 1
-
-    db.commit()
-
-    user_name = current_user.username if current_user else "Auditor Calidad"
-    try:
-        if resolved_count > 0:
-            audit_pipe = LogPipelineIngesta(
-                id_documento=None,
-                etapa="HITL_RESOLUCION_LOTE",
-                nivel="INFO",
-                modulo="DataOps HITL",
-                mensaje=f"Resolución en lote por {user_name}: {resolved_count} casos aprobados y consolidados en el Data Warehouse.",
-                metadata_json={"item_ids": payload.item_ids, "resolved_count": resolved_count, "usuario": user_name}
-            )
-            db.add(audit_pipe)
-            db.commit()
-
-            NotificationService.create_notification(
-                db=db,
-                title=f"{resolved_count} casos consolidados",
-                message=f"Se resolvieron y consolidaron {resolved_count} casos de la bandeja de revisión en el Data Warehouse por {user_name}.",
-                category="DataOps",
-                severity="SUCCESS",
-                role_target="AUDITOR_CALIDAD",
-                link="/dataops/revision"
-            )
-    except Exception as e_aud_batch:
-        logger.warning("No se pudo registrar auditoría en lote: %s", e_aud_batch)
-
-    return {
-        "status": "success",
-        "resolved_count": resolved_count,
-        "message": f"Se resolvieron y consolidaron {resolved_count} caso(s) en el Data Warehouse.",
-    }
+    for item_id in dict.fromkeys(payload.item_ids):
+        datos = payload.model_dump(exclude_none=True)
+        datos['accion'] = 'APROBAR'
+        datos['aprobacion_en_bloque'] = True
+        res = resolve_review_item(str(item_id), datos, db=db, current_user=current_user)
+        if res.get('status') == 'success':
+            resolved_count += 1
+    if resolved_count:
+        _notificar_revision(db, 'Aprobación en bloque terminada', f'{resolved_count} casos guardados. Abre Revisión para consultar el resultado.')
+    return {'status': 'success', 'resolved_count': resolved_count,
+            'message': f'{resolved_count} casos aprobados.'}
 
 
-@router.patch("/review-tray/{item_id}/resolve")
 class AprobacionEnBloqueRequest(BaseModel):
     id_lote: Optional[str] = None
     doc_id: Optional[int] = None
@@ -4489,9 +4157,16 @@ def aprobar_casos_un_clic(
     """
     if not payload.confirmar:
         raise HTTPException(status_code=400, detail="Confirme la aprobación en bloque (confirmar = true).")
-    bandeja = get_review_tray(doc_id=payload.doc_id, id_lote=payload.id_lote, motivo=None, estado=None,
-                              page=1, page_size=10**9, db=db)
-    casos = [it for it in bandeja["items"] if it.get("un_clic")]
+    from services import revision_consulta as revision
+    docs = revision.documentos(db, payload.id_lote, payload.doc_id)
+    _bloquear_documentos_editables(db, docs)
+    # Se recorren resultados guardados en bloques; no se obtiene una respuesta gigante ni se llama a BETO.
+    casos = []
+    total = 0
+    for it, _ in revision.iterar_casos(db, docs):
+        total += 1
+        if it.get('un_clic'):
+            casos.append(it)
     user_name = getattr(current_user, "username", None) or "Auditor Calidad"
     user_id = getattr(current_user, "id", None)
     aprobados, fallidos = [], []
@@ -4502,7 +4177,7 @@ def aprobar_casos_un_clic(
                 res = resolver_caso_hecho(db, item_id, {"accion": "APROBAR", "aprobacion_en_bloque": True},
                                           user_id=user_id, user_name=user_name)
             else:
-                res = resolve_review_item(item_id, {"accion": "APROBAR", "estudiante_resuelto": it.get("sugerencia")},
+                res = resolve_review_item(item_id, {"accion": "APROBAR", "estudiante_resuelto": it.get("sugerencia"), 'aprobacion_en_bloque': True},
                                           db=db, current_user=current_user)
                 db.add(LogPipelineIngesta(
                     id_documento=it.get("id_documento"), etapa="HITL_APROBACION_EN_BLOQUE", nivel="SUCCESS",
@@ -4516,15 +4191,35 @@ def aprobar_casos_un_clic(
             fallidos.append(item_id)
             logger.warning("Aprobación en bloque: no se pudo aprobar %s: %s", item_id, e_bloque)
     cache_consultas.invalidar()
+    if aprobados:
+        _notificar_revision(db, 'Aprobación en bloque terminada', f'{len(aprobados)} casos guardados; {total - len(aprobados)} siguen pendientes.')
     return {
         "status": "success",
         "aprobados": len(aprobados),
         "fallidos": fallidos,
-        "manuales_pendientes": bandeja["total"] - len(casos),
-        "message": f"{len(aprobados)} casos de un clic aprobados en bloque; {bandeja['total'] - len(casos)} manuales siguen en la bandeja.",
+        "manuales_pendientes": total - len(aprobados),
+        "message": f"{len(aprobados)} casos aprobados; {total - len(aprobados)} siguen pendientes.",
     }
 
 
+def _bloquear_documentos_editables(db, docs):
+    for lote_id in sorted({d.id_lote for d in docs if d.id_lote}):
+        db.query(Lote).filter_by(id_lote=lote_id).with_for_update().first()
+        _asegurar_lote_editable(db, lote_id)
+
+
+def _notificar_revision(db, titulo, mensaje, id_lote=None):
+    try:
+        for rol in ('ADMIN', 'AUDITOR_CALIDAD'):
+            NotificationService.create_notification(db=db, title=titulo, message=mensaje,
+                category='DataOps', severity='SUCCESS', role_target=rol,
+                link=f'/dataops/lote/{id_lote}/revision' if id_lote else '/dataops/revision')
+    except Exception:
+        db.rollback()
+        logger.exception('No se pudo guardar el aviso de revisión')
+
+
+@router.patch("/review-tray/{item_id}/resolve")
 @router.post("/review-tray/{item_id}/resolve")
 def resolve_review_item(
     item_id: str,
@@ -4533,15 +4228,41 @@ def resolve_review_item(
     current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
 ):
     """Aprueba y consolida un registro individual en la bandeja de revisión humana."""
-    payload = payload or {}
+    payload = dict(payload or {})
+    for campo, minimo, maximo in (('nota_final', 0, 100), ('monto_deuda', 0, None), ('cuotas_impagas', 0, None), ('mes', 1, 12), ('gestion', 2000, 2100)):
+        valor = payload.get(campo)
+        if valor not in (None, ''):
+            try:
+                numero = float(valor)
+                if not math.isfinite(numero) or numero < minimo or (maximo is not None and numero > maximo) or (campo in ('cuotas_impagas', 'mes', 'gestion') and not numero.is_integer()):
+                    raise ValueError()
+            except (ValueError, TypeError):
+                raise HTTPException(422, 'Revisa los valores numéricos y la fecha de la corrección.')
+            payload[campo] = int(numero) if campo in ('cuotas_impagas', 'mes', 'gestion') else numero
     if es_caso_hecho(item_id):
-        return resolver_caso_hecho(
+        from services.revision_hechos import _cargar
+        if str(item_id).startswith('HECHO-EVA-'):
+            doc_id = int(str(item_id).split('-')[2])
+        else:
+            hecho, _ = _cargar(db, item_id)
+            doc_id = hecho.id_documento if hecho else None
+        if doc_id:
+            _bloquear_documentos_editables(db, db.query(DimOrigenDocumental).filter_by(id_documento=doc_id).all())
+        pendiente_antes = bool(hecho.requiere_revision) if not str(item_id).startswith('HECHO-EVA-') and hecho else True
+        resultado = resolver_caso_hecho(
             db, str(item_id), payload,
             user_id=getattr(current_user, "id", None),
             user_name=getattr(current_user, "username", None) or "Auditor Calidad",
         )
+        if pendiente_antes and resultado.get('status') == 'success' and not payload.get('aprobacion_en_bloque'):
+            _notificar_revision(db, 'Caso revisado', 'La corrección quedó guardada. Abre Revisión para consultar el resultado.')
+        cache_consultas.invalidar()
+        return resultado
     clean_id = str(item_id).replace("REV-", "").strip()
     if clean_id.isdigit():
+        previo = db.get(StagingEntidadNoResuelta, int(clean_id))
+        if previo:
+            _bloquear_documentos_editables(db, db.query(DimOrigenDocumental).filter_by(id_documento=previo.id_documento).all())
         # FOR UPDATE serializa dos resoluciones simultáneas del mismo caso hasta el commit de la primera
         ent = (
             db.query(StagingEntidadNoResuelta)
@@ -4555,17 +4276,26 @@ def resolve_review_item(
                 raise HTTPException(status_code=409, detail=f"El registro {item_id} ya fue resuelto.")
             if (
                 ent.lock_usuario_id
-                and ent.lock_usuario_id != current_user.id
+                and ent.lock_usuario_id != getattr(current_user, "id", None)
                 and ent.lock_expira
                 and ent.lock_expira > datetime.utcnow()
             ):
                 db.rollback()
                 raise HTTPException(status_code=409, detail="El registro está bloqueado por otro auditor.")
+            from services.revision_consulta import presupuesto_manual, datos_payload
+            doc_caso = db.query(DimOrigenDocumental).filter_by(id_documento=ent.id_documento).first()
+            fila_presupuesto = presupuesto_manual(doc_caso, ent.texto_original) or presupuesto_manual(doc_caso, datos_payload(ent).get('raw_line'))
+            if (payload.get('accion') or 'APROBAR').upper() != 'DESCARTAR' and fila_presupuesto:
+                raise HTTPException(422, 'Esta fila de presupuesto requiere corregir su clasificación antes de aprobarla como persona.')
             user_name = current_user.username if (current_user and hasattr(current_user, "username")) else "Auditor Calidad"
             user_id = current_user.id if (current_user and hasattr(current_user, "id")) else None
             accion = (payload.get("accion") or "APROBAR").upper()
+            if accion not in ('APROBAR', 'DESCARTAR'):
+                raise HTTPException(422, 'Selecciona aprobar o descartar.')
 
             if "DESCARTAR" in accion:
+                if not str(payload.get('motivo_descarte') or '').strip():
+                    raise HTTPException(422, 'Escribe el motivo del descarte.')
                 ent.resuelto = True
                 ent.estado_resolucion = "DESCARTADO"
                 ent.resuelto_en = datetime.now()
@@ -4592,13 +4322,16 @@ def resolve_review_item(
                         nivel="WARNING",
                         modulo="DataOps HITL",
                         mensaje=f"Registro {item_id} descartado por {user_name}.",
-                        metadata_json={"item_id": item_id, "accion": "DESCARTAR", "usuario": user_name}
+                        metadata_json={"item_id": item_id, "accion": "DESCARTAR", "usuario": user_name, "motivo": payload.get("motivo_descarte")}
                     )
                     db.add(audit_pipe)
                     db.commit()
                 except Exception as e_desc_aud:
                     logger.warning("No se pudo auditar descarte de item %s: %s", item_id, e_desc_aud)
 
+                if not payload.get('aprobacion_en_bloque'):
+                    _notificar_revision(db, 'Caso descartado', 'El descarte y su motivo quedaron guardados en Revisión.')
+                cache_consultas.invalidar()
                 return {
                     "status": "success",
                     "message": f"Registro {item_id} descartado.",
@@ -4612,6 +4345,8 @@ def resolve_review_item(
             p_json = ent.payload_json if isinstance(ent.payload_json, dict) else {}
 
             ci_corregida = payload.get("ci_corregida")
+            if ci_corregida and '•' in str(ci_corregida):
+                ci_corregida = None  # La máscara nunca debe guardarse como una cédula real.
             est_resuelto = payload.get("estudiante_resuelto") or payload.get("texto_editado") or p_json.get("estudiante")
 
             ci_raw = ci_corregida or ent.ci_temporal or p_json.get("ci_real")
@@ -4620,7 +4355,9 @@ def resolve_review_item(
             else:
                 ci_clean = str(ci_raw).replace("?", "").strip()
 
-            nom_clean = (est_resuelto or ent.texto_original or "Estudiante Validado").strip()
+            nom_clean = (est_resuelto or ent.texto_original or '').strip()
+            if not nom_clean:
+                raise HTTPException(422, 'Indica el nombre del estudiante antes de aprobar.')
             if len(nom_clean) > 200:  # el caso trae la línea completa como "nombre": el auditor debe escribir el nombre (antes: 500 por VARCHAR(200))
                 db.rollback()
                 raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -4646,7 +4383,7 @@ def resolve_review_item(
                 # Antes se cargaba un solo hecho "Módulo Académico" y, sin nota, se inventaba 75.
                 linea_origen = p_json.get("raw_line") or (ent.texto_original if "|" in (ent.texto_original or "") else None)
                 registros_acta = []
-                if categoria_ruteo == "academico" and linea_origen and not payload.get("nota_final"):
+                if categoria_ruteo == "academico" and linea_origen and payload.get("nota_final") is None:
                     registros_acta = registros_academicos(campos_por_encabezado([c.strip() for c in linea_origen.split("|")]))
                 if registros_acta:
                     res_load = {}
@@ -4656,6 +4393,8 @@ def resolve_review_item(
                             **{k: v for k, v in reg_aca.items() if v is not None or k in ("nota_final", "fecha")},
                             "estudiante": estudiante_res, "nivel_confianza_ia": 0.99,
                         }})
+                        if res_load.get('status') != 'loaded':
+                            raise RuntimeError('La corrección no pudo incorporarse.')
                 else:
                     nota_payload = payload.get("nota_final")
                     res_load = dw.cargar_registro({**base_registro, "resoluciones": {
@@ -4664,13 +4403,17 @@ def resolve_review_item(
                             "valor_extraido": payload.get("modulo_resuelto") or p_json.get("modulo") or "Módulo Académico"
                         },
                         "nota_final": nota_payload if nota_payload not in (None, "") else p_json.get("nota_normalizada"),
-                        "monto_deuda": payload.get("monto_deuda") or p_json.get("monto_deuda") or 0.0,
+                        "monto_deuda": payload.get("monto_deuda") if payload.get("monto_deuda") is not None else p_json.get("monto_deuda"),
                         "cuotas_impagas": payload.get("cuotas_impagas") if payload.get("cuotas_impagas") is not None else (p_json.get("cuotas_impagas") or 0),
                         "nivel_confianza_ia": 0.99,
                     }})
+                    if res_load.get('status') != 'loaded':
+                        raise RuntimeError('La corrección no pudo incorporarse.')
                 ent.id_dimension_resuelta = res_load.get("id_estudiante")
             except Exception as e_res:
-                logger.warning("Error cargando registro resuelto al DW: %s", e_res)
+                db.rollback()
+                logger.exception("No se pudo guardar el caso %s", item_id)
+                raise HTTPException(503, 'No se pudo guardar el caso. Continúa pendiente; inténtalo de nuevo.') from e_res
 
             ent.resuelto = True
             ent.estado_resolucion = "RESUELTO_HUMANO"
@@ -4712,18 +4455,15 @@ def resolve_review_item(
                 db.add(audit_pipe)
                 db.commit()
 
-                NotificationService.create_notification(
-                    db=db,
-                    title=f"Caso {item_id} resuelto y consolidado",
-                    message=f"El caso {item_id} ({nom_clean}) fue validado e insertado en el DW por {user_name}.",
-                    category="DataOps",
-                    severity="SUCCESS",
-                    role_target="AUDITOR_CALIDAD",
-                    link="/dataops/revision"
-                )
+                if not payload.get('aprobacion_en_bloque'):
+                    _notificar_revision(db, 'Caso revisado', 'La corrección quedó guardada. Abre Revisión para consultar el resultado.',
+                                        orig_doc.id_lote if orig_doc else None)
             except Exception as e_aud_ind:
                 logger.warning("No se pudo registrar auditoría de resolución individual: %s", e_aud_ind)
 
+    if not clean_id.isdigit() or not ent:
+        raise HTTPException(404, 'El caso no existe.')
+    cache_consultas.invalidar()
     return {
         "status": "success",
         "message": f"Registro {item_id} aprobado y consolidado en el Data Warehouse.",

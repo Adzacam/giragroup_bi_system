@@ -203,7 +203,7 @@ class TestResolverRespetaBloqueo:
 
     def _resolver(self, db, usuario_id=2):
         from routers.dataops import resolve_review_item
-        return resolve_review_item("REV-10", {"accion": "DESCARTAR"}, db=db,
+        return resolve_review_item("REV-10", {"accion": "DESCARTAR", "motivo_descarte": "Registro duplicado verificado"}, db=db,
                                    current_user=MagicMock(id=usuario_id, username="auditor"))
 
     def test_rechaza_caso_bloqueado_por_otro_auditor(self):
