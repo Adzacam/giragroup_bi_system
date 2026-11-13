@@ -1,6 +1,6 @@
 # Antes de decidir la fase C: caché vacía, una sola pasada de BETO y origen del KPI-10
 
-Complementa `docs/optimizacion-flujo-dataops-A.md`. Misma entrada (10 archivos del ciclo mensual), copias aisladas del snapshot del 10 de noviembre con el DW reiniciado.
+Complementa `docs/mediciones/optimizacion-flujo-dataops-A.md`. Misma entrada (10 archivos del ciclo mensual), copias aisladas del snapshot del 10 de noviembre con el DW reiniciado.
 
 ## 1. Fase A con la caché de índices vacía (escenario de un mes nuevo)
 

@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-OUTPUT_FILE = ROOT / "docs" / "postman_collection.json"
+OUTPUT_FILE = ROOT / "docs" / "api" / "postman_collection.json"
 
 collection = {
     "info": {

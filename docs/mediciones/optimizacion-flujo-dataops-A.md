@@ -2,7 +2,7 @@
 
 Fase A de la secuencia A → B → C. Solo cambios que no alteran la salida; comprobado con huellas md5 de 14 tablas del DW,
 la bandeja y los KPI del CMI sobre la misma entrada (los 10 archivos del ciclo mensual) en copias aisladas del snapshot del
-10 de noviembre con el DW reiniciado. Punto de partida: `docs/perfil-flujo-dataops.md`. Evidencia: `docs/evidencias/`.
+10 de noviembre con el DW reiniciado. Punto de partida: `docs/mediciones/perfil-flujo-dataops.md`. Evidencia: `docs/evidencias/`.
 
 ## Cambios
 
@@ -65,7 +65,7 @@ Recursos (media de las 3 corridas; máximo entre paréntesis): CPU del equipo 43
 `giragroup_api` CPU 51 % (101 %), RAM 1,58 GiB (1,74); `giragroup_db` CPU 3,7 % (94 %). La CPU del equipo sube frente a las corridas
 anteriores (11–31 %) porque ahora dos procesos BETO infieren a la vez.
 
-### Parte humana (KLM, mismos parámetros que `docs/medicion-flujo-dataops-repetida.md`)
+### Parte humana (KLM, mismos parámetros que `docs/mediciones/medicion-flujo-dataops-repetida.md`)
 
 Bandeja: 194 casos en 12 grupos (5 en bloque, 1 corrección de fecha, 7 manuales con 71 casos). K 0,28; P 1,10; H 0,40; M 1,35; clic 0,20; W 10 s.
 
@@ -77,7 +77,7 @@ Bandeja: 194 casos en 12 grupos (5 en bloque, 1 corrección de fecha, 7 manuales
 Con el Deshacer no bloqueante el revisor no espera los 10 s entre acciones (siguen corriendo en paralelo, cada una cancelable), así que el
 modelo sin espera es el que corresponde. 15,1 min queda 0,1 min por encima de la meta RNF-03 (15 min) con la caché de índices heredada del snapshot (63,6 % de aciertos).
 
-Referencia anterior (3 corridas, código anterior, `docs/medicion-flujo-dataops-repetida.md`): máquina 1.732 s (DE 112): lectura 888 s, consolidación 834 s.
+Referencia anterior (3 corridas, código anterior, `docs/mediciones/medicion-flujo-dataops-repetida.md`): máquina 1.732 s (DE 112): lectura 888 s, consolidación 834 s.
 
 Advertencia sobre la variabilidad: la misma lectura del código anterior midió 888 s (3 corridas desde `/app`) y 1.424 s (desde el overlay), y la
 nueva 169 s (overlay) frente a 291–325 s (`/app`). Parte es el sistema de archivos del bind mount de Windows y parte es variación del equipo;

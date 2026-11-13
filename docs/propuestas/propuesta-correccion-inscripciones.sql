@@ -1,5 +1,5 @@
 -- PROPUESTA: NO EJECUTAR sin aprobación. Corrige las inscripciones triplicadas de giragroup_db usando el snapshot como referencia.
--- Ver docs/propuesta-correccion-inscripciones.md. Se ejecuta con psql sobre giragroup_db, con la API detenida.
+-- Ver docs/propuestas/propuesta-correccion-inscripciones.md. Se ejecuta con psql sobre giragroup_db, con la API detenida.
 --
 -- Paso previo (fuera de este script): exportar la referencia desde el snapshot.
 --   psql -d snapshot_dw_20261110_1201 -c "\copy (SELECT * FROM fact_marketing) TO 'mkt_base.tsv'"

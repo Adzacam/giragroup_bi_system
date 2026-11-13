@@ -217,7 +217,7 @@ docker restart giragroup_web
 - `_archivo/_archivo/_archivo/docs/auditoria/plan_maestro_ejecucion.md`: plan por fases, mediciones y estado de las correcciones.
 - `docs/apendices/diccionario_datos.md`: diccionario de datos del DW y de los catálogos.
 - `docs/architecture/`: metodología de pronóstico y auditorías de sprints.
-- `docs/postman_collection.json`: colección de la API.
+- `docs/api/postman_collection.json`: colección de la API.
 
 ## Estructura
 
