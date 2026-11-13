@@ -18,12 +18,12 @@ from sqlalchemy.orm import Session
 from core.database import SessionLocal
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.staging_registro import StagingRegistroCrudo
-from services import cache_consultas, cache_lectura, tareas_dataops
+from services import beto_integracion, cache_consultas, cache_lectura, tareas_dataops
 from services.dataops_evaluation_service import calcular_porcentajes_mayor_residuo, cis_en_entidades, enmascarar_ci, entidad_sin_ci, texto_sin_ci
 from services.revision_hechos import contar_hechos_en_revision
 from sqlalchemy import func
 from ._comun import UMBRAL_INDICE_REGISTRO
-from .extraccion import _docentes_con_contexto, extract_entities_from_line
+from .extraccion import _docentes_con_contexto, _es_encabezado_no_estudiante, extract_entities_from_line, fila_sin_entidad
 
 logger = logging.getLogger(__name__)
 
@@ -234,6 +234,10 @@ def _evaluar_documentos_lote(
     lineas_hechas = 0
     tareas_dataops.avanzar(tarea_id, 0, sum(len([l for l in (s_reg.texto_plano or "").splitlines() if l.strip()])
                                             for s_reg in stg_records), forzar=True)
+    # Flags BETO_CASCADA_FINAL / BETO_ACUERDO_QC (services/beto_integracion.py); apagados: camino original
+    cliente_beto, contadores_beto = None, beto_integracion.Contadores()
+    if beto_integracion.necesita_refinar():
+        cliente_beto = beto_integracion.ClienteBeto(contadores=contadores_beto)
 
     for stg in stg_records:
         orig_doc = doc_map.get(stg.id_documento)
@@ -254,18 +258,33 @@ def _evaluar_documentos_lote(
         peor_score_bloque = 1.0
         bloque_requiere_rev = False
 
+        refinadas = None
+        if cliente_beto is not None:
+            refinadas = beto_integracion.refinar_lineas(
+                lines,
+                lambda l, **kw: extract_entities_from_line(
+                    l, estudiantes, docentes, modulos, tipo_escala=doc_escala, tipo_fuente=doc_fuente,
+                    apariciones_lote=max(1, len(lines)), **kw),
+                tipo_fuente=doc_fuente, cliente=cliente_beto, contadores=contadores_beto,
+                archivo=orig_doc.nombre_archivo if orig_doc else None,
+                omitir=lambda l: fila_sin_entidad(l, doc_fuente), excluir_celda=_es_encabezado_no_estudiante)
+
         for line_idx, line in enumerate(lines):
             lineas_hechas += 1
             tareas_dataops.avanzar(tarea_id, lineas_hechas)
-            ents, score, req_rev = extract_entities_from_line(
-                line,
-                estudiantes,
-                docentes,
-                modulos,
-                tipo_escala=doc_escala,
-                tipo_fuente=doc_fuente,
-                apariciones_lote=max(1, len(lines)),
-            )
+            r_beto = refinadas[line_idx] if refinadas is not None else None
+            if r_beto is not None:
+                ents, score, req_rev = r_beto.tupla
+            else:
+                ents, score, req_rev = extract_entities_from_line(
+                    line,
+                    estudiantes,
+                    docentes,
+                    modulos,
+                    tipo_escala=doc_escala,
+                    tipo_fuente=doc_fuente,
+                    apariciones_lote=max(1, len(lines)),
+                )
             total_entidades += len(ents)
             indice_num = int(round(score * 100))
             suma_indices += indice_num
@@ -693,6 +712,7 @@ def _evaluar_documentos_lote(
         "auditPct": audit_pct,
         "inconsistenciasPct": inc_pct,
         "detalles": detalles,
+        **({"beto": contadores_beto.como_dict()} if cliente_beto is not None else {}),
     }
 
 

@@ -18,14 +18,14 @@ from models.staging_entidad import StagingEntidadNoResuelta
 from models.staging_registro import StagingRegistroCrudo
 from models.user import User
 from services.confianza_service import banda_de, obtener_indices
-from services import cache_consultas, tareas_dataops
+from services import beto_integracion, cache_consultas, tareas_dataops
 from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, metricas_captacion, motivo_fila_sin_entidad, normalizar_encabezado, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
 from datetime import datetime
 from services.dataops_evaluation_service import enmascarar_ci, strip_accents
 from core.security import require_roles
 from ._comun import ConfirmDwInsertRequest, UMBRAL_INDICE_REGISTRO_DEC
 from .revision import _bloquear_documentos_editables, resolve_review_item
-from .extraccion import _docentes_con_contexto, extract_entities_from_line
+from .extraccion import _docentes_con_contexto, _es_encabezado_no_estudiante, extract_entities_from_line
 from .evaluacion import _resolver_documentos_lote
 
 logger = logging.getLogger(__name__)
@@ -163,6 +163,9 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         tareas_dataops.avanzar(tarea_id, indexadas[0] + lineas_hechas)
 
     ocurrencias = ContadorOcurrencias()
+    # Flags BETO_CASCADA_FINAL / BETO_ACUERDO_QC (services/beto_integracion.py); apagados: camino original
+    contadores_beto = beto_integracion.Contadores()
+    cliente_beto = beto_integracion.ClienteBeto(contadores=contadores_beto) if beto_integracion.necesita_refinar() else None
     for stg in stg_records:
         orig_doc = origenes_map.get(stg.id_documento) if stg.id_documento else None
         doc_fuente = (orig_doc.tipo_fuente if (orig_doc and orig_doc.tipo_fuente) else "ACTA").upper().strip()
@@ -191,6 +194,15 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
 
         # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
         indices_linea = obtener_indices(lines, al_avanzar=_al_indexar)
+        refinadas = None
+        if cliente_beto is not None:
+            refinadas = beto_integracion.refinar_lineas(
+                lines,
+                lambda l, **kw: extract_entities_from_line(l, estudiantes, docentes, modulos, tipo_escala=doc_escala, tipo_fuente=doc_fuente, **kw),
+                tipo_fuente=doc_fuente, cliente=cliente_beto, contadores=contadores_beto,
+                archivo=orig_doc.nombre_archivo if orig_doc else None,
+                omitir=lambda l: bool(motivo_fila_sin_entidad(campos_por_encabezado([c.strip() for c in l.split("|")]), categoria_ruteo)),
+                excluir_celda=_es_encabezado_no_estudiante)
         for k_fila, (line, indice) in enumerate(zip(lines, indices_linea)):
             lineas_hechas += 1
             tareas_dataops.avanzar(tarea_id, indexadas[0] + lineas_hechas)
@@ -201,20 +213,25 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                 _registrar_descarte_ruido(db, stg, line, indice, motivo_ruido, doc_fuente)
                 descartados_ruido += 1
                 continue
-            ents, score, req_rev = extract_entities_from_line(
-                line,
-                estudiantes,
-                docentes,
-                modulos,
-                tipo_escala=doc_escala,
-                tipo_fuente=doc_fuente,
-            )
+            r_beto = refinadas[k_fila] if refinadas is not None else None
+            if r_beto is not None:
+                ents, score, req_rev = r_beto.tupla
+            else:
+                ents, score, req_rev = extract_entities_from_line(
+                    line,
+                    estudiantes,
+                    docentes,
+                    modulos,
+                    tipo_escala=doc_escala,
+                    tipo_fuente=doc_fuente,
+                )
             banda = banda_de(indice)
             is_approved = banda != BANDA_STAGING
             # Lecturas dudosas del extractor (CI con '?', escala ambigua) no se descartan: quedan en revisión
             en_revision = banda == BANDA_REVISION or req_rev
             if indice is not None:
                 score = indice
+
 
             ci_tok = next((e["token"] for e in ents if "CI" in e.get("label", "")), None)
             if ci_tok == "No provisto":
@@ -446,6 +463,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                 "sent_hitl": sent_hitl,
                 "inserted_revision": inserted_revision,
                 "usuario": user_name,
+                **({"beto": contadores_beto.como_dict()} if cliente_beto is not None else {}),
             }
         )
         db.add(audit_pipe)
@@ -472,6 +490,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         "inserted_revision": inserted_revision,
         "sent_hitl": sent_hitl,
         "descartados_ruido": descartados_ruido,
+        **({"beto": contadores_beto.como_dict()} if cliente_beto is not None else {}),
     }
 
 

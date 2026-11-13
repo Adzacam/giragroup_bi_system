@@ -46,6 +46,22 @@ _MEMO_LOCK = threading.Lock()
 _MEMO_MAX_CATALOGOS = 12
 
 
+def categoria_de_fuente(doc_fuente: str) -> str:
+    """Categoría de ruteo de un documento por su tipo de fuente (la misma que usa la consolidación)."""
+    return ("financiero" if doc_fuente == "COBRANZA"
+            else "rentabilidad" if doc_fuente in ("EGRESOS", "TECHOS", "RENTABILIDAD")
+            else "evaluacion_docente" if doc_fuente == "EVALUACION_DOCENTE"
+            else "marketing" if doc_fuente == "MARKETING"
+            else "admision" if doc_fuente == "ADMISION"
+            else "academico")
+
+
+def fila_sin_entidad(linea: str, doc_fuente: str) -> bool:
+    """True si la fila no tiene entidad que enlazar (hoja de estados, catálogo, fila agregada): ruido, no se lee con BETO."""
+    from services.extraccion_por_encabezado import campos_por_encabezado, motivo_fila_sin_entidad
+    return bool(motivo_fila_sin_entidad(campos_por_encabezado([c.strip() for c in linea.split("|")]), categoria_de_fuente(doc_fuente)))
+
+
 def _memo_catalogo(tipo: str, catalogo: list) -> Dict[Any, Any]:
     clave = (tipo, id(catalogo))
     with _MEMO_LOCK:
@@ -159,6 +175,8 @@ def extract_entities_from_line(
     tipo_fuente: str = "ACTA",
     prob_override: Optional[dict] = None,
     apariciones_lote: int = 1,
+    est_beto: Optional[dict] = None,
+    doc_beto: Optional[dict] = None,
 ) -> Tuple[list, float, bool]:
     """
     Extrae y resuelve entidades desde una línea de texto plano combinando:
@@ -166,6 +184,10 @@ def extract_entities_from_line(
     2. Resolución contra Catálogo Maestro + RapidFuzz para MÓDULO, DOCENTE, PROGRAMA y CONCEPTO_FINANCIERO (#4)
     3. Compuerta de lectura base >= 0.70 (70) y bonos acumulativos (bono_catalogo + bono_repetido) con tope 0.99 (99) (#3, #6)
     4. Normalización obligatoria de notas a base 100 según tipo_escala (#16).
+
+    est_beto / doc_beto ({"nombre", "prob"}): nombre que BETO propone para el estudiante o el docente que las reglas no resolvieron
+    (services/beto_integracion.py, BETO_CASCADA_FINAL). Solo se usan si no hay una resolución de reglas contra el catálogo
+    (umbral 80): BETO nunca reemplaza una resolución A/B. Sin ellos la función se comporta exactamente como antes.
     """
     entities = []
     is_dudoso = False
@@ -240,7 +262,13 @@ def extract_entities_from_line(
                 best_est = e
                 est_token = cand
 
-    lectura_est_base = float(prob_override.get("ESTUDIANTE", 0.91 if (best_est and best_est_score >= 80.0) else 0.88))
+    est_por_beto = False
+    if est_beto and not (best_est and best_est_score >= 80.0):
+        e_b, score_b, algo_b = _mejor_estudiante(est_beto["nombre"], estudiantes, ci_previo, contexto_reg)
+        if e_b is not None and score_b >= 80.0:
+            best_est, best_est_score, best_est_algo, est_token, est_por_beto = e_b, score_b, algo_b + " · nombre propuesto por BETO", est_beto["nombre"], True
+
+    lectura_est_base = float(est_beto["prob"]) if est_por_beto else float(prob_override.get("ESTUDIANTE", 0.91 if (best_est and best_est_score >= 80.0) else 0.88))
     calc_est = calcular_indice_entidad_con_bonos(
         lectura_est_base,
         score_rapidfuzz=best_est_score if (best_est and best_est_score >= 80.0) else 0.0,
@@ -263,7 +291,7 @@ def extract_entities_from_line(
             "ci": getattr(best_est, "codigo_estudiante", None) or f"{best_est.id_estudiante}",
             "fuzzScore": round(best_est_score, 1),
             "algorithm": best_est_algo,
-            "fuente_resolucion": "CI_EXACTA" if "CI Exact" in best_est_algo else "FUZZY",
+            "fuente_resolucion": "BETO" if est_por_beto else ("CI_EXACTA" if "CI Exact" in best_est_algo else "FUZZY"),
             "es_nuevo_perfil": False,
         })
     elif est_token:
@@ -399,7 +427,13 @@ def extract_entities_from_line(
                 doc_token = d.nombre_completo
                 break
 
-    lectura_doc_base = float(prob_override.get("DOCENTE", 0.85))
+    doc_por_beto = False
+    if doc_beto and not (best_doc and best_doc_score >= 80.0):
+        d_b, score_db, algo_db = _mejor_docente(doc_beto["nombre"], docentes, contexto_reg)
+        if d_b is not None and score_db >= 80.0:
+            best_doc, best_doc_score, best_doc_algo, doc_token, doc_por_beto = d_b, score_db, algo_db + " · nombre propuesto por BETO", doc_beto["nombre"], True
+
+    lectura_doc_base = float(doc_beto["prob"]) if doc_por_beto else float(prob_override.get("DOCENTE", 0.85))
     calc_doc = calcular_indice_entidad_con_bonos(
         lectura_doc_base,
         score_rapidfuzz=best_doc_score if (best_doc and best_doc_score >= 80.0) else 0.0,
@@ -421,7 +455,7 @@ def extract_entities_from_line(
             "canonicalId": f"DOC-{best_doc.id_docente}",
             "fuzzScore": round(best_doc_score, 1),
             "algorithm": best_doc_algo,
-            "fuente_resolucion": "FUZZY" if "Fuzzy" in best_doc_algo else "ENCABEZADO",
+            "fuente_resolucion": "BETO" if doc_por_beto else ("FUZZY" if "Fuzzy" in best_doc_algo else "ENCABEZADO"),
             "es_nuevo_perfil": False,
         })
     elif doc_token or doc_cands:
