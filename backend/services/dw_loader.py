@@ -237,6 +237,10 @@ class DWLoaderService:
         self._cache_docente_programa: Dict[Any, Optional[int]] = {}
         self._cache_tiempo_programa: Dict[Any, Optional[int]] = {}
         self._cache_estudiante: Dict[Any, Tuple[Optional[int], str]] = {}
+        # Con 85 mil registros por consolidación, estas búsquedas se repetían una vez por registro contra la base
+        self._origen_por_doc: Dict[Any, Optional[DimOrigenDocumental]] = {}
+        self._docente_por_nombre: Dict[str, Optional[int]] = {}
+        self._institucion_por_nombre: Dict[str, Optional[int]] = {}
 
     def _candidatos_estudiante_fuzzy(self, nombre_clean: str):
         """[(DimEstudiante, ratio)] con token_sort_ratio >= 90, mayor primero. La lista de nombres se carga una sola vez
@@ -341,15 +345,18 @@ class DWLoaderService:
     def _resolver_id_institucion(self, institucion: Optional[str]) -> Optional[int]:
         if not institucion:
             return None
+        clave = institucion.strip().lower()
+        if clave in self._institucion_por_nombre:
+            return self._institucion_por_nombre[clave]
+        id_inst = None
         try:
-            cat = self.db.query(CatInstitucion).filter(
-                func.lower(CatInstitucion.nombre_institucion) == institucion.strip().lower()
-            ).first()
+            cat = self.db.query(CatInstitucion).filter(func.lower(CatInstitucion.nombre_institucion) == clave).first()
             if cat:
-                return cat.id_institucion
+                id_inst = cat.id_institucion
         except Exception:
             pass
-        return None
+        self._institucion_por_nombre[clave] = id_inst
+        return id_inst
 
     # ── 1. Resolución DimEstudiante ───────────────────────────────────────────
     def resolver_o_crear_estudiante(
@@ -666,10 +673,14 @@ class DWLoaderService:
         con_titulo = bool(grado) and bool(re.fullmatch(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]{3,}", clean_nombre or ""))
         if not clean_nombre or len(clean_nombre) > 200 or not (es_nombre_persona(clean_nombre) or con_titulo):
             return None  # un comentario libre (más largo que dim_docente.nombre_completo, 200) no es un docente
+        clave = clean_nombre.lower()
+        if clave in self._docente_por_nombre:  # el mismo docente se repite en miles de respuestas de una encuesta
+            return self._docente_por_nombre[clave]
         doc = self.db.query(DimDocente).filter(
-            func.lower(DimDocente.nombre_completo) == clean_nombre.lower()
+            func.lower(DimDocente.nombre_completo) == clave
         ).first()
         if doc:
+            self._docente_por_nombre[clave] = doc.id_docente
             return doc.id_docente
 
         docentes = self.db.query(DimDocente).all()
@@ -677,11 +688,13 @@ class DWLoaderService:
             doc_map = {d.nombre_completo: d for d in docentes if d.nombre_completo}
             mejor_cand, score_fuzz = _fuzzy_best_match(clean_nombre, list(doc_map.keys()))
             if mejor_cand and score_fuzz is not None and score_fuzz >= 85.0:
+                self._docente_por_nombre[clave] = doc_map[mejor_cand].id_docente
                 return doc_map[mejor_cand].id_docente
 
         nuevo_doc = DimDocente(nombre_completo=clean_nombre, fk_estado="B")  # sin CI exacta ni candidato
         self.db.add(nuevo_doc)
         self.db.flush()
+        self._docente_por_nombre[clave] = nuevo_doc.id_docente
         return nuevo_doc.id_docente
 
     # ── 3. Resolución DimModulo ──────────────────────────────────────────────
@@ -773,9 +786,13 @@ class DWLoaderService:
         self._eval_pendientes = {}
         self.db.flush()
         cur = self.db.connection().connection.cursor()
+        # Misma regla que la carga fila a fila: lo que decidió la bandeja (docente, período, revisión y motivo) no se pisa en una
+        # respuesta RESUELTO_HUMANO; el resto de la respuesta sí se actualiza
+        protegidas = {"id_docente", "id_tiempo", "requiere_revision", "motivo_revision"}
         sql = (f"INSERT INTO fact_evaluacion_docente ({', '.join(cols)}) VALUES %s ON CONFLICT (clave_respuesta) DO UPDATE SET "
-               + ", ".join(f"{c}=EXCLUDED.{c}" for c in cols[1:])
-               + " WHERE fact_evaluacion_docente.motivo_revision IS DISTINCT FROM 'RESUELTO_HUMANO'")
+               + ", ".join((f"{c}=CASE WHEN fact_evaluacion_docente.motivo_revision IS DISTINCT FROM 'RESUELTO_HUMANO' "
+                            f"THEN EXCLUDED.{c} ELSE fact_evaluacion_docente.{c} END") if c in protegidas else f"{c}=EXCLUDED.{c}"
+                           for c in cols[1:]))
         for i in range(0, len(filas), pagina):
             execute_values(cur, sql, filas[i:i + pagina], page_size=pagina)
         cur.close()
@@ -1002,9 +1019,11 @@ class DWLoaderService:
         doc_id = registro.get("doc_id")
         origen_doc = None
         if doc_id:
-            origen_doc = self.db.query(DimOrigenDocumental).filter(
-                DimOrigenDocumental.id_documento == doc_id
-            ).first()
+            if doc_id not in self._origen_por_doc:
+                self._origen_por_doc[doc_id] = self.db.query(DimOrigenDocumental).filter(
+                    DimOrigenDocumental.id_documento == doc_id
+                ).first()
+            origen_doc = self._origen_por_doc[doc_id]
 
         tipo_fuente = (
             registro.get("tipo_fuente")

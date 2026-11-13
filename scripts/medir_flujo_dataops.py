@@ -83,6 +83,8 @@ def main(salida):
     t0 = time.perf_counter()
     rc = cli.post(f"{BASE}/confirm-dw-insert", json={"id_lote": id_lote, "en_segundo_plano": False})
     t["consolidacion_s"] = round(time.perf_counter() - t0, 2)
+    import huella_dw  # huella del resultado antes de la revisión simulada (que resuelve casos de la bandeja)
+    huella_dw.main(str(salida) + ".huella.json")
 
     # los casos de la bandeja se generan al consolidar: la revisión se simula después
     revision = rev.simular(cli, str(id_lote))

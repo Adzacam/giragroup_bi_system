@@ -126,7 +126,7 @@ function Revision({ batchId }) {
       {readOnly && <p>El lote está cerrado. Las consultas y exportaciones siguen disponibles.</p>}
     </div>
     <IntegridadLote key={batchId} batchId={batchId} />
-    {actions.pending && <div className="dataops-banner-info" role="status" style={{ marginBottom: 20 }}><span>{actions.pending.title}: se enviará en {actions.pending.seconds} s. Salir de esta pantalla cancela la espera.</span><Button variant="ghost" onClick={actions.cancel}>Deshacer</Button></div>}
+    {actions.pending.map(op => <div key={op.id} className="dataops-banner-info" role="status" style={{ marginBottom: 12 }}><span>{op.title}: se enviará en {op.seconds} s. Puedes seguir revisando; salir de esta pantalla cancela la espera.</span><Button variant="ghost" onClick={() => actions.cancel(op.id)}>Deshacer</Button></div>)}
     {processing && <ProgresoTarea titulo="Consolidando el lote" tarea={task} nota="El proceso continúa en segundo plano y avisará al terminar." />}
     <div className="floating-artifact" style={{ padding: 20, marginBottom: 20 }}>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>{[['GRUPOS','Por grupos'],['PENDIENTES','Casos pendientes'],['RESUELTOS','Casos resueltos']].map(([value,label]) => <Button variant="ghost" key={value} style={{ borderColor: filters.vista === value ? 'var(--color-gira-gold)' : 'var(--color-border)', background: filters.vista === value ? 'var(--dataops-info-bg)' : undefined, color: filters.vista === value ? 'var(--dataops-info-text)' : undefined }} disabled={actions.busy} aria-pressed={filters.vista === value} onClick={() => setFilter('vista',value)}>{label}</Button>)}</div>

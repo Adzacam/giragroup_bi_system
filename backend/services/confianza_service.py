@@ -24,31 +24,44 @@ logger = logging.getLogger("confianza_service")
 BETO_INDICE_URL = os.getenv("BETO_INDICE_URL", "http://pipeline:8006/indice")
 LINEAS_POR_PETICION = 256
 TIMEOUT_SEG = 300
+# Peticiones simultáneas al servicio: una por proceso del servidor (uvicorn --workers). Medido: 1 proceso 20,8 líneas/s,
+# 2 procesos 31,8 líneas/s con el mismo resultado por texto (docs/evidencias/benchmark_beto).
+PETICIONES_SIMULTANEAS = max(1, int(os.getenv("BETO_PETICIONES_SIMULTANEAS", "2")))
 
 
 MODELO = os.getenv("BETO_MODELO_VERSION", "beto-v1")  # cambiarlo invalida la caché de índices
 LOTE_CACHE_SQL = 5000
 
 
+def _pedir_indices(lote: List[str]) -> List[Optional[float]]:
+    """Una petición al servicio; None para cada línea si falla (nunca se inventa un índice)."""
+    try:
+        req = urllib.request.Request(
+            BETO_INDICE_URL,
+            data=json.dumps({"textos": lote}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=TIMEOUT_SEG) as resp:
+            return json.loads(resp.read().decode("utf-8"))["indices"]
+    except Exception as e:
+        logger.warning(f"Servicio de índice BETO no disponible ({e}); {len(lote)} líneas quedan sin índice.")
+        return [None] * len(lote)
+
+
 def _inferir(textos: List[str], al_avanzar=None) -> List[Optional[float]]:
-    """Índices del servicio BETO; None para las líneas de una petición que falla (nunca se inventa uno)."""
+    """Índices del servicio BETO en el orden de entrada, con hasta PETICIONES_SIMULTANEAS peticiones de 256 líneas a la vez."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    lotes = [textos[i:i + LINEAS_POR_PETICION] for i in range(0, len(textos), LINEAS_POR_PETICION)]
     indices: List[Optional[float]] = []
-    for i in range(0, len(textos), LINEAS_POR_PETICION):
-        lote = textos[i:i + LINEAS_POR_PETICION]
-        try:
-            req = urllib.request.Request(
-                BETO_INDICE_URL,
-                data=json.dumps({"textos": lote}).encode("utf-8"),
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=TIMEOUT_SEG) as resp:
-                indices.extend(json.loads(resp.read().decode("utf-8"))["indices"])
-        except Exception as e:
-            logger.warning(f"Servicio de índice BETO no disponible ({e}); {len(lote)} líneas quedan sin índice.")
-            indices.extend([None] * len(lote))
-        if al_avanzar:
-            al_avanzar(len(lote))
+    if not lotes:
+        return indices
+    with ThreadPoolExecutor(max_workers=min(PETICIONES_SIMULTANEAS, len(lotes))) as pool:
+        for lote, res in zip(lotes, pool.map(_pedir_indices, lotes)):
+            indices.extend(res)
+            if al_avanzar:
+                al_avanzar(len(lote))
     return indices
 
 

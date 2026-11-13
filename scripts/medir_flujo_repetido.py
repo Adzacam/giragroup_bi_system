@@ -16,6 +16,7 @@ import psutil
 ROOT = Path(__file__).resolve().parent.parent
 SNAPSHOT = "snapshot_dw_20261110_1201"
 INTERVALO = 5
+CONTENEDORES = ("giragroup_api", "giragroup_db")  # contenedores muestreados con docker stats
 TRUNC = ("public.fact_rendimiento_academico, public.fact_situacion_financiera, public.fact_evaluacion_docente, public.fact_marketing, "
          "public.fact_rentabilidad, public.fact_forecast, public.fact_cobranzas_proyectadas, public.stg_entidad_no_resuelta, "
          "public.staging_registros_crudos, public.log_pipeline_ingesta, public.log_inconsistencias, public.log_auditoria_nlp, "
@@ -44,7 +45,7 @@ def muestreador(parar, muestras):
         cont = {}
         for ln in d:
             n, c, m = (ln.split("|") + ["", ""])[:3]
-            if n in ("giragroup_api", "giragroup_db"):
+            if n in CONTENEDORES:
                 usado = m.split("/")[0].strip()
                 mb = float(usado[:-3]) * (1024 if usado.endswith("GiB") else 1) if usado[-3:] in ("MiB", "GiB") else 0
                 cont[n] = {"cpu_pct": float(c.strip("%") or 0), "ram_mib": round(mb, 1)}
@@ -74,19 +75,21 @@ def main(salida, n, desde=1):
         psql(usuario, base, f"TRUNCATE TABLE {TRUNC} RESTART IDENTITY CASCADE")
         sh(["docker", "cp", str(ROOT / "backend/scripts/migrations/014_conversion_captacion_comprobable.sql"), "giragroup_db:/tmp/014.sql"])
         psql(usuario, base, archivo="/tmp/014.sql")
-        sh(["docker", "cp", str(ROOT / "scripts/medir_flujo_dataops.py"), "giragroup_api:/app/scripts/"])
+        for nombre in ("medir_flujo_dataops.py", "huella_dw.py", "simular_revision.py"):
+            sh(["docker", "cp", str(ROOT / "scripts" / nombre), "giragroup_api:/app/scripts/"])
         time.sleep(30)  # reposo para que el muestreo parta con la máquina estable
         muestras, parar = [], threading.Event()
         th = threading.Thread(target=muestreador, args=(parar, muestras))
         th.start()
         t0 = time.time()
-        cmd = (f'cd /app && export DATABASE_URL=$(echo $DATABASE_URL | sed "s#/giragroup_db\$#/{base}#") && '
-               f'CICLO_FILAS_SIN_FECHA=0 CICLO_SLICES=/tmp/slices_flujo PYTHONPATH=/app:/app/scripts python scripts/medir_flujo_dataops.py /tmp/flujo_{i}.json')
+        cmd = (f'cd /app && export DATABASE_URL=$(echo $DATABASE_URL | sed "s#/giragroup_db\\$#/{base}#") && '
+               f'CICLO_REUSAR_SLICES=1 CICLO_FILAS_SIN_FECHA=0 CICLO_SLICES=/tmp/slices_flujo PYTHONPATH=/app:/app/scripts python scripts/medir_flujo_dataops.py /tmp/flujo_{i}.json')
         r = sh(["docker", "exec", "giragroup_api", "sh", "-c", cmd])
         dur = time.time() - t0
         parar.set()
         th.join()
         sh(["docker", "cp", f"giragroup_api:/tmp/flujo_{i}.json", str(out / f"flujo_corrida_{i}.json")])
+        sh(["docker", "cp", f"giragroup_api:/tmp/flujo_{i}.json.huella.json", str(out / f"huella_corrida_{i}.json")])
         (out / f"recursos_corrida_{i}.json").write_text(json.dumps(muestras), encoding="utf-8")
         psql(usuario, "postgres", f"drop database if exists {base}")
         corridas.append({"corrida": i, "duracion_total_s": round(dur, 1), "salida": r.stdout[-300:], "recursos": resumen_recursos(muestras)})

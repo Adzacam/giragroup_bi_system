@@ -1,0 +1,16 @@
+{
+ "lineas": 15516,
+ "lotes": 61,
+ "puertos": [
+  8006
+ ],
+ "errores": 0,
+ "entidades": 288101,
+ "sin_entidades": 1408,
+ "por_puerto": {
+  "8006": 15516
+ },
+ "segundos": 2735.54,
+ "lineas_por_s": 5.67,
+ "ms_por_oracion_servidor_media": 175.53
+}

@@ -111,24 +111,63 @@ def _coincide_contexto(persona_ctx: Iterable[str], registro_ctx: Iterable[str]) 
 UMBRAL_PERSONA = 0.92  # umbral de candidato (score RapidFuzz/100) para el bloqueo escalonado
 
 
+class _PersonaPreparada:
+    """Lo que de una persona del catálogo se usa en cada resolución, calculado una sola vez (antes se recalculaba por cada nombre a resolver:
+    con 14 mil personas y 8 mil nombres eran 200 millones de normalizaciones y el 90 % del tiempo de la lectura)."""
+
+    __slots__ = ("p", "canon", "toks", "toks_set", "apellidos", "ctx", "modulos", "ci")
+
+    def __init__(self, p: Dict[str, Any]):
+        self.p = p
+        self.canon = quitar_titulos(p["nombre"])
+        self.toks = _tokens(self.canon)
+        self.toks_set = set(self.toks)
+        self.apellidos = set(self.toks[1:])
+        self.ctx = [quitar_titulos(c) for c in (p.get("contextos") or []) if c]
+        self.modulos = [quitar_titulos(c) for c in (p.get("modulos") or []) if c]
+        self.ci = _norm_ci(p.get("ci"))
+
+
+_PREPARADAS: Dict[int, tuple] = {}
+_MAX_CATALOGOS_PREPARADOS = 8
+
+
+def _preparar(personas: List[Dict[str, Any]]) -> List[_PersonaPreparada]:
+    """Catálogo preparado, memorizado por identidad y tamaño de la lista (la misma lista se reutiliza en toda una lectura o consolidación)."""
+    clave = id(personas)
+    hit = _PREPARADAS.get(clave)
+    if hit is not None and hit[0] is personas and hit[1] == len(personas):
+        return hit[2]
+    prep = [_PersonaPreparada(p) for p in personas]
+    while len(_PREPARADAS) >= _MAX_CATALOGOS_PREPARADOS:
+        _PREPARADAS.pop(next(iter(_PREPARADAS)))
+    _PREPARADAS[clave] = (personas, len(personas), prep)
+    return prep
+
+
+def _coincide_ctx_preparado(ctx_persona: List[str], ctx_registro: List[str]) -> bool:
+    return any(a and b and (a in b or b in a) for a in ctx_persona for b in ctx_registro)
+
+
 def _candidatos(personas, cand, toks_c, umbral):
-    """Personas compatibles: apellido (sin títulos) en los apellidos del canónico, >=2 tokens en común y score >= umbral."""
-    apellido = toks_c[-1]
+    """Personas compatibles: apellido (sin títulos) en los apellidos del canónico, >=2 tokens en común y score >= umbral.
+    `personas` son _PersonaPreparada (o dicts, que se preparan al vuelo)."""
+    apellido, primero, toks_c_set = toks_c[-1], toks_c[0], set(toks_c)
     out = []
-    for p in personas:
-        canon = quitar_titulos(p["nombre"])
-        toks_p = _tokens(canon)
-        if len(toks_p) < 2:
+    for pp in personas:
+        if not isinstance(pp, _PersonaPreparada):
+            pp = _PersonaPreparada(pp)
+        if len(pp.toks) < 2:
             continue
         # apellido: el último token del candidato debe estar entre los apellidos (todos menos el primer token) del canónico
-        if apellido not in toks_p[1:] and toks_c[0] not in toks_p[1:]:
+        if apellido not in pp.apellidos and primero not in pp.apellidos:
             continue
-        if len(set(toks_c) & set(toks_p)) < 2:
+        if len(toks_c_set & pp.toks_set) < 2:
             continue
-        ts = fuzz.token_sort_ratio(cand, canon)
-        score = max(ts, fuzz.token_set_ratio(cand, canon)) / 100.0
+        ts = fuzz.token_sort_ratio(cand, pp.canon)
+        score = max(ts, fuzz.token_set_ratio(cand, pp.canon)) / 100.0
         if score >= umbral:
-            out.append((score, ts, p))
+            out.append((score, ts, pp.p))
     return out
 
 
@@ -149,10 +188,12 @@ def resolver_persona_detalle(
     """
     if es_correo(nombre):  # filtro previo: ni CI ni fuzzy sobre un correo
         return {"resultado": None, "motivo": "correo", "nivel": None}
+    preparadas = _preparar(personas)
     ci_n = _norm_ci(ci)
     if len(ci_n) >= 5:
-        for p in personas:
-            if _norm_ci(p.get("ci")) == ci_n:
+        for pp in preparadas:
+            if pp.ci == ci_n:
+                p = pp.p
                 return {"resultado": {"id": p["id"], "nombre": p["nombre"], "score": 1.0, "fuente": "CI_EXACTA"},
                         "motivo": None, "nivel": "CI"}
 
@@ -161,14 +202,14 @@ def resolver_persona_detalle(
     if len(toks_c) < 2:
         return {"resultado": None, "motivo": "sin_candidatos", "nivel": None}  # un solo token no identifica a una persona
 
-    ctx_mod = [c for c in (ctx_modulo or []) if c]
-    ctx_prog = [c for c in (contexto or []) if c]
+    ctx_mod = [quitar_titulos(c) for c in (ctx_modulo or []) if c]
+    ctx_prog = [quitar_titulos(c) for c in (contexto or []) if c]
     niveles = []
     if ctx_mod:
-        niveles.append(("MODULO", [p for p in personas if _coincide_contexto(p.get("modulos") or [], ctx_mod)]))
+        niveles.append(("MODULO", [pp for pp in preparadas if _coincide_ctx_preparado(pp.modulos, ctx_mod)]))
     if ctx_prog:
-        niveles.append(("PROGRAMA", [p for p in personas if _coincide_contexto(p.get("contextos") or [], ctx_prog)]))
-    niveles.append(("DIMENSION", personas))
+        niveles.append(("PROGRAMA", [pp for pp in preparadas if _coincide_ctx_preparado(pp.ctx, ctx_prog)]))
+    niveles.append(("DIMENSION", preparadas))
 
     empate = False
     for nivel, pool in niveles:

@@ -1,0 +1,171 @@
+{
+ "cache_indice_beto_antes": 90212,
+ "carga_s": 11.76,
+ "lectura_s": 3074.05,
+ "lectura_sql": {
+  "total": 2182,
+  "top": [
+   [
+    "UPDATE PUBLIC.DATAOPS_TAREA",
+    2161
+   ],
+   [
+    "SELECT ",
+    14
+   ],
+   [
+    "SELECT DIM_DOCENTE",
+    1
+   ],
+   [
+    "SELECT BRIDGE_MODULO_DOCENTE",
+    1
+   ],
+   [
+    "SELECT DIM_MODULO",
+    1
+   ],
+   [
+    "UPDATE STAGING_REGISTROS_CRUDOS",
+    1
+   ],
+   [
+    "SELECT STAGING_REGISTROS_CRUDOS",
+    1
+   ],
+   [
+    "INSERT VALUES",
+    1
+   ],
+   [
+    "SELECT LOTE",
+    1
+   ]
+  ]
+ },
+ "lectura_top15_acumulado": "         14257823623 function calls (14257477182 primitive calls) in 3074.003 seconds\n\n   Ordered by: cumulative time\n   List reduced from 1163 to 15 due to restriction <15>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n        1    0.001    0.001 3074.012 3074.012 /app/routers/dataops/evaluacion.py:699(_evaluar_lote_en_segundo_plano)\n        1    1.103    1.103 3073.624 3073.624 /app/routers/dataops/evaluacion.py:167(_evaluar_documentos_lote)\n    15926    9.079    0.001 3049.560    0.191 /app/routers/dataops/extraccion.py:153(extract_entities_from_line)\n    14367    0.099    0.000 2801.813    0.195 /app/routers/dataops/extraccion.py:99(_resolver_persona_cascada)\n     8178    0.085    0.000 2801.544    0.343 /app/pipeline/normalization/person_resolver.py:188(resolver_persona)\n     8178   25.790    0.003 2801.459    0.343 /app/pipeline/normalization/person_resolver.py:135(resolver_persona_detalle)\n    14238    0.020    0.000 2801.453    0.197 /app/routers/dataops/extraccion.py:115(_mejor_estudiante)\n201300851  205.283    0.000 2484.693    0.000 /app/pipeline/normalization/person_resolver.py:88(quitar_titulos)\n201300851   95.093    0.000 1484.825    0.000 /app/pipeline/normalization/person_resolver.py:30(_sin_acentos)\n 50430586   50.395    0.000 1470.266    0.000 /app/pipeline/normalization/person_resolver.py:104(_coincide_contexto)\n215336408/214996356  404.768    0.000 1359.991    0.000 {method 'join' of 'str' objects}\n     9320   64.533    0.007 1280.537    0.137 /app/pipeline/normalization/person_resolver.py:114(_candidatos)\n4985847088  622.720    0.000  945.927    0.000 /app/pipeline/normalization/person_resolver.py:31(<genexpr>)\n413830628  129.858    0.000  537.104    0.000 /usr/local/lib/python3.12/re/__init__.py:179(sub)\n615133667  451.018    0.000  451.077    0.000 {method 'sub' of 're.Pattern' objects}\n\n\n",
+ "lectura_top15_propio": "         14257823623 function calls (14257477182 primitive calls) in 3074.003 seconds\n\n   Ordered by: internal time\n   List reduced from 1163 to 15 due to restriction <15>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n4985847088  622.720    0.000  945.927    0.000 /app/pipeline/normalization/person_resolver.py:31(<genexpr>)\n615133667  451.018    0.000  451.077    0.000 {method 'sub' of 're.Pattern' objects}\n215336408/214996356  404.768    0.000 1359.991    0.000 {method 'join' of 'str' objects}\n4888853168  325.551    0.000  325.551    0.000 {built-in method unicodedata.category}\n201300851  205.283    0.000 2484.693    0.000 /app/pipeline/normalization/person_resolver.py:88(quitar_titulos)\n413830628  129.858    0.000  537.104    0.000 /usr/local/lib/python3.12/re/__init__.py:179(sub)\n414053570  108.671    0.000  170.682    0.000 /usr/local/lib/python3.12/re/__init__.py:280(_compile)\n201300851   95.093    0.000 1484.825    0.000 /app/pipeline/normalization/person_resolver.py:30(_sin_acentos)\n  8636265   79.219    0.000  118.243    0.000 /app/services/dataops_evaluation_service.py:76(fuzzy_score)\n 84095979   69.759    0.000  112.592    0.000 /app/pipeline/normalization/person_resolver.py:96(_tokens)\n     9320   64.533    0.007 1280.537    0.137 /app/pipeline/normalization/person_resolver.py:114(_candidatos)\n414725907   62.001    0.000   62.002    0.000 {built-in method builtins.isinstance}\n 50430586   50.395    0.000 1470.266    0.000 /app/pipeline/normalization/person_resolver.py:104(_coincide_contexto)\n201633160   44.778    0.000   44.778    0.000 {built-in method unicodedata.normalize}\n243224118   35.672    0.000   35.672    0.000 {method 'lower' of 'str' objects}\n\n\n",
+ "lineas": 15926,
+ "consolidacion_s": 1143.22,
+ "consolidacion_http": 200,
+ "consolidacion_sql": {
+  "total": 295368,
+  "por_linea": 18.55,
+  "top": [
+   [
+    "SELECT ",
+    176940
+   ],
+   [
+    "INSERT FACT_EVALUACION_DOCENTE",
+    81481
+   ],
+   [
+    "SELECT DIM_DOCENTE",
+    17941
+   ],
+   [
+    "SELECT STG_ENTIDAD_NO_RESUELTA",
+    7037
+   ],
+   [
+    "SELECT DIM_MODULO",
+    1999
+   ],
+   [
+    "INSERT PUBLIC.FACT_RENDIMIENTO_ACADEMICO",
+    1393
+   ],
+   [
+    "INSERT FACT_COSTO_PROGRAMA",
+    1320
+   ],
+   [
+    "INSERT CARGA_FILA_ORIGEN",
+    1106
+   ],
+   [
+    "SELECT CAT_INSTITUCION",
+    1098
+   ],
+   [
+    "INSERT FACT_SITUACION_FINANCIERA",
+    1030
+   ],
+   [
+    "INSERT DIM_ESTUDIANTE",
+    861
+   ],
+   [
+    "SELECT BRIDGE_MODULO_DOCENTE",
+    569
+   ],
+   [
+    "SELECT CARGA_FILA_ORIGEN",
+    553
+   ],
+   [
+    "SELECT PUBLIC.FACT_RENDIMIENTO_ACADEMICO",
+    463
+   ],
+   [
+    "INSERT FACT_MARKETING",
+    362
+   ],
+   [
+    "INSERT DIM_MODULO",
+    237
+   ],
+   [
+    "SELECT DIM_ORIGEN_DOCUMENTAL",
+    205
+   ],
+   [
+    "UPDATE FACT_MARKETING",
+    191
+   ],
+   [
+    "SELECT DIM_CATEGORIA_FINANCIERA",
+    167
+   ],
+   [
+    "INSERT FACT_RENTABILIDAD",
+    95
+   ],
+   [
+    "UPDATE FACT_RENTABILIDAD",
+    72
+   ],
+   [
+    "SELECT PUBLIC.CACHE_INDICE_BETO",
+    63
+   ],
+   [
+    "INSERT STG_ENTIDAD_NO_RESUELTA",
+    59
+   ],
+   [
+    "INSERT DIM_DOCENTE",
+    47
+   ],
+   [
+    "UPDATE DIM_ESTUDIANTE",
+    25
+   ]
+  ]
+ },
+ "consolidacion_top15_acumulado": "         4209099460 function calls (4205905911 primitive calls) in 1141.408 seconds\n\n   Ordered by: cumulative time\n   List reduced from 2742 to 15 due to restriction <15>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n942038/942033    0.381    0.000 1146.139    0.001 {built-in method builtins.next}\n174784/174782    0.096    0.000 1143.419    0.007 /usr/local/lib/python3.12/contextlib.py:141(__exit__)\n        3    0.000    0.000 1143.224  381.075 /usr/local/lib/python3.12/site-packages/httpx/_models.py:935(iter_raw)\n        3    0.000    0.000 1143.223  381.074 /usr/local/lib/python3.12/site-packages/httpx/_client.py:152(__iter__)\n        3    0.000    0.000 1143.223  381.074 /usr/local/lib/python3.12/site-packages/starlette/testclient.py:376(iter_body)\n        1    0.000    0.000 1143.222 1143.222 /usr/local/lib/python3.12/site-packages/httpx/_client.py:1123(post)\n        1    0.000    0.000 1143.222 1143.222 /usr/local/lib/python3.12/site-packages/starlette/testclient.py:493(request)\n        2    0.000    0.000 1143.222  571.611 /usr/local/lib/python3.12/site-packages/starlette/testclient.py:485(_portal_factory)\n        1    0.000    0.000 1143.221 1143.221 /usr/local/lib/python3.12/site-packages/httpx/_client.py:771(request)\n        2    0.000    0.000 1143.220  571.610 /usr/local/lib/python3.12/site-packages/httpx/_models.py:884(iter_bytes)\n        1    0.000    0.000 1143.220 1143.220 /usr/local/lib/python3.12/site-packages/httpx/_client.py:879(send)\n      339    0.000    0.000 1143.220    3.372 {method 'join' of 'bytes' objects}\n        1    0.000    0.000 1143.220 1143.220 /usr/local/lib/python3.12/site-packages/httpx/_models.py:876(read)\n        2    0.000    0.000 1143.219  571.610 /usr/local/lib/python3.12/site-packages/anyio/from_thread.py:606(start_blocking_portal)\n        3    0.000    0.000 1143.219  381.073 /usr/local/lib/python3.12/contextlib.py:567(__exit__)\n\n\n",
+ "consolidacion_top15_propio": "         4209099460 function calls (4205905911 primitive calls) in 1141.408 seconds\n\n   Ordered by: internal time\n   List reduced from 2742 to 15 due to restriction <15>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n       43  273.119    6.352  273.119    6.352 {method 'recv_into' of '_socket.socket' objects}\n1291623568  127.274    0.000  192.685    0.000 /app/pipeline/normalization/person_resolver.py:31(<genexpr>)\n154250626   89.316    0.000   89.333    0.000 {method 'sub' of 're.Pattern' objects}\n61232746/61037403   83.975    0.000  285.887    0.000 {method 'join' of 'str' objects}\n1311896145   68.181    0.000   68.181    0.000 {built-in method unicodedata.category}\n   295467   62.942    0.000   64.007    0.000 {method 'execute' of 'psycopg2.extensions.cursor' objects}\n  6732630   43.653    0.000   65.402    0.000 /app/services/dataops_evaluation_service.py:76(fuzzy_score)\n 47487840   35.756    0.000  478.436    0.000 /app/pipeline/normalization/person_resolver.py:88(quitar_titulos)\n106712384   25.361    0.000  104.167    0.000 /usr/local/lib/python3.12/re/__init__.py:179(sub)\n 38950242   24.447    0.000   40.100    0.000 /app/pipeline/normalization/person_resolver.py:96(_tokens)\n     3162   23.258    0.007  458.840    0.145 /app/pipeline/normalization/person_resolver.py:114(_candidatos)\n106987682   20.254    0.000   31.824    0.000 /usr/local/lib/python3.12/re/__init__.py:280(_compile)\n 47487840   16.501    0.000  294.660    0.000 /app/pipeline/normalization/person_resolver.py:30(_sin_acentos)\n     3909   15.808    0.004  105.307    0.027 /app/routers/dataops/extraccion.py:123(_mejor_modulo)\n112476311/112476301   12.455    0.000   12.706    0.000 {built-in method builtins.isinstance}\n\n\n",
+ "cache_indice_beto_despues": 95855,
+ "dw": {
+  "fact_rendimiento_academico": 1393,
+  "fact_situacion_financiera": 1030,
+  "fact_evaluacion_docente": 81481,
+  "fact_marketing": 362,
+  "fact_rentabilidad": 95,
+  "fact_techo_convenio": 1,
+  "fact_costo_programa": 1320,
+  "dim_origen_documental": 10,
+  "stg_entidad_no_resuelta": 6656
+ }
+}

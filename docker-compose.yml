@@ -154,6 +154,8 @@ services:
     environment:
       # Hilos de PyTorch: sin límite usa los 24 núcleos del host y cada forward tarda ~1 s
       TORCH_NUM_THREADS: ${TORCH_NUM_THREADS:-4}
+      # Procesos del servidor (cada uno carga el modelo, ~0,6 GiB): medido 1 proceso 20,8 líneas/s, 2 procesos 31,8, 3 procesos no mejora
+      BETO_WORKERS: ${BETO_WORKERS:-2}
     depends_on:
       db:
         condition: service_healthy
@@ -168,7 +170,7 @@ services:
       - ./output:/app/output
     expose:
       - "8006"
-    command: python -m pipeline.semantic.inference_server --host 0.0.0.0 --port 8006
+    command: sh -c "uvicorn pipeline.semantic.inference_server:app --host 0.0.0.0 --port 8006 --workers ${BETO_WORKERS:-2}"
 
   # 11. Frontend Web SPA React 18 + Vite
   web:

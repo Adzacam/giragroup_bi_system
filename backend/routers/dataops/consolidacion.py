@@ -103,6 +103,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     if payload.id_lote:
         _bloquear_documentos_editables(db, db.query(DimOrigenDocumental).filter_by(id_lote=payload.id_lote).all())
     dw = DWLoaderService(db)
+    dw.diferir_eval = True  # evaluación docente (decenas de miles de respuestas): inserción en bloque al final, no un INSERT por fila
     thresh = payload.threshold or UMBRAL_INDICE_REGISTRO_DEC
 
     effective_doc_id = payload.doc_id
@@ -121,7 +122,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
             raise HTTPException(404, 'El lote no existe.')
         query = query.filter(StagingRegistroCrudo.id_documento.in_([d.id_documento for d in docs_lote]))
 
-    stg_records = query.all()
+    stg_records = query.order_by(StagingRegistroCrudo.id.asc()).all()  # orden fijo: el resultado no depende del orden físico de la tabla
 
     estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
     docentes = _docentes_con_contexto(db)
@@ -422,6 +423,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     )
                     db.add(stg_unresolved)
 
+    dw.finalizar_cargas()
     db.commit()
     cache_consultas.invalidar()  # el DW cambió: alertas, CMI y forecast se recalculan
     inserted_total = inserted_academico + inserted_financiero

@@ -378,7 +378,14 @@ try:
     from fastapi import FastAPI
     from pydantic import BaseModel, Field
 
-    app = FastAPI(title="GiraGroup BETO PyTorch Inference Service", version="1.0.0")
+    from contextlib import asynccontextmanager
+
+    @asynccontextmanager
+    async def _ciclo_de_vida(_app):
+        get_engine_and_tokenizer()  # cada proceso de uvicorn carga el modelo al arrancar, no en la primera petición
+        yield
+
+    app = FastAPI(title="GiraGroup BETO PyTorch Inference Service", version="1.0.0", lifespan=_ciclo_de_vida)
 
     class InferRequest(BaseModel):
         # Obligatorio: un campo mal nombrado ({"texto": ...}) respondía success con 0 entidades

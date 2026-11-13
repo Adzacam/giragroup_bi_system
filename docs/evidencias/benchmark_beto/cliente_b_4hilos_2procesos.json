@@ -1,0 +1,18 @@
+{
+ "lineas": 15488,
+ "lotes": 61,
+ "puertos": [
+  8006,
+  8011
+ ],
+ "errores": 0,
+ "entidades": 91169,
+ "sin_entidades": 1427,
+ "por_puerto": {
+  "8006": 7424,
+  "8011": 8064
+ },
+ "segundos": 487.51,
+ "lineas_por_s": 31.77,
+ "ms_por_oracion_servidor_media": 61.93
+}

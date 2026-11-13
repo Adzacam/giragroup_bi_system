@@ -1,0 +1,98 @@
+[
+ {
+  "corrida": 1,
+  "duracion_total_s": 1076.5,
+  "salida": "les\": 7, \"casos_rechazados_por_regla\": 20, \"pct_grupos_aprobables_en_bloque\": 41.7, \"tiempo_humano_simulado_s\": 2262.0, \"supuestos\": {\"lectura_por_grupo_s\": 6.0, \"accion_por_grupo_s\": 2.0, \"por_caso_manual_s\": 20.0, \"espera_deshacer_por_accion_s\": 10.0}, \"tiempo_maquina_real_aprobaciones_s\": 2.48}}\n",
+  "recursos": {
+   "host_cpu_pct": {
+    "media": 11.1,
+    "max": 23.2
+   },
+   "host_ram_usada_gib": {
+    "media": 19.6,
+    "max": 21.81
+   },
+   "giragroup_api_cpu_pct": {
+    "media": 62.2,
+    "max": 339.62
+   },
+   "giragroup_api_ram_mib": {
+    "media": 1311.3,
+    "max": 1499.1
+   },
+   "giragroup_db_cpu_pct": {
+    "media": 5.0,
+    "max": 97.33
+   },
+   "giragroup_db_ram_mib": {
+    "media": 209.7,
+    "max": 230.0
+   },
+   "muestras": 215
+  }
+ },
+ {
+  "corrida": 2,
+  "duracion_total_s": 892.5,
+  "salida": "ales\": 7, \"casos_rechazados_por_regla\": 20, \"pct_grupos_aprobables_en_bloque\": 41.7, \"tiempo_humano_simulado_s\": 2262.0, \"supuestos\": {\"lectura_por_grupo_s\": 6.0, \"accion_por_grupo_s\": 2.0, \"por_caso_manual_s\": 20.0, \"espera_deshacer_por_accion_s\": 10.0}, \"tiempo_maquina_real_aprobaciones_s\": 2.1}}\n",
+  "recursos": {
+   "host_cpu_pct": {
+    "media": 11.7,
+    "max": 66.7
+   },
+   "host_ram_usada_gib": {
+    "media": 18.5,
+    "max": 18.86
+   },
+   "giragroup_api_cpu_pct": {
+    "media": 60.8,
+    "max": 101.19
+   },
+   "giragroup_api_ram_mib": {
+    "media": 1295.4,
+    "max": 1534.0
+   },
+   "giragroup_db_cpu_pct": {
+    "media": 3.3,
+    "max": 93.6
+   },
+   "giragroup_db_ram_mib": {
+    "media": 351.8,
+    "max": 416.9
+   },
+   "muestras": 179
+  }
+ },
+ {
+  "corrida": 3,
+  "duracion_total_s": 1027.4,
+  "salida": "les\": 7, \"casos_rechazados_por_regla\": 20, \"pct_grupos_aprobables_en_bloque\": 41.7, \"tiempo_humano_simulado_s\": 2262.0, \"supuestos\": {\"lectura_por_grupo_s\": 6.0, \"accion_por_grupo_s\": 2.0, \"por_caso_manual_s\": 20.0, \"espera_deshacer_por_accion_s\": 10.0}, \"tiempo_maquina_real_aprobaciones_s\": 2.41}}\n",
+  "recursos": {
+   "host_cpu_pct": {
+    "media": 11.4,
+    "max": 35.8
+   },
+   "host_ram_usada_gib": {
+    "media": 18.2,
+    "max": 18.54
+   },
+   "giragroup_api_cpu_pct": {
+    "media": 59.0,
+    "max": 101.28
+   },
+   "giragroup_api_ram_mib": {
+    "media": 1364.2,
+    "max": 1571.8
+   },
+   "giragroup_db_cpu_pct": {
+    "media": 4.8,
+    "max": 94.22
+   },
+   "giragroup_db_ram_mib": {
+    "media": 362.6,
+    "max": 382.6
+   },
+   "muestras": 205
+  }
+ }
+]

@@ -36,9 +36,15 @@ def col_fecha(df):
     return mejor if n_mejor >= 20 else None
 
 
+REUSAR_SLICES = os.environ.get("CICLO_REUSAR_SLICES") == "1"  # 1: no regenerar un slice ya escrito (openpyxl cambia los bytes y con ellos el hash del archivo)
+
+
 def construir_slices():
     info = []
     for f in sorted((ROOT / "uploads" / "data").glob("*.xlsx"), key=lambda q: ("ANTIGUO" in q.name, q.name)):
+        if REUSAR_SLICES and (SALIDA / f.name).exists():
+            info.append({"archivo": f.name, "slice": str(SALIDA / f.name), "reutilizado": True})
+            continue
         if any(k in f.name for k in EXCLUIR):
             info.append({"archivo": f.name, "omitido": "cuelga el pipeline (>30 min) - fuera de la medición"})
             continue

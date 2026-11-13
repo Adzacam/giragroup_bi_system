@@ -1,0 +1,231 @@
+[
+ {
+  "config": "a_4hilos_1proceso",
+  "hilos": 4,
+  "procesos": 1,
+  "puertos": [
+   8006
+  ],
+  "entrada": "/tmp/textos_indice_distintos.json",
+  "cliente": {
+   "lineas": 15488,
+   "lotes": 61,
+   "puertos": [
+    8006
+   ],
+   "errores": 0,
+   "entidades": 91169,
+   "sin_entidades": 1427,
+   "por_puerto": {
+    "8006": 15488
+   },
+   "segundos": 743.83,
+   "lineas_por_s": 20.82,
+   "ms_por_oracion_servidor_media": 47.77
+  },
+  "recursos": {
+   "host_cpu_pct": {
+    "media": 20.5,
+    "max": 29.3
+   },
+   "host_ram_usada_gib": {
+    "media": 15.8,
+    "max": 16.03
+   },
+   "giragroup_pipeline_cpu_pct": {
+    "media": 389.0,
+    "max": 400.45
+   },
+   "giragroup_pipeline_ram_mib": {
+    "media": 614.5,
+    "max": 660.6
+   },
+   "muestras": 149
+  }
+ },
+ {
+  "config": "a_lineas_completas_4hilos_1proceso",
+  "hilos": 4,
+  "procesos": 1,
+  "puertos": [
+   8006
+  ],
+  "entrada": "/tmp/lineas_distintas.json",
+  "cliente": {
+   "lineas": 15516,
+   "lotes": 61,
+   "puertos": [
+    8006
+   ],
+   "errores": 0,
+   "entidades": 288101,
+   "sin_entidades": 1408,
+   "por_puerto": {
+    "8006": 15516
+   },
+   "segundos": 2735.54,
+   "lineas_por_s": 5.67,
+   "ms_por_oracion_servidor_media": 175.53
+  },
+  "recursos": {
+   "host_cpu_pct": {
+    "media": 21.0,
+    "max": 39.9
+   },
+   "host_ram_usada_gib": {
+    "media": 16.6,
+    "max": 17.28
+   },
+   "giragroup_pipeline_cpu_pct": {
+    "media": 387.9,
+    "max": 401.29
+   },
+   "giragroup_pipeline_ram_mib": {
+    "media": 763.0,
+    "max": 956.4
+   },
+   "muestras": 547
+  }
+ },
+ {
+  "config": "b_4hilos_2procesos",
+  "hilos": 4,
+  "procesos": 2,
+  "puertos": [
+   8006,
+   8011
+  ],
+  "entrada": "/tmp/textos_indice_distintos.json",
+  "cliente": {
+   "lineas": 15488,
+   "lotes": 61,
+   "puertos": [
+    8006,
+    8011
+   ],
+   "errores": 0,
+   "entidades": 91169,
+   "sin_entidades": 1427,
+   "por_puerto": {
+    "8006": 7424,
+    "8011": 8064
+   },
+   "segundos": 487.51,
+   "lineas_por_s": 31.77,
+   "ms_por_oracion_servidor_media": 61.93
+  },
+  "recursos": {
+   "host_cpu_pct": {
+    "media": 39.8,
+    "max": 54.3
+   },
+   "host_ram_usada_gib": {
+    "media": 17.4,
+    "max": 17.71
+   },
+   "giragroup_pipeline_cpu_pct": {
+    "media": 767.2,
+    "max": 800.82
+   },
+   "giragroup_pipeline_ram_mib": {
+    "media": 1245.5,
+    "max": 1296.4
+   },
+   "muestras": 98
+  }
+ },
+ {
+  "config": "c_4hilos_3procesos",
+  "hilos": 4,
+  "procesos": 3,
+  "puertos": [
+   8006,
+   8011,
+   8012
+  ],
+  "entrada": "/tmp/textos_indice_distintos.json",
+  "cliente": {
+   "lineas": 15488,
+   "lotes": 61,
+   "puertos": [
+    8006,
+    8011,
+    8012
+   ],
+   "errores": 0,
+   "entidades": 91169,
+   "sin_entidades": 1427,
+   "por_puerto": {
+    "8006": 5376,
+    "8011": 4864,
+    "8012": 5248
+   },
+   "segundos": 544.36,
+   "lineas_por_s": 28.45,
+   "ms_por_oracion_servidor_media": 102.94
+  },
+  "recursos": {
+   "host_cpu_pct": {
+    "media": 56.9,
+    "max": 89.0
+   },
+   "host_ram_usada_gib": {
+    "media": 23.6,
+    "max": 24.65
+   },
+   "giragroup_pipeline_cpu_pct": {
+    "media": 1125.0,
+    "max": 1190.65
+   },
+   "giragroup_pipeline_ram_mib": {
+    "media": 1851.1,
+    "max": 1962.0
+   },
+   "muestras": 109
+  }
+ },
+ {
+  "config": "d_8hilos_1proceso",
+  "hilos": 8,
+  "procesos": 1,
+  "puertos": [
+   8011
+  ],
+  "entrada": "/tmp/textos_indice_distintos.json",
+  "cliente": {
+   "lineas": 15488,
+   "lotes": 61,
+   "puertos": [
+    8011
+   ],
+   "errores": 0,
+   "entidades": 91169,
+   "sin_entidades": 1427,
+   "por_puerto": {
+    "8011": 15488
+   },
+   "segundos": 876.15,
+   "lineas_por_s": 17.68,
+   "ms_por_oracion_servidor_media": 56.32
+  },
+  "recursos": {
+   "host_cpu_pct": {
+    "media": 19.5,
+    "max": 53.1
+   },
+   "host_ram_usada_gib": {
+    "media": 23.2,
+    "max": 23.71
+   },
+   "giragroup_pipeline_cpu_pct": {
+    "media": 385.2,
+    "max": 401.34
+   },
+   "giragroup_pipeline_ram_mib": {
+    "media": 1873.4,
+    "max": 1933.3
+   },
+   "muestras": 176
+  }
+ }
+]
