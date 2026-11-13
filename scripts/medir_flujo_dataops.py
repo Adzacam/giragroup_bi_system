@@ -87,7 +87,10 @@ def main(salida):
     huella_dw.main(str(salida) + ".huella.json")
 
     # los casos de la bandeja se generan al consolidar: la revisión se simula después
-    revision = rev.simular(cli, str(id_lote))
+    if os.environ.get("FLUJO_SIN_REVISION") == "1":  # deja la bandeja pendiente (p. ej. para revisarla en la pantalla)
+        revision = {"resumen": {"tiempo_maquina_real_aprobaciones_s": 0.0, "tiempo_humano_simulado_s": 0.0, "omitida": True}, "eventos": []}
+    else:
+        revision = rev.simular(cli, str(id_lote))
     t["revision_maquina_s"] = revision["resumen"]["tiempo_maquina_real_aprobaciones_s"]
     t["revision_humana_simulada_s"] = revision["resumen"]["tiempo_humano_simulado_s"]
 

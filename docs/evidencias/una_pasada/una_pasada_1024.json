@@ -1,0 +1,27 @@
+{
+ "n": 1024,
+ "hilos_torch": 4,
+ "indice_actual_s": 58.52,
+ "ner_pipeline_s": 63.04,
+ "una_pasada_s": 61.16,
+ "indices_iguales": 1024,
+ "indices_max_dif": 0.0,
+ "entidades_identicas": 749,
+ "entidades_mismas_etiquetas_y_offsets": 750,
+ "textos_truncados_128": 275,
+ "entidades_distintas_que_son_textos_truncados": "274 de 274",
+ "una_pasada_512_s": 63.77,
+ "una_pasada_512_entidades_mismas_etiquetas_y_offsets": 1024,
+ "una_pasada_512_indices_distintos_al_actual": 272,
+ "una_pasada_512_indice_medio_vs_actual": [
+  0.9639,
+  0.9631
+ ],
+ "lineas_por_s": {
+  "indice_actual_s": 17.5,
+  "ner_pipeline_s": 16.2,
+  "una_pasada_s": 16.7,
+  "una_pasada_512_s": 16.1
+ },
+ "costo_decodificar_s": 2.64
+}

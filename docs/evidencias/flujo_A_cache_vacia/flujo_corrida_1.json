@@ -1,0 +1,225 @@
+{
+ "carga": {
+  "http": 200,
+  "id_lote": 1,
+  "archivos_exitosos": 10,
+  "archivos_fallidos": 0,
+  "registros_detectados": 14989,
+  "errores": null
+ },
+ "etapas_s": {
+  "carga_y_lectura_s": 162.64,
+  "espera_lectura_beto_s": 0.02,
+  "lectura_beto_s": 153.66,
+  "lineas_leidas_beto": 15926,
+  "lineas_por_s_beto": 103.64,
+  "carga_s": 9.0,
+  "consolidacion_s": 872.77,
+  "revision_maquina_s": 0.75,
+  "revision_humana_simulada_s": 2262.0
+ },
+ "total": {
+  "tiempo_maquina_s": 1036.18,
+  "tiempo_humano_simulado_s": 2262.0,
+  "total_estimado_s": 3298.2,
+  "total_estimado_min": 54.97,
+  "meta_rnf03_min": 15,
+  "referencia_tesis_min": 9
+ },
+ "consolidacion_http": 200,
+ "consolidacion": {
+  "status": "success",
+  "message": "Transacción completada: 85630 hechos persistidos en Data Warehouse (84600 académicos, 1030 financieros), 68 derivados a Revisión Humana.",
+  "inserted_dw": 85630,
+  "inserted_academico": 84600,
+  "inserted_financiero": 1030,
+  "inserted_admision": 553,
+  "inserted_revision": 18502,
+  "sent_hitl": 68,
+  "descartados_ruido": 6976
+ },
+ "revision": {
+  "casos": 194,
+  "grupos": 12,
+  "grupos_aprobables_en_bloque": 5,
+  "grupos_manuales": 7,
+  "casos_rechazados_por_regla": 20,
+  "pct_grupos_aprobables_en_bloque": 41.7,
+  "tiempo_humano_simulado_s": 2262.0,
+  "supuestos": {
+   "lectura_por_grupo_s": 6.0,
+   "accion_por_grupo_s": 2.0,
+   "por_caso_manual_s": 20.0,
+   "espera_deshacer_por_accion_s": 10.0
+  },
+  "tiempo_maquina_real_aprobaciones_s": 0.75
+ },
+ "revision_eventos": [
+  {
+   "grupo": "grupo-eeb97aecd34d409b58",
+   "titulo": "Hecho cargado que necesita revisión",
+   "accion": "APROBAR",
+   "casos": 101,
+   "inicio_humano_simulado": "2026-11-13T04:06:42.661726+00:00",
+   "fin_humano_simulado": "2026-11-13T04:06:54.661726+00:00",
+   "segundos_humano_simulado": 12.0,
+   "segundos_maquina_real": 0.275,
+   "resueltos": 101,
+   "http": 200
+  },
+  {
+   "grupo": "grupo-5039c42781c099d61a",
+   "titulo": "Lectura con baja confianza",
+   "accion": "MANUAL",
+   "casos": 51,
+   "inicio_humano_simulado": "2026-11-13T04:07:00.661726+00:00",
+   "fin_humano_simulado": "2026-11-13T04:32:30.661726+00:00",
+   "segundos_humano_simulado": 1530.0,
+   "segundos_maquina_real": 0.077,
+   "resueltos": 0,
+   "rechazados_por_regla": 5
+  },
+  {
+   "grupo": "grupo-5ea82d70e33abf794a",
+   "titulo": "Lectura con baja confianza",
+   "accion": "MANUAL",
+   "casos": 10,
+   "inicio_humano_simulado": "2026-11-13T04:32:36.661726+00:00",
+   "fin_humano_simulado": "2026-11-13T04:37:36.661726+00:00",
+   "segundos_humano_simulado": 300.0,
+   "segundos_maquina_real": 0.067,
+   "resueltos": 0,
+   "rechazados_por_regla": 5
+  },
+  {
+   "grupo": "grupo-d2ec7470dbdd602054",
+   "titulo": "Hecho cargado que necesita revisión",
+   "accion": "CORREGIR_FECHA",
+   "casos": 8,
+   "inicio_humano_simulado": "2026-11-13T04:37:42.661726+00:00",
+   "fin_humano_simulado": "2026-11-13T04:37:54.661726+00:00",
+   "segundos_humano_simulado": 12.0,
+   "segundos_maquina_real": 0.045,
+   "resueltos": 8,
+   "http": 200
+  },
+  {
+   "grupo": "grupo-3168c07273db6d12db",
+   "titulo": "Hecho cargado que necesita revisión",
+   "accion": "APROBAR",
+   "casos": 7,
+   "inicio_humano_simulado": "2026-11-13T04:38:00.661726+00:00",
+   "fin_humano_simulado": "2026-11-13T04:38:12.661726+00:00",
+   "segundos_humano_simulado": 12.0,
+   "segundos_maquina_real": 0.035,
+   "resueltos": 7,
+   "http": 200
+  },
+  {
+   "grupo": "grupo-3d630e02eb42631e08",
+   "titulo": "Hecho cargado que necesita revisión",
+   "accion": "APROBAR",
+   "casos": 6,
+   "inicio_humano_simulado": "2026-11-13T04:38:18.661726+00:00",
+   "fin_humano_simulado": "2026-11-13T04:38:30.661726+00:00",
+   "segundos_humano_simulado": 12.0,
+   "segundos_maquina_real": 0.033,
+   "resueltos": 6,
+   "http": 200
+  },
+  {
+   "grupo": "grupo-1a626979d064bc0906",
+   "titulo": "Lectura con baja confianza",
+   "accion": "MANUAL",
+   "casos": 5,
+   "inicio_humano_simulado": "2026-11-13T04:38:36.661726+00:00",
+   "fin_humano_simulado": "2026-11-13T04:41:06.661726+00:00",
+   "segundos_humano_simulado": 150.0,
+   "segundos_maquina_real": 0.063,
+   "resueltos": 0,
+   "rechazados_por_regla": 5
+  },
+  {
+   "grupo": "grupo-47eb53d9da1f99e311",
+   "titulo": "Lectura con baja confianza",
+   "accion": "MANUAL",
+   "casos": 2,
+   "inicio_humano_simulado": "2026-11-13T04:41:12.661726+00:00",
+   "fin_humano_simulado": "2026-11-13T04:42:12.661726+00:00",
+   "segundos_humano_simulado": 60.0,
+   "segundos_maquina_real": 0.039,
+   "resueltos": 0,
+   "rechazados_por_regla": 2
+  },
+  {
+   "grupo": "grupo-0824c6fb74d5d634f6",
+   "titulo": "Posible homonimia: nombre parecido a otra persona",
+   "accion": "MANUAL",
+   "casos": 1,
+   "inicio_humano_simulado": "2026-11-13T04:42:18.661726+00:00",
+   "fin_humano_simulado": "2026-11-13T04:42:48.661726+00:00",
+   "segundos_humano_simulado": 30.0,
+   "segundos_maquina_real": 0.031,
+   "resueltos": 0,
+   "rechazados_por_regla": 1
+  },
+  {
+   "grupo": "grupo-b4babd3ec1108cf0ba",
+   "titulo": "La cédula coincide pero el nombre es distinto",
+   "accion": "MANUAL",
+   "casos": 1,
+   "inicio_humano_simulado": "2026-11-13T04:42:54.661726+00:00",
+   "fin_humano_simulado": "2026-11-13T04:43:24.661726+00:00",
+   "segundos_humano_simulado": 30.0,
+   "segundos_maquina_real": 0.03,
+   "resueltos": 0,
+   "rechazados_por_regla": 1
+  },
+  {
+   "grupo": "grupo-6d470fa8561ec27905",
+   "titulo": "La cédula coincide pero el nombre es distinto",
+   "accion": "MANUAL",
+   "casos": 1,
+   "inicio_humano_simulado": "2026-11-13T04:43:30.661726+00:00",
+   "fin_humano_simulado": "2026-11-13T04:44:00.661726+00:00",
+   "segundos_humano_simulado": 30.0,
+   "segundos_maquina_real": 0.032,
+   "resueltos": 0,
+   "rechazados_por_regla": 1
+  },
+  {
+   "grupo": "grupo-89de0bd8085529376e",
+   "titulo": "Hecho cargado que necesita revisión",
+   "accion": "APROBAR",
+   "casos": 1,
+   "inicio_humano_simulado": "2026-11-13T04:44:06.661726+00:00",
+   "fin_humano_simulado": "2026-11-13T04:44:18.661726+00:00",
+   "segundos_humano_simulado": 12.0,
+   "segundos_maquina_real": 0.024,
+   "resueltos": 1,
+   "http": 200
+  }
+ ],
+ "dw_antes": {
+  "fact_rendimiento_academico": 0,
+  "fact_situacion_financiera": 0,
+  "fact_evaluacion_docente": 0,
+  "fact_marketing": 0,
+  "fact_rentabilidad": 0,
+  "fact_techo_convenio": 0,
+  "fact_costo_programa": 0,
+  "dim_origen_documental": 0,
+  "stg_entidad_no_resuelta": 0
+ },
+ "dw_despues": {
+  "fact_rendimiento_academico": 1393,
+  "fact_situacion_financiera": 1030,
+  "fact_evaluacion_docente": 81481,
+  "fact_marketing": 362,
+  "fact_rentabilidad": 95,
+  "fact_techo_convenio": 1,
+  "fact_costo_programa": 1320,
+  "dim_origen_documental": 10,
+  "stg_entidad_no_resuelta": 6656
+ }
+}

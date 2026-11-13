@@ -1,10 +1,11 @@
 """Repite N veces la medición del flujo DataOps (10 archivos) sobre copias aisladas del snapshot con el DW reiniciado,
 registrando CPU y RAM del equipo (psutil) y de los contenedores (docker stats) cada INTERVALO s.
 
-Uso (host, sin otras cargas): python scripts/medir_flujo_repetido.py <carpeta_salida> [N=3] [desde=1]
+Uso (host, sin otras cargas; FLUJO_CACHE_VACIA=1 para el escenario de un mes nuevo): python scripts/medir_flujo_repetido.py <carpeta_salida> [N=3] [desde=1]
 Cada corrida: crea clon_rep_<i> desde el snapshot, vacía el DW, aplica la migración 014, ejecuta medir_flujo_dataops.py en giragroup_api y borra el clon.
 """
 import json
+import os
 import subprocess
 import sys
 import threading
@@ -16,6 +17,7 @@ import psutil
 ROOT = Path(__file__).resolve().parent.parent
 SNAPSHOT = "snapshot_dw_20261110_1201"
 INTERVALO = 5
+CACHE_VACIA = os.environ.get("FLUJO_CACHE_VACIA") == "1"  # 1: vacía cache_indice_beto en cada copia
 CONTENEDORES = ("giragroup_api", "giragroup_db")  # contenedores muestreados con docker stats
 TRUNC = ("public.fact_rendimiento_academico, public.fact_situacion_financiera, public.fact_evaluacion_docente, public.fact_marketing, "
          "public.fact_rentabilidad, public.fact_forecast, public.fact_cobranzas_proyectadas, public.stg_entidad_no_resuelta, "
@@ -33,6 +35,16 @@ def psql(usuario, base, sql=None, archivo=None):
     r = sh(cmd)
     if r.returncode:
         raise RuntimeError(r.stderr[-400:])
+
+
+DIR_SCRIPTS = "/tmp/flujo"  # árbol propio en el contenedor: /app/scripts es el bind mount de backend/scripts (otra versión de medir_ciclo_mensual)
+
+
+def preparar_scripts():
+    """Copia los scripts de medición a /tmp/flujo/scripts (con uploads enlazado) sin escribir en el bind mount."""
+    sh(["docker", "exec", "giragroup_api", "sh", "-c", f"mkdir -p {DIR_SCRIPTS}/scripts && ln -sfn /app/uploads {DIR_SCRIPTS}/uploads"])
+    for nombre in ("medir_flujo_dataops.py", "huella_dw.py", "simular_revision.py", "medir_ciclo_mensual.py"):
+        sh(["docker", "cp", str(ROOT / "scripts" / nombre), f"giragroup_api:{DIR_SCRIPTS}/scripts/"])
 
 
 def muestreador(parar, muestras):
@@ -73,17 +85,18 @@ def main(salida, n, desde=1):
         psql(usuario, "postgres", f"drop database if exists {base}")
         psql(usuario, "postgres", f"create database {base} template {SNAPSHOT}")
         psql(usuario, base, f"TRUNCATE TABLE {TRUNC} RESTART IDENTITY CASCADE")
+        if CACHE_VACIA:  # escenario de un mes nuevo: ningún índice BETO calculado de antemano
+            psql(usuario, base, "TRUNCATE TABLE public.cache_indice_beto")
         sh(["docker", "cp", str(ROOT / "backend/scripts/migrations/014_conversion_captacion_comprobable.sql"), "giragroup_db:/tmp/014.sql"])
         psql(usuario, base, archivo="/tmp/014.sql")
-        for nombre in ("medir_flujo_dataops.py", "huella_dw.py", "simular_revision.py"):
-            sh(["docker", "cp", str(ROOT / "scripts" / nombre), "giragroup_api:/app/scripts/"])
+        preparar_scripts()
         time.sleep(30)  # reposo para que el muestreo parta con la máquina estable
         muestras, parar = [], threading.Event()
         th = threading.Thread(target=muestreador, args=(parar, muestras))
         th.start()
         t0 = time.time()
         cmd = (f'cd /app && export DATABASE_URL=$(echo $DATABASE_URL | sed "s#/giragroup_db\\$#/{base}#") && '
-               f'CICLO_REUSAR_SLICES=1 CICLO_FILAS_SIN_FECHA=0 CICLO_SLICES=/tmp/slices_flujo PYTHONPATH=/app:/app/scripts python scripts/medir_flujo_dataops.py /tmp/flujo_{i}.json')
+               f'CICLO_REUSAR_SLICES=1 CICLO_FILAS_SIN_FECHA=0 CICLO_SLICES=/tmp/slices_flujo PYTHONPATH=/app:{DIR_SCRIPTS}/scripts python {DIR_SCRIPTS}/scripts/medir_flujo_dataops.py /tmp/flujo_{i}.json')
         r = sh(["docker", "exec", "giragroup_api", "sh", "-c", cmd])
         dur = time.time() - t0
         parar.set()
