@@ -2,7 +2,7 @@
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = next(p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file())
 sys.path[:0] = [str(ROOT), str(ROOT / "backend")]
 
 from models.staging_entidad import clave_staging

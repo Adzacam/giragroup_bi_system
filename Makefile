@@ -33,7 +33,7 @@ test-unit:
 
 test-integration:
 	@echo "==> [2/6] Ejecutando pruebas de integración con PostgreSQL (Constelación + Catálogos)..."
-	$(EXEC_PIPELINE) pytest tests/sprint1/test_esquema_constelacion_hefesto.py tests/sprint1/test_modelos_orm_sqlalchemy.py tests/sprint3/test_catalogos_db.py tests/sprint3/test_cross_source_reconciliation.py tests/sprint3/test_financial_catalog_matching.py tests/sprint4/test_alert_engine.py tests/sprint4/test_dw_loader.py tests/sprint4/test_kpis_and_catalogs.py tests/test_kpi_service.py tests/test_risk_service.py tests/test_rentabilidad_ejecutado_meta.py -v --tb=short
+	$(EXEC_PIPELINE) pytest tests/sprint1/test_esquema_constelacion_hefesto.py tests/sprint1/test_modelos_orm_sqlalchemy.py tests/sprint3/test_catalogos_db.py tests/sprint3/test_cross_source_reconciliation.py tests/sprint3/test_financial_catalog_matching.py tests/sprint4/test_alert_engine.py tests/sprint4/test_dw_loader.py tests/sprint4/test_kpis_and_catalogs.py tests/sprint4/test_kpi_service.py tests/sprint4/test_risk_service.py tests/sprint4/test_rentabilidad_ejecutado_meta.py -v --tb=short
 
 test-pipeline:
 	@echo "==> [3/6] Ejecutando pruebas del pipeline BETO NER y Analytics (incluyendo marcas slow)..."

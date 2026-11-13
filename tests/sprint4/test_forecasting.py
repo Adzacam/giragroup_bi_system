@@ -18,7 +18,7 @@ import pandas as pd
 from fastapi.testclient import TestClient
 
 # Configurar path raíz
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = next(p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file())
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 

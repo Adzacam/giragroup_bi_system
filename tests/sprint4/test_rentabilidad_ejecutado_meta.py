@@ -14,7 +14,7 @@ import pytest
 
 from services.extraccion_por_encabezado import campos_por_encabezado, registros_rentabilidad
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = next(p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file())
 SUBCONJUNTO = ROOT / "output" / "lote1387_archivos" / "EJECUTADO_VS_META_lote1387_24_filas.xlsx"
 
 LINEA_ENERO = ("CATEGORIA: PROGRAMAS | MES: ENERO | MES NUMERICO: 1 | EJECUTADO 2023: 679446.0 | "
