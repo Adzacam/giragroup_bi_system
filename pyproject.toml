@@ -11,6 +11,7 @@ requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+norecursedirs = ["_archivo", ".git", ".venv", "node_modules", "__pycache__", "dist", "build", "*.egg", ".*", "_darcs", "CVS", "venv", "{arch}"]
 pythonpath = [".", "backend"]
 addopts = "-ra"
 filterwarnings = [
