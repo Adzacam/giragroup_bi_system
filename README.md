@@ -240,3 +240,5 @@ docs/             Documentación técnica y apéndices
 Pruebas en tests/sprint1 … sprint6, tests/readiness y tests/transversales. Resultado medido: 652 colectadas, 634 passed, 11 skipped, 7 xfailed, sin fallos, con PostgreSQL de validación aislado. Los cinco tests Node son adicionales.
 
 El archivo histórico se conserva en [_archivo/](_archivo/), excluido del contexto Docker y de pytest. Gráficos vigentes: docs/evidencias/graficos_v2/. Mapa de rutas, commits, cobertura y capturas pendientes: [registro de limpieza](docs/limpieza/LIMPIEZA_REGISTRO.md). Las dependencias locales y la base viva se conservaron.
+
+Las fuentes de autoría Power BI se conservan en `_archivo/powerbi/cmi/`; el informe activo sigue en `powerbi/dashboards/giragroup_cmi.pbix`.
