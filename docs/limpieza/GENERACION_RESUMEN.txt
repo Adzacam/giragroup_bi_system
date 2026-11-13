@@ -1,0 +1,1 @@
+{"archivos_propios": 2125, "dependencias": 82067, "bytes_antes": 2328289218, "bytes_eliminar": 4463945, "duplicados": 93, "tests_mapeados": 77, "clasificaciones": {"GENERADO": 888, "USADO": 597, "DUPLICADO": 94, "DUDOSO": 313, "EVIDENCIA ANTIGUA": 21, "EVIDENCIA FINAL": 212}}

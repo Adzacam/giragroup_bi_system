@@ -1,0 +1,22 @@
+{
+  "collected": 652,
+  "unique_ids": 652,
+  "passed": 629,
+  "failed_or_errors": 5,
+  "skipped": 11,
+  "xfailed": 7,
+  "coverage_percent": 68.38475757144889,
+  "covered_lines": 9619,
+  "num_statements": 14066,
+  "failures": [
+    "tests.test_forecasting::test_extractor_series_reales",
+    "tests.test_forecasting::test_api_forecast_alumnos",
+    "tests.test_forecasting::test_api_forecast_metas_mensual",
+    "tests.test_forecasting::test_api_forecast_metas_anual",
+    "tests.test_sprint4_verification_loops::test_loop4_validacion_estricta_contratos"
+  ],
+  "frontend_build_exit": 0,
+  "compose_config_exit": 0,
+  "node_passed": 5,
+  "fase2_autorizada": false
+}

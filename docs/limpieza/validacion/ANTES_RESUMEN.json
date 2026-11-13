@@ -1,0 +1,20 @@
+{
+  "commit": "5850dd4b81b429cceafc3cbfb45aaa38ebdba524",
+  "fecha": "2026-11-13",
+  "passed": 634,
+  "skipped": 11,
+  "xfailed": 7,
+  "collected": 652,
+  "failed": 0,
+  "cobertura": {
+    "covered_lines": 9628,
+    "num_statements": 14066,
+    "percent_covered": 68.44874164652353,
+    "percent_covered_display": "68",
+    "missing_lines": 4438,
+    "excluded_lines": 3,
+    "percent_statements_covered": 68.44874164652353,
+    "percent_statements_covered_display": "68"
+  },
+  "referencia_f3b37d9": 650
+}
