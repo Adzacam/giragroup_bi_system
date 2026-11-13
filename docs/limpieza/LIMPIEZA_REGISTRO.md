@@ -413,8 +413,12 @@ Mismo alcance local que fase 1: se excluyen .git y docs/limpieza; incluye depend
 | Medición | Bytes |
 | --- | --- |
 | Local antes | 2328289218 |
-| Local después, medido | 2308215860 |
-| Árbol versionado después, sin entregables de limpieza | 52731848 |
+| Local después, medido | 2308215996 |
+| Árbol versionado después, sin entregables de limpieza | 52731984 |
 
 
 Detalle reproducible: validacion/TAMANOS.json. Los entregables nuevos se mantienen separados para no presentar su crecimiento como ahorro.
+
+### Cierre del SQLite temporal
+
+El commit documental 0f9f49c pasó su smoke posterior (18 passed). Se conservan ignoradas tanto tests/test_auth_temp.db (remanente anterior) como tests/sprint5/test_auth_temp.db (ruta actual), sin borrar bases locales ni dependencias. Este ajuste y su verificación posterior se identifican con git log -1 -- .gitignore; el log local está en validacion/checks/registro/ignores/.

@@ -1,10 +1,10 @@
 {
   "local_antes_sin_git_ni_entregables": 2328289218,
-  "local_despues_mismo_alcance": 2308215860,
+  "local_despues_mismo_alcance": 2308215996,
   "bytes_retirados_por_git_rm": 21214486,
   "bytes_archivados_sin_ahorro_local": 314320,
   "arbol_versionado_original_antes": 73916648,
-  "arbol_versionado_despues_sin_entregables_nuevos": 52731848,
+  "arbol_versionado_despues_sin_entregables_nuevos": 52731984,
   "exclusiones": [
     ".git/",
     "docs/limpieza/"

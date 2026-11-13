@@ -102,6 +102,7 @@ output/lote*/ARCA_*.xlsx
 uploads/powerbi/
 
 # Base temporal de test_email_redesign_and_forgot_password
+tests/test_auth_temp.db
 tests/sprint5/test_auth_temp.db
 uploads/.cache_lectura/
 
