@@ -1,0 +1,1 @@
+IDÉNTICAS: 14 tablas, bandeja 182 casos / 12 grupos, KPI {'KPI-10': None, 'KPI-11': None, 'KPI-18': 59.0}
