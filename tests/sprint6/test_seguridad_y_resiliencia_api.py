@@ -16,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import pytest
 from fastapi.testclient import TestClient
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = next(p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file())
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
@@ -159,7 +159,7 @@ def test_loop2_cabeceras_defensivas_owasp():
         for cabecera in CABECERAS_OWASP:
             assert cabecera not in headers, f"La API no debe enviar {cabecera} ({ep}): la pone nginx"
 
-    conf = (Path(__file__).resolve().parent.parent / "gateway" / "nginx.conf").read_text(encoding="utf-8")
+    conf = (next(p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file()) / "gateway" / "nginx.conf").read_text(encoding="utf-8")
     for cabecera in CABECERAS_OWASP:
         assert len(re.findall(rf"^\s*add_header\s+{cabecera}\s", conf, re.M)) == 1, f"{cabecera} debe declararse una sola vez"
     assert re.search(r"~\^/api/\s+\"default-src 'self'; frame-ancestors 'none';\"", conf)

@@ -178,7 +178,7 @@ python -m pytest tests/readiness -q
 Pruebas de carga (Locust; instrucciones en el propio archivo):
 
 ```bash
-locust -f tests/load/locust_readiness.py --host http://localhost
+locust -f tests/sprint6/locust_readiness.py --host http://localhost
 ```
 
 ---

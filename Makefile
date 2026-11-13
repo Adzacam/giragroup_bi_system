@@ -41,7 +41,7 @@ test-pipeline:
 
 test-api:
 	@echo "==> [4/6] Ejecutando pruebas de API y endpoints REST en contenedor 'api'..."
-	$(EXEC_API) pytest tests/test_otp_entorno_pruebas.py tests/sprint5/test_email_redesign_and_forgot_password.py -v --tb=short
+	$(EXEC_API) pytest tests/sprint6/test_otp_entorno_pruebas.py tests/sprint5/test_email_redesign_and_forgot_password.py -v --tb=short
 
 test-e2e:
 	@echo "==> [5/6] Ejecutando pruebas de Readiness y verificación de producción..."

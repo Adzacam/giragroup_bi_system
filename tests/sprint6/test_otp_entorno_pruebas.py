@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-_candidate_auth = Path(__file__).resolve().parent.parent / "services" / "auth-service"
-AUTH_DIR = _candidate_auth if _candidate_auth.exists() else Path(__file__).resolve().parent.parent
+_candidate_auth = next(p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file()) / "services" / "auth-service"
+AUTH_DIR = _candidate_auth if _candidate_auth.exists() else next(p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file())
 SONDA = "import os; import routers.auth as a; print(a.OTP_EXPUESTO_EN_PRUEBAS)"
 
 
