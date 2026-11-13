@@ -11,7 +11,7 @@ from pathlib import Path
 
 from main import MIGRACIONES_EN_ARRANQUE
 
-DIR_MIGRACIONES = Path(__file__).resolve().parent.parent / "backend" / "scripts" / "migrations"
+DIR_MIGRACIONES = next(p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file()) / "backend" / "scripts" / "migrations"
 RE_CHECK = re.compile(r"ADD CONSTRAINT chk_dim_origen_tipo_fuente\s+CHECK \((.*?)\);", re.S)
 
 

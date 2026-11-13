@@ -9,7 +9,7 @@ repetía la restricción uq_fact_rendimiento_estudiante_modulo. La migración 00
 import re
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parent.parent
+RAIZ = next(p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file())
 DDL = (RAIZ / "db" / "schema.sql").read_text(encoding="utf-8")
 MIG_005 = (RAIZ / "backend" / "scripts" / "migrations" / "005_alinear_esquema_con_ddl.sql").read_text(encoding="utf-8")
 
