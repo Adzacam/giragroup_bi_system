@@ -37,11 +37,11 @@ test-integration:
 
 test-pipeline:
 	@echo "==> [3/6] Ejecutando pruebas del pipeline BETO NER y Analytics (incluyendo marcas slow)..."
-	$(EXEC_PIPELINE) pytest tests/sprint3/test_ner_engine_gira10.py tests/sprint3/test_financial_rules_engine.py tests/sprint3/test_financial_validator.py tests/sprint3/test_financial_and_quality_post_steps.py tests/test_bandeja_hitl_ruido_y_un_clic.py -v --tb=short
+	$(EXEC_PIPELINE) pytest tests/sprint3/test_ner_engine_gira10.py tests/sprint3/test_financial_rules_engine.py tests/sprint3/test_financial_validator.py tests/sprint3/test_financial_and_quality_post_steps.py tests/sprint5/test_bandeja_hitl_ruido_y_un_clic.py -v --tb=short
 
 test-api:
 	@echo "==> [4/6] Ejecutando pruebas de API y endpoints REST en contenedor 'api'..."
-	$(EXEC_API) pytest tests/test_otp_entorno_pruebas.py tests/test_email_redesign_and_forgot_password.py -v --tb=short
+	$(EXEC_API) pytest tests/test_otp_entorno_pruebas.py tests/sprint5/test_email_redesign_and_forgot_password.py -v --tb=short
 
 test-e2e:
 	@echo "==> [5/6] Ejecutando pruebas de Readiness y verificación de producción..."

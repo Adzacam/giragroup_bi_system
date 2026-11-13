@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { crearEsperaRevision } from '../frontend/src/modules/dataops/hooks/esperaRevision.mjs';
+import { crearEsperaRevision } from '../../frontend/src/modules/dataops/hooks/esperaRevision.mjs';
 
 test('no envía antes de diez segundos y bloquea un segundo inicio', t => {
   t.mock.timers.enable({ apis: ['setTimeout', 'setInterval'] });

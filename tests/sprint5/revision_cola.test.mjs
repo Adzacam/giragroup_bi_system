@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { crearColaRevision } from '../frontend/src/modules/dataops/hooks/colaRevision.mjs';
+import { crearColaRevision } from '../../frontend/src/modules/dataops/hooks/colaRevision.mjs';
 
 test('la espera de una operación no bloquea programar la siguiente; cada una se envía a sus diez segundos', t => {
   t.mock.timers.enable({ apis: ['setTimeout', 'setInterval'] });

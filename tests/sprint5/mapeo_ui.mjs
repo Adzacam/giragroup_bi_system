@@ -1,7 +1,7 @@
 // E2E del diálogo "Mapear a estado canónico": un grupo con estado fuera de catálogo se resuelve desde la UI (tiempo medido y capturas).
 import { chromium } from 'playwright';
 import fs from 'node:fs';
-import { URL_APP, EMAIL, PASSWORD, SALIDA, otpDelLog } from './lib.mjs';
+import { URL_APP, EMAIL, PASSWORD, SALIDA, otpDelLog } from '../../e2e/lib.mjs';
 const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } }); const page = await ctx.newPage(); page.setDefaultTimeout(60000);
 await page.goto(`${URL_APP}/login`); await page.fill('input[type="email"]', EMAIL); await page.fill('input[type="password"]', PASSWORD);
 const d = new Date(Date.now() - 2000).toISOString(); await page.click('button:has-text("Iniciar sesión")');

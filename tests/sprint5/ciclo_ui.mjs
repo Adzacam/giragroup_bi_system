@@ -4,7 +4,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 import path from 'node:path';
-import { URL_APP, EMAIL, PASSWORD, SALIDA, paso, pasos, otpDelLog } from './lib.mjs';
+import { URL_APP, EMAIL, PASSWORD, SALIDA, paso, pasos, otpDelLog } from '../../e2e/lib.mjs';
 
 const CARPETA = process.env.E2E_ARCHIVOS;
 const archivos = fs.readdirSync(CARPETA).filter((f) => f.endsWith('.xlsx')).map((f) => path.join(CARPETA, f));

@@ -4,7 +4,7 @@ from sqlalchemy import text
 from models.fact_marketing import FactMarketing
 from services.clave_fila import ContadorOcurrencias, clave_contenido
 from services.dw_loader import DWLoaderService
-from tests.test_dataops_integridad import registro
+from tests.sprint5.test_dataops_integridad import registro
 
 
 def _loader(db):

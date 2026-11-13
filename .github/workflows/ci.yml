@@ -99,7 +99,32 @@ jobs:
           DATABASE_URL: postgresql+psycopg2://giragroup_user:giragroup_secret_2026@localhost:5434/giragroup_db_test
           CATALOG_DATABASE_URL: postgresql+psycopg2://giragroup_user:giragroup_secret_2026@localhost:5433/giragroup_catalog_db_test
         run: |
-          pytest tests/sprint1/ tests/sprint2/ tests/sprint3/ tests/sprint4/ \
+          pytest tests/sprint1/test_esquema_constelacion_hefesto.py \
+            tests/sprint1/test_infraestructura_y_docker.py \
+            tests/sprint1/test_modelos_orm_sqlalchemy.py \
+            tests/sprint1/test_usuarios_semilla_rbac.py \
+            tests/sprint2/test_bloques_detector.py \
+            tests/sprint2/test_categorizacion_y_cierre.py \
+            tests/sprint2/test_ingesta.py \
+            tests/sprint3/test_area2_confianza_telemetria.py \
+            tests/sprint3/test_area3_normalizacion_matching_fk.py \
+            tests/sprint3/test_area4_calidad_auditoria.py \
+            tests/sprint3/test_asymmetric_flattener_and_summary.py \
+            tests/sprint3/test_catalogos_db.py \
+            tests/sprint3/test_cross_source_reconciliation.py \
+            tests/sprint3/test_financial_and_quality_post_steps.py \
+            tests/sprint3/test_financial_catalog_matching.py \
+            tests/sprint3/test_financial_rules_engine.py \
+            tests/sprint3/test_financial_validator.py \
+            tests/sprint3/test_formatter_gira40.py \
+            tests/sprint3/test_ner_engine_gira10.py \
+            tests/sprint4/test_alert_engine.py \
+            tests/sprint4/test_alertas_tempranas_vista3.py \
+            tests/sprint4/test_anonimizacion.py \
+            tests/sprint4/test_cmi_y_laboratorio_predictivo.py \
+            tests/sprint4/test_dw_loader.py \
+            tests/sprint4/test_kpis_and_catalogs.py \
+            tests/sprint4/test_rbac_enforcement.py \
             --cov=pipeline --cov=backend/services \
             --cov-report=term-missing \
             --cov-fail-under=75
