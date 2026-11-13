@@ -393,6 +393,10 @@ try:
 
     class InferBatchRequest(BaseModel):
         textos: List[str] = Field(..., min_length=1, max_length=256)
+        # BETO_VENTANA: leer los textos de más de max_length tokens con ventanas que se solapan `stride` tokens (apagado por defecto)
+        ventana: bool = False
+        stride: int = Field(32, ge=0, le=96)
+        max_length: int = Field(128, ge=16, le=512)
 
     @app.post("/infer-batch")
     def infer_batch(req: InferBatchRequest):
@@ -401,7 +405,7 @@ try:
         if engine is None:
             return {"status": "error", "detail": "Motor BETO no disponible", "resultados": []}
         t0 = time.perf_counter()
-        resultados = engine.extraer_lote(req.textos)
+        resultados = engine.extraer_lote(req.textos, ventana=req.ventana, stride=req.stride, max_length=req.max_length)
         total_ms = (time.perf_counter() - t0) * 1000.0
         return {
             "status": "success",
@@ -421,6 +425,12 @@ try:
                             "source": e.origen,
                         }
                         for e in r.entidades
+                    ],
+                    # lo que emitió BETO solo, antes de reglas y catálogo (services/beto_integracion.py)
+                    "entidades_beto": [
+                        {"type": e.tipo.value if hasattr(e.tipo, "value") else str(e.tipo), "text": e.valor, "start": e.start_char,
+                         "end": e.end_char, "score": min(0.99, round(float(e.score), 4))}
+                        for e in r.entidades_beto
                     ],
                 }
                 for r in resultados

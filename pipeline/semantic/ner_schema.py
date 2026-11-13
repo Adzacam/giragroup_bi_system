@@ -164,6 +164,7 @@ class ResultadoInferenciaNER:
     modelo: str = MODELO_BETO_BASE
     dispositivo: str = "cpu"
     metadata: Dict[str, Any] = field(default_factory=dict)
+    entidades_beto: List[EntidadExtraida] = field(default_factory=list)   # solo lo que emitió BETO, antes de reglas y catálogo (no va en to_dict)
 
     def obtener_por_tipo(self, tipo: str) -> List[EntidadExtraida]:
         """Filtra entidades por su tipo canónico."""

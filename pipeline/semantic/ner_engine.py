@@ -11,7 +11,7 @@ import os
 import re
 import time
 import logging
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Tuple, Union
 
 try:
     import torch
@@ -227,13 +227,39 @@ class BetoNEREngine:
             entidades=entidades_finales,
             tiempo_inferencia_ms=tiempo_ms,
             modelo=self.model_name,
-            dispositivo=self.dispositivo_nombre
+            dispositivo=self.dispositivo_nombre,
+            entidades_beto=entidades_beto,
         )
+
+    def _predicciones_con_ventana(self, textos: List[str], max_length: int, stride: int) -> List[List[Dict[str, Any]]]:
+        """Predicciones del pipeline NER por texto, leyendo los textos largos con ventanas de max_length tokens que se solapan `stride`."""
+        from pipeline.semantic.ventana import TOKENS_ESPECIALES, fusionar_entidades, tramos_de_tokens
+        tok = self._nlp_pipeline.tokenizer
+        trozos: List[Tuple[int, int, str, bool, bool]] = []   # (texto, desplazamiento, trozo, cortado_por_izquierda, cortado_por_derecha)
+        for k, t in enumerate(textos):
+            offs = tok(t, add_special_tokens=False, return_offsets_mapping=True)["offset_mapping"]
+            for i0, i1 in tramos_de_tokens(len(offs), max(1, max_length - TOKENS_ESPECIALES), stride):
+                if not offs:
+                    trozos.append((k, 0, t, False, False))
+                    continue
+                c0, c1 = (offs[i0][0], offs[i1 - 1][1]) if len(offs) > max_length - TOKENS_ESPECIALES else (0, len(t))
+                trozos.append((k, c0, t[c0:c1], i0 > 0, i1 < len(offs)))
+        salidas = self._nlp_pipeline([x[2] for x in trozos], batch_size=DEFAULT_BATCH_SIZE) if trozos else []
+        por_texto: List[List[Dict[str, Any]]] = [[] for _ in textos]
+        for (k, desplazamiento, trozo, corta_izq, corta_der), preds in zip(trozos, salidas):
+            for p in preds:
+                inicio, fin = int(p["start"]), int(p["end"])
+                por_texto[k].append({**p, "start": inicio + desplazamiento, "end": fin + desplazamiento,
+                                     "borde": (corta_izq and inicio <= 0) or (corta_der and fin >= len(trozo.rstrip()))})
+        return [fusionar_entidades(ps) for ps in por_texto]
 
     def extraer_lote(
         self,
         textos: List[str],
-        batch_size: int = DEFAULT_BATCH_SIZE
+        batch_size: int = DEFAULT_BATCH_SIZE,
+        ventana: bool = False,
+        stride: int = 32,
+        max_length: int = 128,
     ) -> List[ResultadoInferenciaNER]:
         """
         Procesa un lote de oraciones aprovechando procesamiento optimizado en pipeline.
@@ -252,7 +278,7 @@ class BetoNEREngine:
             if self._nlp_pipeline is not None and validos:
                 t_lote = time.perf_counter()
                 try:
-                    salida = self._nlp_pipeline(validos, batch_size=len(validos))
+                    salida = self._predicciones_con_ventana(validos, max_length, stride) if ventana else self._nlp_pipeline(validos, batch_size=len(validos))
                     por_texto = dict(zip(validos, salida))
                 except Exception as err:
                     logger.error(f"Error durante inferencia BETO por lote: {err}")
