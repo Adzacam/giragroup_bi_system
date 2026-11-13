@@ -8,7 +8,7 @@ data = [
     {"rango": "Retenido en Staging (< 0,60)", "n": 141, "pct": 10.2},
 ]
 df = pd.DataFrame(data)
-df.to_csv("confianza.csv", index=False)
+df.to_csv("data/reproducibilidad/graficos/confianza.csv", index=False)
 
 plt.rcParams.update({
     "font.family": "serif",

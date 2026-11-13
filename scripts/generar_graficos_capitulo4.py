@@ -95,7 +95,7 @@ def generar_grafico_4_1():
 def generar_grafico_4_2():
     """Gráfico 4.2: Distribución porcentual del lote de ingesta según umbrales de confianza probabilística."""
     # Leer datos reales de confianza.csv
-    csv_path = pathlib.Path("confianza.csv")
+    csv_path = pathlib.Path("data/reproducibilidad/graficos/confianza.csv")
     datos = []
     if csv_path.exists():
         with open(csv_path, encoding='utf-8') as f:

@@ -290,7 +290,6 @@ assert sum(1 for t in tablas if t.startswith("public.")) == 48 and sum(1 for t i
 # Guardar en docs/evidencias/diccionario_datos.csv y en la raíz ./diccionario_datos.csv
 destinos = [
     ROOT / "docs" / "evidencias" / "diccionario_datos.csv",
-    ROOT / "diccionario_datos.csv"
 ]
 for dest in destinos:
     with open(dest, "w", encoding="utf-8-sig", newline="") as fh:

@@ -203,7 +203,7 @@ def generar_g3_4():
     Leyenda fuera abajo con MAPE: HW 13,89 %, naive 10,32 %.
     Eje X formateado en español (sep-23, ene-24, etc.).
     """
-    s_full = pd.read_csv('inscritos.csv', parse_dates=['mes'], index_col='mes')['inscritos'].asfreq('MS', fill_value=0)
+    s_full = pd.read_csv('data/reproducibilidad/graficos/inscritos.csv', parse_dates=['mes'], index_col='mes')['inscritos'].asfreq('MS', fill_value=0)
     s = s_full.iloc[-33:]
     
     h = 6
@@ -295,7 +295,7 @@ def generar_g3_5():
     En el gráfico: pendiente +3,6541 est./mes; intercepto 329,72 (t=0 en sep-2023); R² 0,1921; p 0,0107.
     Leyenda fuera del área de datos.
     """
-    s_full = pd.read_csv('inscritos.csv', parse_dates=['mes'], index_col='mes')['inscritos'].asfreq('MS', fill_value=0)
+    s_full = pd.read_csv('data/reproducibilidad/graficos/inscritos.csv', parse_dates=['mes'], index_col='mes')['inscritos'].asfreq('MS', fill_value=0)
     s = s_full.iloc[-33:]
     
     t = np.arange(len(s))

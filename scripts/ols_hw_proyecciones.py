@@ -18,7 +18,7 @@ m = pd.read_sql(text(Q), eng)
 m["anio"] = m.periodo_mes.str[:4].astype(int)
 anual = m[m.anio <= 2025].groupby("anio").v.sum()
 tesis = {2023: 8.03e6, 2024: 9.98e6, 2025: 12.90e6}
-csv = pd.read_csv(ROOT / "recaudacion.csv").set_index("anio").monto
+csv = pd.read_csv(ROOT / "data/reproducibilidad/graficos/recaudacion.csv").set_index("anio").monto
 a = {"DW_suma_monto_ejecutado": {int(k): round(float(v), 2) for k, v in anual.items()},
      "recaudacion_csv": {int(k): round(float(v), 2) for k, v in csv.items()},
      "tesis_millones": {k: v / 1e6 for k, v in tesis.items()},

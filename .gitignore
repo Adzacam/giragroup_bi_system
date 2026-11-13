@@ -110,3 +110,15 @@ uploads/.cache_lectura/
 *.prof
 !docs/evidencias/**/*.prof
 .coverage.*
+
+/_archivo/output/inventario_loc_proyecto.csv
+
+/_archivo/output/lote1387_beto_local.csv
+
+/_archivo/output/tabla_3_19_recuento_uploads.csv
+
+# Nuevas salidas de autoría; las evidencias finales se guardan explícitamente en docs/evidencias
+output/reportes/
+output/diagramas/
+output/graficos_historicos/
+output/historicos_nuevos/

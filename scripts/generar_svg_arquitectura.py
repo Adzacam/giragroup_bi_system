@@ -136,7 +136,7 @@ svg_content = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 680" 
 </svg>
 """
 
-with open("output/figura_arquitectura_ner_rapidfuzz.svg", "w", encoding="utf-8") as f:
+with open("docs/figuras_src/figura_arquitectura_ner_rapidfuzz.svg", "w", encoding="utf-8") as f:
     f.write(svg_content)
 
-print("SVG generado en output/figura_arquitectura_ner_rapidfuzz.svg")
+print("SVG generado en docs/figuras_src/figura_arquitectura_ner_rapidfuzz.svg")

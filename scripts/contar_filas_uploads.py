@@ -10,8 +10,10 @@ Calcula:
 - Columnas detectadas
 - Tipo de contenido inferido
 
-Genera la Tabla 3.19 en formato Markdown y persiste el resultado en output/tabla_3_19_recuento_uploads.csv.
+Genera la Tabla 3.19 en formato Markdown y persiste el resultado en output/historicos_nuevos/tabla_3_19_recuento_uploads.csv.
 """
+from pathlib import Path as _OutputPath
+_OutputPath('output/historicos_nuevos').mkdir(parents=True, exist_ok=True)
 
 import os
 import glob

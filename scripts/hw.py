@@ -11,7 +11,7 @@ plt.rcParams.update({
     "savefig.facecolor": "white",
 })
 
-s_full = pd.read_csv('inscritos.csv', parse_dates=['mes'], index_col='mes')['inscritos'].asfreq('MS', fill_value=0)
+s_full = pd.read_csv('data/reproducibilidad/graficos/inscritos.csv', parse_dates=['mes'], index_col='mes')['inscritos'].asfreq('MS', fill_value=0)
 # Ventana consolidada N = 33 meses (2023-09 a 2026-05): 27 meses de entrenamiento (>= 24 requeridos por s=12) + 6 meses holdout
 s = s_full.iloc[-33:]
 h = 6
@@ -47,9 +47,5 @@ a.spines['top'].set_visible(False)
 a.spines['right'].set_visible(False)
 a.legend(loc='upper left', frameon=False, fontsize=8.5)
 f.tight_layout()
-f.savefig('grafico_3_4.png', dpi=300, facecolor='white')
-os.makedirs('docs/images', exist_ok=True)
-shutil.copy2('grafico_3_4.png', 'docs/images/grafico_3_4_serie_temporal_holt_winters.png')
-brain_dir = r"C:\Users\DAZA\.gemini\antigravity\brain\f930e363-4cdd-4e0f-bee8-dd23f1e3b7d0"
-if os.path.exists(brain_dir):
-    shutil.copy2('grafico_3_4.png', os.path.join(brain_dir, 'grafico_3_4_serie_temporal_holt_winters.png'))
+os.makedirs('output/graficos_historicos', exist_ok=True)
+f.savefig('output/graficos_historicos/grafico_3_4.png', dpi=300, facecolor='white')

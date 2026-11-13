@@ -5,7 +5,7 @@ Reprocesa el lote de 1.387 registros utilizando exclusivamente el modelo entrena
 MODELO_BETO_NOMBRE = 'pipeline/semantic/beto_local'.
 
 Genera:
-- output/lote1387_beto_local.csv con columnas:
+- output/historicos_nuevos/lote1387_beto_local.csv con columnas:
   registro, archivo, formato, indice_final, estado
 - Reporte detallado por rangos de confianza:
   * Consolidado directo (>= 0.85)
@@ -13,6 +13,8 @@ Genera:
   * Retenido en Staging (< 0.60)
 - Desglose por formato (.xlsx, .csv, .xls) con fracciones exactas.
 """
+from pathlib import Path as _OutputPath
+_OutputPath('output/historicos_nuevos').mkdir(parents=True, exist_ok=True)
 
 import os
 import sys

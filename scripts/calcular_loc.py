@@ -1,3 +1,5 @@
+from pathlib import Path as _OutputPath
+_OutputPath('output/historicos_nuevos').mkdir(parents=True, exist_ok=True)
 import os
 import csv
 from pathlib import Path
@@ -147,7 +149,7 @@ def main():
     results.extend(analyze_directory("db", "Base de Datos"))
 
     # Write CSV
-    out_csv = Path("output/inventario_loc_proyecto.csv")
+    out_csv = Path("output/historicos_nuevos/inventario_loc_proyecto.csv")
     out_csv.parent.mkdir(parents=True, exist_ok=True)
     with open(out_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["Grupo", "Módulo / Subcarpeta", "Archivos", "Líneas Totales", "Líneas en Blanco", "Comentarios", "Código (SLOC)"])

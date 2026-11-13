@@ -10,8 +10,10 @@ Mide:
 - Filas derivadas a staging (stg_entidad_no_resuelta)
 - Excepciones no controladas (exigencia: 0)
 
-Persiste el reporte de robustez en output/reporte_robustez_layouts.json.
+Persiste el reporte de robustez en output/historicos_nuevos/reporte_robustez_layouts.json.
 """
+from pathlib import Path as _OutputPath
+_OutputPath('output/historicos_nuevos').mkdir(parents=True, exist_ok=True)
 
 import os
 import sys

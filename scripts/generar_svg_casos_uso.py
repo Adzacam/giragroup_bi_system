@@ -172,7 +172,7 @@ svg_content = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 950" 
 </svg>
 """
 
-with open("output/figura_casos_de_uso_general_sprint2.svg", "w", encoding="utf-8") as f:
+with open("docs/figuras_src/figura_casos_de_uso_general_sprint2.svg", "w", encoding="utf-8") as f:
     f.write(svg_content)
 
-print("SVG generado en output/figura_casos_de_uso_general_sprint2.svg")
+print("SVG generado en docs/figuras_src/figura_casos_de_uso_general_sprint2.svg")

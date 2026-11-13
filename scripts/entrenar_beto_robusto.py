@@ -15,6 +15,8 @@ Pipeline de Fine-Tuning y Evaluación Ciega de BETO para GiraGroup BI.
    b) test.conll sintético (230 oraciones)
 6. Persistencia de checkpoint en pipeline/semantic/beto_local/ y training_info.json.
 """
+from pathlib import Path as _OutputPath
+_OutputPath('output/historicos_nuevos').mkdir(parents=True, exist_ok=True)
 
 import os
 import sys
@@ -293,7 +295,7 @@ def entrenar_beto():
     print("2. Evaluando en test.conll sintético (230 oraciones)...")
     # Cargar test.conll
     from scripts.eval_ner import load_conll, reconstruct_text_and_offsets
-    X_conll, Y_conll = load_conll(Path("test.conll"))
+    X_conll, Y_conll = load_conll(Path("data/ner/test.conll"))
     
     Y_pred_conll = []
     best_model.eval()
@@ -373,7 +375,7 @@ def entrenar_beto():
     }
 
     os.makedirs("output", exist_ok=True)
-    with open("output/metricas_ner_robusto.json", "w", encoding="utf-8") as f:
+    with open("output/historicos_nuevos/metricas_ner_robusto.json", "w", encoding="utf-8") as f:
         json.dump(metricas_consolidadas, f, indent=2, ensure_ascii=False)
 
     print("\n=======================================================")

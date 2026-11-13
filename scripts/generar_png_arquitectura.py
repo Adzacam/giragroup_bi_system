@@ -1,3 +1,5 @@
+from pathlib import Path
+Path('output/diagramas').mkdir(parents=True, exist_ok=True)
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
@@ -117,5 +119,5 @@ ax.annotate("", xy=(10.4, 4.2), xytext=(10.25, 4.2), arrowprops=arrow_style)
 ax.text(0.5, 0.4, "Fuente: Elaboración propia a partir del código verificado en giragroup_bi_system (PyTorch, BETO, RapidFuzz, PostgreSQL)", fontsize=10, style="italic", color="#64748b")
 
 plt.tight_layout()
-plt.savefig("output/figura_arquitectura_ner_rapidfuzz.png", dpi=300, bbox_inches="tight")
-print("PNG generado en output/figura_arquitectura_ner_rapidfuzz.png")
+plt.savefig("output/diagramas/figura_arquitectura_ner_rapidfuzz.png", dpi=300, bbox_inches="tight")
+print("PNG generado en output/diagramas/figura_arquitectura_ner_rapidfuzz.png")

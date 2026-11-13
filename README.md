@@ -242,3 +242,5 @@ Pruebas en tests/sprint1 … sprint6, tests/readiness y tests/transversales. Res
 El archivo histórico se conserva en [_archivo/](_archivo/), excluido del contexto Docker y de pytest. Gráficos vigentes: docs/evidencias/graficos_v2/. Mapa de rutas, commits, cobertura y capturas pendientes: [registro de limpieza](docs/limpieza/LIMPIEZA_REGISTRO.md). Las dependencias locales y la base viva se conservaron.
 
 Las fuentes de autoría Power BI se conservan en `_archivo/powerbi/cmi/`; el informe activo sigue en `powerbi/dashboards/giragroup_cmi.pbix`.
+
+Datos de gráficos: `data/reproducibilidad/graficos/`. Corpus NER: `data/ner/test.conll`. Ingesta manual: `python scripts/run_sprint2.py`. Carga API: `locust -f tests/sprint6/locust_carga_api.py`. Documentación: `docs/README.md`.

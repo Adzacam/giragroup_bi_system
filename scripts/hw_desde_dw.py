@@ -8,7 +8,7 @@ url = os.environ["DATABASE_URL"]
 df = pd.read_sql(text("SELECT dt.periodo_mes, SUM(fm.inscritos)::float AS valor FROM dim_tiempo dt JOIN fact_marketing fm "
                       "ON dt.id_tiempo=fm.id_tiempo GROUP BY dt.periodo_mes HAVING SUM(fm.inscritos)>0 ORDER BY 1"), create_engine(url))
 dw = pd.Series(df.valor.values, index=pd.PeriodIndex(df.periodo_mes, freq="M").to_timestamp(), name="inscritos").asfreq("MS", fill_value=0)
-csv = pd.read_csv("inscritos.csv", parse_dates=["mes"], index_col="mes")["inscritos"].asfreq("MS", fill_value=0).astype(float)
+csv = pd.read_csv("data/reproducibilidad/graficos/inscritos.csv", parse_dates=["mes"], index_col="mes")["inscritos"].asfreq("MS", fill_value=0).astype(float)
 h = 6
 fit = lambda x: ES(x, trend="add", seasonal="add", seasonal_periods=12, initialization_method="heuristic").fit()
 

@@ -242,7 +242,7 @@ def generar_grafico_4_5():
 # 5. Gráfico 3.4: Serie mensual de inscritos con Holt-Winters amortiguado
 # =============================================================================
 def generar_grafico_3_4():
-    s_full = pd.read_csv('inscritos.csv', parse_dates=['mes'], index_col='mes')['inscritos'].asfreq('MS', fill_value=0)
+    s_full = pd.read_csv('data/reproducibilidad/graficos/inscritos.csv', parse_dates=['mes'], index_col='mes')['inscritos'].asfreq('MS', fill_value=0)
     s = s_full.iloc[-33:]
     h = 6
 

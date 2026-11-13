@@ -253,7 +253,7 @@ def reconstruct_text_and_offsets(tokens):
 
 
 def main():
-    conll_path = Path("test.conll")
+    conll_path = Path("data/ner/test.conll")
     build_test_conll(conll_path)
     X, Y_true = load_conll(conll_path)
 
@@ -295,7 +295,7 @@ def main():
         return obj
 
     rep_clean = make_serializable(rep)
-    Path("metricas_ner.json").write_text(
+    Path("docs/evidencias/ner_evaluacion/metricas_ner.json").write_text(
         json.dumps(rep_clean, indent=2, ensure_ascii=False), encoding="utf-8"
     )
     print("Reporte seqeval (strict, IOB2):")

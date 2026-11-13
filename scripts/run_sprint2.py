@@ -8,12 +8,18 @@ Ejecuta secuencialmente:
   Loop 4: Persistencia consolidada ({archivo, hoja, bloque_id, categoria, texto_plano})
           y generación del reporte de auditoría e invariante de conservación en sprint2_v2_resultado.md.
 """
+from pathlib import Path as _OutputPath
+_OutputPath('output/historicos_nuevos').mkdir(parents=True, exist_ok=True)
 
 import json
 import logging
 import os
 import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import pandas as pd
 
@@ -37,7 +43,7 @@ logger = logging.getLogger("run_sprint2")
 def ejecutar_pipeline_sprint2(
     directorio_datos: str = "uploads/data",
     directorio_salida: str = "output",
-    archivo_reporte: str = "sprint2_v2_resultado.md",
+    archivo_reporte: str = "output/reportes/sprint2_resultado.md",
 ) -> tuple[list[dict], dict]:
     """
     Ejecuta el pipeline completo de Sprint 2 de punta a punta.
@@ -191,6 +197,7 @@ def ejecutar_pipeline_sprint2(
 
     # ── Generar reporte markdown ─────────────────────────────────────
     reporte_md = _construir_reporte_markdown(auditoria, len(documentos_salida))
+    Path(archivo_reporte).parent.mkdir(parents=True, exist_ok=True)
     with open(archivo_reporte, "w", encoding="utf-8") as f:
         f.write(reporte_md)
     logger.info("Reporte final generado con éxito en '%s'", archivo_reporte)
@@ -255,7 +262,7 @@ def _construir_reporte_markdown(auditoria: dict, total_docs: int) -> str:
         "## 5. Salidas Persistidas para Sprint 3",
         "",
         "- **JSON Lines:** `output/sprint2_documentos.jsonl` (73 bloques con texto plano serializado y metadatos).",
-        "- **CSV Resumen:** `output/sprint2_documentos.csv`.",
+        "- **CSV Resumen:** `output/historicos_nuevos/sprint2_documentos.csv`.",
         "- **Trazabilidad:** Cada bloque conserva `{archivo, hoja, bloque_id, categoria, texto_plano, metadata}`.",
     ])
 

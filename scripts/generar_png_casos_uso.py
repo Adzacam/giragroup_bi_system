@@ -1,3 +1,5 @@
+from pathlib import Path
+Path('output/diagramas').mkdir(parents=True, exist_ok=True)
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
@@ -83,5 +85,5 @@ for act in actores:
 ax.text(0.5, 0.1, "Fuente: Elaboración propia según backlog del proyecto (FastAPI, RBAC, PyTorch BETO, PostgreSQL)", fontsize=11, style="italic", color="#64748b")
 
 plt.tight_layout()
-plt.savefig("output/figura_casos_de_uso_general_sprint2.png", dpi=300, bbox_inches="tight")
-print("PNG generado en output/figura_casos_de_uso_general_sprint2.png")
+plt.savefig("output/diagramas/figura_casos_de_uso_general_sprint2.png", dpi=300, bbox_inches="tight")
+print("PNG generado en output/diagramas/figura_casos_de_uso_general_sprint2.png")
