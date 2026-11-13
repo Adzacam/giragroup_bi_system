@@ -1,2 +1,0 @@
-OK: 3 entradas psycopg2 y connect/connect_ex bloqueadas; socketpair interno funcional.
-exit_code=0

@@ -7,3 +7,5 @@
 - [Diseño](diseno/), [colección API](api/postman_collection.json) y [propuestas pendientes](propuestas/).
 - [Evidencias conservadas](evidencias/). Las propuestas SQL no se ejecutan por organizar archivos.
 - Históricos: `_archivo/docs/`. Se mantienen las rutas originales dentro del archivo.
+
+Registro final: [registro_limpieza_20261113.md](auditoria/registro_limpieza_20261113.md).

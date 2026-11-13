@@ -1,0 +1,13 @@
+✔ la espera de una operación no bloquea programar la siguiente; cada una se envía a sus diez segundos (1.4156ms)
+✔ la misma operación no se programa dos veces y Deshacer cancela solo la elegida (0.5998ms)
+✔ salir de la pantalla cancela todas las esperas sin enviar nada (0.1589ms)
+✔ no envía antes de diez segundos y bloquea un segundo inicio (0.8367ms)
+✔ deshacer o salir durante la espera evita cualquier envío (0.1387ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 74.1081

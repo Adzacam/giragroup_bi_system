@@ -1,3 +1,0 @@
-[limpieza-repo f106550] chore(limpieza): generadores
- 8 files changed, 29 insertions(+), 316 deletions(-)
-{"tema": "generadores", "commit": "f106550933f2a35c570c5f0d37883cb87713fccd", "quick_exit": 0, "node_exit": 0, "revertido": false, "cambios": ["M\tscripts/generar_figuras_tesis_sprint5_6.py", "M\tscripts/generar_fuente_verdad_doc.py", "M\tscripts/generar_graficos_3_1_3_3.py", "M\tscripts/generar_graficos_capitulo4.py", "M\tscripts/generar_graficos_ronda_final.py", "M\tscripts/generar_graficos_veridicos_sprint3_4.py", "M\tscripts/grafico_3_2.py", "M\tscripts/graficos_tesis_v2.py"]}

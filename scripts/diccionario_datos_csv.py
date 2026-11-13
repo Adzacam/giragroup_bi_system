@@ -2,7 +2,7 @@
 referencia, descripción). Tipo, nulo, PK/FK y referencia salen de la base; la descripción se obtiene priorizando comentarios
 del catálogo, descripciones formales de los Apéndices de documentación (docs/apendices/diccionario_datos.md) y definiciones
 canónicas del sistema.
-Uso: DATABASE_URL=... python scripts/diccionario_datos_csv.py -> docs/evidencias/diccionario_datos.csv y ./diccionario_datos.csv
+Uso: DATABASE_URL=... python scripts/diccionario_datos_csv.py -> docs/evidencias/diccionario_datos.csv
 """
 import csv, os, re
 from pathlib import Path
@@ -287,7 +287,7 @@ for sch, tab, col, tipo, ln, prec, esc, nulo, _ in cols:
 tablas = {f[0] for f in filas}
 assert sum(1 for t in tablas if t.startswith("public.")) == 48 and sum(1 for t in tablas if t.startswith("bi.")) == 2, tablas
 
-# Guardar en docs/evidencias/diccionario_datos.csv y en la raíz ./diccionario_datos.csv
+# Guardar en docs/evidencias/diccionario_datos.csv
 destinos = [
     ROOT / "docs" / "evidencias" / "diccionario_datos.csv",
 ]

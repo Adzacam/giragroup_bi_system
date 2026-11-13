@@ -159,7 +159,7 @@ La evaluación experimental de ablación compara la capacidad de extracción de 
 
 ## D. PRUEBAS Y COBERTURA — MEDICIÓN DE LIMPIEZA (13-nov-2026)
 
-Esta medición sustituye las cifras de pruebas de rondas anteriores para el código `df033e9`. No modifica las cifras de negocio del snapshot del 10-nov. PostgreSQL de validación en proyecto Docker aislado con tmpfs; dump copiado por lectura y hash original intacto. Evidencia: `docs/limpieza/validacion/despues_pytest.txt`, `despues/junit.xml`, `despues/coverage.json`.
+Esta medición sustituye las cifras de pruebas de rondas anteriores para el código `3973c29`. No modifica las cifras de negocio del snapshot del 10-nov. PostgreSQL de validación en proyecto Docker aislado con tmpfs; dump copiado por lectura y hash original intacto. Evidencia: `docs/evidencias/validacion_20261113/pytest_completo.txt`, `docs/evidencias/validacion_20261113/junit.xml`, `docs/evidencias/validacion_20261113/coverage.json`.
 
 | Métrica | Resultado medido |
 | --- | --- |
@@ -184,7 +184,7 @@ Esta medición sustituye las cifras de pruebas de rondas anteriores para el cód
 | sprint6 | 14 |
 | transversales | 23 |
 
-Mapa histórico completo para Tabla 3.29, GCB-42 y matriz de trazabilidad: `docs/limpieza/MAPA_TESTS.tsv`. Los cinco tests Node de UI se miden aparte de pytest. La prueba extensa excluida en verificaciones rápidas sí se ejecutó en esta corrida completa.
+Mapa histórico completo para Tabla 3.29, GCB-42 y matriz de trazabilidad: `docs/evidencias/validacion_20261113/mapa_tests.tsv`. Los cinco tests Node de UI se miden aparte de pytest. La prueba extensa excluida en verificaciones rápidas sí se ejecutó en esta corrida completa.
 
 ### Tabla D.2: Cobertura por componente
 
@@ -437,8 +437,8 @@ Todos los gráficos y figuras han sido regenerados exclusivamente a partir de lo
 | **Gráfico 4.3** | Resultado de vinculación automática e intervención humana por archivo de origen | `docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
 | **Gráfico 4.5** | Comparación de tiempos de consolidación analítica entre línea base manual y pipeline | `docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
 | **Figura 3.5** | Esquema físico del modelo en constelación de hechos del Data Warehouse | `docs/figuras_src/figura_3_5_constelacion_dw.mmd` (PNG pendiente de regenerar) | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Figura 3.40** | Captura de ejecución de la suite de pruebas unitarias y de integración (634 passed; medición 13-nov-2026) | Pendiente de captura real; consultar docs/limpieza/LIMPIEZA_REGISTRO.md | Runner de pruebas pytest / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Figura 3.50** | Captura de reporte consolidado de cobertura de código por componentes (medición vigente en sección D) | Pendiente de captura real; consultar docs/limpieza/LIMPIEZA_REGISTRO.md | Runner de pruebas pytest-cov / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Figura 3.40** | Captura de ejecución de la suite de pruebas unitarias y de integración (634 passed; medición 13-nov-2026) | Pendiente de captura real; consultar docs/auditoria/registro_limpieza_20261113.md | Runner de pruebas pytest / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Figura 3.50** | Captura de reporte consolidado de cobertura de código por componentes (medición vigente en sección D) | Pendiente de captura real; consultar docs/auditoria/registro_limpieza_20261113.md | Runner de pruebas pytest-cov / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
 
 ---
 

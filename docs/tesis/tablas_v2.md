@@ -102,9 +102,9 @@
 | transversales | tests/transversales/ | 23 | 0 | 0 | 23 | 100,0 % |
 | TOTAL CONSOLIDADO | DW aislada; --cov=backend --cov=pipeline | 634 | 11 | 7 | 652 | 97,24 %; 100 % operativo |
 
-Fuente: corrida real del 13-nov-2026; df033e9.
+Fuente: corrida real del 13-nov-2026; 3973c29.
 
-> Medición real del 13-nov-2026, commit df033e9: 68,448742 % (9.628 de 14.066 sentencias). Readiness: 11 omitidas condicionales y 7 fallos esperados documentados; sin fallos inesperados. Evidencia: docs/limpieza/validacion/despues/.
+> Medición real del 13-nov-2026, commit 3973c29: 68,448742 % (9.628 de 14.066 sentencias). Readiness: 11 omitidas condicionales y 7 fallos esperados documentados; sin fallos inesperados. Evidencia: docs/evidencias/validacion_20261113/.
 
 ---
 ### Tabla 3.30 Reporte de cobertura de código por componente del sistema analítico
@@ -135,7 +135,7 @@ Fuente: corrida real del 13-nov-2026; df033e9.
 | pipeline/semantic/ner_engine.py | 301 | 193 | 108 | 64,12 % | Motor NER BETO fine-tuned (S-17) |
 | TOTAL SISTEMA | 14.066 | 9.628 | 4.438 | 68,45 % | Alcance global de pruebas automatizadas (--cov=backend --cov=pipeline) |
 
-Selección de componentes; el total corresponde al alcance completo. Detalle: docs/limpieza/validacion/despues/coverage.json.
+Selección de componentes; el total corresponde al alcance completo. Detalle: docs/evidencias/validacion_20261113/coverage.json.
 
 ---
 ### Tabla 3.34 Indicadores de calidad y rendimiento en la iteración de estabilización final

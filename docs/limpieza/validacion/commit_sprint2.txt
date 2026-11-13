@@ -1,6 +1,0 @@
-[limpieza-repo edb1452] chore(limpieza): sprint2
- 4 files changed, 1 insertion(+), 1 deletion(-)
- rename tests/{ => sprint2}/test_datos_reales_pipeline.py (100%)
- rename tests/{ => sprint2}/test_fecha_corte_moodle.py (100%)
- rename tests/{ => sprint2}/test_formatos_genericos.py (100%)
-{"tema": "sprint2", "commit": "edb1452f24abb1d559f27cf1cce957f2fcb48f88", "quick_exit": 0, "node_exit": 0, "revertido": false, "cambios": ["M\tMakefile", "R100\ttests/test_datos_reales_pipeline.py\ttests/sprint2/test_datos_reales_pipeline.py", "R100\ttests/test_fecha_corte_moodle.py\ttests/sprint2/test_fecha_corte_moodle.py", "R100\ttests/test_formatos_genericos.py\ttests/sprint2/test_formatos_genericos.py"]}

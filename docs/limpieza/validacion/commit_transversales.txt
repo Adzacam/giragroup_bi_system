@@ -1,5 +1,0 @@
-[limpieza-repo df033e9] chore(limpieza): transversales
- 2 files changed, 1 insertion(+), 1 deletion(-)
- create mode 100644 tests/transversales/__init__.py
- rename tests/{ => transversales}/test_agnostic_classifier_and_dw_reset.py (99%)
-{"tema": "transversales", "commit": "df033e90ca17223eaf69fdcccd9e3b77367e98f8", "quick_exit": 0, "node_exit": 0, "revertido": false, "cambios": ["A\ttests/transversales/__init__.py", "R099\ttests/test_agnostic_classifier_and_dw_reset.py\ttests/transversales/test_agnostic_classifier_and_dw_reset.py"]}

@@ -1,6 +1,0 @@
-{
-  "ruta": "docs/evidencias/snapshot_dw_20261110_1201.dump",
-  "sha256": "14d45f5a128f44543927911dc0ad453f681d524ac05037203f5c0c2787e3a2eb",
-  "bytes": 26557093,
-  "operacion": "solo lectura del dump; ninguna conexión SQL"
-}

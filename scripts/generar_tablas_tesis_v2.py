@@ -216,8 +216,8 @@ T3_29_DATA = [['sprint1', 'tests/sprint1/', '29', '0', '0', '29', '100,0 %'],
  ['readiness', 'tests/readiness/', '21', '11', '7', '39', '100,0 % operativo'],
  ['transversales', 'tests/transversales/', '23', '0', '0', '23', '100,0 %'],
  ['TOTAL CONSOLIDADO', 'DW aislada; --cov=backend --cov=pipeline', '634', '11', '7', '652', '97,24 %; 100 % operativo']]
-T3_29_NOTA = ('Medición real del 13-nov-2026, commit df033e9: 68,448742 % (9.628 de 14.066 sentencias). Readiness: 11 omitidas condicionales y 7 fallos '
- 'esperados documentados; sin fallos inesperados. Evidencia: docs/limpieza/validacion/despues/.')
+T3_29_NOTA = ('Medición real del 13-nov-2026, commit 3973c29: 68,448742 % (9.628 de 14.066 sentencias). Readiness: 11 omitidas condicionales y 7 fallos '
+ 'esperados documentados; sin fallos inesperados. Evidencia: docs/evidencias/validacion_20261113/.')
 
 # T3.30: Cobertura por módulo (Tabla D.2 de la SFV v2)
 T3_30_TITULO = "Tabla 3.30 Reporte de cobertura de código por componente del sistema analítico"

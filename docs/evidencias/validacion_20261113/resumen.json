@@ -1,0 +1,22 @@
+{
+  "fecha": "2026-11-13T11:50:44.901594-04:00",
+  "commit_validado": "3973c29a5cfc96665628a776db79bbedba1d06b1",
+  "collected": 652,
+  "passed": 634,
+  "skipped": 11,
+  "xfailed": 7,
+  "failed": 0,
+  "coverage": {
+    "covered_lines": 9628,
+    "num_statements": 14066,
+    "percent_covered": 68.44874164652353,
+    "percent_covered_display": "68",
+    "missing_lines": 4438,
+    "excluded_lines": 3,
+    "percent_statements_covered": 68.44874164652353,
+    "percent_statements_covered_display": "68"
+  },
+  "ids_antes_despues_iguales": true,
+  "runtime_backend_pipeline_services_frontend_db_sin_cambios": true,
+  "snapshot_sha256": "14d45f5a128f44543927911dc0ad453f681d524ac05037203f5c0c2787e3a2eb"
+}

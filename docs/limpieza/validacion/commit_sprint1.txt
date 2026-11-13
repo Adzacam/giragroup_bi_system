@@ -1,5 +1,0 @@
-[limpieza-repo cfab981] chore(limpieza): sprint1
- 2 files changed, 2 insertions(+), 2 deletions(-)
- rename tests/{ => sprint1}/test_esquema_alineado_ddl.py (97%)
- rename tests/{ => sprint1}/test_migraciones_arranque.py (96%)
-{"tema": "sprint1", "commit": "cfab9814c71116c704b5c934ba3d420422fe94f4", "quick_exit": 0, "node_exit": 0, "revertido": false, "cambios": ["R097\ttests/test_esquema_alineado_ddl.py\ttests/sprint1/test_esquema_alineado_ddl.py", "R096\ttests/test_migraciones_arranque.py\ttests/sprint1/test_migraciones_arranque.py"]}

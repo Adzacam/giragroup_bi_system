@@ -1,0 +1,4 @@
+Power BI e0f6d2d: 8 passed
+Documentos e46dd3f: 8 passed
+Raíz/output 3973c29: 17 passed
+Pruebas completas finales: 634 passed, 11 skipped, 7 xfailed, 0 failed; 652 collected.

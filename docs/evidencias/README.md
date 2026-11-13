@@ -16,3 +16,5 @@ cifras finales del lote 1.387, corridas finales, recálculos Holt-Winters, captu
 Las rondas intermedias, resúmenes antiguos, cobertura ronda 6 y primera versión A se archivaron
 en `_archivo/docs/evidencias/`. No se borró ninguna cifra final ni se alteraron los JSON de negocio.
 Un archivo sin referencias concluyentes se conserva para revisión; no se elimina por ese solo motivo.
+
+Registro y mapa de movimientos: `docs/auditoria/registro_limpieza_20261113.md`.
