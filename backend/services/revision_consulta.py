@@ -23,6 +23,7 @@ MOTIVOS = {
     'HECHO_EN_REVISION': 'Hecho cargado que necesita revisión',
     'REVISION_GENERAL': 'Revisión general', 'NOTA_FUERA_ESCALA': 'Nota fuera de escala',
     'ENTIDAD_NUEVA': 'Entidad nueva', 'ESCALA_AMBIGUA': 'Escala no declarada',
+    'DESACUERDO_REGLA_BETO': 'Las reglas y BETO no coinciden en la persona',
 }
 
 
@@ -108,6 +109,8 @@ def caso_guardado(ent, doc):
         'cuando': ent.resuelto_en.isoformat() if ent.resuelto_en else None,
         'entidades': p.get('entities') or p.get('entidades') or [],
     }
+    if p.get('sugerencias'):   # opción 3: candidatos ordenados por score combinado (campo opcional; solo orden, nunca una acción)
+        publico['sugerencias_beto'] = p['sugerencias']
     return proteger_ci(publico, cis_en_entidades(publico['entidades'], str(ci) if ci else None))
 
 

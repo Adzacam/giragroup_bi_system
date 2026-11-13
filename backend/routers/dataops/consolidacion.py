@@ -168,6 +168,10 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     # Flags BETO_CASCADA_FINAL / BETO_ACUERDO_QC (services/beto_integracion.py); apagados: camino original
     contadores_beto = beto_integracion.Contadores()
     cliente_beto = beto_integracion.ClienteBeto(contadores=contadores_beto) if beto_integracion.necesita_refinar() else None
+    sugeridor = None
+    if beto_integracion.activo("BETO_SUGERENCIA_HITL"):   # opción 3: candidatos ordenados en la bandeja; solo ordena
+        sugeridor = beto_integracion.hacer_sugeridor(cliente_beto or beto_integracion.ClienteBeto(contadores=contadores_beto), estudiantes)
+        dw.sugeridor = sugeridor
     for stg in stg_records:
         orig_doc = origenes_map.get(stg.id_documento) if stg.id_documento else None
         doc_fuente = (orig_doc.tipo_fuente if (orig_doc and orig_doc.tipo_fuente) else "ACTA").upper().strip()
@@ -291,6 +295,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
             if is_approved:
                 fecha_linea = fecha_de_fila(campos_linea, categoria_ruteo) if campos_linea else None
                 reg_dict = {
+                    **({"beto_texto": beto_integracion.texto_para_beto(line)} if sugeridor is not None else {}),
                     "categoria": categoria_ruteo,
                     "tipo_fuente": doc_fuente,
                     "tipo_escala": doc_escala,
@@ -444,6 +449,8 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                             "score": score,
                             "tipo_fuente": doc_fuente,
                             "tipo_escala": doc_escala,
+                            **({"sugerencias": sugeridor(nombre_est, None, beto_integracion.texto_para_beto(line))}
+                               if (sugeridor is not None and nombre_est) else {}),
                         },
                         registro_origen_id=stg.id,
                         estado_resolucion="PENDIENTE",

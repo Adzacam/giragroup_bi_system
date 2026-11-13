@@ -238,6 +238,9 @@ class DWLoaderService:
         self._cache_tiempo_programa: Dict[Any, Optional[int]] = {}
         self._cache_estudiante: Dict[Any, Tuple[Optional[int], str]] = {}
         # Con 85 mil registros por consolidación, estas búsquedas se repetían una vez por registro contra la base
+        # Opción 3 (BETO_SUGERENCIA_HITL): función (nombre, candidatos, texto_beto) → candidatos ordenados; solo ordena, nunca decide
+        self.sugeridor: Optional[Any] = None
+        self._texto_beto: Optional[str] = None
         self._origen_por_doc: Dict[Any, Optional[DimOrigenDocumental]] = {}
         self._docente_por_nombre: Dict[str, Optional[int]] = {}
         self._institucion_por_nombre: Dict[str, Optional[int]] = {}
@@ -260,6 +263,18 @@ class DWLoaderService:
             if e is not None and not e.deprecado:
                 out.append((e, round(ratio, 2)))
         return out
+
+    def _extra_sugerencias(self, nombre, candidatos) -> Dict[str, Any]:
+        """kwargs de StagingEntidadNoResuelta con los candidatos ordenados (vacío si la opción 3 está apagada o falla)."""
+        if self.sugeridor is None:
+            return {}
+        try:
+            lista = [{"id": e.id_estudiante, "nombre": e.nombre_completo, "similitud_nombre": ratio,
+                      "programa": e.programa_origen} for e, ratio in candidatos]
+            sug = self.sugeridor(nombre, lista, self._texto_beto)
+        except Exception:
+            return {}
+        return {"payload_json": {"sugerencias": sug}} if sug else {}
 
     def _desempatar_homonimos(self, candidatos, ci, programa, modulo, fecha):
         """Entre >=2 candidatos con el mismo nombre elige uno solo si, aplicando en orden CI parcial, programa, módulo y
@@ -494,7 +509,8 @@ class DWLoaderService:
                     fk_estado="C",
                     motivo="HOMONIMIA",
                     nivel_confianza=confianza_ia,
-                    resuelto=False
+                    resuelto=False,
+                    **self._extra_sugerencias(nombre_clean, candidatos_validos)
                 )
                 self.db.add(stg)
                 self.db.flush()
@@ -522,7 +538,8 @@ class DWLoaderService:
                             fk_estado="C",
                             motivo="HOMONIMIA",
                             nivel_confianza=confianza_ia,
-                            resuelto=False
+                            resuelto=False,
+                            **self._extra_sugerencias(nombre_clean, candidatos_validos)
                         )
                         self.db.add(stg)
                         self.db.flush()
@@ -1017,6 +1034,7 @@ class DWLoaderService:
         - ADMISION -> dim_estudiante
         """
         doc_id = registro.get("doc_id")
+        self._texto_beto = registro.get("beto_texto")
         origen_doc = None
         if doc_id:
             if doc_id not in self._origen_por_doc:

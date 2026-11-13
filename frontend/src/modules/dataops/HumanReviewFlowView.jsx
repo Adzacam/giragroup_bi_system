@@ -50,6 +50,11 @@ function CasoRevision({ item, readOnly, busy, schedule }) {
     <p style={{ margin: '12px 0' }}>Cédula: {revealed[item.id] || item.ci_enmascarado || 'Sin dato'} {hasCi && <Button variant="ghost" isLoading={revealing} loadingText="Consultando…" onClick={reveal}>{revealed[item.id] ? 'Ocultar cédula' : 'Revelar con auditoría'}</Button>}</p>
     <details style={{ marginBottom: 12 }}><summary style={{ cursor: 'pointer' }}>Ver texto original protegido</summary><p style={{ fontSize: 12, overflowWrap: 'anywhere', padding: '12px 0' }}>{item.que_vio || 'Sin texto disponible'}</p></details>
     {item.sugerencia && <p style={{ marginBottom: 12 }}>Sugerencia guardada: {item.sugerencia}</p>}
+    {item.sugerencias_beto?.length > 0 && <div style={{ marginBottom: 12 }}>
+      <p style={{ fontSize: 12, marginBottom: 6 }}>Candidatos ordenados por score combinado (similitud y probabilidad de BETO). Solo ordenan: la decisión es tuya.</p>
+      <table style={{ width: '100%', fontSize: 12 }}><thead><tr><th align="left">Candidato</th><th align="right">Similitud</th><th align="right">Prob. BETO</th><th align="right">Score</th></tr></thead>
+        <tbody>{item.sugerencias_beto.map(s => <tr key={s.id ?? s.nombre}><td>{s.nombre}{s.ci_enmascarado ? ` · ${s.ci_enmascarado}` : ''}</td><td align="right">{(s.similitud * 100).toFixed(0)} %</td><td align="right">{s.probabilidad_beto == null ? 'Sin dato' : `${(s.probabilidad_beto * 100).toFixed(0)} %`}</td><td align="right">{(s.score_combinado * 100).toFixed(0)} %</td></tr>)}</tbody></table>
+    </div>}
     {readOnly ? <p>Estado: {item.estado_resolucion === 'DESCARTADO' ? 'Descartado' : item.estado_resolucion === 'RESUELTO_HUMANO' ? 'Resuelto' : 'Pendiente de revisión'}</p> : <>
       {item.manual_presupuesto && <p className="dataops-banner-info">Esta fila requiere revisar su clasificación. La aprobación como persona está bloqueada.</p>}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12, margin: '16px 0' }}>
