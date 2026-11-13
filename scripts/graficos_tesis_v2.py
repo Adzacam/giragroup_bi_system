@@ -433,8 +433,6 @@ def generar_g4_1():
              transform=ax2.transAxes, fontsize=9.5, weight='bold')
     
     guardar_figura_exacta(fig, "grafico_4_1_calidad_corpus.png")
-    shutil.copy2(OUTPUT_DIR / "grafico_4_1_calidad_corpus.png",
-                 OUTPUT_DIR / "grafico_4_1_inconsistencias_corpus.png")
 
 
 # =============================================================================
@@ -485,8 +483,6 @@ def generar_g4_2():
                 va='center', ha='left', fontsize=8.5)
         
     guardar_figura_exacta(fig, "grafico_4_2_resoluciones_cascada.png")
-    shutil.copy2(OUTPUT_DIR / "grafico_4_2_resoluciones_cascada.png",
-                 OUTPUT_DIR / "grafico_4_2_confianza_probabilistica.png")
 
 
 # =============================================================================
@@ -546,8 +542,6 @@ def generar_g4_3():
               frameon=True, facecolor='#FFFFFF', edgecolor='#AAAAAA', fontsize=8.2)
     
     guardar_figura_exacta(fig, "grafico_4_3_vinculacion_por_archivo.png")
-    shutil.copy2(OUTPUT_DIR / "grafico_4_3_vinculacion_por_archivo.png",
-                 OUTPUT_DIR / "grafico_4_3_distribucion_archivo_lote_1387.png")
 
 
 # =============================================================================
@@ -622,8 +616,6 @@ def generar_g4_4():
     fig.text(0.09, 0.02, "Fuente: Elaboración propia (2026)", fontsize=8.2, style='italic', color='#333333')
     
     guardar_figura_exacta(fig, "grafico_4_4_kpi_cmi_perspectivas.png")
-    shutil.copy2(OUTPUT_DIR / "grafico_4_4_kpi_cmi_perspectivas.png",
-                 OUTPUT_DIR / "grafico_4_4_kpis_cmi.png")
 
 
 # =============================================================================

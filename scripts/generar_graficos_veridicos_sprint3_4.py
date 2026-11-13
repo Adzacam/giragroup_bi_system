@@ -21,8 +21,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-OUTPUT_DIR = os.path.abspath("docs/images")
-BRAIN_DIR = r"C:\Users\DAZA\.gemini\antigravity\brain\f930e363-4cdd-4e0f-bee8-dd23f1e3b7d0"
+OUTPUT_DIR = os.path.abspath("docs/evidencias/graficos_v2")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
@@ -262,22 +261,6 @@ def generar_grafico_3_5():
     print(f"Gráfico 3.5 generado en: {ruta_png}")
 
 
-def copiar_a_cerebro():
-    """Copia los gráficos al directorio de artefactos del asistente"""
-    archivos = [
-        "grafico_3_1_matriz_confusion_beto.png",
-        "grafico_3_2_distribucion_confianza_probabilistica.png",
-        "grafico_3_3_desempeno_metricas_por_entidad.png",
-        "grafico_3_4_serie_temporal_holt_winters.png",
-        "grafico_3_5_tendencia_lineal_ols.png"
-    ]
-    if os.path.exists(BRAIN_DIR):
-        for a in archivos:
-            src = os.path.join(OUTPUT_DIR, a)
-            dst = os.path.join(BRAIN_DIR, a)
-            if os.path.exists(src):
-                shutil.copy2(src, dst)
-        print("Gráficos analíticos copiados con éxito al cerebro.")
 
 
 if __name__ == "__main__":
@@ -286,4 +269,3 @@ if __name__ == "__main__":
     generar_grafico_3_3()
     generar_grafico_3_4()
     generar_grafico_3_5()
-    copiar_a_cerebro()

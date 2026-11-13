@@ -50,6 +50,7 @@ ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
 
 fig.tight_layout()
-fig.savefig("grafico_3_2.png", dpi=300, facecolor="white")
-fig.savefig("docs/images/grafico_3_2_distribucion_confianza_probabilistica.png", dpi=300, facecolor="white")
+from pathlib import Path
+Path("docs/evidencias/graficos_v2").mkdir(parents=True, exist_ok=True)
+fig.savefig("docs/evidencias/graficos_v2/grafico_3_2_distribucion_confianza_probabilistica.png", dpi=300, facecolor="white")
 print("Gráfico 3.2 generado exitosamente: N =", df["n"].sum(), "| Suma pct =", df["pct"].sum())

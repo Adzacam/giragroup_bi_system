@@ -12,9 +12,8 @@ plt.rcParams.update({
     "savefig.facecolor": "white",
 })
 
-os.makedirs("output", exist_ok=True)
-os.makedirs("docs/images", exist_ok=True)
-brain_dir = r"C:\Users\DAZA\.gemini\antigravity\brain\f930e363-4cdd-4e0f-bee8-dd23f1e3b7d0"
+os.makedirs("docs/evidencias/graficos_v2", exist_ok=True)
+
 
 # ==============================================================================
 # 1. GRÁFICO 3.1: MATRIZ DE CONFUSIÓN
@@ -66,11 +65,8 @@ for i in range(len(clases)):
         ax1.text(j, i, texto, ha="center", va="center", color=color, fontsize=8.5, fontweight="bold")
 
 fig1.tight_layout()
-p1 = "output/grafico_3_1_matriz_confusion_beto.png"
+p1 = "docs/evidencias/graficos_v2/grafico_3_1_matriz_confusion_beto.png"
 fig1.savefig(p1, dpi=300, facecolor="white")
-fig1.savefig("docs/images/grafico_3_1_matriz_confusion_beto.png", dpi=300, facecolor="white")
-if os.path.exists(brain_dir):
-    shutil.copy2(p1, os.path.join(brain_dir, "grafico_3_1_matriz_confusion_beto.png"))
 plt.close(fig1)
 print(f"Generado: {p1}")
 
@@ -121,10 +117,7 @@ autolabel(r2)
 autolabel(r3)
 
 fig2.tight_layout()
-p2 = "output/grafico_3_3_desempeno_metricas_beto.png"
+p2 = "docs/evidencias/graficos_v2/grafico_3_3_desempeno_metricas_beto.png"
 fig2.savefig(p2, dpi=300, facecolor="white")
-fig2.savefig("docs/images/grafico_3_3_desempeno_metricas_beto.png", dpi=300, facecolor="white")
-if os.path.exists(brain_dir):
-    shutil.copy2(p2, os.path.join(brain_dir, "grafico_3_3_desempeno_metricas_beto.png"))
 plt.close(fig2)
 print(f"Generado: {p2}")

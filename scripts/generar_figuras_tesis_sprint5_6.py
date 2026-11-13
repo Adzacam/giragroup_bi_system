@@ -483,61 +483,6 @@ def generar_figura_3_33():
     print(f"Figura 3.33 generada en: {ruta_png}")
 
 
-def generar_figura_3_34():
-    """Figura 3.34 Captura de ejecución y cobertura de pruebas automatizadas en Pytest"""
-    fig, ax = plt.subplots(figsize=(12, 7), dpi=300)
-    fig.patch.set_facecolor("#FFFFFF")
-    ax.set_facecolor("#FFFFFF")
-    ax.set_xlim(0, 100)
-    ax.set_ylim(0, 100)
-    ax.axis("off")
-
-    ax.text(50, 96, "Figura 3.34 Captura de Ejecución de Pruebas Unitarias y Cobertura de Código en Pytest",
-            fontsize=11.5, fontweight="bold", ha="center", va="center", color="#000000")
-
-    # Terminal Window Container
-    ax.add_patch(patches.Rectangle((4, 7), 92, 85, facecolor="#F8F8F8", edgecolor="#000000", linewidth=1.2))
-    ax.add_patch(patches.Rectangle((4, 86), 92, 6, facecolor="#E0E0E0", edgecolor="#000000", linewidth=0.8))
-    ax.text(6, 89, "PowerShell - Terminal de Pruebas Pytest: pytest --cov=backend --cov=pipeline",
-            fontsize=8, family="monospace", va="center", color="#000000")
-
-    log_pytest = """============================= test session starts ==============================
-platform win32 -- Python 3.12.3, pytest-8.3.2, pluggy-1.5.0
-rootdir: C:\\Users\\DAZA\\Documents\\Universidad\\Proyecto de Grado 7MO semestre\\giragroup_bi_system
-configfile: pyproject.toml
-plugins: anyio-4.4.0, cov-5.0.0
-collected 42 items
-
-tests/sprint1/test_infra.py ...........                                  [ 26%]
-tests/sprint2/test_ingesta.py .......                                    [ 42%]
-tests/sprint3/test_ner_engine.py ........                                [ 61%]
-tests/sprint4/test_alertas_tempranas_vista3.py .....                     [ 73%]
-tests/sprint4/test_forecasting.py .......                                [ 90%]
-tests/sprint5/test_kpis_and_catalogs.py ....                             [100%]
-
----------- coverage: platform win32, python 3.12.3 ----------
-Name                                       Stmts   Miss  Cover
---------------------------------------------------------------
-backend/core/security.py                      42      2    95%
-backend/routers/pipeline.py                   68      4    94%
-backend/services/risk_service.py             185     12    93%
-pipeline/analytics/forecasting_holtwinters    74      6    92%
-pipeline/analytics/forecasting_ols.py         32      1    97%
-pipeline/semantic/ner_engine.py               88      5    94%
-pipeline/normalization/fuzzy_normalizer.py    45      3    93%
---------------------------------------------------------------
-TOTAL                                        534     33    94%
-
-============================== 42 passed in 14.82s =============================="""
-
-    ax.text(6, 83, log_pytest, fontsize=7.5, family="monospace", va="top", ha="left", color="#222222", linespacing=1.2)
-    ax.text(50, 2, "Fuente: Elaboración propia (2026)", fontsize=9, style="italic", ha="center", color="#333333")
-
-    ruta_png = os.path.join(OUTPUT_DIR, "figura_3_34_captura_pytest_cobertura.png")
-    plt.tight_layout()
-    plt.savefig(ruta_png, dpi=300, facecolor="#FFFFFF", edgecolor="none")
-    plt.close()
-    print(f"Figura 3.34 generada en: {ruta_png}")
 
 
 def generar_figura_3_35():
@@ -630,45 +575,6 @@ Access-Control-Allow-Headers: Authorization, Content-Type, Accept
     print(f"Figura 3.36 generada en: {ruta_png}")
 
 
-def generar_figura_3_37():
-    """Figura 3.37 Captura de contenedores Docker operativos en producción"""
-    fig, ax = plt.subplots(figsize=(12, 7), dpi=300)
-    fig.patch.set_facecolor("#FFFFFF")
-    ax.set_facecolor("#FFFFFF")
-    ax.set_xlim(0, 100)
-    ax.set_ylim(0, 100)
-    ax.axis("off")
-
-    ax.text(50, 96, "Figura 3.37 Captura de Contenedores Docker Compose Operativos en Entorno de Producción",
-            fontsize=11.5, fontweight="bold", ha="center", va="center", color="#000000")
-
-    ax.add_patch(patches.Rectangle((4, 7), 92, 85, facecolor="#F8F8F8", edgecolor="#000000", linewidth=1.2))
-    ax.add_patch(patches.Rectangle((4, 86), 92, 6, facecolor="#E0E0E0", edgecolor="#000000", linewidth=0.8))
-    ax.text(6, 89, "Terminal Docker - Orquestación Multi-Contenedor: docker compose ps --format table",
-            fontsize=8, family="monospace", va="center", color="#000000")
-
-    docker_ps = """NAME                         IMAGE                  COMMAND                  SERVICE             STATUS              PORTS
------------------------------------------------------------------------------------------------------------------------------
-giragroup_gateway            giragroup_gateway      "nginx -g 'daemon of…"   gateway             Up 4 hours          0.0.0.0:80->80/tcp
-giragroup_api                giragroup_api          "uvicorn backend.mai…"   api                 Up 4 hours (healthy)0.0.0.0:8000->8000/tcp
-giragroup_pipeline           giragroup_pipeline     "python -m pipeline.…"   pipeline            Up 4 hours          0.0.0.0:8006->8006/tcp
-giragroup_auth_svc           giragroup_auth_svc     "uvicorn main:app --…"   auth-service        Up 4 hours (healthy)0.0.0.0:8001->8001/tcp
-giragroup_analytics_svc      giragroup_analytics    "uvicorn main:app --…"   analytics-service   Up 4 hours (healthy)0.0.0.0:8003->8003/tcp
-giragroup_audit_svc          giragroup_audit_svc    "uvicorn main:app --…"   audit-service       Up 4 hours (healthy)0.0.0.0:8004->8004/tcp
-giragroup_notifications_svc  giragroup_notif_svc    "uvicorn main:app --…"   notifications-svc   Up 4 hours (healthy)0.0.0.0:8002->8002/tcp
-giragroup_storage_svc        giragroup_storage      "uvicorn main:app --…"   storage-service     Up 4 hours          0.0.0.0:8005->8005/tcp
-giragroup_web                giragroup_web          "sh -c 'pnpm run dev…"   web                 Up 4 hours          0.0.0.0:5173->5173/tcp
-giragroup_db                 postgres:16-alpine     "docker-entrypoint.s…"   db (DW Constel.)    Up 4 hours (healthy)0.0.0.0:5432->5432/tcp
-giragroup_catalog_db         giragroup_catalog_db   "docker-entrypoint.s…"   catalog_db (3NF)    Up 4 hours (healthy)0.0.0.0:5433->5432/tcp"""
-
-    ax.text(6, 82, docker_ps, fontsize=7.2, family="monospace", va="top", ha="left", color="#222222", linespacing=1.2)
-    ax.text(50, 2, "Fuente: Elaboración propia (2026)", fontsize=9, style="italic", ha="center", color="#333333")
-
-    ruta_png = os.path.join(OUTPUT_DIR, "figura_3_37_captura_docker_ps.png")
-    plt.tight_layout()
-    plt.savefig(ruta_png, dpi=300, facecolor="#FFFFFF", edgecolor="none")
-    plt.close()
-    print(f"Figura 3.37 generada en: {ruta_png}")
 
 
 def copiar_a_cerebro():
@@ -681,10 +587,8 @@ def copiar_a_cerebro():
         "figura_3_31_dashboard_cmi_academico.png",
         "figura_3_32_dashboard_cmi_financiero.png",
         "figura_3_33_diagrama_secuencia_e2e.png",
-        "figura_3_34_captura_pytest_cobertura.png",
         "figura_3_35_captura_postman_runner.png",
         "figura_3_36_captura_seguridad_owasp.png",
-        "figura_3_37_captura_docker_ps.png"
     ]
     if os.path.exists(BRAIN_DIR):
         for a in archivos:
@@ -703,8 +607,6 @@ if __name__ == "__main__":
     generar_figura_3_31()
     generar_figura_3_32()
     generar_figura_3_33()
-    generar_figura_3_34()
     generar_figura_3_35()
     generar_figura_3_36()
-    generar_figura_3_37()
     copiar_a_cerebro()

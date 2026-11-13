@@ -9,8 +9,7 @@ Normas técnicas aplicadas:
 - 300 DPI, fondo blanco puro (#FFFFFF), escala de grises con tramas (hatching) APA/IEEE.
 - Coma decimal en todos los ejes numéricos y rótulos en español.
 - Dimensiones legibles sin títulos internos incrustados (los títulos van en el texto de tesis).
-- Destino principal: docs/evidencias/graficos/
-- Destinos réplica: docs/images/ y artefactos.
+- Destino único: docs/evidencias/graficos_v2/.
 """
 
 import os
@@ -36,12 +35,8 @@ plt.rcParams['ytick.labelsize'] = 8.5
 plt.rcParams['legend.fontsize'] = 8.5
 plt.rcParams['figure.titlesize'] = 11
 
-DIR_EVIDENCIAS_GRAFICOS = pathlib.Path("docs/evidencias/graficos")
-DIR_IMAGES = pathlib.Path("docs/images")
-DIR_ARTIFACTS = pathlib.Path(r"C:\Users\DAZA\.gemini\antigravity\brain\f930e363-4cdd-4e0f-bee8-dd23f1e3b7d0")
-
+DIR_EVIDENCIAS_GRAFICOS = pathlib.Path("docs/evidencias/graficos_v2")
 DIR_EVIDENCIAS_GRAFICOS.mkdir(parents=True, exist_ok=True)
-DIR_IMAGES.mkdir(parents=True, exist_ok=True)
 
 def fmt_coma(x, pos):
     if abs(x - int(x)) < 1e-5:
@@ -55,14 +50,7 @@ formatter_coma = ticker.FuncFormatter(fmt_coma)
 formatter_coma_2dec = ticker.FuncFormatter(fmt_coma_2dec)
 
 def guardar(fig, nombre_base):
-    destinos = [
-        DIR_EVIDENCIAS_GRAFICOS / nombre_base,
-        DIR_IMAGES / nombre_base,
-    ]
-    if DIR_ARTIFACTS.exists():
-        destinos.append(DIR_ARTIFACTS / nombre_base)
-    for d in destinos:
-        fig.savefig(d, dpi=300, bbox_inches='tight', facecolor='#FFFFFF', edgecolor='none')
+    fig.savefig(DIR_EVIDENCIAS_GRAFICOS / nombre_base, dpi=300, bbox_inches='tight', facecolor='#FFFFFF', edgecolor='none')
     print(f"[OK] Generado: {nombre_base}")
 
 
@@ -78,7 +66,7 @@ def generar_graficos_3_2_y_4_2():
     conteos = [1353, 34, 0]
     porcentajes = [97.55, 2.45, 0.00]
 
-    for nombre_archivo in ["grafico_3_2_distribucion_lote_1387.png", "grafico_4_2_confianza_probabilistica.png", "grafico_4_2_distribucion_lote_1387.png"]:
+    for nombre_archivo in ["grafico_3_2_distribucion_lote_1387.png", "grafico_4_2_resoluciones_cascada.png"]:
         fig, ax = plt.subplots(figsize=(6.5, 3.0), dpi=300)
         y_pos = np.arange(len(categorias))
         colores = ['#444444', '#888888', '#CCCCCC']
@@ -161,8 +149,7 @@ def generar_grafico_4_3():
     ax.spines['right'].set_visible(False)
     ax.invert_yaxis()
 
-    guardar(fig, "grafico_4_3_distribucion_archivo_lote_1387.png")
-    guardar(fig, "grafico_4_3_resolucion_por_formato.png")
+    guardar(fig, "grafico_4_3_vinculacion_por_archivo.png")
     plt.close(fig)
 
 
@@ -202,8 +189,7 @@ def generar_grafico_4_1():
     ax.spines['right'].set_visible(False)
     ax.invert_yaxis()
 
-    guardar(fig, "grafico_4_1_excepciones_calidad_lote.png")
-    guardar(fig, "grafico_4_1_inconsistencias_corpus.png")
+    guardar(fig, "grafico_4_1_calidad_corpus.png")
     plt.close(fig)
 
 
@@ -643,146 +629,8 @@ def generar_figura_3_5():
 # =============================================================================
 # 7. Figuras 3.40 y 3.50: Capturas de consola de Pytest y Cobertura
 # =============================================================================
-def generar_figura_3_40_pytest():
-    fig, ax = plt.subplots(figsize=(13.5, 9.2), dpi=300)
-    fig.patch.set_facecolor("#FFFFFF")
-    ax.set_facecolor("#FFFFFF")
-    ax.set_xlim(0, 100)
-    ax.set_ylim(0, 100)
-    ax.axis("off")
-
-    rect_main = patches.FancyBboxPatch(
-        (1.5, 2), 97, 96,
-        boxstyle="round,pad=0.5,rounding_size=1.2",
-        edgecolor="#2B2D42", facecolor="#FAFAFA", linewidth=1.4
-    )
-    ax.add_patch(rect_main)
-
-    rect_bar = patches.Rectangle((1.5, 92), 97, 6, facecolor="#EBECEF", edgecolor="#2B2D42", linewidth=1.2)
-    ax.add_patch(rect_bar)
-
-    for cx, ccol, bcol in [(4, "#FF5F56", "#E0443E"), (6.5, "#FFBD2E", "#DEA123"), (9, "#27C93F", "#1AAB29")]:
-        ax.add_patch(patches.Circle((cx, 95), 0.9, facecolor=ccol, edgecolor=bcol, linewidth=0.8))
-
-    ax.text(50, 95, "PowerShell - Terminal de Aseguramiento de Calidad: pytest tests/ -v (Suite Completa)",
-            fontsize=8.5, family="monospace", fontweight="bold", ha="center", va="center", color="#2B2D42")
-
-    terminal_lines = [
-        ("PS C:\\giragroup_bi_system> python -m pytest tests/ -v", "#1D3557", True),
-        ("============================= test session starts =============================", "#555555", False),
-        ("platform win32 -- Python 3.12.3, pytest-8.3.3, pluggy-1.5.0", "#555555", False),
-        ("rootdir: C:\\giragroup_bi_system, configfile: pyproject.toml", "#555555", False),
-        ("plugins: anyio-4.4.0, asyncio-0.23.8, cov-5.0.0", "#555555", False),
-        ("collected 493 items", "#333333", True),
-        ("", "#333333", False),
-        ("tests/sprint1/test_infra_db_and_schema.py ................ [ 16/493] [ 3%]", "#15803D", False),
-        ("tests/sprint2/test_ingesta_and_parser.py ................................ [ 48/493] [10%]", "#15803D", False),
-        ("tests/sprint3/test_beto_ner_gazetteer_and_rapid.py ........................................................................................................................ [168/493] [34%]", "#15803D", False),
-        ("tests/sprint4/test_alertas_forecasting_kpis.py ....................... [191/493] [39%]", "#15803D", False),
-        ("tests/loops/test_sprint4_verification_loops.py ......... [200/493] [41%]", "#15803D", False),
-        ("tests/readiness/test_production_readiness.py ..................sssssssssssXXXXXXX [239/493] [48%]", "#D97706", False),
-        ("tests/transversales/test_auth_rbac_polp_and_hitl.py .................................................................................................................................................................................................................................. [493/493] [100%]", "#15803D", False),
-        ("", "#333333", False),
-        ("=================================== FAILURES ===================================", "#15803D", True),
-        ("=========================== short test summary info ============================", "#555555", False),
-        ("XFAIL tests/readiness/test_production_readiness.py::test_banda_95_se_ensancha_con_el_horizonte - Banda empirica fija en h", "#475569", False),
-        ("XFAIL tests/readiness/test_production_readiness.py::test_alerta_financiera_regla_previsionable - Regla en backlog", "#475569", False),
-        ("XFAIL tests/readiness/test_production_readiness.py::test_desercion_incluye_inasistencia - Asistencia aislada", "#475569", False),
-        ("XFAIL tests/readiness/test_production_readiness.py::test_kpi10_calculo_ponderado_tokens - Backlog de ponderacion", "#475569", False),
-        ("XFAIL tests/readiness/test_production_readiness.py::test_tolerancia_fallo_servicios_secundarios - Respaldo en cold-standby", "#475569", False),
-        ("XFAIL tests/readiness/test_production_readiness.py::test_idempotencia_recarga_lote_dw - Deduplicacion por hash", "#475569", False),
-        ("XFAIL tests/readiness/test_production_readiness.py::test_limite_rate_limiting_login - En revision de proxy", "#475569", False),
-        ("SKIPPED [11] tests/readiness/test_production_readiness.py - Requiere credenciales SMTP externas activas", "#6B7280", False),
-    ]
-
-    y_pos = 89.0
-    for line, color, bold in terminal_lines:
-        weight = "bold" if bold else "normal"
-        ax.text(3.5, y_pos, line, fontsize=6.8, family="monospace", color=color, fontweight=weight, va="center")
-        y_pos -= 2.2
-
-    # Banner final verde
-    rect_summary = patches.Rectangle((3.5, 12), 93, 4.2, facecolor="#DCFCE7", edgecolor="#86EFAC", linewidth=1.2)
-    ax.add_patch(rect_summary)
-
-    ax.text(50, 14.1, "====== 475 passed, 11 skipped, 7 xfailed, 0 failed in 118.42s (0:01:58) ======",
-            fontsize=8.5, family="monospace", fontweight="bold", ha="center", va="center", color="#166534")
-
-    guardar(fig, "figura_3_40_captura_pytest_475.png")
-    plt.close(fig)
 
 
-def generar_figura_3_50_cobertura():
-    fig, ax = plt.subplots(figsize=(13.5, 9.2), dpi=300)
-    fig.patch.set_facecolor("#FFFFFF")
-    ax.set_facecolor("#FFFFFF")
-    ax.set_xlim(0, 100)
-    ax.set_ylim(0, 100)
-    ax.axis("off")
-
-    rect_main = patches.FancyBboxPatch(
-        (1.5, 2), 97, 96,
-        boxstyle="round,pad=0.5,rounding_size=1.2",
-        edgecolor="#2B2D42", facecolor="#FAFAFA", linewidth=1.4
-    )
-    ax.add_patch(rect_main)
-
-    rect_bar = patches.Rectangle((1.5, 92), 97, 6, facecolor="#EBECEF", edgecolor="#2B2D42", linewidth=1.2)
-    ax.add_patch(rect_bar)
-
-    for cx, ccol, bcol in [(4, "#FF5F56", "#E0443E"), (6.5, "#FFBD2E", "#DEA123"), (9, "#27C93F", "#1AAB29")]:
-        ax.add_patch(patches.Circle((cx, 95), 0.9, facecolor=ccol, edgecolor=bcol, linewidth=0.8))
-
-    ax.text(50, 95, "PowerShell - Resumen Oficial de Cobertura de Código (--cov=backend --cov=pipeline)",
-            fontsize=8.5, family="monospace", fontweight="bold", ha="center", va="center", color="#2B2D42")
-
-    terminal_lines = [
-        ("PS C:\\giragroup_bi_system> pytest --cov=backend --cov=pipeline --cov-report=term-missing", "#1D3557", True),
-        ("---------- coverage: platform win32, python 3.12.3-final-0 ----------", "#555555", False),
-        ("Name                                                    Stmts   Miss  Cover   Missing", "#1D3557", True),
-        ("-------------------------------------------------------------------------------------", "#888888", False),
-        ("backend/core/security.py                                   87     11    87%   26-27, 51, 82-84, 108", "#1E293B", False),
-        ("backend/services/ingestion_service.py                     587    227    61%   145-180, 290-310", "#1E293B", False),
-        ("pipeline/semantic/ner_engine.py                           301    108    64%   85-94, 210-230", "#1E293B", False),
-        ("pipeline/normalization/fk_resolver.py                      89     11    88%   45-52", "#1E293B", False),
-        ("pipeline/normalization/fuzzy_normalizer.py                 71     12    83%   38-44", "#1E293B", False),
-        ("pipeline/normalization/person_resolver.py                 125      9    93%   112-118", "#1E293B", False),
-        ("backend/services/dw_loader.py                             870    483    45%   320-410, 680-740", "#1E293B", False),
-        ("backend/routers/pipeline.py                               269    173    36%   120-195", "#1E293B", False),
-        ("backend/services/alert_engine.py                           71      6    92%   58-62", "#1E293B", False),
-        ("backend/services/financial_rules_engine.py                 85      2    98%   78-79", "#1E293B", False),
-        ("backend/services/risk_service.py                          337     19    94%   215-228", "#1E293B", False),
-        ("pipeline/analytics/forecasting_holtwinters.py              71      3    96%   134-136", "#1E293B", False),
-        ("pipeline/analytics/forecasting_ols.py                      28      0   100%   ", "#1E293B", False),
-        ("backend/services/forecast_service.py                      253    163    36%   110-185", "#1E293B", False),
-        ("backend/routers/dataops.py                               2176   1234    43%   450-890, 1400-1650", "#1E293B", False),
-        ("backend/services/bandeja_grupos.py                        149      7    95%   88-92", "#1E293B", False),
-        ("backend/services/revision_hechos.py                       210     25    88%   140-155", "#1E293B", False),
-        ("backend/services/kpi_service.py                           374    121    68%   190-245", "#1E293B", False),
-        ("backend/routers/reportes.py                               261     40    85%   180-210", "#1E293B", False),
-        ("backend/services/confianza_service.py                      87     38    56%   45-68", "#1E293B", False),
-        ("pipeline/semantic/indice_confianza.py                      70     47    33%   32-65", "#1E293B", False),
-        ("backend/services/extraccion_por_encabezado.py             421     79    81%   180-220", "#1E293B", False),
-        ("backend/models/ (Esquema Constelación ORM)               1640    115    93%   ", "#1E293B", False),
-        ("-------------------------------------------------------------------------------------", "#888888", False),
-        ("TOTAL (Suite Global: backend + pipeline)               13249   5200  60.8%", "#0F172A", True),
-    ]
-
-    y_pos = 89.0
-    for line, color, bold in terminal_lines:
-        weight = "bold" if bold else "normal"
-        ax.text(3.5, y_pos, line, fontsize=6.8, family="monospace", color=color, fontweight=weight, va="center")
-        y_pos -= 2.2
-
-    # Banner final verde
-    rect_summary = patches.Rectangle((3.5, 10), 93, 4.2, facecolor="#DCFCE7", edgecolor="#86EFAC", linewidth=1.2)
-    ax.add_patch(rect_summary)
-
-    ax.text(50, 12.1, "Cobertura General Consolidada: 60,8 % (8.049 de 13.249 sentencias cubiertas)",
-            fontsize=8.5, family="monospace", fontweight="bold", ha="center", va="center", color="#166534")
-
-    guardar(fig, "figura_3_50_captura_cobertura_60_8.png")
-    plt.close(fig)
 
 
 if __name__ == "__main__":
@@ -793,6 +641,4 @@ if __name__ == "__main__":
     generar_grafico_4_5()
     generar_grafico_3_4()
     generar_figura_3_5()
-    generar_figura_3_40_pytest()
-    generar_figura_3_50_cobertura()
     print("--- FINALIZADO CON ÉXITO ---")

@@ -27,9 +27,8 @@ plt.rcParams['ytick.labelsize'] = 8.5
 plt.rcParams['legend.fontsize'] = 8.5
 plt.rcParams['figure.titlesize'] = 11
 
-OUTPUT_DIR = pathlib.Path("docs/images")
+OUTPUT_DIR = pathlib.Path("docs/evidencias/graficos_v2")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-ARTIFACT_DIR = pathlib.Path(r"C:\Users\DAZA\.gemini\antigravity\brain\79040f08-dd80-48f6-8bdb-1ac2e5db47d6")
 
 def formato_coma(x, pos):
     """Formateador de coma decimal para ejes."""
@@ -48,9 +47,7 @@ formatter_coma_2dec = ticker.FuncFormatter(formato_coma_2dec)
 def guardar_grafico(fig, nombre_archivo):
     """Guarda en docs/images y en el directorio de artefactos a 300 DPI."""
     p1 = OUTPUT_DIR / nombre_archivo
-    p2 = ARTIFACT_DIR / nombre_archivo
     fig.savefig(p1, dpi=300, bbox_inches='tight', facecolor='#FFFFFF', edgecolor='none')
-    fig.savefig(p2, dpi=300, bbox_inches='tight', facecolor='#FFFFFF', edgecolor='none')
     plt.close(fig)
     print(f"[OK] Generado: {nombre_archivo}")
 
@@ -92,7 +89,7 @@ def generar_grafico_4_1():
     ax.spines['left'].set_color('#333333')
     ax.spines['bottom'].set_color('#333333')
     
-    guardar_grafico(fig, "grafico_4_1_inconsistencias_corpus.png")
+    guardar_grafico(fig, "grafico_4_1_calidad_corpus.png")
 
 
 def generar_grafico_4_2():
@@ -144,7 +141,7 @@ def generar_grafico_4_2():
     ax.spines['right'].set_visible(False)
     ax.invert_yaxis()  # El consolidado arriba
     
-    guardar_grafico(fig, "grafico_4_2_confianza_probabilistica.png")
+    guardar_grafico(fig, "grafico_4_2_resoluciones_cascada.png")
 
 
 def generar_grafico_4_3():
@@ -190,7 +187,7 @@ def generar_grafico_4_3():
     ax.spines['right'].set_visible(False)
     ax.invert_yaxis()
     
-    guardar_grafico(fig, "grafico_4_3_resolucion_por_formato.png")
+    guardar_grafico(fig, "grafico_4_3_vinculacion_por_archivo.png")
 
 
 def generar_grafico_4_4():
@@ -233,7 +230,7 @@ def generar_grafico_4_4():
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     
-    guardar_grafico(fig, "grafico_4_4_disponibilidad_kpi_cmi.png")
+    guardar_grafico(fig, "grafico_4_4_kpi_cmi_perspectivas.png")
 
 
 def generar_grafico_4_5():

@@ -437,15 +437,15 @@ Todos los gráficos y figuras han sido regenerados exclusivamente a partir de lo
 ### Tabla I.1: Catálogo de Gráficos y Figuras Oficiales
 | Identificador | Título Sugerido en Tesis | Archivo PNG (300 DPI) | Script Generador | Fuente Oficial a Citar al Pie |
 |---|---|---|---|---|
-| **Gráfico 3.2** | Distribución porcentual del lote de validación según bandas de confianza IA | `docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 3.4** | Serie temporal de matrícula histórica y modelado Holt-Winters amortiguado | `docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 4.1** | Distribución de inconsistencias y excepciones de calidad en el corpus institucional | `docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 4.2** | Proporción de resoluciones automáticas por etapa de la cascada jerárquica | `docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 4.3** | Resultado de vinculación automática e intervención humana por archivo de origen | `docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 4.5** | Comparación de tiempos de consolidación analítica entre línea base manual y pipeline | `docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Figura 3.5** | Esquema físico del modelo en constelación de hechos del Data Warehouse | `docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Figura 3.40** | Captura de ejecución de la suite de pruebas unitarias y de integración (475 passed) | `docs/evidencias/graficos/figura_3_40_captura_pytest_475.png` | Runner de pruebas pytest / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Figura 3.50** | Captura de reporte consolidado de cobertura de código por componentes (60,8 %) | `docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png` | Runner de pruebas pytest-cov / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Gráfico 3.2** | Distribución porcentual del lote de validación según bandas de confianza IA | `docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Gráfico 3.4** | Serie temporal de matrícula histórica y modelado Holt-Winters amortiguado | `docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Gráfico 4.1** | Distribución de inconsistencias y excepciones de calidad en el corpus institucional | `docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Gráfico 4.2** | Proporción de resoluciones automáticas por etapa de la cascada jerárquica | `docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Gráfico 4.3** | Resultado de vinculación automática e intervención humana por archivo de origen | `docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Gráfico 4.5** | Comparación de tiempos de consolidación analítica entre línea base manual y pipeline | `docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Figura 3.5** | Esquema físico del modelo en constelación de hechos del Data Warehouse | `docs/evidencias/graficos_v2/figura_3_5_esquema_constelacion_fisico.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Figura 3.40** | Captura de ejecución de la suite de pruebas unitarias y de integración (475 passed) | Pendiente de captura real; consultar docs/limpieza/LIMPIEZA_REGISTRO.md | Runner de pruebas pytest / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Figura 3.50** | Captura de reporte consolidado de cobertura de código por componentes (60,8 %) | Pendiente de captura real; consultar docs/limpieza/LIMPIEZA_REGISTRO.md | Runner de pruebas pytest-cov / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
 
 ---
 
@@ -461,7 +461,7 @@ Todos los gráficos y figuras han sido regenerados exclusivamente a partir de lo
    - **¿Están integradas en el frontend la bandeja y Power BI? SÍ.** Evidencia: `HumanReviewFlowView.jsx` integra `BandejaGrupos` y `CuadroMandoIntegral.jsx` integra el iframe de `giragroup_cmi.pbix`.
 """
 
-with open('fuente_verdad_tesis.md', 'w', encoding='utf-8') as f:
+with open('docs/fuente_verdad_tesis.md', 'w', encoding='utf-8') as f:
     f.write(content.strip() + '\n')
 
 print("Documento fuente_verdad_tesis.md generado con éxito.")
