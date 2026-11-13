@@ -740,7 +740,7 @@ def _evaluar_lote_en_segundo_plano(doc_ids: List[int], id_lote: Optional[int], t
         clave = ("evaluacion_lectura", tuple(ids), _huella_evaluacion(db_bg, ids))
         if cache_lectura.guardar(clave, res) is False:
             raise RuntimeError("No se pudieron guardar los resultados de la lectura. Inténtalo de nuevo.")
-        tareas_dataops.terminar(tarea_id, {"total_tuplas": res.get("totalTuplas")})
+        tareas_dataops.terminar(tarea_id, {"total_tuplas": res.get("totalTuplas"), **({"beto": res["beto"]} if "beto" in res else {})})
     except Exception as e_eval_batch:
         db_bg.rollback()
         logger.warning("No se pudo evaluar lote %s post-ingesta: %s", id_lote, e_eval_batch)

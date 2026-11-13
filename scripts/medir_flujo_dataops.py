@@ -100,7 +100,11 @@ def main(salida):
              "total_estimado_s": round(maquina + t["revision_humana_simulada_s"], 1),
              "total_estimado_min": round((maquina + t["revision_humana_simulada_s"]) / 60, 2),
              "meta_rnf03_min": 15, "referencia_tesis_min": 9}
-    out = {"carga": resumen_carga, "etapas_s": t, "total": total, "consolidacion_http": rc.status_code,
+    with __import__("core.database", fromlist=["SessionLocal"]).SessionLocal() as ses:
+        fila_beto = ses.execute(text("SELECT resultado FROM dataops_tarea WHERE id_lote = :l AND tipo = 'LECTURA_BETO' ORDER BY id DESC LIMIT 1"), {"l": id_lote}).scalar()
+    rj = rc.json() if rc.headers.get("content-type", "").startswith("application/json") else {}
+    out = {"lectura_beto_contadores": ((fila_beto or {}) if isinstance(fila_beto, dict) else json.loads(fila_beto or "{}")).get("beto"),
+           "consolidacion_beto_contadores": rj.get("beto"), "carga": resumen_carga, "etapas_s": t, "total": total, "consolidacion_http": rc.status_code,
            "consolidacion": {k: v for k, v in (rc.json() if rc.headers.get("content-type", "").startswith("application/json") else {}).items()
                              if not isinstance(v, (list, dict))},
            "revision": revision["resumen"], "revision_eventos": revision["eventos"], "dw_antes": antes, "dw_despues": despues}
