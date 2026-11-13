@@ -164,54 +164,44 @@ ightarrow$ Dimensión Completa. Exige que el candidato posea al menos dos tokens
 
 ---
 
-## D. PRUEBAS Y COBERTURA DE CÓDIGO
-La verificación automatizada del sistema se ejecuta mediante `pytest` integrando pruebas unitarias, de integración, de regresión y de frontera bajo el entorno de pruebas oficial.
+## D. PRUEBAS Y COBERTURA — MEDICIÓN DE LIMPIEZA (13-nov-2026)
 
-### Tabla D.1: Métricas Globales del Suite de Pruebas
-| ID | Métrica | Valor | Ref. ronda 10 | ¿Coincide? | Fuente (SQL/comando/log) | Dónde va en el documento |
-|---|---|---|---|---|---|---|
-| D-01 | Total pruebas ejecutadas en pytest | 493 | 493 | Sí | `pytest -v` / `docs/evidencias/pytest_por_suite_y_cobertura.json` | Cap. III, Sec. 3.6; Tabla 3.29 |
-| D-02 | Pruebas aprobadas exitosamente (passed) | 475 (96,35 %) | 475 | Sí | `pytest -v` / `docs/evidencias/pytest_por_suite_y_cobertura.json` | Cap. III, Sec. 3.6; Figura 3.40 |
-| D-03 | Pruebas omitidas intencionalmente (skipped) | 11 (2,23 %) | 11 | Sí | Pruebas de integración sujetas a credenciales externas activas | Cap. III, Sec. 3.6 |
-| D-04 | Pruebas con fallo esperado documentado (xfailed) | 7 (1,42 %) | 7 | Sí | Pruebas de degradación extrema de red en servicios auxiliares | Cap. III, Sec. 3.6 |
-| D-05 | Pruebas fallidas críticas (failed / error) | 0 (0,00 %) | 0 | Sí | Salida oficial del runner de pruebas | Cap. III, Sec. 3.6 |
-| D-06 | Cobertura global de sentencias | 60,8 % (8.049 de 13.249) | 60,8 % (8.049 / 13.249) | Sí | `pytest --cov=backend --cov=pipeline` | Cap. III, Sec. 3.6; Tabla 3.30; Fig. 3.50 |
-| D-07 | Pruebas suite `transversales` (Núcleo DataOps) | 254 pasadas de 254 (100 %) | 254 | Sí | `pytest tests/transversales/` | Tabla 3.29 |
-| D-08 | Pruebas suite `sprint3` (Pipeline & BETO) | 120 pasadas de 120 (100 %) | 120 | Sí | `pytest tests/sprint3/` | Tabla 3.29 |
-| D-09 | Pruebas suite `sprint2` (DW & Ingesta) | 32 pasadas de 32 (100 %) | 32 | Sí | `pytest tests/sprint2/` | Tabla 3.29 |
-| D-10 | Pruebas suite `sprint4` (CMI & Alertas) | 23 pasadas de 23 (100 %) | 23 | Sí | `pytest tests/sprint4/` | Tabla 3.29 |
-| D-11 | Pruebas suite `sprint1` (Seguridad & RBAC) | 16 pasadas de 16 (100 %) | 16 | Sí | `pytest tests/sprint1/` | Tabla 3.29 |
-| D-12 | Pruebas suite `loops` (Ciclos cerrados) | 9 pasadas de 9 (100 %) | 9 | Sí | `pytest tests/loops/` | Tabla 3.29 |
-| D-13 | Pruebas suite `readiness` (Despliegue Docker) | 21 pasadas, 11 skip, 7 xfail | 39 pruebas | Sí | `pytest tests/readiness/` | Tabla 3.29 |
+Esta medición sustituye las cifras de pruebas de rondas anteriores para el código `df033e9`. No modifica las cifras de negocio del snapshot del 10-nov. PostgreSQL de validación en proyecto Docker aislado con tmpfs; dump copiado por lectura y hash original intacto. Evidencia: `docs/limpieza/validacion/despues_pytest.txt`, `despues/junit.xml`, `despues/coverage.json`.
 
-**Nota S-18/S-19:** por suite (`pytest_por_suite_y_cobertura.json`): sprint1 16, sprint2 32, sprint3 120, sprint4 23, loops 9, readiness 39 (21 pasadas, 11 omitidas, 7 xfail), transversales 254 = 493. La Tabla 3.29 de la tesis agrupa «sprint4 + loops» = 32 y debe llevar transversales = 254.
+| Métrica | Resultado medido |
+| --- | --- |
+| Pruebas colectadas | 652 IDs únicos |
+| Passed | 634 |
+| Skipped | 11 |
+| Xfailed | 7 |
+| Failed / error | 0 |
+| Cobertura backend + pipeline | 68,448742 % (9.628/14.066) |
+| Diferencia frente a línea base aislada | 0,000000 puntos porcentuales |
 
-### Tabla D.2: Desglose de Cobertura por Componente de Software (Base para Tabla 3.30)
-| Módulo / Archivo Fuente | Líneas Totales | Líneas Cubiertas | Cobertura (%) | Responsabilidad Arquitectónica |
-|---|---|---|---|---|
-| `backend/core/security.py` | 87 | 76 | 87,4 % | Autenticación JWT, MFA con OTP y control RBAC |
-| `backend/services/financial_rules_engine.py` | 85 | 83 | 97,6 % | Clasificación de categorías financieras y egresos |
-| `backend/services/bandeja_grupos.py` | 149 | 142 | 95,3 % | Agrupamiento inteligente de entidades para HITL |
-| `backend/services/risk_service.py` | 337 | 318 | 94,4 % | Motor determinístico de alertas tempranas y mora |
-| `pipeline/normalization/person_resolver.py` | 125 | 116 | 92,8 % | Resolución jerárquica escalonada con RapidFuzz |
-| `backend/services/alert_engine.py` | 71 | 65 | 91,5 % | Disparador y orquestación de reglas de alerta |
-| `backend/services/revision_hechos.py` | 210 | 185 | 88,1 % | Servicio transaccional de auditoría y lease de revisión |
-| `pipeline/normalization/fk_resolver.py` | 89 | 78 | 87,6 % | Resolución de claves foráneas de programas y módulos |
-| `backend/routers/reportes.py` | 261 | 221 | 84,7 % | Enmascaramiento de datos y exportación de reportes |
-| `pipeline/normalization/fuzzy_normalizer.py` | 71 | 59 | 83,1 % | Limpieza canónica y normalización de cadenas |
-| `backend/services/extraccion_por_encabezado.py` | 421 | 342 | 81,2 % | Mapeo estructural determinístico de hojas de cálculo |
-| `pipeline/analytics/forecasting_holtwinters.py` | 71 | 68 | 95,8 % | Ajuste y proyección Holt-Winters amortiguado |
-| `pipeline/analytics/forecasting_ols.py` | 28 | 28 | 100,0 % | Modelo econométrico lineal comparativo OLS |
-| `backend/services/kpi_service.py` | 374 | 253 | 67,6 % | Cálculo dinámico de indicadores del CMI en DW |
-| `backend/services/ingestion_service.py` | 587 | 360 | 61,3 % | Despacho y validación multipart de archivos subidos |
-| `backend/services/confianza_service.py` | 87 | 49 | 56,3 % | Cliente de inferencia y asignación de confianza IA |
-| `backend/services/dw_loader.py` | 870 | 387 | 44,5 % | Consolidación atómica de hechos y dimensiones en DW |
-| `backend/routers/dataops.py` | 2.176 | 942 | 43,3 % | Endpoints de carga masiva, catálogos y reprocesamiento |
-| `backend/routers/pipeline.py` | 269 | 96 | 35,7 % | Orquestación asíncrona de tareas del pipeline |
-| `backend/services/forecast_service.py` | 253 | 90 | 35,6 % | Servicio de persistencia y exposición de pronósticos |
-| `pipeline/semantic/indice_confianza.py` | 70 | 23 | 32,9 % | Cálculo vectorial de entropía de predicción BETO |
-| `pipeline/semantic/ner_engine.py` | 301 | 193 | 64,1 % | Motor NER BETO (S-17; `docs/evidencias/cobertura.json`, 09-nov 22:30, mismo total 13.249/8.049) |
-| **TOTAL SISTEMA (--cov=backend --cov=pipeline)** | **13.249** | **8.049** | **60,8 %** | **Alcance global de pruebas automatizadas** |
+`f3b37d9` colectaba 650: los dos casos nuevos son `test_el_catalogo_se_prepara_una_vez_y_se_rehace_si_cambia` y `test_preparado_equivale_al_algoritmo_original`, ahora en `tests/sprint3/test_person_resolver_preparado.py`. No se retiraron pruebas ni se cambiaron aserciones. Las cifras 493/475 y 650/632 no son la medición vigente. La línea base offline fue 629 passed / 5 fallos DW / 11 skipped / 7 xfailed, 68,384758 % (9.619/14.066); con la DW aislada las cinco pruebas dependientes de datos pasan.
+
+| Suite | Colectadas |
+| --- | --- |
+| readiness | 39 |
+| sprint1 | 29 |
+| sprint2 | 67 |
+| sprint3 | 179 |
+| sprint4 | 104 |
+| sprint5 | 197 |
+| sprint6 | 14 |
+| transversales | 23 |
+
+Mapa histórico completo para Tabla 3.29, GCB-42 y matriz de trazabilidad: `docs/limpieza/MAPA_TESTS.tsv`. Los cinco tests Node de UI se miden aparte de pytest. La prueba extensa excluida en verificaciones rápidas sí se ejecutó en esta corrida completa.
+
+### Tabla D.2: Cobertura por componente
+
+| Componente | Sentencias | Cubiertas | Cobertura |
+| --- | --- | --- | --- |
+| backend/ | 10247 | 7313 | 71,37 % |
+| pipeline/ | 3819 | 2315 | 60,62 % |
+| TOTAL | 14066 | 9628 | 68,448742 % |
+
+El detalle por archivo se conserva en coverage.json. Se mantienen los objetivos `--cov=backend --cov=pipeline`, las reglas omit originales y el denominador de 14.066 sentencias. Las 58 sentencias de diferencia respecto de 14.008 pertenecen a cambios anteriores a la limpieza; no se quitó código de backend/pipeline/services para alterar la métrica.
 
 ---
 
@@ -481,16 +471,16 @@ Todos los gráficos y figuras han sido regenerados exclusivamente a partir de lo
 ### Tabla I.1: Catálogo de Gráficos y Figuras Oficiales
 | Identificador | Título Sugerido en Tesis | Archivo PNG (300 DPI) | Script Generador | Fuente Oficial a Citar al Pie |
 |---|---|---|---|---|
-| **Gráfico 3.2** | Distribución porcentual del lote de validación según bandas de confianza IA | `docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 3.4** | Serie temporal de matrícula histórica y modelado Holt-Winters amortiguado | `docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 4.1** | Distribución de inconsistencias y excepciones de calidad en el corpus institucional | `docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 4.2** | Proporción de resoluciones automáticas por etapa de la cascada jerárquica | `docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 4.3** | Resultado de vinculación automática e intervención humana por archivo de origen | `docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Gráfico 3.2** | Distribución porcentual del lote de validación según bandas de confianza IA | `docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Gráfico 3.4** | Serie temporal de matrícula histórica y modelado Holt-Winters amortiguado | `docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Gráfico 4.1** | Distribución de inconsistencias y excepciones de calidad en el corpus institucional | `docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Gráfico 4.2** | Proporción de resoluciones automáticas por etapa de la cascada jerárquica | `docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Gráfico 4.3** | Resultado de vinculación automática e intervención humana por archivo de origen | `docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
 | **Gráfico 4.4** | Disponibilidad de KPI por perspectiva estratégica de Kaplan y Norton (Pretest vs Postest) | `docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png` | `scripts/graficos_tesis_v2.py` | Fuente: Elaboración propia (2026) |
-| **Gráfico 4.5** | Comparación de tiempos de consolidación analítica entre línea base manual y pipeline | `docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Figura 3.5** | Esquema físico del modelo en constelación de hechos del Data Warehouse | `docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Figura 3.40** | Captura de ejecución de la suite de pruebas unitarias y de integración (475 passed) | `docs/evidencias/graficos/figura_3_40_captura_pytest_475.png` | Runner de pruebas pytest / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Figura 3.50** | Captura de reporte consolidado de cobertura de código por componentes (60,8 %) | `docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png` | Runner de pruebas pytest-cov / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Gráfico 4.5** | Comparación de tiempos de consolidación analítica entre línea base manual y pipeline | `docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Figura 3.5** | Esquema físico del modelo en constelación de hechos del Data Warehouse | `docs/figuras_src/figura_3_5_constelacion_dw.mmd` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Figura 3.40** | Captura de ejecución de la suite de pruebas unitarias y de integración (634 passed; medición 13-nov-2026) | Pendiente de recaptura/regeneración real (ver registro de limpieza) | Runner de pruebas pytest / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
+| **Figura 3.50** | Captura de reporte consolidado de cobertura de código por componentes (medición vigente en sección D) | Pendiente de recaptura/regeneración real (ver registro de limpieza) | Runner de pruebas pytest-cov / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
 
 ---
 

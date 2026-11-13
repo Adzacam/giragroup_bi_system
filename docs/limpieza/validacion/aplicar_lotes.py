@@ -147,10 +147,15 @@ elif tema.startswith('sprint') or tema=='transversales':
             text=re.sub(r'Path\(__file__\)\.resolve\(\)\.parent\.parent', 'next(p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file())',text)
             text=re.sub(r'Path\(__file__\)\.resolve\(\)\.parents\[1\]', 'next(p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").is_file())',text)
             text=text.replace('from tests.test_dataops_integridad import','from tests.sprint5.test_dataops_integridad import')
+            text=text.replace('os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))','os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))')
         if new.endswith('.mjs'):
             text=text.replace("'../frontend/","'../../frontend/")
             if old.startswith('e2e/'):text=text.replace("'./lib.mjs'","'../../e2e/lib.mjs'")
         edit(old,text);move(old,new)
+    for r in ('Makefile','README.md'):
+        text=(ROOT/r).read_text(encoding='utf-8-sig')
+        for old,new in selected:text=text.replace(old,new)
+        edit(r,text)
     # Migración de imports externos al sprint movido.
     if tema=='sprint5':
         for p in (ROOT/'tests').rglob('*.py'):
@@ -158,11 +163,20 @@ elif tema.startswith('sprint') or tema=='transversales':
             newtext=text.replace('from tests.test_dataops_integridad import','from tests.sprint5.test_dataops_integridad import')
             if text!=newtext:edit(p.relative_to(ROOT).as_posix(),newtext)
         r='.gitignore';text=(ROOT/r).read_text(encoding='utf-8-sig').replace('tests/test_auth_temp.db','tests/sprint5/test_auth_temp.db');edit(r,text)
+        r='.github/workflows/ci.yml';text=(ROOT/r).read_text(encoding='utf-8-sig')
+        historical_ci=sorted(p for p in initial if re.match(r'tests/sprint[1-4]/test_.*\.py$',p))
+        # No ampliar silenciosamente una CI histórica con pruebas DW que antes no ejecutaba.
+        # pytest tests/ continúa siendo la suite completa de 652, verificada aparte.
+        text=text.replace('pytest tests/sprint1/ tests/sprint2/ tests/sprint3/ tests/sprint4/',
+                          'pytest '+(' '+chr(92)+chr(10)+' '*12).join(historical_ci))
+        edit(r,text)
     if tema in ('sprint5','sprint6','transversales'):
         marker=ROOT/f'tests/{tema}/__init__.py'
         if not marker.exists():marker.write_text('',encoding='utf-8');changes.append(marker.relative_to(ROOT).as_posix())
 elif tema=='registro':
     git('add','--','docs/limpieza','docs/fuente_verdad_tesis.md','fuente_verdad_tesis.md','scripts/generar_fuente_verdad_doc.py','README.md')
+    extra=DOC/'DOCUMENTOS_ACTUALIZADOS.json'
+    if extra.exists():git('add','--',*json.loads(extra.read_text(encoding='utf-8')))
 
 if tema not in ('respaldo','registro'):
     existing=[r for r in set(changes) if (ROOT/r).exists()]
@@ -189,6 +203,7 @@ if result.returncode or node_code:
 record_path=DOC/'COMMITS_FASE2.json'
 records=json.loads(record_path.read_text(encoding='utf-8')) if record_path.exists() else []
 records.append({'tema':tema,'commit':commit,'quick_exit':result.returncode,'node_exit':node_code,'revertido':reverted,'cambios':output('show','--format=','--name-status','-M',commit).splitlines()})
-record_path.write_text(json.dumps(records,ensure_ascii=False,indent=2),encoding='utf-8')
+if tema!='registro':
+    record_path.write_text(json.dumps(records,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps(records[-1],ensure_ascii=False))
 if reverted:raise SystemExit('FALLO: commit revertido; revisar registro antes de continuar.')

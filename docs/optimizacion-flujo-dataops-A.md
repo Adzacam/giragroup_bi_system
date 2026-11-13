@@ -18,8 +18,8 @@ la bandeja y los KPI del CMI sobre la misma entrada (los 10 archivos del ciclo m
 | — | Avance de `dataops_tarea` | — | ya estaba limitado a una escritura por segundo (`INTERVALO_SEG = 1.0`); sin cambio |
 | — | Reutilizar la extracción del paso ③ en la consolidación | — | no se hizo: la lectura pasa `apariciones_lote = n` y la consolidación `1`, así que reutilizarla cambiaría la confianza de las entidades guardadas en `payload_json`; tras el cambio 1 la extracción ya no pesa |
 
-Pruebas nuevas: `tests/test_person_resolver_preparado.py` (equivalencia con el algoritmo original sobre 77 consultas y 300 personas; invalidación al cambiar la lista),
-`tests/revision_cola.test.mjs` (cola de operaciones). Suite: 634 passed, 11 skipped, 7 xfailed.
+Pruebas nuevas: `tests/sprint3/test_person_resolver_preparado.py` (equivalencia con el algoritmo original sobre 77 consultas y 300 personas; invalidación al cambiar la lista),
+`tests/sprint5/revision_cola.test.mjs` (cola de operaciones). Suite: 634 passed, 11 skipped, 7 xfailed.
 
 ## Regresión de resultados (código anterior vs nuevo)
 

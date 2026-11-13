@@ -1,0 +1,187 @@
+rm 'docs/evidencias/graficos/figura_3_40_captura_pytest_475.png'
+rm 'docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png'
+rm 'docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png'
+rm 'docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png'
+rm 'docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png'
+rm 'docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png'
+rm 'docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png'
+rm 'docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png'
+rm 'docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png'
+rm 'docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png'
+rm 'docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png'
+rm 'docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png'
+rm 'docs/evidencias/graficos/grafico_4_4_kpis_cmi.png'
+rm 'docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png'
+rm 'docs/figuras/grafico_3_2_bandas_confianza_lote1387.png'
+rm 'docs/figuras/grafico_4_1_motivos_derivacion.png'
+rm 'docs/figuras/grafico_4_2_destino_lote.png'
+rm 'docs/figuras/grafico_4_3_consolidacion_por_origen.png'
+rm 'docs/figuras/grafico_4_4_kpi_por_perspectiva.png'
+rm 'docs/figuras/grafico_4_5_tiempo_consolidacion_semilog.png'
+rm 'docs/figuras_tesis/figura_3_10_codigo_despachador.png'
+rm 'docs/figuras_tesis/figura_3_11_codigo_lectura_hojas_formularios.png'
+rm 'docs/figuras_tesis/figura_3_12_diagrama_flujo_ner_beto_rapidfuzz.png'
+rm 'docs/figuras_tesis/figura_3_13_codigo_inicializacion_beto.png'
+rm 'docs/figuras_tesis/figura_3_14_codigo_emparejamiento_difuso.png'
+rm 'docs/figuras_tesis/figura_3_15_captura_logs_extraccion_hitl.png'
+rm 'docs/figuras_tesis/figura_3_9_diagrama_actividad_ingesta.png'
+rm 'docs/figuras_tesis/grafico_3_1_matriz_confusion_beto.png'
+rm 'docs/figuras_tesis/grafico_3_2_distribucion_confianza_probabilistica.png'
+rm 'docs/figuras_tesis/grafico_3_3_metricas_por_tipo_entidad.png'
+rm 'docs/images/figura_1_40_resumen_pytest.png'
+rm 'docs/images/figura_3_12_diagrama_flujo_beto_rapidfuzz.png'
+rm 'docs/images/figura_3_16_diagrama_casos_de_uso_backend.png'
+rm 'docs/images/figura_3_17_captura_logs_extraccion_semantica.png'
+rm 'docs/images/figura_3_17_diagrama_secuencia_jwt_pipeline.png'
+rm 'docs/images/figura_3_22_captura_respuesta_json_forecast.png'
+rm 'docs/images/figura_3_23_diagrama_casos_de_uso_frontend.png'
+rm 'docs/images/figura_3_24_mockup_login_e_ingesta.png'
+rm 'docs/images/figura_3_25_captura_respuesta_json_forecast.png'
+rm 'docs/images/figura_3_25_mockup_hitl_y_alertas.png'
+rm 'docs/images/figura_3_26_mockup_cmi_powerbi.png'
+rm 'docs/images/figura_3_2_arquitectura_fisica_orquestacion.png'
+rm 'docs/images/figura_3_31_dashboard_cmi_academico.png'
+rm 'docs/images/figura_3_32_dashboard_cmi_financiero.png'
+rm 'docs/images/figura_3_33_diagrama_secuencia_e2e.png'
+rm 'docs/images/figura_3_34_captura_pytest_cobertura.png'
+rm 'docs/images/figura_3_35_captura_postman_runner.png'
+rm 'docs/images/figura_3_35_captura_pytest_cobertura.png'
+rm 'docs/images/figura_3_36_captura_seguridad_owasp.png'
+rm 'docs/images/figura_3_36_validacion_postman.png'
+rm 'docs/images/figura_3_37_captura_docker_ps.png'
+rm 'docs/images/figura_3_37_pruebas_verificacion_sprint5.png'
+rm 'docs/images/figura_3_39_captura_pytest_cobertura.png'
+rm 'docs/images/figura_3_3_diagrama_despliegue_docker_compose.png'
+rm 'docs/images/figura_3_40_captura_pytest_475.png'
+rm 'docs/images/figura_3_41_evidencia_objetivo_2_esquema_constelacion.png'
+rm 'docs/images/figura_3_42_captura_seguridad_owasp.png'
+rm 'docs/images/figura_3_42_evidencia_objetivo_3_lote_unificado.png'
+rm 'docs/images/figura_3_43_captura_docker_ps_9_servicios.png'
+rm 'docs/images/figura_3_43_evidencia_objetivo_4_entidades_beto_rapidfuzz.png'
+rm 'docs/images/figura_3_44_evidencia_objetivo_5_proyecciones_cmi.png'
+rm 'docs/images/figura_3_45_evidencia_objetivo_6_reporte_pruebas_calidad.png'
+rm 'docs/images/figura_3_4_modelo_conceptual_hefesto.png'
+rm 'docs/images/figura_3_50_captura_cobertura_60_8.png'
+rm 'docs/images/figura_3_5_esquema_constelacion_fisico.png'
+rm 'docs/images/figura_3_6_diagrama_clases_orm_pydantic.png'
+rm 'docs/images/figura_3_9_diagrama_actividad_ingesta.png'
+rm 'docs/images/grafico_3_1_matriz_confusion_beto.png'
+rm 'docs/images/grafico_3_2_distribucion_confianza_probabilistica.png'
+rm 'docs/images/grafico_3_2_distribucion_lote_1387.png'
+rm 'docs/images/grafico_3_3_desempeno_metricas_beto.png'
+rm 'docs/images/grafico_3_3_desempeno_metricas_por_entidad.png'
+rm 'docs/images/grafico_3_4_serie_temporal_holt_winters.png'
+rm 'docs/images/grafico_3_5_tendencia_lineal_ols.png'
+rm 'docs/images/grafico_4_1_excepciones_calidad_lote.png'
+rm 'docs/images/grafico_4_1_inconsistencias_corpus.png'
+rm 'docs/images/grafico_4_2_confianza_probabilistica.png'
+rm 'docs/images/grafico_4_2_distribucion_lote_1387.png'
+rm 'docs/images/grafico_4_3_distribucion_archivo_lote_1387.png'
+rm 'docs/images/grafico_4_3_resolucion_por_formato.png'
+rm 'docs/images/grafico_4_4_disponibilidad_kpi_cmi.png'
+rm 'docs/images/grafico_4_5_tiempo_consolidacion_semilog.png'
+rm 'docs/images/grafico_4_6_evaluacion_likert_pre_post.png'
+rm 'docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png'
+rm 'docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png'
+rm 'docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png'
+rm 'docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png'
+rm 'scripts/generar_figura_1_40.py'
+rm 'scripts/generar_figura_3_37_sprint5_tests.py'
+rm 'scripts/generar_figura_3_39_pytest_cobertura.py'
+rm 'scripts/generar_figura_3_42_seguridad.py'
+rm 'scripts/generar_figura_docker_ps_9_servicios.py'
+[limpieza-repo 998c8ed] chore(limpieza): imagenes
+ 92 files changed, 634 deletions(-)
+ delete mode 100644 docs/evidencias/graficos/figura_3_40_captura_pytest_475.png
+ delete mode 100644 docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png
+ delete mode 100644 docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png
+ delete mode 100644 docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png
+ delete mode 100644 docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png
+ delete mode 100644 docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png
+ delete mode 100644 docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png
+ delete mode 100644 docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png
+ delete mode 100644 docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png
+ delete mode 100644 docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png
+ delete mode 100644 docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png
+ delete mode 100644 docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png
+ delete mode 100644 docs/evidencias/graficos/grafico_4_4_kpis_cmi.png
+ delete mode 100644 docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png
+ delete mode 100644 docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png
+ delete mode 100644 docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png
+ delete mode 100644 docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png
+ delete mode 100644 docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png
+ delete mode 100644 docs/figuras/grafico_3_2_bandas_confianza_lote1387.png
+ delete mode 100644 docs/figuras/grafico_4_1_motivos_derivacion.png
+ delete mode 100644 docs/figuras/grafico_4_2_destino_lote.png
+ delete mode 100644 docs/figuras/grafico_4_3_consolidacion_por_origen.png
+ delete mode 100644 docs/figuras/grafico_4_4_kpi_por_perspectiva.png
+ delete mode 100644 docs/figuras/grafico_4_5_tiempo_consolidacion_semilog.png
+ delete mode 100644 docs/figuras_tesis/figura_3_10_codigo_despachador.png
+ delete mode 100644 docs/figuras_tesis/figura_3_11_codigo_lectura_hojas_formularios.png
+ delete mode 100644 docs/figuras_tesis/figura_3_12_diagrama_flujo_ner_beto_rapidfuzz.png
+ delete mode 100644 docs/figuras_tesis/figura_3_13_codigo_inicializacion_beto.png
+ delete mode 100644 docs/figuras_tesis/figura_3_14_codigo_emparejamiento_difuso.png
+ delete mode 100644 docs/figuras_tesis/figura_3_15_captura_logs_extraccion_hitl.png
+ delete mode 100644 docs/figuras_tesis/figura_3_9_diagrama_actividad_ingesta.png
+ delete mode 100644 docs/figuras_tesis/grafico_3_1_matriz_confusion_beto.png
+ delete mode 100644 docs/figuras_tesis/grafico_3_2_distribucion_confianza_probabilistica.png
+ delete mode 100644 docs/figuras_tesis/grafico_3_3_metricas_por_tipo_entidad.png
+ delete mode 100644 docs/images/figura_1_40_resumen_pytest.png
+ delete mode 100644 docs/images/figura_3_12_diagrama_flujo_beto_rapidfuzz.png
+ delete mode 100644 docs/images/figura_3_16_diagrama_casos_de_uso_backend.png
+ delete mode 100644 docs/images/figura_3_17_captura_logs_extraccion_semantica.png
+ delete mode 100644 docs/images/figura_3_17_diagrama_secuencia_jwt_pipeline.png
+ delete mode 100644 docs/images/figura_3_22_captura_respuesta_json_forecast.png
+ delete mode 100644 docs/images/figura_3_23_diagrama_casos_de_uso_frontend.png
+ delete mode 100644 docs/images/figura_3_24_mockup_login_e_ingesta.png
+ delete mode 100644 docs/images/figura_3_25_captura_respuesta_json_forecast.png
+ delete mode 100644 docs/images/figura_3_25_mockup_hitl_y_alertas.png
+ delete mode 100644 docs/images/figura_3_26_mockup_cmi_powerbi.png
+ delete mode 100644 docs/images/figura_3_2_arquitectura_fisica_orquestacion.png
+ delete mode 100644 docs/images/figura_3_31_dashboard_cmi_academico.png
+ delete mode 100644 docs/images/figura_3_32_dashboard_cmi_financiero.png
+ delete mode 100644 docs/images/figura_3_33_diagrama_secuencia_e2e.png
+ delete mode 100644 docs/images/figura_3_34_captura_pytest_cobertura.png
+ delete mode 100644 docs/images/figura_3_35_captura_postman_runner.png
+ delete mode 100644 docs/images/figura_3_35_captura_pytest_cobertura.png
+ delete mode 100644 docs/images/figura_3_36_captura_seguridad_owasp.png
+ delete mode 100644 docs/images/figura_3_36_validacion_postman.png
+ delete mode 100644 docs/images/figura_3_37_captura_docker_ps.png
+ delete mode 100644 docs/images/figura_3_37_pruebas_verificacion_sprint5.png
+ delete mode 100644 docs/images/figura_3_39_captura_pytest_cobertura.png
+ delete mode 100644 docs/images/figura_3_3_diagrama_despliegue_docker_compose.png
+ delete mode 100644 docs/images/figura_3_40_captura_pytest_475.png
+ delete mode 100644 docs/images/figura_3_41_evidencia_objetivo_2_esquema_constelacion.png
+ delete mode 100644 docs/images/figura_3_42_captura_seguridad_owasp.png
+ delete mode 100644 docs/images/figura_3_42_evidencia_objetivo_3_lote_unificado.png
+ delete mode 100644 docs/images/figura_3_43_captura_docker_ps_9_servicios.png
+ delete mode 100644 docs/images/figura_3_43_evidencia_objetivo_4_entidades_beto_rapidfuzz.png
+ delete mode 100644 docs/images/figura_3_44_evidencia_objetivo_5_proyecciones_cmi.png
+ delete mode 100644 docs/images/figura_3_45_evidencia_objetivo_6_reporte_pruebas_calidad.png
+ delete mode 100644 docs/images/figura_3_4_modelo_conceptual_hefesto.png
+ delete mode 100644 docs/images/figura_3_50_captura_cobertura_60_8.png
+ delete mode 100644 docs/images/figura_3_5_esquema_constelacion_fisico.png
+ delete mode 100644 docs/images/figura_3_6_diagrama_clases_orm_pydantic.png
+ delete mode 100644 docs/images/figura_3_9_diagrama_actividad_ingesta.png
+ delete mode 100644 docs/images/grafico_3_1_matriz_confusion_beto.png
+ delete mode 100644 docs/images/grafico_3_2_distribucion_confianza_probabilistica.png
+ delete mode 100644 docs/images/grafico_3_2_distribucion_lote_1387.png
+ delete mode 100644 docs/images/grafico_3_3_desempeno_metricas_beto.png
+ delete mode 100644 docs/images/grafico_3_3_desempeno_metricas_por_entidad.png
+ delete mode 100644 docs/images/grafico_3_4_serie_temporal_holt_winters.png
+ delete mode 100644 docs/images/grafico_3_5_tendencia_lineal_ols.png
+ delete mode 100644 docs/images/grafico_4_1_excepciones_calidad_lote.png
+ delete mode 100644 docs/images/grafico_4_1_inconsistencias_corpus.png
+ delete mode 100644 docs/images/grafico_4_2_confianza_probabilistica.png
+ delete mode 100644 docs/images/grafico_4_2_distribucion_lote_1387.png
+ delete mode 100644 docs/images/grafico_4_3_distribucion_archivo_lote_1387.png
+ delete mode 100644 docs/images/grafico_4_3_resolucion_por_formato.png
+ delete mode 100644 docs/images/grafico_4_4_disponibilidad_kpi_cmi.png
+ delete mode 100644 docs/images/grafico_4_5_tiempo_consolidacion_semilog.png
+ delete mode 100644 docs/images/grafico_4_6_evaluacion_likert_pre_post.png
+ delete mode 100644 scripts/generar_figura_1_40.py
+ delete mode 100644 scripts/generar_figura_3_37_sprint5_tests.py
+ delete mode 100644 scripts/generar_figura_3_39_pytest_cobertura.py
+ delete mode 100644 scripts/generar_figura_3_42_seguridad.py
+ delete mode 100644 scripts/generar_figura_docker_ps_9_servicios.py
+{"tema": "imagenes", "commit": "998c8ed680b4155ef92660843c9735e0269d3184", "quick_exit": 0, "node_exit": 0, "revertido": false, "cambios": ["D\tdocs/evidencias/graficos/figura_3_40_captura_pytest_475.png", "D\tdocs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png", "D\tdocs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png", "D\tdocs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png", "D\tdocs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png", "D\tdocs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png", "D\tdocs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png", "D\tdocs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png", "D\tdocs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png", "D\tdocs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png", "D\tdocs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png", "D\tdocs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png", "D\tdocs/evidencias/graficos/grafico_4_4_kpis_cmi.png", "D\tdocs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png", "D\tdocs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png", "D\tdocs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png", "D\tdocs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png", "D\tdocs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png", "D\tdocs/figuras/grafico_3_2_bandas_confianza_lote1387.png", "D\tdocs/figuras/grafico_4_1_motivos_derivacion.png", "D\tdocs/figuras/grafico_4_2_destino_lote.png", "D\tdocs/figuras/grafico_4_3_consolidacion_por_origen.png", "D\tdocs/figuras/grafico_4_4_kpi_por_perspectiva.png", "D\tdocs/figuras/grafico_4_5_tiempo_consolidacion_semilog.png", "D\tdocs/figuras_tesis/figura_3_10_codigo_despachador.png", "D\tdocs/figuras_tesis/figura_3_11_codigo_lectura_hojas_formularios.png", "D\tdocs/figuras_tesis/figura_3_12_diagrama_flujo_ner_beto_rapidfuzz.png", "D\tdocs/figuras_tesis/figura_3_13_codigo_inicializacion_beto.png", "D\tdocs/figuras_tesis/figura_3_14_codigo_emparejamiento_difuso.png", "D\tdocs/figuras_tesis/figura_3_15_captura_logs_extraccion_hitl.png", "D\tdocs/figuras_tesis/figura_3_9_diagrama_actividad_ingesta.png", "D\tdocs/figuras_tesis/grafico_3_1_matriz_confusion_beto.png", "D\tdocs/figuras_tesis/grafico_3_2_distribucion_confianza_probabilistica.png", "D\tdocs/figuras_tesis/grafico_3_3_metricas_por_tipo_entidad.png", "D\tdocs/images/figura_1_40_resumen_pytest.png", "D\tdocs/images/figura_3_12_diagrama_flujo_beto_rapidfuzz.png", "D\tdocs/images/figura_3_16_diagrama_casos_de_uso_backend.png", "D\tdocs/images/figura_3_17_captura_logs_extraccion_semantica.png", "D\tdocs/images/figura_3_17_diagrama_secuencia_jwt_pipeline.png", "D\tdocs/images/figura_3_22_captura_respuesta_json_forecast.png", "D\tdocs/images/figura_3_23_diagrama_casos_de_uso_frontend.png", "D\tdocs/images/figura_3_24_mockup_login_e_ingesta.png", "D\tdocs/images/figura_3_25_captura_respuesta_json_forecast.png", "D\tdocs/images/figura_3_25_mockup_hitl_y_alertas.png", "D\tdocs/images/figura_3_26_mockup_cmi_powerbi.png", "D\tdocs/images/figura_3_2_arquitectura_fisica_orquestacion.png", "D\tdocs/images/figura_3_31_dashboard_cmi_academico.png", "D\tdocs/images/figura_3_32_dashboard_cmi_financiero.png", "D\tdocs/images/figura_3_33_diagrama_secuencia_e2e.png", "D\tdocs/images/figura_3_34_captura_pytest_cobertura.png", "D\tdocs/images/figura_3_35_captura_postman_runner.png", "D\tdocs/images/figura_3_35_captura_pytest_cobertura.png", "D\tdocs/images/figura_3_36_captura_seguridad_owasp.png", "D\tdocs/images/figura_3_36_validacion_postman.png", "D\tdocs/images/figura_3_37_captura_docker_ps.png", "D\tdocs/images/figura_3_37_pruebas_verificacion_sprint5.png", "D\tdocs/images/figura_3_39_captura_pytest_cobertura.png", "D\tdocs/images/figura_3_3_diagrama_despliegue_docker_compose.png", "D\tdocs/images/figura_3_40_captura_pytest_475.png", "D\tdocs/images/figura_3_41_evidencia_objetivo_2_esquema_constelacion.png", "D\tdocs/images/figura_3_42_captura_seguridad_owasp.png", "D\tdocs/images/figura_3_42_evidencia_objetivo_3_lote_unificado.png", "D\tdocs/images/figura_3_43_captura_docker_ps_9_servicios.png", "D\tdocs/images/figura_3_43_evidencia_objetivo_4_entidades_beto_rapidfuzz.png", "D\tdocs/images/figura_3_44_evidencia_objetivo_5_proyecciones_cmi.png", "D\tdocs/images/figura_3_45_evidencia_objetivo_6_reporte_pruebas_calidad.png", "D\tdocs/images/figura_3_4_modelo_conceptual_hefesto.png", "D\tdocs/images/figura_3_50_captura_cobertura_60_8.png", "D\tdocs/images/figura_3_5_esquema_constelacion_fisico.png", "D\tdocs/images/figura_3_6_diagrama_clases_orm_pydantic.png", "D\tdocs/images/figura_3_9_diagrama_actividad_ingesta.png", "D\tdocs/images/grafico_3_1_matriz_confusion_beto.png", "D\tdocs/images/grafico_3_2_distribucion_confianza_probabilistica.png", "D\tdocs/images/grafico_3_2_distribucion_lote_1387.png", "D\tdocs/images/grafico_3_3_desempeno_metricas_beto.png", "D\tdocs/images/grafico_3_3_desempeno_metricas_por_entidad.png", "D\tdocs/images/grafico_3_4_serie_temporal_holt_winters.png", "D\tdocs/images/grafico_3_5_tendencia_lineal_ols.png", "D\tdocs/images/grafico_4_1_excepciones_calidad_lote.png", "D\tdocs/images/grafico_4_1_inconsistencias_corpus.png", "D\tdocs/images/grafico_4_2_confianza_probabilistica.png", "D\tdocs/images/grafico_4_2_distribucion_lote_1387.png", "D\tdocs/images/grafico_4_3_distribucion_archivo_lote_1387.png", "D\tdocs/images/grafico_4_3_resolucion_por_formato.png", "D\tdocs/images/grafico_4_4_disponibilidad_kpi_cmi.png", "D\tdocs/images/grafico_4_5_tiempo_consolidacion_semilog.png", "D\tdocs/images/grafico_4_6_evaluacion_likert_pre_post.png", "D\tscripts/generar_figura_1_40.py", "D\tscripts/generar_figura_3_37_sprint5_tests.py", "D\tscripts/generar_figura_3_39_pytest_cobertura.py", "D\tscripts/generar_figura_3_42_seguridad.py", "D\tscripts/generar_figura_docker_ps_9_servicios.py"]}

@@ -10,3 +10,5 @@ validacion/referencia_f3b37d9.zip
 validacion/**/.coverage
 validacion/**/pytest_cache/
 validacion/frontend-dist/
+validacion/checks/registro/
+validacion/cierre_docker_local.txt

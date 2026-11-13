@@ -1,0 +1,7 @@
+[limpieza-repo 71e9aa7] chore(limpieza): sprint6
+ 6 files changed, 6 insertions(+), 6 deletions(-)
+ create mode 100644 tests/sprint6/__init__.py
+ rename tests/{load => sprint6}/locust_readiness.py (100%)
+ rename tests/{ => sprint6}/test_otp_entorno_pruebas.py (85%)
+ rename tests/{test_sprint4_verification_loops.py => sprint6/test_seguridad_y_resiliencia_api.py} (98%)
+{"tema": "sprint6", "commit": "71e9aa785d96b61f9f5025cb1684acd60ae59d43", "quick_exit": 0, "node_exit": 0, "revertido": false, "cambios": ["M\tMakefile", "M\tREADME.md", "A\ttests/sprint6/__init__.py", "R100\ttests/load/locust_readiness.py\ttests/sprint6/locust_readiness.py", "R085\ttests/test_otp_entorno_pruebas.py\ttests/sprint6/test_otp_entorno_pruebas.py", "R098\ttests/test_sprint4_verification_loops.py\ttests/sprint6/test_seguridad_y_resiliencia_api.py"]}

@@ -86,7 +86,7 @@ graph TD
 ## 4. Archivos Entregables del Sistema de Verificación
 
 1. **Suite de Pruebas Pytest:**  
-   [`tests/test_sprint4_verification_loops.py`](file:///c:/Users/DAZA/Documents/Universidad/Proyecto%20de%20Grado%207MO%20semestre/giragroup_bi_system/tests/test_sprint4_verification_loops.py) (9 pruebas de bucle ejecutables vía `pytest`).
+   [`tests/sprint6/test_seguridad_y_resiliencia_api.py`](file:///c:/Users/DAZA/Documents/Universidad/Proyecto%20de%20Grado%207MO%20semestre/giragroup_bi_system/tests/sprint6/test_seguridad_y_resiliencia_api.py) (9 pruebas de bucle ejecutables vía `pytest`).
 2. **Orquestador y Runner CLI:**  
    [`pipeline/analytics/run_verification_loops.py`](file:///c:/Users/DAZA/Documents/Universidad/Proyecto%20de%20Grado%207MO%20semestre/giragroup_bi_system/pipeline/analytics/run_verification_loops.py) (Script independiente que genera métricas en terminal y CI/CD).
 3. **Esquemas de Contrato Tipado:**  

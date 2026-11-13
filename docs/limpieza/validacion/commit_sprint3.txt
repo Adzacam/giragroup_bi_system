@@ -1,0 +1,12 @@
+[limpieza-repo 200fad6] chore(limpieza): sprint3
+ 10 files changed, 1 insertion(+), 1 deletion(-)
+ rename tests/{ => sprint3}/test_cedula_prefijo_ci.py (100%)
+ rename tests/{ => sprint3}/test_coherencia_estado_notas.py (100%)
+ rename tests/{ => sprint3}/test_extractor_estudiante_ci.py (100%)
+ rename tests/{ => sprint3}/test_fecha_fuera_de_rango.py (100%)
+ rename tests/{ => sprint3}/test_fk_resolver_padron.py (100%)
+ rename tests/{ => sprint3}/test_person_resolver.py (100%)
+ rename tests/{ => sprint3}/test_person_resolver_preparado.py (100%)
+ rename tests/{ => sprint3}/test_pipeline_financiero.py (100%)
+ rename tests/{ => sprint3}/test_reduccion_hitl.py (100%)
+{"tema": "sprint3", "commit": "200fad6098639b85d55ad72942831f1bf0c7bf4c", "quick_exit": 0, "node_exit": 0, "revertido": false, "cambios": ["M\tMakefile", "R100\ttests/test_cedula_prefijo_ci.py\ttests/sprint3/test_cedula_prefijo_ci.py", "R100\ttests/test_coherencia_estado_notas.py\ttests/sprint3/test_coherencia_estado_notas.py", "R100\ttests/test_extractor_estudiante_ci.py\ttests/sprint3/test_extractor_estudiante_ci.py", "R100\ttests/test_fecha_fuera_de_rango.py\ttests/sprint3/test_fecha_fuera_de_rango.py", "R100\ttests/test_fk_resolver_padron.py\ttests/sprint3/test_fk_resolver_padron.py", "R100\ttests/test_person_resolver.py\ttests/sprint3/test_person_resolver.py", "R100\ttests/test_person_resolver_preparado.py\ttests/sprint3/test_person_resolver_preparado.py", "R100\ttests/test_pipeline_financiero.py\ttests/sprint3/test_pipeline_financiero.py", "R100\ttests/test_reduccion_hitl.py\ttests/sprint3/test_reduccion_hitl.py"]}

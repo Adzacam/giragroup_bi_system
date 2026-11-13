@@ -213,8 +213,8 @@ docker restart giragroup_web
 
 ## Documentación
 
-- `docs/auditoria/production_readiness_2026-11-01.md`: auditoría de preparación para producción (hallazgos y remediación).
-- `docs/auditoria/plan_maestro_ejecucion.md`: plan por fases, mediciones y estado de las correcciones.
+- `_archivo/_archivo/_archivo/docs/auditoria/production_readiness_2026-11-01.md`: auditoría de preparación para producción (hallazgos y remediación).
+- `_archivo/_archivo/_archivo/docs/auditoria/plan_maestro_ejecucion.md`: plan por fases, mediciones y estado de las correcciones.
 - `docs/apendices/diccionario_datos.md`: diccionario de datos del DW y de los catálogos.
 - `docs/architecture/`: metodología de pronóstico y auditorías de sprints.
 - `docs/postman_collection.json`: colección de la API.
@@ -234,3 +234,9 @@ scripts/          Entrenamiento y evaluación de BETO, reset del DW, figuras de 
 tests/            Pruebas por sprint, readiness y carga
 docs/             Documentación técnica y apéndices
 ```
+
+## Limpieza del repositorio (13-nov-2026)
+
+Pruebas en tests/sprint1 … sprint6, tests/readiness y tests/transversales. Resultado medido: 652 colectadas, 634 passed, 11 skipped, 7 xfailed, sin fallos, con PostgreSQL de validación aislado. Los cinco tests Node son adicionales.
+
+El archivo histórico se conserva en [_archivo/](_archivo/), excluido del contexto Docker y de pytest. Gráficos vigentes: docs/evidencias/graficos_v2/. Mapa de rutas, commits, cobertura y capturas pendientes: [registro de limpieza](docs/limpieza/LIMPIEZA_REGISTRO.md). Las dependencias locales y la base viva se conservaron.

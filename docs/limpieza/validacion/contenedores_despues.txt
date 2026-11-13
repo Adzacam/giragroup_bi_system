@@ -1,0 +1,18 @@
+giragroup_limpieza_validacion-gateway-1 Up 10 minutes (healthy)
+giragroup_limpieza_validacion-web-1 Up 10 minutes (healthy)
+giragroup_limpieza_validacion-api-1 Up 10 minutes (healthy)
+giragroup_limpieza_validacion-auth-service-1 Up 10 minutes (healthy)
+giragroup_limpieza_validacion-notifications-service-1 Up 10 minutes (healthy)
+giragroup_limpieza_validacion-audit-service-1 Up 10 minutes (healthy)
+giragroup_limpieza_validacion-pipeline-1 Up 10 minutes (healthy)
+giragroup_limpieza_validacion-db-1 Up 22 minutes (healthy)
+giragroup_limpieza_validacion-catalog_db-1 Up 22 minutes (healthy)
+giragroup_api Up 2 hours
+giragroup_pipeline Up 2 hours
+giragroup_gateway Up 2 hours
+giragroup_audit_svc Up 2 hours
+giragroup_auth_svc Up 2 hours
+giragroup_notifications_svc Up 2 hours
+giragroup_catalog_db Up 2 hours (healthy)
+giragroup_web Up 2 hours
+giragroup_db Up 2 hours (healthy)

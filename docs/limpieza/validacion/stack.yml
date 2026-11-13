@@ -1,0 +1,103 @@
+# Pila de salud aislada: imágenes locales existentes + código actual montado sólo lectura.
+# No carga .env, no tiene nombres fijos ni volúmenes persistentes, y no ejecuta migraciones.
+x-env: &validation-env
+  APP_ENV: test
+  ENVIRONMENT: test
+  TESTING: "true"
+  EMAIL_BACKEND: console
+  SECRET_KEY: clave_exclusiva_validacion_limpieza_sin_usuarios_reales
+  DATABASE_URL: postgresql://giragroup_user:limpieza_solo_validacion@db:5432/giragroup_db
+  CATALOG_DATABASE_URL: postgresql://giragroup_user:limpieza_solo_validacion@catalog_db:5432/giragroup_catalog_db
+  PGOPTIONS: "-c default_transaction_read_only=on"
+  PYTHONDONTWRITEBYTECODE: "1"
+  HF_HUB_OFFLINE: "1"
+  TRANSFORMERS_OFFLINE: "1"
+services:
+  api:
+    image: giragroup_bi_system-api:latest
+    environment: *validation-env
+    volumes:
+      - ../../../backend:/app:ro
+      - ../../../pipeline:/app/pipeline:ro
+      - ../../../db:/app/db:ro
+    tmpfs: [/app/uploads, /app/output]
+    command: [uvicorn, "main:app", --host, "0.0.0.0", --port, "8000"]
+    depends_on:
+      db: {condition: service_healthy}
+      catalog_db: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+  auth-service:
+    image: giragroup_bi_system-auth-service:latest
+    environment: *validation-env
+    volumes:
+      - ../../../services/auth-service:/app:ro
+      - ../../../shared:/app/shared:ro
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health', timeout=5).read()"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+  notifications-service:
+    image: giragroup_bi_system-notifications-service:latest
+    environment: *validation-env
+    volumes:
+      - ../../../services/notifications-service:/app:ro
+      - ../../../shared:/app/shared:ro
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8002/health', timeout=5).read()"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+  audit-service:
+    image: giragroup_bi_system-audit-service:latest
+    environment: *validation-env
+    volumes:
+      - ../../../services/audit-service:/app:ro
+      - ../../../shared:/app/shared:ro
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8004/health', timeout=5).read()"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+  pipeline:
+    image: giragroup_bi_system-pipeline:latest
+    environment:
+      <<: *validation-env
+      TORCH_NUM_THREADS: "2"
+    volumes:
+      - ../../../pipeline:/app/pipeline:ro
+      - ../../../backend:/app/backend:ro
+    command: [uvicorn, "pipeline.semantic.inference_server:app", --host, "0.0.0.0", --port, "8006"]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8006/health', timeout=60).read()"]
+      interval: 10s
+      timeout: 70s
+      retries: 12
+  web:
+    image: giragroup_bi_system-web:latest
+    command: [pnpm, run, preview, --host, "0.0.0.0", --port, "5173"]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:5173').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+  gateway:
+    image: giragroup_bi_system-gateway:latest
+    volumes:
+      - ../../../gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports: ["127.0.0.1:55080:80"]
+    depends_on:
+      api: {condition: service_healthy}
+      web: {condition: service_healthy}
+      auth-service: {condition: service_healthy}
+      notifications-service: {condition: service_healthy}
+      audit-service: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, wget, -q, --spider, "http://127.0.0.1/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 30

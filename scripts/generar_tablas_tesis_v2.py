@@ -148,7 +148,8 @@ T3_4_HDR = ["Sprint", "Objetivo / Alcance Técnico", "Pruebas Ejecutadas", "Crit
 T3_4_DATA = [
     ["Sprint 6", "Aseguramiento de Calidad (SQA), Pruebas E2E, Auditoría de Seguridad y Estabilización Final", "382 pruebas*", "100 % pruebas críticas aprobadas; 0 regresiones en DW", "Completado exitosamente"]
 ]
-T3_4_NOTA = "* Nota técnica: 382 pruebas registradas durante el cierre del Sprint 6; alcanzando 493 pruebas automatizadas tras la iteración de estabilización final (Tabla 3.34)."
+T3_4_NOTA = ('382 pruebas corresponden al cierre histórico del Sprint 6. Medición vigente de limpieza: 652 pruebas (634 passed, 11 skipped, 7 xfailed, '
+ '0 failed; 13-nov-2026).')
 
 # T3.19: Umbrales de decisión
 T3_19_TITULO = "Tabla 3.19 Especificación de umbrales de decisión para resolución difusa y semántica"
@@ -206,90 +207,133 @@ T3_27_NOTA = "* Nota técnica: Se presentan los 11 KPI clave implementados en la
 # T3.29: Pruebas por suite
 T3_29_TITULO = "Tabla 3.29 Distribución de la suite de pruebas automatizadas por módulo y sprint"
 T3_29_HDR = ["Suite de Pruebas", "Directorio / Componente", "Pruebas Passed", "Pruebas Skipped", "Pruebas XFailed", "Total Pruebas", "Tasa de Éxito"]
-T3_29_DATA = [
-    ["Transversales", "tests/*.py (raíz, 263 pruebas con los bucles de verificación; 254 sin ellos): ingesta, bandeja HITL, resolución de personas/FK, KPI, riesgo, pronóstico, RBAC/OTP, reportes, esquema DDL, idempotencia de staging", "254", "0", "0", "254", "100,0 %"],
-    ["Sprint 3", "tests/sprint3/ (confianza y telemetría, normalización y matching FK, calidad y auditoría, catálogos, reconciliación entre fuentes, reglas financieras, formateo BETO, motor NER)", "120", "0", "0", "120", "100,0 %"],
-    ["Sprint 2", "tests/sprint2/ (Loop 1 lector universal, Loop 2 detección de bloques tabulares, Loop 3 extracción, categorización y cierre)", "32", "0", "0", "32", "100,0 %"],
-    ["Sprint 4 + loops", "tests/sprint4/ (alertas, anonimización, DW loader, KPI y catálogos, RBAC: 23) + tests/test_sprint4_verification_loops.py (9)", "32", "0", "0", "32", "100,0 %"],
-    ["Sprint 1", "tests/sprint1/ (infraestructura Docker, modelos ORM, esquema en constelación, usuarios semilla RBAC)", "16", "0", "0", "16", "100,0 %"],
-    ["Readiness", "tests/readiness/test_production_readiness.py (puertas de salida a producción; 11 skipped por variables READINESS_* no definidas; 7 xfail por hallazgos documentados)", "21", "11", "7", "39", "100,0 % efectivo*"],
-    ["TOTAL CONSOLIDADO", "Ambiente pytest unificado (--cov=backend --cov=pipeline)", "475", "11", "7", "493", "96,35 % (100 % passed/operativo)"]
-]
-T3_29_NOTA = "* Cobertura consolidada: 60,7 % (8.062 líneas cubiertas de 13.278 sentencias totales). Las 11 pruebas skipped y 7 xfailed en readiness corresponden a verificaciones condicionales de GPU opcional y entornos aislados sin fallas activas."
+T3_29_DATA = [['sprint1', 'tests/sprint1/', '29', '0', '0', '29', '100,0 %'],
+ ['sprint2', 'tests/sprint2/', '67', '0', '0', '67', '100,0 %'],
+ ['sprint3', 'tests/sprint3/', '179', '0', '0', '179', '100,0 %'],
+ ['sprint4', 'tests/sprint4/', '104', '0', '0', '104', '100,0 %'],
+ ['sprint5', 'tests/sprint5/', '197', '0', '0', '197', '100,0 %'],
+ ['sprint6', 'tests/sprint6/', '14', '0', '0', '14', '100,0 %'],
+ ['readiness', 'tests/readiness/', '21', '11', '7', '39', '100,0 % operativo'],
+ ['transversales', 'tests/transversales/', '23', '0', '0', '23', '100,0 %'],
+ ['TOTAL CONSOLIDADO', 'DW aislada; --cov=backend --cov=pipeline', '634', '11', '7', '652', '97,24 %; 100 % operativo']]
+T3_29_NOTA = ('Medición real del 13-nov-2026, commit df033e9: 68,448742 % (9.628 de 14.066 sentencias). Readiness: 11 omitidas condicionales y 7 fallos '
+ 'esperados documentados; sin fallos inesperados. Evidencia: docs/limpieza/validacion/despues/.')
 
 # T3.30: Cobertura por módulo (Tabla D.2 de la SFV v2)
 T3_30_TITULO = "Tabla 3.30 Reporte de cobertura de código por componente del sistema analítico"
 T3_30_HDR = ["Módulo / Archivo Fuente", "Líneas Totales", "Líneas Cubiertas", "Líneas Sin Cubrir", "Cobertura (%)", "Responsabilidad Arquitectónica"]
-T3_30_DATA = [
-    ["backend/core/security.py", "87", "76", "11", "87,4 %", "Autenticación JWT, MFA con OTP y control de acceso RBAC"],
-    ["backend/services/financial_rules_engine.py", "85", "83", "2", "97,6 %", "Clasificación de categorías financieras y egresos"],
-    ["backend/services/bandeja_grupos.py", "149", "142", "7", "95,3 %", "Agrupamiento inteligente de entidades para revisión HITL"],
-    ["backend/services/risk_service.py", "337", "318", "19", "94,4 %", "Motor determinístico de alertas tempranas y mora"],
-    ["pipeline/normalization/person_resolver.py", "125", "116", "9", "92,8 %", "Resolución jerárquica escalonada con RapidFuzz"],
-    ["backend/services/alert_engine.py", "71", "65", "6", "91,5 %", "Disparador y orquestación de reglas de alerta"],
-    ["backend/services/revision_hechos.py", "210", "185", "25", "88,1 %", "Servicio transaccional de auditoría y lease de revisión"],
-    ["pipeline/normalization/fk_resolver.py", "89", "78", "11", "87,6 %", "Resolución de claves foráneas de programas y módulos"],
-    ["backend/routers/reportes.py", "261", "221", "40", "84,7 %", "Enmascaramiento de datos y exportación de reportes"],
-    ["pipeline/normalization/fuzzy_normalizer.py", "71", "59", "12", "83,1 %", "Limpieza canónica y normalización difusa de cadenas"],
-    ["backend/services/extraccion_por_encabezado.py", "421", "342", "79", "81,2 %", "Mapeo estructural determinístico de hojas de cálculo"],
-    ["pipeline/analytics/forecasting_holtwinters.py", "85", "69", "16", "81,2 %", "Ajuste y proyección Holt-Winters amortiguado"],
-    ["pipeline/analytics/forecasting_ols.py", "28", "28", "0", "100,0 %", "Modelo econométrico lineal comparativo OLS"],
-    ["backend/services/kpi_service.py", "374", "253", "121", "67,6 %", "Cálculo dinámico de indicadores del CMI en DW"],
-    ["backend/services/ingestion_service.py", "587", "360", "227", "61,3 %", "Despacho y validación multipart de archivos subidos"],
-    ["backend/services/confianza_service.py", "87", "53", "34", "60,9 %", "Cliente de inferencia y asignación de confianza IA"],
-    ["backend/services/dw_loader.py", "870", "387", "483", "44,5 %", "Consolidación atómica de hechos y dimensiones en DW"],
-    ["backend/routers/dataops.py", "2.176", "942", "1.234", "43,3 %", "Endpoints de carga masiva, catálogos y reprocesamiento"],
-    ["backend/routers/pipeline.py", "269", "96", "173", "35,7 %", "Orquestación asíncrona de tareas del pipeline"],
-    ["backend/services/forecast_service.py", "268", "98", "170", "36,6 %", "Servicio de persistencia y exposición de pronósticos"],
-    ["pipeline/semantic/indice_confianza.py", "70", "23", "47", "32,9 %", "Cálculo vectorial de entropía de predicción BETO"],
-    ["pipeline/semantic/ner_engine.py", "301", "193", "108", "64,1 %", "Motor NER BETO fine-tuned (S-17)"],
-    ["TOTAL SISTEMA", "13.278", "8.062", "5.216", "60,7 %", "Alcance global de pruebas automatizadas (--cov=backend --cov=pipeline)"]
-]
+T3_30_DATA = [['backend/core/security.py', '87', '76', '11', '87,36 %', 'Autenticación JWT, MFA con OTP y control de acceso RBAC'],
+ ['backend/services/financial_rules_engine.py', '85', '83', '2', '97,65 %', 'Clasificación de categorías financieras y egresos'],
+ ['backend/services/bandeja_grupos.py', '157', '146', '11', '92,99 %', 'Agrupamiento inteligente de entidades para revisión HITL'],
+ ['backend/services/risk_service.py', '337', '318', '19', '94,36 %', 'Motor determinístico de alertas tempranas y mora'],
+ ['pipeline/normalization/person_resolver.py', '152', '143', '9', '94,08 %', 'Resolución jerárquica escalonada con RapidFuzz'],
+ ['backend/services/alert_engine.py', '71', '65', '6', '91,55 %', 'Disparador y orquestación de reglas de alerta'],
+ ['backend/services/revision_hechos.py', '232', '197', '35', '84,91 %', 'Servicio transaccional de auditoría y lease de revisión'],
+ ['pipeline/normalization/fk_resolver.py', '89', '78', '11', '87,64 %', 'Resolución de claves foráneas de programas y módulos'],
+ ['backend/routers/reportes.py', '261', '221', '40', '84,67 %', 'Enmascaramiento de datos y exportación de reportes'],
+ ['pipeline/normalization/fuzzy_normalizer.py', '71', '59', '12', '83,10 %', 'Limpieza canónica y normalización difusa de cadenas'],
+ ['backend/services/extraccion_por_encabezado.py', '428', '353', '75', '82,48 %', 'Mapeo estructural determinístico de hojas de cálculo'],
+ ['pipeline/analytics/forecasting_holtwinters.py', '95', '89', '6', '93,68 %', 'Ajuste y proyección Holt-Winters amortiguado'],
+ ['pipeline/analytics/forecasting_ols.py', '28', '28', '0', '100,00 %', 'Modelo econométrico lineal comparativo OLS'],
+ ['backend/services/kpi_service.py', '322', '236', '86', '73,29 %', 'Cálculo dinámico de indicadores del CMI en DW'],
+ ['backend/services/ingestion_service.py', '589', '384', '205', '65,20 %', 'Despacho y validación multipart de archivos subidos'],
+ ['backend/services/confianza_service.py', '94', '59', '35', '62,77 %', 'Cliente de inferencia y asignación de confianza IA'],
+ ['backend/services/dw_loader.py', '902', '453', '449', '50,22 %', 'Consolidación atómica de hechos y dimensiones en DW'],
+ ['backend/routers/dataops/', '2.267', '1.433', '834', '63,21 %', 'Endpoints de carga masiva, catálogos y reprocesamiento'],
+ ['backend/routers/pipeline.py', '276', '111', '165', '40,22 %', 'Orquestación asíncrona de tareas del pipeline'],
+ ['backend/services/forecast_service.py', '268', '235', '33', '87,69 %', 'Servicio de persistencia y exposición de pronósticos'],
+ ['pipeline/semantic/indice_confianza.py', '70', '23', '47', '32,86 %', 'Cálculo vectorial de entropía de predicción BETO'],
+ ['pipeline/semantic/ner_engine.py', '301', '193', '108', '64,12 %', 'Motor NER BETO fine-tuned (S-17)'],
+ ['TOTAL SISTEMA', '14.066', '9.628', '4.438', '68,45 %', 'Alcance global de pruebas automatizadas (--cov=backend --cov=pipeline)']]
 
 # T3.34: Estabilización
 T3_34_TITULO = "Tabla 3.34 Indicadores de calidad y rendimiento en la iteración de estabilización final"
-T3_34_HDR = ["Dimensión de Calidad", "Métrica Evaluada", "Valor Observado en Ronda 8", "Línea Base o Meta", "Resultado"]
-T3_34_DATA = [
-    ["Tiempo de ejecución", "Tiempo de máquina en ciclo mensual (10 archivos)", "60,0 s (DE = 0,8 s; 59,24 a 60,84 s)", "< 120,0 s", "Cumplimiento satisfactorio"],
-    ["Desglose computacional", "Tiempo de inferencia modelo BETO", "5,4 s (DE = 0,2 s)", "N/D", "Validado en ciclo_r8_resumen.json"],
-    ["Desglose computacional", "Tiempo de inserción y carga en DW", "44,0 s (43,97 s; DE = 0,87 s)", "N/D", "Validado en ciclo_r8_resumen.json"],
-    ["Intervención humana", "Esfuerzo de revisión estimada (KLM)", "490,5 s (188 casos en 37 grupos)", "< 900,0 s (15 min)", "Cumplimiento satisfactorio (8,2 min)"],
-    ["Aseguramiento de software", "Batería de pruebas automatizadas", "493 pruebas (475 passed, 11 skipped, 7 xfailed, 0 failed)", "100 % funcionales", "Cero defectos bloqueantes"],
-    ["Integridad en staging", "Casos retenidos por discrepancia de calidad", "1.044 casos (756 CI discordante + 288 baja confianza)", "Aislamiento total", "100 % retenidos sin corromper DW"]
-]
+T3_34_HDR = ['Dimensión de Calidad',
+ 'Métrica Evaluada',
+ 'Valor Observado (Ronda 8; pruebas actualizadas 13-nov-2026)',
+ 'Línea Base o Meta',
+ 'Resultado']
+T3_34_DATA = [['Tiempo de ejecución',
+  'Tiempo de máquina en ciclo mensual (10 archivos)',
+  '60,0 s (DE = 0,8 s; 59,24 a 60,84 s)',
+  '< 120,0 s',
+  'Cumplimiento satisfactorio'],
+ ['Desglose computacional', 'Tiempo de inferencia modelo BETO', '5,4 s (DE = 0,2 s)', 'N/D', 'Validado en ciclo_r8_resumen.json'],
+ ['Desglose computacional',
+  'Tiempo de inserción y carga en DW',
+  '44,0 s (43,97 s; DE = 0,87 s)',
+  'N/D',
+  'Validado en ciclo_r8_resumen.json'],
+ ['Intervención humana',
+  'Esfuerzo de revisión estimada (KLM)',
+  '490,5 s (188 casos en 37 grupos)',
+  '< 900,0 s (15 min)',
+  'Cumplimiento satisfactorio (8,2 min)'],
+ ['Aseguramiento de software',
+  'Batería de pruebas automatizadas',
+  '652 pruebas (634 passed, 11 skipped, 7 xfailed, 0 failed; 13-nov-2026)',
+  '100 % funcionales',
+  'Cero defectos bloqueantes'],
+ ['Integridad en staging',
+  'Casos retenidos por discrepancia de calidad',
+  '1.044 casos (756 CI discordante + 288 baja confianza)',
+  'Aislamiento total',
+  '100 % retenidos sin corromper DW']]
 
 # T3.36: Matriz por objetivo
 T3_36_TITULO = "Tabla 3.36 Matriz de verificación y cumplimiento de objetivos específicos"
 T3_36_HDR = ["Objetivo Específico", "Indicador Técnico", "Resultado Obtenido (Snapshot Oficial)", "Meta Propuesta", "Evidencias Vinculadas"]
-T3_36_DATA = [
-    ["Obj. 1: Diagnóstico e ingesta", "Identificación de inconsistencias y excepciones en corpus", "1.044 casos en staging (756 CI discordante, 288 baja confianza); 562 excepciones interceptadas (0 ingresadas sin control)", "Aislamiento del 100 % de inconsistencias", "Tabla 3.34, Tabla 4.3; Gráfico 4.1"],
-    ["Obj. 2: Modelo dimensional DW", "Estructura en constelación de hechos", "50 tablas base + 9 vistas (59 objetos totales en DW; 9 hechos, 7 dimensiones, 1 puente)", "Constelación conformada", "Tabla G.2; Figura 3.5; Diccionario Apéndice F"],
-    ["Obj. 3: Unificación y vinculación", "Tasa de resolución automática del lote documental", "97,55 % directo (1.353) / 2,45 % HITL (34) / 0,00 % staging (0) sobre lote de 1.387", "≥ 85,0 % directo", "Tabla 3.34, Tabla 4.1, Tabla 4.5; Gráficos 3.2, 4.2, 4.3"],
-    ["Obj. 4: Componentes de software", "Arquitectura modular y servicios RESTful", "128 rutas de API operativas (20 familias en Tabla 3.22); 9 contenedores orquestados con Docker Compose", "Arquitectura desplegada", "Tabla 3.22, Tabla 3.35, Tabla G.1; Figura 3.44"],
-    ["Obj. 5: Analítica y CMI", "Modelado predictivo y tablero de indicadores", "HW amortiguado MAPE 13,89 % (frente a naive estacional 10,32 %); 11 KPI ejecutivos calculados dinámicamente", "MAPE < 20,0 %; 11 KPI CMI", "Tabla 3.24, Tabla 3.27, Tabla 4.6, Tabla 4.7; Gráficos 3.4, 4.4"],
-    ["Obj. 6: Pruebas y calidad", "Verificación integral y cobertura de código", "493 pruebas automatizadas (475 passed, 11 skipped, 7 xfail, 0 failed); 60,7 % cobertura (8.062 de 13.278 sentencias)", "≥ 60,0 % cobertura", "Tablas 3.29 a 3.35; Figuras 3.40, 3.50"]
-]
+T3_36_DATA = [['Obj. 1: Diagnóstico e ingesta',
+  'Identificación de inconsistencias y excepciones en corpus',
+  '1.044 casos en staging (756 CI discordante, 288 baja confianza); 562 excepciones interceptadas (0 ingresadas sin control)',
+  'Aislamiento del 100 % de inconsistencias',
+  'Tabla 3.34, Tabla 4.3; Gráfico 4.1'],
+ ['Obj. 2: Modelo dimensional DW',
+  'Estructura en constelación de hechos',
+  '50 tablas base + 9 vistas (59 objetos totales en DW; 9 hechos, 7 dimensiones, 1 puente)',
+  'Constelación conformada',
+  'Tabla G.2; Figura 3.5; Diccionario Apéndice F'],
+ ['Obj. 3: Unificación y vinculación',
+  'Tasa de resolución automática del lote documental',
+  '97,55 % directo (1.353) / 2,45 % HITL (34) / 0,00 % staging (0) sobre lote de 1.387',
+  '≥ 85,0 % directo',
+  'Tabla 3.34, Tabla 4.1, Tabla 4.5; Gráficos 3.2, 4.2, 4.3'],
+ ['Obj. 4: Componentes de software',
+  'Arquitectura modular y servicios RESTful',
+  '128 rutas de API operativas (20 familias en Tabla 3.22); 9 contenedores orquestados con Docker Compose',
+  'Arquitectura desplegada',
+  'Tabla 3.22, Tabla 3.35, Tabla G.1; Figura 3.44'],
+ ['Obj. 5: Analítica y CMI',
+  'Modelado predictivo y tablero de indicadores',
+  'HW amortiguado MAPE 13,89 % (frente a naive estacional 10,32 %); 11 KPI ejecutivos calculados dinámicamente',
+  'MAPE < 20,0 %; 11 KPI CMI',
+  'Tabla 3.24, Tabla 3.27, Tabla 4.6, Tabla 4.7; Gráficos 3.4, 4.4'],
+ ['Obj. 6: Pruebas y calidad',
+  'Verificación integral y cobertura de código',
+  '652 pruebas (634 passed, 11 skipped, 7 xfailed, 0 failed; 13-nov-2026); 68,448742 % (9.628 de 14.066 sentencias)',
+  '≥ 60,0 % cobertura',
+  'Tablas 3.29 a 3.35; Figuras 3.40, 3.50']]
 
 # T3.37: Cobertura funcional RF/RNF
 T3_37_TITULO = "Tabla 3.37 Matriz de trazabilidad y cobertura funcional de requisitos del sistema (RF / RNF)"
 T3_37_HDR = ["Requisito", "Tipo", "Descripción del Requisito", "Módulo / Endpoint Implementado", "Suite de Pruebas Pytest", "Evidencia de Cumplimiento"]
 T3_37_DATA = [
-    ["RF-01", "Funcional", "Autenticación JWT + MFA y RBAC de 5 perfiles", "backend/core/security.py; backend/routers/auth.py (/auth/token)", "tests/test_auth_and_rbac.py; tests/sprint4/test_rbac_enforcement.py; tests/test_otp_entorno_pruebas.py; tests/sprint1/test_usuarios_semilla_rbac.py", "Tabla 3.30 (security.py 87,4 %); 5 roles RBAC"],
-    ["RF-02", "Funcional", "Carga por lotes de Excel/CSV (Sheets, Forms, Moodle), máx. 15 MB, rechazo de otras extensiones", "backend/services/ingestion_service.py (/dataops/upload)", "tests/sprint2/test_ingesta.py; tests/test_ingesta_sin_timeout.py; tests/test_fecha_corte_moodle.py; tests/test_formatos_genericos.py", "Tabla 3.34; Lote 1.387. Nota: el código limita a 50 MB (ingestion_service.py:515) y acepta solo .xlsx y .csv"],
-    ["RF-03", "Funcional", "Clasificador agnóstico de fuente, descombinado de celdas, escala sobre 100 y texto plano", "backend/services/ingestion_service.py; pipeline/normalization/asymmetric_flattener.py; pipeline/semantic/formatter.py", "tests/test_agnostic_classifier_and_dw_reset.py; tests/sprint2/test_bloques_detector.py; tests/sprint3/test_formatter_gira40.py; tests/test_coherencia_estado_notas.py", "Tabla 3.30; Tabla 4.5"],
+    ["RF-01", "Funcional", "Autenticación JWT + MFA y RBAC de 5 perfiles", "backend/core/security.py; backend/routers/auth.py (/auth/token)", "tests/sprint4/test_auth_and_rbac.py; tests/sprint4/test_rbac_enforcement.py; tests/sprint6/test_otp_entorno_pruebas.py; tests/sprint1/test_usuarios_semilla_rbac.py", "Tabla 3.30 (security.py 87,4 %); 5 roles RBAC"],
+    ["RF-02", "Funcional", "Carga por lotes de Excel/CSV (Sheets, Forms, Moodle), máx. 15 MB, rechazo de otras extensiones", "backend/services/ingestion_service.py (/dataops/upload)", "tests/sprint2/test_ingesta.py; tests/sprint5/test_ingesta_sin_timeout.py; tests/sprint2/test_fecha_corte_moodle.py; tests/sprint2/test_formatos_genericos.py", "Tabla 3.34; Lote 1.387. Nota: el código limita a 50 MB (ingestion_service.py:515) y acepta solo .xlsx y .csv"],
+    ["RF-03", "Funcional", "Clasificador agnóstico de fuente, descombinado de celdas, escala sobre 100 y texto plano", "backend/services/ingestion_service.py; pipeline/normalization/asymmetric_flattener.py; pipeline/semantic/formatter.py", "tests/transversales/test_agnostic_classifier_and_dw_reset.py; tests/sprint2/test_bloques_detector.py; tests/sprint3/test_formatter_gira40.py; tests/sprint3/test_coherencia_estado_notas.py", "Tabla 3.30; Tabla 4.5"],
     ["RF-04", "Funcional", "NER con BETO sobre texto estructurado", "pipeline/semantic/ner_engine.py", "tests/sprint3/test_ner_engine_gira10.py", "Tabla 3.20 (F1 estricto 100 % Modo B / 97,57 % Modo C)"],
-    ["RF-05", "Funcional", "Cascada de identidad A (CI exacta) / B (RapidFuzz o miembro nuevo TEMP) / C (revisión humana)", "backend/services/dw_loader.py (resolver estudiante); pipeline/normalization/person_resolver.py; fk_resolver.py", "tests/sprint4/test_dw_loader.py; tests/test_person_resolver.py; tests/test_fk_resolver_padron.py; tests/sprint3/test_area3_normalizacion_matching_fk.py", "Tabla 3.19 (umbral 0,92); DW: 13.667 A / 411 B"],
-    ["RF-06", "Funcional", "Bandas de confianza: >= 0,85 directo; [0,60; 0,85) con requiere_revision; < 0,60 a stg_entidad_no_resuelta", "backend/services/dw_loader.py; backend/services/bandeja_grupos.py (/dataops/bandeja-grupos)", "tests/test_reduccion_hitl.py; tests/test_bandeja_grupos.py; tests/test_bandeja_hechos_en_revision.py; tests/sprint3/test_area2_confianza_telemetria.py", "Tabla 3.34; Tabla 4.3; 97,55 % directo / 2,45 % HITL / 0,00 % staging (1.387)"],
-    ["RF-07", "Funcional", "Carga idempotente en el DW constelación en PostgreSQL", "backend/services/dw_loader.py; db/schema.sql", "tests/test_staging_idempotente.py; tests/test_esquema_alineado_ddl.py; tests/sprint1/test_esquema_constelacion_hefesto.py", "Figura 3.46; DW: 9 hechos + 7 dimensiones + 1 bridge. Nota: el RF dice 2 hechos núcleo + 5 de soporte (7); el DW tiene 9"],
-    ["RF-08", "Funcional", "Alertas determinísticas: riesgo académico (<= 70), deserción (> 30 %), financiero (>= 2 cuotas) y crítica (>= 2 reglas)", "backend/services/risk_service.py; backend/services/alert_engine.py; backend/routers/riesgos.py", "tests/test_risk_service.py; tests/sprint4/test_alert_engine.py", "Tabla 3.30 (risk_service.py 94,4 %)"],
-    ["RF-09", "Funcional", "Proyección de inscritos con Holt-Winters (m=12, N >= 24, IC 95 %), OLS anual y viabilidad de programas", "pipeline/analytics/forecasting_holtwinters.py; forecasting_ols.py; backend/services/forecast_service.py (/forecast)", "tests/test_forecasting.py; tests/test_holtwinters_cobertura.py", "Tabla 3.24; Tabla 4.7 (MAPE 13,89 %; IC ±94,79). Nota: el modelo en producción es amortiguado, no aditivo simple"],
-    ["RF-10", "Funcional", "CMI en 4 perspectivas en React y conexión local a Power BI Desktop", "backend/services/kpi_service.py (/kpis/cmi-completo); backend/routers/cmi.py; backend/routers/powerbi.py", "tests/test_kpi_service.py; tests/sprint4/test_kpis_and_catalogs.py", "Tabla 3.27; Tabla 4.6; Figura 3.49"],
-    ["RF-11", "Funcional", "Exportación XLSX/PDF de KPI, alertas y cierre; bitácora de auditoría", "backend/routers/reportes.py; backend/routers/audit.py", "tests/test_reportes_export.py", "Tabla 3.30 (reportes.py 84,7 %)"],
-    ["RNF-01", "No Funcional", "Seguridad: JWT, mínimo privilegio, bcrypt, cabeceras defensivas, CORS, OWASP API", "backend/core/security.py; backend/main.py; gateway/nginx.conf", "tests/sprint4/test_rbac_enforcement.py; tests/test_sprint4_verification_loops.py", "Detalle G.1"],
-    ["RNF-02", "No Funcional", "Privacidad: CI enmascarada, revelación solo ADMIN/AUDITOR con bitácora, corpus anonimizados", "backend/routers/dataops.py (ci_enmascarado / ci_real)", "tests/sprint4/test_anonimizacion.py; tests/test_sprint4_verification_loops.py (enmascaramiento de errores)", "Anexo B; Figura 3.47 (modo demo)"],
-    ["RNF-03", "No Funcional", "Ciclo completo < 15 min y endpoints CMI/alertas < 3 s", "pipeline/ejecutar_sprint3.py; backend/routers/pipeline.py", "tests/readiness/test_production_readiness.py (parte live, skipped sin entorno); tests/load/locust_readiness.py (carga, fuera de pytest)", "Tabla 4.1; Tabla 4.8 (9,2 min postest)"],
-    ["RNF-04", "No Funcional", "F1 de NER >= 0,85 y derivación de confianza < 0,85 a auditoría humana", "pipeline/semantic/ner_engine.py; backend/services/confianza_service.py", "tests/sprint3/test_ner_engine_gira10.py; tests/sprint3/test_area2_confianza_telemetria.py; tests/test_reduccion_hitl.py", "Tabla 3.20 (100 % Modo B / 97,57 % Modo C)"],
-    ["RNF-05", "No Funcional", "ACID, unicidad e integridad referencial; recarga sin duplicar hechos", "backend/services/dw_loader.py; db/schema.sql", "tests/test_staging_idempotente.py; tests/test_esquema_alineado_ddl.py", "B-03 (0 filas en recarga)"],
+    ["RF-05", "Funcional", "Cascada de identidad A (CI exacta) / B (RapidFuzz o miembro nuevo TEMP) / C (revisión humana)", "backend/services/dw_loader.py (resolver estudiante); pipeline/normalization/person_resolver.py; fk_resolver.py", "tests/sprint4/test_dw_loader.py; tests/sprint3/test_person_resolver.py; tests/sprint3/test_fk_resolver_padron.py; tests/sprint3/test_area3_normalizacion_matching_fk.py", "Tabla 3.19 (umbral 0,92); DW: 13.667 A / 411 B"],
+    ["RF-06", "Funcional", "Bandas de confianza: >= 0,85 directo; [0,60; 0,85) con requiere_revision; < 0,60 a stg_entidad_no_resuelta", "backend/services/dw_loader.py; backend/services/bandeja_grupos.py (/dataops/bandeja-grupos)", "tests/sprint3/test_reduccion_hitl.py; tests/sprint5/test_bandeja_grupos.py; tests/sprint5/test_bandeja_hechos_en_revision.py; tests/sprint3/test_area2_confianza_telemetria.py", "Tabla 3.34; Tabla 4.3; 97,55 % directo / 2,45 % HITL / 0,00 % staging (1.387)"],
+    ["RF-07", "Funcional", "Carga idempotente en el DW constelación en PostgreSQL", "backend/services/dw_loader.py; db/schema.sql", "tests/sprint4/test_staging_idempotente.py; tests/sprint1/test_esquema_alineado_ddl.py; tests/sprint1/test_esquema_constelacion_hefesto.py", "Figura 3.46; DW: 9 hechos + 7 dimensiones + 1 bridge. Nota: el RF dice 2 hechos núcleo + 5 de soporte (7); el DW tiene 9"],
+    ["RF-08", "Funcional", "Alertas determinísticas: riesgo académico (<= 70), deserción (> 30 %), financiero (>= 2 cuotas) y crítica (>= 2 reglas)", "backend/services/risk_service.py; backend/services/alert_engine.py; backend/routers/riesgos.py", "tests/sprint4/test_risk_service.py; tests/sprint4/test_alert_engine.py", "Tabla 3.30 (risk_service.py 94,4 %)"],
+    ["RF-09", "Funcional", "Proyección de inscritos con Holt-Winters (m=12, N >= 24, IC 95 %), OLS anual y viabilidad de programas", "pipeline/analytics/forecasting_holtwinters.py; forecasting_ols.py; backend/services/forecast_service.py (/forecast)", "tests/sprint4/test_forecasting.py; tests/sprint4/test_holtwinters_cobertura.py", "Tabla 3.24; Tabla 4.7 (MAPE 13,89 %; IC ±94,79). Nota: el modelo en producción es amortiguado, no aditivo simple"],
+    ["RF-10", "Funcional", "CMI en 4 perspectivas en React y conexión local a Power BI Desktop", "backend/services/kpi_service.py (/kpis/cmi-completo); backend/routers/cmi.py; backend/routers/powerbi.py", "tests/sprint4/test_kpi_service.py; tests/sprint4/test_kpis_and_catalogs.py", "Tabla 3.27; Tabla 4.6; Figura 3.49"],
+    ["RF-11", "Funcional", "Exportación XLSX/PDF de KPI, alertas y cierre; bitácora de auditoría", "backend/routers/reportes.py; backend/routers/audit.py", "tests/sprint5/test_reportes_export.py", "Tabla 3.30 (reportes.py 84,7 %)"],
+    ["RNF-01", "No Funcional", "Seguridad: JWT, mínimo privilegio, bcrypt, cabeceras defensivas, CORS, OWASP API", "backend/core/security.py; backend/main.py; gateway/nginx.conf", "tests/sprint4/test_rbac_enforcement.py; tests/sprint6/test_seguridad_y_resiliencia_api.py", "Detalle G.1"],
+    ["RNF-02", "No Funcional", "Privacidad: CI enmascarada, revelación solo ADMIN/AUDITOR con bitácora, corpus anonimizados", "backend/routers/dataops.py (ci_enmascarado / ci_real)", "tests/sprint4/test_anonimizacion.py; tests/sprint6/test_seguridad_y_resiliencia_api.py (enmascaramiento de errores)", "Anexo B; Figura 3.47 (modo demo)"],
+    ["RNF-03", "No Funcional", "Ciclo completo < 15 min y endpoints CMI/alertas < 3 s", "pipeline/ejecutar_sprint3.py; backend/routers/pipeline.py", "tests/readiness/test_production_readiness.py (parte live, skipped sin entorno); tests/sprint6/locust_readiness.py (carga, fuera de pytest)", "Tabla 4.1; Tabla 4.8 (9,2 min postest)"],
+    ["RNF-04", "No Funcional", "F1 de NER >= 0,85 y derivación de confianza < 0,85 a auditoría humana", "pipeline/semantic/ner_engine.py; backend/services/confianza_service.py", "tests/sprint3/test_ner_engine_gira10.py; tests/sprint3/test_area2_confianza_telemetria.py; tests/sprint3/test_reduccion_hitl.py", "Tabla 3.20 (100 % Modo B / 97,57 % Modo C)"],
+    ["RNF-05", "No Funcional", "ACID, unicidad e integridad referencial; recarga sin duplicar hechos", "backend/services/dw_loader.py; db/schema.sql", "tests/sprint4/test_staging_idempotente.py; tests/sprint1/test_esquema_alineado_ddl.py", "B-03 (0 filas en recarga)"],
     ["RNF-06", "No Funcional", "9 servicios contenerizados con docker-compose, sin licencias comerciales", "docker-compose.yml", "tests/sprint1/test_infraestructura_y_docker.py; tests/readiness/test_production_readiness.py", "Tabla G.1 (9 contenedores en ejecución)"],
     ["RNF-07", "No Funcional", "UI React responsiva, design tokens, modo claro/oscuro y navegación por rol", "frontend/src/context/ThemeContext.jsx; frontend/src/styles/", "Sin prueba pytest (verificación visual)", "Figuras de interfaz del Cap. III"]
 ]
@@ -301,16 +345,49 @@ T3_37_DATA = [
 # T4.1: Matriz de evaluación de indicadores
 T4_1_TITULO = "Tabla 4.1 Evaluación final de indicadores de impacto y cumplimiento de metas operativas"
 T4_1_HDR = ["N.º", "Indicador Técnico de Impacto", "Línea Base (Pretest)", "Valor Alcanzado (Postest)", "Meta Comprometida", "Evaluación de Cumplimiento"]
-T4_1_DATA = [
-    ["1", "Tasa de vinculación automática de entidades", "0,00 % (manual)", "97,55 % (1.353 de 1.387)", "≥ 85,00 %", "Cumple ampliamente (+12,55 pp)"],
-    ["2", "Precisión de extracción NER en actas (gold_510)", "n. a. (sin inferencia IA)", "100,00 % (Modo B) / 97,57 % (Modo C)", "≥ 95,00 %", "Cumple (F1 micro estricto)"],
-    ["3", "Precisión predictiva de matrícula (MAPE hold-out)", "n. a. (sin modelado cuantitativo)", "13,89 % (Benchmark naive: 10,32 %)", "< 20,00 %", "Cumple (Precisión calificada como buena)"],
-    ["4", "Cobertura de pruebas automatizadas de software", "0,0 % (sin pruebas)", "60,7 % (8.062 de 13.278 sentencias)", "≥ 60,0 %", "Cumple (493 pruebas totales)"],
-    ["5", "Tiempo medio de consolidación mensual", "600,0 min (8 a 12 horas)", "9,2 min (60,0 s máquina + 490,5 s KLM)", "< 15,0 min", "Cumple ampliamente (Δ = −590,8 min, −98,5 %)"],
-    ["6a", "Consolidación directa automática del lote", "0 de 1.387 (0,00 %)", "1.353 de 1.387 (97,55 %)", "≥ 85,00 %", "Cumple (A-02)"],
-    ["6b", "Unificación total y preservación documental", "n. a.", "100 % (1.387 de 1.387 procesados)", "100 %", "Cumple (1.353 directos + 34 HITL + 0 staging)"],
-    ["7", "Excepciones de calidad abiertas en DW", "n. a. (contaminación directa)", "0 de 268 registros / 0 de 562 entidades", "0 registros sin control", "Cumple estrictamente (B-01, B-02)"]
-]
+T4_1_DATA = [['1',
+  'Tasa de vinculación automática de entidades',
+  '0,00 % (manual)',
+  '97,55 % (1.353 de 1.387)',
+  '≥ 85,00 %',
+  'Cumple ampliamente (+12,55 pp)'],
+ ['2',
+  'Precisión de extracción NER en actas (gold_510)',
+  'n. a. (sin inferencia IA)',
+  '100,00 % (Modo B) / 97,57 % (Modo C)',
+  '≥ 95,00 %',
+  'Cumple (F1 micro estricto)'],
+ ['3',
+  'Precisión predictiva de matrícula (MAPE hold-out)',
+  'n. a. (sin modelado cuantitativo)',
+  '13,89 % (Benchmark naive: 10,32 %)',
+  '< 20,00 %',
+  'Cumple (Precisión calificada como buena)'],
+ ['4',
+  'Cobertura de pruebas automatizadas de software',
+  '0,0 % (sin pruebas)',
+  '68,448742 % (9.628 de 14.066 sentencias)',
+  '≥ 60,0 %',
+  'Cumple (652 pruebas totales; medición 13-nov-2026)'],
+ ['5',
+  'Tiempo medio de consolidación mensual',
+  '600,0 min (8 a 12 horas)',
+  '9,2 min (60,0 s máquina + 490,5 s KLM)',
+  '< 15,0 min',
+  'Cumple ampliamente (Δ = −590,8 min, −98,5 %)'],
+ ['6a', 'Consolidación directa automática del lote', '0 de 1.387 (0,00 %)', '1.353 de 1.387 (97,55 %)', '≥ 85,00 %', 'Cumple (A-02)'],
+ ['6b',
+  'Unificación total y preservación documental',
+  'n. a.',
+  '100 % (1.387 de 1.387 procesados)',
+  '100 %',
+  'Cumple (1.353 directos + 34 HITL + 0 staging)'],
+ ['7',
+  'Excepciones de calidad abiertas en DW',
+  'n. a. (contaminación directa)',
+  '0 de 268 registros / 0 de 562 entidades',
+  '0 registros sin control',
+  'Cumple estrictamente (B-01, B-02)']]
 
 # T4.3: Excepciones de calidad en corpus
 T4_3_TITULO = "Tabla 4.3 Clasificación de excepciones de calidad e inconsistencias interceptadas en el corpus institucional"
@@ -794,27 +871,111 @@ def generar_docx():
 # Generación de manifiesto CSV
 # =============================================================================
 def generar_manifiesto():
-    items = [
-        ["Tabla 3.4", "docs/tablas_v2.docx", "D-01, Tabla 3.34", "Sprint 6: 382 pruebas (493 tras estabilización)", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 3.19", "docs/tablas_v2.docx", "SFV C.1", "5 umbrales: 0,92 personas (person_resolver.py:27); 90 % homónimos (dw_loader.py:1020); 85 % variante CI (fuzzy_normalizer.py:88); 85 % docentes; 80 % módulos", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 3.20", "docs/tablas_v2.docx", "C-01 a C-08", "Ablación Modo A / B / C en gold_510 (510 ent.) y layouts_5 (72 ent.): F1 estricto A 100 %, B 100 %, C 97,57 %; F1 relajado layouts_5 A 28,57 %, B 71,64 %, C 69,23 %", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 3.24", "docs/tablas_v2.docx", "E-01 a E-14, Detalle E.1", "HW 27m (RMSE 45,00, MAPE 13,89 %); HW 33m (RMSE 48,36, AIC 290,00, IC ±94,79); Naive (MAPE 10,32 %); OLS mensual matrícula (+3,6541, R² 0,1921); Proy. jun-nov 2026: 426,37 a 461,97", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 3.27", "docs/tablas_v2.docx", "Tabla F.1, Tabla F.2, Detalle F.1, Detalle F.3", "11 KPI del CMI: metas desde fact_rentabilidad.monto_meta; KPI-06 N/D; nota 11 de 22 KPI catalogados en bi.ref_kpi", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 3.29", "docs/tablas_v2.docx", "D-01 a D-06", "Transversales 254 · sprint3 120 · sprint2 32 · sprint4 + loops 32 · sprint1 16 · readiness 39 (21/11/7) · TOTAL 493 / 475 / 60,7 % (8.062 de 13.278)", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 3.30", "docs/tablas_v2.docx", "Tabla D.2, S-17", "22 módulos + TOTAL (13.278 stmts / 5.216 miss / 8.062 cover / 60,7 %); ner_engine.py 301 stmts, 64,1 %; dataops.py 2.176 stmts, 43,3 %", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 3.34", "docs/tablas_v2.docx", "A-26, B-06, D-01, ciclo_r8_resumen.json", "Tiempo máquina 60,0 s (DE 0,8); BETO 5,4 s; carga DW 44,0 s; KLM 490,5 s (188 casos/37 grupos); 493 pruebas (475/11/7/0); staging 1.044", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 3.36", "docs/tablas_v2.docx", "A.1, D.1, E.1, G.1, G.2", "Obj. 1 a 6: Lote 97,55 / 2,45 / 0,00 sobre 1.387; 50 tablas + 9 vistas; 493 pruebas; MAPE 13,89 % frente a naive 10,32 %; 128 rutas API", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 3.37", "docs/tablas_v2.docx", "Trazabilidad RF/RNF", "11 RF (RF-01 a RF-11) y 7 RNF (RNF-01 a RNF-07) mapeados a endpoints, pruebas unitarias/integración y evidencias", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 4.1", "docs/tablas_v2.docx", "A-02, B-01, B-02, D-02, D-08, E-09, E-12", "Fila 3 MAPE 13,89 % (naive 10,32 %); Fila 5 600,0 -> 9,2 min (Δ −590,8); Fila 6a 1.353 (97,55 %); Fila 6b 100 % (1.387); Fila 7 0 de 268 / 0 de 562", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 4.3", "docs/tablas_v2.docx", "A-17, A-18, A-19, B-01, B-02", "Excepciones 562 entidades en 268 registros (0 al DW sin control); Staging 1.044 entidades en 786 grupos (756 CI / 288 IA); Nota 5 repositorios/fuentes", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 4.5", "docs/tablas_v2.docx", "A.1, C-01, C-05", "Balance 7 archivos (ARCA 448/2, Cobranzas 349/1, Inscritos 248/2, Eval. Docente 137/13, Exp. Docente 95/15, Egresos 53/0, Metas 23/1) + Motor C 97,57 %, B 100 %, B 71,64 % vs A 28,57 %", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 4.6", "docs/tablas_v2.docx", "Tabla F.1, Tabla F.2, Detalle F.3", "11 KPI 2025: Ticket 1.610,13 Bs; Cumplimiento 157,48 %; Acumulado 110,54 %; Riesgo fin. 623; Mora 18,36 %; KPI-06 N/D; Nota 79,02 pts; Aprobación 85,61 %; Riesgo acad. 588; Confianza 0,9269; Directo 90,10 %", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 4.7", "docs/tablas_v2.docx", "E-09, E-12, E-15, E-16", "HW (13,89 %), naive (10,32 %), OLS mensual (+16.212,88 Bs/mes), OLS anual DW (+2.267.633,83 Bs/año; R² 0,9937; 2023 8,03M · 2024 9,98M · 2025 12,57M Bs, N = 3 descriptivo)", "scripts/generar_tablas_tesis_v2.py"],
-        ["Tabla 4.8", "docs/tablas_v2.docx", "A-02, B-02, Regla r8/KLM", "Resumen pre/post: Vinculación 0 % -> 97,55 %; Tiempo 600,0 -> 9,2 min (Δ −590,8 min); Excepciones sin control 0 de 562", "scripts/generar_tablas_tesis_v2.py"],
-        ["Cuadros 3.14-3.21 / I.1-I.3", "docs/tablas_v2.docx", "C3.14 a C3.21, TalentUp 2026, ISBSG 2010", "PF sin ajustar 305; CGS 47 -> VAF 1,12 -> 341,60 PF; ISBSG 7,4 h/PF -> 2.527,84 h; TalentUp 59,22 Bs/h -> Desarrollo 149.698,68 Bs; Impl. 343,48 Bs; Total 150.042,16 Bs; Operación 473,76 Bs/mes", "scripts/generar_tablas_tesis_v2.py"],
-        ["Apéndice F", "docs/tablas_v2.docx", "Tabla G.2", "Diccionario Data Warehouse: 50 tablas base + 9 vistas (59 objetos totales) con esquema, filas en snapshot y propósito", "scripts/generar_tablas_tesis_v2.py"],
-        ["Apéndice Catálogo", "docs/tablas_v2.docx", "Tabla G.3", "Catálogo giragroup_catalog_db: 20 tablas base con filas en snapshot y propósito funcional", "scripts/generar_tablas_tesis_v2.py"]
-    ]
+    items = [['Tabla 3.4',
+      'docs/tablas_v2.docx',
+      'D-01, Tabla 3.34',
+      'Sprint 6: 382 históricas; 652 en limpieza 13-nov-2026',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 3.19',
+      'docs/tablas_v2.docx',
+      'SFV C.1',
+      '5 umbrales: 0,92 personas (person_resolver.py:27); 90 % homónimos (dw_loader.py:1020); 85 % variante CI (fuzzy_normalizer.py:88); 85 % '
+      'docentes; 80 % módulos',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 3.20',
+      'docs/tablas_v2.docx',
+      'C-01 a C-08',
+      'Ablación Modo A / B / C en gold_510 (510 ent.) y layouts_5 (72 ent.): F1 estricto A 100 %, B 100 %, C 97,57 %; F1 relajado layouts_5 A '
+      '28,57 %, B 71,64 %, C 69,23 %',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 3.24',
+      'docs/tablas_v2.docx',
+      'E-01 a E-14, Detalle E.1',
+      'HW 27m (RMSE 45,00, MAPE 13,89 %); HW 33m (RMSE 48,36, AIC 290,00, IC ±94,79); Naive (MAPE 10,32 %); OLS mensual matrícula (+3,6541, R² '
+      '0,1921); Proy. jun-nov 2026: 426,37 a 461,97',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 3.27',
+      'docs/tablas_v2.docx',
+      'Tabla F.1, Tabla F.2, Detalle F.1, Detalle F.3',
+      '11 KPI del CMI: metas desde fact_rentabilidad.monto_meta; KPI-06 N/D; nota 11 de 22 KPI catalogados en bi.ref_kpi',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 3.29',
+      'docs/tablas_v2.docx',
+      'D-01 a D-06',
+      'readiness 39 · sprint1 29 · sprint2 67 · sprint3 179 · sprint4 104 · sprint5 197 · sprint6 14 · transversales 23 · TOTAL 652 / 634 / '
+      '68,448742 % (9.628 de 14.066 sentencias)',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 3.30',
+      'docs/tablas_v2.docx',
+      'Tabla D.2, S-17',
+      '22 componentes seleccionados + TOTAL; 68,448742 % (9.628 de 14.066 sentencias); detalle completo en coverage.json',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 3.34',
+      'docs/tablas_v2.docx',
+      'A-26, B-06, D-01, ciclo_r8_resumen.json',
+      'Tiempo máquina 60,0 s (DE 0,8); BETO 5,4 s; carga DW 44,0 s; KLM 490,5 s (188 casos/37 grupos); 652 pruebas (634/11/7/0); staging 1.044',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 3.36',
+      'docs/tablas_v2.docx',
+      'A.1, D.1, E.1, G.1, G.2',
+      'Obj. 1 a 6: Lote 97,55 / 2,45 / 0,00 sobre 1.387; 50 tablas + 9 vistas; 652 pruebas; MAPE 13,89 % frente a naive 10,32 %; 128 rutas API',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 3.37',
+      'docs/tablas_v2.docx',
+      'Trazabilidad RF/RNF',
+      '11 RF (RF-01 a RF-11) y 7 RNF (RNF-01 a RNF-07) mapeados a endpoints, pruebas unitarias/integración y evidencias',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 4.1',
+      'docs/tablas_v2.docx',
+      'A-02, B-01, B-02, D-02, D-08, E-09, E-12',
+      'Fila 3 MAPE 13,89 % (naive 10,32 %); Fila 5 600,0 -> 9,2 min (Δ −590,8); Fila 6a 1.353 (97,55 %); Fila 6b 100 % (1.387); Fila 7 0 de '
+      '268 / 0 de 562',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 4.3',
+      'docs/tablas_v2.docx',
+      'A-17, A-18, A-19, B-01, B-02',
+      'Excepciones 562 entidades en 268 registros (0 al DW sin control); Staging 1.044 entidades en 786 grupos (756 CI / 288 IA); Nota 5 '
+      'repositorios/fuentes',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 4.5',
+      'docs/tablas_v2.docx',
+      'A.1, C-01, C-05',
+      'Balance 7 archivos (ARCA 448/2, Cobranzas 349/1, Inscritos 248/2, Eval. Docente 137/13, Exp. Docente 95/15, Egresos 53/0, Metas 23/1) + '
+      'Motor C 97,57 %, B 100 %, B 71,64 % vs A 28,57 %',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 4.6',
+      'docs/tablas_v2.docx',
+      'Tabla F.1, Tabla F.2, Detalle F.3',
+      '11 KPI 2025: Ticket 1.610,13 Bs; Cumplimiento 157,48 %; Acumulado 110,54 %; Riesgo fin. 623; Mora 18,36 %; KPI-06 N/D; Nota 79,02 pts; '
+      'Aprobación 85,61 %; Riesgo acad. 588; Confianza 0,9269; Directo 90,10 %',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 4.7',
+      'docs/tablas_v2.docx',
+      'E-09, E-12, E-15, E-16',
+      'HW (13,89 %), naive (10,32 %), OLS mensual (+16.212,88 Bs/mes), OLS anual DW (+2.267.633,83 Bs/año; R² 0,9937; 2023 8,03M · 2024 9,98M '
+      '· 2025 12,57M Bs, N = 3 descriptivo)',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Tabla 4.8',
+      'docs/tablas_v2.docx',
+      'A-02, B-02, Regla r8/KLM',
+      'Resumen pre/post: Vinculación 0 % -> 97,55 %; Tiempo 600,0 -> 9,2 min (Δ −590,8 min); Excepciones sin control 0 de 562',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Cuadros 3.14-3.21 / I.1-I.3',
+      'docs/tablas_v2.docx',
+      'C3.14 a C3.21, TalentUp 2026, ISBSG 2010',
+      'PF sin ajustar 305; CGS 47 -> VAF 1,12 -> 341,60 PF; ISBSG 7,4 h/PF -> 2.527,84 h; TalentUp 59,22 Bs/h -> Desarrollo 149.698,68 Bs; '
+      'Impl. 343,48 Bs; Total 150.042,16 Bs; Operación 473,76 Bs/mes',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Apéndice F',
+      'docs/tablas_v2.docx',
+      'Tabla G.2',
+      'Diccionario Data Warehouse: 50 tablas base + 9 vistas (59 objetos totales) con esquema, filas en snapshot y propósito',
+      'scripts/generar_tablas_tesis_v2.py'],
+     ['Apéndice Catálogo',
+      'docs/tablas_v2.docx',
+      'Tabla G.3',
+      'Catálogo giragroup_catalog_db: 20 tablas base con filas en snapshot y propósito funcional',
+      'scripts/generar_tablas_tesis_v2.py']]
     
     with open(MANIFEST_PATH, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)

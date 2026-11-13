@@ -1,0 +1,649 @@
+﻿ruta anterior	ruta actual o estado	tipo de cita	ubicación previa
+docs/apendices/csv/F_01_catalogo_tablas.csv	_archivo/docs/apendices/csv/F_01_catalogo_tablas.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_02_fact_rendimiento_academico.csv	_archivo/docs/apendices/csv/F_02_fact_rendimiento_academico.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_03_fact_situacion_financiera.csv	_archivo/docs/apendices/csv/F_03_fact_situacion_financiera.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_04_fact_cobranzas_proyectadas.csv	_archivo/docs/apendices/csv/F_04_fact_cobranzas_proyectadas.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_05_fact_evaluacion_docente.csv	_archivo/docs/apendices/csv/F_05_fact_evaluacion_docente.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_06_fact_marketing.csv	_archivo/docs/apendices/csv/F_06_fact_marketing.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_07_fact_rentabilidad.csv	_archivo/docs/apendices/csv/F_07_fact_rentabilidad.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_08_fact_forecast.csv	_archivo/docs/apendices/csv/F_08_fact_forecast.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_09_dim_tiempo.csv	_archivo/docs/apendices/csv/F_09_dim_tiempo.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_10_dim_estudiante.csv	_archivo/docs/apendices/csv/F_10_dim_estudiante.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_11_dim_docente.csv	_archivo/docs/apendices/csv/F_11_dim_docente.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_12_dim_modulo.csv	_archivo/docs/apendices/csv/F_12_dim_modulo.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_13_dim_origen_documental.csv	_archivo/docs/apendices/csv/F_13_dim_origen_documental.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_14_dim_categoria_financiera.csv	_archivo/docs/apendices/csv/F_14_dim_categoria_financiera.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_15_dim_meta.csv	_archivo/docs/apendices/csv/F_15_dim_meta.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_16_cat_institucion.csv	_archivo/docs/apendices/csv/F_16_cat_institucion.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_17_cat_categoria_financiera.csv	_archivo/docs/apendices/csv/F_17_cat_categoria_financiera.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_18_cat_docente.csv	_archivo/docs/apendices/csv/F_18_cat_docente.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_18_staging_registros_crudos.csv	_archivo/docs/apendices/csv/F_18_staging_registros_crudos.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_19_cat_modulo.csv	_archivo/docs/apendices/csv/F_19_cat_modulo.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_19_stg_entidad_no_resuelta.csv	_archivo/docs/apendices/csv/F_19_stg_entidad_no_resuelta.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_20_log_pipeline_ingesta.csv	_archivo/docs/apendices/csv/F_20_log_pipeline_ingesta.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_20_staging_registros_crudos.csv	_archivo/docs/apendices/csv/F_20_staging_registros_crudos.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_21_log_inconsistencias.csv	_archivo/docs/apendices/csv/F_21_log_inconsistencias.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_21_stg_entidad_no_resuelta.csv	_archivo/docs/apendices/csv/F_21_stg_entidad_no_resuelta.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_22_log_auditoria_nlp.csv	_archivo/docs/apendices/csv/F_22_log_auditoria_nlp.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_22_log_pipeline_ingesta.csv	_archivo/docs/apendices/csv/F_22_log_pipeline_ingesta.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_23_log_inconsistencias.csv	_archivo/docs/apendices/csv/F_23_log_inconsistencias.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_23_schema_migrations.csv	_archivo/docs/apendices/csv/F_23_schema_migrations.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_24_log_auditoria_nlp.csv	_archivo/docs/apendices/csv/F_24_log_auditoria_nlp.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_24_users.csv	_archivo/docs/apendices/csv/F_24_users.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_25_notifications.csv	_archivo/docs/apendices/csv/F_25_notifications.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_25_schema_migrations.csv	_archivo/docs/apendices/csv/F_25_schema_migrations.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_26_lote.csv	_archivo/docs/apendices/csv/F_26_lote.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_26_users.csv	_archivo/docs/apendices/csv/F_26_users.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_27_notifications.csv	_archivo/docs/apendices/csv/F_27_notifications.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_27_relaciones.csv	_archivo/docs/apendices/csv/F_27_relaciones.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_28_lote.csv	_archivo/docs/apendices/csv/F_28_lote.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/F_29_relaciones.csv	_archivo/docs/apendices/csv/F_29_relaciones.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_01_catalogo_tablas.csv	_archivo/docs/apendices/csv/G_01_catalogo_tablas.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_02_cat_programa.csv	_archivo/docs/apendices/csv/G_02_cat_programa.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_03_cat_modulo.csv	_archivo/docs/apendices/csv/G_03_cat_modulo.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_04_cat_docente.csv	_archivo/docs/apendices/csv/G_04_cat_docente.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_05_cat_escuela.csv	_archivo/docs/apendices/csv/G_05_cat_escuela.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_06_cat_tipo_programa.csv	_archivo/docs/apendices/csv/G_06_cat_tipo_programa.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_07_cat_modalidad.csv	_archivo/docs/apendices/csv/G_07_cat_modalidad.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_08_cat_estado_academico.csv	_archivo/docs/apendices/csv/G_08_cat_estado_academico.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_09_cat_estado_reprobado.csv	_archivo/docs/apendices/csv/G_09_cat_estado_reprobado.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_10_cat_estado_arca.csv	_archivo/docs/apendices/csv/G_10_cat_estado_arca.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_11_cat_tipo_cartera.csv	_archivo/docs/apendices/csv/G_11_cat_tipo_cartera.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_12_cat_concepto_financiero.csv	_archivo/docs/apendices/csv/G_12_cat_concepto_financiero.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_13_cat_historico_equivalencia.csv	_archivo/docs/apendices/csv/G_13_cat_historico_equivalencia.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_14_cat_etiqueta_clasificacion.csv	_archivo/docs/apendices/csv/G_14_cat_etiqueta_clasificacion.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_15_cat_mapeo_columna.csv	_archivo/docs/apendices/csv/G_15_cat_mapeo_columna.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_16_cat_guia_texto_plano.csv	_archivo/docs/apendices/csv/G_16_cat_guia_texto_plano.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_17_ref_metas_gestion.csv	_archivo/docs/apendices/csv/G_17_ref_metas_gestion.csv	otros docs	README.md (directorio docs/apendices/)
+docs/apendices/csv/G_18_relaciones.csv	_archivo/docs/apendices/csv/G_18_relaciones.csv	otros docs	README.md (directorio docs/apendices/)
+docs/auditoria/plan_maestro_ejecucion.md	_archivo/docs/auditoria/plan_maestro_ejecucion.md	otros docs	README.md (directorio docs/auditoria/)
+docs/auditoria/plan_maestro_ejecucion.md	_archivo/docs/auditoria/plan_maestro_ejecucion.md	otros docs	README.md:217
+docs/auditoria/production_readiness_2026-11-01.md	_archivo/docs/auditoria/production_readiness_2026-11-01.md	otros docs	README.md (directorio docs/auditoria/)
+docs/auditoria/production_readiness_2026-11-01.md	_archivo/docs/auditoria/production_readiness_2026-11-01.md	otros docs	README.md:216
+docs/auditoria/production_readiness_2026-11-01.md	_archivo/docs/auditoria/production_readiness_2026-11-01.md	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/auditoria/)
+docs/auditoria/production_readiness_2026-11-01.md	_archivo/docs/auditoria/production_readiness_2026-11-01.md	otros docs	docs/auditoria/plan_maestro_ejecucion.md:4
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md:491
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md:492
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/manifiesto_figuras.csv:5
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md:492
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md:493
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/manifiesto_figuras.csv:10
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	tesis	docs/fuente_verdad_tesis.md:490
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	tesis	fuente_verdad_tesis.md:491
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/figura_3_5_esquema_constelacion_fisico.png	docs/figuras_src/figura_3_5_constelacion_dw.mmd	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	tesis	docs/fuente_verdad_tesis.md:484
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	tesis	fuente_verdad_tesis.md:484
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	otros docs	docs/evidencias/manifiesto_graficos.csv:2
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	tesis	docs/fuente_verdad_tesis.md:485
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	tesis	fuente_verdad_tesis.md:485
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	otros docs	docs/evidencias/manifiesto_graficos.csv:4
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	docs/fuente_verdad_tesis.md:486
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	fuente_verdad_tesis.md:486
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	docs/fuente_verdad_tesis.md:487
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	fuente_verdad_tesis.md:487
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	docs/fuente_verdad_tesis.md:488
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	fuente_verdad_tesis.md:488
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	tesis	fuente_verdad_tesis.md:489
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/manifiesto_graficos.csv:9
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpi_cmi_perspectivas.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	tesis	docs/fuente_verdad_tesis.md:489
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	tesis	fuente_verdad_tesis.md:490
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/evidencias/manifiesto_graficos.csv:10
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	docs/fuente_verdad_tesis.md:486
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos_v2/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	fuente_verdad_tesis.md:486
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/evidencias/manifiesto_graficos.csv (directorio docs/evidencias/graficos_v2/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	docs/fuente_verdad_tesis.md:487
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos_v2/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	fuente_verdad_tesis.md:487
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/evidencias/manifiesto_graficos.csv (directorio docs/evidencias/graficos_v2/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	docs/fuente_verdad_tesis.md:488
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos_v2/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	fuente_verdad_tesis.md:488
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/evidencias/manifiesto_graficos.csv (directorio docs/evidencias/graficos_v2/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	tesis	docs/fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	tesis	fuente_verdad_tesis.md (directorio docs/evidencias/graficos_v2/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/RESUMEN_RONDA10.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/RESUMEN_RONDA8.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/RESUMEN_RONDA9.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/flujo_repetido/resumen.json (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/evidencias/manifiesto_graficos.csv (directorio docs/evidencias/graficos_v2/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/medicion-flujo-dataops.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/optimizacion-flujo-dataops-A.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/performance/informe_rendimiento.md (directorio docs/evidencias/)
+docs/evidencias/graficos_v2/grafico_4_4_kpis_cmi.png	docs/evidencias/graficos_v2/grafico_4_4_kpi_cmi_perspectivas.png	otros docs	docs/propuesta-correccion-inscripciones.md (directorio docs/evidencias/)
+docs/figuras/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	tesis	docs/fuente_verdad_tesis.md:489
+docs/figuras/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	tesis	fuente_verdad_tesis.md:490
+docs/figuras/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/evidencias/manifiesto_graficos.csv:10
+docs/images/figura_1_40_resumen_pytest.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_12_diagrama_flujo_beto_rapidfuzz.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_16_diagrama_casos_de_uso_backend.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_17_captura_logs_extraccion_semantica.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_17_diagrama_secuencia_jwt_pipeline.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_17_diagrama_secuencia_jwt_pipeline.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md:507
+docs/images/figura_3_22_captura_respuesta_json_forecast.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_23_diagrama_casos_de_uso_frontend.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_24_mockup_login_e_ingesta.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_24_mockup_login_e_ingesta.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md:502
+docs/images/figura_3_25_captura_respuesta_json_forecast.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_25_mockup_hitl_y_alertas.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_26_mockup_cmi_powerbi.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_2_arquitectura_fisica_orquestacion.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_2_arquitectura_fisica_orquestacion.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md:517
+docs/images/figura_3_31_dashboard_cmi_academico.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_32_dashboard_cmi_financiero.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_33_diagrama_secuencia_e2e.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_34_captura_pytest_cobertura.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_34_captura_pytest_cobertura.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md:522
+docs/images/figura_3_35_captura_postman_runner.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_35_captura_postman_runner.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md:527
+docs/images/figura_3_35_captura_pytest_cobertura.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_36_captura_seguridad_owasp.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_36_captura_seguridad_owasp.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md:512
+docs/images/figura_3_36_validacion_postman.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_36_validacion_postman.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md:527
+docs/images/figura_3_37_captura_docker_ps.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_37_pruebas_verificacion_sprint5.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_39_captura_pytest_cobertura.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_39_captura_pytest_cobertura.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md:522
+docs/images/figura_3_3_diagrama_despliegue_docker_compose.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md:491
+docs/images/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md:492
+docs/images/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_40_captura_pytest_475.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/manifiesto_figuras.csv:5
+docs/images/figura_3_41_evidencia_objetivo_2_esquema_constelacion.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_42_captura_seguridad_owasp.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_42_captura_seguridad_owasp.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md:512
+docs/images/figura_3_42_evidencia_objetivo_3_lote_unificado.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_43_captura_docker_ps_9_servicios.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_43_captura_docker_ps_9_servicios.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md:532
+docs/images/figura_3_43_evidencia_objetivo_4_entidades_beto_rapidfuzz.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_44_evidencia_objetivo_5_proyecciones_cmi.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_45_evidencia_objetivo_6_reporte_pruebas_calidad.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_4_modelo_conceptual_hefesto.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md:492
+docs/images/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md:493
+docs/images/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_50_captura_cobertura_60_8.png	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/manifiesto_figuras.csv:10
+docs/images/figura_3_5_esquema_constelacion_fisico.png	retirada; pendiente recaptura/regeneración	tesis	docs/fuente_verdad_tesis.md:490
+docs/images/figura_3_5_esquema_constelacion_fisico.png	retirada; pendiente recaptura/regeneración	tesis	fuente_verdad_tesis.md:491
+docs/images/figura_3_5_esquema_constelacion_fisico.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_6_diagrama_clases_orm_pydantic.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/figura_3_9_diagrama_actividad_ingesta.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_3_1_matriz_confusion_beto.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_3_2_distribucion_confianza_probabilistica.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	tesis	docs/fuente_verdad_tesis.md:484
+docs/images/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	tesis	fuente_verdad_tesis.md:484
+docs/images/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_3_2_distribucion_lote_1387.png	docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png	otros docs	docs/evidencias/manifiesto_graficos.csv:2
+docs/images/grafico_3_3_desempeno_metricas_beto.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_3_3_desempeno_metricas_por_entidad.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	tesis	docs/fuente_verdad_tesis.md:485
+docs/images/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	tesis	fuente_verdad_tesis.md:485
+docs/images/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_3_4_serie_temporal_holt_winters.png	docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png	otros docs	docs/evidencias/manifiesto_graficos.csv:4
+docs/images/grafico_3_5_tendencia_lineal_ols.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_4_1_excepciones_calidad_lote.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	docs/fuente_verdad_tesis.md:486
+docs/images/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	tesis	fuente_verdad_tesis.md:486
+docs/images/grafico_4_1_inconsistencias_corpus.png	docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	docs/fuente_verdad_tesis.md:487
+docs/images/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	tesis	fuente_verdad_tesis.md:487
+docs/images/grafico_4_2_confianza_probabilistica.png	docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_4_2_distribucion_lote_1387.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	docs/fuente_verdad_tesis.md:488
+docs/images/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	tesis	fuente_verdad_tesis.md:488
+docs/images/grafico_4_3_distribucion_archivo_lote_1387.png	docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_4_3_resolucion_por_formato.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_4_4_disponibilidad_kpi_cmi.png	retirada; pendiente recaptura/regeneración	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	tesis	docs/fuente_verdad_tesis.md:489
+docs/images/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	tesis	fuente_verdad_tesis.md:490
+docs/images/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_4_5_tiempo_consolidacion_semilog.png	docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png	otros docs	docs/evidencias/manifiesto_graficos.csv:10
+docs/images/grafico_4_6_evaluacion_likert_pre_post.png	docs/evidencias/graficos_v2/grafico_4_6_evaluacion_likert_pre_post.png	otros docs	docs/INFORME_CONSIDERACIONES_SEGURIDAD_GIRAGROUP_BI.md (directorio docs/images/)
+docs/images/grafico_4_6_evaluacion_likert_pre_post.png	docs/evidencias/graficos_v2/grafico_4_6_evaluacion_likert_pre_post.png	otros docs	docs/evidencias/manifiesto_graficos.csv:11
+docs/testing/ci.yml	_archivo/docs/testing/ci.yml	otros docs	docs/auditoria/production_readiness_2026-11-01.md:152
+docs/testing/ci.yml	_archivo/docs/testing/ci.yml	otros docs	docs/testing/informe_pruebas.md:203
+docs/testing/skeletons/test_auth_otp.py	_archivo/docs/testing/skeletons/test_auth_otp.py	otros docs	docs/testing/informe_pruebas.md (directorio docs/testing/skeletons/)
+docs/testing/skeletons/test_forecast_constraints.py	_archivo/docs/testing/skeletons/test_forecast_constraints.py	otros docs	docs/testing/informe_pruebas.md (directorio docs/testing/skeletons/)
+docs/testing/skeletons/test_health.py	_archivo/docs/testing/skeletons/test_health.py	otros docs	docs/testing/informe_pruebas.md (directorio docs/testing/skeletons/)
+docs/testing/skeletons/test_health.py	_archivo/docs/testing/skeletons/test_health.py	otros docs	docs/testing/informe_pruebas.md:18
+docs/testing/skeletons/test_ingestion_security.py	_archivo/docs/testing/skeletons/test_ingestion_security.py	otros docs	docs/testing/informe_pruebas.md (directorio docs/testing/skeletons/)
+docs/testing/skeletons/test_kpis.py	_archivo/docs/testing/skeletons/test_kpis.py	otros docs	docs/testing/informe_pruebas.md (directorio docs/testing/skeletons/)
+docs/testing/skeletons/test_ner_thresholds.py	_archivo/docs/testing/skeletons/test_ner_thresholds.py	otros docs	docs/testing/informe_pruebas.md (directorio docs/testing/skeletons/)
+docs/testing/skeletons/test_risk_rules.py	_archivo/docs/testing/skeletons/test_risk_rules.py	otros docs	docs/testing/informe_pruebas.md (directorio docs/testing/skeletons/)
+e2e/ciclo_ui.mjs	tests/sprint5/ciclo_ui.mjs	otros docs	docs/evidencias/RESUMEN_RONDA9.md:40
+e2e/mapeo_ui.mjs	tests/sprint5/mapeo_ui.mjs	otros docs	docs/evidencias/RESUMEN_RONDA9.md:40
+scripts/generar_figura_docker_ps_9_servicios.py	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/inventario_tablas.json:1212
+scripts/generar_figura_docker_ps_9_servicios.py	retirada; pendiente recaptura/regeneración	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1298
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	tesis	docs/tablas_v2.docx (directorio tests/load/)
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	tesis	docs/tablas_v2.docx:591
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	tesis	docs/tablas_v2.md (directorio tests/load/)
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	tesis	docs/tablas_v2.md:189
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	README.md (directorio tests/load/)
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	README.md:181
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	docs/auditoria/plan_maestro_ejecucion.md (directorio tests/load/)
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	docs/auditoria/plan_maestro_ejecucion.md:215
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	docs/auditoria/plan_maestro_ejecucion.md:5
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	docs/evidencias/inventario_tablas.json (directorio tests/load/)
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	docs/evidencias/inventario_tablas.json:1174
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	docs/evidencias/inventario_tablas.json:1367
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json (directorio tests/load/)
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1260
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1451
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	docs/testing/informe_pruebas.md (directorio tests/load/)
+tests/load/locust_readiness.py	tests/sprint6/locust_readiness.py	otros docs	docs/testing/informe_pruebas.md:82
+tests/revision_cola.test.mjs	tests/sprint5/revision_cola.test.mjs	otros docs	docs/optimizacion-flujo-dataops-A.md:22
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	tesis	docs/tablas_v2.docx:525
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	tesis	docs/tablas_v2.md:178
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:1039
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:1178
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:1277
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:1313
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:1372
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:321
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:731
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:803
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:825
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:866
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:890
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:920
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:965
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas.json:998
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_48.csv:30
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1012
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1056
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1087
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1127
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1264
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1363
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1398
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1456
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:412
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:828
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:898
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:920
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:959
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:983
+tests/test_agnostic_classifier_and_dw_reset.py	tests/transversales/test_agnostic_classifier_and_dw_reset.py	otros docs	docs/testing/informe_pruebas.md:72
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	tesis	docs/tablas_v2.docx:513
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	tesis	docs/tablas_v2.md:176
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/evidencias/inventario_tablas.json:1135
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/evidencias/inventario_tablas.json:1179
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/evidencias/inventario_tablas.json:1197
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/evidencias/inventario_tablas.json:1219
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/evidencias/inventario_tablas.json:1341
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/evidencias/inventario_tablas.json:1373
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1221
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1265
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1283
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1305
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1425
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1457
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/testing/informe_pruebas.md:102
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/testing/informe_pruebas.md:103
+tests/test_auth_and_rbac.py	tests/sprint4/test_auth_and_rbac.py	otros docs	docs/testing/informe_pruebas.md:73
+tests/test_bandeja_grupos.py	tests/sprint5/test_bandeja_grupos.py	tesis	docs/tablas_v2.docx:543
+tests/test_bandeja_grupos.py	tests/sprint5/test_bandeja_grupos.py	tesis	docs/tablas_v2.md:181
+tests/test_bandeja_grupos.py	tests/sprint5/test_bandeja_grupos.py	otros docs	docs/evidencias/RESUMEN_RONDA8.md:25
+tests/test_bandeja_hechos_en_revision.py	tests/sprint5/test_bandeja_hechos_en_revision.py	tesis	docs/tablas_v2.docx:543
+tests/test_bandeja_hechos_en_revision.py	tests/sprint5/test_bandeja_hechos_en_revision.py	tesis	docs/tablas_v2.md:181
+tests/test_bandeja_hechos_en_revision.py	tests/sprint5/test_bandeja_hechos_en_revision.py	otros docs	docs/evidencias/inventario_tablas.json:1078
+tests/test_bandeja_hechos_en_revision.py	tests/sprint5/test_bandeja_hechos_en_revision.py	otros docs	docs/evidencias/inventario_tablas.json:591
+tests/test_bandeja_hechos_en_revision.py	tests/sprint5/test_bandeja_hechos_en_revision.py	otros docs	docs/evidencias/inventario_tablas.json:678
+tests/test_bandeja_hechos_en_revision.py	tests/sprint5/test_bandeja_hechos_en_revision.py	otros docs	docs/evidencias/inventario_tablas.json:804
+tests/test_bandeja_hechos_en_revision.py	tests/sprint5/test_bandeja_hechos_en_revision.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1166
+tests/test_bandeja_hechos_en_revision.py	tests/sprint5/test_bandeja_hechos_en_revision.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:691
+tests/test_bandeja_hechos_en_revision.py	tests/sprint5/test_bandeja_hechos_en_revision.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:778
+tests/test_bandeja_hechos_en_revision.py	tests/sprint5/test_bandeja_hechos_en_revision.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:899
+tests/test_bandeja_hechos_en_revision.py	tests/sprint5/test_bandeja_hechos_en_revision.py	otros docs	docs/testing/informe_pruebas.md:61
+tests/test_bandeja_hitl_ruido_y_un_clic.py	tests/sprint5/test_bandeja_hitl_ruido_y_un_clic.py	otros docs	docs/evidencias/inventario_tablas.json:1180
+tests/test_bandeja_hitl_ruido_y_un_clic.py	tests/sprint5/test_bandeja_hitl_ruido_y_un_clic.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1266
+tests/test_bandeja_hitl_ruido_y_un_clic.py	tests/sprint5/test_bandeja_hitl_ruido_y_un_clic.py	otros docs	docs/testing/informe_pruebas.md:62
+tests/test_cedula_prefijo_ci.py	tests/sprint3/test_cedula_prefijo_ci.py	otros docs	docs/testing/informe_pruebas.md:63
+tests/test_coherencia_estado_notas.py	tests/sprint3/test_coherencia_estado_notas.py	tesis	docs/tablas_v2.docx:525
+tests/test_coherencia_estado_notas.py	tests/sprint3/test_coherencia_estado_notas.py	tesis	docs/tablas_v2.md:178
+tests/test_datos_reales_pipeline.py	tests/sprint2/test_datos_reales_pipeline.py	otros docs	docs/evidencias/inventario_tablas.json:805
+tests/test_datos_reales_pipeline.py	tests/sprint2/test_datos_reales_pipeline.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:900
+tests/test_datos_reales_pipeline.py	tests/sprint2/test_datos_reales_pipeline.py	otros docs	docs/testing/informe_pruebas.md:20
+tests/test_datos_reales_pipeline.py	tests/sprint2/test_datos_reales_pipeline.py	otros docs	docs/testing/informe_pruebas.md:74
+tests/test_datos_reales_pipeline.py	tests/sprint2/test_datos_reales_pipeline.py	otros docs	docs/testing/informe_pruebas.md:97
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	tesis	docs/tablas_v2.docx:549
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	tesis	docs/tablas_v2.docx:603
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	tesis	docs/tablas_v2.md:182
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	tesis	docs/tablas_v2.md:191
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/RESUMEN_RONDA4.md:34
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas.json:1040
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas.json:1314
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas.json:390
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas.json:468
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas.json:524
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas.json:592
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas.json:679
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas.json:806
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1128
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1399
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:281
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:481
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:571
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:625
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:692
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:779
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:901
+tests/test_esquema_alineado_ddl.py	tests/sprint1/test_esquema_alineado_ddl.py	otros docs	docs/testing/informe_pruebas.md:64
+tests/test_extractor_estudiante_ci.py	tests/sprint3/test_extractor_estudiante_ci.py	otros docs	docs/testing/informe_pruebas.md:75
+tests/test_fecha_corte_moodle.py	tests/sprint2/test_fecha_corte_moodle.py	tesis	docs/tablas_v2.docx:519
+tests/test_fecha_corte_moodle.py	tests/sprint2/test_fecha_corte_moodle.py	tesis	docs/tablas_v2.md:177
+tests/test_fecha_corte_moodle.py	tests/sprint2/test_fecha_corte_moodle.py	otros docs	docs/testing/informe_pruebas.md:65
+tests/test_fk_resolver_padron.py	tests/sprint3/test_fk_resolver_padron.py	tesis	docs/tablas_v2.docx:537
+tests/test_fk_resolver_padron.py	tests/sprint3/test_fk_resolver_padron.py	tesis	docs/tablas_v2.md:180
+tests/test_fk_resolver_padron.py	tests/sprint3/test_fk_resolver_padron.py	otros docs	docs/testing/informe_pruebas.md:66
+tests/test_forecasting.py	tests/sprint4/test_forecasting.py	tesis	docs/tablas_v2.docx:561
+tests/test_forecasting.py	tests/sprint4/test_forecasting.py	tesis	docs/tablas_v2.md:184
+tests/test_forecasting.py	tests/sprint4/test_forecasting.py	otros docs	docs/evidencias/RESUMEN_TAREAS.md:47
+tests/test_forecasting.py	tests/sprint4/test_forecasting.py	otros docs	docs/evidencias/inventario_tablas.json:764
+tests/test_forecasting.py	tests/sprint4/test_forecasting.py	otros docs	docs/evidencias/inventario_tablas.json:807
+tests/test_forecasting.py	tests/sprint4/test_forecasting.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:861
+tests/test_forecasting.py	tests/sprint4/test_forecasting.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:902
+tests/test_forecasting.py	tests/sprint4/test_forecasting.py	otros docs	docs/testing/informe_pruebas.md:100
+tests/test_forecasting.py	tests/sprint4/test_forecasting.py	otros docs	docs/testing/informe_pruebas.md:76
+tests/test_formatos_genericos.py	tests/sprint2/test_formatos_genericos.py	tesis	docs/tablas_v2.docx:519
+tests/test_formatos_genericos.py	tests/sprint2/test_formatos_genericos.py	tesis	docs/tablas_v2.md:177
+tests/test_holtwinters_cobertura.py	tests/sprint4/test_holtwinters_cobertura.py	tesis	docs/tablas_v2.docx:561
+tests/test_holtwinters_cobertura.py	tests/sprint4/test_holtwinters_cobertura.py	tesis	docs/tablas_v2.md:184
+tests/test_holtwinters_cobertura.py	tests/sprint4/test_holtwinters_cobertura.py	otros docs	docs/evidencias/RESUMEN_RONDA10.md:50
+tests/test_ingesta_sin_timeout.py	tests/sprint5/test_ingesta_sin_timeout.py	tesis	docs/tablas_v2.docx:519
+tests/test_ingesta_sin_timeout.py	tests/sprint5/test_ingesta_sin_timeout.py	tesis	docs/tablas_v2.md:177
+tests/test_ingesta_sin_timeout.py	tests/sprint5/test_ingesta_sin_timeout.py	otros docs	docs/evidencias/inventario_tablas.json:1181
+tests/test_ingesta_sin_timeout.py	tests/sprint5/test_ingesta_sin_timeout.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1267
+tests/test_ingesta_sin_timeout.py	tests/sprint5/test_ingesta_sin_timeout.py	otros docs	docs/testing/informe_pruebas.md:101
+tests/test_ingesta_sin_timeout.py	tests/sprint5/test_ingesta_sin_timeout.py	otros docs	docs/testing/informe_pruebas.md:67
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	tesis	docs/tablas_v2.docx:567
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	tesis	docs/tablas_v2.md:185
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	otros docs	docs/evidencias/inventario_tablas.json:593
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	otros docs	docs/evidencias/inventario_tablas.json:680
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	otros docs	docs/evidencias/inventario_tablas.json:808
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	otros docs	docs/evidencias/inventario_tablas.json:921
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1013
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:693
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:780
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:903
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	otros docs	docs/testing/informe_pruebas.md:104
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	otros docs	docs/testing/informe_pruebas.md:68
+tests/test_kpi_service.py	tests/sprint4/test_kpi_service.py	otros docs	docs/testing/informe_pruebas.md:94
+tests/test_migraciones_arranque.py	tests/sprint1/test_migraciones_arranque.py	otros docs	docs/evidencias/RESUMEN_RONDA4.md:32
+tests/test_migraciones_arranque.py	tests/sprint1/test_migraciones_arranque.py	otros docs	docs/evidencias/inventario_tablas.json:1257
+tests/test_migraciones_arranque.py	tests/sprint1/test_migraciones_arranque.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1343
+tests/test_migraciones_arranque.py	tests/sprint1/test_migraciones_arranque.py	otros docs	docs/testing/informe_pruebas.md:77
+tests/test_otp_entorno_pruebas.py	tests/sprint6/test_otp_entorno_pruebas.py	tesis	docs/tablas_v2.docx:513
+tests/test_otp_entorno_pruebas.py	tests/sprint6/test_otp_entorno_pruebas.py	tesis	docs/tablas_v2.md:176
+tests/test_otp_entorno_pruebas.py	tests/sprint6/test_otp_entorno_pruebas.py	otros docs	docs/testing/informe_pruebas.md:69
+tests/test_person_resolver.py	tests/sprint3/test_person_resolver.py	tesis	docs/tablas_v2.docx:537
+tests/test_person_resolver.py	tests/sprint3/test_person_resolver.py	tesis	docs/tablas_v2.md:180
+tests/test_person_resolver.py	tests/sprint3/test_person_resolver.py	otros docs	docs/evidencias/RESUMEN_TAREAS.md:47
+tests/test_person_resolver.py	tests/sprint3/test_person_resolver.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:282
+tests/test_person_resolver_preparado.py	tests/sprint3/test_person_resolver_preparado.py	otros docs	docs/optimizacion-flujo-dataops-A.md:21
+tests/test_pipeline_financiero.py	tests/sprint3/test_pipeline_financiero.py	otros docs	docs/testing/informe_pruebas.md:20
+tests/test_pipeline_financiero.py	tests/sprint3/test_pipeline_financiero.py	otros docs	docs/testing/informe_pruebas.md:78
+tests/test_reduccion_hitl.py	tests/sprint3/test_reduccion_hitl.py	tesis	docs/tablas_v2.docx:543
+tests/test_reduccion_hitl.py	tests/sprint3/test_reduccion_hitl.py	tesis	docs/tablas_v2.docx:597
+tests/test_reduccion_hitl.py	tests/sprint3/test_reduccion_hitl.py	tesis	docs/tablas_v2.md:181
+tests/test_reduccion_hitl.py	tests/sprint3/test_reduccion_hitl.py	tesis	docs/tablas_v2.md:190
+tests/test_rentabilidad_ejecutado_meta.py	tests/sprint4/test_rentabilidad_ejecutado_meta.py	otros docs	docs/evidencias/inventario_tablas.json:1182
+tests/test_rentabilidad_ejecutado_meta.py	tests/sprint4/test_rentabilidad_ejecutado_meta.py	otros docs	docs/evidencias/inventario_tablas.json:999
+tests/test_rentabilidad_ejecutado_meta.py	tests/sprint4/test_rentabilidad_ejecutado_meta.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1088
+tests/test_rentabilidad_ejecutado_meta.py	tests/sprint4/test_rentabilidad_ejecutado_meta.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1268
+tests/test_rentabilidad_ejecutado_meta.py	tests/sprint4/test_rentabilidad_ejecutado_meta.py	otros docs	docs/testing/informe_pruebas.md:70
+tests/test_reportes_export.py	tests/sprint5/test_reportes_export.py	tesis	docs/tablas_v2.docx:573
+tests/test_reportes_export.py	tests/sprint5/test_reportes_export.py	tesis	docs/tablas_v2.md:186
+tests/test_reportes_export.py	tests/sprint5/test_reportes_export.py	otros docs	docs/evidencias/inventario_tablas.json:1111
+tests/test_reportes_export.py	tests/sprint5/test_reportes_export.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:1197
+tests/test_reportes_export.py	tests/sprint5/test_reportes_export.py	otros docs	docs/testing/informe_pruebas.md:79
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	tesis	docs/tablas_v2.docx:555
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	tesis	docs/tablas_v2.md:183
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	otros docs	docs/evidencias/inventario_tablas.json:525
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	otros docs	docs/evidencias/inventario_tablas.json:594
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	otros docs	docs/evidencias/inventario_tablas.json:681
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	otros docs	docs/evidencias/inventario_tablas.json:809
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:626
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:694
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:781
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:904
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	otros docs	docs/testing/informe_pruebas.md:71
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	otros docs	docs/testing/informe_pruebas.md:85
+tests/test_risk_service.py	tests/sprint4/test_risk_service.py	otros docs	docs/testing/informe_pruebas.md:95
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	tesis	docs/tablas_v2.docx:253
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	tesis	docs/tablas_v2.docx:579
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	tesis	docs/tablas_v2.docx:585
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	tesis	docs/tablas_v2.md:187
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	tesis	docs/tablas_v2.md:188
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	tesis	docs/tablas_v2.md:98
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	otros docs	docs/architecture/auditoria_loops_sprint4.md:89
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	otros docs	docs/evidencias/RESUMEN_TAREAS.md:33
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	otros docs	docs/evidencias/RESUMEN_TAREAS.md:47
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	otros docs	docs/evidencias/inventario_tablas.json:765
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	otros docs	docs/evidencias/inventario_tablas.json:810
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:862
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	otros docs	docs/evidencias/inventario_tablas_antes_011.json:905
+tests/test_sprint4_verification_loops.py	tests/sprint6/test_seguridad_y_resiliencia_api.py	otros docs	docs/testing/informe_pruebas.md:80
+tests/test_staging_idempotente.py	tests/sprint4/test_staging_idempotente.py	tesis	docs/tablas_v2.docx:549
+tests/test_staging_idempotente.py	tests/sprint4/test_staging_idempotente.py	tesis	docs/tablas_v2.docx:603
+tests/test_staging_idempotente.py	tests/sprint4/test_staging_idempotente.py	tesis	docs/tablas_v2.md:182
+tests/test_staging_idempotente.py	tests/sprint4/test_staging_idempotente.py	tesis	docs/tablas_v2.md:191
+tests/test_staging_idempotente.py	tests/sprint4/test_staging_idempotente.py	otros docs	docs/evidencias/RESUMEN_RONDA4.md:48
+tests/test_staging_idempotente.py	tests/sprint4/test_staging_idempotente.py	otros docs	docs/evidencias/inventario_tablas.json:1315

@@ -1,0 +1,44 @@
+warning: in the working copy of 'docs/limpieza/validacion/aplicar_lotes.py', LF will be replaced by CRLF the next time Git touches it
+[limpieza-repo 5b46c81] chore(limpieza): respaldo
+ 40 files changed, 120851 insertions(+)
+ create mode 100644 docs/limpieza/.gitignore
+ create mode 100644 docs/limpieza/GENERACION_RESUMEN.txt
+ create mode 100644 docs/limpieza/INVENTARIO_DATOS.json
+ create mode 100644 docs/limpieza/INVENTARIO_DEPENDENCIAS.md
+ create mode 100644 docs/limpieza/LIMPIEZA_INVENTARIO.md
+ create mode 100644 docs/limpieza/MAPA_TESTS.tsv
+ create mode 100644 docs/limpieza/PREBORRADO_REFERENCIAS.md
+ create mode 100644 docs/limpieza/PRE_FASE2_MANIFIESTO.json
+ create mode 100644 docs/limpieza/RUTAS_CITADAS_TESIS.tsv
+ create mode 100644 docs/limpieza/generar_inventario.py
+ create mode 100644 docs/limpieza/linea_base/RESUMEN.json
+ create mode 100644 docs/limpieza/linea_base/aislamiento_verificado.txt
+ create mode 100644 docs/limpieza/linea_base/coverage.json
+ create mode 100644 docs/limpieza/linea_base/docker_compose_config.txt
+ create mode 100644 docs/limpieza/linea_base/ejecutar_pytest.py
+ create mode 100644 docs/limpieza/linea_base/frontend_build.txt
+ create mode 100644 docs/limpieza/linea_base/intento_1/coverage.json
+ create mode 100644 docs/limpieza/linea_base/intento_1/pytest_completo.txt
+ create mode 100644 docs/limpieza/linea_base/intento_1/pytest_junit.xml
+ create mode 100644 docs/limpieza/linea_base/intento_2/pytest_completo.txt
+ create mode 100644 docs/limpieza/linea_base/intento_3/pytest_completo.txt
+ create mode 100644 docs/limpieza/linea_base/node_tests.txt
+ create mode 100644 docs/limpieza/linea_base/pytest_completo.txt
+ create mode 100644 docs/limpieza/linea_base/pytest_junit.xml
+ create mode 100644 docs/limpieza/linea_base/pytest_nodeids.txt
+ create mode 100644 docs/limpieza/linea_base/snapshot_archivo_sha256.json
+ create mode 100644 docs/limpieza/validacion/ANTES_RESUMEN.json
+ create mode 100644 docs/limpieza/validacion/antes/coverage.json
+ create mode 100644 docs/limpieza/validacion/antes/junit.xml
+ create mode 100644 docs/limpieza/validacion/antes/nodeids.txt
+ create mode 100644 docs/limpieza/validacion/antes_pytest.txt
+ create mode 100644 docs/limpieza/validacion/aplicar_lotes.py
+ create mode 100644 docs/limpieza/validacion/auditar_preborrado.py
+ create mode 100644 docs/limpieza/validacion/colecta_f3b37d9/nodeids.txt
+ create mode 100644 docs/limpieza/validacion/collect_f3b37d9.txt
+ create mode 100644 docs/limpieza/validacion/commit_respaldo.txt
+ create mode 100644 docs/limpieza/validacion/compose.yml
+ create mode 100644 docs/limpieza/validacion/preparar_dw.py
+ create mode 100644 docs/limpieza/validacion/pytest_aislado.py
+ create mode 100644 docs/limpieza/validacion/restauracion.txt
+{"tema": "respaldo", "commit": "5b46c81d23585e7b2783a9ee81e026897c45b96d", "quick_exit": 0, "node_exit": 0, "revertido": false, "cambios": ["A\tdocs/limpieza/.gitignore", "A\tdocs/limpieza/GENERACION_RESUMEN.txt", "A\tdocs/limpieza/INVENTARIO_DATOS.json", "A\tdocs/limpieza/INVENTARIO_DEPENDENCIAS.md", "A\tdocs/limpieza/LIMPIEZA_INVENTARIO.md", "A\tdocs/limpieza/MAPA_TESTS.tsv", "A\tdocs/limpieza/PREBORRADO_REFERENCIAS.md", "A\tdocs/limpieza/PRE_FASE2_MANIFIESTO.json", "A\tdocs/limpieza/RUTAS_CITADAS_TESIS.tsv", "A\tdocs/limpieza/generar_inventario.py", "A\tdocs/limpieza/linea_base/RESUMEN.json", "A\tdocs/limpieza/linea_base/aislamiento_verificado.txt", "A\tdocs/limpieza/linea_base/coverage.json", "A\tdocs/limpieza/linea_base/docker_compose_config.txt", "A\tdocs/limpieza/linea_base/ejecutar_pytest.py", "A\tdocs/limpieza/linea_base/frontend_build.txt", "A\tdocs/limpieza/linea_base/intento_1/coverage.json", "A\tdocs/limpieza/linea_base/intento_1/pytest_completo.txt", "A\tdocs/limpieza/linea_base/intento_1/pytest_junit.xml", "A\tdocs/limpieza/linea_base/intento_2/pytest_completo.txt", "A\tdocs/limpieza/linea_base/intento_3/pytest_completo.txt", "A\tdocs/limpieza/linea_base/node_tests.txt", "A\tdocs/limpieza/linea_base/pytest_completo.txt", "A\tdocs/limpieza/linea_base/pytest_junit.xml", "A\tdocs/limpieza/linea_base/pytest_nodeids.txt", "A\tdocs/limpieza/linea_base/snapshot_archivo_sha256.json", "A\tdocs/limpieza/validacion/ANTES_RESUMEN.json", "A\tdocs/limpieza/validacion/antes/coverage.json", "A\tdocs/limpieza/validacion/antes/junit.xml", "A\tdocs/limpieza/validacion/antes/nodeids.txt", "A\tdocs/limpieza/validacion/antes_pytest.txt", "A\tdocs/limpieza/validacion/aplicar_lotes.py", "A\tdocs/limpieza/validacion/auditar_preborrado.py", "A\tdocs/limpieza/validacion/colecta_f3b37d9/nodeids.txt", "A\tdocs/limpieza/validacion/collect_f3b37d9.txt", "A\tdocs/limpieza/validacion/commit_respaldo.txt", "A\tdocs/limpieza/validacion/compose.yml", "A\tdocs/limpieza/validacion/preparar_dw.py", "A\tdocs/limpieza/validacion/pytest_aislado.py", "A\tdocs/limpieza/validacion/restauracion.txt"]}

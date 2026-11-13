@@ -1,5 +1,5 @@
 # ==============================================================================
-# docs/testing/Makefile
+# Makefile
 # ---------------------
 # Automatización estandarizada de pruebas dockerizadas para GiraGroup BI System.
 # Diseñado para ejecutar comandos reproducibles dentro de los contenedores Docker
