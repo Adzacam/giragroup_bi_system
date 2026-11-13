@@ -29,7 +29,7 @@ help:
 
 test-unit:
 	@echo "==> [1/6] Ejecutando pruebas unitarias puras (sin BD/red)..."
-	$(EXEC_PIPELINE) pytest tests/sprint2/ tests/sprint3/test_area2_confianza_telemetria.py tests/sprint3/test_area3_normalizacion_matching_fk.py tests/sprint3/test_formatter_gira40.py tests/sprint4/test_anonimizacion.py tests/test_cedula_prefijo_ci.py tests/test_fecha_corte_moodle.py -v -m "not slow" --tb=short
+	$(EXEC_PIPELINE) pytest tests/sprint2/ tests/sprint3/test_area2_confianza_telemetria.py tests/sprint3/test_area3_normalizacion_matching_fk.py tests/sprint3/test_formatter_gira40.py tests/sprint4/test_anonimizacion.py tests/test_cedula_prefijo_ci.py tests/sprint2/test_fecha_corte_moodle.py -v -m "not slow" --tb=short
 
 test-integration:
 	@echo "==> [2/6] Ejecutando pruebas de integración con PostgreSQL (Constelación + Catálogos)..."
