@@ -26,6 +26,8 @@ from core.security import require_roles
 from ._comun import ConfirmDwInsertRequest, UMBRAL_INDICE_REGISTRO_DEC
 from .revision import _bloquear_documentos_editables, resolve_review_item
 from .extraccion import _docentes_con_contexto, _es_encabezado_no_estudiante, extract_entities_from_line
+from models.log_inconsistencia import LogInconsistencia
+from pipeline.config import MOTIVO_DESACUERDO_REGLA_BETO
 from .evaluacion import _resolver_documentos_lote
 
 logger = logging.getLogger(__name__)
@@ -231,7 +233,15 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
             en_revision = banda == BANDA_REVISION or req_rev
             if indice is not None:
                 score = indice
-
+            if r_beto is not None and r_beto.acuerdo == beto_integracion.DESACUERDO and is_approved:
+                # Opción 2: las reglas ven una persona que BETO no ve. La confianza baja un escalón y el hecho queda en revisión
+                score = beto_integracion.bajar_un_escalon(score)
+                en_revision = True
+                db.add(LogInconsistencia(
+                    id_documento=stg.id_documento, fila_origen=(stg.fila_inicio or 0) + k_fila, campo_afectado="persona",
+                    valor_recibido=str(next((e.get("token") for e in ents if e.get("label") in ("ESTUDIANTE", "DOCENTE") and e.get("acuerdo_beto") == beto_integracion.DESACUERDO), ""))[:2000],
+                    valor_esperado="BETO: sin entidad persona en ese tramo", tipo_regla=MOTIVO_DESACUERDO_REGLA_BETO, severidad="BAJA",
+                    estado_resolucion="PENDIENTE", descripcion="La regla resolvió una persona que BETO etiqueta como O; confianza bajada un escalón y hecho en revisión"))
 
             ci_tok = next((e["token"] for e in ents if "CI" in e.get("label", "")), None)
             if ci_tok == "No provisto":

@@ -22,6 +22,7 @@ from services import beto_integracion, cache_consultas, cache_lectura, tareas_da
 from services.dataops_evaluation_service import calcular_porcentajes_mayor_residuo, cis_en_entidades, enmascarar_ci, entidad_sin_ci, texto_sin_ci
 from services.revision_hechos import contar_hechos_en_revision
 from sqlalchemy import func
+from pipeline.config import MOTIVO_DESACUERDO_REGLA_BETO
 from ._comun import UMBRAL_INDICE_REGISTRO
 from .extraccion import _docentes_con_contexto, _es_encabezado_no_estudiante, extract_entities_from_line, fila_sin_entidad
 
@@ -358,7 +359,10 @@ def _evaluar_documentos_lote(
                 categoria_particion = "REVISION"
                 estado_reg = "REVISION"
                 estado_res_row = "PENDIENTE"
-                if indice_num < UMBRAL_INDICE_REGISTRO:
+                if r_beto is not None and r_beto.degradada_por_acuerdo:
+                    motivo_codigo = MOTIVO_DESACUERDO_REGLA_BETO
+                    motivo_decision = "Las reglas encontraron una persona que BETO no reconoce en ese tramo; la confianza bajó un escalón."
+                elif indice_num < UMBRAL_INDICE_REGISTRO:
                     motivo_codigo = "BAJA_CONFIANZA"
                     motivo_decision = f"Índice del registro ({indice_num}) inferior al umbral de pase directo ({UMBRAL_INDICE_REGISTRO})."
                 elif ent_mod and ent_mod.get("es_nuevo_perfil"):
