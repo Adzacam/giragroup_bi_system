@@ -21,6 +21,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -313,22 +314,38 @@ def mejor_propuesta(ents_beto: Sequence[EntidadBeto], tipo: str, texto: str,
     return max(candidatas, key=lambda e: e.score) if candidatas else None
 
 
+def _tramos_del_nombre(token: str, texto: str) -> Optional[List[Tuple[int, int]]]:
+    """Dónde está en el texto el nombre que leyeron las reglas. Entero si aparece tal cual; si las reglas lo armaron con varias columnas
+    (NOMBRES + PATERNO + MATERNO) se busca cada palabra por separado. None si alguna palabra no está en el texto."""
+    def buscar(cadena: str):
+        return re.search(r"(?<!\w)" + re.escape(cadena) + r"(?!\w)", texto, flags=re.IGNORECASE)
+
+    m = buscar(token)
+    if m:
+        return [(m.start(), m.end())]
+    tramos = []
+    for palabra in token.split():
+        m = buscar(palabra)
+        if not m:
+            return None
+        tramos.append((m.start(), m.end()))
+    return tramos or None
+
+
 def comparar_con_beto(token: str, texto: str, ents_beto: Sequence[EntidadBeto]) -> str:
     """Opción 2: ¿ve BETO una persona en el tramo donde las reglas encontraron `token`?"""
     token = (token or "").strip()
-    pos = texto.find(token) if token else -1
-    if pos < 0 and token:
-        pos = texto.lower().find(token.lower())
-    if pos < 0:
+    tramos = _tramos_del_nombre(token, texto) if token else None
+    if not tramos:
         return NO_EVALUABLE   # el nombre queda fuera del texto que vio BETO (más allá de las 8 celdas o 128 tokens)
-    fin = pos + len(token)
+    propios = {i for a, b in tramos for i in range(a, b)}
 
     def cubierto(tipos):
         marcados = set()
         for e in ents_beto:
             if e.tipo in tipos:
-                marcados.update(range(max(pos, e.start), min(fin, e.end)))
-        return len(marcados) / max(1, fin - pos)
+                marcados.update(propios.intersection(range(e.start, e.end)))
+        return len(marcados) / max(1, len(propios))
 
     if cubierto(TIPOS_PERSONA) >= cfg.BETO_SOLAPE_MINIMO_ACUERDO:
         return ACUERDO

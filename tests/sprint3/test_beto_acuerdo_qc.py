@@ -108,3 +108,17 @@ def test_servicio_caido_no_cambia_ni_cuenta_desacuerdos():
     (r,), cont = refinar([RESUELTA], ServicioFalso(falla=True))
     est, doc, mod = catalogo()
     assert (r.score, r.req_rev) == extraer_con(est, doc, mod)(RESUELTA)[1:] and r.acuerdo is None and cont.desacuerdos == 0
+
+
+def test_un_nombre_armado_con_varias_columnas_se_busca_palabra_por_palabra():
+    """Cobranzas y actas ARCA parten el nombre (NOMBRES + PATERNO + MATERNO): el token de las reglas no aparece seguido en el texto."""
+    texto = "APELLIDO PATERNO: CAYO | APELLIDO MATERNO: LIMA | NOMBRES: EDGAR | MONTO: 120"
+    token = "EDGAR CAYO LIMA"
+    assert token not in texto
+    a, b, c = texto.index("CAYO"), texto.index("LIMA"), texto.index("EDGAR")
+    todo = [bi.EntidadBeto("ESTUDIANTE", "CAYO", a, a + 4, 0.9), bi.EntidadBeto("ESTUDIANTE", "LIMA", b, b + 4, 0.9), bi.EntidadBeto("ESTUDIANTE", "EDGAR", c, c + 5, 0.9)]
+    assert bi.comparar_con_beto(token, texto, todo) == bi.ACUERDO
+    assert bi.comparar_con_beto(token, texto, []) == bi.DESACUERDO
+    assert bi.comparar_con_beto(token, texto, todo[:1]) == bi.DESACUERDO          # solo cubre 4 de 14 caracteres
+    assert bi.comparar_con_beto("EDGAR CAYO ROJAS", texto, todo) == bi.NO_EVALUABLE   # una palabra no está en el texto
+    assert bi.comparar_con_beto("EDGAR", "EDGARDO: x", todo) == bi.NO_EVALUABLE        # no confunde EDGAR con EDGARDO
