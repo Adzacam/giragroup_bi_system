@@ -1,0 +1,194 @@
+{
+ "bridge_modulo_docente": {
+  "filas": 1922,
+  "md5": "330154647127019925a8f7f1c8383a86"
+ },
+ "cache_indice_beto": {
+  "filas": 90212,
+  "md5": "1dfde7632e1b2df70674e75be7c09590"
+ },
+ "carga_fila_origen": {
+  "filas": 15196,
+  "md5": "88436a3d1fb377ccea484dc35d677d0a"
+ },
+ "cat_categoria_financiera": {
+  "filas": 5,
+  "md5": "9e9d08ed9a7e1beb09a44f2a8e467ee8"
+ },
+ "cat_combinacion_estado": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_concepto_financiero": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_escuela": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_estado_academico": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_estado_arca": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_estado_reprobado": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_etiqueta_clasificacion": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_guia_texto_plano": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_historico_equivalencia": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_institucion": {
+  "filas": 4,
+  "md5": "0fb275f244aac6c6afdd73ff045580cb"
+ },
+ "cat_institucion_convenio": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_mapeo_columna": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_modalidad": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_modulo": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "cat_programa": {
+  "filas": 4,
+  "md5": "0d0cce38ac914ca4a0f9faec4c7ac6cf"
+ },
+ "cat_tipo_programa": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "dataops_tarea": {
+  "filas": 28,
+  "md5": "4b06d685e07ed7879a188d7eaf6296f0"
+ },
+ "dim_categoria_financiera": {
+  "filas": 15,
+  "md5": "896c251a106c8342890b2f9565caca0f"
+ },
+ "dim_docente": {
+  "filas": 638,
+  "md5": "d4f5398b161482c0e86acf8fcc3b0215"
+ },
+ "dim_estudiante": {
+  "filas": 14078,
+  "md5": "59f58722e86536828ed02b28ae9a8dad"
+ },
+ "dim_meta": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "dim_modulo": {
+  "filas": 3585,
+  "md5": "af2c5e957c222bbdade070fae18280d1"
+ },
+ "dim_origen_documental": {
+  "filas": 16,
+  "md5": "5bc9549b5b11267787aac32e1a5d9830"
+ },
+ "dim_tiempo": {
+  "filas": 2230,
+  "md5": "9b3a331b5ea05f8b1e2853dbb136e87e"
+ },
+ "fact_cobranzas_proyectadas": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "fact_costo_programa": {
+  "filas": 1371,
+  "md5": "382698225865044c1acca6dc4e5bdd66"
+ },
+ "fact_evaluacion_docente": {
+  "filas": 14234,
+  "md5": "7c379756e57ceca55375fd921a5c2d7d"
+ },
+ "fact_forecast": {
+  "filas": 24,
+  "md5": "ad84bd6d3581f2d17ec872674f0d4129"
+ },
+ "fact_marketing": {
+  "filas": 8946,
+  "md5": "7f29207f6c70b2eda65fc5113a625f87"
+ },
+ "fact_rendimiento_academico": {
+  "filas": 22618,
+  "md5": "769afb45f9bed0fae94679265ddefe62"
+ },
+ "fact_rentabilidad": {
+  "filas": 108,
+  "md5": "75e733febf819e50c4b7f765167d6741"
+ },
+ "fact_situacion_financiera": {
+  "filas": 10483,
+  "md5": "71db21c042affd0bc9b3956353c8d2a4"
+ },
+ "fact_techo_convenio": {
+  "filas": 206,
+  "md5": "b4f03952d48288d0284ced3d05aa05d6"
+ },
+ "log_auditoria_nlp": {
+  "filas": 4,
+  "md5": "c516a2955bcb44a268a03449412cdcf0"
+ },
+ "log_inconsistencias": {
+  "filas": 92,
+  "md5": "9d6fe7b24ab36347d1fac831e81eee88"
+ },
+ "log_pipeline_ingesta": {
+  "filas": 117,
+  "md5": "537e9105cd1a4a08343e55f6b6d5feb7"
+ },
+ "lote": {
+  "filas": 1,
+  "md5": "b594b6e6f71f9f1bc77f4834312ab9b3"
+ },
+ "notifications": {
+  "filas": 2,
+  "md5": "a191192474dd4f3b586589b8aa3b42ec"
+ },
+ "powerbi_informe_version": {
+  "filas": 2,
+  "md5": "0a39e706f41a66c800daa0d60185db06"
+ },
+ "ref_metas_gestion": {
+  "filas": 0,
+  "md5": "d41d8cd98f00b204e9800998ecf8427e"
+ },
+ "schema_migrations": {
+  "filas": 12,
+  "md5": "8f68665e84719001a9143d8370de55d5"
+ },
+ "staging_registros_crudos": {
+  "filas": 91,
+  "md5": "2cf02c483449e5314afb98d4f2aebaf2"
+ },
+ "stg_entidad_no_resuelta": {
+  "filas": 23127,
+  "md5": "48132e62c8c9d9e0f44a0adbe2a0555c"
+ },
+ "users": {
+  "filas": 5,
+  "md5": "4a73f88778dd2c36ab6e4b6107c2d70b"
+ }
+}
