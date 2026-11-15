@@ -1,0 +1,15 @@
+{
+  "decision": "D3",
+  "fecha": "2026-11-15",
+  "autoridad": "decidido por Lean en chat 1",
+  "valor": {
+    "candidato": "output/f1/reproduccion_1/modelo",
+    "vigente": "pipeline/semantic/beto_local",
+    "condicion_promocion": "Promover solo si pasa la puerta de fuga (F1-L: solapamiento de oraciones normalizadas == 0) y F1-C demuestra invalidación por versión/hash del modelo; si no pasa, se conserva el vigente."
+  },
+  "fuentes": [
+    "docs/mediciones/f1_modelo_comparacion.json",
+    "docs/mediciones/f1_modelo_manifest.json",
+    "docs/cierres/PLAN_F1V.md"
+  ]
+}

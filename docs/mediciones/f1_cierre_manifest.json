@@ -1,5 +1,5 @@
 {
-  "fase": "F1-parcial",
+  "fase": "F1V-completo",
   "archivos": [
     {
       "archivo": "docs/mediciones/f1_a8_integracion.md",
@@ -17,6 +17,16 @@
       "sha256": "20b206f39f8cc5237b269c1538a80c71ea2a2432f804d876233e807df19371ca"
     },
     {
+      "archivo": "docs/mediciones/f1_cache_identidad_modelo.json",
+      "bytes": 967,
+      "sha256": "58b12779b917aaaea09599ec0e27d152eac6bcc38a26fa7271f9862c47bbd228"
+    },
+    {
+      "archivo": "docs/mediciones/f1_cierre_manifest.json",
+      "bytes": 5489,
+      "sha256": "2a0611d64c35891de795b8d29f9de0444aa1700c05fffff04581441e93e0329b"
+    },
+    {
       "archivo": "docs/mediciones/f1_comparacion_base.txt",
       "bytes": 108,
       "sha256": "a66b70f63a5bac918ea672a8167ebd12feb1749c1f87871e6f33db8fbde93b40"
@@ -25,6 +35,31 @@
       "archivo": "docs/mediciones/f1_corpus_auditoria.json",
       "bytes": 1262,
       "sha256": "ce76a96e0ee62e6ebfc35a9ecbd9f2bac796d3fe2df0181f93a54377e6af9738"
+    },
+    {
+      "archivo": "docs/mediciones/f1_d2_dw_viva.json",
+      "bytes": 123,
+      "sha256": "a8a5b2a338e8d5e5a87927f134840d33163be139084f1ee9577e1191ed11fa29"
+    },
+    {
+      "archivo": "docs/mediciones/f1_d2_inventario_dw_nuevo.csv",
+      "bytes": 2135,
+      "sha256": "65ebb669eff53caa8f6694df5ac23ae009a659ffed084e69c8fa08916e55d9e2"
+    },
+    {
+      "archivo": "docs/mediciones/f1_decision_cache.json",
+      "bytes": 690,
+      "sha256": "b9a490c010e0b078584f221153fb45c6974bb0c111b3a27eaa157807ab3d4fb8"
+    },
+    {
+      "archivo": "docs/mediciones/f1_decision_flags.json",
+      "bytes": 498,
+      "sha256": "21b8fa0b5c5f1c57884ddfcf88bfa783375e7710dc363979c8852a6455a19cd3"
+    },
+    {
+      "archivo": "docs/mediciones/f1_decision_modelo.json",
+      "bytes": 577,
+      "sha256": "5d2002c8e0c742874dbb73ea66aeb3fdcee07ef5a22d839673094a82adcbaf29"
     },
     {
       "archivo": "docs/mediciones/f1_evaluacion_antes/gold_510_predicciones.json",
@@ -77,6 +112,11 @@
       "sha256": "3f54a22222bd0b82ded431975e476cf8dfef2e1fcb59d01da266d85792a3d539"
     },
     {
+      "archivo": "docs/mediciones/f1_fuga_evaluacion.json",
+      "bytes": 1729,
+      "sha256": "03665d61335b71e6097981f103e75a91d9fcda81e04169a4a8bcb43b852f0dc6"
+    },
+    {
       "archivo": "docs/mediciones/f1_inventario_objetos.csv",
       "bytes": 6648,
       "sha256": "6ce14ba6214bdf7a9a2cc7097b1607f791fc5f265b0fb6d9da8cbf8c44e5c118"
@@ -107,9 +147,14 @@
       "sha256": "384266494a8ececf8b8879516393f58507d0c13464d7e5448b3e2d2d8b7bd2f7"
     },
     {
+      "archivo": "docs/mediciones/f1_promocion_modelo.json",
+      "bytes": 2950,
+      "sha256": "8bd727139bec5e3e7000d798dd6d95f200458131b7a667ec49dc29cff698af26"
+    },
+    {
       "archivo": "docs/mediciones/f1_pruebas.txt",
-      "bytes": 106034,
-      "sha256": "9ecf675801f7e0689c0732dc7b101d4b7462a7e85331731c8be4686579ab7170"
+      "bytes": 106023,
+      "sha256": "c9b61ba20ef8055f7032a122ab83527ab4b7b8237c9a8508a878686b81c6c4a8"
     },
     {
       "archivo": "docs/mediciones/f1_purga_cache.json",
@@ -118,8 +163,8 @@
     },
     {
       "archivo": "docs/mediciones/f1_servicios.txt",
-      "bytes": 27307,
-      "sha256": "6cc72dde7aa8258d4e891f06fa997c529671c77729ea32765ad132ebc5097bec"
+      "bytes": 2219,
+      "sha256": "28a2f2ded96e0dff3adf710bcc7897da6cba238afba4e2a274f3f9306619ef3a"
     },
     {
       "archivo": "docs/mediciones/f1_snapshot_antes.json",
@@ -134,7 +179,7 @@
     {
       "archivo": "docs/mediciones/f1_snapshot_despues.json",
       "bytes": 7290,
-      "sha256": "17e63a6d995a91af6c7118c9c6342e1dc72015bbbb3b072f14529f0df692d927"
+      "sha256": "f51602c327acc9f9507a3bcbbcb9a7ae1b9c330493ce5387bfa8914cf005f1e3"
     },
     {
       "archivo": "docs/mediciones/f1_training_info.json",
@@ -142,9 +187,114 @@
       "sha256": "4b882cdc2e90a3f8736220720326dbe3773029d92b3b1c4f3277017c4d3e143b"
     },
     {
+      "archivo": "docs/mediciones/f1_validacion_llena_r1.json",
+      "bytes": 2025,
+      "sha256": "cfb4318c30e84dd04f43635172449075744685388e1de6acca5d249c32f9326e"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_llena_r1.json.huella.json",
+      "bytes": 6052,
+      "sha256": "a57426d4112fbb912125a1ffb4b6e5c975788d280fdf6e96ee84bc8cf934c98a"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_llena_r1.json.meta.json",
+      "bytes": 1212,
+      "sha256": "a8dd65e46a133dd6a9d7c1c431a5571faefbafe00bbb9fb72eb2b8f47257dc67"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_llena_r2.json",
+      "bytes": 2025,
+      "sha256": "e71e8c697d48796494ddb72447ad3da9de0dfb719dfd8e3b062cef503c0eb9d1"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_llena_r2.json.huella.json",
+      "bytes": 6052,
+      "sha256": "a57426d4112fbb912125a1ffb4b6e5c975788d280fdf6e96ee84bc8cf934c98a"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_llena_r2.json.meta.json",
+      "bytes": 1212,
+      "sha256": "b149d1f0ec53c4b50760a54efc504610b78cf178fb7735d4ddf49954855f3486"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_llena_r3.json",
+      "bytes": 2025,
+      "sha256": "4b1133540b16107bc08e148fbdf4bcf4cad762f13449f4214c9b0526ca49fc7b"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_llena_r3.json.huella.json",
+      "bytes": 6052,
+      "sha256": "a57426d4112fbb912125a1ffb4b6e5c975788d280fdf6e96ee84bc8cf934c98a"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_llena_r3.json.meta.json",
+      "bytes": 1212,
+      "sha256": "17ca3192dea940ad1ea751e1104fed7946d9e50fee5517dfd32143bea3ff2840"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_resumen.json",
+      "bytes": 12246,
+      "sha256": "bc737738f18d2daa9650aa0824e1526309ddd7fe59c252a2f2cb912ea57a7b86"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_vacia_r1.json",
+      "bytes": 2026,
+      "sha256": "e0a31353111efc75cc5e038cbb9029bc9bd297cf23aef6ad655c59a143f6bc5e"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_vacia_r1.json.huella.json",
+      "bytes": 6052,
+      "sha256": "a57426d4112fbb912125a1ffb4b6e5c975788d280fdf6e96ee84bc8cf934c98a"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_vacia_r1.json.meta.json",
+      "bytes": 1208,
+      "sha256": "1d0772bc32b8c8f28ee68b0462ea914f31f6c1cf509cbb5c4891a32f2b65ea53"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_vacia_r2.json",
+      "bytes": 2026,
+      "sha256": "3777f7f9c15d48d3437413aac7307c8f7f12d5ba7bc1aaa068c7fea398e927dd"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_vacia_r2.json.huella.json",
+      "bytes": 6052,
+      "sha256": "a57426d4112fbb912125a1ffb4b6e5c975788d280fdf6e96ee84bc8cf934c98a"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_vacia_r2.json.meta.json",
+      "bytes": 1208,
+      "sha256": "ebab4857d185b3499dcbac218f965b8a8eb611301933ec4a3c567e6c20308c72"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_vacia_r3.json",
+      "bytes": 2027,
+      "sha256": "6edbce258d065402aa23b8c86c60119a2c46e815b33c3f92523c3652be12653c"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_vacia_r3.json.huella.json",
+      "bytes": 6052,
+      "sha256": "a57426d4112fbb912125a1ffb4b6e5c975788d280fdf6e96ee84bc8cf934c98a"
+    },
+    {
+      "archivo": "docs/mediciones/f1_validacion_vacia_r3.json.meta.json",
+      "bytes": 1208,
+      "sha256": "8f36cd28ed0c13e5fb19d03524c61ad40eed86d677564acc4398ab01ce279cca"
+    },
+    {
       "archivo": "docs/cierres/CIERRE_F1.md",
-      "bytes": 7438,
-      "sha256": "b6f770aeac39ba52152ae8601ca0650008be9287b6621244e3277defcaec88da"
+      "bytes": 7780,
+      "sha256": "889ff8a4f470ade8124c728bf5ad338b4d0e2561dc73efc72aa0a66c6eace6d0"
+    },
+    {
+      "archivo": "docs/cierres/CIERRE_F1V.md",
+      "bytes": 9393,
+      "sha256": "0f10cb76038e54878954684333389720c7ed320d5201d4b0a73cbb097a3f2e9c"
+    },
+    {
+      "archivo": "docs/cierres/PLAN_F1V.md",
+      "bytes": 5627,
+      "sha256": "71fc634e797dda7a695a59ab566675f73efe061e5fc0be503fee0daf8dc8e309"
     }
   ]
 }

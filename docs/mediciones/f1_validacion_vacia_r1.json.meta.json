@@ -1,0 +1,36 @@
+{
+  "fecha_inicio": "2026-11-15T10:17:17.742813-04:00",
+  "fecha_fin": "2026-11-15T10:28:14.938820-04:00",
+  "estado": "vacia",
+  "corrida": 1,
+  "arbol": "/tmp/f1_validacion",
+  "modelo_digest": "e40145f89727ba4476548d11f71d15b8c411d3bbf8f98350f1189b29ffeafc0f",
+  "lote_sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "pared_s": 657.195,
+  "tiempo_maquina_s": 653.01,
+  "cache_antes": {
+    "cache_indice_beto": {
+      "filas": 0,
+      "sha256_claves": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_contenido": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cache_beto_entidades": {
+      "filas": 0,
+      "sha256_claves": null,
+      "sha256_contenido": null
+    }
+  },
+  "cache_despues": {
+    "cache_indice_beto": {
+      "filas": 12559,
+      "sha256_claves": "cf6f6271d824006f0cb5c871bb6ddf27c50b433758fa4c2f70dfd01de317bd95",
+      "sha256_contenido": "baf82b574f189973850def6c1ed6c388237fcb9eee55867a52b440d4970186c9"
+    },
+    "cache_beto_entidades": {
+      "filas": 0,
+      "sha256_claves": null,
+      "sha256_contenido": null
+    }
+  },
+  "valida": true
+}

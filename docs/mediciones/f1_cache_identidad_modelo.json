@@ -1,0 +1,36 @@
+{
+  "puerta": "F1-C",
+  "veredicto": "pasa",
+  "cache_indice_beto": {
+    "pk": [
+      "hash_texto",
+      "modelo"
+    ],
+    "usa_BETO_MODELO_VERSION": true,
+    "valor_por_defecto_codigo": "beto-v1",
+    "aislamiento_demostrado": {
+      "modelo_a": "beto-v1",
+      "hit_a": true,
+      "modelo_b": "beto-v2",
+      "hit_b": false
+    },
+    "dw_viva_lectura": {
+      "modelo": "beto-v1",
+      "filas": 90212
+    }
+  },
+  "cache_beto_entidades": {
+    "pk": [
+      "hash_texto",
+      "configuracion"
+    ],
+    "configuracion_incluye_modelo": true,
+    "cfg_v1": "beto-v1|ner|corte128",
+    "cfg_v2": "beto-v2|ner|corte128",
+    "aislamiento_demostrado": {
+      "hit_cfg_v1": true,
+      "hit_cfg_v2": false
+    }
+  },
+  "accion_en_promocion": "Definir BETO_MODELO_VERSION=beto-v2 en docker-compose.yml y como nuevo default/entorno al promover el checkpoint para invalidar las 90.212 filas beto-v1 sin tocar la DW viva."
+}

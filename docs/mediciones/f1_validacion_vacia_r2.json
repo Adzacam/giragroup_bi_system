@@ -1,0 +1,70 @@
+{
+  "lectura_beto_contadores": null,
+  "consolidacion_beto_contadores": null,
+  "carga": {
+    "http": 200,
+    "id_lote": 1,
+    "archivos_exitosos": 10,
+    "archivos_fallidos": 0,
+    "registros_detectados": 11956
+  },
+  "etapas_s": {
+    "carga_y_lectura_s": 92.31,
+    "espera_lectura_beto_s": 0.01,
+    "lectura_beto_s": 86.58,
+    "lineas_leidas_beto": 12992,
+    "lineas_por_s_beto": 150.07,
+    "carga_s": 5.74,
+    "consolidacion_s": 564.6,
+    "revision_maquina_s": 0.0,
+    "revision_humana_simulada_s": 0.0
+  },
+  "total": {
+    "tiempo_maquina_s": 656.92,
+    "tiempo_humano_simulado_s": 0.0,
+    "total_estimado_s": 656.9,
+    "total_estimado_min": 10.95,
+    "meta_rnf03_min": 15,
+    "referencia_tesis_min": 9
+  },
+  "consolidacion_http": 200,
+  "consolidacion": {
+    "status": "success",
+    "message": "Transacción completada: 78750 hechos persistidos en Data Warehouse (78025 académicos, 725 financieros), 33 derivados a Revisión Humana.",
+    "inserted_dw": 78750,
+    "inserted_academico": 78025,
+    "inserted_financiero": 725,
+    "inserted_admision": 391,
+    "inserted_revision": 15703,
+    "sent_hitl": 33,
+    "descartados_ruido": 5455
+  },
+  "revision": {
+    "tiempo_maquina_real_aprobaciones_s": 0.0,
+    "tiempo_humano_simulado_s": 0.0,
+    "omitida": true
+  },
+  "revision_eventos": [],
+  "dw_antes": {
+    "fact_rendimiento_academico": 0,
+    "fact_situacion_financiera": 0,
+    "fact_evaluacion_docente": 0,
+    "fact_marketing": 0,
+    "fact_rentabilidad": 0,
+    "fact_techo_convenio": 0,
+    "fact_costo_programa": 0,
+    "dim_origen_documental": 0,
+    "stg_entidad_no_resuelta": 0
+  },
+  "dw_despues": {
+    "fact_rendimiento_academico": 1392,
+    "fact_situacion_financiera": 725,
+    "fact_evaluacion_docente": 75073,
+    "fact_marketing": 299,
+    "fact_rentabilidad": 91,
+    "fact_techo_convenio": 1,
+    "fact_costo_programa": 1371,
+    "dim_origen_documental": 10,
+    "stg_entidad_no_resuelta": 5076
+  }
+}

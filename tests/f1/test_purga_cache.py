@@ -44,6 +44,12 @@ def test_purge_isolated_table_present_empty_and_absent(tmp_path):
         with psycopg2.connect(target_url) as c:
             with c.cursor() as cur:
                 cur.execute(
+                    "CREATE TABLE IF NOT EXISTS public.cache_beto_entidades ("
+                    "hash_texto CHAR(64) NOT NULL, configuracion VARCHAR(80) NOT NULL, "
+                    "entidades TEXT NOT NULL, creado_en TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    "PRIMARY KEY (hash_texto, configuracion))"
+                )
+                cur.execute(
                     "INSERT INTO public.cache_beto_entidades (hash_texto, configuracion, entidades) "
                     "VALUES (%s, %s, %s), (%s, %s, %s)",
                     ("a" * 64, "cfg1", "[]", "b" * 64, "cfg1", "[]"),

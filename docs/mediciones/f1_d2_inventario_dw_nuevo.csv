@@ -1,0 +1,60 @@
+table_schema,table_name,table_type
+bi,ref_kpi,BASE TABLE
+bi,ref_perspectiva,BASE TABLE
+bi,vw_cartera_estado,VIEW
+bi,vw_cmi_gestiones,VIEW
+bi,vw_cmi_global,VIEW
+bi,vw_cmi_perspectiva,VIEW
+bi,vw_cmi_scorecard,VIEW
+bi,vw_cmi_valores,VIEW
+bi,vw_dataops_documento,VIEW
+bi,vw_metas_mensual,VIEW
+bi,vw_riesgo_estudiante,VIEW
+public,bridge_modulo_docente,BASE TABLE
+public,cache_indice_beto,BASE TABLE
+public,carga_fila_origen,BASE TABLE
+public,cat_categoria_financiera,BASE TABLE
+public,cat_combinacion_estado,BASE TABLE
+public,cat_concepto_financiero,BASE TABLE
+public,cat_escuela,BASE TABLE
+public,cat_estado_academico,BASE TABLE
+public,cat_estado_arca,BASE TABLE
+public,cat_estado_reprobado,BASE TABLE
+public,cat_etiqueta_clasificacion,BASE TABLE
+public,cat_guia_texto_plano,BASE TABLE
+public,cat_historico_equivalencia,BASE TABLE
+public,cat_institucion,BASE TABLE
+public,cat_institucion_convenio,BASE TABLE
+public,cat_mapeo_columna,BASE TABLE
+public,cat_modalidad,BASE TABLE
+public,cat_modulo,BASE TABLE
+public,cat_programa,BASE TABLE
+public,cat_tipo_programa,BASE TABLE
+public,dataops_tarea,BASE TABLE
+public,dim_categoria_financiera,BASE TABLE
+public,dim_docente,BASE TABLE
+public,dim_estudiante,BASE TABLE
+public,dim_meta,BASE TABLE
+public,dim_modulo,BASE TABLE
+public,dim_origen_documental,BASE TABLE
+public,dim_tiempo,BASE TABLE
+public,fact_cobranzas_proyectadas,BASE TABLE
+public,fact_costo_programa,BASE TABLE
+public,fact_evaluacion_docente,BASE TABLE
+public,fact_forecast,BASE TABLE
+public,fact_marketing,BASE TABLE
+public,fact_rendimiento_academico,BASE TABLE
+public,fact_rentabilidad,BASE TABLE
+public,fact_situacion_financiera,BASE TABLE
+public,fact_techo_convenio,BASE TABLE
+public,log_auditoria_nlp,BASE TABLE
+public,log_inconsistencias,BASE TABLE
+public,log_pipeline_ingesta,BASE TABLE
+public,lote,BASE TABLE
+public,notifications,BASE TABLE
+public,powerbi_informe_version,BASE TABLE
+public,ref_metas_gestion,BASE TABLE
+public,schema_migrations,BASE TABLE
+public,staging_registros_crudos,BASE TABLE
+public,stg_entidad_no_resuelta,BASE TABLE
+public,users,BASE TABLE

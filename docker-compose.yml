@@ -73,6 +73,7 @@ services:
     env_file: .env
     environment:
       STANDALONE_MONOLITH: "false"
+      BETO_MODELO_VERSION: ${BETO_MODELO_VERSION:-beto-v2}
     # RNF-03: varios workers para atender concurrencia (un solo proceso con --reload saturaba con 50 usuarios).
     # API_RELOAD=1 vuelve al modo desarrollo con recarga automática.
     command: >

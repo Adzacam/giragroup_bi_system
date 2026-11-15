@@ -1,0 +1,256 @@
+{
+  "tablas": {
+    "fact_rendimiento_academico": {
+      "filas": 1392,
+      "md5": "f74c105130d4186c12eab6c547616a15",
+      "columnas": [
+        "id_estudiante",
+        "id_docente",
+        "id_modulo",
+        "id_tiempo",
+        "id_documento",
+        "id_usuario_carga",
+        "nota_final",
+        "asistencia_pct",
+        "incumplimiento_actividades_pct",
+        "nivel_confianza_ia",
+        "requiere_revision",
+        "estado_academico",
+        "fk_estado",
+        "tipo_alerta",
+        "estado_tutoria",
+        "estado_arca"
+      ]
+    },
+    "fact_situacion_financiera": {
+      "filas": 725,
+      "md5": "d2c1185b2f3037567a81747cc298705a",
+      "columnas": [
+        "id_estudiante",
+        "id_tiempo",
+        "monto_deuda",
+        "cuotas_impagas",
+        "estado_cartera",
+        "tipo_alerta",
+        "id_documento",
+        "nivel_confianza_ia",
+        "requiere_revision",
+        "fk_estado",
+        "id_modulo",
+        "id_categoria_fin",
+        "monto_pagado",
+        "concepto"
+      ]
+    },
+    "fact_evaluacion_docente": {
+      "filas": 75073,
+      "md5": "55d21657b8d73e4aea453c46fcab8087",
+      "columnas": [
+        "id_docente",
+        "id_modulo",
+        "id_estudiante",
+        "id_tiempo",
+        "pregunta_bloque",
+        "puntuacion",
+        "comentario",
+        "tipo_pregunta",
+        "escala_max",
+        "clave_respuesta",
+        "id_documento",
+        "requiere_revision",
+        "motivo_revision"
+      ]
+    },
+    "fact_marketing": {
+      "filas": 299,
+      "md5": "8c57749c38e54a4fbcd96be748628b39",
+      "columnas": [
+        "id_modulo",
+        "id_tiempo",
+        "leads",
+        "reservas",
+        "inscritos",
+        "costo_programa",
+        "leads_captacion",
+        "inscritos_captacion"
+      ]
+    },
+    "fact_rentabilidad": {
+      "filas": 91,
+      "md5": "4fdd8c66a5b7e540821ecc6851a76c4e",
+      "columnas": [
+        "id_modulo",
+        "id_tiempo",
+        "id_categoria",
+        "monto_ejecutado",
+        "monto_meta",
+        "id_documento"
+      ]
+    },
+    "fact_techo_convenio": {
+      "filas": 1,
+      "md5": "18fa7b3b12b08a802320aff814d038be",
+      "columnas": [
+        "id_modulo",
+        "id_tiempo",
+        "id_documento",
+        "clave_convenio",
+        "institucion",
+        "id_convenio_catalogo",
+        "monto_convenio",
+        "n_inscritos",
+        "gestion",
+        "fecha_inicio",
+        "fecha_fin",
+        "requiere_revision",
+        "motivo_revision"
+      ]
+    },
+    "fact_costo_programa": {
+      "filas": 1371,
+      "md5": "e3d740db0c2c43f2bd6d0f7f701655fc",
+      "columnas": [
+        "id_modulo",
+        "id_documento",
+        "egreso_anterior",
+        "egreso_real",
+        "ingreso",
+        "rentabilidad",
+        "requiere_revision",
+        "motivo_revision"
+      ]
+    },
+    "stg_entidad_no_resuelta": {
+      "filas": 5076,
+      "md5": "c2b72bb03a5d4cdd1aba18f650b9b382",
+      "columnas": [
+        "id_documento",
+        "tipo_entidad",
+        "texto_original",
+        "ci_temporal",
+        "mejor_candidato",
+        "score_fuzzy",
+        "fk_estado",
+        "nivel_confianza",
+        "resuelto",
+        "resuelto_por",
+        "id_dimension_resuelta",
+        "motivo",
+        "registro_origen_id",
+        "estado_resolucion",
+        "lock_usuario_id",
+        "version",
+        "clave_origen"
+      ]
+    },
+    "dim_estudiante": {
+      "filas": 14978,
+      "md5": "da1dfde796b270d12ee5c55b7114e22b",
+      "columnas": [
+        "id_estudiante",
+        "nombre_completo",
+        "codigo_estudiante",
+        "genero",
+        "ciudad",
+        "nivel_academico",
+        "edad",
+        "ocupacion",
+        "estado_civil",
+        "ci",
+        "id_temporal",
+        "deprecado",
+        "fusionado_en",
+        "ci_numero",
+        "ci_complemento",
+        "identidad_verificada",
+        "id_institucion",
+        "programa_origen",
+        "fk_estado"
+      ]
+    },
+    "dim_modulo": {
+      "filas": 3796,
+      "md5": "43c2be20b2b9d0769d35079ba28a4e49",
+      "columnas": [
+        "id_modulo",
+        "nombre_modulo",
+        "nombre_institucion",
+        "programa",
+        "pos_code",
+        "id_cat_modulo",
+        "id_institucion"
+      ]
+    },
+    "dim_docente": {
+      "filas": 673,
+      "md5": "656692fcfb37885879369886536b2a8b",
+      "columnas": [
+        "id_docente",
+        "nombre_completo",
+        "area_especialidad",
+        "fk_estado"
+      ]
+    },
+    "dim_tiempo": {
+      "filas": 2230,
+      "md5": "656811fdd3a7a2fddf53efeed90fb357",
+      "columnas": [
+        "id_tiempo",
+        "gestion",
+        "semestre",
+        "mes",
+        "nombre_mes",
+        "periodo_mes",
+        "fecha",
+        "trimestre",
+        "semana_iso",
+        "dia_mes",
+        "dia_semana",
+        "nombre_dia",
+        "es_fin_semana"
+      ]
+    },
+    "carga_fila_origen": {
+      "filas": 15978,
+      "md5": "e28543847a9cd3f05a093e5571bd0f8b",
+      "columnas": [
+        "clave",
+        "id_documento",
+        "tabla"
+      ]
+    },
+    "log_inconsistencias": {
+      "filas": 10,
+      "md5": "5a4ae59ffab8b9244a8c384f7d45b3de",
+      "columnas": [
+        "id_documento",
+        "fila_origen",
+        "campo_afectado",
+        "valor_recibido",
+        "valor_esperado",
+        "tipo_regla",
+        "severidad",
+        "estado_resolucion",
+        "descripcion",
+        "resuelto_por"
+      ]
+    }
+  },
+  "bandeja": {
+    "casos": 680,
+    "grupos": 19,
+    "manuales": 14,
+    "casos_manuales": 47,
+    "firma_sha256": "22bd64640929883070af7854b5cad000a907d6aea00f906b7e77fd220e635875"
+  },
+  "kpis": {
+    "KPI-10": null,
+    "KPI-11": null,
+    "KPI-18": 36.0
+  },
+  "kpis_todos": {
+    "KPI-10": null,
+    "KPI-11": null,
+    "KPI-18": 36.0
+  }
+}

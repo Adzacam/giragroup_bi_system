@@ -1,0 +1,17 @@
+{
+  "decision": "D1/A-5",
+  "fecha": "2026-11-15",
+  "autoridad": "decidido por Lean en chat 1",
+  "valor": {
+    "BETO_CASCADA_FINAL": false,
+    "BETO_ACUERDO_QC": false,
+    "BETO_SUGERENCIA_HITL": false,
+    "BETO_VENTANA": false
+  },
+  "fuentes": [
+    "pipeline/config.py",
+    "backend/services/beto_integracion.py",
+    "docs/cierres/PLAN_F1V.md"
+  ],
+  "nota": "Corrige los nombres inexistentes citados en CIERRE_F1.md §3 (BETO_ACTIVO, BETO_UMBRALES_CALIBRADOS, BETO_CACHE_ENTIDADES)."
+}

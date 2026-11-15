@@ -1,0 +1,18 @@
+{
+  "decision": "D2/A-9",
+  "fecha": "2026-11-15",
+  "autoridad": "decidido por Lean en chat 1",
+  "valor": {
+    "cache_beto_entidades_en_alcance_50_tablas": false,
+    "clasificacion": "caché operativa fuera de las 50 tablas DW",
+    "migracion_015_en_inicializacion": false,
+    "ruta_migracion_015": "backend/scripts/migrations_opcionales/015_cache_beto_entidades.sql",
+    "creacion_al_vuelo": "DDL_CACHE en backend/services/beto_integracion.py:155 solo si se enciende BETO_CASCADA_FINAL o BETO_ACUERDO_QC"
+  },
+  "fuentes": [
+    "backend/services/beto_integracion.py",
+    "backend/core/migraciones.py",
+    "backend/scripts/run_migrations.py",
+    "docs/cierres/PLAN_F1V.md"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "base": "giragroup_db (solo lectura)",
+  "tabla": "public.cache_beto_entidades",
+  "existe": false,
+  "filas": 0
+}

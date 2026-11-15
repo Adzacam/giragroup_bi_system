@@ -1,0 +1,99 @@
+{
+  "puerta_f1_l": "pasa",
+  "puerta_f1_c": "pasa",
+  "promocion_ejecutada": true,
+  "origen_candidato": "output/f1/reproduccion_1/modelo",
+  "destino": "pipeline/semantic/beto_local",
+  "respaldo_anterior": "output/f1/beto_local_respaldo",
+  "hashes_iguales_a_manifiesto": true,
+  "pesos_fuera_de_git": true,
+  "beto_modelo_version": "beto-v2",
+  "health_api": {
+    "status": "healthy",
+    "service": "giragroup-bi-api",
+    "database": "connected"
+  },
+  "health_pipeline": {
+    "status": "online",
+    "engine": "BETO_PYTORCH_REAL",
+    "model": "/app/pipeline/semantic/beto_local"
+  },
+  "reevaluacion_deltas": {
+    "gold_510": {
+      "delta_f1_estricto_micro": 0.0,
+      "delta_f1_relajado": 0.0
+    },
+    "layouts_5": {
+      "delta_f1_estricto_micro": 0.0,
+      "delta_f1_relajado": 0.0
+    },
+    "test.conll": {
+      "delta_f1_estricto_micro": 0.0,
+      "delta_f1_relajado": 0.0
+    }
+  },
+  "respaldo_archivos": [
+    {
+      "archivo": "config.json",
+      "bytes": 1285,
+      "sha256": "498c02a8c4e13f243eec6589d53ed77fcea645890deebb2d2374961a8710be60"
+    },
+    {
+      "archivo": "model.safetensors",
+      "bytes": 437092180,
+      "sha256": "5966dde3fa4adccacb8ed74c62c991a6bf140c2b4d67598a05a1c35e67ec9543"
+    },
+    {
+      "archivo": "tokenizer.json",
+      "bytes": 729619,
+      "sha256": "29f908924ecfc985bb4ddf8b856fd94407f48792b11e069d56d40e8b55ebfb61"
+    },
+    {
+      "archivo": "tokenizer_config.json",
+      "bytes": 422,
+      "sha256": "3400e0fe6e6d4148ee825295d3565d024f7556beaf3c3e1739f8a3f2a7694f75"
+    },
+    {
+      "archivo": "training_info.json",
+      "bytes": 1384,
+      "sha256": "7999b6c45003fb3e22b7401cb32a641a6b3f7ac4f03b65e88a176eb8e388c4a1"
+    }
+  ],
+  "promovido_archivos": [
+    {
+      "archivo": "config.json",
+      "bytes": 1285,
+      "sha256": "498c02a8c4e13f243eec6589d53ed77fcea645890deebb2d2374961a8710be60"
+    },
+    {
+      "archivo": "metricas_ner_robusto.json",
+      "bytes": 5204,
+      "sha256": "287f26f784f3696f27df8a1fccaa6341f2af56e0f6c23fa9fcc96add641873fd"
+    },
+    {
+      "archivo": "model.safetensors",
+      "bytes": 437092180,
+      "sha256": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92"
+    },
+    {
+      "archivo": "predicciones_test_gold.json",
+      "bytes": 178361,
+      "sha256": "4594b81fc936aea692f40fcebf4399056b0dc42724f9219f804a76e5ea721a8e"
+    },
+    {
+      "archivo": "tokenizer.json",
+      "bytes": 729619,
+      "sha256": "29f908924ecfc985bb4ddf8b856fd94407f48792b11e069d56d40e8b55ebfb61"
+    },
+    {
+      "archivo": "tokenizer_config.json",
+      "bytes": 422,
+      "sha256": "3400e0fe6e6d4148ee825295d3565d024f7556beaf3c3e1739f8a3f2a7694f75"
+    },
+    {
+      "archivo": "training_info.json",
+      "bytes": 2531,
+      "sha256": "4b882cdc2e90a3f8736220720326dbe3773029d92b3b1c4f3277017c4d3e143b"
+    }
+  ]
+}

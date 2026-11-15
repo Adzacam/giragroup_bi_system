@@ -94,25 +94,25 @@ tests\sprint5\test_reportes_export.py ........                           [ 95%]
 tests\sprint6\test_otp_entorno_pruebas.py .....                          [ 96%]
 tests\sprint6\test_seguridad_y_resiliencia_api.py .........              [ 97%]
 tests\transversales\test_agnostic_classifier_and_dw_reset.py ........... [ 98%]
-............C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387D54130>
+............C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED850C4040>
   result = tuple_new(cls, iterable)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838462C7C0>
+C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED917B97B0>
   result = tuple_new(cls, iterable)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838B77B5B0>
+C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED894A3A60>
   result = tuple_new(cls, iterable)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384F923E0>
+C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED853EF1F0>
   result = tuple_new(cls, iterable)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283855FEA70>
+C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8A001210>
   result = tuple_new(cls, iterable)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A126E30>
+C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87A91F30>
   result = tuple_new(cls, iterable)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
-C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283855E08B0>
+C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\collections\__init__.py:455: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED853ED4E0>
   result = tuple_new(cls, iterable)
 ResourceWarning: Enable tracemalloc to get the object allocation traceback
                                                              [100%]
@@ -157,25 +157,25 @@ tests/sprint2/test_datos_reales_pipeline.py::TestLoaderSinValoresPorDefecto::tes
     t = db.query(DimTiempo).get(20240201)
 
 tests/sprint2/test_datos_reales_pipeline.py::TestNotaFueraDeRango::test_loader_descarta_nota_invalida
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\selectable.py:4885: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002834964FF10>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\selectable.py:4885: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED14C8F790>
     @classmethod
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint2/test_datos_reales_pipeline.py::TestNotaFueraDeRango::test_loader_descarta_nota_invalida
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\selectable.py:4885: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028343E5B790>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\selectable.py:4885: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8B5EF880>
     @classmethod
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint2/test_ingesta.py::TestCorpusReal::test_lectura_completa_corpus
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\xml\etree\ElementTree.py:1315: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838B5935B0>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\xml\etree\ElementTree.py:1315: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8B5EF5B0>
     self._parser.feed(data)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint3/test_person_resolver_preparado.py::test_preparado_equivale_al_algoritmo_original
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\pipeline\normalization\person_resolver.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838462F010>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\pipeline\normalization\person_resolver.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED891FEE30>
     return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
@@ -186,43 +186,43 @@ tests/sprint5/test_email_redesign_and_forgot_password.py: 1 warning
     now = timegm(datetime.utcnow().utctimetuple())
 
 tests/sprint4/test_cmi_y_laboratorio_predictivo.py::test_endpoint_viabilidad_programas_normalizacion_acentos
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\starlette\_exception_handler.py:23: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838456C220>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\starlette\_exception_handler.py:23: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED881D3E20>
     def wrap_app_handling_exceptions(app: ASGIApp, conn: Request | WebSocket) -> ASGIApp:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint4/test_cmi_y_laboratorio_predictivo.py::test_endpoint_viabilidad_programas_normalizacion_acentos
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\starlette\_exception_handler.py:23: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384704040>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\starlette\_exception_handler.py:23: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED80160B80>
     def wrap_app_handling_exceptions(app: ASGIApp, conn: Request | WebSocket) -> ASGIApp:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint4/test_kpis_and_catalogs.py::TestCatalogServicePoLP::test_detalle_estudiante_muestra_finanzas_para_analista_financiero
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283884A48B0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88178A90>
     raise AttributeError(key)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint4/test_kpis_and_catalogs.py::TestCatalogServicePoLP::test_detalle_estudiante_muestra_finanzas_para_analista_financiero
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838526F3D0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED881435B0>
     raise AttributeError(key)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint4/test_kpis_and_catalogs.py::TestCatalogServicePoLP::test_detalle_estudiante_muestra_finanzas_para_analista_financiero
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283884A5210>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1282: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88178220>
     raise AttributeError(key)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint4/test_rentabilidad_ejecutado_meta.py::test_las_24_filas_del_lote_conservan_categoria_y_mes
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\xml\etree\ElementTree.py:1315: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283801EBB50>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\xml\etree\ElementTree.py:1315: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8B5ED4E0>
     self._parser.feed(data)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint4/test_risk_service.py::test_evaluar_alertas_deterministicas_y_fronteras
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\orm\mapper.py:3976: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838526C220>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\orm\mapper.py:3976: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88141D50>
     visitables = deque(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
@@ -234,55 +234,55 @@ tests/sprint5/test_dataops_revision.py: 3 warnings
     return db.query(FactRendimientoAcademico).get(int(sid[len(PREFIJO_ACA):])), "academico"
 
 tests/sprint5/test_bandeja_grupos.py::test_corregir_fecha_asigna_mes_y_gestion_a_todo_el_grupo
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028343E5A020>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8B5EDC60>
     p = _cache.pop(key, None)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_bandeja_grupos.py::test_corregir_fecha_asigna_mes_y_gestion_a_todo_el_grupo
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838526EF20>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8817BF10>
     p = _cache.pop(key, None)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_bandeja_grupos.py::test_corregir_fecha_asigna_mes_y_gestion_a_todo_el_grupo
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A0BDB70>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED843958A0>
     p = _cache.pop(key, None)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_bandeja_grupos.py::test_corregir_fecha_asigna_mes_y_gestion_a_todo_el_grupo
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A0BD3F0>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED84397F10>
     p = _cache.pop(key, None)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_bandeja_grupos.py::test_corregir_fecha_asigna_mes_y_gestion_a_todo_el_grupo
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384707790>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED80160310>
     p = _cache.pop(key, None)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_bandeja_grupos.py::test_corregir_fecha_asigna_mes_y_gestion_a_todo_el_grupo
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A125E40>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88681D50>
     p = _cache.pop(key, None)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_bandeja_grupos.py::test_corregir_fecha_asigna_mes_y_gestion_a_todo_el_grupo
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A1246D0>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88683790>
     p = _cache.pop(key, None)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_bandeja_grupos.py::test_corregir_fecha_asigna_mes_y_gestion_a_todo_el_grupo
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028388CDA6B0>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87A925C0>
     p = _cache.pop(key, None)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_bandeja_grupos.py::test_corregir_fecha_asigna_mes_y_gestion_a_todo_el_grupo
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028388CDB880>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\re\__init__.py:341: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87A93970>
     p = _cache.pop(key, None)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
@@ -295,7 +295,7 @@ tests/sprint5/test_bandeja_hechos_en_revision.py::test_aprobacion_en_bloque_apru
     return db.query(FactSituacionFinanciera).get(int(sid[len(PREFIJO_FIN):])), "financiero"
 
 tests/sprint5/test_bandeja_grupos.py::test_aprobar_grupo_de_staging_delega_en_la_resolucion_en_lote
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\weakref.py:361: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A124D60>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\weakref.py:361: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88680C70>
     wr = ref(key)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
@@ -325,31 +325,31 @@ tests/sprint5/test_bandeja_hechos_en_revision.py::test_hecho_sin_fecha_se_aprueb
     h = dw.query(FactRendimientoAcademico).get(4)
 
 tests/sprint5/test_bandeja_hechos_en_revision.py::test_aprobar_entidad_de_acta_carga_las_notas_reales_y_no_inventa_75
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\weakref.py:326: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838431B100>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\weakref.py:326: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8829B010>
     return self.data[ref(key)]
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_bandeja_hechos_en_revision.py::test_aprobar_entidad_de_acta_carga_las_notas_reales_y_no_inventa_75
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\weakref.py:326: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387BD3B50>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\weakref.py:326: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87833D30>
     return self.data[ref(key)]
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_bandeja_hechos_en_revision.py::test_aprobar_entidad_de_acta_carga_las_notas_reales_y_no_inventa_75
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\weakref.py:326: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387BD0400>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\weakref.py:326: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87833970>
     return self.data[ref(key)]
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_bandeja_hechos_en_revision.py::test_aprobar_entidad_de_acta_carga_las_notas_reales_y_no_inventa_75
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\weakref.py:326: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387BD2200>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\weakref.py:326: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87831D50>
     return self.data[ref(key)]
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_bandeja_hechos_en_revision.py::test_aprobar_entidad_de_acta_carga_las_notas_reales_y_no_inventa_75
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\weakref.py:326: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384CC6B60>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\weakref.py:326: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED917B8F40>
     return self.data[ref(key)]
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
@@ -359,691 +359,691 @@ tests/sprint5/test_bandeja_hitl_ruido_y_un_clic.py::test_confirm_descarta_fila_d
     resuelto_en=datetime.utcnow(),
 
 tests/sprint5/test_beto_integracion_flujo.py::test_acuerdo_qc_en_lectura_y_consolidacion
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:143: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387E83F10>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:143: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88303B50>
     def __init__(self,
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_beto_integracion_flujo.py::test_acuerdo_qc_en_lectura_y_consolidacion
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:143: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A0BDF30>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:143: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88303E20>
     def __init__(self,
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_beto_integracion_flujo.py::test_acuerdo_qc_en_lectura_y_consolidacion
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:143: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384CC4A90>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:143: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED917B87C0>
     def __init__(self,
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_beto_integracion_flujo.py::test_cascada_final_rescata_a_un_residual_en_la_lectura_y_la_consolidacion
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:335: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283877A66B0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:335: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED844EE7A0>
     return itertools.chain(*[x._cloned_set for x in elements])
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_beto_sugerencia_hitl.py::test_un_fallo_del_sugeridor_no_impide_derivar_el_caso
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387BD0310>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87833A60>
     kw.update(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_catalogo_modulos.py::test_filtra_por_gestion_con_actividad
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\compiler.py:7224: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A1247C0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\compiler.py:7224: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88682B60>
     ", ".join(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_catalogo_solo_referencia_paginado_y_busqueda_global
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\cursor.py:1529: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A1274C0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\cursor.py:1529: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88680B80>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_catalogo_solo_referencia_paginado_y_busqueda_global
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\routing.py:812: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838C01E7A0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\routing.py:812: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED917BB2E0>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_catalogo_solo_referencia_paginado_y_busqueda_global
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\routing.py:812: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283847065C0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\routing.py:812: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED881D31F0>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_catalogo_solo_referencia_paginado_y_busqueda_global
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\routing.py:812: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387BD1C60>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\routing.py:812: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87830040>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_catalogo_solo_referencia_paginado_y_busqueda_global
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\routing.py:812: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283883E2A70>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\routing.py:812: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED844ED8A0>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_catalogo_solo_referencia_paginado_y_busqueda_global
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\routing.py:812: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283883E2D40>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\routing.py:812: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED895BE4D0>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_endpoint_antiguo_de_personas_no_existe
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:3028: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838456DF30>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:3028: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87831210>
     params = OrderedDict((param.name, param) for param in parameters)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:1683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A125300>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:1683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88141030>
     return dict.get(instance_dict, attr, _sentinel)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028344FB58A0>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8BFBF880>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283801E9300>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED897B13F0>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838FA9FD30>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88A245E0>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838FA9E2F0>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88A25D50>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384CC6A70>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED917BA980>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A124E50>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED886818A0>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838F5D1030>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED844EC8B0>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028388CDA3E0>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87A932E0>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028388CDA980>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87A908B0>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838F5D1990>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED843F74C0>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283883E2B60>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED844EDE40>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838526E6B0>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED843F7790>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_real_sin_relleno_y_sin_duplicado
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A126C50>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:683: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED881425C0>
     recursion_limit = sys.getrecursionlimit()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_alta_invalida_no_escribe[payload2]
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\_internal\_config.py:379: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A0BCF40>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\_internal\_config.py:379: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED84394130>
     deprecated_removed_keys = V2_REMOVED_KEYS & config_dict.keys()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_bitacora_pagina_eventos_y_mapeos_reales_sin_pii
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\compiler.py:6903: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283801E97B0>
-    return ", \n\t".join(
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\compiler.py:7224: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87A914E0>
+    ", ".join(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_exportacion_incluye_todas_las_paginas_sin_mensajes_internos
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\compiler.py:3971: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387BD1120>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\compiler.py:3971: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87A91990>
     def bindparam_string(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_catalogo_bitacora.py::test_exportacion_incluye_todas_las_paginas_sin_mensajes_internos
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\compiler.py:3971: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838C01C7C0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\compiler.py:3971: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8B6622F0>
     def bindparam_string(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_ingesta_historial.py::test_historial_pagina_lotes_sin_duplicarlos_por_archivo
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:925: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283877A7F10>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:925: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED844EC040>
     if set(other).difference(self._cache_attrs):
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_conversion_no_acredita_el_cien_por_ciento_historico
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283883E0A90>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88141F30>
     s = util.column_set()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_conversion_no_acredita_el_cien_por_ciento_historico
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283891F8D60>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FAC8C70>
     s = util.column_set()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_conversion_no_acredita_el_cien_por_ciento_historico
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283883E1E40>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED895BF4C0>
     s = util.column_set()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_conversion_no_acredita_el_cien_por_ciento_historico
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838917B010>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FB2AF20>
     s = util.column_set()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_conversion_no_acredita_el_cien_por_ciento_historico
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838917B100>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FB2B010>
     s = util.column_set()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_conversion_no_acredita_el_cien_por_ciento_historico
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838924C6D0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FAEC5E0>
     s = util.column_set()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_conversion_no_acredita_el_cien_por_ciento_historico
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028389170A90>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED851889A0>
     s = util.column_set()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_conversion_no_acredita_el_cien_por_ciento_historico
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838B779300>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\elements.py:487: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED85159210>
     s = util.column_set()
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_reintentar_misma_fila_no_duplica_captacion
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\result.py:1202: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838526CF40>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\result.py:1202: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED843F75B0>
     def _tuple_getter(self, keys: Sequence[_KeyIndexType]) -> _TupleGetterType:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_reintentar_misma_fila_no_duplica_captacion
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\result.py:1202: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384E7C400>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\result.py:1202: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED843F6B60>
     def _tuple_getter(self, keys: Sequence[_KeyIndexType]) -> _TupleGetterType:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_reintentar_misma_fila_no_duplica_captacion
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\result.py:1202: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384E7E7A0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\result.py:1202: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8C001C60>
     def _tuple_getter(self, keys: Sequence[_KeyIndexType]) -> _TupleGetterType:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_reintentar_misma_fila_no_duplica_captacion
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\result.py:1202: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387B98C70>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\result.py:1202: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8A001C60>
     def _tuple_getter(self, keys: Sequence[_KeyIndexType]) -> _TupleGetterType:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_reintentar_misma_fila_no_duplica_captacion
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\result.py:1202: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387B985E0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\result.py:1202: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8A0004F0>
     def _tuple_getter(self, keys: Sequence[_KeyIndexType]) -> _TupleGetterType:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_reintentar_misma_fila_no_duplica_captacion
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\result.py:1202: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283891DC400>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\result.py:1202: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8B6614E0>
     def _tuple_getter(self, keys: Sequence[_KeyIndexType]) -> _TupleGetterType:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_no_crea_nuevos_modulos_solo_con_puntuacion[---]
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\compiler.py:7203: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838526EB60>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\compiler.py:7203: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED843F76A0>
     def define_primary_key_body(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_no_crea_nuevos_modulos_solo_con_puntuacion[---]
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\compiler.py:7203: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838526EE30>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\compiler.py:7203: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED843F65C0>
     def define_primary_key_body(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_integridad_respeta_roles[ADMIN-200]
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\_internal\_config.py:149: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283891DE200>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\_internal\_config.py:149: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FAED210>
     return cls(config_new)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_integridad_respeta_roles[ADMIN-200]
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\_internal\_config.py:149: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384E7D6C0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\_internal\_config.py:149: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8C002B60>
     return cls(config_new)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_integridad_respeta_roles[ADMIN-200]
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\_internal\_config.py:149: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838526D210>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\_internal\_config.py:149: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED843F5300>
     return cls(config_new)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_integridad_respeta_roles[ADMIN-200]
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\_internal\_config.py:149: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384E7E5C0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\_internal\_config.py:149: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED881F6A70>
     return cls(config_new)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_integridad_respeta_roles[ADMIN-200]
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\_internal\_config.py:149: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384E7D300>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\_internal\_config.py:149: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8518B970>
     return cls(config_new)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_integridad.py::test_integridad_respeta_roles[ANALISTA_MARKETING-403]
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\routing.py:351: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838B778E50>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\routing.py:351: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8515A3E0>
     def get_request_handler(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_lectura_beto.py::test_inicio_es_explicito_y_no_programa_duplicados
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1633: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838B77BE20>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1633: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED844EE200>
     self, "_proxy_index", collections.defaultdict(util.OrderedSet)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_lectura_beto.py::test_inicio_es_explicito_y_no_programa_duplicados
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1633: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028389173790>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1633: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED85188040>
     self, "_proxy_index", collections.defaultdict(util.OrderedSet)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_lectura_beto.py::test_inicio_es_explicito_y_no_programa_duplicados
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1633: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838C01EB60>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1633: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED85188130>
     self, "_proxy_index", collections.defaultdict(util.OrderedSet)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_lectura_beto.py::test_inicio_es_explicito_y_no_programa_duplicados
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1633: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283877A71F0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1633: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FB29E40>
     self, "_proxy_index", collections.defaultdict(util.OrderedSet)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_lectura_beto.py::test_inicio_es_explicito_y_no_programa_duplicados
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1633: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283891FB790>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1633: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FB2BA60>
     self, "_proxy_index", collections.defaultdict(util.OrderedSet)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_lectura_beto.py::test_api_no_admite_mas_de_cinco_y_aplica_roles
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:663: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387B9B010>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:663: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FB713F0>
     def unwrap(func, *, stop=None):
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_lectura_beto.py::test_fallo_al_reservar_no_programa_analisis
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\schema.py:5059: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283849D7A60>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\schema.py:5059: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED883E7970>
     @property
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_grupos_cinco_opacos_y_detalle_acotado
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\default.py:1423: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028385196F20>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\default.py:1423: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED853EEE30>
     for grp, m in enumerate(parameters)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_grupos_cinco_opacos_y_detalle_acotado
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\default.py:1423: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384F90F40>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\default.py:1423: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED887D0E50>
     for grp, m in enumerate(parameters)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_grupos_cinco_opacos_y_detalle_acotado
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\default.py:1423: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384F93B50>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\engine\default.py:1423: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED887D0F40>
     for grp, m in enumerate(parameters)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_limites_http_roles_y_exportacion_completa
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:3028: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384A1B790>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:3028: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87FA57B0>
     params = OrderedDict((param.name, param) for param in parameters)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838F5D1F30>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88142110>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283847044F0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED84395990>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387BD1300>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED886806D0>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387BD05E0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED886835B0>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283884A46D0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88A27B50>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283883E0310>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED895BD8A0>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838C01DF30>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8B661210>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838924C220>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FB705E0>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283891DE3E0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FAEC400>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384E7D8A0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8518B790>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838B778220>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED851589A0>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283891704F0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED851884F0>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283891789A0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FB72B60>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283891FBD30>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FAC8A90>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A038220>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED894A0130>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283884A64D0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FACBF10>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384A19F30>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87FA5E40>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028389172A70>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88455A80>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384A266B0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87FAA6B0>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384A26110>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87FABB50>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283855E2C50>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED854B2B60>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_consolidacion_reserva_una_sola_tarea
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838551B4C0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\base.py:1472: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED853F73D0>
     def __init__(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_csv_filtra_todo_el_conjunto_y_evitar_formulas
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\dependencies\utils.py:155: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384F90130>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\dependencies\utils.py:155: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED853EF880>
     header_params=dependant.header_params.copy(),
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_csv_filtra_todo_el_conjunto_y_evitar_formulas
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\dependencies\utils.py:155: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384F931F0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\dependencies\utils.py:155: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED853EDA80>
     header_params=dependant.header_params.copy(),
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_csv_filtra_todo_el_conjunto_y_evitar_formulas
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\dependencies\utils.py:155: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A03B4C0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\dependencies\utils.py:155: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED887D1D50>
     header_params=dependant.header_params.copy(),
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_csv_filtra_todo_el_conjunto_y_evitar_formulas
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\dependencies\utils.py:155: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A0389A0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\dependencies\utils.py:155: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED887D35B0>
     header_params=dependant.header_params.copy(),
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_csv_filtra_todo_el_conjunto_y_evitar_formulas
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\dependencies\utils.py:155: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387E82110>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\fastapi\dependencies\utils.py:155: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED891FC8B0>
     header_params=dependant.header_params.copy(),
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_busqueda_por_la_definicion_visible_del_motivo
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\topological.py:35: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384CC5D50>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\topological.py:35: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8FB2BC40>
     edges[child].add(parent)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_revision.py::test_grupo_de_hechos_abre_solo_sus_casos_y_exporta
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\fields.py:687: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384F933D0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\pydantic\fields.py:687: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED853EEF20>
     continue
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_texto_preparado.py::test_preguntas_de_encuesta_no_son_alertas
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384CC6020>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88298A90>
     kw.update(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_texto_preparado.py::test_preguntas_de_encuesta_no_son_alertas
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384F90D60>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED917BAF20>
     kw.update(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_texto_preparado.py::test_preguntas_de_encuesta_no_son_alertas
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838F5D1A80>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED843F55D0>
     kw.update(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_texto_preparado.py::test_preguntas_de_encuesta_no_son_alertas
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283855E0B80>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED843F5990>
     kw.update(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_texto_preparado.py::test_preguntas_de_encuesta_no_son_alertas
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283855E32E0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED843965C0>
     kw.update(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_dataops_texto_preparado.py::test_preguntas_de_encuesta_no_son_alertas
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283855FC9A0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1397: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED84397D30>
     kw.update(
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_email_redesign_and_forgot_password.py::test_mask_email_function
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1389: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028387BD3E20>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:1389: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8A001D50>
     def constructor_copy(obj: _T, cls: Type[_T], *args: Any, **kw: Any) -> _T:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_evaluacion_docente_revision.py::test_respuestas_sin_docente_forman_un_caso_por_documento_y_modulo
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\type_api.py:975: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838551B5B0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\type_api.py:975: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8C003B50>
     def _dialect_info(self, dialect: Dialect) -> _TypeMemoDict:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_evaluacion_docente_revision.py::test_respuestas_sin_docente_forman_un_caso_por_documento_y_modulo
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\type_api.py:975: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028385518040>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\type_api.py:975: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8C0018A0>
     def _dialect_info(self, dialect: Dialect) -> _TypeMemoDict:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_evaluacion_docente_revision.py::test_respuestas_sin_docente_forman_un_caso_por_documento_y_modulo
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\type_api.py:975: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A1272E0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\type_api.py:975: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8A001120>
     def _dialect_info(self, dialect: Dialect) -> _TypeMemoDict:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_evaluacion_docente_revision.py::test_respuestas_sin_docente_forman_un_caso_por_documento_y_modulo
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\type_api.py:975: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838A127100>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\sqlalchemy\sql\type_api.py:975: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8A003880>
     def _dialect_info(self, dialect: Dialect) -> _TypeMemoDict:
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_reportes_export.py::TestExportReportesRBAC::test_export_sin_token_retorna_401
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:2426: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000002838917B880>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:2426: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8515B1F0>
     _get_signature_of = functools.partial(_signature_from_callable,
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_reportes_export.py::TestExportReportesRBAC::test_export_sin_token_retorna_401
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:2426: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028389179E40>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:2426: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED884544F0>
     _get_signature_of = functools.partial(_signature_from_callable,
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_reportes_export.py::TestExportReportesRBAC::test_export_sin_token_retorna_401
-  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:2426: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283891713F0>
+  C:\Users\DAZA\AppData\Local\Python\pythoncore-3.14-64\Lib\inspect.py:2426: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED88454220>
     _get_signature_of = functools.partial(_signature_from_callable,
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_reportes_export.py::TestExportReportesRBAC::test_export_kpis_xlsx_admin_con_auditoria_log
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283855FC040>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED853EE980>
     m = aRGB_REGEX.match(value)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_reportes_export.py::TestExportReportesRBAC::test_export_kpis_xlsx_admin_con_auditoria_log
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283855FD8A0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8A0025C0>
     m = aRGB_REGEX.match(value)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_reportes_export.py::TestExportReportesRBAC::test_export_kpis_xlsx_admin_con_auditoria_log
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283877A6980>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87FA47C0>
     m = aRGB_REGEX.match(value)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_reportes_export.py::TestExportReportesRBAC::test_export_kpis_xlsx_admin_con_auditoria_log
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283877A4220>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8A0006D0>
     m = aRGB_REGEX.match(value)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_reportes_export.py::TestExportReportesRBAC::test_export_kpis_xlsx_admin_con_auditoria_log
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000283877A6D40>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED8542C220>
     m = aRGB_REGEX.match(value)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_reportes_export.py::TestExportReportesRBAC::test_export_kpis_xlsx_admin_con_auditoria_log
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384A188B0>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87FA62F0>
     m = aRGB_REGEX.match(value)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 tests/sprint5/test_reportes_export.py::TestExportReportesRBAC::test_export_kpis_xlsx_admin_con_auditoria_log
-  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x0000028384A18C70>
+  C:\Users\DAZA\Documents\Universidad\Proyecto de Grado 7MO semestre\giragroup_bi_system\.venv\Lib\site-packages\openpyxl\styles\colors.py:59: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x000001ED87FA66B0>
     m = aRGB_REGEX.match(value)
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
@@ -1183,7 +1183,7 @@ pipeline\normalization\quality_rules.py             241     61    75%
 pipeline\normalization\semantic_matcher.py           14      1    93%
 pipeline\pipeline_logger.py                          24      6    75%
 pipeline\semantic\__init__.py                         0      0   100%
-pipeline\semantic\formatter.py                      257     47    82%
+pipeline\semantic\formatter.py                      257     46    82%
 pipeline\semantic\indice_confianza.py                70     47    33%
 pipeline\semantic\inference_server.py               267    217    19%
 pipeline\semantic\ner_engine.py                     320    110    66%
@@ -1191,7 +1191,7 @@ pipeline\semantic\ner_schema.py                      94     10    89%
 pipeline\semantic\performance_logger.py              59      3    95%
 pipeline\semantic\ventana.py                         26      0   100%
 ---------------------------------------------------------------------
-TOTAL                                             14555   4345    70%
+TOTAL                                             14555   4344    70%
 =========================== short test summary info ===========================
 SKIPPED [1] tests\readiness\test_production_readiness.py:259: READINESS_TOKEN no definido
 SKIPPED [1] tests\readiness\test_production_readiness.py:264: READINESS_TOKEN no definido
@@ -1211,4 +1211,4 @@ XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_e
 XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_id_sintetico_con_entropia_suficiente - Hallazgo FK-HASH: TEMP-CI usa MD5 truncado a 8 hex (32 bits); homónimos colisionan
 XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_banda_media_deriva_a_staging[0.7] - Hallazgo FK-BANDA: [0.60, 0.85) y confianza None generan TEMP en DimEstudiante en vez de derivar a stg_entidad_no_resuelta
 XFAIL tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_banda_media_deriva_a_staging[None] - Hallazgo FK-BANDA: [0.60, 0.85) y confianza None generan TEMP en DimEstudiante en vez de derivar a stg_entidad_no_resuelta
-==== 801 passed, 11 skipped, 7 xfailed, 186 warnings in 365.90s (0:06:05) =====
+==== 801 passed, 11 skipped, 7 xfailed, 186 warnings in 200.38s (0:03:20) =====

@@ -34,7 +34,7 @@ case "$1" in
   vacio)
     $PSQL -d postgres -c "drop database if exists dw_vacio" -c "create database dw_vacio template giragroup_db"
     $PSQL -d dw_vacio -c "$TRUNC"
-    for m in 014_conversion_captacion_comprobable.sql 015_cache_beto_entidades.sql; do
+    for m in 014_conversion_captacion_comprobable.sql; do
       [ -f "backend/scripts/migrations/$m" ] || continue
       docker cp "backend/scripts/migrations/$m" beto_pg_tmpfs:/tmp/m.sql
       $PSQL -d dw_vacio -f /tmp/m.sql >/dev/null 2>&1 || true

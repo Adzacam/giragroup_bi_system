@@ -61,3 +61,10 @@
 3. **D3 (Adopción de checkpoint):** Autorizar explícitamente la promoción de `output/f1/reproduccion_1/modelo` sobre `pipeline/semantic/beto_local` (los artefactos locales permanecen en `output/f1/reproduccion_1/`).
 4. **F0-R3 / F0-R4:** Completar las revisiones humanas ciegas (`A-3` sobre 90 contextos y `A-4` sobre los 7 casos faltantes) y **B-10** (rotación de credenciales / reescritura de historial Git si aplica).
 5. **F1-V:** Ejecutar las 6 corridas finales de validación una vez resueltas D1, D2 y D3.
+
+---
+
+## Erratas (2026-11-15)
+
+- En el punto 1 de §3 («D1 / A-5 (Flags BETO)»), los nombres reales de los 4 flags en `pipeline/config.py` y `backend/services/beto_integracion.py` son `BETO_CASCADA_FINAL`, `BETO_ACUERDO_QC`, `BETO_SUGERENCIA_HITL` y `BETO_VENTANA` (no `BETO_ACTIVO`, `BETO_UMBRALES_CALIBRADOS` ni `BETO_CACHE_ENTIDADES`).
+
