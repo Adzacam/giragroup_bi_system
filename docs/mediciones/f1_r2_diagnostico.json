@@ -1,0 +1,1539 @@
+{
+  "tarea": "R-2 PLAN_F1R2",
+  "fecha": "2026-11-15T13:24:54.831093-04:00",
+  "aviso": "veredicto_tecnico_automatico es una regla técnica automática; no es una etiqueta humana ni la sustituye.",
+  "reejecucion_tmpfs": {
+    "hubo": true,
+    "motivo": "las huellas existentes solo guardan conteos y la firma de grupos; sin casos",
+    "puertos": {
+      "tmpfs_port": 55632,
+      "dw_viva_port": 5434
+    },
+    "bases": [
+      "run_r2r_v1",
+      "run_r2r_v2"
+    ],
+    "v1": {
+      "modelo_version": "beto-v1",
+      "servicio_indice": {
+        "contenedor": "beto_pipeline_r2v1",
+        "model_safetensors_sha256": "5966dde3fa4adccacb8ed74c62c991a6bf140c2b4d67598a05a1c35e67ec9543",
+        "health": {
+          "status": "online",
+          "engine": "BETO_PYTORCH_REAL",
+          "model": "/app/pipeline/semantic/beto_local",
+          "base_model": "dccuchile/bert-base-spanish-wwm-cased"
+        }
+      },
+      "cache_indice_beto_antes": 0,
+      "lote_sha256_antes": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+      "lote_sha256_despues": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+      "comparacion": {
+        "referencia": "f1_off.json.huella.json",
+        "tablas_distintas": [],
+        "bandeja_igual": true,
+        "kpis_iguales": true,
+        "identica": true,
+        "bandeja": {
+          "casos": 182,
+          "grupos": 12,
+          "manuales": 7,
+          "casos_manuales": 59,
+          "firma_sha256": "e939d5f0f626d972f5c18c0c096b8642d61c90f9f06bc28af169f0ac1f2e1e0f"
+        },
+        "bandeja_referencia": {
+          "casos": 182,
+          "grupos": 12,
+          "manuales": 7,
+          "casos_manuales": 59,
+          "firma_sha256": "e939d5f0f626d972f5c18c0c096b8642d61c90f9f06bc28af169f0ac1f2e1e0f"
+        }
+      }
+    },
+    "servicios_entidades": {
+      "contenedores": {
+        "beto_pipeline_r2v1": "5966dde3fa4adccacb8ed74c62c991a6bf140c2b4d67598a05a1c35e67ec9543",
+        "beto_pipeline_r2v2": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92"
+      }
+    },
+    "v2": {
+      "modelo_version": "beto-v2",
+      "servicio_indice": "ninguno (todos los índices desde la caché sembrada)",
+      "cache_seed_sha256": "f52a898a299c12c4841c070cf4c2e06308e61ae61b873cd68293343c75081ba5",
+      "cache_indice_beto_antes": 12559,
+      "cache_indice_beto_despues": 12559,
+      "lote_sha256_antes": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+      "lote_sha256_despues": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+      "comparacion": {
+        "referencia": "f1_validacion_llena_r1.json.huella.json",
+        "tablas_distintas": [],
+        "bandeja_igual": true,
+        "kpis_iguales": true,
+        "identica": true,
+        "bandeja": {
+          "casos": 680,
+          "grupos": 19,
+          "manuales": 14,
+          "casos_manuales": 47,
+          "firma_sha256": "22bd64640929883070af7854b5cad000a907d6aea00f906b7e77fd220e635875"
+        },
+        "bandeja_referencia": {
+          "casos": 680,
+          "grupos": 19,
+          "manuales": 14,
+          "casos_manuales": 47,
+          "firma_sha256": "22bd64640929883070af7854b5cad000a907d6aea00f906b7e77fd220e635875"
+        }
+      }
+    }
+  },
+  "desglose": {
+    "f1_off": {
+      "casos": 182,
+      "por_tipo": {
+        "aca": 114,
+        "fin": 9,
+        "stg": 59
+      },
+      "por_motivo": {
+        "HECHO_EN_REVISION": 123,
+        "CI_DUDOSA": 2,
+        "BAJA_CONFIANZA_IA": 54,
+        "HOMONIMIA": 1,
+        "CI_NOMBRE_DISCORDANTE": 2
+      },
+      "por_archivo": {
+        "Base centralizada Académica ARCA (1).xlsx": 116,
+        "BD Cobranzas.xlsx": 9,
+        "TBL_INSCRITOS.xlsx": 2,
+        "BD Egresos.xlsx": 54,
+        "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx": 1
+      },
+      "grupos": [
+        {
+          "tipo": "aca",
+          "motivo": "HECHO_EN_REVISION",
+          "grupo": "grupo-eeb97aecd3",
+          "accion": "APROBAR",
+          "n": 101
+        },
+        {
+          "tipo": "stg",
+          "motivo": "BAJA_CONFIANZA_IA",
+          "grupo": "grupo-5039c42781",
+          "accion": "MANUAL",
+          "n": 51
+        },
+        {
+          "tipo": "fin",
+          "motivo": "HECHO_EN_REVISION",
+          "grupo": "grupo-d2ec7470db",
+          "accion": "CORREGIR_FECHA",
+          "n": 8
+        },
+        {
+          "tipo": "aca",
+          "motivo": "HECHO_EN_REVISION",
+          "grupo": "grupo-3168c07273",
+          "accion": "APROBAR",
+          "n": 7
+        },
+        {
+          "tipo": "aca",
+          "motivo": "HECHO_EN_REVISION",
+          "grupo": "grupo-3d630e02eb",
+          "accion": "APROBAR",
+          "n": 6
+        },
+        {
+          "tipo": "stg",
+          "motivo": "CI_DUDOSA",
+          "grupo": "grupo-5a9ebf94f4",
+          "accion": "MANUAL",
+          "n": 2
+        },
+        {
+          "tipo": "stg",
+          "motivo": "BAJA_CONFIANZA_IA",
+          "grupo": "grupo-47eb53d9da",
+          "accion": "MANUAL",
+          "n": 2
+        },
+        {
+          "tipo": "fin",
+          "motivo": "HECHO_EN_REVISION",
+          "grupo": "grupo-89de0bd808",
+          "accion": "APROBAR",
+          "n": 1
+        },
+        {
+          "tipo": "stg",
+          "motivo": "HOMONIMIA",
+          "grupo": "grupo-0824c6fb74",
+          "accion": "MANUAL",
+          "n": 1
+        },
+        {
+          "tipo": "stg",
+          "motivo": "CI_NOMBRE_DISCORDANTE",
+          "grupo": "grupo-b4babd3ec1",
+          "accion": "MANUAL",
+          "n": 1
+        },
+        {
+          "tipo": "stg",
+          "motivo": "CI_NOMBRE_DISCORDANTE",
+          "grupo": "grupo-6d470fa856",
+          "accion": "MANUAL",
+          "n": 1
+        },
+        {
+          "tipo": "stg",
+          "motivo": "BAJA_CONFIANZA_IA",
+          "grupo": "grupo-a370459559",
+          "accion": "MANUAL",
+          "n": 1
+        }
+      ]
+    },
+    "f1_validacion": {
+      "casos": 680,
+      "por_tipo": {
+        "aca": 632,
+        "fin": 12,
+        "stg": 36
+      },
+      "por_motivo": {
+        "HECHO_EN_REVISION": 644,
+        "CI_DUDOSA": 2,
+        "HOMONIMIA": 1,
+        "CI_NOMBRE_DISCORDANTE": 2,
+        "BAJA_CONFIANZA_IA": 31
+      },
+      "por_archivo": {
+        "Base centralizada Académica ARCA (1).xlsx": 641,
+        "BD Cobranzas.xlsx": 12,
+        "TBL_INSCRITOS.xlsx": 2,
+        "BD Egresos.xlsx": 3,
+        "EJECUTADO VS META.xlsx": 4,
+        "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx": 18
+      },
+      "grupos": [
+        {
+          "tipo": "aca",
+          "motivo": "HECHO_EN_REVISION",
+          "grupo": "grupo-eeb97aecd3",
+          "accion": "APROBAR",
+          "n": 594
+        },
+        {
+          "tipo": "aca",
+          "motivo": "HECHO_EN_REVISION",
+          "grupo": "grupo-3d630e02eb",
+          "accion": "APROBAR",
+          "n": 20
+        },
+        {
+          "tipo": "aca",
+          "motivo": "HECHO_EN_REVISION",
+          "grupo": "grupo-fce10f6266",
+          "accion": "MANUAL",
+          "n": 11
+        },
+        {
+          "tipo": "stg",
+          "motivo": "BAJA_CONFIANZA_IA",
+          "grupo": "grupo-a370459559",
+          "accion": "MANUAL",
+          "n": 10
+        },
+        {
+          "tipo": "fin",
+          "motivo": "HECHO_EN_REVISION",
+          "grupo": "grupo-d2ec7470db",
+          "accion": "CORREGIR_FECHA",
+          "n": 8
+        },
+        {
+          "tipo": "stg",
+          "motivo": "BAJA_CONFIANZA_IA",
+          "grupo": "grupo-3a4ebffc23",
+          "accion": "MANUAL",
+          "n": 8
+        },
+        {
+          "tipo": "aca",
+          "motivo": "HECHO_EN_REVISION",
+          "grupo": "grupo-3168c07273",
+          "accion": "APROBAR",
+          "n": 7
+        },
+        {
+          "tipo": "fin",
+          "motivo": "HECHO_EN_REVISION",
+          "grupo": "grupo-89de0bd808",
+          "accion": "APROBAR",
+          "n": 4
+        },
+        {
+          "tipo": "stg",
+          "motivo": "BAJA_CONFIANZA_IA",
+          "grupo": "grupo-d4cefe4860",
+          "accion": "MANUAL",
+          "n": 3
+        },
+        {
+          "tipo": "stg",
+          "motivo": "CI_DUDOSA",
+          "grupo": "grupo-5a9ebf94f4",
+          "accion": "MANUAL",
+          "n": 2
+        },
+        {
+          "tipo": "stg",
+          "motivo": "BAJA_CONFIANZA_IA",
+          "grupo": "grupo-47eb53d9da",
+          "accion": "MANUAL",
+          "n": 2
+        },
+        {
+          "tipo": "stg",
+          "motivo": "BAJA_CONFIANZA_IA",
+          "grupo": "grupo-58481de487",
+          "accion": "MANUAL",
+          "n": 2
+        },
+        {
+          "tipo": "stg",
+          "motivo": "BAJA_CONFIANZA_IA",
+          "grupo": "grupo-ce149a97c1",
+          "accion": "MANUAL",
+          "n": 2
+        },
+        {
+          "tipo": "stg",
+          "motivo": "BAJA_CONFIANZA_IA",
+          "grupo": "grupo-c59e1f2610",
+          "accion": "MANUAL",
+          "n": 2
+        },
+        {
+          "tipo": "stg",
+          "motivo": "HOMONIMIA",
+          "grupo": "grupo-0824c6fb74",
+          "accion": "MANUAL",
+          "n": 1
+        },
+        {
+          "tipo": "stg",
+          "motivo": "CI_NOMBRE_DISCORDANTE",
+          "grupo": "grupo-b4babd3ec1",
+          "accion": "MANUAL",
+          "n": 1
+        },
+        {
+          "tipo": "stg",
+          "motivo": "CI_NOMBRE_DISCORDANTE",
+          "grupo": "grupo-6d470fa856",
+          "accion": "MANUAL",
+          "n": 1
+        },
+        {
+          "tipo": "stg",
+          "motivo": "BAJA_CONFIANZA_IA",
+          "grupo": "grupo-49f92e61a8",
+          "accion": "MANUAL",
+          "n": 1
+        },
+        {
+          "tipo": "stg",
+          "motivo": "BAJA_CONFIANZA_IA",
+          "grupo": "grupo-15f47f574d",
+          "accion": "MANUAL",
+          "n": 1
+        }
+      ]
+    },
+    "por_grupo": [
+      {
+        "grupo": "grupo-eeb97aecd3",
+        "tipo": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "accion": "APROBAR",
+        "f1_off": 101,
+        "f1_validacion": 594,
+        "delta": 493
+      },
+      {
+        "grupo": "grupo-3d630e02eb",
+        "tipo": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "accion": "APROBAR",
+        "f1_off": 6,
+        "f1_validacion": 20,
+        "delta": 14
+      },
+      {
+        "grupo": "grupo-fce10f6266",
+        "tipo": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "accion": "MANUAL",
+        "f1_off": 0,
+        "f1_validacion": 11,
+        "delta": 11
+      },
+      {
+        "grupo": "grupo-a370459559",
+        "tipo": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "accion": "MANUAL",
+        "f1_off": 1,
+        "f1_validacion": 10,
+        "delta": 9
+      },
+      {
+        "grupo": "grupo-3a4ebffc23",
+        "tipo": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "accion": "MANUAL",
+        "f1_off": 0,
+        "f1_validacion": 8,
+        "delta": 8
+      },
+      {
+        "grupo": "grupo-89de0bd808",
+        "tipo": "fin",
+        "motivo": "HECHO_EN_REVISION",
+        "accion": "APROBAR",
+        "f1_off": 1,
+        "f1_validacion": 4,
+        "delta": 3
+      },
+      {
+        "grupo": "grupo-d4cefe4860",
+        "tipo": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "accion": "MANUAL",
+        "f1_off": 0,
+        "f1_validacion": 3,
+        "delta": 3
+      },
+      {
+        "grupo": "grupo-c59e1f2610",
+        "tipo": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "accion": "MANUAL",
+        "f1_off": 0,
+        "f1_validacion": 2,
+        "delta": 2
+      },
+      {
+        "grupo": "grupo-58481de487",
+        "tipo": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "accion": "MANUAL",
+        "f1_off": 0,
+        "f1_validacion": 2,
+        "delta": 2
+      },
+      {
+        "grupo": "grupo-ce149a97c1",
+        "tipo": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "accion": "MANUAL",
+        "f1_off": 0,
+        "f1_validacion": 2,
+        "delta": 2
+      },
+      {
+        "grupo": "grupo-49f92e61a8",
+        "tipo": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "accion": "MANUAL",
+        "f1_off": 0,
+        "f1_validacion": 1,
+        "delta": 1
+      },
+      {
+        "grupo": "grupo-15f47f574d",
+        "tipo": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "accion": "MANUAL",
+        "f1_off": 0,
+        "f1_validacion": 1,
+        "delta": 1
+      },
+      {
+        "grupo": "grupo-47eb53d9da",
+        "tipo": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "accion": "MANUAL",
+        "f1_off": 2,
+        "f1_validacion": 2,
+        "delta": 0
+      },
+      {
+        "grupo": "grupo-b4babd3ec1",
+        "tipo": "stg",
+        "motivo": "CI_NOMBRE_DISCORDANTE",
+        "accion": "MANUAL",
+        "f1_off": 1,
+        "f1_validacion": 1,
+        "delta": 0
+      },
+      {
+        "grupo": "grupo-0824c6fb74",
+        "tipo": "stg",
+        "motivo": "HOMONIMIA",
+        "accion": "MANUAL",
+        "f1_off": 1,
+        "f1_validacion": 1,
+        "delta": 0
+      },
+      {
+        "grupo": "grupo-3168c07273",
+        "tipo": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "accion": "APROBAR",
+        "f1_off": 7,
+        "f1_validacion": 7,
+        "delta": 0
+      },
+      {
+        "grupo": "grupo-5a9ebf94f4",
+        "tipo": "stg",
+        "motivo": "CI_DUDOSA",
+        "accion": "MANUAL",
+        "f1_off": 2,
+        "f1_validacion": 2,
+        "delta": 0
+      },
+      {
+        "grupo": "grupo-6d470fa856",
+        "tipo": "stg",
+        "motivo": "CI_NOMBRE_DISCORDANTE",
+        "accion": "MANUAL",
+        "f1_off": 1,
+        "f1_validacion": 1,
+        "delta": 0
+      },
+      {
+        "grupo": "grupo-d2ec7470db",
+        "tipo": "fin",
+        "motivo": "HECHO_EN_REVISION",
+        "accion": "CORREGIR_FECHA",
+        "f1_off": 8,
+        "f1_validacion": 8,
+        "delta": 0
+      },
+      {
+        "grupo": "grupo-5039c42781",
+        "tipo": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "accion": "MANUAL",
+        "f1_off": 51,
+        "f1_validacion": 0,
+        "delta": -51
+      }
+    ]
+  },
+  "reconciliacion": {
+    "f1_off": 182,
+    "f1_validacion": 680,
+    "neto": 498,
+    "casos_emparejados_en_ambas": 111,
+    "altas": 569,
+    "bajas": 71,
+    "cuadra": true,
+    "atribucion": {
+      "alta": {
+        "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION": 532,
+        "beto_v2_cambio_banda_STAGING_a_REVISION": 7,
+        "beto_v2_cambio_banda_REVISION_a_STAGING": 26,
+        "beto_v2_cambio_banda_CONSOLIDADO_a_STAGING": 4
+      },
+      "baja": {
+        "beto_v2_cambio_banda_REVISION_a_STAGING": 8,
+        "beto_v2_cambio_banda_REVISION_a_CONSOLIDADO": 10,
+        "beto_v2_cambio_banda_STAGING_a_REVISION": 44,
+        "beto_v2_cambio_banda_STAGING_a_CONSOLIDADO": 9
+      }
+    },
+    "atribucion_por_tipo": {
+      "alta": {
+        "aca|beto_v2_cambio_banda_CONSOLIDADO_a_REVISION": 528,
+        "aca|beto_v2_cambio_banda_STAGING_a_REVISION": 7,
+        "fin|beto_v2_cambio_banda_CONSOLIDADO_a_REVISION": 4,
+        "stg|beto_v2_cambio_banda_REVISION_a_STAGING": 26,
+        "stg|beto_v2_cambio_banda_CONSOLIDADO_a_STAGING": 4
+      },
+      "baja": {
+        "aca|beto_v2_cambio_banda_REVISION_a_STAGING": 8,
+        "aca|beto_v2_cambio_banda_REVISION_a_CONSOLIDADO": 9,
+        "fin|beto_v2_cambio_banda_REVISION_a_CONSOLIDADO": 1,
+        "stg|beto_v2_cambio_banda_STAGING_a_REVISION": 44,
+        "stg|beto_v2_cambio_banda_STAGING_a_CONSOLIDADO": 9
+      }
+    },
+    "suma_atribuciones_altas": 569,
+    "suma_atribuciones_bajas": 71
+  },
+  "cambio_entidad_beto": {
+    "metodo": "entidades_beto de /infer-batch (solo BETO, antes de reglas) sobre texto_para_indice de la línea, v1 y v2 en contenedores aislados",
+    "consistencia_indice": {
+      "lineas": 1244,
+      "indice_servicio_igual_a_cache_v1": 1244,
+      "indice_servicio_igual_a_cache_v2": 1243
+    },
+    "lineas_que_cambian_de_banda_por_clase": {
+      "v2_gana_entidad": 632,
+      "mismos_tipos_mismos_tramos": 166,
+      "mismos_tipos_distinto_tramo": 121,
+      "v2_pierde_entidad": 182,
+      "v2_cambia_tipo_de_entidad": 143
+    },
+    "por_sentido_atribucion_y_clase": {
+      "alta|beto_v2_cambio_banda_CONSOLIDADO_a_REVISION|v2_cambia_tipo_de_entidad": 5,
+      "alta|beto_v2_cambio_banda_CONSOLIDADO_a_REVISION|mismos_tipos_distinto_tramo": 66,
+      "alta|beto_v2_cambio_banda_CONSOLIDADO_a_REVISION|mismos_tipos_mismos_tramos": 340,
+      "alta|beto_v2_cambio_banda_CONSOLIDADO_a_REVISION|v2_gana_entidad": 107,
+      "alta|beto_v2_cambio_banda_CONSOLIDADO_a_REVISION|v2_pierde_entidad": 14,
+      "alta|beto_v2_cambio_banda_STAGING_a_REVISION|v2_gana_entidad": 7,
+      "alta|beto_v2_cambio_banda_REVISION_a_STAGING|v2_pierde_entidad": 3,
+      "alta|beto_v2_cambio_banda_REVISION_a_STAGING|v2_cambia_tipo_de_entidad": 18,
+      "alta|beto_v2_cambio_banda_REVISION_a_STAGING|v2_gana_entidad": 3,
+      "alta|beto_v2_cambio_banda_REVISION_a_STAGING|mismos_tipos_distinto_tramo": 2,
+      "alta|beto_v2_cambio_banda_CONSOLIDADO_a_STAGING|v2_gana_entidad": 3,
+      "alta|beto_v2_cambio_banda_CONSOLIDADO_a_STAGING|mismos_tipos_mismos_tramos": 1,
+      "baja|beto_v2_cambio_banda_REVISION_a_STAGING|v2_cambia_tipo_de_entidad": 1,
+      "baja|beto_v2_cambio_banda_REVISION_a_STAGING|mismos_tipos_distinto_tramo": 7,
+      "baja|beto_v2_cambio_banda_REVISION_a_CONSOLIDADO|mismos_tipos_distinto_tramo": 5,
+      "baja|beto_v2_cambio_banda_REVISION_a_CONSOLIDADO|v2_pierde_entidad": 4,
+      "baja|beto_v2_cambio_banda_REVISION_a_CONSOLIDADO|v2_cambia_tipo_de_entidad": 1,
+      "baja|beto_v2_cambio_banda_STAGING_a_REVISION|v2_gana_entidad": 32,
+      "baja|beto_v2_cambio_banda_STAGING_a_REVISION|v2_cambia_tipo_de_entidad": 9,
+      "baja|beto_v2_cambio_banda_STAGING_a_CONSOLIDADO|v2_gana_entidad": 8,
+      "baja|beto_v2_cambio_banda_STAGING_a_REVISION|mismos_tipos_distinto_tramo": 2,
+      "baja|beto_v2_cambio_banda_STAGING_a_CONSOLIDADO|v2_pierde_entidad": 1,
+      "baja|beto_v2_cambio_banda_STAGING_a_REVISION|v2_pierde_entidad": 1
+    },
+    "tipos_perdidos_por_v2_en_casos": {
+      "PROGRAMA": 10,
+      "DOCENTE": 29,
+      "ESTUDIANTE": 70,
+      "MODULO": 1
+    },
+    "tipos_ganados_por_v2_en_casos": {
+      "ESTUDIANTE": 71,
+      "DOCENTE": 112,
+      "PROGRAMA": 117,
+      "MODULO": 9
+    }
+  },
+  "transicion_bandas_por_linea": {
+    "descripcion": "líneas del lote (documento, línea) por banda del índice BETO v1 -> v2; umbrales 0,85/0,60 sin cambio",
+    "lineas_comparadas": 12992,
+    "conteos": [
+      {
+        "archivo": "BD Cobranzas.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 726
+      },
+      {
+        "archivo": "BD Cobranzas.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "REVISION",
+        "lineas": 6
+      },
+      {
+        "archivo": "BD Cobranzas.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 1
+      },
+      {
+        "archivo": "BD Cobranzas.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "REVISION",
+        "lineas": 12
+      },
+      {
+        "archivo": "BD Cobranzas.xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "STAGING",
+        "lineas": 1
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 1246
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "REVISION",
+        "lineas": 19
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 24
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "REVISION",
+        "lineas": 58
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "STAGING",
+        "lineas": 2
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 9
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "REVISION",
+        "lineas": 43
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "STAGING",
+        "lineas": 8
+      },
+      {
+        "archivo": "BD Techos.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "REVISION",
+        "lineas": 1
+      },
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 986
+      },
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "REVISION",
+        "lineas": 164
+      },
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "STAGING",
+        "lineas": 1
+      },
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 2
+      },
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "REVISION",
+        "lineas": 34
+      },
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "STAGING",
+        "lineas": 11
+      },
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "REVISION",
+        "lineas": 2
+      },
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "STAGING",
+        "lineas": 1
+      },
+      {
+        "archivo": "EJECUTADO VS META.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 7
+      },
+      {
+        "archivo": "EJECUTADO VS META.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "REVISION",
+        "lineas": 12
+      },
+      {
+        "archivo": "EJECUTADO VS META.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "STAGING",
+        "lineas": 5
+      },
+      {
+        "archivo": "EJECUTADO VS META.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "REVISION",
+        "lineas": 2
+      },
+      {
+        "archivo": "EJECUTADO VS META.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "STAGING",
+        "lineas": 2
+      },
+      {
+        "archivo": "EJECUTADO VS META.xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "REVISION",
+        "lineas": 2
+      },
+      {
+        "archivo": "EJECUTADO VS META.xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "STAGING",
+        "lineas": 6
+      },
+      {
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 3130
+      },
+      {
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "REVISION",
+        "lineas": 171
+      },
+      {
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 86
+      },
+      {
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "REVISION",
+        "lineas": 423
+      },
+      {
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "REVISION",
+        "lineas": 1
+      },
+      {
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "STAGING",
+        "lineas": 1075
+      },
+      {
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 911
+      },
+      {
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "REVISION",
+        "lineas": 129
+      },
+      {
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 17
+      },
+      {
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "REVISION",
+        "lineas": 80
+      },
+      {
+        "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 289
+      },
+      {
+        "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "REVISION",
+        "lineas": 192
+      },
+      {
+        "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "STAGING",
+        "lineas": 8
+      },
+      {
+        "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 89
+      },
+      {
+        "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "REVISION",
+        "lineas": 1413
+      },
+      {
+        "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "STAGING",
+        "lineas": 118
+      },
+      {
+        "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "REVISION",
+        "lineas": 33
+      },
+      {
+        "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "STAGING",
+        "lineas": 160
+      },
+      {
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 384
+      },
+      {
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "REVISION",
+        "lineas": 3
+      },
+      {
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 3
+      },
+      {
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "REVISION",
+        "lineas": 1
+      },
+      {
+        "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 140
+      },
+      {
+        "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+        "banda_v1": "CONSOLIDADO",
+        "banda_v2": "REVISION",
+        "lineas": 45
+      },
+      {
+        "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "CONSOLIDADO",
+        "lineas": 17
+      },
+      {
+        "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "REVISION",
+        "lineas": 599
+      },
+      {
+        "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+        "banda_v1": "REVISION",
+        "banda_v2": "STAGING",
+        "lineas": 25
+      },
+      {
+        "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "REVISION",
+        "lineas": 2
+      },
+      {
+        "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+        "banda_v1": "STAGING",
+        "banda_v2": "STAGING",
+        "lineas": 55
+      }
+    ]
+  },
+  "muestra_30": {
+    "semilla": 20261115,
+    "metodo": "random.Random(semilla).sample(altas ordenadas por caso_id, 30)",
+    "archivo": "docs/mediciones/f1_r2_bandeja_diff.csv (columna en_muestra_30 = True)",
+    "regla": "Regla técnica explícita (no es una etiqueta humana): ¿las reglas deterministas corroboran el caso por sí solas?\n\nComprobaciones, todas contra datos del propio sistema (CI, encabezado, catálogo):\n  ci_exacta      el estudiante tiene CI exacta verificada (estado A: identidad_verificada y ci_numero no nulo)\n  modulo_catalogo el módulo está resuelto contra el catálogo institucional (id_modulo no nulo)\n  fecha          el hecho tiene fecha (id_tiempo no nulo)\n  valor          nota en [0, 100] o monto no nulo y >= 0\n  estados_ok     estados de acta dentro del catálogo y combinación válida (motivo_estado == OK); solo académicos\nPara un caso de staging de una fuente a nivel de programa (tipo_fuente RENTABILIDAD/MARKETING: sin estudiante) se\ncomprueba el encabezado y el catálogo: encabezado_programa (la línea trae 'PROGRAMA:' o 'NRO POS:') y pos_catalogo (todo\ncódigo POS-n de la línea existe en dim_modulo). Para otro caso de staging se evalúan los campos del hecho homólogo de la\notra corrida (misma línea) si existe; si no, las entidades del payload (CI_EXACTA y módulo con fuente de resolución).\n  todas pasan -> 'revision_innecesaria_reglas_corroboran'\n  alguna falla -> 'revision_justificada_regla_falla:<lista>'\nLectura: en un alta (caso que v2 añade) 'innecesaria' = regresión y 'justificada' = mejora; en una baja (caso que v2\nquita) 'innecesaria' = mejora y 'justificada' = regresión.",
+    "conteo_veredictos": {
+      "revision_innecesaria_reglas_corroboran": 27,
+      "revision_justificada_regla_falla": 3
+    },
+    "casos": [
+      {
+        "caso_id": "02c60a336160df73-aca522",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9288,
+        "indice_v2": 0.8126,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_distinto_tramo",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "0bfafe872472027d-aca330",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.8557,
+        "indice_v2": 0.7218,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "12c5fc22cdc2d7e8-aca469",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9639,
+        "indice_v2": 0.7819,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "13dd41094c64a4bc-stg2929",
+        "tipo_caso": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "grupo": "grupo-ce149a97c1",
+        "archivo": "EJECUTADO VS META.xlsx",
+        "indice_v1": 0.8921,
+        "indice_v2": 0.5786,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_STAGING",
+        "cambio_entidad_beto": "v2_gana_entidad",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "DOCENTE+ESTUDIANTE+PROGRAMA",
+        "veredicto_tecnico_automatico": "revision_justificada_regla_falla:encabezado_programa,pos_catalogo",
+        "veredicto_fuente": "encabezado_y_catalogo_de_la_linea"
+      },
+      {
+        "caso_id": "216c72aa9527258b-aca243",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9401,
+        "indice_v2": 0.841,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_distinto_tramo",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "29df33dfb6744f20-stg7082",
+        "tipo_caso": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "grupo": "grupo-a370459559",
+        "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+        "indice_v1": 0.7342,
+        "indice_v2": 0.5327,
+        "atribucion": "beto_v2_cambio_banda_REVISION_a_STAGING",
+        "cambio_entidad_beto": "v2_pierde_entidad",
+        "entidades_pierde_v2": "DOCENTE+DOCENTE+ESTUDIANTE",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_justificada_regla_falla:ci_exacta,modulo_catalogo",
+        "veredicto_fuente": "payload_staging"
+      },
+      {
+        "caso_id": "3b76a599ecc6afd9-aca498",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9588,
+        "indice_v2": 0.8464,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "3fe40d007768d9b3-aca1185",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9159,
+        "indice_v2": 0.8134,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "4457e78fc2e856a3-aca328",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.8557,
+        "indice_v2": 0.7218,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "46508a189811c3a2-aca1180",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9661,
+        "indice_v2": 0.7948,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "4dbdd76ec911714e-stg7077",
+        "tipo_caso": "stg",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "grupo": "grupo-3a4ebffc23",
+        "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+        "indice_v1": 0.6512,
+        "indice_v2": 0.5962,
+        "atribucion": "beto_v2_cambio_banda_REVISION_a_STAGING",
+        "cambio_entidad_beto": "v2_cambia_tipo_de_entidad",
+        "entidades_pierde_v2": "ESTUDIANTE+ESTUDIANTE",
+        "entidades_gana_v2": "PROGRAMA+PROGRAMA",
+        "veredicto_tecnico_automatico": "revision_justificada_regla_falla:ci_exacta,modulo_catalogo",
+        "veredicto_fuente": "payload_staging"
+      },
+      {
+        "caso_id": "4f4641b3a7c1fdf9-aca1130",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9225,
+        "indice_v2": 0.8218,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "54c3d48cecfc31df-aca537",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9633,
+        "indice_v2": 0.7812,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "56518addc6edf88d-aca466",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9639,
+        "indice_v2": 0.7819,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "6e2562e010b70f90-aca864",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9383,
+        "indice_v2": 0.775,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "8b05bcd9bbe4067f-aca912",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9482,
+        "indice_v2": 0.8069,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "9c7e5f962d861e04-aca218",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.98,
+        "indice_v2": 0.8197,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_distinto_tramo",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "9e345e618bec147f-aca1263",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-3d630e02eb",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9363,
+        "indice_v2": 0.8413,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_distinto_tramo",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "a1d723acf5500bab-aca1031",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.8643,
+        "indice_v2": 0.7588,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "v2_pierde_entidad",
+        "entidades_pierde_v2": "DOCENTE",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "a8662d8f471d1636-aca1323",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9483,
+        "indice_v2": 0.8094,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "a8f7b37cef1de6bf-aca443",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9269,
+        "indice_v2": 0.7979,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "c0628637df2dd742-aca1179",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9709,
+        "indice_v2": 0.8351,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_distinto_tramo",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "d2f50e8124589e94-aca987",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9225,
+        "indice_v2": 0.7808,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "d8b2b4bdb250073b-aca988",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9225,
+        "indice_v2": 0.7808,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "dcad4516a5a80369-aca342",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9336,
+        "indice_v2": 0.7413,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "e4e674e2e21be795-aca341",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9336,
+        "indice_v2": 0.7413,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "f048b79cf19034ce-aca136",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9312,
+        "indice_v2": 0.7228,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_distinto_tramo",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "f2e553bd391076f4-aca551",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9537,
+        "indice_v2": 0.8482,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "faed94ed01311979-aca114",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.9207,
+        "indice_v2": 0.7307,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      },
+      {
+        "caso_id": "fb232c4f77febe8b-aca655",
+        "tipo_caso": "aca",
+        "motivo": "HECHO_EN_REVISION",
+        "grupo": "grupo-eeb97aecd3",
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "indice_v1": 0.8837,
+        "indice_v2": 0.7561,
+        "atribucion": "beto_v2_cambio_banda_CONSOLIDADO_a_REVISION",
+        "cambio_entidad_beto": "mismos_tipos_mismos_tramos",
+        "entidades_pierde_v2": "",
+        "entidades_gana_v2": "",
+        "veredicto_tecnico_automatico": "revision_innecesaria_reglas_corroboran",
+        "veredicto_fuente": "hecho"
+      }
+    ]
+  },
+  "veredictos_todos": {
+    "alta": {
+      "revision_innecesaria_reglas_corroboran": 530,
+      "revision_justificada_regla_falla": 39
+    },
+    "baja": {
+      "revision_innecesaria_reglas_corroboran": 70,
+      "revision_justificada_regla_falla": 1
+    }
+  },
+  "conclusion": {
+    "veredicto": "mezcla",
+    "casos_mejora": 109,
+    "casos_regresion": 531,
+    "criterio": "mejora = altas con regla que falla + bajas que las reglas corroboran; regresión = altas que las reglas corroboran + bajas con regla que falla",
+    "altas_mejora_regla_falla": 39,
+    "altas_regresion_reglas_corroboran": 530,
+    "bajas_correctas_reglas_corroboran": 70,
+    "bajas_con_defecto_regla_falla": 1,
+    "muestra_30": {
+      "revision_innecesaria_reglas_corroboran": 27,
+      "revision_justificada_regla_falla": 3
+    }
+  },
+  "kpi_18": {
+    "definicion": "KPI-18 = COUNT(*) FROM public.stg_entidad_no_resuelta WHERE resuelto = FALSE (CTE backlog, migración 014)",
+    "f1_off": 59,
+    "f1_validacion": 36,
+    "huella_f1_off": 59,
+    "huella_f1_validacion": 36,
+    "altas_stg": 30,
+    "bajas_stg": 53,
+    "por_motivo_y_archivo": {
+      "stg|alta|BAJA_CONFIANZA_IA|Base centralizada Académica ARCA (1).xlsx": 8,
+      "stg|alta|BAJA_CONFIANZA_IA|_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx": 18,
+      "stg|alta|BAJA_CONFIANZA_IA|EJECUTADO VS META.xlsx": 4,
+      "stg|baja|BAJA_CONFIANZA_IA|Base centralizada Académica ARCA (1).xlsx": 1,
+      "stg|baja|BAJA_CONFIANZA_IA|BD Egresos.xlsx": 51,
+      "stg|baja|BAJA_CONFIANZA_IA|_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx": 1
+    },
+    "atribucion": {
+      "alta|beto_v2_cambio_banda_REVISION_a_STAGING": 26,
+      "alta|beto_v2_cambio_banda_CONSOLIDADO_a_STAGING": 4,
+      "baja|beto_v2_cambio_banda_STAGING_a_REVISION": 44,
+      "baja|beto_v2_cambio_banda_STAGING_a_CONSOLIDADO": 9
+    },
+    "destino_de_las_bajas": {
+      "aca": 1,
+      "sin_homologo": 52
+    },
+    "cuadra": true
+  },
+  "fuera_de_bandeja": {
+    "nota": "la bandeja solo cuenta staging pendiente y hechos académicos/financieros/evaluación en revisión (services/bandeja_grupos.py); fact_costo_programa con requiere_revision no aparece en ella",
+    "v1": {
+      "fact_costo_programa": 1320,
+      "fact_costo_programa_requiere_revision": 71,
+      "fact_evaluacion_docente_requiere_revision": 0
+    },
+    "v2": {
+      "fact_costo_programa": 1371,
+      "fact_costo_programa_requiere_revision": 116,
+      "fact_evaluacion_docente_requiere_revision": 0
+    }
+  },
+  "fuentes_sha256": {
+    "docs/mediciones/f1_off.json": "fbf258e38313befb2da84cbeaac7fffdad83d758eb283457ac7f027faa64a97b",
+    "docs/mediciones/f1_off.json.huella.json": "20b206f39f8cc5237b269c1538a80c71ea2a2432f804d876233e807df19371ca",
+    "docs/mediciones/f1_validacion_llena_r1.json": "cfb4318c30e84dd04f43635172449075744685388e1de6acca5d249c32f9326e",
+    "docs/mediciones/f1_validacion_llena_r1.json.huella.json": "a57426d4112fbb912125a1ffb4b6e5c975788d280fdf6e96ee84bc8cf934c98a",
+    "docs/mediciones/f1_validacion_resumen.json": "bc737738f18d2daa9650aa0824e1526309ddd7fe59c252a2f2cb912ea57a7b86",
+    "docs/mediciones/f1_promocion_modelo.json": "8bd727139bec5e3e7000d798dd6d95f200458131b7a667ec49dc29cff698af26",
+    "docs/mediciones/f0_lote_manifest.json": "55645505680cb30a843aad923555cda9ce904273be55268b654e3e7baac4d202",
+    "output/f1/f1v_cache_seed.sql": "f52a898a299c12c4841c070cf4c2e06308e61ae61b873cd68293343c75081ba5",
+    "output/f1/beto_local_respaldo/model.safetensors": "5966dde3fa4adccacb8ed74c62c991a6bf140c2b4d67598a05a1c35e67ec9543",
+    "docs/mediciones/f1_r2_corrida_v1.json": "786f53b1aef85f2ae449b3e544e9f837546ff28d6d0d39389b9b6e229d72cc46",
+    "docs/mediciones/f1_r2_corrida_v1.json.huella.json": "20b206f39f8cc5237b269c1538a80c71ea2a2432f804d876233e807df19371ca",
+    "docs/mediciones/f1_r2_corrida_v1.json.meta.json": "3ede219a34b4699c44e69848093cab66f04964a77cd8a20311c6189be7a9430e",
+    "docs/mediciones/f1_r2_corrida_v2.json": "b597709fc73f336a6ef9c793b15d3920dbbc27494d313317455babf9da42ed52",
+    "docs/mediciones/f1_r2_corrida_v2.json.huella.json": "7aa2fb880c5ec0f0f27af49aab7b10b72a0c97cb95536916321fff253aa569d9",
+    "docs/mediciones/f1_r2_corrida_v2.json.meta.json": "0cf8f321ae7321b87403d0841227f14ac4664b7c3ceb59cde9d6e81fc0fbc9f6",
+    "scripts/f1_r2_diagnostico.py": "f746210727e55dfd51c113a855d823e941a481394789696543333ba5ccfd60e7",
+    "scripts/f1_r2_extraer_casos.py": "6bcd9101bb3f69ba93f16a2a438b8a4a2bfc1deeddddfe406aa57a80f19bb087"
+  },
+  "notas": [
+    "Las dos corridas reproducen byte a byte las huellas de referencia (14 tablas, firma de bandeja y KPI): el código es el mismo, así que toda diferencia caso a caso entre f1_off y f1_validacion procede del cambio de modelo beto-v1 -> beto-v2.",
+    "El índice BETO de cada línea entra a la cascada solo como banda (>= 0,85 hecho; [0,60, 0,85) hecho en revisión; < 0,60 staging); no cambian umbrales, cascada ni flags (4 en 0).",
+    "En tmpfs ya existían run_r2_v1/run_r2_v2 de una corrida previa sin procedencia documentada; no se usaron ni se borraron (run_r2_v1 no reproduce f1_off: 199 casos, KPI-18 76).",
+    "veredicto_tecnico_automatico es una regla técnica; no es ni sustituye una etiqueta humana."
+  ]
+}

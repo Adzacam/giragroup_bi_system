@@ -1,0 +1,31 @@
+{
+  "tarea": "R-1",
+  "base_commit": "b559292",
+  "restaurados": {
+    "docs/mediciones/f0_desacuerdos_muestra.csv": {
+      "bytes": 61049,
+      "sha256": "dda8815a965dbc2f52b80f715c173968f66a81c19aefb32f78fb510c344a0da2",
+      "igual_b559292": true
+    },
+    "docs/mediciones/f0_top1_resumen.json": {
+      "bytes": 2755,
+      "sha256": "647e0fc5481415985708038cff7cb7c76992e5de2ce0fa9f6125e6e0da6a80ae",
+      "igual_b559292": true
+    }
+  },
+  "movidos_a_no_valida": [
+    {
+      "origen": "docs/mediciones/f0_top1_decisiones_humanas.csv",
+      "destino": "docs/mediciones/f1_revision_no_valida/f0_top1_decisiones_humanas.csv",
+      "sha256": "5ee7b13a1a889ac9ac464b7c862186464f4d36814152beb48fcad46a35414faf"
+    },
+    {
+      "origen": "docs/mediciones/f1_revision_humana_resumen.json",
+      "destino": "docs/mediciones/f1_revision_no_valida/f1_revision_humana_resumen.json",
+      "sha256": "b4a6cbcef747df3dc3479c7256dff5999804c209714f798e45f25953a17da359"
+    }
+  ],
+  "f0_desacuerdos_resumen_status": "automatic_technical_suggestions_review_pending",
+  "f0_top1_resumen_pending": true,
+  "cifras_a3_a4_como_humanas": 0
+}

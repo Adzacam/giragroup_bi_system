@@ -1,0 +1,64 @@
+{
+  "reviewer_id": "rev_01",
+  "procedencia": {
+    "declarado_por": "Lean",
+    "fecha_declaracion": "2026-11-15",
+    "modo_registro": "dictado por el revisor, registrado en lote por el chat 2",
+    "marcas_tiempo": "de registro, no de revisión"
+  },
+  "archivos_f0_sin_cambios": {
+    "docs/mediciones/f0_desacuerdos_muestra.csv": {
+      "sha256": "dda8815a965dbc2f52b80f715c173968f66a81c19aefb32f78fb510c344a0da2",
+      "esperado": "dda8815a965dbc2f52b80f715c173968f66a81c19aefb32f78fb510c344a0da2",
+      "coincide": true
+    },
+    "docs/mediciones/f0_top1_resumen.json": {
+      "sha256": "647e0fc5481415985708038cff7cb7c76992e5de2ce0fa9f6125e6e0da6a80ae",
+      "esperado": "647e0fc5481415985708038cff7cb7c76992e5de2ce0fa9f6125e6e0da6a80ae",
+      "coincide": true
+    }
+  },
+  "a3_desacuerdos": {
+    "archivo_etiquetas": "docs/mediciones/f1_revision_humana/a3_etiquetas_rev01.csv",
+    "sha256_archivo_etiquetas": "4a970be2315c793d1564e36b6b4935331699f022867e1b387d1714c032d365db",
+    "fuente_git": "3be4fbe:docs/mediciones/f0_desacuerdos_muestra.csv",
+    "total_filas": 90,
+    "con_human_label": 90,
+    "distribucion_human_label": {
+      "desacuerdo real": 90
+    },
+    "falsos_desacuerdos": 0,
+    "falsos_desacuerdos_pct": 0.0,
+    "case_id_en_muestra_sellada": "90/90",
+    "a3_ciego_a_sugerencia_tecnica": false,
+    "nota": "la columna technical_label estaba visible al revisor; 0 % falsos desacuerdos debe leerse con sesgo de anclaje"
+  },
+  "a4_top1": {
+    "archivo_decisiones": "docs/mediciones/f1_revision_humana/a4_decisiones_rev01.csv",
+    "sha256_archivo_decisiones": "5ee7b13a1a889ac9ac464b7c862186464f4d36814152beb48fcad46a35414faf",
+    "sha256_esperado_decisiones": "5ee7b13a1a889ac9ac464b7c862186464f4d36814152beb48fcad46a35414faf",
+    "total_filas": 7,
+    "distribucion_decision_kind": {
+      "exclude": 7
+    },
+    "filas_con_candidate_id": 0,
+    "top1": "N/D",
+    "case_id_en_resumen_sellado": "7/7",
+    "a4_paquete_ciego": true,
+    "blind_package_sha256": "099d8f4974d3d411b065f2e14a58f43ded16adf1a958f8597abcaa6f0ebc6101",
+    "blind_package_sha256_coincide_con_paquete_sellado": true,
+    "filas_con_blind_package_sha256_correcto": 7
+  },
+  "cruces": {
+    "a3_case_id_en_muestra_sellada": "90/90",
+    "a4_case_id_en_f0_top1_resumen": "7/7",
+    "a4_case_id_en_f0_top1_paquete_sellado": "0/7 (el paquete sellado no contiene case_id; los 7 están en f0_top1_resumen.json)"
+  },
+  "limitaciones": [
+    "Sesgo de anclaje en A-3: technical_label estaba visible; 90/90 coinciden con la sugerencia técnica. El 0 % de falsos desacuerdos va siempre con esta nota.",
+    "Las marcas de tiempo son de registro, no de revisión: no sirven para medir esfuerzo de revisión ni para el KLM (B-6).",
+    "Top-1 N/D: ningún caso de A-4 tiene candidato decidido (7/7 exclude); no hay cifra top-1 humana.",
+    "Las etiquetas son declaración de Lean dictada al chat 2 y registrada en lote; no se generaron ni completaron por ningún agente."
+  ],
+  "superado_por": "historial_r1/ (revisión apartada el 2026-11-15, superada por la declaración de Lean del mismo día)"
+}

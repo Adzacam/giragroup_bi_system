@@ -1,0 +1,61 @@
+{
+  "fecha_inicio": "2026-11-15T13:03:04.194666-04:00",
+  "fecha_fin": "2026-11-15T13:13:58.309113-04:00",
+  "variante": "v1",
+  "base_tmpfs": "run_r2r_v1",
+  "arbol": "/tmp/f1_r2",
+  "modelo_version": "beto-v1",
+  "flags": [
+    "BETO_CASCADA_FINAL=0",
+    "BETO_ACUERDO_QC=0",
+    "BETO_SUGERENCIA_HITL=0",
+    "BETO_VENTANA=0",
+    "BETO_VENTANA_STRIDE=32",
+    "BETO_UMBRAL_REGLA=0.85",
+    "BETO_UMBRAL_BETO=0.85",
+    "BETO_PESO_SIM=0.55",
+    "BETO_PESO_BETO=0.45",
+    "BETO_INT8=0"
+  ],
+  "puertos": {
+    "tmpfs_port": 55632,
+    "dw_viva_port": 5434
+  },
+  "servicio_indice": {
+    "contenedor": "beto_pipeline_r2v1",
+    "model_safetensors_sha256": "5966dde3fa4adccacb8ed74c62c991a6bf140c2b4d67598a05a1c35e67ec9543",
+    "health": {
+      "status": "online",
+      "engine": "BETO_PYTORCH_REAL",
+      "model": "/app/pipeline/semantic/beto_local",
+      "base_model": "dccuchile/bert-base-spanish-wwm-cased"
+    }
+  },
+  "cache_seed_sha256": null,
+  "cache_indice_beto_antes": 0,
+  "cache_indice_beto_despues": 12559,
+  "lote_sha256_antes": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "lote_sha256_despues": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "pared_s": 653.941,
+  "comparacion": {
+    "referencia": "f1_off.json.huella.json",
+    "tablas_distintas": [],
+    "bandeja_igual": true,
+    "kpis_iguales": true,
+    "identica": true,
+    "bandeja": {
+      "casos": 182,
+      "grupos": 12,
+      "manuales": 7,
+      "casos_manuales": 59,
+      "firma_sha256": "e939d5f0f626d972f5c18c0c096b8642d61c90f9f06bc28af169f0ac1f2e1e0f"
+    },
+    "bandeja_referencia": {
+      "casos": 182,
+      "grupos": 12,
+      "manuales": 7,
+      "casos_manuales": 59,
+      "firma_sha256": "e939d5f0f626d972f5c18c0c096b8642d61c90f9f06bc28af169f0ac1f2e1e0f"
+    }
+  }
+}

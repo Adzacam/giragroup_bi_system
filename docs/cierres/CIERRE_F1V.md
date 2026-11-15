@@ -72,3 +72,16 @@
 4. **Revisión humana A-3 (90) y A-4 (7) — COMPLETADA (`rev_01`, 2026-11-15):**
    - **A-4 (`7/7`):** importado en [f0_top1_resumen.json](file:///c:/Users/DAZA/Documents/Universidad/Proyecto%20de%20Grado%207MO%20semestre/giragroup_bi_system/docs/mediciones/f0_top1_resumen.json) (`exclude: 7`, `human_validation_pending: false`, `top1: N/D` en `a3` y `a123`).
    - **A-3 (`90/90`):** completado en [f0_desacuerdos_muestra.csv](file:///c:/Users/DAZA/Documents/Universidad/Proyecto%20de%20Grado%207MO%20semestre/giragroup_bi_system/docs/mediciones/f0_desacuerdos_muestra.csv) (`desacuerdo real: 90/90`). Resumen conjunto en [f1_revision_humana_resumen.json](file:///c:/Users/DAZA/Documents/Universidad/Proyecto%20de%20Grado%207MO%20semestre/giragroup_bi_system/docs/mediciones/f1_revision_humana_resumen.json).
+
+## Erratas (2026-11-15, F1R2)
+
+Esta sección corrige y completa lo anterior sin reescribirlo. Las cifras de §3 y §4 no cambian.
+
+1. **§5, punto 4 (§5.4): evidencia de la revisión humana.** La evidencia de la revisión `rev_01` está en `docs/mediciones/f1_revision_humana/` (`resumen.json`, `a3_etiquetas_rev01.csv`, `a4_decisiones_rev01.csv`), no en los archivos `f0_*`. Los archivos de F0 siguen sellados: `f0_desacuerdos_muestra.csv` con sha256 `dda8815a…0da2` y `f0_top1_resumen.json` con sha256 `647e0fc5…80ae`. Lean declaró `rev_01` el 2026-11-15; la dictó al chat 2, que la registró en lote. Limitaciones:
+   - (i) A-3 no fue ciega a la sugerencia técnica: `technical_label` estaba visible. El resultado 90/90 «desacuerdo real» (0/90 = 0 % falsos desacuerdos) puede tener sesgo de anclaje.
+   - (ii) Las marcas de tiempo son de registro, no de revisión. No sirven para medir esfuerzo ni para el KLM (B-6).
+   - (iii) Top-1 de A-4 = N/D: 7/7 casos con decisión `exclude` y 0 casos con candidato decidido.
+
+2. **R-2 en una línea:** Bandeja 182→680 (+569 altas, −71 bajas, neto +498) atribuida en 640/640 casos a cambios de banda de beto-v2; veredicto técnico automático: mezcla (109 mejora / 531 regresión); KPI-18 59→36 = 59 − 53 + 30 — ver `docs/mediciones/f1_r2_diagnostico.json` y `f1_r2_bandeja_diff.csv`.
+
+3. **Estado:** parcial hasta D3-bis (decisión pendiente de Lean: mantener beto-v2 o volver a beto-v1).

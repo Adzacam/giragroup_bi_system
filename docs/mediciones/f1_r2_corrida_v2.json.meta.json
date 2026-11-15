@@ -1,0 +1,52 @@
+{
+  "fecha_inicio": "2026-11-15T13:14:12.139677-04:00",
+  "fecha_fin": "2026-11-15T13:17:18.470492-04:00",
+  "variante": "v2",
+  "base_tmpfs": "run_r2r_v2",
+  "arbol": "/tmp/f1_r2",
+  "modelo_version": "beto-v2",
+  "flags": [
+    "BETO_CASCADA_FINAL=0",
+    "BETO_ACUERDO_QC=0",
+    "BETO_SUGERENCIA_HITL=0",
+    "BETO_VENTANA=0",
+    "BETO_VENTANA_STRIDE=32",
+    "BETO_UMBRAL_REGLA=0.85",
+    "BETO_UMBRAL_BETO=0.85",
+    "BETO_PESO_SIM=0.55",
+    "BETO_PESO_BETO=0.45",
+    "BETO_INT8=0"
+  ],
+  "puertos": {
+    "tmpfs_port": 55632,
+    "dw_viva_port": 5434
+  },
+  "servicio_indice": "ninguno (todos los índices desde la caché sembrada)",
+  "cache_seed_sha256": "f52a898a299c12c4841c070cf4c2e06308e61ae61b873cd68293343c75081ba5",
+  "cache_indice_beto_antes": 12559,
+  "cache_indice_beto_despues": 12559,
+  "lote_sha256_antes": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "lote_sha256_despues": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "pared_s": 186.159,
+  "comparacion": {
+    "referencia": "f1_validacion_llena_r1.json.huella.json",
+    "tablas_distintas": [],
+    "bandeja_igual": true,
+    "kpis_iguales": true,
+    "identica": true,
+    "bandeja": {
+      "casos": 680,
+      "grupos": 19,
+      "manuales": 14,
+      "casos_manuales": 47,
+      "firma_sha256": "22bd64640929883070af7854b5cad000a907d6aea00f906b7e77fd220e635875"
+    },
+    "bandeja_referencia": {
+      "casos": 680,
+      "grupos": 19,
+      "manuales": 14,
+      "casos_manuales": 47,
+      "firma_sha256": "22bd64640929883070af7854b5cad000a907d6aea00f906b7e77fd220e635875"
+    }
+  }
+}
