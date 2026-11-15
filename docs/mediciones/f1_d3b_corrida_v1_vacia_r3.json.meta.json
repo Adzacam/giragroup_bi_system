@@ -1,0 +1,43 @@
+{
+  "fecha_inicio": "2026-11-15T15:28:47.528956-04:00",
+  "fecha_fin": "2026-11-15T15:43:43.979339-04:00",
+  "version": "v1",
+  "modelo_version": "beto-v1",
+  "modo_cache": "vacia",
+  "repeticion": 3,
+  "base_tmpfs": "run_d3b_v1_vacia_r3",
+  "contenedor_indice": {
+    "contenedor": "beto_pipeline_d3b_v1",
+    "model_safetensors_sha256": "5966dde3fa4adccacb8ed74c62c991a6bf140c2b4d67598a05a1c35e67ec9543",
+    "health": {
+      "status": "online",
+      "engine": "BETO_PYTORCH_REAL",
+      "model": "/app/pipeline/semantic/beto_local",
+      "base_model": "dccuchile/bert-base-spanish-wwm-cased"
+    }
+  },
+  "puertos": {
+    "tmpfs_port": 55632,
+    "dw_viva_port": 5434
+  },
+  "lote_sha256_antes": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "lote_sha256_despues": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "cache_indice_beto_antes": 0,
+  "cache_indice_beto_despues": 12559,
+  "modelos_en_cache_antes": [],
+  "modelos_en_cache_despues": [
+    "beto-v1:12559"
+  ],
+  "pared_s": 893.436,
+  "maquina_s": 888.1,
+  "sistema_antes": {
+    "cpu_count": 24,
+    "loadavg": null,
+    "windows_cpu_load_pct": 34.0
+  },
+  "sistema_despues": {
+    "cpu_count": 24,
+    "loadavg": null,
+    "windows_cpu_load_pct": 4.0
+  }
+}

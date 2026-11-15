@@ -1,0 +1,198 @@
+{
+  "tarea": "D-B",
+  "timestamp": "2026-11-15T14:07:49.829550-04:00",
+  "tabla_v1_vs_v2": {
+    "beto-v1": {
+      "training_info_ruta": "output/f1/beto_local_respaldo/training_info.json",
+      "train_corpus": {
+        "ruta": "data/train_robusto.jsonl",
+        "sha256": "c43115401d696f56828fd1ad5a94c6535613d9ec89753b3e136ad59faa278df2",
+        "filas": 1400,
+        "personas_unicas": 2486
+      },
+      "dev_corpus": {
+        "ruta": "data/dev_robusto.jsonl",
+        "sha256": "49f467058d7d6cb1923dcb7d9651c3ce83b025999b06df35cd8c4bc4b8e729d4",
+        "filas": 350,
+        "personas_unicas": 678
+      },
+      "epochs": 3,
+      "best_epoch": 3,
+      "learning_rate": 2.5e-05,
+      "weight_decay": null,
+      "batch_size": 16,
+      "max_length": 128,
+      "seed": 42,
+      "train_duration_sec": 689.9,
+      "best_dev_f1": 0.9989
+    },
+    "beto-v2": {
+      "training_info_ruta": "docs/mediciones/f1_training_info.json",
+      "train_corpus": {
+        "ruta": "output/f1/reproduccion_1/corpus/train_robusto.jsonl",
+        "sha256": "d02ae16807831aab92b4d7cef34962c0d2a42f5221c646162e46efd5f155c5b7",
+        "filas": 1400,
+        "personas_unicas": 2447
+      },
+      "dev_corpus": {
+        "ruta": "output/f1/reproduccion_1/corpus/dev_robusto.jsonl",
+        "sha256": "9f3e7371ae654404591d6892c8d4d01b806f37f5344640d8ea8c52a774c7de9e",
+        "filas": 350,
+        "personas_unicas": 597
+      },
+      "epochs": 3,
+      "best_epoch": 2,
+      "learning_rate": 2.5e-05,
+      "weight_decay": 0.01,
+      "batch_size": 16,
+      "max_length": 128,
+      "seed": 42,
+      "train_duration_sec": 4537.58,
+      "best_dev_f1": 0.9979
+    }
+  },
+  "orden_aumento_separacion": {
+    "separa_antes_de_aumentar": true,
+    "script": "scripts/preparar_corpus_robusto.py",
+    "evidencia_codigo": {
+      "particion_por_claves_persona": "lineas 101-110 (particionar_por_persona con random.Random(semilla).shuffle(claves))",
+      "llamada_particion": "linea 334 (train_p, dev_p = particionar_por_persona(ests + docs, args.fraccion_dev, args.semilla))",
+      "aumento_por_pool_separado": "lineas 336-344 (est_tr/doc_tr y est_dv/doc_dv alimentan generar_muestras por separado)"
+    },
+    "prueba_empirica_train_vs_dev": {
+      "beto-v1": {
+        "personas_train_iob2": 2486,
+        "personas_dev_iob2": 678,
+        "personas_compartidas_train_dev_iob2": 143,
+        "personas_compartidas_train_dev_spans": 273
+      },
+      "beto-v2": {
+        "personas_train_iob2": 2447,
+        "personas_dev_iob2": 597,
+        "personas_compartidas_train_dev_iob2": 1,
+        "personas_compartidas_train_dev_spans": 0,
+        "nota_iob2_vs_spans": "Spans exactos comparten 0 personas; la diferencia de 1 en IOB2 proviene de tokenización de abreviaturas con punto (p.ej. 'M . Sc .')."
+      }
+    }
+  },
+  "conjuntos_evaluacion": {
+    "gold_510": {
+      "ruta": "data/test_gold_real.jsonl",
+      "sha256": "7dce0bec4dd3a60b94a7e6e5a48df29a6844fc93d28375697aa04f1b9a3d51a5",
+      "filas": 180,
+      "personas_unicas": 83
+    },
+    "layouts_5": {
+      "ruta": "uploads/test/layouts_adversarios/gold_layouts_adversarios.json",
+      "sha256": "3102ef272ce6ffea599c2d52e102bbd97c2a4f3661dc8b1a83949c2ca6939221",
+      "filas": 25,
+      "personas_unicas": 19
+    }
+  },
+  "fuga_4_niveles": {
+    "v1_train_vs_gold_510": {
+      "a_oracion_exacta": {
+        "coincidencias": 0,
+        "pares": []
+      },
+      "b_texto_normalizado": {
+        "coincidencias": 0,
+        "pares": []
+      },
+      "c_variantes": {
+        "coincidencias_total_unicas": 0,
+        "plantilla_enmascarada_exacta": {
+          "coincidencias": 0,
+          "pares": []
+        },
+        "jaccard_tokens_norm_ge_0_8": {
+          "coincidencias": 0,
+          "pares": []
+        }
+      },
+      "d_personas_normalizadas_compartidas": {
+        "personas_unicas_compartidas": 0,
+        "coincidencias_pares": 0,
+        "pares": []
+      }
+    },
+    "v1_train_vs_layouts_5": {
+      "a_oracion_exacta": {
+        "coincidencias": 0,
+        "pares": []
+      },
+      "b_texto_normalizado": {
+        "coincidencias": 0,
+        "pares": []
+      },
+      "c_variantes": {
+        "coincidencias_total_unicas": 0,
+        "plantilla_enmascarada_exacta": {
+          "coincidencias": 0,
+          "pares": []
+        },
+        "jaccard_tokens_norm_ge_0_8": {
+          "coincidencias": 0,
+          "pares": []
+        }
+      },
+      "d_personas_normalizadas_compartidas": {
+        "personas_unicas_compartidas": 0,
+        "coincidencias_pares": 0,
+        "pares": []
+      }
+    },
+    "v2_train_vs_gold_510": {
+      "a_oracion_exacta": {
+        "coincidencias": 0,
+        "pares": []
+      },
+      "b_texto_normalizado": {
+        "coincidencias": 0,
+        "pares": []
+      },
+      "c_variantes": {
+        "coincidencias_total_unicas": 0,
+        "plantilla_enmascarada_exacta": {
+          "coincidencias": 0,
+          "pares": []
+        },
+        "jaccard_tokens_norm_ge_0_8": {
+          "coincidencias": 0,
+          "pares": []
+        }
+      },
+      "d_personas_normalizadas_compartidas": {
+        "personas_unicas_compartidas": 0,
+        "coincidencias_pares": 0,
+        "pares": []
+      }
+    },
+    "v2_train_vs_layouts_5": {
+      "a_oracion_exacta": {
+        "coincidencias": 0,
+        "pares": []
+      },
+      "b_texto_normalizado": {
+        "coincidencias": 0,
+        "pares": []
+      },
+      "c_variantes": {
+        "coincidencias_total_unicas": 0,
+        "plantilla_enmascarada_exacta": {
+          "coincidencias": 0,
+          "pares": []
+        },
+        "jaccard_tokens_norm_ge_0_8": {
+          "coincidencias": 0,
+          "pares": []
+        }
+      },
+      "d_personas_normalizadas_compartidas": {
+        "personas_unicas_compartidas": 0,
+        "coincidencias_pares": 0,
+        "pares": []
+      }
+    }
+  }
+}

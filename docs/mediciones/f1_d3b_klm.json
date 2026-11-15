@@ -1,0 +1,264 @@
+{
+  "tarea": "D-C",
+  "etiqueta": "klm_estimado_d3b",
+  "fuente_klm": "scripts/agregar_flujo_repetido.py::klm",
+  "parametros": {
+    "K": 0.28,
+    "P": 1.1,
+    "H": 0.4,
+    "M": 1.35,
+    "B": 0.1,
+    "W_DESHACER": 10.0,
+    "PAGINA": 5
+  },
+  "versiones": {
+    "v1": {
+      "etiqueta": "klm_estimado_d3b",
+      "grupos_total": 12,
+      "casos_total": 182,
+      "regla_mapeo": "Cada grupo de /api/v1/dataops/review-tray/grupos se mapea directamente por g['accion_grupo'] (APROBAR / MANUAL / CORREGIR_FECHA / MAPEAR_ESTADO) con casos = g['n'].",
+      "eventos": [
+        {
+          "grupo": "grupo-eeb97aecd34d409b58",
+          "titulo": "Hecho cargado que necesita revisión",
+          "accion": "APROBAR",
+          "casos": 101
+        },
+        {
+          "grupo": "grupo-5039c42781c099d61a",
+          "titulo": "Lectura con baja confianza",
+          "accion": "MANUAL",
+          "casos": 51
+        },
+        {
+          "grupo": "grupo-d2ec7470dbdd602054",
+          "titulo": "Hecho cargado que necesita revisión",
+          "accion": "CORREGIR_FECHA",
+          "casos": 8
+        },
+        {
+          "grupo": "grupo-3168c07273db6d12db",
+          "titulo": "Hecho cargado que necesita revisión",
+          "accion": "APROBAR",
+          "casos": 7
+        },
+        {
+          "grupo": "grupo-3d630e02eb42631e08",
+          "titulo": "Hecho cargado que necesita revisión",
+          "accion": "APROBAR",
+          "casos": 6
+        },
+        {
+          "grupo": "grupo-5a9ebf94f4143d10ae",
+          "titulo": "Cédula dudosa",
+          "accion": "MANUAL",
+          "casos": 2
+        },
+        {
+          "grupo": "grupo-47eb53d9da1f99e311",
+          "titulo": "Lectura con baja confianza",
+          "accion": "MANUAL",
+          "casos": 2
+        },
+        {
+          "grupo": "grupo-0824c6fb74d5d634f6",
+          "titulo": "Posible homonimia: nombre parecido a otra persona",
+          "accion": "MANUAL",
+          "casos": 1
+        },
+        {
+          "grupo": "grupo-b4babd3ec1108cf0ba",
+          "titulo": "La cédula coincide pero el nombre es distinto",
+          "accion": "MANUAL",
+          "casos": 1
+        },
+        {
+          "grupo": "grupo-6d470fa8561ec27905",
+          "titulo": "La cédula coincide pero el nombre es distinto",
+          "accion": "MANUAL",
+          "casos": 1
+        },
+        {
+          "grupo": "grupo-a37045955975d8464f",
+          "titulo": "Lectura con baja confianza",
+          "accion": "MANUAL",
+          "casos": 1
+        },
+        {
+          "grupo": "grupo-89de0bd8085529376e",
+          "titulo": "Hecho cargado que necesita revisión",
+          "accion": "APROBAR",
+          "casos": 1
+        }
+      ],
+      "con_espera_W_10s": {
+        "total_s": 903.3,
+        "desglose_s": {
+          "bloque": 56.0,
+          "corregir_fecha": 18.7,
+          "mapear_estado": 0.0,
+          "manual": 826.0,
+          "paginacion": 2.6
+        }
+      },
+      "sin_espera_W_0s": {
+        "total_s": 263.3,
+        "desglose_s": {
+          "bloque": 16.0,
+          "corregir_fecha": 8.7,
+          "mapear_estado": 0.0,
+          "manual": 236.0,
+          "paginacion": 2.6
+        }
+      },
+      "tiempo_maquina_vacia_media_s": 848.09,
+      "tiempo_total_con_W_10s": 1751.4,
+      "tiempo_total_sin_W_0s": 1111.4
+    },
+    "v2": {
+      "etiqueta": "klm_estimado_d3b",
+      "grupos_total": 19,
+      "casos_total": 680,
+      "regla_mapeo": "Cada grupo de /api/v1/dataops/review-tray/grupos se mapea directamente por g['accion_grupo'] (APROBAR / MANUAL / CORREGIR_FECHA / MAPEAR_ESTADO) con casos = g['n'].",
+      "eventos": [
+        {
+          "grupo": "grupo-eeb97aecd34d409b58",
+          "titulo": "Hecho cargado que necesita revisión",
+          "accion": "APROBAR",
+          "casos": 594
+        },
+        {
+          "grupo": "grupo-3d630e02eb42631e08",
+          "titulo": "Hecho cargado que necesita revisión",
+          "accion": "APROBAR",
+          "casos": 20
+        },
+        {
+          "grupo": "grupo-fce10f626660f9eb9c",
+          "titulo": "Hecho cargado que necesita revisión",
+          "accion": "MANUAL",
+          "casos": 11
+        },
+        {
+          "grupo": "grupo-a37045955975d8464f",
+          "titulo": "Lectura con baja confianza",
+          "accion": "MANUAL",
+          "casos": 10
+        },
+        {
+          "grupo": "grupo-3a4ebffc23612b08b1",
+          "titulo": "Lectura con baja confianza",
+          "accion": "MANUAL",
+          "casos": 8
+        },
+        {
+          "grupo": "grupo-d2ec7470dbdd602054",
+          "titulo": "Hecho cargado que necesita revisión",
+          "accion": "CORREGIR_FECHA",
+          "casos": 8
+        },
+        {
+          "grupo": "grupo-3168c07273db6d12db",
+          "titulo": "Hecho cargado que necesita revisión",
+          "accion": "APROBAR",
+          "casos": 7
+        },
+        {
+          "grupo": "grupo-89de0bd8085529376e",
+          "titulo": "Hecho cargado que necesita revisión",
+          "accion": "APROBAR",
+          "casos": 4
+        },
+        {
+          "grupo": "grupo-d4cefe486042617cab",
+          "titulo": "Lectura con baja confianza",
+          "accion": "MANUAL",
+          "casos": 3
+        },
+        {
+          "grupo": "grupo-5a9ebf94f4143d10ae",
+          "titulo": "Cédula dudosa",
+          "accion": "MANUAL",
+          "casos": 2
+        },
+        {
+          "grupo": "grupo-47eb53d9da1f99e311",
+          "titulo": "Lectura con baja confianza",
+          "accion": "MANUAL",
+          "casos": 2
+        },
+        {
+          "grupo": "grupo-58481de48779c8da4e",
+          "titulo": "Lectura con baja confianza",
+          "accion": "MANUAL",
+          "casos": 2
+        },
+        {
+          "grupo": "grupo-ce149a97c151f3c02a",
+          "titulo": "Lectura con baja confianza",
+          "accion": "MANUAL",
+          "casos": 2
+        },
+        {
+          "grupo": "grupo-c59e1f2610af2a821e",
+          "titulo": "Lectura con baja confianza",
+          "accion": "MANUAL",
+          "casos": 2
+        },
+        {
+          "grupo": "grupo-0824c6fb74d5d634f6",
+          "titulo": "Posible homonimia: nombre parecido a otra persona",
+          "accion": "MANUAL",
+          "casos": 1
+        },
+        {
+          "grupo": "grupo-b4babd3ec1108cf0ba",
+          "titulo": "La cédula coincide pero el nombre es distinto",
+          "accion": "MANUAL",
+          "casos": 1
+        },
+        {
+          "grupo": "grupo-6d470fa8561ec27905",
+          "titulo": "La cédula coincide pero el nombre es distinto",
+          "accion": "MANUAL",
+          "casos": 1
+        },
+        {
+          "grupo": "grupo-49f92e61a863970e4a",
+          "titulo": "Lectura con baja confianza",
+          "accion": "MANUAL",
+          "casos": 1
+        },
+        {
+          "grupo": "grupo-15f47f574d9ea531b9",
+          "titulo": "Lectura con baja confianza",
+          "accion": "MANUAL",
+          "casos": 1
+        }
+      ],
+      "con_espera_W_10s": {
+        "total_s": 736.6,
+        "desglose_s": {
+          "bloque": 56.0,
+          "corregir_fecha": 18.7,
+          "mapear_estado": 0.0,
+          "manual": 658.0,
+          "paginacion": 3.9
+        }
+      },
+      "sin_espera_W_0s": {
+        "total_s": 216.6,
+        "desglose_s": {
+          "bloque": 16.0,
+          "corregir_fecha": 8.7,
+          "mapear_estado": 0.0,
+          "manual": 188.0,
+          "paginacion": 3.9
+        }
+      },
+      "tiempo_maquina_vacia_media_s": 864.283,
+      "tiempo_total_con_W_10s": 1600.9,
+      "tiempo_total_sin_W_0s": 1080.9
+    }
+  }
+}

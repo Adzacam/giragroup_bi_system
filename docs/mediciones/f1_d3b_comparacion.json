@@ -1,0 +1,459 @@
+{
+  "tarea": "D-T",
+  "timestamp": "2026-11-15T16:09:35.336321-04:00",
+  "tabla_unica": [
+    {
+      "grupo": "D-A (Calidad sin pipeline)",
+      "metrica": "gold_510 Modo A (strict) F1 [P / R | TP/FP/FN]",
+      "v1": "1.0000 [P=1.0000, R=1.0000 | 510/0/0]",
+      "v2": "1.0000 [P=1.0000, R=1.0000 | 510/0/0]",
+      "delta": "0",
+      "fuente": "f1_d3b_calidad_v1_gold.json / f1_d3b_calidad_v2_gold.json (f1_d3b_calidad.json)"
+    },
+    {
+      "grupo": "D-A (Calidad sin pipeline)",
+      "metrica": "gold_510 Modo A (relaxed) F1 [P / R | TP/FP/FN]",
+      "v1": "1.0000 [P=1.0000, R=1.0000 | 510/0/0]",
+      "v2": "1.0000 [P=1.0000, R=1.0000 | 510/0/0]",
+      "delta": "0",
+      "fuente": "f1_d3b_calidad_v1_gold.json / f1_d3b_calidad_v2_gold.json (f1_d3b_calidad.json)"
+    },
+    {
+      "grupo": "D-A (Calidad sin pipeline)",
+      "metrica": "gold_510 Modo B (strict) F1 [P / R | TP/FP/FN]",
+      "v1": "1.0000 [P=1.0000, R=1.0000 | 510/0/0]",
+      "v2": "1.0000 [P=1.0000, R=1.0000 | 510/0/0]",
+      "delta": "0",
+      "fuente": "f1_d3b_calidad_v1_gold.json / f1_d3b_calidad_v2_gold.json (f1_d3b_calidad.json)"
+    },
+    {
+      "grupo": "D-A (Calidad sin pipeline)",
+      "metrica": "gold_510 Modo B (relaxed) F1 [P / R | TP/FP/FN]",
+      "v1": "1.0000 [P=1.0000, R=1.0000 | 510/0/0]",
+      "v2": "1.0000 [P=1.0000, R=1.0000 | 510/0/0]",
+      "delta": "0",
+      "fuente": "f1_d3b_calidad_v1_gold.json / f1_d3b_calidad_v2_gold.json (f1_d3b_calidad.json)"
+    },
+    {
+      "grupo": "D-A (Calidad sin pipeline)",
+      "metrica": "gold_510 Modo C (strict) F1 [P / R | TP/FP/FN]",
+      "v1": "0.9757 [P=0.9691, R=0.9824 | 501/16/9]",
+      "v2": "0.9796 [P=0.9729, R=0.9863 | 503/14/7]",
+      "delta": "+0.0039",
+      "fuente": "f1_d3b_calidad_v1_gold.json / f1_d3b_calidad_v2_gold.json (f1_d3b_calidad.json)"
+    },
+    {
+      "grupo": "D-A (Calidad sin pipeline)",
+      "metrica": "gold_510 Modo C (relaxed) F1 [P / R | TP/FP/FN]",
+      "v1": "0.9912 [P=0.9864, R=0.9961 | 508/7/2]",
+      "v2": "0.9942 [P=0.9884, R=1.0000 | 510/6/0]",
+      "delta": "+0.003",
+      "fuente": "f1_d3b_calidad_v1_gold.json / f1_d3b_calidad_v2_gold.json (f1_d3b_calidad.json)"
+    },
+    {
+      "grupo": "D-A (Calidad sin pipeline)",
+      "metrica": "layouts_5 Modo A (strict) F1 [P / R | TP/FP/FN]",
+      "v1": "0.2619 [P=0.9167, R=0.1528 | 11/1/61]",
+      "v2": "0.2619 [P=0.9167, R=0.1528 | 11/1/61]",
+      "delta": "0",
+      "fuente": "f1_d3b_calidad_v1_layouts.json / f1_d3b_calidad_v2_layouts.json (f1_d3b_calidad.json)"
+    },
+    {
+      "grupo": "D-A (Calidad sin pipeline)",
+      "metrica": "layouts_5 Modo A (relaxed) F1 [P / R | TP/FP/FN]",
+      "v1": "0.2857 [P=1.0000, R=0.1667 | 12/0/60]",
+      "v2": "0.2857 [P=1.0000, R=0.1667 | 12/0/60]",
+      "delta": "0",
+      "fuente": "f1_d3b_calidad_v1_layouts.json / f1_d3b_calidad_v2_layouts.json (f1_d3b_calidad.json)"
+    },
+    {
+      "grupo": "D-A (Calidad sin pipeline)",
+      "metrica": "layouts_5 Modo B (strict) F1 [P / R | TP/FP/FN]",
+      "v1": "0.3158 [P=0.3000, R=0.3333 | 24/56/48]",
+      "v2": "0.4026 [P=0.3780, R=0.4306 | 31/51/41]",
+      "delta": "+0.0868",
+      "fuente": "f1_d3b_calidad_v1_layouts.json / f1_d3b_calidad_v2_layouts.json (f1_d3b_calidad.json)"
+    },
+    {
+      "grupo": "D-A (Calidad sin pipeline)",
+      "metrica": "layouts_5 Modo B (relaxed) F1 [P / R | TP/FP/FN]",
+      "v1": "0.7164 [P=0.7742, R=0.6667 | 48/14/24]",
+      "v2": "0.7376 [P=0.7536, R=0.7222 | 52/17/20]",
+      "delta": "+0.0212",
+      "fuente": "f1_d3b_calidad_v1_layouts.json / f1_d3b_calidad_v2_layouts.json (f1_d3b_calidad.json)"
+    },
+    {
+      "grupo": "D-A (Calidad sin pipeline)",
+      "metrica": "layouts_5 Modo C (strict) F1 [P / R | TP/FP/FN]",
+      "v1": "0.2468 [P=0.2317, R=0.2639 | 19/63/53]",
+      "v2": "0.3312 [P=0.3059, R=0.3611 | 26/59/46]",
+      "delta": "+0.0845",
+      "fuente": "f1_d3b_calidad_v1_layouts.json / f1_d3b_calidad_v2_layouts.json (f1_d3b_calidad.json)"
+    },
+    {
+      "grupo": "D-A (Calidad sin pipeline)",
+      "metrica": "layouts_5 Modo C (relaxed) F1 [P / R | TP/FP/FN]",
+      "v1": "0.6923 [P=0.7759, R=0.6250 | 45/13/27]",
+      "v2": "0.7206 [P=0.7656, R=0.6806 | 49/15/23]",
+      "delta": "+0.0283",
+      "fuente": "f1_d3b_calidad_v1_layouts.json / f1_d3b_calidad_v2_layouts.json (f1_d3b_calidad.json)"
+    },
+    {
+      "grupo": "D-C (Pipeline operativo)",
+      "metrica": "Lineas leidas por BETO",
+      "v1": 12992,
+      "v2": 12992,
+      "delta": "0",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas carga_fila_origen",
+      "v1": 15978,
+      "v2": 15978,
+      "delta": "0",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas dim_docente",
+      "v1": 673,
+      "v2": 673,
+      "delta": "0",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas dim_estudiante",
+      "v1": 14939,
+      "v2": 14978,
+      "delta": "+39",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas dim_modulo",
+      "v1": 3796,
+      "v2": 3796,
+      "delta": "0",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas dim_tiempo",
+      "v1": 2230,
+      "v2": 2230,
+      "delta": "0",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas fact_costo_programa",
+      "v1": 1320,
+      "v2": 1371,
+      "delta": "+51",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas fact_evaluacion_docente",
+      "v1": 75126,
+      "v2": 75073,
+      "delta": "-53",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas fact_marketing",
+      "v1": 299,
+      "v2": 299,
+      "delta": "0",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas fact_rendimiento_academico",
+      "v1": 1393,
+      "v2": 1392,
+      "delta": "-1",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas fact_rentabilidad",
+      "v1": 95,
+      "v2": 91,
+      "delta": "-4",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas fact_situacion_financiera",
+      "v1": 725,
+      "v2": 725,
+      "delta": "0",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas fact_techo_convenio",
+      "v1": 1,
+      "v2": 1,
+      "delta": "0",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas log_inconsistencias",
+      "v1": 11,
+      "v2": 10,
+      "delta": "-1",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tablas DW y staging)",
+      "metrica": "Filas stg_entidad_no_resuelta",
+      "v1": 5099,
+      "v2": 5076,
+      "delta": "-23",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Bandeja)",
+      "metrica": "Bandeja: casos totales",
+      "v1": 182,
+      "v2": 680,
+      "delta": "+498",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Bandeja)",
+      "metrica": "Bandeja: grupos totales",
+      "v1": 12,
+      "v2": 19,
+      "delta": "+7",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Bandeja)",
+      "metrica": "Bandeja: grupos manuales",
+      "v1": 7,
+      "v2": 14,
+      "delta": "+7",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Bandeja)",
+      "metrica": "Bandeja: casos manuales",
+      "v1": 59,
+      "v2": 47,
+      "delta": "-12",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (KPIs)",
+      "metrica": "KPI-10",
+      "v1": null,
+      "v2": null,
+      "delta": "igual",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (KPIs)",
+      "metrica": "KPI-11",
+      "v1": null,
+      "v2": null,
+      "delta": "igual",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (KPIs)",
+      "metrica": "KPI-18",
+      "v1": 59.0,
+      "v2": 36.0,
+      "delta": "-23.0",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tiempos)",
+      "metrica": "Tiempo maquina cache vacia (media +/- DE, s, n=3)",
+      "v1": "848.09 +/- 71.61",
+      "v2": "864.28 +/- 80.28",
+      "delta": "+16.19",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tiempos)",
+      "metrica": "Tiempo pared cache vacia (media +/- DE, s, n=3)",
+      "v1": "853.36 +/- 70.77",
+      "v2": "869.27 +/- 80.42",
+      "delta": "+15.92",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tiempos)",
+      "metrica": "Tiempo maquina cache llena (media +/- DE, s, n=3)",
+      "v1": "267.98 +/- 18.86",
+      "v2": "281.56 +/- 6.90",
+      "delta": "+13.58",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (Tiempos)",
+      "metrica": "Tiempo pared cache llena (media +/- DE, s, n=3)",
+      "v1": "272.95 +/- 18.50",
+      "v2": "286.66 +/- 6.90",
+      "delta": "+13.71",
+      "fuente": "f1_d3b_operativo.json"
+    },
+    {
+      "grupo": "D-C (KLM y Total)",
+      "metrica": "klm_estimado_d3b con espera W=10s (s)",
+      "v1": 903.3,
+      "v2": 736.6,
+      "delta": "-166.7",
+      "fuente": "f1_d3b_klm.json"
+    },
+    {
+      "grupo": "D-C (KLM y Total)",
+      "metrica": "klm_estimado_d3b sin espera W=0s (s)",
+      "v1": 263.3,
+      "v2": 216.6,
+      "delta": "-46.7",
+      "fuente": "f1_d3b_klm.json"
+    },
+    {
+      "grupo": "D-C (KLM y Total)",
+      "metrica": "Tiempo total (maquina vacia + KLM W=10s) (s)",
+      "v1": 1751.4,
+      "v2": 1600.9,
+      "delta": "-150.5",
+      "fuente": "f1_d3b_klm.json"
+    },
+    {
+      "grupo": "D-C (KLM y Total)",
+      "metrica": "Tiempo total (maquina vacia + KLM W=0s) (s)",
+      "v1": 1111.4,
+      "v2": 1080.9,
+      "delta": "-30.5",
+      "fuente": "f1_d3b_klm.json"
+    }
+  ],
+  "validez_reentrenamiento_D_B": {
+    "fuente": "f1_d3b_validez.json",
+    "separa_antes_de_aumentar": true,
+    "personas_compartidas_train_dev": {
+      "beto-v1": {
+        "personas_train_iob2": 2486,
+        "personas_dev_iob2": 678,
+        "personas_compartidas_train_dev_iob2": 143,
+        "personas_compartidas_train_dev_spans": 273
+      },
+      "beto-v2": {
+        "personas_train_iob2": 2447,
+        "personas_dev_iob2": 597,
+        "personas_compartidas_train_dev_iob2": 1,
+        "personas_compartidas_train_dev_spans": 0,
+        "nota_iob2_vs_spans": "Spans exactos comparten 0 personas; la diferencia de 1 en IOB2 proviene de tokenización de abreviaturas con punto (p.ej. 'M . Sc .')."
+      }
+    },
+    "fuga_4_niveles_x_2_trains": {
+      "v1_train_vs_gold_510": {
+        "a_oracion_exacta": 0,
+        "b_texto_normalizado": 0,
+        "c_variantes_unicas": 0,
+        "d_personas_compartidas": 0
+      },
+      "v1_train_vs_layouts_5": {
+        "a_oracion_exacta": 0,
+        "b_texto_normalizado": 0,
+        "c_variantes_unicas": 0,
+        "d_personas_compartidas": 0
+      },
+      "v2_train_vs_gold_510": {
+        "a_oracion_exacta": 0,
+        "b_texto_normalizado": 0,
+        "c_variantes_unicas": 0,
+        "d_personas_compartidas": 0
+      },
+      "v2_train_vs_layouts_5": {
+        "a_oracion_exacta": 0,
+        "b_texto_normalizado": 0,
+        "c_variantes_unicas": 0,
+        "d_personas_compartidas": 0
+      }
+    }
+  },
+  "huellas_dw": {
+    "v1_huella_archivo": "f1_d3b_corrida_v1_vacia_r1.json.huella.json",
+    "v1_huella_sha256": "9cfbffebb790d9b4653558a94ee2293bf5b1294458f1f9e8cc91110d65a3032f",
+    "v2_huella_archivo": "f1_d3b_corrida_v2_vacia_r1.json.huella.json",
+    "v2_huella_sha256": "85420985c49895fa96b91feb7fd391ac6db8a59b0a2f2a61213bf405c76ee682",
+    "tablas_que_difieren_v1_vs_v2": [
+      {
+        "tabla": "dim_estudiante",
+        "v1_filas": 14939,
+        "v2_filas": 14978,
+        "delta_filas": 39,
+        "v1_md5": "a94e0313e916cf881d60e8d694439f16",
+        "v2_md5": "da1dfde796b270d12ee5c55b7114e22b"
+      },
+      {
+        "tabla": "fact_costo_programa",
+        "v1_filas": 1320,
+        "v2_filas": 1371,
+        "delta_filas": 51,
+        "v1_md5": "6f9b389b4a8eb3ac8555042606c98841",
+        "v2_md5": "e3d740db0c2c43f2bd6d0f7f701655fc"
+      },
+      {
+        "tabla": "fact_evaluacion_docente",
+        "v1_filas": 75126,
+        "v2_filas": 75073,
+        "delta_filas": -53,
+        "v1_md5": "73c5fce5c67ecda90fa5a2433fd3717a",
+        "v2_md5": "55d21657b8d73e4aea453c46fcab8087"
+      },
+      {
+        "tabla": "fact_rendimiento_academico",
+        "v1_filas": 1393,
+        "v2_filas": 1392,
+        "delta_filas": -1,
+        "v1_md5": "0f1bbdf972f3e3cc3bcad6ad6f5ee7dd",
+        "v2_md5": "f74c105130d4186c12eab6c547616a15"
+      },
+      {
+        "tabla": "fact_rentabilidad",
+        "v1_filas": 95,
+        "v2_filas": 91,
+        "delta_filas": -4,
+        "v1_md5": "b4cac1dfd6b04910c261497a4bde4a47",
+        "v2_md5": "4fdd8c66a5b7e540821ecc6851a76c4e"
+      },
+      {
+        "tabla": "fact_situacion_financiera",
+        "v1_filas": 725,
+        "v2_filas": 725,
+        "delta_filas": 0,
+        "v1_md5": "43a8d3e0df7a582ac05ebf9ee558c83a",
+        "v2_md5": "b6c34aad63570d51a97125ba66b0838c"
+      },
+      {
+        "tabla": "log_inconsistencias",
+        "v1_filas": 11,
+        "v2_filas": 10,
+        "delta_filas": -1,
+        "v1_md5": "e039adbdf1751b318c10ef87d5e76f87",
+        "v2_md5": "5a4ae59ffab8b9244a8c384f7d45b3de"
+      },
+      {
+        "tabla": "stg_entidad_no_resuelta",
+        "v1_filas": 5099,
+        "v2_filas": 5076,
+        "delta_filas": -23,
+        "v1_md5": "b2cdb582e73015c7a0985c219612db71",
+        "v2_md5": "fff3ce024b55bde8eb96e0d6f008e431"
+      }
+    ]
+  }
+}

@@ -1,0 +1,533 @@
+{
+  "tarea": "D-A",
+  "timestamp": "2026-11-15T14:10:37.457105-04:00",
+  "total_filas": 24,
+  "entorno": {
+    "ablacion_beto_ruta": "scripts/ablacion_beto.py",
+    "ablacion_beto_sha256": "114bcdf8090421ccf355c12b7818b19718227709da0abe060724a8aa04799554",
+    "semilla": 42,
+    "BETO_INT8": "0",
+    "max_tokens": 128,
+    "torch": "2.13.0+cpu",
+    "transformers": "5.14.1"
+  },
+  "conjuntos": {
+    "gold_510": {
+      "ruta": "data/test_gold_real.jsonl",
+      "sha256": "7dce0bec4dd3a60b94a7e6e5a48df29a6844fc93d28375697aa04f1b9a3d51a5",
+      "soporte_declarado": 510,
+      "motivo_soporte_510_vs_503": "Según docs/mediciones/f0_b3_conteos.json, data/test_gold_real.jsonl contiene 510 entidades (130 PER_ESTUDIANTE, 180 PROGRAMA, 150 MODULO, 50 PER_DOCENTE), todas visibles dentro de max_tokens=128. El valor histórico 503 provenía de una matriz 4x4 hardcodeada donde PROGRAMA sumaba 173 en lugar de 180."
+    },
+    "layouts_5": {
+      "ruta": "uploads/test/layouts_adversarios/gold_layouts_adversarios.json",
+      "sha256": "3102ef272ce6ffea599c2d52e102bbd97c2a4f3661dc8b1a83949c2ca6939221",
+      "soporte_declarado": 72
+    }
+  },
+  "control_f0_b3_ablacion": {
+    "reproduce_exactamente_delta_0": false,
+    "causa_diferencia": "En modos A y B sobre gold_510, delta = 0 (F1 = 1.0). En modo C sobre gold_510: en relajado TP=508, FP=7, FN=2 (delta_f1 = -0.000020 por redondeo a 4 decimales); en estricto hay delta_FP = +2 (FP=16 vs 14, F1=0.975657 vs 0.977561) porque f0_b3_ablacion.csv fue calculado con el evaluador auxiliar de F0 (evaluator_sha256 555c085d..., IOB2 estricto explícito), mientras que scripts/ablacion_beto.py usa seqeval en modo por defecto. Ambas versiones v1 y v2 se midieron con el mismo scripts/ablacion_beto.py y las mismas versiones de torch y transformers, por lo que la comparación v1 vs v2 es homogénea.",
+    "filas": [
+      {
+        "modo": "A",
+        "criterio": "strict",
+        "d3b_v1": {
+          "tp": 510,
+          "fp": 0,
+          "fn": 0,
+          "f1": 1.0
+        },
+        "f0_b3": {
+          "tp": 510,
+          "fp": 0,
+          "fn": 0,
+          "f1": 1.0
+        },
+        "delta": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "f1": 0.0
+        },
+        "exacto_delta_0": true
+      },
+      {
+        "modo": "A",
+        "criterio": "relaxed",
+        "d3b_v1": {
+          "tp": 510,
+          "fp": 0,
+          "fn": 0,
+          "f1": 1.0
+        },
+        "f0_b3": {
+          "tp": 510,
+          "fp": 0,
+          "fn": 0,
+          "f1": 1.0
+        },
+        "delta": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "f1": 0.0
+        },
+        "exacto_delta_0": true
+      },
+      {
+        "modo": "B",
+        "criterio": "strict",
+        "d3b_v1": {
+          "tp": 510,
+          "fp": 0,
+          "fn": 0,
+          "f1": 1.0
+        },
+        "f0_b3": {
+          "tp": 510,
+          "fp": 0,
+          "fn": 0,
+          "f1": 1.0
+        },
+        "delta": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "f1": 0.0
+        },
+        "exacto_delta_0": true
+      },
+      {
+        "modo": "B",
+        "criterio": "relaxed",
+        "d3b_v1": {
+          "tp": 510,
+          "fp": 0,
+          "fn": 0,
+          "f1": 1.0
+        },
+        "f0_b3": {
+          "tp": 510,
+          "fp": 0,
+          "fn": 0,
+          "f1": 1.0
+        },
+        "delta": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "f1": 0.0
+        },
+        "exacto_delta_0": true
+      },
+      {
+        "modo": "C",
+        "criterio": "strict",
+        "d3b_v1": {
+          "tp": 501,
+          "fp": 16,
+          "fn": 9,
+          "f1": 0.975657
+        },
+        "f0_b3": {
+          "tp": 501,
+          "fp": 14,
+          "fn": 9,
+          "f1": 0.977561
+        },
+        "delta": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 0,
+          "f1": -0.001904
+        },
+        "exacto_delta_0": false
+      },
+      {
+        "modo": "C",
+        "criterio": "relaxed",
+        "d3b_v1": {
+          "tp": 508,
+          "fp": 7,
+          "fn": 2,
+          "f1": 0.9912
+        },
+        "f0_b3": {
+          "tp": 508,
+          "fp": 7,
+          "fn": 2,
+          "f1": 0.99122
+        },
+        "delta": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "f1": -2e-05
+        },
+        "exacto_delta_0": true
+      }
+    ]
+  },
+  "filas": [
+    {
+      "version": "beto-v1",
+      "dataset": "gold_510",
+      "modo": "A",
+      "criterio": "strict",
+      "tp": 510,
+      "fp": 0,
+      "fn": 0,
+      "support": 510,
+      "predicted": 510,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v1_gold.json"
+    },
+    {
+      "version": "beto-v1",
+      "dataset": "gold_510",
+      "modo": "A",
+      "criterio": "relaxed",
+      "tp": 510,
+      "fp": 0,
+      "fn": 0,
+      "support": 510,
+      "predicted": 510,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v1_gold.json"
+    },
+    {
+      "version": "beto-v1",
+      "dataset": "gold_510",
+      "modo": "B",
+      "criterio": "strict",
+      "tp": 510,
+      "fp": 0,
+      "fn": 0,
+      "support": 510,
+      "predicted": 510,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v1_gold.json"
+    },
+    {
+      "version": "beto-v1",
+      "dataset": "gold_510",
+      "modo": "B",
+      "criterio": "relaxed",
+      "tp": 510,
+      "fp": 0,
+      "fn": 0,
+      "support": 510,
+      "predicted": 510,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v1_gold.json"
+    },
+    {
+      "version": "beto-v1",
+      "dataset": "gold_510",
+      "modo": "C",
+      "criterio": "strict",
+      "tp": 501,
+      "fp": 16,
+      "fn": 9,
+      "support": 510,
+      "predicted": 517,
+      "precision": 0.969052,
+      "recall": 0.982353,
+      "f1": 0.975657,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v1_gold.json"
+    },
+    {
+      "version": "beto-v1",
+      "dataset": "gold_510",
+      "modo": "C",
+      "criterio": "relaxed",
+      "tp": 508,
+      "fp": 7,
+      "fn": 2,
+      "support": 510,
+      "predicted": 515,
+      "precision": 0.9864,
+      "recall": 0.9961,
+      "f1": 0.9912,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v1_gold.json"
+    },
+    {
+      "version": "beto-v1",
+      "dataset": "layouts_5",
+      "modo": "A",
+      "criterio": "strict",
+      "tp": 11,
+      "fp": 1,
+      "fn": 61,
+      "support": 72,
+      "predicted": 12,
+      "precision": 0.916667,
+      "recall": 0.152778,
+      "f1": 0.261905,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v1_layouts.json"
+    },
+    {
+      "version": "beto-v1",
+      "dataset": "layouts_5",
+      "modo": "A",
+      "criterio": "relaxed",
+      "tp": 12,
+      "fp": 0,
+      "fn": 60,
+      "support": 72,
+      "predicted": 12,
+      "precision": 1.0,
+      "recall": 0.1667,
+      "f1": 0.2857,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v1_layouts.json"
+    },
+    {
+      "version": "beto-v1",
+      "dataset": "layouts_5",
+      "modo": "B",
+      "criterio": "strict",
+      "tp": 24,
+      "fp": 56,
+      "fn": 48,
+      "support": 72,
+      "predicted": 80,
+      "precision": 0.3,
+      "recall": 0.333333,
+      "f1": 0.315789,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v1_layouts.json"
+    },
+    {
+      "version": "beto-v1",
+      "dataset": "layouts_5",
+      "modo": "B",
+      "criterio": "relaxed",
+      "tp": 48,
+      "fp": 14,
+      "fn": 24,
+      "support": 72,
+      "predicted": 62,
+      "precision": 0.7742,
+      "recall": 0.6667,
+      "f1": 0.7164,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v1_layouts.json"
+    },
+    {
+      "version": "beto-v1",
+      "dataset": "layouts_5",
+      "modo": "C",
+      "criterio": "strict",
+      "tp": 19,
+      "fp": 63,
+      "fn": 53,
+      "support": 72,
+      "predicted": 82,
+      "precision": 0.231707,
+      "recall": 0.263889,
+      "f1": 0.246753,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v1_layouts.json"
+    },
+    {
+      "version": "beto-v1",
+      "dataset": "layouts_5",
+      "modo": "C",
+      "criterio": "relaxed",
+      "tp": 45,
+      "fp": 13,
+      "fn": 27,
+      "support": 72,
+      "predicted": 58,
+      "precision": 0.7759,
+      "recall": 0.625,
+      "f1": 0.6923,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v1_layouts.json"
+    },
+    {
+      "version": "beto-v2",
+      "dataset": "gold_510",
+      "modo": "A",
+      "criterio": "strict",
+      "tp": 510,
+      "fp": 0,
+      "fn": 0,
+      "support": 510,
+      "predicted": 510,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_gold.json"
+    },
+    {
+      "version": "beto-v2",
+      "dataset": "gold_510",
+      "modo": "A",
+      "criterio": "relaxed",
+      "tp": 510,
+      "fp": 0,
+      "fn": 0,
+      "support": 510,
+      "predicted": 510,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_gold.json"
+    },
+    {
+      "version": "beto-v2",
+      "dataset": "gold_510",
+      "modo": "B",
+      "criterio": "strict",
+      "tp": 510,
+      "fp": 0,
+      "fn": 0,
+      "support": 510,
+      "predicted": 510,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_gold.json"
+    },
+    {
+      "version": "beto-v2",
+      "dataset": "gold_510",
+      "modo": "B",
+      "criterio": "relaxed",
+      "tp": 510,
+      "fp": 0,
+      "fn": 0,
+      "support": 510,
+      "predicted": 510,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_gold.json"
+    },
+    {
+      "version": "beto-v2",
+      "dataset": "gold_510",
+      "modo": "C",
+      "criterio": "strict",
+      "tp": 503,
+      "fp": 14,
+      "fn": 7,
+      "support": 510,
+      "predicted": 517,
+      "precision": 0.972921,
+      "recall": 0.986275,
+      "f1": 0.979552,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_gold.json"
+    },
+    {
+      "version": "beto-v2",
+      "dataset": "gold_510",
+      "modo": "C",
+      "criterio": "relaxed",
+      "tp": 510,
+      "fp": 6,
+      "fn": 0,
+      "support": 510,
+      "predicted": 516,
+      "precision": 0.9884,
+      "recall": 1.0,
+      "f1": 0.9942,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_gold.json"
+    },
+    {
+      "version": "beto-v2",
+      "dataset": "layouts_5",
+      "modo": "A",
+      "criterio": "strict",
+      "tp": 11,
+      "fp": 1,
+      "fn": 61,
+      "support": 72,
+      "predicted": 12,
+      "precision": 0.916667,
+      "recall": 0.152778,
+      "f1": 0.261905,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_layouts.json"
+    },
+    {
+      "version": "beto-v2",
+      "dataset": "layouts_5",
+      "modo": "A",
+      "criterio": "relaxed",
+      "tp": 12,
+      "fp": 0,
+      "fn": 60,
+      "support": 72,
+      "predicted": 12,
+      "precision": 1.0,
+      "recall": 0.1667,
+      "f1": 0.2857,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_layouts.json"
+    },
+    {
+      "version": "beto-v2",
+      "dataset": "layouts_5",
+      "modo": "B",
+      "criterio": "strict",
+      "tp": 31,
+      "fp": 51,
+      "fn": 41,
+      "support": 72,
+      "predicted": 82,
+      "precision": 0.378049,
+      "recall": 0.430556,
+      "f1": 0.402597,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_layouts.json"
+    },
+    {
+      "version": "beto-v2",
+      "dataset": "layouts_5",
+      "modo": "B",
+      "criterio": "relaxed",
+      "tp": 52,
+      "fp": 17,
+      "fn": 20,
+      "support": 72,
+      "predicted": 69,
+      "precision": 0.7536,
+      "recall": 0.7222,
+      "f1": 0.7376,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_layouts.json"
+    },
+    {
+      "version": "beto-v2",
+      "dataset": "layouts_5",
+      "modo": "C",
+      "criterio": "strict",
+      "tp": 26,
+      "fp": 59,
+      "fn": 46,
+      "support": 72,
+      "predicted": 85,
+      "precision": 0.305882,
+      "recall": 0.361111,
+      "f1": 0.33121,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_layouts.json"
+    },
+    {
+      "version": "beto-v2",
+      "dataset": "layouts_5",
+      "modo": "C",
+      "criterio": "relaxed",
+      "tp": 49,
+      "fp": 15,
+      "fn": 23,
+      "support": 72,
+      "predicted": 64,
+      "precision": 0.7656,
+      "recall": 0.6806,
+      "f1": 0.7206,
+      "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_layouts.json"
+    }
+  ]
+}
