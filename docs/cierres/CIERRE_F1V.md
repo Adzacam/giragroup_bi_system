@@ -69,4 +69,6 @@
 1. Confirmar si en la DW viva (donde `cache_beto_entidades` hoy **no existe**) queda cerrada la observación D2 sin acciones adicionales.
 2. Confirmar que el aislamiento por `BETO_MODELO_VERSION=beto-v2` en `cache_indice_beto` cubre el riesgo de las `90.212` filas `beto-v1` en la DW viva sin borrarlas.
 3. **B-10 residual:** rotación de la contraseña de PostgreSQL y reescritura de historial Git si aplica.
-4. **Revisión humana A-3 (90) y A-4 (7):** pendiente para F2 cuando Lean entregue los CSV.
+4. **Revisión humana A-3 (90) y A-4 (7) — COMPLETADA (`rev_01`, 2026-11-15):**
+   - **A-4 (`7/7`):** importado en [f0_top1_resumen.json](file:///c:/Users/DAZA/Documents/Universidad/Proyecto%20de%20Grado%207MO%20semestre/giragroup_bi_system/docs/mediciones/f0_top1_resumen.json) (`exclude: 7`, `human_validation_pending: false`, `top1: N/D` en `a3` y `a123`).
+   - **A-3 (`90/90`):** completado en [f0_desacuerdos_muestra.csv](file:///c:/Users/DAZA/Documents/Universidad/Proyecto%20de%20Grado%207MO%20semestre/giragroup_bi_system/docs/mediciones/f0_desacuerdos_muestra.csv) (`desacuerdo real: 90/90`). Resumen conjunto en [f1_revision_humana_resumen.json](file:///c:/Users/DAZA/Documents/Universidad/Proyecto%20de%20Grado%207MO%20semestre/giragroup_bi_system/docs/mediciones/f1_revision_humana_resumen.json).

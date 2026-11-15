@@ -1,65 +1,116 @@
 {
   "blind_package_sha256": "099d8f4974d3d411b065f2e14a58f43ded16adf1a958f8597abcaa6f0ebc6101",
-  "case_ids": [
-    "72a8230f96af06bf2eac28e8db20892a02dc3d734c26b0aa5f40c3db86a67912",
-    "73f47690d25fb70d62dc19e0352c334978ac20d76a13d4fc01eb974c289c231a",
-    "85dcd1c9154d2d351ef3ecaeb36e5736030e6c4fd16b44e97a3bbb3dec1dd4f4",
-    "97248a2a736f43ff77270545cd4681034d7b483abc68e5f2e66a57d5a7f0c443",
-    "b4fa36e5f2ff4c0d4ebb994ff68cee25734d29399f5d45300e00b43e52f8d2bb",
-    "c84d205fe7f583f0519c43c9c9e2b43aeff47e9391e62c3139c57d51cfc05b63",
-    "ea20e2387cf59b493a07f7137928a7da182a86c765555adef99db05586fef9a2"
-  ],
-  "coincidences": null,
-  "coverage_of_staging_contexts": 0.001368791552600704,
-  "eligible_context_completeness": {
-    "original_text_only_no_raw_source_link": 1,
-    "raw_line_saved": 6
+  "decision_kinds": {
+    "exclude": 7
   },
-  "eligible_population": 7,
-  "eligible_population_by_config": {
-    "a123": 4,
-    "a3": 4
+  "human_decisions_csv_sha256": "5ee7b13a1a889ac9ac464b7c862186464f4d36814152beb48fcad46a35414faf",
+  "human_validation_pending": false,
+  "independence_evidence": "Explicit reviewer attestation bound to sealed package; CSV validation cannot independently prove actual human behavior.",
+  "per_configuration": {
+    "a123": {
+      "coincidences": 0,
+      "eligible_population": 4,
+      "eligible_sample": 4,
+      "exclusions": [
+        {
+          "case_id": "72a8230f96af06bf2eac28e8db20892a02dc3d734c26b0aa5f40c3db86a67912",
+          "kind": "exclude",
+          "reason": "Fila duplicada idéntica a c84d205f sin localizador estable diferenciable (fail closed) y con dos estudiantes concatenados."
+        },
+        {
+          "case_id": "73f47690d25fb70d62dc19e0352c334978ac20d76a13d4fc01eb974c289c231a",
+          "kind": "exclude",
+          "reason": "Fila guardada idéntica a 85dcd1c9 sin localizador estable que permita distinguirlas (fail closed)."
+        },
+        {
+          "case_id": "97248a2a736f43ff77270545cd4681034d7b483abc68e5f2e66a57d5a7f0c443",
+          "kind": "exclude",
+          "reason": "Fila guardada idéntica a b4fa36e5 sin localizador estable que permita distinguirlas (fail closed)."
+        },
+        {
+          "case_id": "ea20e2387cf59b493a07f7137928a7da182a86c765555adef99db05586fef9a2",
+          "kind": "exclude",
+          "reason": "Ruido administrativo ('no hay facturacion') sin entidad válida ni enlace a fuente cruda (source_locator_available: false)."
+        }
+      ],
+      "review_coverage_of_eligible_population": 1.0,
+      "review_coverage_of_sample": 1.0,
+      "reviewed_sample": 4,
+      "top1": null,
+      "top1_display": "N/D",
+      "valid_decision_coverage": 0.0,
+      "valid_human_decisions": 0
+    },
+    "a3": {
+      "coincidences": 0,
+      "eligible_population": 4,
+      "eligible_sample": 4,
+      "exclusions": [
+        {
+          "case_id": "85dcd1c9154d2d351ef3ecaeb36e5736030e6c4fd16b44e97a3bbb3dec1dd4f4",
+          "kind": "exclude",
+          "reason": "Fila guardada idéntica a 73f47690 sin localizador estable que permita distinguirlas (fail closed)."
+        },
+        {
+          "case_id": "b4fa36e5f2ff4c0d4ebb994ff68cee25734d29399f5d45300e00b43e52f8d2bb",
+          "kind": "exclude",
+          "reason": "Fila guardada idéntica a 97248a2a sin localizador estable que permita distinguirlas (fail closed)."
+        },
+        {
+          "case_id": "c84d205fe7f583f0519c43c9c9e2b43aeff47e9391e62c3139c57d51cfc05b63",
+          "kind": "exclude",
+          "reason": "Fila duplicada idéntica a 72a8230f sin localizador estable diferenciable (fail closed) y con dos estudiantes concatenados."
+        },
+        {
+          "case_id": "ea20e2387cf59b493a07f7137928a7da182a86c765555adef99db05586fef9a2",
+          "kind": "exclude",
+          "reason": "Ruido administrativo ('no hay facturacion') sin entidad válida ni enlace a fuente cruda (source_locator_available: false)."
+        }
+      ],
+      "review_coverage_of_eligible_population": 1.0,
+      "review_coverage_of_sample": 1.0,
+      "reviewed_sample": 4,
+      "top1": null,
+      "top1_display": "N/D",
+      "valid_decision_coverage": 0.0,
+      "valid_human_decisions": 0
+    }
   },
-  "final_population": true,
-  "human_validation_pending": true,
-  "identity_definition": "SHA256 of file hash, source sheet/row when available, role, complete available private context and CI fields. Motive and ephemeral DB IDs excluded. Missing raw source context is explicit; identical saved rows without distinguishable stable locators fail closed.",
-  "private_blind_package": "C:\\Users\\DAZA\\Documents\\Universidad\\Proyecto de Grado 7MO semestre\\giragroup_bi_system\\output\\backups\\f0_lote\\revision_ciega\\final",
+  "population": {
+    "eligible_context_completeness": {
+      "original_text_only_no_raw_source_link": 1,
+      "raw_line_saved": 6
+    },
+    "eligible_population": 7,
+    "eligible_population_by_config": {
+      "a123": 4,
+      "a3": 4
+    },
+    "identity_definition": "SHA256 of file hash, source sheet/row when available, role, complete available private context and CI fields. Motive and ephemeral DB IDs excluded. Missing raw source context is explicit; identical saved rows without distinguishable stable locators fail closed.",
+    "sample_size": 7,
+    "source_population_unit": "Saved review-tray staging cases, not count of original source rows/persons; product staging may already group repeated original rows.",
+    "source_staging_rows_by_run": {
+      "f0_a123_llena_r1": 5111,
+      "f0_a123_llena_r2": 5111,
+      "f0_a123_llena_r3": 5111,
+      "f0_a123_vacia_r1": 5111,
+      "f0_a123_vacia_r2": 5111,
+      "f0_a123_vacia_r3": 5111,
+      "f0_a3_llena_r1": 5099,
+      "f0_a3_llena_r2": 5099,
+      "f0_a3_llena_r3": 5099,
+      "f0_a3_vacia_r1": 5099,
+      "f0_a3_vacia_r2": 5099,
+      "f0_a3_vacia_r3": 5099
+    },
+    "unique_staging_contexts": 5114
+  },
   "ranking_package_sha256": "c563c634994675470f021de21a2460d6e2ca54783a08da2c766e0da6b738feae",
-  "sample_size": 7,
-  "sampling": "Census if N<=100, otherwise100 unique source contexts with seed42; source rows retained per run, cache/repetition copies never multiply decisions.",
-  "source_population_unit": "Saved review-tray staging cases, not count of original source rows/persons; product staging may already group repeated original rows.",
-  "source_runs": [
-    "f0_a123_llena_r1",
-    "f0_a123_llena_r2",
-    "f0_a123_llena_r3",
-    "f0_a123_vacia_r1",
-    "f0_a123_vacia_r2",
-    "f0_a123_vacia_r3",
-    "f0_a3_llena_r1",
-    "f0_a3_llena_r2",
-    "f0_a3_llena_r3",
-    "f0_a3_vacia_r1",
-    "f0_a3_vacia_r2",
-    "f0_a3_vacia_r3"
+  "received_decisions": 7,
+  "reviewer_ids": [
+    "rev_01"
   ],
-  "source_runs_expected": 12,
-  "source_staging_rows_by_run": {
-    "f0_a123_llena_r1": 5111,
-    "f0_a123_llena_r2": 5111,
-    "f0_a123_llena_r3": 5111,
-    "f0_a123_vacia_r1": 5111,
-    "f0_a123_vacia_r2": 5111,
-    "f0_a123_vacia_r3": 5111,
-    "f0_a3_llena_r1": 5099,
-    "f0_a3_llena_r2": 5099,
-    "f0_a3_llena_r3": 5099,
-    "f0_a3_vacia_r1": 5099,
-    "f0_a3_vacia_r2": 5099,
-    "f0_a3_vacia_r3": 5099
-  },
-  "status": "pending_independent_human_decisions",
-  "top1": null,
-  "top1_display": "N/D",
-  "unique_staging_contexts": 5114,
-  "valid_human_decisions": 0
+  "sample_size": 7,
+  "source_manifest_sha256": "4782a73f5f87ea1bf610b990908169a867edd0fd68e85798dbb408d5c4579708",
+  "status": "human_decisions_imported"
 }

@@ -1,0 +1,34 @@
+{
+  "reviewer_id": "rev_01",
+  "a3_desacuerdos": {
+    "archivo": "docs/mediciones/f0_desacuerdos_muestra.csv",
+    "sha256": "fc02fdbb5ea34f69fa74330405376115b8031cc4b86bab60b47f61958b5d150d",
+    "total_muestra": 90,
+    "etiquetadas": 90,
+    "pendientes": 0,
+    "distribucion_human_label": {
+      "desacuerdo real": 90
+    },
+    "distribucion_por_etapa": {
+      "consolidacion": 30,
+      "lectura": 60
+    },
+    "distribucion_por_config": {
+      "a2": 19,
+      "a12": 19,
+      "a2w": 33,
+      "a123": 19
+    }
+  },
+  "a4_top1": {
+    "archivo_decisiones": "docs/mediciones/f0_top1_decisiones_humanas.csv",
+    "sha256_decisiones": "5ee7b13a1a889ac9ac464b7c862186464f4d36814152beb48fcad46a35414faf",
+    "archivo_resumen": "docs/mediciones/f0_top1_resumen.json",
+    "human_validation_pending": false,
+    "decision_kinds": {
+      "exclude": 7
+    },
+    "top1_a3": "N/D",
+    "top1_a123": "N/D"
+  }
+}
