@@ -1,0 +1,38 @@
+{
+  "tarea": "Z-2",
+  "fuente": "docs/mediciones/f1_d3b_pruebas.txt",
+  "total_fallos_d3b": 6,
+  "causa_raiz_comun": "En D3B se pasó DATABASE_URL apuntando a la base inexistente 'dw_base' en lugar de 'giragroup_db' (nombre creado por scripts/aislada_tmpfs.sh).",
+  "fallos": [
+    {
+      "test": "tests/sprint1/test_infraestructura_y_docker.py::TestInfraestructuraDocker::test_database_url_segura_y_configurada",
+      "error": "AssertionError: assert 'giragroup_db' in 'postgresql+psycopg2://giragroup_user:tmpfs_local@127.0.0.1:55632/dw_base'",
+      "causa": "Nombre de base 'dw_base' en lugar de 'giragroup_db'."
+    },
+    {
+      "test": "tests/sprint4/test_forecasting.py::test_extractor_series_reales",
+      "error": "AssertionError: assert 0 >= 24 (FATAL: database \"dw_base\" does not exist)",
+      "causa": "Nombre de base 'dw_base' en lugar de 'giragroup_db'."
+    },
+    {
+      "test": "tests/sprint4/test_forecasting.py::test_api_forecast_alumnos",
+      "error": "AssertionError: assert None == 'HoltWinters' (FATAL: database \"dw_base\" does not exist)",
+      "causa": "Nombre de base 'dw_base' en lugar de 'giragroup_db'."
+    },
+    {
+      "test": "tests/sprint4/test_forecasting.py::test_api_forecast_metas_mensual",
+      "error": "AssertionError: assert None == 'HoltWinters' (FATAL: database \"dw_base\" does not exist)",
+      "causa": "Nombre de base 'dw_base' en lugar de 'giragroup_db'."
+    },
+    {
+      "test": "tests/sprint4/test_forecasting.py::test_api_forecast_metas_anual",
+      "error": "AssertionError: assert None == 'OLS' (FATAL: database \"dw_base\" does not exist)",
+      "causa": "Nombre de base 'dw_base' en lugar de 'giragroup_db'."
+    },
+    {
+      "test": "tests/sprint6/test_seguridad_y_resiliencia_api.py::test_loop4_validacion_estricta_contratos",
+      "error": "Fallo al consultar /api/v1/forecast/alumnos contra _dw_session_factory() por database \"dw_base\" does not exist",
+      "causa": "Nombre de base 'dw_base' en lugar de 'giragroup_db'."
+    }
+  ]
+}

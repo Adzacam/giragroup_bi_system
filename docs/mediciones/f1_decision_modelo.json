@@ -11,5 +11,28 @@
     "docs/mediciones/f1_modelo_comparacion.json",
     "docs/mediciones/f1_modelo_manifest.json",
     "docs/cierres/PLAN_F1V.md"
-  ]
+  ],
+  "d3_bis": {
+    "decision": "1. Mantiene beto-v2",
+    "fecha": "2026-11-15",
+    "autoridad": "decidido por Lean",
+    "modelo_vigente": "pipeline/semantic/beto_local",
+    "modelo_vigente_sha256": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+    "rebuild_ejecutado": false,
+    "costo_declarado": "+498 casos de bandeja, +509 en un grupo APROBAR de ARCA",
+    "fuentes": [
+      "docs/mediciones/f1_d3b_comparacion.md",
+      "docs/mediciones/f1_d3b_validez.json",
+      "docs/mediciones/f1_r2_diagnostico.json"
+    ]
+  },
+  "rnf03_alcance_f3": {
+    "decision": "2. RNF-03, para F3: medir solo máquina ciclo y tener otro número con revisión humana",
+    "fecha": "2026-11-15",
+    "autoridad": "decidido por Lean",
+    "metricas_f3": [
+      "solo_maquina_ciclo",
+      "maquina_ciclo_mas_revision_humana"
+    ]
+  }
 }

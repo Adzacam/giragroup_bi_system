@@ -1,0 +1,85 @@
+{
+  "tarea": "Z-3",
+  "fuentes": [
+    "docs/mediciones/f1_off.json.huella.json",
+    "docs/mediciones/f1_d3b_corrida_v1_vacia_r1.json.huella.json",
+    "docs/mediciones/f1_validacion_vacia_r1.json.huella.json",
+    "docs/mediciones/f1_d3b_corrida_v2_vacia_r1.json.huella.json",
+    "scripts/huella_dw.py"
+  ],
+  "comparacion_huellas": {
+    "v1_f1_off_vs_d3b": {
+      "tablas_distintas": [
+        {
+          "tabla": "stg_entidad_no_resuelta",
+          "filas_base": 5099,
+          "filas_nueva": 5099,
+          "md5_base": "03fd0a265ef47aeb1b1d10f48aa6ddc5",
+          "md5_nueva": "b2cdb582e73015c7a0985c219612db71"
+        }
+      ],
+      "bandeja_igual": true,
+      "kpis_iguales": true
+    },
+    "v2_f1_validacion_vs_d3b": {
+      "tablas_distintas": [
+        {
+          "tabla": "fact_situacion_financiera",
+          "filas_base": 725,
+          "filas_nueva": 725,
+          "md5_base": "d2c1185b2f3037567a81747cc298705a",
+          "md5_nueva": "b6c34aad63570d51a97125ba66b0838c"
+        },
+        {
+          "tabla": "stg_entidad_no_resuelta",
+          "filas_base": 5076,
+          "filas_nueva": 5076,
+          "md5_base": "c2b72bb03a5d4cdd1aba18f650b9b382",
+          "md5_nueva": "fff3ce024b55bde8eb96e0d6f008e431"
+        }
+      ],
+      "bandeja_firma_sha256_igual": true,
+      "kpis_iguales": true
+    }
+  },
+  "diagnostico_por_tabla": [
+    {
+      "tabla": "stg_entidad_no_resuelta",
+      "columnas_en_huella": [
+        "id_documento", "tipo_entidad", "texto_original", "ci_temporal",
+        "mejor_candidato", "score_fuzzy", "fk_estado", "nivel_confianza",
+        "resuelto", "resuelto_por", "id_dimension_resuelta", "motivo",
+        "registro_origen_id", "estado_resolucion", "lock_usuario_id",
+        "version", "clave_origen"
+      ],
+      "columnas_sensibles_identificadas": [
+        "registro_origen_id",
+        "score_fuzzy",
+        "nivel_confianza"
+      ],
+      "causa": "Las huellas JSON no almacenan filas individuales; sin embargo, dentro de una misma sesión (6/6 corridas de F1-V y 6/6 corridas de D3B) el md5 es 100% idéntico y solo cambia entre sesiones de contenedor sin cambios de código (git diff = 0 desde 4b4a554). Esto indica sensibilidad a id autoincremental de origen (registro_origen_id en staging_registros_crudos, no excluido en huella_dw.py) u orden de iteración dependiente de PYTHONHASHSEED en desempates / formato de flotantes."
+    },
+    {
+      "tabla": "fact_situacion_financiera",
+      "columnas_en_huella": [
+        "id_estudiante", "id_tiempo", "monto_deuda", "cuotas_impagas",
+        "estado_cartera", "tipo_alerta", "id_documento", "nivel_confianza_ia",
+        "requiere_revision", "fk_estado", "id_modulo", "id_categoria_fin",
+        "monto_pagado", "concepto"
+      ],
+      "columnas_sensibles_identificadas": [
+        "nivel_confianza_ia",
+        "id_documento"
+      ],
+      "causa": "Mismas 725 filas, mismo dim_estudiante (md5 da1dfde7... idéntico), misma bandeja (680/19, firma_sha256 22bd6464... idéntica) y mismos KPIs. La variación entre sesiones de contenedor sin cambios de código apunta al orden de iteración en el upsert de FactSituacionFinanciera (dw_loader.py:1225-1230) o precisión flotante en nivel_confianza_ia."
+    }
+  ],
+  "veredicto_f3": {
+    "estado": "afecta",
+    "alcance": "Afecta únicamente a la comparación estricta por md5 de stg_entidad_no_resuelta y fact_situacion_financiera entre sesiones distintas de contenedor. No afecta conteos de filas, bandeja de revisión, KPIs ni las otras 12 tablas del DW.",
+    "propuesta_para_f3_sin_aplicar": [
+      "En scripts/huella_dw.py (sin modificar en F1Z): excluir 'registro_origen_id' de stg_entidad_no_resuelta (clave sustituta autoincremental) y normalizar columnas flotantes ('score_fuzzy', 'nivel_confianza', 'nivel_confianza_ia') a round(v, 4).",
+      "Fijar PYTHONHASHSEED=0 en el entorno de ejecución de las corridas congeladas de F3 para eliminar variabilidad entre reinicios de contenedor."
+    ]
+  }
+}
