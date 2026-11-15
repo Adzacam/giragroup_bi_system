@@ -1,0 +1,167 @@
+{
+  "gold_510": {
+    "estricto": {
+      "MODULO": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 150
+      },
+      "PER_DOCENTE": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 50
+      },
+      "PER_ESTUDIANTE": {
+        "precision": 0.9923076923076923,
+        "recall": 0.9923076923076923,
+        "f1-score": 0.9923076923076923,
+        "support": 130
+      },
+      "PROGRAMA": {
+        "precision": 0.9354838709677419,
+        "recall": 0.9666666666666667,
+        "f1-score": 0.9508196721311476,
+        "support": 180
+      },
+      "micro avg": {
+        "precision": 0.9748062015503876,
+        "recall": 0.9862745098039216,
+        "f1-score": 0.9805068226120858,
+        "support": 510
+      },
+      "macro avg": {
+        "precision": 0.9819478908188586,
+        "recall": 0.9897435897435898,
+        "f1-score": 0.98578184110971,
+        "support": 510
+      },
+      "weighted avg": {
+        "precision": 0.975268817204301,
+        "recall": 0.9862745098039216,
+        "f1-score": 0.9806814529090325,
+        "support": 510
+      }
+    },
+    "relajado": {
+      "precision": 0.9864603481624759,
+      "recall": 1.0,
+      "f1": 0.9931840311587147,
+      "tp": 510,
+      "gold": 510,
+      "pred": 517,
+      "criterio": "mismo tipo y solapamiento de tokens; matching m\u00e1ximo uno a uno"
+    }
+  },
+  "layouts_5": {
+    "estricto": {
+      "MODULO": {
+        "precision": 0.18181818181818182,
+        "recall": 0.11764705882352941,
+        "f1-score": 0.14285714285714285,
+        "support": 17
+      },
+      "PER_DOCENTE": {
+        "precision": 0.34782608695652173,
+        "recall": 0.4444444444444444,
+        "f1-score": 0.3902439024390244,
+        "support": 18
+      },
+      "PER_ESTUDIANTE": {
+        "precision": 0.9,
+        "recall": 0.4090909090909091,
+        "f1-score": 0.5625000000000001,
+        "support": 22
+      },
+      "PROGRAMA": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 15
+      },
+      "micro avg": {
+        "precision": 0.296875,
+        "recall": 0.2638888888888889,
+        "f1-score": 0.2794117647058824,
+        "support": 72
+      },
+      "macro avg": {
+        "precision": 0.3574110671936759,
+        "recall": 0.24279560308972076,
+        "f1-score": 0.2739002613240419,
+        "support": 72
+      },
+      "weighted avg": {
+        "precision": 0.4048858146684233,
+        "recall": 0.2638888888888889,
+        "f1-score": 0.30316613433991485,
+        "support": 72
+      }
+    },
+    "relajado": {
+      "precision": 0.7764705882352941,
+      "recall": 0.9166666666666666,
+      "f1": 0.8407643312101911,
+      "tp": 66,
+      "gold": 72,
+      "pred": 85,
+      "criterio": "mismo tipo y solapamiento de tokens; matching m\u00e1ximo uno a uno"
+    }
+  },
+  "test.conll": {
+    "estricto": {
+      "MODULO": {
+        "precision": 0.34782608695652173,
+        "recall": 0.041025641025641026,
+        "f1-score": 0.07339449541284404,
+        "support": 195
+      },
+      "PER_DOCENTE": {
+        "precision": 1.0,
+        "recall": 0.7379310344827587,
+        "f1-score": 0.8492063492063493,
+        "support": 145
+      },
+      "PER_ESTUDIANTE": {
+        "precision": 0.7844036697247706,
+        "recall": 0.95,
+        "f1-score": 0.8592964824120602,
+        "support": 180
+      },
+      "PROGRAMA": {
+        "precision": 0.9458333333333333,
+        "recall": 0.9869565217391304,
+        "f1-score": 0.9659574468085107,
+        "support": 230
+      },
+      "micro avg": {
+        "precision": 0.8724489795918368,
+        "recall": 0.684,
+        "f1-score": 0.7668161434977578,
+        "support": 750
+      },
+      "macro avg": {
+        "precision": 0.7695157725036564,
+        "recall": 0.6789782993118825,
+        "f1-score": 0.686963693459941,
+        "support": 750
+      },
+      "weighted avg": {
+        "precision": 0.7620805522315295,
+        "recall": 0.684,
+        "f1-score": 0.6857205691207381,
+        "support": 750
+      }
+    },
+    "relajado": {
+      "precision": 0.8973042362002568,
+      "recall": 0.932,
+      "f1": 0.9143230869849576,
+      "tp": 699,
+      "gold": 750,
+      "pred": 779,
+      "criterio": "mismo tipo y solapamiento de tokens; matching m\u00e1ximo uno a uno"
+    }
+  }
+}

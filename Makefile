@@ -12,7 +12,7 @@ COMPOSE_FALLBACK := docker-compose
 EXEC_PIPELINE := docker compose exec -e ENVIRONMENT=test -e APP_ENV=test -e EMAIL_BACKEND=console -e DATABASE_URL="$(TEST_DATABASE_URL)" -e CATALOG_DATABASE_URL="$(TEST_DATABASE_URL)" pipeline
 EXEC_API := docker compose exec -e ENVIRONMENT=test -e APP_ENV=test -e EMAIL_BACKEND=console -e DATABASE_URL="$(TEST_DATABASE_URL)" -e PYTHONPATH=/app api
 
-.PHONY: help test-unit test-integration test-pipeline test-api test-e2e test-all coverage clean
+.PHONY: beto-reproducir help test-unit test-integration test-pipeline test-api test-e2e test-all coverage clean
 
 help:
 	@echo "=================================================================="
@@ -53,3 +53,7 @@ test-all: test-unit test-integration test-pipeline test-api
 coverage:
 	@echo "==> Generando informe de cobertura de código..."
 	$(EXEC_PIPELINE) pytest tests/sprint2/ tests/sprint3/ tests/sprint4/ --cov=pipeline --cov-report=term-missing
+
+beto-reproducir:
+	@echo "==> Reproduciendo fine-tuning de BETO (corpus -> entrenamiento temporal -> evaluacion)..."
+	bash scripts/beto_reproducir.sh

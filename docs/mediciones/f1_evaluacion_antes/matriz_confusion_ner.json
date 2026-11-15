@@ -1,0 +1,83 @@
+{
+  "clases": [
+    "O",
+    "MODULO",
+    "PER_DOCENTE",
+    "PER_ESTUDIANTE",
+    "PROGRAMA"
+  ],
+  "matriz": [
+    [
+      1470,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      300,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      120,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      463,
+      5
+    ],
+    [
+      0,
+      2,
+      0,
+      0,
+      1151
+    ]
+  ],
+  "por_clase": {
+    "O": {
+      "tp": 1470,
+      "fp": 0,
+      "fn": 0,
+      "soporte": 1470
+    },
+    "MODULO": {
+      "tp": 300,
+      "fp": 2,
+      "fn": 0,
+      "soporte": 300
+    },
+    "PER_DOCENTE": {
+      "tp": 120,
+      "fp": 0,
+      "fn": 0,
+      "soporte": 120
+    },
+    "PER_ESTUDIANTE": {
+      "tp": 463,
+      "fp": 0,
+      "fn": 5,
+      "soporte": 468
+    },
+    "PROGRAMA": {
+      "tp": 1151,
+      "fp": 5,
+      "fn": 2,
+      "soporte": 1153
+    }
+  },
+  "n_tokens": 3511,
+  "n_secuencias": 180,
+  "nivel": "token (B-/I- colapsados al tipo; incluye O)",
+  "conjunto": "gold_510",
+  "origen": "C:\\Users\\DAZA\\Documents\\Universidad\\Proyecto de Grado 7MO semestre\\giragroup_bi_system\\docs\\mediciones\\f1_evaluacion_antes\\gold_510_predicciones.json"
+}

@@ -2,22 +2,26 @@
 """
 scripts/entrenar_beto_robusto.py
 =================================
-Pipeline de Fine-Tuning y Evaluación Ciega de BETO para GiraGroup BI.
+Pipeline de Fine-Tuning y Evaluación de BETO para GiraGroup BI.
 
 1. Modelo Base: dccuchile/bert-base-spanish-wwm-cased
-2. 9 Etiquetas Institucionales BIO:
+2. 9 Etiquetas Institucionales IOB2:
    O, B-PER_ESTUDIANTE, I-PER_ESTUDIANTE, B-PER_DOCENTE, I-PER_DOCENTE,
    B-MODULO, I-MODULO, B-PROGRAMA, I-PROGRAMA
-3. Optimizador: AdamW (lr=2.5e-5, weight_decay=0.01)
-4. Early Stopping guiado estrictamente por Dev Loss y Dev F1
-5. Evaluación Final Ciega en:
-   a) Test Gold Real (180 líneas de datos reales auditables)
-   b) test.conll sintético (230 oraciones)
-6. Persistencia de checkpoint en pipeline/semantic/beto_local/ y training_info.json.
-"""
-from pathlib import Path as _OutputPath
-_OutputPath('output/historicos_nuevos').mkdir(parents=True, exist_ok=True)
+3. Optimizador: AdamW (lr=LR, weight_decay=WEIGHT_DECAY), 3 épocas fijas, batch 16, CPU.
+4. NO hay early stopping: siempre se corren las 3 épocas y se conserva el checkpoint de
+   mayor F1 estricto en dev (selección de mejor checkpoint, no parada anticipada).
+5. Evaluación final sobre:
+   a) Test Gold Real (180 líneas, 510 entidades)
+   b) test.conll sintético (230 oraciones; límite conocido: micro F1 ~0,71)
+6. Persiste el checkpoint en --salida y training_info.json con trazabilidad completa
+   (SHA-256 del modelo y de train/dev/test, versiones, comando, semilla).
 
+Uso (no pisa pipeline/semantic/beto_local ; siempre en directorio nuevo):
+    PYTHONHASHSEED=0 python scripts/entrenar_beto_robusto.py --datos <dir con jsonl> --salida <dir nuevo>
+"""
+import argparse
+import hashlib
 import os
 import sys
 import json
@@ -60,7 +64,70 @@ LABEL2ID: Dict[str, int] = {label: i for i, label in enumerate(LABEL_LIST)}
 ID2LABEL: Dict[int, str] = {i: label for i, label in enumerate(LABEL_LIST)}
 
 MODEL_NAME = "dccuchile/bert-base-spanish-wwm-cased"
-OUTPUT_DIR = os.path.join(str(BASE_DIR), "pipeline", "semantic", "beto_local")
+MODELO_VIGENTE_DIR = os.path.join(str(BASE_DIR), "pipeline", "semantic", "beto_local")
+
+
+def sha256_archivo(ruta) -> str:
+    h = hashlib.sha256()
+    with open(ruta, "rb") as f:
+        for bloque in iter(lambda: f.read(1 << 20), b""):
+            h.update(bloque)
+    return h.hexdigest()
+
+
+def construir_training_info(*, salida, datos_dir, historial, best_epoch, best_dev_f1, duracion, device,
+                            tamanos, comando=None, semilla=SEED, versiones=None, timestamp=None) -> Dict[str, Any]:
+    """Arma el training_info.json con trazabilidad: hashes del modelo y del corpus, versiones, comando y semilla."""
+    import platform
+    if versiones is None:
+        import transformers
+        import seqeval
+        try:
+            from importlib.metadata import version as _v
+            seqeval_v = _v("seqeval")
+        except Exception:
+            seqeval_v = getattr(seqeval, "__version__", "desconocida")
+        versiones = {"python": platform.python_version(), "torch": torch.__version__,
+                     "transformers": transformers.__version__, "seqeval": seqeval_v, "numpy": np.__version__}
+    datos_dir = Path(datos_dir)
+    return {
+        "status": "trained_success",
+        "timestamp": timestamp or datetime.now().isoformat(),
+        "model_base": MODEL_NAME,
+        "output_dir": str(salida),
+        "epochs": EPOCHS,
+        "best_epoch": best_epoch,
+        "learning_rate": LR,
+        "weight_decay": WEIGHT_DECAY,
+        "batch_size": BATCH_SIZE,
+        "max_length": MAX_LEN,
+        "seed": semilla,
+        "train_size": tamanos["train"],
+        "dev_size": tamanos["dev"],
+        "test_gold_size": tamanos["test"],
+        "classes": LABEL_LIST,
+        "best_dev_f1": round(best_dev_f1, 4),
+        "train_duration_sec": round(duracion, 2),
+        "device": str(device),
+        "determinism": {"algorithms": True, "cpu_threads": 1, "PYTHONHASHSEED": os.environ.get("PYTHONHASHSEED")},
+        "selection": "mejor checkpoint por F1 estricto en dev (sin early stopping)",
+        "command": comando if comando is not None else {"argv": [sys.executable] + sys.argv, "PYTHONHASHSEED": os.environ.get("PYTHONHASHSEED"), "cwd": os.getcwd()},
+        "versions": versiones,
+        "sha256": {
+            "model.safetensors": sha256_archivo(Path(salida) / "model.safetensors"),
+            "train_robusto.jsonl": sha256_archivo(datos_dir / "train_robusto.jsonl"),
+            "dev_robusto.jsonl": sha256_archivo(datos_dir / "dev_robusto.jsonl"),
+            "test_gold_real.jsonl": sha256_archivo(datos_dir / "test_gold_real.jsonl"),
+        },
+        "epoch_history": historial,
+    }
+
+
+EPOCHS = 3
+LR = 2.5e-5
+WEIGHT_DECAY = 0.01
+BATCH_SIZE = 16
+MAX_LEN = 128
 
 class NerDataset(Dataset):
     def __init__(self, data_path: str, tokenizer, max_len: int = 128):
@@ -173,8 +240,16 @@ def evaluar_modelo(model, dataloader, device):
         "y_pred": y_pred_all
     }
 
-def entrenar_beto():
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+def entrenar_beto(datos_dir="data", salida=None):
+    validar_salida(salida)
+    random.seed(SEED)
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+    torch.use_deterministic_algorithms(True)
+    torch.set_num_threads(1)
+    salida = str(salida)
+    datos_dir = Path(datos_dir)
+    os.makedirs(salida, exist_ok=True)
     device = torch.device("cpu")
     print(f"Iniciando fine-tuning de BETO en: {device}")
     t0_global = time.time()
@@ -190,19 +265,18 @@ def entrenar_beto():
     model.to(device)
 
     print("Cargando Datasets de Train y Dev...")
-    train_ds = NerDataset("data/train_robusto.jsonl", tokenizer, max_len=128)
-    dev_ds = NerDataset("data/dev_robusto.jsonl", tokenizer, max_len=128)
-    test_gold_ds = NerDataset("data/test_gold_real.jsonl", tokenizer, max_len=128)
+    train_ds = NerDataset(str(datos_dir / "train_robusto.jsonl"), tokenizer, max_len=MAX_LEN)
+    dev_ds = NerDataset(str(datos_dir / "dev_robusto.jsonl"), tokenizer, max_len=MAX_LEN)
+    test_gold_ds = NerDataset(str(datos_dir / "test_gold_real.jsonl"), tokenizer, max_len=MAX_LEN)
 
-    train_loader = DataLoader(train_ds, batch_size=16, shuffle=True)
-    dev_loader = DataLoader(dev_ds, batch_size=16, shuffle=False)
-    test_gold_loader = DataLoader(test_gold_ds, batch_size=16, shuffle=False)
+    train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
+    dev_loader = DataLoader(dev_ds, batch_size=BATCH_SIZE, shuffle=False)
+    test_gold_loader = DataLoader(test_gold_ds, batch_size=BATCH_SIZE, shuffle=False)
 
     print(f"Train samples: {len(train_ds)}, Dev samples: {len(dev_ds)}, Test Gold samples: {len(test_gold_ds)}")
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=2.5e-5, weight_decay=0.01)
 
-    EPOCHS = 3
     best_dev_f1 = -1.0
     best_epoch = 0
     history = []
@@ -249,42 +323,26 @@ def entrenar_beto():
         if dev_res["f1"] > best_dev_f1:
             best_dev_f1 = dev_res["f1"]
             best_epoch = epoch
-            print(f"    [MEJOR MODELO DEV] Guardando checkpoint en {OUTPUT_DIR}...")
-            model.save_pretrained(OUTPUT_DIR)
-            tokenizer.save_pretrained(OUTPUT_DIR)
+            print(f"    [MEJOR MODELO DEV] Guardando checkpoint en {salida}...")
+            model.save_pretrained(salida, safe_serialization=True)
+            tokenizer.save_pretrained(salida)
 
     duracion_total = time.time() - t0_global
     print(f"\nEntrenamiento completado en {duracion_total:.1f}s. Mejor época en Dev: {best_epoch} (Dev F1: {best_dev_f1*100:.2f}%)")
 
-    # Guardar metadata del entrenamiento
-    training_info = {
-        "status": "trained_success",
-        "timestamp": datetime.now().isoformat(),
-        "model_base": MODEL_NAME,
-        "output_dir": OUTPUT_DIR,
-        "epochs": EPOCHS,
-        "best_epoch": best_epoch,
-        "learning_rate": 2.5e-5,
-        "batch_size": 16,
-        "max_length": 128,
-        "seed": SEED,
-        "train_size": len(train_ds),
-        "dev_size": len(dev_ds),
-        "test_gold_size": len(test_gold_ds),
-        "classes": LABEL_LIST,
-        "best_dev_f1": round(best_dev_f1, 4),
-        "train_duration_sec": round(duracion_total, 2),
-        "device": str(device),
-        "epoch_history": history
-    }
-
-    with open(os.path.join(OUTPUT_DIR, "training_info.json"), "w", encoding="utf-8") as f:
+    # Guardar metadata del entrenamiento (con trazabilidad: hashes, versiones, comando, semilla)
+    training_info = construir_training_info(
+        salida=salida, datos_dir=datos_dir, historial=history, best_epoch=best_epoch,
+        best_dev_f1=best_dev_f1, duracion=duracion_total, device=device,
+        tamanos={"train": len(train_ds), "dev": len(dev_ds), "test": len(test_gold_ds)},
+    )
+    with open(os.path.join(salida, "training_info.json"), "w", encoding="utf-8") as f:
         json.dump(training_info, f, indent=2, ensure_ascii=False)
 
     print("\n--- EVALUACIÓN FINAL CIEGA ---")
     # Cargar mejor modelo guardado
-    print(f"Cargando mejor modelo guardado desde: {OUTPUT_DIR}")
-    best_model = AutoModelForTokenClassification.from_pretrained(OUTPUT_DIR)
+    print(f"Cargando mejor modelo guardado desde: {salida}")
+    best_model = AutoModelForTokenClassification.from_pretrained(salida)
     best_model.to(device)
 
     # 1. Test Gold Real
@@ -294,8 +352,8 @@ def entrenar_beto():
     # 2. Test Conll Sintético
     print("2. Evaluando en test.conll sintético (230 oraciones)...")
     # Cargar test.conll
-    from scripts.eval_ner import load_conll, reconstruct_text_and_offsets
-    X_conll, Y_conll = load_conll(Path("data/ner/test.conll"))
+    from scripts.beto_metricas import load_conll, reconstruct_text_and_offsets
+    X_conll, Y_conll = load_conll(BASE_DIR / "data" / "ner" / "test.conll")
     
     Y_pred_conll = []
     best_model.eval()
@@ -337,7 +395,7 @@ def entrenar_beto():
                 pred_spans.append({"tipo": cur_tag, "start": cur_start, "end": cur_end})
 
             # Mapear a tokens conll
-            from scripts.eval_ner import spans_to_iob2
+            from scripts.preparar_corpus_robusto import spans_to_iob2
             conll_preds = spans_to_iob2(tok_offsets, pred_spans)
             Y_pred_conll.append(conll_preds)
 
@@ -366,17 +424,23 @@ def entrenar_beto():
     gold_report_clean = clean_report(gold_res["report"])
     synth_report_clean = clean_report(synth_report)
 
+    from scripts.beto_metricas import metricas_relajadas
     metricas_consolidadas = {
         "fecha": datetime.now().isoformat(),
-        "modelo": OUTPUT_DIR,
+        "modelo": salida,
         "test_gold_real": gold_report_clean,
         "test_conll_sintetico": synth_report_clean,
+        "test_conll_relajado": metricas_relajadas(Y_conll, Y_pred_conll),
+        "test_gold_relajado": metricas_relajadas(gold_res["y_true"], gold_res["y_pred"]),
         "training_info": training_info
     }
 
-    os.makedirs("output", exist_ok=True)
-    with open("output/historicos_nuevos/metricas_ner_robusto.json", "w", encoding="utf-8") as f:
+    with open(os.path.join(salida, "metricas_ner_robusto.json"), "w", encoding="utf-8") as f:
         json.dump(metricas_consolidadas, f, indent=2, ensure_ascii=False)
+    # y_true / y_pred token a token sobre test_gold_real (insumo de la matriz de confusión real)
+    with open(os.path.join(salida, "predicciones_test_gold.json"), "w", encoding="utf-8") as f:
+        json.dump({"dataset": "test_gold_real.jsonl", "y_true": gold_res["y_true"], "y_pred": gold_res["y_pred"]},
+                  f, ensure_ascii=False)
 
     print("\n=======================================================")
     print("MÉTRICAS TEST GOLD REAL (180 LÍNEAS REALES AUDITABLES):")
@@ -388,5 +452,28 @@ def entrenar_beto():
     print("=======================================================")
     print(json.dumps(synth_report_clean, indent=2, ensure_ascii=False))
 
+def validar_salida(salida):
+    if salida is None:
+        raise ValueError("--salida es obligatorio")
+    destino = Path(salida).resolve()
+    if destino.is_relative_to((BASE_DIR / "pipeline").resolve()):
+        raise ValueError("No se permite escribir en pipeline/")
+    if destino.exists() and any(destino.iterdir()):
+        raise ValueError("El directorio de salida debe ser nuevo o vacío")
+
+
+def _parsear_args(argv=None):
+    ap = argparse.ArgumentParser(description="Fine-tuning de BETO para NER institucional")
+    ap.add_argument("--datos", default=str(BASE_DIR / "data"), help="Directorio con train/dev/test_gold_real .jsonl")
+    ap.add_argument("--salida", required=True, help="Directorio de salida del modelo (obligatorio)")
+    args = ap.parse_args(argv)
+    try:
+        validar_salida(args.salida)
+    except ValueError as exc:
+        ap.error(str(exc))
+    return args
+
+
 if __name__ == "__main__":
-    entrenar_beto()
+    _a = _parsear_args()
+    entrenar_beto(datos_dir=_a.datos, salida=_a.salida)

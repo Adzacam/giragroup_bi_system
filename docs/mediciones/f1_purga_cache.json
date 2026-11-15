@@ -1,0 +1,60 @@
+{
+  "primera_purga": {
+    "fecha": "2026-11-14T21:39:57.306315-04:00",
+    "destino": {
+      "scheme": "postgresql",
+      "host": "127.0.0.1",
+      "port": 55632,
+      "database": "f1_a7_evidencia"
+    },
+    "tabla": "public.cache_beto_entidades",
+    "tabla_existe": true,
+    "filas_antes": 2,
+    "filas_eliminadas": 2,
+    "filas_despues": 0,
+    "tablas_ajenas_antes": {
+      "public.cache_indice_beto": 90212,
+      "public.dim_estudiante": 14078,
+      "public.fact_rendimiento_academico": 0,
+      "public.stg_entidad_no_resuelta": 0,
+      "public.schema_migrations": 14
+    },
+    "tablas_ajenas_despues": {
+      "public.cache_indice_beto": 90212,
+      "public.dim_estudiante": 14078,
+      "public.fact_rendimiento_academico": 0,
+      "public.stg_entidad_no_resuelta": 0,
+      "public.schema_migrations": 14
+    },
+    "tablas_ajenas_sin_cambios": true
+  },
+  "segunda_purga_idempotente": {
+    "fecha": "2026-11-14T21:39:57.339376-04:00",
+    "destino": {
+      "scheme": "postgresql",
+      "host": "127.0.0.1",
+      "port": 55632,
+      "database": "f1_a7_evidencia"
+    },
+    "tabla": "public.cache_beto_entidades",
+    "tabla_existe": true,
+    "filas_antes": 0,
+    "filas_eliminadas": 0,
+    "filas_despues": 0,
+    "tablas_ajenas_antes": {
+      "public.cache_indice_beto": 90212,
+      "public.dim_estudiante": 14078,
+      "public.fact_rendimiento_academico": 0,
+      "public.stg_entidad_no_resuelta": 0,
+      "public.schema_migrations": 14
+    },
+    "tablas_ajenas_despues": {
+      "public.cache_indice_beto": 90212,
+      "public.dim_estudiante": 14078,
+      "public.fact_rendimiento_academico": 0,
+      "public.stg_entidad_no_resuelta": 0,
+      "public.schema_migrations": 14
+    },
+    "tablas_ajenas_sin_cambios": true
+  }
+}

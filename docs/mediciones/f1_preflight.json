@@ -1,0 +1,11 @@
+{
+  "fecha": "2026-11-14T21:40:02.476853-04:00",
+  "rama": "beto-integracion",
+  "commit": "2aa5398d917ef503a26bb300cf514ed2ffd1db62",
+  "rama_entrenamiento_ref": "beto-entrenamiento@9888539",
+  "lote_sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "tmpfs_puerto_host": 55632,
+  "tmpfs_contenedor": "beto_pg_tmpfs:5432",
+  "snapshot_vs_copia_diferencias": [],
+  "snapshot_igual_copia": true
+}

@@ -1,0 +1,3 @@
+
+# El target BETO se ejecuta con Bash también en Windows.
+scripts/beto_reproducir.sh text eol=lf

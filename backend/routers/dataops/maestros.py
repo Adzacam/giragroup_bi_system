@@ -434,12 +434,15 @@ def infer_beto_text(payload: BetoInferRequest, db: Session = Depends(get_db)):
         "status": "success",
         "engine": pipeline_service_data.get("engine", "BETO_PYTORCH_REAL") if pipeline_service_data else "BETO_CATALOG_HYBRID",
         "pytorch_active": bool(pipeline_service_data and pipeline_service_data.get("pytorch_active")),
-        "model": "mrm8488/bert-spanish-cased-finetuned-ner",
+        "model": "pipeline/semantic/beto_local",
         "base_model": "dccuchile/bert-base-spanish-wwm-cased",
         "conll_mapping_note": (
-            "El modelo mrm8488/bert-spanish-cased-finetuned-ner (basado en BETO dccuchile/bert-base-spanish-wwm-cased) "
-            "emite etiquetas CoNLL (PER, ORG, LOC, MISC). PER -> DOCENTE (con título) o ESTUDIANTE; "
-            "MÓDULO, DOCENTE, PROGRAMA y CONCEPTO_FINANCIERO se resuelven mediante Catálogo Maestro + RapidFuzz."
+            "El modelo vigente es el checkpoint local pipeline/semantic/beto_local: BETO "
+            "(dccuchile/bert-base-spanish-wwm-cased) ajustado con 9 etiquetas IOB2 institucionales "
+            "(PER_ESTUDIANTE, PER_DOCENTE, MODULO, PROGRAMA). mrm8488/bert-spanish-cased-finetuned-ner "
+            "(etiquetas CoNLL PER, ORG, LOC, MISC) es solo el respaldo si falla la carga local "
+            "(pipeline/config.py: MODELO_BETO_FALLBACK). Además, MÓDULO, DOCENTE, PROGRAMA y "
+            "CONCEPTO_FINANCIERO se resuelven mediante Catálogo Maestro + RapidFuzz."
         ),
         "tokens": tokens_list,
         "embeddings": embeddings_obj,
@@ -492,7 +495,7 @@ def get_telemetry_summary(db: Session = Depends(get_db)):
             "human_review_pct": round(resumen.get("auditPct", 0.0) + resumen.get("inconsistenciasPct", 0.0), 1),
         },
         "model_specs": {
-            "architecture": "mrm8488/bert-spanish-cased-finetuned-ner (BETO)",
+            "architecture": "BETO dccuchile/bert-base-spanish-wwm-cased; checkpoint local de 9 etiquetas IOB2",
             "framework": "PyTorch 2.2 + HuggingFace Transformers",
             "vocabulary_size": 31002,
             "compuerta_lectura_modelo": COMPUERTA_LECTURA_MODELO_PCT,

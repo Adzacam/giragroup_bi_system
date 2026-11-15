@@ -1,0 +1,94 @@
+{
+  "fuentes_y_evaluacion": {
+    "uploads/data/Experiencia Docente 2.0.xlsx": {
+      "sha256": "bf8432b5193257446c670310d7bfeccc28a8e277a0d1c7bdab8f1b1c3b84ac5c",
+      "bytes": 3409451
+    },
+    "uploads/data/Base centralizada Académica ARCA (1).xlsx": {
+      "sha256": "cd6070f0c3b61e88c1b86f7f2bcd909367e0ce8f770f16e671fc93e1218ded52",
+      "bytes": 1167153
+    },
+    "uploads/data/TBL_INSCRITOS.xlsx": {
+      "sha256": "5b72c61c436fd5d7e7332ae734001aaee52f9fb24645400d253a6c64b3d8b572",
+      "bytes": 3436775
+    },
+    "uploads/test/Base_Academica_ARCA_TEST.xlsx": {
+      "sha256": "7a6586d3c5cdef25af4b0ef866fbe2c62b894be1a4f4f595fa861ba369337068",
+      "bytes": 31415
+    },
+    "uploads/test/TBL_INSCRITOS_TEST.xlsx": {
+      "sha256": "0000b55f87f95930e64b522a48a191505ab0e5c029fd36e5ddcc36ba30bbb7e5",
+      "bytes": 40864
+    },
+    "db/seeds/seed_catalogos.sql": {
+      "sha256": "5361022f940221d79a7f2ae114cc0bab41dea344be0b8a0339e019c92c9fe007",
+      "bytes": 2606527
+    },
+    "uploads/test/layouts_adversarios/gold_layouts_adversarios.json": {
+      "sha256": "3102ef272ce6ffea599c2d52e102bbd97c2a4f3661dc8b1a83949c2ca6939221",
+      "bytes": 33320
+    },
+    "data/ner/test.conll": {
+      "sha256": "283a454ff4be74683a26bdae97cdda3c9ed1fae0066fa576c78e7507afb38fa6",
+      "bytes": 68783
+    }
+  },
+  "lock_sha256": "de42b73b362e24cb02d46e494d5ac03bae1c4a802af858e81bdd0c7a76d4c59e",
+  "generado": "2026-11-13T12:36:45",
+  "datos": {
+    "dev_robusto.jsonl": {
+      "sha256": "49f467058d7d6cb1923dcb7d9651c3ce83b025999b06df35cd8c4bc4b8e729d4",
+      "bytes": 435326,
+      "lineas": 350
+    },
+    "test_gold_real.jsonl": {
+      "sha256": "7dce0bec4dd3a60b94a7e6e5a48df29a6844fc93d28375697aa04f1b9a3d51a5",
+      "bytes": 144555,
+      "lineas": 180
+    },
+    "train_robusto.jsonl": {
+      "sha256": "c43115401d696f56828fd1ad5a94c6535613d9ec89753b3e136ad59faa278df2",
+      "bytes": 1773425,
+      "lineas": 1400
+    }
+  },
+  "modelo_vigente": {
+    "ruta": "pipeline/semantic/beto_local",
+    "archivos": {
+      "model.safetensors": {
+        "sha256": "5966dde3fa4adccacb8ed74c62c991a6bf140c2b4d67598a05a1c35e67ec9543",
+        "bytes": 437092180
+      },
+      "config.json": {
+        "sha256": "498c02a8c4e13f243eec6589d53ed77fcea645890deebb2d2374961a8710be60",
+        "bytes": 1285
+      },
+      "tokenizer.json": {
+        "sha256": "29f908924ecfc985bb4ddf8b856fd94407f48792b11e069d56d40e8b55ebfb61",
+        "bytes": 729619
+      },
+      "tokenizer_config.json": {
+        "sha256": "3400e0fe6e6d4148ee825295d3565d024f7556beaf3c3e1739f8a3f2a7694f75",
+        "bytes": 422
+      },
+      "training_info.json": {
+        "sha256": "7999b6c45003fb3e22b7401cb32a641a6b3f7ac4f03b65e88a176eb8e388c4a1",
+        "bytes": 1384
+      }
+    },
+    "entrenado": "2026-10-28T12:46:19.074396",
+    "semilla": 42,
+    "tiene_hash_en_training_info": false
+  },
+  "instrucciones": {
+    "estado": "El modelo NO está versionado en Git (.gitignore:75 excluye pipeline/semantic/beto_local/).",
+    "obtener": "Copiar beto_local/ desde el respaldo de la máquina de entrenamiento y verificar el SHA-256 de model.safetensors contra este manifiesto.",
+    "regenerar": [
+      "make beto-reproducir   # corpus -> entrenamiento a directorio temporal -> evaluación (no pisa el vigente)",
+      "PYTHONHASHSEED=0 python scripts/preparar_corpus_robusto.py --salida <dir>",
+      "PYTHONHASHSEED=0 python scripts/entrenar_beto_robusto.py --datos <dir> --salida <dir_modelo>"
+    ],
+    "advertencia": "Un reentrenamiento produce otro SHA-256 si cambian versiones de librerías, hardware o corpus; la promoción del modelo requiere una tarea posterior explícita y actualizar este manifiesto.",
+    "dependencias": "requirements-lock.txt (pip freeze del .venv)"
+  }
+}

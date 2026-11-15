@@ -1,0 +1,150 @@
+{
+  "fase": "F1-parcial",
+  "archivos": [
+    {
+      "archivo": "docs/mediciones/f1_a8_integracion.md",
+      "bytes": 1382,
+      "sha256": "b625f78b4c38eb28418be006e4d50a10ce15cb456b7f4dfa67ba2819266559df"
+    },
+    {
+      "archivo": "docs/mediciones/f1_base.json",
+      "bytes": 1861,
+      "sha256": "53335b7d03f9dc64ccb0338a8076f6d9e3297ce95a3dd8fc905ec6af2d1faeb7"
+    },
+    {
+      "archivo": "docs/mediciones/f1_base.json.huella.json",
+      "bytes": 5544,
+      "sha256": "20b206f39f8cc5237b269c1538a80c71ea2a2432f804d876233e807df19371ca"
+    },
+    {
+      "archivo": "docs/mediciones/f1_comparacion_base.txt",
+      "bytes": 108,
+      "sha256": "a66b70f63a5bac918ea672a8167ebd12feb1749c1f87871e6f33db8fbde93b40"
+    },
+    {
+      "archivo": "docs/mediciones/f1_corpus_auditoria.json",
+      "bytes": 1262,
+      "sha256": "ce76a96e0ee62e6ebfc35a9ecbd9f2bac796d3fe2df0181f93a54377e6af9738"
+    },
+    {
+      "archivo": "docs/mediciones/f1_evaluacion_antes/gold_510_predicciones.json",
+      "bytes": 77717,
+      "sha256": "d39cfb9d8c706164b7dd231a4f3154d7984340fffb53fe9d147775dc8a5959ee"
+    },
+    {
+      "archivo": "docs/mediciones/f1_evaluacion_antes/layouts_5_predicciones.json",
+      "bytes": 9672,
+      "sha256": "e0688b569f4f31e46e72ffd0fcfdfe30ec29f8341f268146f879cdcc41cf74dc"
+    },
+    {
+      "archivo": "docs/mediciones/f1_evaluacion_antes/matriz_confusion_ner.json",
+      "bytes": 1289,
+      "sha256": "1a5c64e114376f61662a472a7070a66bb8ea0bd41e3ea13685eb114ef4478912"
+    },
+    {
+      "archivo": "docs/mediciones/f1_evaluacion_antes/metricas.json",
+      "bytes": 4529,
+      "sha256": "1bc2c3e1e9493d2c3af2e34d479380498ccdde95de4060d66ff53c9e7baef000"
+    },
+    {
+      "archivo": "docs/mediciones/f1_evaluacion_antes/test_conll_predicciones.json",
+      "bytes": 99547,
+      "sha256": "1872a4da5a54cf9d1ae0c6c2d49d3441cda10c3185ee80ebed18bd8ebf6fbb0c"
+    },
+    {
+      "archivo": "docs/mediciones/f1_evaluacion_despues/gold_510_predicciones.json",
+      "bytes": 77745,
+      "sha256": "da3831706f18f15041f315ba89180e1b4be8a2ea508b7e3aeb574167d9d12289"
+    },
+    {
+      "archivo": "docs/mediciones/f1_evaluacion_despues/layouts_5_predicciones.json",
+      "bytes": 9622,
+      "sha256": "0c488bd21e2d2f88033afa99c0f5b4b5174e303a520666687492134282e1ac48"
+    },
+    {
+      "archivo": "docs/mediciones/f1_evaluacion_despues/matriz_confusion_ner.json",
+      "bytes": 1284,
+      "sha256": "fca96903fe408e7a6715fa01ba8924ed1f088974f5254a3638f428a179252bbd"
+    },
+    {
+      "archivo": "docs/mediciones/f1_evaluacion_despues/metricas.json",
+      "bytes": 4510,
+      "sha256": "b0fe77d0cf84611134d94d9456a7dbaf349470b02d8ef2902c0d276327191ce6"
+    },
+    {
+      "archivo": "docs/mediciones/f1_evaluacion_despues/test_conll_predicciones.json",
+      "bytes": 99690,
+      "sha256": "3f54a22222bd0b82ded431975e476cf8dfef2e1fcb59d01da266d85792a3d539"
+    },
+    {
+      "archivo": "docs/mediciones/f1_inventario_objetos.csv",
+      "bytes": 6648,
+      "sha256": "6ce14ba6214bdf7a9a2cc7097b1607f791fc5f265b0fb6d9da8cbf8c44e5c118"
+    },
+    {
+      "archivo": "docs/mediciones/f1_modelo_comparacion.json",
+      "bytes": 2989,
+      "sha256": "1ad579f77a50bc7c26770c2f423a512822faa830ec8b6bccf2334fb5d8bf2ff0"
+    },
+    {
+      "archivo": "docs/mediciones/f1_modelo_manifest.json",
+      "bytes": 1576,
+      "sha256": "fd620469e93dc17e9ff4a723550261cf034c0dd6f9e9e225bdc2adf8aba7853a"
+    },
+    {
+      "archivo": "docs/mediciones/f1_off.json",
+      "bytes": 1860,
+      "sha256": "fbf258e38313befb2da84cbeaac7fffdad83d758eb283457ac7f027faa64a97b"
+    },
+    {
+      "archivo": "docs/mediciones/f1_off.json.huella.json",
+      "bytes": 5544,
+      "sha256": "20b206f39f8cc5237b269c1538a80c71ea2a2432f804d876233e807df19371ca"
+    },
+    {
+      "archivo": "docs/mediciones/f1_preflight.json",
+      "bytes": 435,
+      "sha256": "384266494a8ececf8b8879516393f58507d0c13464d7e5448b3e2d2d8b7bd2f7"
+    },
+    {
+      "archivo": "docs/mediciones/f1_pruebas.txt",
+      "bytes": 106034,
+      "sha256": "9ecf675801f7e0689c0732dc7b101d4b7462a7e85331731c8be4686579ab7170"
+    },
+    {
+      "archivo": "docs/mediciones/f1_purga_cache.json",
+      "bytes": 1831,
+      "sha256": "74ed323efca26e7ab8f2bd7b5290650067afde7adbc1ade7dd4d80db8d93c74c"
+    },
+    {
+      "archivo": "docs/mediciones/f1_servicios.txt",
+      "bytes": 27307,
+      "sha256": "6cc72dde7aa8258d4e891f06fa997c529671c77729ea32765ad132ebc5097bec"
+    },
+    {
+      "archivo": "docs/mediciones/f1_snapshot_antes.json",
+      "bytes": 7290,
+      "sha256": "1f7cf22c459748a8bbfa965939383c19737e43079ddd3e22e42e7226b4697548"
+    },
+    {
+      "archivo": "docs/mediciones/f1_snapshot_copia.json",
+      "bytes": 7274,
+      "sha256": "b8e9437bc4aa1bf028878964adc064e85acb4b649b46f9a2bb440c3baf3d1936"
+    },
+    {
+      "archivo": "docs/mediciones/f1_snapshot_despues.json",
+      "bytes": 7290,
+      "sha256": "17e63a6d995a91af6c7118c9c6342e1dc72015bbbb3b072f14529f0df692d927"
+    },
+    {
+      "archivo": "docs/mediciones/f1_training_info.json",
+      "bytes": 2531,
+      "sha256": "4b882cdc2e90a3f8736220720326dbe3773029d92b3b1c4f3277017c4d3e143b"
+    },
+    {
+      "archivo": "docs/cierres/CIERRE_F1.md",
+      "bytes": 7438,
+      "sha256": "b6f770aeac39ba52152ae8601ca0650008be9287b6621244e3277defcaec88da"
+    }
+  ]
+}

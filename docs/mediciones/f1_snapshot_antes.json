@@ -1,0 +1,245 @@
+{
+  "fecha": "2026-11-14T21:39:11.369529-04:00",
+  "origen": "snapshot",
+  "base": "snapshot_dw_20261110_1201",
+  "relaciones": {
+    "bi.ref_kpi": {
+      "filas": 22,
+      "md5_filas": "531b65cc809e7f041fdd3709e122b0f3"
+    },
+    "bi.ref_perspectiva": {
+      "filas": 4,
+      "md5_filas": "9c658760c0c12119daa83df5968f8a6b"
+    },
+    "bi.vw_cartera_estado": {
+      "filas": 7,
+      "md5_filas": "f2e02eebf7afee8024bdaa2b3fef0594"
+    },
+    "bi.vw_cmi_gestiones": {
+      "filas": 5,
+      "md5_filas": "305d06820e1334ba0de20f7996c0bd39"
+    },
+    "bi.vw_cmi_global": {
+      "filas": 5,
+      "md5_filas": "1052476317610d127e346c267fe443ee"
+    },
+    "bi.vw_cmi_perspectiva": {
+      "filas": 20,
+      "md5_filas": "08481a3a5048a75dbf342db296190d42"
+    },
+    "bi.vw_cmi_scorecard": {
+      "filas": 110,
+      "md5_filas": "cb213e71412b9a18679625545fafe550"
+    },
+    "bi.vw_cmi_valores": {
+      "filas": 64,
+      "md5_filas": "3301eb1dded1c0756a01a6733dedb520"
+    },
+    "bi.vw_dataops_documento": {
+      "filas": 16,
+      "md5_filas": "2e9e1c92adae3742774f5621db303115"
+    },
+    "bi.vw_metas_mensual": {
+      "filas": 95,
+      "md5_filas": "662c1295e5a77b8d5efcb4e96ba75729"
+    },
+    "bi.vw_riesgo_estudiante": {
+      "filas": 6602,
+      "md5_filas": "93dac1629a74fd903e057ba85d1832aa"
+    },
+    "public.bridge_modulo_docente": {
+      "filas": 1922,
+      "md5_filas": "6bfe027fe6c1872f4c7b6c67e400013d"
+    },
+    "public.cache_indice_beto": {
+      "filas": 90212,
+      "md5_filas": "28dab5547e0c415f2a090744050e6b19"
+    },
+    "public.carga_fila_origen": {
+      "filas": 15196,
+      "md5_filas": "44f7697298c0e7b0c51f8312cea4602a"
+    },
+    "public.cat_categoria_financiera": {
+      "filas": 5,
+      "md5_filas": "66592b7858c54cf0077f40672a138381"
+    },
+    "public.cat_combinacion_estado": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_concepto_financiero": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_escuela": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_estado_academico": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_estado_arca": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_estado_reprobado": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_etiqueta_clasificacion": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_guia_texto_plano": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_historico_equivalencia": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_institucion": {
+      "filas": 4,
+      "md5_filas": "b77a307fa5c1be84606565cdbbeda62c"
+    },
+    "public.cat_institucion_convenio": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_mapeo_columna": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_modalidad": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_modulo": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cat_programa": {
+      "filas": 4,
+      "md5_filas": "aa233527acdb18edd0da527456303e51"
+    },
+    "public.cat_tipo_programa": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.dataops_tarea": {
+      "filas": 28,
+      "md5_filas": "3342e148537df78a4af18d6121be2eaa"
+    },
+    "public.dim_categoria_financiera": {
+      "filas": 15,
+      "md5_filas": "cd462043e8683958a56703c98aab217b"
+    },
+    "public.dim_docente": {
+      "filas": 638,
+      "md5_filas": "d3a6d37fcc4df35a38b0c144ce996cdd"
+    },
+    "public.dim_estudiante": {
+      "filas": 14078,
+      "md5_filas": "47487b33ec95b8c5e14c59095f239cb0"
+    },
+    "public.dim_meta": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.dim_modulo": {
+      "filas": 3585,
+      "md5_filas": "22669e6f42fa7a9de93f405d0372e385"
+    },
+    "public.dim_origen_documental": {
+      "filas": 16,
+      "md5_filas": "6e6fd625298c2cadf7605e639214171d"
+    },
+    "public.dim_tiempo": {
+      "filas": 2230,
+      "md5_filas": "5fffe07345f001d7cc3da9fabc43a7eb"
+    },
+    "public.fact_cobranzas_proyectadas": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.fact_costo_programa": {
+      "filas": 1371,
+      "md5_filas": "b35b6ff9fd85a5db65d09e20b088421a"
+    },
+    "public.fact_evaluacion_docente": {
+      "filas": 14234,
+      "md5_filas": "222ebc0322da3db8fad2b1c805368bdb"
+    },
+    "public.fact_forecast": {
+      "filas": 24,
+      "md5_filas": "f91fdf7458fa04edeefd2e6d9c071782"
+    },
+    "public.fact_marketing": {
+      "filas": 8946,
+      "md5_filas": "33423aa9dec643c4c3f086bb0c06587a"
+    },
+    "public.fact_rendimiento_academico": {
+      "filas": 22618,
+      "md5_filas": "c165f6da3efa6efd6673f7c0fb0238a2"
+    },
+    "public.fact_rentabilidad": {
+      "filas": 108,
+      "md5_filas": "d208bf0324b6dd12fefaedf0d87e7d0f"
+    },
+    "public.fact_situacion_financiera": {
+      "filas": 10483,
+      "md5_filas": "d912127dd87e8b54c86d4b4b5f5c82ef"
+    },
+    "public.fact_techo_convenio": {
+      "filas": 206,
+      "md5_filas": "30405705a895c2a9696ec492b28ede8e"
+    },
+    "public.log_auditoria_nlp": {
+      "filas": 4,
+      "md5_filas": "a05d204a176b82c51a051f930f1cf608"
+    },
+    "public.log_inconsistencias": {
+      "filas": 92,
+      "md5_filas": "c8e674d0a90a1803aa87d9c17c56af03"
+    },
+    "public.log_pipeline_ingesta": {
+      "filas": 117,
+      "md5_filas": "381227a876bd85e5649125668cf2bd03"
+    },
+    "public.lote": {
+      "filas": 1,
+      "md5_filas": "82b07b9c7ac347e7ec0f36ec4cee2873"
+    },
+    "public.notifications": {
+      "filas": 2,
+      "md5_filas": "7c07b646520c90b8c969dc5b2449bc6a"
+    },
+    "public.powerbi_informe_version": {
+      "filas": 2,
+      "md5_filas": "9abe6b08a68502726a984a30c55d7a7c"
+    },
+    "public.ref_metas_gestion": {
+      "filas": 0,
+      "md5_filas": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.schema_migrations": {
+      "filas": 12,
+      "md5_filas": "17f59ea8a016aaf3df6b79e3cb417093"
+    },
+    "public.staging_registros_crudos": {
+      "filas": 91,
+      "md5_filas": "7680ed22a80719eebb06074c7fda12b3"
+    },
+    "public.stg_entidad_no_resuelta": {
+      "filas": 23127,
+      "md5_filas": "5b949bc5d4864a3a06e7598bc59b800e"
+    },
+    "public.users": {
+      "filas": 5,
+      "md5_filas": "3526b227dc4b2f8afb7764d3b8395c48"
+    }
+  },
+  "algoritmo": "COUNT y MD5 string_agg(row_to_json::text ordenado), READ ONLY; SHA256 JSON canónico de mapa de relaciones",
+  "huella": "6d33f14d1607b44075e45477d989c59b0fab70f86032c19c87dc0c41da96ee50"
+}

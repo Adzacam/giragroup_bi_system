@@ -11,6 +11,7 @@ set -e
 export MSYS_NO_PATHCONV=1
 SNAPSHOT="${SNAPSHOT:-snapshot_dw_20261110_1201}"
 RED="${RED:-giragroup_bi_system_default}"
+TMPFS_PORT="${TMPFS_PORT:-55432}"
 PSQL="docker exec beto_pg_tmpfs psql -U giragroup_user -q -v ON_ERROR_STOP=1"
 TRUNC="TRUNCATE TABLE public.fact_rendimiento_academico, public.fact_situacion_financiera, public.fact_evaluacion_docente, public.fact_marketing, public.fact_rentabilidad, public.fact_forecast, public.fact_cobranzas_proyectadas, public.stg_entidad_no_resuelta, public.staging_registros_crudos, public.log_pipeline_ingesta, public.log_inconsistencias, public.log_auditoria_nlp, public.dim_origen_documental, public.lote, public.dataops_tarea RESTART IDENTITY CASCADE"
 
@@ -18,7 +19,7 @@ case "$1" in
   up)
     docker rm -f beto_pg_tmpfs >/dev/null 2>&1 || true
     docker run -d --name beto_pg_tmpfs --tmpfs /var/lib/postgresql/data:rw,size=3g -e POSTGRES_USER=giragroup_user \
-      -e POSTGRES_PASSWORD=tmpfs_local -e POSTGRES_DB=postgres -p 127.0.0.1:55432:5432 postgres:16-alpine >/dev/null
+      -e POSTGRES_PASSWORD=tmpfs_local -e POSTGRES_DB=postgres -p "127.0.0.1:${TMPFS_PORT}:5432" postgres:16-alpine >/dev/null
     docker network connect "$RED" beto_pg_tmpfs
     until docker exec beto_pg_tmpfs pg_isready -U giragroup_user >/dev/null 2>&1; do sleep 2; done
     $PSQL -d postgres -c "create database giragroup_db"

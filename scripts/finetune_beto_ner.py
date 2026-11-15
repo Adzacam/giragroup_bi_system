@@ -2,6 +2,14 @@
 """
 scripts/finetune_beto_ner.py
 ============================
+*** NO USADO PARA ENTRENAR EL MODELO VIGENTE ***
+El checkpoint pipeline/semantic/beto_local se entrena con scripts/entrenar_beto_robusto.py.
+Este módulo se conserva únicamente porque su extractor relacional (RelationalExtractor,
+extraer_tuplas_relacionales) y LABEL_LIST son importados por tests/transversales/
+test_agnostic_classifier_and_dw_reset.py; su rutina de entrenamiento (7 entidades, 15 clases,
+lr 3e-5) no tiene corrida registrada ni produce artefactos usados por el sistema. Retirarlo
+exigiría migrar primero esos imports.
+
 Pipeline de Fine-Tuning y Extracción Relacional con BETO (dccuchile/bert-spanish-cased).
 
 Objetivos:

@@ -1,0 +1,114 @@
+{
+  "antes_modelo": "pipeline/semantic/beto_local",
+  "despues_modelo": "output/f1/reproduccion_1/modelo",
+  "datasets": {
+    "gold_510": {
+      "estricto_micro": {
+        "antes": {
+          "precision": 0.9728155339805825,
+          "recall": 0.9823529411764705,
+          "f1-score": 0.9775609756097561,
+          "support": 510
+        },
+        "despues": {
+          "precision": 0.9748062015503876,
+          "recall": 0.9862745098039216,
+          "f1-score": 0.9805068226120858,
+          "support": 510
+        },
+        "delta_f1": 0.002946
+      },
+      "relajado": {
+        "antes": {
+          "precision": 0.9825918762088974,
+          "recall": 0.996078431372549,
+          "f1": 0.9892891918208373,
+          "tp": 508,
+          "gold": 510,
+          "pred": 517
+        },
+        "despues": {
+          "precision": 0.9864603481624759,
+          "recall": 1.0,
+          "f1": 0.9931840311587147,
+          "tp": 510,
+          "gold": 510,
+          "pred": 517
+        },
+        "delta_f1": 0.003895
+      }
+    },
+    "layouts_5": {
+      "estricto_micro": {
+        "antes": {
+          "precision": 0.27586206896551724,
+          "recall": 0.2222222222222222,
+          "f1-score": 0.24615384615384614,
+          "support": 72
+        },
+        "despues": {
+          "precision": 0.296875,
+          "recall": 0.2638888888888889,
+          "f1-score": 0.2794117647058824,
+          "support": 72
+        },
+        "delta_f1": 0.033258
+      },
+      "relajado": {
+        "antes": {
+          "precision": 0.7195121951219512,
+          "recall": 0.8194444444444444,
+          "f1": 0.7662337662337662,
+          "tp": 59,
+          "gold": 72,
+          "pred": 82
+        },
+        "despues": {
+          "precision": 0.7764705882352941,
+          "recall": 0.9166666666666666,
+          "f1": 0.8407643312101911,
+          "tp": 66,
+          "gold": 72,
+          "pred": 85
+        },
+        "delta_f1": 0.074531
+      }
+    },
+    "test.conll": {
+      "estricto_micro": {
+        "antes": {
+          "precision": 0.8178694158075601,
+          "recall": 0.6346666666666667,
+          "f1-score": 0.7147147147147147,
+          "support": 750
+        },
+        "despues": {
+          "precision": 0.8724489795918368,
+          "recall": 0.684,
+          "f1-score": 0.7668161434977578,
+          "support": 750
+        },
+        "delta_f1": 0.052101
+      },
+      "relajado": {
+        "antes": {
+          "precision": 0.860969387755102,
+          "recall": 0.9,
+          "f1": 0.8800521512385919,
+          "tp": 675,
+          "gold": 750,
+          "pred": 784
+        },
+        "despues": {
+          "precision": 0.8973042362002568,
+          "recall": 0.932,
+          "f1": 0.9143230869849576,
+          "tp": 699,
+          "gold": 750,
+          "pred": 779
+        },
+        "delta_f1": 0.034271
+      }
+    }
+  }
+}

@@ -684,14 +684,18 @@ def main():
     parser.add_argument("--modo", choices=["A", "B", "C", "ALL"], default="ALL", help="Modo arquitectural")
     parser.add_argument("--dataset", choices=["all", "gold_510", "layouts_5", "lote_1387"], default="all")
     parser.add_argument("--semilla", type=int, default=42, help="Semilla fija reproducible")
+    parser.add_argument("--modelo", type=str, default="pipeline/semantic/beto_local",
+                        help="Directorio del checkpoint a evaluar (por defecto el vigente)")
+    parser.add_argument("--gold", type=str, default="data/test_gold_real.jsonl",
+                        help="JSONL del gold_510 (por defecto el vigente)")
     parser.add_argument("--output_json", type=str, default="docs/evidencias/ablacion_beto.json")
     parser.add_argument("--output_csv", type=str, default="docs/evidencias/ablacion_beto_resultados.csv")
     args = parser.parse_args()
 
     modos = ["A", "B", "C"] if args.modo == "ALL" else [args.modo]
-    evaluador = EvaluadorAblacion()
+    evaluador = EvaluadorAblacion(args.modelo)
 
-    gold_510_path = "data/test_gold_real.jsonl"
+    gold_510_path = args.gold
     layouts_5_path = "uploads/test/layouts_adversarios/gold_layouts_adversarios.json"
 
     resultados_completos = {

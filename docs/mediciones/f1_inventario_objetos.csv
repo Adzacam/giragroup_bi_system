@@ -1,0 +1,140 @@
+base,esquema,objeto,tipo
+giragroup_db,bi,ref_kpi,BASE TABLE
+giragroup_db,bi,ref_perspectiva,BASE TABLE
+giragroup_db,bi,vw_cartera_estado,VIEW
+giragroup_db,bi,vw_cmi_gestiones,VIEW
+giragroup_db,bi,vw_cmi_global,VIEW
+giragroup_db,bi,vw_cmi_perspectiva,VIEW
+giragroup_db,bi,vw_cmi_scorecard,VIEW
+giragroup_db,bi,vw_cmi_valores,VIEW
+giragroup_db,bi,vw_dataops_documento,VIEW
+giragroup_db,bi,vw_metas_mensual,VIEW
+giragroup_db,bi,vw_riesgo_estudiante,VIEW
+giragroup_db,public,bridge_modulo_docente,BASE TABLE
+giragroup_db,public,cache_indice_beto,BASE TABLE
+giragroup_db,public,carga_fila_origen,BASE TABLE
+giragroup_db,public,cat_categoria_financiera,BASE TABLE
+giragroup_db,public,cat_combinacion_estado,BASE TABLE
+giragroup_db,public,cat_concepto_financiero,BASE TABLE
+giragroup_db,public,cat_escuela,BASE TABLE
+giragroup_db,public,cat_estado_academico,BASE TABLE
+giragroup_db,public,cat_estado_arca,BASE TABLE
+giragroup_db,public,cat_estado_reprobado,BASE TABLE
+giragroup_db,public,cat_etiqueta_clasificacion,BASE TABLE
+giragroup_db,public,cat_guia_texto_plano,BASE TABLE
+giragroup_db,public,cat_historico_equivalencia,BASE TABLE
+giragroup_db,public,cat_institucion,BASE TABLE
+giragroup_db,public,cat_institucion_convenio,BASE TABLE
+giragroup_db,public,cat_mapeo_columna,BASE TABLE
+giragroup_db,public,cat_modalidad,BASE TABLE
+giragroup_db,public,cat_modulo,BASE TABLE
+giragroup_db,public,cat_programa,BASE TABLE
+giragroup_db,public,cat_tipo_programa,BASE TABLE
+giragroup_db,public,dataops_tarea,BASE TABLE
+giragroup_db,public,dim_categoria_financiera,BASE TABLE
+giragroup_db,public,dim_docente,BASE TABLE
+giragroup_db,public,dim_estudiante,BASE TABLE
+giragroup_db,public,dim_meta,BASE TABLE
+giragroup_db,public,dim_modulo,BASE TABLE
+giragroup_db,public,dim_origen_documental,BASE TABLE
+giragroup_db,public,dim_tiempo,BASE TABLE
+giragroup_db,public,fact_cobranzas_proyectadas,BASE TABLE
+giragroup_db,public,fact_costo_programa,BASE TABLE
+giragroup_db,public,fact_evaluacion_docente,BASE TABLE
+giragroup_db,public,fact_forecast,BASE TABLE
+giragroup_db,public,fact_marketing,BASE TABLE
+giragroup_db,public,fact_rendimiento_academico,BASE TABLE
+giragroup_db,public,fact_rentabilidad,BASE TABLE
+giragroup_db,public,fact_situacion_financiera,BASE TABLE
+giragroup_db,public,fact_techo_convenio,BASE TABLE
+giragroup_db,public,log_auditoria_nlp,BASE TABLE
+giragroup_db,public,log_inconsistencias,BASE TABLE
+giragroup_db,public,log_pipeline_ingesta,BASE TABLE
+giragroup_db,public,lote,BASE TABLE
+giragroup_db,public,notifications,BASE TABLE
+giragroup_db,public,powerbi_informe_version,BASE TABLE
+giragroup_db,public,ref_metas_gestion,BASE TABLE
+giragroup_db,public,schema_migrations,BASE TABLE
+giragroup_db,public,staging_registros_crudos,BASE TABLE
+giragroup_db,public,stg_entidad_no_resuelta,BASE TABLE
+giragroup_db,public,users,BASE TABLE
+dw_vacio,bi,ref_kpi,BASE TABLE
+dw_vacio,bi,ref_perspectiva,BASE TABLE
+dw_vacio,bi,vw_cartera_estado,VIEW
+dw_vacio,bi,vw_cmi_gestiones,VIEW
+dw_vacio,bi,vw_cmi_global,VIEW
+dw_vacio,bi,vw_cmi_perspectiva,VIEW
+dw_vacio,bi,vw_cmi_scorecard,VIEW
+dw_vacio,bi,vw_cmi_valores,VIEW
+dw_vacio,bi,vw_dataops_documento,VIEW
+dw_vacio,bi,vw_metas_mensual,VIEW
+dw_vacio,bi,vw_riesgo_estudiante,VIEW
+dw_vacio,public,bridge_modulo_docente,BASE TABLE
+dw_vacio,public,cache_beto_entidades,BASE TABLE
+dw_vacio,public,cache_indice_beto,BASE TABLE
+dw_vacio,public,carga_fila_origen,BASE TABLE
+dw_vacio,public,cat_categoria_financiera,BASE TABLE
+dw_vacio,public,cat_combinacion_estado,BASE TABLE
+dw_vacio,public,cat_concepto_financiero,BASE TABLE
+dw_vacio,public,cat_escuela,BASE TABLE
+dw_vacio,public,cat_estado_academico,BASE TABLE
+dw_vacio,public,cat_estado_arca,BASE TABLE
+dw_vacio,public,cat_estado_reprobado,BASE TABLE
+dw_vacio,public,cat_etiqueta_clasificacion,BASE TABLE
+dw_vacio,public,cat_guia_texto_plano,BASE TABLE
+dw_vacio,public,cat_historico_equivalencia,BASE TABLE
+dw_vacio,public,cat_institucion,BASE TABLE
+dw_vacio,public,cat_institucion_convenio,BASE TABLE
+dw_vacio,public,cat_mapeo_columna,BASE TABLE
+dw_vacio,public,cat_modalidad,BASE TABLE
+dw_vacio,public,cat_modulo,BASE TABLE
+dw_vacio,public,cat_programa,BASE TABLE
+dw_vacio,public,cat_tipo_programa,BASE TABLE
+dw_vacio,public,dataops_tarea,BASE TABLE
+dw_vacio,public,dim_categoria_financiera,BASE TABLE
+dw_vacio,public,dim_docente,BASE TABLE
+dw_vacio,public,dim_estudiante,BASE TABLE
+dw_vacio,public,dim_meta,BASE TABLE
+dw_vacio,public,dim_modulo,BASE TABLE
+dw_vacio,public,dim_origen_documental,BASE TABLE
+dw_vacio,public,dim_tiempo,BASE TABLE
+dw_vacio,public,fact_cobranzas_proyectadas,BASE TABLE
+dw_vacio,public,fact_costo_programa,BASE TABLE
+dw_vacio,public,fact_evaluacion_docente,BASE TABLE
+dw_vacio,public,fact_forecast,BASE TABLE
+dw_vacio,public,fact_marketing,BASE TABLE
+dw_vacio,public,fact_rendimiento_academico,BASE TABLE
+dw_vacio,public,fact_rentabilidad,BASE TABLE
+dw_vacio,public,fact_situacion_financiera,BASE TABLE
+dw_vacio,public,fact_techo_convenio,BASE TABLE
+dw_vacio,public,log_auditoria_nlp,BASE TABLE
+dw_vacio,public,log_inconsistencias,BASE TABLE
+dw_vacio,public,log_pipeline_ingesta,BASE TABLE
+dw_vacio,public,lote,BASE TABLE
+dw_vacio,public,notifications,BASE TABLE
+dw_vacio,public,powerbi_informe_version,BASE TABLE
+dw_vacio,public,ref_metas_gestion,BASE TABLE
+dw_vacio,public,schema_migrations,BASE TABLE
+dw_vacio,public,staging_registros_crudos,BASE TABLE
+dw_vacio,public,stg_entidad_no_resuelta,BASE TABLE
+dw_vacio,public,users,BASE TABLE
+catalogo_copia,public,cat_categoria_financiera,BASE TABLE
+catalogo_copia,public,cat_combinacion_estado,BASE TABLE
+catalogo_copia,public,cat_concepto_financiero,BASE TABLE
+catalogo_copia,public,cat_convenio_programa,BASE TABLE
+catalogo_copia,public,cat_escuela,BASE TABLE
+catalogo_copia,public,cat_estado_academico,BASE TABLE
+catalogo_copia,public,cat_estado_arca,BASE TABLE
+catalogo_copia,public,cat_estado_reprobado,BASE TABLE
+catalogo_copia,public,cat_etiqueta_clasificacion,BASE TABLE
+catalogo_copia,public,cat_guia_texto_plano,BASE TABLE
+catalogo_copia,public,cat_historico_equivalencia,BASE TABLE
+catalogo_copia,public,cat_institucion_convenio,BASE TABLE
+catalogo_copia,public,cat_mapeo_columna,BASE TABLE
+catalogo_copia,public,cat_modalidad,BASE TABLE
+catalogo_copia,public,cat_modulo,BASE TABLE
+catalogo_copia,public,cat_programa,BASE TABLE
+catalogo_copia,public,cat_tipo_cartera,BASE TABLE
+catalogo_copia,public,cat_tipo_programa,BASE TABLE
+catalogo_copia,public,ref_metas_gestion,BASE TABLE
+catalogo_copia,public,stg_entidad_no_resuelta,BASE TABLE
