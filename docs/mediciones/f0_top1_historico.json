@@ -1,0 +1,44 @@
+{
+  "timestamp": "2026-11-13T21:17:02.194409-04:00",
+  "source": "beto_pg_tmpfs/giragroup_db intact historical isolated copy",
+  "transaction": "BEGIN READ ONLY; SELECT aggregates/schema; ROLLBACK",
+  "observations": [
+    {
+      "source": "beto_pg_tmpfs/giragroup_db historical isolated copy",
+      "table": "log_auditoria_nlp",
+      "rows": 4,
+      "with_auditor": 4,
+      "with_correction": 4,
+      "with_prediction": 4,
+      "earliest": "2026-11-06T00:36:39.605277",
+      "latest": "2026-11-06T00:37:17.290356"
+    },
+    {
+      "columns": [
+        "id_log",
+        "texto_original",
+        "prediccion_beto",
+        "confianza_ia",
+        "correccion_humana",
+        "usuario_auditor",
+        "created_at"
+      ]
+    },
+    {
+      "resolved_staging_rows": 22083,
+      "with_actor": 0,
+      "with_decision_timestamp": 22083
+    }
+  ],
+  "accepted_independent_human_decisions": 0,
+  "status": "not_verifiable",
+  "reason": [
+    "4 audit rows have correction/auditor/timestamp, but no source case ID, saved ranking ID/hash, human-versus-simulation provenance or proof of blindness before decision. Field names do not establish independent human truth.",
+    "22083 resolved staging rows have decision timestamps but no actor. They cannot establish independent human decisions or map to F0 candidate rankings.",
+    "Current scripts/simular_revision.py can POST approvals via a TestClient, so API resolution alone is not proof of human review."
+  ],
+  "files": {
+    "f0_top1_historico_consultas.sql": "0f06558884e47d372da72820884ad7fef0d0eee38c967ecc786b178ee489bce1",
+    "f0_top1_historico_consultas.txt": "0227d42e1b6d1ea4d5eb9bde7d309fef652d7f0eff2455dc399256ec414bebad"
+  }
+}

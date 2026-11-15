@@ -51,11 +51,11 @@ def setup_loops_test():
     client.headers.pop("Authorization", None)
 
 def _dw_session_factory():
-    """Sesión al DW del docker-compose (host: localhost:5434). DW_TEST_URL lo sobreescribe; no depende de DATABASE_URL."""
+    """Sesión al DW del docker-compose (host: localhost:5434). DW_TEST_URL opcional; DATABASE_URL debe señalar una copia aislada."""
     import os
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
-    url = os.getenv("DW_TEST_URL", "postgresql+psycopg2://giragroup_user:giragroup_secret_2026@localhost:5434/giragroup_db")
+    url = os.getenv("DW_TEST_URL") or os.environ["DATABASE_URL"]
     return sessionmaker(autocommit=False, autoflush=False, bind=create_engine(url))
 
 client = TestClient(app)

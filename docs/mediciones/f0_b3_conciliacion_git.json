@@ -1,0 +1,245 @@
+{
+  "status": "historical_matrix_sum_explained_historical_ID_trace_partial",
+  "scope": "At most12 gold-changing commits; current historical graph generator AST and last touching commit; no inference, no figures or product changes.",
+  "current_gold": {
+    "path": "data/test_gold_real.jsonl",
+    "worktree_bytes_sha256": "7dce0bec4dd3a60b94a7e6e5a48df29a6844fc93d28375697aa04f1b9a3d51a5",
+    "canonical_records_sha256": "3b555848a4584bc37012dd4e6210cbcff01fac66503c36db2b437ce0a9fe3c14",
+    "records": 180,
+    "support": {
+      "PER_ESTUDIANTE": 130,
+      "PROGRAMA": 180,
+      "MODULO": 150,
+      "PER_DOCENTE": 50
+    },
+    "line_ids": "1-based nonempty JSONL lines"
+  },
+  "gold_history": [
+    {
+      "commit": "e14fd0af8b264f72e54401b831b568be6120fee6",
+      "path": "data/test_gold_real.jsonl",
+      "blob_id": "3bef60a2f785980c280b556ca275c9ec6b0ea462",
+      "git_bytes_sha256": "ebbbe6f262a28ac9a17dd9abbb195fd8a7db1f8429720d6f791d8adad3dd8f60",
+      "canonical_records_sha256": "3b555848a4584bc37012dd4e6210cbcff01fac66503c36db2b437ce0a9fe3c14",
+      "record_count": 180,
+      "span_count": 510,
+      "begin_tag_count": 510,
+      "changed_line_ids_vs_worktree": [],
+      "same_parsed_content_as_worktree": true,
+      "raw_equal_after_CRLF_to_LF": true
+    }
+  ],
+  "raw_hash_difference": "Git blob stores LF; working tree uses local line endings. Parsed-content equality is checked explicitly, not inferred from raw hash.",
+  "historical_matrix": {
+    "path": "scripts/generar_graficos_3_1_3_3.py",
+    "worktree_sha256": "aa577519fdfeff08427978674c8583cb11ec47a4f739822b16604a1f3cabff81",
+    "last_touching_commit": "f106550933f2a35c570c5f0d37883cb87713fccd",
+    "git_blob_id_at_HEAD": "f9e8ebd78f83a87fc4817ef62a2e8b66ee7314b0",
+    "assignment_line": 32,
+    "assignment_end_line": 37,
+    "class_order": [
+      "MODULO",
+      "PER_DOCENTE",
+      "PER_ESTUDIANTE",
+      "PROGRAMA"
+    ],
+    "matrix": [
+      [
+        150,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        50,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        128,
+        2
+      ],
+      [
+        0,
+        0,
+        0,
+        173
+      ]
+    ],
+    "row_comparison": [
+      {
+        "type": "MODULO",
+        "full_gold_support": 150,
+        "historical_matrix_row_sum": 150,
+        "missing_from_row": 0
+      },
+      {
+        "type": "PER_DOCENTE",
+        "full_gold_support": 50,
+        "historical_matrix_row_sum": 50,
+        "missing_from_row": 0
+      },
+      {
+        "type": "PER_ESTUDIANTE",
+        "full_gold_support": 130,
+        "historical_matrix_row_sum": 130,
+        "missing_from_row": 0
+      },
+      {
+        "type": "PROGRAMA",
+        "full_gold_support": 180,
+        "historical_matrix_row_sum": 173,
+        "missing_from_row": 7
+      }
+    ],
+    "sum": 503,
+    "full_gold_sum": 510,
+    "definition": "Hardcoded4x4 matrix over four NER classes, omitting O/unmatched outside this matrix; program row contributes173 rather than declared support180. The seven-row-count difference explains503=510-7 arithmetically.",
+    "limitations": "Matrix generator stores no row IDs, saved prediction artifact hash or matching policy. Its comments attribute seven program FN to O; current predictions do not validate that attribution."
+  },
+  "current_F0_C_unmatched_programs": [
+    {
+      "line_id": 26,
+      "gold_span": [
+        "PROGRAMA",
+        8,
+        10
+      ],
+      "overlapping_predictions": [
+        [
+          "PROGRAMA",
+          8,
+          9
+        ]
+      ],
+      "all_tokens_O": false
+    },
+    {
+      "line_id": 40,
+      "gold_span": [
+        "PROGRAMA",
+        7,
+        9
+      ],
+      "overlapping_predictions": [
+        [
+          "PROGRAMA",
+          7,
+          8
+        ]
+      ],
+      "all_tokens_O": false
+    },
+    {
+      "line_id": 111,
+      "gold_span": [
+        "PROGRAMA",
+        7,
+        11
+      ],
+      "overlapping_predictions": [
+        [
+          "PROGRAMA",
+          7,
+          9
+        ],
+        [
+          "PROGRAMA",
+          9,
+          11
+        ]
+      ],
+      "all_tokens_O": false
+    },
+    {
+      "line_id": 128,
+      "gold_span": [
+        "PROGRAMA",
+        7,
+        11
+      ],
+      "overlapping_predictions": [
+        [
+          "PROGRAMA",
+          7,
+          9
+        ],
+        [
+          "PROGRAMA",
+          9,
+          11
+        ]
+      ],
+      "all_tokens_O": false
+    },
+    {
+      "line_id": 132,
+      "gold_span": [
+        "PROGRAMA",
+        7,
+        11
+      ],
+      "overlapping_predictions": [
+        [
+          "PROGRAMA",
+          7,
+          9
+        ],
+        [
+          "PROGRAMA",
+          9,
+          11
+        ]
+      ],
+      "all_tokens_O": false
+    },
+    {
+      "line_id": 146,
+      "gold_span": [
+        "PROGRAMA",
+        7,
+        11
+      ],
+      "overlapping_predictions": [
+        [
+          "PROGRAMA",
+          7,
+          9
+        ],
+        [
+          "PROGRAMA",
+          9,
+          11
+        ]
+      ],
+      "all_tokens_O": false
+    },
+    {
+      "line_id": 177,
+      "gold_span": [
+        "PROGRAMA",
+        12,
+        16
+      ],
+      "overlapping_predictions": [
+        [
+          "PROGRAMA",
+          12,
+          14
+        ],
+        [
+          "PROGRAMA",
+          14,
+          16
+        ]
+      ],
+      "all_tokens_O": false
+    }
+  ],
+  "current_vs_historical_ID_warning": "Current7FN IDs are linked only to the hashed current F0 predictions. They are NOT proven to be the same seven historical cases. All current unmatched program entities overlap partial/fragmented program predictions, so treating all as all-O is false for the current run.",
+  "historical_ID_trace_status": "not recoverable from hardcoded matrix; pending independent original prediction artifact",
+  "prediction_artifact_sha256": "ccce59c9746b5719c571f5f7ce632536f8bb71d98979597d20719ed012906d1d"
+}

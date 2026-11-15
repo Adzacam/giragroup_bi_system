@@ -1,0 +1,51 @@
+{
+  "status": "discarded_warmup_A4_schema_smoke_only",
+  "source": "f0_warmup_a3",
+  "excluded_from_F0_population": true,
+  "row_field_types": {
+    "id_staging": "int",
+    "id_documento": "int",
+    "tipo_entidad": "str",
+    "texto_original": "str",
+    "ci_temporal": "NoneType",
+    "mejor_candidato": "str",
+    "score_fuzzy": "float",
+    "fk_estado": "str",
+    "nivel_confianza": "float",
+    "resuelto": "bool",
+    "resuelto_por": "NoneType",
+    "resuelto_en": "NoneType",
+    "id_dimension_resuelta": "NoneType",
+    "created_at": "str",
+    "motivo": "str",
+    "payload_json": "dict",
+    "registro_origen_id": "NoneType",
+    "estado_resolucion": "str",
+    "lock_usuario_id": "NoneType",
+    "lock_expira": "NoneType",
+    "version": "int",
+    "clave_origen": "str"
+  },
+  "payload_field_types": {
+    "sugerencias": "list"
+  },
+  "candidate_field_types": {
+    "id": "int",
+    "nombre": "str",
+    "programa": "str",
+    "similitud": "float",
+    "tramo_beto": "NoneType",
+    "similitud_beto": "NoneType",
+    "score_combinado": "float",
+    "similitud_nombre": "float",
+    "probabilidad_beto": "NoneType"
+  },
+  "required_candidate_fields_present": true,
+  "raw_context_available": false,
+  "source_staging_join_id_available": false,
+  "payload_row_id_available": false,
+  "payload_line_number_available": false,
+  "no_candidates_names_scores_population_rates_or_decisions_exported": true,
+  "joined_raw_source_found": false,
+  "stable_sheet_and_block_start_available": false
+}

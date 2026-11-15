@@ -1,0 +1,36 @@
+{
+  "pausas": [
+    {
+      "solicitada": "2026-11-14T11:10:08.810764-04:00",
+      "despues_de": "f0_a0_vacia_r2",
+      "puerta": "gates(): exclusividad_8006=False; r2usaentorno ya capturado",
+      "entorno_original_sha256": "6de8392fb76add584ce73e403c5639b8d8bbcbdc174df88af6b110d0bfd8baee",
+      "respaldo_privado": "pausas\\entorno_antes_pausa_a0r2.json",
+      "motivo": "Validación incremental de91MBexports yKPI10/11/18 sin inferencia",
+      "estado": "entorno físico restaurado byte-exacto antes de añadir revisión documentaldecontrol; reanudación autorizada",
+      "cronometros_suspendidos": false,
+      "fin": "2026-11-14T11:33:49.738403-04:00",
+      "invalida_durante_pausa": "ninguna; r2invalidada por suspensiónWindows anterior",
+      "proteccion_energia": {
+        "pid": 45460,
+        "latido": "2026-11-14T15:33:45.975099+00:00",
+        "retorno_api": 2147483649,
+        "flags": "ES_CONTINUOUS|ES_SYSTEM_REQUIRED",
+        "pantalla_requerida": false
+      },
+      "analisis_incremental": "21exports SHA yKPI10/11/18 conciliados por dev-media fuera declocks"
+    },
+    {
+      "solicitada": "2026-11-14T13:36:47.897167-04:00",
+      "despues_de": "f0_a2_vacia_r1",
+      "puerta": "gates(): exclusividad_8006=False; actualusaentornocapturado",
+      "respaldo_privado": "pausas/entorno_antes_pausa_a2r1.json",
+      "entorno_original_sha256": "6a7c0a3621efad4d112fb6d2c6b9d6df48e829f99204bfa940faf57074c73017",
+      "motivo": "Verificar A3/persona/rol/spans de primerQC real sininferencia",
+      "estado": "entorno físico restaurado byte-exacto; análisis incremental A-3 ejecutado sin inferencia; reanudación autorizada",
+      "cronometros_suspendidos": false,
+      "fin": "2026-11-14T13:56:14.474487-04:00",
+      "analisis_incremental": "f0_a2_vacia_r1: 12 desacuerdos en lectura (cobertura 1.0), 19 contextos en muestra parcial (f0_desacuerdos_parcial_resumen.json)"
+    }
+  ]
+}

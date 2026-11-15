@@ -1,0 +1,53 @@
+{
+  "fecha": "2026-11-13T21:09:17.836676-04:00",
+  "ejecuciones": [
+    {
+      "id": "sandbox",
+      "estado": "interrumpida",
+      "razon": "TestClient HTTP local bloqueado dentro del sandbox; sin resultado de suite ni cobertura válidos.",
+      "log_privado": "output/backups/f0_pytest_raw.txt"
+    },
+    {
+      "id": "diagnostico_http_fuera_sandbox",
+      "estado": "completa",
+      "passed": 4,
+      "failed": 0,
+      "log_privado": "output/backups/f0_infra_fuera_sandbox.txt"
+    },
+    {
+      "id": "sin_copias_datos",
+      "estado": "interrumpida_no_aceptable",
+      "razon": "Bases desechables de prueba todavía inexistentes: fallos de pronóstico por conectividad, no usados para aceptar el código.",
+      "log_privado": "output/backups/f0_pytest_validacion.txt"
+    },
+    {
+      "id": "copia_tmpfs",
+      "estado": "completa",
+      "bases": [
+        "f0_tests_giragroup_db",
+        "f0_tests_catalogo_copia"
+      ],
+      "host": "127.0.0.1:55432",
+      "origen": "CREATE DATABASE TEMPLATE desde copias históricas ya verificadas; ninguna prueba apunta al snapshot ni a DW viva",
+      "log_privado": "output/backups/f0_pytest_copia.txt",
+      "colectadas": 729,
+      "passed": 711,
+      "failed": 0,
+      "skipped": 11,
+      "xfailed": 7,
+      "duracion_s": 379.76,
+      "cobertura": {
+        "covered_lines": 10210,
+        "num_statements": 14555,
+        "percent_covered": 70.14771556166266,
+        "percent_covered_display": "70",
+        "missing_lines": 4345,
+        "excluded_lines": 3,
+        "percent_statements_covered": 70.14771556166266,
+        "percent_statements_covered_display": "70"
+      },
+      "log_publico": "f0_pytest_cobertura.txt",
+      "exit_code": 0
+    }
+  ]
+}

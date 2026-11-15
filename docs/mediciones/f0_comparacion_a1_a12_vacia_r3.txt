@@ -1,0 +1,10 @@
+DIFERENCIAS:
+  fact_rendimiento_academico: filas 1393 -> 1393, md5 0f1bbdf972 -> 25fb5a4f02
+  log_inconsistencias: filas 11 -> 23, md5 e039adbdf1 -> ac086f2bc1
+  stg_entidad_no_resuelta: filas 5099 -> 5111, md5 03fd0a265e -> c29b301c56
+  bandeja.casos: 182 -> 201
+  bandeja.grupos: 12 -> 17
+  bandeja.manuales: 7 -> 12
+  bandeja.casos_manuales: 59 -> 71
+  bandeja.firma_sha256 distinta
+  KPI-18: 59.0 -> 71.0

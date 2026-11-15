@@ -1,0 +1,15 @@
+{
+  "fecha": "2026-11-14T12:20:38.029279-04:00",
+  "observaciones": {
+    "ultimo_arranque_windows": "2026-11-13T09:11:27.500449-04:00",
+    "sin_eventos_energia_desde": "2026-11-14T11:50:00-04:00",
+    "job_observador": {
+      "kill_on_close": true,
+      "silent_breakaway": true,
+      "procesos_asignados": 1,
+      "docker_desktop_en_ese_job": false
+    }
+  },
+  "conclusion": "No se demostró la causa del cierre de Docker/driver; no se atribuye a reboot ni al JobObject observado.",
+  "reanudacion": "Lanzadores independientes y ocultos; PID real y heartbeat verificados tras retornar lanzador; sin tareas programadas, servicios permanentes o cambios de configuración de jobs."
+}

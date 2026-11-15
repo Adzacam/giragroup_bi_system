@@ -1,0 +1,84 @@
+{
+  "timestamp": "2026-11-14T11:19:23.184772-04:00",
+  "status": "single_valid_run_incremental_checked_no_pairs_yet",
+  "run_id": "f0_a0_vacia_r1",
+  "source_valid": true,
+  "source_config": "a0",
+  "cache_state": "vacia",
+  "private_export_hashes_verified": 21,
+  "private_export_bytes_verified": 91280923,
+  "effective_endpoint_gestion": 2026,
+  "kpis": {
+    "KPI-10": {
+      "numerator": 0.0,
+      "denominator": 0,
+      "unit": "percent",
+      "value": null,
+      "formula": "100 * SUM(academic.nivel_confianza_ia) / COUNT(non-null confidence), inner join dim_tiempo, gestion=2026",
+      "null_reason": "denominator zero or population unavailable",
+      "exact_decimal_numerator": "0",
+      "exact_decimal_value": null,
+      "rounded_recomputed_value": null,
+      "endpoint_key_present": true,
+      "endpoint_value": null,
+      "value_matches_endpoint": true,
+      "endpoint_scope_verified": true,
+      "gestion": 2026,
+      "endpoint_reconciles": true,
+      "reconciliation_warning": null
+    },
+    "KPI-11": {
+      "numerator": 0,
+      "denominator": 0,
+      "unit": "percent",
+      "value": null,
+      "formula": "100 * COUNT(confidence >= .85) / COUNT(non-null confidence), same academic/date scope",
+      "null_reason": "denominator zero or population unavailable",
+      "exact_decimal_value": null,
+      "rounded_recomputed_value": null,
+      "endpoint_key_present": true,
+      "endpoint_value": null,
+      "value_matches_endpoint": true,
+      "endpoint_scope_verified": true,
+      "gestion": 2026,
+      "endpoint_reconciles": true,
+      "reconciliation_warning": null
+    },
+    "KPI-18": {
+      "numerator": 59,
+      "denominator": 1,
+      "unit": "pending entities",
+      "value": 59.0,
+      "formula": "COUNT(stg_entidad_no_resuelta WHERE resuelto=FALSE), created_at year=2026",
+      "null_reason": null,
+      "rounded_recomputed_value": 59.0,
+      "endpoint_key_present": true,
+      "endpoint_value": 59.0,
+      "value_matches_endpoint": true,
+      "endpoint_scope_verified": true,
+      "gestion": 2026,
+      "endpoint_reconciles": true,
+      "reconciliation_warning": null
+    }
+  },
+  "all_three_endpoint_reconciled": true,
+  "measured_contrast_rows": 0,
+  "missing_pairs": 24,
+  "note": "Only a0_vacia_r1 validated during an explicitly coordinated pause between measured runs. No pairs invented; no database, inference, Torch or human decisions. A3/A4/A6 final pending artifacts remain unchanged.",
+  "source_evidence_sha256": {
+    "meta": "0b5f6bae4c45b02fd02929f88b43fb571d9659ba9ef10df5481d42451dab5f21",
+    "revision": "576b70e80c12419d7868ca717d48d3da740093ca593281bd33d45de2bcc41936",
+    "result": "f62ed2b93d82a2a7af83030edd715633696807523e3c7e8716b6f71e0864b98b",
+    "footprint": "9680e7962c5796159325a49052ac09570dc07072d2c2eb3351b38e8f1f3003d3"
+  },
+  "final_pending_sha256_before": {
+    "f0_desacuerdos_resumen.json": "6503580e286139f98bd28fc0f967c29845c2dd81a11d57009474c9727374e306",
+    "f0_top1_resumen.json": "6f16f1e08d43bcf3936207a5cc66145c3bfd8e1a872ff889872e78120a653d4c",
+    "f0_impacto_qc.json": "80d817cc064bff358c02ef53a7e1ac9072bedd4c257827b7c29191af73638919"
+  },
+  "final_pending_sha256_after": {
+    "f0_desacuerdos_resumen.json": "6503580e286139f98bd28fc0f967c29845c2dd81a11d57009474c9727374e306",
+    "f0_top1_resumen.json": "6f16f1e08d43bcf3936207a5cc66145c3bfd8e1a872ff889872e78120a653d4c",
+    "f0_impacto_qc.json": "80d817cc064bff358c02ef53a7e1ac9072bedd4c257827b7c29191af73638919"
+  }
+}

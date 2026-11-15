@@ -1,0 +1,30 @@
+{
+  "fecha": "2026-11-13T21:01:04.452709-04:00",
+  "tipo": "humo_sintetico_excluido",
+  "cache_vacia": {
+    "cache_indice_beto": {
+      "filas": 0,
+      "sha256_claves": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_contenido": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cache_beto_entidades": {
+      "filas": 0,
+      "sha256_claves": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_contenido": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "cache_restaurada": {
+    "cache_indice_beto": {
+      "filas": 1,
+      "sha256_claves": "9f8fa9335d35791e99caed6f3ed0b1b3943f55d7fd9959599e377d47700b1380",
+      "sha256_contenido": "93626e661cad70e84664d7b92358f7b9e864ffa0fe9533ee193241bab43a0b48"
+    },
+    "cache_beto_entidades": {
+      "filas": 1,
+      "sha256_claves": "9f8fa9335d35791e99caed6f3ed0b1b3943f55d7fd9959599e377d47700b1380",
+      "sha256_contenido": "e09a3fcc40fdd31d85dfdea9941bf014ee54f54d75af4fcd49246b9e9f6fdedf"
+    }
+  },
+  "resultado": "OK",
+  "limpieza": "run_f0_smoke, run_f0_smoke_restore y f0_cache_a0 eliminadas tras comprobación"
+}

@@ -6,6 +6,21 @@
 set -e
 export MSYS_NO_PATHCONV=1
 ARBOL="$1"; DB="$2"; SALIDA="$3"; shift 3
+case "$DB" in
+  *[!a-z0-9_]*|'') echo 'Nombre de base inválido' >&2; exit 2 ;;
+esac
+case "$DB" in
+  run_f0_*|f0_cache_*)
+    # F0 comprueba entrada, flags, aislamiento, cachés y salidas antes de aceptar la corrida.
+    exec "${F0_PYTHON:-python}" scripts/medir_f0.py ejecutar "$ARBOL" "$DB" "$SALIDA" "$@"
+    ;;
+esac
+if [ "${CACHE_VACIA:-}" = "1" ] && [ -n "${CACHE_SEED_DB:-}" ]; then
+  echo 'CACHE_VACIA y CACHE_SEED_DB son mutuamente excluyentes' >&2; exit 2
+fi
+if [ -n "${CACHE_SEED_DB:-}" ]; then
+  echo 'CACHE_SEED_DB solo se admite en bases F0 verificadas' >&2; exit 2
+fi
 sh scripts/aislada_tmpfs.sh clon "$DB"
 # CACHE_VACIA=1: escenario de un mes nuevo (ningún índice ni entidad de BETO calculados de antemano)
 if [ "$CACHE_VACIA" = "1" ]; then

@@ -5,8 +5,8 @@ diff --git a/backend/core/database.py b/backend/core/database.py
  # ── 1. Base de Datos Data Warehouse (Esquema Constelación) ─────────────
  SQLALCHEMY_DATABASE_URL = os.getenv(
      "DATABASE_URL", 
--    "postgresql://giragroup_user:giragroup_secret_2026@localhost:5432/giragroup_db"
-+    "postgresql+psycopg2://giragroup_user:giragroup_secret_2026@localhost:5432/giragroup_db"
+-    "postgresql://giragroup_user:example_only_not_a_real_password@localhost:5432/giragroup_db"
++    "postgresql+psycopg2://giragroup_user:example_only_not_a_real_password@localhost:5432/giragroup_db"
  )
 +
 +# En entorno de prueba, derivar automáticamente a giragroup_db_test para proteger prod/dev

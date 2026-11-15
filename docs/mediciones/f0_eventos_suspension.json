@@ -1,0 +1,61 @@
+{
+  "fecha": "2026-11-14T11:32:18.422799-04:00",
+  "fuente_energia_api": "https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate",
+  "auditorias": [
+    {
+      "corrida": "f0_a0_vacia_r1",
+      "inicio": "2026-11-14T10:26:51.503608-04:00",
+      "fin_verificacion": "2026-11-14T10:37:29.027814-04:00",
+      "eventos": {
+        "aplica": true,
+        "kernel_power_42": [],
+        "power_troubleshooter_1": [],
+        "suspension_detectada": false
+      },
+      "valida_por_energia": true
+    },
+    {
+      "corrida": "f0_a0_vacia_r2",
+      "inicio": "2026-11-14T10:37:36.330052-04:00",
+      "fin_verificacion": "2026-11-14T11:17:04.628091-04:00",
+      "eventos": {
+        "aplica": true,
+        "kernel_power_42": [
+          {
+            "id": 42,
+            "utc": "2026-11-14T15:01:45.9003435Z"
+          },
+          {
+            "id": 42,
+            "utc": "2026-11-14T14:41:27.0071490Z"
+          }
+        ],
+        "power_troubleshooter_1": [
+          {
+            "id": 1,
+            "utc": "2026-11-14T15:08:42.0007583Z",
+            "datos": {
+              "TargetState": "5",
+              "WakeTime": "2026-11-14T15:08:40.9964127Z",
+              "SleepTime": "2026-11-14T15:01:45.4883566Z",
+              "EffectiveState": "5"
+            }
+          },
+          {
+            "id": 1,
+            "utc": "2026-11-14T15:01:46.5060029Z",
+            "datos": {
+              "TargetState": "5",
+              "WakeTime": "2026-11-14T15:01:45.4883566Z",
+              "SleepTime": "2026-11-14T15:01:45.4883566Z",
+              "EffectiveState": "5"
+            }
+          }
+        ],
+        "suspension_detectada": true
+      },
+      "valida_por_energia": false
+    }
+  ],
+  "interpretacion": "Suspensión confirmada invalida r2. La diferencia pared-tiempo máquina también incluye evidencia/importaciones; no se atribuye íntegramente a sueño. No se recogen nombres de usuario, equipo ni fuentes de despertar."
+}

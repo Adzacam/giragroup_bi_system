@@ -8,8 +8,8 @@ import json
 import psycopg2
 from collections import Counter
 
-URL_SNAPSHOT = "postgresql://giragroup_user:giragroup_secret_2026@localhost:5434/snapshot_dw_20261110_1201"
-URL_CATALOG = "postgresql://giragroup_user:giragroup_secret_2026@localhost:5433/giragroup_catalog_db"
+URL_SNAPSHOT = os.environ["SNAPSHOT_DATABASE_URL"]
+URL_CATALOG = os.environ["CATALOG_DATABASE_URL"]
 
 def auditar_tablas():
     conn = psycopg2.connect(URL_SNAPSHOT)

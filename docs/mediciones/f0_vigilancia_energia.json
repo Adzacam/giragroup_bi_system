@@ -1,0 +1,26 @@
+{
+  "fecha": "2026-11-14T11:33:49.739486-04:00",
+  "proteccion": {
+    "pid": 45460,
+    "latido": "2026-11-14T15:33:45.975099+00:00",
+    "retorno_api": 2147483649,
+    "flags": "ES_CONTINUOUS|ES_SYSTEM_REQUIRED",
+    "pantalla_requerida": false
+  },
+  "fuente": "https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate",
+  "configuracion_energia_cambiada": false,
+  "pantalla_requerida": false,
+  "limpieza": "ES_CONTINUOUS mismahebra al salir,STOPmanual yvigilaPIDdriver; finallyseries solicitaSTOP",
+  "validas_actuales": 1,
+  "invalidas_actuales": [
+    {
+      "id": "f0_a0_vacia_r2",
+      "evidencia": "f0_eventos_suspension.json"
+    }
+  ],
+  "vigilar": "EventosWindows por invocación ypared/monotonic host; diferencia absoluta>5s invalida; no se resta huella del tiempo deproducto ni se cambia su temporización",
+  "pruebas_guardas": {
+    "passed": 26,
+    "failed": 0
+  }
+}

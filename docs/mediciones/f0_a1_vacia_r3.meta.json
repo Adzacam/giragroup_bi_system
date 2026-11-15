@@ -1,0 +1,179 @@
+{
+  "fecha": "2026-11-14T13:03:58.041288-04:00",
+  "configuracion": "a1",
+  "estado": "vacia",
+  "valida": true,
+  "flags": {
+    "BETO_CASCADA_FINAL": "1",
+    "BETO_ACUERDO_QC": "0",
+    "BETO_SUGERENCIA_HITL": "0",
+    "BETO_VENTANA": "0"
+  },
+  "lote_sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "arbol_sha256": "eb77387d72396d0ebf0fe381818bbc576371d87e8129c56c3f04fc4532fb9102",
+  "modelo_sha256": "4998caf9c8673fab745371f28f5ba7802bb48feb3e4cf20abff0959b3f7326e8",
+  "arbol": "/tmp/medida",
+  "orden": [
+    "BD Cobranzas.xlsx",
+    "BD Egresos.xlsx",
+    "BD Techos.xlsx",
+    "Base centralizada Académica ARCA (1).xlsx",
+    "EJECUTADO VS META.xlsx",
+    "Evaluación Docente y Unifranz.xlsx",
+    "Experiencia Docente 2.0.xlsx",
+    "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+    "TBL_INSCRITOS.xlsx",
+    "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx"
+  ],
+  "base": "run_f0_a1_vacia_r3",
+  "catalogo": "catalogo_copia",
+  "verificacion_antes": {
+    "fecha": "2026-11-14T13:03:58.096730-04:00",
+    "sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+    "archivos": 20,
+    "valido": true
+  },
+  "lectura_cache_dir": "/tmp/f0/run_f0_a1_vacia_r3/lectura",
+  "landing_dir": "/tmp/f0/run_f0_a1_vacia_r3/landing",
+  "energia_antes": {
+    "pid": 45292,
+    "latido": "2026-11-14T17:03:50.954175+00:00",
+    "retorno_api": 2147483649,
+    "flags": "ES_CONTINUOUS|ES_SYSTEM_REQUIRED",
+    "pantalla_requerida": false
+  },
+  "protocolo_vigilancia": "v2: inhibición temporal, eventos Windows y pared/monotonic host; temporizadores de producto sin cambios",
+  "soporte_control_sha256": {
+    "medir_f0.py": "8ee58506040b16e8bb6a12e04b357ede03c7087b03d445a8e9fe51c2565331f7",
+    "f0_mantener_activo.py": "6f60ed28ebfbbda6476c28684c16645600034668b94ded97a6efeb9a3862ebdb"
+  },
+  "catalogo_antes": {
+    "fecha": "2026-11-14T13:03:58.238175-04:00",
+    "fuente": "copia",
+    "tablas": 20,
+    "sha256": "3ddf4c746114febd6ff424c2d67c30c9fe18f7d1fa4b08548089d762338d2ce9",
+    "metodo": "READ ONLY: conteo y MD5 de JSON filas ordenadas por tabla; SHA256 mapa XML canónico"
+  },
+  "recursos_antes": [
+    "{\"BlockIO\":\"37.5MB / 8.19kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"298b8ae6fc5e2a19e225d711c4ffb0f05e29a91ca5c362a9b6572046ace36a79\",\"ID\":\"298b8ae6fc5e\",\"MemPerc\":\"4.33%\",\"MemUsage\":\"680.4MiB / 15.34GiB\",\"Name\":\"beto_pg_tmpfs\",\"NetIO\":\"408MB / 498MB\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"1.83GB / 24.9MB\",\"CPUPerc\":\"0.60%\",\"Container\":\"ff48ce0c112e0a9003c3d150049f38bc8b6f8577767ab89cdaecdce83ba0f81b\",\"ID\":\"ff48ce0c112e\",\"MemPerc\":\"8.25%\",\"MemUsage\":\"1.265GiB / 15.34GiB\",\"Name\":\"giragroup_api\",\"NetIO\":\"498MB / 417MB\",\"PIDs\":\"194\"}",
+    "{\"BlockIO\":\"1.57GB / 0B\",\"CPUPerc\":\"0.32%\",\"Container\":\"3374bad5486067bdd52fa3381b4417a7ddb613b843f40d979a2a7ba7a5f7bce8\",\"ID\":\"3374bad54860\",\"MemPerc\":\"9.37%\",\"MemUsage\":\"1.438GiB / 15.34GiB\",\"Name\":\"giragroup_pipeline\",\"NetIO\":\"8.23MB / 512kB\",\"PIDs\":\"69\"}",
+    "{\"BlockIO\":\"10.1MB / 4.1kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"617fbf0bb4359aceb087f6128157b852a90f5f95345b94d11390eac931ca0223\",\"ID\":\"617fbf0bb435\",\"MemPerc\":\"0.02%\",\"MemUsage\":\"3.586MiB / 15.34GiB\",\"Name\":\"giragroup_gateway\",\"NetIO\":\"2.66kB / 126B\",\"PIDs\":\"2\"}",
+    "{\"BlockIO\":\"70.8MB / 0B\",\"CPUPerc\":\"0.12%\",\"Container\":\"3ff92f7bd8d845fada8247f6fe1c6b900eba09d0631f682161d89aea45e34730\",\"ID\":\"3ff92f7bd8d8\",\"MemPerc\":\"0.43%\",\"MemUsage\":\"67.91MiB / 15.34GiB\",\"Name\":\"giragroup_audit_svc\",\"NetIO\":\"2.7kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"67.5MB / 0B\",\"CPUPerc\":\"0.13%\",\"Container\":\"ae348540b4120598cbbd818ef9241e2607552d16a4d85583cdb530f3c8bb0acc\",\"ID\":\"ae348540b412\",\"MemPerc\":\"0.42%\",\"MemUsage\":\"66.06MiB / 15.34GiB\",\"Name\":\"giragroup_auth_svc\",\"NetIO\":\"2.62kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"60.7MB / 0B\",\"CPUPerc\":\"0.11%\",\"Container\":\"787ba23ff599526908f118f25ad3ee7d055342382c4682c0a85c75eee72dd87e\",\"ID\":\"787ba23ff599\",\"MemPerc\":\"0.40%\",\"MemUsage\":\"63.13MiB / 15.34GiB\",\"Name\":\"giragroup_notifications_svc\",\"NetIO\":\"2.53kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"52.9MB / 315kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"2ebf95f49df2e7980edfd0a8bf2e8dad08fa2dac0c11034bc11d59b901ef26ac\",\"ID\":\"2ebf95f49df2\",\"MemPerc\":\"0.30%\",\"MemUsage\":\"47.61MiB / 15.34GiB\",\"Name\":\"giragroup_catalog_db\",\"NetIO\":\"2.96kB / 126B\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"124MB / 0B\",\"CPUPerc\":\"0.04%\",\"Container\":\"c5fa82bcb467276feeb6f44bd95b517d90de5a608b4cdc684c94dcb667b7c973\",\"ID\":\"c5fa82bcb467\",\"MemPerc\":\"0.43%\",\"MemUsage\":\"67.78MiB / 15.34GiB\",\"Name\":\"giragroup_web\",\"NetIO\":\"2.74kB / 126B\",\"PIDs\":\"33\"}",
+    "{\"BlockIO\":\"143MB / 1.02MB\",\"CPUPerc\":\"0.00%\",\"Container\":\"4b5c580f83392eead4f6be82975311e0575616ac897316e45a2df4efd1a28f93\",\"ID\":\"4b5c580f8339\",\"MemPerc\":\"0.79%\",\"MemUsage\":\"123.7MiB / 15.34GiB\",\"Name\":\"giragroup_db\",\"NetIO\":\"121kB / 80kB\",\"PIDs\":\"14\"}"
+  ],
+  "calentamiento_servicio": {
+    "tipo": "sintetico_excluido",
+    "textos_por_peticion": 16,
+    "max_length": 128,
+    "ventana": false,
+    "stride": 32,
+    "peticiones": [
+      {
+        "peticion": 1,
+        "http": 200
+      },
+      {
+        "peticion": 2,
+        "http": 200
+      },
+      {
+        "peticion": 3,
+        "http": 200
+      },
+      {
+        "peticion": 4,
+        "http": 200
+      }
+    ]
+  },
+  "cache_antes": {
+    "cache_indice_beto": {
+      "filas": 0,
+      "sha256_claves": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_contenido": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cache_beto_entidades": {
+      "filas": 0,
+      "sha256_claves": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_contenido": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "tiempo_invocacion_host": {
+    "inicio": "2026-11-14T13:04:03.278804-04:00",
+    "fin": "2026-11-14T13:16:25.344871-04:00",
+    "pared_s": 742.066067,
+    "monotonic_s": 742.0660717999999,
+    "diferencia_relojes_s": -4.79999994240643e-06,
+    "incluye": "Importaciones, lectura/consolidación, huella y generación de evidencia; distinto del tiempo de máquina sin revisión",
+    "fuera_cronometro_dentro_invocacion_s": 3.7760717999999542
+  },
+  "cache_despues": {
+    "cache_indice_beto": {
+      "filas": 12559,
+      "sha256_claves": "961096284b37aaff534e3c77ced6d1384dc3f8044b875c64168d72161cab64bd",
+      "sha256_contenido": "f30d27fcb1958f06f34728982db15c07cbfc33acd1a940d8fbc581d2a078a47b"
+    },
+    "cache_beto_entidades": {
+      "filas": 23,
+      "sha256_claves": "1d11c29e9f149642516f93ac5c1a386c4d226c471e3f359a5a0992283c2ef14a",
+      "sha256_contenido": "e0eb83de481d4e3e0b6fa8ddcb2445a1d5badc4ac7dbc4107fe78c165b7f82db"
+    }
+  },
+  "revision_evidencia": "f0_a1_vacia_r3.revision.json",
+  "verificacion_despues": {
+    "fecha": "2026-11-14T13:16:41.819098-04:00",
+    "sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+    "archivos": 20,
+    "valido": true
+  },
+  "eventos_energia": {
+    "aplica": true,
+    "kernel_power_42": [],
+    "power_troubleshooter_1": [],
+    "suspension_detectada": false
+  },
+  "energia_despues": {
+    "pid": 45292,
+    "latido": "2026-11-14T17:16:41.362725+00:00",
+    "retorno_api": 2147483649,
+    "flags": "ES_CONTINUOUS|ES_SYSTEM_REQUIRED",
+    "pantalla_requerida": false
+  },
+  "catalogo_despues": {
+    "fecha": "2026-11-14T13:16:42.488868-04:00",
+    "fuente": "copia",
+    "tablas": 20,
+    "sha256": "3ddf4c746114febd6ff424c2d67c30c9fe18f7d1fa4b08548089d762338d2ce9",
+    "metodo": "READ ONLY: conteo y MD5 de JSON filas ordenadas por tabla; SHA256 mapa XML canónico"
+  },
+  "recursos_despues": [
+    "{\"BlockIO\":\"37.5MB / 8.19kB\",\"CPUPerc\":\"0.36%\",\"Container\":\"298b8ae6fc5e2a19e225d711c4ffb0f05e29a91ca5c362a9b6572046ace36a79\",\"ID\":\"298b8ae6fc5e\",\"MemPerc\":\"4.61%\",\"MemUsage\":\"723.3MiB / 15.34GiB\",\"Name\":\"beto_pg_tmpfs\",\"NetIO\":\"491MB / 597MB\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"1.83GB / 29.8MB\",\"CPUPerc\":\"0.68%\",\"Container\":\"ff48ce0c112e0a9003c3d150049f38bc8b6f8577767ab89cdaecdce83ba0f81b\",\"ID\":\"ff48ce0c112e\",\"MemPerc\":\"8.26%\",\"MemUsage\":\"1.266GiB / 15.34GiB\",\"Name\":\"giragroup_api\",\"NetIO\":\"598MB / 503MB\",\"PIDs\":\"194\"}",
+    "{\"BlockIO\":\"1.57GB / 0B\",\"CPUPerc\":\"0.33%\",\"Container\":\"3374bad5486067bdd52fa3381b4417a7ddb613b843f40d979a2a7ba7a5f7bce8\",\"ID\":\"3374bad54860\",\"MemPerc\":\"10.04%\",\"MemUsage\":\"1.54GiB / 15.34GiB\",\"Name\":\"giragroup_pipeline\",\"NetIO\":\"12.3MB / 725kB\",\"PIDs\":\"69\"}",
+    "{\"BlockIO\":\"10.1MB / 4.1kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"617fbf0bb4359aceb087f6128157b852a90f5f95345b94d11390eac931ca0223\",\"ID\":\"617fbf0bb435\",\"MemPerc\":\"0.02%\",\"MemUsage\":\"3.586MiB / 15.34GiB\",\"Name\":\"giragroup_gateway\",\"NetIO\":\"2.66kB / 126B\",\"PIDs\":\"2\"}",
+    "{\"BlockIO\":\"70.8MB / 0B\",\"CPUPerc\":\"0.13%\",\"Container\":\"3ff92f7bd8d845fada8247f6fe1c6b900eba09d0631f682161d89aea45e34730\",\"ID\":\"3ff92f7bd8d8\",\"MemPerc\":\"0.43%\",\"MemUsage\":\"67.92MiB / 15.34GiB\",\"Name\":\"giragroup_audit_svc\",\"NetIO\":\"2.7kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"67.5MB / 0B\",\"CPUPerc\":\"0.13%\",\"Container\":\"ae348540b4120598cbbd818ef9241e2607552d16a4d85583cdb530f3c8bb0acc\",\"ID\":\"ae348540b412\",\"MemPerc\":\"0.42%\",\"MemUsage\":\"65.87MiB / 15.34GiB\",\"Name\":\"giragroup_auth_svc\",\"NetIO\":\"2.62kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"60.7MB / 0B\",\"CPUPerc\":\"0.13%\",\"Container\":\"787ba23ff599526908f118f25ad3ee7d055342382c4682c0a85c75eee72dd87e\",\"ID\":\"787ba23ff599\",\"MemPerc\":\"0.40%\",\"MemUsage\":\"63.13MiB / 15.34GiB\",\"Name\":\"giragroup_notifications_svc\",\"NetIO\":\"2.53kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"52.9MB / 315kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"2ebf95f49df2e7980edfd0a8bf2e8dad08fa2dac0c11034bc11d59b901ef26ac\",\"ID\":\"2ebf95f49df2\",\"MemPerc\":\"0.30%\",\"MemUsage\":\"47.26MiB / 15.34GiB\",\"Name\":\"giragroup_catalog_db\",\"NetIO\":\"2.96kB / 126B\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"124MB / 0B\",\"CPUPerc\":\"0.06%\",\"Container\":\"c5fa82bcb467276feeb6f44bd95b517d90de5a608b4cdc684c94dcb667b7c973\",\"ID\":\"c5fa82bcb467\",\"MemPerc\":\"0.43%\",\"MemUsage\":\"67.79MiB / 15.34GiB\",\"Name\":\"giragroup_web\",\"NetIO\":\"2.74kB / 126B\",\"PIDs\":\"33\"}",
+    "{\"BlockIO\":\"143MB / 1.02MB\",\"CPUPerc\":\"0.00%\",\"Container\":\"4b5c580f83392eead4f6be82975311e0575616ac897316e45a2df4efd1a28f93\",\"ID\":\"4b5c580f8339\",\"MemPerc\":\"0.79%\",\"MemUsage\":\"124.5MiB / 15.34GiB\",\"Name\":\"giragroup_db\",\"NetIO\":\"121kB / 80kB\",\"PIDs\":\"14\"}"
+  ],
+  "trafico_servicio": {
+    "desde": "2026-11-14T13:03:58.041288-04:00",
+    "peticiones_por_ruta": {
+      "POST /infer-batch": 9,
+      "POST /indice": 98
+    },
+    "atribucion": "Ventana exclusiva declarada; no hay atribución individual de clientes a partir del log HTTP"
+  },
+  "clon_eliminado_tras_exportacion": true,
+  "respaldo_privado": {
+    "ruta": "corridas\\f0_a1_vacia_r3\\base.sql",
+    "sha256": "585d55ed99fc60d0870185603ac40df8603431bd590a5d43652970ce690328af"
+  }
+}

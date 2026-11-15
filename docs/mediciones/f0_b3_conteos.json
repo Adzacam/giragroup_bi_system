@@ -1,0 +1,31 @@
+{
+  "status": "503_explained_by_incomplete_historical_matrix_ID_trace_partial",
+  "gold_sha256": "7dce0bec4dd3a60b94a7e6e5a48df29a6844fc93d28375697aa04f1b9a3d51a5",
+  "records": 180,
+  "full_gold_support": 510,
+  "full_by_type": {
+    "PER_ESTUDIANTE": 130,
+    "PROGRAMA": 180,
+    "MODULO": 150,
+    "PER_DOCENTE": 50
+  },
+  "visible_128_support": 510,
+  "visible_by_type": {
+    "PER_ESTUDIANTE": 130,
+    "PROGRAMA": 180,
+    "MODULO": 150,
+    "PER_DOCENTE": 50
+  },
+  "fully_omitted_entities": [],
+  "partially_truncated_entities": [],
+  "definition": "Current gold has510 entities, all visible within128. Historical graph hardcodes a4x4 matrix summing503 because its PROGRAMA row has173 instead of full support180. This explains503 by presentation/matrix definition, not a different gold version or current tokenizer truncation. Historical excluded case IDs were not saved.",
+  "ids": "1-based nonempty JSONL line IDs, zero-based half-open saved-token spans",
+  "historical_matrix_evidence": "f0_b3_conciliacion_git.json",
+  "historical_matrix_sum": 503,
+  "historical_matrix_missing_by_type": {
+    "MODULO": 0,
+    "PER_DOCENTE": 0,
+    "PER_ESTUDIANTE": 0,
+    "PROGRAMA": 7
+  }
+}

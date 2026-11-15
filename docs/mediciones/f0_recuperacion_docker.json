@@ -1,0 +1,38 @@
+{
+  "fecha": "2026-11-14T10:20:12.444320-04:00",
+  "incidente": "Docker Desktop no arrancaba: sockets AF_UNIX obsoletos dockerInference y engine.sock",
+  "acciones": [
+    {
+      "accion": "parada controlada",
+      "comando": "docker desktop stop --force --timeout 10",
+      "exit_code": 0
+    },
+    {
+      "accion": "rename reversible de directorios verificados: solo sockets ReparsePoint de cero bytes, sin subdirectorios",
+      "respaldos": [
+        "C:/Users/DAZA/AppData/Local/Docker/run.f0-stale-20261114_101754",
+        "C:/Users/DAZA/AppData/Local/Docker/run.f0-stale-20261114_101910",
+        "C:/Users/DAZA/AppData/Local/docker-secrets-engine.f0-stale-20261114_101910"
+      ]
+    },
+    {
+      "accion": "inicio Docker Desktop con ventana oculta"
+    }
+  ],
+  "configuracion_modificada": false,
+  "volumenes_borrados": false,
+  "reset_fabrica": false,
+  "directorios_respaldados_eliminados": false,
+  "fuentes_procedimiento_reportado": [
+    "https://github.com/docker/desktop-feedback/issues/532",
+    "https://github.com/docker/desktop-feedback/issues/536"
+  ],
+  "verificacion_posterior": {
+    "docker_ps_exit": 0,
+    "servicios_existentes_activos": 9,
+    "bases_postgresql": "healthy",
+    "beto_pg_tmpfs": "Exited255; requiere restauración aislada",
+    "usuario": "confirmó que Docker estaba recuperado"
+  },
+  "limite": "No se atribuye el resultado solo a estas acciones: también hubo confirmación de recuperación del usuario. No se cambió Model Runner ni ajustes de Docker."
+}

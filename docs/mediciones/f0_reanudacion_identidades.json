@@ -1,0 +1,20 @@
+{
+  "fecha": "2026-11-14T10:21:52.907516-04:00",
+  "arbol_sha256": "eb77387d72396d0ebf0fe381818bbc576371d87e8129c56c3f04fc4532fb9102",
+  "modelo_sha256": "4998caf9c8673fab745371f28f5ba7802bb48feb3e4cf20abff0959b3f7326e8",
+  "catalogo_origen": {
+    "fecha": "2026-11-14T10:21:52.235867-04:00",
+    "fuente": "origen",
+    "tablas": 20,
+    "sha256": "3ddf4c746114febd6ff424c2d67c30c9fe18f7d1fa4b08548089d762338d2ce9",
+    "metodo": "READ ONLY: conteo y MD5 de JSON filas ordenadas por tabla; SHA256 mapa XML canónico"
+  },
+  "lote": {
+    "fecha": "2026-11-14T10:21:52.957950-04:00",
+    "sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+    "archivos": 20,
+    "valido": true
+  },
+  "identidades_originales_conservadas": true,
+  "serie_valida_antes_del_paro": 0
+}

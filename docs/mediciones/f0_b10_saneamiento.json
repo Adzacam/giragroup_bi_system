@@ -1,0 +1,229 @@
+{
+  "tarea": "B-10",
+  "estado": "saneado_arbol_actual",
+  "archivos_antes": [
+    {
+      "path": ".env.example",
+      "lineas": [
+        6,
+        7
+      ]
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "lineas": [
+        50,
+        64,
+        91,
+        99,
+        100
+      ]
+    },
+    {
+      "path": "Makefile",
+      "lineas": [
+        12,
+        13
+      ]
+    },
+    {
+      "path": "_archivo/docs/auditoria/production_readiness_2026-11-01.md",
+      "lineas": [
+        24,
+        106
+      ]
+    },
+    {
+      "path": "_archivo/docs/testing/Makefile",
+      "lineas": [
+        12
+      ]
+    },
+    {
+      "path": "_archivo/docs/testing/ci.yml",
+      "lineas": [
+        50,
+        64,
+        91,
+        99,
+        100
+      ]
+    },
+    {
+      "path": "_archivo/docs/testing/diff_aislamiento_smtp_db.patch",
+      "lineas": [
+        8,
+        9
+      ]
+    },
+    {
+      "path": "_archivo/docs/testing/test.sh",
+      "lineas": [
+        11
+      ]
+    },
+    {
+      "path": "backend/core/database.py",
+      "lineas": [
+        19,
+        58
+      ]
+    },
+    {
+      "path": "docker-compose.yml",
+      "lineas": [
+        12,
+        30
+      ]
+    },
+    {
+      "path": "infrastructure/docker/catalog_db.Dockerfile",
+      "lineas": [
+        5
+      ]
+    },
+    {
+      "path": "scripts/auditar_metricas_cmi_alertas.py",
+      "lineas": [
+        14
+      ]
+    },
+    {
+      "path": "scripts/exportar_inventario_tablas.py",
+      "lineas": [
+        3,
+        19
+      ]
+    },
+    {
+      "path": "scripts/generar_fuente_verdad_doc.py",
+      "lineas": [
+        15,
+        16
+      ]
+    },
+    {
+      "path": "scripts/investigar_fuente_verdad.py",
+      "lineas": [
+        11,
+        12
+      ]
+    },
+    {
+      "path": "scripts/migrar_staging_idempotente.py",
+      "lineas": [
+        15
+      ]
+    },
+    {
+      "path": "scripts/reset_dw.py",
+      "lineas": [
+        27
+      ]
+    },
+    {
+      "path": "scripts/verificar_snapshot_metricas.py",
+      "lineas": [
+        6
+      ]
+    },
+    {
+      "path": "services/audit-service/core/database.py",
+      "lineas": [
+        19,
+        47
+      ]
+    },
+    {
+      "path": "services/auth-service/core/database.py",
+      "lineas": [
+        19,
+        47
+      ]
+    },
+    {
+      "path": "services/notifications-service/core/database.py",
+      "lineas": [
+        19,
+        47
+      ]
+    },
+    {
+      "path": "tests/sprint4/test_forecasting.py",
+      "lineas": [
+        176
+      ]
+    },
+    {
+      "path": "tests/sprint6/test_seguridad_y_resiliencia_api.py",
+      "lineas": [
+        58
+      ]
+    }
+  ],
+  "archivos_modificados": [
+    ".env.example",
+    ".github/workflows/ci.yml",
+    "Makefile",
+    "_archivo/docs/auditoria/production_readiness_2026-11-01.md",
+    "_archivo/docs/testing/Makefile",
+    "_archivo/docs/testing/ci.yml",
+    "_archivo/docs/testing/diff_aislamiento_smtp_db.patch",
+    "_archivo/docs/testing/test.sh",
+    "backend/core/database.py",
+    "docker-compose.yml",
+    "infrastructure/docker/catalog_db.Dockerfile",
+    "scripts/auditar_metricas_cmi_alertas.py",
+    "scripts/exportar_inventario_tablas.py",
+    "scripts/generar_fuente_verdad_doc.py",
+    "scripts/investigar_fuente_verdad.py",
+    "scripts/migrar_staging_idempotente.py",
+    "scripts/reset_dw.py",
+    "scripts/verificar_snapshot_metricas.py",
+    "services/audit-service/core/database.py",
+    "services/auth-service/core/database.py",
+    "services/notifications-service/core/database.py",
+    "tests/sprint4/test_forecasting.py",
+    "tests/sprint6/test_seguridad_y_resiliencia_api.py"
+  ],
+  "apariciones_restantes_secreto_identificado": 0,
+  "archivos_restantes": [],
+  "env_privado_preservado": true,
+  "credencial_rotada": false,
+  "historial_reescrito": false,
+  "limitacion": "El secreto permanece en commits anteriores. Rotación e historial requieren decisión explícita de Lean.",
+  "configuracion": "DATABASE_URL y CATALOG_DATABASE_URL obligatorias; scripts snapshot usan SNAPSHOT_DATABASE_URL; compose exige POSTGRES_PASSWORD privado; ejemplos y CI usan valores ficticios.",
+  "fecha": "2026-11-13 America/La_Paz",
+  "archivos_versionables_examinados": 1083,
+  "pruebas": {
+    "comando": ".venv/Scripts/python.exe -m pytest tests/f0/test_configuracion_sin_fallback.py -q",
+    "passed": 12,
+    "failed": 0,
+    "duracion_s": 12.48,
+    "compilacion_python_correcta": [
+      "backend/core/database.py",
+      "scripts/auditar_metricas_cmi_alertas.py",
+      "scripts/exportar_inventario_tablas.py",
+      "scripts/generar_fuente_verdad_doc.py",
+      "scripts/investigar_fuente_verdad.py",
+      "scripts/migrar_staging_idempotente.py",
+      "scripts/reset_dw.py",
+      "scripts/verificar_snapshot_metricas.py",
+      "services/audit-service/core/database.py",
+      "services/auth-service/core/database.py",
+      "services/notifications-service/core/database.py",
+      "tests/sprint4/test_forecasting.py",
+      "tests/sprint6/test_seguridad_y_resiliencia_api.py"
+    ]
+  },
+  "variables_obligatorias": [
+    "DATABASE_URL",
+    "CATALOG_DATABASE_URL",
+    "POSTGRES_PASSWORD (compose)",
+    "SNAPSHOT_DATABASE_URL (scripts auditoría)"
+  ],
+  "variables_no_presentes_env_privado": [
+    "POSTGRES_PASSWORD",
+    "SNAPSHOT_DATABASE_URL"
+  ]
+}

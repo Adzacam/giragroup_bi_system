@@ -1,9 +1,10 @@
+import os
 """
 Verificación de métricas en snapshot_dw_20261110_1201
 """
 import psycopg2
 
-URL = "postgresql://giragroup_user:giragroup_secret_2026@localhost:5434/snapshot_dw_20261110_1201"
+URL = os.environ["SNAPSHOT_DATABASE_URL"]
 conn = psycopg2.connect(URL)
 cur = conn.cursor()
 

@@ -8,7 +8,7 @@ set -euo pipefail
 
 TARGET="${1:-help}"
 
-EXEC_PIPELINE="docker compose exec -e APP_ENV=test -e EMAIL_BACKEND=console -e DATABASE_URL=postgresql+psycopg2://giragroup_user:giragroup_secret_2026@giragroup_db:5432/giragroup_db -e CATALOG_DATABASE_URL=postgresql+psycopg2://giragroup_user:giragroup_secret_2026@catalog_db:5432/giragroup_catalog_db pipeline"
+EXEC_PIPELINE="docker compose exec -e APP_ENV=test -e EMAIL_BACKEND=console -e DATABASE_URL=postgresql+psycopg2://giragroup_user:example_only_not_a_real_password@giragroup_db:5432/giragroup_db -e CATALOG_DATABASE_URL=postgresql+psycopg2://giragroup_user:example_only_not_a_real_password@catalog_db:5432/giragroup_catalog_db pipeline"
 
 case "$TARGET" in
   unit)

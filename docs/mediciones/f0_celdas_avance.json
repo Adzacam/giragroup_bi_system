@@ -1,0 +1,123 @@
+{
+  "fecha": "2026-11-14T17:30:08.036588+00:00",
+  "tipo": "avance_parcial_sin_aceptación_final",
+  "ablacion_42_completa": false,
+  "validas_hasta_ahora": 12,
+  "objetivo_corridas_validas": 42,
+  "celdas_completas": [
+    {
+      "configuracion": "a0",
+      "estado": "llena",
+      "n": 3,
+      "tiempo_maquina_s_media": 210.08333333333334,
+      "tiempo_maquina_s_de_muestral": 7.244696911074554,
+      "corridas": [
+        {
+          "id": "f0_a0_llena_r1_reintento1",
+          "resultado": "f0_a0_llena_r1_reintento1.json",
+          "sha256": "1ec838e28410b71910966becd6e061dcbf72b8dd17a09c3ca5b6c9eaf3354ccc",
+          "tiempo_maquina_s": 216.92
+        },
+        {
+          "id": "f0_a0_llena_r2",
+          "resultado": "f0_a0_llena_r2.json",
+          "sha256": "19f088c19a360fe66265fb5f41e3fcda438634f370594716e86d296d1b4d383f",
+          "tiempo_maquina_s": 210.84
+        },
+        {
+          "id": "f0_a0_llena_r3",
+          "resultado": "f0_a0_llena_r3.json",
+          "sha256": "121f0bd5271f5376773b019073345703cee36ed644363ae467f175dfdf9e3948",
+          "tiempo_maquina_s": 202.49
+        }
+      ]
+    },
+    {
+      "configuracion": "a0",
+      "estado": "vacia",
+      "n": 3,
+      "tiempo_maquina_s_media": 803.5833333333333,
+      "tiempo_maquina_s_de_muestral": 173.03728856328433,
+      "corridas": [
+        {
+          "id": "f0_a0_vacia_r1",
+          "resultado": "f0_a0_vacia_r1.json",
+          "sha256": "f62ed2b93d82a2a7af83030edd715633696807523e3c7e8716b6f71e0864b98b",
+          "tiempo_maquina_s": 603.78
+        },
+        {
+          "id": "f0_a0_vacia_r2_reintento1",
+          "resultado": "f0_a0_vacia_r2_reintento1.json",
+          "sha256": "0031ae59264711fb26a488e4a32c1ee5ea8e98c24aa99d3c89f95a63cdc9abdc",
+          "tiempo_maquina_s": 902.55
+        },
+        {
+          "id": "f0_a0_vacia_r3",
+          "resultado": "f0_a0_vacia_r3.json",
+          "sha256": "e494241fcae6a31b655df2504453bec4f521acab399168d2f75bcca3389ab71a",
+          "tiempo_maquina_s": 904.42
+        }
+      ]
+    },
+    {
+      "configuracion": "a1",
+      "estado": "llena",
+      "n": 3,
+      "tiempo_maquina_s_media": 206.32999999999998,
+      "tiempo_maquina_s_de_muestral": 1.7376133056580796,
+      "corridas": [
+        {
+          "id": "f0_a1_llena_r1",
+          "resultado": "f0_a1_llena_r1.json",
+          "sha256": "80210af3cc4e3ee17c83d90c8fd7bfc87c376a430ba3e5ce810ee879a1078e1f",
+          "tiempo_maquina_s": 206.44
+        },
+        {
+          "id": "f0_a1_llena_r2",
+          "resultado": "f0_a1_llena_r2.json",
+          "sha256": "f351dfb2243670bde55df308323de2aaa9ea09b6cec3f40976941bae175684d4",
+          "tiempo_maquina_s": 204.54
+        },
+        {
+          "id": "f0_a1_llena_r3",
+          "resultado": "f0_a1_llena_r3.json",
+          "sha256": "a94c6d79f46d8d7199914c5cbed12dc0d2ae3180c69a9a4b34e9928f82aca6f9",
+          "tiempo_maquina_s": 208.01
+        }
+      ]
+    },
+    {
+      "configuracion": "a1",
+      "estado": "vacia",
+      "n": 3,
+      "tiempo_maquina_s_media": 739.6133333333333,
+      "tiempo_maquina_s_de_muestral": 11.124191356378825,
+      "corridas": [
+        {
+          "id": "f0_a1_vacia_r1",
+          "resultado": "f0_a1_vacia_r1.json",
+          "sha256": "91cb46d460e6c295f83f277387611f821c7842b07fc834ab297df313c5b8c446",
+          "tiempo_maquina_s": 729.21
+        },
+        {
+          "id": "f0_a1_vacia_r2",
+          "resultado": "f0_a1_vacia_r2.json",
+          "sha256": "b8f6466abf1e041980e3b41441e1d24a88c8b569a86e608bde049bd9771400b1",
+          "tiempo_maquina_s": 751.34
+        },
+        {
+          "id": "f0_a1_vacia_r3",
+          "resultado": "f0_a1_vacia_r3.json",
+          "sha256": "169428915d55bc74e807fc631f01e6c5d2836131ea5f2a61bb2aa675ad71bb20",
+          "tiempo_maquina_s": 738.29
+        }
+      ]
+    }
+  ],
+  "invalidas_excluidas": [
+    "f0_a0_llena_r1",
+    "f0_a0_vacia_r2"
+  ],
+  "warmups_excluidos": 7,
+  "rnf03": "Máquina sin revisión humana; no certifica ciclo completo"
+}

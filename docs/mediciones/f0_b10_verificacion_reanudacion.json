@@ -1,0 +1,8 @@
+{
+  "fecha": "2026-11-14T10:20:46.888289-04:00",
+  "alcance": "tracked + untracked no ignorados; coincidencia literal bytes de contraseñas PostgreSQL identificadas por las URLs privadas; valores no exportados",
+  "archivos_escaneados": 1170,
+  "archivos_con_apariciones": [],
+  "apariciones_en_archivos": 0,
+  "valores_secretos_publicados": false
+}

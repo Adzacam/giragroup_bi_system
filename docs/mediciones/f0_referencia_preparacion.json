@@ -1,0 +1,15 @@
+{
+  "fecha": "2026-11-14T10:17:19.756106-04:00",
+  "git_commit": "73ec78f507e9acb13f5aefe52162fcadb271f00b",
+  "archivo_privado": "referencia_73ec78f.tar",
+  "archivo_sha256": "3ddec726197512654f403b6480bf0a81e3d25b356b6f99b32f16a1f89d5f8d5a",
+  "datos_incluidos": false,
+  "nota": "Archivo histórico privado no versionable; no se publica código antiguo ni credenciales",
+  "arbol": "/tmp/f0_ref_73ec78f",
+  "arbol_sha256": "92aae1c770362bc5e0f531dff405849d57a0f845287deb0c0b0dad8fcc1d2a36",
+  "lote_sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "modelo_sha256": "4998caf9c8673fab745371f28f5ba7802bb48feb3e4cf20abff0959b3f7326e8",
+  "seed_sha256": "5361022f940221d79a7f2ae114cc0bab41dea344be0b8a0339e019c92c9fe007",
+  "ajuste_exclusivo_copia": "ingestion_service.py: \"/app\", \"/app/pipeline\" → ruta fija referencia; pesos enlazados a copia medida",
+  "estado": "arbol_referencia_preparado"
+}

@@ -1,0 +1,5 @@
+BEGIN
+{"source" : "beto_pg_tmpfs/giragroup_db historical isolated copy", "table" : "log_auditoria_nlp", "rows" : 4, "with_auditor" : 4, "with_correction" : 4, "with_prediction" : 4, "earliest" : "2026-11-06T00:36:39.605277", "latest" : "2026-11-06T00:37:17.290356"}
+{"columns" : ["id_log", "texto_original", "prediccion_beto", "confianza_ia", "correccion_humana", "usuario_auditor", "created_at"]}
+{"resolved_staging_rows" : 22083, "with_actor" : 0, "with_decision_timestamp" : 22083}
+ROLLBACK

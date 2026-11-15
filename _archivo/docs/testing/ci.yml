@@ -47,7 +47,7 @@ jobs:
         env:
           POSTGRES_DB: giragroup_db_test
           POSTGRES_USER: giragroup_user
-          POSTGRES_PASSWORD: giragroup_secret_2026
+          POSTGRES_PASSWORD: example_only_not_a_real_password
         ports:
           - 5434:5432
         options: >-
@@ -61,7 +61,7 @@ jobs:
         env:
           POSTGRES_DB: giragroup_catalog_db_test
           POSTGRES_USER: giragroup_user
-          POSTGRES_PASSWORD: giragroup_secret_2026
+          POSTGRES_PASSWORD: example_only_not_a_real_password
         ports:
           - 5433:5432
         options: >-
@@ -88,7 +88,7 @@ jobs:
 
       - name: Initialize DB Schemas
         env:
-          PGPASSWORD: giragroup_secret_2026
+          PGPASSWORD: example_only_not_a_real_password
         run: |
           psql -h localhost -p 5434 -U giragroup_user -d giragroup_db_test -f db/schema.sql
           psql -h localhost -p 5433 -U giragroup_user -d giragroup_catalog_db_test -f db/catalogos_3nf_schema.sql
@@ -96,8 +96,8 @@ jobs:
 
       - name: Run Test Suite with Coverage Gate (Threshold >= 75%)
         env:
-          DATABASE_URL: postgresql+psycopg2://giragroup_user:giragroup_secret_2026@localhost:5434/giragroup_db_test
-          CATALOG_DATABASE_URL: postgresql+psycopg2://giragroup_user:giragroup_secret_2026@localhost:5433/giragroup_catalog_db_test
+          DATABASE_URL: postgresql+psycopg2://giragroup_user:example_only_not_a_real_password@localhost:5434/giragroup_db_test
+          CATALOG_DATABASE_URL: postgresql+psycopg2://giragroup_user:example_only_not_a_real_password@localhost:5433/giragroup_catalog_db_test
         run: |
           pytest tests/sprint1/ tests/sprint2/ tests/sprint3/ tests/sprint4/ \
             --cov=pipeline --cov=backend/services \

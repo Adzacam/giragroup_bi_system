@@ -1,0 +1,14 @@
+{
+  "fecha": "2026-11-14T10:09:50.235948-04:00",
+  "registros": 1313,
+  "original_privado": "logs\\comandos_redactados_20261114_100947_993020.jsonl",
+  "original_sha256": "8d12100e641e0f2bd7b23cf6d2e64ca7e2c094f65ec922d25f4254871fbdf44d",
+  "original_bytes": 214369946,
+  "compacto_sha256": "985aacd272cea8d65e7a90e0bb05a34b933740e44839ac5535785c5feb31a2c9",
+  "compacto_bytes": 929790,
+  "integrales_privados": {
+    "ruta": "comandos.stdout-stderr.txt",
+    "sha256_al_compactar": "bda2964c90b1d9569c078e4994531e31483d18ccd62010bece86144cfeb81a0e"
+  },
+  "protocolo": "No se descartan originales: archivo de log anterior íntegro privado; reemplazo público por resúmenes de stdout/stderr"
+}

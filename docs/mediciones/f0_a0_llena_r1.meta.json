@@ -1,0 +1,70 @@
+{
+  "fecha": "2026-11-14T12:15:26.415824-04:00",
+  "fecha_es_deteccion_posterior": true,
+  "valida": false,
+  "configuracion": "a0",
+  "estado": "llena",
+  "base": "run_f0_a0_llena_r1",
+  "motivo_invalida": "Invocación interrumpida sin salida/huella/metadato terminal; existe landing/1 con10archivos y1caché de lectura que prueban ejecución despuésdeiniciar cronómetro",
+  "inicio_exactamente_recuperado": false,
+  "causa_cierre": "No determinada; no se presupone reinicio ni suspensión",
+  "evidencia_parcial_privada": [
+    {
+      "ruta_privada": "corridas/f0_a0_llena_r1_interrumpida/landing/1/_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+      "bytes": 119449,
+      "sha256": "8b5b67cffb015e036d234c60fc90b0b96704580020fa1c82717b005f8cccfbd3"
+    },
+    {
+      "ruta_privada": "corridas/f0_a0_llena_r1_interrumpida/landing/1/Base centralizada Académica ARCA (1).xlsx",
+      "bytes": 149682,
+      "sha256": "248da01d11e4e5517b67d79c67e0f0ecd97fa4897ed67608da6ac97efd7f109f"
+    },
+    {
+      "ruta_privada": "corridas/f0_a0_llena_r1_interrumpida/landing/1/BD Cobranzas.xlsx",
+      "bytes": 207759,
+      "sha256": "086a46ab0aef42d4beb780b8f57db45534719375735a0eec1399deaa170e1092"
+    },
+    {
+      "ruta_privada": "corridas/f0_a0_llena_r1_interrumpida/landing/1/BD Egresos.xlsx",
+      "bytes": 141040,
+      "sha256": "8a5c150782477ae37e092366441f85ac903bd961d9b14d41e905dbd14bada729"
+    },
+    {
+      "ruta_privada": "corridas/f0_a0_llena_r1_interrumpida/landing/1/BD Techos.xlsx",
+      "bytes": 5333,
+      "sha256": "ef85948514829e8243ef41f498edc7d5bc1a1feaa2cae8027a369b886bac76ba"
+    },
+    {
+      "ruta_privada": "corridas/f0_a0_llena_r1_interrumpida/landing/1/EJECUTADO VS META.xlsx",
+      "bytes": 8910,
+      "sha256": "1e45cb1789aefe7449a363e5c5f41e4146acc3551b962a312c19b29f29e87d58"
+    },
+    {
+      "ruta_privada": "corridas/f0_a0_llena_r1_interrumpida/landing/1/Evaluación Docente y Unifranz.xlsx",
+      "bytes": 756950,
+      "sha256": "65f2dc58e562747225ba3bed991324fb8adb524e91034b70fa3f1c1be53b6810"
+    },
+    {
+      "ruta_privada": "corridas/f0_a0_llena_r1_interrumpida/landing/1/Experiencia Docente 2.0.xlsx",
+      "bytes": 183753,
+      "sha256": "dde464c21db2fce63bc9425d35ab2587dc005d70437ecf11f69c32aa0260679c"
+    },
+    {
+      "ruta_privada": "corridas/f0_a0_llena_r1_interrumpida/landing/1/PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+      "bytes": 250582,
+      "sha256": "79cfe35e002e7156a2e205b64a3d0f2f4c0f0caa26da1f7b43a2505e546a7ca0"
+    },
+    {
+      "ruta_privada": "corridas/f0_a0_llena_r1_interrumpida/landing/1/TBL_INSCRITOS.xlsx",
+      "bytes": 118393,
+      "sha256": "d2be9a42dbceedcac0ebe68fea0111729b51960763be943b5ba3294cb73ad947"
+    },
+    {
+      "ruta_privada": "corridas/f0_a0_llena_r1_interrumpida/lectura/9a5d40c1c8046ac41cf23be08b092371980787173159b2a86ab78a59eaeadab7.pkl.gz",
+      "bytes": 3000986,
+      "sha256": "3aa6cc70d3ee14eb7bc8b48425bdc68aab405638b4d611b16a11ad6ce5b1d056"
+    }
+  ],
+  "resultados_cuantitativos_recuperados": false,
+  "ultimo_comando_host_observable": "2026-11-14T12:06:02.644588-04:00"
+}

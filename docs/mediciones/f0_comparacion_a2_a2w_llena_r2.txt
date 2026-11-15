@@ -1,0 +1,10 @@
+DIFERENCIAS:
+  fact_situacion_financiera: filas 725 -> 725, md5 43a8d3e0df -> 5d161762d9
+  log_inconsistencias: filas 23 -> 35, md5 ac086f2bc1 -> 6ffdd5e556
+  stg_entidad_no_resuelta: filas 5111 -> 5122, md5 c29b301c56 -> 5e505a1042
+  bandeja.casos: 201 -> 224
+  bandeja.grupos: 17 -> 19
+  bandeja.manuales: 12 -> 14
+  bandeja.casos_manuales: 71 -> 82
+  bandeja.firma_sha256 distinta
+  KPI-18: 71.0 -> 82.0

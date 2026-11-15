@@ -1,0 +1,25 @@
+{
+  "fecha": "2026-11-14T16:38:11.063941+00:00",
+  "cache_indice_beto": {
+    "hits_observados": null,
+    "misses_observados": null,
+    "estado": "N/D",
+    "razon": "confianza_service.obtener_indices no expone esos contadores. Cardinalidades, hashes o cambios de tamaño no son hits ni misses observados. No se sustituyen por inferencias.",
+    "evidencia_disponible": [
+      "cache_antes/cache_despues: filas y SHA de claves/contenido",
+      "trafico_servicio: peticiones HTTP observadas por ruta /indice",
+      "log privado íntegro de stdout/stderr",
+      "huellas del resultado sobre el mismo lote"
+    ],
+    "unidad_trafico": "peticiones HTTP, no textos ni personas",
+    "advertencia_trafico": "El recuento HTTP se registra para la ventana de la corrida; no da el número de consultas SQL ni todos sus resultados."
+  },
+  "cache_beto_entidades": {
+    "hits_campo_nativo": "lectura_beto_contadores.textos_en_cache y consolidacion_beto_contadores.textos_en_cache",
+    "inferidos_campo_nativo": "lectura_beto_contadores.textos_inferidos y consolidacion_beto_contadores.textos_inferidos",
+    "unidad": "Textos distintos no vacíos por llamada a ClienteBeto.entidades, acumulados por etapa. Un texto repetido en otras llamadas vuelve a contarse. No son personas ni filas del DW.",
+    "inferidos_definicion": "Textos para los que se recibió respuesta NER válida. No se equipara automáticamente a todos los misses si hubo fallos del servicio.",
+    "etapas_no_sumables_por_defecto": true
+  },
+  "protocolo_actual": "Sin cambio al proceso ni temporización activos; limitación de observabilidad explícita. Una eventual traza auxiliar se identificará aparte y no reemplazará mediciones ausentes."
+}

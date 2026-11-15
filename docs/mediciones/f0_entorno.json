@@ -1,0 +1,448 @@
+{
+  "fecha": "2026-11-13T21:02:03.225911-04:00",
+  "estado": "F0_P_reanudacion2_superada",
+  "commit": "16bba9f6a662233841b8a3b46f0d98354931e218",
+  "rama": "beto-integracion",
+  "python": "3.14.6 (tags/v3.14.6:c63aec6, Jun 10 2026, 10:26:10) [MSC v.1944 64 bit (AMD64)]",
+  "sistema": "Windows-11-10.0.26300-SP0",
+  "cpu": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+  "cpu_logicas": 24,
+  "ram_bytes": null,
+  "workers_requeridos": 2,
+  "stride_requerido": 32,
+  "dispositivo_requerido": "cpu",
+  "versiones": {
+    "pandas": "3.0.3",
+    "openpyxl": "3.1.5",
+    "pytest": "9.1.1",
+    "sqlalchemy": "2.0.49"
+  },
+  "arbol_sha256": "eb77387d72396d0ebf0fe381818bbc576371d87e8129c56c3f04fc4532fb9102",
+  "modelo_sha256": "4998caf9c8673fab745371f28f5ba7802bb48feb3e4cf20abff0959b3f7326e8",
+  "imagen_contenedor": null,
+  "modelo_directorio": "/app/pipeline/semantic/beto_local",
+  "exclusividad_8006": {
+    "inicio": "2026-11-14T12:24:37.818786-04:00",
+    "responsable": "dev-alta único; root confirma sinotrosjobsCPU ni builds; lanzadores independientes StartProcessHidden"
+  },
+  "calentamiento_modelo": {
+    "tipo": "sintetico_excluido",
+    "textos_por_peticion": 16,
+    "max_length": 128,
+    "ventana": false,
+    "stride": 32,
+    "peticiones": [
+      {
+        "peticion": 1,
+        "http": 200
+      },
+      {
+        "peticion": 2,
+        "http": 200
+      },
+      {
+        "peticion": 3,
+        "http": 200
+      },
+      {
+        "peticion": 4,
+        "http": 200
+      }
+    ]
+  },
+  "flags_persistentes_modificados": false,
+  "bloqueo": null,
+  "puertas_pendientes": [
+    "42corridasválidas",
+    "comparaciones yreferencia",
+    "huellas finales"
+  ],
+  "soporte_sha256": {
+    "scripts\\medir_f0.py": "8ee58506040b16e8bb6a12e04b357ede03c7087b03d445a8e9fe51c2565331f7",
+    "scripts\\flujo_aislada.sh": "2cff9dbc79a61d970c3b38e511dcaa78c9a3dbb4f73513442ec9f2da0c825625",
+    "scripts\\recuperar_f0_cache.py": "03dab7c8c67326c9e84b941b50653b8e174192357c35be8a61ce7fa12cb53014",
+    "scripts\\referencia_f0.py": "e190fa1a574f2b3cc438baabf881a5b15292aa460e06518dbbce90a4ad5d0840",
+    "scripts\\comparar_huellas.py": "3322989f7def58f82eaaf728c0e54975b35e53794d11f99e5363c4b4066f3f7d",
+    "scripts\\comparar_f0.py": "05dd6f626461f96359c74d2587758eb0de0b40d99a6113db2feb20319c2ae194",
+    "scripts\\f0_mantener_activo.py": "6f60ed28ebfbbda6476c28684c16645600034668b94ded97a6efeb9a3862ebdb"
+  },
+  "huellas_origen_copia": "identicas; 59 relaciones; ver f0_snapshot_antes/copia",
+  "docker_recursos": {
+    "cpu": 24,
+    "ram_bytes": 16466485248,
+    "version": "29.6.1"
+  },
+  "contenedores": {
+    "giragroup_api": {
+      "id": "ff48ce0c112e0a9003c3d150049f38bc8b6f8577767ab89cdaecdce83ba0f81b",
+      "imagen": "sha256:19b0b36a74de4e8f55d081f690baee48d2bb6f28a0439fa99ab81cfacc89a94b",
+      "inicio": "2026-11-14T16:10:44.276373311Z"
+    },
+    "giragroup_pipeline": {
+      "id": "3374bad5486067bdd52fa3381b4417a7ddb613b843f40d979a2a7ba7a5f7bce8",
+      "imagen": "sha256:8e0bc7676d614b06d12652aca6bfd8c351b629c394e9a8c4f3a458b47f3d5dab",
+      "inicio": "2026-11-15T00:19:31.458302485Z"
+    },
+    "beto_pg_tmpfs": {
+      "id": "298b8ae6fc5e2a19e225d711c4ffb0f05e29a91ca5c362a9b6572046ace36a79",
+      "imagen": "sha256:57c72fd2a128e416c7fcc499958864df5301e940bca0a56f58fddf30ffc07777",
+      "inicio": "2026-11-14T16:16:30.63343383Z"
+    }
+  },
+  "versiones_contenedor": {
+    "giragroup_api": {
+      "versiones": {
+        "torch": null,
+        "transformers": null,
+        "fastapi": "0.136.0",
+        "sqlalchemy": "2.0.49",
+        "pandas": "3.1.1",
+        "numpy": "2.5.4"
+      },
+      "variables": {
+        "BETO_WORKERS": null,
+        "TORCH_NUM_THREADS": null,
+        "BETO_CASCADA_FINAL": null,
+        "BETO_ACUERDO_QC": null,
+        "BETO_SUGERENCIA_HITL": null,
+        "BETO_VENTANA": null,
+        "BETO_VENTANA_STRIDE": null,
+        "BETO_MODELO_VERSION": null
+      }
+    },
+    "giragroup_pipeline": {
+      "versiones": {
+        "torch": "2.15.0",
+        "transformers": "5.22.2",
+        "fastapi": "0.162.2",
+        "sqlalchemy": "2.1.8",
+        "pandas": "3.1.1",
+        "numpy": "2.4.6"
+      },
+      "variables": {
+        "BETO_WORKERS": "2",
+        "TORCH_NUM_THREADS": "4",
+        "BETO_CASCADA_FINAL": null,
+        "BETO_ACUERDO_QC": null,
+        "BETO_SUGERENCIA_HITL": null,
+        "BETO_VENTANA": null,
+        "BETO_VENTANA_STRIDE": null,
+        "BETO_MODELO_VERSION": null
+      }
+    }
+  },
+  "diff_local_archivos": [
+    "4\t3\t.env.example",
+    "5\t5\t.github/workflows/ci.yml",
+    "2\t2\tMakefile",
+    "2\t2\t_archivo/docs/auditoria/production_readiness_2026-11-01.md",
+    "1\t1\t_archivo/docs/testing/Makefile",
+    "5\t5\t_archivo/docs/testing/ci.yml",
+    "2\t2\t_archivo/docs/testing/diff_aislamiento_smtp_db.patch",
+    "1\t1\t_archivo/docs/testing/test.sh",
+    "2\t8\tbackend/core/database.py",
+    "2\t2\tdocker-compose.yml",
+    "0\t1\tinfrastructure/docker/catalog_db.Dockerfile",
+    "1\t1\tscripts/auditar_metricas_cmi_alertas.py",
+    "3\t2\tscripts/exportar_inventario_tablas.py",
+    "15\t0\tscripts/flujo_aislada.sh",
+    "2\t2\tscripts/generar_fuente_verdad_doc.py",
+    "2\t2\tscripts/investigar_fuente_verdad.py",
+    "2\t1\tscripts/migrar_staging_idempotente.py",
+    "2\t3\tscripts/reset_dw.py",
+    "2\t1\tscripts/verificar_snapshot_metricas.py",
+    "2\t8\tservices/audit-service/core/database.py",
+    "2\t8\tservices/auth-service/core/database.py",
+    "2\t8\tservices/notifications-service/core/database.py",
+    "2\t2\ttests/sprint4/test_forecasting.py",
+    "2\t2\ttests/sprint6/test_seguridad_y_resiliencia_api.py"
+  ],
+  "hash_arbol_algoritmo": "SHA256 JSON UTF8 ensure_ascii=False sort_keys=True separators sin espacios de archivos backend/pipeline/db, excluye __pycache__,*.pyc y uploads; rutas relativas,bytes,sha256 ordenados Linux",
+  "seed_catalogos": {
+    "ruta_pipeline": "/app/db/seeds/seed_catalogos.sql",
+    "ruta_medida": "/tmp/medida/db/seeds/seed_catalogos.sql",
+    "sha256": "5361022f940221d79a7f2ae114cc0bab41dea344be0b8a0339e019c92c9fe007",
+    "justificacion": "CatalogRepository lee seed SQL en memoria; no cliente PostgreSQL en infer-batch; copia de código requiere db/seeds ausente del copiar_arbol original"
+  },
+  "servicio_verificado": {
+    "health": {
+      "status": "online",
+      "engine": "BETO_PYTORCH_REAL",
+      "model": "/app/pipeline/semantic/beto_local",
+      "base_model": "dccuchile/bert-base-spanish-wwm-cased"
+    },
+    "infer_batch_schema": {
+      "properties": {
+        "textos": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "maxItems": 256,
+          "minItems": 1,
+          "title": "Textos"
+        },
+        "ventana": {
+          "type": "boolean",
+          "title": "Ventana",
+          "default": false
+        },
+        "stride": {
+          "type": "integer",
+          "maximum": 96.0,
+          "minimum": 0.0,
+          "title": "Stride",
+          "default": 32
+        },
+        "max_length": {
+          "type": "integer",
+          "maximum": 512.0,
+          "minimum": 16.0,
+          "title": "Max Length",
+          "default": 128
+        }
+      },
+      "type": "object",
+      "required": [
+        "textos"
+      ],
+      "title": "InferBatchRequest"
+    }
+  },
+  "recursos_antes": [
+    "{\"BlockIO\":\"32.1MB / 8.19kB\",\"CPUPerc\":\"0.02%\",\"Container\":\"c9593296afb48609e907c6b815fa088c2492e1e8105e82f616d95dd4eec8cab5\",\"ID\":\"c9593296afb4\",\"MemPerc\":\"4.34%\",\"MemUsage\":\"680.9MiB / 15.34GiB\",\"Name\":\"beto_pg_tmpfs\",\"NetIO\":\"57.5kB / 182kB\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"286MB / 491MB\",\"CPUPerc\":\"0.96%\",\"Container\":\"ff48ce0c112e0a9003c3d150049f38bc8b6f8577767ab89cdaecdce83ba0f81b\",\"ID\":\"ff48ce0c112e\",\"MemPerc\":\"4.62%\",\"MemUsage\":\"725.9MiB / 15.34GiB\",\"Name\":\"giragroup_api\",\"NetIO\":\"86.5kB / 120kB\",\"PIDs\":\"194\"}",
+    "{\"BlockIO\":\"1.35GB / 0B\",\"CPUPerc\":\"0.43%\",\"Container\":\"3374bad5486067bdd52fa3381b4417a7ddb613b843f40d979a2a7ba7a5f7bce8\",\"ID\":\"3374bad54860\",\"MemPerc\":\"6.10%\",\"MemUsage\":\"957.4MiB / 15.34GiB\",\"Name\":\"giragroup_pipeline\",\"NetIO\":\"3.93kB / 4.44kB\",\"PIDs\":\"62\"}",
+    "{\"BlockIO\":\"10.3MB / 4.1kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"617fbf0bb4359aceb087f6128157b852a90f5f95345b94d11390eac931ca0223\",\"ID\":\"617fbf0bb435\",\"MemPerc\":\"0.02%\",\"MemUsage\":\"3.613MiB / 15.34GiB\",\"Name\":\"giragroup_gateway\",\"NetIO\":\"2.7kB / 126B\",\"PIDs\":\"2\"}",
+    "{\"BlockIO\":\"60MB / 0B\",\"CPUPerc\":\"0.16%\",\"Container\":\"3ff92f7bd8d845fada8247f6fe1c6b900eba09d0631f682161d89aea45e34730\",\"ID\":\"3ff92f7bd8d8\",\"MemPerc\":\"0.39%\",\"MemUsage\":\"61.14MiB / 15.34GiB\",\"Name\":\"giragroup_audit_svc\",\"NetIO\":\"2.53kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"59.9MB / 0B\",\"CPUPerc\":\"0.15%\",\"Container\":\"ae348540b4120598cbbd818ef9241e2607552d16a4d85583cdb530f3c8bb0acc\",\"ID\":\"ae348540b412\",\"MemPerc\":\"0.40%\",\"MemUsage\":\"62.37MiB / 15.34GiB\",\"Name\":\"giragroup_auth_svc\",\"NetIO\":\"2.49kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"65.2MB / 0B\",\"CPUPerc\":\"0.14%\",\"Container\":\"787ba23ff599526908f118f25ad3ee7d055342382c4682c0a85c75eee72dd87e\",\"ID\":\"787ba23ff599\",\"MemPerc\":\"0.41%\",\"MemUsage\":\"64.38MiB / 15.34GiB\",\"Name\":\"giragroup_notifications_svc\",\"NetIO\":\"2.66kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"44.7MB / 307kB\",\"CPUPerc\":\"0.52%\",\"Container\":\"2ebf95f49df2e7980edfd0a8bf2e8dad08fa2dac0c11034bc11d59b901ef26ac\",\"ID\":\"2ebf95f49df2\",\"MemPerc\":\"0.29%\",\"MemUsage\":\"45.69MiB / 15.34GiB\",\"Name\":\"giragroup_catalog_db\",\"NetIO\":\"2.58kB / 126B\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"123MB / 0B\",\"CPUPerc\":\"0.06%\",\"Container\":\"c5fa82bcb467276feeb6f44bd95b517d90de5a608b4cdc684c94dcb667b7c973\",\"ID\":\"c5fa82bcb467\",\"MemPerc\":\"0.42%\",\"MemUsage\":\"66.14MiB / 15.34GiB\",\"Name\":\"giragroup_web\",\"NetIO\":\"2.92kB / 126B\",\"PIDs\":\"32\"}",
+    "{\"BlockIO\":\"137MB / 631kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"4b5c580f83392eead4f6be82975311e0575616ac897316e45a2df4efd1a28f93\",\"ID\":\"4b5c580f8339\",\"MemPerc\":\"0.79%\",\"MemUsage\":\"123.8MiB / 15.34GiB\",\"Name\":\"giragroup_db\",\"NetIO\":\"121kB / 79.8kB\",\"PIDs\":\"14\"}"
+  ],
+  "catalogo_sha256": "3ddf4c746114febd6ff424c2d67c30c9fe18f7d1fa4b08548089d762338d2ce9",
+  "diff_relevante_sha256": "ca9554faef03bc483dcedafc6022ac95dd41794b4cf4122b77f63f1eb9c498dd",
+  "diff_relevante_nota": "Digest del diff backend/pipeline; no guardar patch porque elimina credenciales antiguas. Árbol copiado huellado separadamente.",
+  "verificacion_actual": {
+    "fecha": "2026-11-14T12:24:39.236622-04:00",
+    "semillas_exactas_verificadas": 7,
+    "validas_preservadas": 3,
+    "invalidas_preservadas": 2,
+    "energia": {
+      "pid": 45292,
+      "latido": "2026-11-14T16:24:24.749361+00:00",
+      "retorno_api": 2147483649,
+      "flags": "ES_CONTINUOUS|ES_SYSTEM_REQUIRED",
+      "pantalla_requerida": false
+    },
+    "motivo_cierre_Docker": "no determinado; hipótesisJobObject no probada"
+  },
+  "exclusividad_8006_historica": {
+    "inicio": "2026-11-13T21:10:40.141381-04:00",
+    "responsable": "dev-alta único; coordinador confirma suite finalizada y B3 terminado; sin builds ni otras inferencias durante serie"
+  },
+  "calentamiento_modelo_historico": {
+    "tipo": "sintetico_excluido",
+    "textos_por_peticion": 16,
+    "max_length": 128,
+    "ventana": false,
+    "stride": 32,
+    "peticiones": [
+      {
+        "peticion": 1,
+        "http": 200
+      },
+      {
+        "peticion": 2,
+        "http": 200
+      },
+      {
+        "peticion": 3,
+        "http": 200
+      },
+      {
+        "peticion": 4,
+        "http": 200
+      }
+    ]
+  },
+  "referencia_73ec78f": {
+    "fecha": "2026-11-14T10:17:19.756106-04:00",
+    "git_commit": "73ec78f507e9acb13f5aefe52162fcadb271f00b",
+    "archivo_privado": "referencia_73ec78f.tar",
+    "archivo_sha256": "3ddec726197512654f403b6480bf0a81e3d25b356b6f99b32f16a1f89d5f8d5a",
+    "datos_incluidos": false,
+    "nota": "Archivo histórico privado no versionable; no se publica código antiguo ni credenciales",
+    "arbol": "/tmp/f0_ref_73ec78f",
+    "arbol_sha256": "92aae1c770362bc5e0f531dff405849d57a0f845287deb0c0b0dad8fcc1d2a36",
+    "lote_sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+    "modelo_sha256": "4998caf9c8673fab745371f28f5ba7802bb48feb3e4cf20abff0959b3f7326e8",
+    "seed_sha256": "5361022f940221d79a7f2ae114cc0bab41dea344be0b8a0339e019c92c9fe007",
+    "ajuste_exclusivo_copia": "ingestion_service.py: \"/app\", \"/app/pipeline\" → ruta fija referencia; pesos enlazados a copia medida",
+    "estado": "arbol_referencia_preparado"
+  },
+  "historial_reanudaciones": [
+    {
+      "contenedores_previos": {
+        "giragroup_api": {
+          "id": "ff48ce0c112e0a9003c3d150049f38bc8b6f8577767ab89cdaecdce83ba0f81b",
+          "imagen": "sha256:19b0b36a74de4e8f55d081f690baee48d2bb6f28a0439fa99ab81cfacc89a94b",
+          "inicio": "2026-11-14T00:48:34.997318149Z"
+        },
+        "giragroup_pipeline": {
+          "id": "3374bad5486067bdd52fa3381b4417a7ddb613b843f40d979a2a7ba7a5f7bce8",
+          "imagen": "sha256:8e0bc7676d614b06d12652aca6bfd8c351b629c394e9a8c4f3a458b47f3d5dab",
+          "inicio": "2026-11-14T00:48:35.016988354Z"
+        },
+        "beto_pg_tmpfs": {
+          "id": "c9593296afb48609e907c6b815fa088c2492e1e8105e82f616d95dd4eec8cab5",
+          "imagen": "sha256:57c72fd2a128e416c7fcc499958864df5301e940bca0a56f58fddf30ffc07777",
+          "inicio": "2026-11-14T00:57:01.231277616Z"
+        }
+      },
+      "ventana_previa": {
+        "inicio": "2026-11-13T21:10:40.141381-04:00",
+        "responsable": "dev-alta único; coordinador confirma suite finalizada y B3 terminado; sin builds ni otras inferencias durante serie"
+      },
+      "motivo": "MotorDocker se detuvo;0corridasválidasanteriores;7cachésrecuperadas sin inferencia con huella idéntica"
+    },
+    {
+      "fecha": "2026-11-14T12:24:37.621182-04:00",
+      "contenedores_previos": {
+        "giragroup_api": {
+          "id": "ff48ce0c112e0a9003c3d150049f38bc8b6f8577767ab89cdaecdce83ba0f81b",
+          "imagen": "sha256:19b0b36a74de4e8f55d081f690baee48d2bb6f28a0439fa99ab81cfacc89a94b",
+          "inicio": "2026-11-14T14:19:23.367967134Z"
+        },
+        "giragroup_pipeline": {
+          "id": "3374bad5486067bdd52fa3381b4417a7ddb613b843f40d979a2a7ba7a5f7bce8",
+          "imagen": "sha256:8e0bc7676d614b06d12652aca6bfd8c351b629c394e9a8c4f3a458b47f3d5dab",
+          "inicio": "2026-11-14T14:19:23.351124851Z"
+        },
+        "beto_pg_tmpfs": {
+          "id": "5a7f8ad28fc0c48ae8e4b3d6969bdae5f6314fcb02582888999e2552aad5f570",
+          "imagen": "sha256:57c72fd2a128e416c7fcc499958864df5301e940bca0a56f58fddf30ffc07777",
+          "inicio": "2026-11-14T14:21:22.264010031Z"
+        }
+      },
+      "motivo": "Nueva pérdida disponibilidadDocker; causa no determinada;3válidas preservadas y1llena incompleta conservada",
+      "reloj_iniciara_otra_vez": "a0_llena_r1_reintento1"
+    }
+  ],
+  "registros_esperados": 11956,
+  "lineas_lectura_esperadas": 12992,
+  "fecha_reanudacion": "2026-11-14T10:26:02.778963-04:00",
+  "recursos_antes_reanudacion": [
+    "{\"BlockIO\":\"27MB / 8.19kB\",\"CPUPerc\":\"0.01%\",\"Container\":\"5a7f8ad28fc0c48ae8e4b3d6969bdae5f6314fcb02582888999e2552aad5f570\",\"ID\":\"5a7f8ad28fc0\",\"MemPerc\":\"4.22%\",\"MemUsage\":\"662.3MiB / 15.34GiB\",\"Name\":\"beto_pg_tmpfs\",\"NetIO\":\"2.57kB / 252B\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"731MB / 30.4MB\",\"CPUPerc\":\"0.60%\",\"Container\":\"ff48ce0c112e0a9003c3d150049f38bc8b6f8577767ab89cdaecdce83ba0f81b\",\"ID\":\"ff48ce0c112e\",\"MemPerc\":\"4.95%\",\"MemUsage\":\"776.9MiB / 15.34GiB\",\"Name\":\"giragroup_api\",\"NetIO\":\"82kB / 118kB\",\"PIDs\":\"194\"}",
+    "{\"BlockIO\":\"1.32GB / 0B\",\"CPUPerc\":\"0.25%\",\"Container\":\"3374bad5486067bdd52fa3381b4417a7ddb613b843f40d979a2a7ba7a5f7bce8\",\"ID\":\"3374bad54860\",\"MemPerc\":\"6.74%\",\"MemUsage\":\"1.034GiB / 15.34GiB\",\"Name\":\"giragroup_pipeline\",\"NetIO\":\"2.36kB / 126B\",\"PIDs\":\"61\"}",
+    "{\"BlockIO\":\"10.5MB / 4.1kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"617fbf0bb4359aceb087f6128157b852a90f5f95345b94d11390eac931ca0223\",\"ID\":\"617fbf0bb435\",\"MemPerc\":\"0.03%\",\"MemUsage\":\"5.133MiB / 15.34GiB\",\"Name\":\"giragroup_gateway\",\"NetIO\":\"2.62kB / 126B\",\"PIDs\":\"2\"}",
+    "{\"BlockIO\":\"70.3MB / 0B\",\"CPUPerc\":\"0.12%\",\"Container\":\"3ff92f7bd8d845fada8247f6fe1c6b900eba09d0631f682161d89aea45e34730\",\"ID\":\"3ff92f7bd8d8\",\"MemPerc\":\"0.44%\",\"MemUsage\":\"69.87MiB / 15.34GiB\",\"Name\":\"giragroup_audit_svc\",\"NetIO\":\"2.66kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"68.5MB / 0B\",\"CPUPerc\":\"0.10%\",\"Container\":\"ae348540b4120598cbbd818ef9241e2607552d16a4d85583cdb530f3c8bb0acc\",\"ID\":\"ae348540b412\",\"MemPerc\":\"0.44%\",\"MemUsage\":\"69.05MiB / 15.34GiB\",\"Name\":\"giragroup_auth_svc\",\"NetIO\":\"2.83kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"60.9MB / 0B\",\"CPUPerc\":\"0.10%\",\"Container\":\"787ba23ff599526908f118f25ad3ee7d055342382c4682c0a85c75eee72dd87e\",\"ID\":\"787ba23ff599\",\"MemPerc\":\"0.42%\",\"MemUsage\":\"65.54MiB / 15.34GiB\",\"Name\":\"giragroup_notifications_svc\",\"NetIO\":\"2.49kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"39.1MB / 307kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"2ebf95f49df2e7980edfd0a8bf2e8dad08fa2dac0c11034bc11d59b901ef26ac\",\"ID\":\"2ebf95f49df2\",\"MemPerc\":\"0.32%\",\"MemUsage\":\"50.2MiB / 15.34GiB\",\"Name\":\"giragroup_catalog_db\",\"NetIO\":\"2.41kB / 126B\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"122MB / 0B\",\"CPUPerc\":\"0.06%\",\"Container\":\"c5fa82bcb467276feeb6f44bd95b517d90de5a608b4cdc684c94dcb667b7c973\",\"ID\":\"c5fa82bcb467\",\"MemPerc\":\"0.45%\",\"MemUsage\":\"70.19MiB / 15.34GiB\",\"Name\":\"giragroup_web\",\"NetIO\":\"2.87kB / 126B\",\"PIDs\":\"29\"}",
+    "{\"BlockIO\":\"137MB / 1.06MB\",\"CPUPerc\":\"0.00%\",\"Container\":\"4b5c580f83392eead4f6be82975311e0575616ac897316e45a2df4efd1a28f93\",\"ID\":\"4b5c580f8339\",\"MemPerc\":\"1.20%\",\"MemUsage\":\"187.8MiB / 15.34GiB\",\"Name\":\"giragroup_db\",\"NetIO\":\"121kB / 79.8kB\",\"PIDs\":\"14\"}"
+  ],
+  "catalogo_reanudacion": {
+    "fecha": "2026-11-14T10:26:05.609050-04:00",
+    "fuente": "copia",
+    "tablas": 20,
+    "sha256": "3ddf4c746114febd6ff424c2d67c30c9fe18f7d1fa4b08548089d762338d2ce9",
+    "metodo": "READ ONLY: conteo y MD5 de JSON filas ordenadas por tabla; SHA256 mapa XML canónico"
+  },
+  "servicio_verificado_reanudacion": {
+    "status": "online",
+    "engine": "BETO_PYTORCH_REAL",
+    "model": "/app/pipeline/semantic/beto_local",
+    "base_model": "dccuchile/bert-base-spanish-wwm-cased"
+  },
+  "trabajadores_reanudacion": "{\"BETO_WORKERS\": \"2\", \"TORCH_NUM_THREADS\": \"4\", \"proceso_principal\": \"sh -c uvicorn pipeline.semantic.inference_server:app --host 0.0.0.0 --port 8006 --workers 2 \"}",
+  "politica_clones": "Eliminar solo clon F0 sellado tras exportar respaldo privado; conservar a123_llena_r1 para revisión; nunca historia/tests/semillas",
+  "revisiones_control": [
+    {
+      "fecha": "2026-11-14T11:33:49.730776-04:00",
+      "motivo": "SuspensiónWindows detectada invalida r2; controlcritical añadido sin cambiar temporizadoresproducto ni backend/pipeline/modelo/flags",
+      "anterior_soporte_sha256": {
+        "scripts\\medir_f0.py": "7d62bfd5b38a40ce15d54b04cafddb171ec9c64224a59bf06e48f1c1fc86f8b6",
+        "scripts\\flujo_aislada.sh": "2cff9dbc79a61d970c3b38e511dcaa78c9a3dbb4f73513442ec9f2da0c825625",
+        "scripts\\recuperar_f0_cache.py": "03dab7c8c67326c9e84b941b50653b8e174192357c35be8a61ce7fa12cb53014",
+        "scripts\\referencia_f0.py": "e190fa1a574f2b3cc438baabf881a5b15292aa460e06518dbbce90a4ad5d0840",
+        "scripts\\comparar_huellas.py": "3322989f7def58f82eaaf728c0e54975b35e53794d11f99e5363c4b4066f3f7d",
+        "scripts\\comparar_f0.py": "05dd6f626461f96359c74d2587758eb0de0b40d99a6113db2feb20319c2ae194"
+      },
+      "codigo_vigilancia_sha256": {
+        "scripts\\medir_f0.py": "8ee58506040b16e8bb6a12e04b357ede03c7087b03d445a8e9fe51c2565331f7",
+        "scripts\\f0_mantener_activo.py": "6f60ed28ebfbbda6476c28684c16645600034668b94ded97a6efeb9a3862ebdb"
+      },
+      "energia_verificada": {
+        "pid": 45460,
+        "latido": "2026-11-14T15:33:45.975099+00:00",
+        "retorno_api": 2147483649,
+        "flags": "ES_CONTINUOUS|ES_SYSTEM_REQUIRED",
+        "pantalla_requerida": false
+      },
+      "tolerancia_salto_pared_vs_monotonic_host_s": 5,
+      "evidencia": "f0_eventos_suspension.json"
+    }
+  ],
+  "verificacion_reanudacion2": {
+    "fecha": "2026-11-14T12:19:50.709103-04:00",
+    "arbol_modelo_catalogo_lote_originales": true,
+    "lanzador_independiente": "pendiente_root",
+    "corridas_validas_preservadas": 3
+  },
+  "recursos_reanudacion2": [
+    "{\"BlockIO\":\"32.9MB / 8.19kB\",\"CPUPerc\":\"0.39%\",\"Container\":\"298b8ae6fc5e2a19e225d711c4ffb0f05e29a91ca5c362a9b6572046ace36a79\",\"ID\":\"298b8ae6fc5e\",\"MemPerc\":\"4.22%\",\"MemUsage\":\"662.9MiB / 15.34GiB\",\"Name\":\"beto_pg_tmpfs\",\"NetIO\":\"2.61kB / 252B\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"1.21GB / 0B\",\"CPUPerc\":\"0.62%\",\"Container\":\"ff48ce0c112e0a9003c3d150049f38bc8b6f8577767ab89cdaecdce83ba0f81b\",\"ID\":\"ff48ce0c112e\",\"MemPerc\":\"4.63%\",\"MemUsage\":\"726.3MiB / 15.34GiB\",\"Name\":\"giragroup_api\",\"NetIO\":\"104kB / 124kB\",\"PIDs\":\"194\"}",
+    "{\"BlockIO\":\"1.5GB / 0B\",\"CPUPerc\":\"0.30%\",\"Container\":\"3374bad5486067bdd52fa3381b4417a7ddb613b843f40d979a2a7ba7a5f7bce8\",\"ID\":\"3374bad54860\",\"MemPerc\":\"6.10%\",\"MemUsage\":\"958.6MiB / 15.34GiB\",\"Name\":\"giragroup_pipeline\",\"NetIO\":\"7.68kB / 21.7kB\",\"PIDs\":\"65\"}",
+    "{\"BlockIO\":\"10.1MB / 4.1kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"617fbf0bb4359aceb087f6128157b852a90f5f95345b94d11390eac931ca0223\",\"ID\":\"617fbf0bb435\",\"MemPerc\":\"0.02%\",\"MemUsage\":\"3.586MiB / 15.34GiB\",\"Name\":\"giragroup_gateway\",\"NetIO\":\"2.62kB / 126B\",\"PIDs\":\"2\"}",
+    "{\"BlockIO\":\"70.8MB / 0B\",\"CPUPerc\":\"0.12%\",\"Container\":\"3ff92f7bd8d845fada8247f6fe1c6b900eba09d0631f682161d89aea45e34730\",\"ID\":\"3ff92f7bd8d8\",\"MemPerc\":\"0.42%\",\"MemUsage\":\"66.55MiB / 15.34GiB\",\"Name\":\"giragroup_audit_svc\",\"NetIO\":\"2.66kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"67.5MB / 0B\",\"CPUPerc\":\"0.13%\",\"Container\":\"ae348540b4120598cbbd818ef9241e2607552d16a4d85583cdb530f3c8bb0acc\",\"ID\":\"ae348540b412\",\"MemPerc\":\"0.42%\",\"MemUsage\":\"66.25MiB / 15.34GiB\",\"Name\":\"giragroup_auth_svc\",\"NetIO\":\"2.58kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"60.7MB / 0B\",\"CPUPerc\":\"0.13%\",\"Container\":\"787ba23ff599526908f118f25ad3ee7d055342382c4682c0a85c75eee72dd87e\",\"ID\":\"787ba23ff599\",\"MemPerc\":\"0.40%\",\"MemUsage\":\"63.33MiB / 15.34GiB\",\"Name\":\"giragroup_notifications_svc\",\"NetIO\":\"2.49kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"49.5MB / 315kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"2ebf95f49df2e7980edfd0a8bf2e8dad08fa2dac0c11034bc11d59b901ef26ac\",\"ID\":\"2ebf95f49df2\",\"MemPerc\":\"0.30%\",\"MemUsage\":\"46.82MiB / 15.34GiB\",\"Name\":\"giragroup_catalog_db\",\"NetIO\":\"2.92kB / 126B\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"122MB / 0B\",\"CPUPerc\":\"0.05%\",\"Container\":\"c5fa82bcb467276feeb6f44bd95b517d90de5a608b4cdc684c94dcb667b7c973\",\"ID\":\"c5fa82bcb467\",\"MemPerc\":\"0.43%\",\"MemUsage\":\"67.25MiB / 15.34GiB\",\"Name\":\"giragroup_web\",\"NetIO\":\"2.7kB / 126B\",\"PIDs\":\"28\"}",
+    "{\"BlockIO\":\"140MB / 1.02MB\",\"CPUPerc\":\"0.00%\",\"Container\":\"4b5c580f83392eead4f6be82975311e0575616ac897316e45a2df4efd1a28f93\",\"ID\":\"4b5c580f8339\",\"MemPerc\":\"0.78%\",\"MemUsage\":\"123MiB / 15.34GiB\",\"Name\":\"giragroup_db\",\"NetIO\":\"121kB / 80kB\",\"PIDs\":\"14\"}"
+  ],
+  "trabajadores_reanudacion2": {
+    "BETO_WORKERS": "2",
+    "TORCH_NUM_THREADS": "4",
+    "cmd": "sh -c uvicorn pipeline.semantic.inference_server:app --host 0.0.0.0 --port 8006 --workers 2 "
+  },
+  "contenedores_antes_reanudacion3": [
+    {
+      "fecha": "2026-11-14T20:22:28.485546-04:00",
+      "giragroup_pipeline": {
+        "id": "3374bad5486067bdd52fa3381b4417a7ddb613b843f40d979a2a7ba7a5f7bce8",
+        "imagen": "sha256:8e0bc7676d614b06d12652aca6bfd8c351b629c394e9a8c4f3a458b47f3d5dab",
+        "inicio": "2026-11-14T16:10:44.274821553Z"
+      }
+    }
+  ],
+  "calentamiento_reanudacion3": {
+    "tipo": "sintetico_excluido",
+    "textos_por_peticion": 16,
+    "max_length": 128,
+    "ventana": false,
+    "stride": 32,
+    "peticiones": [
+      {
+        "peticion": 1,
+        "http": 200
+      },
+      {
+        "peticion": 2,
+        "http": 200
+      },
+      {
+        "peticion": 3,
+        "http": 200
+      },
+      {
+        "peticion": 4,
+        "http": 200
+      }
+    ]
+  }
+}

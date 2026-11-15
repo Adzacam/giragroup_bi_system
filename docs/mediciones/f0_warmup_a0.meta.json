@@ -1,0 +1,125 @@
+{
+  "fecha": "2026-11-13T21:12:12.718219-04:00",
+  "configuracion": "a0",
+  "estado": "vacia",
+  "valida": true,
+  "flags": {
+    "BETO_CASCADA_FINAL": "0",
+    "BETO_ACUERDO_QC": "0",
+    "BETO_SUGERENCIA_HITL": "0",
+    "BETO_VENTANA": "0"
+  },
+  "lote_sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "arbol_sha256": "eb77387d72396d0ebf0fe381818bbc576371d87e8129c56c3f04fc4532fb9102",
+  "modelo_sha256": "4998caf9c8673fab745371f28f5ba7802bb48feb3e4cf20abff0959b3f7326e8",
+  "orden": [
+    "BD Cobranzas.xlsx",
+    "BD Egresos.xlsx",
+    "BD Techos.xlsx",
+    "Base centralizada Académica ARCA (1).xlsx",
+    "EJECUTADO VS META.xlsx",
+    "Evaluación Docente y Unifranz.xlsx",
+    "Experiencia Docente 2.0.xlsx",
+    "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+    "TBL_INSCRITOS.xlsx",
+    "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx"
+  ],
+  "base": "run_f0_warmup_a0",
+  "catalogo": "catalogo_copia",
+  "verificacion_antes": {
+    "fecha": "2026-11-13T21:12:12.853409-04:00",
+    "sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+    "archivos": 20,
+    "valido": true
+  },
+  "lectura_cache_dir": "/tmp/f0/run_f0_warmup_a0/lectura",
+  "landing_dir": "/tmp/f0/run_f0_warmup_a0/landing",
+  "recursos_antes": [
+    "{\"BlockIO\":\"33.2MB / 8.19kB\",\"CPUPerc\":\"0.01%\",\"Container\":\"c9593296afb48609e907c6b815fa088c2492e1e8105e82f616d95dd4eec8cab5\",\"ID\":\"c9593296afb4\",\"MemPerc\":\"4.33%\",\"MemUsage\":\"680.7MiB / 15.34GiB\",\"Name\":\"beto_pg_tmpfs\",\"NetIO\":\"57.5kB / 182kB\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"1.18GB / 516MB\",\"CPUPerc\":\"0.80%\",\"Container\":\"ff48ce0c112e0a9003c3d150049f38bc8b6f8577767ab89cdaecdce83ba0f81b\",\"ID\":\"ff48ce0c112e\",\"MemPerc\":\"4.76%\",\"MemUsage\":\"747MiB / 15.34GiB\",\"Name\":\"giragroup_api\",\"NetIO\":\"108kB / 125kB\",\"PIDs\":\"194\"}",
+    "{\"BlockIO\":\"1.5GB / 0B\",\"CPUPerc\":\"0.35%\",\"Container\":\"3374bad5486067bdd52fa3381b4417a7ddb613b843f40d979a2a7ba7a5f7bce8\",\"ID\":\"3374bad54860\",\"MemPerc\":\"6.21%\",\"MemUsage\":\"974.6MiB / 15.34GiB\",\"Name\":\"giragroup_pipeline\",\"NetIO\":\"9.16kB / 26kB\",\"PIDs\":\"69\"}",
+    "{\"BlockIO\":\"10.3MB / 4.1kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"617fbf0bb4359aceb087f6128157b852a90f5f95345b94d11390eac931ca0223\",\"ID\":\"617fbf0bb435\",\"MemPerc\":\"0.02%\",\"MemUsage\":\"3.602MiB / 15.34GiB\",\"Name\":\"giragroup_gateway\",\"NetIO\":\"2.7kB / 126B\",\"PIDs\":\"2\"}",
+    "{\"BlockIO\":\"60MB / 0B\",\"CPUPerc\":\"0.12%\",\"Container\":\"3ff92f7bd8d845fada8247f6fe1c6b900eba09d0631f682161d89aea45e34730\",\"ID\":\"3ff92f7bd8d8\",\"MemPerc\":\"0.39%\",\"MemUsage\":\"61MiB / 15.34GiB\",\"Name\":\"giragroup_audit_svc\",\"NetIO\":\"2.53kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"59.9MB / 0B\",\"CPUPerc\":\"0.12%\",\"Container\":\"ae348540b4120598cbbd818ef9241e2607552d16a4d85583cdb530f3c8bb0acc\",\"ID\":\"ae348540b412\",\"MemPerc\":\"0.40%\",\"MemUsage\":\"62.37MiB / 15.34GiB\",\"Name\":\"giragroup_auth_svc\",\"NetIO\":\"2.49kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"65.2MB / 0B\",\"CPUPerc\":\"0.12%\",\"Container\":\"787ba23ff599526908f118f25ad3ee7d055342382c4682c0a85c75eee72dd87e\",\"ID\":\"787ba23ff599\",\"MemPerc\":\"0.41%\",\"MemUsage\":\"64.24MiB / 15.34GiB\",\"Name\":\"giragroup_notifications_svc\",\"NetIO\":\"2.66kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"47.1MB / 307kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"2ebf95f49df2e7980edfd0a8bf2e8dad08fa2dac0c11034bc11d59b901ef26ac\",\"ID\":\"2ebf95f49df2\",\"MemPerc\":\"0.30%\",\"MemUsage\":\"46.37MiB / 15.34GiB\",\"Name\":\"giragroup_catalog_db\",\"NetIO\":\"2.58kB / 126B\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"123MB / 0B\",\"CPUPerc\":\"0.05%\",\"Container\":\"c5fa82bcb467276feeb6f44bd95b517d90de5a608b4cdc684c94dcb667b7c973\",\"ID\":\"c5fa82bcb467\",\"MemPerc\":\"0.42%\",\"MemUsage\":\"66.16MiB / 15.34GiB\",\"Name\":\"giragroup_web\",\"NetIO\":\"2.92kB / 126B\",\"PIDs\":\"33\"}",
+    "{\"BlockIO\":\"139MB / 631kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"4b5c580f83392eead4f6be82975311e0575616ac897316e45a2df4efd1a28f93\",\"ID\":\"4b5c580f8339\",\"MemPerc\":\"0.79%\",\"MemUsage\":\"123.7MiB / 15.34GiB\",\"Name\":\"giragroup_db\",\"NetIO\":\"121kB / 79.8kB\",\"PIDs\":\"14\"}"
+  ],
+  "calentamiento_servicio": {
+    "tipo": "sintetico_excluido",
+    "textos_por_peticion": 16,
+    "max_length": 128,
+    "ventana": false,
+    "stride": 32,
+    "peticiones": [
+      {
+        "peticion": 1,
+        "http": 200
+      },
+      {
+        "peticion": 2,
+        "http": 200
+      },
+      {
+        "peticion": 3,
+        "http": 200
+      },
+      {
+        "peticion": 4,
+        "http": 200
+      }
+    ]
+  },
+  "cache_antes": {
+    "cache_indice_beto": {
+      "filas": 0,
+      "sha256_claves": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_contenido": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cache_beto_entidades": {
+      "filas": 0,
+      "sha256_claves": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_contenido": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "cache_despues": {
+    "cache_indice_beto": {
+      "filas": 12559,
+      "sha256_claves": "961096284b37aaff534e3c77ced6d1384dc3f8044b875c64168d72161cab64bd",
+      "sha256_contenido": "f30d27fcb1958f06f34728982db15c07cbfc33acd1a940d8fbc581d2a078a47b"
+    },
+    "cache_beto_entidades": {
+      "filas": 0,
+      "sha256_claves": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256_contenido": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "revision_evidencia": "f0_warmup_a0.revision.json",
+  "verificacion_despues": {
+    "fecha": "2026-11-13T21:30:43.976515-04:00",
+    "sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+    "archivos": 20,
+    "valido": true
+  },
+  "recursos_despues": [
+    "{\"BlockIO\":\"35.6MB / 8.19kB\",\"CPUPerc\":\"0.01%\",\"Container\":\"c9593296afb48609e907c6b815fa088c2492e1e8105e82f616d95dd4eec8cab5\",\"ID\":\"c9593296afb4\",\"MemPerc\":\"4.06%\",\"MemUsage\":\"637.5MiB / 15.34GiB\",\"Name\":\"beto_pg_tmpfs\",\"NetIO\":\"82.5MB / 99.1MB\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"1.33GB / 522MB\",\"CPUPerc\":\"0.67%\",\"Container\":\"ff48ce0c112e0a9003c3d150049f38bc8b6f8577767ab89cdaecdce83ba0f81b\",\"ID\":\"ff48ce0c112e\",\"MemPerc\":\"7.48%\",\"MemUsage\":\"1.147GiB / 15.34GiB\",\"Name\":\"giragroup_api\",\"NetIO\":\"99.2MB / 86.6MB\",\"PIDs\":\"194\"}",
+    "{\"BlockIO\":\"1.57GB / 0B\",\"CPUPerc\":\"0.28%\",\"Container\":\"3374bad5486067bdd52fa3381b4417a7ddb613b843f40d979a2a7ba7a5f7bce8\",\"ID\":\"3374bad54860\",\"MemPerc\":\"9.29%\",\"MemUsage\":\"1.424GiB / 15.34GiB\",\"Name\":\"giragroup_pipeline\",\"NetIO\":\"4.1MB / 205kB\",\"PIDs\":\"69\"}",
+    "{\"BlockIO\":\"10.3MB / 4.1kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"617fbf0bb4359aceb087f6128157b852a90f5f95345b94d11390eac931ca0223\",\"ID\":\"617fbf0bb435\",\"MemPerc\":\"0.02%\",\"MemUsage\":\"3.602MiB / 15.34GiB\",\"Name\":\"giragroup_gateway\",\"NetIO\":\"2.74kB / 126B\",\"PIDs\":\"2\"}",
+    "{\"BlockIO\":\"60MB / 0B\",\"CPUPerc\":\"0.13%\",\"Container\":\"3ff92f7bd8d845fada8247f6fe1c6b900eba09d0631f682161d89aea45e34730\",\"ID\":\"3ff92f7bd8d8\",\"MemPerc\":\"0.39%\",\"MemUsage\":\"60.53MiB / 15.34GiB\",\"Name\":\"giragroup_audit_svc\",\"NetIO\":\"2.58kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"59.9MB / 0B\",\"CPUPerc\":\"0.10%\",\"Container\":\"ae348540b4120598cbbd818ef9241e2607552d16a4d85583cdb530f3c8bb0acc\",\"ID\":\"ae348540b412\",\"MemPerc\":\"0.40%\",\"MemUsage\":\"62.11MiB / 15.34GiB\",\"Name\":\"giragroup_auth_svc\",\"NetIO\":\"2.53kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"65.2MB / 0B\",\"CPUPerc\":\"0.10%\",\"Container\":\"787ba23ff599526908f118f25ad3ee7d055342382c4682c0a85c75eee72dd87e\",\"ID\":\"787ba23ff599\",\"MemPerc\":\"0.41%\",\"MemUsage\":\"64.24MiB / 15.34GiB\",\"Name\":\"giragroup_notifications_svc\",\"NetIO\":\"2.7kB / 126B\",\"PIDs\":\"1\"}",
+    "{\"BlockIO\":\"48.9MB / 307kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"2ebf95f49df2e7980edfd0a8bf2e8dad08fa2dac0c11034bc11d59b901ef26ac\",\"ID\":\"2ebf95f49df2\",\"MemPerc\":\"0.30%\",\"MemUsage\":\"47.61MiB / 15.34GiB\",\"Name\":\"giragroup_catalog_db\",\"NetIO\":\"2.62kB / 126B\",\"PIDs\":\"6\"}",
+    "{\"BlockIO\":\"123MB / 0B\",\"CPUPerc\":\"0.07%\",\"Container\":\"c5fa82bcb467276feeb6f44bd95b517d90de5a608b4cdc684c94dcb667b7c973\",\"ID\":\"c5fa82bcb467\",\"MemPerc\":\"0.43%\",\"MemUsage\":\"67.91MiB / 15.34GiB\",\"Name\":\"giragroup_web\",\"NetIO\":\"2.96kB / 126B\",\"PIDs\":\"33\"}",
+    "{\"BlockIO\":\"139MB / 631kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"4b5c580f83392eead4f6be82975311e0575616ac897316e45a2df4efd1a28f93\",\"ID\":\"4b5c580f8339\",\"MemPerc\":\"0.78%\",\"MemUsage\":\"122.6MiB / 15.34GiB\",\"Name\":\"giragroup_db\",\"NetIO\":\"122kB / 79.8kB\",\"PIDs\":\"14\"}"
+  ],
+  "trafico_servicio": {
+    "desde": "2026-11-13T21:12:12.718219-04:00",
+    "peticiones_por_ruta": {
+      "POST /infer-batch": 4,
+      "POST /indice": 98
+    },
+    "atribucion": "Ventana exclusiva declarada; no hay atribución individual de clientes a partir del log HTTP"
+  }
+}

@@ -14,10 +14,7 @@ def _can_resolve(host: str) -> bool:
         return False
 
 # ── 1. Base de Datos Data Warehouse (Esquema Constelación) ─────────────
-SQLALCHEMY_DATABASE_URL = os.getenv(
-    "DATABASE_URL", 
-    "postgresql://giragroup_user:giragroup_secret_2026@localhost:5432/giragroup_db"
-)
+SQLALCHEMY_DATABASE_URL = os.environ["DATABASE_URL"]
 
 # Ajuste dinámico de host y protocolo explícito postgresql+psycopg2://
 if SQLALCHEMY_DATABASE_URL.startswith("postgresql://"):
@@ -53,10 +50,7 @@ def get_db():
 
 
 # ── 2. Base de Datos de Catálogos Institucionales (3NF) ─────────────────
-CATALOG_DATABASE_URL = os.getenv(
-    "CATALOG_DATABASE_URL",
-    "postgresql://giragroup_user:giragroup_secret_2026@localhost:5433/giragroup_catalog_db"
-)
+CATALOG_DATABASE_URL = os.environ["CATALOG_DATABASE_URL"]
 
 if CATALOG_DATABASE_URL.startswith("postgresql://"):
     CATALOG_DATABASE_URL = CATALOG_DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)

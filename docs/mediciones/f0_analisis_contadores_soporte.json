@@ -1,0 +1,150 @@
+{
+  "timestamp": "2026-11-14T11:32:18.857821-04:00",
+  "status": "offline_counter_tooling_verified_no_exports_reloaded",
+  "observation": "Schema/counter values read only from small public a0r1 result; not an aggregate or additional accepted run. Run validity remains governed by measured metadata and disturbance audit.",
+  "source_result_sha256": "f62ed2b93d82a2a7af83030edd715633696807523e3c7e8716b6f71e0864b98b",
+  "api_counter_preview": {
+    "consolidacion.inserted_dw": {
+      "numerator": 78782,
+      "denominator": 1,
+      "unit": "loaded routing outcomes (academic bucket + financial)",
+      "value": 78782.0,
+      "formula": "Count of consolidacion.inserted_dw",
+      "null_reason": null,
+      "source": "result.consolidacion.inserted_dw",
+      "measurement_layer": "API consolidation counters",
+      "interpretation": "inserted_academico + inserted_financiero; admission outcomes excluded. Loaded outcomes may insert or update, so this is not a count of newly persisted rows.",
+      "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+    },
+    "consolidacion.inserted_academico": {
+      "numerator": 78057,
+      "denominator": 1,
+      "unit": "loaded outcomes in broad academic API bucket",
+      "value": 78057.0,
+      "formula": "Count of consolidacion.inserted_academico",
+      "null_reason": null,
+      "source": "result.consolidacion.inserted_academico",
+      "measurement_layer": "API consolidation counters",
+      "interpretation": "Loaded non-financial/non-admission outcomes: includes academic, teacher evaluation, profitability and marketing routes; not just fact_rendimiento_academico.",
+      "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+    },
+    "consolidacion.inserted_financiero": {
+      "numerator": 725,
+      "denominator": 1,
+      "unit": "loaded financial routing outcomes",
+      "value": 725.0,
+      "formula": "Count of consolidacion.inserted_financiero",
+      "null_reason": null,
+      "source": "result.consolidacion.inserted_financiero",
+      "measurement_layer": "API consolidation counters",
+      "interpretation": "One increment per loader result loaded with tipo financiero; not a distinct persisted-row count.",
+      "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+    },
+    "consolidacion.inserted_admision": {
+      "numerator": 391,
+      "denominator": 1,
+      "unit": "loaded admission routing outcomes",
+      "value": 391.0,
+      "formula": "Count of consolidacion.inserted_admision",
+      "null_reason": null,
+      "source": "result.consolidacion.inserted_admision",
+      "measurement_layer": "API consolidation counters",
+      "interpretation": "Admission route may update a student or aggregated marketing record; excluded from inserted_dw.",
+      "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+    },
+    "consolidacion.inserted_revision": {
+      "numerator": 13106,
+      "denominator": 1,
+      "unit": "loaded reg_item outcomes flagged for review at caller",
+      "value": 13106.0,
+      "formula": "Count of consolidacion.inserted_revision",
+      "null_reason": null,
+      "source": "result.consolidacion.inserted_revision",
+      "measurement_layer": "API consolidation counters",
+      "interpretation": "Increments after status loaded when reg_item.calidad.requiere_revision. Loader may independently force review (e.g. missing date); repeated updates/expansion also prevent equality with persisted requires_review rows.",
+      "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+    },
+    "consolidacion.sent_hitl": {
+      "numerator": 54,
+      "denominator": 1,
+      "unit": "API HITL path increments (mixed line/outcome granularity)",
+      "value": 54.0,
+      "formula": "Count of consolidacion.sent_hitl",
+      "null_reason": null,
+      "source": "result.consolidacion.sent_hitl",
+      "measurement_layer": "API consolidation counters",
+      "interpretation": "Increments per non-loaded expanded reg_item, or per unapproved input line. Not the number of staging rows, distinct people or review-tray cases.",
+      "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+    },
+    "consolidacion.descartados_ruido": {
+      "numerator": 5455,
+      "denominator": 1,
+      "unit": "nonempty consolidation input lines discarded for semantic noise",
+      "value": 5455.0,
+      "formula": "Count of consolidacion.descartados_ruido",
+      "null_reason": null,
+      "source": "result.consolidacion.descartados_ruido",
+      "measurement_layer": "API consolidation counters",
+      "interpretation": "One increment before loading when motivo_fila_sin_entidad is nonempty; applies to queried staging blocks with es_ruido FALSE. Not a fact-row count.",
+      "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+    },
+    "carga.archivos_exitosos": {
+      "numerator": 10,
+      "denominator": 1,
+      "unit": "ingestion API successful files",
+      "value": 10.0,
+      "formula": "Count of carga.archivos_exitosos",
+      "null_reason": null,
+      "source": "result.carga.archivos_exitosos",
+      "measurement_layer": "API ingestion counters",
+      "denominator_basis": "Constant1 expresses a count; ingestion records are not a proven denominator for expanded consolidation outcomes or semantic-noise line counts."
+    },
+    "carga.archivos_fallidos": {
+      "numerator": 0,
+      "denominator": 1,
+      "unit": "ingestion API failed files",
+      "value": 0.0,
+      "formula": "Count of carga.archivos_fallidos",
+      "null_reason": null,
+      "source": "result.carga.archivos_fallidos",
+      "measurement_layer": "API ingestion counters",
+      "denominator_basis": "Constant1 expresses a count; ingestion records are not a proven denominator for expanded consolidation outcomes or semantic-noise line counts."
+    },
+    "carga.registros_detectados": {
+      "numerator": 11956,
+      "denominator": 1,
+      "unit": "ingestion API reported detected records",
+      "value": 11956.0,
+      "formula": "Count of carga.registros_detectados",
+      "null_reason": null,
+      "source": "result.carga.registros_detectados",
+      "measurement_layer": "API ingestion counters",
+      "denominator_basis": "Constant1 expresses a count; ingestion records are not a proven denominator for expanded consolidation outcomes or semantic-noise line counts."
+    }
+  },
+  "source_code_contract": {
+    "path": "backend/routers/dataops/consolidacion.py",
+    "sha256": "39e5c83e9c21b5b2f2b14744af464067339791e83fc077b2dfc73a76257c7c89",
+    "noise": "Lines219-221 increment descartados_ruido once per nonempty input line satisfying semantic-noise rule; input staging query excludes es_ruido TRUE.",
+    "loaded": "Lines403-417 increment API routing counters after loader status loaded; academic bucket includes several domains; inserted_dw is academic+financial and excludes admission.",
+    "review": "inserted_revision tests caller reg_item quality flag, distinct from final persisted row review flag and counts; loader may force review or update existing rows.",
+    "hitl": "sent_hitl increments per non-loaded expanded item or unapproved source line: mixed event granularity; not equal to staging or tray cardinality."
+  },
+  "denominators": "Count/1 for API counters because neither ingestion records nor expanded physical facts establish a compatible population denominator. Physical table fractions use only their same-table total. Layers stay separate.",
+  "new_output_contract": "Every metric carries source, measurement_layer, unit, numerator, denominator and denominator_basis; missing required API counter stays NULL with reason, never zero. Contrast CSV preserves metric sources and layer.",
+  "tests": {
+    "passed": 46,
+    "failed": 0,
+    "evidence": "f0_analisis_contadores_pruebas.txt"
+  },
+  "pending_final_states": {
+    "f0_desacuerdos_resumen.json": "pending_missing_F0_runs",
+    "f0_top1_resumen.json": "pending_runs_and_independent_human_decisions",
+    "f0_impacto_qc.json": "pending_A1_A2_A3_A4"
+  },
+  "large_private_exports_loaded": false,
+  "measurement_services_database_or_inference_used": false,
+  "previous_partial_report": "Not regenerated while clocks may run; next coordinated incremental/final analysis will include these newly supported counters.",
+  "tool_sha256": "087dd6713c0a6b7454faa75c349f5e3ca8e2df974158ab54dd428e7a1737b2eb",
+  "test_sha256": "4ce856dcf958403ca7d142ee75b738bd57f97fa6828cf346e4562f276020158e"
+}

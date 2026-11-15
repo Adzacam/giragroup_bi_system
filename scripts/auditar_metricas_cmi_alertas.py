@@ -11,7 +11,7 @@ import numpy as np
 
 sys.path.insert(0, '.')
 sys.path.insert(0, 'backend')
-os.environ['DATABASE_URL'] = 'postgresql://giragroup_user:giragroup_secret_2026@localhost:5434/snapshot_dw_20261110_1201'
+os.environ['DATABASE_URL'] = os.environ['SNAPSHOT_DATABASE_URL']
 from core.database import SessionLocal
 from services.kpi_service import KPIService
 from services.risk_service import evaluar_alertas_tempranas_deterministicas, get_riesgo_cruzado

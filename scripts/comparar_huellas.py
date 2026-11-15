@@ -15,9 +15,9 @@ def main(a, b):
         x, y = ha["tablas"].get(t, {}), hb["tablas"].get(t, {})
         if (x.get("filas"), x.get("md5")) != (y.get("filas"), y.get("md5")):
             dif.append(f"{t}: filas {x.get('filas')} -> {y.get('filas')}, md5 {str(x.get('md5'))[:10]} -> {str(y.get('md5'))[:10]}")
-    for k in ("casos", "grupos", "manuales", "casos_manuales", "firma"):
+    for k in ("casos", "grupos", "manuales", "casos_manuales", "firma", "firma_sha256"):
         if ha["bandeja"].get(k) != hb["bandeja"].get(k):
-            dif.append(f"bandeja.{k}: {ha['bandeja'].get(k)} -> {hb['bandeja'].get(k)}" if k != "firma" else "bandeja.firma distinta")
+            dif.append(f"bandeja.{k}: {ha['bandeja'].get(k)} -> {hb['bandeja'].get(k)}" if not k.startswith("firma") else f"bandeja.{k} distinta")
     for k in ha.get("kpis", {}):
         if ha["kpis"].get(k) != hb.get("kpis", {}).get(k):
             dif.append(f"{k}: {ha['kpis'].get(k)} -> {hb['kpis'].get(k)}")

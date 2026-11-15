@@ -1,3 +1,4 @@
+import os
 """
 Migración 011: clave única de idempotencia en stg_entidad_no_resuelta.
 clave_origen = md5(hash del archivo | tipo | motivo | valor normalizado). Deduplica la cola actual (conserva por clave
@@ -12,7 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path[:0] = [str(ROOT), str(ROOT / "backend")]
 from models.staging_entidad import clave_staging
 
-URL = os.environ.get("DATABASE_URL") or "postgresql://giragroup_user:giragroup_secret_2026@localhost:5434/giragroup_db"
+URL = os.environ["DATABASE_URL"]
 SQL_CONTEOS = """SELECT count(*) total, count(*) FILTER (WHERE NOT resuelto AND estado_resolucion='PENDIENTE') pendientes,
  count(DISTINCT (SELECT COALESCE(d.hash_sha256,'doc'||s.id_documento) FROM dim_origen_documental d WHERE d.id_documento=s.id_documento)) archivos
  FROM stg_entidad_no_resuelta s"""

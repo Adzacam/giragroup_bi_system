@@ -1,0 +1,46 @@
+﻿=== docker compose ps ===
+NAME                          IMAGE                                       COMMAND                   SERVICE                 CREATED          STATUS                    PORTS
+giragroup_api                 giragroup_bi_system-api                     "sh -c 'if [ \"${API_…"   api                     27 seconds ago   Up 17 seconds             0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+giragroup_audit_svc           giragroup_bi_system-audit-service           "uvicorn main:app --…"    audit-service           3 days ago       Up 55 minutes             8004/tcp
+giragroup_auth_svc            giragroup_bi_system-auth-service            "uvicorn main:app --…"    auth-service            3 days ago       Up 55 minutes             8001/tcp
+giragroup_catalog_db          giragroup_bi_system-catalog_db              "docker-entrypoint.s…"    catalog_db              43 seconds ago   Up 23 seconds (healthy)   127.0.0.1:5433->5432/tcp
+giragroup_db                  postgres:16-alpine                          "docker-entrypoint.s…"    db                      10 days ago      Up 55 minutes (healthy)   127.0.0.1:5434->5432/tcp
+giragroup_gateway             giragroup_bi_system-gateway                 "/docker-entrypoint.…"    gateway                 3 days ago       Up 55 minutes             0.0.0.0:80->80/tcp, [::]:80->80/tcp
+giragroup_notifications_svc   giragroup_bi_system-notifications-service   "uvicorn main:app --…"    notifications-service   3 days ago       Up 55 minutes             8002/tcp
+giragroup_pipeline            giragroup_bi_system-pipeline                "sh -c 'uvicorn pipe…"    pipeline                27 seconds ago   Up 17 seconds             8006/tcp
+giragroup_web                 giragroup_bi_system-web                     "docker-entrypoint.s…"    web                     3 days ago       Up 55 minutes             0.0.0.0:5173->5173/tcp, [::]:5173->5173/tcp
+
+=== api /health ===
+{"status":"healthy","service":"giragroup-bi-api","database":"connected"}
+
+=== pipeline /health ===
+{"status":"online","engine":"BETO_PYTORCH_REAL","model":"/app/pipeline/semantic/beto_local","base_model":"dccuchile/bert-base-spanish-wwm-cased"}
+
+=== api /api/v1/cmi/scorecard (solo lectura) ===
+docker : Traceback (most recent call last):
+En línea: 7 Carácter: 13
++ $cmiSmoke = docker exec giragroup_api python -c "import urllib.reques ...
++             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "<string>", line 1, in <module>
+  File "/usr/local/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/urllib/request.py", line 521, in open
+    response = meth(req, response)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/urllib/request.py", line 630, in http_response
+    response = self.parent.error(
+               ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/urllib/request.py", line 559, in error
+    return self._call_chain(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/urllib/request.py", line 639, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 401: Unauthorized
+

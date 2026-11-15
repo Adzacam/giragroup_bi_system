@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-11-14T10:17:10.308352-04:00",
+  "status": "offline_support_revision_tested_only",
+  "measurement_population_used": false,
+  "services_database_or_inference_used": false,
+  "fragmentation": {
+    "proof": "At least two disjoint saved person spans; literal offsets equal emitted surfaces; ordered concatenation exactly equals complete rule name after whitespace/cell-separator removal; no intervening content or partial word boundary accepted.",
+    "example": "ED | GAR TORRES reconstructs EDGAR TORRES only with coherent saved ED and GAR TORRES person spans.",
+    "code_verdict_preserved": "NO_EVALUABLE if original intact/per-word lookup fails; suggested technical fragmentation diagnosis does not replace code counters.",
+    "truncation_priority": "Full reconstruction beyond visible tokenizer offsets remains truncation/non-evaluable.",
+    "labels": "Automatic suggested labels only. Manual technical reviewed=0 and human reviewed=0 until effective review; no claim of100% manual review."
+  },
+  "kpi_formula_audit": {
+    "KPI-10": {
+      "source": "backend/scripts/migrations/014_conversion_captacion_comprobable.sql:48",
+      "formula": "AVG(non-null academic confidence)*100, academic inner join dim_tiempo, effective endpoint gestion; Decimal sum/count preserves numeric rounding."
+    },
+    "KPI-11": {
+      "source": "backend/scripts/migrations/014_conversion_captacion_comprobable.sql:49",
+      "formula": "100*count(confidence>=.85)/count(non-null confidence), same inner join/year."
+    },
+    "KPI-18": {
+      "source": "backend/scripts/migrations/014_conversion_captacion_comprobable.sql:85",
+      "formula": "COUNT pending staging (resuelto FALSE), grouped by year(created_at); absent group returns NULL, not zero."
+    },
+    "rounding": {
+      "source": "backend/scripts/migrations/006_capa_semantica_cmi.sql:335",
+      "rule": "ROUND(numeric,2), half up for positive KPI values."
+    },
+    "scope": {
+      "source": "backend/routers/cmi.py:58",
+      "rule": "Default chooses latest available CMI gestion; analysis requires exported actual default year rather than assuming2026."
+    }
+  },
+  "reconciliation_gate": "Missing endpoint key, unknown/different scope or numeric mismatch is explicit in metric warnings and top-level endpoint_discrepancies; affected KPI deltas withheld, status requires_kpi_reconciliation; --final exits unsuccessfully until resolved.",
+  "tests": {
+    "command": ".venv/Scripts/python.exe -m pytest tests/f0/test_resultados_analysis.py --noconftest -q",
+    "passed": 17,
+    "failed": 0,
+    "evidence": "f0_analisis_pruebas.txt"
+  },
+  "pending_states_preserved": {
+    "f0_desacuerdos_resumen.json": "pending_missing_F0_runs",
+    "f0_top1_resumen.json": "pending_runs_and_independent_human_decisions",
+    "f0_impacto_qc.json": "pending_A1_A2_A3_A4"
+  },
+  "source_sha256": {
+    "scripts/analizar_f0_resultados.py": "8e193d81cedaa3b35de8e876eb924ae63b191f77518ae059102b90927d868ad4",
+    "tests/f0/test_resultados_analysis.py": "898c7193e1b870a84d4c434d355929ea5919b6ddb7c27c9031a2e00b49337037",
+    "backend/scripts/migrations/014_conversion_captacion_comprobable.sql": "868dece736655ff04676c73d22c51f02f5c7d23d31dc0b649c6eb19b3956b9d6",
+    "backend/scripts/migrations/006_capa_semantica_cmi.sql": "eb061153dad053acf83c89e0e9f3389d6d14d97a3f71f97303dcdae6bd022a04",
+    "backend/routers/cmi.py": "bcfc037b66bed377163bd14a36ed9a611dfd6b88df3f3014b9702e5e2d5f39aa"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "fecha": "2026-11-14T10:26:10.325989-04:00",
+  "verificacion": {
+    "fecha": "2026-11-13T20:51:21.360036-04:00",
+    "sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+    "archivos": 20,
+    "valido": true
+  },
+  "originales": 10,
+  "slices": 10,
+  "corridas_validas": 0,
+  "F0_P": "Actual superada: snapshot/copia idénticos,20archivos exactos,modelo/árbol/catálogo originales,7semillas restauradas yverificadas,ventana exclusiva ycalentamiento uniforme",
+  "A1": "pendiente: 0/36",
+  "A2": "pendiente: 0/6",
+  "datos_privados": "output/backups/f0_lote; ignorado por git",
+  "regeneracion_slices": false,
+  "pruebas_soporte": {
+    "passed": 22,
+    "failed": 0,
+    "comando": "pytest soporte/recuperacion/referencia --noconftest"
+  },
+  "limitaciones_soporte": [
+    "42corridas aún pendientes; no usar warmups como resultados"
+  ],
+  "A2_definicion_codigo": "comparadas_acuerdo=acuerdos+desacuerdos+tipo_distinto; no_evaluables excluido por continue",
+  "incidencias_congelacion": [
+    "Hardlink denegado antes de generar slices; se recuperaron originales byte-identicos y se usaron copias privadas",
+    "openpyxl reporta fechas fuera de rango en dos celdas y extensiones no soportadas; se mantiene el generador autorizado sin cambios"
+  ],
+  "evidencias_nuevas": [
+    "f0_snapshot_antes.json",
+    "f0_snapshot_copia.json",
+    "f0_cache_humo.json",
+    "f0_despliegue.json"
+  ],
+  "semillas_historicas_preparadas": 7,
+  "semillas_actuales_servidor_verificadas": 7,
+  "recuperacion_offline_cache": "7/7 semillas con contenido, claves y conteos idénticos al manifiesto original; ver f0_cache_recuperacion.json"
+}

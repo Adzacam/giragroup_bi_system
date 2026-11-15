@@ -1,0 +1,119 @@
+{
+  "fecha": "2026-11-14T12:24:43.712452-04:00",
+  "contenedor": {
+    "id": "298b8ae6fc5e2a19e225d711c4ffb0f05e29a91ca5c362a9b6572046ace36a79",
+    "imagen": "sha256:57c72fd2a128e416c7fcc499958864df5301e940bca0a56f58fddf30ffc07777",
+    "inicio": "2026-11-14T16:16:30.63343383Z"
+  },
+  "sin_inferencia_lote": true,
+  "fuente": "f0_cache_recuperacion.json",
+  "fuente_sha256": "6a64d703929edf44e884a25699edbae2c7634b3c2b729aba11d3fabb7f33884c",
+  "semillas": [
+    {
+      "base": "f0_cache_a0",
+      "cache": {
+        "cache_indice_beto": {
+          "filas": 12559,
+          "sha256_claves": "961096284b37aaff534e3c77ced6d1384dc3f8044b875c64168d72161cab64bd",
+          "sha256_contenido": "f30d27fcb1958f06f34728982db15c07cbfc33acd1a940d8fbc581d2a078a47b"
+        },
+        "cache_beto_entidades": {
+          "filas": 0,
+          "sha256_claves": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "sha256_contenido": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "base": "f0_cache_a1",
+      "cache": {
+        "cache_indice_beto": {
+          "filas": 12559,
+          "sha256_claves": "961096284b37aaff534e3c77ced6d1384dc3f8044b875c64168d72161cab64bd",
+          "sha256_contenido": "f30d27fcb1958f06f34728982db15c07cbfc33acd1a940d8fbc581d2a078a47b"
+        },
+        "cache_beto_entidades": {
+          "filas": 23,
+          "sha256_claves": "1d11c29e9f149642516f93ac5c1a386c4d226c471e3f359a5a0992283c2ef14a",
+          "sha256_contenido": "e0eb83de481d4e3e0b6fa8ddcb2445a1d5badc4ac7dbc4107fe78c165b7f82db"
+        }
+      }
+    },
+    {
+      "base": "f0_cache_a2",
+      "cache": {
+        "cache_indice_beto": {
+          "filas": 12559,
+          "sha256_claves": "961096284b37aaff534e3c77ced6d1384dc3f8044b875c64168d72161cab64bd",
+          "sha256_contenido": "f30d27fcb1958f06f34728982db15c07cbfc33acd1a940d8fbc581d2a078a47b"
+        },
+        "cache_beto_entidades": {
+          "filas": 5866,
+          "sha256_claves": "e8a1a05bcf7fe73c437fb54776deb815659886ad3a21d3af02efbe7559cbe782",
+          "sha256_contenido": "9b1861a5eb8a509f69ab6cc60cb8635627801a72ecc775943a05a106f2aec777"
+        }
+      }
+    },
+    {
+      "base": "f0_cache_a3",
+      "cache": {
+        "cache_indice_beto": {
+          "filas": 12559,
+          "sha256_claves": "961096284b37aaff534e3c77ced6d1384dc3f8044b875c64168d72161cab64bd",
+          "sha256_contenido": "f30d27fcb1958f06f34728982db15c07cbfc33acd1a940d8fbc581d2a078a47b"
+        },
+        "cache_beto_entidades": {
+          "filas": 9,
+          "sha256_claves": "bd20894fa7fbf2ae6a6d2b7f177ea223fe7336c29358465f87add2f0fab59926",
+          "sha256_contenido": "961dcc4778d87d9ce832e3e594edd0917145ee76da33daed52a60bc2158de706"
+        }
+      }
+    },
+    {
+      "base": "f0_cache_a12",
+      "cache": {
+        "cache_indice_beto": {
+          "filas": 12559,
+          "sha256_claves": "961096284b37aaff534e3c77ced6d1384dc3f8044b875c64168d72161cab64bd",
+          "sha256_contenido": "f30d27fcb1958f06f34728982db15c07cbfc33acd1a940d8fbc581d2a078a47b"
+        },
+        "cache_beto_entidades": {
+          "filas": 5867,
+          "sha256_claves": "272b9065f479635b11c0fe2d81a5011f33424a2947f23c7573111e29b9800d0a",
+          "sha256_contenido": "3e9e8e6204ece8223b9096397d8a86dfe521233a0c0ca27039696a5150255464"
+        }
+      }
+    },
+    {
+      "base": "f0_cache_a123",
+      "cache": {
+        "cache_indice_beto": {
+          "filas": 12559,
+          "sha256_claves": "961096284b37aaff534e3c77ced6d1384dc3f8044b875c64168d72161cab64bd",
+          "sha256_contenido": "f30d27fcb1958f06f34728982db15c07cbfc33acd1a940d8fbc581d2a078a47b"
+        },
+        "cache_beto_entidades": {
+          "filas": 5873,
+          "sha256_claves": "3cbe017188f19012ae840186f728331b8fade6a4c9eee79a345ed9af4905e368",
+          "sha256_contenido": "82557136765a03b54065706bc3ae067b8e412f594e2e413588c7711db3f1bef5"
+        }
+      }
+    },
+    {
+      "base": "f0_cache_a2w",
+      "cache": {
+        "cache_indice_beto": {
+          "filas": 12559,
+          "sha256_claves": "961096284b37aaff534e3c77ced6d1384dc3f8044b875c64168d72161cab64bd",
+          "sha256_contenido": "f30d27fcb1958f06f34728982db15c07cbfc33acd1a940d8fbc581d2a078a47b"
+        },
+        "cache_beto_entidades": {
+          "filas": 5871,
+          "sha256_claves": "76204152228db8670bd93eafd08c47b8af7f66592e6a86fa59f1d0c6044cb030",
+          "sha256_contenido": "5df1d9ded95fcd395fb6a207fbacdb6f07e581f55ae1c92dbe75fa2c350e3bbb"
+        }
+      }
+    }
+  ],
+  "todas_identicas_al_manifiesto_original": true
+}

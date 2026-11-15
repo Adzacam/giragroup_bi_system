@@ -1,0 +1,317 @@
+{
+  "status": "automatic_technical_suggestions_review_pending",
+  "final_population": false,
+  "population": 19,
+  "sample_size": 19,
+  "population_definition": "Only individually proven productive DESACUERDO contexts enter this frame. ACUERDO, NO_EVALUABLE, TIPO_DISTINTO and untraceable row-level markers stay outside its false-disagreement denominator. Reading per-person reconstructed verdict and suggested technical diagnosis remain separate. Identical cache/repetition contexts merged with source run IDs retained; consolidation single-name logs establish only partial coverage.",
+  "census_by_run": {
+    "f0_a2_vacia_r1": {
+      "lectura": {
+        "observed_individual_counts": {
+          "acuerdos": 4983,
+          "desacuerdos": 12,
+          "no_evaluables": 1735,
+          "tipo_distinto": 91,
+          "comparadas_acuerdo": 5086
+        },
+        "unknown_individual_observations": 0,
+        "comparisons": {
+          "acuerdos": {
+            "observed": 4983,
+            "expected": 4984,
+            "delta": -1
+          },
+          "desacuerdos": {
+            "observed": 12,
+            "expected": 12,
+            "delta": 0
+          },
+          "no_evaluables": {
+            "observed": 1735,
+            "expected": 1734,
+            "delta": 1
+          },
+          "tipo_distinto": {
+            "observed": 91,
+            "expected": 91,
+            "delta": 0
+          },
+          "comparadas_acuerdo": {
+            "observed": 5086,
+            "expected": 5087,
+            "delta": -1
+          }
+        },
+        "reconciled_complete_census": false,
+        "partial_log_population": false,
+        "proven_D_coverage_of_counter": 1.0,
+        "unrepresented_D_counter_observations": 0,
+        "coverage_unit": "Proven per-role observations divided by productive per-person disagreement counter; not unique people across stages or repetitions",
+        "warning": null
+      },
+      "lectura_by_file_type": [
+        {
+          "file_id": "086a46ab0aef42d4beb780b8f57db45534719375735a0eec1399deaa170e1092",
+          "type": "COBRANZA",
+          "individual_verdicts": {
+            "NO_EVALUABLE": 699,
+            "ACUERDO": 25,
+            "TIPO_DISTINTO": 1
+          },
+          "expected_disagreements": 0,
+          "observed_proven_disagreements": 0,
+          "delta": 0,
+          "reconciles": true
+        },
+        {
+          "file_id": "248da01d11e4e5517b67d79c67e0f0ecd97fa4897ed67608da6ac97efd7f109f",
+          "type": "ACTA",
+          "individual_verdicts": {
+            "ACUERDO": 436,
+            "NO_EVALUABLE": 49,
+            "DESACUERDO": 1
+          },
+          "expected_disagreements": 1,
+          "observed_proven_disagreements": 1,
+          "delta": 0,
+          "reconciles": true
+        },
+        {
+          "file_id": "65f2dc58e562747225ba3bed991324fb8adb524e91034b70fa3f1c1be53b6810",
+          "type": "EVALUACION_DOCENTE",
+          "individual_verdicts": {
+            "ACUERDO": 3535,
+            "NO_EVALUABLE": 975,
+            "TIPO_DISTINTO": 50,
+            "DESACUERDO": 4
+          },
+          "expected_disagreements": 4,
+          "observed_proven_disagreements": 4,
+          "delta": 0,
+          "reconciles": true
+        },
+        {
+          "file_id": "d2be9a42dbceedcac0ebe68fea0111729b51960763be943b5ba3294cb73ad947",
+          "type": "ADMISION",
+          "individual_verdicts": {
+            "ACUERDO": 386,
+            "DESACUERDO": 2,
+            "NO_EVALUABLE": 1,
+            "TIPO_DISTINTO": 2
+          },
+          "expected_disagreements": 2,
+          "observed_proven_disagreements": 2,
+          "delta": 0,
+          "reconciles": true
+        },
+        {
+          "file_id": "8b5b67cffb015e036d234c60fc90b0b96704580020fa1c82717b005f8cccfbd3",
+          "type": "EVALUACION_DOCENTE",
+          "individual_verdicts": {
+            "ACUERDO": 601,
+            "NO_EVALUABLE": 11,
+            "TIPO_DISTINTO": 38,
+            "DESACUERDO": 5
+          },
+          "expected_disagreements": 5,
+          "observed_proven_disagreements": 5,
+          "delta": 0,
+          "reconciles": true
+        }
+      ],
+      "consolidacion": {
+        "observed_individual_counts": {
+          "acuerdos": 0,
+          "desacuerdos": 7,
+          "no_evaluables": 0,
+          "tipo_distinto": 0,
+          "comparadas_acuerdo": 7
+        },
+        "unknown_individual_observations": 5,
+        "comparisons": {
+          "acuerdos": {
+            "observed": 0,
+            "expected": 4984,
+            "delta": -4984
+          },
+          "desacuerdos": {
+            "observed": 7,
+            "expected": 12,
+            "delta": -5
+          },
+          "no_evaluables": {
+            "observed": 0,
+            "expected": 1734,
+            "delta": -1734
+          },
+          "tipo_distinto": {
+            "observed": 0,
+            "expected": 91,
+            "delta": -91
+          },
+          "comparadas_acuerdo": {
+            "observed": 7,
+            "expected": 5087,
+            "delta": -5080
+          }
+        },
+        "reconciled_complete_census": false,
+        "partial_log_population": true,
+        "proven_D_coverage_of_counter": 0.5833333333333334,
+        "unrepresented_D_counter_observations": 5,
+        "coverage_unit": "Proven per-role observations divided by productive per-person disagreement counter; not unique people across stages or repetitions",
+        "warning": "Single-name logs cover only a subset of individuals; counts are coverage diagnostics, not forced equality"
+      },
+      "consolidacion_by_file_type": [
+        {
+          "file_id": "248da01d11e4e5517b67d79c67e0f0ecd97fa4897ed67608da6ac97efd7f109f",
+          "type": "ACTA",
+          "logged_name_verdicts": {
+            "UNKNOWN": 1
+          },
+          "proven_logged_name_disagreements": 0,
+          "expected_productive_person_disagreements": 1,
+          "unrepresented_counter_observations": 1,
+          "partial_log_population": true,
+          "reconciled_complete_person_census": false
+        },
+        {
+          "file_id": "65f2dc58e562747225ba3bed991324fb8adb524e91034b70fa3f1c1be53b6810",
+          "type": "EVALUACION_DOCENTE",
+          "logged_name_verdicts": {
+            "UNKNOWN": 1,
+            "DESACUERDO": 3
+          },
+          "proven_logged_name_disagreements": 3,
+          "expected_productive_person_disagreements": 4,
+          "unrepresented_counter_observations": 1,
+          "partial_log_population": true,
+          "reconciled_complete_person_census": false
+        },
+        {
+          "file_id": "d2be9a42dbceedcac0ebe68fea0111729b51960763be943b5ba3294cb73ad947",
+          "type": "ADMISION",
+          "logged_name_verdicts": {
+            "DESACUERDO": 2
+          },
+          "proven_logged_name_disagreements": 2,
+          "expected_productive_person_disagreements": 2,
+          "unrepresented_counter_observations": 0,
+          "partial_log_population": true,
+          "reconciled_complete_person_census": false
+        },
+        {
+          "file_id": "8b5b67cffb015e036d234c60fc90b0b96704580020fa1c82717b005f8cccfbd3",
+          "type": "EVALUACION_DOCENTE",
+          "logged_name_verdicts": {
+            "UNKNOWN": 3,
+            "DESACUERDO": 2
+          },
+          "proven_logged_name_disagreements": 2,
+          "expected_productive_person_disagreements": 5,
+          "unrepresented_counter_observations": 3,
+          "partial_log_population": true,
+          "reconciled_complete_person_census": false
+        }
+      ],
+      "consolidation_log_rows_seen": 12,
+      "scope_warning": "Reading counters are per resolved person. Product acuerdo_beto fields hold an aggregated row verdict. Consolidation logs may omit another disagreeing role and unapproved rows; they do not establish a full person census."
+    }
+  },
+  "excluded_non_disagreement_observations": 6814,
+  "stages_separate": true,
+  "seed": 42,
+  "strata": {
+    "consolidacion|65f2dc58e562747225ba3bed991324fb8adb524e91034b70fa3f1c1be53b6810|EVALUACION_DOCENTE|persona_log_no_desagregada": {
+      "population": 3,
+      "sample": 3,
+      "labels": {
+        "desacuerdo real": 3
+      },
+      "label_rates": {
+        "desacuerdo real": 1.0
+      }
+    },
+    "lectura|d2be9a42dbceedcac0ebe68fea0111729b51960763be943b5ba3294cb73ad947|ADMISION|ESTUDIANTE": {
+      "population": 2,
+      "sample": 2,
+      "labels": {
+        "desacuerdo real": 2
+      },
+      "label_rates": {
+        "desacuerdo real": 1.0
+      }
+    },
+    "consolidacion|d2be9a42dbceedcac0ebe68fea0111729b51960763be943b5ba3294cb73ad947|ADMISION|persona_log_no_desagregada": {
+      "population": 2,
+      "sample": 2,
+      "labels": {
+        "desacuerdo real": 2
+      },
+      "label_rates": {
+        "desacuerdo real": 1.0
+      }
+    },
+    "lectura|65f2dc58e562747225ba3bed991324fb8adb524e91034b70fa3f1c1be53b6810|EVALUACION_DOCENTE|ESTUDIANTE": {
+      "population": 4,
+      "sample": 4,
+      "labels": {
+        "desacuerdo real": 4
+      },
+      "label_rates": {
+        "desacuerdo real": 1.0
+      }
+    },
+    "lectura|8b5b67cffb015e036d234c60fc90b0b96704580020fa1c82717b005f8cccfbd3|EVALUACION_DOCENTE|ESTUDIANTE": {
+      "population": 5,
+      "sample": 5,
+      "labels": {
+        "desacuerdo real": 5
+      },
+      "label_rates": {
+        "desacuerdo real": 1.0
+      }
+    },
+    "consolidacion|8b5b67cffb015e036d234c60fc90b0b96704580020fa1c82717b005f8cccfbd3|EVALUACION_DOCENTE|persona_log_no_desagregada": {
+      "population": 2,
+      "sample": 2,
+      "labels": {
+        "desacuerdo real": 2
+      },
+      "label_rates": {
+        "desacuerdo real": 1.0
+      }
+    },
+    "lectura|248da01d11e4e5517b67d79c67e0f0ecd97fa4897ed67608da6ac97efd7f109f|ACTA|ESTUDIANTE": {
+      "population": 1,
+      "sample": 1,
+      "labels": {
+        "desacuerdo real": 1
+      },
+      "label_rates": {
+        "desacuerdo real": 1.0
+      }
+    }
+  },
+  "weighted_suggested_false_fragmentation_rate_by_stage": {
+    "lectura": 0.0,
+    "consolidacion": 0.0
+  },
+  "population_by_stage": {
+    "lectura": 12,
+    "consolidacion": 7
+  },
+  "sample_by_stage": {
+    "lectura": 12,
+    "consolidacion": 7
+  },
+  "technical_suggestions_count": 19,
+  "manual_technical_reviewed": 0,
+  "human_reviewed": 0,
+  "human_validation_pending": true,
+  "automatic_technical_inspection": "Automatic recomputation supplies suggested labels only, not completed manual review. Deterministic examination of saved rule name, raw text, exact cached NER spans and tokenizer offset coverage; no fresh inference and no human labels invented.",
+  "private_sample_sha256": "778adb33a7a33c2c99cca041abd2403f10179aeb93ea72a3a1d2720a84da8a41",
+  "private_sample_path": "output\\backups\\f0_lote\\revision_desacuerdos\\parcial.json",
+  "limitations": [],
+  "technical_warning": "Consolidation log does not save original per-person rule state; ambiguous mapping remains indeterminate. Technical rates are not independently human validated."
+}

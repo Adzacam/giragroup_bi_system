@@ -1,0 +1,18 @@
+{
+  "origen": {
+    "fecha": "2026-11-13T21:21:26.501037-04:00",
+    "fuente": "origen",
+    "tablas": 20,
+    "sha256": "3ddf4c746114febd6ff424c2d67c30c9fe18f7d1fa4b08548089d762338d2ce9",
+    "metodo": "READ ONLY: conteo y MD5 de JSON filas ordenadas por tabla; SHA256 mapa XML canónico"
+  },
+  "copia": {
+    "fecha": "2026-11-13T21:21:26.940234-04:00",
+    "fuente": "copia",
+    "tablas": 20,
+    "sha256": "3ddf4c746114febd6ff424c2d67c30c9fe18f7d1fa4b08548089d762338d2ce9",
+    "metodo": "READ ONLY: conteo y MD5 de JSON filas ordenadas por tabla; SHA256 mapa XML canónico"
+  },
+  "identicas": true,
+  "auditoria_rutas": "Clientes de ingesta/consolidación solo SELECT. Escritura mapear_estado_grupo corresponde a revisión humana omitida."
+}

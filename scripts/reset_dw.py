@@ -24,12 +24,11 @@ import sys
 from typing import Dict, Any, List, Optional, Tuple
 from urllib.parse import urlparse
 
-URL_POR_DEFECTO = "postgresql://giragroup_user:giragroup_secret_2026@127.0.0.1:5432/giragroup_db"
 
 
 def destino_del_reset() -> Tuple[str, str, str]:
     """Base y usuario a los que apunta DATABASE_URL. El respaldo por Docker debe actuar sobre esa misma base, nunca sobre otra."""
-    u = urlparse(os.getenv("DATABASE_URL", URL_POR_DEFECTO))
+    u = urlparse(os.environ["DATABASE_URL"])
     return u.path.lstrip("/") or "giragroup_db", u.username or "giragroup_user", u.hostname or "127.0.0.1"
 
 TABLAS_TRUNCAR = [
@@ -146,7 +145,7 @@ def reset_data_warehouse(confirm: bool = False, use_docker_fallback: bool = True
     # 1. Intentar conexión directa vía SQLAlchemy / psycopg2
     try:
         import psycopg2
-        url = os.getenv("DATABASE_URL", URL_POR_DEFECTO)
+        url = os.environ["DATABASE_URL"]
         # Parsear o conectar directamente
         conn = psycopg2.connect(url, connect_timeout=2)
         res = ejecutar_reset_via_psycopg2(conn)

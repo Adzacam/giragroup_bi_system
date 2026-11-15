@@ -1,0 +1,1338 @@
+{
+  "status": "incremental_incomplete",
+  "kpi_reconciliation_passed": true,
+  "endpoint_discrepancies": [],
+  "gestion_override": null,
+  "gestion_protocol": "Use actual exported endpoint default year independently for each run unless an explicit override is supplied; retain scope and require same year for KPI deltas",
+  "rows": [],
+  "missing_pairs": [
+    [
+      "a0",
+      "a2",
+      "vacia",
+      1
+    ],
+    [
+      "a0",
+      "a2",
+      "vacia",
+      2
+    ],
+    [
+      "a0",
+      "a2",
+      "vacia",
+      3
+    ],
+    [
+      "a0",
+      "a2",
+      "llena",
+      1
+    ],
+    [
+      "a0",
+      "a2",
+      "llena",
+      2
+    ],
+    [
+      "a0",
+      "a2",
+      "llena",
+      3
+    ],
+    [
+      "a1",
+      "a12",
+      "vacia",
+      1
+    ],
+    [
+      "a1",
+      "a12",
+      "vacia",
+      2
+    ],
+    [
+      "a1",
+      "a12",
+      "vacia",
+      3
+    ],
+    [
+      "a1",
+      "a12",
+      "llena",
+      1
+    ],
+    [
+      "a1",
+      "a12",
+      "llena",
+      2
+    ],
+    [
+      "a1",
+      "a12",
+      "llena",
+      3
+    ],
+    [
+      "a2",
+      "a2w",
+      "vacia",
+      1
+    ],
+    [
+      "a2",
+      "a2w",
+      "vacia",
+      2
+    ],
+    [
+      "a2",
+      "a2w",
+      "vacia",
+      3
+    ],
+    [
+      "a2",
+      "a2w",
+      "llena",
+      1
+    ],
+    [
+      "a2",
+      "a2w",
+      "llena",
+      2
+    ],
+    [
+      "a2",
+      "a2w",
+      "llena",
+      3
+    ],
+    [
+      "a3",
+      "a123",
+      "vacia",
+      1
+    ],
+    [
+      "a3",
+      "a123",
+      "vacia",
+      2
+    ],
+    [
+      "a3",
+      "a123",
+      "vacia",
+      3
+    ],
+    [
+      "a3",
+      "a123",
+      "llena",
+      1
+    ],
+    [
+      "a3",
+      "a123",
+      "llena",
+      2
+    ],
+    [
+      "a3",
+      "a123",
+      "llena",
+      3
+    ]
+  ],
+  "run_metrics": {
+    "f0_a2_vacia_r1": {
+      "KPI-10": {
+        "numerator": 0.0,
+        "denominator": 0,
+        "unit": "percent",
+        "value": null,
+        "formula": "100 * SUM(academic.nivel_confianza_ia) / COUNT(non-null confidence), inner join dim_tiempo, gestion=2026",
+        "null_reason": "denominator zero or population unavailable",
+        "exact_decimal_numerator": "0",
+        "exact_decimal_value": null,
+        "rounded_recomputed_value": null,
+        "endpoint_key_present": true,
+        "endpoint_value": null,
+        "value_matches_endpoint": true,
+        "endpoint_scope_verified": true,
+        "gestion": 2026,
+        "endpoint_reconciles": true,
+        "reconciliation_warning": null,
+        "source": "SQL014 CMI formula recomputed from private academic/time/staging exports; compared to footprint.kpis.KPI-10",
+        "measurement_layer": "CMI scoped population",
+        "denominator_basis": "Exact SQL population recorded in formula and gestion"
+      },
+      "KPI-11": {
+        "numerator": 0,
+        "denominator": 0,
+        "unit": "percent",
+        "value": null,
+        "formula": "100 * COUNT(confidence >= .85) / COUNT(non-null confidence), same academic/date scope",
+        "null_reason": "denominator zero or population unavailable",
+        "exact_decimal_value": null,
+        "rounded_recomputed_value": null,
+        "endpoint_key_present": true,
+        "endpoint_value": null,
+        "value_matches_endpoint": true,
+        "endpoint_scope_verified": true,
+        "gestion": 2026,
+        "endpoint_reconciles": true,
+        "reconciliation_warning": null,
+        "source": "SQL014 CMI formula recomputed from private academic/time/staging exports; compared to footprint.kpis.KPI-11",
+        "measurement_layer": "CMI scoped population",
+        "denominator_basis": "Exact SQL population recorded in formula and gestion"
+      },
+      "KPI-18": {
+        "numerator": 71,
+        "denominator": 1,
+        "unit": "pending entities",
+        "value": 71.0,
+        "formula": "COUNT(stg_entidad_no_resuelta WHERE resuelto=FALSE), created_at year=2026",
+        "null_reason": null,
+        "rounded_recomputed_value": 71.0,
+        "endpoint_key_present": true,
+        "endpoint_value": 71.0,
+        "value_matches_endpoint": true,
+        "endpoint_scope_verified": true,
+        "gestion": 2026,
+        "endpoint_reconciles": true,
+        "reconciliation_warning": null,
+        "source": "SQL014 CMI formula recomputed from private academic/time/staging exports; compared to footprint.kpis.KPI-18",
+        "measurement_layer": "CMI scoped population",
+        "denominator_basis": "Exact SQL population recorded in formula and gestion"
+      },
+      "bandeja.casos": {
+        "numerator": 201,
+        "denominator": 1,
+        "unit": "cases",
+        "value": 201.0,
+        "formula": "saved footprint bandeja count",
+        "null_reason": null,
+        "source": "footprint.bandeja.casos",
+        "measurement_layer": "review-tray cases/groups",
+        "denominator_basis": "Constant1 expresses a saved tray count; not equivalent to API HITL increments or staging rows"
+      },
+      "bandeja.grupos": {
+        "numerator": 17,
+        "denominator": 1,
+        "unit": "groups",
+        "value": 17.0,
+        "formula": "saved footprint bandeja count",
+        "null_reason": null,
+        "source": "footprint.bandeja.grupos",
+        "measurement_layer": "review-tray cases/groups",
+        "denominator_basis": "Constant1 expresses a saved tray count; not equivalent to API HITL increments or staging rows"
+      },
+      "bandeja.manuales": {
+        "numerator": 12,
+        "denominator": 1,
+        "unit": "groups",
+        "value": 12.0,
+        "formula": "saved footprint bandeja count",
+        "null_reason": null,
+        "source": "footprint.bandeja.manuales",
+        "measurement_layer": "review-tray cases/groups",
+        "denominator_basis": "Constant1 expresses a saved tray count; not equivalent to API HITL increments or staging rows"
+      },
+      "bandeja.casos_manuales": {
+        "numerator": 71,
+        "denominator": 1,
+        "unit": "cases",
+        "value": 71.0,
+        "formula": "saved footprint bandeja count",
+        "null_reason": null,
+        "source": "footprint.bandeja.casos_manuales",
+        "measurement_layer": "review-tray cases/groups",
+        "denominator_basis": "Constant1 expresses a saved tray count; not equivalent to API HITL increments or staging rows"
+      },
+      "staging_registros_crudos.total": {
+        "numerator": 63,
+        "denominator": 63,
+        "unit": "fraction of staging_registros_crudos rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "staging_registros_crudos.total.count": {
+        "numerator": 63,
+        "denominator": 1,
+        "unit": "rows of staging_registros_crudos",
+        "value": 63.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "staging_registros_crudos.requiere_revision": {
+        "numerator": 5,
+        "denominator": 63,
+        "unit": "fraction of staging_registros_crudos rows",
+        "value": 0.07936507936507936,
+        "formula": "requiere_revision / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.requiere_revision",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "staging_registros_crudos.requiere_revision.count": {
+        "numerator": 5,
+        "denominator": 1,
+        "unit": "rows of staging_registros_crudos",
+        "value": 5.0,
+        "formula": "count requiere_revision",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.requiere_revision",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "staging_registros_crudos.ruido": {
+        "numerator": 0,
+        "denominator": 63,
+        "unit": "fraction of staging_registros_crudos rows",
+        "value": 0.0,
+        "formula": "ruido / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.ruido",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "staging_registros_crudos.ruido.count": {
+        "numerator": 0,
+        "denominator": 1,
+        "unit": "rows of staging_registros_crudos",
+        "value": 0.0,
+        "formula": "count ruido",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.ruido",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "staging_registros_crudos.banda_alta": {
+        "numerator": 58,
+        "denominator": 63,
+        "unit": "fraction of staging_registros_crudos rows",
+        "value": 0.9206349206349206,
+        "formula": "banda_alta / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.banda_alta",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "staging_registros_crudos.banda_alta.count": {
+        "numerator": 58,
+        "denominator": 1,
+        "unit": "rows of staging_registros_crudos",
+        "value": 58.0,
+        "formula": "count banda_alta",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.banda_alta",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "staging_registros_crudos.banda_media": {
+        "numerator": 5,
+        "denominator": 63,
+        "unit": "fraction of staging_registros_crudos rows",
+        "value": 0.07936507936507936,
+        "formula": "banda_media / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.banda_media",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "staging_registros_crudos.banda_media.count": {
+        "numerator": 5,
+        "denominator": 1,
+        "unit": "rows of staging_registros_crudos",
+        "value": 5.0,
+        "formula": "count banda_media",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.banda_media",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "staging_registros_crudos.banda_baja": {
+        "numerator": 0,
+        "denominator": 63,
+        "unit": "fraction of staging_registros_crudos rows",
+        "value": 0.0,
+        "formula": "banda_baja / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.banda_baja",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "staging_registros_crudos.banda_baja.count": {
+        "numerator": 0,
+        "denominator": 1,
+        "unit": "rows of staging_registros_crudos",
+        "value": 0.0,
+        "formula": "count banda_baja",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.banda_baja",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "staging_registros_crudos.confianza_null": {
+        "numerator": 0,
+        "denominator": 63,
+        "unit": "fraction of staging_registros_crudos rows",
+        "value": 0.0,
+        "formula": "confianza_null / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.confianza_null",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "staging_registros_crudos.confianza_null.count": {
+        "numerator": 0,
+        "denominator": 1,
+        "unit": "rows of staging_registros_crudos",
+        "value": 0.0,
+        "formula": "count confianza_null",
+        "null_reason": null,
+        "source": "revision.estadisticas.staging_registros_crudos.confianza_null",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "stg_entidad_no_resuelta.total": {
+        "numerator": 5111,
+        "denominator": 5111,
+        "unit": "fraction of stg_entidad_no_resuelta rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.stg_entidad_no_resuelta.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "stg_entidad_no_resuelta.total.count": {
+        "numerator": 5111,
+        "denominator": 1,
+        "unit": "rows of stg_entidad_no_resuelta",
+        "value": 5111.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.stg_entidad_no_resuelta.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "stg_entidad_no_resuelta.banda_alta": {
+        "numerator": 2312,
+        "denominator": 5111,
+        "unit": "fraction of stg_entidad_no_resuelta rows",
+        "value": 0.45235765994912935,
+        "formula": "banda_alta / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.stg_entidad_no_resuelta.banda_alta",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "stg_entidad_no_resuelta.banda_alta.count": {
+        "numerator": 2312,
+        "denominator": 1,
+        "unit": "rows of stg_entidad_no_resuelta",
+        "value": 2312.0,
+        "formula": "count banda_alta",
+        "null_reason": null,
+        "source": "revision.estadisticas.stg_entidad_no_resuelta.banda_alta",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "stg_entidad_no_resuelta.banda_media": {
+        "numerator": 1436,
+        "denominator": 5111,
+        "unit": "fraction of stg_entidad_no_resuelta rows",
+        "value": 0.2809626296223831,
+        "formula": "banda_media / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.stg_entidad_no_resuelta.banda_media",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "stg_entidad_no_resuelta.banda_media.count": {
+        "numerator": 1436,
+        "denominator": 1,
+        "unit": "rows of stg_entidad_no_resuelta",
+        "value": 1436.0,
+        "formula": "count banda_media",
+        "null_reason": null,
+        "source": "revision.estadisticas.stg_entidad_no_resuelta.banda_media",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "stg_entidad_no_resuelta.banda_baja": {
+        "numerator": 1363,
+        "denominator": 5111,
+        "unit": "fraction of stg_entidad_no_resuelta rows",
+        "value": 0.2666797104284876,
+        "formula": "banda_baja / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.stg_entidad_no_resuelta.banda_baja",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "stg_entidad_no_resuelta.banda_baja.count": {
+        "numerator": 1363,
+        "denominator": 1,
+        "unit": "rows of stg_entidad_no_resuelta",
+        "value": 1363.0,
+        "formula": "count banda_baja",
+        "null_reason": null,
+        "source": "revision.estadisticas.stg_entidad_no_resuelta.banda_baja",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "stg_entidad_no_resuelta.confianza_null": {
+        "numerator": 0,
+        "denominator": 5111,
+        "unit": "fraction of stg_entidad_no_resuelta rows",
+        "value": 0.0,
+        "formula": "confianza_null / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.stg_entidad_no_resuelta.confianza_null",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "stg_entidad_no_resuelta.confianza_null.count": {
+        "numerator": 0,
+        "denominator": 1,
+        "unit": "rows of stg_entidad_no_resuelta",
+        "value": 0.0,
+        "formula": "count confianza_null",
+        "null_reason": null,
+        "source": "revision.estadisticas.stg_entidad_no_resuelta.confianza_null",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "dataops_tarea.total": {
+        "numerator": 2,
+        "denominator": 2,
+        "unit": "fraction of dataops_tarea rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.dataops_tarea.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "dataops_tarea.total.count": {
+        "numerator": 2,
+        "denominator": 1,
+        "unit": "rows of dataops_tarea",
+        "value": 2.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.dataops_tarea.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "log_inconsistencias.total": {
+        "numerator": 23,
+        "denominator": 23,
+        "unit": "fraction of log_inconsistencias rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.log_inconsistencias.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "log_inconsistencias.total.count": {
+        "numerator": 23,
+        "denominator": 1,
+        "unit": "rows of log_inconsistencias",
+        "value": 23.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.log_inconsistencias.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "log_pipeline_ingesta.total": {
+        "numerator": 72,
+        "denominator": 72,
+        "unit": "fraction of log_pipeline_ingesta rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.log_pipeline_ingesta.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "log_pipeline_ingesta.total.count": {
+        "numerator": 72,
+        "denominator": 1,
+        "unit": "rows of log_pipeline_ingesta",
+        "value": 72.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.log_pipeline_ingesta.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "dim_origen_documental.total": {
+        "numerator": 10,
+        "denominator": 10,
+        "unit": "fraction of dim_origen_documental rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.dim_origen_documental.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "dim_origen_documental.total.count": {
+        "numerator": 10,
+        "denominator": 1,
+        "unit": "rows of dim_origen_documental",
+        "value": 10.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.dim_origen_documental.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "dim_estudiante.total": {
+        "numerator": 14939,
+        "denominator": 14939,
+        "unit": "fraction of dim_estudiante rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.dim_estudiante.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "dim_estudiante.total.count": {
+        "numerator": 14939,
+        "denominator": 1,
+        "unit": "rows of dim_estudiante",
+        "value": 14939.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.dim_estudiante.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "dim_docente.total": {
+        "numerator": 673,
+        "denominator": 673,
+        "unit": "fraction of dim_docente rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.dim_docente.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "dim_docente.total.count": {
+        "numerator": 673,
+        "denominator": 1,
+        "unit": "rows of dim_docente",
+        "value": 673.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.dim_docente.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "dim_tiempo.total": {
+        "numerator": 2230,
+        "denominator": 2230,
+        "unit": "fraction of dim_tiempo rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.dim_tiempo.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "dim_tiempo.total.count": {
+        "numerator": 2230,
+        "denominator": 1,
+        "unit": "rows of dim_tiempo",
+        "value": 2230.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.dim_tiempo.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "cache_indice_beto.total": {
+        "numerator": 12559,
+        "denominator": 12559,
+        "unit": "fraction of cache_indice_beto rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.cache_indice_beto.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "cache_indice_beto.total.count": {
+        "numerator": 12559,
+        "denominator": 1,
+        "unit": "rows of cache_indice_beto",
+        "value": 12559.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.cache_indice_beto.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "cache_beto_entidades.total": {
+        "numerator": 5866,
+        "denominator": 5866,
+        "unit": "fraction of cache_beto_entidades rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.cache_beto_entidades.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "cache_beto_entidades.total.count": {
+        "numerator": 5866,
+        "denominator": 1,
+        "unit": "rows of cache_beto_entidades",
+        "value": 5866.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.cache_beto_entidades.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_cobranzas_proyectadas.total": {
+        "numerator": 0,
+        "denominator": 0,
+        "unit": "fraction of fact_cobranzas_proyectadas rows",
+        "value": null,
+        "formula": "total / total table rows",
+        "null_reason": "denominator zero or population unavailable",
+        "source": "revision.estadisticas.fact_cobranzas_proyectadas.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_cobranzas_proyectadas.total.count": {
+        "numerator": 0,
+        "denominator": 1,
+        "unit": "rows of fact_cobranzas_proyectadas",
+        "value": 0.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_cobranzas_proyectadas.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_costo_programa.total": {
+        "numerator": 1320,
+        "denominator": 1320,
+        "unit": "fraction of fact_costo_programa rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_costo_programa.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_costo_programa.total.count": {
+        "numerator": 1320,
+        "denominator": 1,
+        "unit": "rows of fact_costo_programa",
+        "value": 1320.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_costo_programa.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_costo_programa.requiere_revision": {
+        "numerator": 71,
+        "denominator": 1320,
+        "unit": "fraction of fact_costo_programa rows",
+        "value": 0.05378787878787879,
+        "formula": "requiere_revision / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_costo_programa.requiere_revision",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_costo_programa.requiere_revision.count": {
+        "numerator": 71,
+        "denominator": 1,
+        "unit": "rows of fact_costo_programa",
+        "value": 71.0,
+        "formula": "count requiere_revision",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_costo_programa.requiere_revision",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_evaluacion_docente.total": {
+        "numerator": 75126,
+        "denominator": 75126,
+        "unit": "fraction of fact_evaluacion_docente rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_evaluacion_docente.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_evaluacion_docente.total.count": {
+        "numerator": 75126,
+        "denominator": 1,
+        "unit": "rows of fact_evaluacion_docente",
+        "value": 75126.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_evaluacion_docente.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_evaluacion_docente.requiere_revision": {
+        "numerator": 0,
+        "denominator": 75126,
+        "unit": "fraction of fact_evaluacion_docente rows",
+        "value": 0.0,
+        "formula": "requiere_revision / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_evaluacion_docente.requiere_revision",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_evaluacion_docente.requiere_revision.count": {
+        "numerator": 0,
+        "denominator": 1,
+        "unit": "rows of fact_evaluacion_docente",
+        "value": 0.0,
+        "formula": "count requiere_revision",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_evaluacion_docente.requiere_revision",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_forecast.total": {
+        "numerator": 0,
+        "denominator": 0,
+        "unit": "fraction of fact_forecast rows",
+        "value": null,
+        "formula": "total / total table rows",
+        "null_reason": "denominator zero or population unavailable",
+        "source": "revision.estadisticas.fact_forecast.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_forecast.total.count": {
+        "numerator": 0,
+        "denominator": 1,
+        "unit": "rows of fact_forecast",
+        "value": 0.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_forecast.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_marketing.total": {
+        "numerator": 299,
+        "denominator": 299,
+        "unit": "fraction of fact_marketing rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_marketing.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_marketing.total.count": {
+        "numerator": 299,
+        "denominator": 1,
+        "unit": "rows of fact_marketing",
+        "value": 299.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_marketing.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_rendimiento_academico.total": {
+        "numerator": 1393,
+        "denominator": 1393,
+        "unit": "fraction of fact_rendimiento_academico rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rendimiento_academico.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_rendimiento_academico.total.count": {
+        "numerator": 1393,
+        "denominator": 1,
+        "unit": "rows of fact_rendimiento_academico",
+        "value": 1393.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rendimiento_academico.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_rendimiento_academico.requiere_revision": {
+        "numerator": 121,
+        "denominator": 1393,
+        "unit": "fraction of fact_rendimiento_academico rows",
+        "value": 0.08686288585786073,
+        "formula": "requiere_revision / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rendimiento_academico.requiere_revision",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_rendimiento_academico.requiere_revision.count": {
+        "numerator": 121,
+        "denominator": 1,
+        "unit": "rows of fact_rendimiento_academico",
+        "value": 121.0,
+        "formula": "count requiere_revision",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rendimiento_academico.requiere_revision",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_rendimiento_academico.banda_alta": {
+        "numerator": 1279,
+        "denominator": 1393,
+        "unit": "fraction of fact_rendimiento_academico rows",
+        "value": 0.91816223977028,
+        "formula": "banda_alta / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rendimiento_academico.banda_alta",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_rendimiento_academico.banda_alta.count": {
+        "numerator": 1279,
+        "denominator": 1,
+        "unit": "rows of fact_rendimiento_academico",
+        "value": 1279.0,
+        "formula": "count banda_alta",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rendimiento_academico.banda_alta",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_rendimiento_academico.banda_media": {
+        "numerator": 114,
+        "denominator": 1393,
+        "unit": "fraction of fact_rendimiento_academico rows",
+        "value": 0.08183776022972003,
+        "formula": "banda_media / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rendimiento_academico.banda_media",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_rendimiento_academico.banda_media.count": {
+        "numerator": 114,
+        "denominator": 1,
+        "unit": "rows of fact_rendimiento_academico",
+        "value": 114.0,
+        "formula": "count banda_media",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rendimiento_academico.banda_media",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_rendimiento_academico.banda_baja": {
+        "numerator": 0,
+        "denominator": 1393,
+        "unit": "fraction of fact_rendimiento_academico rows",
+        "value": 0.0,
+        "formula": "banda_baja / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rendimiento_academico.banda_baja",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_rendimiento_academico.banda_baja.count": {
+        "numerator": 0,
+        "denominator": 1,
+        "unit": "rows of fact_rendimiento_academico",
+        "value": 0.0,
+        "formula": "count banda_baja",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rendimiento_academico.banda_baja",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_rendimiento_academico.confianza_null": {
+        "numerator": 0,
+        "denominator": 1393,
+        "unit": "fraction of fact_rendimiento_academico rows",
+        "value": 0.0,
+        "formula": "confianza_null / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rendimiento_academico.confianza_null",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_rendimiento_academico.confianza_null.count": {
+        "numerator": 0,
+        "denominator": 1,
+        "unit": "rows of fact_rendimiento_academico",
+        "value": 0.0,
+        "formula": "count confianza_null",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rendimiento_academico.confianza_null",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_rentabilidad.total": {
+        "numerator": 95,
+        "denominator": 95,
+        "unit": "fraction of fact_rentabilidad rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rentabilidad.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_rentabilidad.total.count": {
+        "numerator": 95,
+        "denominator": 1,
+        "unit": "rows of fact_rentabilidad",
+        "value": 95.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_rentabilidad.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_situacion_financiera.total": {
+        "numerator": 725,
+        "denominator": 725,
+        "unit": "fraction of fact_situacion_financiera rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_situacion_financiera.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_situacion_financiera.total.count": {
+        "numerator": 725,
+        "denominator": 1,
+        "unit": "rows of fact_situacion_financiera",
+        "value": 725.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_situacion_financiera.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_situacion_financiera.requiere_revision": {
+        "numerator": 9,
+        "denominator": 725,
+        "unit": "fraction of fact_situacion_financiera rows",
+        "value": 0.012413793103448275,
+        "formula": "requiere_revision / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_situacion_financiera.requiere_revision",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_situacion_financiera.requiere_revision.count": {
+        "numerator": 9,
+        "denominator": 1,
+        "unit": "rows of fact_situacion_financiera",
+        "value": 9.0,
+        "formula": "count requiere_revision",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_situacion_financiera.requiere_revision",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_situacion_financiera.banda_alta": {
+        "numerator": 724,
+        "denominator": 725,
+        "unit": "fraction of fact_situacion_financiera rows",
+        "value": 0.9986206896551724,
+        "formula": "banda_alta / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_situacion_financiera.banda_alta",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_situacion_financiera.banda_alta.count": {
+        "numerator": 724,
+        "denominator": 1,
+        "unit": "rows of fact_situacion_financiera",
+        "value": 724.0,
+        "formula": "count banda_alta",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_situacion_financiera.banda_alta",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_situacion_financiera.banda_media": {
+        "numerator": 1,
+        "denominator": 725,
+        "unit": "fraction of fact_situacion_financiera rows",
+        "value": 0.001379310344827586,
+        "formula": "banda_media / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_situacion_financiera.banda_media",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_situacion_financiera.banda_media.count": {
+        "numerator": 1,
+        "denominator": 1,
+        "unit": "rows of fact_situacion_financiera",
+        "value": 1.0,
+        "formula": "count banda_media",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_situacion_financiera.banda_media",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_situacion_financiera.banda_baja": {
+        "numerator": 0,
+        "denominator": 725,
+        "unit": "fraction of fact_situacion_financiera rows",
+        "value": 0.0,
+        "formula": "banda_baja / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_situacion_financiera.banda_baja",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_situacion_financiera.banda_baja.count": {
+        "numerator": 0,
+        "denominator": 1,
+        "unit": "rows of fact_situacion_financiera",
+        "value": 0.0,
+        "formula": "count banda_baja",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_situacion_financiera.banda_baja",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_situacion_financiera.confianza_null": {
+        "numerator": 0,
+        "denominator": 725,
+        "unit": "fraction of fact_situacion_financiera rows",
+        "value": 0.0,
+        "formula": "confianza_null / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_situacion_financiera.confianza_null",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_situacion_financiera.confianza_null.count": {
+        "numerator": 0,
+        "denominator": 1,
+        "unit": "rows of fact_situacion_financiera",
+        "value": 0.0,
+        "formula": "count confianza_null",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_situacion_financiera.confianza_null",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_techo_convenio.total": {
+        "numerator": 1,
+        "denominator": 1,
+        "unit": "fraction of fact_techo_convenio rows",
+        "value": 1.0,
+        "formula": "total / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_techo_convenio.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_techo_convenio.total.count": {
+        "numerator": 1,
+        "denominator": 1,
+        "unit": "rows of fact_techo_convenio",
+        "value": 1.0,
+        "formula": "count total",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_techo_convenio.total",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "fact_techo_convenio.requiere_revision": {
+        "numerator": 1,
+        "denominator": 1,
+        "unit": "fraction of fact_techo_convenio rows",
+        "value": 1.0,
+        "formula": "requiere_revision / total table rows",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_techo_convenio.requiere_revision",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "All rows of the same named persisted table"
+      },
+      "fact_techo_convenio.requiere_revision.count": {
+        "numerator": 1,
+        "denominator": 1,
+        "unit": "rows of fact_techo_convenio",
+        "value": 1.0,
+        "formula": "count requiere_revision",
+        "null_reason": null,
+        "source": "revision.estadisticas.fact_techo_convenio.requiere_revision",
+        "measurement_layer": "persisted table rows",
+        "denominator_basis": "Constant1 expresses a persisted-row count; API outcomes are a separate population"
+      },
+      "consolidacion.inserted_dw": {
+        "numerator": 78782,
+        "denominator": 1,
+        "unit": "loaded routing outcomes (academic bucket + financial)",
+        "value": 78782.0,
+        "formula": "Count of consolidacion.inserted_dw",
+        "null_reason": null,
+        "source": "result.consolidacion.inserted_dw",
+        "measurement_layer": "API consolidation counters",
+        "interpretation": "inserted_academico + inserted_financiero; admission outcomes excluded. Loaded outcomes may insert or update, so this is not a count of newly persisted rows.",
+        "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+      },
+      "consolidacion.inserted_academico": {
+        "numerator": 78057,
+        "denominator": 1,
+        "unit": "loaded outcomes in broad academic API bucket",
+        "value": 78057.0,
+        "formula": "Count of consolidacion.inserted_academico",
+        "null_reason": null,
+        "source": "result.consolidacion.inserted_academico",
+        "measurement_layer": "API consolidation counters",
+        "interpretation": "Loaded non-financial/non-admission outcomes: includes academic, teacher evaluation, profitability and marketing routes; not just fact_rendimiento_academico.",
+        "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+      },
+      "consolidacion.inserted_financiero": {
+        "numerator": 725,
+        "denominator": 1,
+        "unit": "loaded financial routing outcomes",
+        "value": 725.0,
+        "formula": "Count of consolidacion.inserted_financiero",
+        "null_reason": null,
+        "source": "result.consolidacion.inserted_financiero",
+        "measurement_layer": "API consolidation counters",
+        "interpretation": "One increment per loader result loaded with tipo financiero; not a distinct persisted-row count.",
+        "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+      },
+      "consolidacion.inserted_admision": {
+        "numerator": 391,
+        "denominator": 1,
+        "unit": "loaded admission routing outcomes",
+        "value": 391.0,
+        "formula": "Count of consolidacion.inserted_admision",
+        "null_reason": null,
+        "source": "result.consolidacion.inserted_admision",
+        "measurement_layer": "API consolidation counters",
+        "interpretation": "Admission route may update a student or aggregated marketing record; excluded from inserted_dw.",
+        "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+      },
+      "consolidacion.inserted_revision": {
+        "numerator": 13149,
+        "denominator": 1,
+        "unit": "loaded reg_item outcomes flagged for review at caller",
+        "value": 13149.0,
+        "formula": "Count of consolidacion.inserted_revision",
+        "null_reason": null,
+        "source": "result.consolidacion.inserted_revision",
+        "measurement_layer": "API consolidation counters",
+        "interpretation": "Increments after status loaded when reg_item.calidad.requiere_revision. Loader may independently force review (e.g. missing date); repeated updates/expansion also prevent equality with persisted requires_review rows.",
+        "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+      },
+      "consolidacion.sent_hitl": {
+        "numerator": 54,
+        "denominator": 1,
+        "unit": "API HITL path increments (mixed line/outcome granularity)",
+        "value": 54.0,
+        "formula": "Count of consolidacion.sent_hitl",
+        "null_reason": null,
+        "source": "result.consolidacion.sent_hitl",
+        "measurement_layer": "API consolidation counters",
+        "interpretation": "Increments per non-loaded expanded reg_item, or per unapproved input line. Not the number of staging rows, distinct people or review-tray cases.",
+        "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+      },
+      "consolidacion.descartados_ruido": {
+        "numerator": 5455,
+        "denominator": 1,
+        "unit": "nonempty consolidation input lines discarded for semantic noise",
+        "value": 5455.0,
+        "formula": "Count of consolidacion.descartados_ruido",
+        "null_reason": null,
+        "source": "result.consolidacion.descartados_ruido",
+        "measurement_layer": "API consolidation counters",
+        "interpretation": "One increment before loading when motivo_fila_sin_entidad is nonempty; applies to queried staging blocks with es_ruido FALSE. Not a fact-row count.",
+        "denominator_basis": "Constant1 expresses a count; no compatible population denominator is established. Do not divide by ingestion records, facts or review cases."
+      },
+      "carga.archivos_exitosos": {
+        "numerator": 10,
+        "denominator": 1,
+        "unit": "ingestion API successful files",
+        "value": 10.0,
+        "formula": "Count of carga.archivos_exitosos",
+        "null_reason": null,
+        "source": "result.carga.archivos_exitosos",
+        "measurement_layer": "API ingestion counters",
+        "denominator_basis": "Constant1 expresses a count; ingestion records are not a proven denominator for expanded consolidation outcomes or semantic-noise line counts."
+      },
+      "carga.archivos_fallidos": {
+        "numerator": 0,
+        "denominator": 1,
+        "unit": "ingestion API failed files",
+        "value": 0.0,
+        "formula": "Count of carga.archivos_fallidos",
+        "null_reason": null,
+        "source": "result.carga.archivos_fallidos",
+        "measurement_layer": "API ingestion counters",
+        "denominator_basis": "Constant1 expresses a count; ingestion records are not a proven denominator for expanded consolidation outcomes or semantic-noise line counts."
+      },
+      "carga.registros_detectados": {
+        "numerator": 11956,
+        "denominator": 1,
+        "unit": "ingestion API reported detected records",
+        "value": 11956.0,
+        "formula": "Count of carga.registros_detectados",
+        "null_reason": null,
+        "source": "result.carga.registros_detectados",
+        "measurement_layer": "API ingestion counters",
+        "denominator_basis": "Constant1 expresses a count; ingestion records are not a proven denominator for expanded consolidation outcomes or semantic-noise line counts."
+      }
+    }
+  },
+  "warning": "Only same frozen F0 population is compared. a3→a123 is combined options1+2. Reading/consolidation, API outcomes, persisted requires_revision rows, staging rows and review-tray cases/groups are separate units and are never summed or forced to reconcile. Count/1 is used when no compatible denominator is proven. Pending A3/A4 human validation is independent of these arithmetic contrasts.",
+  "formula_source": {
+    "path": "backend/scripts/migrations/014_conversion_captacion_comprobable.sql",
+    "sha256": "868dece736655ff04676c73d22c51f02f5c7d23d31dc0b649c6eb19b3956b9d6"
+  },
+  "evidence": {
+    "f0_a2_vacia_r1": {
+      "meta": "c664591e78bcb527a637b62fb4c5173bc71b14fef1608ed0e5f0b5624f6fc1d8",
+      "revision": "7bca9918dcfcc8b1e593f5fda16abba72bfe5311f58cce5f7871d125922642f2",
+      "result": "5d7600439fef55662b6426155f41c70cdf2df112286e12af734c004c7f6f4137",
+      "footprint": "3466a01ea59d9c5d56acd5161d5652ead24de000006925585a266156fefbbd56"
+    }
+  }
+}

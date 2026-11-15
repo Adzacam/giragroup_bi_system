@@ -1,0 +1,276 @@
+{
+  "exports_privados": [
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\staging_registros_crudos.jsonl",
+      "sha256": "3154054a974ed915d9fb57a9db252ada13d70a1b3a7673ac069194817b6abeb3",
+      "bytes": 37142485
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\stg_entidad_no_resuelta.jsonl",
+      "sha256": "613427e995d768cc77a6f40c35de5be157c402e1283ef91b3e0b2712c067041b",
+      "bytes": 8002883
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\dataops_tarea.jsonl",
+      "sha256": "990e7e2ffacfcd41140f5e58a9be31700e22114faa7af1f0662253f3a0a0f084",
+      "bytes": 661
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\log_inconsistencias.jsonl",
+      "sha256": "e7658bf726995c08e5abd649046743d2cdba463ec8c158713818886efe0b71c3",
+      "bytes": 4798
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\log_pipeline_ingesta.jsonl",
+      "sha256": "c7a41c8f5944f7bd320ed13ce8c60d0fbb44d632e79893845dd1a14dffaa86f4",
+      "bytes": 110788
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\dim_origen_documental.jsonl",
+      "sha256": "44ffdeb8d13d63a28568e14a08965513eb07febf4b1c5b4aa6a724d16388e62b",
+      "bytes": 3535
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\dim_estudiante.jsonl",
+      "sha256": "585b461c7405e9ceeabb954d440e2cb81b4c4f49ed40b37ac7d2b1221434c752",
+      "bytes": 6598616
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\dim_docente.jsonl",
+      "sha256": "65e6b1cbe368b9de8bbb614465838f3b63bf4ad705099c1e04b49bd99b71d9d6",
+      "bytes": 72346
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\dim_tiempo.jsonl",
+      "sha256": "95be92f9b58f24eaacf8b1da9fdb394f1b4ed37064de56031dbac20899a14717",
+      "bytes": 512336
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\cache_indice_beto.jsonl",
+      "sha256": "7bf58160c85d93c3a53626e3a9112ad9e076bc86a9fd28bc016d3005512195c0",
+      "bytes": 2072235
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\cache_beto_entidades.jsonl",
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "bytes": 2
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\fact_cobranzas_proyectadas.jsonl",
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "bytes": 2
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\fact_costo_programa.jsonl",
+      "sha256": "3192c0360f1acf69458feeb2c52503ab72645a493ca6beeb11a33c8f19de761f",
+      "bytes": 319206
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\fact_evaluacion_docente.jsonl",
+      "sha256": "d6d69923379af23e7e368d6aa82a1d36448c9e5e7ed2854c45a5c0019eb46c83",
+      "bytes": 32504091
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\fact_forecast.jsonl",
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+      "bytes": 2
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\fact_marketing.jsonl",
+      "sha256": "3b766db54d55e36158dc145af80367aa7b30ae0d0de3793f77c65dc98c70a399",
+      "bytes": 50350
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\fact_rendimiento_academico.jsonl",
+      "sha256": "fb712a80d6b2bbc8080c0c0d09aec60436aa21df7aa267e0d9d0abcb4a9283e7",
+      "bytes": 610508
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\fact_rentabilidad.jsonl",
+      "sha256": "a7621e2f7f03aae0fce3703aa6216366ef9d10db8b3d63712c33bf59f463121c",
+      "bytes": 13339
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\fact_situacion_financiera.jsonl",
+      "sha256": "ece5d6d747258178238bf316cd54037802859b64183c741e1e3c8a39439ba3ca",
+      "bytes": 263040
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\fact_techo_convenio.jsonl",
+      "sha256": "a4f07c32020c6889f390742e967ada0be0ed046b16d8faee57528a87ee0b0b23",
+      "bytes": 518
+    },
+    {
+      "archivo": "corridas\\f0_a0_llena_r2\\lectura\\9a5d40c1c8046ac41cf23be08b092371980787173159b2a86ab78a59eaeadab7.pkl.gz",
+      "sha256": "1c794c23984dc1f6cddd82ed53417c319594b3c93082673d42f55cbd961cb207",
+      "bytes": 3000985
+    }
+  ],
+  "estadisticas": {
+    "staging_registros_crudos": {
+      "total": 63,
+      "requiere_revision": 1,
+      "ruido": 0,
+      "banda_alta": 63,
+      "banda_media": 0,
+      "banda_baja": 0,
+      "confianza_null": 0,
+      "unidad": "filas de staging_registros_crudos",
+      "denominador_bandas": 63,
+      "columna_confianza": "score_confianza",
+      "motivo_bandas_null": null
+    },
+    "stg_entidad_no_resuelta": {
+      "total": 5099,
+      "banda_alta": 2312,
+      "banda_media": 1424,
+      "banda_baja": 1363,
+      "confianza_null": 0,
+      "unidad": "filas de stg_entidad_no_resuelta",
+      "denominador_bandas": 5099,
+      "columna_confianza": "nivel_confianza",
+      "motivo_bandas_null": null
+    },
+    "dataops_tarea": {
+      "total": 2,
+      "unidad": "filas de dataops_tarea",
+      "denominador_bandas": 2,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "log_inconsistencias": {
+      "total": 11,
+      "unidad": "filas de log_inconsistencias",
+      "denominador_bandas": 11,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "log_pipeline_ingesta": {
+      "total": 72,
+      "unidad": "filas de log_pipeline_ingesta",
+      "denominador_bandas": 72,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "dim_origen_documental": {
+      "total": 10,
+      "unidad": "filas de dim_origen_documental",
+      "denominador_bandas": 10,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "dim_estudiante": {
+      "total": 14939,
+      "unidad": "filas de dim_estudiante",
+      "denominador_bandas": 14939,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "dim_docente": {
+      "total": 673,
+      "unidad": "filas de dim_docente",
+      "denominador_bandas": 673,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "dim_tiempo": {
+      "total": 2230,
+      "unidad": "filas de dim_tiempo",
+      "denominador_bandas": 2230,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "cache_indice_beto": {
+      "total": 12559,
+      "unidad": "filas de cache_indice_beto",
+      "denominador_bandas": 12559,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "cache_beto_entidades": {
+      "total": 0,
+      "unidad": "filas de cache_beto_entidades",
+      "denominador_bandas": 0,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "fact_cobranzas_proyectadas": {
+      "total": 0,
+      "unidad": "filas de fact_cobranzas_proyectadas",
+      "denominador_bandas": 0,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "fact_costo_programa": {
+      "total": 1320,
+      "requiere_revision": 71,
+      "unidad": "filas de fact_costo_programa",
+      "denominador_bandas": 1320,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "fact_evaluacion_docente": {
+      "total": 75126,
+      "requiere_revision": 0,
+      "unidad": "filas de fact_evaluacion_docente",
+      "denominador_bandas": 75126,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "fact_forecast": {
+      "total": 0,
+      "unidad": "filas de fact_forecast",
+      "denominador_bandas": 0,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "fact_marketing": {
+      "total": 299,
+      "unidad": "filas de fact_marketing",
+      "denominador_bandas": 299,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "fact_rendimiento_academico": {
+      "total": 1393,
+      "requiere_revision": 114,
+      "banda_alta": 1286,
+      "banda_media": 107,
+      "banda_baja": 0,
+      "confianza_null": 0,
+      "unidad": "filas de fact_rendimiento_academico",
+      "denominador_bandas": 1393,
+      "columna_confianza": "nivel_confianza_ia",
+      "motivo_bandas_null": null
+    },
+    "fact_rentabilidad": {
+      "total": 95,
+      "unidad": "filas de fact_rentabilidad",
+      "denominador_bandas": 95,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    },
+    "fact_situacion_financiera": {
+      "total": 725,
+      "requiere_revision": 9,
+      "banda_alta": 724,
+      "banda_media": 1,
+      "banda_baja": 0,
+      "confianza_null": 0,
+      "unidad": "filas de fact_situacion_financiera",
+      "denominador_bandas": 725,
+      "columna_confianza": "nivel_confianza_ia",
+      "motivo_bandas_null": null
+    },
+    "fact_techo_convenio": {
+      "total": 1,
+      "requiere_revision": 1,
+      "unidad": "filas de fact_techo_convenio",
+      "denominador_bandas": 1,
+      "columna_confianza": null,
+      "motivo_bandas_null": "Tabla sin columna de confianza; no se imputa"
+    }
+  },
+  "gestion_scorecard_por_defecto": 2026,
+  "protocolo": "Export posterior a cronómetro; originales de lectura y rankings inmutables privados para A3/A4"
+}

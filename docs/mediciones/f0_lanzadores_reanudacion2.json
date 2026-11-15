@@ -1,0 +1,21 @@
+{
+  "fecha": "2026-11-14T12:24:43.713845-04:00",
+  "auxiliar_energia": {
+    "pid": 45292,
+    "latido": "2026-11-14T16:26:09.793921+00:00",
+    "retorno_api": 2147483649,
+    "flags": "ES_CONTINUOUS|ES_SYSTEM_REQUIRED",
+    "pantalla_requerida": false
+  },
+  "metodo": "Start-Process -WindowStyle Hidden; WorkingDirectory explícito; stdout/stderr únicos privados",
+  "supervivencia_tras_retorno_lanzador_verificada": true,
+  "driver": {
+    "pid_real": 40388,
+    "launcher_pid": 54912,
+    "fecha": "2026-11-14T16:25:54.456461+00:00",
+    "vivo_tras_retorno_lanzador": true,
+    "stdout_privado": "ejecuciones\\series_20261114_122554_68cce2e6.stdout.txt",
+    "stderr_privado": "ejecuciones\\series_20261114_122554_68cce2e6.stderr.txt"
+  },
+  "configuracion_jobs_modificada": false
+}

@@ -1,0 +1,250 @@
+[
+  [
+    {
+      "base": "giragroup_db",
+      "fecha_servidor": "2026-11-13",
+      "solo_lectura": "on"
+    }
+  ],
+  [
+    {
+      "anio": 2023,
+      "observado_bs": 8035694.25,
+      "meses": 12,
+      "filas": 12,
+      "n": 3,
+      "pendiente": 2436141.6799999997,
+      "intercepto": -4920439626.336666,
+      "ajustado_ols_bs": 7874992.3033332825,
+      "delta_ajustado_observado_bs": -160701.94666671753,
+      "delta_pct": -1.9998514337042816
+    },
+    {
+      "anio": 2024,
+      "observado_bs": 9989730.09,
+      "meses": 12,
+      "filas": 12,
+      "n": 3,
+      "pendiente": 2436141.6799999997,
+      "intercepto": -4920439626.336666,
+      "ajustado_ols_bs": 10311133.983333588,
+      "delta_ajustado_observado_bs": 321403.8933335878,
+      "delta_pct": 3.2173431157596752
+    },
+    {
+      "anio": 2025,
+      "observado_bs": 12907977.61,
+      "meses": 12,
+      "filas": 12,
+      "n": 3,
+      "pendiente": 2436141.6799999997,
+      "intercepto": -4920439626.336666,
+      "ajustado_ols_bs": 12747275.66333294,
+      "delta_ajustado_observado_bs": -160701.94666706026,
+      "delta_pct": -1.2449816037995147
+    }
+  ],
+  [
+    {
+      "gestion": 2025,
+      "tipo": "INGRESO",
+      "nombre_categoria": "PROGRAMAS",
+      "filas": 21,
+      "meses": 12,
+      "ejecutado_bs": 12907977.61,
+      "meta_bs": 11894228.59
+    },
+    {
+      "gestion": 2025,
+      "tipo": "INGRESO",
+      "nombre_categoria": "TECHOS_CERRADOS",
+      "filas": 12,
+      "meses": 12,
+      "ejecutado_bs": 1133740.54,
+      "meta_bs": 808975.7
+    }
+  ],
+  [
+    {
+      "universo": "KPI03_INGRESO",
+      "gestion": 2025,
+      "meses_con_fila": 12,
+      "meses_ejecutados": 12,
+      "ejecutado_bs": 14041718.15,
+      "meta_anual_bs": 12703204.29,
+      "meta_a_la_fecha_bs": 12703204.29,
+      "cumplimiento_a_la_fecha_pct": 110.53682070636053,
+      "cumplimiento_anual_pct": 110.53682070636053,
+      "meses": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "serie_mensual": [
+        {
+          "mes": 1,
+          "ejecutado_bs": 1123295.9,
+          "meta_bs": 828875.0
+        },
+        {
+          "mes": 2,
+          "ejecutado_bs": 1125595.89,
+          "meta_bs": 1119348.0
+        },
+        {
+          "mes": 3,
+          "ejecutado_bs": 1032003.64,
+          "meta_bs": 1151470.01
+        },
+        {
+          "mes": 4,
+          "ejecutado_bs": 1231686.92,
+          "meta_bs": 1098652.73
+        },
+        {
+          "mes": 5,
+          "ejecutado_bs": 1251981.22,
+          "meta_bs": 1097380.73
+        },
+        {
+          "mes": 6,
+          "ejecutado_bs": 1228638.57,
+          "meta_bs": 1091470.01
+        },
+        {
+          "mes": 7,
+          "ejecutado_bs": 1331800.26,
+          "meta_bs": 1158082.19
+        },
+        {
+          "mes": 8,
+          "ejecutado_bs": 1245816.64,
+          "meta_bs": 1205483.02
+        },
+        {
+          "mes": 9,
+          "ejecutado_bs": 1190165.96,
+          "meta_bs": 1151533.39
+        },
+        {
+          "mes": 10,
+          "ejecutado_bs": 1222518.97,
+          "meta_bs": 1151533.39
+        },
+        {
+          "mes": 11,
+          "ejecutado_bs": 1099250.0,
+          "meta_bs": 1040415.32
+        },
+        {
+          "mes": 12,
+          "ejecutado_bs": 958964.18,
+          "meta_bs": 608960.5
+        }
+      ]
+    },
+    {
+      "universo": "MACRO_PROGRAMAS",
+      "gestion": 2025,
+      "meses_con_fila": 12,
+      "meses_ejecutados": 12,
+      "ejecutado_bs": 12907977.61,
+      "meta_anual_bs": 11894228.59,
+      "meta_a_la_fecha_bs": 11894228.59,
+      "cumplimiento_a_la_fecha_pct": 108.52303293424428,
+      "cumplimiento_anual_pct": 108.52303293424428,
+      "meses": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "serie_mensual": [
+        {
+          "mes": 1,
+          "ejecutado_bs": 1045178.9,
+          "meta_bs": 828875.0
+        },
+        {
+          "mes": 2,
+          "ejecutado_bs": 967058.89,
+          "meta_bs": 1074404.91
+        },
+        {
+          "mes": 3,
+          "ejecutado_bs": 997224.7,
+          "meta_bs": 1061583.82
+        },
+        {
+          "mes": 4,
+          "ejecutado_bs": 1200794.92,
+          "meta_bs": 1008766.54
+        },
+        {
+          "mes": 5,
+          "ejecutado_bs": 1179233.22,
+          "meta_bs": 1007494.54
+        },
+        {
+          "mes": 6,
+          "ejecutado_bs": 1056754.17,
+          "meta_bs": 1001583.82
+        },
+        {
+          "mes": 7,
+          "ejecutado_bs": 1143335.46,
+          "meta_bs": 1068196.0
+        },
+        {
+          "mes": 8,
+          "ejecutado_bs": 1206945.24,
+          "meta_bs": 1115596.83
+        },
+        {
+          "mes": 9,
+          "ejecutado_bs": 1124596.36,
+          "meta_bs": 1061647.2
+        },
+        {
+          "mes": 10,
+          "ejecutado_bs": 1109638.17,
+          "meta_bs": 1061647.2
+        },
+        {
+          "mes": 11,
+          "ejecutado_bs": 1013177.0,
+          "meta_bs": 995472.23
+        },
+        {
+          "mes": 12,
+          "ejecutado_bs": 864040.58,
+          "meta_bs": 608960.5
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "gestion": 2025,
+      "codigo": "KPI-03",
+      "valor": 110.53682070636053
+    }
+  ]
+]

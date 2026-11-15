@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: giragroup_catalog_db
       POSTGRES_USER: giragroup_user
-      POSTGRES_PASSWORD: giragroup_secret_2026
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en el entorno privado}
     ports:
       - "127.0.0.1:5433:5432" # Puerto 5433 solo en localhost
     volumes:
@@ -27,7 +27,7 @@ services:
     environment:
       POSTGRES_DB: giragroup_db
       POSTGRES_USER: giragroup_user
-      POSTGRES_PASSWORD: giragroup_secret_2026
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en el entorno privado}
     ports:
       - "127.0.0.1:5434:5432"
     volumes:

@@ -1,0 +1,815 @@
+{
+  "tarea": "B-5",
+  "estado": "medido",
+  "fecha": "2026-11-13T20:59:51.567116-04:00",
+  "fuente": "beto_pg_tmpfs/giragroup_db (copia histórica)",
+  "gestion": 2025,
+  "sql": "f0_b5_consultas.sql",
+  "sql_sha256": "33d6443bf9dafab95d5438365c39f940d1c5bcb5ece8aeb765a408264d1ab47b",
+  "solo_lectura": true,
+  "serie_anual": [
+    {
+      "anio": 2023,
+      "observado_bs": 8035694.25,
+      "meses": 12,
+      "filas": 12,
+      "n": 3,
+      "pendiente": 2436141.6799999997,
+      "intercepto": -4920439626.336666,
+      "ajustado_ols_bs": 7874992.3033332825,
+      "delta_ajustado_observado_bs": -160701.94666671753,
+      "delta_pct": -1.9998514337042816
+    },
+    {
+      "anio": 2024,
+      "observado_bs": 9989730.09,
+      "meses": 12,
+      "filas": 12,
+      "n": 3,
+      "pendiente": 2436141.6799999997,
+      "intercepto": -4920439626.336666,
+      "ajustado_ols_bs": 10311133.983333588,
+      "delta_ajustado_observado_bs": 321403.8933335878,
+      "delta_pct": 3.2173431157596752
+    },
+    {
+      "anio": 2025,
+      "observado_bs": 12907977.61,
+      "meses": 12,
+      "filas": 12,
+      "n": 3,
+      "pendiente": 2436141.6799999997,
+      "intercepto": -4920439626.336666,
+      "ajustado_ols_bs": 12747275.66333294,
+      "delta_ajustado_observado_bs": -160701.94666706026,
+      "delta_pct": -1.2449816037995147
+    }
+  ],
+  "comparacion_2025_OLS": {
+    "anio": 2025,
+    "observado_bs": 12907977.61,
+    "meses": 12,
+    "filas": 12,
+    "n": 3,
+    "pendiente": 2436141.6799999997,
+    "intercepto": -4920439626.336666,
+    "ajustado_ols_bs": 12747275.66333294,
+    "delta_ajustado_observado_bs": -160701.94666706026,
+    "delta_pct": -1.2449816037995147
+  },
+  "categorias_2025": [
+    {
+      "gestion": 2025,
+      "tipo": "INGRESO",
+      "nombre_categoria": "PROGRAMAS",
+      "filas": 21,
+      "meses": 12,
+      "ejecutado_bs": 12907977.61,
+      "meta_bs": 11894228.59
+    },
+    {
+      "gestion": 2025,
+      "tipo": "INGRESO",
+      "nombre_categoria": "TECHOS_CERRADOS",
+      "filas": 12,
+      "meses": 12,
+      "ejecutado_bs": 1133740.54,
+      "meta_bs": 808975.7
+    }
+  ],
+  "universos_2025": [
+    {
+      "universo": "KPI03_INGRESO",
+      "gestion": 2025,
+      "meses_con_fila": 12,
+      "meses_ejecutados": 12,
+      "ejecutado_bs": 14041718.15,
+      "meta_anual_bs": 12703204.29,
+      "meta_a_la_fecha_bs": 12703204.29,
+      "cumplimiento_a_la_fecha_pct": 110.53682070636053,
+      "cumplimiento_anual_pct": 110.53682070636053,
+      "meses": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "serie_mensual": [
+        {
+          "mes": 1,
+          "ejecutado_bs": 1123295.9,
+          "meta_bs": 828875.0
+        },
+        {
+          "mes": 2,
+          "ejecutado_bs": 1125595.89,
+          "meta_bs": 1119348.0
+        },
+        {
+          "mes": 3,
+          "ejecutado_bs": 1032003.64,
+          "meta_bs": 1151470.01
+        },
+        {
+          "mes": 4,
+          "ejecutado_bs": 1231686.92,
+          "meta_bs": 1098652.73
+        },
+        {
+          "mes": 5,
+          "ejecutado_bs": 1251981.22,
+          "meta_bs": 1097380.73
+        },
+        {
+          "mes": 6,
+          "ejecutado_bs": 1228638.57,
+          "meta_bs": 1091470.01
+        },
+        {
+          "mes": 7,
+          "ejecutado_bs": 1331800.26,
+          "meta_bs": 1158082.19
+        },
+        {
+          "mes": 8,
+          "ejecutado_bs": 1245816.64,
+          "meta_bs": 1205483.02
+        },
+        {
+          "mes": 9,
+          "ejecutado_bs": 1190165.96,
+          "meta_bs": 1151533.39
+        },
+        {
+          "mes": 10,
+          "ejecutado_bs": 1222518.97,
+          "meta_bs": 1151533.39
+        },
+        {
+          "mes": 11,
+          "ejecutado_bs": 1099250.0,
+          "meta_bs": 1040415.32
+        },
+        {
+          "mes": 12,
+          "ejecutado_bs": 958964.18,
+          "meta_bs": 608960.5
+        }
+      ]
+    },
+    {
+      "universo": "MACRO_PROGRAMAS",
+      "gestion": 2025,
+      "meses_con_fila": 12,
+      "meses_ejecutados": 12,
+      "ejecutado_bs": 12907977.61,
+      "meta_anual_bs": 11894228.59,
+      "meta_a_la_fecha_bs": 11894228.59,
+      "cumplimiento_a_la_fecha_pct": 108.52303293424428,
+      "cumplimiento_anual_pct": 108.52303293424428,
+      "meses": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "serie_mensual": [
+        {
+          "mes": 1,
+          "ejecutado_bs": 1045178.9,
+          "meta_bs": 828875.0
+        },
+        {
+          "mes": 2,
+          "ejecutado_bs": 967058.89,
+          "meta_bs": 1074404.91
+        },
+        {
+          "mes": 3,
+          "ejecutado_bs": 997224.7,
+          "meta_bs": 1061583.82
+        },
+        {
+          "mes": 4,
+          "ejecutado_bs": 1200794.92,
+          "meta_bs": 1008766.54
+        },
+        {
+          "mes": 5,
+          "ejecutado_bs": 1179233.22,
+          "meta_bs": 1007494.54
+        },
+        {
+          "mes": 6,
+          "ejecutado_bs": 1056754.17,
+          "meta_bs": 1001583.82
+        },
+        {
+          "mes": 7,
+          "ejecutado_bs": 1143335.46,
+          "meta_bs": 1068196.0
+        },
+        {
+          "mes": 8,
+          "ejecutado_bs": 1206945.24,
+          "meta_bs": 1115596.83
+        },
+        {
+          "mes": 9,
+          "ejecutado_bs": 1124596.36,
+          "meta_bs": 1061647.2
+        },
+        {
+          "mes": 10,
+          "ejecutado_bs": 1109638.17,
+          "meta_bs": 1061647.2
+        },
+        {
+          "mes": 11,
+          "ejecutado_bs": 1013177.0,
+          "meta_bs": 995472.23
+        },
+        {
+          "mes": 12,
+          "ejecutado_bs": 864040.58,
+          "meta_bs": 608960.5
+        }
+      ]
+    }
+  ],
+  "KPI03_vista": [
+    {
+      "gestion": 2025,
+      "codigo": "KPI-03",
+      "valor": 110.53682070636053
+    }
+  ],
+  "delta_ejecutado_global_menos_programas_bs": 1133740.54,
+  "respuestas_TestClient": {
+    "/api/v1/cmi/scorecard?gestion=2025": {
+      "status_code": 200,
+      "body": {
+        "gestion": 2025,
+        "gestiones": [
+          2022,
+          2023,
+          2024,
+          2025,
+          2026
+        ],
+        "global": {
+          "indice": 86.2,
+          "verdes": 9,
+          "ambar": 3,
+          "rojos": 1,
+          "sin_evaluar": 9,
+          "indicadores": 22
+        },
+        "perspectivas": [
+          {
+            "codigo": "FINANCIERA",
+            "nombre": "Financiera",
+            "objetivo": "Asegurar la sostenibilidad financiera cumpliendo las metas de recaudación y controlando la cartera.",
+            "pregunta": "¿Cómo debemos aparecer ante quienes financian la institución?",
+            "peso": 30.0,
+            "orden": 1,
+            "indicadores": 9,
+            "verdes": 3,
+            "ambar": 1,
+            "rojos": 1,
+            "sin_evaluar": 4,
+            "indice": 76.0,
+            "kpis": [
+              {
+                "perspectiva": "FINANCIERA",
+                "codigo": "KPI-01",
+                "nombre": "Ticket promedio por estudiante",
+                "descripcion": "Recaudación de la gestión dividida entre la matrícula efectiva.",
+                "unidad": "BS",
+                "sentido": "MAX",
+                "valor": 3773.91,
+                "valor_anterior": 2311.15,
+                "delta": 1462.76,
+                "meta": null,
+                "umbral_verde": null,
+                "umbral_ambar": null,
+                "peso": 1.0,
+                "semaforo": "SIN_UMBRAL",
+                "puntaje": null,
+                "tendencia": "MEJORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "FINANCIERA",
+                "codigo": "KPI-02",
+                "nombre": "Cumplimiento de meta del último mes",
+                "descripcion": "Ingreso ejecutado frente a la meta del último mes con ejecución.",
+                "unidad": "PCT",
+                "sentido": "MAX",
+                "valor": 157.48,
+                "valor_anterior": 6.25,
+                "delta": 151.23,
+                "meta": 100.0,
+                "umbral_verde": 100.0,
+                "umbral_ambar": 85.0,
+                "peso": 1.0,
+                "semaforo": "VERDE",
+                "puntaje": 100.0,
+                "tendencia": "MEJORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "FINANCIERA",
+                "codigo": "KPI-03",
+                "nombre": "Cumplimiento de meta a la fecha",
+                "descripcion": "Ingreso ejecutado frente a la meta de los meses ya ejecutados.",
+                "unidad": "PCT",
+                "sentido": "MAX",
+                "valor": 110.54,
+                "valor_anterior": 102.26,
+                "delta": 8.28,
+                "meta": 100.0,
+                "umbral_verde": 100.0,
+                "umbral_ambar": 85.0,
+                "peso": 1.0,
+                "semaforo": "VERDE",
+                "puntaje": 100.0,
+                "tendencia": "MEJORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "FINANCIERA",
+                "codigo": "KPI-13",
+                "nombre": "Avance sobre la meta anual",
+                "descripcion": "Ingreso ejecutado frente a la meta de los doce meses de la gestión (informativo durante la gestión).",
+                "unidad": "PCT",
+                "sentido": "MAX",
+                "valor": 110.54,
+                "valor_anterior": 102.26,
+                "delta": 8.28,
+                "meta": 100.0,
+                "umbral_verde": null,
+                "umbral_ambar": null,
+                "peso": 1.0,
+                "semaforo": "SIN_UMBRAL",
+                "puntaje": null,
+                "tendencia": "MEJORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "FINANCIERA",
+                "codigo": "KPI-14",
+                "nombre": "Brecha a la meta anual",
+                "descripcion": "Monto que falta recaudar para alcanzar la meta anual.",
+                "unidad": "BS",
+                "sentido": "MIN",
+                "valor": 0.0,
+                "valor_anterior": 0.0,
+                "delta": 0.0,
+                "meta": 0.0,
+                "umbral_verde": null,
+                "umbral_ambar": null,
+                "peso": 1.0,
+                "semaforo": "SIN_UMBRAL",
+                "puntaje": null,
+                "tendencia": "ESTABLE",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "FINANCIERA",
+                "codigo": "KPI-12",
+                "nombre": "Variación interanual de ingresos",
+                "descripcion": "Ingreso de la gestión frente a los mismos meses de la gestión anterior.",
+                "unidad": "PCT",
+                "sentido": "MAX",
+                "valor": 28.1,
+                "valor_anterior": 17.6,
+                "delta": 10.5,
+                "meta": 10.0,
+                "umbral_verde": 10.0,
+                "umbral_ambar": 0.0,
+                "peso": 1.0,
+                "semaforo": "VERDE",
+                "puntaje": 100.0,
+                "tendencia": "MEJORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "FINANCIERA",
+                "codigo": "KPI-05",
+                "nombre": "Estudiantes en mora",
+                "descripcion": "Estudiantes en mora o previsionables sobre el total con cartera.",
+                "unidad": "PCT",
+                "sentido": "MIN",
+                "valor": 18.36,
+                "valor_anterior": 14.08,
+                "delta": 4.28,
+                "meta": 10.0,
+                "umbral_verde": 10.0,
+                "umbral_ambar": 20.0,
+                "peso": 1.0,
+                "semaforo": "AMBAR",
+                "puntaje": 60.0,
+                "tendencia": "EMPEORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "FINANCIERA",
+                "codigo": "KPI-15",
+                "nombre": "Cartera vencida",
+                "descripcion": "Deuda en mora o previsionable sobre la deuda total.",
+                "unidad": "PCT",
+                "sentido": "MIN",
+                "valor": 20.56,
+                "valor_anterior": 43.58,
+                "delta": -23.02,
+                "meta": 10.0,
+                "umbral_verde": 10.0,
+                "umbral_ambar": 20.0,
+                "peso": 1.0,
+                "semaforo": "ROJO",
+                "puntaje": 20.0,
+                "tendencia": "MEJORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "FINANCIERA",
+                "codigo": "KPI-04",
+                "nombre": "Estudiantes con riesgo financiero",
+                "descripcion": "Estudiantes con dos o más cuotas impagas o cartera previsionable.",
+                "unidad": "CANT",
+                "sentido": "MIN",
+                "valor": 623.0,
+                "valor_anterior": 314.0,
+                "delta": 309.0,
+                "meta": null,
+                "umbral_verde": null,
+                "umbral_ambar": null,
+                "peso": 1.0,
+                "semaforo": "SIN_UMBRAL",
+                "puntaje": null,
+                "tendencia": "EMPEORA",
+                "motivo_sin_dato": null
+              }
+            ]
+          },
+          {
+            "codigo": "CLIENTES",
+            "nombre": "Estudiantes y mercado",
+            "objetivo": "Atraer, satisfacer y retener a los estudiantes y a las instituciones en convenio.",
+            "pregunta": "¿Cómo nos perciben los estudiantes y las instituciones?",
+            "peso": 25.0,
+            "orden": 2,
+            "indicadores": 5,
+            "verdes": 2,
+            "ambar": 1,
+            "rojos": 0,
+            "sin_evaluar": 2,
+            "indice": 86.7,
+            "kpis": [
+              {
+                "perspectiva": "CLIENTES",
+                "codigo": "KPI-21",
+                "nombre": "Matrícula efectiva",
+                "descripcion": "Estudiantes distintos con calificaciones en la gestión.",
+                "unidad": "CANT",
+                "sentido": "MAX",
+                "valor": 3455.0,
+                "valor_anterior": 3147.0,
+                "delta": 308.0,
+                "meta": null,
+                "umbral_verde": null,
+                "umbral_ambar": null,
+                "peso": 1.0,
+                "semaforo": "SIN_UMBRAL",
+                "puntaje": null,
+                "tendencia": "MEJORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "CLIENTES",
+                "codigo": "KPI-22",
+                "nombre": "Inscritos por convenio",
+                "descripcion": "Estudiantes inscritos mediante convenios institucionales.",
+                "unidad": "CANT",
+                "sentido": "MAX",
+                "valor": 2609.0,
+                "valor_anterior": 1631.0,
+                "delta": 978.0,
+                "meta": null,
+                "umbral_verde": null,
+                "umbral_ambar": null,
+                "peso": 1.0,
+                "semaforo": "SIN_UMBRAL",
+                "puntaje": null,
+                "tendencia": "MEJORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "CLIENTES",
+                "codigo": "KPI-06",
+                "nombre": "Conversión de admisiones",
+                "descripcion": "Inscritos sobre leads de marketing.",
+                "unidad": "PCT",
+                "sentido": "MAX",
+                "valor": 100.0,
+                "valor_anterior": 100.0,
+                "delta": 0.0,
+                "meta": 10.0,
+                "umbral_verde": 10.0,
+                "umbral_ambar": 7.0,
+                "peso": 1.0,
+                "semaforo": "VERDE",
+                "puntaje": 100.0,
+                "tendencia": "ESTABLE",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "CLIENTES",
+                "codigo": "KPI-20",
+                "nombre": "Satisfacción institucional",
+                "descripcion": "Puntaje medio de las preguntas institucionales de la evaluación.",
+                "unidad": "PCT",
+                "sentido": "MAX",
+                "valor": 84.39,
+                "valor_anterior": null,
+                "delta": null,
+                "meta": 85.0,
+                "umbral_verde": 85.0,
+                "umbral_ambar": 75.0,
+                "peso": 1.0,
+                "semaforo": "AMBAR",
+                "puntaje": 60.0,
+                "tendencia": "ESTABLE",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "CLIENTES",
+                "codigo": "KPI-16",
+                "nombre": "Tasa de deserción",
+                "descripcion": "Estudiantes con incumplimiento o inasistencia mayor al 30 %.",
+                "unidad": "PCT",
+                "sentido": "MIN",
+                "valor": 0.0,
+                "valor_anterior": 0.0,
+                "delta": 0.0,
+                "meta": 5.0,
+                "umbral_verde": 5.0,
+                "umbral_ambar": 10.0,
+                "peso": 1.0,
+                "semaforo": "VERDE",
+                "puntaje": 100.0,
+                "tendencia": "ESTABLE",
+                "motivo_sin_dato": null
+              }
+            ]
+          },
+          {
+            "codigo": "PROCESOS_INTERNOS",
+            "nombre": "Procesos internos",
+            "objetivo": "Procesar la información institucional con calidad, trazabilidad y mínima intervención manual.",
+            "pregunta": "¿En qué procesos debemos ser excelentes?",
+            "peso": 20.0,
+            "orden": 3,
+            "indicadores": 3,
+            "verdes": 2,
+            "ambar": 0,
+            "rojos": 0,
+            "sin_evaluar": 1,
+            "indice": 100.0,
+            "kpis": [
+              {
+                "perspectiva": "PROCESOS_INTERNOS",
+                "codigo": "KPI-10",
+                "nombre": "Confianza media de extracción",
+                "descripcion": "Confianza promedio de la extracción automática de calificaciones (reglas por encabezado y modelo BETO).",
+                "unidad": "PCT",
+                "sentido": "MAX",
+                "valor": 92.69,
+                "valor_anterior": 93.43,
+                "delta": -0.74,
+                "meta": 85.0,
+                "umbral_verde": 85.0,
+                "umbral_ambar": 75.0,
+                "peso": 1.0,
+                "semaforo": "VERDE",
+                "puntaje": 100.0,
+                "tendencia": "EMPEORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "PROCESOS_INTERNOS",
+                "codigo": "KPI-11",
+                "nombre": "Automatización directa",
+                "descripcion": "Registros consolidados sin revisión humana (confianza ≥ 85 %).",
+                "unidad": "PCT",
+                "sentido": "MAX",
+                "valor": 90.1,
+                "valor_anterior": 91.91,
+                "delta": -1.81,
+                "meta": 85.0,
+                "umbral_verde": 85.0,
+                "umbral_ambar": 70.0,
+                "peso": 1.0,
+                "semaforo": "VERDE",
+                "puntaje": 100.0,
+                "tendencia": "EMPEORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "PROCESOS_INTERNOS",
+                "codigo": "KPI-18",
+                "nombre": "Pendientes de revisión humana",
+                "descripcion": "Entidades no resueltas que esperan revisión.",
+                "unidad": "CANT",
+                "sentido": "MIN",
+                "valor": null,
+                "valor_anterior": null,
+                "delta": null,
+                "meta": 0.0,
+                "umbral_verde": 10.0,
+                "umbral_ambar": 50.0,
+                "peso": 1.0,
+                "semaforo": "SIN_UMBRAL",
+                "puntaje": null,
+                "tendencia": "ESTABLE",
+                "motivo_sin_dato": null
+              }
+            ]
+          },
+          {
+            "codigo": "APRENDIZAJE",
+            "nombre": "Aprendizaje y crecimiento",
+            "objetivo": "Elevar el rendimiento académico y la calidad docente como base del crecimiento.",
+            "pregunta": "¿Cómo sostenemos la capacidad de mejorar y crecer?",
+            "peso": 25.0,
+            "orden": 4,
+            "indicadores": 5,
+            "verdes": 2,
+            "ambar": 1,
+            "rojos": 0,
+            "sin_evaluar": 2,
+            "indice": 86.7,
+            "kpis": [
+              {
+                "perspectiva": "APRENDIZAJE",
+                "codigo": "KPI-07",
+                "nombre": "Promedio de calificaciones",
+                "descripcion": "Nota final promedio sobre 100.",
+                "unidad": "PTS",
+                "sentido": "MAX",
+                "valor": 79.02,
+                "valor_anterior": 78.94,
+                "delta": 0.08,
+                "meta": 75.0,
+                "umbral_verde": 75.0,
+                "umbral_ambar": 70.0,
+                "peso": 1.0,
+                "semaforo": "VERDE",
+                "puntaje": 100.0,
+                "tendencia": "MEJORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "APRENDIZAJE",
+                "codigo": "KPI-08",
+                "nombre": "Tasa de aprobación",
+                "descripcion": "Calificaciones con nota final ≥ 70.",
+                "unidad": "PCT",
+                "sentido": "MAX",
+                "valor": 85.61,
+                "valor_anterior": 85.5,
+                "delta": 0.11,
+                "meta": 85.0,
+                "umbral_verde": 85.0,
+                "umbral_ambar": 75.0,
+                "peso": 1.0,
+                "semaforo": "VERDE",
+                "puntaje": 100.0,
+                "tendencia": "MEJORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "APRENDIZAJE",
+                "codigo": "KPI-19",
+                "nombre": "Satisfacción con los docentes",
+                "descripcion": "Puntaje medio de las preguntas sobre el docente en la evaluación.",
+                "unidad": "PCT",
+                "sentido": "MAX",
+                "valor": 81.23,
+                "valor_anterior": null,
+                "delta": null,
+                "meta": 85.0,
+                "umbral_verde": 85.0,
+                "umbral_ambar": 75.0,
+                "peso": 1.0,
+                "semaforo": "AMBAR",
+                "puntaje": 60.0,
+                "tendencia": "ESTABLE",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "APRENDIZAJE",
+                "codigo": "KPI-09",
+                "nombre": "Estudiantes en riesgo académico",
+                "descripcion": "Estudiantes con promedio ≤ 70.",
+                "unidad": "CANT",
+                "sentido": "MIN",
+                "valor": 588.0,
+                "valor_anterior": 674.0,
+                "delta": -86.0,
+                "meta": null,
+                "umbral_verde": null,
+                "umbral_ambar": null,
+                "peso": 1.0,
+                "semaforo": "SIN_UMBRAL",
+                "puntaje": null,
+                "tendencia": "MEJORA",
+                "motivo_sin_dato": null
+              },
+              {
+                "perspectiva": "APRENDIZAJE",
+                "codigo": "KPI-17",
+                "nombre": "Estudiantes en prioridad crítica",
+                "descripcion": "Estudiantes que cumplen dos o más reglas de riesgo (académico, deserción, financiero).",
+                "unidad": "CANT",
+                "sentido": "MIN",
+                "valor": 124.0,
+                "valor_anterior": 90.0,
+                "delta": 34.0,
+                "meta": null,
+                "umbral_verde": null,
+                "umbral_ambar": null,
+                "peso": 1.0,
+                "semaforo": "SIN_UMBRAL",
+                "puntaje": null,
+                "tendencia": "EMPEORA",
+                "motivo_sin_dato": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/forecast/metas?granularidad=ANUAL&horizonte=2": {
+      "status_code": 200,
+      "body": {
+        "status": "success",
+        "data": {
+          "caso_uso": "META_ANUAL",
+          "granularidad": "ANUAL",
+          "metodo": "OLS",
+          "tipo_estimacion": "Proyección indicativa de tendencia lineal anual",
+          "horizonte_meses": null,
+          "pendiente_anual_bs": 2436141.68,
+          "cagr_historico_pct": 26.76,
+          "banda_operativa_pct": 5.0,
+          "banda_min_bs": 14424246.47,
+          "banda_max_bs": 15942588.21,
+          "nota_metodologica": "Estimación de tendencia lineal indicativa sobre N=3 puntos. No se calculan intervalos de confianza al 95% debido a la reducida muestra longitudinal histórica (dof=1). Ver Cap. 4 del informe técnico.",
+          "rmse": null,
+          "aic": null,
+          "sin_datos": false,
+          "mensaje": null,
+          "n_observaciones": null,
+          "proyecciones": [
+            {
+              "periodo": "2026",
+              "monto_proyectado_bs": 15183417.34,
+              "ic_lower": 14424246.47,
+              "ic_upper": 15942588.21
+            },
+            {
+              "periodo": "2027",
+              "monto_proyectado_bs": 17619559.02,
+              "ic_lower": 16738581.07,
+              "ic_upper": 18500536.97
+            }
+          ]
+        }
+      }
+    }
+  },
+  "protocolo_TestClient": "Routers reales cmi/forecast montados en FastAPI sin startup; rol ADMIN simulado únicamente para acceso de lectura; dependencia get_db con default_transaction_read_only=on; URLs aisladas. No revisión humana ni medición top-1.",
+  "razon_discrepancia": "OLS anual usa PROGRAMAS y valor ajustado por recta, mientras KPI-03 usa todas las categorías INGRESO y ejecutado observado; meta_a_la_fecha incluye solo meses con ejecución positiva. El total observado y el valor ajustado son magnitudes diferentes.",
+  "invariantes": "OLS anual descriptiva, mensual N=40 y HW sin cambios.",
+  "delta_ejecutado_global_menos_programas_pct_sobre_programas": 8.783254621712967,
+  "delta_global_menos_ajustado_ols_2025_bs": 1294442.4866670612,
+  "delta_global_menos_ajustado_ols_2025_pct_sobre_ajustado": 10.154659872857973
+}

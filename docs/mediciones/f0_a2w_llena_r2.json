@@ -1,0 +1,114 @@
+{
+  "lectura_beto_contadores": {
+    "a_hitl": 0,
+    "acuerdos": 5651,
+    "peticiones": 0,
+    "desacuerdos": 25,
+    "tasa_acuerdo": 0.9767,
+    "no_evaluables": 1035,
+    "tiempo_beto_s": 0.0,
+    "tipo_distinto": 110,
+    "lineas_totales": 7537,
+    "textos_en_cache": 5871,
+    "textos_inferidos": 0,
+    "comparadas_acuerdo": 5786,
+    "resueltas_por_beto": 0,
+    "residuales_enviadas": 0,
+    "desacuerdos_por_archivo_y_tipo": {
+      "BD Cobranzas.xlsx | COBRANZA": 12,
+      "TBL_INSCRITOS.xlsx | ADMISION": 3,
+      "Base centralizada Académica ARCA (1).xlsx | ACTA": 2,
+      "Evaluación Docente y Unifranz.xlsx | EVALUACION_DOCENTE": 1,
+      "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx | EVALUACION_DOCENTE": 7
+    }
+  },
+  "consolidacion_beto_contadores": {
+    "lineas_totales": 7537,
+    "residuales_enviadas": 0,
+    "resueltas_por_beto": 0,
+    "a_hitl": 0,
+    "tiempo_beto_s": 0.0,
+    "peticiones": 0,
+    "textos_inferidos": 0,
+    "textos_en_cache": 5871,
+    "comparadas_acuerdo": 5786,
+    "acuerdos": 5651,
+    "desacuerdos": 25,
+    "no_evaluables": 1035,
+    "tipo_distinto": 110,
+    "desacuerdos_por_archivo_y_tipo": {
+      "BD Cobranzas.xlsx | COBRANZA": 12,
+      "Base centralizada Académica ARCA (1).xlsx | ACTA": 2,
+      "Evaluación Docente y Unifranz.xlsx | EVALUACION_DOCENTE": 1,
+      "TBL_INSCRITOS.xlsx | ADMISION": 3,
+      "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx | EVALUACION_DOCENTE": 7
+    },
+    "tasa_acuerdo": 0.9767
+  },
+  "carga": {
+    "http": 200,
+    "id_lote": 1,
+    "archivos_exitosos": 10,
+    "archivos_fallidos": 0,
+    "registros_detectados": 11956
+  },
+  "etapas_s": {
+    "carga_y_lectura_s": 113.4,
+    "espera_lectura_beto_s": 0.01,
+    "lectura_beto_s": 106.15,
+    "lineas_leidas_beto": 12992,
+    "lineas_por_s_beto": 122.39,
+    "carga_s": 7.26,
+    "consolidacion_s": 99.14,
+    "revision_maquina_s": 0.0,
+    "revision_humana_simulada_s": 0.0
+  },
+  "total": {
+    "tiempo_maquina_s": 212.55,
+    "tiempo_humano_simulado_s": 0.0,
+    "total_estimado_s": 212.6,
+    "total_estimado_min": 3.54,
+    "meta_rnf03_min": 15,
+    "referencia_tesis_min": 9
+  },
+  "consolidacion_http": 200,
+  "consolidacion": {
+    "status": "success",
+    "message": "Transacción completada: 78782 hechos persistidos en Data Warehouse (78057 académicos, 725 financieros), 54 derivados a Revisión Humana.",
+    "inserted_dw": 78782,
+    "inserted_academico": 78057,
+    "inserted_financiero": 725,
+    "inserted_admision": 391,
+    "inserted_revision": 13160,
+    "sent_hitl": 54,
+    "descartados_ruido": 5455
+  },
+  "revision": {
+    "tiempo_maquina_real_aprobaciones_s": 0.0,
+    "tiempo_humano_simulado_s": 0.0,
+    "omitida": true
+  },
+  "revision_eventos": [],
+  "dw_antes": {
+    "fact_rendimiento_academico": 0,
+    "fact_situacion_financiera": 0,
+    "fact_evaluacion_docente": 0,
+    "fact_marketing": 0,
+    "fact_rentabilidad": 0,
+    "fact_techo_convenio": 0,
+    "fact_costo_programa": 0,
+    "dim_origen_documental": 0,
+    "stg_entidad_no_resuelta": 0
+  },
+  "dw_despues": {
+    "fact_rendimiento_academico": 1393,
+    "fact_situacion_financiera": 725,
+    "fact_evaluacion_docente": 75126,
+    "fact_marketing": 299,
+    "fact_rentabilidad": 95,
+    "fact_techo_convenio": 1,
+    "fact_costo_programa": 1320,
+    "dim_origen_documental": 10,
+    "stg_entidad_no_resuelta": 5122
+  }
+}

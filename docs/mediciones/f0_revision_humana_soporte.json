@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-11-14T10:35:41.797715-04:00",
+  "status": "offline_A4_support_tested_no_real_package_or_labels_generated",
+  "identity": "file hash + source sheet/row when available + role + complete available private context and CI fields; ephemeral DB IDs and motive excluded; ambiguous duplicate contexts fail closed",
+  "sealing_gate": "all12 valid a3/a123 sources with matching frozen input/code/model; warmups prohibited; all sealed members preflighted against changed material before writing",
+  "decisions": "Explicit real reviewer CSV only; package hash, opaque IDs, reviewer/timezone timestamp after seal, blindness attestation, and justified rejection/no-candidate/exclusion validated. No automatic human labels.",
+  "top1": "per configuration, repetitions/cache do not multiply independent decisions; N=0 null/N-D; coverage and exclusions retained; changing ranking across replicas blocks aggregation",
+  "tests": {
+    "passed": 43,
+    "failed": 0,
+    "evidence": "f0_revision_humana_pruebas.txt"
+  },
+  "source_sha256": {
+    "scripts/f0_revision_humana.py": "efcb82bc15c558297cdb838ed3a42f718d53fb956815a66ee9ad51401274fec0",
+    "scripts/analizar_f0_resultados.py": "a1db2cb541126799e9324eb865cfee95da3f64f46ccbfafca86e37c68371c96f",
+    "tests/f0/test_revision_humana.py": "a56954c4581354d66a6f25e0237246931492e3205342750f919cd53bb6350053",
+    "tests/f0/test_resultados_analysis.py": "898c7193e1b870a84d4c434d355929ea5919b6ddb7c27c9031a2e00b49337037",
+    "docs/mediciones/f0_top1_contrato_decisiones.md": "81d68fa576f97d469fad059d69994b3a0f65a4af9db6bc932dfe3e7842efd972"
+  },
+  "measurement_pending_states": {
+    "f0_desacuerdos_resumen.json": "pending_missing_F0_runs",
+    "f0_top1_resumen.json": "pending_runs_and_independent_human_decisions",
+    "f0_impacto_qc.json": "pending_A1_A2_A3_A4"
+  },
+  "known_context_limit": "Warmup a3 schema has loader cases with only name+suggestions, no CI/raw_line/source row. Marked explicitly; no first-name-match reconstruction, no claim of source-row identity. Reviewer may declare insufficient_information with reason, retained in coverage and excluded from valid top1 denominator."
+}

@@ -1,0 +1,112 @@
+{
+  "blind_package_sha256": "099d8f4974d3d411b065f2e14a58f43ded16adf1a958f8597abcaa6f0ebc6101",
+  "eligible_context_completeness": {
+    "original_text_only_no_raw_source_link": 1,
+    "raw_line_saved": 6
+  },
+  "eligible_population": 7,
+  "eligible_population_by_config": {
+    "a123": 4,
+    "a3": 4
+  },
+  "identity_definition": "SHA256 of file hash, source sheet/row when available, role, complete available private context and CI fields. Motive and ephemeral DB IDs excluded. Missing raw source context is explicit; identical saved rows without distinguishable stable locators fail closed.",
+  "ranking_package_sha256": "c563c634994675470f021de21a2460d6e2ca54783a08da2c766e0da6b738feae",
+  "sample_size": 7,
+  "sealed_at": "2026-11-14T20:37:06.150273-04:00",
+  "source_evidence": {
+    "f0_a123_llena_r1": {
+      "footprint": "3466a01ea59d9c5d56acd5161d5652ead24de000006925585a266156fefbbd56",
+      "meta": "57be2d98ba82b3daf6b25684a1ca377f7c650627eca64fb79cc3b89db4ac12f4",
+      "result": "9547422886d7be26d228bd335bf8e3e2eae1b12292ded1b263913dfc6f421ee9",
+      "revision": "28ec717ab5dd09a64fba877130639981f14fb06c8b11bdf048596813742aca2d"
+    },
+    "f0_a123_llena_r2": {
+      "footprint": "3466a01ea59d9c5d56acd5161d5652ead24de000006925585a266156fefbbd56",
+      "meta": "b05b7ca0687fe24f04681e9d3363111347ed39c344f659cddaeea92a25abd25a",
+      "result": "90a23fa9501e601a0454b7b49212e905bc3992c11660203ee7aaff2dc9135933",
+      "revision": "e979f8a2829912eba3c3d9e886fb84752bfb1ece1cc4e80bcbb9f3d1f5fdbcc6"
+    },
+    "f0_a123_llena_r3": {
+      "footprint": "3466a01ea59d9c5d56acd5161d5652ead24de000006925585a266156fefbbd56",
+      "meta": "ffac861331f1965a68c3f7fafca19d34adcf7b6845150c6ae300614cb21c48c7",
+      "result": "ad4e92328ed7bd1f9228c855e73d3ae7738f2a0e40ef24772a35a7560e1676f0",
+      "revision": "cf1ce5e37b198c21281585c2c134551ee85d6fe02e8f06fc808b3d3d6420aaf0"
+    },
+    "f0_a123_vacia_r1": {
+      "footprint": "3466a01ea59d9c5d56acd5161d5652ead24de000006925585a266156fefbbd56",
+      "meta": "78ed2f6ea8b84fde5562689a53c9c1a2343e958b8b4b37a7147527e8f39ee9ca",
+      "result": "4fecb156e73d5136bd0616ee1ba9186fb9d0f199305af01458297b81f9ff9c6c",
+      "revision": "3ec3988e895908e3330d08ad4e140bff317f6be72da4a700168ee3beeb4abf3f"
+    },
+    "f0_a123_vacia_r2": {
+      "footprint": "3466a01ea59d9c5d56acd5161d5652ead24de000006925585a266156fefbbd56",
+      "meta": "2b9c57cb7ff9403857e71a45c7ccb210cca87a43aefd247d49765daee577c43e",
+      "result": "0ab89b15b7108f9fd0bcf1d661c92db7cdc862d8b5e068f159ba6b1516955c00",
+      "revision": "3b095a390ee0ffdca1175a1a0bfdc221a89e92896b20dd3ddfb02ae1aa9352e0"
+    },
+    "f0_a123_vacia_r3": {
+      "footprint": "3466a01ea59d9c5d56acd5161d5652ead24de000006925585a266156fefbbd56",
+      "meta": "b28d2122c74e4ac2391e9639d3312a62f5d8a1c4abc7a4d0ca3826ae508cb936",
+      "result": "4b50fc51f438b2a3df3dcbe21be77d2bc6ea818a417ff5ec4fa9e615717c43d5",
+      "revision": "d99e8eb76b51a2ff579a2f60e08052a4022b905fd43cb4eafe664c1d94941d54"
+    },
+    "f0_a3_llena_r1": {
+      "footprint": "9680e7962c5796159325a49052ac09570dc07072d2c2eb3351b38e8f1f3003d3",
+      "meta": "d6eb1ae5b08d48904fac307ba78848514eb47864fb459aa22defd0ff58187664",
+      "result": "7abfd905d0d77c4dfb18650a2416bee10700508e12dfe9e9c7b60442d5d3ae6d",
+      "revision": "a966c7bed688a732da1cce75e77c69bbb310630b83e6b4cf0d365e8939f3d25e"
+    },
+    "f0_a3_llena_r2": {
+      "footprint": "9680e7962c5796159325a49052ac09570dc07072d2c2eb3351b38e8f1f3003d3",
+      "meta": "3420ff91dd861532f354075bb51500b6203dc8566b54980d14ea4dd62a14e504",
+      "result": "e85f6b2d307f65800e307970bc5415ee0e4c7735184ad970597f89a7b7bf472f",
+      "revision": "f096a18785da66be19fefd2ed870971f8071d5b5692548a0b186197d6769bc52"
+    },
+    "f0_a3_llena_r3": {
+      "footprint": "9680e7962c5796159325a49052ac09570dc07072d2c2eb3351b38e8f1f3003d3",
+      "meta": "8e0300aa8e6ab530762608148138f352fe2ab6e821514ae26262fd87ca880170",
+      "result": "960f16b0adb82449990cdc7d5289981e230bf9b6f5955b808d2efc62e3857c7b",
+      "revision": "a66fde9f5e0c0f5a8a5eb8f60864403bbaee9e86b59523cf54c263733d7df0da"
+    },
+    "f0_a3_vacia_r1": {
+      "footprint": "9680e7962c5796159325a49052ac09570dc07072d2c2eb3351b38e8f1f3003d3",
+      "meta": "4f07b1335ddc54d74fb6ec536174c352e68f4d21d3552c00749f16ffc44bceb6",
+      "result": "15a6f1453e7b2df926fb1419903667befbc680424748390095559b3967b3a32a",
+      "revision": "460a4d0cc472c74f8d114a9490850003e82aac1d8401f02f9d0bd20c31bdac07"
+    },
+    "f0_a3_vacia_r2": {
+      "footprint": "9680e7962c5796159325a49052ac09570dc07072d2c2eb3351b38e8f1f3003d3",
+      "meta": "5babbef15147366dc1c0a7c26d5038e72efd3334ec67ce4b42cd71c09fd63ec5",
+      "result": "401aaeff9defd1c228b97ead50c0a4ead7b70a558e6922f463c4cf2597f2138c",
+      "revision": "2dc5aeb0f5114faba55679ed780ae28599dfae707ba3ee4bef2ec37804ef765a"
+    },
+    "f0_a3_vacia_r3": {
+      "footprint": "9680e7962c5796159325a49052ac09570dc07072d2c2eb3351b38e8f1f3003d3",
+      "meta": "7f4d058f38135f26a520cbc07fa7e420872e2a767d951ee7d457c29ef70b5bfa",
+      "result": "6390d48c73ada495fbae4f47f448f454a2df660ffc06237ef0bb10e2a34207de",
+      "revision": "07fc4ffe6e87ebc55ce70475490b067e579a02e03c83fe5600213e3421297e74"
+    }
+  },
+  "source_identity": [
+    "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+    "eb77387d72396d0ebf0fe381818bbc576371d87e8129c56c3f04fc4532fb9102",
+    "4998caf9c8673fab745371f28f5ba7802bb48feb3e4cf20abff0959b3f7326e8"
+  ],
+  "source_population_unit": "Saved review-tray staging cases, not count of original source rows/persons; product staging may already group repeated original rows.",
+  "source_staging_rows_by_run": {
+    "f0_a123_llena_r1": 5111,
+    "f0_a123_llena_r2": 5111,
+    "f0_a123_llena_r3": 5111,
+    "f0_a123_vacia_r1": 5111,
+    "f0_a123_vacia_r2": 5111,
+    "f0_a123_vacia_r3": 5111,
+    "f0_a3_llena_r1": 5099,
+    "f0_a3_llena_r2": 5099,
+    "f0_a3_llena_r3": 5099,
+    "f0_a3_vacia_r1": 5099,
+    "f0_a3_vacia_r2": 5099,
+    "f0_a3_vacia_r3": 5099
+  },
+  "status": "sealed",
+  "unique_staging_contexts": 5114
+}

@@ -9,8 +9,8 @@
 SHELL := /bin/bash
 COMPOSE := docker compose
 COMPOSE_FALLBACK := docker-compose
-EXEC_PIPELINE := docker compose exec -e ENVIRONMENT=test -e APP_ENV=test -e EMAIL_BACKEND=console -e DATABASE_URL="postgresql+psycopg2://giragroup_user:giragroup_secret_2026@giragroup_db:5432/giragroup_db_test" -e CATALOG_DATABASE_URL="postgresql+psycopg2://giragroup_user:giragroup_secret_2026@catalog_db:5432/giragroup_catalog_db" pipeline
-EXEC_API := docker compose exec -e ENVIRONMENT=test -e APP_ENV=test -e EMAIL_BACKEND=console -e DATABASE_URL="postgresql+psycopg2://giragroup_user:giragroup_secret_2026@giragroup_db:5432/giragroup_db_test" -e PYTHONPATH=/app api
+EXEC_PIPELINE := docker compose exec -e ENVIRONMENT=test -e APP_ENV=test -e EMAIL_BACKEND=console -e DATABASE_URL="$(TEST_DATABASE_URL)" -e CATALOG_DATABASE_URL="$(TEST_DATABASE_URL)" pipeline
+EXEC_API := docker compose exec -e ENVIRONMENT=test -e APP_ENV=test -e EMAIL_BACKEND=console -e DATABASE_URL="$(TEST_DATABASE_URL)" -e PYTHONPATH=/app api
 
 .PHONY: help test-unit test-integration test-pipeline test-api test-e2e test-all coverage clean
 

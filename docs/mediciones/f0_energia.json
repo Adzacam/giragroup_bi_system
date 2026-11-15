@@ -1,0 +1,15 @@
+{
+  "pid": 42112,
+  "hebra": 18104,
+  "inicio": "2026-11-15T00:22:34.934411+00:00",
+  "fuente": "https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate",
+  "flags": "ES_CONTINUOUS|ES_SYSTEM_REQUIRED",
+  "pantalla_requerida": false,
+  "configuracion_permanente_modificada": false,
+  "limite": "No impide suspensión manual, tapa o batería crítica",
+  "estado": "limpiado",
+  "latido": "2026-11-15T00:35:30.337204+00:00",
+  "retorno_api": 2147483649,
+  "fin": "2026-11-15T00:35:35.338950+00:00",
+  "limpieza": "ES_CONTINUOUS en la misma hebra"
+}

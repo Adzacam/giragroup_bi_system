@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-11-14T13:40:48.641012-04:00",
+  "status": "person_frame_tooling_tested_waiting_valid_QC_export_pause",
+  "product_provenance": {
+    "path": "backend/services/beto_integracion.py",
+    "sha256": "6d9018b945b55b4a9966d9dd04292240bccbfe4876a80a4a56b5b35e15ad6034",
+    "finding": "_aplicar_acuerdo computes per-person verdicts, then writes aggregated r.acuerdo to acuerdo_beto on both roles. Agreement markers in saved entities are row-level unless explicitly scoped as individual; productive code is unchanged."
+  },
+  "frame": "Only individually proven productive DESACUERDO observations enter sampling and its false-disagreement denominator. Other role agreement, non-evaluable, different-type and untraceable markers are excluded and counted separately.",
+  "reconstruction": "Uses saved original private input and exact cached NER spans with productive name/overlap rules. Reconstructed productive verdict is separate from suggested technical fragmentation/truncation diagnosis. First entity per role matches productive entidad() behavior.",
+  "reading_census": "All QC-marked reading rows, not only rows whose displayed motive is disagreement; reconcile per-person counts and file/type disagreement counters. Missing strata and unknown traceability are explicit, never forced to match.",
+  "consolidation_census": "Single-name logs establish a partial frame. Preserve known logged-name verdicts, coverage/faltants against productive per-person counters, no proof of complete census or invented correspondence to omitted roles.",
+  "review_status": "Automatic technical suggestions only; manual and human review remain pending.",
+  "tests": {
+    "passed": 55,
+    "failed": 0,
+    "evidence": "f0_censo_personas_pruebas.txt"
+  },
+  "no_actual_QC_exports_loaded_yet": true,
+  "no_database_Torch_or_inference": true,
+  "sources": {
+    "scripts/analizar_f0_resultados.py": "52a436aa00210a043a10223352bfb15e94480e6cd82816003dc87ac29609d0aa",
+    "tests/f0/test_person_census.py": "aa30da89ddd4082ba52a6ecefdcd03be1de92319eb5dedca929483ae7c39777e"
+  },
+  "final_pending_states": {
+    "f0_desacuerdos_resumen.json": "pending_missing_F0_runs",
+    "f0_top1_resumen.json": "pending_runs_and_independent_human_decisions",
+    "f0_impacto_qc.json": "pending_A1_A2_A3_A4"
+  }
+}

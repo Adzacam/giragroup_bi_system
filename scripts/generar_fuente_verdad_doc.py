@@ -12,8 +12,8 @@ content = """# ÚNICA FUENTE DE VERDAD (SFV) - PROYECTO DE GRADO GIRAGROUP BI
 **Snapshot ID:** `snapshot_dw_20261110_1201`  
 **Archivo de Respaldo Físico:** `docs/evidencias/snapshot_dw_20261110_1201.dump`  
 **Hash SHA-256 del Snapshot:** `14D45F5A128F44543927911DC0AD453F681D524AC05037203F5C0C2787E3A2EB`  
-**Cadena de Conexión Snapshot DW:** `postgresql://giragroup_user:giragroup_secret_2026@localhost:5434/snapshot_dw_20261110_1201`  
-**Cadena de Conexión Catálogo:** `postgresql://giragroup_user:giragroup_secret_2026@localhost:5433/giragroup_catalog_db`  
+**Cadena de Conexión Snapshot DW:** `postgresql://giragroup_user:example_only_not_a_real_password@localhost:5434/snapshot_dw_20261110_1201`
+**Cadena de Conexión Catálogo:** `postgresql://giragroup_user:example_only_not_a_real_password@localhost:5433/giragroup_catalog_db`
 
 ---
 

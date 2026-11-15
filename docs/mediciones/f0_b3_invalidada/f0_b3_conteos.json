@@ -1,0 +1,33 @@
+{
+  "status": "503_not_reproduced",
+  "gold_sha256": "7dce0bec4dd3a60b94a7e6e5a48df29a6844fc93d28375697aa04f1b9a3d51a5",
+  "records": 180,
+  "full_gold_support": 510,
+  "full_by_type": {
+    "PER_ESTUDIANTE": 130,
+    "PROGRAMA": 180,
+    "MODULO": 150,
+    "PER_DOCENTE": 50
+  },
+  "visible_128_support": 510,
+  "visible_by_type": {
+    "PER_ESTUDIANTE": 130,
+    "PROGRAMA": 180,
+    "MODULO": 150,
+    "PER_DOCENTE": 50
+  },
+  "fully_omitted_entities": [],
+  "partially_truncated_entities": [],
+  "definition": "510 counts full saved token annotations. All 510 are also visible within 128 tokens with the current tokenizer. No seven-ID exclusion policy is reproducible; historical 503 remains pending.",
+  "ids": "1-based nonempty JSONL line IDs, zero-based half-open saved-token spans",
+  "historical_source_search": {
+    "inspected": [
+      "scripts/",
+      "docs/tesis/",
+      "docs/fuente_verdad_tesis.md",
+      "docs/evidencias/f1_beto_fp32_gold_510.json",
+      "_archivo/output/metricas_ner_robusto.json"
+    ],
+    "finding": "Current saved reports have support510, source references 503 do not provide seven excluded IDs or a reproducible population rule."
+  }
+}

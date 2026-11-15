@@ -1,0 +1,28 @@
+{
+  "blind_package_sha256": "2ccbcfdd94d310da4a67b75e04987b69fcf844d0e2bfaa613b875d99cdbc3a37",
+  "case_ids": [],
+  "coincidences": null,
+  "coverage_of_staging_contexts": null,
+  "eligible_context_completeness": {},
+  "eligible_population": 0,
+  "eligible_population_by_config": {
+    "a123": 0,
+    "a3": 0
+  },
+  "final_population": false,
+  "human_validation_pending": true,
+  "identity_definition": "SHA256 of file hash, source sheet/row when available, role, complete available private context and CI fields. Motive and ephemeral DB IDs excluded. Missing raw source context is explicit; identical saved rows without distinguishable stable locators fail closed.",
+  "private_blind_package": "C:\\Users\\DAZA\\Documents\\Universidad\\Proyecto de Grado 7MO semestre\\giragroup_bi_system\\output\\backups\\f0_lote\\revision_ciega\\parcial",
+  "ranking_package_sha256": "33e9a755a6816ae66c93c58f5b785fd2acd9af441746386278837af9d631ada2",
+  "sample_size": 0,
+  "sampling": "Census if N<=100, otherwise100 unique source contexts with seed42; source rows retained per run, cache/repetition copies never multiply decisions.",
+  "source_population_unit": "Saved review-tray staging cases, not count of original source rows/persons; product staging may already group repeated original rows.",
+  "source_runs": [],
+  "source_runs_expected": 12,
+  "source_staging_rows_by_run": {},
+  "status": "pending_independent_human_decisions",
+  "top1": null,
+  "top1_display": "N/D",
+  "unique_staging_contexts": 0,
+  "valid_human_decisions": 0
+}

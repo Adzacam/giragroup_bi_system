@@ -1,0 +1,16 @@
+{
+  "fecha": "2026-11-13T21:03:06.954825-04:00",
+  "verificacion": {
+    "fecha": "2026-11-13T21:03:07.101627-04:00",
+    "sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+    "archivos": 20,
+    "valido": true
+  },
+  "rutas": [
+    "/tmp/flujo/uploads/data",
+    "/tmp/slices_flujo",
+    "/tmp/medida/uploads/data"
+  ],
+  "hashes_contenedor": "20/20 coinciden con manifiesto canónico; también originales en árbol medida",
+  "datos_vivos_modificados": false
+}
