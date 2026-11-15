@@ -17,6 +17,10 @@ class ProyeccionItem(BaseModel):
     valor_forecast: float = Field(..., ge=0.0, description="Monto proyectado (>= 0)")
     ic_lower: Optional[float] = Field(None, ge=0.0, description="Límite inferior IC 95% (>= 0)")
     ic_upper: Optional[float] = Field(None, ge=0.0, description="Límite superior IC 95% (>= 0)")
+    ic80_lower: Optional[float] = Field(None, ge=0.0, description="Límite inferior IC 80% formal (>= 0)")
+    ic80_upper: Optional[float] = Field(None, ge=0.0, description="Límite superior IC 80% formal (>= 0)")
+    ic95_lower: Optional[float] = Field(None, ge=0.0, description="Límite inferior IC 95% formal (>= 0)")
+    ic95_upper: Optional[float] = Field(None, ge=0.0, description="Límite superior IC 95% formal (>= 0)")
 
 
 class ForecastAlumnosData(BaseModel):
@@ -26,6 +30,7 @@ class ForecastAlumnosData(BaseModel):
     caso_uso: str = Field(..., description="Identificador canónico del caso de uso")
     tipo_solicitado: str = Field(..., description="Tipo de programa solicitado")
     metodo: Optional[str] = Field(None, description="Algoritmo predictivo (HoltWinters u OLS)")
+    metodo_intervalo: Optional[str] = Field(None, description="Método de cálculo de intervalos de predicción")
     origen: Optional[str] = Field(None, description="Origen del dato (database_fact_forecast o on_demand)")
     horizonte_meses: Optional[int] = Field(None, ge=1, le=6, description="Meses proyectados (máximo 6)")
     rmse: Optional[float] = Field(None, ge=0.0, description="Error cuadrático medio")
@@ -52,6 +57,10 @@ class ProyeccionMetaItem(BaseModel):
     monto_proyectado_bs: float = Field(..., ge=0.0, description="Recaudación proyectada en Bs.")
     ic_lower: Optional[float] = Field(None, ge=0.0)
     ic_upper: Optional[float] = Field(None, ge=0.0)
+    ic80_lower: Optional[float] = Field(None, ge=0.0)
+    ic80_upper: Optional[float] = Field(None, ge=0.0)
+    ic95_lower: Optional[float] = Field(None, ge=0.0)
+    ic95_upper: Optional[float] = Field(None, ge=0.0)
 
 
 class ForecastMetasData(BaseModel):
@@ -61,6 +70,7 @@ class ForecastMetasData(BaseModel):
     caso_uso: str
     granularidad: str = Field(..., description="'MENSUAL' o 'ANUAL'")
     metodo: Optional[str] = Field(None, description="'HoltWinters' o 'OLS'")
+    metodo_intervalo: Optional[str] = Field(None, description="Método de cálculo de intervalos de predicción")
     tipo_estimacion: Optional[str] = None
     horizonte_meses: Optional[int] = Field(None, ge=1, le=6)
     pendiente_anual_bs: Optional[float] = None

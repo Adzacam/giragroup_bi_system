@@ -1,0 +1,41 @@
+{
+  "etiqueta": "F2, provisional",
+  "tarea": "F2-5 (B-5 / P-5)",
+  "uso_estadistico": "solo descriptiva",
+  "base_datos": "dw_f2 (beto_pg_tmpfs)",
+  "ols_anual_programas": {
+    "n_gestiones": 3,
+    "pendiente_bs_anio": 1907764.595,
+    "intercepto": -3851356657.686666,
+    "serie": [
+      {"anio": 2023, "observado_bs": 8035694.25, "ajustado_ols_bs": 8051118.00, "delta_bs": 15423.75, "delta_pct": 0.1919},
+      {"anio": 2024, "observado_bs": 9989730.09, "ajustado_ols_bs": 9958882.59, "delta_bs": -30847.50, "delta_pct": -0.3088},
+      {"anio": 2025, "observado_bs": 11851223.44, "ajustado_ols_bs": 11866647.19, "delta_bs": 15423.75, "delta_pct": 0.1301}
+    ]
+  },
+  "universos_2025": {
+    "KPI03_INGRESO": {
+      "ejecutado_bs": 12841191.18,
+      "meta_anual_bs": 12803204.29,
+      "cumplimiento_anual_pct": 100.2967,
+      "desglose": {
+        "PROGRAMAS": {"ejecutado_bs": 11851223.44, "meta_bs": 11994228.59},
+        "TECHOS_CERRADOS": {"ejecutado_bs": 989967.74, "meta_bs": 808975.70}
+      }
+    },
+    "MACRO_PROGRAMAS": {
+      "ejecutado_bs": 11851223.44,
+      "meta_anual_bs": 11994228.59,
+      "meta_a_la_fecha_bs": 10892644.77,
+      "cumplimiento_a_la_fecha_pct": 108.8002,
+      "cumplimiento_anual_pct": 98.8077
+    }
+  },
+  "vw_cmi_valores_kpi03_2025": 100.2966983041086818,
+  "comparacion_f0": {
+    "f0_referencia_ejecutado_vs_meta": "12,907,977.61 vs 12,747,275.66 (-1.24% / diferencia por universo e ingesta completa en snapshot histórico)",
+    "f2_dw_f2_kpi03_ejecutado_bs": 12841191.18,
+    "f2_dw_f2_kpi03_meta_bs": 12803204.29,
+    "nota": "En dw_f2 solo está cargado el lote congelado de 10 archivos (sin EGRESO en fact_rentabilidad); KPI-03 incluye PROGRAMAS + TECHOS_CERRADOS mientras que OLS anual usa solo PROGRAMAS."
+  }
+}

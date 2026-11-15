@@ -1,0 +1,37 @@
+{
+  "etiqueta": "F2, provisional",
+  "tarea": "F2-2 (B-2 / P-2)",
+  "base_datos": "dw_f2 (beto_pg_tmpfs)",
+  "consulta_sql": "docs/mediciones/f2_b2_consultas.sql",
+  "comparacion_api_vs_sql": {
+    "endpoint": "/api/v1/cmi/scorecard",
+    "rol_consulta": "ADMIN",
+    "delta_maximo": 0.0,
+    "2025": {
+      "KPI-12": {"nombre": "Variación interanual de ingresos", "unidad": "PCT", "api": 17.15, "sql": 17.14565766263905, "delta": 0.0},
+      "KPI-13": {"nombre": "Avance sobre la meta anual", "unidad": "PCT", "api": 100.3, "sql": 100.29669830410869, "delta": 0.0},
+      "KPI-14": {"nombre": "Brecha a la meta anual", "unidad": "BS", "api": 0.0, "sql": 0.0, "delta": 0.0},
+      "KPI-15": {"nombre": "Cartera vencida", "unidad": "PCT", "api": null, "sql": null, "delta": null, "motivo_null": "Las 725 filas de fact_situacion_financiera tienen estado_cartera='Vigente' (0 en Mora/En Mora/Previsionable); SUM(...) FILTER devuelve NULL."},
+      "KPI-17": {"nombre": "Estudiantes en prioridad crítica", "unidad": "CANT", "api": 0.0, "sql": 0.0, "delta": 0.0},
+      "KPI-18": {"nombre": "Pendientes de revisión humana", "unidad": "CANT", "api": null, "sql": null, "delta": null, "motivo_null": "En dw_f2 los registros de stg_entidad_no_resuelta tienen created_at en gestión 2026 (valor=36.0 en 2026)."},
+      "KPI-19": {"nombre": "Satisfacción con los docentes", "unidad": "PCT", "api": 80.76, "sql": 80.75738916256158, "delta": 0.0},
+      "KPI-20": {"nombre": "Satisfacción institucional", "unidad": "PCT", "api": 84.39, "sql": 84.39114391143912, "delta": 0.0}
+    },
+    "2026": {
+      "KPI-12": {"api": -5.29, "sql": -5.2948165288790685, "delta": 0.0},
+      "KPI-13": {"api": 33.63, "sql": 33.63091908160896, "delta": 0.0},
+      "KPI-14": {"api": 10716022.82, "sql": 10716022.82, "delta": 0.0},
+      "KPI-15": {"api": null, "sql": null, "delta": null},
+      "KPI-17": {"api": null, "sql": null, "delta": null, "motivo_null": "fact_rendimiento_academico solo tiene filas en 2024 (227) y 2025 (1165)."},
+      "KPI-18": {"api": 36.0, "sql": 36.0, "delta": 0.0},
+      "KPI-19": {"api": 85.32, "sql": 85.31621163041801, "delta": 0.0},
+      "KPI-20": {"api": 83.23, "sql": 83.23110151187905, "delta": 0.0}
+    }
+  },
+  "sensibilidad_requiere_revision": {
+    "incluye_requiere_revision_true_en_kpi": true,
+    "fact_rendimiento_academico": {"total": 1392, "en_revision": 632, "nota_prom_con_rev": 87.0312, "nota_prom_sin_rev": 86.9062},
+    "fact_evaluacion_docente": {"total": 75073, "en_revision": 0, "puntuacion_prom_con_rev": 4.9719, "puntuacion_prom_sin_rev": 4.9719},
+    "fact_situacion_financiera": {"total": 725, "en_revision": 12, "deuda_total_con_rev": 597998.71, "deuda_total_sin_rev": 578908.71}
+  }
+}

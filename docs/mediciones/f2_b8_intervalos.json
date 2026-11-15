@@ -1,0 +1,275 @@
+{
+  "etiqueta": "F2, provisional",
+  "tarea": "F2-8 (B-8)",
+  "fecha_utc": "2026-11-15T22:25:57.950124+00:00",
+  "modelo_hw_sin_cambios": {
+    "trend": "add",
+    "damped_trend": true,
+    "seasonal": "add",
+    "seasonal_periods": 12,
+    "holdout_meses": 6,
+    "delta_punto_mae_mape_rmse": 0.0
+  },
+  "metodo_intervalos_formales": "Simulación paramétrica aditiva de trayectoria (statsmodels fit.simulate, repetitions=1000, error='add', rng=default_rng(42)); cuantiles 10/90 (80%) y 2.5/97.5 (95%), acotados a >= 0; fallback analítico proporcional a sqrt(h) si se usa el motor nativo.",
+  "contrato_api": {
+    "campos_legacy_preservados": [
+      "ic_lower",
+      "ic_upper"
+    ],
+    "campos_nuevos_opcionales": [
+      "ic80_lower",
+      "ic80_upper",
+      "ic95_lower",
+      "ic95_upper",
+      "metodo_intervalo"
+    ]
+  },
+  "series": {
+    "serie_referencia_alumnos": {
+      "n_observaciones": 36,
+      "parametros_hw": {
+        "alpha": 0.0,
+        "beta": 0.0,
+        "gamma": 0.0,
+        "phi": 0.995
+      },
+      "rmse": 2.64,
+      "aic": 103.99,
+      "mape_holdout_pct": 1.78,
+      "metodo_intervalo": "simulacion_param_aditivo_n1000",
+      "forecast": [
+        151.85,
+        159.33,
+        163.65,
+        169.6,
+        167.54,
+        164.02
+      ],
+      "ic_legacy_95_constante": {
+        "lower": [
+          146.67,
+          154.15,
+          158.47,
+          164.42,
+          162.36,
+          158.84
+        ],
+        "upper": [
+          157.03,
+          164.51,
+          168.83,
+          174.79,
+          172.72,
+          169.2
+        ],
+        "anchos": [
+          10.36,
+          10.36,
+          10.36,
+          10.37,
+          10.36,
+          10.36
+        ]
+      },
+      "ic80_formal": {
+        "lower": [
+          147.05,
+          154.1,
+          158.93,
+          164.78,
+          162.8,
+          159.27
+        ],
+        "upper": [
+          156.54,
+          163.82,
+          168.6,
+          174.21,
+          172.16,
+          169.0
+        ],
+        "anchos": [
+          9.49,
+          9.72,
+          9.67,
+          9.43,
+          9.36,
+          9.73
+        ]
+      },
+      "ic95_formal": {
+        "lower": [
+          144.41,
+          151.45,
+          156.32,
+          162.68,
+          159.9,
+          156.78
+        ],
+        "upper": [
+          158.87,
+          166.45,
+          171.25,
+          176.98,
+          174.83,
+          171.48
+        ],
+        "anchos": [
+          14.46,
+          15.0,
+          14.93,
+          14.3,
+          14.93,
+          14.7
+        ]
+      },
+      "cobertura_empirica_holdout_6m": {
+        "horizonte_holdout": 6,
+        "metodo_intervalo": "simulacion_param_aditivo_n1000",
+        "cobertura_80": 0.8333,
+        "cubiertos_80": 5,
+        "cobertura_95": 0.8333,
+        "cubiertos_95": 5,
+        "anchos_80": [
+          10.41,
+          10.67,
+          10.62,
+          10.36,
+          10.27,
+          10.68
+        ],
+        "anchos_95": [
+          15.87,
+          16.46,
+          16.39,
+          15.7,
+          16.38,
+          16.13
+        ]
+      }
+    },
+    "serie_referencia_metas": {
+      "n_observaciones": 42,
+      "parametros_hw": {
+        "alpha": 0.3606,
+        "beta": 0.3565,
+        "gamma": 0.0,
+        "phi": 0.995
+      },
+      "rmse": 1511.15,
+      "aic": 648.93,
+      "mape_holdout_pct": 2.08,
+      "metodo_intervalo": "simulacion_param_aditivo_n1000",
+      "forecast": [
+        90593.58,
+        87551.25,
+        87783.36,
+        88565.72,
+        90208.21,
+        93821.58
+      ],
+      "ic_legacy_95_constante": {
+        "lower": [
+          87631.72,
+          84589.39,
+          84821.5,
+          85603.86,
+          87246.34,
+          90859.72
+        ],
+        "upper": [
+          93555.44,
+          90513.11,
+          90745.22,
+          91527.58,
+          93170.07,
+          96783.44
+        ],
+        "anchos": [
+          5923.72,
+          5923.72,
+          5923.72,
+          5923.72,
+          5923.73,
+          5923.72
+        ]
+      },
+      "ic80_formal": {
+        "lower": [
+          88028.55,
+          84147.93,
+          83557.34,
+          82823.27,
+          82494.41,
+          84608.33
+        ],
+        "upper": [
+          93100.41,
+          90303.56,
+          91778.85,
+          93728.97,
+          96956.72,
+          102257.77
+        ],
+        "anchos": [
+          5071.86,
+          6155.63,
+          8221.51,
+          10905.7,
+          14462.31,
+          17649.44
+        ]
+      },
+      "ic95_formal": {
+        "lower": [
+          86613.7,
+          82486.57,
+          81306.61,
+          79714.61,
+          79428.17,
+          80227.81
+        ],
+        "upper": [
+          94345.79,
+          92205.59,
+          94446.54,
+          97070.19,
+          101555.74,
+          107911.75
+        ],
+        "anchos": [
+          7732.09,
+          9719.02,
+          13139.93,
+          17355.58,
+          22127.57,
+          27683.94
+        ]
+      },
+      "cobertura_empirica_holdout_6m": {
+        "horizonte_holdout": 6,
+        "metodo_intervalo": "simulacion_param_aditivo_n1000",
+        "cobertura_80": 1.0,
+        "cubiertos_80": 6,
+        "cobertura_95": 1.0,
+        "cubiertos_95": 6,
+        "anchos_80": [
+          5192.58,
+          5860.38,
+          6762.66,
+          8092.9,
+          9993.93,
+          11864.43
+        ],
+        "anchos_95": [
+          7916.14,
+          8955.9,
+          10895.93,
+          12758.39,
+          15203.4,
+          17895.86
+        ]
+      }
+    }
+  }
+}

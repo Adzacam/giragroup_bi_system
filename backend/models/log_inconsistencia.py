@@ -13,6 +13,7 @@ class LogInconsistencia(Base):
     valor_recibido = Column(Text, nullable=True)
     valor_esperado = Column(Text, nullable=True)
     tipo_regla = Column(String(50), nullable=False, index=True)
+    regla_origen = Column(String(80), nullable=True, index=True)
     severidad = Column(String(20), nullable=False, default="ALTA")
     estado_resolucion = Column(String(30), nullable=False, default="BLOQUEADO", index=True)
     descripcion = Column(Text, nullable=True)

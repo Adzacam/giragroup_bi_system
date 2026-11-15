@@ -59,8 +59,23 @@ class StagingEntidadNoResuelta(Base):
     version = Column(Integer, default=1)
     # Idempotencia: md5(hash del archivo | tipo | motivo | valor normalizado); índice único uq_stg_entidad_clave_origen
     clave_origen = Column(String(32), nullable=True)
+    # Identificador determinista de homónimo en Estado C (B-9; no fusiona ni crea perfil)
+    id_homonimo = Column(String(32), nullable=True, index=True)
 
     created_at = Column(DateTime, server_default=func.now())
+
+
+def generar_id_homonimo(nombre: str, ci: str = None, programa: str = None) -> str:
+    """Genera un identificador determinista para menciones homónimas en Estado C."""
+    import hashlib
+    import unicodedata
+
+    def _norm(txt):
+        s = " ".join((txt or "").split()).lower()
+        return "".join(c for c in unicodedata.normalize("NFKD", s) if not unicodedata.combining(c))
+
+    base = f"{_norm(nombre)}|{_norm(ci)}|{_norm(programa)}"
+    return "HOM-" + hashlib.sha256(base.encode("utf-8")).hexdigest()[:16]
 
 
 def clave_staging(hash_doc, tipo, motivo, texto):

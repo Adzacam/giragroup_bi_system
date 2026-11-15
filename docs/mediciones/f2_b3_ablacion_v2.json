@@ -1,0 +1,674 @@
+{
+  "tarea": "F2-3 (B-3 / P-3)",
+  "estado": "F2, provisional",
+  "timestamp": "2026-11-15T18:22:55.009885-04:00",
+  "semilla": 42,
+  "evaluador_f0_sha256": "304e48c6f6d38a4dbd5bd9cb043dabe09a867bcca3ba1a281226936b973842d2",
+  "ablacion_beto_sha256": "114bcdf8090421ccf355c12b7818b19718227709da0abe060724a8aa04799554",
+  "gold_sha256": "7dce0bec4dd3a60b94a7e6e5a48df29a6844fc93d28375697aa04f1b9a3d51a5",
+  "modelo_v2_sha256": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+  "control_v1_vs_f0_b3": {
+    "reproduce_delta_0": true,
+    "filas": [
+      {
+        "mode": "A",
+        "criterion": "strict",
+        "delta_tp": 0,
+        "delta_fp": 0,
+        "delta_fn": 0,
+        "exacto_delta_0": true
+      },
+      {
+        "mode": "A",
+        "criterion": "relaxed",
+        "delta_tp": 0,
+        "delta_fp": 0,
+        "delta_fn": 0,
+        "exacto_delta_0": true
+      },
+      {
+        "mode": "B",
+        "criterion": "strict",
+        "delta_tp": 0,
+        "delta_fp": 0,
+        "delta_fn": 0,
+        "exacto_delta_0": true
+      },
+      {
+        "mode": "B",
+        "criterion": "relaxed",
+        "delta_tp": 0,
+        "delta_fp": 0,
+        "delta_fn": 0,
+        "exacto_delta_0": true
+      },
+      {
+        "mode": "C",
+        "criterion": "strict",
+        "delta_tp": 0,
+        "delta_fp": 0,
+        "delta_fn": 0,
+        "exacto_delta_0": true
+      },
+      {
+        "mode": "C",
+        "criterion": "relaxed",
+        "delta_tp": 0,
+        "delta_fp": 0,
+        "delta_fn": 0,
+        "exacto_delta_0": true
+      }
+    ]
+  },
+  "v2_rows": [
+    {
+      "mode": "A",
+      "criterion": "strict",
+      "tp": 510,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 510,
+      "predicted": 510
+    },
+    {
+      "mode": "A",
+      "criterion": "relaxed",
+      "tp": 510,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 510,
+      "predicted": 510
+    },
+    {
+      "mode": "B",
+      "criterion": "strict",
+      "tp": 510,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 510,
+      "predicted": 510
+    },
+    {
+      "mode": "B",
+      "criterion": "relaxed",
+      "tp": 510,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 510,
+      "predicted": 510
+    },
+    {
+      "mode": "C",
+      "criterion": "strict",
+      "tp": 503,
+      "fp": 13,
+      "fn": 7,
+      "precision": 0.9748062015503876,
+      "recall": 0.9862745098039216,
+      "f1": 0.9805068226120858,
+      "support": 510,
+      "predicted": 516
+    },
+    {
+      "mode": "C",
+      "criterion": "relaxed",
+      "tp": 510,
+      "fp": 6,
+      "fn": 0,
+      "precision": 0.9883720930232558,
+      "recall": 1.0,
+      "f1": 0.9941520467836257,
+      "support": 510,
+      "predicted": 516
+    }
+  ],
+  "v2_por_modo": {
+    "A": {
+      "strict": {
+        "tp": 510,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 510,
+        "predicted": 510,
+        "by_type": {
+          "PER_ESTUDIANTE": {
+            "tp": 130,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 130,
+            "predicted": 130
+          },
+          "PER_DOCENTE": {
+            "tp": 50,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 50,
+            "predicted": 50
+          },
+          "MODULO": {
+            "tp": 150,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 150,
+            "predicted": 150
+          },
+          "PROGRAMA": {
+            "tp": 180,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 180,
+            "predicted": 180
+          }
+        }
+      },
+      "relaxed": {
+        "tp": 510,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 510,
+        "predicted": 510,
+        "by_type": {
+          "PER_ESTUDIANTE": {
+            "tp": 130,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 130,
+            "predicted": 130
+          },
+          "PER_DOCENTE": {
+            "tp": 50,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 50,
+            "predicted": 50
+          },
+          "MODULO": {
+            "tp": 150,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 150,
+            "predicted": 150
+          },
+          "PROGRAMA": {
+            "tp": 180,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 180,
+            "predicted": 180
+          }
+        }
+      },
+      "legacy_seqeval": {
+        "reporte_seqeval_estricto": {
+          "MODULO": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 150
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 50
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 130
+          },
+          "PROGRAMA": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 180
+          },
+          "micro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 510
+          },
+          "macro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 510
+          },
+          "weighted avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 510
+          }
+        },
+        "reporte_seqeval_relajado": {
+          "p_micro_relajado": 1.0,
+          "r_micro_relajado": 1.0,
+          "f1_micro_relajado": 1.0,
+          "f1_por_tipo": {
+            "PER_ESTUDIANTE": 1.0,
+            "PER_DOCENTE": 1.0,
+            "MODULO": 1.0,
+            "PROGRAMA": 1.0
+          }
+        }
+      }
+    },
+    "B": {
+      "strict": {
+        "tp": 510,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 510,
+        "predicted": 510,
+        "by_type": {
+          "PER_ESTUDIANTE": {
+            "tp": 130,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 130,
+            "predicted": 130
+          },
+          "PER_DOCENTE": {
+            "tp": 50,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 50,
+            "predicted": 50
+          },
+          "MODULO": {
+            "tp": 150,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 150,
+            "predicted": 150
+          },
+          "PROGRAMA": {
+            "tp": 180,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 180,
+            "predicted": 180
+          }
+        }
+      },
+      "relaxed": {
+        "tp": 510,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 510,
+        "predicted": 510,
+        "by_type": {
+          "PER_ESTUDIANTE": {
+            "tp": 130,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 130,
+            "predicted": 130
+          },
+          "PER_DOCENTE": {
+            "tp": 50,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 50,
+            "predicted": 50
+          },
+          "MODULO": {
+            "tp": 150,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 150,
+            "predicted": 150
+          },
+          "PROGRAMA": {
+            "tp": 180,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 180,
+            "predicted": 180
+          }
+        }
+      },
+      "legacy_seqeval": {
+        "reporte_seqeval_estricto": {
+          "MODULO": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 150
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 50
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 130
+          },
+          "PROGRAMA": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 180
+          },
+          "micro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 510
+          },
+          "macro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 510
+          },
+          "weighted avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 510
+          }
+        },
+        "reporte_seqeval_relajado": {
+          "p_micro_relajado": 1.0,
+          "r_micro_relajado": 1.0,
+          "f1_micro_relajado": 1.0,
+          "f1_por_tipo": {
+            "PER_ESTUDIANTE": 1.0,
+            "PER_DOCENTE": 1.0,
+            "MODULO": 1.0,
+            "PROGRAMA": 1.0
+          }
+        }
+      }
+    },
+    "C": {
+      "strict": {
+        "tp": 503,
+        "fp": 13,
+        "fn": 7,
+        "precision": 0.9748062015503876,
+        "recall": 0.9862745098039216,
+        "f1": 0.9805068226120858,
+        "support": 510,
+        "predicted": 516,
+        "by_type": {
+          "PER_ESTUDIANTE": {
+            "tp": 129,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.9923076923076923,
+            "recall": 0.9923076923076923,
+            "f1": 0.9923076923076923,
+            "support": 130,
+            "predicted": 130
+          },
+          "PER_DOCENTE": {
+            "tp": 50,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 50,
+            "predicted": 50
+          },
+          "MODULO": {
+            "tp": 150,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 150,
+            "predicted": 150
+          },
+          "PROGRAMA": {
+            "tp": 174,
+            "fp": 12,
+            "fn": 6,
+            "precision": 0.9354838709677419,
+            "recall": 0.9666666666666667,
+            "f1": 0.9508196721311475,
+            "support": 180,
+            "predicted": 186
+          }
+        }
+      },
+      "relaxed": {
+        "tp": 510,
+        "fp": 6,
+        "fn": 0,
+        "precision": 0.9883720930232558,
+        "recall": 1.0,
+        "f1": 0.9941520467836257,
+        "support": 510,
+        "predicted": 516,
+        "by_type": {
+          "PER_ESTUDIANTE": {
+            "tp": 130,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 130,
+            "predicted": 130
+          },
+          "PER_DOCENTE": {
+            "tp": 50,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 50,
+            "predicted": 50
+          },
+          "MODULO": {
+            "tp": 150,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 150,
+            "predicted": 150
+          },
+          "PROGRAMA": {
+            "tp": 180,
+            "fp": 6,
+            "fn": 0,
+            "precision": 0.967741935483871,
+            "recall": 1.0,
+            "f1": 0.9836065573770492,
+            "support": 180,
+            "predicted": 186
+          }
+        }
+      },
+      "legacy_seqeval": {
+        "reporte_seqeval_estricto": {
+          "MODULO": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 150
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 50
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 0.9923076923076923,
+            "recall": 0.9923076923076923,
+            "f1-score": 0.9923076923076923,
+            "support": 130
+          },
+          "PROGRAMA": {
+            "precision": 0.93048128342246,
+            "recall": 0.9666666666666667,
+            "f1-score": 0.9482288828337875,
+            "support": 180
+          },
+          "micro avg": {
+            "precision": 0.9729206963249516,
+            "recall": 0.9862745098039216,
+            "f1-score": 0.979552093476144,
+            "support": 510
+          },
+          "macro avg": {
+            "precision": 0.9806972439325381,
+            "recall": 0.9897435897435898,
+            "f1-score": 0.98513414378537,
+            "support": 510
+          },
+          "weighted avg": {
+            "precision": 0.9735031980706721,
+            "recall": 0.9862745098039216,
+            "f1-score": 0.9797670566864348,
+            "support": 510
+          }
+        },
+        "reporte_seqeval_relajado": {
+          "p_micro_relajado": 0.9884,
+          "r_micro_relajado": 1.0,
+          "f1_micro_relajado": 0.9942,
+          "f1_por_tipo": {
+            "PER_ESTUDIANTE": 1.0,
+            "PER_DOCENTE": 1.0,
+            "MODULO": 1.0,
+            "PROGRAMA": 0.9836
+          }
+        }
+      }
+    }
+  },
+  "grafico_3_1_soporte": {
+    "soporte_total": 510,
+    "visible_128_support": 510,
+    "por_tipo": {
+      "PER_ESTUDIANTE": 130,
+      "PROGRAMA": 180,
+      "MODULO": 150,
+      "PER_DOCENTE": 50
+    },
+    "explicacion_503": "Current gold has510 entities, all visible within128. Historical graph hardcodes a4x4 matrix summing503 because its PROGRAMA row has173 instead of full support180. This explains503 by presentation/matrix definition, not a different gold version or current tokenizer truncation. Historical excluded case IDs were not saved."
+  },
+  "diferencia_con_seqeval_d3b": {
+    "nota": "En D3B (f1_d3b_calidad.json), scripts/ablacion_beto.py usa seqeval por defecto para estricto y any-overlap para relajado; el evaluador de F0 (evaluar_f0_gold.py) usa IOB2 estricto explícito y emparejamiento bipartito 1:1 para relajado. No se mezclan cifras entre ambos evaluadores.",
+    "d3b_v2_modo_c_seqeval": [
+      {
+        "version": "beto-v2",
+        "dataset": "gold_510",
+        "modo": "C",
+        "criterio": "strict",
+        "tp": 503,
+        "fp": 14,
+        "fn": 7,
+        "support": 510,
+        "predicted": 517,
+        "precision": 0.972921,
+        "recall": 0.986275,
+        "f1": 0.979552,
+        "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_gold.json"
+      },
+      {
+        "version": "beto-v2",
+        "dataset": "gold_510",
+        "modo": "C",
+        "criterio": "relaxed",
+        "tp": 510,
+        "fp": 6,
+        "fn": 0,
+        "support": 510,
+        "predicted": 516,
+        "precision": 0.9884,
+        "recall": 1.0,
+        "f1": 0.9942,
+        "fuente_json": "docs/mediciones/f1_d3b_calidad_v2_gold.json"
+      }
+    ]
+  }
+}

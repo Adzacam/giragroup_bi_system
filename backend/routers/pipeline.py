@@ -378,21 +378,26 @@ def process_pipeline(
 
         # Pasada 1 (reglas): cada línea se resuelve con la cascada de reglas antes de consultar BETO
         preparadas = []
-        no_aplicables = {}
         for k_orig, (linea_str, celdas, campos_fin) in enumerate(lineas):
             campos = campos_por_encabezado(celdas)
             res_l, ents_l, por_reglas = _resolver_linea(categoria, celdas, campos, campos_fin, factores_escala)
             if not por_reglas:
                 motivo_na = _motivo_no_aplicable(celdas)
-                if motivo_na:  # ni BETO ni bandeja: no hay hecho ni entidad que resolver; queda un registro agregado en el log
-                    no_aplicables[motivo_na] = no_aplicables.get(motivo_na, 0) + 1
+                if motivo_na:  # ni BETO ni bandeja: queda registro individual en log_inconsistencias (B-9)
+                    db.add(LogInconsistencia(
+                        id_documento=doc_id,
+                        fila_origen=(b.fila_inicio or 0) + k_orig,
+                        campo_afectado=(b.hoja or "")[:100],
+                        valor_recibido=(linea_str or "")[:500],
+                        tipo_regla="LINEAS_NO_APLICABLES",
+                        regla_origen=motivo_na[:80],
+                        severidad="BAJA",
+                        estado_resolucion="REGISTRADO",
+                        descripcion=f"Línea descartada por regla ({motivo_na}) en hoja '{b.hoja}'",
+                    ))
+                    lineas_no_aplicables += 1
                     continue
             preparadas.append((linea_str, celdas, campos_fin, campos, res_l, ents_l, por_reglas, k_orig))
-        for motivo_na, n_na in no_aplicables.items():
-            db.add(LogInconsistencia(id_documento=doc_id, campo_afectado=b.hoja or "", valor_recibido=str(n_na), tipo_regla="LINEAS_NO_APLICABLES",
-                                     severidad="BAJA", estado_resolucion="REGISTRADO",
-                                     descripcion=f"{n_na} líneas sin hecho posible ({motivo_na}) en la hoja '{b.hoja}'; no pasan por BETO ni por la bandeja"))
-            lineas_no_aplicables += n_na
 
         # Pasada 2 (BETO): solo las líneas que las reglas no resolvieron; las demás reutilizan el índice de la caché si existe
         # (nunca se calcula uno nuevo para ellas). Banda: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging

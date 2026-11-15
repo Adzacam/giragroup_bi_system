@@ -1,0 +1,180 @@
+{
+  "etiqueta": "F2, provisional",
+  "tarea": "F2-1 (B-1 / P-1)",
+  "total_pytest": 830,
+  "passed": 812,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 11,
+  "xfailed": 7,
+  "cobertura_total_pct": 70,
+  "cobertura_stmts": 14595,
+  "cobertura_miss": 4343,
+  "duracion_s": 302.115,
+  "por_carpeta": {
+    "f0": {
+      "total": 103,
+      "passed": 103,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "f1": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "f2": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "readiness": {
+      "total": 39,
+      "passed": 21,
+      "failed": 0,
+      "skipped": 11,
+      "xfailed": 7,
+      "errors": 0
+    },
+    "sprint1": {
+      "total": 29,
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "sprint2": {
+      "total": 67,
+      "passed": 67,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "sprint3": {
+      "total": 228,
+      "passed": 228,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "sprint4": {
+      "total": 104,
+      "passed": 104,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "sprint5": {
+      "total": 210,
+      "passed": 210,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "sprint6": {
+      "total": 14,
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "transversales": {
+      "total": 23,
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    }
+  },
+  "xfails": [
+    {
+      "test": "tests.readiness.test_production_readiness.TestHoltWinters::test_banda_95_se_ensancha_con_el_horizonte",
+      "motivo": "Hallazgo HW-IC: banda ±1,96·RMSE constante; la varianza debe crecer con h"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestHoltWinters::test_mes_faltante_no_se_interpreta_como_demanda_cero",
+      "motivo": "Hallazgo HW-GAP: asfreq().fillna(0) trata un mes sin carga como demanda cero"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestOLSAnual::test_cagr_es_geometrico",
+      "motivo": "Hallazgo OLS-CAGR: se publica la media aritmética de variaciones como CAGR"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestCascadaConfianza::test_estado_a_ci_con_extension_departamental",
+      "motivo": "Hallazgo FK-CI-EXT: el CI con extensión departamental ('4567890 LP') se rechaza y cae a Estado C sintético"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestCascadaConfianza::test_id_sintetico_con_entropia_suficiente",
+      "motivo": "Hallazgo FK-HASH: TEMP-CI usa MD5 truncado a 8 hex (32 bits); homónimos colisionan"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestCascadaConfianza::test_banda_media_deriva_a_staging[0.7]",
+      "motivo": "Hallazgo FK-BANDA: [0.60, 0.85) y confianza None generan TEMP en DimEstudiante en vez de derivar a stg_entidad_no_resuelta"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestCascadaConfianza::test_banda_media_deriva_a_staging[None]",
+      "motivo": "Hallazgo FK-BANDA: [0.60, 0.85) y confianza None generan TEMP en DimEstudiante en vez de derivar a stg_entidad_no_resuelta"
+    }
+  ],
+  "skips": [
+    {
+      "test": "tests.readiness.test_production_readiness.TestLatenciaAPI::test_cmi_50_concurrentes_p95_menor_3s",
+      "motivo": "READINESS_TOKEN no definido"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestLatenciaAPI::test_analitica_macro_10_concurrentes_p95_menor_3s",
+      "motivo": "READINESS_TOKEN no definido"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness::test_bloqueo_hitl_exclusivo_bajo_concurrencia",
+      "motivo": "READINESS_TOKEN y READINESS_TOKEN_2 requeridos"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestBETO::test_campo_texto_vacio_o_mal_nombrado_responde_422",
+      "motivo": "READINESS_BETO_URL no definido"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestBETO::test_latencia_menor_20ms_por_oracion_en_lote",
+      "motivo": "READINESS_BETO_URL no definido"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestBETO::test_confianza_media_minima",
+      "motivo": "READINESS_BETO_URL no definido"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestHigieneDatos::test_sin_documentos_de_prueba",
+      "motivo": "READINESS_DB_URL no definido"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestHigieneDatos::test_sin_usuarios_tecnicos_activos",
+      "motivo": "READINESS_DB_URL no definido"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestHigieneDatos::test_inscripciones_cargadas_en_dw",
+      "motivo": "READINESS_DB_URL no definido"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestHigieneDatos::test_una_foto_financiera_por_estudiante_y_corte",
+      "motivo": "READINESS_DB_URL no definido"
+    },
+    {
+      "test": "tests.readiness.test_production_readiness.TestHigieneDatos::test_tablas_preservadas_por_reset",
+      "motivo": "READINESS_DB_URL no definido"
+    }
+  ]
+}

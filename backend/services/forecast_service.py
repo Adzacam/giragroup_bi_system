@@ -132,8 +132,26 @@ def obtener_pronostico_alumnos(
         return _respuesta_sin_datos(caso_uso, motivo, tipo_solicitado=tipo_upper, n_observaciones=len(serie))
 
     proyecciones = [
-        {"periodo": p, "valor_forecast": f, "ic_lower": l, "ic_upper": u}
-        for p, f, l, u in zip(res["periodos"], res["forecast"], res["ic_lower"], res["ic_upper"])
+        {
+            "periodo": p,
+            "valor_forecast": f,
+            "ic_lower": l,
+            "ic_upper": u,
+            "ic80_lower": l80,
+            "ic80_upper": u80,
+            "ic95_lower": l95,
+            "ic95_upper": u95,
+        }
+        for p, f, l, u, l80, u80, l95, u95 in zip(
+            res["periodos"],
+            res["forecast"],
+            res["ic_lower"],
+            res["ic_upper"],
+            res["ic80_lower"],
+            res["ic80_upper"],
+            res["ic95_lower"],
+            res["ic95_upper"],
+        )
     ]
 
     # Persistir en fact_forecast para acelerar subsecuentes lecturas
@@ -144,6 +162,7 @@ def obtener_pronostico_alumnos(
         "caso_uso": caso_uso,
         "tipo_solicitado": tipo_upper,
         "metodo": res["metodo"],
+        "metodo_intervalo": res.get("metodo_intervalo"),
         "origen": "on_demand_computation",
         "horizonte_meses": res["horizonte_meses"],
         "n_observaciones": len(serie),
@@ -273,13 +292,32 @@ def obtener_pronostico_metas(
         return _respuesta_sin_datos("META_MENSUAL_PROGRAMAS", motivo, granularidad="MENSUAL",
                                     n_observaciones=len(serie_mensual))
     proyecciones = [
-        {"periodo": p, "monto_proyectado_bs": f, "ic_lower": l, "ic_upper": u}
-        for p, f, l, u in zip(res_hw["periodos"], res_hw["forecast"], res_hw["ic_lower"], res_hw["ic_upper"])
+        {
+            "periodo": p,
+            "monto_proyectado_bs": f,
+            "ic_lower": l,
+            "ic_upper": u,
+            "ic80_lower": l80,
+            "ic80_upper": u80,
+            "ic95_lower": l95,
+            "ic95_upper": u95,
+        }
+        for p, f, l, u, l80, u80, l95, u95 in zip(
+            res_hw["periodos"],
+            res_hw["forecast"],
+            res_hw["ic_lower"],
+            res_hw["ic_upper"],
+            res_hw["ic80_lower"],
+            res_hw["ic80_upper"],
+            res_hw["ic95_lower"],
+            res_hw["ic95_upper"],
+        )
     ]
     return {
         "caso_uso": "META_MENSUAL_PROGRAMAS",
         "granularidad": "MENSUAL",
         "metodo": res_hw["metodo"],
+        "metodo_intervalo": res_hw.get("metodo_intervalo"),
         "horizonte_meses": res_hw["horizonte_meses"],
         "rmse": res_hw["rmse"],
         "aic": res_hw["aic"],

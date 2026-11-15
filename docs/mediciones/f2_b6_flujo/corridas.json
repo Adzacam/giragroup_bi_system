@@ -1,0 +1,23 @@
+[
+  {
+    "corrida": 1,
+    "duracion_total_s": 882.7,
+    "tiempo_maquina_s": 877.11,
+    "huella_rc": 0,
+    "bandeja": null
+  },
+  {
+    "corrida": 2,
+    "duracion_total_s": 880.2,
+    "tiempo_maquina_s": 873.26,
+    "huella_rc": 0,
+    "bandeja": null
+  },
+  {
+    "corrida": 3,
+    "duracion_total_s": 1210.4,
+    "tiempo_maquina_s": 1203.36,
+    "huella_rc": 0,
+    "bandeja": null
+  }
+]

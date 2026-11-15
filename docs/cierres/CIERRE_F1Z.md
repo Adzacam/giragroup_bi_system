@@ -45,3 +45,10 @@ Cierre completo de **F1** sobre la rama `beto-integracion` (base `4a28300`). Se 
 - **Lo que pasa a F3:**
   - `B-7` (RNF-03) midiendo ambos números aprobados por Lean: (1) solo máquina del ciclo y (2) máquina + revisión humana (KLM), bajo condiciones de máquina fijadas (carga registrada, sin contenedores pesados compitiendo, energía en alto rendimiento).
   - Decisión sobre la propuesta de `scripts/huella_dw.py` (`f1z_md5_inestables.json`) y `PYTHONHASHSEED=0` para la huella congelada de F3.
+
+---
+
+## Erratas (F2)
+
+- **Corrección a §4 (Lo que pasa a F2):** `A-3` (`90/90`, falsos desacuerdos `0/90 = 0.0 %`) y `A-4` (`7/7` `exclude`, `0` con `candidate_id`) **ya están registrados** como revisión humana declarada por Lean en `docs/mediciones/f1_revision_humana/` (`resumen.json`, commit `ce8ff46` / `CIERRE_F1R2.md`), con 3 limitaciones declaradas de procedencia: (1) registro en lote dictado al chat (`marcas_tiempo` de registro, no de revisión), (2) `A-3` con sesgo de anclaje por visibilidad de `technical_label` (`a3_ciego_a_sugerencia_tecnica: false`), y (3) `A-4` sin candidatos válidos (`top1 = N/D`). Solo el **top-1** de `A-4` sigue pendiente en `N/D`.
+

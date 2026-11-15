@@ -1,0 +1,65 @@
+{
+  "etiqueta": "F2, provisional",
+  "tarea": "F2-6 (B-6 / KLM N=3)",
+  "base_datos": "clones tmpfs de dw_vacio + 015 (B-9), caché vacía, 4 flags False",
+  "n_corridas": 3,
+  "corridas": [
+    {
+      "corrida": 1,
+      "duracion_total_s": 882.7,
+      "tiempo_maquina_s": 877.11,
+      "huella_rc": 0,
+      "bandeja": null
+    },
+    {
+      "corrida": 2,
+      "duracion_total_s": 880.2,
+      "tiempo_maquina_s": 873.26,
+      "huella_rc": 0,
+      "bandeja": null
+    },
+    {
+      "corrida": 3,
+      "duracion_total_s": 1210.4,
+      "tiempo_maquina_s": 1203.36,
+      "huella_rc": 0,
+      "bandeja": null
+    }
+  ],
+  "tiempo_maquina_s": {
+    "media": 984.58,
+    "desviacion_std": 189.48,
+    "min": 873.26,
+    "max": 1203.36,
+    "meta_rnf03_s": 900,
+    "cumple_solo_maquina": false
+  },
+  "klm_con_espera_W_10s": {
+    "total_s": 815.5,
+    "desglose_s": {
+      "bloque": 62.0,
+      "corregir_fecha": 39.9,
+      "mapear_estado": 0.0,
+      "manual": 678.2,
+      "paginacion": 35.4
+    }
+  },
+  "klm_sin_espera_W_0s": {
+    "total_s": 295.5,
+    "desglose_s": {
+      "bloque": 22.0,
+      "corregir_fecha": 29.9,
+      "mapear_estado": 0.0,
+      "manual": 208.2,
+      "paginacion": 35.4
+    }
+  },
+  "tiempo_total_con_W_10s_s": 1800.1,
+  "tiempo_total_sin_W_0s_s": 1280.1,
+  "referencia_f1_d3b_v2": {
+    "tiempo_maquina_vacia_media_s": 864.283,
+    "klm_con_W_10s_s": 736.6,
+    "klm_sin_W_0s_s": 216.6,
+    "v1_referencia_grupos_casos": "12 grupos / 182-188 casos / 490.5 s"
+  }
+}

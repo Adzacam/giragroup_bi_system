@@ -1,0 +1,41 @@
+{
+  "etiqueta": "F2, provisional",
+  "tarea": "F2-9 (B-9)",
+  "inventario_descartes": [
+    {
+      "modulo": "backend/routers/pipeline.py",
+      "funcion": "process_pipeline / _motivo_no_aplicable",
+      "regla": "LINEAS_NO_APLICABLES",
+      "comportamiento_previo": "Agrupaba todas las filas descartadas por hoja y motivo en un único registro agregado en log_inconsistencias (valor_recibido = conteo).",
+      "comportamiento_b9": "Emite una fila individual en log_inconsistencias por cada línea descartada con regla_origen, fila_origen, campo_afectado (hoja), valor_recibido (línea truncada) y conteo exacto Δ=0."
+    },
+    {
+      "modulo": "pipeline/normalization/asymmetric_flattener.py",
+      "funcion": "AsymmetricFlattener._procesar_excel / _procesar_csv",
+      "regla": "SUBTOTAL_KEYWORDS",
+      "comportamiento_previo": "Contaba subtotales_descartados en memoria y emitía una advertencia agregada.",
+      "comportamiento_b9": "Preserva el conteo y registra el detalle de filas descartadas en la metadata del bloque (filas_subtotales_detalle) para trazabilidad."
+    },
+    {
+      "modulo": "pipeline/normalization/catalog_repository.py",
+      "funcion": "CatalogRepository.clasificar_texto",
+      "regla": "ruido / descartable",
+      "comportamiento_previo": "Retorna ('ruido', 'descartable') para términos de ruido.",
+      "comportamiento_b9": "Clasificador puro mantenido sin efectos laterales; los descartes en ingesta pasan por _motivo_no_aplicable -> log_inconsistencias."
+    },
+    {
+      "modulo": "backend/services/extraccion_por_encabezado.py",
+      "funcion": "motivo_fila_sin_entidad",
+      "regla": "sin_entidad / ruido_administrativo",
+      "comportamiento_previo": "Devuelve el motivo textual de descarte de línea sin entidad.",
+      "comportamiento_b9": "Integrado con pipeline.py para registrar cada motivo individualmente en log_inconsistencias."
+    },
+    {
+      "modulo": "backend/services/dw_loader.py",
+      "funcion": "DWLoader._resolver_estudiante (casos 2a y 2b)",
+      "regla": "HOMONIMIA (Estado C)",
+      "comportamiento_previo": "Derivaba a stg_entidad_no_resuelta con motivo='HOMONIMIA' y fk_estado='C' sin identificador determinista de homónimo.",
+      "comportamiento_b9": "Asigna id_homonimo determinista ('HOM-' + sha256(nombre_norm|ci|programa)[:16]) en stg_entidad_no_resuelta manteniendo fk_estado='C' sin fusionar ni crear perfiles."
+    }
+  ]
+}

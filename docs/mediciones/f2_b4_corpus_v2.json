@@ -1,0 +1,128 @@
+{
+  "tarea": "F2-4 (B-4 / P-4)",
+  "estado": "F2, provisional",
+  "timestamp": "2026-11-15T18:21:03.825437-04:00",
+  "fuentes": [
+    "docs/mediciones/f1_d3b_validez.json",
+    "docs/mediciones/f1_corpus_auditoria.json",
+    "docs/mediciones/f0_b4_auditoria.json"
+  ],
+  "orden_separacion_aumento": {
+    "separa_antes_de_aumentar": true,
+    "script": "scripts/preparar_corpus_robusto.py",
+    "evidencia_codigo": {
+      "particion_por_claves_persona": "lineas 101-110 (particionar_por_persona con random.Random(semilla).shuffle(claves))",
+      "llamada_particion": "linea 334 (train_p, dev_p = particionar_por_persona(ests + docs, args.fraccion_dev, args.semilla))",
+      "aumento_por_pool_separado": "lineas 336-344 (est_tr/doc_tr y est_dv/doc_dv alimentan generar_muestras por separado)"
+    }
+  },
+  "corpus_v2": {
+    "train": {
+      "ruta": "output/f1/reproduccion_1/corpus/train_robusto.jsonl",
+      "sha256": "d02ae16807831aab92b4d7cef34962c0d2a42f5221c646162e46efd5f155c5b7",
+      "filas": 1400,
+      "personas_unicas": 2447
+    },
+    "dev": {
+      "ruta": "output/f1/reproduccion_1/corpus/dev_robusto.jsonl",
+      "sha256": "9f3e7371ae654404591d6892c8d4d01b806f37f5344640d8ea8c52a774c7de9e",
+      "filas": 350,
+      "personas_unicas": 597
+    },
+    "determinismo_sha256_identico": true,
+    "sha256_auditoria_f1": {
+      "train_robusto.jsonl": {
+        "corrida_1": "d02ae16807831aab92b4d7cef34962c0d2a42f5221c646162e46efd5f155c5b7",
+        "corrida_2": "d02ae16807831aab92b4d7cef34962c0d2a42f5221c646162e46efd5f155c5b7",
+        "identicos": true
+      },
+      "dev_robusto.jsonl": {
+        "corrida_1": "9f3e7371ae654404591d6892c8d4d01b806f37f5344640d8ea8c52a774c7de9e",
+        "corrida_2": "9f3e7371ae654404591d6892c8d4d01b806f37f5344640d8ea8c52a774c7de9e",
+        "identicos": true
+      },
+      "test_gold_real.jsonl": {
+        "corrida_1": "ebbbe6f262a28ac9a17dd9abbb195fd8a7db1f8429720d6f791d8adad3dd8f60",
+        "corrida_2": "ebbbe6f262a28ac9a17dd9abbb195fd8a7db1f8429720d6f791d8adad3dd8f60",
+        "identicos": true
+      }
+    },
+    "solapamiento_f1": {
+      "personas_unicas": {
+        "train": 1967,
+        "dev": 485,
+        "test": 83
+      },
+      "personas_solapadas": {
+        "train_dev": 0,
+        "train_test": 0,
+        "dev_test": 0
+      },
+      "textos_solapados": {
+        "train_dev": 0,
+        "train_test": 0,
+        "dev_test": 0
+      },
+      "programas_solapados": {
+        "train_dev": 338,
+        "train_test": 0,
+        "dev_test": 0
+      },
+      "lineas_dev_con_persona_en_train": 0
+    }
+  },
+  "personas_train_dev_v2": {
+    "personas_compartidas_spans": 0,
+    "personas_compartidas_iob2": 1,
+    "nota": "Spans exactos comparten 0 personas; la diferencia de 1 en IOB2 proviene de tokenización de abreviaturas con punto (p.ej. 'M . Sc .')."
+  },
+  "fuga_4_niveles_v2": {
+    "v2_train_vs_gold_510": {
+      "a_oracion_exacta": 0,
+      "b_texto_normalizado": 0,
+      "c_variantes_total_unicas": 0,
+      "d_personas_normalizadas_compartidas": 0
+    },
+    "v2_train_vs_layouts_5": {
+      "a_oracion_exacta": 0,
+      "b_texto_normalizado": 0,
+      "c_variantes_total_unicas": 0,
+      "d_personas_normalizadas_compartidas": 0
+    }
+  },
+  "anotacion_gold_510": {
+    "fuente": "docs/mediciones/f0_b4_auditoria.json",
+    "gold_dataset": {
+      "path": "data\\test_gold_real.jsonl",
+      "bytes": 144555,
+      "sha256": "7dce0bec4dd3a60b94a7e6e5a48df29a6844fc93d28375697aa04f1b9a3d51a5",
+      "records": 180,
+      "entity_support": {
+        "PER_ESTUDIANTE": 130,
+        "PROGRAMA": 180,
+        "MODULO": 150,
+        "PER_DOCENTE": 50
+      },
+      "tabular_records": 180,
+      "records_with_source_id": 0,
+      "inconsistent_token_tag_lengths": 0,
+      "invalid_spans": 0
+    },
+    "annotation": {
+      "origin": "programmatic span construction and token-overlap IOB2 in preparar_corpus_robusto.py; no annotator or adjudication IDs in JSONL.",
+      "review_file": {
+        "path": "output\\test_gold_revision.csv",
+        "sha256": "c2897fa45086322c614134a82193c02b3f476e48fc6393abfd488a919a08e8bb",
+        "columns": [
+          "linea",
+          "token",
+          "etiqueta_auto"
+        ],
+        "rows": 3511,
+        "status": "automatic labels only; does not demonstrate independent human review"
+      },
+      "independent_human_review": "not verifiable; no signed decisions, reviewer ID, before/after annotation or review log linked to gold IDs found in inspected sources.",
+      "source_reproduction": "not attempted: would regenerate datasets and require live catalog; existing dataset bytes were read only."
+    }
+  }
+}

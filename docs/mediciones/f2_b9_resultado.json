@@ -1,0 +1,32 @@
+{
+  "etiqueta": "F2, provisional",
+  "tarea": "F2-9 (B-9)",
+  "migracion": "backend/scripts/migrations/015_b9_descartes_y_homonimos.sql",
+  "invariantes": {
+    "tablas_public": 48,
+    "tablas_bi": 2,
+    "vistas_bi": 9,
+    "sin_tablas_nuevas": true,
+    "cascada_y_estados_abc_intactos": true
+  },
+  "pruebas_unitarias": {
+    "archivo": "tests/f2/test_f2_b9.py",
+    "resultado": "4 passed (dentro de 7 passed en tests/f2/)"
+  },
+  "evidencia_dw_f2": {
+    "log_inconsistencias_total": 10,
+    "log_inconsistencias_por_regla": {
+      "CI_NOMBRE_VARIANTE": 1,
+      "CONFLICTO_FUENTES": 9
+    },
+    "stg_entidad_no_resuelta_total": 5076,
+    "stg_entidad_no_resuelta_ruido_descartado": 5040,
+    "stg_entidad_no_resuelta_pendiente": 36,
+    "stg_homonimia_total": 1,
+    "stg_homonimia_con_id_homonimo": 1,
+    "stg_homonimia_distintos_id_homonimo": 1,
+    "bandeja_casos": 680,
+    "bandeja_grupos": 19,
+    "kpi_18": 36.0
+  }
+}
