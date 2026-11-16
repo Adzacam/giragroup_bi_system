@@ -1,0 +1,417 @@
+{
+  "etiqueta": "F3R, final (snapshot 10-nov)",
+  "tarea": "R3-6 (KPIs snapshot)",
+  "gestiones": {
+    "2024": {
+      "KPI-01": {
+        "api": 2311.15,
+        "sql": 2311.1537591356846,
+        "sql_redondeado": 2311.15,
+        "delta": 0.0
+      },
+      "KPI-02": {
+        "api": 6.25,
+        "sql": 6.253610224321702,
+        "sql_redondeado": 6.25,
+        "delta": 0.0
+      },
+      "KPI-03": {
+        "api": 102.26,
+        "sql": 102.25786678239136,
+        "sql_redondeado": 102.26,
+        "delta": 0.0
+      },
+      "KPI-04": {
+        "api": 314.0,
+        "sql": 314.0,
+        "sql_redondeado": 314.0,
+        "delta": 0.0
+      },
+      "KPI-05": {
+        "api": 14.08,
+        "sql": 14.081442337581597,
+        "sql_redondeado": 14.08,
+        "delta": 0.0
+      },
+      "KPI-06": {
+        "api": 100.0,
+        "sql": 100.0,
+        "sql_redondeado": 100.0,
+        "delta": 0.0
+      },
+      "KPI-07": {
+        "api": 78.94,
+        "sql": 78.94430870334484,
+        "sql_redondeado": 78.94,
+        "delta": 0.0
+      },
+      "KPI-08": {
+        "api": 85.5,
+        "sql": 85.50004212654815,
+        "sql_redondeado": 85.5,
+        "delta": 0.0
+      },
+      "KPI-09": {
+        "api": 674.0,
+        "sql": 674.0,
+        "sql_redondeado": 674.0,
+        "delta": 0.0
+      },
+      "KPI-10": {
+        "api": 93.43,
+        "sql": 93.42932070163826,
+        "sql_redondeado": 93.43,
+        "delta": 0.0,
+        "uso": "no_usar_dependiente_del_modelo"
+      },
+      "KPI-11": {
+        "api": 91.91,
+        "sql": 91.90799271884825,
+        "sql_redondeado": 91.91,
+        "delta": 0.0,
+        "uso": "no_usar_dependiente_del_modelo"
+      },
+      "KPI-12": {
+        "api": 17.6,
+        "sql": 17.59980442377595,
+        "sql_redondeado": 17.6,
+        "delta": 0.0
+      },
+      "KPI-13": {
+        "api": 102.26,
+        "sql": 102.25786678239136,
+        "sql_redondeado": 102.26,
+        "delta": 0.0
+      },
+      "KPI-14": {
+        "api": 0.0,
+        "sql": 0.0,
+        "sql_redondeado": 0.0,
+        "delta": 0.0
+      },
+      "KPI-15": {
+        "api": 43.58,
+        "sql": 43.57732634875141,
+        "sql_redondeado": 43.58,
+        "delta": 0.0
+      },
+      "KPI-16": {
+        "api": 0.0,
+        "sql": 0.0,
+        "sql_redondeado": 0.0,
+        "delta": 0.0
+      },
+      "KPI-17": {
+        "api": 90.0,
+        "sql": 90.0,
+        "sql_redondeado": 90.0,
+        "delta": 0.0
+      },
+      "KPI-18": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "uso": "no_usar_dependiente_del_modelo"
+      },
+      "KPI-19": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null
+      },
+      "KPI-20": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null
+      },
+      "KPI-21": {
+        "api": 3147.0,
+        "sql": 3147.0,
+        "sql_redondeado": 3147.0,
+        "delta": 0.0
+      },
+      "KPI-22": {
+        "api": 1631.0,
+        "sql": 1631.0,
+        "sql_redondeado": 1631.0,
+        "delta": 0.0
+      }
+    },
+    "2025": {
+      "KPI-01": {
+        "api": 3773.91,
+        "sql": 3773.9116613603474,
+        "sql_redondeado": 3773.91,
+        "delta": 0.0
+      },
+      "KPI-02": {
+        "api": 157.48,
+        "sql": 157.4755965288389,
+        "sql_redondeado": 157.48,
+        "delta": 0.0
+      },
+      "KPI-03": {
+        "api": 110.54,
+        "sql": 110.53682070636053,
+        "sql_redondeado": 110.54,
+        "delta": 0.0
+      },
+      "KPI-04": {
+        "api": 623.0,
+        "sql": 623.0,
+        "sql_redondeado": 623.0,
+        "delta": 0.0
+      },
+      "KPI-05": {
+        "api": 18.36,
+        "sql": 18.3587701835877,
+        "sql_redondeado": 18.36,
+        "delta": 0.0
+      },
+      "KPI-06": {
+        "api": 100.0,
+        "sql": 100.0,
+        "sql_redondeado": 100.0,
+        "delta": 0.0
+      },
+      "KPI-07": {
+        "api": 79.02,
+        "sql": 79.01993756922766,
+        "sql_redondeado": 79.02,
+        "delta": 0.0
+      },
+      "KPI-08": {
+        "api": 85.61,
+        "sql": 85.61071392609001,
+        "sql_redondeado": 85.61,
+        "delta": 0.0
+      },
+      "KPI-09": {
+        "api": 588.0,
+        "sql": 588.0,
+        "sql_redondeado": 588.0,
+        "delta": 0.0
+      },
+      "KPI-10": {
+        "api": 92.69,
+        "sql": 92.68519641825534,
+        "sql_redondeado": 92.69,
+        "delta": 0.0,
+        "uso": "no_usar_dependiente_del_modelo"
+      },
+      "KPI-11": {
+        "api": 90.1,
+        "sql": 90.10206046601193,
+        "sql_redondeado": 90.1,
+        "delta": 0.0,
+        "uso": "no_usar_dependiente_del_modelo"
+      },
+      "KPI-12": {
+        "api": 28.1,
+        "sql": 28.0976417481517,
+        "sql_redondeado": 28.1,
+        "delta": 0.0
+      },
+      "KPI-13": {
+        "api": 110.54,
+        "sql": 110.53682070636053,
+        "sql_redondeado": 110.54,
+        "delta": 0.0
+      },
+      "KPI-14": {
+        "api": 0.0,
+        "sql": 0.0,
+        "sql_redondeado": 0.0,
+        "delta": 0.0
+      },
+      "KPI-15": {
+        "api": 20.56,
+        "sql": 20.555831539895177,
+        "sql_redondeado": 20.56,
+        "delta": 0.0
+      },
+      "KPI-16": {
+        "api": 0.0,
+        "sql": 0.0,
+        "sql_redondeado": 0.0,
+        "delta": 0.0
+      },
+      "KPI-17": {
+        "api": 124.0,
+        "sql": 124.0,
+        "sql_redondeado": 124.0,
+        "delta": 0.0
+      },
+      "KPI-18": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "uso": "no_usar_dependiente_del_modelo"
+      },
+      "KPI-19": {
+        "api": 81.23,
+        "sql": 81.22557726465364,
+        "sql_redondeado": 81.23,
+        "delta": 0.0
+      },
+      "KPI-20": {
+        "api": 84.39,
+        "sql": 84.39393939393939,
+        "sql_redondeado": 84.39,
+        "delta": 0.0
+      },
+      "KPI-21": {
+        "api": 3455.0,
+        "sql": 3455.0,
+        "sql_redondeado": 3455.0,
+        "delta": 0.0
+      },
+      "KPI-22": {
+        "api": 2609.0,
+        "sql": 2609.0,
+        "sql_redondeado": 2609.0,
+        "delta": 0.0
+      }
+    },
+    "2026": {
+      "KPI-01": {
+        "api": 2956.21,
+        "sql": 2956.206646216769,
+        "sql_redondeado": 2956.21,
+        "delta": 0.0
+      },
+      "KPI-02": {
+        "api": 15.28,
+        "sql": 15.283199910809284,
+        "sql_redondeado": 15.28,
+        "delta": 0.0
+      },
+      "KPI-03": {
+        "api": 85.76,
+        "sql": 85.76397844215863,
+        "sql_redondeado": 85.76,
+        "delta": 0.0
+      },
+      "KPI-04": {
+        "api": 844.0,
+        "sql": 844.0,
+        "sql_redondeado": 844.0,
+        "delta": 0.0
+      },
+      "KPI-05": {
+        "api": 63.09,
+        "sql": 63.08860759493671,
+        "sql_redondeado": 63.09,
+        "delta": 0.0
+      },
+      "KPI-06": {
+        "api": 100.0,
+        "sql": 100.0,
+        "sql_redondeado": 100.0,
+        "delta": 0.0
+      },
+      "KPI-07": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null
+      },
+      "KPI-08": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null
+      },
+      "KPI-09": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null
+      },
+      "KPI-10": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "uso": "no_usar_dependiente_del_modelo"
+      },
+      "KPI-11": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "uso": "no_usar_dependiente_del_modelo"
+      },
+      "KPI-12": {
+        "api": -1.21,
+        "sql": -1.2059853127788476,
+        "sql_redondeado": -1.21,
+        "delta": 0.0
+      },
+      "KPI-13": {
+        "api": 31.69,
+        "sql": 31.685956914106402,
+        "sql_redondeado": 31.69,
+        "delta": 0.0
+      },
+      "KPI-14": {
+        "api": 12278356.22,
+        "sql": 12278356.22,
+        "sql_redondeado": 12278356.22,
+        "delta": 0.0
+      },
+      "KPI-15": {
+        "api": 26.58,
+        "sql": 26.57866442883044,
+        "sql_redondeado": 26.58,
+        "delta": 0.0
+      },
+      "KPI-16": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null
+      },
+      "KPI-17": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null
+      },
+      "KPI-18": {
+        "api": 1044.0,
+        "sql": 1044.0,
+        "sql_redondeado": 1044.0,
+        "delta": 0.0,
+        "uso": "no_usar_dependiente_del_modelo"
+      },
+      "KPI-19": {
+        "api": 83.74,
+        "sql": 83.7366503329564,
+        "sql_redondeado": 83.74,
+        "delta": 0.0
+      },
+      "KPI-20": {
+        "api": 82.51,
+        "sql": 82.51086956521739,
+        "sql_redondeado": 82.51,
+        "delta": 0.0
+      },
+      "KPI-21": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null
+      },
+      "KPI-22": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null
+      }
+    }
+  }
+}

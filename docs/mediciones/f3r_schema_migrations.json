@@ -1,0 +1,8 @@
+{
+  "etiqueta": "F3R, final",
+  "tarea": "R3-3 (schema_migrations en corridas llenas)",
+  "f3_base": {"filas": 13, "md5": "7d492c990ecd0d05ae5dc8d2612affb5", "columnas": ["version", "applied_at"]},
+  "corridas_llenas": {"filas": 13, "md5": "3d27f9c8d21b65c3f1576994e1e10d49", "columnas": ["version", "applied_at"]},
+  "diferencia_fila_a_fila": "Las 13 filas de 'version' (001..014) son idénticas; únicamente difiere la marca de tiempo 'applied_at' porque beto_pg_tmpfs se reinició entre f3_base y las corridas llenas (huella_dw_v2.py no excluyó schema_migrations.applied_at).",
+  "veredicto": "no afecta a los datos"
+}

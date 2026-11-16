@@ -1,0 +1,22 @@
+{
+  "etiqueta": "F3R, final",
+  "tarea": "R3-9 (Evidencias sueltas)",
+  "f1_75_66_pct": {
+    "encontrado_en_mediciones": false,
+    "dictamen": "RETIRADA (J1-15): no corresponde al modelo vigente; el F1 micro estricto del modelo vigente en gold_510 Modo C es 0.979552 (97.96%) y relajado 0.9942 (99.42%), y en layouts_5 Modo C estricto 0.33121 / relajado 0.7206."
+  },
+  "anotacion_y_corpus_modelo_vigente": {
+    "fuentes": ["docs/mediciones/f1_d3b_validez.json", "docs/mediciones/f1_corpus_auditoria.json", "docs/mediciones/f0_b4_auditoria.json"],
+    "train": {"filas": 1400, "personas_unicas_iob2": 2447, "entidades_por_tipo": {"PER_ESTUDIANTE": 1400, "MODULO": 1400, "PROGRAMA": 1400, "PER_DOCENTE": 1400}},
+    "dev": {"filas": 350, "personas_unicas_iob2": 597, "entidades_por_tipo": {"PER_ESTUDIANTE": 350, "MODULO": 350, "PROGRAMA": 350, "PER_DOCENTE": 350}},
+    "gold_510": {"filas": 180, "personas_unicas": 83, "entidades_por_tipo": {"PER_ESTUDIANTE": 130, "PROGRAMA": 180, "MODULO": 150, "PER_DOCENTE": 50}, "total_entidades": 510},
+    "orden_particion": "separación por claves de persona antes del aumento (scripts/preparar_corpus_robusto.py:101-110, 334-344)",
+    "fuga_4_niveles": "0 coincidencia en oraciones exactas, texto normalizado, personas train/dev spans (0) y gold_510 vs train/dev (0)"
+  },
+  "inventario_corpus_uploads_data": {
+    "libros": 10,
+    "hojas": 60,
+    "filas_procesables": 90538,
+    "nota_vs_docx": "El docx citaba 10 / 62 / 92.946 / 66.485 / 6,20%; la corrida actual de scripts/inventario_corpus.py sobre uploads/data reporta 10 libros, 60 hojas y 90.538 filas procesables (sin columna de % sin CI en el script)."
+  }
+}

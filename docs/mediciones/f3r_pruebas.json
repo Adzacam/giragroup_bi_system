@@ -1,0 +1,168 @@
+{
+  "etiqueta": "F3R",
+  "tarea": "R3-7 (Suite pytest + cobertura JSON)",
+  "colectadas": 842,
+  "passed": 823,
+  "failed": 1,
+  "skipped": 11,
+  "xfailed": 7,
+  "duracion_s": 354.78,
+  "cobertura_total": {
+    "sentencias": 14685,
+    "cubiertas": 10319,
+    "faltantes": 4366,
+    "porcentaje_2dec": 70.27,
+    "porcentaje_redondeado_term": 70
+  },
+  "archivos_clave_j1_04": {
+    "backend/core/security.py": {
+      "sentencias": 87,
+      "cubiertas": 76,
+      "faltantes": 11,
+      "cobertura_pct": 87.36
+    },
+    "backend/routers/reportes.py": {
+      "sentencias": 261,
+      "cubiertas": 221,
+      "faltantes": 40,
+      "cobertura_pct": 84.67
+    },
+    "backend/services/bandeja_grupos.py": {
+      "sentencias": 157,
+      "cubiertas": 146,
+      "faltantes": 11,
+      "cobertura_pct": 92.99
+    },
+    "backend/services/risk_service.py": {
+      "sentencias": 337,
+      "cubiertas": 318,
+      "faltantes": 19,
+      "cobertura_pct": 94.36
+    },
+    "pipeline/normalization/person_resolver.py": {
+      "sentencias": 152,
+      "cubiertas": 143,
+      "faltantes": 9,
+      "cobertura_pct": 94.08
+    }
+  },
+  "total_archivos_csv": 137,
+  "xfails": [
+    "tests/readiness/test_production_readiness.py::TestHoltWinters::test_banda_95_se_ensancha_con_el_horizonte - Hallazgo HW-IC: banda ±1,96·RMSE constante; la varianza debe crecer con h\r",
+    "tests/readiness/test_production_readiness.py::TestHoltWinters::test_mes_faltante_no_se_interpreta_como_demanda_cero - Hallazgo HW-GAP: asfreq().fillna(0) trata un mes sin carga como demanda cero\r",
+    "tests/readiness/test_production_readiness.py::TestOLSAnual::test_cagr_es_geometrico - Hallazgo OLS-CAGR: se publica la media aritmética de variaciones como CAGR\r",
+    "tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_estado_a_ci_con_extension_departamental - Hallazgo FK-CI-EXT: el CI con extensión departamental ('4567890 LP') se rechaza y cae a Estado C sintético\r",
+    "tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_id_sintetico_con_entropia_suficiente - Hallazgo FK-HASH: TEMP-CI usa MD5 truncado a 8 hex (32 bits); homónimos colisionan\r",
+    "tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_banda_media_deriva_a_staging[0.7] - Hallazgo FK-BANDA: [0.60, 0.85) y confianza None generan TEMP en DimEstudiante en vez de derivar a stg_entidad_no_resuelta\r",
+    "tests/readiness/test_production_readiness.py::TestCascadaConfianza::test_banda_media_deriva_a_staging[None] - Hallazgo FK-BANDA: [0.60, 0.85) y confianza None generan TEMP en DimEstudiante en vez de derivar a stg_entidad_no_resuelta\r"
+  ],
+  "skipped_detalle": [
+    "tests\\readiness\\test_production_readiness.py:259: READINESS_TOKEN no definido\r",
+    "tests\\readiness\\test_production_readiness.py:264: READINESS_TOKEN no definido\r",
+    "tests\\readiness\\test_production_readiness.py:270: READINESS_TOKEN y READINESS_TOKEN_2 requeridos\r",
+    "tests\\readiness\\test_production_readiness.py:307: READINESS_BETO_URL no definido\r",
+    "tests\\readiness\\test_production_readiness.py:311: READINESS_BETO_URL no definido\r",
+    "tests\\readiness\\test_production_readiness.py:318: READINESS_BETO_URL no definido\r",
+    "tests\\readiness\\test_production_readiness.py:338: READINESS_DB_URL no definido\r",
+    "tests\\readiness\\test_production_readiness.py:341: READINESS_DB_URL no definido\r",
+    "tests\\readiness\\test_production_readiness.py:344: READINESS_DB_URL no definido\r",
+    "tests\\readiness\\test_production_readiness.py:347: READINESS_DB_URL no definido\r",
+    "tests\\readiness\\test_production_readiness.py:352: READINESS_DB_URL no definido\r"
+  ],
+  "por_carpeta_f3_referencia": {
+    "f0": {
+      "total": 103,
+      "passed": 103,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "f1": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "f2": {
+      "total": 19,
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "readiness": {
+      "total": 39,
+      "passed": 21,
+      "failed": 0,
+      "skipped": 11,
+      "xfailed": 7,
+      "errors": 0
+    },
+    "sprint1": {
+      "total": 29,
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "sprint2": {
+      "total": 67,
+      "passed": 67,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "sprint3": {
+      "total": 228,
+      "passed": 228,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "sprint4": {
+      "total": 104,
+      "passed": 104,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "sprint5": {
+      "total": 210,
+      "passed": 210,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "sprint6": {
+      "total": 14,
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    },
+    "transversales": {
+      "total": 23,
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "xfailed": 0,
+      "errors": 0
+    }
+  },
+  "diferencia_vs_f3_6": {
+    "f3_6_passed": 824,
+    "f3r_passed": 823,
+    "f3r_failed": 1,
+    "detalle_fallo": "tests/sprint5/test_powerbi_retencion.py::test_conserva_solo_las_ultimas_versiones_y_borra_los_archivos (assert 2 == 3) debido a cambios previos sin commit en backend/routers/powerbi.py que F3R no modifica."
+  }
+}

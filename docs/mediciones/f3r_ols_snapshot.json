@@ -1,0 +1,133 @@
+{
+  "base_datos": "f3r_snapshot",
+  "anual_status": 200,
+  "anual": {
+    "status": "success",
+    "data": {
+      "caso_uso": "META_ANUAL",
+      "granularidad": "ANUAL",
+      "metodo": "OLS",
+      "metodo_intervalo": null,
+      "tipo_estimacion": "Proyección indicativa de tendencia lineal anual",
+      "horizonte_meses": null,
+      "pendiente_anual_bs": 2436141.68,
+      "cagr_historico_pct": 26.76,
+      "banda_operativa_pct": 5.0,
+      "banda_min_bs": 14424246.47,
+      "banda_max_bs": 15942588.21,
+      "nota_metodologica": "Estimación de tendencia lineal indicativa sobre N=3 puntos. No se calculan intervalos de confianza al 95% debido a la reducida muestra longitudinal histórica (dof=1). Ver Cap. 4 del informe técnico.",
+      "rmse": null,
+      "aic": null,
+      "sin_datos": false,
+      "mensaje": null,
+      "n_observaciones": null,
+      "proyecciones": [
+        {
+          "periodo": "2026",
+          "monto_proyectado_bs": 15183417.34,
+          "ic_lower": 14424246.47,
+          "ic_upper": 15942588.21,
+          "ic80_lower": null,
+          "ic80_upper": null,
+          "ic95_lower": null,
+          "ic95_upper": null
+        },
+        {
+          "periodo": "2027",
+          "monto_proyectado_bs": 17619559.02,
+          "ic_lower": 16738581.07,
+          "ic_upper": 18500536.97,
+          "ic80_lower": null,
+          "ic80_upper": null,
+          "ic95_lower": null,
+          "ic95_upper": null
+        }
+      ]
+    }
+  },
+  "mensual_status": 200,
+  "mensual": {
+    "status": "success",
+    "data": {
+      "caso_uso": "META_MENSUAL_PROGRAMAS",
+      "granularidad": "MENSUAL",
+      "metodo": "HoltWinters",
+      "metodo_intervalo": "simulacion_param_aditivo_n1000",
+      "tipo_estimacion": null,
+      "horizonte_meses": 6,
+      "pendiente_anual_bs": null,
+      "cagr_historico_pct": null,
+      "banda_operativa_pct": null,
+      "banda_min_bs": null,
+      "banda_max_bs": null,
+      "nota_metodologica": null,
+      "rmse": 184571.04,
+      "aic": 1198.08,
+      "sin_datos": false,
+      "mensaje": null,
+      "n_observaciones": null,
+      "proyecciones": [
+        {
+          "periodo": "2027-01",
+          "monto_proyectado_bs": 1585081.97,
+          "ic_lower": 1223322.73,
+          "ic_upper": 1946841.21,
+          "ic80_lower": 1285518.67,
+          "ic80_upper": 1877847.63,
+          "ic95_lower": 1120282.03,
+          "ic95_upper": 2023292.39
+        },
+        {
+          "periodo": "2027-02",
+          "monto_proyectado_bs": 1479533.13,
+          "ic_lower": 1117773.9,
+          "ic_upper": 1841292.37,
+          "ic80_lower": 1133619.29,
+          "ic80_upper": 1768112.47,
+          "ic95_lower": 977838.63,
+          "ic95_upper": 1917175.71
+        },
+        {
+          "periodo": "2027-03",
+          "monto_proyectado_bs": 1599347.57,
+          "ic_lower": 1237588.33,
+          "ic_upper": 1961106.81,
+          "ic80_lower": 1276848.57,
+          "ic80_upper": 1931680.27,
+          "ic95_lower": 1100287.44,
+          "ic95_upper": 2117623.58
+        },
+        {
+          "periodo": "2027-04",
+          "monto_proyectado_bs": 1695363.16,
+          "ic_lower": 1333603.93,
+          "ic_upper": 2057122.4,
+          "ic80_lower": 1359658.83,
+          "ic80_upper": 2037927.5,
+          "ic95_lower": 1181216.1,
+          "ic95_upper": 2268015.16
+        },
+        {
+          "periodo": "2027-05",
+          "monto_proyectado_bs": 1308120.81,
+          "ic_lower": 946361.57,
+          "ic_upper": 1669880.04,
+          "ic80_lower": 908789.4,
+          "ic80_upper": 1685897.63,
+          "ic95_lower": 719202.94,
+          "ic95_upper": 1893661.46
+        },
+        {
+          "periodo": "2027-06",
+          "monto_proyectado_bs": 1675586.99,
+          "ic_lower": 1313827.75,
+          "ic_upper": 2037346.23,
+          "ic80_lower": 1240141.52,
+          "ic80_upper": 2099396.83,
+          "ic95_lower": 1029399.06,
+          "ic95_upper": 2342524.53
+        }
+      ]
+    }
+  }
+}

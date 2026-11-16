@@ -1,0 +1,129 @@
+{
+  "etiqueta": "F3R, escenario reescrito (Tabla 3.32)",
+  "tarea": "R3-8 (Locust)",
+  "parametros": {
+    "usuarios": 50,
+    "rampa_por_s": 5,
+    "duracion": "30s",
+    "base_datos": "f3r_base"
+  },
+  "agregado": {
+    "method": "",
+    "requests": 1219,
+    "failures": 0,
+    "median_ms": 15.0,
+    "avg_ms": 23.466841837587594,
+    "min_ms": 2.9173000002629124,
+    "max_ms": 316.84580000001006,
+    "rps": 41.81714706030991,
+    "p50_ms": 15.0,
+    "p95_ms": 63.0,
+    "p99_ms": 99.0
+  },
+  "por_endpoint": {
+    "GET /api/v1/cmi/scorecard": {
+      "method": "GET",
+      "requests": 222,
+      "failures": 0,
+      "median_ms": 12.0,
+      "avg_ms": 16.95095765769299,
+      "min_ms": 3.8751000001866487,
+      "max_ms": 316.84580000001006,
+      "rps": 7.615591999498606,
+      "p50_ms": 12.0,
+      "p95_ms": 40.0,
+      "p99_ms": 62.0
+    },
+    "GET /api/v1/dataops/review-tray/grupos": {
+      "method": "GET",
+      "requests": 201,
+      "failures": 0,
+      "median_ms": 47.0,
+      "avg_ms": 52.59598606969587,
+      "min_ms": 20.09360000010929,
+      "max_ms": 276.6132999995534,
+      "rps": 6.895198161708197,
+      "p50_ms": 47.0,
+      "p95_ms": 89.0,
+      "p99_ms": 120.0
+    },
+    "GET /api/v1/forecast/alumnos": {
+      "method": "GET",
+      "requests": 120,
+      "failures": 0,
+      "median_ms": 11.0,
+      "avg_ms": 14.959050000038587,
+      "min_ms": 3.3032000001185224,
+      "max_ms": 57.07369999981893,
+      "rps": 4.116536215945192,
+      "p50_ms": 11.0,
+      "p95_ms": 40.0,
+      "p99_ms": 47.0
+    },
+    "GET /api/v1/forecast/metas": {
+      "method": "GET",
+      "requests": 125,
+      "failures": 0,
+      "median_ms": 12.0,
+      "avg_ms": 16.88399919999938,
+      "min_ms": 3.604599999562197,
+      "max_ms": 98.29649999937828,
+      "rps": 4.288058558276242,
+      "p50_ms": 12.0,
+      "p95_ms": 43.0,
+      "p99_ms": 82.0
+    },
+    "GET /api/v1/kpis/cmi-completo": {
+      "method": "GET",
+      "requests": 206,
+      "failures": 0,
+      "median_ms": 12.0,
+      "avg_ms": 19.43054077670346,
+      "min_ms": 4.050399999869114,
+      "max_ms": 222.76500000043598,
+      "rps": 7.066720504039247,
+      "p50_ms": 12.0,
+      "p95_ms": 47.0,
+      "p99_ms": 200.0
+    },
+    "GET /api/v1/riesgos/alertas-tempranas": {
+      "method": "GET",
+      "requests": 151,
+      "failures": 0,
+      "median_ms": 13.0,
+      "avg_ms": 18.396558278134354,
+      "min_ms": 5.818000000544998,
+      "max_ms": 177.57439999968483,
+      "rps": 5.1799747383977,
+      "p50_ms": 13.0,
+      "p95_ms": 47.0,
+      "p99_ms": 180.0
+    },
+    "GET /health": {
+      "method": "GET",
+      "requests": 128,
+      "failures": 0,
+      "median_ms": 9.0,
+      "avg_ms": 11.344792968763784,
+      "min_ms": 2.9173000002629124,
+      "max_ms": 41.579700000511366,
+      "rps": 4.390971963674872,
+      "p50_ms": 9.0,
+      "p95_ms": 27.0,
+      "p99_ms": 40.0
+    },
+    "POST /api/v1/dataops/review-tray/approve-group": {
+      "method": "POST",
+      "requests": 66,
+      "failures": 0,
+      "median_ms": 23.0,
+      "avg_ms": 32.3164136363189,
+      "min_ms": 9.084899999834306,
+      "max_ms": 89.77879999929428,
+      "rps": 2.264094918769856,
+      "p50_ms": 23.0,
+      "p95_ms": 80.0,
+      "p99_ms": 90.0
+    }
+  }
+}

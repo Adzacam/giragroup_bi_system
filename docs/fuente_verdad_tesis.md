@@ -1,525 +1,361 @@
-# ÚNICA FUENTE DE VERDAD (SFV) - PROYECTO DE GRADO GIRAGROUP BI
-**Estado:** **CONGELADO** — F3 (16 de noviembre de 2026)  
-**Sistema de Inteligencia de Negocios basado en BETO y Cuadro de Mando Integral para mitigar la fragmentación informacional en GiraGroup S.R.L.**  
+# ÚNICA FUENTE DE VERDAD (SFV) — PROYECTO DE GRADO GIRAGROUP BI
+
+**Estado:** **CONGELADO** — F3R (16 de noviembre de 2026)  
+**Título del Proyecto:** *Sistema de Inteligencia de Negocios basado en BETO y Cuadro de Mando Integral para mitigar la fragmentación informacional en GiraGroup S.R.L.*  
 **Autor:** Lean (Adriano Daza)  
-**Rama / Commit base F3:** `beto-integracion` (`155192b`, código congelado F3-4 sobre `b7c5006`)  
-**Lote congelado (10 archivos, SHA-256):** `aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60`  
-**Modelo BETO (`beto-v2`, SHA-256):** `9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92`  
-**Huella v2 de `f3_base` (SHA-256):** `b5f1d7b145ceeef8ca85c1f85fd9121eb20d506fcad618a13d66fd944eaaf24f` (`docs/mediciones/f3_base.json.huella.json`)  
+**Rama / Commit base F3:** `beto-integracion` (`2f68d0c`, código del sistema congelado sin cambios en F3R)  
+**Lote congelado (10 archivos en `uploads/data/`, SHA-256):** `aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60`  
+**Modelo BETO vigente (SHA-256):** `9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92`  
+**Huella de `f3_base` (SHA-256):** `b5f1d7b145ceeef8ca85c1f85fd9121eb20d506fcad618a13d66fd944eaaf24f` (`docs/mediciones/f3_base.json.huella.json`)  
 **Flags de integración BETO:** `BETO_CASCADA_FINAL=False`, `BETO_ACUERDO_QC=False`, `BETO_SUGERENCIA_HITL=False`, `BETO_VENTANA=False`  
-**Referencia histórica (10-nov-2026):** `snapshot_dw_20261110_1201` (`docs/evidencias/snapshot_dw_20261110_1201.dump`, SHA-256 `14D45F5A128F44543927911DC0AD453F681D524AC05037203F5C0C2787E3A2EB`)  
-**Acceso a las bases:** las cadenas de conexión y credenciales se retiraron de este documento (S-13). Se leen de la variable de entorno `DATABASE_URL` / `docker-compose.yml` en el equipo de ejecución. Snapshot DW: contenedor `giragroup_db`, base `snapshot_dw_20261110_1201`; catálogo: contenedor `giragroup_catalog_db`, base `giragroup_catalog_db`.  
+**Snapshot histórico (10-nov-2026):** `snapshot_dw_20261110_1201` (`docs/evidencias/snapshot_dw_20261110_1201.dump`, SHA-256 `14D45F5A128F44543927911DC0AD453F681D524AC05037203F5C0C2787E3A2EB`)  
+**Acceso a las bases:** Las credenciales y cadenas de conexión se leen únicamente desde variables de entorno (`DATABASE_URL` / `docker-compose.yml`). Ninguna medición altera la DW viva ni el archivo `.dump` del snapshot.
 
 ---
 
-## INTRODUCCIÓN Y REGLAS DE CONCILIACIÓN
-El presente documento constituye la **Única Fuente de Verdad (Single Source of Truth)** para la redacción final del Proyecto de Grado, reconciliando y sustituyendo de forma vinculante cualquier discrepancia numérica encontrada entre los borradores previos de los Capítulos I, III, IV y V (texto narrativo, tablas, cuadros de especificación técnica, esquemas y gráficos estadísticos).
+## REGLAS DE PRECEDENCIA, BASES Y CONCILIACIÓN
 
-Todas las cifras reportadas provienen estrictamente de la ejecución en una única corrida sobre la copia congelada e inmutable de la base de datos analítica (`snapshot_dw_20261110_1201`). Se emplea de manera uniforme el estándar numérico oficial de Bolivia: coma (`,`) como separador decimal y punto (`.`) como separador de miles. Ninguna cifra ha sido estimada ni alterada; en los casos donde un registro o dimensión no se genera en el estado actual del sistema, se consigna formalmente como **N/D** indicando su fundamento técnico.
-
----
-
-## A. LOTE DE CARGA Y VINCULACIÓN
-El lote de validación de producción se compone de **1.387 registros procesados**, consolidados a partir de los 7 archivos primarios de producción ubicados en `uploads/data/`. La arquitectura en ejecución (Modo B Híbrido: Encabezados + Reglas Determinísticas + RapidFuzz + Modelo BETO) resolvió **1.353 registros de manera directa** (97,55 %), derivó **34 registros a revisión humana HITL** (2,45 %) y **0 registros a Staging directo** (0,00 %).
-
-### Tabla A.1: Métricas Consolidadas del Lote de Carga y Vinculación
-| ID | Métrica | Valor | Ref. ronda 10 | ¿Coincide? | Fuente (SQL/comando/log) | Dónde va en el documento |
-|---|---|---|---|---|---|---|
-| A-01 | Total de registros evaluados en el lote | 1.387 | 1.387 | Sí | `docs/evidencias/lote_1387_uploads_data_arquitectura_b.json` | Cap. IV, Sec. 4.3; Tabla 4.1; Cuadro 3.8 |
-| A-02 | Registros vinculados directos (Banda ≥ 0,85) | 1.353 (97,55 %) | 1.353 (97,55 %) | Sí | `SELECT count(*) FROM fact_rendimiento_academico WHERE carga_lote = 'lote_1387'` / Log de ejecución | Cap. III, Sec. 3.4; Cap. IV, Sec. 4.3; Gráfico 3.2; Gráfico 4.2 |
-| A-03 | Registros derivados a HITL (Banda 0,60–0,85) | 34 (2,45 %) | 34 (2,45 %) | Sí | `lote_1387_uploads_data_arquitectura_b.json:distribucion_bandas_con_regla_personas` | Cap. III, Sec. 3.4; Cap. IV, Sec. 4.3; Gráfico 3.2; Gráfico 4.2 |
-| A-04 | Registros rechazados a Staging (Banda < 0,60) | 0 (0,00 %) | 0 (0,00 %) | Sí | `lote_1387_uploads_data_arquitectura_b.json:distribucion_bandas_con_regla_personas` | Cap. III, Sec. 3.4; Cap. IV, Sec. 4.3; Gráfico 3.2; Gráfico 4.2 |
-| A-05 | Tasa de vinculación automática final | 97,55 % | 97,55 % | Sí | `1.353 / 1.387 * 100` | Cap. I, Planteamiento; Cap. IV, Discusión |
-| A-06 | Tasa de derivación a revisión humana (HITL) | 2,45 % | 2,45 % | Sí | `34 / 1.387 * 100` | Cap. I, Planteamiento; Cap. IV, Discusión |
-| A-07 | Personas evaluadas en el lote (Total entidades) | 1.658 | 1.658 | Sí | `lote_1387_uploads_data_arquitectura_b.json:personas` | Cap. IV, Sec. 4.3.2 |
-| A-08 | Distribución fk_estado A (CI exacta confirmada) | 1.021 (61,58 %) | 1.021 (61,58 %) | Sí | `personas_por_fk_estado.estudiante.A` | Cap. III, Sec. 3.3.4; Cap. IV, Tabla 4.2 |
-| A-09 | Distribución fk_estado B (Fuzzy/rescate sin CI) | 134 (8,08 %) | 134 (8,08 %) | Sí | `personas_por_fk_estado.estudiante.B` | Cap. III, Sec. 3.3.4; Cap. IV, Tabla 4.2 |
-| A-10 | Distribución fk_estado C (Docentes nuevos/TEMP) | 498 (30,04 %) | 498 (30,04 %) | Sí | `personas_por_fk_estado.docente.C` | Cap. III, Sec. 3.3.4; Cap. IV, Tabla 4.2 |
-| A-11 | Personas sin coincidencia derivadas a HITL | 5 (0,30 %) | 5 (0,30 %) | Sí | `personas.sin_coincidencia_HITL` | Cap. IV, Sec. 4.3.2 |
-| A-12 | Cascada: Resolución por CI_EXACTA | 1.850 (16,19 %) | 1.850 | Sí | `conteos_fuente_resolucion.CI_EXACTA` (N=11.426) | Cap. III, Sec. 3.3; Gráfico 4.2 |
-| A-13 | Cascada: Resolución por ENCABEZADO | 3.079 (26,95 %) | 3.079 | Sí | `conteos_fuente_resolucion.ENCABEZADO` | Cap. III, Sec. 3.3; Gráfico 4.2 |
-| A-14 | Cascada: Resolución por REGEX | 3.103 (27,16 %) | 3.103 | Sí | `conteos_fuente_resolucion.REGEX` | Cap. III, Sec. 3.3; Gráfico 4.2 |
-| A-15 | Cascada: Resolución por BETO (Inferencia NLP) | 3.248 (28,43 %) | 3.248 | Sí | `conteos_fuente_resolucion.BETO` | Cap. III, Sec. 3.3; Gráfico 4.2 |
-| A-16 | Cascada: Resolución por FUZZY (RapidFuzz) | 146 (1,28 %) | 146 | Sí | `conteos_fuente_resolucion.FUZZY` | Cap. III, Sec. 3.3; Gráfico 4.2 |
-| A-17 | Conflictos de CI pendientes en Staging | 1.044 | 1.044 | Sí | `SELECT count(*) FROM stg_entidad_no_resuelta WHERE resuelto = false` | Cap. IV, Sec. 4.3.3; Gráfico 4.1 |
-| A-18 | Conflictos CI con nombres discordantes | 756 | 756 | Sí | `SELECT count(*) FROM stg_entidad_no_resuelta WHERE motivo = 'CI_NOMBRE_DISCORDANTE' AND resuelto = false` | Cap. IV, Sec. 4.3.3; Gráfico 4.1 |
-| A-19 | Evaluaciones con baja confianza IA en Staging | 288 | 288 | Sí | `SELECT count(*) FROM stg_entidad_no_resuelta WHERE motivo = 'BAJA_CONFIANZA_IA' AND resuelto = false` | Cap. IV, Sec. 4.3.3; Gráfico 4.1 |
-| A-20 | Filas de hechos académicos en DW (`fact_rendimiento_academico`) | 22.618 | 22.618 | Sí (redefinición) | `SELECT count(*) FROM fact_rendimiento_academico;` | Cap. III, Modelo DW; Cap. IV, Sec. 4.2 |
-| A-21 | Filas de hechos financieros en DW (`fact_situacion_financiera`) | 10.483 | 10.483 | Sí (redefinición) | `SELECT count(*) FROM fact_situacion_financiera;` | Cap. III, Modelo DW; Cap. IV, Sec. 4.2 |
-| A-22 | Estudiantes totales en dimensión (`dim_estudiante`) | 14.078 | 14.078 | Sí | `SELECT count(*) FROM dim_estudiante;` | Cap. III, Sec. 3.3.4 |
-| A-23 | Documentos de identidad (CI) únicos en DW | 13.667 | 13.667 | Sí | `SELECT count(DISTINCT ci_numero) FROM dim_estudiante;` | Cap. III, Sec. 3.3.4; Cap. IV, Sec. 4.2 |
-| A-24 | Descartes por reglas de calidad sin bitácora en BD | 509 entidades | 509 entidades | Sí | `lote_1387_uploads_data_arquitectura_b.json:excepciones.por_destino.descarte` | Cap. IV, Sec. 4.3.1; Defectos Sec. H |
-| A-25 | Descartes con registro en `log_inconsistencias` | 48 entidades | 48 entidades | Sí | `SELECT count(*) FROM log_inconsistencias WHERE regla_origen = 'PER_SIN_FORMA_NOMBRE'` | Cap. IV, Sec. 4.3.1; Tabla 4.3 |
-| A-26 | Tiempo medio de ciclo automático (3 corridas) | 59,14 s | 60,00 s | Diferencia de -0,86 s | `docs/evidencias/ciclo_completo_final_1/2/3.json` (58,42 s, 59,73 s, 59,26 s) | Cap. IV, Sec. 4.4; Cuadro 4.5 |
-| A-27 | Tiempo mínimo y máximo de ciclo automático | Mín: 58,42 s; Máx: 59,73 s | 59,24 s – 60,84 s | Sí (rango concordante) | `docs/evidencias/ciclo_completo_final_1/2/3.json` y `ciclo_r8_resumen.json` | Cap. IV, Sec. 4.4 |
-
-### Detalle A.1: Desglose por Archivo de Origen del Lote 1.387
-1. **Base centralizada Académica ARCA (1).xlsx** (Hoja `ACTAS DE NOTAS`):
-   - Filas leídas: 450 | Filas cargadas directo: 448 (99,56 %) | Derivadas a HITL: 2 (0,44 %) | Staging: 0.
-   - Motivo de HITL: N/D (el JSON de evidencia no registra el motivo por archivo; ver Detalle A.2).
-2. **BD Cobranzas.xlsx** (Hoja `COBRANZAS 2024 2025`):
-   - Filas leídas: 350 | Filas cargadas directo: 349 (99,71 %) | Derivadas a HITL: 1 (0,29 %) | Staging: 0.
-   - Motivo de HITL: N/D (el JSON de evidencia no registra el motivo por archivo; ver Detalle A.2).
-3. **TBL_INSCRITOS.xlsx** (Hoja `TBL_INSCRITOS`):
-   - Filas leídas: 250 | Filas cargadas directo: 248 (99,20 %) | Derivadas a HITL: 2 (0,80 %) | Staging: 0.
-   - Motivo de HITL: N/D (el JSON de evidencia no registra el motivo por archivo; ver Detalle A.2).
-4. **Evaluación Docente Institución A.xlsx** (Hoja `DIP. EXP DOC. X MODULO`):
-   - Filas leídas: 150 | Filas cargadas directo: 137 (91,33 %) | Derivadas a HITL: 13 (8,67 %) | Staging: 0.
-   - Motivo de HITL: N/D (el JSON de evidencia no registra el motivo por archivo; ver Detalle A.2).
-5. **Experiencia Docente 2.0.xlsx** (Hoja `CURSOS DOC 1`):
-   - Filas leídas: 110 | Filas cargadas directo: 95 (86,36 %) | Derivadas a HITL: 15 (13,64 %) | Staging: 0.
-   - Motivo de HITL: N/D (el JSON de evidencia no registra el motivo por archivo; ver Detalle A.2).
-6. **BD Egresos.xlsx** (Hoja `egresos`):
-   - Filas leídas: 53 | Filas cargadas directo: 53 (100,00 %) | Derivadas a HITL: 0 (0,00 %) | Staging: 0.
-7. **EJECUTADO VS META.xlsx** (Hoja `EJECUTADO`):
-   - Filas leídas: 24 | Filas cargadas directo: 23 (95,83 %) | Derivadas a HITL: 1 (4,17 %) | Staging: 0.
-   - Motivo de HITL: N/D (el JSON de evidencia no registra el motivo por archivo; ver Detalle A.2).
-
-### Detalle A.2: Composición de los 34 registros HITL y criterio de muestreo (S-08)
-- **34 HITL = 3 + 31** (`lote_1387_uploads_data_arquitectura_b.json`): 3 por banda de confianza intermedia y 31 registros que iban a carga directa pero se movieron a HITL por persona sin resolver (`registros_directo_movidos_a_hitl_por_persona_sin_resolver = 31`: 5 `PERSONA_SIN_COINCIDENCIA` + 26 hechos sin persona por `PER_SIN_FORMA_NOMBRE`).
-- **Los 15 casos de Experiencia Docente 2.0:** el JSON da el recuento por archivo (95 directo / 15 HITL) pero **no su motivo**. La afirmación previa de que eran «Ninguno / NINGUNA / -» **no tiene evidencia** y se retiró. Comprobación de código (`pipeline/normalization/person_resolver.py`): `es_etiqueta_likert`, `parece_nombre_propio` y `es_correo` devuelven `False` para `Ninguno`, `NINGUNA` y `-`, es decir, **ninguna regla de calidad los descarta**; por eso no podían ir «al descarte por regla». Además, en `CURSOS DOC 1` la segunda fila trae códigos `POS-xxxx` en la columna «Nombre completo del usuario» (columnas desplazadas), causa candidata aún no verificada fila a fila.
-- **Muestreo:** `muestreo_por_archivo.criterio_documentado = false`. Los topes 450/350/250/150/110/53/24 son constantes del script (`scripts/reejecutar_lote_1387_uploads_data.py`); la selección es «primeras N filas no vacías en orden de archivo», **sin aleatorización ni estratificación**. El texto de la tesis («muestra estratificada») debe corregirse.
-
-### Detalle A.3: Corridas del ciclo mensual (S-09)
-- `docs/evidencias/ciclo_completo_final_1/2/3.json` (13:46 del 09-nov-2026; `mes_objetivo` 2026-03): procesan **10 archivos** (BD Cobranzas, BD Egresos, BD Techos, Base centralizada Académica ARCA (1), EJECUTADO VS META, Evaluación Docente Institución A, Experiencia Docente 2.0, PLANIFICACION Y EJECUCION ACADÉMICA, TBL_INSCRITOS, [BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE), 12.016 filas de entrada, 81.107 hechos cargados. Tiempos 58,42 / 59,73 / 59,26 s. Casos HITL nuevos por corrida: **32** (bandeja 26.863 → 26.895); `grupos_hitl_final_1.json` lista **252 casos / 38 grupos**.
-- **188 casos / 37 grupos** NO proviene de `ciclo_completo_final_*`: sale de `ciclo_r8_*`/`revision_r8_*` y `tiempo_klm.json` (`casos: 188`, `grupos: 37`; RESUMEN_RONDA8.md). Las corridas `ciclo_r8_1/2/3.json` (15:12, posteriores) dan 60,84 / 59,24 / 59,92 s → media 60,0 s, DE 0,8 s (`ciclo_r8_resumen.json`).
-- **Inconsistencia abierta:** la SFV usa los tiempos de `final_*` (A-26: 59,14 s) pero el KLM de la tesis usa 188/37 de `r8`. Son dos series distintas; hay que elegir una (la tesis hoy cita 60,0 s de `r8`). Decisión pendiente del autor.
-- **KLM 490,5 s** (aritmética reproducible; `tiempo_klm.json` solo guarda casos y grupos, los tiempos humanos no se midieron): 37 grupos × 5,3 s (2 × [1,35 decisión + 1,10 desplazamiento + 0,20 clic]) = 196,1 s; 188 casos × 1,35 s = 253,8 s; 2 acciones adicionales × 5,3 s = 10,6 s; ingreso y filtrado 30,0 s. Total 490,5 s = 8,2 min.
+1. **Regla de precedencia:** Este documento constituye la **Única Fuente de Verdad (SFV)** unificada y vinculante para la redacción final de los Capítulos I, III, IV y V. Sustituye y anula cualquier borrador, anexo o cifra previa que lo contradiga.
+2. **Regla de base mixta declarada (Decisión 1, 16-nov-2026):**
+   - **Base `snapshot 10-nov` (`snapshot_dw_20261110_1201`):** Fuente exclusiva de las series históricas y cifras de negocio que **no dependen del modelo BETO de extracción** (KPIs de negocio, alertas tempranas, serie histórica de matrícula de 43 meses, recaudación, metas y conteos históricos del DW).
+   - **Base `f3_base` (ciclo mensual 2026-03 sobre recortes `output/backups/f0_lote/slices/`):** Fuente exclusiva de las métricas operativas del ciclo vigente (tiempos de RNF-03, KLM, bandeja HITL del ciclo, staging, `log_inconsistencias`, KPI-10, KPI-11, KPI-18 y cuadre de cobranzas).
+   - **Base `lote 1.387` (`f3r_lote_1387.json`):** Fuente exclusiva de la evaluación controlada de 1.387 registros ejecutada con el modelo BETO vigente.
+   - **Regla de no mezcla:** Dentro de una misma tabla **nunca se mezclan bases**. El título de cada tabla declara explícitamente la única base a la que pertenecen sus filas.
+3. **Regla de modelo único (Decisión 4, 16-nov-2026):** La tesis describe únicamente el modelo BETO vigente (`9ff7fb9d…5f92`). No se citan versiones anteriores ni se realizan comparaciones entre versiones del modelo.
+4. **Estándar numérico:** Se emplea de forma uniforme el estándar oficial de Bolivia: **coma (`,`) como separador decimal y punto (`.`) como separador de miles**. Toda cifra cuantitativa está trazada a un archivo y ruta JSON en `docs/mediciones/` y verificada por `scripts/verificar_sfv.py`. Los valores sin respaldo medible o externos al código se declaran como **N/D**, **RETIRADA** o **Dato de Lean**.
 
 ---
 
-## B. STAGING, IDEMPOTENCIA Y EXCEPCIONES
-El sistema mantiene mecanismos de aislamiento para resguardar la consistencia transaccional y la integridad referencial en el Data Warehouse.
+## A. LOTE 1.387, CICLO OPERATIVO (`f3_base`) Y RENDIMIENTO (RNF-03)
 
-### Tabla B.1: Métricas de Staging, Idempotencia y Excepciones
-| ID | Métrica | Valor | Ref. ronda 10 | ¿Coincide? | Fuente (SQL/comando/log) | Dónde va en el documento |
-|---|---|---|---|---|---|---|
-| B-01 | Excepciones de calidad abiertas en el lote | 0 de 268 registros (0,00 %) | 0 de 268 | Sí | `lote_1387_uploads_data_arquitectura_b.json:excepciones.habrian_ingresado_al_dw_sin_control` | Cap. IV, Sec. 4.3.1; Tabla 4.3 |
-| B-02 | Excepciones de calidad abiertas a nivel entidad | 0 de 562 entidades (0,00 %) | 0 de 562 | Sí | `lote_1387_uploads_data_arquitectura_b.json:excepciones.total_entidades` | Cap. IV, Sec. 4.3.1; Tabla 4.3 |
-| B-03 | Filas nuevas en prueba de idempotencia estricta | 0 filas | 0 filas | Sí | `docs/evidencias/ciclo_idempotencia_hitl.json` / `backend/services/dw_loader.py:974` | Cap. IV, Sec. 4.3.4 |
-| B-04 | Conflicto precedencia Marzo 2025: Valor consolidado en DW | 997.224,70 Bs | 997.224,70 Bs | Sí | `SELECT monto_ejecutado FROM fact_rentabilidad WHERE id_tiempo IN (SELECT id_tiempo FROM dim_tiempo WHERE periodo_mes = '2025-03')` | Cap. IV, Sec. 4.2.3; Cuadro 4.2 |
-| B-05 | Conflicto precedencia Marzo 2025: Fuente prevaleciente | `EJECUTADO VS META` | `EJECUTADO VS META` | Sí | `SELECT * FROM log_inconsistencias WHERE id_inconsistencia = 1527` | Cap. IV, Sec. 4.2.3 |
-| B-06 | Stock histórico pendiente en bandeja HITL | 1.606 casos en 786 grupos | 1.606 casos / 786 grupos | Sí | `docs/evidencias/remanente_stock_grupos.json` / `backend/services/bandeja_grupos.py` | Cap. IV, Sec. 4.3.3; Gráfico 4.1 |
-| B-07 | Subconjunto de stock: Conflictos de CI | 756 casos en 725 grupos | 756 casos / 725 grupos | Sí | `stg_entidad_no_resuelta` filtrado por `CI_NOMBRE_DISCORDANTE` | Cap. IV, Sec. 4.3.3 |
-| B-08 | Subconjunto de stock: Baja confianza y hechos en revisión | 850 casos en 61 grupos | 850 casos en 61 grupos | Sí | 288 `BAJA_CONFIANZA_IA` + 562 hechos en revisión: `SELECT count(*) FROM fact_rendimiento_academico WHERE requiere_revision` = 559 y `... FROM fact_situacion_financiera WHERE requiere_revision` = 3 (S-07). Por tipo en `remanente_stock_grupos.json`: 498 `MAPEAR_ESTADO` + 61 `MANUAL` + 3 sin acción. **El 562 coincide por azar con las 562 entidades de B-02** (283+139+87+48+5): son magnitudes distintas | Cap. IV, Sec. 4.3.3 |
-| B-09 | Extensiones admitidas por el pipeline | `.xlsx`, `.csv` | `.xlsx`, `.csv` | Sí | `backend/services/ingestion_service.py:17` (`ALLOWED_EXTENSIONS`) | Cap. III, Sec. 3.2.1 |
-| B-10 | Procesamiento real de Google Forms | Sí (exportación Excel/CSV) | Sí | Sí | `TBL_INSCRITOS.xlsx` (`MARCA TEMPORAL`, 250 filas en lote 1.387) | Cap. III, Sec. 3.2.1; Cap. IV, Sec. 4.1 |
-| B-11 | Procesamiento real de Moodle | Sí (exportación encuestas/notas) | Sí | Sí | `Evaluación Docente Institución A.xlsx`, `Experiencia Docente 2.0.xlsx`. Encabezados reales (openpyxl): «N°», «Nombre completo del usuario», «Grupos», «Dirección de correo», «Fecha», «Programa - POS», «Número del modulo», preguntas Likert («5/Totalmente de acuerdo»). Son columnas típicas de una exportación de actividad de Moodle; el origen exacto (Moodle) se **infiere de los encabezados**, el archivo no trae metadatos de plataforma (S-12) | Cap. III, Sec. 3.2.1; Cap. IV, Sec. 4.1 |
+### Tabla A.1: Lote de Validación Controlado — Base: `lote 1.387` (`f3r_lote_1387.json`)
 
-### Detalle B.1: Interpretación de los Denominadores 268 y 562
-- **Denominador 562 (Nivel Entidad):** Representa el número total de celdas o entidades anómalas interceptadas preventivamente por las reglas de calidad en el lote de 1.387:
-  1. `ETIQUETA_LIKERT`: 283 entidades correspondientes a escalas cualitativas ("Muy Bueno", "Excelente") en campos nominales.
-  2. `CORREO_NO_ES_NOMBRE`: 139 entidades consistentes en correos electrónicos ingresados en lugar del nombre del estudiante.
-  3. `COLUMNA_DE_COMENTARIO`: 87 cadenas de texto largo o sugerencias de alumnos en encuestas docentes.
-  4. `PER_SIN_FORMA_NOMBRE`: 48 cadenas que violan la estructura de nombre de persona (un solo token sin apellido).
-  5. `PERSONA_SIN_COINCIDENCIA`: 5 personas que no alcanzaron el umbral difuso y fueron derivadas limpiamente a HITL.
-- **Denominador 268 (Nivel Registro/Fila):** Corresponde exactamente a los 268 registros del lote que contenían al menos una de las 562 entidades defectuosas.
-- **Resultado de Calidad:** 0 de 268 registros defectuosos y 0 de 562 entidades anómalas penetraron al DW sin control (`habrian_ingresado_al_dw_sin_control = 0`).
+| ID | Métrica | Valor F3R | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) | Dónde va en tesis |
+|---|---|---|---|---|---|
+| A-01 | Total de registros evaluados en el lote | 1.387 | 1.387 | `docs/mediciones/f3r_lote_1387.json` → `lote_evaluado.total_registros` | Cap. IV Sec. 4.3; Tabla 4.1; Cuadro 3.8 |
+| A-02 | Registros vinculados directos (con regla personas) | 1.360 (98,05 %) | 1.360 (98,05 %) | `docs/mediciones/f3r_lote_1387.json` → `distribucion_bandas_con_regla_personas.directo` | Cap. III Sec. 3.4; Cap. IV Sec. 4.3; Gráf. 3.2 |
+| A-03 | Registros derivados a HITL (con regla personas) | 27 (1,95 %) | 27 (1,95 %) | `docs/mediciones/f3r_lote_1387.json` → `distribucion_bandas_con_regla_personas.hitl` | Cap. III Sec. 3.4; Cap. IV Sec. 4.3; Gráf. 3.2 |
+| A-04 | Registros rechazados a Staging directo | 0 (0,00 %) | 0 (0,00 %) | `docs/mediciones/f3r_lote_1387.json` → `distribucion_bandas_con_regla_personas.staging` | Cap. III Sec. 3.4; Cap. IV Sec. 4.3 |
+| A-05 | Registros directos sin regla de personas (solo banda) | 1.384 (99,78 %) | 1.384 (99,78 %) | `docs/mediciones/f3r_lote_1387.json` → `distribucion_bandas_sin_regla_personas.directo` | Cap. IV Sec. 4.3 |
+| A-06 | Movidos de directo a HITL por persona sin resolver | 24 | 24 | `docs/mediciones/f3r_lote_1387.json` → `registros_directo_movidos_a_hitl_por_persona_sin_resolver` | Cap. IV Sec. 4.3 |
+| A-07 | Personas evaluadas en el lote (total entidades) | 1.748 | 1.748 | `docs/mediciones/f3r_lote_1387.json` → `personas.total` | Cap. IV Sec. 4.3.2 |
+| A-08 | Personas resueltas por CI exacta (Estado A) | 1.037 (59,32 %) | 1.037 (59,32 %) | `docs/mediciones/f3r_lote_1387.json` → `personas.resueltas_CI_EXACTA` | Cap. III Sec. 3.3.4; Tabla 4.2 |
+| A-09 | Personas resueltas por coincidencia difusa (Estado B) | 182 (10,41 %) | 182 (10,41 %) | `docs/mediciones/f3r_lote_1387.json` → `personas.resueltas_FUZZY` | Cap. III Sec. 3.3.4; Tabla 4.2 |
+| A-10 | Docentes nuevos provisionales (Estado C) | 524 (29,98 %) | 524 (29,98 %) | `docs/mediciones/f3r_lote_1387.json` → `personas.nuevos_estado_C` | Cap. III Sec. 3.3.4; Tabla 4.2 |
+| A-11 | Personas sin coincidencia derivadas a HITL | 5 (0,29 %) | 5 (0,29 %) | `docs/mediciones/f3r_lote_1387.json` → `personas.sin_coincidencia_HITL` | Cap. IV Sec. 4.3.2 |
+| A-12 | Cascada: Resolución por `CI_EXACTA` | 1.850 (16,00 %) | 1.850 | `docs/mediciones/f3r_lote_1387.json` → `conteos_fuente_resolucion.CI_EXACTA` | Cap. III Sec. 3.3; Gráf. 4.2 |
+| A-13 | Cascada: Resolución por `ENCABEZADO` | 3.079 (26,63 %) | 3.079 | `docs/mediciones/f3r_lote_1387.json` → `conteos_fuente_resolucion.ENCABEZADO` | Cap. III Sec. 3.3; Gráf. 4.2 |
+| A-14 | Cascada: Resolución por `REGEX` | 3.103 (26,84 %) | 3.103 | `docs/mediciones/f3r_lote_1387.json` → `conteos_fuente_resolucion.REGEX` | Cap. III Sec. 3.3; Gráf. 4.2 |
+| A-15 | Cascada: Resolución por `BETO` (inferencia NLP) | 3.382 (29,26 %) | 3.382 | `docs/mediciones/f3r_lote_1387.json` → `conteos_fuente_resolucion.BETO` | Cap. III Sec. 3.3; Gráf. 4.2 |
+| A-16 | Cascada: Resolución por `FUZZY` (RapidFuzz) | 146 (1,26 %) | 146 | `docs/mediciones/f3r_lote_1387.json` → `conteos_fuente_resolucion.FUZZY` | Cap. III Sec. 3.3; Gráf. 4.2 |
+| A-17 | KPI-10a: Confianza media (todas las entidades, N=11.560) | 0,9538 | 0,9538 | `docs/mediciones/f3r_lote_1387.json` → `kpis.KPI_10a_media_todas_las_entidades` | Cap. IV Sec. 4.3 |
+| A-18 | KPI-10b: Confianza media (solo entidades BETO, N=3.382) | 0,8953 | 0,8953 | `docs/mediciones/f3r_lote_1387.json` → `kpis.KPI_10b_media_solo_entidades_BETO` | Cap. IV Sec. 4.3 |
+| A-19 | KPI-11: Automatización directa (con regla de personas) | 98,05 % | 98,05 % | `docs/mediciones/f3r_lote_1387.json` → `kpis.KPI_11_directo_con_regla_personas_pct` | Cap. IV Sec. 4.3 |
 
----
+### Tabla A.2: Desglose por Archivo del Lote Controlado — Base: `lote 1.387` (`f3r_lote_1387.json`)
 
-## C. ABLACIÓN A/B/C Y BETO
-La evaluación experimental de ablación compara la capacidad de extracción de entidades bajo tres arquitecturas:
-- **Modo A (Determinístico puro):** Expresiones regulares, lectura posicional de encabezados y coincidencia difusa sin IA.
-- **Modo B (Híbrido implementado en el sistema):** Cascada jerárquica con reglas determinísticas + RapidFuzz + Modelo BETO (`dccuchile/bert-base-spanish-wwm-cased` fine-tuned).
-- **Modo C (BETO puro):** Extracción basada exclusivamente en inferencia semántica del modelo de lenguaje.
+| Archivo (`uploads/data/`) | Hoja | Filas leídas | Directo | HITL | Staging | `valor_docx` (Directo / HITL) | Fuente (`docs/mediciones/` y ruta JSON) |
+|---|---|---|---|---|---|---|---|
+| `Base centralizada Académica ARCA (1).xlsx` | `ACTAS DE NOTAS` | 450 | 449 (99,78 %) | 1 (0,22 %) | 0 | 449 / 1 | `docs/mediciones/f3r_lote_1387.json` → `distribucion_por_archivo` |
+| `BD Cobranzas.xlsx` | `COBRANZAS 2024 2025` | 350 | 349 (99,71 %) | 1 (0,29 %) | 0 | 349 / 1 | `docs/mediciones/f3r_lote_1387.json` → `distribucion_por_archivo` |
+| `TBL_INSCRITOS.xlsx` | `TBL_INSCRITOS` | 250 | 249 (99,60 %) | 1 (0,40 %) | 0 | 249 / 1 | `docs/mediciones/f3r_lote_1387.json` → `distribucion_por_archivo` |
+| `Evaluación Docente y Unifranz.xlsx` | `DIP. EXP DOC. X MODULO` | 150 | 146 (97,33 %) | 4 (2,67 %) | 0 | 146 / 4 | `docs/mediciones/f3r_lote_1387.json` → `distribucion_por_archivo` |
+| `Experiencia Docente 2.0.xlsx` | `CURSOS DOC 1` | 110 | 95 (86,36 %) | 15 (13,64 %) | 0 | 95 / 15 | `docs/mediciones/f3r_lote_1387.json` → `distribucion_por_archivo` |
+| `BD Egresos.xlsx` | `egresos` | 53 | 53 (100,00 %) | 0 (0,00 %) | 0 | 53 / 0 | `docs/mediciones/f3r_lote_1387.json` → `distribucion_por_archivo` |
+| `EJECUTADO VS META.xlsx` | `EJECUTADO` | 24 | 19 (79,17 %) | 5 (20,83 %) | 0 | 19 / 5 | `docs/mediciones/f3r_lote_1387.json` → `distribucion_por_archivo` |
 
-### Tabla C.1: Desempeño Comparativo de Arquitecturas de Extracción
-| ID | Métrica | Modo A (Reglas) | Modo B (Híbrido) | Modo C (BETO solo) | Ref. ronda 10 | ¿Coincide? | Fuente | Dónde va |
-|---|---|---|---|---|---|---|---|---|
-| C-01 | F1 micro estricto (Dataset `gold_510`) | 100,00 % | 100,00 % | 97,57 % | C: 97,57 %; B: 100,00 % | Sí | `docs/evidencias/f1_beto_fp32_gold_510.json` | Cap. IV, Sec. 4.1.2; Tabla 4.4 |
-| C-02 | Precisión micro estricta (`gold_510`) | 100,00 % | 100,00 % | 96,91 % | 96,91 % | Sí | `f1_beto_fp32_gold_510.json:por_modo.C` | Cap. IV, Sec. 4.1.2 |
-| C-03 | Recall micro estricto (`gold_510`) | 100,00 % | 100,00 % | 98,24 % | 98,24 % | Sí | `f1_beto_fp32_gold_510.json:por_modo.C` | Cap. IV, Sec. 4.1.2 |
-| C-04 | F1 micro relajado (`gold_510`) | 100,00 % | 100,00 % | 99,12 % | 99,12 % | Sí | `f1_beto_fp32_gold_510.json:por_modo.C` | Cap. IV, Sec. 4.1.2 |
-| C-05 | F1 relajado en layouts adversos (`layouts_5`) | 28,57 % | 71,64 % | 69,23 % | B: 71,64 %; A: 28,57 % | Sí | `docs/evidencias/f1_beto_fp32_layouts_5.json` | Cap. IV, Sec. 4.1.3; Gráfico 4.4 |
-| C-06 | Precisión relajada en layouts adversos (`layouts_5`) | 100,00 % | 77,42 % | 77,59 % | 77,42 % frente a 100 % | Sí | `f1_beto_fp32_layouts_5.json` | Cap. IV, Sec. 4.1.3 |
-| C-07 | Recall relajado en layouts adversos (`layouts_5`) | 16,67 % | 66,67 % | 62,50 % | 66,67 % frente a 16,67 % | Sí | `f1_beto_fp32_layouts_5.json` | Cap. IV, Sec. 4.1.3 |
-| C-08 | F1 estricto en layouts adversos (`layouts_5`) | 26,19 % | 31,58 % | 24,68 % | 31,58 % frente a 26,19 % | Sí | `f1_beto_fp32_layouts_5.json` | Cap. IV, Sec. 4.1.3 |
-| C-09 | Tamaño dataset estándar (`gold_510`) | 510 entidades (180 líneas) | 510 entidades | Sí | Anotación de actas académicas y cobranzas | Cap. IV, Sec. 4.1.1 |
-| C-10 | Tamaño dataset adverso (`layouts_5`) | 72 entidades (98 totales) | 72 / 98 | Sí | 5 layouts sintéticos de alta distorsión | Cap. IV, Sec. 4.1.1 |
-| C-11 | Aporte marginal de BETO en lote 1.387 | 3.248 entidades (28,43 %) | 3.248 entidades | Sí | `conteos_fuente_resolucion.BETO` | Cap. IV, Sec. 4.1.4 |
+*Nota de muestreo:* `muestreo_por_archivo.criterio_documentado = false` (`docs/mediciones/f3r_lote_1387.json`). Los topes `450/350/250/150/110/53/24` toman las primeras $N$ filas no vacías en orden de archivo, sin aleatorización ni estratificación.
 
-**Nota S-11 (97,47 % vs 97,57 %):** 97,57 % (P 96,91 / R 98,24) es el Modo C medido en `f1_beto_fp32_gold_510.json` (semilla 42, 09-nov-2026 22:22, `por_modo.C.gold_510.reporte_seqeval_estricto["micro avg"]`). El 97,47 % (P 96,72 / R 98,24) de la Tabla 3.20 no figura en ningún archivo de `docs/evidencias`; con el mismo recall equivale a un falso positivo adicional (≈ 518 vs 517 predichas sobre 510). Es una corrida anterior de `evaluar_subsets_test_gold.py`. Vigente y reproducible: 97,57 %; la Tabla 3.20 y la Tabla 4.5 deben actualizarse o rehacerse con el mismo script.
+### Tabla A.3: Ciclo Mensual Completo y Cumplimiento RNF-03 — Base: `f3_base` (`f3r_base_reproducida.json`, `f3_b7_corridas.json`, `f3_b7_rnf03.json`, `f3r_klm_w_medido.json`)
 
-### Detalle C.1: Umbrales Numéricos Exactos Vigentes en el Código Fuente
-1. **Resolución de personas por bloqueo escalonado (0,92):**
-   - *Ubicación:* `pipeline/normalization/person_resolver.py`, líneas 111 y 141-175.
-   - *Código:* `UMBRAL_PERSONA = 0.92`.
-   - *Regla:* Escalonamiento estricto a tres niveles: Módulo $
-ightarrow$ Programa $
-ightarrow$ Dimensión Completa. Exige que el candidato posea al menos dos tokens y que el apellido esté explícitamente presente en el nombre canónico (`toks_c[-1] in toks_p[1:]`).
-2. **Coincidencia difusa de homónimos de estudiante (90 %):**
-   - *Ubicación:* `backend/services/dw_loader.py`, líneas 241-253 y 473-486.
-   - *Código:* `score_cutoff=90.0`.
-   - *Regla:* Si dos o más estudiantes en la dimensión superan el 90 % de similitud difusa con el nombre procesado, se bloquea la inserción automática y se deriva a la bandeja HITL como `HOMONIMIA`. Si existe exactamente un candidato $\ge 90$ %, se rescata vinculándolo en `fk_estado = 'B'`.
-3. **Variante de Cédula de Identidad con nombre discordante (85 %):**
-   - *Ubicación:* `backend/services/dw_loader.py`, líneas 185-192.
-   - *Código:* `bool(set(_tokens(a)) & set(_tokens(b))) and fuzz.token_set_ratio(a, b) >= 85`.
-   - *Regla:* Si la cédula ya existe en `dim_estudiante`, pero el nombre difiere con similitud $< 85$ %, se cataloga como `CI_NOMBRE_DISCORDANTE` y se confina en `stg_entidad_no_resuelta`.
-4. **Coincidencia difusa de docentes (85 %):**
-   - *Ubicación:* `backend/services/dw_loader.py`, líneas 678-679.
-   - *Código:* `score_fuzz is not None and score_fuzz >= 85.0`.
-   - *Regla:* Búsqueda contra `dim_docente`. Si no se halla coincidencia $\ge 85$ %, se crea el docente bajo `fk_estado = 'C'` (miembro provisional).
-5. **Coincidencia difusa de asignaturas y módulos (80 %):**
-   - *Ubicación:* `backend/services/dw_loader.py`, líneas 742-743.
-   - *Código:* `score_fuzz is not None and score_fuzz >= 80.0`.
-   - *Regla:* Coincidencia contra `dim_modulo` supeditada a validación previa del código formal de programa (`POS`).
+| ID | Métrica | Valor F3R | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) | Dónde va en tesis |
+|---|---|---|---|---|---|
+| A-20 | Archivos procesados en el ciclo mensual | 10 archivos (11.956 registros; 12.992 líneas BETO) | 10 / 11.956 / 12.992 | `docs/mediciones/f3r_base_reproducida.json` → `carga.archivos_exitosos`, `carga.registros_detectados`, `etapas_s.lineas_leidas_beto` | Cap. IV Sec. 4.4 |
+| A-21 | Hechos persistidos en el ciclo (`f3_base`) | 78.750 (78.025 acad. + 725 fin.) | 78.750 | `docs/mediciones/f3r_base_reproducida.json` → `consolidacion.inserted_dw` | Cap. IV Sec. 4.4 |
+| A-22 | Bandeja HITL generada en el ciclo | 680 casos en 19 grupos (47 manuales en 14 grupos) | 680 / 19 | `docs/mediciones/f3r_klm_w_medido.json` → `bandeja` | Cap. IV Sec. 4.4 |
+| A-23 | Solo máquina, caché vacía (`N=3`): media ± DE | **850,18 s ± 51,14 s** (14,17 min) | 850,18 s (14,17 min) | `docs/mediciones/f3_b7_corridas.json` → `resumen.vacia.tiempo_maquina_s` | Cap. IV Sec. 4.4; RNF-03 |
+| A-24 | Solo máquina, caché vacía (`N=3`): mín / máx | 800,21 s / **902,42 s** (1 de 3 corridas > 900 s) | 800,21–902,42 s | `docs/mediciones/f3_b7_corridas.json` → `resumen.vacia.tiempo_maquina_s` | Cap. IV Sec. 4.4; RNF-03 |
+| A-25 | Solo máquina, caché llena (`N=3`): media ± DE (mín / máx) | **256,15 s ± 3,14 s** (4,27 min; 252,52–258,02 s) | 256,15 s (4,27 min) | `docs/mediciones/f3_b7_corridas.json` → `resumen.llena.tiempo_maquina_s` | Cap. IV Sec. 4.4; RNF-03 |
+| A-26 | Tiempo KLM con espera medida (`W = 0,089 s`, p95 Locust) | **221,3 s** (bloque 16,4 s · fecha 8,8 s · manual 192,2 s · pag. 3,9 s) | 221,3 s | `docs/mediciones/f3r_klm_w_medido.json` → `klm.W_medido` | Cap. IV Sec. 4.4; RNF-03 |
+| A-27 | RNF-03 total (caché vacía + KLM, `W = 0,089 s`) | **1.071,48 s** (17,86 min; cumple ≤ 1.200 s, no ≤ 900 s) | 1.071,48 s | `docs/mediciones/f3r_klm_w_medido.json` → `rnf03_totales_s.vacia_mas_klm_W_medido_s` | Cap. IV Sec. 4.4; RNF-03 |
+| A-28 | RNF-03 total (caché llena + KLM, `W = 0,089 s`) | **477,45 s** (7,96 min; cumple ≤ 900 s y ≤ 1.200 s) | 477,45 s | `docs/mediciones/f3r_klm_w_medido.json` → `rnf03_totales_s.llena_mas_klm_W_medido_s` | Cap. IV Sec. 4.4; RNF-03 |
+| A-29 | Sensibilidad KLM (`W = 0 s` / `W = 10 s`) | KLM: 216,6 s / 736,6 s · Vacía+KLM: 1.066,78 s / 1.586,78 s · Llena+KLM: 472,75 s / 992,75 s | 216,6 s / 736,6 s | `docs/mediciones/f3r_klm_w_medido.json` → `klm.sensibilidad_W_0`, `klm.sensibilidad_W_10`, `rnf03_totales_s` | Cap. IV Sec. 4.4 |
+
+*Veredicto RNF-03:* Solo máquina cumple en media (`850,18 s ≤ 900 s` con caché vacía; `256,15 s ≤ 900 s` con caché llena), aunque 1 de 3 corridas en frío (`902,42 s`) supera marginalmente los `900 s`. Con intervención humana KLM (`W = 0,089 s`), la corrida con caché llena (`477,45 s`) cumple holgadamente `≤ 900 s`, mientras que la corrida con caché vacía (`1.071,48 s`) supera `900 s` pero cumple el límite operativo de `1.200 s`. Solo bajo el escenario pesimista de sensibilidad `W = 10 s` en frío (`1.586,78 s`) se exceden ambos umbrales.
 
 ---
 
-## D. PRUEBAS Y COBERTURA — MEDICIÓN DE LIMPIEZA (13-nov-2026)
+## B. STAGING, IDEMPOTENCIA, EXCEPCIONES Y CONTENCIÓN DE CALIDAD
 
-Esta medición sustituye las cifras de pruebas de rondas anteriores para el código `3973c29`. No modifica las cifras de negocio del snapshot del 10-nov. PostgreSQL de validación en proyecto Docker aislado con tmpfs; dump copiado por lectura y hash original intacto. Evidencia: `docs/evidencias/validacion_20261113/pytest_completo.txt`, `docs/evidencias/validacion_20261113/junit.xml`, `docs/evidencias/validacion_20261113/coverage.json`.
+### Tabla B.1: Excepciones y Calidad en Lote Controlado — Base: `lote 1.387` (`f3r_lote_1387.json`)
 
-| Métrica | Resultado medido |
-| --- | --- |
-| Pruebas colectadas | 652 IDs únicos |
-| Passed | 634 |
-| Skipped | 11 |
-| Xfailed | 7 |
-| Failed / error | 0 |
-| Cobertura backend + pipeline | 68,448742 % (9.628/14.066) |
-| Diferencia frente a línea base aislada | 0,000000 puntos porcentuales |
+| ID | Métrica | Valor F3R | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) | Dónde va en tesis |
+|---|---|---|---|---|---|
+| B-01 | Excepciones de calidad que ingresaron al DW sin control | **0** de 264 registros (0,00 %) | 0 de 264 | `docs/mediciones/f3r_lote_1387.json` → `excepciones.habrian_ingresado_al_dw_sin_control`, `excepciones.registros_afectados` | Cap. IV Sec. 4.3.1; Tabla 4.3 |
+| B-02 | Total de entidades anómalas interceptadas | **550** entidades | 550 | `docs/mediciones/f3r_lote_1387.json` → `excepciones.total_entidades` | Cap. IV Sec. 4.3.1; Tabla 4.3 |
+| B-03 | Desglose por regla: `ETIQUETA_LIKERT` (descarte) | 283 entidades (110 registros) | 283 | `docs/mediciones/f3r_lote_1387.json` → `excepciones.por_regla.ETIQUETA_LIKERT` | Tabla 4.3 |
+| B-04 | Desglose por regla: `CORREO_NO_ES_NOMBRE` (descarte) | 154 entidades (154 registros) | 154 | `docs/mediciones/f3r_lote_1387.json` → `excepciones.por_regla.CORREO_NO_ES_NOMBRE` | Tabla 4.3 |
+| B-05 | Desglose por regla: `COLUMNA_DE_COMENTARIO` (descarte) | 87 entidades (87 registros) | 87 | `docs/mediciones/f3r_lote_1387.json` → `excepciones.por_regla.COLUMNA_DE_COMENTARIO` | Tabla 4.3 |
+| B-06 | Desglose por regla: `PER_SIN_FORMA_NOMBRE` (log+descarte) | 21 entidades (21 registros) | 21 | `docs/mediciones/f3r_lote_1387.json` → `excepciones.por_regla.PER_SIN_FORMA_NOMBRE` | Tabla 4.3 |
+| B-07 | Desglose por regla: `PERSONA_SIN_COINCIDENCIA` (HITL) | 5 entidades (5 registros) | 5 | `docs/mediciones/f3r_lote_1387.json` → `excepciones.por_regla.PERSONA_SIN_COINCIDENCIA` | Tabla 4.3 |
 
-`f3b37d9` colectaba 650: los dos casos nuevos son `test_el_catalogo_se_prepara_una_vez_y_se_rehace_si_cambia` y `test_preparado_equivale_al_algoritmo_original`, ahora en `tests/sprint3/test_person_resolver_preparado.py`. No se retiraron pruebas ni se cambiaron aserciones. Las cifras 493/475 y 650/632 no son la medición vigente. La línea base offline fue 629 passed / 5 fallos DW / 11 skipped / 7 xfailed, 68,384758 % (9.619/14.066); con la DW aislada las cinco pruebas dependientes de datos pasan.
+### Tabla B.2: Staging, Bitácora B-9, `fk_estado` e Idempotencia — Base: `f3_base` (`f3r_extraccion_f3base.json`)
 
-| Suite | Colectadas |
-| --- | --- |
-| readiness | 39 |
-| sprint1 | 29 |
-| sprint2 | 67 |
-| sprint3 | 179 |
-| sprint4 | 104 |
-| sprint5 | 197 |
-| sprint6 | 14 |
-| transversales | 23 |
-
-Mapa histórico completo para Tabla 3.29, GCB-42 y matriz de trazabilidad: `docs/evidencias/validacion_20261113/mapa_tests.tsv`. Los cinco tests Node de UI se miden aparte de pytest. La prueba extensa excluida en verificaciones rápidas sí se ejecutó en esta corrida completa.
-
-### Tabla D.2: Cobertura por componente
-
-| Componente | Sentencias | Cubiertas | Cobertura |
-| --- | --- | --- | --- |
-| backend/ | 10247 | 7313 | 71,37 % |
-| pipeline/ | 3819 | 2315 | 60,62 % |
-| TOTAL | 14066 | 9628 | 68,448742 % |
-
-El detalle por archivo se conserva en coverage.json. Se mantienen los objetivos `--cov=backend --cov=pipeline`, las reglas omit originales y el denominador de 14.066 sentencias. Las 58 sentencias de diferencia respecto de 14.008 pertenecen a cambios anteriores a la limpieza; no se quitó código de backend/pipeline/services para alterar la métrica.
+| ID | Métrica | Valor F3R | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) | Dónde va en tesis |
+|---|---|---|---|---|---|
+| B-08 | Filas totales en `stg_entidad_no_resuelta` | **5.076** (36 pendientes `resuelto=false`, 5.040 resueltas) | 5.076 (36 pend.) | `docs/mediciones/f3r_extraccion_f3base.json` → `stg_entidad_no_resuelta` | Cap. IV Sec. 4.3.3; Gráf. 4.1 |
+| B-09 | Pendientes por motivo (`resuelto=false`): `BAJA_CONFIANZA_IA` / `CI_DUDOSA` / `CI_NOMBRE_DISCORDANTE` / `HOMONIMIA` | 31 / 2 / 2 / 1 (total 36 = KPI-18) | 31 / 2 / 2 / 1 | `docs/mediciones/f3r_extraccion_f3base.json` → `stg_entidad_no_resuelta` | Cap. IV Sec. 4.3.3 |
+| B-10 | Filas en `log_inconsistencias` (bitácora B-9) | **6.226** (0 descartes sin bitácora) | 6.226 | `docs/mediciones/f3r_extraccion_f3base.json` → `log_inconsistencias` | Cap. IV Sec. 4.3.1 |
+| B-11 | Distribución `fk_estado` en `fact_rendimiento_academico` | Estado A: 1.385 · Estado B: 7 (total 1.392) | 1.385 / 7 | `docs/mediciones/f3r_extraccion_f3base.json` → `fk_estado.fact_rendimiento_academico` | Cap. III Sec. 3.3.4 |
+| B-12 | Distribución `fk_estado` en `fact_situacion_financiera` | Estado A: 725 (total 725) | 725 | `docs/mediciones/f3r_extraccion_f3base.json` → `fk_estado.fact_situacion_financiera` | Cap. III Sec. 3.3.4 |
+| B-13 | Distribución `fk_estado` en `dim_estudiante` / `dim_docente` | Est.: A 14.566, B 412 (14.978) · Doc.: A 638, B 35 (673) | 14.978 / 673 | `docs/mediciones/f3r_extraccion_f3base.json` → `fk_estado.dim_estudiante`, `fk_estado.dim_docente` | Cap. III Sec. 3.3.4 |
+| B-14 | Filas nuevas en prueba de idempotencia estricta | 0 filas | 0 | `docs/evidencias/ciclo_idempotencia_hitl.json` (`backend/services/dw_loader.py:974`) | Cap. IV Sec. 4.3.4 |
+| B-15 | Extensiones admitidas por el pipeline | `.xlsx`, `.csv` | `.xlsx`, `.csv` | `backend/services/ingestion_service.py:17` (`ALLOWED_EXTENSIONS`) | Cap. III Sec. 3.2.1 |
 
 ---
 
-## E. PRONÓSTICO DE MATRÍCULA (HOLT-WINTERS Y BENCHMARKS)
-Método vigente: **Holt-Winters con tendencia aditiva amortiguada y estacionalidad aditiva (m = 12)**. Serie: `SELECT dt.periodo_mes, sum(fm.inscritos) FROM fact_marketing fm JOIN dim_tiempo dt USING(id_tiempo) GROUP BY 1 ORDER BY 1` (snapshot). **Todos los valores de esta sección se recalcularon el 10-nov-2026 sobre el snapshot** con el mismo `ExponentialSmoothing` del código (statsmodels 0.15.0, `initialization_method="estimated"`); el script de recálculo no se versionó en el repositorio. Los valores del borrador anterior mezclaban dos ajustes distintos (ver nota).
+## C. ABLACIÓN A/B/C, MATRIZ DE CONFUSIÓN Y CORPUS BETO
 
-### Tabla E.1: Parámetros y evaluación del modelo predictivo
-| ID | Métrica | Valor | Evidencia (SQL / archivo:línea) | Dónde va |
+### Tabla C.1: Evaluación de Ablación (Semilla 42) — Base: `evaluación BETO` (`f3r_ablacion.json`)
+
+| Dataset | Modo | Criterio | TP | FP | FN | Soporte | Precisión | Recall | F1 (`valor_docx`) | Fuente (`docs/mediciones/` y ruta JSON) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `gold_510` | A (Reglas) | Estricto | 510 | 0 | 0 | 510 | 100,00 % | 100,00 % | **100,00 %** | `docs/mediciones/f3r_ablacion.json` → `filas.0.f1` |
+| `gold_510` | A (Reglas) | Relajado | 510 | 0 | 0 | 510 | 100,00 % | 100,00 % | **100,00 %** | `docs/mediciones/f3r_ablacion.json` → `filas.1.f1` |
+| `gold_510` | B (Híbrido) | Estricto | 510 | 0 | 0 | 510 | 100,00 % | 100,00 % | **100,00 %** | `docs/mediciones/f3r_ablacion.json` → `filas.2.f1` |
+| `gold_510` | B (Híbrido) | Relajado | 510 | 0 | 0 | 510 | 100,00 % | 100,00 % | **100,00 %** | `docs/mediciones/f3r_ablacion.json` → `filas.3.f1` |
+| `gold_510` | C (BETO) | Estricto | 503 | 14 | 7 | 510 | 97,29 % | 98,63 % | **97,96 %** (`0,979552`) | `docs/mediciones/f3r_ablacion.json` → `filas.4.f1` |
+| `gold_510` | C (BETO) | Relajado | 510 | 6 | 0 | 510 | 98,84 % | 100,00 % | **99,42 %** (`0,9942`) | `docs/mediciones/f3r_ablacion.json` → `filas.5.f1` |
+| `layouts_5` | A (Reglas) | Estricto | 11 | 1 | 61 | 72 | 91,67 % | 15,28 % | **26,19 %** | `docs/mediciones/f3r_ablacion.json` → `filas.6.f1` |
+| `layouts_5` | A (Reglas) | Relajado | 12 | 0 | 60 | 72 | 100,00 % | 16,67 % | **28,57 %** | `docs/mediciones/f3r_ablacion.json` → `filas.7.f1` |
+| `layouts_5` | B (Híbrido) | Estricto | 31 | 51 | 41 | 72 | 37,80 % | 43,06 % | **40,26 %** | `docs/mediciones/f3r_ablacion.json` → `filas.8.f1` |
+| `layouts_5` | B (Híbrido) | Relajado | 52 | 17 | 20 | 72 | 75,36 % | 72,22 % | **73,76 %** | `docs/mediciones/f3r_ablacion.json` → `filas.9.f1` |
+| `layouts_5` | C (BETO) | Estricto | 26 | 59 | 46 | 72 | 30,59 % | 36,11 % | **33,12 %** | `docs/mediciones/f3r_ablacion.json` → `filas.10.f1` |
+| `layouts_5` | C (BETO) | Relajado | 49 | 15 | 23 | 72 | 76,56 % | 68,06 % | **72,06 %** | `docs/mediciones/f3r_ablacion.json` → `filas.11.f1` |
+
+*Nota sobre F1 = 75,66 % (J1-15):* **RETIRADA**. No existe en `docs/mediciones/` ni corresponde al modelo BETO vigente (`docs/mediciones/f3r_evidencias_sueltas.json` → `f1_75_66_pct.dictamen`).
+
+### Tabla C.2: Matriz de Confusión por Tipo de Entidad (`gold_510`, Modo C estricto, Gráfico 3.1) — Base: `evaluación BETO` (`f3r_matriz_confusion.json`)
+
+| Tipo de entidad | Soporte | TP | FN | FP | Precisión | Recall | F1 estricto | F1 relajado | Fuente (`docs/mediciones/` y ruta JSON) |
+|---|---|---|---|---|---|---|---|---|---|
+| `MODULO` | 150 | 150 | 0 | 0 | 100,00 % | 100,00 % | 100,00 % | 100,00 % | `docs/mediciones/f3r_matriz_confusion.json` → `por_tipo_estricto.MODULO` |
+| `PER_DOCENTE` | 50 | 50 | 0 | 0 | 100,00 % | 100,00 % | 100,00 % | 100,00 % | `docs/mediciones/f3r_matriz_confusion.json` → `por_tipo_estricto.PER_DOCENTE` |
+| `PER_ESTUDIANTE` | 130 | 129 | 1 | 1 | 99,23 % | 99,23 % | 99,23 % | 100,00 % | `docs/mediciones/f3r_matriz_confusion.json` → `por_tipo_estricto.PER_ESTUDIANTE` |
+| `PROGRAMA` | 180 | 174 | 6 | 13 | 93,05 % | 96,67 % | 94,82 % | 98,36 % | `docs/mediciones/f3r_matriz_confusion.json` → `por_tipo_estricto.PROGRAMA` |
+| **TOTAL** | **510** | **503** | **7** | **14** | **97,29 %** | **98,63 %** | **97,96 %** | **99,42 %** | `docs/mediciones/f3r_matriz_confusion.json` → `suma_tp_estricto` |
+
+*Explicación 503 vs 510:* Bajo criterio estricto `seqeval`, los 7 FN corresponden a límites de *span* en `PROGRAMA` (6) y `PER_ESTUDIANTE` (1); bajo criterio relajado, las 510 entidades `gold` coinciden (`TP=510`, `FN=0`).
+
+### Tabla C.3: Corpus de Entrenamiento, `gold_510` e Inventario de Producción — Base: `corpus BETO` (`f3r_evidencias_sueltas.json`)
+
+| Conjunto / Inventario | Filas / Libros | Entidades / Hojas | Detalle verificado | Fuente (`docs/mediciones/` y ruta JSON) |
 |---|---|---|---|---|
-| E-01 | Modelo vigente | Tendencia amortiguada | `pipeline/analytics/forecasting_holtwinters.py:117-119` (`trend="add"`, **`damped_trend=True` en la línea 118**, `seasonal="add"`). La línea 97 citada antes era errónea (S-02) | Cap. III Sec. Pronóstico; Tabla 3.24 |
-| E-02 | Fuente de la serie | `TBL_INSCRITOS.xlsx` (hoja `TBL_INSCRITOS`) → `fact_marketing.inscritos`. No existe `inscritos.csv` | consulta de arriba; `holtwinters_dw_vs_csv.json` | Tabla 3.24 |
-| E-03 | Ventana de ajuste | 33 meses (2023-09 a 2026-05), suma 12.810 inscritos. (Antes decía `fact_rendimiento_academico`: era incorrecto) | consulta de arriba | Tabla 3.24 |
-| E-04 | Serie completa en `fact_marketing` | 43 meses, **2022-11 a 2026-05** (antes: «2022-01 a 2025-07», incorrecto) | consulta de arriba (43 filas) | Cap. IV |
-| E-05 | Entrenamiento (validación) | 27 meses (2023-09 a 2025-11) | partición cronológica | Tabla 3.24 |
-| E-06 | Hold-out | 6 meses (2025-12 a 2026-05) | idem | Tabla 3.24 |
-| E-07 | Ajuste sobre 27 meses (validación): α / β / γ / φ | 0,7010 / 0,0000 / 0,0000 / 0,9858 | `modelo.params` del ajuste `serie[:27]` | Tabla 3.24 |
-| E-08 | Ajuste sobre 27 meses: RMSE ajuste / AIC | 45,00 / 239,56 | idem | Tabla 3.24 |
-| E-09 | **Hold-out: RMSE / MAPE** | **75,03 / 13,89 %** | `forecast(6)` del ajuste de 27 meses frente a los 6 reales | Tabla 3.24; Tabla 4.1; Tabla 4.7 |
-| E-10 | Ajuste sobre 33 meses (**el que usa el servicio para proyectar**): α / β / γ / φ | 0,6978 / 0,0000 / 0,0000 / 0,9950 | `modelo.params` del ajuste de la serie completa | Tabla 3.24 |
-| E-11 | Ajuste sobre 33 meses: RMSE ajuste / AIC | 48,36 / 290,00 | `rmse = sqrt(mean(residuos²))` (`forecasting_holtwinters.py:126`); `modelo.aic` | Tabla 3.24 |
-| E-12 | MAPE naive estacional (ŷₜ = yₜ₋₁₂) en el mismo hold-out | **10,32 %** | recalculado; reemplaza el 18,22 % del borrador, que **no se reproduce** | Cap. IV; cuadro de benchmarks |
-| E-13 | HW amortiguado − naive estacional | **+3,57 pp (HW peor)** | 13,89 % − 10,32 %. La «reducción de 4,33 pp / 23,77 %» (4,33/18,22; el 23,76 % era error de redondeo) **no se sostiene** | Cap. IV |
-| E-14 | OLS lineal de matrícula (N = 33, t = 0..32) | pendiente +3,6541 est./mes; R² = 0,1921; p = 0,0107 | `statsmodels.OLS` sobre la misma serie. Los valores del borrador (+2,95; 0,0854; 0,098) **no se reproducen** (S-10) | Cap. IV; Gráfico 3.5 |
-| E-15 | OLS mensual de recaudación (PROGRAMAS, N = 40, 2023-01 a 2026-04) | pendiente +16.212,88 Bs/mes; R² = 0,7128; RMSE ajuste 118.783,06; hold-out MAPE 17,01 % | `docs/evidencias/ols_reajuste.json` | Tabla 3.24 (fila OLS) |
-| E-16 | OLS anual de recaudación (N = 3) con valores del **DW** | pendiente +2.267.633,83 Bs/año; R² = 0,9937 (2023: 8.035.694,25; 2024: 9.989.730,09; 2025: 12.570.961,91) | `docs/evidencias/ols_mensual_vs_anual.json` | Cap. IV, Tabla 4.7 |
-| E-17 | OLS anual con valores **CSV** (los que usa hoy la tesis) | pendiente +2.436.141,68 Bs/año; R² = 0,987 (2025 = 12.907.977,61) | `docs/evidencias/ols_hw_proyecciones.json` (`recaudacion_csv`); R² recalculado a mano | Tabla 4.7: **las cifras de la tesis vienen del CSV, no del DW**; elegir una fuente |
+| `train` (corpus vigente) | 1.400 filas | 5.600 entidades (1.400 c/u) | 2.447 personas únicas IOB2; partición por persona antes del aumento (`preparar_corpus_robusto.py:101-110`) | `docs/mediciones/f3r_evidencias_sueltas.json` → `anotacion_y_corpus_modelo_vigente.train` |
+| `dev` (corpus vigente) | 350 filas | 1.400 entidades (350 c/u) | 597 personas únicas IOB2; fuga = 0 en 4 niveles | `docs/mediciones/f3r_evidencias_sueltas.json` → `anotacion_y_corpus_modelo_vigente.dev` |
+| `gold_510` | 180 filas | 510 entidades | 83 personas únicas; `PER_ESTUDIANTE` 130, `PROGRAMA` 180, `MODULO` 150, `PER_DOCENTE` 50 | `docs/mediciones/f3r_evidencias_sueltas.json` → `anotacion_y_corpus_modelo_vigente.gold_510` |
+| Corpus `uploads/data/` | 10 libros | 60 hojas · 90.538 procesables | Inventario actual con `scripts/inventario_corpus.py` (docx previo citaba 10 / 62 / 92.946) | `docs/mediciones/f3r_evidencias_sueltas.json` → `inventario_corpus_uploads_data` |
 
-**Nota (mezcla del borrador):** α = 0,6978, φ = 0,9950, RMSE 48,36 y AIC 290,00 pertenecen al ajuste de 33 meses; el RMSE 75,03 y el MAPE 13,89 % pertenecen al ajuste de 27 meses. Presentarlos juntos como «un único modelo» era incorrecto.
-**Nota:** `fact_forecast` del snapshot (24 filas, generadas 2026-11-06/10) no contiene esta proyección (p. ej. `ALUMNOS_GLOBAL` 2026-06 = 435,21, con 4 meses); no se usó como fuente.
+---
 
-### Detalle E.1: Proyección h = 6 (jun-nov 2026) y bandas de confianza (S-01)
-El código calcula la banda como `v ± 1,96 × rmse`, con `rmse` = RMSE **in-sample del ajuste completo (33 meses) = 48,36** (`forecasting_holtwinters.py:126,141-142`), es decir **±94,79**, no el RMSE de hold-out. El texto previo («1,96 × RMSE hold-out = ±94,79») era erróneo. Con el RMSE de hold-out (75,03) la banda honesta sería **±147,06**.
+## D. PRUEBAS AUTOMATIZADAS, COBERTURA Y PRUEBAS DE CARGA / CAJA NEGRA
 
-| Mes | Pronóstico | IC 95 % del código (±94,79) | IC 95 % con RMSE hold-out (±147,06) |
-|---|---|---|---|
-| 2026-06 | 426,37 | [331,58; 521,16] | [279,31; 573,43] |
-| 2026-07 | 414,22 | [319,43; 509,01] | [267,16; 561,28] |
-| 2026-08 | 498,55 | [403,76; 593,34] | [351,49; 645,61] |
-| 2026-09 | 454,48 | [359,69; 549,27] | [307,42; 601,54] |
-| 2026-10 | 428,85 | [334,06; 523,64] | [281,79; 575,91] |
-| 2026-11 | 461,97 | [367,18; 556,76] | [314,91; 609,03] |
+### Tabla D.1: Suite `pytest` y Cobertura — Base: `suite pytest F3R` (`f3r_pruebas.json`, `f3r_cobertura_archivos.csv`)
+
+| Métrica | Valor F3R | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) | Dónde va en tesis |
+|---|---|---|---|---|
+| Pruebas colectadas | 842 | 842 | `docs/mediciones/f3r_pruebas.json` → `colectadas` | Cap. III / Cap. IV; Tabla 3.29 |
+| Aprobadas (`passed`) | **823** | 823 | `docs/mediciones/f3r_pruebas.json` → `passed` | Tabla 3.29 |
+| Fallidas (`failed`) | **1** (`test_powerbi_retencion.py`) | 1 (nota abajo) | `docs/mediciones/f3r_pruebas.json` → `failed`, `diferencia_vs_f3_6` | Tabla 3.29 |
+| Omitidas (`skipped`) | 11 (variables `READINESS_*` no definidas) | 11 | `docs/mediciones/f3r_pruebas.json` → `skipped`, `skipped_detalle` | Tabla 3.29 |
+| Esperadas fallidas (`xfailed`) | 7 (hallazgos `HW-IC`, `HW-GAP`, `OLS-CAGR`, `FK-*`) | 7 | `docs/mediciones/f3r_pruebas.json` → `xfailed`, `xfails` | Tabla 3.29 |
+| Duración total de la suite | 354,78 s | 354,78 s | `docs/mediciones/f3r_pruebas.json` → `duracion_s` | Tabla 3.29 |
+| Cobertura total (`backend` + `pipeline`) | **70,27 %** (10.319 / 14.685 sentencias) | 70,27 % | `docs/mediciones/f3r_pruebas.json` → `cobertura_total.porcentaje_2dec` | Cap. IV; Tabla 3.30 |
+| `backend/core/security.py` | 87,36 % (76 / 87) | 87,36 % | `docs/mediciones/f3r_pruebas.json` → `archivos_clave_j1_04` | Tabla 3.30 |
+| `backend/routers/reportes.py` | 84,67 % (221 / 261) | 84,67 % | `docs/mediciones/f3r_pruebas.json` → `archivos_clave_j1_04` | Tabla 3.30 |
+| `backend/services/bandeja_grupos.py` | 92,99 % (146 / 157) | 92,99 % | `docs/mediciones/f3r_pruebas.json` → `archivos_clave_j1_04` | Tabla 3.30 |
+| `backend/services/risk_service.py` | 94,36 % (318 / 337) | 94,36 % | `docs/mediciones/f3r_pruebas.json` → `archivos_clave_j1_04` | Tabla 3.30 |
+| `pipeline/normalization/person_resolver.py` | 94,08 % (143 / 152) | 94,08 % | `docs/mediciones/f3r_pruebas.json` → `archivos_clave_j1_04` | Tabla 3.30 |
+
+*Nota sobre el único fallo (`failed = 1`):* En `f3_pruebas.json` (`2f68d0c` limpio) la suite dio `824 passed / 0 failed`. En F3R (`823 passed / 1 failed`), el único fallo corresponde a `tests/sprint5/test_powerbi_retencion.py::test_conserva_solo_las_ultimas_versiones_y_borra_los_archivos` (`assert 2 == 3`) causado por cambios locales previos sin commit en `backend/routers/powerbi.py` (fuera del alcance de F3R). El detalle de los 137 archivos se conserva en `docs/mediciones/f3r_cobertura_archivos.csv`.
+
+### Tabla D.2: Pruebas de Carga (Locust) y Caja Negra (Newman) — Base: `f3_base` (`f3r_locust.json`, `f3r_newman.json`)
+
+| Herramienta | Métrica | Valor F3R | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) |
+|---|---|---|---|---|
+| Locust (50 usuarios, rampa 5/s, 30 s) | Peticiones totales / Fallos | 1.219 / 0 (0,00 %) | 1.219 / 0 | `docs/mediciones/f3r_locust.json` → `agregado.requests`, `agregado.failures` |
+| Locust | RPS / Latencia p50 / p95 / p99 | 41,82 RPS · 15,0 / 63,0 / 99,0 ms | 41,82 RPS · 63 ms p95 | `docs/mediciones/f3r_locust.json` → `agregado.rps`, `agregado.p50_ms`, `agregado.p95_ms`, `agregado.p99_ms` |
+| Locust (`review-tray/grupos`) | p95 `GET` / `POST approve-group` (usado en $W$) | **89,0 ms** (`0,089 s`) / **80,0 ms** | 89,0 ms | `docs/mediciones/f3r_locust.json` → `por_endpoint` |
+| Newman (`postman_collection.json`) | Solicitudes / Aserciones totales / Fallidas | 11 req · 23 aserciones · 17 fallidas | 11 / 23 / 17 | `docs/mediciones/f3r_newman.json` → `run.stats` |
+| Newman | Tiempo de respuesta promedio (mín / máx) | 7 ms (3 ms / 21 ms) | 7 ms | `docs/mediciones/f3r_newman.json` → `run.timings.responseAverage` |
+
+*Nota sobre Locust y Newman:* El escenario de Locust fue reescrito en `tests/carga/locustfile.py` siguiendo la Tabla 3.32. La colección `docs/api/postman_collection.json` no se editó en F3R; sus 17 aserciones fallidas reflejan rutas/contratos desactualizados respecto a la API vigente.
+
+---
+
+## E. PRONÓSTICO DE MATRÍCULA (HOLT-WINTERS) Y RECAUDACIÓN (OLS)
+
+**Decisión confirmada (Opción 1):** La Sección E se calcula sobre el `snapshot 10-nov` (`n = 43` meses en `fact_marketing`, `2022-11` a `2026-05`).  
+**Nota obligatoria:** *«f3_base corresponde al ciclo mensual 2026-03 (recortes en output/backups/f0_lote/slices/) que mide RNF-03; no contiene serie histórica»* (`docs/mediciones/f3r_matricula_lote.json`).
+
+### Tabla E.1: Pronóstico de Matrícula (`ALUMNOS_GLOBAL`) — Base: `snapshot 10-nov` (`f3r_hw_matricula.json`)
+
+| ID | Métrica | Valor F3R | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) | Dónde va en tesis |
+|---|---|---|---|---|---|
+| E-01 | Método vigente | Holt-Winters tendencia aditiva amortiguada, estacionalidad aditiva ($m=12$) | HW amortiguado | `pipeline/analytics/forecasting_holtwinters.py:117-119` (`damped_trend=True`) | Cap. III; Tabla 3.24 |
+| E-02 | Observaciones históricas (`fact_marketing`) | **43 meses** (`2022-11` a `2026-05`) | 43 meses | `docs/mediciones/f3r_hw_matricula.json` → `n_observaciones` | Tabla 3.24; Cap. IV |
+| E-03 | Parámetros ajustados ($\alpha / \beta / \gamma / \phi$) | 0,0000 / 0,0000 / 0,0000 / **0,9072** | 0,0 / 0,0 / 0,0 / 0,9072 | `docs/mediciones/f3r_hw_matricula.json` → `parametros_hw` | Tabla 3.24 |
+| E-04 | RMSE / AIC del ajuste | **59,57** / **385,49** | 59,57 / 385,49 | `docs/mediciones/f3r_hw_matricula.json` → `rmse`, `aic` | Tabla 3.24 |
+| E-05 | MAPE en hold-out (6 meses) | **15,67 %** | 15,67 % | `docs/mediciones/f3r_hw_matricula.json` → `mape_holdout_6m_pct` | Tabla 3.24; Tabla 4.7 |
+| E-06 | Cobertura empírica hold-out IC 80 % / IC 95 % | **66,67 %** (4/6) / **100,00 %** (6/6) | 66,67 % / 100,00 % | `docs/mediciones/f3r_hw_matricula.json` → `cobertura_empirica_holdout_6m` | Cap. IV |
+| E-07 | Proyección `2026-06` a `2026-11` (`forecast`) | 396,44 · 423,55 · 479,38 · 440,72 · 416,17 · 402,81 | 396,44–402,81 | `docs/mediciones/f3r_hw_matricula.json` → `forecast` | Cap. IV; Gráf. 3.4 |
+
+### Tabla E.2: Pronóstico de Recaudación (`META_MENSUAL_PROGRAMAS` y `META_ANUAL`) — Base: `snapshot 10-nov` (`f3r_ols_snapshot.json`, `f3r_b5_snapshot_sql.txt`)
+
+| ID | Serie / Métrica | Valor F3R | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) |
+|---|---|---|---|---|
+| E-08 | `META_MENSUAL_PROGRAMAS` (HW, `simulacion_param_aditivo_n1000`) | RMSE **184.571,04** · AIC **1.198,08** | 184.571,04 / 1.198,08 | `docs/mediciones/f3r_ols_snapshot.json` → `mensual.data.rmse`, `mensual.data.aic` |
+| E-09 | `META_ANUAL` (OLS descriptiva, $N=3$: 2023–2025) | Pendiente **+2.436.141,68 Bs/año** · CAGR **26,76 %** | +2.436.141,68 Bs/año | `docs/mediciones/f3r_ols_snapshot.json` → `anual.data.pendiente_anual_bs`, `cagr_historico_pct` |
+| E-10 | Proyección OLS anual `2026` / `2027` (banda ±5 %) | **15.183.417,34 Bs** / **17.619.559,02 Bs** | 15.183.417,34 / 17.619.559,02 | `docs/mediciones/f3r_ols_snapshot.json` → `anual.data.proyecciones` |
+| E-11 | Conciliación SQL 2025 (`PROGRAMAS`, `f0_b5_consultas.sql`) | Observado **12.907.977,61 Bs** · Ajustado **12.747.275,66 Bs** ($\Delta = -1,24\%$) | 12.907.977,61 Bs | `docs/mediciones/f3r_b5_snapshot_sql.txt` |
 
 ---
 
 ## F. INDICADORES (KPI) Y SISTEMA DE ALERTAS TEMPRANAS
-`bi.ref_kpi` cataloga **22 KPI**; el endpoint `/kpis/cmi-completo` (`backend/services/kpi_service.py`, diccionario `kpis_exactos_11`) calcula **11**. Los nombres y fórmulas de la tabla F.1 del borrador anterior **no coincidían** con `bi.ref_kpi` y se reemplazaron por el contenido real de la tabla (S-04).
 
-### Tabla F.1: Catálogo real de 22 KPI en `bi.ref_kpi` (`SELECT * FROM bi.ref_kpi ORDER BY 1`)
-| Código | Perspectiva | Nombre | Descripción | Unidad | ¿En `/cmi-completo`? |
+De acuerdo con la **Decisión 1**, los indicadores de negocio (`KPI-01`..`09`, `KPI-12`..`17`, `KPI-19`..`22`) provienen del `snapshot 10-nov` (`f3r_snapshot_kpi.json`), mientras que los dependientes del modelo (`KPI-10`, `KPI-11`, `KPI-18`) y el cuadre de `KPI-15` por fila de origen provienen de `f3_base` / `lote 1.387`. En el snapshot, `KPI-10`, `KPI-11` y `KPI-18` están marcados `no_usar_dependiente_del_modelo`.
+
+### Tabla F.1: KPIs de Negocio (Gestiones 2024 y 2025) — Base: `snapshot 10-nov` (`f3r_snapshot_kpi.json`)
+
+| Código | Indicador | Gestión 2024 | Gestión 2025 | `valor_docx` (2025) | Fuente (`docs/mediciones/` y ruta JSON) |
 |---|---|---|---|---|---|
-| KPI-01 | Financiera | Ticket promedio por estudiante | Recaudación de la gestión entre la matrícula efectiva | Bs | Sí (1) |
-| KPI-02 | Financiera | Cumplimiento de meta del último mes | Ejecutado frente a la meta del último mes con ejecución | % | Sí (2) |
-| KPI-03 | Financiera | Cumplimiento de meta a la fecha | Ejecutado frente a la meta de los meses ya ejecutados | % | Sí (3) |
-| KPI-04 | Financiera | Estudiantes con riesgo financiero | ≥ 2 cuotas impagas o cartera previsionable | Cantidad | Sí (4) |
-| KPI-05 | Financiera | Estudiantes en mora | Estudiantes en mora o previsionables sobre el total con cartera | % | Sí (5) |
-| KPI-06 | Clientes | Conversión de admisiones | Inscritos sobre leads de marketing | % | Sí (6) |
-| KPI-07 | Aprendizaje | Promedio de calificaciones | Nota final promedio sobre 100 | Puntos | Sí (7) |
-| KPI-08 | Aprendizaje | Tasa de aprobación | Calificaciones con nota final ≥ 70 | % | Sí (8) |
-| KPI-09 | Aprendizaje | Estudiantes en riesgo académico | Estudiantes con promedio ≤ 70 | Cantidad | Sí (9) |
-| KPI-10 | Procesos internos | Confianza media de extracción | Confianza promedio de la extracción automática | % | Sí (10) |
-| KPI-11 | Procesos internos | Automatización directa | Registros consolidados sin revisión humana (confianza ≥ 85 %) | % | Sí (11) |
-| KPI-12 | Financiera | Variación interanual de ingresos | Ingreso de la gestión frente a los mismos meses de la anterior | % | No |
-| KPI-13 | Financiera | Avance sobre la meta anual | Ejecutado frente a la meta de los 12 meses | % | No |
-| KPI-14 | Financiera | Brecha a la meta anual | Monto que falta recaudar para la meta anual | Bs | No |
-| KPI-15 | Financiera | Cartera vencida | Deuda en mora o previsionable sobre la deuda total | % | No |
-| KPI-16 | Clientes | Tasa de deserción | Incumplimiento o inasistencia > 30 % | % | No |
-| KPI-17 | Aprendizaje | Estudiantes en prioridad crítica | ≥ 2 reglas de riesgo | Cantidad | No |
-| KPI-18 | Procesos internos | Pendientes de revisión humana | Entidades no resueltas en espera | Cantidad | No |
-| KPI-19 | Aprendizaje | Satisfacción con los docentes | Puntaje medio de preguntas sobre el docente | % | No |
-| KPI-20 | Clientes | Satisfacción institucional | Puntaje medio de preguntas institucionales | % | No |
-| KPI-21 | Clientes | Matrícula efectiva | Estudiantes distintos con calificaciones en la gestión | Cantidad | No |
-| KPI-22 | Clientes | Inscritos por convenio | Inscritos mediante convenios | Cantidad | No |
+| KPI-01 | Ticket promedio por estudiante (Bs) | 2.311,15 | **3.773,91** | 3.773,91 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-01.api` |
+| KPI-02 | Cumplimiento de meta del último mes (%) | 6,25 % | **157,48 %** | 157,48 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-02.api` |
+| KPI-03 | Cumplimiento de meta a la fecha (%) | 102,26 % | **110,54 %** | 110,54 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-03.api` |
+| KPI-04 | Estudiantes con riesgo financiero (cant.) | 314 | **623** | 623 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-04.api` |
+| KPI-05 | Estudiantes en mora (%) | 14,08 % | **18,36 %** | 18,36 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-05.api` |
+| KPI-06 | Conversión de admisiones (%) | 100,00 % (tautológico) | **100,00 %** (tautológico; declarar **N/D**) | N/D | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-06.api` |
+| KPI-07 | Promedio de calificaciones (pts) | 78,94 | **79,02** | 79,02 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-07.api` |
+| KPI-08 | Tasa de aprobación (nota ≥ 70) | 85,50 % | **85,61 %** | 85,61 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-08.api` |
+| KPI-09 | Estudiantes en riesgo académico (cant.) | 674 | **588** | 588 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-09.api` |
+| KPI-12 | Variación interanual de ingresos (%) | 17,60 % | **28,10 %** | 28,10 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-12.api` |
+| KPI-13 | Avance sobre la meta anual (%) | 102,26 % | **110,54 %** | 110,54 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-13.api` |
+| KPI-14 | Brecha a la meta anual (Bs) | 0,00 | **0,00** | 0,00 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-14.api` |
+| KPI-15 | Cartera vencida (%) | 43,58 % | **20,56 %** | 20,56 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-15.api` |
+| KPI-16 | Tasa de deserción (%) | 0,00 % | **0,00 %** | 0,00 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-16.api` |
+| KPI-17 | Estudiantes en prioridad crítica (cant.) | 90 | **124** | 124 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-17.api` |
+| KPI-19 | Satisfacción con los docentes (%) | N/D (`null`) | **81,23 %** | 81,23 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-19.api` |
+| KPI-20 | Satisfacción institucional (%) | N/D (`null`) | **84,39 %** | 84,39 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-20.api` |
+| KPI-21 | Matrícula efectiva (cant.) | 3.147 | **3.455** | 3.455 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-21.api` |
+| KPI-22 | Inscritos por convenio (cant.) | 1.631 | **2.609** | 2.609 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-22.api` |
 
-La lista de 11 implementados **coincide con la Tabla 3.27 de la tesis** (KPI-04 riesgo financiero, KPI-05 estado de cartera, KPI-07 promedio acumulado, KPI-09 riesgo académico). El borrador de esta SFV los había rotulado mal (margen operativo, NPS, retención).
+*Nota sobre `KPI-02` 2024 (`6,25 %`):* Distorsionado por la celda `10.719.694,00` en `META POR CATEGORIA 2024` diciembre (ver Defecto `D-A8b` en Sección H).
 
-### Tabla F.2: Valores de los 11 KPI ejecutivos (ejecución de `obtener_perspectivas_cmi_completo` sobre el snapshot, 10-nov-2026)
-| Código | Indicador | Gestión 2025 | Todas las gestiones | Evidencia |
-|---|---|---|---|---|
-| KPI-01 | Ticket promedio (Bs) | 1.610,13 | 1.626,99 | `kpi_service.py`, clave `1_ticket_promedio_por_programa` |
-| KPI-02 | Cumplimiento meta del último mes con ejecución | 157,48 % | 0,0 % (sin ejecución en el mes final) | `fact_rentabilidad.monto_ejecutado / monto_meta` |
-| KPI-03 | Cumplimiento meta a la fecha | 110,54 % (14.041.718,15 / 12.703.204,29 Bs) | 96,67 % (40.019.707,17 / 41.396.298,29 Bs) | idem |
-| KPI-04 | Estudiantes con riesgo financiero (**cantidad**, no Bs ni %) | 623 | 1.765 | `fact_situacion_financiera`: ≥ 2 cuotas impagas o previsionable |
-| KPI-05 | Estado de cartera / mora | 3.691 vigente · 830 en mora · 0 previsionable (total 4.521; mora 18,36 %) | 6.886 · 2.498 · 0 (total 9.384; mora 26,62 %) | `estado_financiero` |
-| KPI-06 | Conversión de admisiones | 100,0 % (4.737 inscritos / 4.737 leads) | 100,0 % (15.196 / 15.196) | ver Detalle F.3: valor tautológico |
-| KPI-07 | Promedio de calificaciones (**media de `nota_final`**, no NPS) | 79,02 pts | 78,98 pts | `fact_rendimiento_academico` |
-| KPI-08 | Tasa de aprobación (nota ≥ 70) | 85,61 % (8.502 aprob. / 1.429 repro.) | 85,55 % (18.650 / 3.150 con nota; 818 filas sin nota) | `NOTA_APROBACION = 70.0` (`pipeline/config.py:58`) |
-| KPI-09 | Estudiantes en riesgo académico (**cantidad**, promedio ≤ 70) | 588 | 1.224 | `kpi_service.py` |
-| KPI-10 | Confianza media de extracción | 0,9269 | 0,9308 | lote 1.387: **0,9618** (todas, N = 11.426) / **0,9209** (solo BETO, N = 3.248) |
-| KPI-11 | Automatización directa | 90,10 % | 91,06 % | lote 1.387: **97,55 %** (1.353/1.387) |
+### Tabla F.2: KPIs Operativos y Cuadre de KPI-15 — Base: `f3_base` (`f3r_extraccion_f3base.json`, `f3_2_kpi15.json`, `f3r_kpi15_cuadre.json`)
 
-(El borrador marcaba 0,9269 y 90,10 % como «DW general»; son de la gestión 2025. «General» = 0,9308 y 91,06 %. Las columnas «Valor en Lote 1.387» del borrador repetían los valores del DW y se eliminaron: solo KPI-10 y KPI-11 tienen valor propio del lote.)
+| Código / Métrica | Valor F3R | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) |
+|---|---|---|---|
+| KPI-10 (`f3_base` 2024 / 2025) | 84,32 % / 84,64 % | 84,32 % / 84,64 % | `docs/mediciones/f3r_extraccion_f3base.json` → `kpis_vw_cmi_valores` |
+| KPI-11 (`f3_base` 2024 / 2025) | 56,39 % / 54,85 % | 56,39 % / 54,85 % | `docs/mediciones/f3r_extraccion_f3base.json` → `kpis_vw_cmi_valores` |
+| KPI-15 (gestión 2025 en `f3_base`, API = SQL) | **73,44 %** | 73,44 % | `docs/mediciones/f3_2_kpi15.json` → `kpi_15_api_vs_sql.2025.api` |
+| Cuadre KPI-15 por fila de origen (`fact_situacion_financiera`) | **500** Mora · **7** Previsionable · **218** Vigente (total 725; $\Delta=0$) | 500 / 7 / 218 | `docs/mediciones/f3r_kpi15_cuadre.json` → `por_estado_cartera`, `desajuste_conteo` |
+| KPI-18 (`f3_base` 2026) | **36** | 36 | `docs/mediciones/f3r_extraccion_f3base.json` → `kpis_vw_cmi_valores` |
 
-### Detalle F.1: Origen real de metas (KPI-02 y KPI-03)
-`dim_meta` tiene 0 filas. Las metas salen de `fact_rentabilidad.monto_meta` (48 filas no nulas desde `EJECUTADO VS META.xlsx`).
+### Tabla F.3: Alertas Tempranas y Cartera en Mora — Base: `snapshot 10-nov` (`f3r_snapshot_alertas.json`)
 
-### Detalle F.2: Alertas tempranas (S-03)
-Las cifras 10.707 / 1.698 / 1.451 / 103 pertenecen a corridas sintéticas y no están vigentes. Valores vigentes (`evaluar_alertas_tempranas_deterministicas`, snapshot):
-- Matrícula activa analizada: 9.603.
-- **Riesgo académico: 1.224 estudiantes con promedio de notas ≤ 70.** Evidencia: `SELECT count(*) FILTER (WHERE p <= 70) FROM (SELECT avg(nota_final) p FROM fact_rendimiento_academico WHERE nota_final IS NOT NULL GROUP BY id_estudiante) a` = **1.224** (5.751 estudiantes con nota); con `< 51` serían 805. Umbral en código: `alert_engine.py:6,96,115` y `risk_service.py:402` (`<= umbral_nota`, 70,0). El «< 51» del borrador era incorrecto; `NOTA_APROBACION = 70.0` (`pipeline/config.py:58`). El mínimo de `nota_final` en la tabla es 0,00 (no 51).
-- Riesgo de deserción: 0 (`incumplimiento_actividades_pct = 0,00` en las 22.618 filas).
-- Riesgo financiero: 1.765 (monto adeudado 867.811,89 Bs). Alerta crítica (≥ 2 reglas): 238. Estudiantes con al menos una alerta: 2.751.
-
-### Detalle F.3: KPI-06 = 100 % (S-04)
-`kpi_service.py:572` filtra `FactMarketing.leads > 0` y `:583` calcula `inscritos / leads × 100`. En el snapshot, **ninguna fila con `leads > 0` tiene `leads <> inscritos`** (`SELECT count(*) FROM fact_marketing WHERE leads > 0 AND leads <> inscritos` = 0): el cargador escribe `leads = inscritos` para `TBL_INSCRITOS`. Postulantes = inscritos, por lo que el 100 % es un artefacto del dato y no una conversión real. Debe declararse **N/D (sin embudo real de postulantes)** en la tesis.
+| Métrica | Valor F3R | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) |
+|---|---|---|---|
+| Total de alertas emitidas | **7.094** | 7.094 | `docs/mediciones/f3r_snapshot_alertas.json` → `total_alertas` |
+| Por severidad (`CRITICAL` / `WARNING`) | 4.201 / 2.893 | 4.201 / 2.893 | `docs/mediciones/f3r_snapshot_alertas.json` → `por_severidad` |
+| Por tipo (`ACADEMICO` / `FINANCIERO` / `DATAOPS_CALIDAD` / `RIESGO_CRUZADO`) | 3.942 / 1.806 / 1.044 / 302 | 3.942 / 1.806 / 1.044 / 302 | `docs/mediciones/f3r_snapshot_alertas.json` → `por_tipo` |
+| Cartera en mora: estudiantes distintos / filas / deuda | **2.498** est. · **2.574** filas · **692.957,88 Bs** | 2.498 / 692.957,88 Bs | `docs/mediciones/f3r_snapshot_alertas.json` → `mora_estudiantes_distintos`, `mora_monto_deuda` |
 
 ---
 
-## G. INFRAESTRUCTURA, SERVICIOS DOCKER Y MODELO DE DATOS
-La arquitectura de despliegue opera bajo contenedores Docker orquestados mediante Docker Compose.
+## G. INFRAESTRUCTURA, INVENTARIO DE TABLAS Y RUTAS DE LA API
 
-### Tabla G.1: Inventario de Contenedores Docker en Ejecución (`docker compose ps`)
-| Nombre del Contenedor | Imagen | Servicio | Puerto(s) Publicado(s) | Estado Operativo |
+### Tabla G.1: Inventario del Data Warehouse y API — Base: `f3_base` (`f3r_extraccion_f3base.json`, `f3r_inventario_api.json`, `f3r_schema_migrations.json`)
+
+| Componente | Valor F3R | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) |
+|---|---|---|---|
+| Tablas base y vistas del DW | **50** tablas base + **9** vistas (`cache_beto_entidades`: no existe) | 50 tablas + 9 vistas | `docs/mediciones/f3r_extraccion_f3base.json` → `inventario` |
+| `dim_tiempo` (filas y rango) | **2.230** filas (`2005-02-05` a `2034-01-12`) | 2.230 (2005–2034) | `docs/mediciones/f3r_extraccion_f3base.json` → `dim_tiempo` |
+| `schema_migrations` | **13** migraciones (`001`..`014` idénticas; solo varía `applied_at`, no afecta datos) | 13 | `docs/mediciones/f3r_schema_migrations.json` → `veredicto` |
+| Decoradores de rutas API | **136** (`backend/routers` 115 + `main.py` 2 + `auth` 11 + `notif` 6 + `audit` 2) | 136 | `docs/mediciones/f3r_inventario_api.json` → `total_decoradores_ruta` |
+| Healthchecks Docker (`docker-compose.yml`) | 2 de 9 contenedores (`db` y `catalog_db`) | 2 de 9 | `docker-compose.yml:17,41` |
+
+---
+
+## H. DEFECTOS, INCONSISTENCIAS Y LIMITACIONES REGISTRADAS
+
+### Tabla H.1: Limitaciones Históricas y Defectos de Cobertura (`PLAN_F3R_A.md`) — Base: `f3_base` (`f3r_dw_vacio.json`, `f3r_cobertura_resumen.md`)
+
+| ID | Componente / Archivo | Síntoma y causa raíz | Impacto en SFV y KPIs | Fuente (`docs/mediciones/` / código) |
 |---|---|---|---|---|
-| `giragroup_gateway` | `giragroup_bi_system-gateway` | `gateway` | `0.0.0.0:80->80/tcp` | Up 3 hours (sin healthcheck) |
-| `giragroup_web` | `giragroup_bi_system-web` | `web` | `0.0.0.0:5173->5173/tcp` | Up 3 hours (sin healthcheck) |
-| `giragroup_api` | `giragroup_bi_system-api` | `api` | `0.0.0.0:8000->8000/tcp` | Up 3 hours (sin healthcheck) |
-| `giragroup_auth_svc` | `giragroup_bi_system-auth-service` | `auth-service` | `8001/tcp` (interno) | Up 3 hours (sin healthcheck) |
-| `giragroup_notifications_svc` | `giragroup_bi_system-notifications-service` | `notifications-service` | `8002/tcp` (interno) | Up 3 hours (sin healthcheck) |
-| `giragroup_audit_svc` | `giragroup_bi_system-audit-service` | `audit-service` | `8004/tcp` (interno) | Up 3 hours (sin healthcheck) |
-| `giragroup_pipeline` | `giragroup_bi_system-pipeline` | `pipeline` | `8006/tcp` (interno) | Up 3 hours (sin healthcheck) |
-| `giragroup_catalog_db` | `giragroup_bi_system-catalog_db` | `catalog_db` | `127.0.0.1:5433->5432/tcp` | Up 3 hours (healthy) |
-| `giragroup_db` | `postgres:16-alpine` | `db` | `127.0.0.1:5434->5432/tcp` | Up 3 hours (healthy) |
+| `D-A9` | `dw_vacio` y `public.carga_fila_origen` | `scripts/aislada_tmpfs.sh:16` trunca 15 tablas desde `snapshot_dw_20261110_1201`, pero omite `public.carga_fila_origen`, dejando **15.196 filas huérfanas** (`id_documento=12`, `tabla='fact_marketing'`). Al cargar `TBL_INSCRITOS.xlsx` completo sobre `dw_vacio`, `15.183` filas quedan bloqueadas por `dw_loader.py:1019-1029` (`fact_marketing=0`). | No afectó al recorte `2026-03` de `f3_base`, que heredó esas 15.196 filas (`15.196 + 782 = 15.978`). | `docs/mediciones/f3r_dw_vacio.json` |
+| `D-A4` | `Experiencia Docente 2.0.xlsx` | `ingestion_service.py:837` etiqueta las filas como `evaluacion_docente` en `staging_registros_crudos`, pero `consolidacion.py:193-200` rutea por `dim_origen_documental.tipo_fuente='ACTA'` e ignora `stg.categoria`. | Descarta el **100 %** del archivo (`1.137` filas en recorte / `16.629` en libro). | `docs/mediciones/f3r_cobertura_resumen.md` |
+| `D-A4b` | `TBL EXPERIENCIA UNIFRANZ` (`doc 10`) | `18` filas usan la 1.ª fila de datos como cabecera (`BAJA_CONFIANZA_IA`). | Derivación a staging/bandeja en `doc 10`. | `docs/mediciones/f3r_cobertura_resumen.md` |
+| `D-A5` | `dim_tiempo` fuera de rango 2022–2027 | Incluye `2034-01-12` (`BD Techos.xlsx` f.26, `1` hecho en `fact_techo_convenio` `id=25`) y `2005-02-05` / `2005-02-14` (`ARCA MODULOS`, `0` hechos). | Amplía el rango de `dim_tiempo` a `2005-02-05`..`2034-01-12`. | `docs/mediciones/f3r_extraccion_f3base.json` → `dim_tiempo` |
+| `D-A8a` | `EJECUTADO VS META.xlsx` | BETO NER intercepta `4` filas agregadas (`PROGRAMAS JUNIO`, `TECHOS/CERRADOS FEBRERO/ABRIL/OCTUBRE`) como `ESTUDIANTE` (`BAJA_CONFIANZA_IA`, `id_staging` `812-815`). | Reduce `fact_rentabilidad` de `95` esperados a `91` en `f3_base`. | `docs/mediciones/f3r_cobertura_resumen.md` |
+| `D-A8b` | `META POR CATEGORIA 2024` | La celda `10.719.694,00` (`TECHOS/CERRADOS` diciembre) ingresa como meta mensual. | Distorsiona `KPI-02`/`KPI-03` 2024 (`kpi_service.py:320-347`); no afecta a `META_MENSUAL_PROGRAMAS` (`forecast_service.py:470`). | `docs/mediciones/f3r_cobertura_resumen.md` |
+| `D-A2` | `fact_cobranzas_proyectadas` | `0` filas en el DW por ausencia de extractor implementado. | Tabla sin datos (`0`). | `docs/mediciones/f3r_extraccion_f3base.json` |
+| Nota Cobranzas | `Copia de COBRANZAS 2024 2025` | Confirmado en `PLAN_F3R_A.md` que **no** es duplicado de `COBRANZAS 2024 2025` (`overlap_CIs = 0`). | Aporta `446` de `725` hechos financieros en `f3_base`. | `docs/mediciones/f3r_cobertura_resumen.md` |
+| Lim. KPI-06 | `KPI-06` tautológico | `leads = inscritos` en el `100 %` de las filas con `leads > 0`. | Debe declararse como **N/D** en la tesis. | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-06.api` |
+| Lim. Metas/Des. | `dim_meta` y deserción | `dim_meta = 0` (metas provienen de `fact_rentabilidad.monto_meta`); `incumplimiento_actividades_pct = 0,00` en `fact_rendimiento_academico`. | Alertas de deserción = `0`. | `docs/mediciones/f3r_extraccion_f3base.json` |
+| Lim. Revisión | Inclusión de `requiere_revision = true` | Se mantiene por decisión de Lean (`632/1.392` en `fact_rendimiento_academico`, nota media `87,0312` con revisión frente a `86,9062` sin ella). | Impacto documentado en KPIs académicos. | `docs/mediciones/f3_kpi.json` → `sensibilidad_requiere_revision` |
+| Bitácora B-9 | `log_inconsistencias` | `6.226` filas en `log_inconsistencias` (`0` descartes sin bitácora en `f3_base`). | Trazabilidad completa de descartes. | `docs/mediciones/f3r_extraccion_f3base.json` → `log_inconsistencias` |
 
-Salida literal de `docker compose ps` (S-05):
-```
-NAME                          IMAGE                                       COMMAND                   SERVICE                 CREATED        STATUS                 PORTS
-giragroup_api                 giragroup_bi_system-api                     "sh -c 'if [ \"${API_…"   api                     18 hours ago   Up 3 hours             0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
-giragroup_audit_svc           giragroup_bi_system-audit-service           "uvicorn main:app --…"    audit-service           18 hours ago   Up 3 hours             8004/tcp
-giragroup_auth_svc            giragroup_bi_system-auth-service            "uvicorn main:app --…"    auth-service            18 hours ago   Up 3 hours             8001/tcp
-giragroup_catalog_db          giragroup_bi_system-catalog_db              "docker-entrypoint.s…"    catalog_db              20 hours ago   Up 3 hours (healthy)   127.0.0.1:5433->5432/tcp
-giragroup_db                  postgres:16-alpine                          "docker-entrypoint.s…"    db                      6 days ago     Up 3 hours (healthy)   127.0.0.1:5434->5432/tcp
-giragroup_gateway             giragroup_bi_system-gateway                 "/docker-entrypoint.…"    gateway                 20 hours ago   Up 3 hours             0.0.0.0:80->80/tcp, [::]:80->80/tcp
-giragroup_notifications_svc   giragroup_bi_system-notifications-service   "uvicorn main:app --…"    notifications-service   18 hours ago   Up 3 hours             8002/tcp
-giragroup_pipeline            giragroup_bi_system-pipeline                "python -m pipeline.…"    pipeline                18 hours ago   Up 3 hours             8006/tcp
-giragroup_web                 giragroup_bi_system-web                     "docker-entrypoint.s…"    web                     19 hours ago   Up 3 hours             0.0.0.0:5173->5173/tcp, [::]:5173->5173/tcp
-```
-**Healthchecks (`docker-compose.yml`):** solo `catalog_db` (línea 17) y `db` (línea 41), ambos `pg_isready`. Los otros 7 servicios **no tienen healthcheck**, por eso `docker compose ps` no muestra «healthy» para ellos; el «Up (Saludable)» del borrador era incorrecto.
+---
 
-### Tabla G.2: Inventario Físico de Tablas y Vistas del Data Warehouse (59 objetos = 50 tablas base + 9 vistas)
-| Esquema | Objeto | Tipo | Filas | Propósito y Contenido |
-|---|---|---|---|---|
-| `bi` | `ref_kpi` | BASE TABLE | 22 | Catálogo maestro de indicadores del CMI |
-| `bi` | `ref_perspectiva` | BASE TABLE | 4 | Las 4 perspectivas del CMI institucional |
-| `bi` | `vw_cartera_estado` | VIEW | 7 | Vista agregada de cartera por estado crediticio |
-| `bi` | `vw_cmi_gestiones` | VIEW | 5 | Histórico de gestiones consolidadas |
-| `bi` | `vw_cmi_global` | VIEW | 5 | Indicadores globales de alto nivel por gestión |
-| `bi` | `vw_cmi_perspectiva` | VIEW | 20 | Desempeño ponderado por perspectiva |
-| `bi` | `vw_cmi_scorecard` | VIEW | 110 | Matriz completa del Cuadro de Mando Integral |
-| `bi` | `vw_cmi_valores` | VIEW | 64 | Serie temporal de valores ejecutados de KPI |
-| `bi` | `vw_dataops_documento` | VIEW | 16 | Estado de procesamiento por archivo fuente |
-| `bi` | `vw_metas_mensual` | VIEW | 95 | Comparativo mensual ejecutado vs meta |
-| `bi` | `vw_riesgo_estudiante` | VIEW | 6.602 | Clasificación de riesgo individual por estudiante |
-| `public` | `bridge_modulo_docente` | BASE TABLE | 1.922 | Tabla puente asociativa entre módulos y docentes |
-| `public` | `cache_indice_beto` | BASE TABLE | 90.212 | Caché semántica local de inferencias del modelo BETO |
-| `public` | `carga_fila_origen` | BASE TABLE | 15.196 | Registro de claves únicas para idempotencia estricta |
-| `public` | `cat_categoria_financiera` | BASE TABLE | 5 | Categorías de egresos y rentabilidad en DW |
-| `public` | `cat_institucion` | BASE TABLE | 4 | Instituciones y universidades aliadas |
-| `public` | `cat_programa` | BASE TABLE | 4 | Programas canónicos homologados |
-| `public` | `dataops_tarea` | BASE TABLE | 28 | Registro de tareas y lotes de procesamiento DataOps |
-| `public` | `dim_categoria_financiera` | BASE TABLE | 15 | Dimensión financiera extendida |
-| `public` | `dim_docente` | BASE TABLE | 638 | Dimensión de docentes de posgrado |
-| `public` | `dim_estudiante` | BASE TABLE | 14.078 | Dimensión de alumnos (13.667 CIs únicas) |
-| `public` | `dim_meta` | BASE TABLE | 0 | Estructura dimensional previa (reemplazada por fact) |
-| `public` | `dim_modulo` | BASE TABLE | 3.585 | Dimensión de asignaturas y módulos académicos |
-| `public` | `dim_origen_documental` | BASE TABLE | 16 | Catálogo de fuentes y planillas procesadas |
-| `public` | `dim_tiempo` | BASE TABLE | 2.230 | Dimensión temporal diaria (2020 a 2026) |
-| `public` | `fact_cobranzas_proyectadas`| BASE TABLE | 0 | Hechos proyectados de recuperación de cartera |
-| `public` | `fact_costo_programa` | BASE TABLE | 1.371 | Costos operacionales por versión de programa |
-| `public` | `fact_evaluacion_docente` | BASE TABLE | 14.234 | Evaluaciones y encuestas de satisfacción estudiantil |
-| `public` | `fact_forecast` | BASE TABLE | 24 | Proyecciones mensuales de demanda persistidas |
-| `public` | `fact_marketing` | BASE TABLE | 8.946 | Leads, consultas y métricas de captación |
-| `public` | `fact_rendimiento_academico`| BASE TABLE | 22.618 | Actas de notas y calificaciones de alumnos |
-| `public` | `fact_rentabilidad` | BASE TABLE | 108 | Ingresos, egresos y metas presupuestarias |
-| `public` | `fact_situacion_financiera` | BASE TABLE | 10.483 | Transacciones de cobranza, cuotas y deudas |
-| `public` | `fact_techo_convenio` | BASE TABLE | 206 | Aranceles máximos por convenios interinstitucionales |
-| `public` | `log_auditoria_nlp` | BASE TABLE | 4 | Trazabilidad de predicciones del modelo BETO |
-| `public` | `log_inconsistencias` | BASE TABLE | 92 | Registro de discrepancias y descartes nominales |
-| `public` | `log_pipeline_ingesta` | BASE TABLE | 117 | Auditoría de pasos de ejecución del pipeline |
-| `public` | `lote` | BASE TABLE | 1 | Control maestro de lotes procesados |
-| `public` | `notifications` | BASE TABLE | 2 | Notificaciones emitidas por el sistema |
-| `public` | `powerbi_informe_version` | BASE TABLE | 2 | Metadatos de reportes Power BI sincronizados |
-| `public` | `ref_metas_gestion` | BASE TABLE | 0 | Metas anuales (gestionadas en fact_rentabilidad) |
-| `public` | `schema_migrations` | BASE TABLE | 12 | Registro de control de migraciones aplicadas |
-| `public` | `staging_registros_crudos` | BASE TABLE | 91 | Buffer temporal de ingesta sin normalizar |
-| `public` | `stg_entidad_no_resuelta` | BASE TABLE | 23.127 | Entidades pendientes de resolución (1.044 activas) |
-| `public` | `users` | BASE TABLE | 5 | Usuarios autenticados bajo el modelo RBAC |
-| `public` | *Tablas cat_* auxiliares (**14**): `cat_combinacion_estado`, `cat_concepto_financiero`, `cat_escuela`, `cat_estado_academico`, `cat_estado_arca`, `cat_estado_reprobado`, `cat_etiqueta_clasificacion`, `cat_guia_texto_plano`, `cat_historico_equivalencia`, `cat_institucion_convenio`, `cat_mapeo_columna`, `cat_modalidad`, `cat_modulo`, `cat_tipo_programa` | BASE TABLE | 0 c/u | Catálogos locales replicados desde la base de catálogo |
+## I. GRÁFICOS Y FIGURAS ACADÉMICAS (300 DPI)
 
-**Conteo (S-06), `SELECT table_schema, table_type, count(*) FROM information_schema.tables ... GROUP BY 1,2`:** `bi` BASE TABLE 2 + `bi` VIEW 9 + `public` BASE TABLE 48 = 59. Las filas explícitas del borrador sumaban 58 porque el grupo de catálogos auxiliares figuraba como 13 y son 14. Total confirmado: **50 tablas base + 9 vistas**.
-
-### Tabla G.3: Inventario de Tablas en Base de Catálogo (`giragroup_catalog_db`, 20 Tablas)
-| Objeto | Filas | Propósito Funcional |
+| Identificador | Archivo / Estado | Fuente a citar al pie |
 |---|---|---|
-| `cat_categoria_financiera` | 2 | Categorías maestras de clasificación contable |
-| `cat_combinacion_estado` | 16 | Matriz de homologación de estados académicos y financieros |
-| `cat_concepto_financiero` | 16 | Conceptos arancelarios (matrícula, colegiatura, titulación) |
-| `cat_convenio_programa` | 195 | Relación formal de convenios interinstitucionales |
-| `cat_escuela` | 5 | Escuelas académicas de posgrado |
-| `cat_estado_academico` | 5 | Estados del estudiante (regular, baja, graduado, abandono) |
-| `cat_estado_arca` | 2 | Estados homologados del sistema académico ARCA |
-| `cat_estado_reprobado` | 7 | Tipologías de reprobación (abandono, nota, inasistencia) |
-| `cat_etiqueta_clasificacion`| 66 | Etiquetas semánticas para entrenamiento y reglas NLP |
-| `cat_guia_texto_plano` | 6 | Plantillas de expresiones regulares por formato de archivo |
-| `cat_historico_equivalencia` | 67 | Tabla de equivalencias entre versiones de programas |
-| `cat_institucion_convenio` | 22 | Universidades e instituciones en convenio nacional |
-| `cat_mapeo_columna` | 159 | Diccionario de sinónimos para encabezados heterogéneos |
-| `cat_modalidad` | 3 | Modalidades de cursado (virtual, presencial, semipresencial) |
-| `cat_modulo` | 1.747 | Catálogo estandarizado de materias de posgrado |
-| `cat_programa` | 1.229 | Oferta académica de diplomados y maestrías |
-| `cat_tipo_cartera` | 5 | Tipología de cobranza y riesgo financiero |
-| `cat_tipo_programa` | 6 | Clasificación de programas de estudio |
-| `ref_metas_gestion` | 59 | Metas históricas presupuestadas por gestión |
-| `stg_entidad_no_resuelta` | 0 | Buffer de soporte de catálogo |
-
-### Detalle G.0: Rutas de la API (S-16)
-Decoradores de ruta en código (`grep -rhoE '@[a-z_]+\.(get|post|put|patch|delete)\('`): `backend/routers` 107 + `backend/main.py` 2 + `services/auth-service` 11 + `services/notifications-service` 6 + `services/audit-service` 2 = **128**. La Tabla 3.22 de la tesis lista 20 filas (rutas/familias principales), no el total.
-
-### Detalle G.1: Arquitectura RBAC (Role-Based Access Control)
-El sistema protege cada recurso mediante dependencias `require_roles(...)` en FastAPI (`backend/core/security.py`):
-1. **ADMIN (`admin_general`):** Acceso irrestricto al sistema, endpoints administrativos, auditoría, gestión de usuarios y reconfiguración dimensional.
-2. **AUDITOR_CALIDAD (`auditor_dataops`):** Acceso autorizado a la ingesta documental, cola de validación HITL (`/api/v1/dataops/bandeja-grupos`), reasignación de entidades en Staging y logs de inconsistencia.
-3. **DIRECTOR_ACADEMICO (`dir_academica`):** Visualización del CMI integral, tablero de alertas académicas y de deserción, reportes de retención y aprobación, y pronósticos de demanda.
-4. **ANALISTA_FINANCIERO (`analista_fin`):** Acceso al tablero financiero del CMI (recaudación, metas, rentabilidad, cartera vencida), proyecciones de flujo y reportes exportables con montos financieros visibles.
-5. **ANALISTA_MARKETING (`analista_mkt`):** Monitoreo del embudo de conversión, campañas publicitarias y pronósticos de captación de postulantes.
-
-### Detalle G.2: Integración Frontend de la Bandeja Agrupada y Power BI
-- **Bandeja Agrupada HITL:** Integrada en `frontend/src/modules/admin/HumanReviewFlowView.jsx`. Utiliza el componente desacoplado `BandejaGrupos` y consume `/api/v1/dataops/bandeja-grupos`, permitiendo resolver de forma atómica grupos de inconsistencias por similitud.
-- **Embebido de Power BI:** Integrado en `frontend/src/modules/admin/CuadroMandoIntegral.jsx`. Renderiza un contenedor embebido `iframe` apuntando a las versiones publicadas administradas desde `backend/routers/powerbi.py` y respaldadas en el archivo físico `powerbi/dashboards/giragroup_cmi.pbix`.
+| Gráficos 3.2, 3.4, 4.1, 4.2, 4.3, 4.5 y Figura 3.5 | Generados en `docs/evidencias/` por `scripts/generar_graficos_ronda_final.py` | Elaboración propia (`docs/evidencias/` con datos de `snapshot_dw_20261110_1201` / `f3_base`) |
+| Gráfico 3.1 (Matriz de confusión) | Datos en `docs/mediciones/f3r_matriz_confusion.json` (generación en F4) | `docs/mediciones/f3r_matriz_confusion.json` |
 
 ---
 
-## H. DEFECTOS E INCONSISTENCIAS TÉCNICAS DETECTADAS
-En estricto cumplimiento de la regla de no alteración y reporte honesto de discrepancias, se documentan los siguientes hallazgos:
+## J. MAPA RESUELTO DOCX ↔ SISTEMA (`f3r_mapa_j.json`)
 
-1. **Confusión conceptual de "Personas Totales y Únicas" (22.618 vs 10.483):**
-   - *Hallazgo:* En borradores de los Capítulos I y IV se afirmó que existían "22.618 personas totales y 10.483 personas únicas".
-   - *Realidad técnica:* 22.618 es el número total de evaluaciones en `fact_rendimiento_academico` (pertenecientes a 6.419 estudiantes distintos); 10.483 es el número de transacciones en `fact_situacion_financiera` (pertenecientes a 9.022 estudiantes distintos). El total de estudiantes en `dim_estudiante` es de 14.078 registros con 13.667 números de CI únicos.
-2. **Dualidad en el recuento de KPIs (22 vs 11):**
-   - *Hallazgo:* El documento menciona alternativamente 22 y 11 KPIs.
-   - *Realidad técnica:* En `bi.ref_kpi` existen 22 indicadores diseñados a nivel institucional. En la interfaz web y el backend ejecutivo (`/kpis/cmi-completo`) se implementan y calculan dinámicamente 11 KPIs clave.
-3. **Inexistencia de datos en `dim_meta`:**
-   - *Hallazgo:* El documento de diseño dimensional referenciaba la consulta de metas a `dim_meta`.
-   - *Realidad técnica:* `dim_meta` tiene 0 filas. El cálculo de cumplimiento de metas (KPI-02 y KPI-03) se realiza directamente a través de `fact_rentabilidad.monto_meta` (48 filas consolidadas).
-4. **Descartes de calidad en memoria sin persistencia en base de datos:**
-   - *Hallazgo:* Se documenta el descarte de 509 entidades anómalas por reglas de calidad.
-   - *Realidad técnica:* Las 509 entidades (Likert, correos, comentarios) son filtradas en memoria durante el pre-procesamiento por expresiones regulares y no generan registros en `log_inconsistencias`. Solo las 48 entidades de `PER_SIN_FORMA_NOMBRE` se persisten en dicha tabla.
-5. **Alertas de deserción en 0:**
-   - *Hallazgo:* El sistema de alertas no detecta deserción por inactividad.
-   - *Realidad técnica:* Todas las 22.618 filas de `fact_rendimiento_academico` presentan `incumplimiento_actividades_pct = 0.00` debido a que las actas históricas en Excel carecían de la columna de inactividad de Moodle.
-6. **Denominación errónea del archivo de postulantes:**
-   - *Hallazgo:* El texto menciona «inscritos.csv».
-   - *Realidad técnica:* El archivo real en el corpus institucional es `TBL_INSCRITOS.xlsx` (hoja `TBL_INSCRITOS`).
-7. **Obsolescencia de cifras de alertas previas:**
-   - *Hallazgo:* Las cifras 10.707 / 1.698 / 1.451 / 103 pertenecen a corridas sintéticas del Sprint 4 y deben sustituirse por las del snapshot (9.603 analizados, 1.224 académico, 0 deserción, 1.765 financiero, 238 críticas, 2.751 únicos).
+Todos los ítems de la Sección J (`J1-01`..`J1-22` y `J2-01`..`J2-15`) quedaron resueltos (`sin_resolver = 0` en `docs/mediciones/f3r_mapa_j.json`):
 
-8. **Parámetros de HW mezclados:** el borrador unía el ajuste de 33 meses (α 0,6978, φ 0,9950, RMSE 48,36, AIC 290,00) con el hold-out del ajuste de 27 meses (RMSE 75,03, MAPE 13,89 %). El benchmark naive (18,22 %) y el OLS de matrícula (R² 0,0854) no se reproducen; recalculados en la sección E.
-9. **KPI mal rotulados:** KPI-04/05/07/09 del borrador (margen operativo, mora, NPS, retención) no correspondían a `bi.ref_kpi` ni al código. Corregido en la sección F.
-10. **KPI-06 tautológico:** leads = inscritos en el 100 % de las filas con leads > 0 (Detalle F.3).
-11. **Healthchecks:** solo 2 de 9 contenedores tienen (Tabla G.1).
-12. **Muestreo del lote 1.387:** primeras N filas por archivo, sin aleatorización (Detalle A.2). `748 programas` (S-20): **N/D**; `cat_programa` del catálogo = 1.229 `pos_code` (583 nombres distintos; 379 con módulos) y `dim_modulo` del DW = 1.719 programas distintos; ninguna consulta da 748.
-
----
-
-## I. GRÁFICOS Y FIGURAS ACADÉMICAS REGENERADAS (300 DPI)
-Todos los gráficos y figuras han sido regenerados exclusivamente a partir de los datos auditados en el snapshot `snapshot_dw_20261110_1201`, cumpliendo con la resolución requerida (300 DPI), formato en escala de grises con tramas para impresión académica y coma decimal en sus ejes numéricos.
-
-### Tabla I.1: Catálogo de Gráficos y Figuras Oficiales
-| Identificador | Título Sugerido en Tesis | Archivo PNG (300 DPI) | Script Generador | Fuente Oficial a Citar al Pie |
+| ID | Tema | Estado | Valor resumen | Fuente (`docs/mediciones/` y ruta JSON) |
 |---|---|---|---|---|
-| **Gráfico 3.2** | Distribución porcentual del lote de validación según bandas de confianza IA | `docs/evidencias/graficos_v2/grafico_3_2_distribucion_lote_1387.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 3.4** | Serie temporal de matrícula histórica y modelado Holt-Winters amortiguado | `docs/evidencias/graficos_v2/grafico_3_4_serie_temporal_holt_winters.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 4.1** | Distribución de inconsistencias y excepciones de calidad en el corpus institucional | `docs/evidencias/graficos_v2/grafico_4_1_calidad_corpus.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 4.2** | Proporción de resoluciones automáticas por etapa de la cascada jerárquica | `docs/evidencias/graficos_v2/grafico_4_2_resoluciones_cascada.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 4.3** | Resultado de vinculación automática e intervención humana por archivo de origen | `docs/evidencias/graficos_v2/grafico_4_3_vinculacion_por_archivo.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Gráfico 4.5** | Comparación de tiempos de consolidación analítica entre línea base manual y pipeline | `docs/evidencias/graficos_v2/grafico_4_5_tiempo_consolidacion_semilog.png` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Figura 3.5** | Esquema físico del modelo en constelación de hechos del Data Warehouse | `docs/figuras_src/figura_3_5_constelacion_dw.mmd` | `scripts/generar_graficos_ronda_final.py` | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Figura 3.40** | Captura de ejecución de la suite de pruebas unitarias y de integración (634 passed; medición 13-nov-2026) | Pendiente de recaptura/regeneración real (ver registro de limpieza) | Runner de pruebas pytest / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-| **Figura 3.50** | Captura de reporte consolidado de cobertura de código por componentes (medición vigente en sección D) | Pendiente de recaptura/regeneración real (ver registro de limpieza) | Runner de pruebas pytest-cov / script de captura | Fuente: Elaboración propia con datos del sistema, snapshot snapshot_dw_20261110_1201 |
-
----
-
-## CIERRE
-1. **ID del Snapshot:** `snapshot_dw_20261110_1201` (Hash SHA-256: `14D45F5A128F44543927911DC0AD453F681D524AC05037203F5C0C2787E3A2EB`).
-2. **Valores que cambiaron respecto de la ronda 10:** El tiempo medio de ciclo automático se precisó en 59,14 s (frente a 60,00 s); las alertas tempranas se actualizaron al DW real (9.603 analizados, 1.224 académico, 0 deserción, 1.765 financiero, 238 críticas, sustituyendo a las obsoletas 10.707 / 1.698 / 1.451 / 103); y se aclaró que 22.618 y 10.483 son recuentos de hechos de notas y cobranzas, no de personas totales y únicas (que son 14.078 y 13.667).
-3. **Métricas en N/D:** Se consignaron como N/D la tasa de retención y desglose de mora en el lote 1.387 aislado (porque se calculan a nivel anual/DW completo en gestión 2025) y los registros de `dim_meta` (que tiene 0 filas).
-4. **Respuestas con evidencia técnica:**
-   - **¿HW es amortiguado? SÍ.** Evidencia: `pipeline/analytics/forecasting_holtwinters.py:118` (`damped_trend=True`, factor φ = 0,9950 en el ajuste de 33 meses).
-   - **¿Son 22 KPI o 11? AMBOS.** `bi.ref_kpi` almacena 22 KPI; `/kpis/cmi-completo` calcula 11 (KPI-01 a KPI-11 del catálogo).
-   - **¿Se procesan Forms y Moodle? SÍ.** Evidencia: `backend/services/ingestion_service.py:17` acepta `.xlsx` y `.csv`; `TBL_INSCRITOS.xlsx` procesa respuestas de Forms y `Evaluación Docente Institución A.xlsx` procesa encuestas de Moodle.
-   - **¿Los descartes van a una bitácora? PARCIALMENTE.** Evidencia: 509 entidades se descartan en memoria por regex sin bitácora en BD; solo las 48 de `PER_SIN_FORMA_NOMBRE` se persisten en `log_inconsistencias`.
-   - **¿Están integradas en el frontend la bandeja y Power BI? SÍ.** Evidencia: `HumanReviewFlowView.jsx` integra `BandejaGrupos` y `CuadroMandoIntegral.jsx` integra el iframe de `giragroup_cmi.pbix`.
-
----
-
-## ACTUALIZACIÓN DE CONGELAMIENTO F3 (16-nov-2026)
-
-Todas las cifras de esta sección provienen del sistema congelado en `f3_base` y de las mediciones finales de F3 (`docs/mediciones/`), expresadas en formato boliviano (coma decimal, punto de miles) y verificadas automáticamente mediante `scripts/verificar_sfv.py` contra `docs/mediciones/f3_sfv_trazabilidad.json`.
-
-| ID | Métrica | Valor F3 (congelado) | Valor anterior (snapshot / F0) | Archivo y ruta JSON en `docs/mediciones/` |
-|---|---|---|---|---|
-| F3-P1-PASS | Pruebas automatizadas aprobadas (`pytest`) | 824 (`0` fallidas, `11` omitidas, `7` `xfail`) | 634 | `f3_pruebas.json` (`passed`) |
-| F3-P1-COV | Cobertura total de código (`backend` + `pipeline`) | 70 % (`14.672` sentencias) | N/D | `f3_pruebas.json` (`cobertura_total_pct`) |
-| F3-B7-MAQ-VAC | RNF-03 (1) solo máquina, caché vacía (media `N=3`) | 850,18 s (`14,17 min`, DE `51,14 s`) | 59,14 s (lote parcial) | `f3_b7_rnf03.json` (`solo_maquina.cache_vacia_media_s`) |
-| F3-B7-MAQ-LLENA | RNF-03 solo máquina, caché llena (media `N=3`) | 256,15 s (`4,27 min`, DE `3,14 s`) | N/D | `f3_b7_rnf03.json` (`solo_maquina.cache_llena_media_s`) |
-| F3-B7-KLM-W10 | RNF-03 (2) máquina + KLM con espera $W=10\text{ s}$ | 1.586,78 s (`736,6 s` KLM; **no** cumple $\le 900\text{ s}$ ni $\le 1.200\text{ s}$) | 490,5 s (r8) | `f3_b7_rnf03.json` (`maquina_mas_klm.con_espera_W_10s_s`) |
-| F3-B7-KLM-W0 | RNF-03 (2) máquina + KLM sin espera $W=0\text{ s}$ | 1.066,78 s (`216,6 s` KLM; cumple $\le 1.200\text{ s}$) | N/D | `f3_b7_rnf03.json` (`maquina_mas_klm.sin_espera_W_0s_s`) |
-| F3-CICLO-LINEAS | Líneas leídas por BETO en el ciclo de 10 archivos | 12.992 (`78.750` hechos DW) | 12.016 (`81.107` hechos) | `f3_base.json` (`etapas_s.lineas_leidas_beto`) |
-| F3-BANDEJA-CASOS | Bandeja de revisión del ciclo (`casos` / `grupos`) | 680 casos en 19 grupos (`47` manuales en `14` grupos) | 188 / 37 (r8) | `f3_b7_klm.json` (`bandeja.casos`, `bandeja.grupos`) |
-| F3-KPI15-2025 | KPI-15 Cartera vencida (gestión 2025, `f3_base`) | 73,44 % (`500` Mora, `7` Previsionable, `218` Vigente) | N/D (`NULL` en F2) | `f3_2_kpi15.json` (`kpi_15_api_vs_sql.2025.api`) |
-| F3-B9-BITACORA | Descartes en `log_inconsistencias` (`f3_base`, B-9) | 6.226 filas (`0` descartes sin bitácora, limitación 12) | 48 con bitácora / 509 sin bitácora | `f3_1_b9_rendimiento.json` (`log_inconsistencias_filas`) |
-| F3-B8-HW | Intervalos formales Holt-Winters 80 % / 95 % (`META_MENSUAL_PROGRAMAS`, $N=47$) | RMSE `241.708,20`, AIC `1.223,97`, MAPE hold-out `33,96 %` | N/D (banda constante $\pm 1,96\cdot\text{RMSE}$) | `f3_pronostico.json` (`hw.META_MENSUAL_PROGRAMAS.rmse`) |
-| F3-P3-V2 | Evaluación `beto-v2` en `gold_510` (modo C estricto / relajado) | F1 `0,980507` / `0,994152` | F1 `0,9805` / `0,9942` (F2) | `f2_b3_ablacion_v2.json` (`v2.C.estricto.f1`) |
-| F3-P5-OLS | OLS anual descriptiva 2025 (`PROGRAMAS`, *solo descriptiva*) | `11.851.223,44` vs `11.866.647,19 Bs` (`+0,13 %`, `12` filas) | `12.907.977,61` vs `12.747.275,66 Bs` (`-1,24 %`, `21` filas) | `f2r_g4_b5_conciliacion.json` (`comparacion_misma_definicion_ols_programas_2025.F2_lote_v2_f2r_base.observado_bs`) |
-
-- **Limitaciones 12 y 13 (B-9):** El registro individual en `log_inconsistencias` (`5.455` `LINEA_SIN_ENTIDAD` + `761` `SUBTOTAL` + `10` previas = `6.226`) elimina los descartes sin bitácora ($\Delta = 0$); los homónimos en Estado C reciben `id_homonimo` determinista (`HOM-<sha256[:16]>`) sin fusionar perfiles.
-- **Series sin datos en `f3_base`:** `ALUMNOS_GLOBAL` (`n_obs = 0` en `f3_base`) se reporta explícitamente sin datos (`N/D` para pronóstico de alumnos sobre el lote aislado de 10 archivos).
-- **Decisión sobre `requiere_revision` en KPIs:** Se mantiene la inclusión de filas con `requiere_revision = true` (`632/1.392` en `fact_rendimiento_academico`, nota media `87,0312` con revisión frente a `86,9062` sin ella) por decisión de Lean (`f3_kpi.json`).
-
+| J1-01 | Pruebas colectadas y estado | RESUELTO | 842 / 823 passed / 1 failed / 11 skip / 7 xfail | `docs/mediciones/f3r_pruebas.json` → `colectadas` |
+| J1-02 | Duración y desglose por carpeta | RESUELTO | 354,78 s; 11 carpetas | `docs/mediciones/f3r_pruebas.json` → `duracion_s` |
+| J1-03 | Cobertura total a 2 decimales | RESUELTO | 70,27 % (10.319 / 14.685) | `docs/mediciones/f3r_pruebas.json` → `cobertura_total.porcentaje_2dec` |
+| J1-04 | Cobertura archivos clave | RESUELTO | 5 archivos clave + 137 en CSV | `docs/mediciones/f3r_pruebas.json` → `archivos_clave_j1_04` |
+| J1-05 | Detalle `xfail` y `skipped` | RESUELTO | 7 `xfail` (HW/OLS/FK) + 11 `skipped` | `docs/mediciones/f3r_pruebas.json` → `xfails` |
+| J1-06 | RNF-03 solo máquina | RESUELTO | 850,18 s (vacía) / 256,15 s (llena) | `docs/mediciones/f3_b7_rnf03.json` → `solo_maquina` |
+| J1-07 | KLM con $W$ medido y sensibilidad | RESUELTO | 221,3 s ($W=0,089$ s); 216,6 / 736,6 s | `docs/mediciones/f3r_klm_w_medido.json` → `klm` |
+| J1-08 | Ciclo operativo `f3_base` | RESUELTO | 12.992 líneas; bandeja 680/19; KPI-18=36 | `docs/mediciones/f3r_base_reproducida.json` → `etapas_s` |
+| J1-09 | Inventario corpus `uploads/data/` | RESUELTO | 10 libros, 60 hojas, 90.538 procesables | `docs/mediciones/f3r_evidencias_sueltas.json` → `inventario_corpus_uploads_data` |
+| J1-10 | Anotación `gold_510` | RESUELTO | 180 filas, 83 personas, 510 entidades | `docs/mediciones/f3r_evidencias_sueltas.json` → `anotacion_y_corpus_modelo_vigente.gold_510` |
+| J1-11 | Partición corpus y fuga = 0 | RESUELTO | 1.400 train / 350 dev; fuga 0 (4 niveles) | `docs/mediciones/f3r_evidencias_sueltas.json` → `anotacion_y_corpus_modelo_vigente` |
+| J1-12 | Ablación A/B/C | RESUELTO | 12 filas (`gold_510` y `layouts_5`) | `docs/mediciones/f3r_ablacion.json` → `filas` |
+| J1-13 | Matriz confusión Gráfico 3.1 | RESUELTO | 503 TP estricto / 510 relajado | `docs/mediciones/f3r_matriz_confusion.json` → `por_tipo_estricto` |
+| J1-14 | Lote 1.387 con modelo vigente | RESUELTO | 98,05 % directo (1.360/1.387); 27 HITL | `docs/mediciones/f3r_lote_1387.json` → `distribucion_bandas_con_regla_personas` |
+| J1-15 | Cifra F1 = 75,66 % | **RETIRADA** | No pertenece al modelo vigente | `docs/mediciones/f3r_evidencias_sueltas.json` → `f1_75_66_pct.dictamen` |
+| J1-16 | Cuadre KPI-15 en `f3_base` | RESUELTO | 725 filas (500 Mora / 7 Prev / 218 Vigente) | `docs/mediciones/f3r_kpi15_cuadre.json` → `por_estado_cartera` |
+| J1-17 | `schema_migrations` en corridas llenas | RESUELTO | 13 filas; solo difiere `applied_at` | `docs/mediciones/f3r_schema_migrations.json` → `veredicto` |
+| J1-18 | Recuento de rutas API | RESUELTO | 136 decoradores | `docs/mediciones/f3r_inventario_api.json` → `total_decoradores_ruta` |
+| J1-19 | Prueba de carga Locust | RESUELTO | 1.219 req, 0 fallos, 41,82 RPS, p95 63 ms | `docs/mediciones/f3r_locust.json` → `agregado` |
+| J1-20 | Pruebas Newman | RESUELTO | 11 req, 23 aserciones (17 fallidas) | `docs/mediciones/f3r_newman.json` → `run.stats` |
+| J1-21 | Inventario de tablas DW | RESUELTO | 50 tablas base, 9 vistas | `docs/mediciones/f3r_extraccion_f3base.json` → `inventario` |
+| J1-22 | Conteo y rango `dim_tiempo` | RESUELTO | 2.230 filas (`2005-02-05` a `2034-01-12`) | `docs/mediciones/f3r_extraccion_f3base.json` → `dim_tiempo` |
+| J2-01 | Integridad snapshot en tmpfs | RESUELTO | SHA-256 intacto | `docs/mediciones/f3r_snapshot_kpi.json` → `etiqueta` |
+| J2-02 | Pronóstico HW matrícula | RESUELTO | `n_obs=43`, RMSE 59,57, MAPE 15,67 % | `docs/mediciones/f3r_hw_matricula.json` → `rmse` |
+| J2-03 | Pronóstico HW `META_MENSUAL_PROGRAMAS` | RESUELTO | RMSE 184.571,04, AIC 1.198,08 | `docs/mediciones/f3r_ols_snapshot.json` → `mensual.data` |
+| J2-04 | Pronóstico OLS anual ($N=3$) | RESUELTO | +2.436.141,68 Bs/año, CAGR 26,76 % | `docs/mediciones/f3r_ols_snapshot.json` → `anual.data` |
+| J2-05 | Conciliación SQL `f0_b5_consultas.sql` | RESUELTO | KPI-03 = 110,54 %; 2025 = 12.907.977,61 Bs | `docs/mediciones/f3r_b5_snapshot_sql.txt` |
+| J2-06 | KPIs 2024 y 2025 del snapshot | RESUELTO | 22 KPIs (sin usar 10, 11, 18) | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones` |
+| J2-07 | Alertas tempranas en snapshot | RESUELTO | 7.094 alertas (4.201 CRITICAL / 2.893 WARNING) | `docs/mediciones/f3r_snapshot_alertas.json` → `total_alertas` |
+| J2-08 | Mora en snapshot | RESUELTO | 2.498 est., 2.574 filas, 692.957,88 Bs | `docs/mediciones/f3r_snapshot_alertas.json` → `mora_monto_deuda` |
+| J2-09 | Distribución `fk_estado` en `f3_base` | RESUELTO | Acad. 1.385 A / 7 B · Fin. 725 A | `docs/mediciones/f3r_extraccion_f3base.json` → `fk_estado` |
+| J2-10 | Staging en `f3_base` | RESUELTO | 5.076 filas (36 pendientes) | `docs/mediciones/f3r_extraccion_f3base.json` → `stg_entidad_no_resuelta` |
+| J2-11 | Bitácora `log_inconsistencias` B-9 | RESUELTO | 6.226 filas | `docs/mediciones/f3r_extraccion_f3base.json` → `log_inconsistencias` |
+| J2-12 | Inclusión `requiere_revision` en KPIs | RESUELTO | 632/1.392 incluidas (nota 87,0312) | `docs/mediciones/f3_kpi.json` → `sensibilidad_requiere_revision` |
+| J2-13 | Trazabilidad automática SFV | RESUELTO | 0 / 0 / 0 | `docs/mediciones/f3r_sfv_verificacion.txt` |
+| J2-14 | Encuesta Likert de usabilidad | DATO_DE_LEAN | Evaluación humana externa | N/D (Dato de Lean) |
+| J2-15 | Línea base manual de consolidación | DATO_DE_LEAN | Referencia externa J0-6 | N/D (Dato de Lean) |

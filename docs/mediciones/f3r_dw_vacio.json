@@ -1,0 +1,28 @@
+{
+  "etiqueta": "F3R-A",
+  "tarea": "A-9 (Auditoría de dw_vacio y public.carga_fila_origen)",
+  "veredicto": "defecto",
+  "defecto_id": "D-A9",
+  "origen": {
+    "script": "scripts/aislada_tmpfs.sh",
+    "linea": 16,
+    "descripcion": "aislada_tmpfs.sh:16 trunca 15 tablas al crear dw_vacio desde snapshot_dw_20261110_1201, pero omite public.carga_fila_origen, dejando 15.196 filas huérfanas heredadas del snapshot."
+  },
+  "filas_huerfanas_carga_fila_origen": {
+    "total": 15196,
+    "id_documento": 12,
+    "tabla": "fact_marketing",
+    "nombre_archivo": null
+  },
+  "prueba_carga_completa_tbl_inscritos": {
+    "archivo": "uploads/data/TBL_INSCRITOS.xlsx",
+    "filas_origen": 15196,
+    "filas_bloqueadas_idempotencia": 15183,
+    "fact_marketing_insertadas": 0,
+    "regla_idempotencia": "backend/services/dw_loader.py:1019-1029"
+  },
+  "impacto_mediciones_congeladas": {
+    "f3_base": "Heredó las 15.196 filas huérfanas (total en carga_fila_origen = 15.978 = 15.196 + 782 de id_documento=9). La carga del recorte 2026-03 (391 inscritos -> 299 fact_marketing) no fue bloqueada por esas claves, pero una carga completa de TBL_INSCRITOS.xlsx sobre dw_vacio queda bloqueada en 15.183 filas.",
+    "snapshot_10_nov": "No afectado (origen de las 15.196 filas)."
+  }
+}

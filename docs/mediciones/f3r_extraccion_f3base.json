@@ -1,0 +1,226 @@
+{
+  "base_datos": "f3r_base",
+  "inventario": {
+    "total_tablas_base": 50,
+    "total_vistas": 9,
+    "tiene_cache_beto_entidades": false
+  },
+  "conteos_tablas": {
+    "bi.ref_kpi": 22,
+    "bi.ref_perspectiva": 4,
+    "public.bridge_modulo_docente": 5,
+    "public.cache_indice_beto": 12559,
+    "public.carga_fila_origen": 15978,
+    "public.cat_categoria_financiera": 5,
+    "public.cat_combinacion_estado": 0,
+    "public.cat_concepto_financiero": 0,
+    "public.cat_escuela": 0,
+    "public.cat_estado_academico": 0,
+    "public.cat_estado_arca": 0,
+    "public.cat_estado_reprobado": 0,
+    "public.cat_etiqueta_clasificacion": 0,
+    "public.cat_guia_texto_plano": 0,
+    "public.cat_historico_equivalencia": 0,
+    "public.cat_institucion": 4,
+    "public.cat_institucion_convenio": 0,
+    "public.cat_mapeo_columna": 0,
+    "public.cat_modalidad": 0,
+    "public.cat_modulo": 0,
+    "public.cat_programa": 4,
+    "public.cat_tipo_programa": 0,
+    "public.dataops_tarea": 2,
+    "public.dim_categoria_financiera": 15,
+    "public.dim_docente": 673,
+    "public.dim_estudiante": 14978,
+    "public.dim_meta": 0,
+    "public.dim_modulo": 3796,
+    "public.dim_origen_documental": 10,
+    "public.dim_tiempo": 2230,
+    "public.fact_cobranzas_proyectadas": 0,
+    "public.fact_costo_programa": 1371,
+    "public.fact_evaluacion_docente": 75073,
+    "public.fact_forecast": 0,
+    "public.fact_marketing": 299,
+    "public.fact_rendimiento_academico": 1392,
+    "public.fact_rentabilidad": 91,
+    "public.fact_situacion_financiera": 725,
+    "public.fact_techo_convenio": 1,
+    "public.log_auditoria_nlp": 0,
+    "public.log_inconsistencias": 6226,
+    "public.log_pipeline_ingesta": 72,
+    "public.lote": 1,
+    "public.notifications": 6,
+    "public.powerbi_informe_version": 2,
+    "public.ref_metas_gestion": 0,
+    "public.schema_migrations": 13,
+    "public.staging_registros_crudos": 63,
+    "public.stg_entidad_no_resuelta": 5076,
+    "public.users": 5
+  },
+  "fk_estado": {
+    "fact_rendimiento_academico": {
+      "A": 1385,
+      "B": 7
+    },
+    "fact_situacion_financiera": {
+      "A": 725
+    },
+    "dim_estudiante": {
+      "A": 14566,
+      "B": 412
+    },
+    "dim_docente": {
+      "A": 638,
+      "B": 35
+    }
+  },
+  "fuente_resolucion": {},
+  "stg_entidad_no_resuelta": [
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "resuelto": false,
+      "filas": 31
+    },
+    {
+      "motivo": "CI_DUDOSA",
+      "resuelto": false,
+      "filas": 2
+    },
+    {
+      "motivo": "CI_NOMBRE_DISCORDANTE",
+      "resuelto": false,
+      "filas": 2
+    },
+    {
+      "motivo": "FILA_ACADEMICA_SIN_ESTUDIANTE",
+      "resuelto": true,
+      "filas": 1901
+    },
+    {
+      "motivo": "FILA_AGREGADA_SIN_CATEGORIA_MES",
+      "resuelto": true,
+      "filas": 1857
+    },
+    {
+      "motivo": "FILA_EVALUACION_SIN_RESPUESTAS",
+      "resuelto": true,
+      "filas": 1076
+    },
+    {
+      "motivo": "FILA_FINANCIERA_SIN_ESTUDIANTE",
+      "resuelto": true,
+      "filas": 7
+    },
+    {
+      "motivo": "FILA_SIN_CABECERAS",
+      "resuelto": true,
+      "filas": 185
+    },
+    {
+      "motivo": "FILA_SIN_ENTIDAD",
+      "resuelto": true,
+      "filas": 14
+    },
+    {
+      "motivo": "HOMONIMIA",
+      "resuelto": false,
+      "filas": 1
+    }
+  ],
+  "log_inconsistencias": [
+    {
+      "regla_origen": "FILA_AGREGADA_SIN_CATEGORIA_MES",
+      "tipo_regla": "LINEA_SIN_ENTIDAD",
+      "filas": 2063
+    },
+    {
+      "regla_origen": "FILA_ACADEMICA_SIN_ESTUDIANTE",
+      "tipo_regla": "LINEA_SIN_ENTIDAD",
+      "filas": 1901
+    },
+    {
+      "regla_origen": "FILA_EVALUACION_SIN_RESPUESTAS",
+      "tipo_regla": "LINEA_SIN_ENTIDAD",
+      "filas": 1076
+    },
+    {
+      "regla_origen": "SUBTOTAL",
+      "tipo_regla": "SUBTOTAL",
+      "filas": 761
+    },
+    {
+      "regla_origen": "FILA_SIN_CABECERAS",
+      "tipo_regla": "LINEA_SIN_ENTIDAD",
+      "filas": 394
+    },
+    {
+      "regla_origen": "FILA_SIN_ENTIDAD",
+      "tipo_regla": "LINEA_SIN_ENTIDAD",
+      "filas": 14
+    },
+    {
+      "regla_origen": null,
+      "tipo_regla": "CONFLICTO_FUENTES",
+      "filas": 9
+    },
+    {
+      "regla_origen": "FILA_FINANCIERA_SIN_ESTUDIANTE",
+      "tipo_regla": "LINEA_SIN_ENTIDAD",
+      "filas": 7
+    },
+    {
+      "regla_origen": null,
+      "tipo_regla": "CI_NOMBRE_VARIANTE",
+      "filas": 1
+    }
+  ],
+  "dim_tiempo": {
+    "filas": 2230,
+    "fecha_min": "2005-02-05",
+    "fecha_max": "2034-01-12",
+    "anio_min": 2005,
+    "anio_max": 2034
+  },
+  "kpis_vw_cmi_valores": [
+    {
+      "gestion": 2024,
+      "codigo": "KPI-10",
+      "valor": 84.32215859030838
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-11",
+      "valor": 56.38766519823788
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-15",
+      "valor": 99.99678480714202
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-10",
+      "valor": 84.63603433476395
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-11",
+      "valor": 54.84978540772532
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-15",
+      "valor": 73.43834986933457
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-15",
+      "valor": 99.80032109740586
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-18",
+      "valor": 36.0
+    }
+  ]
+}

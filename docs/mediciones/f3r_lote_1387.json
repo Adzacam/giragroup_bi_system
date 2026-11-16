@@ -1,0 +1,644 @@
+{
+  "lote_evaluado": {
+    "total_registros": 1387,
+    "origen": "EXCLUSIVAMENTE uploads/data/ (archivos de producción)",
+    "archivos": [
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "filas": 450
+      },
+      {
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "filas": 350
+      },
+      {
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "hoja": "TBL_INSCRITOS",
+        "filas": 250
+      },
+      {
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "filas": 150
+      },
+      {
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "filas": 110
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "hoja": "egresos",
+        "filas": 53
+      },
+      {
+        "archivo": "EJECUTADO VS META.xlsx",
+        "hoja": "EJECUTADO",
+        "filas": 24
+      }
+    ]
+  },
+  "muestreo_por_archivo": {
+    "criterio_documentado": false,
+    "nota": "No existe criterio de muestreo documentado: los topes 450/350/250/150/110/53/24 son constantes escritas en este script (suman 1.387, el tamaño objetivo del lote). La selección es 'primeras N filas no vacías en orden de archivo', sin aleatorización ni estratificación. 'el_tope_agota_la_hoja' indica en qué hojas el tope coincide con (o supera) la hoja completa.",
+    "detalle": [
+      {
+        "archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "hoja": "ACTAS DE NOTAS",
+        "tope_en_codigo": 450,
+        "filas_no_vacias_en_hoja": 8660,
+        "filas_tomadas": 450,
+        "el_tope_agota_la_hoja": false,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      },
+      {
+        "archivo": "BD Cobranzas.xlsx",
+        "hoja": "COBRANZAS 2024 2025",
+        "tope_en_codigo": 350,
+        "filas_no_vacias_en_hoja": 10017,
+        "filas_tomadas": 350,
+        "el_tope_agota_la_hoja": false,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      },
+      {
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "hoja": "TBL_INSCRITOS",
+        "tope_en_codigo": 250,
+        "filas_no_vacias_en_hoja": 15196,
+        "filas_tomadas": 250,
+        "el_tope_agota_la_hoja": false,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      },
+      {
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "tope_en_codigo": 150,
+        "filas_no_vacias_en_hoja": 4096,
+        "filas_tomadas": 150,
+        "el_tope_agota_la_hoja": false,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      },
+      {
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "tope_en_codigo": 110,
+        "filas_no_vacias_en_hoja": 994,
+        "filas_tomadas": 110,
+        "el_tope_agota_la_hoja": false,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      },
+      {
+        "archivo": "BD Egresos.xlsx",
+        "hoja": "egresos",
+        "tope_en_codigo": 53,
+        "filas_no_vacias_en_hoja": 1373,
+        "filas_tomadas": 53,
+        "el_tope_agota_la_hoja": false,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      },
+      {
+        "archivo": "EJECUTADO VS META.xlsx",
+        "hoja": "EJECUTADO",
+        "tope_en_codigo": 24,
+        "filas_no_vacias_en_hoja": 24,
+        "filas_tomadas": 24,
+        "el_tope_agota_la_hoja": true,
+        "seleccion": "primeras N filas no vacías en el orden del archivo (sin aleatorización)"
+      }
+    ]
+  },
+  "arquitectura": "B (CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO) + personas sin cat_docente (tarea 1)",
+  "dimensiones_dw_usadas": {
+    "dim_estudiante": 14978,
+    "dim_docente": 673
+  },
+  "personas": {
+    "total": 1748,
+    "resueltas_CI_EXACTA": 1037,
+    "resueltas_FUZZY": 182,
+    "nuevos_estado_C": 524,
+    "sin_coincidencia_HITL": 5
+  },
+  "personas_hitl_desglose_regla_previa_umbral_085": {
+    "estudiante": {
+      "sin_candidatos": 189,
+      "umbral": 1
+    },
+    "docente": {
+      "sin_candidatos": 541
+    }
+  },
+  "personas_hitl_desglose_bloqueo_escalonado_umbral_092": {
+    "estudiante": {
+      "empate": 5
+    },
+    "docente": {}
+  },
+  "personas_resueltas_por_nivel": {
+    "CI": 1037,
+    "DIMENSION": 182
+  },
+  "correos_filtrados_como_no_nombre": {
+    "entidades": 154,
+    "registros": 154
+  },
+  "descartadas_PER_SIN_FORMA_NOMBRE": {
+    "entidades": 21,
+    "registros_afectados": 21,
+    "hechos_sin_persona_van_a_hitl": 20,
+    "ejemplos_20": [
+      {
+        "valor": "MARIA",
+        "archivo": "TBL_INSCRITOS.xlsx",
+        "hoja": "TBL_INSCRITOS",
+        "fila_origen": 127,
+        "hecho_sin_persona": false
+      },
+      {
+        "valor": "CINTHYA",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 54,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 11,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "NINGUNO",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 12,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "Ninguna",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 44,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "Ninguna",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 55,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 57,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 65,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 66,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "-",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 67,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 76,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "NINGUNA",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 79,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 82,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 85,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 89,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 92,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "Ninguna",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 93,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "ABRIL",
+        "archivo": "EJECUTADO VS META.xlsx",
+        "hoja": "EJECUTADO",
+        "fila_origen": 17,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "JUNIO",
+        "archivo": "EJECUTADO VS META.xlsx",
+        "hoja": "EJECUTADO",
+        "fila_origen": 19,
+        "hecho_sin_persona": true
+      },
+      {
+        "valor": "JULIO",
+        "archivo": "EJECUTADO VS META.xlsx",
+        "hoja": "EJECUTADO",
+        "fila_origen": 20,
+        "hecho_sin_persona": true
+      }
+    ],
+    "ejemplos_20_hecho_sin_persona": [
+      {
+        "valor": "CINTHYA",
+        "archivo": "Evaluación Docente y Unifranz.xlsx",
+        "hoja": "DIP. EXP DOC. X MODULO",
+        "fila_origen": 54
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 11
+      },
+      {
+        "valor": "NINGUNO",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 12
+      },
+      {
+        "valor": "Ninguna",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 44
+      },
+      {
+        "valor": "Ninguna",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 55
+      },
+      {
+        "valor": "ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 57
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 65
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 66
+      },
+      {
+        "valor": "-",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 67
+      },
+      {
+        "valor": "ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 76
+      },
+      {
+        "valor": "NINGUNA",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 79
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 82
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 85
+      },
+      {
+        "valor": "Ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 89
+      },
+      {
+        "valor": "ninguno",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 92
+      },
+      {
+        "valor": "Ninguna",
+        "archivo": "Experiencia Docente 2.0.xlsx",
+        "hoja": "CURSOS DOC 1",
+        "fila_origen": 93
+      },
+      {
+        "valor": "ABRIL",
+        "archivo": "EJECUTADO VS META.xlsx",
+        "hoja": "EJECUTADO",
+        "fila_origen": 17
+      },
+      {
+        "valor": "JUNIO",
+        "archivo": "EJECUTADO VS META.xlsx",
+        "hoja": "EJECUTADO",
+        "fila_origen": 19
+      },
+      {
+        "valor": "JULIO",
+        "archivo": "EJECUTADO VS META.xlsx",
+        "hoja": "EJECUTADO",
+        "fila_origen": 20
+      },
+      {
+        "valor": "AGOSTO",
+        "archivo": "EJECUTADO VS META.xlsx",
+        "hoja": "EJECUTADO",
+        "fila_origen": 21
+      }
+    ]
+  },
+  "log_inconsistencias_PER_SIN_FORMA_NOMBRE_registradas": 21,
+  "texto_libre": {
+    "nombres_compuestos_desde_columnas_partidas": 1050,
+    "entidades_PER_partidas_reemplazadas": 2662,
+    "comentarios_en_columnas_de_texto_libre": 87,
+    "registros_con_comentarios": 87,
+    "entidades_PER_descartadas_no_parece_nombre": 21,
+    "entidades_excluidas_etiqueta_likert": 283,
+    "entidades_excluidas_por_columna_de_comentario": 87
+  },
+  "personas_por_fk_estado": {
+    "estudiante": {
+      "A": 1037,
+      "B": 182
+    },
+    "docente": {
+      "C": 524
+    }
+  },
+  "distribucion_bandas_sin_regla_personas": {
+    "directo": {
+      "conteo": 1384,
+      "porcentaje": 99.78
+    },
+    "hitl": {
+      "conteo": 3,
+      "porcentaje": 0.22
+    },
+    "staging": {
+      "conteo": 0,
+      "porcentaje": 0.0
+    }
+  },
+  "distribucion_bandas_con_regla_personas_previa_umbral_085": {
+    "directo": {
+      "conteo": 656,
+      "porcentaje": 47.3
+    },
+    "hitl": {
+      "conteo": 731,
+      "porcentaje": 52.7
+    },
+    "staging": {
+      "conteo": 0,
+      "porcentaje": 0.0
+    }
+  },
+  "distribucion_bandas_con_regla_personas": {
+    "directo": {
+      "conteo": 1360,
+      "porcentaje": 98.05
+    },
+    "hitl": {
+      "conteo": 27,
+      "porcentaje": 1.95
+    },
+    "staging": {
+      "conteo": 0,
+      "porcentaje": 0.0
+    }
+  },
+  "registros_directo_movidos_a_hitl_por_persona_sin_resolver": 24,
+  "kpis": {
+    "KPI_10a_media_todas_las_entidades": 0.9538,
+    "KPI_10a_n_entidades": 11560,
+    "KPI_10b_media_solo_entidades_BETO": 0.8953,
+    "KPI_10b_n_entidades": 3382,
+    "KPI_10_previo_media_por_registro": 0.9557,
+    "KPI_11_directo_sin_regla_personas_pct": 99.78,
+    "KPI_11_directo_con_regla_personas_pct": 98.05
+  },
+  "conteos_fuente_resolucion": {
+    "CI_EXACTA": 1850,
+    "ENCABEZADO": 3079,
+    "FUZZY": 146,
+    "REGEX": 3103,
+    "BETO": 3382
+  },
+  "distribucion_por_archivo": {
+    "Base centralizada Académica ARCA (1).xlsx": {
+      "directo": {
+        "conteo": 449,
+        "porcentaje": 99.78
+      },
+      "hitl": {
+        "conteo": 1,
+        "porcentaje": 0.22
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 450
+    },
+    "BD Cobranzas.xlsx": {
+      "directo": {
+        "conteo": 349,
+        "porcentaje": 99.71
+      },
+      "hitl": {
+        "conteo": 1,
+        "porcentaje": 0.29
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 350
+    },
+    "TBL_INSCRITOS.xlsx": {
+      "directo": {
+        "conteo": 249,
+        "porcentaje": 99.6
+      },
+      "hitl": {
+        "conteo": 1,
+        "porcentaje": 0.4
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 250
+    },
+    "Evaluación Docente y Unifranz.xlsx": {
+      "directo": {
+        "conteo": 146,
+        "porcentaje": 97.33
+      },
+      "hitl": {
+        "conteo": 4,
+        "porcentaje": 2.67
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 150
+    },
+    "Experiencia Docente 2.0.xlsx": {
+      "directo": {
+        "conteo": 95,
+        "porcentaje": 86.36
+      },
+      "hitl": {
+        "conteo": 15,
+        "porcentaje": 13.64
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 110
+    },
+    "BD Egresos.xlsx": {
+      "directo": {
+        "conteo": 53,
+        "porcentaje": 100.0
+      },
+      "hitl": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 53
+    },
+    "EJECUTADO VS META.xlsx": {
+      "directo": {
+        "conteo": 19,
+        "porcentaje": 79.17
+      },
+      "hitl": {
+        "conteo": 5,
+        "porcentaje": 20.83
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      },
+      "total": 24
+    }
+  },
+  "excepciones": {
+    "total_entidades": 550,
+    "registros_afectados": 264,
+    "de_registros": 1387,
+    "por_regla": {
+      "COLUMNA_DE_COMENTARIO": {
+        "entidades": 87,
+        "registros": 87,
+        "destino": "descarte",
+        "registros_con_banda_hitl": 0
+      },
+      "CORREO_NO_ES_NOMBRE": {
+        "entidades": 154,
+        "registros": 154,
+        "destino": "descarte",
+        "registros_con_banda_hitl": 4
+      },
+      "ETIQUETA_LIKERT": {
+        "entidades": 283,
+        "registros": 110,
+        "destino": "descarte",
+        "registros_con_banda_hitl": 15
+      },
+      "PERSONA_SIN_COINCIDENCIA": {
+        "entidades": 5,
+        "registros": 5,
+        "destino": "hitl",
+        "registros_con_banda_hitl": 5
+      },
+      "PER_SIN_FORMA_NOMBRE": {
+        "entidades": 21,
+        "registros": 21,
+        "destino": "log+descarte",
+        "registros_con_banda_hitl": 20
+      }
+    },
+    "por_destino": {
+      "descarte": 524,
+      "hitl": 5,
+      "log+descarte": 21
+    },
+    "habrian_ingresado_al_dw_sin_control": 0
+  }
+}

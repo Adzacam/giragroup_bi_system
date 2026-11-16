@@ -1,0 +1,60 @@
+{
+  "etiqueta": "F3R",
+  "tarea": "R3-8 (W medido + KLM + RNF-03)",
+  "fuente_w": "p95 de GET /api/v1/dataops/review-tray/grupos y POST /api/v1/dataops/review-tray/approve-group en f3r_locust.json",
+  "p95_grupos_ms": 89.0,
+  "p95_approve_group_ms": 80.0,
+  "W_medido_s": 0.089,
+  "bandeja": {
+    "casos": 680,
+    "grupos": 19,
+    "manuales": 14,
+    "casos_manuales": 47,
+    "acciones_con_W": 52
+  },
+  "klm": {
+    "W_medido": {
+      "W_s": 0.089,
+      "klm_s": 221.3,
+      "desglose_s": {
+        "bloque": 16.4,
+        "corregir_fecha": 8.8,
+        "mapear_estado": 0.0,
+        "manual": 192.2,
+        "paginacion": 3.9
+      }
+    },
+    "sensibilidad_W_0": {
+      "W_s": 0.0,
+      "klm_s": 216.6,
+      "desglose_s": {
+        "bloque": 16.0,
+        "corregir_fecha": 8.7,
+        "mapear_estado": 0.0,
+        "manual": 188.0,
+        "paginacion": 3.9
+      }
+    },
+    "sensibilidad_W_10": {
+      "W_s": 10.0,
+      "klm_s": 736.6,
+      "desglose_s": {
+        "bloque": 56.0,
+        "corregir_fecha": 18.7,
+        "mapear_estado": 0.0,
+        "manual": 658.0,
+        "paginacion": 3.9
+      }
+    }
+  },
+  "rnf03_totales_s": {
+    "maquina_cache_vacia_s": 850.18,
+    "maquina_cache_llena_s": 256.15,
+    "vacia_mas_klm_W_medido_s": 1071.48,
+    "llena_mas_klm_W_medido_s": 477.45,
+    "vacia_mas_klm_W_0_s": 1066.78,
+    "llena_mas_klm_W_0_s": 472.75,
+    "vacia_mas_klm_W_10_s": 1586.78,
+    "llena_mas_klm_W_10_s": 992.75
+  }
+}

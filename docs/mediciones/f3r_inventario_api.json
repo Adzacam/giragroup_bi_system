@@ -1,0 +1,14 @@
+{
+  "etiqueta": "F3R, final",
+  "tarea": "R3-9 (Inventario de rutas API)",
+  "grep_patron": "@[a-z_]+\\.(get|post|put|patch|delete)\\(",
+  "conteo_por_componente": {
+    "backend/routers": 115,
+    "backend/main.py": 2,
+    "services/auth-service": 11,
+    "services/notifications-service": 6,
+    "services/audit-service": 2
+  },
+  "total_decoradores_ruta": 136,
+  "nota_vs_g0_anterior": "Antes 128 (backend/routers 107 + main 2 + auth 11 + notifications 6 + audit 2); ahora 136 por los endpoints añadidos en backend/routers."
+}

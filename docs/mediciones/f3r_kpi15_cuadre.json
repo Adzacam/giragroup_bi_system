@@ -1,0 +1,38 @@
+{
+  "base_datos": "f3r_base",
+  "excel_hojas_no_vacias": {
+    "COBRANZAS 2024 2025": 10017,
+    "Hoja 8": 7,
+    "Hoja 12": 18,
+    "Hoja 4": 516,
+    "Copia de COBRANZAS 2024 2025": 5478
+  },
+  "dim_origen_documental_cobranzas": [
+    {
+      "id": 1,
+      "archivo": "BD Cobranzas.xlsx",
+      "tipo_fuente": "COBRANZA",
+      "periodo": "2024–2026 (Auto)"
+    }
+  ],
+  "fact_situacion_financiera_total": 725,
+  "por_estado_cartera": {
+    "Mora": {
+      "filas": 500,
+      "monto_deuda": 531412.38,
+      "monto_pagado": 1256762.87
+    },
+    "Previsionable": {
+      "filas": 7,
+      "monto_deuda": 11529.5,
+      "monto_pagado": 15470.5
+    },
+    "Vigente": {
+      "filas": 218,
+      "monto_deuda": 55056.83,
+      "monto_pagado": 571190.5
+    }
+  },
+  "kpi_15_formula_mora_mas_previsionable_pct": 69.93,
+  "desajuste_conteo": 0
+}

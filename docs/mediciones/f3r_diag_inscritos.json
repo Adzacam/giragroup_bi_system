@@ -1,0 +1,886 @@
+{
+  "base_datos": "f3r_base",
+  "docs_inscritos": [
+    {
+      "id_documento": 9,
+      "nombre_archivo": "TBL_INSCRITOS.xlsx",
+      "tipo_documento": "SHEET",
+      "tipo_fuente": "ADMISION",
+      "periodo": "2020–2026 (Auto)",
+      "fecha_procesamiento": "2026-11-16 15:46:37.139021"
+    }
+  ],
+  "todos_documentos": [
+    {
+      "id_documento": 1,
+      "nombre_archivo": "BD Cobranzas.xlsx",
+      "tipo_documento": "SHEET",
+      "tipo_fuente": "COBRANZA",
+      "periodo": "2024–2026 (Auto)",
+      "fecha_procesamiento": "2026-11-16 15:46:29.559668"
+    },
+    {
+      "id_documento": 2,
+      "nombre_archivo": "BD Egresos.xlsx",
+      "tipo_documento": "SHEET",
+      "tipo_fuente": "RENTABILIDAD",
+      "periodo": "2020–2029 (Auto)",
+      "fecha_procesamiento": "2026-11-16 15:46:30.572169"
+    },
+    {
+      "id_documento": 3,
+      "nombre_archivo": "BD Techos.xlsx",
+      "tipo_documento": "SHEET",
+      "tipo_fuente": "MARKETING",
+      "periodo": "2024 (Auto)",
+      "fecha_procesamiento": "2026-11-16 15:46:30.987505"
+    },
+    {
+      "id_documento": 4,
+      "nombre_archivo": "Base centralizada Académica ARCA (1).xlsx",
+      "tipo_documento": "SHEET",
+      "tipo_fuente": "ACTA",
+      "periodo": "2024–2025 (Auto)",
+      "fecha_procesamiento": "2026-11-16 15:46:31.01124"
+    },
+    {
+      "id_documento": 5,
+      "nombre_archivo": "EJECUTADO VS META.xlsx",
+      "tipo_documento": "SHEET",
+      "tipo_fuente": "RENTABILIDAD",
+      "periodo": "2023–2026 (Auto)",
+      "fecha_procesamiento": "2026-11-16 15:46:31.521583"
+    },
+    {
+      "id_documento": 6,
+      "nombre_archivo": "Evaluación Docente y Unifranz.xlsx",
+      "tipo_documento": "SHEET",
+      "tipo_fuente": "EVALUACION_DOCENTE",
+      "periodo": "2025–2026 (Auto)",
+      "fecha_procesamiento": "2026-11-16 15:46:31.556542"
+    },
+    {
+      "id_documento": 7,
+      "nombre_archivo": "Experiencia Docente 2.0.xlsx",
+      "tipo_documento": "SHEET",
+      "tipo_fuente": "ACTA",
+      "periodo": "2025 (Auto)",
+      "fecha_procesamiento": "2026-11-16 15:46:34.391722"
+    },
+    {
+      "id_documento": 8,
+      "nombre_archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+      "tipo_documento": "SHEET",
+      "tipo_fuente": "RENTABILIDAD",
+      "periodo": "2026 (Auto)",
+      "fecha_procesamiento": "2026-11-16 15:46:35.702781"
+    },
+    {
+      "id_documento": 9,
+      "nombre_archivo": "TBL_INSCRITOS.xlsx",
+      "tipo_documento": "SHEET",
+      "tipo_fuente": "ADMISION",
+      "periodo": "2020–2026 (Auto)",
+      "fecha_procesamiento": "2026-11-16 15:46:37.139021"
+    },
+    {
+      "id_documento": 10,
+      "nombre_archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+      "tipo_documento": "SHEET",
+      "tipo_fuente": "EVALUACION_DOCENTE",
+      "periodo": "2026 (Auto)",
+      "fecha_procesamiento": "2026-11-16 15:46:37.731662"
+    }
+  ],
+  "carga_fila_origen_por_documento": [
+    {
+      "id_documento": 12,
+      "nombre_archivo": null,
+      "tabla": "fact_marketing",
+      "filas": 15196
+    },
+    {
+      "id_documento": 9,
+      "nombre_archivo": "TBL_INSCRITOS.xlsx",
+      "tabla": "fact_marketing",
+      "filas": 782
+    }
+  ],
+  "fact_marketing_por_fecha": [
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-01",
+      "filas": 3,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 3
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-02",
+      "filas": 8,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 9
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-03",
+      "filas": 15,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 18
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-04",
+      "filas": 4,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 5
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-05",
+      "filas": 13,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 15
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-06",
+      "filas": 10,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 11
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-07",
+      "filas": 7,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 8
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-08",
+      "filas": 3,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 4
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-09",
+      "filas": 17,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 21
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-10",
+      "filas": 12,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 16
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-11",
+      "filas": 7,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 8
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-12",
+      "filas": 12,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 18
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-13",
+      "filas": 5,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 6
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-14",
+      "filas": 3,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 4
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-15",
+      "filas": 1,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 1
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-16",
+      "filas": 11,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 13
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-17",
+      "filas": 14,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 20
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-18",
+      "filas": 14,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 18
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-19",
+      "filas": 12,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 15
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-20",
+      "filas": 14,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 19
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-21",
+      "filas": 6,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 7
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-22",
+      "filas": 3,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 5
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-23",
+      "filas": 18,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 24
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-24",
+      "filas": 11,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 14
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-25",
+      "filas": 15,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 22
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-26",
+      "filas": 11,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 14
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-27",
+      "filas": 7,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 10
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-28",
+      "filas": 7,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 9
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-29",
+      "filas": 5,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 6
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-30",
+      "filas": 19,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 29
+    },
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "fecha": "2026-03-31",
+      "filas": 12,
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 19
+    }
+  ],
+  "fact_marketing_muestra_5": [
+    {
+      "id_hecho_mkt": 1,
+      "nombre_modulo": "DIPLOMADO EN TRASTORNOS DE LA COMUNICACIÓN HABLA Y LENGUAJE – FONOAUDIOLOGÍA v.7",
+      "fecha": "2026-03-01",
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 1,
+      "costo_programa": 0.0
+    },
+    {
+      "id_hecho_mkt": 2,
+      "nombre_modulo": "DIPLOMADO EN SALUD PÚBLICA ODONTOLÓGICA v.1",
+      "fecha": "2026-03-01",
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 1,
+      "costo_programa": 0.0
+    },
+    {
+      "id_hecho_mkt": 3,
+      "nombre_modulo": "DIPLOMADO EN DERECHO DE LAS FAMILIAS Y SU PROCEDIMIENTO v.10",
+      "fecha": "2026-03-01",
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 1,
+      "costo_programa": 0.0
+    },
+    {
+      "id_hecho_mkt": 4,
+      "nombre_modulo": "DIPLOMADO",
+      "fecha": "2026-03-02",
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 2,
+      "costo_programa": 0.0
+    },
+    {
+      "id_hecho_mkt": 5,
+      "nombre_modulo": "Sistemas Informáticos",
+      "fecha": "2026-03-02",
+      "leads": 0,
+      "reservas": 0,
+      "inscritos": 1,
+      "costo_programa": 0.0
+    }
+  ],
+  "stg_entidad_no_resuelta_tbl_inscritos": [
+    {
+      "id_documento": 9,
+      "tipo_entidad": "ESTUDIANTE",
+      "motivo": "CI_DUDOSA",
+      "estado_resolucion": "PENDIENTE",
+      "resuelto": false,
+      "filas": 2
+    }
+  ],
+  "stg_tbl_inscritos_muestra_5": [
+    {
+      "id_staging": 1,
+      "id_documento": 9,
+      "tipo_entidad": "ESTUDIANTE",
+      "texto_original": "MARCA TEMPORAL: 2026-03-17 11:50:49 | NUMEROPROYECTO: POS-6123 | NOMBRE DEL PROGRAMA: DIPLOMADO EN DERECHO NOTARIAL EN BOLIVIA v. 23 | ASESOR: SIN ASESOR | CI: 123 | NOMBRES: PRUEBA 6123 | PATERNO: PRUEBA 6123 | MATERNO: PRUEBA 6123 | CELULAR: p:45235 | CORREO ELECTRONICO: marco.jimenez.gira@gmail.com | GENERO: Masculino | FECHA NACIMIENTO: 2026-03-27 00:00:00 | PAIS: BOLIVIA | CIUDAD: Chuquisaca | DIRECCION: SERWER | INSTITUCION DONDE TRABAJA: Sin trabajo | NIVEL ACADEMICO: Diplomado | CARRERA: Enfermería | UNIVERSIDA/INSTITUTO: Universidad Catolica Boliviana | RAZON SOCIAL: WQWQE | NIT: 324 | TIPO DE INSCRIPCION: Inscripción a nuevo programa | ESTADO DEL INSCRITO: ACTIVO | ID ACADEMICO: 6123|123 | EXPEDIDO: EXTRANJERO | NACIONALIDAD: Boliviana | POS-CI INCRITOS: 6123-123 | GENERO L: Masculino | EDAD L: 0 | PAIS L: BOLIVIA | CIUDAD L: Chuquisaca | RANGO EDAD: No hay datos",
+      "motivo": "CI_DUDOSA",
+      "payload_json": {
+        "id": "REG_60_161",
+        "modulo": "DIPLOMADO EN DERECHO NOTARIAL EN BOLIVIA v. 23",
+        "ci_real": "123",
+        "raw_line": "MARCA TEMPORAL: 2026-03-17 11:50:49 | NUMEROPROYECTO: POS-6123 | NOMBRE DEL PROGRAMA: DIPLOMADO EN DERECHO NOTARIAL EN BOLIVIA v. 23 | ASESOR: SIN ASESOR | CI: 123 | NOMBRES: PRUEBA 6123 | PATERNO: PRUEBA 6123 | MATERNO: PRUEBA 6123 | CELULAR: p:45235 | CORREO ELECTRONICO: marco.jimenez.gira@gmail.com | GENERO: Masculino | FECHA NACIMIENTO: 2026-03-27 00:00:00 | PAIS: BOLIVIA | CIUDAD: Chuquisaca | DIRECCION: SERWER | INSTITUCION DONDE TRABAJA: Sin trabajo | NIVEL ACADEMICO: Diplomado | CARRERA: Enfermería | UNIVERSIDA/INSTITUTO: Universidad Catolica Boliviana | RAZON SOCIAL: WQWQE | NIT: 324 | TIPO DE INSCRIPCION: Inscripción a nuevo programa | ESTADO DEL INSCRITO: ACTIVO | ID ACADEMICO: 6123|123 | EXPEDIDO: EXTRANJERO | NACIONALIDAD: Boliviana | POS-CI INCRITOS: 6123-123 | GENERO L: Masculino | EDAD L: 0 | PAIS L: BOLIVIA | CIUDAD L: Chuquisaca | RANGO EDAD: No hay datos",
+        "estudiante": "PRUEBA 6123 PRUEBA 6123 PRUEBA 6123",
+        "monto_deuda": null,
+        "tipo_escala": null,
+        "tipo_fuente": "ADMISION",
+        "motivo_llano": "El CI '••••123' presenta caracteres dudosos (?) o longitud inválida.",
+        "nota_original": null,
+        "ci_enmascarado": "••••123",
+        "cuotas_impagas": 0,
+        "nota_normalizada": null
+      }
+    },
+    {
+      "id_staging": 2,
+      "id_documento": 9,
+      "tipo_entidad": "ESTUDIANTE",
+      "texto_original": "MARCA TEMPORAL: 2026-03-17 14:43:02 | NUMEROPROYECTO: POS-6091 | NOMBRE DEL PROGRAMA: DIPLOMADO EN ÉTICA DIGITAL, INTELIGENCIA ARTIFICIAL Y COMPLIANCE v.1 | ASESOR: SIN ASESOR | CI: 3244 | NOMBRES: prueba 9061 | PATERNO: prueba 9061 | MATERNO: prueba 9061 | CELULAR: p:3243 | CORREO ELECTRONICO: marco.jimenez@unifranz.edu.bo | GENERO: Masculino | FECHA NACIMIENTO: 2026-03-26 00:00:00 | PAIS: BOLIVIA | CIUDAD: Potosí | DIRECCION: sad | INSTITUCION DONDE TRABAJA: Independiente | NIVEL ACADEMICO: Egresado | CARRERA: Economía | UNIVERSIDA/INSTITUTO: Universidad Amazónica de Pando | RAZON SOCIAL: sadsa | NIT: 324 | TIPO DE INSCRIPCION: Inscripción a nuevo programa | ESTADO DEL INSCRITO: ACTIVO | ID ACADEMICO: 6091|3244 | EXPEDIDO: PT | NACIONALIDAD: Boliviana | POS-CI INCRITOS: 6091-3244 | GENERO L: Masculino | EDAD L: 0 | PAIS L: BOLIVIA | CIUDAD L: Potosí | RANGO EDAD: No hay datos",
+      "motivo": "CI_DUDOSA",
+      "payload_json": {
+        "id": "REG_60_167",
+        "modulo": "DIPLOMADO EN ÉTICA DIGITAL, INTELIGENCIA ARTIFICIAL Y COMPLIANCE v.1",
+        "ci_real": "3244",
+        "raw_line": "MARCA TEMPORAL: 2026-03-17 14:43:02 | NUMEROPROYECTO: POS-6091 | NOMBRE DEL PROGRAMA: DIPLOMADO EN ÉTICA DIGITAL, INTELIGENCIA ARTIFICIAL Y COMPLIANCE v.1 | ASESOR: SIN ASESOR | CI: 3244 | NOMBRES: prueba 9061 | PATERNO: prueba 9061 | MATERNO: prueba 9061 | CELULAR: p:3243 | CORREO ELECTRONICO: marco.jimenez@unifranz.edu.bo | GENERO: Masculino | FECHA NACIMIENTO: 2026-03-26 00:00:00 | PAIS: BOLIVIA | CIUDAD: Potosí | DIRECCION: sad | INSTITUCION DONDE TRABAJA: Independiente | NIVEL ACADEMICO: Egresado | CARRERA: Economía | UNIVERSIDA/INSTITUTO: Universidad Amazónica de Pando | RAZON SOCIAL: sadsa | NIT: 324 | TIPO DE INSCRIPCION: Inscripción a nuevo programa | ESTADO DEL INSCRITO: ACTIVO | ID ACADEMICO: 6091|3244 | EXPEDIDO: PT | NACIONALIDAD: Boliviana | POS-CI INCRITOS: 6091-3244 | GENERO L: Masculino | EDAD L: 0 | PAIS L: BOLIVIA | CIUDAD L: Potosí | RANGO EDAD: No hay datos",
+        "estudiante": "prueba 9061 prueba 9061 prueba 9061",
+        "monto_deuda": null,
+        "tipo_escala": null,
+        "tipo_fuente": "ADMISION",
+        "motivo_llano": "El CI '••••244' presenta caracteres dudosos (?) o longitud inválida.",
+        "nota_original": null,
+        "ci_enmascarado": "••••244",
+        "cuotas_impagas": 0,
+        "nota_normalizada": null
+      }
+    }
+  ],
+  "log_pipeline_ingesta_tbl_inscritos": [
+    {
+      "etapa": "UPLOAD",
+      "nivel": "INFO",
+      "modulo": "dispatcher.py",
+      "mensaje": "Archivo recibido 'TBL_INSCRITOS.xlsx' (115.6 KB). Hash: sha256:d2be9a42dbceedca",
+      "tiempo_ms": 45,
+      "metadata": {}
+    },
+    {
+      "etapa": "DISPATCH",
+      "nivel": "INFO",
+      "modulo": "dispatcher.py",
+      "mensaje": "Dispatcher enrutó 'TBL_INSCRITOS.xlsx' por extensión '.xlsx'. 2 hoja(s) leída(s). Tipo fuente: ADMISION.",
+      "tiempo_ms": 205,
+      "metadata": {
+        "tipo_fuente": "ADMISION",
+        "total_hojas": 2
+      }
+    },
+    {
+      "etapa": "CLEAN",
+      "nivel": "INFO",
+      "modulo": "cleaner.py",
+      "mensaje": "Limpieza estructural completada: 393 filas crudas evaluadas, 1 islas válidas detectadas.",
+      "tiempo_ms": 143,
+      "metadata": {}
+    },
+    {
+      "etapa": "NORMALIZE",
+      "nivel": "INFO",
+      "modulo": "mapper.py",
+      "mensaje": "Matriz de normalización: 37 cabeceras mapeadas a esquema canónico.",
+      "tiempo_ms": 40,
+      "metadata": {
+        "matriz": [
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "MARCA TEMPORAL",
+            "cabecera_normalizada": "marca_temporal"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "NUMEROPROYECTO",
+            "cabecera_normalizada": "numeroproyecto"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "NOMBRE DEL PROGRAMA",
+            "cabecera_normalizada": "nombre_del_programa"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "ASESOR",
+            "cabecera_normalizada": "asesor"
+          },
+          {
+            "regla": "Limpieza alfanumérica",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "CI",
+            "cabecera_normalizada": "ci_estudiante"
+          },
+          {
+            "regla": "Mapeo directo",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "NOMBRES",
+            "cabecera_normalizada": "nombre_completo"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "PATERNO",
+            "cabecera_normalizada": "paterno"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "MATERNO",
+            "cabecera_normalizada": "materno"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "CELULAR",
+            "cabecera_normalizada": "celular"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "CORREO ELECTRONICO",
+            "cabecera_normalizada": "correo_electronico"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "GENERO",
+            "cabecera_normalizada": "genero"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "FECHA NACIMIENTO",
+            "cabecera_normalizada": "fecha_nacimiento"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "PAIS",
+            "cabecera_normalizada": "pais"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "CIUDAD",
+            "cabecera_normalizada": "ciudad"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "DIRECCION",
+            "cabecera_normalizada": "direccion"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "INSTITUCION DONDE TRABAJA",
+            "cabecera_normalizada": "institucion_donde_trabaja"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "NIVEL ACADEMICO",
+            "cabecera_normalizada": "nivel_academico"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "CARRERA",
+            "cabecera_normalizada": "carrera"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "UNIVERSIDA/INSTITUTO",
+            "cabecera_normalizada": "universida/instituto"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "RAZON SOCIAL",
+            "cabecera_normalizada": "razon_social"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "NIT",
+            "cabecera_normalizada": "nit"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "TIPO DE INSCRIPCION",
+            "cabecera_normalizada": "tipo_de_inscripcion"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "ESTADO DEL INSCRITO",
+            "cabecera_normalizada": "estado_del_inscrito"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "ID ACADEMICO",
+            "cabecera_normalizada": "id_academico"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "EXPEDIDO",
+            "cabecera_normalizada": "expedido"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "NACIONALIDAD",
+            "cabecera_normalizada": "nacionalidad"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "Ciudad Natal",
+            "cabecera_normalizada": "ciudad_natal"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "POS-CI INCRITOS",
+            "cabecera_normalizada": "pos-ci_incritos"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "GENERO L",
+            "cabecera_normalizada": "genero_l"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "EDAD L",
+            "cabecera_normalizada": "edad_l"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "PAIS L",
+            "cabecera_normalizada": "pais_l"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "CIUDAD L",
+            "cabecera_normalizada": "ciudad_l"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "TRABAJO L",
+            "cabecera_normalizada": "trabajo_l"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "NIVEL ACADEMICO L",
+            "cabecera_normalizada": "nivel_academico_l"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "CARRERA L",
+            "cabecera_normalizada": "carrera_l"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "UNIVERSIDAD",
+            "cabecera_normalizada": "universidad"
+          },
+          {
+            "regla": "Mapeo inferido",
+            "estado": "Completado",
+            "tipo_dato": "VARCHAR",
+            "cabecera_original": "RANGO EDAD",
+            "cabecera_normalizada": "rango_edad"
+          }
+        ]
+      }
+    },
+    {
+      "etapa": "VALIDATE",
+      "nivel": "SUCCESS",
+      "modulo": "validator.py",
+      "mensaje": "Validación de esquema completada: 100.0% validez (0 inconsistencias derivadas a Revisión Humana).",
+      "tiempo_ms": 106,
+      "metadata": {}
+    },
+    {
+      "etapa": "STAGE",
+      "nivel": "SUCCESS",
+      "modulo": "loader.py",
+      "mensaje": "Batch INSERT completado en Registros de Ingesta: 391 registros cargados.",
+      "tiempo_ms": 70,
+      "metadata": {}
+    },
+    {
+      "etapa": "SUMMARY",
+      "nivel": "SUCCESS",
+      "modulo": "pipeline.py",
+      "mensaje": "Pipeline ejecutado exitosamente en 576ms.",
+      "tiempo_ms": 576,
+      "metadata": {}
+    }
+  ],
+  "log_inconsistencias_tbl_inscritos": [
+    {
+      "regla_origen": "SUBTOTAL",
+      "tipo_regla": "SUBTOTAL",
+      "filas": 1
+    }
+  ],
+  "tbl_inscritos_excel_total_filas": 15196,
+  "tbl_inscritos_excel_muestra_5": [
+    {
+      "fila_excel": 2,
+      "marca_temporal_original": "2023-04-14 19:44:33",
+      "columnas_fecha_encontradas": [
+        "MARCA TEMPORAL",
+        "FECHA NACIMIENTO"
+      ],
+      "programa_o_pos": "POS-4403"
+    },
+    {
+      "fila_excel": 3,
+      "marca_temporal_original": "2023-03-31 17:34:36",
+      "columnas_fecha_encontradas": [
+        "MARCA TEMPORAL",
+        "FECHA NACIMIENTO"
+      ],
+      "programa_o_pos": "POS-4403"
+    },
+    {
+      "fila_excel": 4,
+      "marca_temporal_original": "2023-03-30 11:44:20",
+      "columnas_fecha_encontradas": [
+        "MARCA TEMPORAL",
+        "FECHA NACIMIENTO"
+      ],
+      "programa_o_pos": "POS-4403"
+    },
+    {
+      "fila_excel": 5,
+      "marca_temporal_original": "2023-03-31 00:46:07",
+      "columnas_fecha_encontradas": [
+        "MARCA TEMPORAL",
+        "FECHA NACIMIENTO"
+      ],
+      "programa_o_pos": "POS-4403"
+    },
+    {
+      "fila_excel": 6,
+      "marca_temporal_original": "2023-04-18 17:58:36",
+      "columnas_fecha_encontradas": [
+        "MARCA TEMPORAL",
+        "FECHA NACIMIENTO"
+      ],
+      "programa_o_pos": "POS-4403"
+    }
+  ],
+  "causa_raiz": {
+    "slice_usado_por_medir_ciclo_mensual": "C:\\Users\\DAZA\\Documents\\Universidad\\Proyecto de Grado 7MO semestre\\giragroup_bi_system\\output\\backups\\f0_lote\\slices\\TBL_INSCRITOS.xlsx",
+    "slice_filas_totales": 391,
+    "slice_marca_temporal_min": "2026-03-01 12:04:44",
+    "slice_marca_temporal_max": "2026-03-31 17:48:11",
+    "slice_meses_distintos": {
+      "2026-03": 391
+    },
+    "dw_vacio_carga_fila_origen_residual": {
+      "id_documento": 12,
+      "tabla": "fact_marketing",
+      "filas": 15196
+    },
+    "explicacion": "No hubo perdida de datos por BETO ni por el pipeline de consolidacion: medir_flujo_dataops.py se ejecuto con CICLO_REUSAR_SLICES=1 usando el recorte mensual output/backups/f0_lote/slices/TBL_INSCRITOS.xlsx (391 filas, todas de marzo 2026: 2026-03-01 a 2026-03-31). Ademas, dw_vacio conservaba 15.196 claves residuales en carga_fila_origen (id_documento=12, tabla=fact_marketing). Las 391 filas del slice de TBL_INSCRITOS (clasificado como ADMISION, id_documento=9, 782 filas en carga_fila_origen) se agruparon en 299 filas de fact_marketing (por UNIQUE(id_modulo, id_tiempo)), sumando exactamente 391 inscritos en 31 fechas de 2026-03; solo 2 filas quedaron en stg_entidad_no_resuelta con motivo CI_DUDOSA (CI 123 y 3244) y 1 en log_inconsistencias (SUBTOTAL)."
+  }
+}

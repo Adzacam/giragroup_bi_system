@@ -1,0 +1,19 @@
+{
+  "etiqueta": "F3R, final",
+  "tarea": "R3-10 (Matriz de confusión por tipo de entidad, gold_510, Modo C)",
+  "fuente": "docs/mediciones/f1_d3b_calidad_v2_gold.json (por_modo.C.gold_510)",
+  "semilla": 42,
+  "soporte_total": 510,
+  "predichos_total": 517,
+  "explicacion_503_vs_510": "En criterio estricto seqeval (coincidencia exacta de span y tipo), 503 de 510 entidades gold son TP (FN=7, FP=14, micro F1=0.979552). Los 7 FN son límites de span en PROGRAMA (6) y PER_ESTUDIANTE (1); en criterio relajado (solapamiento parcial), todas las 510 entidades gold coinciden (TP=510, FN=0, FP=6, micro F1=0.9942).",
+  "por_tipo_estricto": {
+    "MODULO": {"support": 150, "tp": 150, "fn": 0, "fp": 0, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "PER_DOCENTE": {"support": 50, "tp": 50, "fn": 0, "fp": 0, "precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "PER_ESTUDIANTE": {"support": 130, "tp": 129, "fn": 1, "fp": 1, "precision": 0.992308, "recall": 0.992308, "f1": 0.992308},
+    "PROGRAMA": {"support": 180, "tp": 174, "fn": 6, "fp": 13, "precision": 0.930481, "recall": 0.966667, "f1": 0.948229}
+  },
+  "suma_tp_estricto": 503,
+  "suma_fn_estricto": 7,
+  "suma_fp_estricto": 14,
+  "f1_relajado_por_tipo": {"PER_ESTUDIANTE": 1.0, "PER_DOCENTE": 1.0, "MODULO": 1.0, "PROGRAMA": 0.9836}
+}

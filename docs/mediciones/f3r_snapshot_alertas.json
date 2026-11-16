@@ -1,0 +1,92 @@
+{
+  "base_datos": "f3r_snapshot",
+  "total_alertas": 7094,
+  "por_categoria": {
+    "null": 7094
+  },
+  "por_severidad": {
+    "WARNING": 2893,
+    "CRITICAL": 4201
+  },
+  "por_tipo": {
+    "ACADEMICO": 3942,
+    "FINANCIERO": 1806,
+    "RIESGO_CRUZADO": 302,
+    "DATAOPS_CALIDAD": 1044
+  },
+  "mora_estudiantes_distintos": 2498,
+  "mora_fact_filas": 2574,
+  "mora_monto_deuda": 692957.88,
+  "por_estado_cartera": {
+    "Vigente": {
+      "filas": 7909,
+      "monto_deuda": 2011840.55
+    },
+    "Mora": {
+      "filas": 2574,
+      "monto_deuda": 692957.88
+    }
+  },
+  "muestra": [
+    {
+      "regla": "IF nota_final <= 70.0 THEN ALERTA_RIESGO_ACADEMICO",
+      "tipo": "ACADEMICO",
+      "severidad": "WARNING",
+      "estudiante": "EDGAR . CAYO",
+      "codigo_estudiante": "9008158",
+      "modulo": "Protozoos y Helmintos Intestinales - Parásitos Emergentes y/o Oportunistas",
+      "metrica_valor": 70.0,
+      "umbral_disparador": "<= 70.0",
+      "mensaje": "Estudiante presenta calificación en zona de riesgo (70.00/100) en Protozoos y Helmintos Intestinales - Parásitos Emergentes y/o Oportunistas.",
+      "role_target": "DIRECTOR_ACADEMICO"
+    },
+    {
+      "regla": "IF nota_final <= 70.0 THEN ALERTA_RIESGO_ACADEMICO",
+      "tipo": "ACADEMICO",
+      "severidad": "WARNING",
+      "estudiante": "SOLEDAD PINTO RAMO",
+      "codigo_estudiante": "8887875",
+      "modulo": "Diseño, Planificación y Gestión del Aula en el Enfoque Basado en Competencias y aplicación de TICs.",
+      "metrica_valor": 70.0,
+      "umbral_disparador": "<= 70.0",
+      "mensaje": "Estudiante presenta calificación en zona de riesgo (70.00/100) en Diseño, Planificación y Gestión del Aula en el Enfoque Basado en Competencias y aplicación de TICs..",
+      "role_target": "DIRECTOR_ACADEMICO"
+    },
+    {
+      "regla": "IF nota_final <= 70.0 THEN ALERTA_RIESGO_ACADEMICO",
+      "tipo": "ACADEMICO",
+      "severidad": "WARNING",
+      "estudiante": "SOLEDAD PINTO RAMO",
+      "codigo_estudiante": "8887875",
+      "modulo": "POS-5295 · Módulo 8",
+      "metrica_valor": 70.0,
+      "umbral_disparador": "<= 70.0",
+      "mensaje": "Estudiante presenta calificación en zona de riesgo (70.00/100) en POS-5295 · Módulo 8.",
+      "role_target": "DIRECTOR_ACADEMICO"
+    },
+    {
+      "regla": "IF nota_final <= 70.0 THEN ALERTA_RIESGO_ACADEMICO",
+      "tipo": "ACADEMICO",
+      "severidad": "CRITICAL",
+      "estudiante": "ROCIO ESTHER ARAOZ VILLARROEL",
+      "codigo_estudiante": "5225011",
+      "modulo": "Fundamentos y Estratégias del Marketing y Ventas para Emprendedores",
+      "metrica_valor": 0.0,
+      "umbral_disparador": "<= 70.0",
+      "mensaje": "Estudiante presenta calificación en zona de riesgo (0.00/100) en Fundamentos y Estratégias del Marketing y Ventas para Emprendedores.",
+      "role_target": "DIRECTOR_ACADEMICO"
+    },
+    {
+      "regla": "IF nota_final <= 70.0 THEN ALERTA_RIESGO_ACADEMICO",
+      "tipo": "ACADEMICO",
+      "severidad": "CRITICAL",
+      "estudiante": "ROCIO ESTHER ARAOZ VILLARROEL",
+      "codigo_estudiante": "5225011",
+      "modulo": "Marketing y Ventas Avanzadas en la Era Digital",
+      "metrica_valor": 0.0,
+      "umbral_disparador": "<= 70.0",
+      "mensaje": "Estudiante presenta calificación en zona de riesgo (0.00/100) en Marketing y Ventas Avanzadas en la Era Digital.",
+      "role_target": "DIRECTOR_ACADEMICO"
+    }
+  ]
+}

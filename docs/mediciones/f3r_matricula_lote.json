@@ -1,0 +1,15 @@
+{
+  "base_datos": "f3r_base",
+  "fact_marketing_total_filas": 299,
+  "meses_distintos_con_filas": 1,
+  "filas_con_inscritos_mayor_0": 299,
+  "detalle_por_mes": [
+    {
+      "gestion": 2026,
+      "mes": 3,
+      "filas": 299,
+      "inscritos": 391
+    }
+  ],
+  "diagnostico": "En f3r_base fact_marketing tiene 299 filas distribuidas en 1 meses distintos (minimo requerido por Holt-Winters: >=24 observaciones mensuales). Por eso ALUMNOS_GLOBAL reporta n_obs=0/sin_datos en f3r_base. Por Decision 1 (base mixta declarada), la Seccion E (HW de matricula) se calcula sobre snapshot_dw_20261110_1201 en R3-6 (n_obs=43)."
+}
