@@ -1,0 +1,390 @@
+{
+  "fase": "F3S",
+  "tarea": "S-5",
+  "coleccion": "docs/api/postman_collection.json, sin cambios (0 peticiones y 0 aserciones modificadas; ver docs/mediciones/f3s_newman_diff.txt)",
+  "entorno": {
+    "baseUrl": "http://127.0.0.1:8096",
+    "api": "uvicorn APP_ENV=test y ENVIRONMENT=test sobre copia tmpfs beto_pg_s5 (127.0.0.1:55605), con usuario QA sembrado solo en la copia",
+    "proxy_cabeceras": "proxy de prueba que agrega las cabeceras de gateway/nginx.conf lineas 61-64 sobre :8095",
+    "migracion_014": "aplicada solo a la copia tmpfs",
+    "qa_password": "pasada por --env-var desde .env, no escrita en archivos",
+    "bd_viva": "no escrita; solo lectura para pg_dump del snapshot y consultas de comprobacion"
+  },
+  "newman": "6.2.3 (instalado en scratchpad, fuera del repo)",
+  "run_stats": {
+    "iterations": {
+      "total": 1,
+      "pending": 0,
+      "failed": 0
+    },
+    "items": {
+      "total": 11,
+      "pending": 0,
+      "failed": 0
+    },
+    "scripts": {
+      "total": 11,
+      "pending": 0,
+      "failed": 0
+    },
+    "prerequests": {
+      "total": 11,
+      "pending": 0,
+      "failed": 0
+    },
+    "requests": {
+      "total": 11,
+      "pending": 0,
+      "failed": 0
+    },
+    "tests": {
+      "total": 11,
+      "pending": 0,
+      "failed": 0
+    },
+    "assertions": {
+      "total": 24,
+      "pending": 0,
+      "failed": 0
+    },
+    "testScripts": {
+      "total": 11,
+      "pending": 0,
+      "failed": 0
+    },
+    "prerequestScripts": {
+      "total": 0,
+      "pending": 0,
+      "failed": 0
+    }
+  },
+  "tiempos_run_ms": {
+    "promedio_respuesta": 523.4545454545455,
+    "minimo": 7,
+    "maximo": 3405,
+    "duracion_total": 6734
+  },
+  "peticiones": [
+    {
+      "peticion": "1. Health Check Gateway & API",
+      "metodo": "GET",
+      "codigo": 200,
+      "tiempo_ms": 33
+    },
+    {
+      "peticion": "2. Auth - Paso 1: Login Credenciales",
+      "metodo": "POST",
+      "codigo": 200,
+      "tiempo_ms": 3405
+    },
+    {
+      "peticion": "3. Auth - Paso 2: Verificacion 2FA OTP",
+      "metodo": "POST",
+      "codigo": 200,
+      "tiempo_ms": 397
+    },
+    {
+      "peticion": "4. KPIs - Cuadro de Mando Integral Completo",
+      "metodo": "GET",
+      "codigo": 200,
+      "tiempo_ms": 183
+    },
+    {
+      "peticion": "5. Riesgos - Alertas Tempranas Deterministicas",
+      "metodo": "GET",
+      "codigo": 200,
+      "tiempo_ms": 792
+    },
+    {
+      "peticion": "6. Forecast - Proyeccion de Inscritos (Holt-Winters)",
+      "metodo": "GET",
+      "codigo": 200,
+      "tiempo_ms": 7
+    },
+    {
+      "peticion": "7. Forecast - Proyeccion de Recaudacion (OLS Metas)",
+      "metodo": "GET",
+      "codigo": 200,
+      "tiempo_ms": 20
+    },
+    {
+      "peticion": "8. Reportes - Exportacion XLSX (HU-12)",
+      "metodo": "GET",
+      "codigo": 200,
+      "tiempo_ms": 295
+    },
+    {
+      "peticion": "9. Reportes - Exportacion PDF (HU-12)",
+      "metodo": "GET",
+      "codigo": 200,
+      "tiempo_ms": 587
+    },
+    {
+      "peticion": "10. Seguridad - Caso 401 Unauthorized",
+      "metodo": "GET",
+      "codigo": 401,
+      "tiempo_ms": 20
+    },
+    {
+      "peticion": "11. Seguridad - Caso 422 Validacion de Esquema",
+      "metodo": "POST",
+      "codigo": 422,
+      "tiempo_ms": 19
+    }
+  ],
+  "aserciones": [
+    {
+      "peticion": "1",
+      "asercion": "Status code es 200 OK",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "1",
+      "asercion": "Servicio reporta estado saludable",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "1",
+      "asercion": "Cabeceras OWASP presentes",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "2",
+      "asercion": "Status code es 200 OK",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "2",
+      "asercion": "Requiere 2FA OTP",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "2",
+      "asercion": "OTP de pruebas disponible (APP_ENV=test)",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "3",
+      "asercion": "Status code es 200 OK",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "3",
+      "asercion": "Retorna access_token valido",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "4",
+      "asercion": "Status code es 200 OK",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "4",
+      "asercion": "Estructura contiene 4 perspectivas CMI",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "5",
+      "asercion": "Status code es 200 OK",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "5",
+      "asercion": "Respuesta contiene tarjetas de riesgo y reglas",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "6",
+      "asercion": "Status code es 200 OK",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "6",
+      "asercion": "Modelo Holt-Winters valido con horizonte de proyeccion",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "7",
+      "asercion": "Status code es 200 OK",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "7",
+      "asercion": "Modelo de metas y recaudacion valido",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "8",
+      "asercion": "Status code es 200 OK",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "8",
+      "asercion": "Content-Type corresponde a Excel XLSX",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "9",
+      "asercion": "Status code es 200 OK",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "9",
+      "asercion": "Content-Type corresponde a application/pdf",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "10",
+      "asercion": "Status code es 401 Unauthorized sin token",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "10",
+      "asercion": "Encabezado WWW-Authenticate presente",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "11",
+      "asercion": "Status code es 422 Unprocessable Entity",
+      "resultado": "ok"
+    },
+    {
+      "peticion": "11",
+      "asercion": "Detalle de validacion Pydantic retornado",
+      "resultado": "ok"
+    }
+  ],
+  "causa_fallas_f3r": {
+    "n_fallas_f3r": 17,
+    "base_y_baseUrl": "F3R corrio contra uvicorn directo en http://127.0.0.1:8099 (sin nginx), sobre copia tmpfs f3r_base (ya no existe). Ver f3r_newman.json environment.baseUrl y scripts/f3r_ejecutar_r3_8.py:21,82-83.",
+    "qa_password": "F3R no paso qa_password: el environment de f3r_newman.json solo trae baseUrl. El login devolvio 401 (output/f3r/uvicorn_r3_8.log lineas 1259-1267).",
+    "migracion_014": "No demostrable para f3r_base (eliminada). En f3r_newman.json y en el log de F3R no aparece ningun 500 ni UndefinedColumn (0 Traceback). Las copias de snapshot que aun existen (beto_pg_s1/giragroup_db) tampoco tienen inscritos_captacion (0), asi que la copia de F3R probablemente tampoco. Sin efecto en las 17 fallas.",
+    "detalle_fallas_f3r": [
+      {
+        "peticion": "1",
+        "asercion": "Cabeceras OWASP presentes",
+        "codigo_recibido": 200,
+        "mensaje": "expected response to have header with key 'x-content-type-options'"
+      },
+      {
+        "peticion": "2",
+        "asercion": "Status code es 200 OK",
+        "codigo_recibido": 401,
+        "mensaje": "expected response to have status code 200 but got 401"
+      },
+      {
+        "peticion": "2",
+        "asercion": "Login directo con token de acceso",
+        "codigo_recibido": 401,
+        "mensaje": "expected undefined to be a string"
+      },
+      {
+        "peticion": "3",
+        "asercion": "Status code es 200 OK",
+        "codigo_recibido": 401,
+        "mensaje": "expected response to have status code 200 but got 401"
+      },
+      {
+        "peticion": "3",
+        "asercion": "Retorna access_token valido",
+        "codigo_recibido": 401,
+        "mensaje": "expected undefined to be a string"
+      },
+      {
+        "peticion": "4",
+        "asercion": "Status code es 200 OK",
+        "codigo_recibido": 401,
+        "mensaje": "expected response to have status code 200 but got 401"
+      },
+      {
+        "peticion": "4",
+        "asercion": "Estructura contiene 4 perspectivas CMI",
+        "codigo_recibido": 401,
+        "mensaje": "Target cannot be null or undefined."
+      },
+      {
+        "peticion": "5",
+        "asercion": "Status code es 200 OK",
+        "codigo_recibido": 401,
+        "mensaje": "expected response to have status code 200 but got 401"
+      },
+      {
+        "peticion": "5",
+        "asercion": "Respuesta contiene tarjetas de riesgo y reglas",
+        "codigo_recibido": 401,
+        "mensaje": "expected undefined to deeply equal 'success'"
+      },
+      {
+        "peticion": "6",
+        "asercion": "Status code es 200 OK",
+        "codigo_recibido": 401,
+        "mensaje": "expected response to have status code 200 but got 401"
+      },
+      {
+        "peticion": "6",
+        "asercion": "Modelo Holt-Winters valido con horizonte de proyeccion",
+        "codigo_recibido": 401,
+        "mensaje": "Cannot read properties of undefined (reading 'metodo')"
+      },
+      {
+        "peticion": "7",
+        "asercion": "Status code es 200 OK",
+        "codigo_recibido": 401,
+        "mensaje": "expected response to have status code 200 but got 401"
+      },
+      {
+        "peticion": "7",
+        "asercion": "Modelo de metas y recaudacion valido",
+        "codigo_recibido": 401,
+        "mensaje": "Cannot read properties of undefined (reading 'metodo')"
+      },
+      {
+        "peticion": "8",
+        "asercion": "Status code es 200 OK",
+        "codigo_recibido": 401,
+        "mensaje": "expected response to have status code 200 but got 401"
+      },
+      {
+        "peticion": "8",
+        "asercion": "Content-Type corresponde a Excel XLSX",
+        "codigo_recibido": 401,
+        "mensaje": "expected 'application/json' to include 'openxmlformats'"
+      },
+      {
+        "peticion": "9",
+        "asercion": "Status code es 200 OK",
+        "codigo_recibido": 401,
+        "mensaje": "expected response to have status code 200 but got 401"
+      },
+      {
+        "peticion": "9",
+        "asercion": "Content-Type corresponde a application/pdf",
+        "codigo_recibido": 401,
+        "mensaje": "expected 'application/json' to include 'pdf'"
+      }
+    ],
+    "recuento": {
+      "owasp_puerto_equivocado": 1,
+      "login_401_sin_qa_password_y_rutas_protegidas": 16,
+      "500_columna_ausente": 0,
+      "total": 17,
+      "nota": "Las peticiones 2 a 9 devolvieron 401 en F3R (ver codigo_recibido en detalle_fallas_f3r)."
+    }
+  },
+  "explicacion_23_a_24": "Misma coleccion. En la peticion 2 (login) F3R recibio 401, entro en la rama else y corrieron 2 aserciones: 'Status code es 200 OK' y 'Login directo con token de acceso'. En S-5 el login devuelve 200 con mfa_required, corre la rama if: 'Status code es 200 OK', 'Requiere 2FA OTP' y 'OTP de pruebas disponible (APP_ENV=test)'. Resultado: 3 aserciones en la peticion 2 frente a 2, es decir 24 frente a 23. Ninguna asercion de F3R se elimino.",
+  "f3r_aserciones_peticion_2": [
+    "Status code es 200 OK",
+    "Login directo con token de acceso"
+  ],
+  "s5_aserciones_peticion_2": [
+    "Status code es 200 OK",
+    "Requiere 2FA OTP",
+    "OTP de pruebas disponible (APP_ENV=test)"
+  ],
+  "archivo_completo": {
+    "ruta": "output/f3s/f3s_newman_completo.json",
+    "sha256": "090f5e4bd7ce409f289165cc2d70ed43832a5a0f8e53c6cd847470040a6feb43",
+    "bytes": 37344268,
+    "nota": "output/f3s/ esta en .gitignore (linea añadida en S-5); contiene cuerpos de respuesta"
+  }
+}

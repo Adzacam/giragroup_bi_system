@@ -1,0 +1,558 @@
+{
+ "etiqueta": "F3S, S-7 (B-7), repetición limpia",
+ "protocolo": "docs/mediciones/f2r_g6_protocolo_b7.md",
+ "tmpfs": "beto_pg_s7:55632 (recreada para esta repetición: aislada_tmpfs.sh up + vacio)",
+ "lote_sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+ "modelo_beto_sha256": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+ "integridad": {
+  "antes": {
+   "snapshot_sha256": "14d45f5a128f44543927911dc0ad453f681d524ac05037203f5c0c2787e3a2eb",
+   "modelo_beto_sha256": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+   "lote_sha256_recalculado": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+   "lote_sha256_manifiesto": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+   "lote_archivos_distintos": [],
+   "slices_contenedor": {
+    "carpeta": "/tmp/slices_s7",
+    "n": 10,
+    "iguales_al_manifiesto": true,
+    "distintos": []
+   }
+  },
+  "despues": {
+   "snapshot_sha256": "14d45f5a128f44543927911dc0ad453f681d524ac05037203f5c0c2787e3a2eb",
+   "modelo_beto_sha256": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+   "lote_sha256_recalculado": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+   "lote_sha256_manifiesto": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+   "lote_archivos_distintos": [],
+   "slices_contenedor": {
+    "carpeta": "/tmp/slices_s7",
+    "n": 10,
+    "iguales_al_manifiesto": true,
+    "distintos": []
+   }
+  }
+ },
+ "orden": "estado de máquina (40 s) -> corrida caché vacía (clon dw_vacio + 016, cache_indice_beto vacía, reposo 30 s) -> estado (20 s) -> estado (40 s) -> corrida caché llena (misma preparación + output/f3s/s7/cache_f3s_base.sql, reposo 30 s) -> estado (20 s)",
+ "monitoreo_cpu_ajena": "mismo método que la serie anterior: psutil host + docker stats cada 5 s; ajena = host - suma(CPU contenedores)/24",
+ "corridas": {
+  "vacia": [
+   {
+    "etiqueta": "b7_limpia_vacia_r1",
+    "returncode": 0,
+    "duracion_pared_s": 625.34,
+    "tiempo_maquina_s": 616.61,
+    "etapas_s": {
+     "carga_y_lectura_s": 91.15,
+     "espera_lectura_beto_s": 0.01,
+     "lectura_beto_s": 85.25,
+     "lineas_leidas_beto": 12992,
+     "lineas_por_s_beto": 152.41,
+     "carga_s": 5.91,
+     "consolidacion_s": 525.45,
+     "revision_maquina_s": 0.0,
+     "revision_humana_simulada_s": 0.0
+    },
+    "cache_indice_beto_al_iniciar": 0,
+    "host_cpu_avg_pct": 26.2,
+    "host_cpu_max_pct": 45.2,
+    "cpu_ajena_a_docker_avg_pct": 8.1,
+    "cpu_ajena_a_docker_max_pct": 28.6,
+    "n_muestras": 89,
+    "huella_v2_sha256": "90e2697da392c0eab5f635bd0607758106747277144b2c210bc00e700126299f",
+    "bandeja": {
+     "casos": 676,
+     "grupos": 17,
+     "manuales": 12,
+     "casos_manuales": 43
+    },
+    "kpis": {
+     "KPI-10": null,
+     "KPI-11": null,
+     "KPI-18": 32.0
+    },
+    "huella": {
+     "huella_v2_sha256": "90e2697da392c0eab5f635bd0607758106747277144b2c210bc00e700126299f",
+     "coincide_c8e10263": false,
+     "tablas_distintas_de_f3s_base": [
+      "schema_migrations"
+     ],
+     "bandeja_igual": true,
+     "kpis_todos_igual": true,
+     "huella_v2_sha256_reponiendo_schema_migrations_de_f3s_base": "c8e10263c38a3c1da0301888ac595e56141f810a4efdc23498e6ffd6773b0153",
+     "equivalente_salvo_applied_at": true
+    },
+    "estado_maquina_antes": {
+     "fecha": "2026-11-16 17:42:11",
+     "reposo_s": 40,
+     "cpu_host_reposo_media_pct": 6.1,
+     "cpu_host_reposo_max_pct": 7.9,
+     "nucleos_logicos": 24,
+     "pesados_ajenos": [],
+     "otros_procesos_con_cpu_ge_3pct": [],
+     "discord_presente": true,
+     "contenedores": [
+      "beto_pg_s7|Up 3 minutes",
+      "giragroup_web|Up 3 hours",
+      "giragroup_api|Up 3 hours",
+      "giragroup_pipeline|Up 3 hours",
+      "giragroup_catalog_db|Up 3 hours (healthy)",
+      "giragroup_gateway|Up 3 hours",
+      "giragroup_audit_svc|Up 3 hours",
+      "giragroup_auth_svc|Up 3 hours",
+      "giragroup_notifications_svc|Up 3 hours",
+      "giragroup_db|Up 3 hours (healthy)"
+     ],
+     "plan_energia": "GUID de plan de energ├¡a: 381b4222-f694-41f0-9685-ff5bb260df2e  (Equilibrado)",
+     "plan_energia_cambiado": false,
+     "en_corriente_ac": true,
+     "apto": true,
+     "criterio_apto": "sin pesados ajenos (juegos, lanzadores, pytest/locust/vite, navegador >= 3.0 %), ningún otro proceso >= 3.0 % salvo Discord, CPU host en reposo < 10.0 %",
+     "top5_procesos_cpu": [
+      {
+       "proceso": "dwm.exe",
+       "n": 1,
+       "cpu_pct_host": 1.6,
+       "ram_mb": 455.46
+      },
+      {
+       "proceso": "Discord.exe",
+       "n": 6,
+       "cpu_pct_host": 0.96,
+       "ram_mb": 504.2
+      },
+      {
+       "proceso": "svchost.exe",
+       "n": 94,
+       "cpu_pct_host": 0.55,
+       "ram_mb": 1138.47
+      },
+      {
+       "proceso": "System",
+       "n": 1,
+       "cpu_pct_host": 0.53,
+       "ram_mb": 5.63
+      },
+      {
+       "proceso": "claude.exe",
+       "n": 14,
+       "cpu_pct_host": 0.41,
+       "ram_mb": 1125.7
+      }
+     ],
+     "archivo": "output/f3s/s7/estado_antes_b7_limpia_vacia.json"
+    },
+    "estado_maquina_despues": {
+     "fecha": "2026-11-16 17:53:54",
+     "reposo_s": 20,
+     "cpu_host_reposo_media_pct": 8.2,
+     "cpu_host_reposo_max_pct": 9.2,
+     "nucleos_logicos": 24,
+     "pesados_ajenos": [],
+     "otros_procesos_con_cpu_ge_3pct": [],
+     "discord_presente": true,
+     "contenedores": [
+      "beto_pg_s7|Up 15 minutes",
+      "giragroup_web|Up 3 hours",
+      "giragroup_api|Up 3 hours",
+      "giragroup_pipeline|Up 3 hours",
+      "giragroup_catalog_db|Up 3 hours (healthy)",
+      "giragroup_gateway|Up 3 hours",
+      "giragroup_audit_svc|Up 3 hours",
+      "giragroup_auth_svc|Up 3 hours",
+      "giragroup_notifications_svc|Up 3 hours",
+      "giragroup_db|Up 3 hours (healthy)"
+     ],
+     "plan_energia": "GUID de plan de energ├¡a: 381b4222-f694-41f0-9685-ff5bb260df2e  (Equilibrado)",
+     "plan_energia_cambiado": false,
+     "en_corriente_ac": true,
+     "apto": true,
+     "criterio_apto": "sin pesados ajenos (juegos, lanzadores, pytest/locust/vite, navegador >= 3.0 %), ningún otro proceso >= 3.0 % salvo Discord, CPU host en reposo < 10.0 %",
+     "top5_procesos_cpu": [
+      {
+       "proceso": "Discord.exe",
+       "n": 6,
+       "cpu_pct_host": 1.8,
+       "ram_mb": 651.82
+      },
+      {
+       "proceso": "dwm.exe",
+       "n": 1,
+       "cpu_pct_host": 1.57,
+       "ram_mb": 391.93
+      },
+      {
+       "proceso": "System",
+       "n": 1,
+       "cpu_pct_host": 0.8,
+       "ram_mb": 5.71
+      },
+      {
+       "proceso": "svchost.exe",
+       "n": 94,
+       "cpu_pct_host": 0.63,
+       "ram_mb": 1348.15
+      },
+      {
+       "proceso": "claude.exe",
+       "n": 14,
+       "cpu_pct_host": 0.57,
+       "ram_mb": 1232.2
+      }
+     ],
+     "archivo": "output/f3s/s7/estado_despues_b7_limpia_vacia.json"
+    }
+   }
+  ],
+  "llena": [
+   {
+    "etiqueta": "b7_limpia_llena_r1",
+    "returncode": 0,
+    "duracion_pared_s": 183.91,
+    "tiempo_maquina_s": 177.2,
+    "etapas_s": {
+     "carga_y_lectura_s": 87.37,
+     "espera_lectura_beto_s": 0.02,
+     "lectura_beto_s": 81.9,
+     "lineas_leidas_beto": 12992,
+     "lineas_por_s_beto": 158.62,
+     "carga_s": 5.49,
+     "consolidacion_s": 89.81,
+     "revision_maquina_s": 0.0,
+     "revision_humana_simulada_s": 0.0
+    },
+    "cache_indice_beto_al_iniciar": 11139,
+    "host_cpu_avg_pct": 6.0,
+    "host_cpu_max_pct": 9.2,
+    "cpu_ajena_a_docker_avg_pct": 1.8,
+    "cpu_ajena_a_docker_max_pct": 9.0,
+    "n_muestras": 27,
+    "huella_v2_sha256": "90e2697da392c0eab5f635bd0607758106747277144b2c210bc00e700126299f",
+    "bandeja": {
+     "casos": 676,
+     "grupos": 17,
+     "manuales": 12,
+     "casos_manuales": 43
+    },
+    "kpis": {
+     "KPI-10": null,
+     "KPI-11": null,
+     "KPI-18": 32.0
+    },
+    "huella": {
+     "huella_v2_sha256": "90e2697da392c0eab5f635bd0607758106747277144b2c210bc00e700126299f",
+     "coincide_c8e10263": false,
+     "tablas_distintas_de_f3s_base": [
+      "schema_migrations"
+     ],
+     "bandeja_igual": true,
+     "kpis_todos_igual": true,
+     "huella_v2_sha256_reponiendo_schema_migrations_de_f3s_base": "c8e10263c38a3c1da0301888ac595e56141f810a4efdc23498e6ffd6773b0153",
+     "equivalente_salvo_applied_at": true
+    },
+    "estado_maquina_antes": {
+     "fecha": "2026-11-16 17:54:36",
+     "reposo_s": 40,
+     "cpu_host_reposo_media_pct": 3.6,
+     "cpu_host_reposo_max_pct": 9.1,
+     "nucleos_logicos": 24,
+     "pesados_ajenos": [],
+     "otros_procesos_con_cpu_ge_3pct": [],
+     "discord_presente": false,
+     "contenedores": [
+      "beto_pg_s7|Up 16 minutes",
+      "giragroup_web|Up 3 hours",
+      "giragroup_api|Up 3 hours",
+      "giragroup_pipeline|Up 3 hours",
+      "giragroup_catalog_db|Up 3 hours (healthy)",
+      "giragroup_gateway|Up 3 hours",
+      "giragroup_audit_svc|Up 3 hours",
+      "giragroup_auth_svc|Up 3 hours",
+      "giragroup_notifications_svc|Up 3 hours",
+      "giragroup_db|Up 3 hours (healthy)"
+     ],
+     "plan_energia": "GUID de plan de energ├¡a: 381b4222-f694-41f0-9685-ff5bb260df2e  (Equilibrado)",
+     "plan_energia_cambiado": false,
+     "en_corriente_ac": true,
+     "apto": true,
+     "criterio_apto": "sin pesados ajenos (juegos, lanzadores, pytest/locust/vite, navegador >= 3.0 %), ningún otro proceso >= 3.0 % salvo Discord, CPU host en reposo < 10.0 %",
+     "top5_procesos_cpu": [
+      {
+       "proceso": "claude.exe",
+       "n": 14,
+       "cpu_pct_host": 0.5,
+       "ram_mb": 1261.76
+      },
+      {
+       "proceso": "System",
+       "n": 1,
+       "cpu_pct_host": 0.29,
+       "ram_mb": 5.71
+      },
+      {
+       "proceso": "svchost.exe",
+       "n": 93,
+       "cpu_pct_host": 0.22,
+       "ram_mb": 1231.3
+      },
+      {
+       "proceso": "brave.exe",
+       "n": 16,
+       "cpu_pct_host": 0.21,
+       "ram_mb": 1334.69
+      },
+      {
+       "proceso": "vmmemWSL",
+       "n": 1,
+       "cpu_pct_host": 0.18,
+       "ram_mb": 3990.24
+      }
+     ],
+     "archivo": "output/f3s/s7/estado_antes_b7_limpia_llena.json"
+    },
+    "estado_maquina_despues": {
+     "fecha": "2026-11-16 17:59:00",
+     "reposo_s": 20,
+     "cpu_host_reposo_media_pct": 2.4,
+     "cpu_host_reposo_max_pct": 3.4,
+     "nucleos_logicos": 24,
+     "pesados_ajenos": [],
+     "otros_procesos_con_cpu_ge_3pct": [],
+     "discord_presente": false,
+     "contenedores": [
+      "beto_pg_s7|Up 20 minutes",
+      "giragroup_web|Up 3 hours",
+      "giragroup_api|Up 4 hours",
+      "giragroup_pipeline|Up 4 hours",
+      "giragroup_catalog_db|Up 4 hours (healthy)",
+      "giragroup_gateway|Up 4 hours",
+      "giragroup_audit_svc|Up 4 hours",
+      "giragroup_auth_svc|Up 4 hours",
+      "giragroup_notifications_svc|Up 4 hours",
+      "giragroup_db|Up 4 hours (healthy)"
+     ],
+     "plan_energia": "GUID de plan de energ├¡a: 381b4222-f694-41f0-9685-ff5bb260df2e  (Equilibrado)",
+     "plan_energia_cambiado": false,
+     "en_corriente_ac": true,
+     "apto": true,
+     "criterio_apto": "sin pesados ajenos (juegos, lanzadores, pytest/locust/vite, navegador >= 3.0 %), ningún otro proceso >= 3.0 % salvo Discord, CPU host en reposo < 10.0 %",
+     "top5_procesos_cpu": [
+      {
+       "proceso": "claude.exe",
+       "n": 14,
+       "cpu_pct_host": 0.43,
+       "ram_mb": 1237.85
+      },
+      {
+       "proceso": "python.exe",
+       "n": 3,
+       "cpu_pct_host": 0.29,
+       "ram_mb": 52.0
+      },
+      {
+       "proceso": "vmmemWSL",
+       "n": 1,
+       "cpu_pct_host": 0.27,
+       "ram_mb": 3891.52
+      },
+      {
+       "proceso": "System",
+       "n": 1,
+       "cpu_pct_host": 0.23,
+       "ram_mb": 5.72
+      },
+      {
+       "proceso": "brave.exe",
+       "n": 17,
+       "cpu_pct_host": 0.15,
+       "ram_mb": 1412.06
+      }
+     ],
+     "archivo": "output/f3s/s7/estado_despues_b7_limpia_llena.json"
+    }
+   }
+  ]
+ },
+ "intentos_fallidos_infraestructura": [
+  {
+   "etiqueta": "b7_limpia_vacia_r1 (intento 1)",
+   "duracion_pared_s": 3.56,
+   "causa": "faltaban los originales en /tmp/flujo_s7/uploads/data dentro de giragroup_api (la tmpfs y la carpeta se recrearon); upload-batch 422 'files Field required'. Sin medición. Se copiaron output/backups/f0_lote/originales (sha256 = manifiesto) y se repitió",
+   "archivos": "output/f3s/s7/fallidas/"
+  }
+ ],
+ "desviaciones": [
+  "plan de energía 'Equilibrado' (el protocolo pide Alto rendimiento); no se cambia por ser ajuste del sistema; equipo en AC",
+  "huella v2: la sha256 no es c8e10263…0153 solo porque schema_migrations.applied_at de 014 es la hora de recreación de la tmpfs (ruido de entorno ya documentado en f3s_base.json); reponiendo esa fila de f3s_base da exactamente c8e10263…0153; las demás tablas, bandeja y kpis_todos son idénticos",
+  "1 corrida por condición: no hay media ni desviación estándar (el protocolo pide 3)"
+ ],
+ "serie_3_corridas_contaminadas": {
+  "estado": "DESCARTADA como cifra final; se conserva como evidencia",
+  "motivo": "un juego (VALORANT, ~4,5 de 24 núcleos) corrió durante las 3 corridas y hubo actividad ajena durante la base (decisión de Lean: repetir limpio y solo una)",
+  "tiempo_maquina_s": [
+   1224.91,
+   1158.82,
+   1203.28
+  ],
+  "resumen_tiempo_maquina_s": {
+   "valores": [
+    1224.91,
+    1158.82,
+    1203.28
+   ],
+   "mediana": 1203.28,
+   "media": 1195.67,
+   "de": 33.7,
+   "min": 1158.82,
+   "max": 1224.91
+  },
+  "cpu_ajena_a_docker_avg_pct": [
+   39.7,
+   35.7,
+   38.4
+  ],
+  "huellas": [
+   "c8e10263c38a3c1da0301888ac595e56141f810a4efdc23498e6ffd6773b0153",
+   "c8e10263c38a3c1da0301888ac595e56141f810a4efdc23498e6ffd6773b0153",
+   "c8e10263c38a3c1da0301888ac595e56141f810a4efdc23498e6ffd6773b0153"
+  ],
+  "detalle": [
+   {
+    "etiqueta": "b7_vacia_r1",
+    "returncode": 0,
+    "duracion_pared_s": 1242.13,
+    "tiempo_maquina_s": 1224.91,
+    "etapas_s": {
+     "carga_y_lectura_s": 180.38,
+     "espera_lectura_beto_s": 0.03,
+     "lectura_beto_s": 168.93,
+     "lineas_leidas_beto": 12992,
+     "lineas_por_s_beto": 76.91,
+     "carga_s": 11.48,
+     "consolidacion_s": 1044.5,
+     "revision_maquina_s": 0.0,
+     "revision_humana_simulada_s": 0.0
+    },
+    "cache_indice_beto_al_iniciar": 0,
+    "host_cpu_avg_pct": 58.2,
+    "host_cpu_max_pct": 79.5,
+    "cpu_ajena_a_docker_avg_pct": 39.7,
+    "cpu_ajena_a_docker_max_pct": 56.6,
+    "n_muestras": 172,
+    "huella_v2_sha256": "c8e10263c38a3c1da0301888ac595e56141f810a4efdc23498e6ffd6773b0153",
+    "bandeja": {
+     "casos": 676,
+     "grupos": 17,
+     "manuales": 12,
+     "casos_manuales": 43
+    },
+    "kpis": {
+     "KPI-10": null,
+     "KPI-11": null,
+     "KPI-18": 32.0
+    }
+   },
+   {
+    "etiqueta": "b7_vacia_r2",
+    "returncode": 0,
+    "duracion_pared_s": 1174.63,
+    "tiempo_maquina_s": 1158.82,
+    "etapas_s": {
+     "carga_y_lectura_s": 180.73,
+     "espera_lectura_beto_s": 0.03,
+     "lectura_beto_s": 169.37,
+     "lineas_leidas_beto": 12992,
+     "lineas_por_s_beto": 76.71,
+     "carga_s": 11.39,
+     "consolidacion_s": 978.06,
+     "revision_maquina_s": 0.0,
+     "revision_humana_simulada_s": 0.0
+    },
+    "cache_indice_beto_al_iniciar": 0,
+    "host_cpu_avg_pct": 53.7,
+    "host_cpu_max_pct": 78.0,
+    "cpu_ajena_a_docker_avg_pct": 35.7,
+    "cpu_ajena_a_docker_max_pct": 55.1,
+    "n_muestras": 163,
+    "huella_v2_sha256": "c8e10263c38a3c1da0301888ac595e56141f810a4efdc23498e6ffd6773b0153",
+    "bandeja": {
+     "casos": 676,
+     "grupos": 17,
+     "manuales": 12,
+     "casos_manuales": 43
+    },
+    "kpis": {
+     "KPI-10": null,
+     "KPI-11": null,
+     "KPI-18": 32.0
+    }
+   },
+   {
+    "etiqueta": "b7_vacia_r3",
+    "returncode": 0,
+    "duracion_pared_s": 1218.52,
+    "tiempo_maquina_s": 1203.28,
+    "etapas_s": {
+     "carga_y_lectura_s": 176.22,
+     "espera_lectura_beto_s": 0.03,
+     "lectura_beto_s": 165.53,
+     "lineas_leidas_beto": 12992,
+     "lineas_por_s_beto": 78.49,
+     "carga_s": 10.72,
+     "consolidacion_s": 1027.03,
+     "revision_maquina_s": 0.0,
+     "revision_humana_simulada_s": 0.0
+    },
+    "cache_indice_beto_al_iniciar": 0,
+    "host_cpu_avg_pct": 57.0,
+    "host_cpu_max_pct": 79.3,
+    "cpu_ajena_a_docker_avg_pct": 38.4,
+    "cpu_ajena_a_docker_max_pct": 56.3,
+    "n_muestras": 169,
+    "huella_v2_sha256": "c8e10263c38a3c1da0301888ac595e56141f810a4efdc23498e6ffd6773b0153",
+    "bandeja": {
+     "casos": 676,
+     "grupos": 17,
+     "manuales": 12,
+     "casos_manuales": 43
+    },
+    "kpis": {
+     "KPI-10": null,
+     "KPI-11": null,
+     "KPI-18": 32.0
+    }
+   }
+  ],
+  "archivos": "output/f3s/s7/b7_vacia_r{1,2,3}.*"
+ },
+ "rnf03": {
+  "n_corridas": 1,
+  "dispersion": "no disponible: 1 corrida por condición (decisión de Lean: repetir limpio y solo una)",
+  "maquina_cache_vacia_s": 616.61,
+  "maquina_cache_vacia_min": 10.28,
+  "maquina_cache_llena_s": 177.2,
+  "maquina_cache_llena_min": 2.95,
+  "vacia_mas_klm_W_medido_s": 818.91,
+  "vacia_mas_klm_W_medido_min": 13.65,
+  "veredicto_maquina_vacia": "< 15 min",
+  "veredicto_vacia_mas_klm_W_medido": "< 15 min",
+  "veredicto_vacia_mas_klm_W_10": ">= 20 min",
+  "umbral": "RNF-03 < 15 min (900 s); aceptable < 20 min (1.200 s)",
+  "totales_s": {
+   "vacia_mas_klm_W_medido_s": 818.91,
+   "llena_mas_klm_W_medido_s": 379.5,
+   "vacia_mas_klm_W_0_s": 817.21,
+   "llena_mas_klm_W_0_s": 377.8,
+   "vacia_mas_klm_W_10_s": 1297.21,
+   "llena_mas_klm_W_10_s": 857.8
+  },
+  "totales_min": {
+   "vacia_mas_klm_W_medido_min": 13.65,
+   "llena_mas_klm_W_medido_min": 6.33,
+   "vacia_mas_klm_W_0_min": 13.62,
+   "llena_mas_klm_W_0_min": 6.3,
+   "vacia_mas_klm_W_10_min": 21.62,
+   "llena_mas_klm_W_10_min": 14.3
+  },
+  "klm": "docs/mediciones/f3s_klm.json"
+ }
+}

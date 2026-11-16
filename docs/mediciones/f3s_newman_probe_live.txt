@@ -1,0 +1,19 @@
+# Sonda de solo lectura contra el gateway vivo (2026-11-16T17:13:09Z); NO es Newman
+## health (GET /health)
+HTTP/1.1 200 OK
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+{"status":"healthy","service":"giragroup-bi-api","database":"connected"}
+## cmi-completo sin token (GET)
+HTTP/1.1 401 Unauthorized
+www-authenticate: Bearer
+## reportes export sin token (GET)
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json
+X-Content-Type-Options: nosniff
+## auth/login con {} (POST, falla validacion antes de tocar la BD)
+HTTP/1.1 422 Unprocessable Entity
+## alertas-tempranas sin token (GET)
+HTTP/1.1 401 Unauthorized
+## forecast/alumnos sin token (GET)
+HTTP/1.1 401 Unauthorized

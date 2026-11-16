@@ -1,0 +1,1016 @@
+{
+ "base": "f3s_base_r1",
+ "criterio_origen": "inventario_corpus.py (>=2 celdas, menos cabecera)",
+ "documentos": {
+  "1": {
+   "archivo": "BD Cobranzas.xlsx",
+   "balance": {
+    "bandeja": 0,
+    "con_registros": 725,
+    "diferencia_origen_vs_leidas_mas_ingesta": 2,
+    "ingesta_log_subtotal": 0,
+    "leidas": 746,
+    "origen_slice": 748,
+    "ruido_con_motivo": 21,
+    "sin_explicar": 0
+   },
+   "balance_ok": true,
+   "bandeja_por_tipo_entidad": {},
+   "ejemplos_sin_explicar": [],
+   "hechos_en_dw": {
+    "fact_situacion_financiera": 725
+   },
+   "log_LINEA_SIN_ENTIDAD_vs_ruido": [
+    21,
+    21
+   ],
+   "log_inconsistencias": {
+    "LINEA_SIN_ENTIDAD": 21
+   },
+   "por_hoja": {
+    "COBRANZAS 2024 2025": {
+     "bandeja": 0,
+     "categoria_ruteo": "financiero",
+     "categoria_staging": "financiero",
+     "con_registros": 272,
+     "leidas": 272,
+     "origen_slice": 272,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    },
+    "Copia de COBRANZAS 2024 2025": {
+     "bandeja": 0,
+     "categoria_ruteo": "financiero",
+     "categoria_staging": "financiero",
+     "con_registros": 446,
+     "leidas": 446,
+     "origen_slice": 446,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    },
+    "Hoja 12": {
+     "bandeja": 0,
+     "categoria_ruteo": "financiero",
+     "categoria_staging": "financiero",
+     "con_registros": 0,
+     "leidas": 16,
+     "origen_slice": 18,
+     "ruido_con_motivo": 16,
+     "sin_explicar": 0
+    },
+    "Hoja 4": {
+     "bandeja": 0,
+     "categoria_ruteo": "financiero",
+     "categoria_staging": "financiero",
+     "con_registros": 0,
+     "leidas": 5,
+     "origen_slice": 5,
+     "ruido_con_motivo": 5,
+     "sin_explicar": 0
+    },
+    "Hoja 8": {
+     "bandeja": 0,
+     "categoria_ruteo": "financiero",
+     "categoria_staging": "financiero",
+     "con_registros": 7,
+     "leidas": 7,
+     "origen_slice": 7,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    }
+   },
+   "registros_esperados_por_regla": {
+    "fact_situacion_financiera": 725
+   },
+   "ruido_por_motivo": {
+    "FILA_FINANCIERA_SIN_ESTUDIANTE": 7,
+    "FILA_SIN_ENTIDAD": 14
+   },
+   "slice_sha256": "086a46ab0aef42d4beb780b8f57db45534719375735a0eec1399deaa170e1092",
+   "stg_entidad_no_resuelta": {
+    "FILA_FINANCIERA_SIN_ESTUDIANTE (resuelto)": 7,
+    "FILA_SIN_ENTIDAD (resuelto)": 14
+   },
+   "tipo_fuente": "COBRANZA"
+  },
+  "10": {
+   "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+   "balance": {
+    "bandeja": 20,
+    "con_registros": 732,
+    "diferencia_origen_vs_leidas_mas_ingesta": -387,
+    "ingesta_log_subtotal": 330,
+    "leidas": 883,
+    "origen_slice": 826,
+    "ruido_con_motivo": 131,
+    "sin_explicar": 0
+   },
+   "balance_ok": true,
+   "bandeja_por_tipo_entidad": {
+    "ESTUDIANTE": 18
+   },
+   "ejemplos_sin_explicar": [],
+   "hechos_en_dw": {
+    "fact_evaluacion_docente": 3615
+   },
+   "log_LINEA_SIN_ENTIDAD_vs_ruido": [
+    131,
+    131
+   ],
+   "log_inconsistencias": {
+    "LINEA_SIN_ENTIDAD": 131,
+    "SUBTOTAL": 330
+   },
+   "por_hoja": {
+    "Análisis de Evaluación": {
+     "bandeja": 0,
+     "categoria_ruteo": "evaluacion_docente",
+     "categoria_staging": "evaluacion_docente",
+     "con_registros": 0,
+     "leidas": 131,
+     "origen_slice": 73,
+     "ruido_con_motivo": 131,
+     "sin_explicar": 0
+    },
+    "TBL EVALUACION DOCENTE": {
+     "bandeja": 20,
+     "categoria_ruteo": "evaluacion_docente",
+     "categoria_staging": "evaluacion_docente",
+     "con_registros": 567,
+     "leidas": 587,
+     "origen_slice": 588,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    },
+    "TBL EXPERIENCIA UNIFRANZ": {
+     "bandeja": 0,
+     "categoria_ruteo": "evaluacion_docente",
+     "categoria_staging": "evaluacion_docente",
+     "con_registros": 165,
+     "leidas": 165,
+     "origen_slice": 165,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    }
+   },
+   "registros_esperados_por_regla": {
+    "fact_evaluacion_docente": 3645
+   },
+   "ruido_por_motivo": {
+    "FILA_SIN_CABECERAS": 131
+   },
+   "slice_sha256": "8b5b67cffb015e036d234c60fc90b0b96704580020fa1c82717b005f8cccfbd3",
+   "stg_entidad_no_resuelta": {
+    "BAJA_CONFIANZA_IA": 18,
+    "FILA_SIN_CABECERAS (resuelto)": 107
+   },
+   "tipo_fuente": "EVALUACION_DOCENTE"
+  },
+  "2": {
+   "archivo": "BD Egresos.xlsx",
+   "balance": {
+    "bandeja": 0,
+    "con_registros": 1397,
+    "diferencia_origen_vs_leidas_mas_ingesta": 0,
+    "ingesta_log_subtotal": 0,
+    "leidas": 1409,
+    "origen_slice": 1409,
+    "ruido_con_motivo": 12,
+    "sin_explicar": 0
+   },
+   "balance_ok": true,
+   "bandeja_por_tipo_entidad": {
+    "ESTUDIANTE": 3
+   },
+   "ejemplos_sin_explicar": [],
+   "hechos_en_dw": {
+    "fact_costo_programa": 1371
+   },
+   "log_LINEA_SIN_ENTIDAD_vs_ruido": [
+    12,
+    12
+   ],
+   "log_inconsistencias": {
+    "LINEA_SIN_ENTIDAD": 12
+   },
+   "por_hoja": {
+    "Gestiones": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 24,
+     "leidas": 24,
+     "origen_slice": 24,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    },
+    "acumulados": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 12,
+     "origen_slice": 12,
+     "ruido_con_motivo": 12,
+     "sin_explicar": 0
+    },
+    "egresos": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 1373,
+     "leidas": 1373,
+     "origen_slice": 1373,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    }
+   },
+   "registros_esperados_por_regla": {
+    "fact_costo_programa": 1373,
+    "fact_rentabilidad": 72
+   },
+   "ruido_por_motivo": {
+    "FILA_AGREGADA_SIN_CATEGORIA_MES": 12
+   },
+   "slice_sha256": "8a5c150782477ae37e092366441f85ac903bd961d9b14d41e905dbd14bada729",
+   "stg_entidad_no_resuelta": {
+    "CI_NOMBRE_DISCORDANTE": 2,
+    "FILA_AGREGADA_SIN_CATEGORIA_MES (resuelto)": 12,
+    "HOMONIMIA": 1
+   },
+   "tipo_fuente": "RENTABILIDAD"
+  },
+  "3": {
+   "archivo": "BD Techos.xlsx",
+   "balance": {
+    "bandeja": 0,
+    "con_registros": 1,
+    "diferencia_origen_vs_leidas_mas_ingesta": 0,
+    "ingesta_log_subtotal": 0,
+    "leidas": 1,
+    "origen_slice": 1,
+    "ruido_con_motivo": 0,
+    "sin_explicar": 0
+   },
+   "balance_ok": true,
+   "bandeja_por_tipo_entidad": {},
+   "ejemplos_sin_explicar": [],
+   "hechos_en_dw": {
+    "fact_techo_convenio": 1
+   },
+   "log_LINEA_SIN_ENTIDAD_vs_ruido": [
+    0,
+    0
+   ],
+   "log_inconsistencias": {},
+   "por_hoja": {
+    "BD Techos": {
+     "bandeja": 0,
+     "categoria_ruteo": "marketing",
+     "categoria_staging": "marketing",
+     "con_registros": 1,
+     "leidas": 1,
+     "origen_slice": 1,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    }
+   },
+   "registros_esperados_por_regla": {
+    "fact_techo_convenio": 1
+   },
+   "ruido_por_motivo": {},
+   "slice_sha256": "ef85948514829e8243ef41f498edc7d5bc1a1feaa2cae8027a369b886bac76ba",
+   "stg_entidad_no_resuelta": {},
+   "tipo_fuente": "MARKETING"
+  },
+  "4": {
+   "archivo": "Base centralizada Académica ARCA (1).xlsx",
+   "balance": {
+    "bandeja": 9,
+    "con_registros": 428,
+    "diferencia_origen_vs_leidas_mas_ingesta": 0,
+    "ingesta_log_subtotal": 0,
+    "leidas": 1201,
+    "origen_slice": 1201,
+    "ruido_con_motivo": 764,
+    "sin_explicar": 0
+   },
+   "balance_ok": true,
+   "bandeja_por_tipo_entidad": {
+    "ESTUDIANTE": 9
+   },
+   "ejemplos_sin_explicar": [],
+   "hechos_en_dw": {
+    "bridge_modulo_docente": 5,
+    "fact_rendimiento_academico": 1392
+   },
+   "log_LINEA_SIN_ENTIDAD_vs_ruido": [
+    764,
+    764
+   ],
+   "log_inconsistencias": {
+    "CI_NOMBRE_VARIANTE": 1,
+    "LINEA_SIN_ENTIDAD": 764
+   },
+   "por_hoja": {
+    "ACTAS DE NOTAS": {
+     "bandeja": 3,
+     "categoria_ruteo": "academico",
+     "categoria_staging": "academico",
+     "con_registros": 423,
+     "leidas": 426,
+     "origen_slice": 426,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    },
+    "CRITERIOS": {
+     "bandeja": 0,
+     "categoria_ruteo": "academico",
+     "categoria_staging": "academico",
+     "con_registros": 0,
+     "leidas": 15,
+     "origen_slice": 15,
+     "ruido_con_motivo": 15,
+     "sin_explicar": 0
+    },
+    "Hoja 8": {
+     "leidas": 0,
+     "nota": "hoja del recorte sin bloque en staging",
+     "origen_slice": 0
+    },
+    "IBP": {
+     "bandeja": 0,
+     "categoria_ruteo": "academico",
+     "categoria_staging": "academico",
+     "con_registros": 0,
+     "leidas": 748,
+     "origen_slice": 748,
+     "ruido_con_motivo": 748,
+     "sin_explicar": 0
+    },
+    "MODULOS": {
+     "bandeja": 6,
+     "categoria_ruteo": "academico",
+     "categoria_staging": "academico",
+     "con_registros": 5,
+     "leidas": 11,
+     "origen_slice": 11,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    },
+    "PROGRMAS  DE BAJA": {
+     "bandeja": 0,
+     "categoria_ruteo": "academico",
+     "categoria_staging": "academico",
+     "con_registros": 0,
+     "leidas": 1,
+     "origen_slice": 1,
+     "ruido_con_motivo": 1,
+     "sin_explicar": 0
+    },
+    "Tabla dinámica 1": {
+     "leidas": 0,
+     "nota": "hoja del recorte sin bloque en staging",
+     "origen_slice": 0
+    }
+   },
+   "registros_esperados_por_regla": {
+    "academico": 1397
+   },
+   "ruido_por_motivo": {
+    "FILA_ACADEMICA_SIN_ESTUDIANTE": 764
+   },
+   "slice_sha256": "248da01d11e4e5517b67d79c67e0f0ecd97fa4897ed67608da6ac97efd7f109f",
+   "stg_entidad_no_resuelta": {
+    "BAJA_CONFIANZA_IA": 9,
+    "FILA_ACADEMICA_SIN_ESTUDIANTE (resuelto)": 764
+   },
+   "tipo_fuente": "ACTA"
+  },
+  "5": {
+   "archivo": "EJECUTADO VS META.xlsx",
+   "balance": {
+    "bandeja": 0,
+    "con_registros": 24,
+    "diferencia_origen_vs_leidas_mas_ingesta": 0,
+    "ingesta_log_subtotal": 0,
+    "leidas": 36,
+    "origen_slice": 36,
+    "ruido_con_motivo": 12,
+    "sin_explicar": 0
+   },
+   "balance_ok": true,
+   "bandeja_por_tipo_entidad": {},
+   "ejemplos_sin_explicar": [],
+   "hechos_en_dw": {
+    "fact_rentabilidad": 95
+   },
+   "log_LINEA_SIN_ENTIDAD_vs_ruido": [
+    12,
+    12
+   ],
+   "log_inconsistencias": {
+    "CONFLICTO_FUENTES": 10,
+    "LINEA_SIN_ENTIDAD": 12
+   },
+   "por_hoja": {
+    "EJECUTADO": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 24,
+     "leidas": 24,
+     "origen_slice": 24,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    },
+    "GESTIONES": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 12,
+     "origen_slice": 12,
+     "ruido_con_motivo": 12,
+     "sin_explicar": 0
+    }
+   },
+   "registros_esperados_por_regla": {
+    "fact_rentabilidad": 95
+   },
+   "ruido_por_motivo": {
+    "FILA_AGREGADA_SIN_CATEGORIA_MES": 12
+   },
+   "slice_sha256": "1e45cb1789aefe7449a363e5c5f41e4146acc3551b962a312c19b29f29e87d58",
+   "stg_entidad_no_resuelta": {
+    "FILA_AGREGADA_SIN_CATEGORIA_MES (resuelto)": 12
+   },
+   "tipo_fuente": "RENTABILIDAD"
+  },
+  "6": {
+   "archivo": "Evaluación Docente y Unifranz.xlsx",
+   "balance": {
+    "bandeja": 0,
+    "con_registros": 3810,
+    "diferencia_origen_vs_leidas_mas_ingesta": -1429,
+    "ingesta_log_subtotal": 356,
+    "leidas": 4886,
+    "origen_slice": 3813,
+    "ruido_con_motivo": 1076,
+    "sin_explicar": 0
+   },
+   "balance_ok": true,
+   "bandeja_por_tipo_entidad": {},
+   "ejemplos_sin_explicar": [],
+   "hechos_en_dw": {
+    "fact_evaluacion_docente": 71458
+   },
+   "log_LINEA_SIN_ENTIDAD_vs_ruido": [
+    1076,
+    1076
+   ],
+   "log_inconsistencias": {
+    "LINEA_SIN_ENTIDAD": 1076,
+    "SUBTOTAL": 356
+   },
+   "por_hoja": {
+    "DIP. EXP DOC. X MODULO": {
+     "bandeja": 0,
+     "categoria_ruteo": "evaluacion_docente",
+     "categoria_staging": "evaluacion_docente",
+     "con_registros": 3250,
+     "leidas": 4095,
+     "origen_slice": 3251,
+     "ruido_con_motivo": 845,
+     "sin_explicar": 0
+    },
+    "DIP. EXP UNIFRANZ": {
+     "bandeja": 0,
+     "categoria_ruteo": "evaluacion_docente",
+     "categoria_staging": "evaluacion_docente",
+     "con_registros": 285,
+     "leidas": 516,
+     "origen_slice": 286,
+     "ruido_con_motivo": 231,
+     "sin_explicar": 0
+    },
+    "FINAL EXPERTOCURSO": {
+     "bandeja": 0,
+     "categoria_ruteo": "evaluacion_docente",
+     "categoria_staging": "evaluacion_docente",
+     "con_registros": 275,
+     "leidas": 275,
+     "origen_slice": 276,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    }
+   },
+   "registros_esperados_por_regla": {
+    "fact_evaluacion_docente": 71458
+   },
+   "ruido_por_motivo": {
+    "FILA_EVALUACION_SIN_RESPUESTAS": 1076
+   },
+   "slice_sha256": "65f2dc58e562747225ba3bed991324fb8adb524e91034b70fa3f1c1be53b6810",
+   "stg_entidad_no_resuelta": {
+    "FILA_EVALUACION_SIN_RESPUESTAS (resuelto)": 1076
+   },
+   "tipo_fuente": "EVALUACION_DOCENTE"
+  },
+  "7": {
+   "archivo": "Experiencia Docente 2.0.xlsx",
+   "balance": {
+    "bandeja": 0,
+    "con_registros": 1137,
+    "diferencia_origen_vs_leidas_mas_ingesta": -74,
+    "ingesta_log_subtotal": 74,
+    "leidas": 1137,
+    "origen_slice": 1137,
+    "ruido_con_motivo": 0,
+    "sin_explicar": 0
+   },
+   "balance_ok": true,
+   "bandeja_por_tipo_entidad": {},
+   "ejemplos_sin_explicar": [],
+   "hechos_en_dw": {
+    "fact_evaluacion_docente": 29866
+   },
+   "log_LINEA_SIN_ENTIDAD_vs_ruido": [
+    0,
+    0
+   ],
+   "log_inconsistencias": {
+    "SUBTOTAL": 74
+   },
+   "por_hoja": {
+    "CURSOS DOC 1": {
+     "bandeja": 0,
+     "categoria_ruteo": "evaluacion_docente",
+     "categoria_staging": "evaluacion_docente",
+     "con_registros": 89,
+     "leidas": 89,
+     "origen_slice": 89,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    },
+    "CURSOS DOCENTE": {
+     "bandeja": 0,
+     "categoria_ruteo": "evaluacion_docente",
+     "categoria_staging": "evaluacion_docente",
+     "con_registros": 828,
+     "leidas": 828,
+     "origen_slice": 828,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    },
+    "DIPLOMADOS DOC 2": {
+     "bandeja": 0,
+     "categoria_ruteo": "evaluacion_docente",
+     "categoria_staging": "evaluacion_docente",
+     "con_registros": 156,
+     "leidas": 156,
+     "origen_slice": 156,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    },
+    "DIPLOMADOS DOCENTE": {
+     "bandeja": 0,
+     "categoria_ruteo": "evaluacion_docente",
+     "categoria_staging": "evaluacion_docente",
+     "con_registros": 64,
+     "leidas": 64,
+     "origen_slice": 64,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    }
+   },
+   "registros_esperados_por_regla": {
+    "fact_evaluacion_docente": 29866
+   },
+   "ruido_por_motivo": {},
+   "slice_sha256": "dde464c21db2fce63bc9425d35ab2587dc005d70437ecf11f69c32aa0260679c",
+   "stg_entidad_no_resuelta": {},
+   "tipo_fuente": "ACTA"
+  },
+  "8": {
+   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+   "balance": {
+    "bandeja": 0,
+    "con_registros": 0,
+    "diferencia_origen_vs_leidas_mas_ingesta": -1048,
+    "ingesta_log_subtotal": 0,
+    "leidas": 2302,
+    "origen_slice": 1254,
+    "ruido_con_motivo": 2302,
+    "sin_explicar": 0
+   },
+   "balance_ok": true,
+   "bandeja_por_tipo_entidad": {},
+   "ejemplos_sin_explicar": [],
+   "hechos_en_dw": {},
+   "log_LINEA_SIN_ENTIDAD_vs_ruido": [
+    2302,
+    2302
+   ],
+   "log_inconsistencias": {
+    "LINEA_SIN_ENTIDAD": 2302
+   },
+   "por_hoja": {
+    "Abril-2026": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 152,
+     "origen_slice": 41,
+     "ruido_con_motivo": 152,
+     "sin_explicar": 0
+    },
+    "Agosto": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 31,
+     "origen_slice": 31,
+     "ruido_con_motivo": 31,
+     "sin_explicar": 0
+    },
+    "Agosto-2025": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 79,
+     "origen_slice": 20,
+     "ruido_con_motivo": 79,
+     "sin_explicar": 0
+    },
+    "Agosto-2026": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 37,
+     "origen_slice": 37,
+     "ruido_con_motivo": 37,
+     "sin_explicar": 0
+    },
+    "Centralizado_Mensual": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 136,
+     "origen_slice": 37,
+     "ruido_con_motivo": 136,
+     "sin_explicar": 0
+    },
+    "Dashboard Académico": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 19,
+     "origen_slice": 12,
+     "ruido_con_motivo": 19,
+     "sin_explicar": 0
+    },
+    "Dashboard Programas": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 20,
+     "origen_slice": 21,
+     "ruido_con_motivo": 20,
+     "sin_explicar": 0
+    },
+    "Detalle Presupuestado-Proyectad": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 299,
+     "origen_slice": 300,
+     "ruido_con_motivo": 299,
+     "sin_explicar": 0
+    },
+    "Diciembre": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 31,
+     "origen_slice": 31,
+     "ruido_con_motivo": 31,
+     "sin_explicar": 0
+    },
+    "Diciembre-2025": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 9,
+     "origen_slice": 2,
+     "ruido_con_motivo": 9,
+     "sin_explicar": 0
+    },
+    "Diciembre-2026": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 23,
+     "origen_slice": 23,
+     "ruido_con_motivo": 23,
+     "sin_explicar": 0
+    },
+    "Enero-2026": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 65,
+     "origen_slice": 22,
+     "ruido_con_motivo": 65,
+     "sin_explicar": 0
+    },
+    "Febrero-2026": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 123,
+     "origen_slice": 29,
+     "ruido_con_motivo": 123,
+     "sin_explicar": 0
+    },
+    "Informe Gestión": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 59,
+     "origen_slice": 55,
+     "ruido_con_motivo": 59,
+     "sin_explicar": 0
+    },
+    "Julio": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 31,
+     "origen_slice": 31,
+     "ruido_con_motivo": 31,
+     "sin_explicar": 0
+    },
+    "Julio-2025": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 76,
+     "origen_slice": 22,
+     "ruido_con_motivo": 76,
+     "sin_explicar": 0
+    },
+    "Julio-2025 borrador": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 76,
+     "origen_slice": 22,
+     "ruido_con_motivo": 76,
+     "sin_explicar": 0
+    },
+    "Julio-2026": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 30,
+     "origen_slice": 30,
+     "ruido_con_motivo": 30,
+     "sin_explicar": 0
+    },
+    "Junio-2026": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 69,
+     "origen_slice": 41,
+     "ruido_con_motivo": 69,
+     "sin_explicar": 0
+    },
+    "Marzo-2026": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 158,
+     "origen_slice": 37,
+     "ruido_con_motivo": 158,
+     "sin_explicar": 0
+    },
+    "Mayo-2026": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 180,
+     "origen_slice": 41,
+     "ruido_con_motivo": 180,
+     "sin_explicar": 0
+    },
+    "Noviembre": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 31,
+     "origen_slice": 31,
+     "ruido_con_motivo": 31,
+     "sin_explicar": 0
+    },
+    "Noviembre-2025": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 82,
+     "origen_slice": 20,
+     "ruido_con_motivo": 82,
+     "sin_explicar": 0
+    },
+    "Noviembre-2026": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 37,
+     "origen_slice": 37,
+     "ruido_con_motivo": 37,
+     "sin_explicar": 0
+    },
+    "Octubre": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 31,
+     "origen_slice": 31,
+     "ruido_con_motivo": 31,
+     "sin_explicar": 0
+    },
+    "Octubre-2025": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 84,
+     "origen_slice": 21,
+     "ruido_con_motivo": 84,
+     "sin_explicar": 0
+    },
+    "Octubre-2026": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 43,
+     "origen_slice": 43,
+     "ruido_con_motivo": 43,
+     "sin_explicar": 0
+    },
+    "Programas Notificados": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 66,
+     "origen_slice": 66,
+     "ruido_con_motivo": 66,
+     "sin_explicar": 0
+    },
+    "Septiembre": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 31,
+     "origen_slice": 31,
+     "ruido_con_motivo": 31,
+     "sin_explicar": 0
+    },
+    "Septiembre-2025": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 93,
+     "origen_slice": 24,
+     "ruido_con_motivo": 93,
+     "sin_explicar": 0
+    },
+    "Septiembre-2025boor": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 65,
+     "origen_slice": 29,
+     "ruido_con_motivo": 65,
+     "sin_explicar": 0
+    },
+    "Septiembre-2026": {
+     "bandeja": 0,
+     "categoria_ruteo": "rentabilidad",
+     "categoria_staging": "rentabilidad",
+     "con_registros": 0,
+     "leidas": 36,
+     "origen_slice": 36,
+     "ruido_con_motivo": 36,
+     "sin_explicar": 0
+    }
+   },
+   "registros_esperados_por_regla": {},
+   "ruido_por_motivo": {
+    "FILA_AGREGADA_SIN_CATEGORIA_MES": 2039,
+    "FILA_SIN_CABECERAS": 263
+   },
+   "slice_sha256": "79cfe35e002e7156a2e205b64a3d0f2f4c0f0caa26da1f7b43a2505e546a7ca0",
+   "stg_entidad_no_resuelta": {
+    "FILA_AGREGADA_SIN_CATEGORIA_MES (resuelto)": 1833,
+    "FILA_SIN_CABECERAS (resuelto)": 78
+   },
+   "tipo_fuente": "RENTABILIDAD"
+  },
+  "9": {
+   "archivo": "TBL_INSCRITOS.xlsx",
+   "balance": {
+    "bandeja": 2,
+    "con_registros": 389,
+    "diferencia_origen_vs_leidas_mas_ingesta": -1,
+    "ingesta_log_subtotal": 1,
+    "leidas": 391,
+    "origen_slice": 391,
+    "ruido_con_motivo": 0,
+    "sin_explicar": 0
+   },
+   "balance_ok": true,
+   "bandeja_por_tipo_entidad": {
+    "ESTUDIANTE": 2
+   },
+   "ejemplos_sin_explicar": [],
+   "hechos_en_dw": {
+    "fact_marketing(carga_fila_origen)": 782
+   },
+   "log_LINEA_SIN_ENTIDAD_vs_ruido": [
+    0,
+    0
+   ],
+   "log_inconsistencias": {
+    "SUBTOTAL": 1
+   },
+   "por_hoja": {
+    "BAJAS POR DUPLICADOS": {
+     "leidas": 0,
+     "nota": "hoja del recorte sin bloque en staging",
+     "origen_slice": 0
+    },
+    "TBL_INSCRITOS": {
+     "bandeja": 2,
+     "categoria_ruteo": "admision",
+     "categoria_staging": "marketing",
+     "con_registros": 389,
+     "leidas": 391,
+     "origen_slice": 391,
+     "ruido_con_motivo": 0,
+     "sin_explicar": 0
+    }
+   },
+   "registros_esperados_por_regla": {
+    "fact_marketing": 389
+   },
+   "ruido_por_motivo": {},
+   "slice_sha256": "d2be9a42dbceedcac0ebe68fea0111729b51960763be943b5ba3294cb73ad947",
+   "stg_entidad_no_resuelta": {
+    "CI_DUDOSA": 2
+   },
+   "tipo_fuente": "ADMISION"
+  }
+ },
+ "totales": {
+  "bandeja": 31,
+  "con_registros": 8643,
+  "ingesta_log_subtotal": 761,
+  "leidas": 12992,
+  "origen_slice": 10816,
+  "ruido_con_motivo": 4318,
+  "sin_explicar": 0
+ }
+}

@@ -1,0 +1,302 @@
+{
+ "uso": "solo para CIERRE_F3S.md; no para la SFV",
+ "base_anterior": "f3r_base (F3R)",
+ "base_nueva": "f3s_base (S-7)",
+ "cambios": [
+  {
+   "cifra": "filas cache_indice_beto",
+   "anterior": 12559,
+   "nueva": 11139,
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "filas carga_fila_origen",
+   "anterior": 15978,
+   "nueva": 782,
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "md5 fact_costo_programa (mismo conteo 1371)",
+   "anterior": "e3d740db0c2c43f2bd6d0f7f701655fc",
+   "nueva": "d2a520fa308d309ea72b2569f267e785",
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "filas fact_evaluacion_docente",
+   "anterior": 75073,
+   "nueva": 104939,
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "filas fact_rentabilidad",
+   "anterior": 91,
+   "nueva": 95,
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "filas log_inconsistencias",
+   "anterior": 6226,
+   "nueva": 5090,
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "md5 log_pipeline_ingesta (mismo conteo 72)",
+   "anterior": "38126b84e1ec00d2ab6323c0b65ab91b",
+   "nueva": "f9d4363598c497d412a2e03cb19bcbc2",
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "md5 schema_migrations (mismo conteo 13)",
+   "anterior": "639d8ca5f2d4e91c17e7686c106a05dd",
+   "nueva": "d556ec875060d085f4b8fe89a84d032e",
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "filas stg_entidad_no_resuelta",
+   "anterior": 5076,
+   "nueva": 3935,
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "bandeja.casos",
+   "anterior": 680,
+   "nueva": 676,
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "bandeja.grupos",
+   "anterior": 19,
+   "nueva": 17,
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "bandeja.manuales",
+   "anterior": 14,
+   "nueva": 12,
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "bandeja.casos_manuales",
+   "anterior": 47,
+   "nueva": 43,
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "scorecard KPI-18",
+   "anterior": 36.0,
+   "nueva": 32.0,
+   "fuente_anterior": "f3r_base_reproducida.json.huella.json",
+   "fuente_nueva": "f3s_base.json.huella.json"
+  },
+  {
+   "cifra": "consolidacion.inserted_dw",
+   "anterior": 78750,
+   "nueva": 108632,
+   "fuente_anterior": "f3r_base_reproducida.json",
+   "fuente_nueva": "f3s_base.json"
+  },
+  {
+   "cifra": "consolidacion.inserted_academico",
+   "anterior": 78025,
+   "nueva": 107907,
+   "fuente_anterior": "f3r_base_reproducida.json",
+   "fuente_nueva": "f3s_base.json"
+  },
+  {
+   "cifra": "consolidacion.inserted_revision",
+   "anterior": 15703,
+   "nueva": 43315,
+   "fuente_anterior": "f3r_base_reproducida.json",
+   "fuente_nueva": "f3s_base.json"
+  },
+  {
+   "cifra": "consolidacion.sent_hitl",
+   "anterior": 33,
+   "nueva": 29,
+   "fuente_anterior": "f3r_base_reproducida.json",
+   "fuente_nueva": "f3s_base.json"
+  },
+  {
+   "cifra": "consolidacion.descartados_ruido",
+   "anterior": 5455,
+   "nueva": 4318,
+   "fuente_anterior": "f3r_base_reproducida.json",
+   "fuente_nueva": "f3s_base.json"
+  },
+  {
+   "cifra": "tiempo_maquina_s f3_base (1 corrida)",
+   "anterior": 779.46,
+   "nueva": 1113.24,
+   "fuente_anterior": "f3r_base_reproducida.json",
+   "fuente_nueva": "f3s_base.json"
+  },
+  {
+   "cifra": "stg_entidad_no_resuelta BAJA_CONFIANZA_IA|False",
+   "anterior": 31,
+   "nueva": 27,
+   "fuente_anterior": "f3r_extraccion_f3base.json",
+   "fuente_nueva": "f3s_extraccion_f3base.json"
+  },
+  {
+   "cifra": "stg_entidad_no_resuelta FILA_ACADEMICA_SIN_ESTUDIANTE|True",
+   "anterior": 1901,
+   "nueva": 764,
+   "fuente_anterior": "f3r_extraccion_f3base.json",
+   "fuente_nueva": "f3s_extraccion_f3base.json"
+  },
+  {
+   "cifra": "B-9 log_inconsistencias FILA_ACADEMICA_SIN_ESTUDIANTE|LINEA_SIN_ENTIDAD",
+   "anterior": 1901,
+   "nueva": 764,
+   "fuente_anterior": "f3r_extraccion_f3base.json",
+   "fuente_nueva": "f3s_extraccion_f3base.json"
+  },
+  {
+   "cifra": "B-9 log_inconsistencias None|CONFLICTO_FUENTES",
+   "anterior": 9,
+   "nueva": 10,
+   "fuente_anterior": "f3r_extraccion_f3base.json",
+   "fuente_nueva": "f3s_extraccion_f3base.json"
+  },
+  {
+   "cifra": "vw_cmi_valores 2026|KPI-18",
+   "anterior": 36.0,
+   "nueva": 32.0,
+   "fuente_anterior": "f3r_extraccion_f3base.json",
+   "fuente_nueva": "f3s_extraccion_f3base.json"
+  },
+  {
+   "cifra": "B-7 máquina caché vacía s (F3R media / F3S 1 corrida limpia)",
+   "anterior": 850.18,
+   "nueva": 616.61,
+   "fuente_anterior": "f3r_klm_w_medido.json",
+   "fuente_nueva": "f3s_b7_corridas.json"
+  },
+  {
+   "cifra": "B-7 máquina caché llena s (F3R media / F3S 1 corrida limpia)",
+   "anterior": 256.15,
+   "nueva": 177.2,
+   "fuente_anterior": "f3r_klm_w_medido.json",
+   "fuente_nueva": "f3s_b7_corridas.json"
+  },
+  {
+   "cifra": "W medido s",
+   "anterior": 0.089,
+   "nueva": 0.034,
+   "fuente_anterior": "f3r_klm_w_medido.json",
+   "fuente_nueva": "f3s_klm.json"
+  },
+  {
+   "cifra": "KLM W_medido s",
+   "anterior": 221.3,
+   "nueva": 202.3,
+   "fuente_anterior": "f3r_klm_w_medido.json",
+   "fuente_nueva": "f3s_klm.json"
+  },
+  {
+   "cifra": "vacía + KLM W_medido s",
+   "anterior": 1071.48,
+   "nueva": 818.91,
+   "fuente_anterior": "f3r_klm_w_medido.json",
+   "fuente_nueva": "f3s_klm.json"
+  },
+  {
+   "cifra": "llena + KLM W_medido s",
+   "anterior": 477.45,
+   "nueva": 379.5,
+   "fuente_anterior": "f3r_klm_w_medido.json",
+   "fuente_nueva": "f3s_klm.json"
+  },
+  {
+   "cifra": "KLM W_0 s",
+   "anterior": 216.6,
+   "nueva": 200.6,
+   "fuente_anterior": "f3r_klm_w_medido.json",
+   "fuente_nueva": "f3s_klm.json"
+  },
+  {
+   "cifra": "vacía + KLM W_0 s",
+   "anterior": 1066.78,
+   "nueva": 817.21,
+   "fuente_anterior": "f3r_klm_w_medido.json",
+   "fuente_nueva": "f3s_klm.json"
+  },
+  {
+   "cifra": "llena + KLM W_0 s",
+   "anterior": 472.75,
+   "nueva": 377.8,
+   "fuente_anterior": "f3r_klm_w_medido.json",
+   "fuente_nueva": "f3s_klm.json"
+  },
+  {
+   "cifra": "KLM W_10 s",
+   "anterior": 736.6,
+   "nueva": 680.6,
+   "fuente_anterior": "f3r_klm_w_medido.json",
+   "fuente_nueva": "f3s_klm.json"
+  },
+  {
+   "cifra": "vacía + KLM W_10 s",
+   "anterior": 1586.78,
+   "nueva": 1297.21,
+   "fuente_anterior": "f3r_klm_w_medido.json",
+   "fuente_nueva": "f3s_klm.json"
+  },
+  {
+   "cifra": "llena + KLM W_10 s",
+   "anterior": 992.75,
+   "nueva": 857.8,
+   "fuente_anterior": "f3r_klm_w_medido.json",
+   "fuente_nueva": "f3s_klm.json"
+  },
+  {
+   "cifra": "Locust p95 GET /api/v1/dataops/review-tray/grupos ms",
+   "anterior": 89.0,
+   "nueva": 34.0,
+   "fuente_anterior": "f3r_locust.json",
+   "fuente_nueva": "f3s_locust.json"
+  },
+  {
+   "cifra": "Locust p95 POST /api/v1/dataops/review-tray/approve-group ms",
+   "anterior": 80.0,
+   "nueva": 22.0,
+   "fuente_anterior": "f3r_locust.json",
+   "fuente_nueva": "f3s_locust.json"
+  },
+  {
+   "cifra": "Locust agregado p95 ms",
+   "anterior": 63.0,
+   "nueva": 26.0,
+   "fuente_anterior": "f3r_locust.json",
+   "fuente_nueva": "f3s_locust.json"
+  },
+  {
+   "cifra": "Locust agregado fallos",
+   "anterior": 0,
+   "nueva": 0,
+   "fuente_anterior": "f3r_locust.json",
+   "fuente_nueva": "f3s_locust.json"
+  }
+ ],
+ "sin_cambio": {
+  "lote_1387": "f3s_lote_1387.json y _r2 idénticos byte a byte a f3r_lote_1387.json",
+  "kpi15_cuadre": "Mora 500 / Previsionable 7 / Vigente 218, fórmula 69,93 %, desajuste 0: igual a f3r_kpi15_cuadre.json",
+  "kpi_10_11_scorecard": "None en f3r y f3s (KPI-10/11 por gestión iguales en vw_cmi_valores)",
+  "inventario": "50 tablas, 9 vistas bi"
+ },
+ "no_medido_en_S7": [],
+ "tiempos": "repetición limpia de S-7 (1 corrida por condición); la serie de 3 corridas contaminadas queda descartada como cifra final (evidencia en f3s_b7_corridas.json)"
+}

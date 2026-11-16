@@ -1,0 +1,80 @@
+{
+  "tarea": "S-4 (PLAN_F3S.md): D-A8b, sin cambios de código (solo lectura)",
+  "fecha": "2026-11-16",
+  "rama_base": "beto-integracion",
+  "commit_base": "e3f4590",
+  "decision_lean": "D-A8b no es defecto: 10.719.694 es la meta real de diciembre de 2024 de TECHOS_CERRADOS; se carga tal cual (Lean, 16-nov).",
+  "base_medida": {
+    "contenedor": "beto_pg_s1",
+    "host": "127.0.0.1:55601",
+    "base": "giragroup_db",
+    "origen": "copia tmpfs del snapshot snapshot_dw_20261110_1201",
+    "modo": "BEGIN READ ONLY; ROLLBACK (solo SELECT)",
+    "consultas_archivo": "docs/mediciones/f3s_d_a8b.sql"
+  },
+  "snapshot_sha256": {
+    "archivo": "docs/evidencias/snapshot_dw_20261110_1201.dump",
+    "antes": "14d45f5a128f44543927911dc0ad453f681d524ac05037203f5c0c2787e3a2eb",
+    "despues": "14d45f5a128f44543927911dc0ad453f681d524ac05037203f5c0c2787e3a2eb",
+    "igual": true,
+    "referencia": "14D45F5A…E2EB en PLAN_F3R.md R3-6 y PLAN_F3S.md"
+  },
+  "verificacion_1_meta_2024": {
+    "meta_techos_cerrados_2024_12_bs": 10719694.00,
+    "meses_de_2024_con_meta": 1,
+    "filas_meta_fuera_de_diciembre_2024": 0,
+    "meta_programas_2024": "NULL en los 12 meses (0 filas con meta)",
+    "resultado": "OK: meta de diciembre 2024 = 10.719.694,00 y ninguna meta en los demás meses de 2024",
+    "consulta": "Q1 y Q1b de f3s_d_a8b.sql"
+  },
+  "verificacion_2_kpi02_kpi03_2024": {
+    "kpi02_2024": {
+      "mes": "2024-12",
+      "ejecutado_bs": 670367.88,
+      "meta_bs": 10719694.00,
+      "recalculado_pct": 6.25,
+      "sin_redondear_pct": 6.253610224321701720000,
+      "sfv_pct": 6.25,
+      "snapshot_api_pct": 6.25,
+      "delta": 0.0
+    },
+    "kpi03_2024": {
+      "ejecutado_bs_gestion": 10961730.41,
+      "meta_bs_gestion": 10719694.00,
+      "recalculado_pct": 102.26,
+      "sin_redondear_pct": 102.25786678239136000,
+      "sfv_pct": 102.26,
+      "snapshot_api_pct": 102.26,
+      "delta": 0.0
+    },
+    "referencia_snapshot": "docs/mediciones/f3r_snapshot_kpi.json gestiones.2024 KPI-02 y KPI-03 (api 6.25 / 102.26; sql_redondeado 6.25 / 102.26)",
+    "consulta": "Q2 y Q3 de f3s_d_a8b.sql"
+  },
+  "ubicacion_en_sfv": {
+    "archivo": "docs/fuente_verdad_tesis.md",
+    "nota_kpi02_2024": {
+      "linea": 252,
+      "texto_actual": "*Nota sobre `KPI-02` 2024 (`6,25 %`):* Distorsionado por la celda `10.719.694,00` en `META POR CATEGORIA 2024` diciembre (ver Defecto `D-A8b` en Sección H).",
+      "accion": "reemplazar por la nota propuesta (S-8)"
+    },
+    "defecto_D-A8b": {
+      "linea": 300,
+      "texto_actual": "| `D-A8b` | `META POR CATEGORIA 2024` | La celda `10.719.694,00` (`TECHOS/CERRADOS` diciembre) ingresa como meta mensual. | Distorsiona `KPI-02`/`KPI-03` 2024 (`kpi_service.py:320-347`); no afecta a `META_MENSUAL_PROGRAMAS` (`forecast_service.py:470`). | `docs/mediciones/f3r_cobertura_resumen.md` |",
+      "accion": "sacar la fila de la tabla de defectos de la Sección H (S-8)"
+    },
+    "otras_menciones_fuera_de_la_sfv": [
+      "docs/cierres/CIERRE_F3R_A.md:16 (tabla de defectos de F3R-A; historial, no se toca)",
+      "docs/cierres/CIERRE_F3R_A.md:28 (lista D-A8b como limitación)",
+      "docs/mediciones/f3r_cobertura_resumen.md:13 y :27 (historial F3R, no se toca)"
+    ]
+  },
+  "nota_propuesta_kpi02_2024": "en 2024 la fuente registra meta solo para diciembre (TECHOS/CERRADOS, 10.719.694 Bs)",
+  "codigo": "sin cambios: no se tocaron frontend/, backend/routers/powerbi.py ni ningún otro archivo de código",
+  "sfv_modificada": false,
+  "commit": null,
+  "criterios_plan": {
+    "1_meta_dic_2024_y_0_otros_meses": "cumple",
+    "2_kpi02_kpi03_2024_delta_cero": "cumple",
+    "3_sha_igual_antes_y_despues": "cumple"
+  }
+}

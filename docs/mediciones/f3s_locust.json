@@ -1,0 +1,265 @@
+{
+  "etiqueta": "F3S, escenario reescrito (Tabla 3.32)",
+  "tarea": "S-7 (Locust)",
+  "parametros": {
+    "usuarios": 50,
+    "rampa_por_s": 5,
+    "duracion": "30s",
+    "base_datos": "b7_limpia_llena (tmpfs beto_pg_s7, resultado de la corrida limpia con caché llena; nunca la DW viva)",
+    "pila": "uvicorn local 127.0.0.1:8099 (backend del árbol de trabajo) sobre la copia tmpfs beto_pg_s7",
+    "locustfile": "tests/carga/locustfile.py"
+  },
+  "agregado": {
+    "method": "",
+    "requests": 1252,
+    "failures": 0,
+    "median_ms": 7.0,
+    "avg_ms": 10.81656046318848,
+    "min_ms": 2.55019999895012,
+    "max_ms": 180.07270000089193,
+    "rps": 42.930728268775354,
+    "p50_ms": 7.0,
+    "p95_ms": 26.0,
+    "p99_ms": 56.0
+  },
+  "por_endpoint": {
+    "GET /api/v1/cmi/scorecard": {
+      "method": "GET",
+      "requests": 202,
+      "failures": 0,
+      "median_ms": 6.0,
+      "avg_ms": 8.968631682994845,
+      "min_ms": 3.7032000000181142,
+      "max_ms": 179.6384000008402,
+      "rps": 6.926523251032445,
+      "p50_ms": 6.0,
+      "p95_ms": 16.0,
+      "p99_ms": 61.0
+    },
+    "GET /api/v1/dataops/review-tray/grupos": {
+      "method": "GET",
+      "requests": 226,
+      "failures": 0,
+      "median_ms": 21.0,
+      "avg_ms": 24.196307964528195,
+      "min_ms": 17.38679999834858,
+      "max_ms": 180.07270000089193,
+      "rps": 7.749476508580854,
+      "p50_ms": 21.0,
+      "p95_ms": 34.0,
+      "p99_ms": 62.0
+    },
+    "GET /api/v1/forecast/alumnos": {
+      "method": "GET",
+      "requests": 125,
+      "failures": 0,
+      "median_ms": 6.0,
+      "avg_ms": 6.337202399852686,
+      "min_ms": 3.264099999796599,
+      "max_ms": 24.276500000269152,
+      "rps": 4.286214883064632,
+      "p50_ms": 6.0,
+      "p95_ms": 11.0,
+      "p99_ms": 24.0
+    },
+    "GET /api/v1/forecast/metas": {
+      "method": "GET",
+      "requests": 123,
+      "failures": 0,
+      "median_ms": 6.0,
+      "avg_ms": 7.1207601626733,
+      "min_ms": 3.301099997770507,
+      "max_ms": 41.81669999888982,
+      "rps": 4.217635444935598,
+      "p50_ms": 6.0,
+      "p95_ms": 17.0,
+      "p99_ms": 29.0
+    },
+    "GET /api/v1/kpis/cmi-completo": {
+      "method": "GET",
+      "requests": 209,
+      "failures": 0,
+      "median_ms": 6.0,
+      "avg_ms": 7.33459186593656,
+      "min_ms": 3.4534000005805865,
+      "max_ms": 62.15599999995902,
+      "rps": 7.166551284484065,
+      "p50_ms": 6.0,
+      "p95_ms": 16.0,
+      "p99_ms": 23.0
+    },
+    "GET /api/v1/riesgos/alertas-tempranas": {
+      "method": "GET",
+      "requests": 150,
+      "failures": 0,
+      "median_ms": 6.0,
+      "avg_ms": 10.045783999933823,
+      "min_ms": 3.8985999999567866,
+      "max_ms": 125.40589999844087,
+      "rps": 5.143457859677558,
+      "p50_ms": 6.0,
+      "p95_ms": 21.0,
+      "p99_ms": 120.0
+    },
+    "GET /health": {
+      "method": "GET",
+      "requests": 153,
+      "failures": 0,
+      "median_ms": 4.0,
+      "avg_ms": 5.532520261386392,
+      "min_ms": 2.55019999895012,
+      "max_ms": 36.690299999463605,
+      "rps": 5.24632701687111,
+      "p50_ms": 4.0,
+      "p95_ms": 11.0,
+      "p99_ms": 26.0
+    },
+    "POST /api/v1/dataops/review-tray/approve-group": {
+      "method": "POST",
+      "requests": 64,
+      "failures": 0,
+      "median_ms": 9.0,
+      "avg_ms": 11.062934375161149,
+      "min_ms": 7.008699998550583,
+      "max_ms": 39.27790000307141,
+      "rps": 2.1945420201290915,
+      "p50_ms": 9.0,
+      "p95_ms": 22.0,
+      "p99_ms": 39.0
+    }
+  },
+  "estado_maquina": {
+    "antes": {
+      "fecha": "2026-11-16 17:59:39",
+      "reposo_s": 40,
+      "cpu_host_reposo_media_pct": 4.6,
+      "cpu_host_reposo_max_pct": 8.7,
+      "nucleos_logicos": 24,
+      "pesados_ajenos": [],
+      "otros_procesos_con_cpu_ge_3pct": [],
+      "discord_presente": false,
+      "contenedores": [
+        "beto_pg_s7|Up 21 minutes",
+        "giragroup_web|Up 3 hours",
+        "giragroup_api|Up 4 hours",
+        "giragroup_pipeline|Up 4 hours",
+        "giragroup_catalog_db|Up 4 hours (healthy)",
+        "giragroup_gateway|Up 4 hours",
+        "giragroup_audit_svc|Up 4 hours",
+        "giragroup_auth_svc|Up 4 hours",
+        "giragroup_notifications_svc|Up 4 hours",
+        "giragroup_db|Up 4 hours (healthy)"
+      ],
+      "plan_energia": "GUID de plan de energ├¡a: 381b4222-f694-41f0-9685-ff5bb260df2e  (Equilibrado)",
+      "plan_energia_cambiado": false,
+      "en_corriente_ac": true,
+      "apto": true,
+      "criterio_apto": "sin pesados ajenos (juegos, lanzadores, pytest/locust/vite, navegador >= 3.0 %), ningún otro proceso >= 3.0 % salvo Discord, CPU host en reposo < 10.0 %",
+      "top5_procesos_cpu": [
+        {
+          "proceso": "System",
+          "n": 1,
+          "cpu_pct_host": 0.41,
+          "ram_mb": 5.81
+        },
+        {
+          "proceso": "claude.exe",
+          "n": 14,
+          "cpu_pct_host": 0.39,
+          "ram_mb": 1300.6
+        },
+        {
+          "proceso": "svchost.exe",
+          "n": 99,
+          "cpu_pct_host": 0.32,
+          "ram_mb": 1349.17
+        },
+        {
+          "proceso": "vmmemWSL",
+          "n": 1,
+          "cpu_pct_host": 0.27,
+          "ram_mb": 3854.11
+        },
+        {
+          "proceso": "python.exe",
+          "n": 3,
+          "cpu_pct_host": 0.19,
+          "ram_mb": 52.51
+        }
+      ],
+      "archivo": "output/f3s/s7/estado_antes_locust.json"
+    },
+    "despues": {
+      "fecha": "2026-11-16 18:01:09",
+      "reposo_s": 20,
+      "cpu_host_reposo_media_pct": 10.2,
+      "cpu_host_reposo_max_pct": 11.1,
+      "nucleos_logicos": 24,
+      "pesados_ajenos": [],
+      "otros_procesos_con_cpu_ge_3pct": [
+        {
+          "proceso": "MsMpEng.exe",
+          "cpu_pct_host": 6.91
+        }
+      ],
+      "discord_presente": false,
+      "contenedores": [
+        "beto_pg_s7|Up 22 minutes",
+        "giragroup_web|Up 3 hours",
+        "giragroup_api|Up 4 hours",
+        "giragroup_pipeline|Up 4 hours",
+        "giragroup_catalog_db|Up 4 hours (healthy)",
+        "giragroup_gateway|Up 4 hours",
+        "giragroup_audit_svc|Up 4 hours",
+        "giragroup_auth_svc|Up 4 hours",
+        "giragroup_notifications_svc|Up 4 hours",
+        "giragroup_db|Up 4 hours (healthy)"
+      ],
+      "plan_energia": "GUID de plan de energ├¡a: 381b4222-f694-41f0-9685-ff5bb260df2e  (Equilibrado)",
+      "plan_energia_cambiado": false,
+      "en_corriente_ac": true,
+      "apto": false,
+      "criterio_apto": "sin pesados ajenos (juegos, lanzadores, pytest/locust/vite, navegador >= 3.0 %), ningún otro proceso >= 3.0 % salvo Discord, CPU host en reposo < 10.0 %",
+      "top5_procesos_cpu": [
+        {
+          "proceso": "MsMpEng.exe",
+          "n": 1,
+          "cpu_pct_host": 6.91,
+          "ram_mb": 385.72
+        },
+        {
+          "proceso": "System",
+          "n": 1,
+          "cpu_pct_host": 0.92,
+          "ram_mb": 5.89
+        },
+        {
+          "proceso": "python.exe",
+          "n": 3,
+          "cpu_pct_host": 0.48,
+          "ram_mb": 51.52
+        },
+        {
+          "proceso": "claude.exe",
+          "n": 14,
+          "cpu_pct_host": 0.23,
+          "ram_mb": 1295.58
+        },
+        {
+          "proceso": "vmmemWSL",
+          "n": 1,
+          "cpu_pct_host": 0.22,
+          "ram_mb": 3806.91
+        }
+      ],
+      "archivo": "output/f3s/s7/estado_despues_locust.json"
+    },
+    "nota": "después: MsMpEng (Defender) ~6,9 % al terminar; antes de empezar apto (reposo 4,6 %)"
+  },
+  "csv": [
+    "docs/mediciones/f3s_locust_stats.csv",
+    "docs/mediciones/f3s_locust_stats_history.csv",
+    "docs/mediciones/f3s_locust_failures.csv",
+    "docs/mediciones/f3s_locust_exceptions.csv"
+  ]
+}

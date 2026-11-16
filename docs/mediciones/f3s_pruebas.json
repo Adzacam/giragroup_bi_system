@@ -1,0 +1,116 @@
+{
+  "etiqueta": "F3S",
+  "tarea": "S-6 (Suite pytest + cobertura JSON sobre commit limpio)",
+  "commit_medido": "7fab72ac337ad67fd6f788f5213d4ad1ce088f4a",
+  "worktree": "gira_f3s_limpio (HEAD desacoplado en 7fab72a; eliminado al terminar)",
+  "interprete": "giragroup_bi_system/.venv/Scripts/python.exe",
+  "comando": "PYTHONIOENCODING=utf-8 python -m pytest --cov=backend --cov=pipeline --cov-report=json -p no:cacheprovider -q -rfEsxX",
+  "base_de_datos_pruebas": {
+    "tmpfs": "beto_pg_s6",
+    "puerto_host": 55606,
+    "DATABASE_URL_usado": "postgresql://127.0.0.1:55606/giragroup_db (credenciales omitidas)",
+    "CATALOG_DATABASE_URL_usado": "postgresql://127.0.0.1:55606/catalogo_copia (credenciales omitidas)",
+    "nota": "tmpfs poblada desde snapshot_dw_20261110_1201 (solo lectura, pg_dump); migracion 014 no aplicada. Variables del .env (copiado al worktree, no versionado) sobrescritas por entorno; ninguna apunta a giragroup_db ni catalog_db vivas."
+  },
+  "entradas_no_versionadas": {
+    "descripcion": "Copiadas desde la copia de trabajo al worktree (uploads/data/* esta en .gitignore, linea 46). La suite depende de ellas: los 2 tests de sprint3 (test_corpus_dos_procesos_reales, test_manifiesto_coincide_con_vigentes) y los 4 tests de corpus real de sprint2 (test_bloques_detector, test_categorizacion_y_cierre, test_ingesta) cambian de skip a ejecucion con ellas.",
+    "archivos": [
+      {
+        "archivo": "uploads/data/BD Cobranzas.xlsx",
+        "sha256": "ccf92a5f085679301c791db664ff08e4ad1684be0a22288a3d9e5b1a58d0145c"
+      },
+      {
+        "archivo": "uploads/data/BD Egresos.xlsx",
+        "sha256": "4b4afbddeb3c348c55cd2389542bb63ef41cbbdc2a70a04c0200c65bf6c30c5d"
+      },
+      {
+        "archivo": "uploads/data/BD Techos.xlsx",
+        "sha256": "75a797bdcf1453e35e36e498e4b7c30625ba3669a17534fcb08fdd0adaaa23d8"
+      },
+      {
+        "archivo": "uploads/data/Base centralizada Académica ARCA (1).xlsx",
+        "sha256": "cd6070f0c3b61e88c1b86f7f2bcd909367e0ce8f770f16e671fc93e1218ded52"
+      },
+      {
+        "archivo": "uploads/data/EJECUTADO VS META.xlsx",
+        "sha256": "daee07f1f59df455ca862bda50b8a2c00d276437ddaa3a1375e86c11b2852682"
+      },
+      {
+        "archivo": "uploads/data/Evaluación Docente y Unifranz.xlsx",
+        "sha256": "6875b97a5fbbf61e9b32e26a3abf888c54620fe91fb9cfbb7e9502e255ac432a"
+      },
+      {
+        "archivo": "uploads/data/Experiencia Docente 2.0.xlsx",
+        "sha256": "bf8432b5193257446c670310d7bfeccc28a8e277a0d1c7bdab8f1b1c3b84ac5c"
+      },
+      {
+        "archivo": "uploads/data/PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+        "sha256": "c65129c62c9cfaa13ac483d2f5d7afed5c65d4a503547adb08829a075cf8dba0"
+      },
+      {
+        "archivo": "uploads/data/TBL_INSCRITOS.xlsx",
+        "sha256": "5b72c61c436fd5d7e7332ae734001aaee52f9fb24645400d253a6c64b3d8b572"
+      },
+      {
+        "archivo": "uploads/data/[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+        "sha256": "d0b87767b7dae5aa2d37ebd049a256bb83f565dfb0fc95412f46c8c2299357a0"
+      }
+    ]
+  },
+  "colectadas": 845,
+  "passed": 826,
+  "failed": 0,
+  "skipped": 12,
+  "xfailed": 7,
+  "duracion_s": 290.68,
+  "criterio_0_failed": "CUMPLIDO",
+  "cobertura_total": {
+    "sentencias": 14690,
+    "cubiertas": 10434,
+    "faltantes": 4256,
+    "porcentaje_2dec": 71.03
+  },
+  "total_archivos_csv": 137,
+  "omitidos": [
+    "tests/f1/test_purga_cache.py:34: 'beto_pg_tmpfs no disponible en 127.0.0.1:55632' (puerto fijo en el test)",
+    "tests/readiness/* (11): variables READINESS_* no definidas"
+  ],
+  "xfail_hallazgos": "7 xfail en tests/readiness (HW-IC, HW-GAP, OLS-CAGR, FK-CI-EXT, FK-HASH, FK-BANDA x2)",
+  "notas_corridas_previas": [
+    {
+      "commit": "4b8dedc2628098dfcec3c75d05453f329e280d67",
+      "resultado": {
+        "colectadas": 845,
+        "passed": 819,
+        "failed": 7,
+        "skipped": 12,
+        "xfailed": 7
+      },
+      "causa": "5 por DATABASE_URL del .env al host docker giragroup_db (0 observaciones); 1 test fragil con output/ ignorado; 1 defecto del test con PYTHONIOENCODING=utf-8 (mojibake). Ninguna es regresion. Ver f3s_pruebas_fallos_diag.json."
+    },
+    {
+      "commit": "7fab72ac337ad67fd6f788f5213d4ad1ce088f4a",
+      "entradas_copiadas": "ninguna",
+      "resultado": {
+        "colectadas": 845,
+        "passed": 818,
+        "failed": 2,
+        "skipped": 18,
+        "xfailed": 7
+      },
+      "causa": "2 fallos sprint3 por FileNotFoundError sobre uploads/data/Experiencia Docente 2.0.xlsx; 6 skips adicionales por corpus real ausente."
+    },
+    {
+      "commit": "7fab72ac337ad67fd6f788f5213d4ad1ce088f4a",
+      "entradas_copiadas": "solo las 3 usadas por sprint3 (Experiencia Docente 2.0, Base centralizada Académica ARCA (1), TBL_INSCRITOS)",
+      "resultado": {
+        "colectadas": 845,
+        "passed": 822,
+        "failed": 4,
+        "skipped": 12,
+        "xfailed": 7
+      },
+      "causa": "copiar solo 3 archivos quito el skip de sprint2 (corpus real) pero faltaban los demas archivos del corpus: 4 FileNotFoundError en sprint2 (test_bloques_detector x2, test_categorizacion_y_cierre, test_ingesta). Resuelto copiando uploads/data completo."
+    }
+  ]
+}

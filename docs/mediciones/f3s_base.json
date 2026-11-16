@@ -1,0 +1,268 @@
+{
+ "lectura_beto_contadores": null,
+ "consolidacion_beto_contadores": null,
+ "carga": {
+  "http": 200,
+  "id_lote": 1,
+  "archivos_exitosos": 10,
+  "archivos_fallidos": 0,
+  "registros_detectados": 11956,
+  "errores": null
+ },
+ "etapas_s": {
+  "carga_y_lectura_s": 128.13,
+  "espera_lectura_beto_s": 0.02,
+  "lectura_beto_s": 118.45,
+  "lineas_leidas_beto": 12992,
+  "lineas_por_s_beto": 109.69,
+  "carga_s": 9.7,
+  "consolidacion_s": 985.09,
+  "revision_maquina_s": 0.0,
+  "revision_humana_simulada_s": 0.0
+ },
+ "total": {
+  "tiempo_maquina_s": 1113.24,
+  "tiempo_humano_simulado_s": 0.0,
+  "total_estimado_s": 1113.2,
+  "total_estimado_min": 18.55,
+  "meta_rnf03_min": 15,
+  "referencia_tesis_min": 9
+ },
+ "consolidacion_http": 200,
+ "consolidacion": {
+  "status": "success",
+  "message": "Transacción completada: 108632 hechos persistidos en Data Warehouse (107907 académicos, 725 financieros), 29 derivados a Revisión Humana.",
+  "inserted_dw": 108632,
+  "inserted_academico": 107907,
+  "inserted_financiero": 725,
+  "inserted_admision": 391,
+  "inserted_revision": 43315,
+  "sent_hitl": 29,
+  "descartados_ruido": 4318
+ },
+ "revision": {
+  "tiempo_maquina_real_aprobaciones_s": 0.0,
+  "tiempo_humano_simulado_s": 0.0,
+  "omitida": true
+ },
+ "dw_antes": {
+  "fact_rendimiento_academico": 0,
+  "fact_situacion_financiera": 0,
+  "fact_evaluacion_docente": 0,
+  "fact_marketing": 0,
+  "fact_rentabilidad": 0,
+  "fact_techo_convenio": 0,
+  "fact_costo_programa": 0,
+  "dim_origen_documental": 0,
+  "stg_entidad_no_resuelta": 0
+ },
+ "dw_despues": {
+  "fact_rendimiento_academico": 1392,
+  "fact_situacion_financiera": 725,
+  "fact_evaluacion_docente": 104939,
+  "fact_marketing": 299,
+  "fact_rentabilidad": 95,
+  "fact_techo_convenio": 1,
+  "fact_costo_programa": 1371,
+  "dim_origen_documental": 10,
+  "stg_entidad_no_resuelta": 3935
+ },
+ "etiqueta": "F3S, S-7",
+ "base_datos": "f3s_base (tmpfs beto_pg_s7:55632, clon de dw_vacio + 016, cache_indice_beto vacía)",
+ "commit_codigo": "7fab72a (beto-integracion); /app = backend del árbol de trabajo (solo backend/routers/powerbi.py difiere de HEAD, fuera del flujo)",
+ "recorte": "output/backups/f0_lote/slices/ (ciclo mensual 2026-03), CICLO_REUSAR_SLICES=1, CICLO_SLICES=/tmp/slices_s7",
+ "entorno": {
+  "PYTHONHASHSEED": "0",
+  "BETO_CASCADA_FINAL": "0",
+  "BETO_ACUERDO_QC": "0",
+  "BETO_SUGERENCIA_HITL": "0",
+  "BETO_VENTANA": "0",
+  "CATALOG_DATABASE_URL": "catalogo_copia en la tmpfs (copia del catálogo; nunca catalog_db)"
+ },
+ "integridad": {
+  "antes": {
+   "snapshot_sha256": "14d45f5a128f44543927911dc0ad453f681d524ac05037203f5c0c2787e3a2eb",
+   "modelo_beto_sha256": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+   "lote_sha256_recalculado": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+   "lote_sha256_manifiesto": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+   "lote_archivos_distintos": [],
+   "slices_contenedor": {
+    "carpeta": "/tmp/slices_s7",
+    "n": 10,
+    "iguales_al_manifiesto": true,
+    "distintos": []
+   }
+  },
+  "despues": {
+   "snapshot_sha256": "14d45f5a128f44543927911dc0ad453f681d524ac05037203f5c0c2787e3a2eb",
+   "modelo_beto_sha256": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+   "lote_sha256_recalculado": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+   "lote_sha256_manifiesto": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+   "lote_archivos_distintos": [],
+   "slices_contenedor": {
+    "carpeta": "/tmp/slices_s7",
+    "n": 10,
+    "iguales_al_manifiesto": true,
+    "distintos": []
+   }
+  },
+  "snapshot_igual": true,
+  "modelo_igual": true,
+  "lote_igual": true
+ },
+ "dw_vacio_antes_de_clonar": {
+  "conteos": {
+   "bi.ref_kpi": 22,
+   "bi.ref_perspectiva": 4,
+   "public.bridge_modulo_docente": 0,
+   "public.cache_indice_beto": 0,
+   "public.carga_fila_origen": 0,
+   "public.cat_categoria_financiera": 5,
+   "public.cat_combinacion_estado": 0,
+   "public.cat_concepto_financiero": 0,
+   "public.cat_escuela": 0,
+   "public.cat_estado_academico": 0,
+   "public.cat_estado_arca": 0,
+   "public.cat_estado_reprobado": 0,
+   "public.cat_etiqueta_clasificacion": 0,
+   "public.cat_guia_texto_plano": 0,
+   "public.cat_historico_equivalencia": 0,
+   "public.cat_institucion": 4,
+   "public.cat_institucion_convenio": 0,
+   "public.cat_mapeo_columna": 0,
+   "public.cat_modalidad": 0,
+   "public.cat_modulo": 0,
+   "public.cat_programa": 4,
+   "public.cat_tipo_programa": 0,
+   "public.dataops_tarea": 0,
+   "public.dim_categoria_financiera": 15,
+   "public.dim_docente": 638,
+   "public.dim_estudiante": 14078,
+   "public.dim_meta": 0,
+   "public.dim_modulo": 3585,
+   "public.dim_origen_documental": 0,
+   "public.dim_tiempo": 2230,
+   "public.fact_cobranzas_proyectadas": 0,
+   "public.fact_costo_programa": 0,
+   "public.fact_evaluacion_docente": 0,
+   "public.fact_forecast": 0,
+   "public.fact_marketing": 0,
+   "public.fact_rendimiento_academico": 0,
+   "public.fact_rentabilidad": 0,
+   "public.fact_situacion_financiera": 0,
+   "public.fact_techo_convenio": 0,
+   "public.log_auditoria_nlp": 0,
+   "public.log_inconsistencias": 0,
+   "public.log_pipeline_ingesta": 0,
+   "public.lote": 0,
+   "public.notifications": 2,
+   "public.powerbi_informe_version": 2,
+   "public.ref_metas_gestion": 0,
+   "public.schema_migrations": 13,
+   "public.staging_registros_crudos": 0,
+   "public.stg_entidad_no_resuelta": 0,
+   "public.users": 5
+  },
+  "hechos_staging_logs_carga_en_0": true
+ },
+ "dos_corridas": {
+  "r1": {
+   "etiqueta": "base_r1",
+   "returncode": 0,
+   "duracion_pared_s": 1129.43,
+   "tiempo_maquina_s": 1113.24,
+   "etapas_s": {
+    "carga_y_lectura_s": 128.13,
+    "espera_lectura_beto_s": 0.02,
+    "lectura_beto_s": 118.45,
+    "lineas_leidas_beto": 12992,
+    "lineas_por_s_beto": 109.69,
+    "carga_s": 9.7,
+    "consolidacion_s": 985.09,
+    "revision_maquina_s": 0.0,
+    "revision_humana_simulada_s": 0.0
+   },
+   "cache_indice_beto_al_iniciar": 0,
+   "host_cpu_avg_pct": 53.7,
+   "host_cpu_max_pct": 83.8,
+   "cpu_ajena_a_docker_avg_pct": 33.9,
+   "cpu_ajena_a_docker_max_pct": 56.8,
+   "n_muestras": 157,
+   "huella_v2_sha256": "c8e10263c38a3c1da0301888ac595e56141f810a4efdc23498e6ffd6773b0153",
+   "bandeja": {
+    "casos": 676,
+    "grupos": 17,
+    "manuales": 12,
+    "casos_manuales": 43
+   },
+   "kpis": {
+    "KPI-10": null,
+    "KPI-11": null,
+    "KPI-18": 32.0
+   }
+  },
+  "r2": {
+   "etiqueta": "base_r2",
+   "returncode": 0,
+   "duracion_pared_s": 1238.63,
+   "tiempo_maquina_s": 1222.77,
+   "etapas_s": {
+    "carga_y_lectura_s": 184.6,
+    "espera_lectura_beto_s": 0.03,
+    "lectura_beto_s": 173.0,
+    "lineas_leidas_beto": 12992,
+    "lineas_por_s_beto": 75.1,
+    "carga_s": 11.63,
+    "consolidacion_s": 1038.14,
+    "revision_maquina_s": 0.0,
+    "revision_humana_simulada_s": 0.0
+   },
+   "cache_indice_beto_al_iniciar": 0,
+   "host_cpu_avg_pct": 57.6,
+   "host_cpu_max_pct": 95.2,
+   "cpu_ajena_a_docker_avg_pct": 39.1,
+   "cpu_ajena_a_docker_max_pct": 63.8,
+   "n_muestras": 172,
+   "huella_v2_sha256": "c8e10263c38a3c1da0301888ac595e56141f810a4efdc23498e6ffd6773b0153",
+   "bandeja": {
+    "casos": 676,
+    "grupos": 17,
+    "manuales": 12,
+    "casos_manuales": 43
+   },
+   "kpis": {
+    "KPI-10": null,
+    "KPI-11": null,
+    "KPI-18": 32.0
+   }
+  },
+  "huella_identica": true
+ },
+ "extraccion_R3_1": {
+  "archivo": "docs/mediciones/f3s_extraccion_f3base.json",
+  "kpi15": "docs/mediciones/f3s_kpi15_cuadre.json"
+ },
+ "md5_distinto_con_mismo_conteo_vs_f3r": {
+  "log_pipeline_ingesta": {
+   "veredicto": "diferencia real, consecuencia de D-A4/D-A8a",
+   "evidencia": "al sustituir en la fila DW_CONSOLIDACION de f3s_base los conteos de la consolidación de F3R (inserted_total 78750, inserted_revision 15703, inserted_academico 78025, sent_hitl 33) el md5 da 38126b84e1ec00d2ab6323c0b65ab91b = md5 de F3R; las otras 71 filas son idénticas",
+   "script": "output/f3s/s7/md5_variantes.py"
+  },
+  "fact_costo_programa": {
+   "veredicto": "diferencia real atribuible a D-A8a (requiere_revision), no ruido de entorno",
+   "evidencia": "consolidacion.py:208 y :257 (commit 4b8dedc): las filas de costo por programa (registros_costo_programa) ya resueltas por regla toman banda CONSOLIDADO y no van a BETO; antes su banda salía del índice BETO y las de banda REVISION quedaban requiere_revision=True. En f3s_base las 1.371 filas tienen requiere_revision=False y motivo NULL; md5 idéntico en las 5 corridas de S-7 (determinista). No se reconstruye la fila exacta de F3R: la base f3r_base no se conservó; la hipótesis 'todas True' tampoco da el md5 de F3R (subconjunto).",
+   "filas_requiere_revision_f3s": {
+    "False": 1371
+   }
+  },
+  "schema_migrations": {
+   "veredicto": "ruido de entorno",
+   "evidencia": "13 versiones 001..014 iguales; 014_conversion_captacion_comprobable.sql tiene applied_at = momento en que 'aislada_tmpfs.sh vacio' la aplicó en esta tmpfs (output/f3s/s7/schema_migrations_f3s_base.txt); igual en las 5 corridas de S-7 porque todas clonan el mismo dw_vacio"
+  }
+ },
+ "protocolo_desviaciones": [
+  "plan de energía 'Equilibrado' (no 'Alto rendimiento'); equipo en AC; no se cambia por ser configuración del sistema",
+  "proceso ajeno de usuario activo durante todas las corridas (juego, ~4,5 núcleos de 24): CPU ajena a Docker 34-40 % de media, bajo el umbral de descarte del protocolo (45 %)",
+  "a las 15:42 (durante base_r1) apareció docs/evidencias/matriz_confusion_ner.json y graficos_v2/grafico_3_1/3_3 (no generados por S-7): hubo otro proceso en paralelo"
+ ]
+}

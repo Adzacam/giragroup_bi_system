@@ -1,0 +1,86 @@
+{
+ "etiqueta": "F3S, S-7 (KLM), repetición limpia",
+ "fuente_formula": "scripts/agregar_flujo_repetido.py::klm",
+ "bandeja": {
+  "casos": 676,
+  "grupos": 17,
+  "manuales": 12,
+  "casos_manuales": 43
+ },
+ "eventos": "un evento por grupo de la firma de la huella de b7_limpia_vacia_r1 (igual a f3s_base)",
+ "fuente_w": "max(p95 GET /api/v1/dataops/review-tray/grupos, p95 POST /api/v1/dataops/review-tray/approve-group) de f3s_locust.json (mismo criterio que f3r_klm_w_medido.json)",
+ "p95_grupos_ms": 34.0,
+ "p95_approve_group_ms": 22.0,
+ "W_medido_s": 0.034,
+ "klm": {
+  "W_medido": {
+   "W_s": 0.034,
+   "klm_s": 202.3,
+   "desglose_s": {
+    "bloque": 16.1,
+    "corregir_fecha": 8.8,
+    "mapear_estado": 0.0,
+    "manual": 173.5,
+    "paginacion": 3.9
+   }
+  },
+  "sensibilidad_W_0": {
+   "W_s": 0.0,
+   "klm_s": 200.6,
+   "desglose_s": {
+    "bloque": 16.0,
+    "corregir_fecha": 8.7,
+    "mapear_estado": 0.0,
+    "manual": 172.0,
+    "paginacion": 3.9
+   }
+  },
+  "sensibilidad_W_10": {
+   "W_s": 10.0,
+   "klm_s": 680.6,
+   "desglose_s": {
+    "bloque": 56.0,
+    "corregir_fecha": 18.7,
+    "mapear_estado": 0.0,
+    "manual": 602.0,
+    "paginacion": 3.9
+   }
+  }
+ },
+ "maquina_s": {
+  "vacia": 616.61,
+  "llena": 177.2,
+  "fuente": "f3s_b7_corridas.json (1 corrida por condición)"
+ },
+ "totales_s": {
+  "vacia_mas_klm_W_medido_s": 818.91,
+  "llena_mas_klm_W_medido_s": 379.5,
+  "vacia_mas_klm_W_0_s": 817.21,
+  "llena_mas_klm_W_0_s": 377.8,
+  "vacia_mas_klm_W_10_s": 1297.21,
+  "llena_mas_klm_W_10_s": 857.8
+ },
+ "totales_min": {
+  "vacia_mas_klm_W_medido_min": 13.65,
+  "llena_mas_klm_W_medido_min": 6.33,
+  "vacia_mas_klm_W_0_min": 13.62,
+  "llena_mas_klm_W_0_min": 6.3,
+  "vacia_mas_klm_W_10_min": 21.62,
+  "llena_mas_klm_W_10_min": 14.3
+ },
+ "rnf03": {
+  "n_corridas": 1,
+  "dispersion": "no disponible: 1 corrida por condición (decisión de Lean: repetir limpio y solo una)",
+  "maquina_cache_vacia_s": 616.61,
+  "maquina_cache_vacia_min": 10.28,
+  "maquina_cache_llena_s": 177.2,
+  "maquina_cache_llena_min": 2.95,
+  "vacia_mas_klm_W_medido_s": 818.91,
+  "vacia_mas_klm_W_medido_min": 13.65,
+  "veredicto_maquina_vacia": "< 15 min",
+  "veredicto_vacia_mas_klm_W_medido": "< 15 min",
+  "veredicto_vacia_mas_klm_W_10": ">= 20 min",
+  "umbral": "RNF-03 < 15 min (900 s); aceptable < 20 min (1.200 s)"
+ },
+ "anterior_descartado": "la versión previa de este archivo usaba la mediana de 3 corridas contaminadas (1.203,28 s) y no tenía W medido"
+}

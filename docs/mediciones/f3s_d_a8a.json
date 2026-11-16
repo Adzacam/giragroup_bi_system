@@ -1,0 +1,61 @@
+{
+ "tarea": "F3S S-3 (D-A8a)",
+ "recorte": "output/backups/f0_lote/slices (CICLO_REUSAR_SLICES=1), tmpfs beto_pg_s3:55603, base f3s_a8a (dw_vacio + 016, cache_indice_beto vacia), flags BETO en 0",
+ "causa": {
+  "archivo_linea": "backend/routers/dataops/consolidacion.py:203 (obtener_indices(lines) enviaba TODAS las lineas al indice BETO) y :251-252 (banda_de(indice) < 0.60 -> is_approved False) -> :443-457 StagingEntidadNoResuelta tipo_entidad='ESTUDIANTE', motivo BAJA_CONFIANZA_IA",
+  "explicacion": "Las 4 filas (PROGRAMAS JUNIO, TECHOS/CERRADOS FEB/ABR/OCT) ya las resuelve registros_rentabilidad (extraccion_por_encabezado.py:396) y motivo_fila_sin_entidad no las descarta, pero la banda se decidia por el indice BETO y no por la regla. pipeline.py:407-417 ya aplicaba la cascada correcta (por_reglas); consolidacion.py no."
+ },
+ "correccion": {
+  "archivos": [
+   "backend/services/extraccion_por_encabezado.py (fila_resuelta_por_regla)",
+   "backend/services/confianza_service.py (indices_cascada)",
+   "backend/routers/dataops/consolidacion.py (imports, indices, banda)"
+  ],
+  "orden_cascada": "sin cambios; umbrales sin cambios; filas resueltas por regla: BETO no las recibe (solo indice en cache si existe) y banda CONSOLIDADO"
+ },
+ "prueba": "tests/f3s/test_d_a8a_metas_no_van_a_beto.py (2 tests): antes de la correccion falla (BETO recibe las 4 lineas), despues pasa; tests/sprint3/test_beto_cascada_final.py y test_beto_acuerdo_qc.py en verde",
+ "resultado": {
+  "fact_rentabilidad": 95,
+  "esperado": 95,
+  "staging_ESTUDIANTE_de_EJECUTADO_VS_META": 0,
+  "staging_EJECUTADO_VS_META_por_tipo": {
+   "RUIDO/FILA_AGREGADA_SIN_CATEGORIA_MES": 12
+  },
+  "stg_entidad_no_resuelta_total": 3935,
+  "f3r_base_referencia": {
+   "fact_rentabilidad": 91,
+   "stg_entidad_no_resuelta": 5076
+  },
+  "dw_despues": {
+   "fact_rendimiento_academico": 1392,
+   "fact_situacion_financiera": 725,
+   "fact_evaluacion_docente": 104939,
+   "fact_marketing": 299,
+   "fact_rentabilidad": 95,
+   "fact_techo_convenio": 1,
+   "fact_costo_programa": 1371,
+   "dim_origen_documental": 10,
+   "stg_entidad_no_resuelta": 3935
+  },
+  "total": {
+   "tiempo_maquina_s": 993.69,
+   "tiempo_humano_simulado_s": 0.0,
+   "total_estimado_s": 993.7,
+   "total_estimado_min": 16.56,
+   "meta_rnf03_min": 15,
+   "referencia_tesis_min": 9
+  },
+  "etapas_s": {
+   "carga_y_lectura_s": 150.26,
+   "espera_lectura_beto_s": 0.03,
+   "lectura_beto_s": 142.81,
+   "lineas_leidas_beto": 12992,
+   "lineas_por_s_beto": 90.98,
+   "carga_s": 7.48,
+   "consolidacion_s": 843.4,
+   "revision_maquina_s": 0.0,
+   "revision_humana_simulada_s": 0.0
+  }
+ },
+ "nota_tiempo": "993,69 s (16,56 min) con S-2 (D-A4) aplicado en paralelo y otras tmpfs activas; no es la medicion RNF-03 (la hace S-7)"
+}

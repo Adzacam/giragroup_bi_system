@@ -1,0 +1,8 @@
+# Diff de docs/api/postman_collection.json (S-5, 2026-11-16)
+# Antes: HEAD e3f4590 (git show). Despues: archivo de trabajo actual. Se ignora solo el fin de linea CR (CRLF local).
+# Resultado: sin diferencias. Ninguna peticion ni asercion se modifico, elimino o debilito.
+# Verificado: scripts/generar_postman_collection.py produce un JSON igual (==) al archivo versionado.
+# exit diff=0
+# Corrida S-5: baseUrl=http://127.0.0.1:8096 (proxy de cabeceras OWASP sobre API APP_ENV=test en copia tmpfs beto_pg_s5, puerto 8095). No es la BD viva.
+# Por que no se edito la coleccion: las 11 rutas existen en el codigo vigente (kpis/cmi-completo, riesgos/alertas-tempranas, forecast/alumnos y metas, reportes/export, auth/login, auth/verify-otp) y los contratos coinciden. Las 17 fallas de F3R no venian de la coleccion sino de la ejecucion (qa_password no pasada; baseUrl directa a uvicorn sin cabeceras nginx).
+# Nota: la rama mfa del paso 2 ahora se ejecuta (2 aserciones OTP + 0 de login directo), por eso el total pasa de 23 a 24 sin cambiar ninguna asercion.

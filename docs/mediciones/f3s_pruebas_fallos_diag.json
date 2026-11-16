@@ -1,0 +1,51 @@
+{
+  "etiqueta": "F3S",
+  "tarea": "Diagnostico de los 7 fallos de S-6 (solo lectura; sin cambios de codigo ni tests)",
+  "commit_medido": "4b8dedc",
+  "conclusion": "0 de 7 son regresion de 4b8dedc. 5 son (a) dependencia de entorno: DATABASE_URL del .env apunta al host docker 'giragroup_db', no resoluble desde el host de pytest; 1 es (a/b) dependencia de un output/ ignorado; 1 es (b) defecto del test combinado con PYTHONIOENCODING=utf-8 del comando de S-6. 4b8dedc solo toca consolidacion.py, confianza_service.py, extraccion_por_encabezado.py y aislada_tmpfs.sh; ninguna ruta de estos 7 tests los importa para el resultado.",
+  "reproduccion_arbol_principal": {
+    "A_utf8_env_tal_cual": "6 failed, 11 passed (los 4 forecast + loop4 + OTP fallan; el de inconsistencias PASA porque output/inconsistencias_sprint3.jsonl existe, ignorado por .gitignore, fechado 27-oct)",
+    "B_sin_PYTHONIOENCODING": "tests/sprint6/test_otp_entorno_pruebas.py: 5 passed",
+    "C_DATABASE_URL_a_127.0.0.1:5434_solo_lectura": "forecasting (4 fallos) + loop4: 11 passed en 13,79 s (solo GET/SELECT; no se escribio en giragroup_db)"
+  },
+  "fallos": [
+    {
+      "n": 1,
+      "test": "tests/sprint3/test_financial_and_quality_post_steps.py::TestPostPasosSprint3::test_persistir_telemetria_y_volcar_inconsistencias",
+      "clasificacion": "a/b: dependencia de archivo no versionado (output/ ignorado); el test es fragil",
+      "causa": "tests/sprint3/test_financial_and_quality_post_steps.py:258 afirma Path(ruta_log).exists(); volcar_inconsistencias (pipeline/ejecutar_sprint3.py:487-536) solo devuelve la ruta y NUNCA escribe el JSONL; AuditLogger (pipeline/analytics/audit_logger.py:90-96,193-195) solo crea el archivo al registrar eventos (modo 'a'). El test pasa en el arbol principal solo porque queda un output/inconsistencias_sprint3.jsonl viejo (.gitignore:73 output/*.jsonl); en worktree limpio no existe.",
+      "evidencia": "log S-6 linea 73-74; ls output/inconsistencias_sprint3.jsonl = 60317 bytes, 27-oct; git check-ignore -v lo confirma; el stdout del test muestra 'jsonl_local' sin escritura.",
+      "arreglo_minimo": "En el test, instanciar OrquestadorSprint3 con ruta_inconsistencias=tmp_path/'inc.jsonl' (tmp_path ya esta como parametro sin uso) y llamar audit_logger.vaciar_a_jsonl() o registrar un evento antes del assert; o cambiar el assert a verificar total_inconsistencias==1 y ruta_log no vacia. Alternativa de codigo: que volcar_inconsistencias llame a self.audit_logger.vaciar_a_jsonl().",
+      "estado_F3R": "verde (F3R solo tuvo 1 fallo: test_powerbi_retencion, otro). Verde por el archivo residual, no por correccion."
+    },
+    {
+      "n": "2-5",
+      "test": "tests/sprint4/test_forecasting.py::{test_extractor_series_reales, test_api_forecast_alumnos, test_api_forecast_metas_mensual, test_api_forecast_metas_anual}",
+      "clasificacion": "a: dependencia de entorno/datos (BD con datos, no accesible)",
+      "causa": "tests/sprint4/test_forecasting.py:171-177 _dw_session_factory usa DW_TEST_URL o os.environ['DATABASE_URL']. El .env copiado al worktree trae DATABASE_URL=postgresql://...@giragroup_db:5432/giragroup_db (host solo resoluble dentro de la red docker). Log: 'could not translate host name \"giragroup_db\" to address' (time_series_extractor.py:139) -> circuit breaker -> serie vacia (n_observaciones=0, metodo None, origen sin_datos). Las 4 aserciones (len>=24 / metodo HoltWinters|OLS) fallan en cascada.",
+      "evidencia": "log S-6 lineas 91-93,111,130,149,189-201; reproducido en el arbol principal (caso A: fallan igual); con DATABASE_URL apuntando a 127.0.0.1:5434 (DW viva, solo lectura) pasan los 11 tests del archivo (caso C). Ningun contenedor beto_pg_tmpfs activo ahora; el protocolo documentado (CIERRE_F1Z, beto_pg_pg tmpfs 127.0.0.1:55432 con snapshot) exige exportar DATABASE_URL a la copia poblada.",
+      "arreglo_minimo": "Sin cambio de codigo: ejecutar S-6 con DATABASE_URL (y CATALOG_DATABASE_URL) apuntando a la copia tmpfs poblada con el snapshot (scripts/aislada_tmpfs.sh up, NO 'vacio'), p.ej. postgresql://giragroup_user:tmpfs_local@127.0.0.1:55432/giragroup_db. Mejora opcional: pytest.skip/fail claro en _dw_session_factory si el host no resuelve.",
+      "estado_F3R": "verde (F3R ejecuto con BD poblada accesible; su unico fallo fue powerbi). Verde en F3 (824 passed)."
+    },
+    {
+      "n": 6,
+      "test": "tests/sprint6/test_seguridad_y_resiliencia_api.py::test_loop4_validacion_estricta_contratos",
+      "clasificacion": "a: misma causa que 2-5",
+      "causa": "Usa _dw_session_factory (el mismo DATABASE_URL con host docker) en la primera linea del test; GLOBAL h=1 devuelve horizonte_meses None porque la serie esta vacia (log S-6 linea 199-201).",
+      "evidencia": "Pasa con DATABASE_URL a 127.0.0.1:5434 (caso C); falla igual en arbol principal con .env tal cual (caso A).",
+      "arreglo_minimo": "Igual que 2-5 (variable de entorno hacia la copia poblada).",
+      "estado_F3R": "verde"
+    },
+    {
+      "n": 7,
+      "test": "tests/sprint6/test_otp_entorno_pruebas.py::test_app_env_test_en_produccion_no_arranca",
+      "clasificacion": "b: defecto del test (decodificacion del subproceso) activado por el comando de S-6",
+      "causa": "tests/sprint6/test_otp_entorno_pruebas.py:27 subprocess.run(..., text=True) sin encoding: en Windows decodifica con cp1252; el comando de S-6 exporta PYTHONIOENCODING=utf-8, que hereda el subproceso (env copia os.environ, linea 24), y este escribe stderr en UTF-8 -> 'estÃ¡'; el assert de linea 46 busca 'está' y falla. Sin esa variable, el hijo escribe cp1252 y coincide.",
+      "evidencia": "log S-6 linea 164; reproducido: con PYTHONIOENCODING=utf-8 falla, sin ella 5 passed (casos A y B).",
+      "arreglo_minimo": "En _importar_auth (linea 27) fijar el entorno del hijo env['PYTHONIOENCODING']='utf-8' y pasar encoding='utf-8' a subprocess.run (una linea). O ejecutar la suite sin PYTHONIOENCODING.",
+      "estado_F3R": "verde (F3R no uso PYTHONIOENCODING=utf-8 en este caso; el test es independiente de 4b8dedc)"
+    }
+  ],
+  "descarte_regresion_4b8dedc": "D-A9 (aislada_tmpfs.sh) no se invoca en pytest; D-A4 (consolidacion.py) y D-A8a (confianza_service.py, extraccion_por_encabezado.py) no estan en las trazas de los 7 fallos; todos fallan por causas de entorno/test. Los 2 tests nuevos de tests/f3s pasan en S-6.",
+  "riesgos": "F3R no registro DATABASE_URL en f3r_pruebas.json: la afirmacion 'F3R verde' se basa en 823 passed/1 failed (solo powerbi). Reproducir S-6 exige exportar DATABASE_URL a la copia tmpfs poblada y decidir si PYTHONIOENCODING se mantiene (rompe el test 7)."
+}

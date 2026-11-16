@@ -1,0 +1,95 @@
+{
+ "tarea": "S-2 / D-A4",
+ "causa": "backend/routers/dataops/consolidacion.py:178-193 (antes 193-200): categoria_ruteo/doc_fuente salian de dim_origen_documental.tipo_fuente='ACTA' e ignoraban staging_registros_crudos.categoria='evaluacion_docente' (ingestion_service.py:837). Los renglones Likert se trataban como academicos y se descartaban sin estudiante.",
+ "correccion": "Si stg.categoria == 'evaluacion_docente', doc_fuente='EVALUACION_DOCENTE' para esa hoja (consolidacion.py:179-182). Cascada y umbrales intactos.",
+ "prueba": {
+  "archivo": "tests/f3s/test_d_a4_evaluacion_en_libro_acta.py",
+  "antes": "1 failed (6 hechos en vez de 18 / fila descartada)",
+  "despues": "passed",
+  "regresion": "tests/sprint5/test_dataops_integridad.py y tests/sprint2/test_formatos_genericos.py en verde"
+ },
+ "antes": {
+  "fuente": "docs/mediciones/f3r_base_reproducida.json y f3_base.json.huella.json",
+  "fact_evaluacion_docente": 75073,
+  "por_documento_eval": {
+   "6": 71458,
+   "7": 0,
+   "10": 3615
+  },
+  "doc7_filas_recorte": 1137,
+  "doc7_log_inconsistencias": 1211
+ },
+ "despues": {
+  "fuente": "output/f3s/s2_despues.json (+ .huella.json), base s2_despues en beto_pg_s2",
+  "fact_evaluacion_docente": 104939,
+  "por_documento_eval": {
+   "6": 71458,
+   "7": 29866,
+   "10": 3615
+  },
+  "tablas_iguales_al_base_en_conteo": {
+   "fact_rendimiento_academico": 1392,
+   "fact_situacion_financiera": 725,
+   "fact_marketing": 299,
+   "fact_techo_convenio": 1,
+   "fact_costo_programa": 1371,
+   "bridge_modulo_docente": 5,
+   "dim_origen_documental": 10
+  },
+  "tablas_que_cambian": {
+   "fact_evaluacion_docente": "75073 -> 104939 (solo doc 7)",
+   "fact_rentabilidad": "91 -> 95 (cambio de S-3 presente en el arbol, no de S-2)",
+   "carga_fila_origen": "15978 -> 782 (D-A9/S-1)",
+   "stg_entidad_no_resuelta": "5076 -> 3935",
+   "log_inconsistencias": "6226 -> 5090",
+   "cache_indice_beto": "12559 -> 11139"
+  },
+  "md5_distinto_con_mismo_conteo": [
+   "fact_costo_programa",
+   "log_pipeline_ingesta",
+   "schema_migrations (entorno)"
+  ],
+  "nota_md5": "No aislado si por S-3 (reglas de rentabilidad en el arbol vivo) o por entorno; los conteos coinciden. Pendiente de la corrida S-7."
+ },
+ "motivos_doc7": {
+  "filas_recorte": 1137,
+  "filas_con_hechos": 1137,
+  "hechos_esperados_por_regla": 29866,
+  "hechos_en_dw": 29866,
+  "descartes_por_hoja": {
+   "DIPLOMADOS DOCENTE": {},
+   "CURSOS DOCENTE": {},
+   "DIPLOMADOS DOC 2": {},
+   "CURSOS DOC 1": {}
+  },
+  "descartadas_en_ingesta_con_motivo": {
+   "SUBTOTAL": 74,
+   "tabla": "log_inconsistencias"
+  },
+  "total_trazado": 1211,
+  "sin_explicar": 0
+ },
+ "consolidacion": {
+  "status": "success",
+  "message": "Transacción completada: 108632 hechos persistidos en Data Warehouse (107907 académicos, 725 financieros), 29 derivados a Revisión Humana.",
+  "inserted_dw": 108632,
+  "inserted_academico": 107907,
+  "inserted_financiero": 725,
+  "inserted_admision": 391,
+  "inserted_revision": 43315,
+  "sent_hitl": 29,
+  "descartados_ruido": 4318
+ },
+ "comandos": [
+  "TMPFS_NAME=beto_pg_s2 TMPFS_PORT=55602 sh scripts/aislada_tmpfs.sh up",
+  "TMPFS_NAME=beto_pg_s2 sh scripts/aislada_tmpfs.sh vacio",
+  "TMPFS_NAME=beto_pg_s2 sh scripts/aislada_tmpfs.sh clon s2_despues; aplicar 016; TRUNCATE cache_indice_beto",
+  "docker exec giragroup_api env PYTHONHASHSEED=0 BETO_CASCADA_FINAL=0 BETO_ACUERDO_QC=0 BETO_SUGERENCIA_HITL=0 BETO_VENTANA=0 DATABASE_URL=...@beto_pg_s2:5432/s2_despues FLUJO_SIN_REVISION=1 CICLO_REUSAR_SLICES=1 CICLO_FILAS_SIN_FECHA=0 CICLO_SLICES=/tmp/slices_s2 python scripts/medir_flujo_dataops.py && python scripts/huella_dw_v2.py",
+  "python -m pytest tests/f3s/test_d_a4_evaluacion_en_libro_acta.py"
+ ],
+ "criterios": {
+  "1_prueba_verde": true,
+  "2_doc7_mayor_que_0_y_sin_explicar_0": true,
+  "3_otros_archivos_conteos_iguales": true
+ }
+}
