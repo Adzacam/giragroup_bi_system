@@ -205,7 +205,7 @@ class TestPostPasosSprint3:
     """Verifica la ejecución síncrona de los dos post-pasos institucionales."""
 
     def test_persistir_telemetria_y_volcar_inconsistencias(self, tmp_path):
-        orquestador = OrquestadorSprint3(cpu_only=True)
+        orquestador = OrquestadorSprint3(ruta_inconsistencias=tmp_path / "inc.jsonl", cpu_only=True)
         registros_mock = [
             {
                 "doc_id": 1,
@@ -255,4 +255,6 @@ class TestPostPasosSprint3:
         # Post-paso 2: Volcar inconsistencias
         res_inc = orquestador.volcar_inconsistencias(registros_mock)
         assert res_inc["total_inconsistencias"] == 1
+        # volcar_inconsistencias solo devuelve la ruta; el archivo se materializa al vaciar el logger
+        orquestador.audit_logger.vaciar_a_jsonl()
         assert Path(res_inc["ruta_log"]).exists()

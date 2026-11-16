@@ -21,7 +21,8 @@ def _importar_auth(**env_extra):
     env = {k: v for k, v in os.environ.items() if k not in ("APP_ENV", "ENVIRONMENT")}
     env.update(env_extra)
     env["PYTHONPATH"] = str(AUTH_DIR)
-    return subprocess.run([sys.executable, "-c", SONDA], cwd=AUTH_DIR, env=env, capture_output=True, text=True, timeout=120)
+    env["PYTHONIOENCODING"] = "utf-8"
+    return subprocess.run([sys.executable, "-c", SONDA], cwd=AUTH_DIR, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
 
 
 @pytest.mark.parametrize("env_extra,esperado", [
