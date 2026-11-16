@@ -1,5 +1,5 @@
 # CIERRE F3S — 2026-11-16
-Rama / commit: `beto-integracion`. Código: `4b8dedc` (D-A4, D-A8a, dw_vacio) y `7fab72a` (dos pruebas). Documentación: ver el commit `docs(f3s)` que sigue a `7fab72a`.
+Rama / commit: `beto-integracion`. Código: `4b8dedc` (D-A4, D-A8a, dw_vacio) y `7fab72a` (dos pruebas). Documentación: `0e2d93c`.
 
 **No se anuncia «F3 congelado»: eso lo hace el chat 1 tras revisar este cierre.**
 
