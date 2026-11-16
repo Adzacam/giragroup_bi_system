@@ -1,0 +1,31 @@
+{
+  "etiqueta": "F3, final",
+  "tarea": "F3-5 (B-7 KLM)",
+  "fuente_formula": "scripts/agregar_flujo_repetido.py::klm",
+  "bandeja": {
+    "casos": 680,
+    "grupos": 19,
+    "manuales": 14,
+    "casos_manuales": 47
+  },
+  "con_espera_W_10s": {
+    "total_s": 736.6,
+    "desglose_s": {
+      "bloque": 56.0,
+      "corregir_fecha": 18.7,
+      "mapear_estado": 0.0,
+      "manual": 658.0,
+      "paginacion": 3.9
+    }
+  },
+  "sin_espera_W_0s": {
+    "total_s": 216.6,
+    "desglose_s": {
+      "bloque": 16.0,
+      "corregir_fecha": 8.7,
+      "mapear_estado": 0.0,
+      "manual": 188.0,
+      "paginacion": 3.9
+    }
+  }
+}

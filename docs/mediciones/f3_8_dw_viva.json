@@ -1,0 +1,20 @@
+{
+  "etiqueta": "F3, final",
+  "tarea": "F3-8 (DW viva: migración 016)",
+  "respaldo_previo": {
+    "archivo": "output/f3/giragroup_db_pre016.dump",
+    "formato": "pg_dump -Fc",
+    "bytes": 31627540,
+    "sha256": "0763d1dbe825ba154b325c2db7bfe98f4cfd2d5d35c4ef52811ecef4641a667a",
+    "fuera_de_git": true
+  },
+  "migracion_aplicada": "backend/scripts/migrations/016_b9_descartes_y_homonimos.sql",
+  "registrada_en_schema_migrations": true,
+  "columnas_presentes": [
+    "log_inconsistencias.regla_origen",
+    "stg_entidad_no_resuelta.id_homonimo"
+  ],
+  "sin_recarga_filas_intactas": true,
+  "api_health": 200,
+  "snapshot_dw_20261110_1201_intacto": true
+}

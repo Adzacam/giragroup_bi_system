@@ -1,0 +1,26 @@
+{
+  "etiqueta": "F3, provisional",
+  "tarea": "F3-1 (B-9 sin coste de tiempo)",
+  "consolidacion_s_antes_f2r": 1162.43,
+  "consolidacion_s_ahora": 734.57,
+  "tiempo_maquina_s": 868.06,
+  "meta_consolidacion_s": 750,
+  "cumple_meta_750s": true,
+  "diffs_huella_vs_f2r_base": [],
+  "log_inconsistencias_filas": 6226,
+  "bandeja": {
+    "casos": 680,
+    "grupos": 19,
+    "manuales": 14,
+    "casos_manuales": 47
+  },
+  "kpis": {
+    "KPI-10": null,
+    "KPI-11": null,
+    "KPI-18": 36.0
+  },
+  "recursos_host_cierre": {
+    "cpu_pct": 8.9,
+    "ram_usada_mb": 22361.4
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "etiqueta": "F3, provisional",
+  "tarea": "F3-3 (Huella v2)",
+  "script": "scripts/huella_dw_v2.py",
+  "total_tablas_cubiertas": 50,
+  "meta": {
+    "PYTHONHASHSEED": "0",
+    "columnas_excluidas_global": [
+      "registro_origen_id"
+    ],
+    "columnas_excluidas_por_tabla": {
+      "public.fact_rendimiento_academico": [
+        "id_hecho_aca",
+        "created_at"
+      ],
+      "public.fact_situacion_financiera": [
+        "id_hecho_fin",
+        "fecha_registro"
+      ],
+      "public.fact_evaluacion_docente": [
+        "id_hecho_eval"
+      ],
+      "public.fact_marketing": [
+        "id_hecho_mkt"
+      ],
+      "public.fact_rentabilidad": [
+        "id_hecho_rent"
+      ],
+      "public.fact_techo_convenio": [
+        "id_hecho_techo",
+        "actualizado_en"
+      ],
+      "public.fact_costo_programa": [
+        "id_hecho_costo",
+        "actualizado_en"
+      ],
+      "public.stg_entidad_no_resuelta": [
+        "id_staging",
+        "created_at",
+        "resuelto_en",
+        "lock_expira",
+        "payload_json"
+      ],
+      "public.carga_fila_origen": [
+        "creado_en"
+      ],
+      "public.log_inconsistencias": [
+        "id_inconsistencia",
+        "detectado_en",
+        "resuelto_en"
+      ],
+      "public.log_pipeline_ingesta": [
+        "id",
+        "mensaje",
+        "tiempo_ms",
+        "created_at"
+      ],
+      "public.log_auditoria_nlp": [
+        "id_log",
+        "created_at"
+      ],
+      "public.lote": [
+        "creado_en",
+        "actualizado_en"
+      ],
+      "public.dataops_tarea": [
+        "creado_en",
+        "actualizado_en",
+        "iniciado_en",
+        "terminado_en"
+      ],
+      "public.dim_origen_documental": [
+        "fecha_procesamiento"
+      ],
+      "public.staging_registros_crudos": [
+        "id",
+        "created_at"
+      ],
+      "public.cache_indice_beto": [
+        "creado_en"
+      ],
+      "public.notifications": [
+        "id",
+        "created_at"
+      ]
+    },
+    "columnas_redondeadas_4dec": [
+      "nivel_confianza",
+      "nivel_confianza_ia",
+      "score_fuzzy"
+    ]
+  },
+  "reproducibilidad_entre_dos_sesiones_distintas": {
+    "sesion_1": "f3_1_run (antes de rebuild)",
+    "sesion_2": "f3_base (después de rebuild/reinicio de pipeline y api)",
+    "tablas_con_md5_identico": 49,
+    "tablas_diferentes": [
+      "fact_situacion_financiera"
+    ],
+    "nota": "Única diferencia esperada en fact_situacion_financiera por F3-2 (estado_cartera); 49/49 tablas restantes idénticas en ambas sesiones."
+  },
+  "huellas_anteriores_sin_modificar": true
+}

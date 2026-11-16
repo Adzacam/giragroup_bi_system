@@ -1,0 +1,325 @@
+{
+  "etiqueta": "F3, final",
+  "tarea": "F3-5 (B-7)",
+  "protocolo": "docs/mediciones/f2r_g6_protocolo_b7.md",
+  "lote_manifest": "aafde8ad",
+  "modelo_beto_v2_sha256": {
+    "antes": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+    "despues": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+    "prefijo_ok": true
+  },
+  "docker_stats_antes": [
+    "beto_pg_tmpfs|0.02%|494.2MiB / 15.34GiB",
+    "giragroup_web|0.08%|69.46MiB / 15.34GiB",
+    "giragroup_pipeline|0.42%|1.03GiB / 15.34GiB",
+    "giragroup_api|0.84%|769.5MiB / 15.34GiB",
+    "giragroup_catalog_db|0.01%|53.72MiB / 15.34GiB",
+    "giragroup_gateway|0.00%|5.719MiB / 15.34GiB",
+    "giragroup_audit_svc|0.15%|66.02MiB / 15.34GiB",
+    "giragroup_auth_svc|0.15%|65.1MiB / 15.34GiB",
+    "giragroup_notifications_svc|0.18%|64.37MiB / 15.34GiB",
+    "giragroup_db|0.00%|148.6MiB / 15.34GiB"
+  ],
+  "docker_stats_despues": [
+    "beto_pg_tmpfs|0.04%|626.9MiB / 15.34GiB",
+    "giragroup_web|0.12%|72.52MiB / 15.34GiB",
+    "giragroup_pipeline|0.42%|1.477GiB / 15.34GiB",
+    "giragroup_api|0.80%|877.5MiB / 15.34GiB",
+    "giragroup_catalog_db|0.00%|58.11MiB / 15.34GiB",
+    "giragroup_gateway|0.00%|7.887MiB / 15.34GiB",
+    "giragroup_audit_svc|0.14%|69.13MiB / 15.34GiB",
+    "giragroup_auth_svc|0.13%|66.5MiB / 15.34GiB",
+    "giragroup_notifications_svc|0.12%|67.52MiB / 15.34GiB",
+    "giragroup_db|0.00%|195.1MiB / 15.34GiB"
+  ],
+  "corridas": {
+    "vacia": [
+      {
+        "corrida": 1,
+        "duracion_pared_s": 800.21,
+        "tiempo_maquina_s": 800.21,
+        "etapas_s": {
+          "carga_y_lectura_s": 131.93,
+          "espera_lectura_beto_s": 0.03,
+          "lectura_beto_s": 122.07,
+          "lineas_leidas_beto": 12992,
+          "lineas_por_s_beto": 106.43,
+          "carga_s": 9.89,
+          "consolidacion_s": 668.25,
+          "revision_maquina_s": 0.0,
+          "revision_humana_simulada_s": 0.0
+        },
+        "diffs_huella_vs_f3_base": [],
+        "bandeja": {
+          "casos": 680,
+          "grupos": 19,
+          "manuales": 14,
+          "casos_manuales": 47
+        },
+        "kpis": {
+          "KPI-10": null,
+          "KPI-11": null,
+          "KPI-18": 36.0
+        },
+        "host_cpu_avg_pct": 28.2,
+        "host_cpu_max_pct": 46.5
+      },
+      {
+        "corrida": 2,
+        "duracion_pared_s": 847.91,
+        "tiempo_maquina_s": 847.91,
+        "etapas_s": {
+          "carga_y_lectura_s": 129.21,
+          "espera_lectura_beto_s": 0.02,
+          "lectura_beto_s": 120.53,
+          "lineas_leidas_beto": 12992,
+          "lineas_por_s_beto": 107.79,
+          "carga_s": 8.7,
+          "consolidacion_s": 718.68,
+          "revision_maquina_s": 0.0,
+          "revision_humana_simulada_s": 0.0
+        },
+        "diffs_huella_vs_f3_base": [],
+        "bandeja": {
+          "casos": 680,
+          "grupos": 19,
+          "manuales": 14,
+          "casos_manuales": 47
+        },
+        "kpis": {
+          "KPI-10": null,
+          "KPI-11": null,
+          "KPI-18": 36.0
+        },
+        "host_cpu_avg_pct": 32.1,
+        "host_cpu_max_pct": 60.1
+      },
+      {
+        "corrida": 3,
+        "duracion_pared_s": 902.42,
+        "tiempo_maquina_s": 902.42,
+        "etapas_s": {
+          "carga_y_lectura_s": 154.03,
+          "espera_lectura_beto_s": 0.02,
+          "lectura_beto_s": 142.95,
+          "lineas_leidas_beto": 12992,
+          "lineas_por_s_beto": 90.89,
+          "carga_s": 11.1,
+          "consolidacion_s": 748.37,
+          "revision_maquina_s": 0.0,
+          "revision_humana_simulada_s": 0.0
+        },
+        "diffs_huella_vs_f3_base": [],
+        "bandeja": {
+          "casos": 680,
+          "grupos": 19,
+          "manuales": 14,
+          "casos_manuales": 47
+        },
+        "kpis": {
+          "KPI-10": null,
+          "KPI-11": null,
+          "KPI-18": 36.0
+        },
+        "host_cpu_avg_pct": 32.8,
+        "host_cpu_max_pct": 62.8
+      }
+    ],
+    "llena": [
+      {
+        "corrida": 1,
+        "duracion_pared_s": 270.26,
+        "tiempo_maquina_s": 257.9,
+        "etapas_s": {
+          "carga_y_lectura_s": 133.54,
+          "espera_lectura_beto_s": 0.02,
+          "lectura_beto_s": 123.56,
+          "lineas_leidas_beto": 12992,
+          "lineas_por_s_beto": 105.15,
+          "carga_s": 10.0,
+          "consolidacion_s": 124.34,
+          "revision_maquina_s": 0.0,
+          "revision_humana_simulada_s": 0.0
+        },
+        "diffs_huella_vs_f3_base": [
+          "schema_migrations"
+        ],
+        "bandeja": {
+          "casos": 680,
+          "grupos": 19,
+          "manuales": 14,
+          "casos_manuales": 47
+        },
+        "kpis": {
+          "KPI-10": null,
+          "KPI-11": null,
+          "KPI-18": 36.0
+        },
+        "host_cpu_avg_pct": 8.3,
+        "host_cpu_max_pct": 14.3
+      },
+      {
+        "corrida": 2,
+        "duracion_pared_s": 269.53,
+        "tiempo_maquina_s": 258.02,
+        "etapas_s": {
+          "carga_y_lectura_s": 121.76,
+          "espera_lectura_beto_s": 0.02,
+          "lectura_beto_s": 113.33,
+          "lineas_leidas_beto": 12992,
+          "lineas_por_s_beto": 114.64,
+          "carga_s": 8.45,
+          "consolidacion_s": 136.24,
+          "revision_maquina_s": 0.0,
+          "revision_humana_simulada_s": 0.0
+        },
+        "diffs_huella_vs_f3_base": [
+          "schema_migrations"
+        ],
+        "bandeja": {
+          "casos": 680,
+          "grupos": 19,
+          "manuales": 14,
+          "casos_manuales": 47
+        },
+        "kpis": {
+          "KPI-10": null,
+          "KPI-11": null,
+          "KPI-18": 36.0
+        },
+        "host_cpu_avg_pct": 9.4,
+        "host_cpu_max_pct": 15.7
+      },
+      {
+        "corrida": 3,
+        "duracion_pared_s": 265.6,
+        "tiempo_maquina_s": 252.52,
+        "etapas_s": {
+          "carga_y_lectura_s": 122.82,
+          "espera_lectura_beto_s": 0.02,
+          "lectura_beto_s": 112.4,
+          "lineas_leidas_beto": 12992,
+          "lineas_por_s_beto": 115.58,
+          "carga_s": 10.44,
+          "consolidacion_s": 129.68,
+          "revision_maquina_s": 0.0,
+          "revision_humana_simulada_s": 0.0
+        },
+        "diffs_huella_vs_f3_base": [
+          "schema_migrations"
+        ],
+        "bandeja": {
+          "casos": 680,
+          "grupos": 19,
+          "manuales": 14,
+          "casos_manuales": 47
+        },
+        "kpis": {
+          "KPI-10": null,
+          "KPI-11": null,
+          "KPI-18": 36.0
+        },
+        "host_cpu_avg_pct": 9.7,
+        "host_cpu_max_pct": 28.4
+      }
+    ]
+  },
+  "resumen": {
+    "vacia": {
+      "n": 3,
+      "tiempo_maquina_s": {
+        "valores": [
+          800.21,
+          847.91,
+          902.42
+        ],
+        "media": 850.18,
+        "de": 51.14,
+        "min": 800.21,
+        "max": 902.42
+      },
+      "carga_s": {
+        "valores": [
+          9.89,
+          8.7,
+          11.1
+        ],
+        "media": 9.9,
+        "de": 1.2,
+        "min": 8.7,
+        "max": 11.1
+      },
+      "lectura_beto_s": {
+        "valores": [
+          122.07,
+          120.53,
+          142.95
+        ],
+        "media": 128.52,
+        "de": 12.52,
+        "min": 120.53,
+        "max": 142.95
+      },
+      "consolidacion_s": {
+        "valores": [
+          668.25,
+          718.68,
+          748.37
+        ],
+        "media": 711.77,
+        "de": 40.5,
+        "min": 668.25,
+        "max": 748.37
+      },
+      "todas_huellas_identicas_f3_base": true
+    },
+    "llena": {
+      "n": 3,
+      "tiempo_maquina_s": {
+        "valores": [
+          257.9,
+          258.02,
+          252.52
+        ],
+        "media": 256.15,
+        "de": 3.14,
+        "min": 252.52,
+        "max": 258.02
+      },
+      "carga_s": {
+        "valores": [
+          10.0,
+          8.45,
+          10.44
+        ],
+        "media": 9.63,
+        "de": 1.05,
+        "min": 8.45,
+        "max": 10.44
+      },
+      "lectura_beto_s": {
+        "valores": [
+          123.56,
+          113.33,
+          112.4
+        ],
+        "media": 116.43,
+        "de": 6.19,
+        "min": 112.4,
+        "max": 123.56
+      },
+      "consolidacion_s": {
+        "valores": [
+          124.34,
+          136.24,
+          129.68
+        ],
+        "media": 130.09,
+        "de": 5.96,
+        "min": 124.34,
+        "max": 136.24
+      },
+      "todas_huellas_identicas_f3_base": false
+    }
+  }
+}

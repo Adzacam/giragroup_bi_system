@@ -1,0 +1,25 @@
+{
+  "etiqueta": "F3, final",
+  "tarea": "F3-9 (Trazabilidad SFV)",
+  "entradas": [
+    {"id": "F3-P1-PASS", "valor": 824, "archivo": "docs/mediciones/f3_pruebas.json", "ruta": "passed"},
+    {"id": "F3-P1-FAIL", "valor": 0, "archivo": "docs/mediciones/f3_pruebas.json", "ruta": "failed"},
+    {"id": "F3-P1-COV", "valor": 70, "archivo": "docs/mediciones/f3_pruebas.json", "ruta": "cobertura_total_pct"},
+    {"id": "F3-B7-MAQ-VAC", "valor": 850.18, "archivo": "docs/mediciones/f3_b7_rnf03.json", "ruta": "solo_maquina.cache_vacia_media_s"},
+    {"id": "F3-B7-MAQ-LLENA", "valor": 256.15, "archivo": "docs/mediciones/f3_b7_rnf03.json", "ruta": "solo_maquina.cache_llena_media_s"},
+    {"id": "F3-B7-KLM-W10", "valor": 1586.78, "archivo": "docs/mediciones/f3_b7_rnf03.json", "ruta": "maquina_mas_klm.con_espera_W_10s_s"},
+    {"id": "F3-B7-KLM-W0", "valor": 1066.78, "archivo": "docs/mediciones/f3_b7_rnf03.json", "ruta": "maquina_mas_klm.sin_espera_W_0s_s"},
+    {"id": "F3-KLM-W10", "valor": 736.6, "archivo": "docs/mediciones/f3_b7_klm.json", "ruta": "con_espera_W_10s.total_s"},
+    {"id": "F3-KLM-W0", "valor": 216.6, "archivo": "docs/mediciones/f3_b7_klm.json", "ruta": "sin_espera_W_0s.total_s"},
+    {"id": "F3-CICLO-LINEAS", "valor": 12992, "archivo": "docs/mediciones/f3_base.json", "ruta": "etapas_s.lineas_leidas_beto"},
+    {"id": "F3-CICLO-HECHOS", "valor": 78750, "archivo": "docs/mediciones/f3_base.json", "ruta": "consolidacion.inserted_dw"},
+    {"id": "F3-BANDEJA-CASOS", "valor": 680, "archivo": "docs/mediciones/f3_b7_klm.json", "ruta": "bandeja.casos"},
+    {"id": "F3-BANDEJA-GRUPOS", "valor": 19, "archivo": "docs/mediciones/f3_b7_klm.json", "ruta": "bandeja.grupos"},
+    {"id": "F3-KPI15-2025", "valor": 73.44, "archivo": "docs/mediciones/f3_2_kpi15.json", "ruta": "kpi_15_api_vs_sql.2025.api"},
+    {"id": "F3-B9-BITACORA", "valor": 6226, "archivo": "docs/mediciones/f3_1_b9_rendimiento.json", "ruta": "log_inconsistencias_filas"},
+    {"id": "F3-B8-HW-RMSE", "valor": 241708.2, "archivo": "docs/mediciones/f3_pronostico.json", "ruta": "hw.META_MENSUAL_PROGRAMAS.rmse"},
+    {"id": "F3-B8-HW-AIC", "valor": 1223.97, "archivo": "docs/mediciones/f3_pronostico.json", "ruta": "hw.META_MENSUAL_PROGRAMAS.aic"},
+    {"id": "F3-B8-HW-MAPE", "valor": 33.96, "archivo": "docs/mediciones/f3_pronostico.json", "ruta": "hw.META_MENSUAL_PROGRAMAS.mape_holdout_pct"},
+    {"id": "F3-P5-OLS-2025-OBS", "valor": 11851223.44, "archivo": "docs/mediciones/f2r_g4_b5_conciliacion.json", "ruta": "comparacion_misma_definicion_ols_programas_2025.F2_lote_v2_f2r_base.observado_bs"}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "etiqueta": "F3, final",
+  "tarea": "F3-5 (RNF-03 dos números)",
+  "solo_maquina": {
+    "cache_vacia_media_s": 850.18,
+    "cache_llena_media_s": 256.15,
+    "cumple_900s": true,
+    "cumple_1200s": true
+  },
+  "maquina_mas_klm": {
+    "con_espera_W_10s_s": 1586.78,
+    "cumple_900s_W10": false,
+    "cumple_1200s_W10": false,
+    "sin_espera_W_0s_s": 1066.78,
+    "cumple_900s_W0": false,
+    "cumple_1200s_W0": true
+  }
+}

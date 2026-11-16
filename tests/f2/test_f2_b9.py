@@ -63,3 +63,21 @@ def test_b9_homonimia_en_dw_loader_mantiene_estado_c(monkeypatch):
     assert stg_obj.fk_estado == "C"
     assert stg_obj.motivo == "HOMONIMIA"
     assert stg_obj.id_homonimo == generar_id_homonimo("Juan Perez", "TEMP-CI-abcd1234", "Diplomado X")
+
+
+def test_f3_1_n_descartes_en_bloque_y_dedup_ruido():
+    from routers.dataops.consolidacion import _registrar_descarte_ruido
+
+    db = MagicMock()
+    stg = MagicMock(id_documento=1, id=10, hoja="Hoja1")
+    logs_out, stg_out, ruido_visto = [], [], set()
+
+    for i in range(5):
+        _registrar_descarte_ruido(
+            db, stg, "linea repetida sin entidad", 0.5, "FILA_SIN_ENTIDAD", "ACTA",
+            fila_origen=i + 1, logs_out=logs_out, stg_out=stg_out, ruido_visto=ruido_visto,
+        )
+
+    assert len(logs_out) == 5
+    assert len(stg_out) == 1
+    db.add.assert_not_called()

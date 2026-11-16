@@ -210,14 +210,29 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                 archivo=orig_doc.nombre_archivo if orig_doc else None,
                 omitir=lambda l: bool(motivo_fila_sin_entidad(campos_por_encabezado([c.strip() for c in l.split("|")]), categoria_ruteo)),
                 excluir_celda=_es_encabezado_no_estudiante)
+        logs_descarte_stg = []
+        stg_descarte_stg = []
+        ruido_visto_stg = {
+            r[0]
+            for r in db.query(StagingEntidadNoResuelta.texto_original)
+            .filter(
+                StagingEntidadNoResuelta.id_documento == stg.id_documento,
+                StagingEntidadNoResuelta.registro_origen_id == stg.id,
+            )
+            .all()
+        }
         for k_fila, (line, indice) in enumerate(zip(lines, indices_linea)):
             lineas_hechas += 1
             tareas_dataops.avanzar(tarea_id, indexadas[0] + lineas_hechas)
             campos_linea = campos_por_encabezado([c.strip() for c in line.split("|")])
             motivo_ruido = motivo_fila_sin_entidad(campos_linea, categoria_ruteo)
             if motivo_ruido:
-                # Sin entidad que enlazar (hoja de estados, catálogo, fila agregada): ruido en stg + bitácora individual (B-9)
-                _registrar_descarte_ruido(db, stg, line, indice, motivo_ruido, doc_fuente, fila_origen=(stg.fila_inicio or 0) + k_fila)
+                # Sin entidad que enlazar (hoja de estados, catálogo, fila agregada): acumula en lote sin autoflush (F3-1)
+                _registrar_descarte_ruido(
+                    db, stg, line, indice, motivo_ruido, doc_fuente,
+                    fila_origen=(stg.fila_inicio or 0) + k_fila,
+                    logs_out=logs_descarte_stg, stg_out=stg_descarte_stg, ruido_visto=ruido_visto_stg,
+                )
                 descartados_ruido += 1
                 descartes_por_regla[motivo_ruido] = descartes_por_regla.get(motivo_ruido, 0) + 1
                 continue
@@ -322,6 +337,11 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                         "monto_deuda": monto_deuda_val,
                         "monto_pagado": monto_pagado_val,
                         "cuotas_impagas": cuotas_impagas_val,
+                        "estado_cartera": (
+                            derivar_estado_cartera(campos_linea, cuotas_impagas_val)
+                            if categoria_ruteo == "financiero"
+                            else None
+                        ),
                         "concepto": concepto_str,
                         "nivel_confianza_ia": score,
                         "fecha": fecha_linea,
@@ -459,6 +479,11 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     )
                     db.add(stg_unresolved)
 
+        if logs_descarte_stg:
+            db.add_all(logs_descarte_stg)
+        if stg_descarte_stg:
+            db.add_all(stg_descarte_stg)
+
     dw.finalizar_cargas()
     db.commit()
     cache_consultas.invalidar()  # el DW cambió: alertas, CMI y forecast se recalculan
@@ -514,11 +539,41 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     }
 
 
-def _registrar_descarte_ruido(db: Session, stg, line: str, indice, motivo: str, doc_fuente: str, fila_origen: Optional[int] = None) -> None:
+def derivar_estado_cartera(campos_linea: Optional[dict], cuotas_impagas: int = 0) -> str:
+    """Deriva estado_cartera del dominio existente ('Previsionable', 'Mora', 'Vigente') para F3-2 (KPI-15)."""
+    campos = campos_linea or {}
+    tipo_cartera = strip_accents(str(campos.get("TIPO DE CARTERA") or "")).upper().strip()
+    if "INCOBRABLE" in tipo_cartera:
+        return "Previsionable"
+    dias_raw = str(campos.get("DIAS DE MORA") or "").strip()
+    if dias_raw:
+        m_dias = re.search(r"-?\d+(?:\.\d+)?", dias_raw)
+        if m_dias and float(m_dias.group(0)) > 0:
+            return "Mora"
+    rango = strip_accents(str(campos.get("RANGO MORA") or "")).upper().strip()
+    if rango and rango not in ("0", "0.0", "SIN MORA", "NINGUNO", "N/A", "NA", "NULL", "NONE", "-"):
+        return "Mora"
+    if cuotas_impagas and int(cuotas_impagas) > 0:
+        return "Mora"
+    return "Vigente"
+
+
+def _registrar_descarte_ruido(
+    db: Session,
+    stg,
+    line: str,
+    indice,
+    motivo: str,
+    doc_fuente: str,
+    fila_origen: Optional[int] = None,
+    logs_out: Optional[list] = None,
+    stg_out: Optional[list] = None,
+    ruido_visto: Optional[set] = None,
+) -> None:
     """Deja constancia de una línea descartada como ruido: en log_inconsistencias (1:1 por línea) y en stg_entidad_no_resuelta."""
     from core.esquema_opcional import valores_si_existen
 
-    db.add(LogInconsistencia(
+    log_obj = LogInconsistencia(
         id_documento=stg.id_documento,
         fila_origen=fila_origen,
         campo_afectado=(stg.hoja or "")[:100],
@@ -528,18 +583,30 @@ def _registrar_descarte_ruido(db: Session, stg, line: str, indice, motivo: str, 
         severidad="BAJA",
         estado_resolucion="DESCARTADO",
         descripcion=f"Línea descartada por regla ({motivo}) en hoja '{stg.hoja}'",
-    ))
-    ya_registrada = db.query(StagingEntidadNoResuelta.id_staging).filter(
-        StagingEntidadNoResuelta.id_documento == stg.id_documento,
-        StagingEntidadNoResuelta.registro_origen_id == stg.id,
-        StagingEntidadNoResuelta.texto_original == line[:250],
-    ).first()
-    if ya_registrada:
-        return
-    db.add(StagingEntidadNoResuelta(
+    )
+    if logs_out is not None:
+        logs_out.append(log_obj)
+    else:
+        db.add(log_obj)
+
+    clave_txt = line[:250]
+    if ruido_visto is not None:
+        if clave_txt in ruido_visto:
+            return
+        ruido_visto.add(clave_txt)
+    else:
+        ya_registrada = db.query(StagingEntidadNoResuelta.id_staging).filter(
+            StagingEntidadNoResuelta.id_documento == stg.id_documento,
+            StagingEntidadNoResuelta.registro_origen_id == stg.id,
+            StagingEntidadNoResuelta.texto_original == clave_txt,
+        ).first()
+        if ya_registrada:
+            return
+
+    stg_obj = StagingEntidadNoResuelta(
         id_documento=stg.id_documento,
         tipo_entidad="RUIDO",
-        texto_original=line[:250],
+        texto_original=clave_txt,
         fk_estado="C",
         nivel_confianza=indice,
         resuelto=True,
@@ -548,4 +615,8 @@ def _registrar_descarte_ruido(db: Session, stg, line: str, indice, motivo: str, 
         estado_resolucion="DESCARTADO",
         payload_json={"raw_line": line, "tipo_fuente": doc_fuente, "descarte": "RUIDO"},
         registro_origen_id=stg.id,
-    ))
+    )
+    if stg_out is not None:
+        stg_out.append(stg_obj)
+    else:
+        db.add(stg_obj)

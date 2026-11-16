@@ -1,0 +1,123 @@
+{
+  "etiqueta": "F3, final",
+  "tarea": "F3-7 (Pronóstico HW + OLS sobre f3_base)",
+  "hw": {
+    "ALUMNOS_GLOBAL": {
+      "n_obs": 0,
+      "sin_datos": true
+    },
+    "META_MENSUAL_PROGRAMAS": {
+      "n_obs": 47,
+      "rmse": 241708.2,
+      "aic": 1223.97,
+      "mape_holdout_pct": 33.96,
+      "metodo_intervalo": "simulacion_param_aditivo_n1000",
+      "forecast": [
+        1425508.85,
+        1303816.03,
+        1408544.26,
+        1489839.73,
+        1086040.9,
+        584461.48
+      ],
+      "ic80_lower": [
+        1033210.55,
+        876000.84,
+        1021954.69,
+        1095123.36,
+        698650.28,
+        195623.2
+      ],
+      "ic80_upper": [
+        1808905.18,
+        1670689.9,
+        1813058.72,
+        1866620.64,
+        1464074.89,
+        991399.81
+      ],
+      "ic95_lower": [
+        816822.05,
+        659169.3,
+        808907.33,
+        923478.77,
+        461753.69,
+        0.0
+      ],
+      "ic95_upper": [
+        1999374.89,
+        1885686.56,
+        2030200.24,
+        2093289.73,
+        1682309.98,
+        1194361.09
+      ],
+      "cobertura_holdout": {
+        "horizonte_holdout": 6,
+        "metodo_intervalo": "simulacion_param_aditivo_n1000",
+        "cobertura_80": 0.1667,
+        "cubiertos_80": 1,
+        "cobertura_95": 0.6667,
+        "cubiertos_95": 4,
+        "anchos_80": [
+          724930.3,
+          742681.68,
+          739331.27,
+          721007.65,
+          715332.46,
+          743697.99
+        ],
+        "anchos_95": [
+          1080033.67,
+          1146249.43,
+          1141367.01,
+          1093254.2,
+          1140678.58,
+          1123259.03
+        ]
+      }
+    }
+  },
+  "ols": {
+    "META_ANUAL": {
+      "n_obs": 3,
+      "resultado": {
+        "caso_uso": "META_ANUAL",
+        "metodo": "OLS",
+        "tipo_estimacion": "Proyección indicativa de tendencia lineal anual",
+        "horizonte_anios": 2,
+        "n_observaciones": 3,
+        "anios_historicos": [
+          2023,
+          2024,
+          2025
+        ],
+        "valores_historicos": [
+          8035694.25,
+          9989730.09,
+          11851223.44
+        ],
+        "periodos": [
+          "2026",
+          "2027"
+        ],
+        "forecast": [
+          13774411.78,
+          15682176.38
+        ],
+        "ic_lower": null,
+        "ic_upper": null,
+        "pendiente_anual_bs": 1907764.59,
+        "cagr_historico_pct": 21.48,
+        "nota_metodologica": "Estimación de tendencia lineal indicativa sobre N=3 puntos. No se calculan intervalos de confianza al 95% debido a la reducida muestra longitudinal histórica (dof=1). Ver Cap. 4 del informe técnico."
+      },
+      "uso_estadistico": "solo descriptiva"
+    },
+    "META_MENSUAL_N": {
+      "n_obs": 47,
+      "pendiente_mensual_bs": 16684.49,
+      "intercepto_bs": 559325.56,
+      "uso_estadistico": "solo descriptiva"
+    }
+  }
+}

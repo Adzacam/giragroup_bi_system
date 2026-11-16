@@ -1,10 +1,13 @@
 # ÚNICA FUENTE DE VERDAD (SFV) - PROYECTO DE GRADO GIRAGROUP BI
+**Estado:** **CONGELADO** — F3 (16 de noviembre de 2026)  
 **Sistema de Inteligencia de Negocios basado en BETO y Cuadro de Mando Integral para mitigar la fragmentación informacional en GiraGroup S.R.L.**  
 **Autor:** Lean (Adriano Daza)  
-**Fecha de Congelamiento:** 10 de noviembre de 2026, 12:02:15 -04:00  
-**Snapshot ID:** `snapshot_dw_20261110_1201`  
-**Archivo de Respaldo Físico:** `docs/evidencias/snapshot_dw_20261110_1201.dump`  
-**Hash SHA-256 del Snapshot:** `14D45F5A128F44543927911DC0AD453F681D524AC05037203F5C0C2787E3A2EB`  
+**Rama / Commit base F3:** `beto-integracion` (`155192b`, código congelado F3-4 sobre `b7c5006`)  
+**Lote congelado (10 archivos, SHA-256):** `aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60`  
+**Modelo BETO (`beto-v2`, SHA-256):** `9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92`  
+**Huella v2 de `f3_base` (SHA-256):** `b5f1d7b145ceeef8ca85c1f85fd9121eb20d506fcad618a13d66fd944eaaf24f` (`docs/mediciones/f3_base.json.huella.json`)  
+**Flags de integración BETO:** `BETO_CASCADA_FINAL=False`, `BETO_ACUERDO_QC=False`, `BETO_SUGERENCIA_HITL=False`, `BETO_VENTANA=False`  
+**Referencia histórica (10-nov-2026):** `snapshot_dw_20261110_1201` (`docs/evidencias/snapshot_dw_20261110_1201.dump`, SHA-256 `14D45F5A128F44543927911DC0AD453F681D524AC05037203F5C0C2787E3A2EB`)  
 **Acceso a las bases:** las cadenas de conexión y credenciales se retiraron de este documento (S-13). Se leen de la variable de entorno `DATABASE_URL` / `docker-compose.yml` en el equipo de ejecución. Snapshot DW: contenedor `giragroup_db`, base `snapshot_dw_20261110_1201`; catálogo: contenedor `giragroup_catalog_db`, base `giragroup_catalog_db`.  
 
 ---
@@ -493,3 +496,30 @@ Todos los gráficos y figuras han sido regenerados exclusivamente a partir de lo
    - **¿Se procesan Forms y Moodle? SÍ.** Evidencia: `backend/services/ingestion_service.py:17` acepta `.xlsx` y `.csv`; `TBL_INSCRITOS.xlsx` procesa respuestas de Forms y `Evaluación Docente Institución A.xlsx` procesa encuestas de Moodle.
    - **¿Los descartes van a una bitácora? PARCIALMENTE.** Evidencia: 509 entidades se descartan en memoria por regex sin bitácora en BD; solo las 48 de `PER_SIN_FORMA_NOMBRE` se persisten en `log_inconsistencias`.
    - **¿Están integradas en el frontend la bandeja y Power BI? SÍ.** Evidencia: `HumanReviewFlowView.jsx` integra `BandejaGrupos` y `CuadroMandoIntegral.jsx` integra el iframe de `giragroup_cmi.pbix`.
+
+---
+
+## ACTUALIZACIÓN DE CONGELAMIENTO F3 (16-nov-2026)
+
+Todas las cifras de esta sección provienen del sistema congelado en `f3_base` y de las mediciones finales de F3 (`docs/mediciones/`), expresadas en formato boliviano (coma decimal, punto de miles) y verificadas automáticamente mediante `scripts/verificar_sfv.py` contra `docs/mediciones/f3_sfv_trazabilidad.json`.
+
+| ID | Métrica | Valor F3 (congelado) | Valor anterior (snapshot / F0) | Archivo y ruta JSON en `docs/mediciones/` |
+|---|---|---|---|---|
+| F3-P1-PASS | Pruebas automatizadas aprobadas (`pytest`) | 824 (`0` fallidas, `11` omitidas, `7` `xfail`) | 634 | `f3_pruebas.json` (`passed`) |
+| F3-P1-COV | Cobertura total de código (`backend` + `pipeline`) | 70 % (`14.672` sentencias) | N/D | `f3_pruebas.json` (`cobertura_total_pct`) |
+| F3-B7-MAQ-VAC | RNF-03 (1) solo máquina, caché vacía (media `N=3`) | 850,18 s (`14,17 min`, DE `51,14 s`) | 59,14 s (lote parcial) | `f3_b7_rnf03.json` (`solo_maquina.cache_vacia_media_s`) |
+| F3-B7-MAQ-LLENA | RNF-03 solo máquina, caché llena (media `N=3`) | 256,15 s (`4,27 min`, DE `3,14 s`) | N/D | `f3_b7_rnf03.json` (`solo_maquina.cache_llena_media_s`) |
+| F3-B7-KLM-W10 | RNF-03 (2) máquina + KLM con espera $W=10\text{ s}$ | 1.586,78 s (`736,6 s` KLM; **no** cumple $\le 900\text{ s}$ ni $\le 1.200\text{ s}$) | 490,5 s (r8) | `f3_b7_rnf03.json` (`maquina_mas_klm.con_espera_W_10s_s`) |
+| F3-B7-KLM-W0 | RNF-03 (2) máquina + KLM sin espera $W=0\text{ s}$ | 1.066,78 s (`216,6 s` KLM; cumple $\le 1.200\text{ s}$) | N/D | `f3_b7_rnf03.json` (`maquina_mas_klm.sin_espera_W_0s_s`) |
+| F3-CICLO-LINEAS | Líneas leídas por BETO en el ciclo de 10 archivos | 12.992 (`78.750` hechos DW) | 12.016 (`81.107` hechos) | `f3_base.json` (`etapas_s.lineas_leidas_beto`) |
+| F3-BANDEJA-CASOS | Bandeja de revisión del ciclo (`casos` / `grupos`) | 680 casos en 19 grupos (`47` manuales en `14` grupos) | 188 / 37 (r8) | `f3_b7_klm.json` (`bandeja.casos`, `bandeja.grupos`) |
+| F3-KPI15-2025 | KPI-15 Cartera vencida (gestión 2025, `f3_base`) | 73,44 % (`500` Mora, `7` Previsionable, `218` Vigente) | N/D (`NULL` en F2) | `f3_2_kpi15.json` (`kpi_15_api_vs_sql.2025.api`) |
+| F3-B9-BITACORA | Descartes en `log_inconsistencias` (`f3_base`, B-9) | 6.226 filas (`0` descartes sin bitácora, limitación 12) | 48 con bitácora / 509 sin bitácora | `f3_1_b9_rendimiento.json` (`log_inconsistencias_filas`) |
+| F3-B8-HW | Intervalos formales Holt-Winters 80 % / 95 % (`META_MENSUAL_PROGRAMAS`, $N=47$) | RMSE `241.708,20`, AIC `1.223,97`, MAPE hold-out `33,96 %` | N/D (banda constante $\pm 1,96\cdot\text{RMSE}$) | `f3_pronostico.json` (`hw.META_MENSUAL_PROGRAMAS.rmse`) |
+| F3-P3-V2 | Evaluación `beto-v2` en `gold_510` (modo C estricto / relajado) | F1 `0,980507` / `0,994152` | F1 `0,9805` / `0,9942` (F2) | `f2_b3_ablacion_v2.json` (`v2.C.estricto.f1`) |
+| F3-P5-OLS | OLS anual descriptiva 2025 (`PROGRAMAS`, *solo descriptiva*) | `11.851.223,44` vs `11.866.647,19 Bs` (`+0,13 %`, `12` filas) | `12.907.977,61` vs `12.747.275,66 Bs` (`-1,24 %`, `21` filas) | `f2r_g4_b5_conciliacion.json` (`comparacion_misma_definicion_ols_programas_2025.F2_lote_v2_f2r_base.observado_bs`) |
+
+- **Limitaciones 12 y 13 (B-9):** El registro individual en `log_inconsistencias` (`5.455` `LINEA_SIN_ENTIDAD` + `761` `SUBTOTAL` + `10` previas = `6.226`) elimina los descartes sin bitácora ($\Delta = 0$); los homónimos en Estado C reciben `id_homonimo` determinista (`HOM-<sha256[:16]>`) sin fusionar perfiles.
+- **Series sin datos en `f3_base`:** `ALUMNOS_GLOBAL` (`n_obs = 0` en `f3_base`) se reporta explícitamente sin datos (`N/D` para pronóstico de alumnos sobre el lote aislado de 10 archivos).
+- **Decisión sobre `requiere_revision` en KPIs:** Se mantiene la inclusión de filas con `requiere_revision = true` (`632/1.392` en `fact_rendimiento_academico`, nota media `87,0312` con revisión frente a `86,9062` sin ella) por decisión de Lean (`f3_kpi.json`).
+

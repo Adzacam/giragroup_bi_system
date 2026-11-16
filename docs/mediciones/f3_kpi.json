@@ -1,0 +1,490 @@
+{
+  "etiqueta": "F3, final",
+  "tarea": "F3-7 (22 KPIs sobre f3_base)",
+  "gestiones": {
+    "2024": {
+      "KPI-01": {
+        "api": 6888.31,
+        "sql": 6888.310344827586,
+        "sql_redondeado": 6888.31,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-02": {
+        "api": 6.25,
+        "sql": 6.253610224321702,
+        "sql_redondeado": 6.25,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-03": {
+        "api": 102.26,
+        "sql": 102.25786678239136,
+        "sql_redondeado": 102.26,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-04": {
+        "api": 0.0,
+        "sql": 0.0,
+        "sql_redondeado": 0.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-05": {
+        "api": 98.9,
+        "sql": 98.9010989010989,
+        "sql_redondeado": 98.9,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-06": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": "No hay cifras comprobables de interesados e inscritos en una misma fuente de captación para esta gestión."
+      },
+      "KPI-07": {
+        "api": 91.09,
+        "sql": 91.09251101321586,
+        "sql_redondeado": 91.09,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-08": {
+        "api": 99.56,
+        "sql": 99.55947136563877,
+        "sql_redondeado": 99.56,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-09": {
+        "api": 0.0,
+        "sql": 0.0,
+        "sql_redondeado": 0.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-10": {
+        "api": 84.32,
+        "sql": 84.32215859030838,
+        "sql_redondeado": 84.32,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-11": {
+        "api": 56.39,
+        "sql": 56.38766519823788,
+        "sql_redondeado": 56.39,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-12": {
+        "api": 17.6,
+        "sql": 17.59980442377595,
+        "sql_redondeado": 17.6,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-13": {
+        "api": 102.26,
+        "sql": 102.25786678239136,
+        "sql_redondeado": 102.26,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-14": {
+        "api": 0.0,
+        "sql": 0.0,
+        "sql_redondeado": 0.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-15": {
+        "api": 100.0,
+        "sql": 99.99678480714202,
+        "sql_redondeado": 100.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-16": {
+        "api": 0.0,
+        "sql": 0.0,
+        "sql_redondeado": 0.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-17": {
+        "api": 0.0,
+        "sql": 0.0,
+        "sql_redondeado": 0.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-18": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": null
+      },
+      "KPI-19": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": null
+      },
+      "KPI-20": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": null
+      },
+      "KPI-21": {
+        "api": 29.0,
+        "sql": 29.0,
+        "sql_redondeado": 29.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-22": {
+        "api": 14.0,
+        "sql": 14.0,
+        "sql_redondeado": 14.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      }
+    },
+    "2025": {
+      "KPI-01": {
+        "api": 2256.86,
+        "sql": 2256.8640306122447,
+        "sql_redondeado": 2256.86,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-02": {
+        "api": 157.48,
+        "sql": 157.4755965288389,
+        "sql_redondeado": 157.48,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-03": {
+        "api": 100.3,
+        "sql": 100.29669830410869,
+        "sql_redondeado": 100.3,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-04": {
+        "api": 2.0,
+        "sql": 2.0,
+        "sql_redondeado": 2.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-05": {
+        "api": 94.05,
+        "sql": 94.05099150141643,
+        "sql_redondeado": 94.05,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-06": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": "No hay cifras comprobables de interesados e inscritos en una misma fuente de captación para esta gestión."
+      },
+      "KPI-07": {
+        "api": 86.21,
+        "sql": 86.20732797140303,
+        "sql_redondeado": 86.21,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-08": {
+        "api": 95.53,
+        "sql": 95.53172475424486,
+        "sql_redondeado": 95.53,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-09": {
+        "api": 53.0,
+        "sql": 53.0,
+        "sql_redondeado": 53.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-10": {
+        "api": 84.64,
+        "sql": 84.63603433476395,
+        "sql_redondeado": 84.64,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-11": {
+        "api": 54.85,
+        "sql": 54.84978540772532,
+        "sql_redondeado": 54.85,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-12": {
+        "api": 17.15,
+        "sql": 17.14565766263905,
+        "sql_redondeado": 17.15,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-13": {
+        "api": 100.3,
+        "sql": 100.29669830410869,
+        "sql_redondeado": 100.3,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-14": {
+        "api": 0.0,
+        "sql": 0.0,
+        "sql_redondeado": 0.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-15": {
+        "api": 73.44,
+        "sql": 73.43834986933457,
+        "sql_redondeado": 73.44,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-16": {
+        "api": 0.0,
+        "sql": 0.0,
+        "sql_redondeado": 0.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-17": {
+        "api": 0.0,
+        "sql": 0.0,
+        "sql_redondeado": 0.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-18": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": null
+      },
+      "KPI-19": {
+        "api": 80.76,
+        "sql": 80.75738916256158,
+        "sql_redondeado": 80.76,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-20": {
+        "api": 84.39,
+        "sql": 84.39114391143912,
+        "sql_redondeado": 84.39,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-21": {
+        "api": 392.0,
+        "sql": 392.0,
+        "sql_redondeado": 392.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-22": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": "No hay cifras de inscritos en convenios vinculados a esta gestión."
+      }
+    },
+    "2026": {
+      "KPI-01": {
+        "api": 2800.64,
+        "sql": 2800.6353136531366,
+        "sql_redondeado": 2800.64,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-02": {
+        "api": 15.28,
+        "sql": 15.283199910809284,
+        "sql_redondeado": 15.28,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-03": {
+        "api": 84.29,
+        "sql": 84.28771281153374,
+        "sql_redondeado": 84.29,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-04": {
+        "api": 5.0,
+        "sql": 5.0,
+        "sql_redondeado": 5.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-05": {
+        "api": 31.37,
+        "sql": 31.365313653136532,
+        "sql_redondeado": 31.37,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-06": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": "No hay cifras comprobables de interesados e inscritos en una misma fuente de captación para esta gestión."
+      },
+      "KPI-07": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": "No hay calificaciones con fecha de esta gestión para calcular el promedio."
+      },
+      "KPI-08": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": "No hay calificaciones con fecha de esta gestión para calcular la aprobación."
+      },
+      "KPI-09": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": null
+      },
+      "KPI-10": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": "No hay registros académicos con índice de confianza y fecha de esta gestión."
+      },
+      "KPI-11": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": "No hay registros académicos con índice de confianza y fecha de esta gestión."
+      },
+      "KPI-12": {
+        "api": -5.29,
+        "sql": -5.2948165288790685,
+        "sql_redondeado": -5.29,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-13": {
+        "api": 33.63,
+        "sql": 33.63091908160896,
+        "sql_redondeado": 33.63,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-14": {
+        "api": 10716022.82,
+        "sql": 10716022.82,
+        "sql_redondeado": 10716022.82,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-15": {
+        "api": 99.8,
+        "sql": 99.80032109740586,
+        "sql_redondeado": 99.8,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-16": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": "No hay registros académicos con fecha de esta gestión para calcular este indicador."
+      },
+      "KPI-17": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": null
+      },
+      "KPI-18": {
+        "api": 36.0,
+        "sql": 36.0,
+        "sql_redondeado": 36.0,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-19": {
+        "api": 85.32,
+        "sql": 85.31621163041801,
+        "sql_redondeado": 85.32,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-20": {
+        "api": 83.23,
+        "sql": 83.23110151187905,
+        "sql_redondeado": 83.23,
+        "delta": 0.0,
+        "motivo_sin_dato": null
+      },
+      "KPI-21": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": "No hay estudiantes vinculados a registros académicos con fecha de esta gestión."
+      },
+      "KPI-22": {
+        "api": null,
+        "sql": null,
+        "sql_redondeado": null,
+        "delta": null,
+        "motivo_sin_dato": "No hay cifras de inscritos en convenios vinculados a esta gestión."
+      }
+    }
+  },
+  "sensibilidad_requiere_revision": {
+    "incluye_requiere_revision_true_en_kpi": true,
+    "decision_5_lean": "Se mantiene inclusión de requiere_revision=true en los KPI y se documenta.",
+    "fact_rendimiento_academico": {
+      "total": 1392,
+      "en_revision": 632,
+      "nota_prom_con_rev": 87.0312,
+      "nota_prom_sin_rev": 86.9062
+    },
+    "fact_situacion_financiera": {
+      "total": 725,
+      "en_revision": 12,
+      "deuda_total_con_rev": 597998.71,
+      "deuda_total_sin_rev": 578908.71
+    }
+  }
+}

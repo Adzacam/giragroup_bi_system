@@ -1,0 +1,16 @@
+{
+  "etiqueta": "F3, provisional",
+  "tarea": "F3-4 (Rebuild y base F3)",
+  "servicios_activos": 9,
+  "api_health": 200,
+  "pipeline_health": 200,
+  "inventario_dw_f3_base": {
+    "tablas_public": 48,
+    "tablas_bi": 2,
+    "total_tablas": 50,
+    "vistas_bi": 9,
+    "filas_ref_kpi": 22
+  },
+  "bandeja_f3_base": {"casos": 680, "grupos": 19, "manuales": 14, "casos_manuales": 47},
+  "kpis_consolidacion": {"KPI-10": null, "KPI-11": null, "KPI-18": 36.0}
+}

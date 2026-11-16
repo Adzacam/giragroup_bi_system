@@ -1,0 +1,21 @@
+{
+  "etiqueta": "F3, provisional",
+  "tarea": "F3-2 (KPI-15: mapeo de cartera)",
+  "dominio_comprobado": {
+    "fuente": "bi.vw_cmi_valores (fin_g), backend/services/dw_loader.py:1194, backend/services/alert_engine.py:9",
+    "valores": ["Vigente", "Mora", "En Mora", "Previsionable"]
+  },
+  "conteo_fact_situacion_financiera_f3_base": {
+    "Mora": {"filas": 500, "monto_deuda_bs": 531412.38},
+    "Vigente": {"filas": 218, "monto_deuda_bs": 55056.83},
+    "Previsionable": {"filas": 7, "monto_deuda_bs": 11529.50},
+    "total_hechos": 725
+  },
+  "cuadre_con_fuente": "BD Cobranzas.xlsx tiene 272 filas de origen (85 con mora por días/rango y 5 CARTERA INCOBRABLE); al desagregar por módulo/periodo de pago en fact_situacion_financiera se generan 725 hechos (500 Mora, 7 Previsionable, 218 Vigente).",
+  "kpi_15_api_vs_sql": {
+    "2024": {"api": 100.0, "sql": 99.99678480714202, "delta": 0.0},
+    "2025": {"api": 73.44, "sql": 73.43834986933457, "delta": 0.0},
+    "2026": {"api": 99.8, "sql": 99.80032109740586, "delta": 0.0}
+  },
+  "cambios_vs_f3_1": "Solo cambian fact_situacion_financiera.estado_cartera y KPI-15; todas las demás tablas y KPIs mantienen Δ=0."
+}
