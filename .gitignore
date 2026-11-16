@@ -122,3 +122,6 @@ output/reportes/
 output/diagramas/
 output/graficos_historicos/
 output/historicos_nuevos/
+
+# F3S: JSON completo de Newman (37 MB, con cuerpos de respuesta); no se versiona
+output/f3s/

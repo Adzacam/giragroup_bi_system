@@ -764,6 +764,13 @@ def registros_evaluacion(campos: Dict[str, str]) -> List[Dict[str, Any]]:
     } for enc, num, esc, tipo, coment in respuestas]
 
 
+def fila_resuelta_por_regla(campos: Dict[str, str], categoria: str) -> bool:
+    """D-A8a: una fila de rentabilidad que una regla (categoría + mes, costos por programa o convenio) ya convierte en hecho.
+    No necesita persona ni índice BETO: BETO solo ve lo que las reglas no resolvieron (cascada)."""
+    return bool(campos) and categoria == "rentabilidad" and bool(
+        registros_rentabilidad(campos) or registros_costo_programa(campos) or registros_techo_convenio(campos))
+
+
 def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[str]:
     """
     Motivo por el que una línea no puede producir un hecho (se descarta como ruido, no va a revisión), o None.

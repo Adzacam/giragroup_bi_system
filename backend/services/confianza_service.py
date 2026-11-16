@@ -137,6 +137,24 @@ def obtener_indices(lineas: List[str], al_avanzar=None) -> List[Optional[float]]
     return [en_cache.get(h) for h in hashes]
 
 
+def indices_cascada(lineas: List[str], resueltas: List[bool], obtener=None, al_avanzar=None) -> List[Optional[float]]:
+    """Cascada: BETO (obtener_indices) solo para las líneas que las reglas no resolvieron (resueltas[i] False);
+    las resueltas reutilizan el índice de la caché si existe y nunca se envían al servicio.
+    `obtener` permite inyectar la función de índices (por defecto obtener_indices)."""
+    indices: List[Optional[float]] = [None] * len(lineas)
+    pendientes = [i for i, r in enumerate(resueltas) if not r]
+    hechas = [i for i, r in enumerate(resueltas) if r]
+    if pendientes:
+        for i, v in zip(pendientes, (obtener or obtener_indices)([lineas[i] for i in pendientes], al_avanzar=al_avanzar)):
+            indices[i] = v
+    if hechas:
+        for i, v in zip(hechas, indices_en_cache([lineas[i] for i in hechas])):
+            indices[i] = v
+        if al_avanzar:
+            al_avanzar(len(hechas))
+    return indices
+
+
 def banda_de(indice: Optional[float]) -> str:
     """Banda del registro; sin índice (servicio caído) se trata como revisión, no como consolidado."""
     return clasificar_banda(indice) if indice is not None else BANDA_REVISION

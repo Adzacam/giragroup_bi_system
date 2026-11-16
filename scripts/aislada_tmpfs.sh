@@ -11,32 +11,33 @@ set -e
 export MSYS_NO_PATHCONV=1
 SNAPSHOT="${SNAPSHOT:-snapshot_dw_20261110_1201}"
 RED="${RED:-giragroup_bi_system_default}"
+TMPFS_NAME="${TMPFS_NAME:-beto_pg_tmpfs}"
 TMPFS_PORT="${TMPFS_PORT:-55432}"
-PSQL="docker exec beto_pg_tmpfs psql -U giragroup_user -q -v ON_ERROR_STOP=1"
-TRUNC="TRUNCATE TABLE public.fact_rendimiento_academico, public.fact_situacion_financiera, public.fact_evaluacion_docente, public.fact_marketing, public.fact_rentabilidad, public.fact_forecast, public.fact_cobranzas_proyectadas, public.stg_entidad_no_resuelta, public.staging_registros_crudos, public.log_pipeline_ingesta, public.log_inconsistencias, public.log_auditoria_nlp, public.dim_origen_documental, public.lote, public.dataops_tarea RESTART IDENTITY CASCADE"
+PSQL="docker exec ${TMPFS_NAME} psql -U giragroup_user -q -v ON_ERROR_STOP=1"
+TRUNC="TRUNCATE TABLE public.fact_rendimiento_academico, public.fact_situacion_financiera, public.fact_evaluacion_docente, public.fact_marketing, public.fact_rentabilidad, public.fact_forecast, public.fact_cobranzas_proyectadas, public.fact_costo_programa, public.fact_techo_convenio, public.cache_indice_beto, public.stg_entidad_no_resuelta, public.staging_registros_crudos, public.log_pipeline_ingesta, public.log_inconsistencias, public.log_auditoria_nlp, public.dim_origen_documental, public.carga_fila_origen, public.lote, public.dataops_tarea RESTART IDENTITY CASCADE"
 
 case "$1" in
   up)
-    docker rm -f beto_pg_tmpfs >/dev/null 2>&1 || true
-    docker run -d --name beto_pg_tmpfs --tmpfs /var/lib/postgresql/data:rw,size=3g -e POSTGRES_USER=giragroup_user \
+    docker rm -f ${TMPFS_NAME} >/dev/null 2>&1 || true
+    docker run -d --name ${TMPFS_NAME} --tmpfs /var/lib/postgresql/data:rw,size=3g -e POSTGRES_USER=giragroup_user \
       -e POSTGRES_PASSWORD=tmpfs_local -e POSTGRES_DB=postgres -p "127.0.0.1:${TMPFS_PORT}:5432" postgres:16-alpine >/dev/null
-    docker network connect "$RED" beto_pg_tmpfs
-    until docker exec beto_pg_tmpfs pg_isready -U giragroup_user >/dev/null 2>&1; do sleep 2; done
+    docker network connect "$RED" ${TMPFS_NAME}
+    until docker exec ${TMPFS_NAME} pg_isready -U giragroup_user >/dev/null 2>&1; do sleep 2; done
     $PSQL -d postgres -c "create database giragroup_db"
     U=$(docker exec giragroup_db printenv POSTGRES_USER)
-    docker exec giragroup_db pg_dump -U "$U" -d "$SNAPSHOT" --no-owner --no-privileges | docker exec -i beto_pg_tmpfs psql -U giragroup_user -d giragroup_db -q >/dev/null 2>&1
+    docker exec giragroup_db pg_dump -U "$U" -d "$SNAPSHOT" --no-owner --no-privileges | docker exec -i ${TMPFS_NAME} psql -U giragroup_user -d giragroup_db -q >/dev/null 2>&1
     $PSQL -d giragroup_db -Atc "select 'fact_rendimiento_academico', count(*) from fact_rendimiento_academico"
     # copia del catálogo institucional (solo lectura del original), para que ninguna prueba toque catalog_db
     CU=$(docker exec giragroup_catalog_db printenv POSTGRES_USER); CD=$(docker exec giragroup_catalog_db printenv POSTGRES_DB)
     $PSQL -d postgres -c "create database catalogo_copia"
-    docker exec giragroup_catalog_db pg_dump -U "$CU" -d "$CD" --no-owner --no-privileges | docker exec -i beto_pg_tmpfs psql -U giragroup_user -d catalogo_copia -q >/dev/null 2>&1
+    docker exec giragroup_catalog_db pg_dump -U "$CU" -d "$CD" --no-owner --no-privileges | docker exec -i ${TMPFS_NAME} psql -U giragroup_user -d catalogo_copia -q >/dev/null 2>&1
     ;;
   vacio)
     $PSQL -d postgres -c "drop database if exists dw_vacio" -c "create database dw_vacio template giragroup_db"
     $PSQL -d dw_vacio -c "$TRUNC"
     for m in 014_conversion_captacion_comprobable.sql; do
       [ -f "backend/scripts/migrations/$m" ] || continue
-      docker cp "backend/scripts/migrations/$m" beto_pg_tmpfs:/tmp/m.sql
+      docker cp "backend/scripts/migrations/$m" ${TMPFS_NAME}:/tmp/m.sql
       $PSQL -d dw_vacio -f /tmp/m.sql >/dev/null 2>&1 || true
     done
     ;;
@@ -44,7 +45,7 @@ case "$1" in
     $PSQL -d postgres -c "drop database if exists $2" -c "create database $2 template dw_vacio"
     ;;
   down)
-    docker rm -f beto_pg_tmpfs
+    docker rm -f ${TMPFS_NAME}
     ;;
   *) echo "uso: $0 up|vacio|clon <db>|down"; exit 2 ;;
 esac

@@ -5,7 +5,7 @@ import re
 import threading
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Any, Dict, List, Optional
-from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
+from pipeline.semantic.indice_confianza import BANDA_CONSOLIDADO, BANDA_REVISION, BANDA_STAGING
 from services.clave_fila import ContadorOcurrencias, clave_contenido
 from services.dw_loader import DWLoaderService, normalizar_nota_base_100
 from models.dim_estudiante import DimEstudiante
@@ -17,9 +17,9 @@ from core.database import SessionLocal, get_db
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.staging_registro import StagingRegistroCrudo
 from models.user import User
-from services.confianza_service import banda_de, obtener_indices
+from services.confianza_service import banda_de, indices_cascada, obtener_indices
 from services import beto_integracion, cache_consultas, tareas_dataops
-from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, metricas_captacion, motivo_fila_sin_entidad, normalizar_encabezado, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
+from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, fila_resuelta_por_regla, metricas_captacion, motivo_fila_sin_entidad, normalizar_encabezado, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
 from datetime import datetime
 from services.dataops_evaluation_service import enmascarar_ci, strip_accents
 from core.security import require_roles
@@ -176,6 +176,10 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     for stg in stg_records:
         orig_doc = origenes_map.get(stg.id_documento) if stg.id_documento else None
         doc_fuente = (orig_doc.tipo_fuente if (orig_doc and orig_doc.tipo_fuente) else "ACTA").upper().strip()
+        # D-A4: una hoja Likert queda en staging como 'evaluacion_docente' aunque el libro esté como ACTA (el contenido del
+        # bloque manda sobre el tipo del documento, ingestion_service). La consolidación respeta la categoría de la hoja.
+        if (stg.categoria or "").strip().lower() == "evaluacion_docente":
+            doc_fuente = "EVALUACION_DOCENTE"
         doc_escala = orig_doc.tipo_escala if orig_doc else "CENTESIMAL_100"
         if doc_fuente in ("COBRANZA", "ADMISION"):
             doc_escala = None
@@ -200,7 +204,9 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         )
 
         # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
-        indices_linea = obtener_indices(lines, al_avanzar=_al_indexar)
+        # D-A8a: las filas que una regla ya resolvió (rentabilidad: categoría + mes) no van a BETO ni caen a staging por su índice
+        resueltas_regla = [fila_resuelta_por_regla(campos_por_encabezado([c.strip() for c in l.split("|")]), categoria_ruteo) for l in lines]
+        indices_linea = indices_cascada(lines, resueltas_regla, obtener_indices, al_avanzar=_al_indexar)
         refinadas = None
         if cliente_beto is not None:
             refinadas = beto_integracion.refinar_lineas(
@@ -248,7 +254,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     tipo_escala=doc_escala,
                     tipo_fuente=doc_fuente,
                 )
-            banda = banda_de(indice)
+            banda = BANDA_CONSOLIDADO if resueltas_regla[k_fila] else banda_de(indice)
             is_approved = banda != BANDA_STAGING
             # Lecturas dudosas del extractor (CI con '?', escala ambigua) no se descartan: quedan en revisión
             en_revision = banda == BANDA_REVISION or req_rev
