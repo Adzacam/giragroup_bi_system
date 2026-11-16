@@ -62,9 +62,9 @@ def get_historial_lotes(
     for lote in lotes:
         docs = db.query(DimOrigenDocumental).filter_by(id_lote=lote.id_lote).order_by(DimOrigenDocumental.id_documento).all()
         ids = [d.id_documento for d in docs]
-        pendientes = db.query(StagingEntidadNoResuelta).filter(
+        pendientes = db.query(func.count(StagingEntidadNoResuelta.id_staging)).filter(
             StagingEntidadNoResuelta.id_documento.in_(ids), StagingEntidadNoResuelta.resuelto == False,
-        ).count() if ids else 0
+        ).scalar() if ids else 0
         registros = db.query(func.sum(StagingRegistroCrudo.n_filas)).filter(
             StagingRegistroCrudo.id_documento.in_(ids), StagingRegistroCrudo.es_ruido == False,
         ).scalar() if ids else None

@@ -1,0 +1,31 @@
+{
+  "etiqueta": "F2R, provisional",
+  "tarea": "G-3 (Conciliación KLM D3B vs F2)",
+  "causa_diferencia_78_9_s": {
+    "resumen": "Los eventos de la bandeja (19 grupos, 680 casos) son idénticos entre f1_d3b_klm.json (v2) y f2_b6_klm.json. La diferencia exacta de +78.9 s (tanto con W=10 s como con W=0 s) proviene de que scripts/f2_b6_klm_tmpfs.py usó una fórmula distinta a la canónica de scripts/agregar_flujo_repetido.py::klm.",
+    "diferencias_formula": [
+      "bloque: agregar_flujo_repetido usa (2*M + P + 2*B + w) = 4.0+w s por grupo APROBABLE (14 grupos -> 56.0/16.0 s); f2_b6_klm_tmpfs usó (H+M+P+B + M+P+B + w) = 4.4286+w? (4.4286*14=62.0/22.0 s -> +6.0 s).",
+      "corregir_fecha: agregar_flujo_repetido usa (2*M+P+2*B+M+H+6*K+P+2*B+w) por grupo (1 grupo -> 18.7/8.7 s); f2_b6_klm_tmpfs multiplicó (P+B+6*K) por cas=8 casos (39.9/29.9 s -> +21.2 s).",
+      "manual: agregar_flujo_repetido usa (2*M+P+2*B+w) = 4.0+w s por caso (47 casos -> 658.0/188.0 s); f2_b6_klm_tmpfs usó (H+M+P+B+K+P+B+w) = 4.43+w s por caso (678.2/208.2 s -> +20.2 s).",
+      "paginacion: agregar_flujo_repetido pagina por grupos (19 grupos / 5 = 4 páginas -> 3*(P+2*B) = 3.9 s); f2_b6_klm_tmpfs acumuló casos >= 5 (35.4 s -> +31.5 s)."
+    ],
+    "cuadre_aritmetico_s": {
+      "bloque": 6.0,
+      "corregir_fecha": 21.2,
+      "mapear_estado": 0.0,
+      "manual": 20.2,
+      "paginacion": 31.5,
+      "suma_diferencias": 78.9,
+      "con_W_10s": {"f1_d3b": 736.6, "f2_b6": 815.5, "delta": 78.9},
+      "sin_W_0s": {"f1_d3b": 216.6, "f2_b6": 295.5, "delta": 78.9}
+    }
+  },
+  "mapeo_correcto_bandeja_real": "scripts/agregar_flujo_repetido.py::klm mapeando cada grupo de GET /api/v1/dataops/review-tray/grupos por g['accion_grupo'] y casos=g['n']",
+  "klm_recalculado_canonico": {
+    "grupos": 19,
+    "casos": 680,
+    "con_espera_W_10s": {"total_s": 736.6, "desglose_s": {"bloque": 56.0, "corregir_fecha": 18.7, "mapear_estado": 0.0, "manual": 658.0, "paginacion": 3.9}},
+    "sin_espera_W_0s": {"total_s": 216.6, "desglose_s": {"bloque": 16.0, "corregir_fecha": 8.7, "mapear_estado": 0.0, "manual": 188.0, "paginacion": 3.9}},
+    "delta_vs_d3b": 0.0
+  }
+}

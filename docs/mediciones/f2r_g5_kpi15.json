@@ -1,0 +1,36 @@
+{
+  "etiqueta": "F2R, provisional",
+  "tarea": "G-5 (Diagnóstico KPI-15 Cartera vencida)",
+  "solo_diagnostico": true,
+  "veredicto": "defecto de mapeo, con 85 filas afectadas en BD Cobranzas (y 725 filas en fact_situacion_financiera etiquetadas como 'Vigente')",
+  "fuente_lote": {
+    "archivo": "BD Cobranzas.xlsx",
+    "hoja": "COBRANZAS 2024 2025",
+    "filas_datos": 272,
+    "valores_distintos": {
+      "COL_18_TIPO_DE_CARTERA": {"CARTERA CERRADA": 187, "CARTERA VIGENTE": 79, "CARTERA INCOBRABLE": 5, "<NULL>": 1},
+      "COL_13_DIAS_DE_MORA": {"no_nulo_mayor_0": 82, "<NULL>": 190},
+      "COL_65_RANGO_MORA": {"0": 177, "d) Mayor 361": 81, "a) 1-90": 3, "<NULL>": 11},
+      "COL_70_TOTAL_CUOTAS_EN_MORA": {"<NULL>": 272},
+      "filas_con_mora_dias_o_rango": 85
+    }
+  },
+  "mapeo_en_codigo": [
+    {
+      "archivo": "backend/routers/dataops/consolidacion.py",
+      "lineas": "272, 280-283, 307-326",
+      "comportamiento": "Solo busca etiquetas CUOTAS_IMPAGAS, MORA o CUOTAS_MORA; ignora DIAS DE MORA, RANGO MORA y TIPO DE CARTERA. Como TOTAL CUOTAS EN MORA es NULL en las 272 filas, cuotas_impagas queda en 0 y no se envía estado_cartera en resoluciones."
+    },
+    {
+      "archivo": "backend/services/dw_loader.py",
+      "lineas": "1194-1197",
+      "comportamiento": "estado_cartera = resoluciones.get('estado_cartera') or ('Mora' if cuotas_impagas > 0 else 'Vigente'). Al recibir estado_cartera=None y cuotas_impagas=0, asigna 'Vigente' a las 725 filas."
+    },
+    {
+      "archivo": "backend/routers/pipeline.py",
+      "lineas": "197, 209",
+      "comportamiento": "Fija 'estado_cartera': 'Vigente' o None para que lo derive dw_loader."
+    }
+  ],
+  "propuesta_sin_aplicar": "En consolidacion.py, leer RANGO MORA, DIAS DE MORA y TIPO DE CARTERA: si TIPO DE CARTERA == 'CARTERA INCOBRABLE' -> estado_cartera='Previsionable'; si DIAS DE MORA > 0 o RANGO MORA not in ('', '0') -> estado_cartera='Mora'; en otro caso 'Vigente'. No aplicado en F2R por decisión pendiente de Lean (altera hechos y KPI)."
+}

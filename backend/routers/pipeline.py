@@ -34,6 +34,7 @@ from services.extraccion_por_encabezado import (
 )
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.log_inconsistencia import LogInconsistencia
+from core.esquema_opcional import valores_si_existen
 from pipeline.semantic.indice_confianza import BANDA_REVISION, BANDA_STAGING
 from schemas.pipeline_schemas import PipelineExecutionResponse
 from services.clave_fila import ContadorOcurrencias, clave_contenido
@@ -390,7 +391,7 @@ def process_pipeline(
                         campo_afectado=(b.hoja or "")[:100],
                         valor_recibido=(linea_str or "")[:500],
                         tipo_regla="LINEAS_NO_APLICABLES",
-                        regla_origen=motivo_na[:80],
+                        **valores_si_existen(db, "log_inconsistencias", regla_origen=motivo_na[:80]),
                         severidad="BAJA",
                         estado_resolucion="REGISTRADO",
                         descripcion=f"Línea descartada por regla ({motivo_na}) en hoja '{b.hoja}'",

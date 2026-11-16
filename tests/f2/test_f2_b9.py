@@ -26,14 +26,17 @@ def test_b9_modelos_tienen_columnas_nuevas():
 
 
 def test_b9_migracion_sin_tablas_nuevas():
-    sql = Path("backend/scripts/migrations/015_b9_descartes_y_homonimos.sql").read_text(encoding="utf-8").upper()
+    sql = Path("backend/scripts/migrations/016_b9_descartes_y_homonimos.sql").read_text(encoding="utf-8").upper()
     assert "CREATE TABLE" not in sql
     assert "ALTER TABLE LOG_INCONSISTENCIAS" in sql
     assert "ALTER TABLE STG_ENTIDAD_NO_RESUELTA" in sql
 
 
-def test_b9_homonimia_en_dw_loader_mantiene_estado_c():
+def test_b9_homonimia_en_dw_loader_mantiene_estado_c(monkeypatch):
+    from core import esquema_opcional
     from services.dw_loader import DWLoaderService
+
+    monkeypatch.setattr(esquema_opcional, "_presentes", lambda engine: frozenset({("stg_entidad_no_resuelta", "id_homonimo")}))
 
     db = MagicMock()
     loader = DWLoaderService(db)

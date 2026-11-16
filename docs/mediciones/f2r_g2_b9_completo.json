@@ -1,0 +1,65 @@
+{
+  "etiqueta": "F2R, provisional",
+  "tarea": "G-2 (B-9 completo en el flujo medido)",
+  "base_datos": "f2r_base (beto_pg_tmpfs, migración 016)",
+  "tabla_reglas_a_bd": [
+    {
+      "flujo": "DataOps (consolidacion.py)",
+      "regla": "motivo_fila_sin_entidad (LINEA_SIN_ENTIDAD)",
+      "donde_se_descarta": "backend/routers/dataops/consolidacion.py:216-221",
+      "donde_queda_en_bd": "log_inconsistencias (1:1 por línea, tipo_regla='LINEA_SIN_ENTIDAD', regla_origen=motivo_ruido) y stg_entidad_no_resuelta (deduplicada, tipo_entidad='RUIDO', estado_resolucion='DESCARTADO')",
+      "memoria": 5455,
+      "bd_log_inconsistencias": 5455,
+      "delta": 0
+    },
+    {
+      "flujo": "Ingesta (ingestion_service.py + asymmetric_flattener.py)",
+      "regla": "SUBTOTAL_KEYWORDS (SUBTOTAL)",
+      "donde_se_descarta": "pipeline/normalization/asymmetric_flattener.py:301-308",
+      "donde_queda_en_bd": "log_inconsistencias (1:1 por línea, tipo_regla='SUBTOTAL', regla_origen='SUBTOTAL')",
+      "memoria": 761,
+      "bd_log_inconsistencias": 761,
+      "delta": 0
+    },
+    {
+      "flujo": "Pipeline directo (pipeline.py)",
+      "regla": "_motivo_no_aplicable (LINEAS_NO_APLICABLES)",
+      "donde_se_descarta": "backend/routers/pipeline.py:385-400",
+      "donde_queda_en_bd": "log_inconsistencias (1:1 por línea, tipo_regla='LINEAS_NO_APLICABLES', regla_origen=motivo_na)",
+      "delta": 0
+    },
+    {
+      "flujo": "DWLoader (dw_loader.py)",
+      "regla": "HOMONIMIA (Estado C)",
+      "donde_se_descarta": "backend/services/dw_loader.py:503-548",
+      "donde_queda_en_bd": "stg_entidad_no_resuelta (fk_estado='C', motivo='HOMONIMIA', id_homonimo='HOM-<sha256[:16]>')",
+      "delta": 0
+    }
+  ],
+  "desglose_log_inconsistencias_f2r_base": {
+    "total": 6226,
+    "CI_NOMBRE_VARIANTE": 1,
+    "CONFLICTO_FUENTES": 9,
+    "LINEA_SIN_ENTIDAD": {
+      "total": 5455,
+      "FILA_ACADEMICA_SIN_ESTUDIANTE": 1901,
+      "FILA_AGREGADA_SIN_CATEGORIA_MES": 2063,
+      "FILA_EVALUACION_SIN_RESPUESTAS": 1076,
+      "FILA_FINANCIERA_SIN_ESTUDIANTE": 7,
+      "FILA_SIN_CABECERAS": 394,
+      "FILA_SIN_ENTIDAD": 14
+    },
+    "SUBTOTAL": 761
+  },
+  "comparacion_huella_vs_f2_base": {
+    "tablas_diferentes": ["log_inconsistencias"],
+    "otras_tablas_identicas": true,
+    "bandeja": {"casos": 680, "grupos": 19},
+    "kpi_18": 36.0
+  },
+  "equivalencia_limitacion_12_a24": {
+    "descartes_sin_bitacora_antes": 509,
+    "descartes_sin_bitacora_ahora": 0,
+    "nota": "Todas las reglas de descarte en consolidacion.py (5,455), asymmetric_flattener/ingestion_service (761 SUBTOTAL) y pipeline.py dejan fila individual en log_inconsistencias (Δ=0)."
+  }
+}

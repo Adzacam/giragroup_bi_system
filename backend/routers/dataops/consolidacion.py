@@ -136,6 +136,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     sent_hitl = 0
     inserted_revision = 0
     descartados_ruido = 0
+    descartes_por_regla = {}
 
     doc_ids_stg = {s.id_documento for s in stg_records if s.id_documento}
     origenes_map = {
@@ -215,9 +216,10 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
             campos_linea = campos_por_encabezado([c.strip() for c in line.split("|")])
             motivo_ruido = motivo_fila_sin_entidad(campos_linea, categoria_ruteo)
             if motivo_ruido:
-                # Sin entidad que enlazar (hoja de estados, catálogo, fila agregada): ruido, no va a revisión
-                _registrar_descarte_ruido(db, stg, line, indice, motivo_ruido, doc_fuente)
+                # Sin entidad que enlazar (hoja de estados, catálogo, fila agregada): ruido en stg + bitácora individual (B-9)
+                _registrar_descarte_ruido(db, stg, line, indice, motivo_ruido, doc_fuente, fila_origen=(stg.fila_inicio or 0) + k_fila)
                 descartados_ruido += 1
+                descartes_por_regla[motivo_ruido] = descartes_por_regla.get(motivo_ruido, 0) + 1
                 continue
             r_beto = refinadas[k_fila] if refinadas is not None else None
             if r_beto is not None:
@@ -507,12 +509,26 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         "inserted_revision": inserted_revision,
         "sent_hitl": sent_hitl,
         "descartados_ruido": descartados_ruido,
+        "descartes_por_regla": descartes_por_regla,
         **({"beto": contadores_beto.como_dict()} if cliente_beto is not None else {}),
     }
 
 
-def _registrar_descarte_ruido(db: Session, stg, line: str, indice, motivo: str, doc_fuente: str) -> None:
-    """Deja constancia de una línea descartada como ruido: resuelta (no entra a la bandeja) y con su motivo."""
+def _registrar_descarte_ruido(db: Session, stg, line: str, indice, motivo: str, doc_fuente: str, fila_origen: Optional[int] = None) -> None:
+    """Deja constancia de una línea descartada como ruido: en log_inconsistencias (1:1 por línea) y en stg_entidad_no_resuelta."""
+    from core.esquema_opcional import valores_si_existen
+
+    db.add(LogInconsistencia(
+        id_documento=stg.id_documento,
+        fila_origen=fila_origen,
+        campo_afectado=(stg.hoja or "")[:100],
+        valor_recibido=(line or "")[:500],
+        tipo_regla="LINEA_SIN_ENTIDAD",
+        **valores_si_existen(db, "log_inconsistencias", regla_origen=(motivo or "")[:80]),
+        severidad="BAJA",
+        estado_resolucion="DESCARTADO",
+        descripcion=f"Línea descartada por regla ({motivo}) en hoja '{stg.hoja}'",
+    ))
     ya_registrada = db.query(StagingEntidadNoResuelta.id_staging).filter(
         StagingEntidadNoResuelta.id_documento == stg.id_documento,
         StagingEntidadNoResuelta.registro_origen_id == stg.id,

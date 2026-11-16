@@ -1,0 +1,16 @@
+{
+  "etiqueta": "F2R, provisional (no final)",
+  "tarea": "G-6 (Protocolo de tiempos para B-7)",
+  "no_final": true,
+  "desglose_por_etapa_s": {
+    "F1_V_vacia_media": {"tiempo_maquina_s": 639.85, "de_s": 26.25, "nota": "media de 3 corridas [653.01, 656.92, 609.62]"},
+    "D3B_v2_vacia_r1": {"carga_s": 11.18, "lectura_beto_s": 133.25, "consolidacion_s": 627.64, "tiempo_maquina_s": 772.07, "media_3_corridas_s": 864.283},
+    "F2_6_corrida_1": {"carga_s": 9.16, "lectura_beto_s": 135.44, "consolidacion_s": 732.51, "tiempo_maquina_s": 877.11, "host_cpu_avg_pct": 30.4, "host_cpu_max_pct": 81.8},
+    "F2_6_corrida_2": {"carga_s": 9.43, "lectura_beto_s": 132.60, "consolidacion_s": 731.23, "tiempo_maquina_s": 873.26, "host_cpu_avg_pct": 32.3, "host_cpu_max_pct": 63.6},
+    "F2_6_corrida_3_pico": {"carga_s": 9.36, "lectura_beto_s": 125.91, "consolidacion_s": 1068.09, "tiempo_maquina_s": 1203.36, "host_cpu_avg_pct": 56.0, "host_cpu_max_pct": 97.1, "host_ram_max_mb": 28687.8},
+    "F2R_G6_prueba_protocolo": {"carga_s": 10.18, "lectura_beto_s": 140.39, "consolidacion_s": 1162.43, "tiempo_maquina_s": 1313.0, "nota": "corrida de prueba no final con B-9 completo (6,226 filas en log_inconsistencias)"}
+  },
+  "causa_pico_1203_s": "En F2-6 corrida 3, recursos_corrida_3.json mostró contención externa de CPU en el host (promedio 56.0%, pico 97.1%, RAM pico 28,687.8 MB) frente al rango base de las corridas 1 y 2 (30.4%–32.3% promedio), concentrando el +337 s en consolidacion_s mientras lectura_beto_s se mantuvo estable (125.9 s).",
+  "observacion_b9_para_f3": "El registro 1:1 de 6,216 filas en log_inconsistencias (5,455 LINEA_SIN_ENTIDAD + 761 SUBTOTAL) incrementa consolidacion_s (~1,047–1,162 s). Para F3 (B-7), conviene evaluar bulk insert / add_all() en log_inconsistencias si se busca mantener el ciclo completo bajo 900 s.",
+  "protocolo_escrito": "docs/mediciones/f2r_g6_protocolo_b7.md"
+}

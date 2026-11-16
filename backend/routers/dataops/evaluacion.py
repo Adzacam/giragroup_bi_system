@@ -867,9 +867,9 @@ def _asegurar_lote_editable(db: Session, id_lote: Optional[int]) -> None:
     if not ids_docs:
         return
     pendientes = (
-        db.query(StagingEntidadNoResuelta)
+        db.query(func.count(StagingEntidadNoResuelta.id_staging))  # no .count(): su subconsulta pide id_homonimo (migración 016)
         .filter(StagingEntidadNoResuelta.id_documento.in_(ids_docs), StagingEntidadNoResuelta.resuelto == False)
-        .count()
+        .scalar()
     )
     if _estado_flujo_lote(db, ids_docs, pendientes) == "CONSOLIDADO":
         raise HTTPException(

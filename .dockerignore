@@ -28,4 +28,5 @@ ENV/
 Thumbs.db
 
 # Archivo histórico y resultados locales de limpieza
+output/
 _archivo/

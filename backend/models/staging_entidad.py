@@ -10,7 +10,7 @@ from sqlalchemy import (
     Boolean, DateTime, ForeignKey
 )
 from sqlalchemy import bindparam, event, text
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, deferred
 from sqlalchemy.sql import func
 from core.database import Base
 from models.staging_registro import FlexibleJSONB
@@ -60,7 +60,7 @@ class StagingEntidadNoResuelta(Base):
     # Idempotencia: md5(hash del archivo | tipo | motivo | valor normalizado); índice único uq_stg_entidad_clave_origen
     clave_origen = Column(String(32), nullable=True)
     # Identificador determinista de homónimo en Estado C (B-9; no fusiona ni crea perfil)
-    id_homonimo = Column(String(32), nullable=True, index=True)
+    id_homonimo = deferred(Column(String(32), nullable=True, index=True))  # deferred: la DW puede no tener la migración 016
 
     created_at = Column(DateTime, server_default=func.now())
 

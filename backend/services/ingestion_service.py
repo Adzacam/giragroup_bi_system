@@ -63,6 +63,8 @@ try:
     from models.fact_financiero import FactSituacionFinanciera
     from models.staging_entidad import StagingEntidadNoResuelta
     from models.lote import Lote
+    from models.log_inconsistencia import LogInconsistencia
+    from core.esquema_opcional import valores_si_existen
 except ImportError:
     from backend.models.dim_origen import DimOrigenDocumental
     from backend.models.staging_registro import StagingRegistroCrudo
@@ -71,6 +73,8 @@ except ImportError:
     from backend.models.fact_financiero import FactSituacionFinanciera
     from backend.models.staging_entidad import StagingEntidadNoResuelta
     from backend.models.lote import Lote
+    from backend.models.log_inconsistencia import LogInconsistencia
+    from backend.core.esquema_opcional import valores_si_existen
 
 try:
     from backend.services.readers.moodle_adapter import es_reporte_moodle, adaptar_moodle_df
@@ -696,6 +700,22 @@ class IngestionService:
             logs_generados.append(log1)
             stages_info.append({"id": 1, "name": "Archivo Origen", "time": f"{t_ms_1}ms", "desc": "Parseo UTF-8", "status": "completed"})
 
+            subtotales_det = (asym_info.get("diagnostico_estructural") or {}).get("filas_subtotales_detalle") or []
+            for item_sub in subtotales_det:
+                db.add(LogInconsistencia(
+                    id_documento=doc_id,
+                    fila_origen=item_sub.get("fila"),
+                    campo_afectado="fila_subtotal",
+                    valor_recibido=(item_sub.get("texto") or "")[:500],
+                    tipo_regla="SUBTOTAL",
+                    **valores_si_existen(db, "log_inconsistencias", regla_origen="SUBTOTAL"),
+                    severidad="BAJA",
+                    estado_resolucion="REGISTRADO",
+                    descripcion="Fila de subtotal/promedio/firma descartada preventivamente en ingesta",
+                ))
+            if subtotales_det:
+                logger.info("B9_DESCARTES_RESUMEN flujo=ingesta doc_id=%s conteos=%s", doc_id, {"SUBTOTAL": len(subtotales_det)})
+
             # ── ETAPA 2: Dispatcher ────────────────────────────────
             total_hojas = len(hojas)
             log2 = cls._registrar_log(
@@ -946,7 +966,7 @@ class IngestionService:
 
             n_hitl_pend = 0
             try:
-                n_hitl_pend = db.query(StagingEntidadNoResuelta).filter_by(id_documento=d.id_documento, resuelto=False).count()
+                n_hitl_pend = db.query(func.count(StagingEntidadNoResuelta.id_staging)).filter(StagingEntidadNoResuelta.id_documento == d.id_documento, StagingEntidadNoResuelta.resuelto == False).scalar()
             except Exception:
                 n_hitl_pend = 0
 

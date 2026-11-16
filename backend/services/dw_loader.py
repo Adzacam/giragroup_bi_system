@@ -32,6 +32,7 @@ from models.fact_techo_convenio import FactTechoConvenio
 from models.log_inconsistencia import LogInconsistencia
 from models.staging_entidad import StagingEntidadNoResuelta, generar_id_homonimo
 from models.catalogos import CatInstitucion
+from core.esquema_opcional import valores_si_existen
 from pipeline.config import NOTA_APROBACION
 try:
     from models.fact_evaluacion import FactEvaluacionDocente
@@ -508,7 +509,7 @@ class DWLoaderService:
                     score_fuzzy=candidatos_validos[0][1],
                     fk_estado="C",
                     motivo="HOMONIMIA",
-                    id_homonimo=generar_id_homonimo(nombre_clean, ci, programa),
+                    **valores_si_existen(self.db, "stg_entidad_no_resuelta", id_homonimo=generar_id_homonimo(nombre_clean, ci, programa)),
                     nivel_confianza=confianza_ia,
                     resuelto=False,
                     **self._extra_sugerencias(nombre_clean, candidatos_validos)
@@ -538,7 +539,7 @@ class DWLoaderService:
                             score_fuzzy=candidatos_validos[0][1],
                             fk_estado="C",
                             motivo="HOMONIMIA",
-                            id_homonimo=generar_id_homonimo(nombre_clean, ci, programa),
+                            **valores_si_existen(self.db, "stg_entidad_no_resuelta", id_homonimo=generar_id_homonimo(nombre_clean, ci, programa)),
                             nivel_confianza=confianza_ia,
                             resuelto=False,
                             **self._extra_sugerencias(nombre_clean, candidatos_validos)

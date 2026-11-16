@@ -1,4 +1,4 @@
--- Migración 015 (B-9): Trazabilidad individual de descartes e identificador determinista de homónimos (Estado C)
+-- Migración 016 (B-9): Trazabilidad individual de descartes e identificador determinista de homónimos (Estado C)
 -- No crea tablas nuevas (invariante: 50 tablas + 9 vistas bi).
 -- NO aplicar a giragroup_db viva sin aprobación explícita de Lean.
 

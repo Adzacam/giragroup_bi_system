@@ -1,0 +1,15 @@
+{
+  "etiqueta": "F2R, provisional",
+  "tarea": "G-1 (Migración 016 compatible)",
+  "migracion": "backend/scripts/migrations/016_b9_descartes_y_homonimos.sql",
+  "verificacion_schema_migrations": {
+    "dw_vacio": ["010_dataops_tarea_ingesta.sql", "011_eliminar_tablas_sin_uso.sql", "012_evaluacion_revision_y_fuente_rentabilidad.sql", "013_renombrar_kpi10_confianza_extraccion.sql", "014_conversion_captacion_comprobable.sql"],
+    "giragroup_db_viva": ["010_dataops_tarea_ingesta.sql", "011_eliminar_tablas_sin_uso.sql", "012_evaluacion_revision_y_fuente_rentabilidad.sql", "013_renombrar_kpi10_confianza_extraccion.sql", "014_conversion_captacion_comprobable.sql"],
+    "015_o_016_b9_registrada": false
+  },
+  "compatibilidad_esquema": {
+    "modulo": "backend/core/esquema_opcional.py (valores_si_existen + deferred Column en modelos ORM)",
+    "prueba_humo_sin_016_dw_vacio": {"health": 200, "upload_batch": 200, "confirm_dw_insert": 200, "status": "success"},
+    "pruebas_unitarias": "tests/f2/ (14 passed)"
+  }
+}

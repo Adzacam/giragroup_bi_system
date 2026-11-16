@@ -176,6 +176,7 @@ class AsymmetricFlattener:
         fila_cabecera_idx = 1
         multinivel_aplanados = 0
         subtotales_descartados = 0
+        subtotales_detalle = []
         columnas_dinamicas = []
 
         try:
@@ -300,6 +301,10 @@ class AsymmetricFlattener:
                 es_subtotal = any(skw in fila_str_lower for skw in SUBTOTAL_KEYWORDS)
                 if es_subtotal:
                     subtotales_descartados += 1
+                    subtotales_detalle.append({
+                        "fila": r_idx + 1,
+                        "texto": " | ".join([c for c in fila if c])[:500],
+                    })
                     continue
 
                 filas_datos.append(fila[:len(cabecera_final)])
@@ -356,6 +361,7 @@ class AsymmetricFlattener:
             "fila_cabecera": fila_cabecera_idx,
             "encabezados_multinivel_aplanados": multinivel_aplanados,
             "filas_subtotales_descartadas": subtotales_descartados,
+            "filas_subtotales_detalle": subtotales_detalle,
             "advertencias_estructurales": advertencias,
             "columnas_dinamicas": columnas_dinamicas[:15],
             "fechas_reconocidas": fechas_lista,
@@ -384,6 +390,7 @@ class AsymmetricFlattener:
         mini_grid = []
         fila_cabecera_idx = 1
         subtotales_descartados = 0
+        subtotales_detalle = []
         columnas_dinamicas = []
 
         try:
@@ -465,6 +472,7 @@ class AsymmetricFlattener:
             "fila_cabecera": fila_cabecera_idx,
             "encabezados_multinivel_aplanados": 0,
             "filas_subtotales_descartadas": subtotales_descartados,
+            "filas_subtotales_detalle": subtotales_detalle,
             "advertencias_estructurales": advertencias,
             "columnas_dinamicas": columnas_dinamicas[:15],
             "fechas_reconocidas": fechas_lista,

@@ -1,0 +1,30 @@
+{
+  "etiqueta": "F2R, provisional",
+  "tarea": "G-4 (Conciliación P-5)",
+  "uso_estadistico": "solo descriptiva",
+  "sql_utilizado": "docs/mediciones/f0_b5_consultas.sql",
+  "sql_sha256": "33d6443bf9dafab95d5438365c39f940d1c5bcb5ece8aeb765a408264d1ab47b",
+  "comparacion_misma_definicion_ols_programas_2025": {
+    "F0_snapshot_v1": {
+      "fuente": "beto_pg_tmpfs/giragroup_db (snapshot histórico completo)",
+      "filas_2025_programas": 21,
+      "observado_bs": 12907977.61,
+      "ajustado_ols_bs": 12747275.66,
+      "delta_pct": -1.245,
+      "pendiente_bs_anio": 2436141.68
+    },
+    "F2_lote_v2_f2r_base": {
+      "fuente": "f2r_base (lote congelado 10 archivos aafde8ad...db60)",
+      "filas_2025_programas": 12,
+      "observado_bs": 11851223.44,
+      "ajustado_ols_bs": 11866647.19,
+      "delta_pct": 0.1301,
+      "pendiente_bs_anio": 1907764.60
+    },
+    "causa_diferencia": "El snapshot histórico de F0 contiene 21 filas de PROGRAMAS en 2025 (múltiples fuentes/ingestas históricas), mientras que el lote congelado de 10 archivos en f2r_base contiene 12 filas mensuales de PROGRAMAS (1 por mes)."
+  },
+  "relacion_ols_vs_kpi03": {
+    "definicion_ols_anual": "Solo categoría nombre_categoria = 'PROGRAMAS', gestiones cerradas (anio < año actual), ejecutado no nulo.",
+    "definicion_kpi03_2025": "Todas las categorías con tipo = 'INGRESO' (PROGRAMAS + TECHOS_CERRADOS): en f2r_base suma 11,851,223.44 + 989,967.74 = 12,841,191.18 Bs. ejecutado vs 12,803,204.29 Bs. meta (100.30%); en F0 sumó 14,041,718.15 vs 12,703,204.29 Bs. (110.54%)."
+  }
+}
