@@ -1,0 +1,41 @@
+{
+  "etiqueta": "F3T",
+  "tarea": "T-5 (Borrado lote #3 y recarga completa de BD Techos.xlsx en DW viva)",
+  "dump_previo": {
+    "ruta": "output\\f3t\\giragroup_db_pre_t5.dump",
+    "sha256": "f9194971589c2777ccef7c78c1da70c45017d6513257e93152eb187c5f339ab5",
+    "bytes": 31737464
+  },
+  "nuevo_lote": {
+    "id_lote": 5,
+    "documentos": [
+      {
+        "id_documento": 22,
+        "nombre_archivo": "BD Techos.xlsx",
+        "tipo_fuente": "MARKETING",
+        "id_lote": 5
+      }
+    ],
+    "upload_respuesta": {
+      "omitido": true,
+      "motivo": "verificacion post-recarga"
+    },
+    "consolidacion_respuesta": {
+      "omitido": true,
+      "motivo": "verificacion post-recarga"
+    }
+  },
+  "verificacion_dw_viva": {
+    "stg_nuevo_doc": [],
+    "stg_estudiante_pendientes_global": 1044,
+    "fact_techo_convenio_por_doc": [
+      {
+        "id_documento": 22,
+        "filas": 206
+      }
+    ],
+    "fact_techo_convenio_total": 206,
+    "duplicados_convenio": [],
+    "cero_duplicados": true
+  }
+}
