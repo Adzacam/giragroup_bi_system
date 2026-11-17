@@ -1,0 +1,116 @@
+{
+  "etiqueta": "F3T, solo diagnostico",
+  "tarea": "T-2 (Clasificacion de BD Techos.xlsx)",
+  "libro_completo": {
+    "archivo": "uploads\\data\\BD Techos.xlsx",
+    "tipo_ganador": "MARKETING",
+    "puntajes_relevantes": {
+      "MARKETING": 14,
+      "TECHOS": 12,
+      "ADMISION": 0,
+      "RENTABILIDAD": 0,
+      "EGRESOS": 0
+    },
+    "tokens_activados": {
+      "MARKETING": [
+        "asesor comercial"
+      ],
+      "TECHOS": [
+        "techo",
+        "techos"
+      ],
+      "ADMISION": [],
+      "RENTABILIDAD": [],
+      "EGRESOS": []
+    },
+    "causa_marketing_sobre_techos": "En ingestion_service.py:367-382, has_mkt ('asesor comercial') suma +14 a MARKETING, mientras has_techo ('techo', 'gestion techo', 'escuela techo') suma +12 a TECHOS (14 > 12)."
+  },
+  "recorte_mensual": {
+    "archivo": "output\\backups\\f0_lote\\slices\\BD Techos.xlsx",
+    "tipo_ganador": "MARKETING",
+    "puntajes_relevantes": {
+      "MARKETING": 14,
+      "TECHOS": 12,
+      "ADMISION": 0,
+      "RENTABILIDAD": 0,
+      "EGRESOS": 0
+    },
+    "tokens_activados": {
+      "MARKETING": [
+        "asesor comercial"
+      ],
+      "TECHOS": [
+        "techo",
+        "techos"
+      ],
+      "ADMISION": [],
+      "RENTABILIDAD": [],
+      "EGRESOS": []
+    },
+    "causa_marketing_sobre_techos": "En ingestion_service.py:367-382, has_mkt ('asesor comercial') suma +14 a MARKETING, mientras has_techo ('techo', 'gestion techo', 'escuela techo') suma +12 a TECHOS (14 > 12)."
+  },
+  "impacto_en_otros_9_archivos_si_techos_ganara": [
+    {
+      "archivo": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+      "tipo_actual": "EVALUACION_DOCENTE",
+      "tiene_tokens_techos": [],
+      "cambiaria_si_techos_superara_14": false
+    },
+    {
+      "archivo": "Base centralizada Académica ARCA (1).xlsx",
+      "tipo_actual": "ACTA",
+      "tiene_tokens_techos": [],
+      "cambiaria_si_techos_superara_14": false
+    },
+    {
+      "archivo": "BD Cobranzas.xlsx",
+      "tipo_actual": "COBRANZA",
+      "tiene_tokens_techos": [],
+      "cambiaria_si_techos_superara_14": false
+    },
+    {
+      "archivo": "BD Egresos.xlsx",
+      "tipo_actual": "RENTABILIDAD",
+      "tiene_tokens_techos": [
+        "techos"
+      ],
+      "cambiaria_si_techos_superara_14": true
+    },
+    {
+      "archivo": "EJECUTADO VS META.xlsx",
+      "tipo_actual": "RENTABILIDAD",
+      "tiene_tokens_techos": [
+        "techos"
+      ],
+      "cambiaria_si_techos_superara_14": true
+    },
+    {
+      "archivo": "Evaluación Docente y Unifranz.xlsx",
+      "tipo_actual": "EVALUACION_DOCENTE",
+      "tiene_tokens_techos": [],
+      "cambiaria_si_techos_superara_14": false
+    },
+    {
+      "archivo": "Experiencia Docente 2.0.xlsx",
+      "tipo_actual": "ACTA",
+      "tiene_tokens_techos": [],
+      "cambiaria_si_techos_superara_14": false
+    },
+    {
+      "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+      "tipo_actual": "RENTABILIDAD",
+      "tiene_tokens_techos": [
+        "techos",
+        "presupuesto asignado",
+        "presupuestado"
+      ],
+      "cambiaria_si_techos_superara_14": true
+    },
+    {
+      "archivo": "TBL_INSCRITOS.xlsx",
+      "tipo_actual": "ADMISION",
+      "tiene_tokens_techos": [],
+      "cambiaria_si_techos_superara_14": false
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "etiqueta": "F3T",
+  "tarea": "T-4 (Formula exacta de KPI-15: 73,44 % vs 69,93 %)",
+  "definicion_oficial_sql": {
+    "archivo_y_lineas": "backend/scripts/migrations/006_capa_semantica_cmi.sql:73,268-269 y 014_conversion_captacion_comprobable.sql:106",
+    "nombre": "Cartera vencida",
+    "descripcion": "Deuda en mora o previsionable sobre la deuda total (por gestion en bi.vw_cmi_valores)",
+    "formula": "100.0 * SUM(monto_deuda) FILTER (WHERE estado_cartera IN ('Mora','En Mora','Previsionable')) / NULLIF(SUM(monto_deuda), 0)"
+  },
+  "origen_73_44": {
+    "valor": 73.44,
+    "valor_sql_exacto": 73.43834986933457,
+    "gestion": 2025,
+    "base": "f3_base (bi.vw_cmi_valores / GET /api/v1/cmi/scorecard?gestion=2025)",
+    "criterio": "Proporcion de monto_deuda en Mora+Previsionable sobre monto_deuda total de la gestion 2025",
+    "es_el_kpi15_oficial": true
+  },
+  "origen_69_93": {
+    "valor": 69.93,
+    "numerador_filas": 507,
+    "denominador_filas": 725,
+    "calculo": "(500 + 7) / 725 * 100 = 69.93%",
+    "gestion": "Todas las gestiones acumuladas (sin filtro de gestion)",
+    "criterio": "Conteo de filas (no monto_deuda); corresponde a una razon operativa de filas del cuadre (cercana a KPI-05 sin deduplicar estudiante), NO a KPI-15 oficial",
+    "es_el_kpi15_oficial": false
+  },
+  "nota_monto_acumulado_todas_gestiones": {
+    "numerador_bs": 542941.88,
+    "denominador_bs": 597998.71,
+    "pct_todas_gestiones": 90.79
+  },
+  "nota_kpi_service_py": "backend/services/kpi_service.py:434 calcula mora_total_pct por conteo (KPI-05), mientras KPI-15 en el CMI proviene de bi.vw_cmi_valores (monto_deuda por gestion).",
+  "decision_sfv": "La SFV debe publicar 73,44 % (gestion 2025, f3s_base / f3_2_kpi15.json) como KPI-15 oficial, y el cuadre 500/7/218 (69,93 % en filas) solo como desglose de conteo de filas acumuladas."
+}

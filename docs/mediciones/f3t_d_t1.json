@@ -1,0 +1,155 @@
+{
+  "etiqueta": "F3T",
+  "tarea": "T-1 (D-T1: BD Techos.xlsx completo en tmpfs)",
+  "archivo": "uploads/data/BD Techos.xlsx",
+  "sha256_archivo": "75a797bdcf1453e35e36e498e4b7c30625ba3669a17534fcb08fdd0adaaa23d8",
+  "filas_no_vacias_excel": 207,
+  "filas_con_pos_e_institucion": 207,
+  "staging_registros_crudos": 1,
+  "fact_techo_convenio": 206,
+  "stg_entidad_no_resuelta_estudiante": 0,
+  "stg_entidad_no_resuelta_total": 0,
+  "log_inconsistencias": 0,
+  "sin_explicar": 0,
+  "consolidacion_respuesta": {
+    "status": "success",
+    "message": "Transacción completada: 207 hechos persistidos en Data Warehouse (207 académicos, 0 financieros), 0 derivados a Revisión Humana.",
+    "inserted_dw": 207,
+    "desglose": {
+      "inserted_academico": 207,
+      "inserted_financiero": 0
+    },
+    "inserted_academico": 207,
+    "inserted_financiero": 0,
+    "inserted_admision": 0,
+    "inserted_revision": 39,
+    "sent_hitl": 0,
+    "descartados_ruido": 0,
+    "descartes_por_regla": {}
+  },
+  "nota_upsert_207_a_206": {
+    "motivo": "ON CONFLICT en fact_techo_convenio consolida 1 par repetido (insitucion, POS/modulo)",
+    "duplicados_origen": [
+      {
+        "N°": 4,
+        "Insitución": "STOLZEL",
+        "POS": 5060,
+        "Fecha Inicio": "2023-11-11 00:00:00"
+      },
+      {
+        "N°": 5,
+        "Insitución": "STOLZEL",
+        "POS": 5060,
+        "Fecha Inicio": "2023-11-25 00:00:00"
+      },
+      {
+        "N°": 9,
+        "Insitución": "DISMAC",
+        "POS": 5128,
+        "Fecha Inicio": "2023-06-18 00:00:00"
+      },
+      {
+        "N°": 10,
+        "Insitución": "DISMAC",
+        "POS": 5128,
+        "Fecha Inicio": "2023-06-18 00:00:00"
+      },
+      {
+        "N°": 44,
+        "Insitución": "INVERSIONISTAS",
+        "POS": 5278,
+        "Fecha Inicio": "2023-09-16 00:00:00"
+      },
+      {
+        "N°": 51,
+        "Insitución": "IBNORCA",
+        "POS": 5057,
+        "Fecha Inicio": "2023-12-19 00:00:00"
+      },
+      {
+        "N°": 55,
+        "Insitución": "IBNORCA",
+        "POS": 5057,
+        "Fecha Inicio": "2024-02-29 00:00:00"
+      },
+      {
+        "N°": 62,
+        "Insitución": "IBNORCA",
+        "POS": 5057,
+        "Fecha Inicio": "29/02/2023"
+      },
+      {
+        "N°": 87,
+        "Insitución": "CENTRO GASTRO OBESO",
+        "POS": 5404,
+        "Fecha Inicio": NaN
+      },
+      {
+        "N°": 91,
+        "Insitución": "CENTRO GASTRO OBESO",
+        "POS": 5404,
+        "Fecha Inicio": NaN
+      },
+      {
+        "N°": 108,
+        "Insitución": "CODESING",
+        "POS": 5562,
+        "Fecha Inicio": NaN
+      },
+      {
+        "N°": 125,
+        "Insitución": "CADELP",
+        "POS": 5601,
+        "Fecha Inicio": "2024-12-06 00:00:00"
+      },
+      {
+        "N°": 126,
+        "Insitución": "CADELP",
+        "POS": 5601,
+        "Fecha Inicio": "2025-06-24 00:00:00"
+      },
+      {
+        "N°": 129,
+        "Insitución": "IBNORCA",
+        "POS": 5723,
+        "Fecha Inicio": "2025-04-07 00:00:00"
+      },
+      {
+        "N°": 131,
+        "Insitución": "INVERSIONISTAS",
+        "POS": 5278,
+        "Fecha Inicio": "2025-01-04 00:00:00"
+      },
+      {
+        "N°": 138,
+        "Insitución": "CODESING",
+        "POS": 5562,
+        "Fecha Inicio": NaN
+      },
+      {
+        "N°": 145,
+        "Insitución": "MAGISTER SICERATUM M.S.C.",
+        "POS": 5837,
+        "Fecha Inicio": NaN
+      },
+      {
+        "N°": 148,
+        "Insitución": "IBNORCA",
+        "POS": 5723,
+        "Fecha Inicio": "2025-04-07 00:00:00"
+      },
+      {
+        "N°": 169,
+        "Insitución": "MAGISTER SICERATUM M.S.C.",
+        "POS": 5837,
+        "Fecha Inicio": NaN
+      },
+      {
+        "N°": 202,
+        "Insitución": "CODESING",
+        "POS": 5562,
+        "Fecha Inicio": "2025-03-31 00:00:00"
+      }
+    ]
+  }
+}

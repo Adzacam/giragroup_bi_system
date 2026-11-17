@@ -1,0 +1,208 @@
+{
+  "etiqueta": "F3T",
+  "tarea": "T-3 (Huella post D-T1 vs F3S)",
+  "sha_f3s_sin_schema_migrations": "fa22f701cd991becca0805c3274a4504cd23ac86eb86cb313556c60ff5e721ec",
+  "sha_f3t_sin_schema_migrations": "062d14228df1a8132e40272fcc9c31e3b0effca2f5b4538d53b81429f484d210",
+  "iguales_sin_schema_migrations": false,
+  "tablas_con_diff": [
+    "cache_indice_beto",
+    "schema_migrations"
+  ],
+  "bandeja_f3s": {
+    "casos": 676,
+    "grupos": 17,
+    "manuales": 12,
+    "casos_manuales": 43,
+    "firma": [
+      [
+        "grupo-eeb97aecd3",
+        "APROBAR",
+        594
+      ],
+      [
+        "grupo-3d630e02eb",
+        "APROBAR",
+        20
+      ],
+      [
+        "grupo-fce10f6266",
+        "MANUAL",
+        11
+      ],
+      [
+        "grupo-a370459559",
+        "MANUAL",
+        10
+      ],
+      [
+        "grupo-3a4ebffc23",
+        "MANUAL",
+        8
+      ],
+      [
+        "grupo-d2ec7470db",
+        "CORREGIR_FECHA",
+        8
+      ],
+      [
+        "grupo-3168c07273",
+        "APROBAR",
+        7
+      ],
+      [
+        "grupo-89de0bd808",
+        "APROBAR",
+        4
+      ],
+      [
+        "grupo-d4cefe4860",
+        "MANUAL",
+        3
+      ],
+      [
+        "grupo-5a9ebf94f4",
+        "MANUAL",
+        2
+      ],
+      [
+        "grupo-47eb53d9da",
+        "MANUAL",
+        2
+      ],
+      [
+        "grupo-58481de487",
+        "MANUAL",
+        2
+      ],
+      [
+        "grupo-0824c6fb74",
+        "MANUAL",
+        1
+      ],
+      [
+        "grupo-b4babd3ec1",
+        "MANUAL",
+        1
+      ],
+      [
+        "grupo-6d470fa856",
+        "MANUAL",
+        1
+      ],
+      [
+        "grupo-49f92e61a8",
+        "MANUAL",
+        1
+      ],
+      [
+        "grupo-15f47f574d",
+        "MANUAL",
+        1
+      ]
+    ]
+  },
+  "bandeja_f3t": {
+    "casos": 676,
+    "grupos": 17,
+    "manuales": 12,
+    "casos_manuales": 43,
+    "firma": [
+      [
+        "grupo-eeb97aecd3",
+        "APROBAR",
+        594
+      ],
+      [
+        "grupo-3d630e02eb",
+        "APROBAR",
+        20
+      ],
+      [
+        "grupo-fce10f6266",
+        "MANUAL",
+        11
+      ],
+      [
+        "grupo-a370459559",
+        "MANUAL",
+        10
+      ],
+      [
+        "grupo-3a4ebffc23",
+        "MANUAL",
+        8
+      ],
+      [
+        "grupo-d2ec7470db",
+        "CORREGIR_FECHA",
+        8
+      ],
+      [
+        "grupo-3168c07273",
+        "APROBAR",
+        7
+      ],
+      [
+        "grupo-89de0bd808",
+        "APROBAR",
+        4
+      ],
+      [
+        "grupo-d4cefe4860",
+        "MANUAL",
+        3
+      ],
+      [
+        "grupo-5a9ebf94f4",
+        "MANUAL",
+        2
+      ],
+      [
+        "grupo-47eb53d9da",
+        "MANUAL",
+        2
+      ],
+      [
+        "grupo-58481de487",
+        "MANUAL",
+        2
+      ],
+      [
+        "grupo-0824c6fb74",
+        "MANUAL",
+        1
+      ],
+      [
+        "grupo-b4babd3ec1",
+        "MANUAL",
+        1
+      ],
+      [
+        "grupo-6d470fa856",
+        "MANUAL",
+        1
+      ],
+      [
+        "grupo-49f92e61a8",
+        "MANUAL",
+        1
+      ],
+      [
+        "grupo-15f47f574d",
+        "MANUAL",
+        1
+      ]
+    ]
+  },
+  "kpis_f3s": {
+    "KPI-10": null,
+    "KPI-11": null,
+    "KPI-18": 32.0
+  },
+  "kpis_f3t": {
+    "KPI-10": null,
+    "KPI-11": null,
+    "KPI-18": 32.0
+  },
+  "veredicto": "remedir"
+}
