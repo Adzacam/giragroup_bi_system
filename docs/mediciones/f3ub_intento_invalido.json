@@ -1,0 +1,43 @@
+{
+  "descripcion": "Intento inicial abortado por esquema incompleto del clon.",
+  "causa_clasificada": "UndefinedColumn",
+  "columna_ausente": "fact_marketing.leads_captacion",
+  "migracion_faltante": "014_conversion_captacion_comprobable.sql",
+  "documento": {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "tipo_fuente": "ADMISION",
+    "inicio_utc": "2026-11-17T11:52:14.251065-04:00",
+    "estado": "CONSOLIDACION_TERMINAL_ERROR",
+    "http": 200,
+    "id_lote": 1,
+    "id_documento": 1,
+    "ingesta_estado": "procesado",
+    "ingesta_s": 11.84,
+    "lectura_estado": "COMPLETADA",
+    "lineas_leidas_beto": 15196,
+    "consolidacion_http": 200,
+    "tarea_consolidacion_id": 3,
+    "consolidacion_estado": "ERROR",
+    "conteos": {
+      "fact_rendimiento_academico": 0,
+      "fact_situacion_financiera": 0,
+      "fact_evaluacion_docente": 0,
+      "fact_marketing": 0,
+      "fact_rentabilidad": 0,
+      "fact_forecast": 0,
+      "fact_cobranzas_proyectadas": 0,
+      "fact_costo_programa": 0,
+      "fact_techo_convenio": 0,
+      "staging_registros_crudos": 1,
+      "stg_entidad_no_resuelta": 5,
+      "log_inconsistencias": 2,
+      "log_pipeline_ingesta": 8,
+      "carga_fila_origen": 0,
+      "lote": 1,
+      "dim_origen_documental": 1
+    },
+    "tmpfs_df": [],
+    "fin_utc": "2026-11-17T12:07:12.396613-04:00"
+  },
+  "resultado": "0 hechos cargados; clon desechable se recrea desde dw_vacio tras aplicar 014 y 016."
+}

@@ -1,0 +1,154 @@
+{
+  "fecha": "2026-11-17",
+  "contenedor": "beto_pg_f3ub",
+  "puerto": "127.0.0.1:55633",
+  "comando_docker_run": "docker run -d --name beto_pg_f3ub --tmpfs /var/lib/postgresql/data:rw,size=6g -e POSTGRES_USER=giragroup_user -e POSTGRES_PASSWORD=[omitido] -e POSTGRES_DB=postgres -p 127.0.0.1:55633:5432 postgres:16-alpine",
+  "memoria_docker_total_bytes": 16466497536,
+  "uso_docker_observado_aprox": "7.5 GiB / 15.34 GiB; capacidad libre estimada <12 GiB; se eligió 6g",
+  "lote_sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "lote_archivos": [
+    {
+      "coincide_manifiesto": true,
+      "sha256": "d0b87767b7dae5aa2d37ebd049a256bb83f565dfb0fc95412f46c8c2299357a0",
+      "bytes": 2693173,
+      "nombre": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx"
+    },
+    {
+      "coincide_manifiesto": true,
+      "sha256": "cd6070f0c3b61e88c1b86f7f2bcd909367e0ce8f770f16e671fc93e1218ded52",
+      "bytes": 1167153,
+      "nombre": "Base centralizada Académica ARCA (1).xlsx"
+    },
+    {
+      "coincide_manifiesto": true,
+      "sha256": "ccf92a5f085679301c791db664ff08e4ad1684be0a22288a3d9e5b1a58d0145c",
+      "bytes": 5066985,
+      "nombre": "BD Cobranzas.xlsx"
+    },
+    {
+      "coincide_manifiesto": true,
+      "sha256": "4b4afbddeb3c348c55cd2389542bb63ef41cbbdc2a70a04c0200c65bf6c30c5d",
+      "bytes": 174709,
+      "nombre": "BD Egresos.xlsx"
+    },
+    {
+      "coincide_manifiesto": true,
+      "sha256": "75a797bdcf1453e35e36e498e4b7c30625ba3669a17534fcb08fdd0adaaa23d8",
+      "bytes": 153300,
+      "nombre": "BD Techos.xlsx"
+    },
+    {
+      "coincide_manifiesto": true,
+      "sha256": "daee07f1f59df455ca862bda50b8a2c00d276437ddaa3a1375e86c11b2852682",
+      "bytes": 30879,
+      "nombre": "EJECUTADO VS META.xlsx"
+    },
+    {
+      "coincide_manifiesto": true,
+      "sha256": "6875b97a5fbbf61e9b32e26a3abf888c54620fe91fb9cfbb7e9502e255ac432a",
+      "bytes": 837438,
+      "nombre": "Evaluación Docente y Unifranz.xlsx"
+    },
+    {
+      "coincide_manifiesto": true,
+      "sha256": "bf8432b5193257446c670310d7bfeccc28a8e277a0d1c7bdab8f1b1c3b84ac5c",
+      "bytes": 3409451,
+      "nombre": "Experiencia Docente 2.0.xlsx"
+    },
+    {
+      "coincide_manifiesto": true,
+      "sha256": "c65129c62c9cfaa13ac483d2f5d7afed5c65d4a503547adb08829a075cf8dba0",
+      "bytes": 2789515,
+      "nombre": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx"
+    },
+    {
+      "coincide_manifiesto": true,
+      "sha256": "5b72c61c436fd5d7e7332ae734001aaee52f9fb24645400d253a6c64b3d8b572",
+      "bytes": 3436775,
+      "nombre": "TBL_INSCRITOS.xlsx"
+    }
+  ],
+  "excluidos": [
+    {
+      "razon": "fuera del directorio congelado uploads/data",
+      "bytes": 3704431,
+      "nombre": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S) 1.xlsx"
+    }
+  ],
+  "modelo_sha256": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+  "snapshot_sha256": "14d45f5a128f44543927911dc0ad453f681d524ac05037203f5c0c2787e3a2eb",
+  "snapshot_hash_esperado_plan": "14D45F5A…E2EB",
+  "dw_viva_antes": {
+    "lote": 15,
+    "dim_origen_documental": 26
+  },
+  "dw_vacio": {
+    "lote": 0,
+    "staging_registros_crudos": 0,
+    "carga_fila_origen": 0,
+    "dim_origen_documental": 0,
+    "log_inconsistencias": 0
+  },
+  "migracion_016": {
+    "comprobacion": [
+      "log_inconsistencias.regla_origen",
+      "stg_entidad_no_resuelta.id_homonimo"
+    ],
+    "aplicada": true
+  },
+  "observacion": "Se intentó catalogo_db, pero el nombre real en el contenedor fuente es giragroup_catalog_db; se restauró usando el nombre detectado.",
+  "conteos_dw_vacio_detalle": {
+    "fact_rendimiento_academico": 0,
+    "fact_situacion_financiera": 0,
+    "fact_evaluacion_docente": 0,
+    "fact_marketing": 0,
+    "fact_rentabilidad": 0,
+    "fact_forecast": 0,
+    "fact_cobranzas_proyectadas": 0,
+    "fact_costo_programa": 0,
+    "fact_techo_convenio": 0,
+    "stg_entidad_no_resuelta": 0,
+    "staging_registros_crudos": 0,
+    "log_inconsistencias": 0,
+    "log_pipeline_ingesta": 0,
+    "log_auditoria_nlp": 0,
+    "lote": 0,
+    "dim_origen_documental": 0,
+    "carga_fila_origen": 0,
+    "dataops_tarea": 0
+  },
+  "modelo_sha256_recalculado": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+  "snapshot_sha256_recalculado": "14d45f5a128f44543927911dc0ad453f681d524ac05037203f5c0c2787e3a2eb",
+  "desviacion_corregida": "El primer clon se creó sin migración 014; consolidación falló por columna ausente fact_marketing.leads_captacion. Evidencia sanitizada: f3ub_intento_invalido.json. La plantilla se recrea con 014 y 016 antes de continuar.",
+  "migraciones_aplicadas_al_dw_vacio_y_clon": [
+    "014_conversion_captacion_comprobable.sql",
+    "016_b9_descartes_y_homonimos.sql"
+  ],
+  "desviacion_dw_viva_durante_ejecucion": {
+    "conteos_antes": {
+      "dim_origen_documental": 26,
+      "lote": 15
+    },
+    "conteos_observados_durante_carga": {
+      "dim_origen_documental": 1,
+      "lote": 1
+    },
+    "documento_observado": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "sha256_observado": "d0b87767b7dae5aa2d37ebd049a256bb83f565dfb0fc95412f46c8c2299357a0",
+    "nota": "La carga F3U-B usa DATABASE_URL dirigido a beto_pg_f3ub/f3u_completo; el cambio de la DW viva no corresponde al primer libro del lote. No se intervino la DW viva; repetir conteos al cierre."
+  },
+  "verificacion_lote_sha256": {
+    "algoritmo": "json.dumps(archivos, ensure_ascii=False, sort_keys=True, separators=(',', ':')) y SHA-256",
+    "archivos_originales_seleccionados": 10,
+    "archivos_slices_de_referencia": 10,
+    "hashes_individuales_coinciden": 20,
+    "sha256_recalculado": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+    "coincide_hash_congelado": true,
+    "archivos_fuera_lote": 1
+  },
+  "base_codigo": {
+    "branch": "beto-integracion",
+    "commit": "1db9e5614d0297bd1002aea6f0d944290e807f06",
+    "git_local_changes": "Preexistentes en powerbi/frontend; runner no altera esos archivos."
+  }
+}

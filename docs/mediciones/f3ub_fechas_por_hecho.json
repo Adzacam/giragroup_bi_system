@@ -1,0 +1,47 @@
+{
+  "fact_rendimiento_academico": {
+    "filas": 25108,
+    "fecha_min": "2024-01-01",
+    "fecha_max": "2025-10-01"
+  },
+  "fact_situacion_financiera": {
+    "filas": 10719,
+    "fecha_min": "2023-03-10",
+    "fecha_max": "2026-05-28"
+  },
+  "fact_evaluacion_docente": {
+    "filas": 715217,
+    "fecha_min": "2024-10-17",
+    "fecha_max": "2026-05-19"
+  },
+  "fact_marketing": {
+    "filas": 10432,
+    "fecha_min": "2022-11-29",
+    "fecha_max": "2026-05-29"
+  },
+  "fact_rentabilidad": {
+    "filas": 95,
+    "fecha_min": "2023-01-01",
+    "fecha_max": "2026-12-01"
+  },
+  "fact_techo_convenio": {
+    "filas": 206,
+    "fecha_min": "2022-05-09",
+    "fecha_max": "2026-03-01"
+  },
+  "fact_costo_programa": {
+    "filas": 1371,
+    "fecha_min": null,
+    "fecha_max": null
+  },
+  "fact_forecast": {
+    "filas": 0,
+    "fecha_min": null,
+    "fecha_max": null
+  },
+  "fact_cobranzas_proyectadas": {
+    "filas": 0,
+    "fecha_min": null,
+    "fecha_max": null
+  }
+}

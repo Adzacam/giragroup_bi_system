@@ -1,0 +1,5828 @@
+{
+  "libro": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+  "sha256": "c65129c62c9cfaa13ac483d2f5d7afed5c65d4a503547adb08829a075cf8dba0",
+  "informe_gestion": {
+    "celdas_manual_total": 358,
+    "celdas_manual": [
+      {
+        "celda": "L3",
+        "rotulo_fila": "Fila 3",
+        "rotulo_columna": null,
+        "anio": null,
+        "mes": null,
+        "valor": "RC1.1 - Incrementar el número de cursos de postgrado en un 10%",
+        "fila_excel": 3,
+        "columna": "L"
+      },
+      {
+        "celda": "M4",
+        "rotulo_fila": "Fila 4",
+        "rotulo_columna": null,
+        "anio": null,
+        "mes": null,
+        "valor": "RC1.1.1 - Abrir 12 programas de Diplomado, 6 Programas Experto y 8 Cursos Cortos al mes",
+        "fila_excel": 4,
+        "columna": "M"
+      },
+      {
+        "celda": "B6",
+        "rotulo_fila": "GESTIÓN",
+        "rotulo_columna": "PERIODO",
+        "anio": 2025,
+        "mes": null,
+        "valor": "GESTIÓN 2025",
+        "fila_excel": 6,
+        "columna": "B"
+      },
+      {
+        "celda": "K6",
+        "rotulo_fila": "GESTIÓN 2025",
+        "rotulo_columna": null,
+        "anio": 2025,
+        "mes": null,
+        "valor": "GESTIÓN",
+        "fila_excel": 6,
+        "columna": "K"
+      },
+      {
+        "celda": "L6",
+        "rotulo_fila": "GESTIÓN 2025",
+        "rotulo_columna": "RC1.1 - Incrementar el número de cursos de postgrado en un 10%",
+        "anio": 2025,
+        "mes": null,
+        "valor": "PERIODO",
+        "fila_excel": 6,
+        "columna": "L"
+      },
+      {
+        "celda": "M6",
+        "rotulo_fila": "GESTIÓN 2025",
+        "rotulo_columna": "RC1.1.1 - Abrir 12 programas de Diplomado, 6 Programas Experto y 8 Cursos Cortos al mes",
+        "anio": 2025,
+        "mes": null,
+        "valor": "MES",
+        "fila_excel": 6,
+        "columna": "M"
+      },
+      {
+        "celda": "N6",
+        "rotulo_fila": "GESTIÓN 2025",
+        "rotulo_columna": "Proyectado",
+        "anio": 2025,
+        "mes": null,
+        "valor": "DIPLOMADO",
+        "fila_excel": 6,
+        "columna": "N"
+      },
+      {
+        "celda": "Q6",
+        "rotulo_fila": "GESTIÓN 2025",
+        "rotulo_columna": "Proyectado",
+        "anio": 2025,
+        "mes": null,
+        "valor": "PROGRAMA EXPERTO",
+        "fila_excel": 6,
+        "columna": "Q"
+      },
+      {
+        "celda": "T6",
+        "rotulo_fila": "GESTIÓN 2025",
+        "rotulo_columna": "Proyectado",
+        "anio": 2025,
+        "mes": null,
+        "valor": "CURSO",
+        "fila_excel": 6,
+        "columna": "T"
+      },
+      {
+        "celda": "W6",
+        "rotulo_fila": "GESTIÓN 2025",
+        "rotulo_columna": "Proyectado",
+        "anio": 2025,
+        "mes": null,
+        "valor": "TOTAL PROGRAMAS",
+        "fila_excel": 6,
+        "columna": "W"
+      },
+      {
+        "celda": "B7",
+        "rotulo_fila": "MES",
+        "rotulo_columna": "PERIODO",
+        "anio": 2025,
+        "mes": null,
+        "valor": "PERIODO",
+        "fila_excel": 7,
+        "columna": "B"
+      },
+      {
+        "celda": "C7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": null,
+        "valor": "MES",
+        "fila_excel": 7,
+        "columna": "C"
+      },
+      {
+        "celda": "D7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2025,
+        "mes": null,
+        "valor": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "fila_excel": 7,
+        "columna": "D"
+      },
+      {
+        "celda": "E7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2025,
+        "mes": null,
+        "valor": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "fila_excel": 7,
+        "columna": "E"
+      },
+      {
+        "celda": "F7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "TOTAL INGRESOS",
+        "anio": 2025,
+        "mes": null,
+        "valor": "TOTAL INGRESOS",
+        "fila_excel": 7,
+        "columna": "F"
+      },
+      {
+        "celda": "G7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": null,
+        "valor": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "fila_excel": 7,
+        "columna": "G"
+      },
+      {
+        "celda": "H7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "DIFERENCIA",
+        "anio": 2025,
+        "mes": null,
+        "valor": "DIFERENCIA",
+        "fila_excel": 7,
+        "columna": "H"
+      },
+      {
+        "celda": "I7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "% DE CUMPLIMIENTO",
+        "anio": 2025,
+        "mes": null,
+        "valor": "% DE CUMPLIMIENTO",
+        "fila_excel": 7,
+        "columna": "I"
+      },
+      {
+        "celda": "N7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Proyectado",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Proyectado",
+        "fila_excel": 7,
+        "columna": "N"
+      },
+      {
+        "celda": "O7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Meta",
+        "fila_excel": 7,
+        "columna": "O"
+      },
+      {
+        "celda": "P7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2025,
+        "mes": null,
+        "valor": "% cumplimento",
+        "fila_excel": 7,
+        "columna": "P"
+      },
+      {
+        "celda": "Q7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Proyectado",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Proyectado",
+        "fila_excel": 7,
+        "columna": "Q"
+      },
+      {
+        "celda": "R7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Meta",
+        "fila_excel": 7,
+        "columna": "R"
+      },
+      {
+        "celda": "S7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2025,
+        "mes": null,
+        "valor": "% cumplimento",
+        "fila_excel": 7,
+        "columna": "S"
+      },
+      {
+        "celda": "T7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Proyectado",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Proyectado",
+        "fila_excel": 7,
+        "columna": "T"
+      },
+      {
+        "celda": "U7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Meta",
+        "fila_excel": 7,
+        "columna": "U"
+      },
+      {
+        "celda": "V7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2025,
+        "mes": null,
+        "valor": "% cumplimento",
+        "fila_excel": 7,
+        "columna": "V"
+      },
+      {
+        "celda": "W7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Proyectado",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Proyectado",
+        "fila_excel": 7,
+        "columna": "W"
+      },
+      {
+        "celda": "X7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Meta",
+        "fila_excel": 7,
+        "columna": "X"
+      },
+      {
+        "celda": "Y7",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2025,
+        "mes": null,
+        "valor": "% cumplimento",
+        "fila_excel": 7,
+        "columna": "Y"
+      },
+      {
+        "celda": "B8",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "PERIODO",
+        "anio": 2025,
+        "mes": "enero",
+        "valor": 1.0,
+        "fila_excel": 8,
+        "columna": "B"
+      },
+      {
+        "celda": "C8",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "enero",
+        "valor": "enero",
+        "fila_excel": 8,
+        "columna": "C"
+      },
+      {
+        "celda": "G8",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": "enero",
+        "valor": 827437.0,
+        "fila_excel": 8,
+        "columna": "G"
+      },
+      {
+        "celda": "K8",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "GESTIÓN",
+        "anio": 2025,
+        "mes": "enero",
+        "valor": 2025.0,
+        "fila_excel": 8,
+        "columna": "K"
+      },
+      {
+        "celda": "L8",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "PERIODO",
+        "anio": 2025,
+        "mes": "enero",
+        "valor": 1.0,
+        "fila_excel": 8,
+        "columna": "L"
+      },
+      {
+        "celda": "M8",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "enero",
+        "valor": "enero",
+        "fila_excel": 8,
+        "columna": "M"
+      },
+      {
+        "celda": "O8",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "enero",
+        "valor": 12.0,
+        "fila_excel": 8,
+        "columna": "O"
+      },
+      {
+        "celda": "R8",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "enero",
+        "valor": 6.0,
+        "fila_excel": 8,
+        "columna": "R"
+      },
+      {
+        "celda": "U8",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "enero",
+        "valor": 8.0,
+        "fila_excel": 8,
+        "columna": "U"
+      },
+      {
+        "celda": "X8",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "enero",
+        "valor": 26.0,
+        "fila_excel": 8,
+        "columna": "X"
+      },
+      {
+        "celda": "C9",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "febrero",
+        "valor": "febrero",
+        "fila_excel": 9,
+        "columna": "C"
+      },
+      {
+        "celda": "G9",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": "febrero",
+        "valor": 1047940.0,
+        "fila_excel": 9,
+        "columna": "G"
+      },
+      {
+        "celda": "M9",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "enero",
+        "anio": 2025,
+        "mes": "febrero",
+        "valor": "febrero",
+        "fila_excel": 9,
+        "columna": "M"
+      },
+      {
+        "celda": "O9",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "febrero",
+        "valor": 12.0,
+        "fila_excel": 9,
+        "columna": "O"
+      },
+      {
+        "celda": "R9",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "febrero",
+        "valor": 6.0,
+        "fila_excel": 9,
+        "columna": "R"
+      },
+      {
+        "celda": "U9",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "febrero",
+        "valor": 8.0,
+        "fila_excel": 9,
+        "columna": "U"
+      },
+      {
+        "celda": "X9",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "febrero",
+        "valor": 26.0,
+        "fila_excel": 9,
+        "columna": "X"
+      },
+      {
+        "celda": "C10",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "marzo",
+        "valor": "marzo",
+        "fila_excel": 10,
+        "columna": "C"
+      },
+      {
+        "celda": "G10",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": "marzo",
+        "valor": 1074530.0,
+        "fila_excel": 10,
+        "columna": "G"
+      },
+      {
+        "celda": "M10",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "febrero",
+        "anio": 2025,
+        "mes": "marzo",
+        "valor": "marzo",
+        "fila_excel": 10,
+        "columna": "M"
+      },
+      {
+        "celda": "O10",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "marzo",
+        "valor": 12.0,
+        "fila_excel": 10,
+        "columna": "O"
+      },
+      {
+        "celda": "R10",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "marzo",
+        "valor": 6.0,
+        "fila_excel": 10,
+        "columna": "R"
+      },
+      {
+        "celda": "U10",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "marzo",
+        "valor": 8.0,
+        "fila_excel": 10,
+        "columna": "U"
+      },
+      {
+        "celda": "X10",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "marzo",
+        "valor": 26.0,
+        "fila_excel": 10,
+        "columna": "X"
+      },
+      {
+        "celda": "C11",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "abril",
+        "valor": "abril",
+        "fila_excel": 11,
+        "columna": "C"
+      },
+      {
+        "celda": "G11",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": "abril",
+        "valor": 1116091.0,
+        "fila_excel": 11,
+        "columna": "G"
+      },
+      {
+        "celda": "M11",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "marzo",
+        "anio": 2025,
+        "mes": "abril",
+        "valor": "abril",
+        "fila_excel": 11,
+        "columna": "M"
+      },
+      {
+        "celda": "O11",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "abril",
+        "valor": 12.0,
+        "fila_excel": 11,
+        "columna": "O"
+      },
+      {
+        "celda": "R11",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "abril",
+        "valor": 6.0,
+        "fila_excel": 11,
+        "columna": "R"
+      },
+      {
+        "celda": "U11",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "abril",
+        "valor": 8.0,
+        "fila_excel": 11,
+        "columna": "U"
+      },
+      {
+        "celda": "X11",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "abril",
+        "valor": 26.0,
+        "fila_excel": 11,
+        "columna": "X"
+      },
+      {
+        "celda": "C12",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "mayo",
+        "valor": "mayo",
+        "fila_excel": 12,
+        "columna": "C"
+      },
+      {
+        "celda": "G12",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": "mayo",
+        "valor": 1146419.0,
+        "fila_excel": 12,
+        "columna": "G"
+      },
+      {
+        "celda": "M12",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "abril",
+        "anio": 2025,
+        "mes": "mayo",
+        "valor": "mayo",
+        "fila_excel": 12,
+        "columna": "M"
+      },
+      {
+        "celda": "O12",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "mayo",
+        "valor": 12.0,
+        "fila_excel": 12,
+        "columna": "O"
+      },
+      {
+        "celda": "R12",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "mayo",
+        "valor": 6.0,
+        "fila_excel": 12,
+        "columna": "R"
+      },
+      {
+        "celda": "U12",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "mayo",
+        "valor": 8.0,
+        "fila_excel": 12,
+        "columna": "U"
+      },
+      {
+        "celda": "X12",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "mayo",
+        "valor": 26.0,
+        "fila_excel": 12,
+        "columna": "X"
+      },
+      {
+        "celda": "C13",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "junio",
+        "valor": "junio",
+        "fila_excel": 13,
+        "columna": "C"
+      },
+      {
+        "celda": "G13",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": "junio",
+        "valor": 1195927.0,
+        "fila_excel": 13,
+        "columna": "G"
+      },
+      {
+        "celda": "M13",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "mayo",
+        "anio": 2025,
+        "mes": "junio",
+        "valor": "junio",
+        "fila_excel": 13,
+        "columna": "M"
+      },
+      {
+        "celda": "O13",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "junio",
+        "valor": 12.0,
+        "fila_excel": 13,
+        "columna": "O"
+      },
+      {
+        "celda": "R13",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "junio",
+        "valor": 6.0,
+        "fila_excel": 13,
+        "columna": "R"
+      },
+      {
+        "celda": "U13",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "junio",
+        "valor": 8.0,
+        "fila_excel": 13,
+        "columna": "U"
+      },
+      {
+        "celda": "X13",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "junio",
+        "valor": 26.0,
+        "fila_excel": 13,
+        "columna": "X"
+      },
+      {
+        "celda": "B14",
+        "rotulo_fila": "Total Periodo 1:",
+        "rotulo_columna": "PERIODO",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Total Periodo 1:",
+        "fila_excel": 14,
+        "columna": "B"
+      },
+      {
+        "celda": "L14",
+        "rotulo_fila": "Total Periodo 1:",
+        "rotulo_columna": "PERIODO",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Total Periodo 1:",
+        "fila_excel": 14,
+        "columna": "L"
+      },
+      {
+        "celda": "B15",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "PERIODO",
+        "anio": 2025,
+        "mes": "julio",
+        "valor": 2.0,
+        "fila_excel": 15,
+        "columna": "B"
+      },
+      {
+        "celda": "C15",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "julio",
+        "valor": "julio",
+        "fila_excel": 15,
+        "columna": "C"
+      },
+      {
+        "celda": "G15",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": "julio",
+        "valor": 1258082.18737992,
+        "fila_excel": 15,
+        "columna": "G"
+      },
+      {
+        "celda": "L15",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "Total Periodo 1:",
+        "anio": 2025,
+        "mes": "julio",
+        "valor": 2.0,
+        "fila_excel": 15,
+        "columna": "L"
+      },
+      {
+        "celda": "M15",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "junio",
+        "anio": 2025,
+        "mes": "julio",
+        "valor": "julio",
+        "fila_excel": 15,
+        "columna": "M"
+      },
+      {
+        "celda": "O15",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "julio",
+        "valor": 12.0,
+        "fila_excel": 15,
+        "columna": "O"
+      },
+      {
+        "celda": "R15",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "julio",
+        "valor": 6.0,
+        "fila_excel": 15,
+        "columna": "R"
+      },
+      {
+        "celda": "U15",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "julio",
+        "valor": 8.0,
+        "fila_excel": 15,
+        "columna": "U"
+      },
+      {
+        "celda": "X15",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "julio",
+        "valor": 26.0,
+        "fila_excel": 15,
+        "columna": "X"
+      },
+      {
+        "celda": "C16",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "agosto",
+        "valor": "agosto",
+        "fila_excel": 16,
+        "columna": "C"
+      },
+      {
+        "celda": "G16",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": "agosto",
+        "valor": 1305483.02191832,
+        "fila_excel": 16,
+        "columna": "G"
+      },
+      {
+        "celda": "M16",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "julio",
+        "anio": 2025,
+        "mes": "agosto",
+        "valor": "agosto",
+        "fila_excel": 16,
+        "columna": "M"
+      },
+      {
+        "celda": "O16",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "agosto",
+        "valor": 12.0,
+        "fila_excel": 16,
+        "columna": "O"
+      },
+      {
+        "celda": "R16",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "agosto",
+        "valor": 6.0,
+        "fila_excel": 16,
+        "columna": "R"
+      },
+      {
+        "celda": "U16",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "agosto",
+        "valor": 8.0,
+        "fila_excel": 16,
+        "columna": "U"
+      },
+      {
+        "celda": "X16",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "agosto",
+        "valor": 26.0,
+        "fila_excel": 16,
+        "columna": "X"
+      },
+      {
+        "celda": "C17",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "septiembre",
+        "valor": "septiembre",
+        "fila_excel": 17,
+        "columna": "C"
+      },
+      {
+        "celda": "G17",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": "septiembre",
+        "valor": 1251533.39231109,
+        "fila_excel": 17,
+        "columna": "G"
+      },
+      {
+        "celda": "M17",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "agosto",
+        "anio": 2025,
+        "mes": "septiembre",
+        "valor": "septiembre",
+        "fila_excel": 17,
+        "columna": "M"
+      },
+      {
+        "celda": "O17",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "septiembre",
+        "valor": 12.0,
+        "fila_excel": 17,
+        "columna": "O"
+      },
+      {
+        "celda": "R17",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "septiembre",
+        "valor": 6.0,
+        "fila_excel": 17,
+        "columna": "R"
+      },
+      {
+        "celda": "U17",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "septiembre",
+        "valor": 8.0,
+        "fila_excel": 17,
+        "columna": "U"
+      },
+      {
+        "celda": "X17",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "septiembre",
+        "valor": 26.0,
+        "fila_excel": 17,
+        "columna": "X"
+      },
+      {
+        "celda": "C18",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "octubre",
+        "valor": "octubre",
+        "fila_excel": 18,
+        "columna": "C"
+      },
+      {
+        "celda": "G18",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": "octubre",
+        "valor": 1251533.39231109,
+        "fila_excel": 18,
+        "columna": "G"
+      },
+      {
+        "celda": "M18",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "septiembre",
+        "anio": 2025,
+        "mes": "octubre",
+        "valor": "octubre",
+        "fila_excel": 18,
+        "columna": "M"
+      },
+      {
+        "celda": "O18",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "octubre",
+        "valor": 12.0,
+        "fila_excel": 18,
+        "columna": "O"
+      },
+      {
+        "celda": "R18",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "octubre",
+        "valor": 6.0,
+        "fila_excel": 18,
+        "columna": "R"
+      },
+      {
+        "celda": "U18",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "octubre",
+        "valor": 8.0,
+        "fila_excel": 18,
+        "columna": "U"
+      },
+      {
+        "celda": "X18",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "octubre",
+        "valor": 26.0,
+        "fila_excel": 18,
+        "columna": "X"
+      },
+      {
+        "celda": "C19",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "noviembre",
+        "valor": "noviembre",
+        "fila_excel": 19,
+        "columna": "C"
+      },
+      {
+        "celda": "G19",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": "noviembre",
+        "valor": 1040415.32625035,
+        "fila_excel": 19,
+        "columna": "G"
+      },
+      {
+        "celda": "M19",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "octubre",
+        "anio": 2025,
+        "mes": "noviembre",
+        "valor": "noviembre",
+        "fila_excel": 19,
+        "columna": "M"
+      },
+      {
+        "celda": "O19",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "noviembre",
+        "valor": 12.0,
+        "fila_excel": 19,
+        "columna": "O"
+      },
+      {
+        "celda": "R19",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "noviembre",
+        "valor": 6.0,
+        "fila_excel": 19,
+        "columna": "R"
+      },
+      {
+        "celda": "U19",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "noviembre",
+        "valor": 8.0,
+        "fila_excel": 19,
+        "columna": "U"
+      },
+      {
+        "celda": "X19",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "noviembre",
+        "valor": 26.0,
+        "fila_excel": 19,
+        "columna": "X"
+      },
+      {
+        "celda": "C20",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "MES",
+        "anio": 2025,
+        "mes": "diciembre",
+        "valor": "diciembre",
+        "fila_excel": 20,
+        "columna": "C"
+      },
+      {
+        "celda": "G20",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2025,
+        "mes": "diciembre",
+        "valor": 648684.496191737,
+        "fila_excel": 20,
+        "columna": "G"
+      },
+      {
+        "celda": "M20",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "noviembre",
+        "anio": 2025,
+        "mes": "diciembre",
+        "valor": "diciembre",
+        "fila_excel": 20,
+        "columna": "M"
+      },
+      {
+        "celda": "O20",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "diciembre",
+        "valor": 12.0,
+        "fila_excel": 20,
+        "columna": "O"
+      },
+      {
+        "celda": "R20",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "diciembre",
+        "valor": 6.0,
+        "fila_excel": 20,
+        "columna": "R"
+      },
+      {
+        "celda": "U20",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "diciembre",
+        "valor": 8.0,
+        "fila_excel": 20,
+        "columna": "U"
+      },
+      {
+        "celda": "X20",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "Meta",
+        "anio": 2025,
+        "mes": "diciembre",
+        "valor": 26.0,
+        "fila_excel": 20,
+        "columna": "X"
+      },
+      {
+        "celda": "B21",
+        "rotulo_fila": "Total Periodo 2:",
+        "rotulo_columna": "PERIODO",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Total Periodo 2:",
+        "fila_excel": 21,
+        "columna": "B"
+      },
+      {
+        "celda": "L21",
+        "rotulo_fila": "Total Periodo 2:",
+        "rotulo_columna": "Total Periodo 1:",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Total Periodo 2:",
+        "fila_excel": 21,
+        "columna": "L"
+      },
+      {
+        "celda": "M23",
+        "rotulo_fila": "Fila 23",
+        "rotulo_columna": "diciembre",
+        "anio": 2025,
+        "mes": null,
+        "valor": "Total gestión 2025:",
+        "fila_excel": 23,
+        "columna": "M"
+      },
+      {
+        "celda": "B25",
+        "rotulo_fila": "GESTIÓN",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "GESTIÓN 2026",
+        "fila_excel": 25,
+        "columna": "B"
+      },
+      {
+        "celda": "K25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": null,
+        "anio": 2026,
+        "mes": null,
+        "valor": "GESTIÓN",
+        "fila_excel": 25,
+        "columna": "K"
+      },
+      {
+        "celda": "L25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": "Total Periodo 2:",
+        "anio": 2026,
+        "mes": null,
+        "valor": "PERIODO",
+        "fila_excel": 25,
+        "columna": "L"
+      },
+      {
+        "celda": "M25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": "Total gestión 2025:",
+        "anio": 2026,
+        "mes": null,
+        "valor": "MES",
+        "fila_excel": 25,
+        "columna": "M"
+      },
+      {
+        "celda": "N25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": "Proyectado",
+        "anio": 2026,
+        "mes": null,
+        "valor": "DIPLOMADO",
+        "fila_excel": 25,
+        "columna": "N"
+      },
+      {
+        "celda": "Q25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": "Proyectado",
+        "anio": 2026,
+        "mes": null,
+        "valor": "PROGRAMA EXPERTO",
+        "fila_excel": 25,
+        "columna": "Q"
+      },
+      {
+        "celda": "T25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": "Proyectado",
+        "anio": 2026,
+        "mes": null,
+        "valor": "CURSO",
+        "fila_excel": 25,
+        "columna": "T"
+      },
+      {
+        "celda": "W25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": "Proyectado",
+        "anio": 2026,
+        "mes": null,
+        "valor": "TOTAL PROGRAMAS",
+        "fila_excel": 25,
+        "columna": "W"
+      },
+      {
+        "celda": "AA25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": null,
+        "anio": 2026,
+        "mes": null,
+        "valor": "GESTIÓN",
+        "fila_excel": 25,
+        "columna": "AA"
+      },
+      {
+        "celda": "AB25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": null,
+        "anio": 2026,
+        "mes": null,
+        "valor": "PERIODO",
+        "fila_excel": 25,
+        "columna": "AB"
+      },
+      {
+        "celda": "AC25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": null,
+        "anio": 2026,
+        "mes": null,
+        "valor": "MES",
+        "fila_excel": 25,
+        "columna": "AC"
+      },
+      {
+        "celda": "AD25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": "Leyes",
+        "anio": 2026,
+        "mes": null,
+        "valor": "DIPLOMADO",
+        "fila_excel": 25,
+        "columna": "AD"
+      },
+      {
+        "celda": "AJ25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": "Leyes",
+        "anio": 2026,
+        "mes": null,
+        "valor": "PROGRAMA EXPERTO",
+        "fila_excel": 25,
+        "columna": "AJ"
+      },
+      {
+        "celda": "AP25",
+        "rotulo_fila": "GESTIÓN 2026",
+        "rotulo_columna": "Leyes",
+        "anio": 2026,
+        "mes": null,
+        "valor": "CURSO",
+        "fila_excel": 25,
+        "columna": "AP"
+      },
+      {
+        "celda": "B26",
+        "rotulo_fila": "MES",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "PERIODO",
+        "fila_excel": 26,
+        "columna": "B"
+      },
+      {
+        "celda": "C26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "MES",
+        "fila_excel": 26,
+        "columna": "C"
+      },
+      {
+        "celda": "D26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "fila_excel": 26,
+        "columna": "D"
+      },
+      {
+        "celda": "E26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": null,
+        "valor": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "fila_excel": 26,
+        "columna": "E"
+      },
+      {
+        "celda": "F26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "TOTAL INGRESOS",
+        "anio": 2026,
+        "mes": null,
+        "valor": "TOTAL INGRESOS",
+        "fila_excel": 26,
+        "columna": "F"
+      },
+      {
+        "celda": "G26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": null,
+        "valor": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "fila_excel": 26,
+        "columna": "G"
+      },
+      {
+        "celda": "H26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "DIFERENCIA",
+        "anio": 2026,
+        "mes": null,
+        "valor": "DIFERENCIA",
+        "fila_excel": 26,
+        "columna": "H"
+      },
+      {
+        "celda": "I26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "% DE CUMPLIMIENTO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "% DE CUMPLIMIENTO",
+        "fila_excel": 26,
+        "columna": "I"
+      },
+      {
+        "celda": "N26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Proyectado",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Proyectado",
+        "fila_excel": 26,
+        "columna": "N"
+      },
+      {
+        "celda": "O26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Meta",
+        "fila_excel": 26,
+        "columna": "O"
+      },
+      {
+        "celda": "P26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": "% cumplimento",
+        "fila_excel": 26,
+        "columna": "P"
+      },
+      {
+        "celda": "Q26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Proyectado",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Proyectado",
+        "fila_excel": 26,
+        "columna": "Q"
+      },
+      {
+        "celda": "R26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Meta",
+        "fila_excel": 26,
+        "columna": "R"
+      },
+      {
+        "celda": "S26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": "% cumplimento",
+        "fila_excel": 26,
+        "columna": "S"
+      },
+      {
+        "celda": "T26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Proyectado",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Proyectado",
+        "fila_excel": 26,
+        "columna": "T"
+      },
+      {
+        "celda": "U26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Meta",
+        "fila_excel": 26,
+        "columna": "U"
+      },
+      {
+        "celda": "V26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": "% cumplimento",
+        "fila_excel": 26,
+        "columna": "V"
+      },
+      {
+        "celda": "W26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Proyectado",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Proyectado",
+        "fila_excel": 26,
+        "columna": "W"
+      },
+      {
+        "celda": "X26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Meta",
+        "fila_excel": 26,
+        "columna": "X"
+      },
+      {
+        "celda": "Y26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": "% cumplimento",
+        "fila_excel": 26,
+        "columna": "Y"
+      },
+      {
+        "celda": "AD26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Leyes",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Leyes",
+        "fila_excel": 26,
+        "columna": "AD"
+      },
+      {
+        "celda": "AE26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Ciencias Sociales",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Ciencias Sociales",
+        "fila_excel": 26,
+        "columna": "AE"
+      },
+      {
+        "celda": "AF26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Salud",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Salud",
+        "fila_excel": 26,
+        "columna": "AF"
+      },
+      {
+        "celda": "AG26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Negocios",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Negocios",
+        "fila_excel": 26,
+        "columna": "AG"
+      },
+      {
+        "celda": "AH26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Tecnología",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Tecnología",
+        "fila_excel": 26,
+        "columna": "AH"
+      },
+      {
+        "celda": "AI26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "TOTAL",
+        "anio": 2026,
+        "mes": null,
+        "valor": "TOTAL",
+        "fila_excel": 26,
+        "columna": "AI"
+      },
+      {
+        "celda": "AJ26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Leyes",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Leyes",
+        "fila_excel": 26,
+        "columna": "AJ"
+      },
+      {
+        "celda": "AK26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Ciencias Sociales",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Ciencias Sociales",
+        "fila_excel": 26,
+        "columna": "AK"
+      },
+      {
+        "celda": "AL26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Salud",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Salud",
+        "fila_excel": 26,
+        "columna": "AL"
+      },
+      {
+        "celda": "AM26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Negocios",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Negocios",
+        "fila_excel": 26,
+        "columna": "AM"
+      },
+      {
+        "celda": "AN26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Tecnología",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Tecnología",
+        "fila_excel": 26,
+        "columna": "AN"
+      },
+      {
+        "celda": "AO26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "TOTAL",
+        "anio": 2026,
+        "mes": null,
+        "valor": "TOTAL",
+        "fila_excel": 26,
+        "columna": "AO"
+      },
+      {
+        "celda": "AP26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Leyes",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Leyes",
+        "fila_excel": 26,
+        "columna": "AP"
+      },
+      {
+        "celda": "AQ26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Ciencias Sociales",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Ciencias Sociales",
+        "fila_excel": 26,
+        "columna": "AQ"
+      },
+      {
+        "celda": "AR26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Salud",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Salud",
+        "fila_excel": 26,
+        "columna": "AR"
+      },
+      {
+        "celda": "AS26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Negocios",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Negocios",
+        "fila_excel": 26,
+        "columna": "AS"
+      },
+      {
+        "celda": "AT26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "Tecnología",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Tecnología",
+        "fila_excel": 26,
+        "columna": "AT"
+      },
+      {
+        "celda": "AU26",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "TOTAL",
+        "anio": 2026,
+        "mes": null,
+        "valor": "TOTAL",
+        "fila_excel": 26,
+        "columna": "AU"
+      },
+      {
+        "celda": "B27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": 1.0,
+        "fila_excel": 27,
+        "columna": "B"
+      },
+      {
+        "celda": "C27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": "enero",
+        "fila_excel": 27,
+        "columna": "C"
+      },
+      {
+        "celda": "G27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": 1194543.0,
+        "fila_excel": 27,
+        "columna": "G"
+      },
+      {
+        "celda": "K27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "GESTIÓN",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": 2026.0,
+        "fila_excel": 27,
+        "columna": "K"
+      },
+      {
+        "celda": "L27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": 1.0,
+        "fila_excel": 27,
+        "columna": "L"
+      },
+      {
+        "celda": "M27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": "enero",
+        "fila_excel": 27,
+        "columna": "M"
+      },
+      {
+        "celda": "O27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": 12.0,
+        "fila_excel": 27,
+        "columna": "O"
+      },
+      {
+        "celda": "R27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": 6.0,
+        "fila_excel": 27,
+        "columna": "R"
+      },
+      {
+        "celda": "U27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": 8.0,
+        "fila_excel": 27,
+        "columna": "U"
+      },
+      {
+        "celda": "X27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": 26.0,
+        "fila_excel": 27,
+        "columna": "X"
+      },
+      {
+        "celda": "AA27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "GESTIÓN",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": 2026.0,
+        "fila_excel": 27,
+        "columna": "AA"
+      },
+      {
+        "celda": "AB27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": 1.0,
+        "fila_excel": 27,
+        "columna": "AB"
+      },
+      {
+        "celda": "AC27",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "enero",
+        "valor": "enero",
+        "fila_excel": 27,
+        "columna": "AC"
+      },
+      {
+        "celda": "C28",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "febrero",
+        "valor": "febrero",
+        "fila_excel": 28,
+        "columna": "C"
+      },
+      {
+        "celda": "E28",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": "febrero",
+        "valor": 89000.0,
+        "fila_excel": 28,
+        "columna": "E"
+      },
+      {
+        "celda": "G28",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": "febrero",
+        "valor": 1577979.0,
+        "fila_excel": 28,
+        "columna": "G"
+      },
+      {
+        "celda": "M28",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "enero",
+        "anio": 2026,
+        "mes": "febrero",
+        "valor": "febrero",
+        "fila_excel": 28,
+        "columna": "M"
+      },
+      {
+        "celda": "O28",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "febrero",
+        "valor": 12.0,
+        "fila_excel": 28,
+        "columna": "O"
+      },
+      {
+        "celda": "R28",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "febrero",
+        "valor": 6.0,
+        "fila_excel": 28,
+        "columna": "R"
+      },
+      {
+        "celda": "U28",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "febrero",
+        "valor": 8.0,
+        "fila_excel": 28,
+        "columna": "U"
+      },
+      {
+        "celda": "X28",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "febrero",
+        "valor": 26.0,
+        "fila_excel": 28,
+        "columna": "X"
+      },
+      {
+        "celda": "AC28",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "enero",
+        "anio": 2026,
+        "mes": "febrero",
+        "valor": "febrero",
+        "fila_excel": 28,
+        "columna": "AC"
+      },
+      {
+        "celda": "C29",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "marzo",
+        "valor": "marzo",
+        "fila_excel": 29,
+        "columna": "C"
+      },
+      {
+        "celda": "E29",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": "marzo",
+        "valor": 89000.0,
+        "fila_excel": 29,
+        "columna": "E"
+      },
+      {
+        "celda": "G29",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": "marzo",
+        "valor": 1681471.0,
+        "fila_excel": 29,
+        "columna": "G"
+      },
+      {
+        "celda": "M29",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "febrero",
+        "anio": 2026,
+        "mes": "marzo",
+        "valor": "marzo",
+        "fila_excel": 29,
+        "columna": "M"
+      },
+      {
+        "celda": "O29",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "marzo",
+        "valor": 12.0,
+        "fila_excel": 29,
+        "columna": "O"
+      },
+      {
+        "celda": "R29",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "marzo",
+        "valor": 6.0,
+        "fila_excel": 29,
+        "columna": "R"
+      },
+      {
+        "celda": "U29",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "marzo",
+        "valor": 8.0,
+        "fila_excel": 29,
+        "columna": "U"
+      },
+      {
+        "celda": "X29",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "marzo",
+        "valor": 26.0,
+        "fila_excel": 29,
+        "columna": "X"
+      },
+      {
+        "celda": "AC29",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "febrero",
+        "anio": 2026,
+        "mes": "marzo",
+        "valor": "marzo",
+        "fila_excel": 29,
+        "columna": "AC"
+      },
+      {
+        "celda": "C30",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "abril",
+        "valor": "abril",
+        "fila_excel": 30,
+        "columna": "C"
+      },
+      {
+        "celda": "E30",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": "abril",
+        "valor": 89000.0,
+        "fila_excel": 30,
+        "columna": "E"
+      },
+      {
+        "celda": "G30",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": "abril",
+        "valor": 1741741.0,
+        "fila_excel": 30,
+        "columna": "G"
+      },
+      {
+        "celda": "M30",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "marzo",
+        "anio": 2026,
+        "mes": "abril",
+        "valor": "abril",
+        "fila_excel": 30,
+        "columna": "M"
+      },
+      {
+        "celda": "O30",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "abril",
+        "valor": 12.0,
+        "fila_excel": 30,
+        "columna": "O"
+      },
+      {
+        "celda": "R30",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "abril",
+        "valor": 6.0,
+        "fila_excel": 30,
+        "columna": "R"
+      },
+      {
+        "celda": "U30",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "abril",
+        "valor": 8.0,
+        "fila_excel": 30,
+        "columna": "U"
+      },
+      {
+        "celda": "X30",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "abril",
+        "valor": 26.0,
+        "fila_excel": 30,
+        "columna": "X"
+      },
+      {
+        "celda": "AC30",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "marzo",
+        "anio": 2026,
+        "mes": "abril",
+        "valor": "abril",
+        "fila_excel": 30,
+        "columna": "AC"
+      },
+      {
+        "celda": "C31",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "mayo",
+        "valor": "mayo",
+        "fila_excel": 31,
+        "columna": "C"
+      },
+      {
+        "celda": "E31",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": "mayo",
+        "valor": 89000.0,
+        "fila_excel": 31,
+        "columna": "E"
+      },
+      {
+        "celda": "G31",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": "mayo",
+        "valor": 1785253.0,
+        "fila_excel": 31,
+        "columna": "G"
+      },
+      {
+        "celda": "M31",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "abril",
+        "anio": 2026,
+        "mes": "mayo",
+        "valor": "mayo",
+        "fila_excel": 31,
+        "columna": "M"
+      },
+      {
+        "celda": "O31",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "mayo",
+        "valor": 12.0,
+        "fila_excel": 31,
+        "columna": "O"
+      },
+      {
+        "celda": "R31",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "mayo",
+        "valor": 6.0,
+        "fila_excel": 31,
+        "columna": "R"
+      },
+      {
+        "celda": "U31",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "mayo",
+        "valor": 8.0,
+        "fila_excel": 31,
+        "columna": "U"
+      },
+      {
+        "celda": "X31",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "mayo",
+        "valor": 26.0,
+        "fila_excel": 31,
+        "columna": "X"
+      },
+      {
+        "celda": "AC31",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "abril",
+        "anio": 2026,
+        "mes": "mayo",
+        "valor": "mayo",
+        "fila_excel": 31,
+        "columna": "AC"
+      },
+      {
+        "celda": "C32",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "junio",
+        "valor": "junio",
+        "fila_excel": 32,
+        "columna": "C"
+      },
+      {
+        "celda": "E32",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": "junio",
+        "valor": 89000.0,
+        "fila_excel": 32,
+        "columna": "E"
+      },
+      {
+        "celda": "G32",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": "junio",
+        "valor": 1856727.0,
+        "fila_excel": 32,
+        "columna": "G"
+      },
+      {
+        "celda": "M32",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "mayo",
+        "anio": 2026,
+        "mes": "junio",
+        "valor": "junio",
+        "fila_excel": 32,
+        "columna": "M"
+      },
+      {
+        "celda": "O32",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "junio",
+        "valor": 12.0,
+        "fila_excel": 32,
+        "columna": "O"
+      },
+      {
+        "celda": "R32",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "junio",
+        "valor": 6.0,
+        "fila_excel": 32,
+        "columna": "R"
+      },
+      {
+        "celda": "U32",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "junio",
+        "valor": 8.0,
+        "fila_excel": 32,
+        "columna": "U"
+      },
+      {
+        "celda": "X32",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "junio",
+        "valor": 26.0,
+        "fila_excel": 32,
+        "columna": "X"
+      },
+      {
+        "celda": "AC32",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "mayo",
+        "anio": 2026,
+        "mes": "junio",
+        "valor": "junio",
+        "fila_excel": 32,
+        "columna": "AC"
+      },
+      {
+        "celda": "B33",
+        "rotulo_fila": "Total Periodo 1:",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Periodo 1:",
+        "fila_excel": 33,
+        "columna": "B"
+      },
+      {
+        "celda": "L33",
+        "rotulo_fila": "Total Periodo 1:",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Periodo 1:",
+        "fila_excel": 33,
+        "columna": "L"
+      },
+      {
+        "celda": "AB33",
+        "rotulo_fila": "Total Periodo 1:",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Periodo 1:",
+        "fila_excel": 33,
+        "columna": "AB"
+      },
+      {
+        "celda": "B34",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": "julio",
+        "valor": 2.0,
+        "fila_excel": 34,
+        "columna": "B"
+      },
+      {
+        "celda": "C34",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "julio",
+        "valor": "julio",
+        "fila_excel": 34,
+        "columna": "C"
+      },
+      {
+        "celda": "E34",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": "julio",
+        "valor": 89000.0,
+        "fila_excel": 34,
+        "columna": "E"
+      },
+      {
+        "celda": "G34",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": "julio",
+        "valor": 1779730.0,
+        "fila_excel": 34,
+        "columna": "G"
+      },
+      {
+        "celda": "L34",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "Total Periodo 1:",
+        "anio": 2026,
+        "mes": "julio",
+        "valor": 2.0,
+        "fila_excel": 34,
+        "columna": "L"
+      },
+      {
+        "celda": "M34",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "junio",
+        "anio": 2026,
+        "mes": "julio",
+        "valor": "julio",
+        "fila_excel": 34,
+        "columna": "M"
+      },
+      {
+        "celda": "O34",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "julio",
+        "valor": 12.0,
+        "fila_excel": 34,
+        "columna": "O"
+      },
+      {
+        "celda": "R34",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "julio",
+        "valor": 6.0,
+        "fila_excel": 34,
+        "columna": "R"
+      },
+      {
+        "celda": "U34",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "julio",
+        "valor": 8.0,
+        "fila_excel": 34,
+        "columna": "U"
+      },
+      {
+        "celda": "X34",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "julio",
+        "valor": 26.0,
+        "fila_excel": 34,
+        "columna": "X"
+      },
+      {
+        "celda": "AB34",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "Total Periodo 1:",
+        "anio": 2026,
+        "mes": "julio",
+        "valor": 2.0,
+        "fila_excel": 34,
+        "columna": "AB"
+      },
+      {
+        "celda": "AC34",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "junio",
+        "anio": 2026,
+        "mes": "julio",
+        "valor": "julio",
+        "fila_excel": 34,
+        "columna": "AC"
+      },
+      {
+        "celda": "C35",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "agosto",
+        "valor": "agosto",
+        "fila_excel": 35,
+        "columna": "C"
+      },
+      {
+        "celda": "E35",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": "agosto",
+        "valor": 89000.0,
+        "fila_excel": 35,
+        "columna": "E"
+      },
+      {
+        "celda": "G35",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": "agosto",
+        "valor": 1954861.0,
+        "fila_excel": 35,
+        "columna": "G"
+      },
+      {
+        "celda": "M35",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "julio",
+        "anio": 2026,
+        "mes": "agosto",
+        "valor": "agosto",
+        "fila_excel": 35,
+        "columna": "M"
+      },
+      {
+        "celda": "O35",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "agosto",
+        "valor": 12.0,
+        "fila_excel": 35,
+        "columna": "O"
+      },
+      {
+        "celda": "R35",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "agosto",
+        "valor": 6.0,
+        "fila_excel": 35,
+        "columna": "R"
+      },
+      {
+        "celda": "U35",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "agosto",
+        "valor": 8.0,
+        "fila_excel": 35,
+        "columna": "U"
+      },
+      {
+        "celda": "X35",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "agosto",
+        "valor": 26.0,
+        "fila_excel": 35,
+        "columna": "X"
+      },
+      {
+        "celda": "AC35",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "julio",
+        "anio": 2026,
+        "mes": "agosto",
+        "valor": "agosto",
+        "fila_excel": 35,
+        "columna": "AC"
+      },
+      {
+        "celda": "C36",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "septiembre",
+        "valor": "septiembre",
+        "fila_excel": 36,
+        "columna": "C"
+      },
+      {
+        "celda": "E36",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": "septiembre",
+        "valor": 89000.0,
+        "fila_excel": 36,
+        "columna": "E"
+      },
+      {
+        "celda": "G36",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": "septiembre",
+        "valor": 1808523.0,
+        "fila_excel": 36,
+        "columna": "G"
+      },
+      {
+        "celda": "M36",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "agosto",
+        "anio": 2026,
+        "mes": "septiembre",
+        "valor": "septiembre",
+        "fila_excel": 36,
+        "columna": "M"
+      },
+      {
+        "celda": "O36",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "septiembre",
+        "valor": 12.0,
+        "fila_excel": 36,
+        "columna": "O"
+      },
+      {
+        "celda": "R36",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "septiembre",
+        "valor": 6.0,
+        "fila_excel": 36,
+        "columna": "R"
+      },
+      {
+        "celda": "U36",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "septiembre",
+        "valor": 8.0,
+        "fila_excel": 36,
+        "columna": "U"
+      },
+      {
+        "celda": "X36",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "septiembre",
+        "valor": 26.0,
+        "fila_excel": 36,
+        "columna": "X"
+      },
+      {
+        "celda": "AC36",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "agosto",
+        "anio": 2026,
+        "mes": "septiembre",
+        "valor": "septiembre",
+        "fila_excel": 36,
+        "columna": "AC"
+      },
+      {
+        "celda": "C37",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "octubre",
+        "valor": "octubre",
+        "fila_excel": 37,
+        "columna": "C"
+      },
+      {
+        "celda": "E37",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": "octubre",
+        "valor": 89000.0,
+        "fila_excel": 37,
+        "columna": "E"
+      },
+      {
+        "celda": "G37",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": "octubre",
+        "valor": 1634481.0,
+        "fila_excel": 37,
+        "columna": "G"
+      },
+      {
+        "celda": "M37",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "septiembre",
+        "anio": 2026,
+        "mes": "octubre",
+        "valor": "octubre",
+        "fila_excel": 37,
+        "columna": "M"
+      },
+      {
+        "celda": "O37",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "octubre",
+        "valor": 12.0,
+        "fila_excel": 37,
+        "columna": "O"
+      },
+      {
+        "celda": "R37",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "octubre",
+        "valor": 6.0,
+        "fila_excel": 37,
+        "columna": "R"
+      },
+      {
+        "celda": "U37",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "octubre",
+        "valor": 8.0,
+        "fila_excel": 37,
+        "columna": "U"
+      },
+      {
+        "celda": "X37",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "octubre",
+        "valor": 26.0,
+        "fila_excel": 37,
+        "columna": "X"
+      },
+      {
+        "celda": "AC37",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "septiembre",
+        "anio": 2026,
+        "mes": "octubre",
+        "valor": "octubre",
+        "fila_excel": 37,
+        "columna": "AC"
+      },
+      {
+        "celda": "C38",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "noviembre",
+        "valor": "noviembre",
+        "fila_excel": 38,
+        "columna": "C"
+      },
+      {
+        "celda": "E38",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": "noviembre",
+        "valor": 89000.0,
+        "fila_excel": 38,
+        "columna": "E"
+      },
+      {
+        "celda": "G38",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": "noviembre",
+        "valor": 1521911.0,
+        "fila_excel": 38,
+        "columna": "G"
+      },
+      {
+        "celda": "M38",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "octubre",
+        "anio": 2026,
+        "mes": "noviembre",
+        "valor": "noviembre",
+        "fila_excel": 38,
+        "columna": "M"
+      },
+      {
+        "celda": "O38",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "noviembre",
+        "valor": 12.0,
+        "fila_excel": 38,
+        "columna": "O"
+      },
+      {
+        "celda": "R38",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "noviembre",
+        "valor": 6.0,
+        "fila_excel": 38,
+        "columna": "R"
+      },
+      {
+        "celda": "U38",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "noviembre",
+        "valor": 8.0,
+        "fila_excel": 38,
+        "columna": "U"
+      },
+      {
+        "celda": "X38",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "noviembre",
+        "valor": 26.0,
+        "fila_excel": 38,
+        "columna": "X"
+      },
+      {
+        "celda": "AC38",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "octubre",
+        "anio": 2026,
+        "mes": "noviembre",
+        "valor": "noviembre",
+        "fila_excel": 38,
+        "columna": "AC"
+      },
+      {
+        "celda": "C39",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": "diciembre",
+        "valor": "diciembre",
+        "fila_excel": 39,
+        "columna": "C"
+      },
+      {
+        "celda": "G39",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": "diciembre",
+        "valor": 994214.0,
+        "fila_excel": 39,
+        "columna": "G"
+      },
+      {
+        "celda": "M39",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "noviembre",
+        "anio": 2026,
+        "mes": "diciembre",
+        "valor": "diciembre",
+        "fila_excel": 39,
+        "columna": "M"
+      },
+      {
+        "celda": "O39",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "diciembre",
+        "valor": 12.0,
+        "fila_excel": 39,
+        "columna": "O"
+      },
+      {
+        "celda": "R39",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "diciembre",
+        "valor": 6.0,
+        "fila_excel": 39,
+        "columna": "R"
+      },
+      {
+        "celda": "U39",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "diciembre",
+        "valor": 8.0,
+        "fila_excel": 39,
+        "columna": "U"
+      },
+      {
+        "celda": "X39",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": "diciembre",
+        "valor": 26.0,
+        "fila_excel": 39,
+        "columna": "X"
+      },
+      {
+        "celda": "AC39",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": "noviembre",
+        "anio": 2026,
+        "mes": "diciembre",
+        "valor": "diciembre",
+        "fila_excel": 39,
+        "columna": "AC"
+      },
+      {
+        "celda": "B40",
+        "rotulo_fila": "Total Periodo 2:",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Periodo 2:",
+        "fila_excel": 40,
+        "columna": "B"
+      },
+      {
+        "celda": "L40",
+        "rotulo_fila": "Total Periodo 2:",
+        "rotulo_columna": "Total Periodo 1:",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Periodo 2:",
+        "fila_excel": 40,
+        "columna": "L"
+      },
+      {
+        "celda": "AB40",
+        "rotulo_fila": "Total Periodo 2:",
+        "rotulo_columna": "Total Periodo 1:",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Periodo 2:",
+        "fila_excel": 40,
+        "columna": "AB"
+      },
+      {
+        "celda": "B41",
+        "rotulo_fila": "Fila 41",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Gestión 2026:",
+        "fila_excel": 41,
+        "columna": "B"
+      },
+      {
+        "celda": "B42",
+        "rotulo_fila": "Total gestión 2025:",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Gestión sin Master:",
+        "fila_excel": 42,
+        "columna": "B"
+      },
+      {
+        "celda": "M42",
+        "rotulo_fila": "Total Gestión sin Master:",
+        "rotulo_columna": "diciembre",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total gestión 2025:",
+        "fila_excel": 42,
+        "columna": "M"
+      },
+      {
+        "celda": "B43",
+        "rotulo_fila": "Fila 43",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Gestión sin Convenios:",
+        "fila_excel": 43,
+        "columna": "B"
+      },
+      {
+        "celda": "I43",
+        "rotulo_fila": "Total Gestión sin Convenios:",
+        "rotulo_columna": "% DE CUMPLIMIENTO",
+        "anio": 2026,
+        "mes": null,
+        "valor": 10.0,
+        "fila_excel": 43,
+        "columna": "I"
+      },
+      {
+        "celda": "B44",
+        "rotulo_fila": "Fila 44",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total por escuela de salud y otras escuelas:",
+        "fila_excel": 44,
+        "columna": "B"
+      },
+      {
+        "celda": "H44",
+        "rotulo_fila": "Total por escuela de salud y otras escuelas:",
+        "rotulo_columna": "DIFERENCIA",
+        "anio": 2026,
+        "mes": null,
+        "valor": 12.0,
+        "fila_excel": 44,
+        "columna": "H"
+      },
+      {
+        "celda": "B46",
+        "rotulo_fila": "PERIODO",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "GESTIÓN",
+        "fila_excel": 46,
+        "columna": "B"
+      },
+      {
+        "celda": "C46",
+        "rotulo_fila": "GESTIÓN",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "PERIODO",
+        "fila_excel": 46,
+        "columna": "C"
+      },
+      {
+        "celda": "D46",
+        "rotulo_fila": "GESTIÓN",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "MES",
+        "fila_excel": 46,
+        "columna": "D"
+      },
+      {
+        "celda": "E46",
+        "rotulo_fila": "GESTIÓN",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": null,
+        "valor": "DETALLE DE INGRESOS GESTIÓN 2026",
+        "fila_excel": 46,
+        "columna": "E"
+      },
+      {
+        "celda": "E47",
+        "rotulo_fila": "Ciencias Sociales",
+        "rotulo_columna": "INGRESO PROYECTADO TECHOS ACADÉMICOS",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Leyes",
+        "fila_excel": 47,
+        "columna": "E"
+      },
+      {
+        "celda": "F47",
+        "rotulo_fila": "Leyes",
+        "rotulo_columna": "TOTAL INGRESOS",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Ciencias Sociales",
+        "fila_excel": 47,
+        "columna": "F"
+      },
+      {
+        "celda": "G47",
+        "rotulo_fila": "Leyes",
+        "rotulo_columna": "META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS)",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Tecnología",
+        "fila_excel": 47,
+        "columna": "G"
+      },
+      {
+        "celda": "H47",
+        "rotulo_fila": "Leyes",
+        "rotulo_columna": "DIFERENCIA",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Negocios",
+        "fila_excel": 47,
+        "columna": "H"
+      },
+      {
+        "celda": "I47",
+        "rotulo_fila": "Leyes",
+        "rotulo_columna": "% DE CUMPLIMIENTO",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Otras Escuelas",
+        "fila_excel": 47,
+        "columna": "I"
+      },
+      {
+        "celda": "J47",
+        "rotulo_fila": "Leyes",
+        "rotulo_columna": null,
+        "anio": 2026,
+        "mes": null,
+        "valor": "Meta Otras Escuelas",
+        "fila_excel": 47,
+        "columna": "J"
+      },
+      {
+        "celda": "K47",
+        "rotulo_fila": "Leyes",
+        "rotulo_columna": null,
+        "anio": 2026,
+        "mes": null,
+        "valor": "% Cumplimiento",
+        "fila_excel": 47,
+        "columna": "K"
+      },
+      {
+        "celda": "L47",
+        "rotulo_fila": "Leyes",
+        "rotulo_columna": "Total Periodo 2:",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Salud",
+        "fila_excel": 47,
+        "columna": "L"
+      },
+      {
+        "celda": "M47",
+        "rotulo_fila": "Leyes",
+        "rotulo_columna": "Total gestión 2025:",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Meta Esc. Salud",
+        "fila_excel": 47,
+        "columna": "M"
+      },
+      {
+        "celda": "N47",
+        "rotulo_fila": "Leyes",
+        "rotulo_columna": "Proyectado",
+        "anio": 2026,
+        "mes": null,
+        "valor": "% Cumplimiento",
+        "fila_excel": 47,
+        "columna": "N"
+      },
+      {
+        "celda": "O47",
+        "rotulo_fila": "Leyes",
+        "rotulo_columna": "Meta",
+        "anio": 2026,
+        "mes": null,
+        "valor": "TOTAL PROGRAMAS",
+        "fila_excel": 47,
+        "columna": "O"
+      },
+      {
+        "celda": "P47",
+        "rotulo_fila": "Leyes",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": "INGRESOS CONVENIO",
+        "fila_excel": 47,
+        "columna": "P"
+      },
+      {
+        "celda": "Q47",
+        "rotulo_fila": "Leyes",
+        "rotulo_columna": "Proyectado",
+        "anio": 2026,
+        "mes": null,
+        "valor": "TOTAL GRAL",
+        "fila_excel": 47,
+        "columna": "Q"
+      },
+      {
+        "celda": "B48",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "PERIODO",
+        "anio": 2026,
+        "mes": null,
+        "valor": 2026.0,
+        "fila_excel": 48,
+        "columna": "B"
+      },
+      {
+        "celda": "C48",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": null,
+        "valor": 1.0,
+        "fila_excel": 48,
+        "columna": "C"
+      },
+      {
+        "celda": "D48",
+        "rotulo_fila": "Fila 48",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "enero",
+        "fila_excel": 48,
+        "columna": "D"
+      },
+      {
+        "celda": "J48",
+        "rotulo_fila": "enero",
+        "rotulo_columna": "Meta Otras Escuelas",
+        "anio": 2026,
+        "mes": null,
+        "valor": 400000.0,
+        "fila_excel": 48,
+        "columna": "J"
+      },
+      {
+        "celda": "D49",
+        "rotulo_fila": "Fila 49",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "febrero",
+        "fila_excel": 49,
+        "columna": "D"
+      },
+      {
+        "celda": "P49",
+        "rotulo_fila": "febrero",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": 105188.604,
+        "fila_excel": 49,
+        "columna": "P"
+      },
+      {
+        "celda": "D50",
+        "rotulo_fila": "Fila 50",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "marzo",
+        "fila_excel": 50,
+        "columna": "D"
+      },
+      {
+        "celda": "J50",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "Meta Otras Escuelas",
+        "anio": 2026,
+        "mes": null,
+        "valor": 758309.7875,
+        "fila_excel": 50,
+        "columna": "J"
+      },
+      {
+        "celda": "P50",
+        "rotulo_fila": "marzo",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": 105188.604,
+        "fila_excel": 50,
+        "columna": "P"
+      },
+      {
+        "celda": "D51",
+        "rotulo_fila": "Fila 51",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "abril",
+        "fila_excel": 51,
+        "columna": "D"
+      },
+      {
+        "celda": "J51",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "Meta Otras Escuelas",
+        "anio": 2026,
+        "mes": null,
+        "valor": 758309.7875,
+        "fila_excel": 51,
+        "columna": "J"
+      },
+      {
+        "celda": "P51",
+        "rotulo_fila": "abril",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": 105188.604,
+        "fila_excel": 51,
+        "columna": "P"
+      },
+      {
+        "celda": "D52",
+        "rotulo_fila": "Fila 52",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "mayo",
+        "fila_excel": 52,
+        "columna": "D"
+      },
+      {
+        "celda": "J52",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "Meta Otras Escuelas",
+        "anio": 2026,
+        "mes": null,
+        "valor": 758309.7875,
+        "fila_excel": 52,
+        "columna": "J"
+      },
+      {
+        "celda": "P52",
+        "rotulo_fila": "mayo",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": 105188.604,
+        "fila_excel": 52,
+        "columna": "P"
+      },
+      {
+        "celda": "D53",
+        "rotulo_fila": "Fila 53",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "junio",
+        "fila_excel": 53,
+        "columna": "D"
+      },
+      {
+        "celda": "J53",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "Meta Otras Escuelas",
+        "anio": 2026,
+        "mes": null,
+        "valor": 758309.7875,
+        "fila_excel": 53,
+        "columna": "J"
+      },
+      {
+        "celda": "P53",
+        "rotulo_fila": "junio",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": 105188.604,
+        "fila_excel": 53,
+        "columna": "P"
+      },
+      {
+        "celda": "C54",
+        "rotulo_fila": "Fila 54",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Periodo 1:",
+        "fila_excel": 54,
+        "columna": "C"
+      },
+      {
+        "celda": "C55",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": null,
+        "valor": 2.0,
+        "fila_excel": 55,
+        "columna": "C"
+      },
+      {
+        "celda": "D55",
+        "rotulo_fila": "Fila 55",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "julio",
+        "fila_excel": 55,
+        "columna": "D"
+      },
+      {
+        "celda": "J55",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "Meta Otras Escuelas",
+        "anio": 2026,
+        "mes": null,
+        "valor": 758309.7875,
+        "fila_excel": 55,
+        "columna": "J"
+      },
+      {
+        "celda": "P55",
+        "rotulo_fila": "julio",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": 105188.604,
+        "fila_excel": 55,
+        "columna": "P"
+      },
+      {
+        "celda": "D56",
+        "rotulo_fila": "Fila 56",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "agosto",
+        "fila_excel": 56,
+        "columna": "D"
+      },
+      {
+        "celda": "J56",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "Meta Otras Escuelas",
+        "anio": 2026,
+        "mes": null,
+        "valor": 758309.7875,
+        "fila_excel": 56,
+        "columna": "J"
+      },
+      {
+        "celda": "P56",
+        "rotulo_fila": "agosto",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": 105188.604,
+        "fila_excel": 56,
+        "columna": "P"
+      },
+      {
+        "celda": "D57",
+        "rotulo_fila": "Fila 57",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "septiembre",
+        "fila_excel": 57,
+        "columna": "D"
+      },
+      {
+        "celda": "J57",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "Meta Otras Escuelas",
+        "anio": 2026,
+        "mes": null,
+        "valor": 758309.7875,
+        "fila_excel": 57,
+        "columna": "J"
+      },
+      {
+        "celda": "P57",
+        "rotulo_fila": "septiembre",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": 105188.604,
+        "fila_excel": 57,
+        "columna": "P"
+      },
+      {
+        "celda": "D58",
+        "rotulo_fila": "Fila 58",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "octubre",
+        "fila_excel": 58,
+        "columna": "D"
+      },
+      {
+        "celda": "J58",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "Meta Otras Escuelas",
+        "anio": 2026,
+        "mes": null,
+        "valor": 758309.7875,
+        "fila_excel": 58,
+        "columna": "J"
+      },
+      {
+        "celda": "P58",
+        "rotulo_fila": "octubre",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": 105188.604,
+        "fila_excel": 58,
+        "columna": "P"
+      },
+      {
+        "celda": "D59",
+        "rotulo_fila": "Fila 59",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "noviembre",
+        "fila_excel": 59,
+        "columna": "D"
+      },
+      {
+        "celda": "P59",
+        "rotulo_fila": "noviembre",
+        "rotulo_columna": "% cumplimento",
+        "anio": 2026,
+        "mes": null,
+        "valor": 105188.604,
+        "fila_excel": 59,
+        "columna": "P"
+      },
+      {
+        "celda": "D60",
+        "rotulo_fila": "Fila 60",
+        "rotulo_columna": "INGRESO PROYECTADO PROGRAMAS REGULARES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "diciembre",
+        "fila_excel": 60,
+        "columna": "D"
+      },
+      {
+        "celda": "J60",
+        "rotulo_fila": "diciembre",
+        "rotulo_columna": null,
+        "anio": 2026,
+        "mes": null,
+        "valor": 400000.0,
+        "fila_excel": 60,
+        "columna": "J"
+      },
+      {
+        "celda": "C61",
+        "rotulo_fila": "Fila 61",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Periodo 2:",
+        "fila_excel": 61,
+        "columna": "C"
+      },
+      {
+        "celda": "C62",
+        "rotulo_fila": "Fila 62",
+        "rotulo_columna": "MES",
+        "anio": 2026,
+        "mes": null,
+        "valor": "Total Gestión 2026:",
+        "fila_excel": 62,
+        "columna": "C"
+      }
+    ],
+    "metas_mensuales": [
+      {
+        "anio": 2025,
+        "mes": "enero",
+        "fila": 8,
+        "meta_total_ingresos": 827437.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2025,
+        "mes": "febrero",
+        "fila": 9,
+        "meta_total_ingresos": 1047940.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2025,
+        "mes": "marzo",
+        "fila": 10,
+        "meta_total_ingresos": 1074530.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2025,
+        "mes": "abril",
+        "fila": 11,
+        "meta_total_ingresos": 1116091.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2025,
+        "mes": "mayo",
+        "fila": 12,
+        "meta_total_ingresos": 1146419.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2025,
+        "mes": "junio",
+        "fila": 13,
+        "meta_total_ingresos": 1195927.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2025,
+        "mes": "julio",
+        "fila": 15,
+        "meta_total_ingresos": 1258082.18737992,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2025,
+        "mes": "agosto",
+        "fila": 16,
+        "meta_total_ingresos": 1305483.02191832,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2025,
+        "mes": "septiembre",
+        "fila": 17,
+        "meta_total_ingresos": 1251533.39231109,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2025,
+        "mes": "octubre",
+        "fila": 18,
+        "meta_total_ingresos": 1251533.39231109,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2025,
+        "mes": "noviembre",
+        "fila": 19,
+        "meta_total_ingresos": 1040415.32625035,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2025,
+        "mes": "diciembre",
+        "fila": 20,
+        "meta_total_ingresos": 648684.496191737,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2026,
+        "mes": "enero",
+        "fila": 27,
+        "meta_total_ingresos": 1194543.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      },
+      {
+        "anio": 2026,
+        "mes": "febrero",
+        "fila": 28,
+        "meta_total_ingresos": 1577979.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 89000.0,
+        "ingreso_proyectado_techos_manual": true
+      },
+      {
+        "anio": 2026,
+        "mes": "marzo",
+        "fila": 29,
+        "meta_total_ingresos": 1681471.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 89000.0,
+        "ingreso_proyectado_techos_manual": true
+      },
+      {
+        "anio": 2026,
+        "mes": "abril",
+        "fila": 30,
+        "meta_total_ingresos": 1741741.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 89000.0,
+        "ingreso_proyectado_techos_manual": true
+      },
+      {
+        "anio": 2026,
+        "mes": "mayo",
+        "fila": 31,
+        "meta_total_ingresos": 1785253.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 89000.0,
+        "ingreso_proyectado_techos_manual": true
+      },
+      {
+        "anio": 2026,
+        "mes": "junio",
+        "fila": 32,
+        "meta_total_ingresos": 1856727.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 89000.0,
+        "ingreso_proyectado_techos_manual": true
+      },
+      {
+        "anio": 2026,
+        "mes": "julio",
+        "fila": 34,
+        "meta_total_ingresos": 1779730.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 89000.0,
+        "ingreso_proyectado_techos_manual": true
+      },
+      {
+        "anio": 2026,
+        "mes": "agosto",
+        "fila": 35,
+        "meta_total_ingresos": 1954861.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 89000.0,
+        "ingreso_proyectado_techos_manual": true
+      },
+      {
+        "anio": 2026,
+        "mes": "septiembre",
+        "fila": 36,
+        "meta_total_ingresos": 1808523.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 89000.0,
+        "ingreso_proyectado_techos_manual": true
+      },
+      {
+        "anio": 2026,
+        "mes": "octubre",
+        "fila": 37,
+        "meta_total_ingresos": 1634481.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 89000.0,
+        "ingreso_proyectado_techos_manual": true
+      },
+      {
+        "anio": 2026,
+        "mes": "noviembre",
+        "fila": 38,
+        "meta_total_ingresos": 1521911.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 89000.0,
+        "ingreso_proyectado_techos_manual": true
+      },
+      {
+        "anio": 2026,
+        "mes": "diciembre",
+        "fila": 39,
+        "meta_total_ingresos": 994214.0,
+        "meta_total_ingresos_manual": true,
+        "ingreso_proyectado_techos": 0,
+        "ingreso_proyectado_techos_manual": false
+      }
+    ],
+    "notas_okr_rc1_1_1": [
+      {
+        "hoja": "Informe Gestión",
+        "celda": "M4",
+        "valor": "RC1.1.1 - Abrir 12 programas de Diplomado, 6 Programas Experto y 8 Cursos Cortos al mes"
+      }
+    ],
+    "comparacion_con_ejecutado_vs_meta": [
+      {
+        "anio": 2025,
+        "mes": "enero",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 2,
+            "categoria": "PROGRAMAS",
+            "valor": 828875.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 828875.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 1438.0,
+        "diferencia_relativa_pct": -0.17348816166490724,
+        "meta_total_informe_gestion_col_G": 827437.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "enero",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 14,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 0.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 0.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 0.0,
+        "diferencia_relativa_pct": null,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "febrero",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 3,
+            "categoria": "PROGRAMAS",
+            "valor": 1074404.905
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1074404.905,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 26464.905000000028,
+        "diferencia_relativa_pct": -2.463215206561257,
+        "meta_total_informe_gestion_col_G": 1047940.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "febrero",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 15,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 44943.09
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 44943.09,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 44943.09,
+        "diferencia_relativa_pct": -100.00000000000001,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "marzo",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 4,
+            "categoria": "PROGRAMAS",
+            "valor": 1061583.821
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1061583.821,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 12946.179000000004,
+        "diferencia_relativa_pct": 1.2195154771485541,
+        "meta_total_informe_gestion_col_G": 1074530.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "marzo",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 16,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 89886.19
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 89886.19,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 89886.19,
+        "diferencia_relativa_pct": -100.0,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "abril",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 5,
+            "categoria": "PROGRAMAS",
+            "valor": 1008766.543
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1008766.543,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 107324.45700000005,
+        "diferencia_relativa_pct": 10.639176898237004,
+        "meta_total_informe_gestion_col_G": 1116091.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "abril",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 17,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 89886.19
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 89886.19,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 89886.19,
+        "diferencia_relativa_pct": -100.0,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "mayo",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 6,
+            "categoria": "PROGRAMAS",
+            "valor": 1007494.535
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1007494.535,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 138924.46499999997,
+        "diferencia_relativa_pct": 13.78910358059659,
+        "meta_total_informe_gestion_col_G": 1146419.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "mayo",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 18,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 89886.19
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 89886.19,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 89886.19,
+        "diferencia_relativa_pct": -100.0,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "junio",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 7,
+            "categoria": "PROGRAMAS",
+            "valor": 1001583.821
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1001583.821,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 194343.179,
+        "diferencia_relativa_pct": 19.403586092870803,
+        "meta_total_informe_gestion_col_G": 1195927.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "junio",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 19,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 89886.19
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 89886.19,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 89886.19,
+        "diferencia_relativa_pct": -100.0,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "julio",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 8,
+            "categoria": "PROGRAMAS",
+            "valor": 1068196.001
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1068196.001,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 189886.18637992,
+        "diferencia_relativa_pct": 17.77634312449743,
+        "meta_total_informe_gestion_col_G": 1258082.18737992,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "julio",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 20,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 89886.19
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 89886.19,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 89886.19,
+        "diferencia_relativa_pct": -100.0,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "agosto",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 9,
+            "categoria": "PROGRAMAS",
+            "valor": 1115596.833
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1115596.833,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 189886.18891832,
+        "diferencia_relativa_pct": 17.02104051404384,
+        "meta_total_informe_gestion_col_G": 1305483.02191832,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "agosto",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 21,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 89886.19
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 89886.19,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 89886.19,
+        "diferencia_relativa_pct": -100.0,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "septiembre",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 10,
+            "categoria": "PROGRAMAS",
+            "valor": 1061647.203
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1061647.203,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 189886.18931108993,
+        "diferencia_relativa_pct": 17.885997229071016,
+        "meta_total_informe_gestion_col_G": 1251533.39231109,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "septiembre",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 22,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 89886.19
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 89886.19,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 89886.19,
+        "diferencia_relativa_pct": -100.0,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "octubre",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 11,
+            "categoria": "PROGRAMAS",
+            "valor": 1061647.203
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1061647.203,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 189886.18931108993,
+        "diferencia_relativa_pct": 17.885997229071016,
+        "meta_total_informe_gestion_col_G": 1251533.39231109,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "octubre",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 23,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 89886.19
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 89886.19,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 89886.19,
+        "diferencia_relativa_pct": -100.0,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "noviembre",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 12,
+            "categoria": "PROGRAMAS",
+            "valor": 995472.2316
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 995472.2316,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 44943.09465034993,
+        "diferencia_relativa_pct": 4.514751212910672,
+        "meta_total_informe_gestion_col_G": 1040415.32625035,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "noviembre",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 24,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 44943.09
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 44943.09,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 44943.09,
+        "diferencia_relativa_pct": -100.00000000000001,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "diciembre",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 13,
+            "categoria": "PROGRAMAS",
+            "valor": 608960.4962
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 608960.4962,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 39723.99999173696,
+        "diferencia_relativa_pct": 6.5232474420952355,
+        "meta_total_informe_gestion_col_G": 648684.496191737,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2025,
+        "mes": "diciembre",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2025",
+        "filas_coincidentes": [
+          {
+            "fila": 25,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 0.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 0.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 0.0,
+        "diferencia_relativa_pct": null,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "enero",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 2,
+            "categoria": "PROGRAMAS",
+            "valor": 1085960.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1085960.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 108583.0,
+        "diferencia_relativa_pct": 9.998802902501012,
+        "meta_total_informe_gestion_col_G": 1194543.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "enero",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 14,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 0.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 0.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 0.0,
+        "diferencia_relativa_pct": null,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "febrero",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 3,
+            "categoria": "PROGRAMAS",
+            "valor": 969607.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 969607.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 608372.0,
+        "diferencia_relativa_pct": 62.74418398382025,
+        "meta_total_informe_gestion_col_G": 1577979.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "febrero",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 15,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 99024.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 99024.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 10024.0,
+        "diferencia_relativa_pct": -10.122798513491679,
+        "meta_total_informe_gestion_col_G": 89000.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "marzo",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 4,
+            "categoria": "PROGRAMAS",
+            "valor": 1241098.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1241098.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 440373.0,
+        "diferencia_relativa_pct": 35.48253240275949,
+        "meta_total_informe_gestion_col_G": 1681471.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "marzo",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 16,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 99024.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 99024.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 10024.0,
+        "diferencia_relativa_pct": -10.122798513491679,
+        "meta_total_informe_gestion_col_G": 89000.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "abril",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 5,
+            "categoria": "PROGRAMAS",
+            "valor": 1396235.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1396235.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 345506.0,
+        "diferencia_relativa_pct": 24.745547848320662,
+        "meta_total_informe_gestion_col_G": 1741741.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "abril",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 17,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 99024.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 99024.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 10024.0,
+        "diferencia_relativa_pct": -10.122798513491679,
+        "meta_total_informe_gestion_col_G": 89000.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "mayo",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 6,
+            "categoria": "PROGRAMAS",
+            "valor": 1551372.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1551372.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 233881.0,
+        "diferencia_relativa_pct": 15.075752301833473,
+        "meta_total_informe_gestion_col_G": 1785253.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "mayo",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 18,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 99024.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 99024.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 10024.0,
+        "diferencia_relativa_pct": -10.122798513491679,
+        "meta_total_informe_gestion_col_G": 89000.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "junio",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 7,
+            "categoria": "PROGRAMAS",
+            "valor": 1512588.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1512588.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 344139.0,
+        "diferencia_relativa_pct": 22.751668002126156,
+        "meta_total_informe_gestion_col_G": 1856727.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "junio",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 19,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 99024.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 99024.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 10024.0,
+        "diferencia_relativa_pct": -10.122798513491679,
+        "meta_total_informe_gestion_col_G": 89000.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "julio",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 8,
+            "categoria": "PROGRAMAS",
+            "valor": 1622019.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1622019.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 157711.0,
+        "diferencia_relativa_pct": 9.72312901390181,
+        "meta_total_informe_gestion_col_G": 1779730.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "julio",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 20,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 116657.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 116657.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 27657.0,
+        "diferencia_relativa_pct": -23.707964374191004,
+        "meta_total_informe_gestion_col_G": 89000.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "agosto",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 9,
+            "categoria": "PROGRAMAS",
+            "valor": 1644864.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1644864.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 309997.0,
+        "diferencia_relativa_pct": 18.846360550173145,
+        "meta_total_informe_gestion_col_G": 1954861.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "agosto",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 21,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 116657.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 116657.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 27657.0,
+        "diferencia_relativa_pct": -23.707964374191004,
+        "meta_total_informe_gestion_col_G": 89000.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "septiembre",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 10,
+            "categoria": "PROGRAMAS",
+            "valor": 1667710.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1667710.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 140813.0,
+        "diferencia_relativa_pct": 8.443494372522801,
+        "meta_total_informe_gestion_col_G": 1808523.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "septiembre",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 22,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 116657.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 116657.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 27657.0,
+        "diferencia_relativa_pct": -23.707964374191004,
+        "meta_total_informe_gestion_col_G": 89000.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "octubre",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 11,
+            "categoria": "PROGRAMAS",
+            "valor": 1553483.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1553483.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 80998.0,
+        "diferencia_relativa_pct": 5.21396114408719,
+        "meta_total_informe_gestion_col_G": 1634481.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "octubre",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 23,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 116657.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 116657.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 27657.0,
+        "diferencia_relativa_pct": -23.707964374191004,
+        "meta_total_informe_gestion_col_G": 89000.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "noviembre",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 12,
+            "categoria": "PROGRAMAS",
+            "valor": 1484947.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1484947.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 36964.0,
+        "diferencia_relativa_pct": 2.4892470909736173,
+        "meta_total_informe_gestion_col_G": 1521911.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "noviembre",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 24,
+            "categoria": "TECHOS/CERRADOS",
+            "valor": 116657.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 116657.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 27657.0,
+        "diferencia_relativa_pct": -23.707964374191004,
+        "meta_total_informe_gestion_col_G": 89000.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "diciembre",
+        "tipo": "PROGRAMAS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [
+          {
+            "fila": 13,
+            "categoria": "PROGRAMAS",
+            "valor": 1165112.0
+          }
+        ],
+        "meta_ejecutado_vs_meta_agregada": 1165112.0,
+        "filas_con_meta": 1,
+        "diferencia_absoluta": 170898.0,
+        "diferencia_relativa_pct": -14.667946085869856,
+        "meta_total_informe_gestion_col_G": 994214.0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      },
+      {
+        "anio": 2026,
+        "mes": "diciembre",
+        "tipo": "TECHOS",
+        "columna_meta_ejecutado_vs_meta": "META POR CATEGORIA 2026",
+        "filas_coincidentes": [],
+        "meta_ejecutado_vs_meta_agregada": null,
+        "filas_con_meta": 0,
+        "diferencia_absoluta": null,
+        "diferencia_relativa_pct": null,
+        "meta_total_informe_gestion_col_G": 0,
+        "nota": "La columna G es la meta total; el valor de esta fila es solo el componente de la categoría indicada. La conciliación correcta del total está en tabla_conciliacion_24_meses."
+      }
+    ],
+    "columnas_detectadas_ejecutado": {
+      "CATEGORIA": 1,
+      "MES": 2,
+      "MES NUMERICO": 3,
+      "EJECUTADO 2023": 4,
+      "META POR CATEGORIA 2024": 5,
+      "EJECUTADO 2024": 6,
+      "EJECUTADO 2025": 7,
+      "META POR CATEGORIA 2025": 8,
+      "EJECUTADO 2026": 9,
+      "META POR CATEGORIA 2026": 10,
+      "EJEC 2025": 11,
+      "META 2025": 12,
+      "EBITDA META 2024": 13,
+      "EBITDA EJECUTADO 2024": 14,
+      "EBITDA META 2025": 15,
+      "EBITDA EJECUTADO 2025": 16,
+      "META 2026": 17,
+      "PROYECCION MAESTRIAS": 18,
+      "META 2025 2DO SEMESTRE": 19
+    },
+    "tabla_conciliacion_24_meses": [
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "enero",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 828875.0,
+        "diferencia_absoluta_meta_total": 1438.0,
+        "meta_total_informe_gestion": 827437.0,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C8,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2025\")",
+        "meta_ejecutado_vs_meta_techos": 0.0,
+        "celda_meta_total": 827437.0,
+        "meta_ejecutado_vs_meta_total": 828875.0,
+        "diferencia_relativa_meta_total_pct": -0.17348816166490724,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2025,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "febrero",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1074404.905,
+        "diferencia_absoluta_meta_total": 71407.99500000011,
+        "meta_total_informe_gestion": 1047940.0,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C9,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2025\")",
+        "meta_ejecutado_vs_meta_techos": 44943.09,
+        "celda_meta_total": 1047940.0,
+        "meta_ejecutado_vs_meta_total": 1119347.995,
+        "diferencia_relativa_meta_total_pct": -6.379427605978791,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2025,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "marzo",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1061583.821,
+        "diferencia_absoluta_meta_total": 76940.01099999994,
+        "meta_total_informe_gestion": 1074530.0,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C10,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2025\")",
+        "meta_ejecutado_vs_meta_techos": 89886.19,
+        "celda_meta_total": 1074530.0,
+        "meta_ejecutado_vs_meta_total": 1151470.011,
+        "diferencia_relativa_meta_total_pct": -6.681894470979839,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2025,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "abril",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1008766.543,
+        "diferencia_absoluta_meta_total": 17438.266999999993,
+        "meta_total_informe_gestion": 1116091.0,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C11,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2025\")",
+        "meta_ejecutado_vs_meta_techos": 89886.19,
+        "celda_meta_total": 1116091.0,
+        "meta_ejecutado_vs_meta_total": 1098652.733,
+        "diferencia_relativa_meta_total_pct": 1.5872410340602132,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2025,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "mayo",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1007494.535,
+        "diferencia_absoluta_meta_total": 49038.27499999991,
+        "meta_total_informe_gestion": 1146419.0,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C12,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2025\")",
+        "meta_ejecutado_vs_meta_techos": 89886.19,
+        "celda_meta_total": 1146419.0,
+        "meta_ejecutado_vs_meta_total": 1097380.725,
+        "diferencia_relativa_meta_total_pct": 4.468665603726538,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2025,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "junio",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1001583.821,
+        "diferencia_absoluta_meta_total": 104456.98900000006,
+        "meta_total_informe_gestion": 1195927.0,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C13,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2025\")",
+        "meta_ejecutado_vs_meta_techos": 89886.19,
+        "celda_meta_total": 1195927.0,
+        "meta_ejecutado_vs_meta_total": 1091470.011,
+        "diferencia_relativa_meta_total_pct": 9.570303164289143,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2025,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "julio",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1068196.001,
+        "diferencia_absoluta_meta_total": 99999.99637992005,
+        "meta_total_informe_gestion": 1258082.18737992,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C8,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2025\")",
+        "meta_ejecutado_vs_meta_techos": 89886.19,
+        "celda_meta_total": 1258082.18737992,
+        "meta_ejecutado_vs_meta_total": 1158082.1909999999,
+        "diferencia_relativa_meta_total_pct": 8.63496538994097,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2025,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "agosto",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1115596.833,
+        "diferencia_absoluta_meta_total": 99999.99891832005,
+        "meta_total_informe_gestion": 1305483.02191832,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C9,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2025\")",
+        "meta_ejecutado_vs_meta_techos": 89886.19,
+        "celda_meta_total": 1305483.02191832,
+        "meta_ejecutado_vs_meta_total": 1205483.023,
+        "diferencia_relativa_meta_total_pct": 8.295429882492842,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2025,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "septiembre",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1061647.203,
+        "diferencia_absoluta_meta_total": 99999.99931108998,
+        "meta_total_informe_gestion": 1251533.39231109,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C10,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2025\")",
+        "meta_ejecutado_vs_meta_techos": 89886.19,
+        "celda_meta_total": 1251533.39231109,
+        "meta_ejecutado_vs_meta_total": 1151533.393,
+        "diferencia_relativa_meta_total_pct": 8.684072899576782,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2025,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "octubre",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1061647.203,
+        "diferencia_absoluta_meta_total": 99999.99931108998,
+        "meta_total_informe_gestion": 1251533.39231109,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C11,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2025\")",
+        "meta_ejecutado_vs_meta_techos": 89886.19,
+        "celda_meta_total": 1251533.39231109,
+        "meta_ejecutado_vs_meta_total": 1151533.393,
+        "diferencia_relativa_meta_total_pct": 8.684072899576782,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2025,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "noviembre",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 995472.2316,
+        "diferencia_absoluta_meta_total": 0.004650349961593747,
+        "meta_total_informe_gestion": 1040415.32625035,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C12,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2025\")",
+        "meta_ejecutado_vs_meta_techos": 44943.09,
+        "celda_meta_total": 1040415.32625035,
+        "meta_ejecutado_vs_meta_total": 1040415.3216,
+        "diferencia_relativa_meta_total_pct": 4.469705381157035E-07,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2025,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "diciembre",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 608960.4962,
+        "diferencia_absoluta_meta_total": 39723.99999173696,
+        "meta_total_informe_gestion": 648684.496191737,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C13,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2025\")",
+        "meta_ejecutado_vs_meta_techos": 0.0,
+        "celda_meta_total": 648684.496191737,
+        "meta_ejecutado_vs_meta_total": 608960.4962,
+        "diferencia_relativa_meta_total_pct": 6.5232474420952355,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2025,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "enero",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1085960.0,
+        "diferencia_absoluta_meta_total": 108583.0,
+        "meta_total_informe_gestion": 1194543.0,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C27,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2026\")",
+        "meta_ejecutado_vs_meta_techos": 0.0,
+        "celda_meta_total": 1194543.0,
+        "meta_ejecutado_vs_meta_total": 1085960.0,
+        "diferencia_relativa_meta_total_pct": 9.998802902501012,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2026,
+        "diferencia_relativa_meta_techo_pct": null
+      },
+      {
+        "meta_techo_informe_gestion": 89000.0,
+        "mes": "febrero",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 969607.0,
+        "diferencia_absoluta_meta_total": 509348.0,
+        "meta_total_informe_gestion": 1577979.0,
+        "meta_techo_manual": true,
+        "celda_meta_techo": 89000.0,
+        "meta_ejecutado_vs_meta_techos": 99024.0,
+        "celda_meta_total": 1577979.0,
+        "meta_ejecutado_vs_meta_total": 1068631.0,
+        "diferencia_relativa_meta_total_pct": 47.6635995025411,
+        "diferencia_absoluta_meta_techo_vs_categoria": -10024.0,
+        "anio": 2026,
+        "diferencia_relativa_meta_techo_pct": -10.122798513491679
+      },
+      {
+        "meta_techo_informe_gestion": 89000.0,
+        "mes": "marzo",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1241098.0,
+        "diferencia_absoluta_meta_total": 341349.0,
+        "meta_total_informe_gestion": 1681471.0,
+        "meta_techo_manual": true,
+        "celda_meta_techo": 89000.0,
+        "meta_ejecutado_vs_meta_techos": 99024.0,
+        "celda_meta_total": 1681471.0,
+        "meta_ejecutado_vs_meta_total": 1340122.0,
+        "diferencia_relativa_meta_total_pct": 25.4714869243248,
+        "diferencia_absoluta_meta_techo_vs_categoria": -10024.0,
+        "anio": 2026,
+        "diferencia_relativa_meta_techo_pct": -10.122798513491679
+      },
+      {
+        "meta_techo_informe_gestion": 89000.0,
+        "mes": "abril",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1396235.0,
+        "diferencia_absoluta_meta_total": 246482.0,
+        "meta_total_informe_gestion": 1741741.0,
+        "meta_techo_manual": true,
+        "celda_meta_techo": 89000.0,
+        "meta_ejecutado_vs_meta_techos": 99024.0,
+        "celda_meta_total": 1741741.0,
+        "meta_ejecutado_vs_meta_total": 1495259.0,
+        "diferencia_relativa_meta_total_pct": 16.484234503855184,
+        "diferencia_absoluta_meta_techo_vs_categoria": -10024.0,
+        "anio": 2026,
+        "diferencia_relativa_meta_techo_pct": -10.122798513491679
+      },
+      {
+        "meta_techo_informe_gestion": 89000.0,
+        "mes": "mayo",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1551372.0,
+        "diferencia_absoluta_meta_total": 134857.0,
+        "meta_total_informe_gestion": 1785253.0,
+        "meta_techo_manual": true,
+        "celda_meta_techo": 89000.0,
+        "meta_ejecutado_vs_meta_techos": 99024.0,
+        "celda_meta_total": 1785253.0,
+        "meta_ejecutado_vs_meta_total": 1650396.0,
+        "diferencia_relativa_meta_total_pct": 8.171190429448448,
+        "diferencia_absoluta_meta_techo_vs_categoria": -10024.0,
+        "anio": 2026,
+        "diferencia_relativa_meta_techo_pct": -10.122798513491679
+      },
+      {
+        "meta_techo_informe_gestion": 89000.0,
+        "mes": "junio",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1512588.0,
+        "diferencia_absoluta_meta_total": 245115.0,
+        "meta_total_informe_gestion": 1856727.0,
+        "meta_techo_manual": true,
+        "celda_meta_techo": 89000.0,
+        "meta_ejecutado_vs_meta_techos": 99024.0,
+        "celda_meta_total": 1856727.0,
+        "meta_ejecutado_vs_meta_total": 1611612.0,
+        "diferencia_relativa_meta_total_pct": 15.209305961980924,
+        "diferencia_absoluta_meta_techo_vs_categoria": -10024.0,
+        "anio": 2026,
+        "diferencia_relativa_meta_techo_pct": -10.122798513491679
+      },
+      {
+        "meta_techo_informe_gestion": 89000.0,
+        "mes": "julio",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1622019.0,
+        "diferencia_absoluta_meta_total": 41054.0,
+        "meta_total_informe_gestion": 1779730.0,
+        "meta_techo_manual": true,
+        "celda_meta_techo": 89000.0,
+        "meta_ejecutado_vs_meta_techos": 116657.0,
+        "celda_meta_total": 1779730.0,
+        "meta_ejecutado_vs_meta_total": 1738676.0,
+        "diferencia_relativa_meta_total_pct": 2.361221987305283,
+        "diferencia_absoluta_meta_techo_vs_categoria": -27657.0,
+        "anio": 2026,
+        "diferencia_relativa_meta_techo_pct": -23.707964374191004
+      },
+      {
+        "meta_techo_informe_gestion": 89000.0,
+        "mes": "agosto",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1644864.0,
+        "diferencia_absoluta_meta_total": 193340.0,
+        "meta_total_informe_gestion": 1954861.0,
+        "meta_techo_manual": true,
+        "celda_meta_techo": 89000.0,
+        "meta_ejecutado_vs_meta_techos": 116657.0,
+        "celda_meta_total": 1954861.0,
+        "meta_ejecutado_vs_meta_total": 1761521.0,
+        "diferencia_relativa_meta_total_pct": 10.975741986612706,
+        "diferencia_absoluta_meta_techo_vs_categoria": -27657.0,
+        "anio": 2026,
+        "diferencia_relativa_meta_techo_pct": -23.707964374191004
+      },
+      {
+        "meta_techo_informe_gestion": 89000.0,
+        "mes": "septiembre",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1667710.0,
+        "diferencia_absoluta_meta_total": 24156.0,
+        "meta_total_informe_gestion": 1808523.0,
+        "meta_techo_manual": true,
+        "celda_meta_techo": 89000.0,
+        "meta_ejecutado_vs_meta_techos": 116657.0,
+        "celda_meta_total": 1808523.0,
+        "meta_ejecutado_vs_meta_total": 1784367.0,
+        "diferencia_relativa_meta_total_pct": 1.3537573828702278,
+        "diferencia_absoluta_meta_techo_vs_categoria": -27657.0,
+        "anio": 2026,
+        "diferencia_relativa_meta_techo_pct": -23.707964374191004
+      },
+      {
+        "meta_techo_informe_gestion": 89000.0,
+        "mes": "octubre",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1553483.0,
+        "diferencia_absoluta_meta_total": 35659.0,
+        "meta_total_informe_gestion": 1634481.0,
+        "meta_techo_manual": true,
+        "celda_meta_techo": 89000.0,
+        "meta_ejecutado_vs_meta_techos": 116657.0,
+        "celda_meta_total": 1634481.0,
+        "meta_ejecutado_vs_meta_total": 1670140.0,
+        "diferencia_relativa_meta_total_pct": -2.1350904714574828,
+        "diferencia_absoluta_meta_techo_vs_categoria": -27657.0,
+        "anio": 2026,
+        "diferencia_relativa_meta_techo_pct": -23.707964374191004
+      },
+      {
+        "meta_techo_informe_gestion": 89000.0,
+        "mes": "noviembre",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1484947.0,
+        "diferencia_absoluta_meta_total": 79693.0,
+        "meta_total_informe_gestion": 1521911.0,
+        "meta_techo_manual": true,
+        "celda_meta_techo": 89000.0,
+        "meta_ejecutado_vs_meta_techos": 116657.0,
+        "celda_meta_total": 1521911.0,
+        "meta_ejecutado_vs_meta_total": 1601604.0,
+        "diferencia_relativa_meta_total_pct": -4.975824236203207,
+        "diferencia_absoluta_meta_techo_vs_categoria": -27657.0,
+        "anio": 2026,
+        "diferencia_relativa_meta_techo_pct": -23.707964374191004
+      },
+      {
+        "meta_techo_informe_gestion": 0,
+        "mes": "diciembre",
+        "meta_total_manual": true,
+        "meta_ejecutado_vs_meta_programas": 1165112.0,
+        "diferencia_absoluta_meta_total": 170898.0,
+        "meta_total_informe_gestion": 994214.0,
+        "meta_techo_manual": false,
+        "celda_meta_techo": "=SUMIFS(Centralizado_Mensual!$T$2:$T$600,Centralizado_Mensual!$F$2:$F$600,C32,Centralizado_Mensual!$I$2:$I$600,\"Convenio Académico\",Centralizado_Mensual!$D$2:$D$600,\"2026\")",
+        "meta_ejecutado_vs_meta_techos": null,
+        "celda_meta_total": 994214.0,
+        "meta_ejecutado_vs_meta_total": 1165112.0,
+        "diferencia_relativa_meta_total_pct": -14.667946085869856,
+        "diferencia_absoluta_meta_techo_vs_categoria": null,
+        "anio": 2026,
+        "diferencia_relativa_meta_techo_pct": null
+      }
+    ],
+    "nota_conciliacion": "La columna G de Informe Gestión se titula META (PROGRAMAS REGULARES Y TECHOS ACADÉMICOS); se concilia como meta total contra la suma de categorías PROGRAMAS y TECHOS/CERRADOS de EJECUTADO VS META. Columna E se concilia por separado solo en los diez meses en que el valor de 89.000 es manual.",
+    "interpretacion_columnas": "G=meta total según su encabezado combinado; E=ingreso proyectado de techos. La tabla de 24 meses compara G contra la suma de PROGRAMAS+TECHOS/CERRADOS de EJECUTADO VS META. D/E proyectados con fórmulas no se consideran metas manuales.",
+    "comparacion_con_ejecutado_vs_meta_nota": "Las 48 filas de detalle muestran una fila por mes y categoría; para comparar G como meta total usar tabla_conciliacion_24_meses, que suma las dos categorías."
+  },
+  "pauta_digital": {
+    "criterio": "48 filas con pauta_ejecutada > 0 en Julio, Agosto y Octubre 2025; se excluyen ceros de plantilla y Septiembre (0).",
+    "n_p_ejecutado": 48,
+    "n_con_p_asignado": 48,
+    "min_p_ejecutado": 60.84,
+    "max_p_ejecutado": 391.77,
+    "mediana_ratio_ejecutado_asignado": 0.80505,
+    "correlacion_leads": 0.35658024974455954,
+    "correlacion_dias_activos": 0.3368656375197569,
+    "correlacion_inscritos": 0.15040377338925598,
+    "filas": [
+      {
+        "hoja": "Julio-2025",
+        "fila": 2,
+        "pauta_ejecutada": 82.0,
+        "pauta_asignada": 100.0,
+        "leads": 66.0,
+        "dias_activos": 42.0,
+        "inscritos": 12.0
+      },
+      {
+        "hoja": "Julio-2025",
+        "fila": 5,
+        "pauta_ejecutada": 156.0,
+        "pauta_asignada": 200.0,
+        "leads": 184.0,
+        "dias_activos": 59.0,
+        "inscritos": 10.0
+      },
+      {
+        "hoja": "Julio-2025",
+        "fila": 6,
+        "pauta_ejecutada": 116.0,
+        "pauta_asignada": 200.0,
+        "leads": 198.0,
+        "dias_activos": 66.0,
+        "inscritos": 15.0
+      },
+      {
+        "hoja": "Julio-2025",
+        "fila": 7,
+        "pauta_ejecutada": 81.01,
+        "pauta_asignada": 100.0,
+        "leads": 95.0,
+        "dias_activos": 32.0,
+        "inscritos": 0.0
+      },
+      {
+        "hoja": "Julio-2025",
+        "fila": 8,
+        "pauta_ejecutada": 99.95,
+        "pauta_asignada": 200.0,
+        "leads": 110.0,
+        "dias_activos": 40.0,
+        "inscritos": 11.0
+      },
+      {
+        "hoja": "Julio-2025",
+        "fila": 9,
+        "pauta_ejecutada": 159.93,
+        "pauta_asignada": 200.0,
+        "leads": 525.0,
+        "dias_activos": 50.0,
+        "inscritos": 20.0
+      },
+      {
+        "hoja": "Julio-2025",
+        "fila": 10,
+        "pauta_ejecutada": 159.96,
+        "pauta_asignada": 160.0,
+        "leads": 288.0,
+        "dias_activos": 67.0,
+        "inscritos": 8.0
+      },
+      {
+        "hoja": "Julio-2025",
+        "fila": 11,
+        "pauta_ejecutada": 170.0,
+        "pauta_asignada": 200.0,
+        "leads": 447.0,
+        "dias_activos": 49.0,
+        "inscritos": 22.0
+      },
+      {
+        "hoja": "Julio-2025",
+        "fila": 12,
+        "pauta_ejecutada": 170.36,
+        "pauta_asignada": 191.0,
+        "leads": 84.0,
+        "dias_activos": 32.0,
+        "inscritos": 9.0
+      },
+      {
+        "hoja": "Julio-2025",
+        "fila": 13,
+        "pauta_ejecutada": 99.98,
+        "pauta_asignada": 100.0,
+        "leads": 63.0,
+        "dias_activos": 35.0,
+        "inscritos": 7.0
+      },
+      {
+        "hoja": "Julio-2025",
+        "fila": 14,
+        "pauta_ejecutada": 169.84,
+        "pauta_asignada": 200.0,
+        "leads": 301.0,
+        "dias_activos": 50.0,
+        "inscritos": 22.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 2,
+        "pauta_ejecutada": 99.75,
+        "pauta_asignada": 100.0,
+        "leads": 190.0,
+        "dias_activos": 39.0,
+        "inscritos": 5.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 3,
+        "pauta_ejecutada": 159.94,
+        "pauta_asignada": 200.0,
+        "leads": 200.0,
+        "dias_activos": 35.0,
+        "inscritos": 18.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 5,
+        "pauta_ejecutada": 60.84,
+        "pauta_asignada": 100.0,
+        "leads": 86.0,
+        "dias_activos": 9.0,
+        "inscritos": 0.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 7,
+        "pauta_ejecutada": 159.99,
+        "pauta_asignada": 200.0,
+        "leads": 444.0,
+        "dias_activos": 38.0,
+        "inscritos": 6.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 8,
+        "pauta_ejecutada": 159.97,
+        "pauta_asignada": 200.0,
+        "leads": 365.0,
+        "dias_activos": 35.0,
+        "inscritos": 21.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 9,
+        "pauta_ejecutada": 99.84,
+        "pauta_asignada": 100.0,
+        "leads": 54.0,
+        "dias_activos": 39.0,
+        "inscritos": 0.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 10,
+        "pauta_ejecutada": 99.84,
+        "pauta_asignada": 200.0,
+        "leads": 197.0,
+        "dias_activos": 38.0,
+        "inscritos": 7.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 11,
+        "pauta_ejecutada": 159.98,
+        "pauta_asignada": 200.0,
+        "leads": 309.0,
+        "dias_activos": 38.0,
+        "inscritos": 15.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 12,
+        "pauta_ejecutada": 159.31,
+        "pauta_asignada": 200.0,
+        "leads": 312.0,
+        "dias_activos": 24.0,
+        "inscritos": 9.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 13,
+        "pauta_ejecutada": 105.08,
+        "pauta_asignada": 100.0,
+        "leads": 106.0,
+        "dias_activos": 25.0,
+        "inscritos": 2.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 14,
+        "pauta_ejecutada": 94.55,
+        "pauta_asignada": 100.0,
+        "leads": 84.0,
+        "dias_activos": 25.0,
+        "inscritos": 6.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 15,
+        "pauta_ejecutada": 145.5,
+        "pauta_asignada": 100.0,
+        "leads": 465.0,
+        "dias_activos": 24.0,
+        "inscritos": 29.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 16,
+        "pauta_ejecutada": 160.0,
+        "pauta_asignada": 200.0,
+        "leads": 283.0,
+        "dias_activos": 38.0,
+        "inscritos": 9.0
+      },
+      {
+        "hoja": "Agosto-2025",
+        "fila": 17,
+        "pauta_ejecutada": 149.22,
+        "pauta_asignada": 200.0,
+        "leads": 265.0,
+        "dias_activos": 23.0,
+        "inscritos": 15.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 2,
+        "pauta_ejecutada": 237.65,
+        "pauta_asignada": 252.155,
+        "leads": 277.0,
+        "dias_activos": null,
+        "inscritos": 13.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 3,
+        "pauta_ejecutada": 114.99,
+        "pauta_asignada": 100.575,
+        "leads": 139.0,
+        "dias_activos": null,
+        "inscritos": 7.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 4,
+        "pauta_ejecutada": 114.94,
+        "pauta_asignada": 100.575,
+        "leads": 288.0,
+        "dias_activos": null,
+        "inscritos": 11.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 5,
+        "pauta_ejecutada": 169.99,
+        "pauta_asignada": 381.034,
+        "leads": 299.0,
+        "dias_activos": null,
+        "inscritos": 10.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 6,
+        "pauta_ejecutada": 169.83,
+        "pauta_asignada": 474.138,
+        "leads": 171.0,
+        "dias_activos": null,
+        "inscritos": 6.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 7,
+        "pauta_ejecutada": 169.15,
+        "pauta_asignada": 296.983,
+        "leads": 263.0,
+        "dias_activos": null,
+        "inscritos": 13.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 8,
+        "pauta_ejecutada": 159.97,
+        "pauta_asignada": 862.069,
+        "leads": 515.0,
+        "dias_activos": null,
+        "inscritos": 46.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 9,
+        "pauta_ejecutada": 201.88,
+        "pauta_asignada": 259.483,
+        "leads": 276.0,
+        "dias_activos": null,
+        "inscritos": 15.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 10,
+        "pauta_ejecutada": 159.02,
+        "pauta_asignada": 239.224,
+        "leads": 147.0,
+        "dias_activos": null,
+        "inscritos": 11.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 11,
+        "pauta_ejecutada": 99.26,
+        "pauta_asignada": 100.575,
+        "leads": 162.0,
+        "dias_activos": null,
+        "inscritos": 5.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 12,
+        "pauta_ejecutada": 99.81,
+        "pauta_asignada": 100.575,
+        "leads": 256.0,
+        "dias_activos": null,
+        "inscritos": 6.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 13,
+        "pauta_ejecutada": 160.0,
+        "pauta_asignada": 331.897,
+        "leads": 287.0,
+        "dias_activos": null,
+        "inscritos": 9.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 14,
+        "pauta_ejecutada": 258.92,
+        "pauta_asignada": 301.724,
+        "leads": 196.0,
+        "dias_activos": null,
+        "inscritos": 6.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 15,
+        "pauta_ejecutada": 175.0,
+        "pauta_asignada": 184.345,
+        "leads": 221.0,
+        "dias_activos": null,
+        "inscritos": 4.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 16,
+        "pauta_ejecutada": 224.82,
+        "pauta_asignada": 232.59,
+        "leads": 298.0,
+        "dias_activos": null,
+        "inscritos": 11.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 17,
+        "pauta_ejecutada": 160.0,
+        "pauta_asignada": 252.155,
+        "leads": 280.0,
+        "dias_activos": null,
+        "inscritos": 9.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 18,
+        "pauta_ejecutada": 99.91,
+        "pauta_asignada": 100.575,
+        "leads": 180.0,
+        "dias_activos": null,
+        "inscritos": 7.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 19,
+        "pauta_ejecutada": 100.53,
+        "pauta_asignada": 100.575,
+        "leads": 242.0,
+        "dias_activos": null,
+        "inscritos": 12.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 20,
+        "pauta_ejecutada": 174.85,
+        "pauta_asignada": 310.345,
+        "leads": 9.0,
+        "dias_activos": null,
+        "inscritos": 2.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 21,
+        "pauta_ejecutada": 391.77,
+        "pauta_asignada": 283.621,
+        "leads": 294.0,
+        "dias_activos": null,
+        "inscritos": 8.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 22,
+        "pauta_ejecutada": 240.54,
+        "pauta_asignada": 461.638,
+        "leads": 198.0,
+        "dias_activos": null,
+        "inscritos": 8.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 23,
+        "pauta_ejecutada": 198.36,
+        "pauta_asignada": 240.948,
+        "leads": 342.0,
+        "dias_activos": null,
+        "inscritos": 5.0
+      },
+      {
+        "hoja": "Octubre-2025",
+        "fila": 24,
+        "pauta_ejecutada": 159.92,
+        "pauta_asignada": 213.362,
+        "leads": 311.0,
+        "dias_activos": null,
+        "inscritos": 8.0
+      }
+    ],
+    "correlacion_dias_totales": 0.34724269874933655,
+    "n_pares_dias_activos": 48,
+    "n_pares_dias_totales": 48
+  },
+  "estados_por_hoja": {
+    "Julio-2025": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {},
+        "filas_formula": 0
+      }
+    ],
+    "Agosto-2025": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {
+          "Inicio Confirmado": 16,
+          "Baja": 4
+        },
+        "filas_formula": 0
+      }
+    ],
+    "Septiembre-2025": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {
+          "Inicio Confirmado": 20,
+          "Baja": 4
+        },
+        "filas_formula": 0
+      }
+    ],
+    "Octubre-2025": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {
+          "Inicio Confirmado": 21,
+          "Baja": 2
+        },
+        "filas_formula": 0
+      }
+    ],
+    "Noviembre-2025": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {
+          "Inicio Confirmado": 19,
+          "Baja": 1
+        },
+        "filas_formula": 0
+      }
+    ],
+    "Diciembre-2025": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {
+          "Inicio Confirmado": 21,
+          "Baja": 3
+        },
+        "filas_formula": 0
+      }
+    ],
+    "Enero-2026": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {
+          "Inicio Confirmado": 22
+        },
+        "filas_formula": 0
+      }
+    ],
+    "Febrero-2026": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {
+          "Inicio Confirmado": 28,
+          "Baja": 1
+        },
+        "filas_formula": 0
+      }
+    ],
+    "Marzo-2026": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {
+          "Inicio Confirmado": 24,
+          "Baja": 9,
+          "Reprogramado": 1
+        },
+        "filas_formula": 0
+      }
+    ],
+    "Abril-2026": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AH",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {
+          "Inicio Confirmado": 27,
+          "Baja": 4,
+          "Reprogramado": 2
+        },
+        "filas_formula": 0
+      }
+    ],
+    "Mayo-2026": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AG",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {
+          "Inicio Confirmado": 19,
+          "Reprogramado": 4
+        },
+        "filas_formula": 0
+      }
+    ],
+    "Junio-2026": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AG",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {},
+        "filas_formula": 0
+      }
+    ],
+    "Julio-2026": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {},
+        "filas_formula": 0
+      }
+    ],
+    "Agosto-2026": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {},
+        "filas_formula": 0
+      }
+    ],
+    "Septiembre-2026": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {},
+        "filas_formula": 0
+      }
+    ],
+    "Octubre-2026": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {},
+        "filas_formula": 0
+      }
+    ],
+    "Noviembre-2026": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {},
+        "filas_formula": 0
+      }
+    ],
+    "Diciembre-2026": [
+      {
+        "fila_encabezado": 1,
+        "columna": "AF",
+        "rotulo": "ESTADO",
+        "conteos_valor_cache": {},
+        "filas_formula": 0
+      }
+    ],
+    "Programas Notificados": [
+      {
+        "fila_encabezado": 1,
+        "columna": "U",
+        "rotulo": "Estado del programa",
+        "conteos_valor_cache": {
+          "Finalizo": 559,
+          "En curso": 50,
+          "Baja": 1,
+          "Por iniciar": 242
+        },
+        "filas_formula": 578
+      }
+    ]
+  },
+  "dashboard_programas": {
+    "worksheet_pivot_objects": 0,
+    "pivot_cache_definitions": 0,
+    "pivot_table_xml": 0,
+    "cache_files": [],
+    "pivot_table_files": []
+  },
+  "conciliacion_metadata": {
+    "archivo": "EJECUTADO VS META.xlsx",
+    "hoja": "EJECUTADO",
+    "columna_meta_2025": "META POR CATEGORIA 2025",
+    "columna_meta_2026": "META POR CATEGORIA 2026",
+    "nota": "Para múltiples filas coincidentes se muestran filas y suma candidatos; no se infiere aditividad."
+  },
+  "lectura_formulas_estados": "Los conteos usan data_only=True (valor almacenado en el libro); las celdas fórmula se cuentan por separado."
+}

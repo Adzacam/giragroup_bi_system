@@ -1,0 +1,113 @@
+{
+  "fecha": "2026-11-17",
+  "base": "f3u_completo",
+  "contenedor": "beto_pg_f3ub",
+  "documentos": [
+    "TBL_INSCRITOS.xlsx",
+    "BD Cobranzas.xlsx",
+    "BD Techos.xlsx",
+    "EJECUTADO VS META.xlsx",
+    "BD Egresos.xlsx",
+    "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+    "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "Evaluación Docente y Unifranz.xlsx",
+    "Experiencia Docente 2.0.xlsx",
+    "Base centralizada Académica ARCA (1).xlsx"
+  ],
+  "total_documentos": 10,
+  "estados_consolidacion": [
+    {
+      "estado": "COMPLETADA",
+      "cantidad": 10
+    }
+  ],
+  "conteos_tabla": {
+    "fact_rendimiento_academico": 25108,
+    "fact_situacion_financiera": 10719,
+    "fact_evaluacion_docente": 715217,
+    "fact_marketing": 10432,
+    "fact_rentabilidad": 95,
+    "fact_forecast": 0,
+    "fact_cobranzas_proyectadas": 0,
+    "fact_costo_programa": 1371,
+    "fact_techo_convenio": 206,
+    "staging_registros_crudos": 68,
+    "stg_entidad_no_resuelta": 14359,
+    "log_inconsistencias": 22746,
+    "log_pipeline_ingesta": 90,
+    "carga_fila_origen": 30366,
+    "lote": 10,
+    "dim_origen_documental": 10,
+    "dataops_tarea": 30
+  },
+  "rangos_temporales_hechos": {
+    "fact_rendimiento_academico": {
+      "filas": 25108,
+      "fecha_min": "2024-01-01",
+      "fecha_max": "2025-10-01"
+    },
+    "fact_situacion_financiera": {
+      "filas": 10719,
+      "fecha_min": "2023-03-10",
+      "fecha_max": "2026-05-28"
+    },
+    "fact_evaluacion_docente": {
+      "filas": 715217,
+      "fecha_min": "2024-10-17",
+      "fecha_max": "2026-05-19"
+    },
+    "fact_marketing": {
+      "filas": 10432,
+      "fecha_min": "2022-11-29",
+      "fecha_max": "2026-05-29"
+    },
+    "fact_rentabilidad": {
+      "filas": 95,
+      "fecha_min": "2023-01-01",
+      "fecha_max": "2026-12-01"
+    },
+    "fact_techo_convenio": {
+      "filas": 206,
+      "fecha_min": "2022-05-09",
+      "fecha_max": "2026-03-01"
+    },
+    "fact_costo_programa": {
+      "filas": 1371,
+      "fecha_min": null,
+      "fecha_max": null
+    },
+    "fact_forecast": {
+      "filas": 0,
+      "fecha_min": null,
+      "fecha_max": null
+    },
+    "fact_cobranzas_proyectadas": {
+      "filas": 0,
+      "fecha_min": null,
+      "fecha_max": null
+    }
+  },
+  "lote_sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "modelo_sha256": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+  "snapshot_sha256": "14d45f5a128f44543927911dc0ad453f681d524ac05037203f5c0c2787e3a2eb",
+  "dump_path": "output/f3ub/f3u_completo.dump",
+  "dump_sha256": "b2c1ed32a74483f49facfd45e300dd22223051ca2f95f5e8e1fc38f6d5cf6c67",
+  "uso_tmpfs_final": "16% observado al finalizar la carga",
+  "dw_viva_conteos_antes": {
+    "lote": 15,
+    "dim_origen_documental": 26
+  },
+  "dw_viva_conteos_durante_despues": {
+    "lote": 1,
+    "dim_origen_documental": 1
+  },
+  "dw_viva_documento_observado": {
+    "id_documento": 28,
+    "nombre_archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "hash_sha256": "d0b87767b7dae5aa2d37ebd049a256bb83f565dfb0fc95412f46c8c2299357a0",
+    "coincide_con_lote_seleccionado": false
+  },
+  "nota": "La DW viva cambió concurrentemente de 15/26 a 1/1 y ahora expone el documento id 28. No se modificó desde esta tarea; la carga completa solo usó beto_pg_f3ub/f3u_completo.",
+  "verificacion_huella_modelo_snapshot": "Mismas huellas recalculadas en B-0; los archivos fuente y el snapshot no se modificaron",
+  "base_codigo": "1db9e5614d0297bd1002aea6f0d944290e807f06"
+}

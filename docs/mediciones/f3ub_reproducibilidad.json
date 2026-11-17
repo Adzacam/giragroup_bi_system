@@ -1,0 +1,18 @@
+{
+  "base": "f3u_completo",
+  "script": "scripts/f3s_cobertura_por_archivo.py",
+  "corridas": 2,
+  "md5_1": "07ef88fb2452794d2534889c1aea07d2",
+  "md5_2": "07ef88fb2452794d2534889c1aea07d2",
+  "identicas": true,
+  "totales": {
+    "bandeja": 4638,
+    "con_registros": 90508,
+    "ingesta_log_subtotal": 1033,
+    "leidas": 116557,
+    "origen_slice": 90538,
+    "ruido_con_motivo": 21411,
+    "sin_explicar": 0
+  },
+  "advertencias": "Pandas4Warning y una celda Excel con serial fuera de rango; no detuvieron ejecución."
+}
