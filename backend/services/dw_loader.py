@@ -1228,7 +1228,8 @@ class DWLoaderService:
 
     # ── 5. Carga de un Registro Procesado Individual ─────────────────────────
     def _reclamar_fila_origen(self, clave: Optional[str], doc_id: Optional[int], tabla: str,
-                              clave_contenido: Optional[str] = None, subclave: Optional[str] = None) -> bool:
+                              clave_contenido: Optional[str] = None, subclave: Optional[str] = None,
+                              inmediato: bool = False) -> bool:
         """True si la fila de origen aún no se cargó (la reclama); False si ya existe. Sin clave: siempre True.
 
         La fila cuenta como ya cargada si existe su clave por archivo o su clave por contenido; así un archivo
@@ -1242,7 +1243,7 @@ class DWLoaderService:
         else:
             claves = [c[:64] for c in raw_claves]
 
-        if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
+        if not inmediato and self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
             if self._cfo_existentes is None:
                 self._cfo_existentes = {
                     r[0] for r in self.db.execute(text("SELECT clave FROM carga_fila_origen")).fetchall()
@@ -1265,6 +1266,8 @@ class DWLoaderService:
                     "INSERT INTO carga_fila_origen (clave, id_documento, tabla) VALUES (:c, :d, :t) "
                     "ON CONFLICT (clave) DO NOTHING RETURNING clave"), {"c": c, "d": doc_id, "t": tabla}).first()
                 nuevas = nuevas or r is not None
+                if self._cfo_existentes is not None:
+                    self._cfo_existentes.add(c)
             return existe is None and nuevas
         except Exception as exc:
             if self.db.get_bind().dialect.name != "postgresql" and "no such table" in str(exc).lower():
@@ -1276,7 +1279,7 @@ class DWLoaderService:
             return {"tipo": "planificacion_meta", "status": "skipped_solo_revision"}
         clave_origen = (registro.get("clave_origen") or "")[:64]
         clave_cont = (registro.get("clave_contenido") or clave_origen)[:64]
-        if not self._reclamar_fila_origen(clave_origen, doc_id, "dim_meta", clave_cont):
+        if not self._reclamar_fila_origen(clave_origen, doc_id, "dim_meta", clave_cont, inmediato=True):
             return {"tipo": "planificacion_meta", "status": "skipped", "motivo": "Meta de planificación ya cargada"}
         gestion = int(resoluciones["gestion"])
         mes = int(resoluciones["mes"])
@@ -1299,7 +1302,7 @@ class DWLoaderService:
             return {"tipo": "planificacion", "status": "skipped_solo_revision"}
         clave_origen = (registro.get("clave_origen") or "")[:64]
         clave_cont = (registro.get("clave_contenido") or clave_origen)[:64]
-        if not self._reclamar_fila_origen(clave_origen, doc_id, "fact_planificacion_programa", clave_cont):
+        if not self._reclamar_fila_origen(clave_origen, doc_id, "fact_planificacion_programa", clave_cont, inmediato=True):
             return {"tipo": "planificacion", "status": "skipped", "motivo": "Fila de planificación ya cargada"}
 
         fecha_plan = resoluciones.get("fecha_plan")
@@ -1555,7 +1558,7 @@ class DWLoaderService:
                 nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
             ) if nombre_modulo else None
 
-            if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
+            if not inmediato and self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
                 self._fin_pendientes[(id_est, id_mod_fin or 0, id_tiempo)] = {
                     "id_estudiante": id_est,
                     "id_modulo": id_mod_fin,
@@ -1973,7 +1976,7 @@ class DWLoaderService:
         if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_rendimiento_academico", registro.get("clave_contenido"), subclave=str(id_mod)):
             return {"tipo": "academico", "status": "skipped", "motivo": "Fila de origen ya cargada"}
 
-        if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
+        if not inmediato and self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
             if id_est and nombre_programa:
                 self._programas_vistos_est.setdefault(id_est, set()).add(nombre_programa)
             self._aca_pendientes[(id_est, id_mod)] = {
