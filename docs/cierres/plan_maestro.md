@@ -31,11 +31,11 @@ Todos los md de traspaso van en `docs/cierres/`. Así el chat 1 los lee del repo
 
 ## 2. Asignación de agentes (chat 1)
 
-| Dificultad | Ejemplos | Agente | Paralelizable |
+| Dificultad / Rol | Ejemplos / Modelos | Agente | Paralelizable |
 |---|---|---|---|
-| Alta | Medición A/B, fine-tuning, cambios de cascada o esquema, cifra final de tiempo, decisiones metodológicas | `dev-alta` (Opus) | No: una tarea alta va en un solo agente |
-| Media | Funcionalidad con pruebas, KPI faltantes, KLM, análisis de desacuerdos | `dev-media` (Sonnet) | Sí, si no tocan los mismos archivos |
-| Baja | Consultas SQL, conteos, purga de caché, merge, rebuild, inventarios | `dev-baja` (Haiku) | Sí |
+| Alta / Arquitecto principal (Insignia) | Diseño BD, arquitectura de sistema, evaluación tecnológica, hoja de ruta, medición A/B, fine-tuning, cambios de cascada o esquema, cifra final de tiempo. (Claude Opus 5.5 medio / Gemini 4 Argon medio o Neon / GPT-6.2 Astra medio) | `dev-alta` | No: una tarea alta va en un solo agente |
+| Media / Desglose y Dev principal (Intermedio-Alto) | Desglose en tickets/pasos, funcionalidad con pruebas, APIs, refactorización, bugs difíciles, KPI faltantes, KLM. (Claude Sonnet 5.5 medio / Gemini 4 Neon o Hydrogen medio / GPT-6.2 Sol medio) | `dev-media` | Sí, si no tocan los mismos archivos |
+| Baja / Asistente rápido (Equilibrado) | Unit tests, documentación, consultas de sintaxis, consultas SQL, conteos, purga de caché, merge, rebuild, comandos con resultados. (Haiku 5.5 bajo / Gemini 3.8 medio / GPT-6.1 Terra) | `dev-baja` | Sí |
 
 ---
 
@@ -48,8 +48,8 @@ Todos los md de traspaso van en `docs/cierres/`. Así el chat 1 los lee del repo
 | Estados de identidad | A (CI exacta) / B (rescate difuso o TEMP) / C (homonimia o docente provisional) |
 | Catálogo | Solo entidades institucionales, **sin docentes ni estudiantes** |
 | BETO | `dccuchile/bert-base-spanish-wwm-cased`, IOB2, 128 tokens (ventana deslizante permitida; **no 512**) |
-| DW | 50 tablas + 9 vistas `bi`; 9 hechos, 7 dimensiones, 1 puente; esquema constelación; idempotencia por `carga_fila_origen` |
-| CMI | 22 KPI en `bi.ref_kpi`; `/api/v1/cmi/scorecard` |
+| DW | 51 tablas + 10 vistas `bi`; 10 hechos, 7 dimensiones, 1 puente; esquema constelación; idempotencia por `carga_fila_origen` (DECISIÓN 3 F3V) |
+| CMI | 23 KPI en `bi.ref_kpi`; `/api/v1/cmi/scorecard` (DECISIÓN 3 F3V) |
 | Pronóstico | Holt-Winters amortiguado (m = 12, hold-out de 6 meses); OLS mensual N = 40; OLS anual solo descriptiva |
 | Requisitos | 11 RF, 7 RNF, 12 HU, 6 sprints; RNF-03 < 15 min (aceptable < 20 min); RNF-04 F1 ≥ 0,85 |
 | Infraestructura | 9 servicios en docker-compose, sin licencias comerciales |

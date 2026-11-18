@@ -1,0 +1,19 @@
+{
+  "tarea": "V-9",
+  "fecha": "2026-11-18",
+  "base_datos": "giragroup_db (DW viva)",
+  "dump_pre_v9": {
+    "ruta": "output/f3v/giragroup_db_pre_v9.dump",
+    "sha256": "6b89845733c3c41e9699174d2e268db42fd894b7f80c2816b5ce1365a0ccdf65"
+  },
+  "nota": "La DW viva fue vaciada desde cero antes de F3V (0 documentos previos). Se cargo y consolido PLANIFICACION por los endpoints reales (/api/v1/dataops/upload-batch y /confirm-dw-insert).",
+  "resultados": {
+    "id_lote": 1,
+    "dim_origen_documental": 1,
+    "fact_planificacion_programa": 1663,
+    "dim_meta": 58,
+    "fact_planificacion_f3v_completo": 1663,
+    "delta_vs_f3v_completo": 0,
+    "otros_documentos_alterados": 0
+  }
+}

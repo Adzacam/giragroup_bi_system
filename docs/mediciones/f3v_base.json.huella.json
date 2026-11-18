@@ -1,0 +1,919 @@
+{
+ "version_huella": "v2",
+ "meta": {
+  "PYTHONHASHSEED": "0",
+  "columnas_excluidas_global": [
+   "registro_origen_id"
+  ],
+  "columnas_excluidas_por_tabla": {
+   "public.fact_rendimiento_academico": [
+    "id_hecho_aca",
+    "created_at"
+   ],
+   "public.fact_situacion_financiera": [
+    "id_hecho_fin",
+    "fecha_registro"
+   ],
+   "public.fact_evaluacion_docente": [
+    "id_hecho_eval"
+   ],
+   "public.fact_marketing": [
+    "id_hecho_mkt"
+   ],
+   "public.fact_rentabilidad": [
+    "id_hecho_rent"
+   ],
+   "public.fact_techo_convenio": [
+    "id_hecho_techo",
+    "actualizado_en"
+   ],
+   "public.fact_costo_programa": [
+    "id_hecho_costo",
+    "actualizado_en"
+   ],
+   "public.fact_planificacion_programa": [
+    "id_planificacion"
+   ],
+   "public.stg_entidad_no_resuelta": [
+    "id_staging",
+    "created_at",
+    "resuelto_en",
+    "lock_expira",
+    "payload_json"
+   ],
+   "public.carga_fila_origen": [
+    "creado_en"
+   ],
+   "public.log_inconsistencias": [
+    "id_inconsistencia",
+    "detectado_en",
+    "resuelto_en"
+   ],
+   "public.log_pipeline_ingesta": [
+    "id",
+    "mensaje",
+    "tiempo_ms",
+    "created_at"
+   ],
+   "public.log_auditoria_nlp": [
+    "id_log",
+    "created_at"
+   ],
+   "public.lote": [
+    "creado_en",
+    "actualizado_en"
+   ],
+   "public.dataops_tarea": [
+    "creado_en",
+    "actualizado_en",
+    "iniciado_en",
+    "terminado_en"
+   ],
+   "public.dim_origen_documental": [
+    "fecha_procesamiento"
+   ],
+   "public.staging_registros_crudos": [
+    "id",
+    "created_at"
+   ],
+   "public.cache_indice_beto": [
+    "creado_en"
+   ],
+   "public.notifications": [
+    "id",
+    "created_at"
+   ]
+  },
+  "columnas_redondeadas_4dec": [
+   "nivel_confianza",
+   "nivel_confianza_ia",
+   "score_fuzzy"
+  ]
+ },
+ "tablas": {
+  "bi.ref_kpi": {
+   "filas": 23,
+   "md5": "38e33a4493fea8f5e511c1ec7f18ef41",
+   "columnas": [
+    "codigo",
+    "perspectiva",
+    "nombre",
+    "descripcion",
+    "unidad",
+    "sentido",
+    "meta",
+    "umbral_verde",
+    "umbral_ambar",
+    "peso",
+    "orden",
+    "activo",
+    "actualizado_en",
+    "actualizado_por"
+   ]
+  },
+  "bi.ref_perspectiva": {
+   "filas": 4,
+   "md5": "ef9eddb0634fc13716fc5b95355fbede",
+   "columnas": [
+    "codigo",
+    "nombre",
+    "objetivo",
+    "pregunta",
+    "peso",
+    "orden",
+    "activa",
+    "actualizado_en",
+    "actualizado_por"
+   ]
+  },
+  "bridge_modulo_docente": {
+   "filas": 5,
+   "md5": "526c93d4906d4355e4e91d59a60f2481",
+   "columnas": [
+    "id_asignacion",
+    "id_modulo",
+    "id_docente",
+    "id_documento",
+    "tipo_docente",
+    "grado_academico",
+    "horas_modulo",
+    "pago_docente",
+    "fecha_inicio",
+    "fecha_fin"
+   ]
+  },
+  "cache_indice_beto": {
+   "filas": 9231,
+   "md5": "5a7e814172e2559b788a0df0f7ffe0e2",
+   "columnas": [
+    "hash_texto",
+    "modelo",
+    "indice"
+   ]
+  },
+  "carga_fila_origen": {
+   "filas": 219294,
+   "md5": "4734905ed274a4561005244ccdc2a61d",
+   "columnas": [
+    "clave",
+    "id_documento",
+    "tabla"
+   ]
+  },
+  "cat_categoria_financiera": {
+   "filas": 5,
+   "md5": "9e9d08ed9a7e1beb09a44f2a8e467ee8",
+   "columnas": [
+    "id_categoria_fin",
+    "codigo",
+    "nombre_categoria",
+    "tipo_flujo",
+    "created_at"
+   ]
+  },
+  "cat_combinacion_estado": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_combinacion",
+    "id_estado_academico",
+    "id_estado_reprobado",
+    "id_estado_arca",
+    "activo"
+   ]
+  },
+  "cat_concepto_financiero": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_concepto",
+    "codigo_concepto",
+    "nombre_canonico",
+    "tipo_categoria"
+   ]
+  },
+  "cat_escuela": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_escuela",
+    "nombre_escuela",
+    "sigla"
+   ]
+  },
+  "cat_estado_academico": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_estado_academico",
+    "nombre_estado"
+   ]
+  },
+  "cat_estado_arca": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_estado_arca",
+    "nombre_arca"
+   ]
+  },
+  "cat_estado_reprobado": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_estado_reprobado",
+    "nombre_detalle"
+   ]
+  },
+  "cat_etiqueta_clasificacion": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_etiqueta",
+    "categoria",
+    "subtipo",
+    "palabra_clave",
+    "ambito",
+    "peso"
+   ]
+  },
+  "cat_guia_texto_plano": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_guia",
+    "subtipo",
+    "descripcion",
+    "plantilla_texto",
+    "campos_requeridos",
+    "prioridad"
+   ]
+  },
+  "cat_historico_equivalencia": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_equivalencia",
+    "id_concepto",
+    "termino_origen",
+    "periodo_historico",
+    "confianza_mapeo",
+    "fuente_referencia"
+   ]
+  },
+  "cat_institucion": {
+   "filas": 4,
+   "md5": "0fb275f244aac6c6afdd73ff045580cb",
+   "columnas": [
+    "id_institucion",
+    "nombre_institucion",
+    "sigla",
+    "tipo_escala_default",
+    "created_at"
+   ]
+  },
+  "cat_institucion_convenio": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_convenio",
+    "nombre_institucion",
+    "variantes_origen",
+    "fuente_referencia"
+   ]
+  },
+  "cat_mapeo_columna": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_mapeo",
+    "campo_canonico",
+    "alias_columna",
+    "tipo_entidad"
+   ]
+  },
+  "cat_modalidad": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_modalidad",
+    "nombre_modalidad"
+   ]
+  },
+  "cat_modulo": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_modulo",
+    "codigo_modulo",
+    "nombre_canonico",
+    "area",
+    "nombre_modulo"
+   ]
+  },
+  "cat_programa": {
+   "filas": 4,
+   "md5": "0d0cce38ac914ca4a0f9faec4c7ac6cf",
+   "columnas": [
+    "id_programa",
+    "pos_code",
+    "nombre_programa",
+    "version",
+    "nombre_completo_raw",
+    "id_escuela",
+    "id_tipo_programa",
+    "id_modalidad",
+    "inversion_base",
+    "punto_equilibrio",
+    "horas_totales",
+    "created_at",
+    "tipo_escala"
+   ]
+  },
+  "cat_tipo_programa": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_tipo_programa",
+    "nombre_tipo"
+   ]
+  },
+  "dataops_tarea": {
+   "filas": 2,
+   "md5": "6324b07605c2d358a1f422b32a37e54e",
+   "columnas": [
+    "id",
+    "tipo",
+    "id_lote",
+    "estado",
+    "total",
+    "procesados",
+    "resultado",
+    "error",
+    "iniciado_por"
+   ]
+  },
+  "dim_categoria_financiera": {
+   "filas": 15,
+   "md5": "896c251a106c8342890b2f9565caca0f",
+   "columnas": [
+    "id_categoria",
+    "nombre_categoria",
+    "tipo",
+    "id_cat_categoria_fin"
+   ]
+  },
+  "dim_docente": {
+   "filas": 42,
+   "md5": "eb1bf5ed86756a78e91a41903aeda377",
+   "columnas": [
+    "id_docente",
+    "nombre_completo",
+    "area_especialidad",
+    "fk_estado"
+   ]
+  },
+  "dim_estudiante": {
+   "filas": 2089,
+   "md5": "eb3df6ba36861b8fc5935df4270759f4",
+   "columnas": [
+    "id_estudiante",
+    "nombre_completo",
+    "codigo_estudiante",
+    "genero",
+    "ciudad",
+    "nivel_academico",
+    "edad",
+    "ocupacion",
+    "estado_civil",
+    "ci",
+    "id_temporal",
+    "deprecado",
+    "fusionado_en",
+    "ci_numero",
+    "ci_complemento",
+    "identidad_verificada",
+    "id_institucion",
+    "programa_origen",
+    "fk_estado"
+   ]
+  },
+  "dim_meta": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_meta",
+    "categoria",
+    "id_tiempo",
+    "monto_meta",
+    "tipo_programa",
+    "id_documento",
+    "clave_fila_origen",
+    "celda_origen"
+   ]
+  },
+  "dim_modulo": {
+   "filas": 1752,
+   "md5": "4b534be6a49d2daafdfe846fb383bfd0",
+   "columnas": [
+    "id_modulo",
+    "nombre_modulo",
+    "nombre_institucion",
+    "programa",
+    "pos_code",
+    "id_cat_modulo",
+    "id_institucion"
+   ]
+  },
+  "dim_origen_documental": {
+   "filas": 10,
+   "md5": "99b2d598ca910da96d3517153894d769",
+   "columnas": [
+    "id_documento",
+    "tipo_documento",
+    "nombre_archivo",
+    "tipo_escala",
+    "id_lote",
+    "tipo_fuente",
+    "institucion",
+    "periodo",
+    "hash_sha256"
+   ]
+  },
+  "dim_tiempo": {
+   "filas": 2230,
+   "md5": "656811fdd3a7a2fddf53efeed90fb357",
+   "columnas": [
+    "id_tiempo",
+    "gestion",
+    "semestre",
+    "mes",
+    "nombre_mes",
+    "periodo_mes",
+    "fecha",
+    "trimestre",
+    "semana_iso",
+    "dia_mes",
+    "dia_semana",
+    "nombre_dia",
+    "es_fin_semana"
+   ]
+  },
+  "fact_cobranzas_proyectadas": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_hecho_cobro",
+    "id_estudiante",
+    "id_tiempo",
+    "monto_esperado",
+    "estado_pago",
+    "created_at"
+   ]
+  },
+  "fact_costo_programa": {
+   "filas": 1371,
+   "md5": "68e787c323a1bdfd108e6f68afd97b74",
+   "columnas": [
+    "id_modulo",
+    "id_documento",
+    "egreso_anterior",
+    "egreso_real",
+    "ingreso",
+    "rentabilidad",
+    "requiere_revision",
+    "motivo_revision"
+   ]
+  },
+  "fact_evaluacion_docente": {
+   "filas": 104939,
+   "md5": "9a73bdcb155d512687024655f72a14d2",
+   "columnas": [
+    "id_docente",
+    "id_modulo",
+    "id_estudiante",
+    "id_tiempo",
+    "pregunta_bloque",
+    "puntuacion",
+    "comentario",
+    "tipo_pregunta",
+    "escala_max",
+    "clave_respuesta",
+    "id_documento",
+    "requiere_revision",
+    "motivo_revision"
+   ]
+  },
+  "fact_forecast": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_forecast",
+    "caso_uso",
+    "id_tiempo",
+    "valor_forecast",
+    "ic_lower",
+    "ic_upper",
+    "metodo",
+    "horizonte_meses",
+    "generado_en"
+   ]
+  },
+  "fact_marketing": {
+   "filas": 302,
+   "md5": "dc3e84cef273377fbe0fad8ab81a3c07",
+   "columnas": [
+    "id_modulo",
+    "id_tiempo",
+    "leads",
+    "reservas",
+    "inscritos",
+    "costo_programa",
+    "leads_captacion",
+    "inscritos_captacion"
+   ]
+  },
+  "fact_planificacion_programa": {
+   "filas": 624,
+   "md5": "11987593bb820a95c06a2498ae3dc71d",
+   "columnas": [
+    "id_modulo",
+    "id_tiempo_plan",
+    "id_documento",
+    "clave_fila_origen",
+    "clave_contenido",
+    "hoja",
+    "fila_excel",
+    "pos_code_fuente",
+    "nombre_programa",
+    "tipo_programa",
+    "escuela",
+    "origen_programa",
+    "diseno_curricular",
+    "fecha_notificacion",
+    "fecha_inicio_plan",
+    "fecha_fin_plan",
+    "duracion_meses",
+    "estado_fuente",
+    "notificado",
+    "costo_programa",
+    "costo_descuento_20",
+    "tarifa_contado_100",
+    "tarifa_contado_80",
+    "punto_equilibrio",
+    "leads_fuente",
+    "reservas_fuente",
+    "inscritos_fuente",
+    "pauta_ejecutada",
+    "pauta_asignada",
+    "payload_fuente",
+    "requiere_revision"
+   ]
+  },
+  "fact_rendimiento_academico": {
+   "filas": 1392,
+   "md5": "6d22f7b995a91ed92532ae373de2aecf",
+   "columnas": [
+    "id_estudiante",
+    "id_docente",
+    "id_modulo",
+    "id_tiempo",
+    "id_documento",
+    "id_usuario_carga",
+    "nota_final",
+    "asistencia_pct",
+    "incumplimiento_actividades_pct",
+    "nivel_confianza_ia",
+    "requiere_revision",
+    "estado_academico",
+    "fk_estado",
+    "tipo_alerta",
+    "estado_tutoria",
+    "estado_arca"
+   ]
+  },
+  "fact_rentabilidad": {
+   "filas": 95,
+   "md5": "b7929dd11754ea9f8c7fc1dfea6df598",
+   "columnas": [
+    "id_modulo",
+    "id_tiempo",
+    "id_categoria",
+    "monto_ejecutado",
+    "monto_meta",
+    "id_documento"
+   ]
+  },
+  "fact_situacion_financiera": {
+   "filas": 725,
+   "md5": "b25dea9b7641a4b47009ad5d118e494b",
+   "columnas": [
+    "id_estudiante",
+    "id_tiempo",
+    "monto_deuda",
+    "cuotas_impagas",
+    "estado_cartera",
+    "tipo_alerta",
+    "id_documento",
+    "nivel_confianza_ia",
+    "requiere_revision",
+    "fk_estado",
+    "id_modulo",
+    "id_categoria_fin",
+    "monto_pagado",
+    "concepto"
+   ]
+  },
+  "fact_techo_convenio": {
+   "filas": 1,
+   "md5": "778b1ad5fac7f721b63dde4599774a7c",
+   "columnas": [
+    "id_modulo",
+    "id_tiempo",
+    "id_documento",
+    "clave_convenio",
+    "institucion",
+    "id_convenio_catalogo",
+    "monto_convenio",
+    "n_inscritos",
+    "gestion",
+    "fecha_inicio",
+    "fecha_fin",
+    "requiere_revision",
+    "motivo_revision"
+   ]
+  },
+  "log_auditoria_nlp": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "texto_original",
+    "prediccion_beto",
+    "confianza_ia",
+    "correccion_humana",
+    "usuario_auditor"
+   ]
+  },
+  "log_inconsistencias": {
+   "filas": 2932,
+   "md5": "3625647d45b40157c229e99ccc920944",
+   "columnas": [
+    "id_documento",
+    "fila_origen",
+    "campo_afectado",
+    "valor_recibido",
+    "valor_esperado",
+    "tipo_regla",
+    "severidad",
+    "estado_resolucion",
+    "descripcion",
+    "resuelto_por",
+    "regla_origen"
+   ]
+  },
+  "log_pipeline_ingesta": {
+   "filas": 72,
+   "md5": "b10a01b4bb7dbbac68be5a86e18afe16",
+   "columnas": [
+    "id_documento",
+    "etapa",
+    "nivel",
+    "modulo",
+    "metadata"
+   ]
+  },
+  "lote": {
+   "filas": 1,
+   "md5": "e59f8538698e528bd2329ef257c37fab",
+   "columnas": [
+    "id_lote",
+    "institucion",
+    "periodo",
+    "estado",
+    "total_archivos"
+   ]
+  },
+  "notifications": {
+   "filas": 4,
+   "md5": "9519626d5573af252ee0757a5bc0ebe5",
+   "columnas": [
+    "user_id",
+    "role_target",
+    "title",
+    "message",
+    "category",
+    "severity",
+    "is_read",
+    "link"
+   ]
+  },
+  "powerbi_informe_version": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id",
+    "version",
+    "nombre_archivo",
+    "ruta",
+    "tamano_bytes",
+    "sha256",
+    "nota",
+    "vigente",
+    "subido_por",
+    "subido_en"
+   ]
+  },
+  "ref_metas_gestion": {
+   "filas": 0,
+   "md5": "d41d8cd98f00b204e9800998ecf8427e",
+   "columnas": [
+    "id_meta",
+    "gestion",
+    "mes",
+    "categoria",
+    "monto_meta_ingreso",
+    "monto_ejecutado",
+    "ebitda_meta_pct",
+    "ebitda_ejecutado_pct"
+   ]
+  },
+  "schema_migrations": {
+   "filas": 17,
+   "md5": "d12b84876e81d2ac66136c1ac7267f0d",
+   "columnas": [
+    "version",
+    "applied_at"
+   ]
+  },
+  "staging_registros_crudos": {
+   "filas": 50,
+   "md5": "12c677e8d5ed861349a810bc51b4e179",
+   "columnas": [
+    "id_documento",
+    "hoja",
+    "bloque_id",
+    "categoria",
+    "texto_plano",
+    "n_filas",
+    "fila_inicio",
+    "fila_fin",
+    "es_ruido",
+    "requiere_revision",
+    "score_confianza",
+    "resuelto",
+    "resuelto_por",
+    "resuelto_en",
+    "motivo",
+    "payload_json",
+    "estado_resolucion"
+   ]
+  },
+  "stg_entidad_no_resuelta": {
+   "filas": 2024,
+   "md5": "5c21f8228acc4a8ba6ac68c1621db062",
+   "columnas": [
+    "id_documento",
+    "tipo_entidad",
+    "texto_original",
+    "ci_temporal",
+    "mejor_candidato",
+    "score_fuzzy",
+    "fk_estado",
+    "nivel_confianza",
+    "resuelto",
+    "resuelto_por",
+    "id_dimension_resuelta",
+    "motivo",
+    "estado_resolucion",
+    "lock_usuario_id",
+    "version",
+    "clave_origen",
+    "id_homonimo"
+   ]
+  },
+  "users": {
+   "filas": 5,
+   "md5": "65560f537cd2ca51860de01bc402c30e",
+   "columnas": [
+    "id",
+    "username",
+    "hashed_password",
+    "role",
+    "created_at",
+    "email",
+    "phone",
+    "is_active",
+    "is_mfa_enabled",
+    "otp_code_hash",
+    "otp_expires_at",
+    "failed_login_attempts",
+    "locked_until",
+    "created_by_id"
+   ]
+  }
+ },
+ "bandeja": {
+  "casos": 676,
+  "grupos": 17,
+  "manuales": 12,
+  "casos_manuales": 43,
+  "firma": [
+   [
+    "grupo-eeb97aecd3",
+    "APROBAR",
+    594
+   ],
+   [
+    "grupo-3d630e02eb",
+    "APROBAR",
+    20
+   ],
+   [
+    "grupo-fce10f6266",
+    "MANUAL",
+    11
+   ],
+   [
+    "grupo-a370459559",
+    "MANUAL",
+    10
+   ],
+   [
+    "grupo-3a4ebffc23",
+    "MANUAL",
+    8
+   ],
+   [
+    "grupo-d2ec7470db",
+    "CORREGIR_FECHA",
+    8
+   ],
+   [
+    "grupo-3168c07273",
+    "APROBAR",
+    7
+   ],
+   [
+    "grupo-89de0bd808",
+    "APROBAR",
+    4
+   ],
+   [
+    "grupo-d4cefe4860",
+    "MANUAL",
+    3
+   ],
+   [
+    "grupo-5a9ebf94f4",
+    "MANUAL",
+    2
+   ],
+   [
+    "grupo-47eb53d9da",
+    "MANUAL",
+    2
+   ],
+   [
+    "grupo-58481de487",
+    "MANUAL",
+    2
+   ],
+   [
+    "grupo-0824c6fb74",
+    "MANUAL",
+    1
+   ],
+   [
+    "grupo-b4babd3ec1",
+    "MANUAL",
+    1
+   ],
+   [
+    "grupo-6d470fa856",
+    "MANUAL",
+    1
+   ],
+   [
+    "grupo-49f92e61a8",
+    "MANUAL",
+    1
+   ],
+   [
+    "grupo-15f47f574d",
+    "MANUAL",
+    1
+   ]
+  ]
+ },
+ "kpis": {
+  "KPI-10": null,
+  "KPI-11": null,
+  "KPI-18": 32.0
+ },
+ "kpis_todos": {
+  "KPI-10": null,
+  "KPI-11": null,
+  "KPI-18": 32.0,
+  "KPI-23": 82.56
+ }
+}

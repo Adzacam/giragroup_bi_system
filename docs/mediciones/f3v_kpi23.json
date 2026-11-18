@@ -1,0 +1,23 @@
+{
+  "tarea": "V-4",
+  "fecha": "2026-11-18",
+  "migracion": "backend/scripts/migrations/019_vista_planificacion_kpi23.sql",
+  "vista": "bi.vw_planificacion_ejecucion_mensual",
+  "kpi_nuevo": {
+    "codigo": "KPI-23",
+    "perspectiva": "PROCESOS_INTERNOS",
+    "nombre": "Cumplimiento de inicios planificados",
+    "unidad": "PCT",
+    "sentido": "MAX",
+    "meta": 85.0,
+    "umbral_verde": 85.0,
+    "umbral_ambar": 60.0
+  },
+  "scorecard_total_kpis": 23,
+  "diferencia_22_kpis_anteriores": 0,
+  "delta_sql_manual_3_meses": 0.0,
+  "pruebas": {
+    "archivo": "tests/f3v/test_kpi23.py",
+    "resultado": "1 passed, 0 failed"
+  }
+}

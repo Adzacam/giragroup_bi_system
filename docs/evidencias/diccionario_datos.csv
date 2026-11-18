@@ -160,6 +160,9 @@ public.dim_meta,categoria,character varying(50),NO,,,"Categoría de la meta (PRO
 public.dim_meta,id_tiempo,integer,SI,FK,public.dim_tiempo.id_tiempo,Mes al que corresponde la meta
 public.dim_meta,monto_meta,"numeric(14,2)",SI,,,Monto presupuestado como meta
 public.dim_meta,tipo_programa,character varying(50),SI,,,"Tipo de programa de la meta (PROGRAMAS, TECHOS_CERRADOS)"
+public.dim_meta,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.dim_meta,clave_fila_origen,character varying(64),SI,FK,public.carga_fila_origen.clave,Clave de idempotencia archivo+celda en carga_fila_origen
+public.dim_meta,celda_origen,character varying(120),SI,,,Hoja y celda de origen en Informe Gestión (ej. Informe Gestión!G8)
 public.dim_modulo,id_modulo,integer,NO,PK,,Identificador del módulo en el almacén
 public.dim_modulo,nombre_modulo,character varying(200),NO,,,Nombre del módulo
 public.dim_modulo,nombre_institucion,character varying(200),NO,,,Nombre de la institución que dicta el módulo
@@ -236,6 +239,40 @@ public.fact_marketing,leads,integer,SI,,,Número de interesados (leads) captados
 public.fact_marketing,reservas,integer,SI,,,Número de reservas de cupo
 public.fact_marketing,inscritos,integer,SI,,,Número de inscritos efectivos
 public.fact_marketing,costo_programa,"numeric(12,2)",SI,,,Costo del programa ofertado
+public.fact_marketing,leads_captacion,integer,SI,,,Columna leads captacion (derivada del nombre)
+public.fact_marketing,inscritos_captacion,integer,SI,,,Columna inscritos captacion (derivada del nombre)
+public.fact_planificacion_programa,id_planificacion,bigint,NO,PK,,Identificador único de la fila de planificación de programa
+public.fact_planificacion_programa,id_modulo,integer,SI,FK,public.dim_modulo.id_modulo,Módulo o programa (dim_modulo)
+public.fact_planificacion_programa,id_tiempo_plan,integer,SI,FK,public.dim_tiempo.id_tiempo,Período planificado del programa (FK a dim_tiempo; NULL si la fuente no especifica mes)
+public.fact_planificacion_programa,id_documento,integer,NO,FK,public.dim_origen_documental.id_documento,Documento de origen (dim_origen_documental) del que viene el dato
+public.fact_planificacion_programa,clave_fila_origen,character varying(64),NO,FK,public.carga_fila_origen.clave,Clave de idempotencia archivo+hoja+fila en carga_fila_origen
+public.fact_planificacion_programa,clave_contenido,character(64),NO,,,Hash SHA-256 del contenido de la fila fuente
+public.fact_planificacion_programa,hoja,character varying(200),NO,,,Nombre de la hoja de origen del libro PLANIFICACION
+public.fact_planificacion_programa,fila_excel,integer,NO,,,Número de fila en la hoja Excel de origen
+public.fact_planificacion_programa,pos_code_fuente,character varying(80),SI,,,Código POS tal como figura en la fuente (sin imputar)
+public.fact_planificacion_programa,nombre_programa,text,SI,,,Nombre del programa académico planificado
+public.fact_planificacion_programa,tipo_programa,character varying(100),SI,,,"Tipo de programa (Diplomado, Programa Experto, Curso)"
+public.fact_planificacion_programa,escuela,character varying(120),SI,,,Escuela académica responsable
+public.fact_planificacion_programa,origen_programa,character varying(120),SI,,,"Categoría de origen del programa (Propios, Convenio, etc.)"
+public.fact_planificacion_programa,diseno_curricular,character varying(160),SI,,,Estado o tipo de diseño curricular del programa
+public.fact_planificacion_programa,fecha_notificacion,date,SI,,,Fecha de notificación del programa
+public.fact_planificacion_programa,fecha_inicio_plan,date,SI,,,Fecha planificada de inicio del programa
+public.fact_planificacion_programa,fecha_fin_plan,date,SI,,,Fecha planificada de finalización del programa
+public.fact_planificacion_programa,duracion_meses,"numeric(8,2)",SI,,,Duración planificada del programa en meses
+public.fact_planificacion_programa,estado_fuente,character varying(120),SI,,,"Estado original sin normalizar (Por iniciar, Inicio Confirmado, En curso, Finalizo, Baja, Reprogramado)"
+public.fact_planificacion_programa,notificado,boolean,SI,,,Indicador booleano de programa notificado
+public.fact_planificacion_programa,costo_programa,"numeric(14,2)",SI,,,Costo de matrícula del programa en Bs
+public.fact_planificacion_programa,costo_descuento_20,"numeric(14,2)",SI,,,Costo con descuento del 20% en Bs
+public.fact_planificacion_programa,tarifa_contado_100,"numeric(14,2)",SI,,,Tarifa al contado 100% en Bs
+public.fact_planificacion_programa,tarifa_contado_80,"numeric(14,2)",SI,,,Tarifa al contado 80% en Bs
+public.fact_planificacion_programa,punto_equilibrio,"numeric(14,2)",SI,,,Punto de equilibrio en inscritos requerido
+public.fact_planificacion_programa,leads_fuente,"numeric(14,2)",SI,,,Leads reportados en la planilla de planificación
+public.fact_planificacion_programa,reservas_fuente,"numeric(14,2)",SI,,,Reservas reportadas en la planilla de planificación
+public.fact_planificacion_programa,inscritos_fuente,"numeric(14,2)",SI,,,Inscritos reportados en la planilla de planificación
+public.fact_planificacion_programa,pauta_ejecutada,"numeric(14,2)",SI,,,Monto de pauta publicitaria ejecutada en Bs
+public.fact_planificacion_programa,pauta_asignada,"numeric(14,2)",SI,,,Monto de pauta publicitaria asignada en Bs
+public.fact_planificacion_programa,payload_fuente,jsonb,SI,,,"Campos complementarios preservados de la fila (comentarios, campañas, días)"
+public.fact_planificacion_programa,requiere_revision,boolean,NO,,,True si el hecho espera revisión humana
 public.fact_rendimiento_academico,id_hecho_aca,integer,NO,PK,,Identificador del registro de rendimiento académico
 public.fact_rendimiento_academico,id_estudiante,integer,SI,FK,public.dim_estudiante.id_estudiante,Estudiante que cursó el módulo
 public.fact_rendimiento_academico,id_docente,integer,SI,FK,public.dim_docente.id_docente,Docente que dictó el módulo
@@ -312,6 +349,7 @@ public.log_inconsistencias,descripcion,text,SI,,,Detalle de la inconsistencia
 public.log_inconsistencias,detectado_en,timestamp without time zone,SI,,,Fecha y hora de detección
 public.log_inconsistencias,resuelto_en,timestamp without time zone,SI,,,Fecha y hora de la resolución
 public.log_inconsistencias,resuelto_por,integer,SI,FK,public.users.id,Usuario que resolvió la inconsistencia
+public.log_inconsistencias,regla_origen,character varying(80),SI,,,Columna regla origen (derivada del nombre)
 public.log_pipeline_ingesta,id,integer,NO,PK,,Identificador del evento
 public.log_pipeline_ingesta,id_documento,integer,SI,FK,public.dim_origen_documental.id_documento,Documento procesado
 public.log_pipeline_ingesta,etapa,character varying(50),NO,,,"Etapa del pipeline: UPLOAD, INGESTA, CLEAN, NORMALIZE, VALIDATE, STAGE, DISPATCH, DW_CONSOLIDACION, SUMMARY"
@@ -399,6 +437,7 @@ public.stg_entidad_no_resuelta,lock_usuario_id,integer,SI,FK,public.users.id,Aud
 public.stg_entidad_no_resuelta,lock_expira,timestamp without time zone,SI,,,Vencimiento del bloqueo de revisión (5 minutos desde que se toma)
 public.stg_entidad_no_resuelta,version,integer,SI,,,Versión del registro (control optimista)
 public.stg_entidad_no_resuelta,clave_origen,character varying(32),SI,,,"Clave de idempotencia (hash del archivo, tipo, motivo y valor)"
+public.stg_entidad_no_resuelta,id_homonimo,character varying(32),SI,,,Columna id homonimo (derivada del nombre)
 public.users,id,integer,NO,PK,,Identificador del usuario
 public.users,username,character varying(100),NO,,,Nombre de usuario para iniciar sesión
 public.users,hashed_password,character varying(255),NO,,,Contraseña almacenada como hash

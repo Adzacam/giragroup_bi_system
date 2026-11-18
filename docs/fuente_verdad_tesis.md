@@ -1,12 +1,12 @@
 # ÚNICA FUENTE DE VERDAD (SFV) — PROYECTO DE GRADO GIRAGROUP BI
 
-**Estado:** **CONGELADO** — F3S (16 de noviembre de 2026)  
+**Estado:** **CONGELADO** — 18 de noviembre de 2026  
 **Título del Proyecto:** *Sistema de Inteligencia de Negocios basado en BETO y Cuadro de Mando Integral para mitigar la fragmentación informacional en GiraGroup S.R.L.*  
 **Autor:** Lean (Adriano Daza)  
-**Rama / Commit base:** `beto-integracion` (`7fab72a`)  
+**Rama / Commit base:** `beto-integracion` (`f6289f2`)  
 **Lote congelado (10 archivos en `uploads/data/`, SHA-256):** `aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60`  
 **Modelo BETO vigente (SHA-256):** `9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92`  
-**Huella de `f3_base` (SHA-256):** `c8e10263c38a3c1da0301888ac595e56141f810a4efdc23498e6ffd6773b0153` (`docs/mediciones/f3s_base.json.huella.json`; sha en `docs/mediciones/f3s_base.json` → `dos_corridas`). Coincide en 5 de 5 corridas del ciclo completo (`docs/mediciones/f3s_base.json` → `dos_corridas`; `docs/mediciones/f3s_b7_corridas.json`). La única fila que varía entre corridas es `schema_migrations.applied_at` de la migración 014 (hora en que se aplicó en la copia tmpfs): es ruido de entorno y se normaliza al comparar (`docs/mediciones/f3s_b7_corridas.json` → `desviaciones`)  
+**Huella de `f3_base` (SHA-256):** `bf26e1469f5f4111b442d1a000cc0994f4704bf4be5d95488da135e74f4c855d` (`docs/mediciones/f3v_base.json.huella.json`). Coincide en 2 de 2 corridas de `f3_base` (`docs/mediciones/f3v_base.json`) y en 6 de 6 corridas de B-7 (`docs/mediciones/f3v_b7_corridas.json`).  
 **Flags de integración BETO:** `BETO_CASCADA_FINAL=False`, `BETO_ACUERDO_QC=False`, `BETO_SUGERENCIA_HITL=False`, `BETO_VENTANA=False`  
 **Snapshot histórico (10-nov-2026):** `snapshot_dw_20261110_1201` (`docs/evidencias/snapshot_dw_20261110_1201.dump`, SHA-256 `14D45F5A128F44543927911DC0AD453F681D524AC05037203F5C0C2787E3A2EB`)  
 **Acceso a las bases:** Las credenciales y cadenas de conexión se leen únicamente desde variables de entorno (`DATABASE_URL` / `docker-compose.yml`). Ninguna medición altera la DW viva ni el archivo `.dump` del snapshot.
@@ -16,10 +16,11 @@
 ## REGLAS DE PRECEDENCIA, BASES Y CONCILIACIÓN
 
 1. **Regla de precedencia:** Este documento constituye la **Única Fuente de Verdad (SFV)** unificada y vinculante para la redacción final de los Capítulos I, III, IV y V. Sustituye y anula cualquier borrador, anexo o cifra previa que lo contradiga.
-2. **Regla de base mixta declarada (Decisión 1, 16-nov-2026):**
-   - **Base `snapshot 10-nov` (`snapshot_dw_20261110_1201`):** Fuente exclusiva de las series históricas y cifras de negocio que **no dependen del modelo BETO de extracción** (KPIs de negocio, alertas tempranas, serie histórica de matrícula de 43 meses, recaudación, metas y conteos históricos del DW).
+2. **Regla de tres bases declaradas:**
+   - **Base `snapshot 10-nov` (`snapshot_dw_20261110_1201`):** Fuente exclusiva de las series históricas y cifras de negocio que **no dependen del modelo BETO de extracción** (KPIs de negocio `KPI-01`..`09`, `KPI-12`..`17`, `KPI-19`..`22`, alertas tempranas, serie histórica de matrícula de 43 meses, recaudación, metas y conteos históricos del DW).
    - **Base `f3_base` (ciclo mensual 2026-03 sobre recortes `output/backups/f0_lote/slices/`):** Fuente exclusiva de las métricas operativas del ciclo vigente (tiempos de RNF-03, KLM, bandeja HITL del ciclo, staging, `log_inconsistencias`, KPI-10, KPI-11, KPI-18 y cuadre de cobranzas).
-   - **Base `lote 1.387` (`f3s_lote_1387.json`):** Fuente exclusiva de la evaluación controlada de 1.387 registros ejecutada con el modelo BETO vigente.
+   - **Base `f3v_completo` (`docs/mediciones/f3v_completo.json`):** Carga completa de los 10 libros del lote en clon tmpfs con el código final; fuente exclusiva de `fact_planificacion_programa`, `dim_meta` de planificación y `KPI-23` (`docs/mediciones/f3v_kpi23_serie.json`).
+   - **Base `lote 1.387` (`docs/mediciones/f3v_lote_1387_r1.json`):** Fuente exclusiva de la evaluación controlada de 1.387 registros ejecutada con el modelo BETO vigente (2 corridas idénticas).
    - **Regla de no mezcla:** Dentro de una misma tabla **nunca se mezclan bases**. El título de cada tabla declara explícitamente la única base a la que pertenecen sus filas.
 3. **Regla de modelo único (Decisión 4, 16-nov-2026):** La tesis describe únicamente el modelo BETO vigente (`9ff7fb9d…5f92`). No se citan versiones anteriores ni se realizan comparaciones entre versiones del modelo.
 4. **Estándar numérico:** Se emplea de forma uniforme el estándar oficial de Bolivia: **coma (`,`) como separador decimal y punto (`.`) como separador de miles**. Toda cifra cuantitativa está trazada a un archivo y ruta JSON en `docs/mediciones/` y verificada por `scripts/verificar_sfv.py`. Los valores sin respaldo medible o externos al código se declaran como **N/D**, **RETIRADA** o **Dato de Lean**.
@@ -67,25 +68,25 @@
 
 *Nota de muestreo:* `muestreo_por_archivo.criterio_documentado = false` (`docs/mediciones/f3s_lote_1387.json`). Los topes `450/350/250/150/110/53/24` toman las primeras $N$ filas no vacías en orden de archivo, sin aleatorización ni estratificación.
 
-### Tabla A.3: Ciclo Mensual Completo y Cumplimiento RNF-03 — Base: `f3_base` (`f3s_base.json`, `f3s_b7_corridas.json`, `f3s_klm.json`)
+### Tabla A.3: Ciclo Mensual Completo y Cumplimiento RNF-03 — Base: `f3_base` (`f3v_base.json`, `f3v_b7_corridas.json`, `f3v_klm.json`)
 
 | ID | Métrica | Valor | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) | Dónde va en tesis |
 |---|---|---|---|---|---|
-| A-20 | Archivos procesados en el ciclo mensual | 10 archivos (11.956 registros; 12.992 líneas BETO) | 10 / 11.956 / 12.992 | `docs/mediciones/f3s_base.json` → `carga.archivos_exitosos`, `carga.registros_detectados`, `etapas_s.lineas_leidas_beto` | Cap. IV Sec. 4.4 |
-| A-21 | Hechos persistidos en el ciclo (`f3_base`) | 108.632 (107.907 acad. + 725 fin.) | 108.632 | `docs/mediciones/f3s_base.json` → `consolidacion.inserted_dw`, `consolidacion.inserted_academico`, `consolidacion.inserted_financiero` | Cap. IV Sec. 4.4 |
-| A-22 | Bandeja HITL generada en el ciclo | 676 casos en 17 grupos (43 manuales en 12 grupos) | 676 / 17 | `docs/mediciones/f3s_klm.json` → `bandeja` | Cap. IV Sec. 4.4 |
-| A-23 | Solo máquina, caché vacía (n = 1, sin dispersión) | **616,61 s** (10,28 min) | 616,61 s (10,28 min) | `docs/mediciones/f3s_b7_corridas.json` → `rnf03.maquina_cache_vacia_s` | Cap. IV Sec. 4.4; RNF-03 |
-| A-24 | Solo máquina, caché llena (n = 1, sin dispersión) | **177,20 s** (2,95 min) | 177,20 s (2,95 min) | `docs/mediciones/f3s_b7_corridas.json` → `rnf03.maquina_cache_llena_s` | Cap. IV Sec. 4.4; RNF-03 |
-| A-25 | Corridas por condición | **n = 1** (sin media ni desviación estándar; el protocolo `f2r_g6_protocolo_b7.md` pide 3) | n = 1 | `docs/mediciones/f3s_b7_corridas.json` → `rnf03.n_corridas`, `rnf03.dispersion` | Cap. IV Sec. 4.4; RNF-03 |
-| A-26 | Tiempo KLM con espera medida (`W = 0,034 s`, p95 Locust) | **202,3 s** (bloque 16,1 · fecha 8,8 · manual 173,5 · pag. 3,9) | 202,3 s | `docs/mediciones/f3s_klm.json` → `W_medido_s`, `klm.W_medido` | Cap. IV Sec. 4.4; RNF-03 |
-| A-27 | RNF-03 total (caché vacía + KLM, `W = 0,034 s`) | **818,91 s** (13,65 min; cumple < 15 min) | 818,91 s (13,65 min) | `docs/mediciones/f3s_klm.json` → `totales_s.vacia_mas_klm_W_medido_s` | Cap. IV Sec. 4.4; RNF-03 |
-| A-28 | RNF-03 total (caché llena + KLM, `W = 0,034 s`) | **379,50 s** (6,33 min; cumple < 15 min) | 379,50 s (6,33 min) | `docs/mediciones/f3s_klm.json` → `totales_s.llena_mas_klm_W_medido_s` | Cap. IV Sec. 4.4; RNF-03 |
-| A-29 | Sensibilidad KLM (`W = 0 s` / `W = 10 s`) | KLM: 200,6 s / 680,6 s · Vacía+KLM: 817,21 s / 1.297,21 s (21,62 min) · Llena+KLM: 377,80 s / 857,80 s | 200,6 s / 680,6 s | `docs/mediciones/f3s_klm.json` → `klm.sensibilidad_W_0`, `klm.sensibilidad_W_10`, `totales_s` | Cap. IV Sec. 4.4 |
-| A-30 | Filas en el DW al terminar el ciclo | `fact_evaluacion_docente` 104.939 · `fact_costo_programa` 1.371 · `fact_rendimiento_academico` 1.392 · `fact_situacion_financiera` 725 · `fact_marketing` 299 · `fact_rentabilidad` 95 · `fact_techo_convenio` 1 · `dim_origen_documental` 10 | 104.939 / 1.371 / 1.392 / 725 / 299 / 95 / 1 / 10 | `docs/mediciones/f3s_base.json` → `dw_despues` | Cap. IV Sec. 4.4 |
+| A-20 | Archivos procesados en el ciclo mensual | 10 archivos (11.307 registros; 12.992 líneas BETO) | 10 / 11.307 / 12.992 | `docs/mediciones/f3v_base.json` → `carga.archivos_exitosos`, `carga.registros_detectados`, `etapas_s.lineas_leidas_beto` | Cap. IV Sec. 4.4 |
+| A-21 | Hechos persistidos en el ciclo (`f3_base`) | 109.256 (108.531 acad. + 725 fin.) | 109.256 | `docs/mediciones/f3v_base.json` → `consolidacion.inserted_dw`, `consolidacion.inserted_academico`, `consolidacion.inserted_financiero` | Cap. IV Sec. 4.4 |
+| A-22 | Bandeja HITL generada en el ciclo | 676 casos en 17 grupos | 676 / 17 | `docs/mediciones/f3v_base.json.huella.json` → `bandeja` | Cap. IV Sec. 4.4 |
+| A-23 | Solo máquina, caché vacía (n = 3, media ± desv.) | **424,29 ± 22,24 s** (7,07 min) | 424,29 ± 22,24 s (7,07 min) | `docs/mediciones/f3v_b7_corridas.json` → `resumen.vacia_maquina_s` | Cap. IV Sec. 4.4; RNF-03 |
+| A-24 | Solo máquina, caché llena (n = 3, media ± desv.) | **36,53 ± 0,28 s** (0,61 min) | 36,53 ± 0,28 s (0,61 min) | `docs/mediciones/f3v_b7_corridas.json` → `resumen.llena_maquina_s` | Cap. IV Sec. 4.4; RNF-03 |
+| A-25 | Corridas limpias por condición | **n = 3** (huella idéntica en todas) | n = 3 | `docs/mediciones/f3v_b7_corridas.json` → `resumen.vacia_maquina_s.n`, `huella_unica_en_todas` | Cap. IV Sec. 4.4; RNF-03 |
+| A-26 | Tiempo KLM con espera medida (`W = 2,5 s`, p95 Locust) | **320,6 s** (bloque 18,5 · fecha 9,9 · manual 288,3 · pag. 3,9) | 320,6 s | `docs/mediciones/f3v_klm.json` → `W_medido_p95_s`, `W_medido.klm_s` | Cap. IV Sec. 4.4; RNF-03 |
+| A-27 | RNF-03 total (caché vacía + KLM, `W = 2,5 s`) | **744,89 s** (12,41 min; cumple < 15 min) | 744,89 s (12,41 min) | `docs/mediciones/f3v_b7_corridas.json` → `resumen.vacia_mas_klm_s` | Cap. IV Sec. 4.4; RNF-03 |
+| A-28 | RNF-03 total (caché llena + KLM, `W = 2,5 s`) | **357,13 s** (5,95 min; cumple < 15 min) | 357,13 s (5,95 min) | `docs/mediciones/f3v_b7_corridas.json` → `resumen.llena_mas_klm_s` | Cap. IV Sec. 4.4; RNF-03 |
+| A-29 | Sensibilidad KLM (`W = 0 s` / `W = 10 s`) | KLM: 200,6 s / 680,6 s | 200,6 s / 680,6 s | `docs/mediciones/f3v_klm.json` → `W_0.klm_s`, `W_10.klm_s` | Cap. IV Sec. 4.4 |
+| A-30 | Filas en el DW al terminar el ciclo | `fact_evaluacion_docente` 104.939 · `fact_costo_programa` 1.371 · `fact_rendimiento_academico` 1.392 · `fact_situacion_financiera` 725 · `fact_marketing` 302 · `fact_rentabilidad` 95 · `fact_techo_convenio` 1 · `fact_planificacion_programa` 624 · `dim_origen_documental` 10 | 104.939 / 1.371 / 1.392 / 725 / 302 / 95 / 1 / 624 / 10 | `docs/mediciones/f3v_base.json` → `dw_despues` | Cap. IV Sec. 4.4 |
 
-*Condiciones de la medición de tiempos:* una corrida por condición (**n = 1**; no hay dispersión que reportar), sobre la copia tmpfs `dw_vacio` con la caché BETO vacía o llena, plan de energía «Equilibrado» (el protocolo pide «Alto rendimiento»), equipo en corriente alterna y sin procesos ajenos pesados durante la corrida (`docs/mediciones/f3s_b7_corridas.json` → `desviaciones`, `corridas`). Las cifras con `W = 10 s` son un escenario de sensibilidad, no la condición medida.
+*Condiciones de la medición de tiempos:* 3 corridas limpias por condición (**n = 3**) sobre la copia tmpfs `dw_vacio` con la caché BETO vacía o llena, plan de energía «Alto rendimiento», equipo en corriente alterna y sin procesos ajenos pesados (`docs/mediciones/f3v_estado_maquina.json`, `docs/mediciones/f3v_b7_corridas.json`). Las cifras con `W = 10 s` son un escenario de sensibilidad, no la condición medida.
 
-*Veredicto RNF-03 (< 15 min; aceptable < 20 min):* Solo máquina cumple con caché vacía (`616,61 s`) y con caché llena (`177,20 s`). Con intervención humana KLM y `W` medido (`0,034 s`), la caché vacía da `818,91 s` (13,65 min) y la caché llena `379,50 s` (6,33 min); ambas por debajo de `900 s`. Con `W = 0 s` los totales son `817,21 s` y `377,80 s`. En la sensibilidad `W = 10 s`, la caché vacía (`1.297,21 s`, 21,62 min) supera `900 s` y `1.200 s`, y la caché llena (`857,80 s`, 14,30 min) cumple `900 s` (`docs/mediciones/f3s_klm.json` → `rnf03`).
+*Veredicto RNF-03 (< 15 min; aceptable < 20 min):* Solo máquina cumple con caché vacía (`424,29 ± 22,24 s`) y con caché llena (`36,53 ± 0,28 s`). Con intervención humana KLM y `W` medido (`2,5 s`), la caché vacía da `744,89 s` (12,41 min) y la caché llena `357,13 s` (5,95 min); ambas por debajo de `900 s` (`docs/mediciones/f3v_b7_corridas.json` → `resumen`).
 
 ---
 
@@ -165,34 +166,27 @@
 
 ## D. PRUEBAS AUTOMATIZADAS, COBERTURA Y PRUEBAS DE CARGA / CAJA NEGRA
 
-### Tabla D.1: Suite `pytest` y Cobertura — Base: `suite pytest` sobre el commit `7fab72a` en worktree limpio (`f3s_pruebas.json`, `f3s_cobertura_archivos.csv`)
+### Tabla D.1: Suite `pytest` y Cobertura — Base: `suite pytest` sobre el commit `181bff5` en worktree limpio (`f3v_pruebas.json`, `f3v_cobertura_archivos.csv`)
 
 | Métrica | Valor | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) | Dónde va en tesis |
 |---|---|---|---|---|
-| Pruebas colectadas | 845 | 845 | `docs/mediciones/f3s_pruebas.json` → `colectadas` | Cap. III / Cap. IV; Tabla 3.29 |
-| Aprobadas (`passed`) | **826** | 826 | `docs/mediciones/f3s_pruebas.json` → `passed` | Tabla 3.29 |
-| Fallidas (`failed`) | **0** | 0 | `docs/mediciones/f3s_pruebas.json` → `failed`, `criterio_0_failed` | Tabla 3.29 |
-| Omitidas (`skipped`) | 12 (11 de `tests/readiness` por variables `READINESS_*` no definidas; 1 de `tests/f1/test_purga_cache.py`, que fija el puerto 55632) | 12 | `docs/mediciones/f3s_pruebas.json` → `skipped`, `omitidos` | Tabla 3.29 |
-| Esperadas fallidas (`xfailed`) | 7 (hallazgos `HW-IC`, `HW-GAP`, `OLS-CAGR`, `FK-*`) | 7 | `docs/mediciones/f3s_pruebas.json` → `xfailed`, `xfail_hallazgos` | Tabla 3.29 |
-| Duración total de la suite | 290,68 s | 290,68 s | `docs/mediciones/f3s_pruebas.json` → `duracion_s` | Tabla 3.29 |
-| Cobertura total (`backend` + `pipeline`) | **71,03 %** (10.434 / 14.690 sentencias) | 71,03 % | `docs/mediciones/f3s_pruebas.json` → `cobertura_total` | Cap. IV; Tabla 3.30 |
-| `backend/core/security.py` | 87,36 % (76 / 87) | 87,36 % | `docs/mediciones/f3s_cobertura_archivos.csv` | Tabla 3.30 |
-| `backend/routers/reportes.py` | 84,67 % (221 / 261) | 84,67 % | `docs/mediciones/f3s_cobertura_archivos.csv` | Tabla 3.30 |
-| `backend/services/bandeja_grupos.py` | 92,99 % (146 / 157) | 92,99 % | `docs/mediciones/f3s_cobertura_archivos.csv` | Tabla 3.30 |
-| `backend/services/risk_service.py` | 94,36 % (318 / 337) | 94,36 % | `docs/mediciones/f3s_cobertura_archivos.csv` | Tabla 3.30 |
-| `pipeline/normalization/person_resolver.py` | 94,08 % (143 / 152) | 94,08 % | `docs/mediciones/f3s_cobertura_archivos.csv` | Tabla 3.30 |
+| Pruebas colectadas | 875 | 875 | `docs/mediciones/f3v_pruebas.json` → `colectadas` | Cap. III / Cap. IV; Tabla 3.29 |
+| Aprobadas (`passed`) | **857** | 857 | `docs/mediciones/f3v_pruebas.json` → `passed` | Tabla 3.29 |
+| Fallidas (`failed`) | **0** | 0 | `docs/mediciones/f3v_pruebas.json` → `failed` | Tabla 3.29 |
+| Omitidas (`skipped`) | 11 (`tests/readiness/test_production_readiness.py` por variables `READINESS_*` no definidas) | 11 | `docs/mediciones/f3v_pruebas.json` → `skipped`, `skips_con_motivo` | Tabla 3.29 |
+| Esperadas fallidas (`xfailed`) | 7 (hallazgos `HW-IC`, `HW-GAP`, `OLS-CAGR`, `FK-*`) | 7 | `docs/mediciones/f3v_pruebas.json` → `xfailed` | Tabla 3.29 |
+| Cobertura total (`backend` + `pipeline`) | **72,44 %** (11.368 / 15.692 sentencias) | 72,44 % | `docs/mediciones/f3v_pruebas.json` → `cobertura_total` | Cap. IV; Tabla 3.30 |
+| Frontend (`vitest` / `vite build`) | 14 archivos (84/84 passed) · 2.035 módulos (0 errores) | 84 / 84 | `docs/mediciones/f3v_pruebas.json` → `frontend` | Cap. IV |
 
-*Condiciones de la suite:* se ejecuta sobre el commit `7fab72a` en un worktree limpio. Depende de los 10 archivos de entrada no versionados de `uploads/data/` (sha256 de cada uno en `docs/mediciones/f3s_pruebas.json` → `entradas_no_versionadas`) y de una BD tmpfs poblada con el snapshot `snapshot_dw_20261110_1201` (`docs/mediciones/f3s_pruebas.json` → `base_de_datos_pruebas`). El detalle de los 137 archivos está en `docs/mediciones/f3s_cobertura_archivos.csv`.
+*Condiciones de la suite:* se ejecuta en un worktree limpio contra `beto_pg_tmpfs/giragroup_dw` y los 10 archivos de `uploads/data/`. El detalle por archivo está en `docs/mediciones/f3v_cobertura_archivos.csv`.
 
-### Tabla D.2: Pruebas de Carga (Locust) y Caja Negra (Newman) — Base: `f3_base` (`f3s_locust.json`, `f3s_newman.json`)
+### Tabla D.2: Pruebas de Carga (Locust) y Caja Negra (Newman) — Base: `f3v_completo` (`f3v_locust.json`, `f3v_newman.json`)
 
 | Herramienta | Métrica | Valor | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) |
 |---|---|---|---|---|
-| Locust (50 usuarios, rampa 5/s, 30 s) | Peticiones totales / Fallos | 1.252 / 0 (0,00 %) | 1.252 / 0 | `docs/mediciones/f3s_locust.json` → `agregado.requests`, `agregado.failures` |
-| Locust | RPS / Latencia p50 / p95 / p99 | 42,9 RPS · 7,0 / 26,0 / 56,0 ms | 42,9 RPS · 26 ms p95 | `docs/mediciones/f3s_locust.json` → `agregado.rps`, `agregado.p50_ms`, `agregado.p95_ms`, `agregado.p99_ms` |
-| Locust (`review-tray/grupos`) | p95 `GET` / p95 `POST approve-group` (el mayor define $W$) | **34,0 ms** (`0,034 s`) / **22,0 ms** | 34,0 ms | `docs/mediciones/f3s_locust.json` → `por_endpoint`; `docs/mediciones/f3s_klm.json` → `W_medido_s` |
-| Newman (`postman_collection.json`) | Solicitudes / Aserciones totales / Fallidas | 11 req · 24 aserciones · 0 fallidas | 11 / 24 / 0 | `docs/mediciones/f3s_newman.json` → `run_stats` |
-| Newman | Tiempo de respuesta promedio (mín / máx) | 523,45 ms (7 ms / 3.405 ms) | 523,45 ms | `docs/mediciones/f3s_newman.json` → `tiempos_run_ms` |
+| Locust (50 usuarios, rampa 5/s, 30 s) | Peticiones totales / Fallos | 1.121 / 0 (0,00 %) | 1.121 / 0 | `docs/mediciones/f3v_locust.json` → `agregado.requests`, `agregado.failures` |
+| Locust | RPS / Latencia p50 / p95 / p99 | 41,27 RPS · 10,0 / 34,0 / 290,0 ms | 41,27 RPS · 34 ms p95 | `docs/mediciones/f3v_locust.json` → `agregado.rps`, `agregado.p50_ms`, `agregado.p95_ms`, `agregado.p99_ms` |
+| Newman (`postman_collection.json`) | Solicitudes / Aserciones totales / Fallidas | 11 req · 24 aserciones · 0 fallidas | 11 / 24 / 0 | `docs/mediciones/f3v_newman.json` → `run_stats` |
 
 *Condiciones de Locust:* escenario de `tests/carga/locustfile.py` (Tabla 3.32) contra uvicorn local sobre la copia tmpfs resultante de la corrida con caché llena, no sobre la DW viva (`docs/mediciones/f3s_locust.json` → `parametros`).
 
@@ -279,15 +273,23 @@ De acuerdo con la **Decisión 1**, los indicadores de negocio (`KPI-01`..`09`, `
 | Por tipo (`ACADEMICO` / `FINANCIERO` / `DATAOPS_CALIDAD` / `RIESGO_CRUZADO`) | 3.942 / 1.806 / 1.044 / 302 | 3.942 / 1.806 / 1.044 / 302 | `docs/mediciones/f3r_snapshot_alertas.json` → `por_tipo` |
 | Cartera en mora: estudiantes distintos / filas / deuda | **2.498** est. · **2.574** filas · **692.957,88 Bs** | 2.498 / 692.957,88 Bs | `docs/mediciones/f3r_snapshot_alertas.json` → `mora_estudiantes_distintos`, `mora_monto_deuda` |
 
+### Tabla F.4: Planificación y KPI-23 — Base: `f3v_completo` (`f3v_completo.json`, `f3v_kpi23_serie.json`)
+
+| Métrica | Valor | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) |
+|---|---|---|---|
+| `fact_planificacion_programa` (filas cargadas) | **1.663** (18 hojas mensuales + `Programas Notificados`; 0 borradores) | 1.663 | `docs/mediciones/f3v_completo.json` → `conteos.fact_planificacion_programa` |
+| `dim_meta` (Informe Gestión) | **58** (`PLAN_INGRESO_TOTAL` 24 · `PLAN_INGRESO_TECHOS_PROYECTADO` 10 · `OKR_APERTURAS` 24) | 58 | `docs/mediciones/f3v_completo.json` → `conteos.dim_meta` |
+| `KPI-23` Gestión 2024 / 2025 / 2026 | **100,00 %** (VERDE) / **99,77 %** (VERDE) / **46,62 %** (ROJO) | 100,00 % / 99,77 % / 46,62 % | `docs/mediciones/f3v_kpi23_serie.json` → `kpi23_por_gestion` |
+
 ---
 
 ## G. INFRAESTRUCTURA, INVENTARIO DE TABLAS Y RUTAS DE LA API
 
-### Tabla G.1: Inventario del Data Warehouse y API — Base: `f3_base` (`f3s_extraccion_f3base.json`, `f3r_inventario_api.json`, `f3r_schema_migrations.json`)
+### Tabla G.1: Inventario del Data Warehouse y API (`f3v_invariantes.json`, `f3r_inventario_api.json`)
 
 | Componente | Valor | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) |
 |---|---|---|---|
-| Tablas base y vistas del DW | **50** tablas base + **9** vistas (`cache_beto_entidades`: no existe) | 50 tablas + 9 vistas | `docs/mediciones/f3s_extraccion_f3base.json` → `inventario` |
+| Tablas base y vistas del DW | **51** tablas base + **10** vistas `bi` (10 hechos, 7 dimensiones, 1 puente; 23 KPI en `bi.ref_kpi`) | 51 tablas + 10 vistas + 23 KPI | `docs/mediciones/f3v_invariantes.json` → `invariantes_declarados` |
 | `dim_tiempo` (filas y rango) | **2.230** filas (`2005-02-05` a `2034-01-12`) | 2.230 (2005–2034) | `docs/mediciones/f3s_extraccion_f3base.json` → `dim_tiempo` |
 | `schema_migrations` | **13** migraciones (`001`..`014` idénticas; solo varía `applied_at`, no afecta datos) | 13 | `docs/mediciones/f3r_schema_migrations.json` → `veredicto` |
 | Decoradores de rutas API | **136** (`backend/routers` 115 + `main.py` 2 + `auth` 11 + `notif` 6 + `audit` 2) | 136 | `docs/mediciones/f3r_inventario_api.json` → `total_decoradores_ruta` |
@@ -304,7 +306,10 @@ De acuerdo con la **Decisión 1**, los indicadores de negocio (`KPI-01`..`09`, `
 | `D-A9` | `dw_vacio` y `public.carga_fila_origen` | Corregido | `scripts/aislada_tmpfs.sh` (subcomando `vacio`) trunca `public.carga_fila_origen`, `fact_costo_programa`, `fact_techo_convenio` y `cache_indice_beto`; `dw_vacio` conserva las dimensiones del snapshot (por ejemplo `dim_estudiante` = 14.078) y deja en 0 hechos, staging, logs y `carga_fila_origen`. | `carga_fila_origen` parte en 0 y termina el ciclo con 782 filas. | `docs/mediciones/f3s_dw_vacio.json`; `docs/mediciones/f3s_base.json.huella.json` → `tablas.carga_fila_origen` |
 | `D-A4` | `Experiencia Docente 2.0.xlsx` | Corregido | Las hojas con `staging_registros_crudos.categoria = 'evaluacion_docente'` se rutean como `EVALUACION_DOCENTE` aunque el libro esté registrado con `tipo_fuente='ACTA'` (`consolidacion.py:179-182`). Cascada y umbrales intactos. Prueba: `tests/f3s/test_d_a4_evaluacion_en_libro_acta.py`. | El archivo aporta 29.866 hechos a `fact_evaluacion_docente` (104.939 en total) desde 1.137 filas del recorte, con 0 sin explicar. | `docs/mediciones/f3s_d_a4.json` |
 | `D-A8a` | `EJECUTADO VS META.xlsx` | Corregido | Las filas agregadas (`PROGRAMAS JUNIO`, `TECHOS/CERRADOS FEBRERO/ABRIL/OCTUBRE`) las resuelve la regla de rentabilidad (`fila_resuelta_por_regla` en `extraccion_por_encabezado.py`, `indices_cascada` en `confianza_service.py`): BETO no las recibe y toman la banda CONSOLIDADO. Prueba: `tests/f3s/test_d_a8a_metas_no_van_a_beto.py`. | `fact_rentabilidad` = 95 (esperado 95); 0 filas `ESTUDIANTE` de ese archivo en `stg_entidad_no_resuelta`. | `docs/mediciones/f3s_d_a8a.json` → `resultado` |
-| `D-T1` | `BD Techos.xlsx` y `fila_resuelta_por_regla` | Corregido | `fila_resuelta_por_regla` (`extraccion_por_encabezado.py:767-780`) exime del índice de persona a toda fila convertida en hecho por regla estructural en `rentabilidad`, `marketing` o `admision` (incluida `registros_techo_convenio`). Prueba: `tests/f3t/test_d_t1_convenios_en_marketing.py`. | `BD Techos.xlsx` completo en tmpfs: 207 filas procesadas (`207` `inserted_dw`, `206` `fact_techo_convenio`, `0` staging `ESTUDIANTE`, `0` sin explicar); en el ciclo de recortes, las 48 tablas DW y KPIs quedan idénticos ($\Delta=0$). | `docs/mediciones/f3t_d_t1.json`; `docs/mediciones/f3t_huella_post_d_t1.json` |
+| `D-T1` | `BD Techos.xlsx` y `fila_resuelta_por_regla` | Corregido | `fila_resuelta_por_regla` (`extraccion_por_encabezado.py:767-780`) exime del índice de persona a toda fila convertida en hecho por regla estructural en `rentabilidad`, `marketing` o `admision` (incluida `registros_techo_convenio`). Prueba: `tests/f3t/test_d_t1_convenios_en_marketing.py`. | `BD Techos.xlsx` completo en tmpfs: 207 filas procesadas (`207` `inserted_dw`, `206` `fact_techo_convenio`, `0` staging `ESTUDIANTE`, `0` sin explicar). | `docs/mediciones/f3t_d_t1.json`; `docs/mediciones/f3t_huella_post_d_t1.json` |
+| `V-1` | `dim_modulo` determinista (`dw_loader.py`) | Corregido | `ORDER BY id_modulo` en cada `.first()` de `resolver_o_crear_modulo` y desempate estable `(puntaje -> id_modulo menor)` en `_fuzzy_best_match`; aplicado también a docente, estudiante, institución y categoría. | `fact_marketing` determinista (15.183 inscritos invariantes; 4/4 pruebas en `tests/f3v/test_determinismo_f3v.py`). | `docs/mediciones/f3v_determinismo.json` |
+| `V-2` | Metas financieras por estructura (`dw_loader.py`) | Corregido | Precedencia por estructura (`metas y ejecutado por categoría y mes` = 2; otras = 1; `PLANIFICACION` = 0) y por fecha más reciente entre libros del mismo tipo, registrada en `log_inconsistencias`. | 0 condiciones por nombre de archivo (`EJECUTADO VS META`); 8/8 pruebas en `tests/f3v/test_metas_por_estructura.py`. | `docs/mediciones/f3v_metas_por_estructura.json` |
+| `V-3/4` | `PLANIFICACION` y `KPI-23` | Implementado | `fact_planificacion_programa`, `bi.vw_planificacion_ejecucion_mensual` y `KPI-23` en `bi.ref_kpi` (85 % / 60 %); `Informe Gestión` en `dim_meta` sin sumarse a `fact_rentabilidad`. | `1.663` filas y `58` metas en `f3v_completo`; 23 KPI en `/api/v1/cmi/scorecard`. | `docs/mediciones/f3v_planificacion_carga.json`; `docs/mediciones/f3v_kpi23.json` |
 
 ### Tabla H.2: Limitaciones declaradas — Base: `f3_base` (`f3s_extraccion_f3base.json`, `f3s_cobertura_por_archivo.json`, `f3r_cobertura_resumen.md`)
 
@@ -336,14 +341,14 @@ Todos los ítems de la Sección J (`J1-01`..`J1-22` y `J2-01`..`J2-15`) quedaron
 
 | ID | Tema | Estado | Valor resumen | Fuente (`docs/mediciones/` y ruta JSON) |
 |---|---|---|---|---|
-| J1-01 | Pruebas colectadas y estado | RESUELTO | 845 / 826 passed / 0 failed / 12 skip / 7 xfail | `docs/mediciones/f3s_pruebas.json` → `colectadas` |
-| J1-02 | Duración de la suite | RESUELTO | 290,68 s | `docs/mediciones/f3s_pruebas.json` → `duracion_s` |
-| J1-03 | Cobertura total a 2 decimales | RESUELTO | 71,03 % (10.434 / 14.690) | `docs/mediciones/f3s_pruebas.json` → `cobertura_total.porcentaje_2dec` |
-| J1-04 | Cobertura archivos clave | RESUELTO | 5 archivos clave + 137 en CSV | `docs/mediciones/f3s_cobertura_archivos.csv` |
-| J1-05 | Detalle `xfail` y `skipped` | RESUELTO | 7 `xfail` (HW/OLS/FK) + 12 `skipped` | `docs/mediciones/f3s_pruebas.json` → `xfail_hallazgos`, `omitidos` |
-| J1-06 | RNF-03 solo máquina (n = 1) | RESUELTO | 616,61 s (vacía) / 177,20 s (llena) | `docs/mediciones/f3s_b7_corridas.json` → `rnf03` |
-| J1-07 | KLM con $W$ medido y sensibilidad | RESUELTO | 202,3 s ($W=0,034$ s); 200,6 / 680,6 s | `docs/mediciones/f3s_klm.json` → `klm` |
-| J1-08 | Ciclo operativo `f3_base` | RESUELTO | 12.992 líneas; bandeja 676/17; KPI-18=32 | `docs/mediciones/f3s_base.json` → `etapas_s` |
+| J1-01 | Pruebas colectadas y estado | RESUELTO | 875 / 857 passed / 0 failed / 11 skip / 7 xfail | `docs/mediciones/f3v_pruebas.json` → `colectadas` |
+| J1-02 | Cobertura total a 2 decimales | RESUELTO | 72,44 % (11.368 / 15.692) | `docs/mediciones/f3v_pruebas.json` → `cobertura_total.percent_covered` |
+| J1-03 | Cobertura archivos | RESUELTO | `f3v_cobertura_archivos.csv` | `docs/mediciones/f3v_cobertura_archivos.csv` |
+| J1-04 | Detalle `xfail` y `skipped` | RESUELTO | 7 `xfail` + 11 `skipped` | `docs/mediciones/f3v_pruebas.json` → `skips_con_motivo` |
+| J1-05 | RNF-03 solo máquina (n = 3) | RESUELTO | 424,29 ± 22,24 s (vacía) / 36,53 ± 0,28 s (llena) | `docs/mediciones/f3v_b7_corridas.json` → `resumen` |
+| J1-06 | KLM con $W$ medido y sensibilidad | RESUELTO | 320,6 s ($W=2,5$ s); 200,6 / 680,6 s | `docs/mediciones/f3v_klm.json` → `W_medido` |
+| J1-07 | Ciclo operativo `f3_base` | RESUELTO | 109.256 hechos; bandeja 676/17 | `docs/mediciones/f3v_base.json` → `consolidacion` |
+| J1-08 | Lote 1.387 con modelo vigente (2 corridas) | RESUELTO | 98,05 % directo (1.360/1.387); 27 HITL | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_bandas_con_regla_personas` |
 | J1-09 | Inventario corpus `uploads/data/` | RESUELTO | 10 libros, 60 hojas, 90.538 procesables | `docs/mediciones/f3r_evidencias_sueltas.json` → `inventario_corpus_uploads_data` |
 | J1-10 | Anotación `gold_510` | RESUELTO | 180 filas, 83 personas, 510 entidades | `docs/mediciones/f3r_evidencias_sueltas.json` → `anotacion_y_corpus_modelo_vigente.gold_510` |
 | J1-11 | Partición corpus y fuga = 0 | RESUELTO | 1.400 train / 350 dev; fuga 0 (4 niveles) | `docs/mediciones/f3r_evidencias_sueltas.json` → `anotacion_y_corpus_modelo_vigente` |
@@ -354,9 +359,9 @@ Todos los ítems de la Sección J (`J1-01`..`J1-22` y `J2-01`..`J2-15`) quedaron
 | J1-16 | Cuadre KPI-15 en `f3_base` | RESUELTO | 725 filas (500 Mora / 7 Prev / 218 Vigente) | `docs/mediciones/f3s_kpi15_cuadre.json` → `por_estado_cartera` |
 | J1-17 | `schema_migrations` en corridas llenas | RESUELTO | 13 filas; solo difiere `applied_at` | `docs/mediciones/f3r_schema_migrations.json` → `veredicto` |
 | J1-18 | Recuento de rutas API | RESUELTO | 136 decoradores | `docs/mediciones/f3r_inventario_api.json` → `total_decoradores_ruta` |
-| J1-19 | Prueba de carga Locust | RESUELTO | 1.252 req, 0 fallos, 42,9 RPS, p95 26 ms | `docs/mediciones/f3s_locust.json` → `agregado` |
-| J1-20 | Pruebas Newman | RESUELTO | 11 req, 24 aserciones (0 fallidas) | `docs/mediciones/f3s_newman.json` → `run_stats` |
-| J1-21 | Inventario de tablas DW | RESUELTO | 50 tablas base, 9 vistas | `docs/mediciones/f3s_extraccion_f3base.json` → `inventario` |
+| J1-19 | Prueba de carga Locust | RESUELTO | 1.121 req, 0 fallos, 41,27 RPS, p95 34 ms | `docs/mediciones/f3v_locust.json` → `agregado` |
+| J1-20 | Pruebas Newman | RESUELTO | 11 req, 24 aserciones (0 fallidas) | `docs/mediciones/f3v_newman.json` → `run_stats` |
+| J1-21 | Inventario de tablas DW | RESUELTO | 51 tablas base, 10 vistas, 23 KPI | `docs/mediciones/f3v_invariantes.json` → `invariantes_declarados` |
 | J1-22 | Conteo y rango `dim_tiempo` | RESUELTO | 2.230 filas (`2005-02-05` a `2034-01-12`) | `docs/mediciones/f3s_extraccion_f3base.json` → `dim_tiempo` |
 | J2-01 | Integridad snapshot en tmpfs | RESUELTO | SHA-256 intacto | `docs/mediciones/f3r_snapshot_kpi.json` → `etiqueta` |
 | J2-02 | Pronóstico HW matrícula | RESUELTO | `n_obs=43`, RMSE 59,57, MAPE 15,67 % | `docs/mediciones/f3r_hw_matricula.json` → `rmse` |
@@ -370,6 +375,6 @@ Todos los ítems de la Sección J (`J1-01`..`J1-22` y `J2-01`..`J2-15`) quedaron
 | J2-10 | Staging en `f3_base` | RESUELTO | 3.935 filas (32 pendientes) | `docs/mediciones/f3s_extraccion_f3base.json` → `stg_entidad_no_resuelta` |
 | J2-11 | Bitácora `log_inconsistencias` B-9 | RESUELTO | 5.090 filas | `docs/mediciones/f3s_extraccion_f3base.json` → `log_inconsistencias` |
 | J2-12 | Inclusión `requiere_revision` en KPIs | RESUELTO | 632/1.392 incluidas (nota 87,0312) | `docs/mediciones/f3_kpi.json` → `sensibilidad_requiere_revision` |
-| J2-13 | Trazabilidad automática SFV | RESUELTO | 0 / 0 / 0 | `docs/mediciones/f3s_sfv_verificacion.txt` |
+| J2-13 | Trazabilidad automática SFV | RESUELTO | 0 / 0 / 0 | `docs/mediciones/f3v_sfv_verificacion.txt` |
 | J2-14 | Encuesta Likert de usabilidad | DATO_DE_LEAN | Evaluación humana externa | N/D (Dato de Lean) |
 | J2-15 | Línea base manual de consolidación | DATO_DE_LEAN | Referencia externa J0-6 | N/D (Dato de Lean) |

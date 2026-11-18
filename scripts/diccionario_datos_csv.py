@@ -1,4 +1,4 @@
-"""Diccionario de datos: una fila por columna de las 48 tablas de public y las 2 tablas de bi (tabla, columna, tipo, nulo, PK/FK,
+"""Diccionario de datos: una fila por columna de las 49 tablas de public y las 2 tablas de bi (tabla, columna, tipo, nulo, PK/FK,
 referencia, descripción). Tipo, nulo, PK/FK y referencia salen de la base; la descripción se obtiene priorizando comentarios
 del catálogo, descripciones formales de los Apéndices de documentación (docs/apendices/diccionario_datos.md) y definiciones
 canónicas del sistema.
@@ -160,6 +160,39 @@ DESC_TABLA = {
     ("fact_techo_convenio", "fecha_inicio"): "Fecha de inicio de vigencia del convenio",
     ("fact_techo_convenio", "fecha_fin"): "Fecha de finalización de vigencia del convenio",
     ("fact_techo_convenio", "actualizado_en"): "Fecha y hora de la última actualización del techo de convenio",
+    # fact_planificacion_programa (DECISIÓN 3 F3V)
+    ("fact_planificacion_programa", "id_planificacion"): "Identificador único de la fila de planificación de programa",
+    ("fact_planificacion_programa", "id_tiempo_plan"): "Período planificado del programa (FK a dim_tiempo; NULL si la fuente no especifica mes)",
+    ("fact_planificacion_programa", "clave_fila_origen"): "Clave de idempotencia archivo+hoja+fila en carga_fila_origen",
+    ("fact_planificacion_programa", "clave_contenido"): "Hash SHA-256 del contenido de la fila fuente",
+    ("fact_planificacion_programa", "hoja"): "Nombre de la hoja de origen del libro PLANIFICACION",
+    ("fact_planificacion_programa", "fila_excel"): "Número de fila en la hoja Excel de origen",
+    ("fact_planificacion_programa", "pos_code_fuente"): "Código POS tal como figura en la fuente (sin imputar)",
+    ("fact_planificacion_programa", "nombre_programa"): "Nombre del programa académico planificado",
+    ("fact_planificacion_programa", "tipo_programa"): "Tipo de programa (Diplomado, Programa Experto, Curso)",
+    ("fact_planificacion_programa", "escuela"): "Escuela académica responsable",
+    ("fact_planificacion_programa", "origen_programa"): "Categoría de origen del programa (Propios, Convenio, etc.)",
+    ("fact_planificacion_programa", "diseno_curricular"): "Estado o tipo de diseño curricular del programa",
+    ("fact_planificacion_programa", "fecha_notificacion"): "Fecha de notificación del programa",
+    ("fact_planificacion_programa", "fecha_inicio_plan"): "Fecha planificada de inicio del programa",
+    ("fact_planificacion_programa", "fecha_fin_plan"): "Fecha planificada de finalización del programa",
+    ("fact_planificacion_programa", "duracion_meses"): "Duración planificada del programa en meses",
+    ("fact_planificacion_programa", "estado_fuente"): "Estado original sin normalizar (Por iniciar, Inicio Confirmado, En curso, Finalizo, Baja, Reprogramado)",
+    ("fact_planificacion_programa", "notificado"): "Indicador booleano de programa notificado",
+    ("fact_planificacion_programa", "costo_programa"): "Costo de matrícula del programa en Bs",
+    ("fact_planificacion_programa", "costo_descuento_20"): "Costo con descuento del 20% en Bs",
+    ("fact_planificacion_programa", "tarifa_contado_100"): "Tarifa al contado 100% en Bs",
+    ("fact_planificacion_programa", "tarifa_contado_80"): "Tarifa al contado 80% en Bs",
+    ("fact_planificacion_programa", "punto_equilibrio"): "Punto de equilibrio en inscritos requerido",
+    ("fact_planificacion_programa", "leads_fuente"): "Leads reportados en la planilla de planificación",
+    ("fact_planificacion_programa", "reservas_fuente"): "Reservas reportadas en la planilla de planificación",
+    ("fact_planificacion_programa", "inscritos_fuente"): "Inscritos reportados en la planilla de planificación",
+    ("fact_planificacion_programa", "pauta_ejecutada"): "Monto de pauta publicitaria ejecutada en Bs",
+    ("fact_planificacion_programa", "pauta_asignada"): "Monto de pauta publicitaria asignada en Bs",
+    ("fact_planificacion_programa", "payload_fuente"): "Campos complementarios preservados de la fila (comentarios, campañas, días)",
+    # dim_meta (trazabilidad F3V)
+    ("dim_meta", "clave_fila_origen"): "Clave de idempotencia archivo+celda en carga_fila_origen",
+    ("dim_meta", "celda_origen"): "Hoja y celda de origen en Informe Gestión (ej. Informe Gestión!G8)",
     # log_inconsistencias
     ("log_inconsistencias", "campo_afectado"): "Nombre de la columna o campo que originó la inconsistencia de datos",
     # powerbi_informe_version
@@ -285,7 +318,7 @@ for sch, tab, col, tipo, ln, prec, esc, nulo, _ in cols:
     filas.append([f"{sch}.{tab}", col, t, "SI" if nulo == "YES" else "NO", rol, fk.get(k, ""), desc])
 
 tablas = {f[0] for f in filas}
-assert sum(1 for t in tablas if t.startswith("public.")) == 48 and sum(1 for t in tablas if t.startswith("bi.")) == 2, tablas
+assert sum(1 for t in tablas if t.startswith("public.")) == 49 and sum(1 for t in tablas if t.startswith("bi.")) == 2, tablas
 
 # Guardar en docs/evidencias/diccionario_datos.csv
 destinos = [

@@ -1,0 +1,29 @@
+{
+  "tarea": "V-1",
+  "fecha": "2026-11-18",
+  "cambios": [
+    "backend/services/dw_loader.py: _fuzzy_best_match desempata por mayor puntaje -> menor id_modulo/id_docente -> orden lexico",
+    "backend/services/dw_loader.py: _cargar_nombres_modulo y _registrar_nombre_modulo usan setdefault para conservar el menor id_modulo",
+    "backend/services/dw_loader.py: ORDER BY id_modulo en resolver_o_crear_modulo (lineas pos_code y nombre_modulo)",
+    "backend/services/dw_loader.py: ORDER BY id_docente en resolver_o_crear_docente; ORDER BY id_estudiante en resolver_o_crear_estudiante y _candidatos_estudiante_fuzzy; ORDER BY id_institucion y id_categoria en sus resolvers",
+    "backend/services/cross_source_reconciler.py: ORDER BY id_estudiante en busquedas de DimEstudiante por CI, codigo y correo",
+    "backend/services/revision_hechos.py: ORDER BY id_docente/id_estudiante/id_modulo en correcciones HITL"
+  ],
+  "umbral_fuzzy_modulo_pct": 80.0,
+  "umbral_modificado": false,
+  "pruebas_ejecutadas": {
+    "archivo": "tests/f3v/test_determinismo_f3v.py",
+    "resultado": "4 passed, 0 failed",
+    "casos": [
+      "test_fuzzy_best_match_desempata_por_menor_id_sin_importar_orden",
+      "test_resolver_modulo_determinista_con_precarga_en_distinto_orden",
+      "test_fact_marketing_md5_identico_con_dim_modulo_en_distinto_orden",
+      "test_resolver_docente_y_estudiante_deterministas"
+    ]
+  },
+  "veredicto_first_revisados": {
+    "dw_loader.py": "Todos los .first() que deciden una FK (CatInstitucion, DimEstudiante, DimDocente, DimModulo, DimCategoriaFinanciera) tienen ORDER BY por su PK",
+    "cross_source_reconciler.py": "Los .first() de DimEstudiante por CI, codigo y correo tienen ORDER BY id_estudiante",
+    "revision_hechos.py": "Los .first() de DimDocente, DimEstudiante y DimModulo tienen ORDER BY por su PK"
+  }
+}

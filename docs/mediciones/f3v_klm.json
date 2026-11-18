@@ -1,0 +1,37 @@
+{
+  "tarea": "V-7(c)",
+  "W_medido_p95_s": 2.5,
+  "W_medido": {
+    "W_s": 2.5,
+    "klm_s": 320.6,
+    "desglose_s": {
+      "bloque": 26.0,
+      "corregir_fecha": 11.2,
+      "mapear_estado": 0.0,
+      "manual": 279.5,
+      "paginacion": 3.9
+    }
+  },
+  "W_0": {
+    "W_s": 0.0,
+    "klm_s": 200.6,
+    "desglose_s": {
+      "bloque": 16.0,
+      "corregir_fecha": 8.7,
+      "mapear_estado": 0.0,
+      "manual": 172.0,
+      "paginacion": 3.9
+    }
+  },
+  "W_10": {
+    "W_s": 10.0,
+    "klm_s": 680.6,
+    "desglose_s": {
+      "bloque": 56.0,
+      "corregir_fecha": 18.7,
+      "mapear_estado": 0.0,
+      "manual": 602.0,
+      "paginacion": 3.9
+    }
+  }
+}

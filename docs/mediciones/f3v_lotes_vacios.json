@@ -1,0 +1,41 @@
+{
+  "tarea": "V-0",
+  "fecha": "2026-11-18",
+  "base_datos": "giragroup_db",
+  "dump_pre_v0": {
+    "ruta": "output/f3v/giragroup_db_pre_v0.dump",
+    "sha256": "0d47a92f8ea84e4cd2fffa4ce88018b66ede0aa511a80806de0765fa560f80ff"
+  },
+  "respaldo_previo_vaciar": "output/f3x/giragroup_db_pre_vaciar_20261118.dump",
+  "lotes_1_2_3_ausentes": true,
+  "nota": "La DW viva fue vaciada desde cero tras F3X preservando users, dim_tiempo, cat_*, bi.ref_*, dim_meta, dim_categoria_financiera, ref_metas_gestion y schema_migrations. Al iniciar V-0 ya no existian lotes #1-#3 ni documentos en log_pipeline_ingesta/lote/dim_origen_documental, por lo que no fue necesario ejecutar el endpoint de borrado X-1.",
+  "conteos_antes": {
+    "log_pipeline_ingesta": 0,
+    "lote": 0,
+    "dim_origen_documental": 0,
+    "fact_rendimiento_academico": 0,
+    "fact_marketing": 0,
+    "dim_modulo": 0,
+    "dim_estudiante": 0,
+    "dim_docente": 0,
+    "dim_tiempo": 2230,
+    "bi.ref_kpi": 22,
+    "bi.ref_perspectiva": 4,
+    "users": 5
+  },
+  "conteos_despues": {
+    "log_pipeline_ingesta": 0,
+    "lote": 0,
+    "dim_origen_documental": 0,
+    "fact_rendimiento_academico": 0,
+    "fact_marketing": 0,
+    "dim_modulo": 0,
+    "dim_estudiante": 0,
+    "dim_docente": 0,
+    "dim_tiempo": 2230,
+    "bi.ref_kpi": 22,
+    "bi.ref_perspectiva": 4,
+    "users": 5
+  },
+  "delta": 0
+}

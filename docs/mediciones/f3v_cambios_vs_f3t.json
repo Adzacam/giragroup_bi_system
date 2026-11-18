@@ -1,0 +1,48 @@
+{
+  "tarea": "V-7",
+  "fecha": "2026-11-18",
+  "resumen_f3v": {
+    "huella_base_v2": "bf26e1469f5f41110c86426fae78be0d72baa46fb87d73e0d262cb4b0048b0be",
+    "b7_vacia_maquina_s": {
+      "media": 424.29,
+      "desv": 22.24,
+      "n": 3
+    },
+    "b7_llena_maquina_s": {
+      "media": 36.53,
+      "desv": 0.28,
+      "n": 3
+    },
+    "klm_W_medido_s": 320.6,
+    "vacia_mas_klm_min": 12.41,
+    "llena_mas_klm_min": 5.95,
+    "pruebas": {
+      "colectadas": 875,
+      "passed": 857,
+      "failed": 0,
+      "skipped": 11,
+      "xfailed": 7,
+      "cobertura_pct": 72.44
+    },
+    "locust": {
+      "method": "",
+      "requests": 1121,
+      "failures": 0,
+      "median_ms": 10.0,
+      "avg_ms": 28.1338578951867,
+      "min_ms": 4.442300007212907,
+      "max_ms": 2600.6657000107225,
+      "rps": 41.26922836256324,
+      "p50_ms": 10.0,
+      "p95_ms": 34.0,
+      "p99_ms": 290.0
+    },
+    "newman": {
+      "requests": 11,
+      "assertions": 24,
+      "failed": 0
+    },
+    "f3v_completo_fact_planificacion": 1663,
+    "f3v_completo_dim_meta": 58
+  }
+}

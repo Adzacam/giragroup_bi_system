@@ -1,0 +1,222 @@
+{
+  "tarea": "V-7(b)",
+  "fecha": "2026-11-18",
+  "corridas": {
+    "vacia": [
+      {
+        "etiqueta": "b7_vacia_r1",
+        "modo": "vacia",
+        "cache_filas_inicio": 0,
+        "returncode": 0,
+        "duracion_pared_s": 450.67,
+        "tiempo_maquina_s": 441.04,
+        "etapas_s": {
+          "carga_y_lectura_s": 11.76,
+          "espera_lectura_beto_s": 0.02,
+          "lectura_beto_s": 4.39,
+          "lineas_leidas_beto": 11372,
+          "lineas_por_s_beto": 2590.93,
+          "carga_s": 7.39,
+          "consolidacion_s": 429.26,
+          "revision_maquina_s": 0.0,
+          "revision_humana_simulada_s": 0.0
+        },
+        "dw_despues": {
+          "fact_rendimiento_academico": 1392,
+          "fact_situacion_financiera": 725,
+          "fact_evaluacion_docente": 104939,
+          "fact_marketing": 302,
+          "fact_rentabilidad": 95,
+          "fact_techo_convenio": 1,
+          "fact_costo_programa": 1371,
+          "fact_planificacion_programa": 624,
+          "dim_origen_documental": 10,
+          "stg_entidad_no_resuelta": 2024
+        },
+        "huella_v2_sha256": "bf26e1469f5f41110c86426fae78be0d72baa46fb87d73e0d262cb4b0048b0be"
+      },
+      {
+        "etiqueta": "b7_vacia_r2",
+        "modo": "vacia",
+        "cache_filas_inicio": 0,
+        "returncode": 0,
+        "duracion_pared_s": 441.67,
+        "tiempo_maquina_s": 432.76,
+        "etapas_s": {
+          "carga_y_lectura_s": 11.8,
+          "espera_lectura_beto_s": 0.01,
+          "lectura_beto_s": 4.4,
+          "lineas_leidas_beto": 11372,
+          "lineas_por_s_beto": 2585.47,
+          "carga_s": 7.41,
+          "consolidacion_s": 420.95,
+          "revision_maquina_s": 0.0,
+          "revision_humana_simulada_s": 0.0
+        },
+        "dw_despues": {
+          "fact_rendimiento_academico": 1392,
+          "fact_situacion_financiera": 725,
+          "fact_evaluacion_docente": 104939,
+          "fact_marketing": 302,
+          "fact_rentabilidad": 95,
+          "fact_techo_convenio": 1,
+          "fact_costo_programa": 1371,
+          "fact_planificacion_programa": 624,
+          "dim_origen_documental": 10,
+          "stg_entidad_no_resuelta": 2024
+        },
+        "huella_v2_sha256": "bf26e1469f5f41110c86426fae78be0d72baa46fb87d73e0d262cb4b0048b0be"
+      },
+      {
+        "etiqueta": "b7_vacia_r3",
+        "modo": "vacia",
+        "cache_filas_inicio": 0,
+        "returncode": 0,
+        "duracion_pared_s": 407.54,
+        "tiempo_maquina_s": 399.06,
+        "etapas_s": {
+          "carga_y_lectura_s": 10.34,
+          "espera_lectura_beto_s": 0.01,
+          "lectura_beto_s": 3.85,
+          "lineas_leidas_beto": 11372,
+          "lineas_por_s_beto": 2950.84,
+          "carga_s": 6.5,
+          "consolidacion_s": 388.71,
+          "revision_maquina_s": 0.0,
+          "revision_humana_simulada_s": 0.0
+        },
+        "dw_despues": {
+          "fact_rendimiento_academico": 1392,
+          "fact_situacion_financiera": 725,
+          "fact_evaluacion_docente": 104939,
+          "fact_marketing": 302,
+          "fact_rentabilidad": 95,
+          "fact_techo_convenio": 1,
+          "fact_costo_programa": 1371,
+          "fact_planificacion_programa": 624,
+          "dim_origen_documental": 10,
+          "stg_entidad_no_resuelta": 2024
+        },
+        "huella_v2_sha256": "bf26e1469f5f41110c86426fae78be0d72baa46fb87d73e0d262cb4b0048b0be"
+      }
+    ],
+    "llena": [
+      {
+        "etiqueta": "b7_llena_r1",
+        "modo": "llena",
+        "cache_filas_inicio": 9231,
+        "returncode": 0,
+        "duracion_pared_s": 45.07,
+        "tiempo_maquina_s": 36.76,
+        "etapas_s": {
+          "carga_y_lectura_s": 10.37,
+          "espera_lectura_beto_s": 0.01,
+          "lectura_beto_s": 3.84,
+          "lineas_leidas_beto": 11372,
+          "lineas_por_s_beto": 2962.17,
+          "carga_s": 6.54,
+          "consolidacion_s": 26.38,
+          "revision_maquina_s": 0.0,
+          "revision_humana_simulada_s": 0.0
+        },
+        "dw_despues": {
+          "fact_rendimiento_academico": 1392,
+          "fact_situacion_financiera": 725,
+          "fact_evaluacion_docente": 104939,
+          "fact_marketing": 302,
+          "fact_rentabilidad": 95,
+          "fact_techo_convenio": 1,
+          "fact_costo_programa": 1371,
+          "fact_planificacion_programa": 624,
+          "dim_origen_documental": 10,
+          "stg_entidad_no_resuelta": 2024
+        },
+        "huella_v2_sha256": "bf26e1469f5f41110c86426fae78be0d72baa46fb87d73e0d262cb4b0048b0be"
+      },
+      {
+        "etiqueta": "b7_llena_r2",
+        "modo": "llena",
+        "cache_filas_inicio": 9231,
+        "returncode": 0,
+        "duracion_pared_s": 44.95,
+        "tiempo_maquina_s": 36.62,
+        "etapas_s": {
+          "carga_y_lectura_s": 10.18,
+          "espera_lectura_beto_s": 0.01,
+          "lectura_beto_s": 3.8,
+          "lineas_leidas_beto": 11372,
+          "lineas_por_s_beto": 2992.9,
+          "carga_s": 6.39,
+          "consolidacion_s": 26.43,
+          "revision_maquina_s": 0.0,
+          "revision_humana_simulada_s": 0.0
+        },
+        "dw_despues": {
+          "fact_rendimiento_academico": 1392,
+          "fact_situacion_financiera": 725,
+          "fact_evaluacion_docente": 104939,
+          "fact_marketing": 302,
+          "fact_rentabilidad": 95,
+          "fact_techo_convenio": 1,
+          "fact_costo_programa": 1371,
+          "fact_planificacion_programa": 624,
+          "dim_origen_documental": 10,
+          "stg_entidad_no_resuelta": 2024
+        },
+        "huella_v2_sha256": "bf26e1469f5f41110c86426fae78be0d72baa46fb87d73e0d262cb4b0048b0be"
+      },
+      {
+        "etiqueta": "b7_llena_r3",
+        "modo": "llena",
+        "cache_filas_inicio": 9231,
+        "returncode": 0,
+        "duracion_pared_s": 44.46,
+        "tiempo_maquina_s": 36.22,
+        "etapas_s": {
+          "carga_y_lectura_s": 10.19,
+          "espera_lectura_beto_s": 0.01,
+          "lectura_beto_s": 3.82,
+          "lineas_leidas_beto": 11372,
+          "lineas_por_s_beto": 2979.96,
+          "carga_s": 6.38,
+          "consolidacion_s": 26.02,
+          "revision_maquina_s": 0.0,
+          "revision_humana_simulada_s": 0.0
+        },
+        "dw_despues": {
+          "fact_rendimiento_academico": 1392,
+          "fact_situacion_financiera": 725,
+          "fact_evaluacion_docente": 104939,
+          "fact_marketing": 302,
+          "fact_rentabilidad": 95,
+          "fact_techo_convenio": 1,
+          "fact_costo_programa": 1371,
+          "fact_planificacion_programa": 624,
+          "dim_origen_documental": 10,
+          "stg_entidad_no_resuelta": 2024
+        },
+        "huella_v2_sha256": "bf26e1469f5f41110c86426fae78be0d72baa46fb87d73e0d262cb4b0048b0be"
+      }
+    ]
+  },
+  "huella_unica_en_todas": true,
+  "resumen": {
+    "vacia_maquina_s": {
+      "media": 424.29,
+      "desv": 22.24,
+      "n": 3
+    },
+    "llena_maquina_s": {
+      "media": 36.53,
+      "desv": 0.28,
+      "n": 3
+    },
+    "klm_W_medido_s": 320.6,
+    "vacia_mas_klm_s": 744.89,
+    "vacia_mas_klm_min": 12.41,
+    "llena_mas_klm_s": 357.13,
+    "llena_mas_klm_min": 5.95,
+    "cumple_rnf03_15min": true,
+    "cumple_aceptable_20min": true
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "tarea": "V-7(a)",
+  "fecha": "2026-11-18",
+  "recorte": "2026-03",
+  "corridas": [
+    {
+      "etiqueta": "base_r1",
+      "modo": "vacia",
+      "cache_filas_inicio": 0,
+      "returncode": 0,
+      "duracion_pared_s": 595.45,
+      "tiempo_maquina_s": 580.77,
+      "etapas_s": {
+        "carga_y_lectura_s": 17.35,
+        "espera_lectura_beto_s": 0.03,
+        "lectura_beto_s": 6.44,
+        "lineas_leidas_beto": 11372,
+        "lineas_por_s_beto": 1766.61,
+        "carga_s": 10.94,
+        "consolidacion_s": 563.39,
+        "revision_maquina_s": 0.0,
+        "revision_humana_simulada_s": 0.0
+      },
+      "dw_despues": {
+        "fact_rendimiento_academico": 1392,
+        "fact_situacion_financiera": 725,
+        "fact_evaluacion_docente": 104939,
+        "fact_marketing": 302,
+        "fact_rentabilidad": 95,
+        "fact_techo_convenio": 1,
+        "fact_costo_programa": 1371,
+        "fact_planificacion_programa": 624,
+        "dim_origen_documental": 10,
+        "stg_entidad_no_resuelta": 2024
+      },
+      "huella_v2_sha256": "bf26e1469f5f41110c86426fae78be0d72baa46fb87d73e0d262cb4b0048b0be"
+    },
+    {
+      "etiqueta": "base_r2",
+      "modo": "vacia",
+      "cache_filas_inicio": 0,
+      "returncode": 0,
+      "duracion_pared_s": 470.82,
+      "tiempo_maquina_s": 460.61,
+      "etapas_s": {
+        "carga_y_lectura_s": 13.53,
+        "espera_lectura_beto_s": 0.02,
+        "lectura_beto_s": 4.92,
+        "lineas_leidas_beto": 11372,
+        "lineas_por_s_beto": 2310.51,
+        "carga_s": 8.63,
+        "consolidacion_s": 447.06,
+        "revision_maquina_s": 0.0,
+        "revision_humana_simulada_s": 0.0
+      },
+      "dw_despues": {
+        "fact_rendimiento_academico": 1392,
+        "fact_situacion_financiera": 725,
+        "fact_evaluacion_docente": 104939,
+        "fact_marketing": 302,
+        "fact_rentabilidad": 95,
+        "fact_techo_convenio": 1,
+        "fact_costo_programa": 1371,
+        "fact_planificacion_programa": 624,
+        "dim_origen_documental": 10,
+        "stg_entidad_no_resuelta": 2024
+      },
+      "huella_v2_sha256": "bf26e1469f5f41110c86426fae78be0d72baa46fb87d73e0d262cb4b0048b0be"
+    }
+  ],
+  "huella_identica": true,
+  "huella_v2_sha256": "bf26e1469f5f41110c86426fae78be0d72baa46fb87d73e0d262cb4b0048b0be",
+  "resumen_tiempo_maquina_s": {
+    "media": 520.69,
+    "desv": 84.97,
+    "n": 2
+  },
+  "carga": {
+    "http": 200,
+    "id_lote": 1,
+    "archivos_exitosos": 10,
+    "archivos_fallidos": 0,
+    "registros_detectados": 11307,
+    "errores": null
+  },
+  "etapas_s": {
+    "carga_y_lectura_s": 17.35,
+    "espera_lectura_beto_s": 0.03,
+    "lectura_beto_s": 6.44,
+    "lineas_leidas_beto": 11372,
+    "lineas_por_s_beto": 1766.61,
+    "carga_s": 10.94,
+    "consolidacion_s": 563.39,
+    "revision_maquina_s": 0.0,
+    "revision_humana_simulada_s": 0.0
+  },
+  "consolidacion": {
+    "status": "success",
+    "solo_revision": false,
+    "message": "Transacción completada: 109256 hechos persistidos en Data Warehouse (108531 académicos, 725 financieros), 29 derivados a Revisión Humana.",
+    "inserted_dw": 109256,
+    "inserted_academico": 108531,
+    "inserted_financiero": 725,
+    "inserted_admision": 391,
+    "inserted_revision": 43315,
+    "sent_hitl": 29,
+    "descartados_ruido": 2016
+  },
+  "dw_despues": {
+    "fact_rendimiento_academico": 1392,
+    "fact_situacion_financiera": 725,
+    "fact_evaluacion_docente": 104939,
+    "fact_marketing": 302,
+    "fact_rentabilidad": 95,
+    "fact_techo_convenio": 1,
+    "fact_costo_programa": 1371,
+    "fact_planificacion_programa": 624,
+    "dim_origen_documental": 10,
+    "stg_entidad_no_resuelta": 2024
+  }
+}

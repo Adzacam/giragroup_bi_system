@@ -19,10 +19,10 @@ from sqlalchemy import text  # noqa: E402
 
 BASE = "/api/v1/dataops"
 TIPOS = [("TBL_INSCRITOS", "ADMISION"), ("Cobranzas", "COBRANZA"), ("Techos", "MARKETING"), ("EJECUTADO", "RENTABILIDAD"),
-         ("Egresos", "RENTABILIDAD"), ("PLANIFICACION", "RENTABILIDAD"), ("ANTIGUO", "EVALUACION_DOCENTE"),
+         ("Egresos", "RENTABILIDAD"), ("PLANIFICACION", "PLANIFICACION"), ("ANTIGUO", "EVALUACION_DOCENTE"),
          ("Evaluaci", "EVALUACION_DOCENTE"), ("Experiencia", "ACTA"), ("Base centralizada", "ACTA")]
 TABLAS = ["fact_rendimiento_academico", "fact_situacion_financiera", "fact_evaluacion_docente", "fact_marketing", "fact_rentabilidad",
-          "fact_techo_convenio", "fact_costo_programa", "dim_origen_documental", "stg_entidad_no_resuelta"]
+          "fact_techo_convenio", "fact_costo_programa", "fact_planificacion_programa", "dim_origen_documental", "stg_entidad_no_resuelta"]
 
 
 def tipo_fuente(nombre):

@@ -1,0 +1,17 @@
+{
+  "tarea": "V-2",
+  "fecha": "2026-11-18",
+  "cambios": [
+    "backend/services/dw_loader.py: _prioridad_fuente(nombre_archivo) reemplazada por _prioridad_fuente_doc(id_documento, resoluciones) que reconoce la estructura 'metas y ejecutado por categoria y mes' (prio=2) vs otras fuentes (prio=1) vs PLANIFICACION (prio=0)",
+    "backend/services/dw_loader.py: entre dos libros del mismo tipo prevalece el mas reciente por fecha_procesamiento / id_documento, registrando la sustitucion en log_inconsistencias",
+    "backend/services/extraccion_por_encabezado.py: categoria_rentabilidad ignora GRAN TOTAL; registros_rentabilidad marca es_fuente_metas_categoria por estructura de columnas",
+    "backend/services/ingestion_service.py y pipeline/ingesta.py: eliminada la cadena 'ejecutado vs meta' de las listas de tokens"
+  ],
+  "grep_ejecutado_vs_meta_condiciones": 0,
+  "pruebas_ejecutadas": {
+    "archivo": "tests/f3v/test_metas_por_estructura.py",
+    "resultado": "8 passed, 0 failed",
+    "variantes_probadas": 7,
+    "prueba_precedencia": true
+  }
+}

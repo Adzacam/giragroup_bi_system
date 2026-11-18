@@ -1,0 +1,183 @@
+{
+ "fecha_epoch": 1795030257.4,
+ "fecha": "2026-11-18 15:30:57",
+ "reposo_s": 40,
+ "cpu_host_reposo_media_pct": 7.1,
+ "cpu_host_reposo_max_pct": 10.5,
+ "muestras_pct": [
+  5.6,
+  5.7,
+  7.1,
+  8.2,
+  6.7,
+  10.5,
+  6.7,
+  6.5
+ ],
+ "nucleos_logicos": 24,
+ "top_procesos_cpu": [
+  {
+   "proceso": "Discord.exe",
+   "n": 6,
+   "cpu_pct_host": 1.32,
+   "ram_mb": 1514.96
+  },
+  {
+   "proceso": "brave.exe",
+   "n": 13,
+   "cpu_pct_host": 1.02,
+   "ram_mb": 1549.52
+  },
+  {
+   "proceso": "svchost.exe",
+   "n": 95,
+   "cpu_pct_host": 0.72,
+   "ram_mb": 1565.17
+  },
+  {
+   "proceso": "System",
+   "n": 1,
+   "cpu_pct_host": 0.67,
+   "ram_mb": 0.02
+  },
+  {
+   "proceso": "claude.exe",
+   "n": 12,
+   "cpu_pct_host": 0.48,
+   "ram_mb": 1181.28
+  },
+  {
+   "proceso": "python.exe",
+   "n": 2,
+   "cpu_pct_host": 0.34,
+   "ram_mb": 25.29
+  },
+  {
+   "proceso": "dwm.exe",
+   "n": 1,
+   "cpu_pct_host": 0.27,
+   "ram_mb": 744.7
+  },
+  {
+   "proceso": "vmmemWSL",
+   "n": 1,
+   "cpu_pct_host": 0.19,
+   "ram_mb": 8686.95
+  },
+  {
+   "proceso": "audiodg.exe",
+   "n": 1,
+   "cpu_pct_host": 0.15,
+   "ram_mb": 60.38
+  },
+  {
+   "proceso": "MsMpEng.exe",
+   "n": 1,
+   "cpu_pct_host": 0.11,
+   "ram_mb": 291.45
+  },
+  {
+   "proceso": "language_server.exe",
+   "n": 1,
+   "cpu_pct_host": 0.09,
+   "ram_mb": 373.18
+  },
+  {
+   "proceso": "NVDisplay.Container.exe",
+   "n": 2,
+   "cpu_pct_host": 0.04,
+   "ram_mb": 84.39
+  },
+  {
+   "proceso": "Antigravity.exe",
+   "n": 10,
+   "cpu_pct_host": 0.04,
+   "ram_mb": 631.4
+  },
+  {
+   "proceso": "ChatGPT.exe",
+   "n": 13,
+   "cpu_pct_host": 0.03,
+   "ram_mb": 533.02
+  },
+  {
+   "proceso": "MSPCManagerCore.exe",
+   "n": 1,
+   "cpu_pct_host": 0.02,
+   "ram_mb": 123.05
+  },
+  {
+   "proceso": "com.docker.backend.exe",
+   "n": 2,
+   "cpu_pct_host": 0.02,
+   "ram_mb": 132.64
+  },
+  {
+   "proceso": "explorer.exe",
+   "n": 1,
+   "cpu_pct_host": 0.02,
+   "ram_mb": 170.91
+  },
+  {
+   "proceso": "csrss.exe",
+   "n": 2,
+   "cpu_pct_host": 0.01,
+   "ram_mb": 14.18
+  },
+  {
+   "proceso": "nvcontainer.exe",
+   "n": 4,
+   "cpu_pct_host": 0.01,
+   "ram_mb": 123.11
+  },
+  {
+   "proceso": "RiotClientServices.exe",
+   "n": 1,
+   "cpu_pct_host": 0.01,
+   "ram_mb": 15.0
+  }
+ ],
+ "pesados_ajenos": [
+  {
+   "proceso": "RiotClientServices.exe",
+   "n": 1,
+   "cpu_pct_host": 0.01
+  },
+  {
+   "proceso": "RiotClientCrashHandler.exe",
+   "n": 1,
+   "cpu_pct_host": 0.0
+  }
+ ],
+ "otros_procesos_con_cpu_ge_3pct": [],
+ "discord_presente": true,
+ "contenedores": [
+  "giragroup_pipeline|Up 2 minutes",
+  "giragroup_api|Up 2 minutes",
+  "giragroup_catalog_db|Up 2 minutes (healthy)",
+  "giragroup_web|Up 2 minutes",
+  "beto_pg_tmpfs|Up 12 minutes",
+  "giragroup_gateway|Up 2 minutes",
+  "giragroup_audit_svc|Up About an hour",
+  "giragroup_auth_svc|Up About an hour",
+  "giragroup_notifications_svc|Up About an hour",
+  "giragroup_db|Up About an hour (healthy)"
+ ],
+ "docker_stats": [
+  "giragroup_pipeline|0.30%|1.01GiB / 15.34GiB",
+  "giragroup_api|0.60%|761.4MiB / 15.34GiB",
+  "giragroup_catalog_db|1.37%|23.04MiB / 15.34GiB",
+  "giragroup_web|0.07%|67.72MiB / 15.34GiB",
+  "beto_pg_tmpfs|0.00%|836.3MiB / 15.34GiB",
+  "giragroup_gateway|0.00%|5.562MiB / 15.34GiB",
+  "giragroup_audit_svc|0.11%|65.39MiB / 15.34GiB",
+  "giragroup_auth_svc|0.11%|68.49MiB / 15.34GiB",
+  "giragroup_notifications_svc|0.11%|65.54MiB / 15.34GiB",
+  "giragroup_db|0.00%|59.63MiB / 15.34GiB"
+ ],
+ "plan_energia": "GUID de plan de energ├¡a: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c  (Alto rendimiento)",
+ "plan_energia_cambiado": false,
+ "en_corriente_ac": true,
+ "apto": false,
+ "criterio_apto": "sin pesados ajenos (juegos, lanzadores, pytest/locust/vite, navegador >= 3.0 %), ningún otro proceso >= 3.0 % salvo Discord, CPU host en reposo < 10.0 %"
+}

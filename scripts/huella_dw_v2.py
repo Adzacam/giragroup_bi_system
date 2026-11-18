@@ -21,6 +21,7 @@ EXCLUIR_POR_TABLA = {
     "public.fact_rentabilidad": ["id_hecho_rent"],
     "public.fact_techo_convenio": ["id_hecho_techo", "actualizado_en"],
     "public.fact_costo_programa": ["id_hecho_costo", "actualizado_en"],
+    "public.fact_planificacion_programa": ["id_planificacion"],
     "public.stg_entidad_no_resuelta": ["id_staging", "created_at", "resuelto_en", "lock_expira", "payload_json"],
     "public.carga_fila_origen": ["creado_en"],
     "public.log_inconsistencias": ["id_inconsistencia", "detectado_en", "resuelto_en"],

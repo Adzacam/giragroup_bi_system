@@ -1,0 +1,27 @@
+{
+  "tarea": "V-3",
+  "fecha": "2026-11-18",
+  "migracion": "backend/scripts/migrations/018_fact_planificacion_programa.sql",
+  "tabla": "public.fact_planificacion_programa",
+  "hojas_fuente": 19,
+  "filas_cargadas_total": 1663,
+  "filas_inventario_u3": 1663,
+  "diferencia_vs_u3": 0,
+  "borradores_cargados": 0,
+  "derivadas_cargadas": 0,
+  "filas_sin_mes_id_tiempo_null": 10,
+  "nota_filas_sin_mes": "En Programas Notificados, 10 filas solo traen ANO=2024 sin mes ni fecha de notificacion/inicio/fin (filas Excel 149-155, 179, 182, 183); todas quedan con id_tiempo_plan=NULL sin inventar periodo.",
+  "dim_meta": {
+    "PLAN_INGRESO_TOTAL": 24,
+    "PLAN_INGRESO_TECHOS_PROYECTADO": 10,
+    "OKR_APERTURAS": 24,
+    "total": 58,
+    "trazabilidad": "carga_fila_origen + id_documento + celda_origen"
+  },
+  "idempotencia_recarga_agrega": 0,
+  "borrado_x1_deja": 0,
+  "pruebas": {
+    "archivo": "tests/f3v/test_planificacion_carga.py",
+    "resultado": "2 passed, 0 failed"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "tarea": "V-6",
+  "fecha": "2026-11-18",
+  "decision": "DECISION 3 de PLAN_F3V.md (Diseño B)",
+  "invariantes_declarados": {
+    "tablas": 51,
+    "vistas_bi": 10,
+    "hechos": 10,
+    "dimensiones": 7,
+    "puentes": 1,
+    "kpis": 23
+  },
+  "conteos_reales_postgresql": {
+    "base": "beto_pg_tmpfs/giragroup_dw",
+    "tablas_public_y_bi": 51,
+    "vistas_bi": 10,
+    "kpis_activos": 23
+  },
+  "archivos_actualizados": [
+    "CLAUDE.md",
+    "docs/cierres/plan_maestro.md",
+    "scripts/diccionario_datos_csv.py",
+    "docs/evidencias/diccionario_datos.csv"
+  ]
+}

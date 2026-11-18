@@ -1,0 +1,131 @@
+{
+  "etiqueta": "F3S, escenario reescrito (Tabla 3.32)",
+  "tarea": "S-7 (Locust)",
+  "parametros": {
+    "usuarios": 50,
+    "rampa_por_s": 5,
+    "duracion": "30s",
+    "base_datos": "f3v_completo",
+    "pila": "uvicorn local 127.0.0.1:8099 (backend del árbol de trabajo) sobre la copia tmpfs beto_pg_s7",
+    "locustfile": "tests/carga/locustfile.py"
+  },
+  "agregado": {
+    "method": "",
+    "requests": 1121,
+    "failures": 0,
+    "median_ms": 10.0,
+    "avg_ms": 28.1338578951867,
+    "min_ms": 4.442300007212907,
+    "max_ms": 2600.6657000107225,
+    "rps": 41.26922836256324,
+    "p50_ms": 10.0,
+    "p95_ms": 34.0,
+    "p99_ms": 290.0
+  },
+  "por_endpoint": {
+    "GET /api/v1/cmi/scorecard": {
+      "method": "GET",
+      "requests": 168,
+      "failures": 0,
+      "median_ms": 10.0,
+      "avg_ms": 12.918167858602136,
+      "min_ms": 6.556999986059964,
+      "max_ms": 101.73130000475794,
+      "rps": 6.184862056120093,
+      "p50_ms": 10.0,
+      "p95_ms": 27.0,
+      "p99_ms": 89.0
+    },
+    "GET /api/v1/dataops/review-tray/grupos": {
+      "method": "GET",
+      "requests": 198,
+      "failures": 0,
+      "median_ms": 19.0,
+      "avg_ms": 20.959135353379423,
+      "min_ms": 12.807299994165078,
+      "max_ms": 49.21840000315569,
+      "rps": 7.289301708998681,
+      "p50_ms": 19.0,
+      "p95_ms": 35.0,
+      "p99_ms": 43.0
+    },
+    "GET /api/v1/forecast/alumnos": {
+      "method": "GET",
+      "requests": 124,
+      "failures": 0,
+      "median_ms": 9.0,
+      "avg_ms": 13.84512580613861,
+      "min_ms": 5.4416999919340014,
+      "max_ms": 423.79639999126084,
+      "rps": 4.565017231898164,
+      "p50_ms": 9.0,
+      "p95_ms": 23.0,
+      "p99_ms": 33.0
+    },
+    "GET /api/v1/forecast/metas": {
+      "method": "GET",
+      "requests": 118,
+      "failures": 0,
+      "median_ms": 9.0,
+      "avg_ms": 11.264528813564723,
+      "min_ms": 5.738700012443587,
+      "max_ms": 89.08919998793863,
+      "rps": 4.344129301322447,
+      "p50_ms": 9.0,
+      "p95_ms": 21.0,
+      "p99_ms": 45.0
+    },
+    "GET /api/v1/kpis/cmi-completo": {
+      "method": "GET",
+      "requests": 193,
+      "failures": 0,
+      "median_ms": 9.0,
+      "avg_ms": 11.932166840204331,
+      "min_ms": 5.8200999919790775,
+      "max_ms": 81.7805000115186,
+      "rps": 7.105228433518917,
+      "p50_ms": 9.0,
+      "p95_ms": 22.0,
+      "p99_ms": 70.0
+    },
+    "GET /api/v1/riesgos/alertas-tempranas": {
+      "method": "GET",
+      "requests": 128,
+      "failures": 0,
+      "median_ms": 9.0,
+      "avg_ms": 12.939654688352675,
+      "min_ms": 6.301200017333031,
+      "max_ms": 294.54919998534024,
+      "rps": 4.712275852281976,
+      "p50_ms": 9.0,
+      "p95_ms": 19.0,
+      "p99_ms": 35.0
+    },
+    "GET /health": {
+      "method": "GET",
+      "requests": 135,
+      "failures": 0,
+      "median_ms": 7.0,
+      "avg_ms": 9.999420000153973,
+      "min_ms": 4.442300007212907,
+      "max_ms": 114.9841999867931,
+      "rps": 4.969978437953646,
+      "p50_ms": 7.0,
+      "p95_ms": 21.0,
+      "p99_ms": 88.0
+    },
+    "POST /api/v1/dataops/review-tray/approve-group": {
+      "method": "POST",
+      "requests": 57,
+      "failures": 0,
+      "median_ms": 34.0,
+      "avg_ms": 295.83821052699676,
+      "min_ms": 15.171999984886497,
+      "max_ms": 2600.6657000107225,
+      "rps": 2.0984353404693175,
+      "p50_ms": 34.0,
+      "p95_ms": 2500.0,
+      "p99_ms": 2600.0
+    }
+  }
+}
