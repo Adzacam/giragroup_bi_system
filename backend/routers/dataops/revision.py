@@ -237,7 +237,7 @@ def aprobar_casos_un_clic(
 
 
 def _bloquear_documentos_editables(db, docs):
-    for lote_id in sorted({d.id_lote for d in docs if d.id_lote}):
+    for lote_id in sorted({getattr(d, "id_lote", None) for d in docs if getattr(d, "id_lote", None)}):
         db.query(Lote).filter_by(id_lote=lote_id).with_for_update().first()
         _asegurar_lote_editable(db, lote_id)
 

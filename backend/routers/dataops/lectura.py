@@ -529,6 +529,8 @@ def revelar_ci_registro(
     Endpoint protegido por JWT y rol (`ADMIN` o `AUDITOR_CALIDAD`) que revela el dato sensible
     (`ci`, `nombre` o `correo`) de un registro específico y deja constancia en auditoría (#13, W-12).
     """
+    if hasattr(campo, "default"):
+        campo = campo.default
     val_real = None
     contexto_audit = f"Revelación de {campo.upper()} para registro {registro_id}"
 

@@ -529,15 +529,6 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     if not solo_revision:
         dw.finalizar_cargas()
     db.commit()
-    dw.liberar_memoria()
-    db.expunge_all()
-    import gc
-    gc.collect()
-    try:
-        import ctypes
-        ctypes.CDLL("libc.so.6").malloc_trim(0)
-    except Exception:
-        pass
     if not solo_revision:
         cache_consultas.invalidar()  # el DW cambió: alertas, CMI y forecast se recalculan
     inserted_total = inserted_academico + inserted_financiero
@@ -573,7 +564,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     except Exception as e_aud_dw:
         logger.warning("No se pudo registrar auditoría/notificación de consolidación DW: %s", e_aud_dw)
 
-    return {
+    resp = {
         "status": "success",
         "solo_revision": solo_revision,
         "message": (
@@ -597,6 +588,18 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         "descartes_por_regla": descartes_por_regla,
         **({"beto": contadores_beto.como_dict()} if cliente_beto is not None else {}),
     }
+    dw.liberar_memoria()
+    from .extraccion import _MEMO_CATALOGOS, _MEMO_LOCK
+    with _MEMO_LOCK:
+        _MEMO_CATALOGOS.clear()
+    import gc
+    gc.collect()
+    try:
+        import ctypes
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except Exception:
+        pass
+    return resp
 
 
 def derivar_estado_cartera(campos_linea: Optional[dict], cuotas_impagas: int = 0) -> str:
