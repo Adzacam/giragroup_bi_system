@@ -278,7 +278,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                 )
                 reg_plan["fila_excel"] = fila_ex
                 c_orig = hashlib.sha256(f"{sha_doc}|{stg.hoja}|{fila_ex}|{line}".encode("utf-8")).hexdigest()
-                c_cont = clave_contenido(line, ocurrencias.siguiente(stg.id_documento, line))
+                c_cont = clave_contenido(doc_fuente, stg.hoja or "", line, ocurrencias.siguiente(stg.hoja or "", line))
                 res = dw.cargar_registro({
                     "doc_id": stg.id_documento,
                     "categoria": "planificacion",
