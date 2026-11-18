@@ -1,6 +1,15 @@
 {
   "tarea": "V-7(c)",
   "W_medido_p95_s": 2.5,
+  "fuente_W": {
+    "criterio": "max(p95 GET /api/v1/dataops/review-tray/grupos, p95 POST /api/v1/dataops/review-tray/approve-group) / 1000",
+    "archivo": "docs/mediciones/f3v_locust.json",
+    "ruta_aplicada": "por_endpoint[\"POST /api/v1/dataops/review-tray/approve-group\"].p95_ms",
+    "p95_approve_group_ms": 2500.0,
+    "p95_grupos_ms": 35.0,
+    "agregado_p95_ms": 34.0,
+    "script": "scripts/f3v_medir_ciclo.py"
+  },
   "W_medido": {
     "W_s": 2.5,
     "klm_s": 320.6,

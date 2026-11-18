@@ -174,7 +174,8 @@
       "id": "A-26-W-MEDIDO",
       "valor": 2.5,
       "archivo": "docs/mediciones/f3v_klm.json",
-      "ruta": "W_medido_p95_s"
+      "ruta": "W_medido_p95_s",
+      "nota": "max(p95 review-tray/grupos = 35.0 ms, p95 review-tray/approve-group = 2500.0 ms) en docs/mediciones/f3v_locust.json::por_endpoint[\"POST /api/v1/dataops/review-tray/approve-group\"].p95_ms; agregado.p95_ms = 34.0 ms"
     },
     {
       "id": "A-26-KLM-W-MEDIDO",
