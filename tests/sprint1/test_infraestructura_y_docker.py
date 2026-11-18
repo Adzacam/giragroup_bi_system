@@ -45,8 +45,8 @@ class TestInfraestructuraDocker:
         assert "web" in services or "giragroup_web" in str(services), "Servicio Frontend React debe estar definido"
 
     def test_database_url_segura_y_configurada(self):
-        """Valida que la cadena de conexión apunte a giragroup_db con credenciales institucionales."""
-        assert "giragroup_db" in SQLALCHEMY_DATABASE_URL
+        """Valida que la cadena de conexión apunte a giragroup_db (o tmpfs giragroup_dw) con credenciales institucionales."""
+        assert "giragroup_db" in SQLALCHEMY_DATABASE_URL or "giragroup_dw" in SQLALCHEMY_DATABASE_URL
         assert "giragroup_user" in SQLALCHEMY_DATABASE_URL
         assert engine.pool is not None
 

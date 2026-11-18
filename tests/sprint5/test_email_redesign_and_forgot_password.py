@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from routers.auth import forgot_password, login_step_one, verify_otp, change_password
 from schemas.auth_schemas import (
@@ -20,12 +21,10 @@ from core.security import get_password_hash, generate_temp_password, verify_pass
 from models.user import User
 from services.email_service import email_service, mask_email
 
-TEST_DB_FILE = Path(__file__).resolve().parent / "test_auth_temp.db"
-SQLALCHEMY_TEST_DATABASE_URL = f"sqlite:///{TEST_DB_FILE.as_posix()}"
-
 test_engine = create_engine(
-    SQLALCHEMY_TEST_DATABASE_URL,
+    "sqlite:///:memory:",
     connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
