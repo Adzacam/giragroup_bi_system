@@ -275,7 +275,7 @@ def _resolver_caso_evaluacion(db: Session, item_id: str, payload: Dict[str, Any]
     else:
         nombre = (payload.get("docente_resuelto") or "").strip()
         if nombre:
-            docente = db.query(DimDocente).filter(func.lower(DimDocente.nombre_completo) == nombre.lower()).first()
+            docente = db.query(DimDocente).filter(func.lower(DimDocente.nombre_completo) == nombre.lower()).order_by(DimDocente.id_docente).first()
             if docente is None:
                 raise HTTPException(422, 'El docente indicado no existe en el catálogo.')
             if docente is not None:
@@ -310,7 +310,7 @@ def _aplicar_correcciones(db: Session, hecho, tipo: str, payload: Dict[str, Any]
     cambios = {}
     nombre = (payload.get("nombre_completo") or payload.get("estudiante_resuelto") or "").strip()
     if nombre:
-        est = db.query(DimEstudiante).filter(func.lower(DimEstudiante.nombre_completo) == nombre.lower()).first()
+        est = db.query(DimEstudiante).filter(func.lower(DimEstudiante.nombre_completo) == nombre.lower()).order_by(DimEstudiante.id_estudiante).first()
         if not est:
             raise HTTPException(422, 'El estudiante indicado no existe en el catálogo.')
         if est and est.id_estudiante != hecho.id_estudiante:
@@ -318,7 +318,7 @@ def _aplicar_correcciones(db: Session, hecho, tipo: str, payload: Dict[str, Any]
             cambios["estudiante"] = est.nombre_completo
     modulo = (payload.get('modulo_resuelto') or '').strip()
     if tipo == 'academico' and modulo:
-        mod = db.query(DimModulo).filter(func.lower(DimModulo.nombre_modulo) == modulo.lower()).first()
+        mod = db.query(DimModulo).filter(func.lower(DimModulo.nombre_modulo) == modulo.lower()).order_by(DimModulo.id_modulo).first()
         if not mod:
             raise HTTPException(422, 'El módulo indicado no existe en el catálogo.')
         if mod.id_modulo != hecho.id_modulo:

@@ -15,6 +15,8 @@ MIGRACIONES_EN_ARRANQUE = (
     "013_renombrar_kpi10_confianza_extraccion.sql",
     "014_conversion_captacion_comprobable.sql",
     "017_dataops_tarea_preparacion_revision.sql",
+    "018_fact_planificacion_programa.sql",
+    "019_vista_planificacion_kpi23.sql",
 )
 MIGRACION_LOTE = "003_dataops_lote_and_facts_alignment.sql"
 MIGRACION_TIPO_FUENTE = "004_extend_tipo_fuente_sources.sql"

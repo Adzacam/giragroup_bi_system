@@ -66,6 +66,8 @@ try:
     from models.fact_rentabilidad import FactRentabilidad
     from models.fact_costo_programa import FactCostoPrograma
     from models.fact_techo_convenio import FactTechoConvenio
+    from models.fact_planificacion import FactPlanificacionPrograma
+    from models.dim_meta import DimMeta
     from models.bridge_modulo_docente import BridgeModuloDocente
     from models.staging_entidad import StagingEntidadNoResuelta
     from models.lote import Lote
@@ -81,6 +83,8 @@ except ImportError:
     from backend.models.fact_rentabilidad import FactRentabilidad
     from backend.models.fact_costo_programa import FactCostoPrograma
     from backend.models.fact_techo_convenio import FactTechoConvenio
+    from backend.models.fact_planificacion import FactPlanificacionPrograma
+    from backend.models.dim_meta import DimMeta
     from backend.models.bridge_modulo_docente import BridgeModuloDocente
     from backend.models.staging_entidad import StagingEntidadNoResuelta
     from backend.models.lote import Lote
@@ -364,7 +368,7 @@ def detectar_tipo_fuente_por_cabeceras(
         "techo", "techos", "techo presupuestario", "presupuesto asignado", "presupuestado"
     ))
     has_rent = _contiene_tokens(joined_headers, (
-        "rentabilidad", "ejecutado vs meta", "ejecutado", "monto_ejecutado", "monto_meta",
+        "rentabilidad", "ejecutado", "monto_ejecutado", "monto_meta",
         "ebitda", "margen", "utilidad", "meta por categoria"
     ))
     if has_egreso and has_techo:
@@ -839,38 +843,86 @@ class IngestionService:
                 else "rentabilidad" if final_tipo_fuente in ("EGRESOS", "TECHOS", "RENTABILIDAD")
                 else "evaluacion_docente" if final_tipo_fuente == "EVALUACION_DOCENTE"
                 else "marketing" if final_tipo_fuente in ("MARKETING", "ADMISION")
-                else "academico" if final_tipo_fuente in ("ACTA", "MOODLE", "PLANIFICACION")
+                else "planificacion" if final_tipo_fuente == "PLANIFICACION"
+                else "academico" if final_tipo_fuente in ("ACTA", "MOODLE")
                 else None
             )
-            for nombre_hoja, b in bloques_validos:
-                # Una hoja de encuesta (preguntas + respuestas Likert) es evaluación docente aunque el libro se haya
-                # clasificado como ACTA o COBRANZA: el contenido del bloque manda sobre el tipo del documento.
-                categoria = ("evaluacion_docente" if es_encuesta_likert(b)
-                             else categoria_por_fuente or clasificar_categoria(b, safe_filename, nombre_hoja))
-                texto = cls.serializar_bloque_con_encabezados(b)
-                n_b_filas = max(1, len(b) - 1) if len(b) > 1 else len(b)
-                payload_data = {
-                    "diagnostico_estructural": asym_info.get("diagnostico_estructural", {}),
-                    "chips_catalogo": asym_info.get("chips_catalogo", {}),
-                    "origen_detectado": asym_info.get("origen_detectado", "GSHEETS_ACTA_NOTAS"),
-                    "rango_fechas": asym_info.get("rango_fechas", periodo_final),
-                    "fechas_reconocidas": asym_info.get("fechas_reconocidas", [])
-                }
-                staging_entry = StagingRegistroCrudo(
-                    id_documento=doc_id,
-                    hoja=nombre_hoja,
-                    bloque_id=b.attrs.get("indice", bloques_insertados),
-                    categoria=categoria,
-                    texto_plano=texto,
-                    n_filas=n_b_filas,
-                    fila_inicio=b.attrs.get("fila_inicio", 0),
-                    fila_fin=b.attrs.get("fila_fin", len(b) - 1),
-                    es_ruido=False,
-                    estado_resolucion="PENDIENTE",
-                    payload_json=payload_data
-                )
-                db.add(staging_entry)
-                bloques_insertados += 1
+            if final_tipo_fuente == "PLANIFICACION" and ext in (".xlsx", ".xlsm"):
+                from services.planificacion_extractor import extraer_libro_planificacion
+                plan_data = extraer_libro_planificacion(tmp_path)
+                por_hoja: Dict[str, List[Dict[str, Any]]] = {}
+                for f_plan in plan_data["filas"]:
+                    por_hoja.setdefault(f_plan["hoja"], []).append(f_plan)
+                registros_procesados = len(plan_data["filas"])
+                for idx_h, (nom_h, filas_h) in enumerate(por_hoja.items()):
+                    texto_h = "\n".join(f["texto_linea"] for f in filas_h)
+                    db.add(StagingRegistroCrudo(
+                        id_documento=doc_id,
+                        hoja=nom_h,
+                        bloque_id=idx_h,
+                        categoria="planificacion",
+                        texto_plano=texto_h,
+                        n_filas=len(filas_h),
+                        fila_inicio=filas_h[0]["fila_excel"],
+                        fila_fin=filas_h[-1]["fila_excel"],
+                        es_ruido=False,
+                        estado_resolucion="PENDIENTE",
+                        payload_json={
+                            "anio_hoja": filas_h[0]["anio_hoja"],
+                            "mes_hoja": filas_h[0]["mes_hoja"],
+                            "filas_excel": [f["fila_excel"] for f in filas_h],
+                        },
+                    ))
+                    bloques_insertados += 1
+                if plan_data["metas"]:
+                    texto_m = "\n".join(
+                        f"CATEGORIA: {m['categoria']} | GESTION: {m['gestion']} | MES: {m['mes']} | MONTO: {m['monto_meta']} | CELDA: {m['celda_origen']}"
+                        for m in plan_data["metas"]
+                    )
+                    db.add(StagingRegistroCrudo(
+                        id_documento=doc_id,
+                        hoja="Informe Gestión",
+                        bloque_id=999,
+                        categoria="planificacion_meta",
+                        texto_plano=texto_m,
+                        n_filas=len(plan_data["metas"]),
+                        fila_inicio=1,
+                        fila_fin=len(plan_data["metas"]),
+                        es_ruido=False,
+                        estado_resolucion="PENDIENTE",
+                        payload_json={"metas_planificacion": plan_data["metas"]},
+                    ))
+                    bloques_insertados += 1
+            else:
+                for nombre_hoja, b in bloques_validos:
+                    # Una hoja de encuesta (preguntas + respuestas Likert) es evaluación docente aunque el libro se haya
+                    # clasificado como ACTA o COBRANZA: el contenido del bloque manda sobre el tipo del documento.
+                    categoria = ("evaluacion_docente" if es_encuesta_likert(b)
+                                 else categoria_por_fuente or clasificar_categoria(b, safe_filename, nombre_hoja))
+                    texto = cls.serializar_bloque_con_encabezados(b)
+                    n_b_filas = max(1, len(b) - 1) if len(b) > 1 else len(b)
+                    payload_data = {
+                        "diagnostico_estructural": asym_info.get("diagnostico_estructural", {}),
+                        "chips_catalogo": asym_info.get("chips_catalogo", {}),
+                        "origen_detectado": asym_info.get("origen_detectado", "GSHEETS_ACTA_NOTAS"),
+                        "rango_fechas": asym_info.get("rango_fechas", periodo_final),
+                        "fechas_reconocidas": asym_info.get("fechas_reconocidas", [])
+                    }
+                    staging_entry = StagingRegistroCrudo(
+                        id_documento=doc_id,
+                        hoja=nombre_hoja,
+                        bloque_id=b.attrs.get("indice", bloques_insertados),
+                        categoria=categoria,
+                        texto_plano=texto,
+                        n_filas=n_b_filas,
+                        fila_inicio=b.attrs.get("fila_inicio", 0),
+                        fila_fin=b.attrs.get("fila_fin", len(b) - 1),
+                        es_ruido=False,
+                        estado_resolucion="PENDIENTE",
+                        payload_json=payload_data
+                    )
+                    db.add(staging_entry)
+                    bloques_insertados += 1
 
             t_ms_6 = max(1, int((time.perf_counter() - t0) * 1000) + 30)
             log6 = cls._registrar_log(
@@ -1038,6 +1090,8 @@ class IngestionService:
             FactRentabilidad,
             FactCostoPrograma,
             FactTechoConvenio,
+            FactPlanificacionPrograma,
+            DimMeta,
             BridgeModuloDocente,
             StagingEntidadNoResuelta,
             StagingRegistroCrudo,

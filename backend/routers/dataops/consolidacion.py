@@ -20,7 +20,7 @@ from models.staging_registro import StagingRegistroCrudo
 from models.user import User
 from services.confianza_service import banda_de, indices_cascada, obtener_indices
 from services import beto_integracion, cache_consultas, tareas_dataops
-from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, fila_resuelta_por_regla, metricas_captacion, motivo_fila_sin_entidad, normalizar_encabezado, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
+from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, fila_resuelta_por_regla, metricas_captacion, motivo_fila_sin_entidad, normalizar_encabezado, registro_planificacion, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
 from datetime import datetime
 from services.dataops_evaluation_service import enmascarar_ci, strip_accents
 from core.security import require_roles
@@ -240,6 +240,56 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         lines = [l.strip() for l in raw_text.split("\n") if l.strip()]
         if not lines and raw_text:
             lines = [raw_text]
+
+        stg_cat = (stg.categoria or "").strip().lower()
+        if stg_cat in ("planificacion", "planificacion_meta") or doc_fuente == "PLANIFICACION":
+            sha_doc = (orig_doc.hash_sha256 if orig_doc and orig_doc.hash_sha256 else str(stg.id_documento))
+            payload_stg = stg.payload_json if isinstance(stg.payload_json, dict) else {}
+            if stg_cat == "planificacion_meta":
+                for idx_m, meta in enumerate(payload_stg.get("metas_planificacion") or []):
+                    lineas_hechas += 1
+                    c_orig = hashlib.sha256(f"{sha_doc}|{meta.get('celda_origen', idx_m)}".encode("utf-8")).hexdigest()
+                    c_cont = hashlib.sha256(
+                        f"{meta.get('categoria')}|{meta.get('gestion')}|{meta.get('mes')}|{meta.get('tipo_programa')}|{meta.get('monto_meta')}".encode("utf-8")
+                    ).hexdigest()
+                    res = dw.cargar_registro({
+                        "doc_id": stg.id_documento,
+                        "categoria": "planificacion_meta",
+                        "clave_origen": c_orig,
+                        "clave_contenido": c_cont,
+                        "resoluciones": meta,
+                        "calidad": {"requiere_revision": False},
+                    })
+                    if res.get("status") == "loaded":
+                        inserted_academico += 1
+                continue
+
+            filas_excel = payload_stg.get("filas_excel") or []
+            anio_hoja = payload_stg.get("anio_hoja")
+            mes_hoja = payload_stg.get("mes_hoja")
+            for k_fila, line in enumerate(lines):
+                lineas_hechas += 1
+                if lineas_hechas % 250 == 0:
+                    tareas_dataops.avanzar(tarea_id, lineas_hechas)
+                campos_linea = campos_por_encabezado([c.strip() for c in line.split("|")])
+                fila_ex = filas_excel[k_fila] if k_fila < len(filas_excel) else ((stg.fila_inicio or 0) + k_fila)
+                reg_plan = registro_planificacion(
+                    campos_linea, hoja=stg.hoja or "", anio_hoja=anio_hoja, mes_hoja=mes_hoja
+                )
+                reg_plan["fila_excel"] = fila_ex
+                c_orig = hashlib.sha256(f"{sha_doc}|{stg.hoja}|{fila_ex}|{line}".encode("utf-8")).hexdigest()
+                c_cont = clave_contenido(line, ocurrencias.siguiente(stg.id_documento, line))
+                res = dw.cargar_registro({
+                    "doc_id": stg.id_documento,
+                    "categoria": "planificacion",
+                    "clave_origen": c_orig,
+                    "clave_contenido": c_cont,
+                    "resoluciones": reg_plan,
+                    "calidad": {"requiere_revision": False},
+                })
+                if res.get("status") == "loaded":
+                    inserted_academico += 1
+            continue
 
         categoria_ruteo = resolver_categoria_ruteo(doc_fuente, stg.categoria)
 

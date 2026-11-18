@@ -29,6 +29,8 @@ from models.fact_financiero import FactSituacionFinanciera
 from models.fact_costo_programa import FactCostoPrograma
 from models.bridge_modulo_docente import BridgeModuloDocente
 from models.fact_techo_convenio import FactTechoConvenio
+from models.fact_planificacion import FactPlanificacionPrograma
+from models.dim_meta import DimMeta
 from models.log_inconsistencia import LogInconsistencia
 from models.staging_entidad import StagingEntidadNoResuelta, generar_id_homonimo
 from models.catalogos import CatInstitucion
@@ -197,15 +199,21 @@ def _es_variante_de_nombre(guardado: str, entrante: str) -> bool:
     return bool(set(_tokens(a)) & set(_tokens(b))) and fuzz.token_set_ratio(a, b) >= 85
 
 
-def _fuzzy_best_match(query_str: str, candidates: list):
-    """Búsqueda difusa compatible con rapidfuzz o difflib como fallback."""
+def _fuzzy_best_match(query_str: str, candidates: list, id_map: Optional[Dict[str, int]] = None):
+    """Búsqueda difusa determinista: mayor puntaje primero; en empate, menor id en id_map y luego orden léxico."""
     if not query_str or not candidates:
         return None, None
     try:
         from rapidfuzz import fuzz, process
-        mejor = process.extractOne(query_str, candidates, scorer=fuzz.token_sort_ratio)
-        if mejor:
-            return mejor[0], round(mejor[1], 2)
+        hits = process.extract(query_str, candidates, scorer=fuzz.token_sort_ratio, limit=None)
+        if hits:
+            mejor_score = round(hits[0][1], 2)
+            empatados = [h for h in hits if round(h[1], 2) == mejor_score]
+            ganador = min(
+                empatados,
+                key=lambda h: (id_map.get(h[0], float("inf")) if id_map else 0, str(h[0])),
+            )
+            return ganador[0], mejor_score
     except Exception:
         pass
     from difflib import SequenceMatcher
@@ -213,12 +221,17 @@ def _fuzzy_best_match(query_str: str, candidates: list):
     best_cand = None
     best_ratio = 0.0
     for cand in candidates:
-        ratio = SequenceMatcher(None, q_lower, str(cand).lower()).ratio() * 100.0
+        ratio = round(SequenceMatcher(None, q_lower, str(cand).lower()).ratio() * 100.0, 2)
         if ratio > best_ratio:
             best_ratio = ratio
             best_cand = cand
+        elif ratio == best_ratio and best_cand is not None:
+            cand_key = (id_map.get(cand, float("inf")) if id_map else 0, str(cand))
+            best_key = (id_map.get(best_cand, float("inf")) if id_map else 0, str(best_cand))
+            if cand_key < best_key:
+                best_cand = cand
     if best_cand:
-        return best_cand, round(best_ratio, 2)
+        return best_cand, best_ratio
     return None, None
 
 
@@ -257,6 +270,7 @@ class DWLoaderService:
         self.sugeridor: Optional[Any] = None
         self._texto_beto: Optional[str] = None
         self._origen_por_doc: Dict[Any, Optional[DimOrigenDocumental]] = {}
+        self._cache_prio_fuente: Dict[int, int] = {}
         self._docente_por_nombre: Dict[str, Optional[int]] = {}
         self._institucion_por_nombre: Dict[str, Optional[int]] = {}
         self.solo_revision: bool = False
@@ -281,7 +295,7 @@ class DWLoaderService:
         if self._est_nombres is None:
             self._est_nombres = [(r[0], r[1]) for r in self.db.query(
                 DimEstudiante.id_estudiante, DimEstudiante.nombre_completo
-            ).filter(DimEstudiante.deprecado == False, DimEstudiante.nombre_completo.isnot(None)).all()]
+            ).filter(DimEstudiante.deprecado == False, DimEstudiante.nombre_completo.isnot(None)).order_by(DimEstudiante.id_estudiante).all()]
             self._est_solo_nombres = [n for _, n in self._est_nombres]
         if not self._est_nombres:
             return []
@@ -349,11 +363,53 @@ class DWLoaderService:
             estrechar(lambda e: e.id_estudiante in con)
         return pool[0] if len(pool) == 1 else None
 
-    @staticmethod
-    def _prioridad_fuente(nombre_archivo: Optional[str]) -> int:
-        """Precedencia de fuentes para la recaudación mensual: 'EJECUTADO VS META' es la fuente de referencia (2); el resto,
-        p. ej. la hoja 'Gestiones' de 'BD Egresos' (corte parcial del mismo dato), tiene prioridad 1."""
-        return 2 if "EJECUTADO VS META" in (nombre_archivo or "").upper() else 1
+    def _prioridad_fuente_doc(self, id_documento: Optional[int], resoluciones: Optional[Dict[str, Any]] = None) -> int:
+        """Precedencia de fuentes para la recaudación mensual por estructura del libro (no por nombre de archivo):
+        2 = tipo 'metas y ejecutado por categoría y mes' (columnas CATEGORIA + META POR CATEGORIA <año> / EJECUTADO <año>);
+        1 = otras fuentes de rentabilidad/egresos; 0 = planificación (Informe Gestión)."""
+        if id_documento and id_documento in self._cache_prio_fuente:
+            return self._cache_prio_fuente[id_documento]
+        prio = 1
+        if resoluciones and resoluciones.get("es_fuente_metas_categoria"):
+            prio = 2
+        if id_documento:
+            origen = self.db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento == id_documento).first()
+            if origen and (origen.tipo_fuente or "").upper() == "PLANIFICACION":
+                prio = 0
+            elif prio < 2:
+                try:
+                    from models.staging_registro import StagingRegistroCrudo
+                except ImportError:
+                    from backend.models.staging_registro import StagingRegistroCrudo
+                from services.extraccion_por_encabezado import campos_por_encabezado
+                filas_stg = self.db.query(StagingRegistroCrudo.payload_json).filter(
+                    StagingRegistroCrudo.id_documento == id_documento
+                ).order_by(StagingRegistroCrudo.id).limit(25).all()
+                for (payload,) in filas_stg:
+                    lineas = []
+                    if isinstance(payload, dict):
+                        if payload.get("raw_text"):
+                            lineas = str(payload["raw_text"]).splitlines()
+                        elif payload.get("lines"):
+                            lineas = [str(x) for x in payload["lines"]]
+                    for ln in lineas[:30]:
+                        campos = campos_por_encabezado([c.strip() for c in ln.split(" | ") if ": " in c])
+                        if any(re.match(r"^META POR CATEGORIA \d{4}$", k) for k in campos) or (
+                            "CATEGORIA" in campos and any(re.match(r"^(?:EJECUTADO|META) \d{4}$", k) for k in campos)
+                        ):
+                            prio = 2
+                            break
+                    if prio == 2:
+                        break
+            self._cache_prio_fuente[id_documento] = prio
+        return prio
+
+    def _fecha_ingesta_doc(self, id_documento: Optional[int]) -> Tuple[Any, int]:
+        if not id_documento:
+            return (datetime.min, 0)
+        origen = self.db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento == id_documento).first()
+        fecha = origen.fecha_ingesta if origen and origen.fecha_ingesta else datetime.min
+        return (fecha, int(id_documento))
 
     def _nombre_documento(self, id_documento: Optional[int]) -> Optional[str]:
         if not id_documento:
@@ -402,7 +458,7 @@ class DWLoaderService:
             return self._institucion_por_nombre[clave]
         id_inst = None
         try:
-            cat = self.db.query(CatInstitucion).filter(func.lower(CatInstitucion.nombre_institucion) == clave).first()
+            cat = self.db.query(CatInstitucion).filter(func.lower(CatInstitucion.nombre_institucion) == clave).order_by(CatInstitucion.id_institucion).first()
             if cat:
                 id_inst = cat.id_institucion
         except Exception:
@@ -462,7 +518,7 @@ class DWLoaderService:
             est = self.db.query(DimEstudiante).filter(
                 DimEstudiante.deprecado == False,
                 ci_cond
-            ).first()
+            ).order_by(DimEstudiante.id_estudiante).first()
 
             if est:
                 # Mismo CI con nombre guardado incompleto (solo nombres de pila): misma persona, se completa
@@ -735,15 +791,20 @@ class DWLoaderService:
             return self._docente_por_nombre[clave]
         doc = self.db.query(DimDocente).filter(
             func.lower(DimDocente.nombre_completo) == clave
-        ).first()
+        ).order_by(DimDocente.id_docente).first()
         if doc:
             self._docente_por_nombre[clave] = doc.id_docente
             return doc.id_docente
 
-        docentes = self.db.query(DimDocente).all()
+        docentes = self.db.query(DimDocente).order_by(DimDocente.id_docente).all()
         if docentes:
-            doc_map = {d.nombre_completo: d for d in docentes if d.nombre_completo}
-            mejor_cand, score_fuzz = _fuzzy_best_match(clean_nombre, list(doc_map.keys()))
+            doc_map = {}
+            doc_id_map = {}
+            for d in docentes:
+                if d.nombre_completo:
+                    doc_map.setdefault(d.nombre_completo, d)
+                    doc_id_map.setdefault(d.nombre_completo, d.id_docente)
+            mejor_cand, score_fuzz = _fuzzy_best_match(clean_nombre, list(doc_map.keys()), id_map=doc_id_map)
             if mejor_cand and score_fuzz is not None and score_fuzz >= 85.0:
                 self._docente_por_nombre[clave] = doc_map[mejor_cand].id_docente
                 return doc_map[mejor_cand].id_docente
@@ -784,7 +845,7 @@ class DWLoaderService:
             clave_pos = pos_code.strip()
             if clave_pos in self._modulo_por_pos:
                 return self._modulo_por_pos[clave_pos]
-            mod = self.db.query(DimModulo).filter(DimModulo.pos_code == clave_pos).first()
+            mod = self.db.query(DimModulo).filter(DimModulo.pos_code == clave_pos).order_by(DimModulo.id_modulo).first()
             if mod:
                 self._modulo_por_pos[clave_pos] = mod.id_modulo
                 return mod.id_modulo
@@ -807,13 +868,13 @@ class DWLoaderService:
             clean_name = nombre_modulo.strip()
             clave_nom = clean_name.lower()
             if clave_nom not in self._memo_modulo_nombre:  # una consulta por nombre distinto y por instancia
-                mod = self.db.query(DimModulo).filter(func.lower(DimModulo.nombre_modulo) == clave_nom).first()
+                mod = self.db.query(DimModulo).filter(func.lower(DimModulo.nombre_modulo) == clave_nom).order_by(DimModulo.id_modulo).first()
                 self._memo_modulo_nombre[clave_nom] = mod.id_modulo if mod else None
             if self._memo_modulo_nombre[clave_nom]:
                 return self._memo_modulo_nombre[clave_nom]
             self._cargar_nombres_modulo()
             if self._mod_nombre_id:
-                mejor_cand, score_fuzz = _fuzzy_best_match(clean_name, list(self._mod_nombre_id.keys()))
+                mejor_cand, score_fuzz = _fuzzy_best_match(clean_name, list(self._mod_nombre_id.keys()), id_map=self._mod_nombre_id)
                 if mejor_cand and score_fuzz is not None and score_fuzz >= 80.0:
                     return self._mod_nombre_id[mejor_cand]
 
@@ -978,14 +1039,14 @@ class DWLoaderService:
         for id_m, nom in self.db.query(DimModulo.id_modulo, DimModulo.nombre_modulo).order_by(DimModulo.id_modulo).all():
             if nom:
                 self._mod_por_nombre.setdefault(nom.strip().lower(), id_m)
-                self._mod_nombre_id[nom] = id_m
+                self._mod_nombre_id.setdefault(nom, id_m)
 
     def _registrar_nombre_modulo(self, id_m: int, nombre: Optional[str]) -> None:
         if nombre:
             self._memo_modulo_nombre[nombre.strip().lower()] = self._memo_modulo_nombre.get(nombre.strip().lower()) or id_m
             if self._mod_por_nombre is not None:
                 self._mod_por_nombre.setdefault(nombre.strip().lower(), id_m)
-                self._mod_nombre_id[nombre] = id_m
+                self._mod_nombre_id.setdefault(nombre, id_m)
 
     def _docente_unico_del_modulo(self, id_modulo: Optional[int]) -> Optional[int]:
         """
@@ -1210,6 +1271,83 @@ class DWLoaderService:
                 return True
             raise
 
+    def _cargar_meta_planificacion(self, resoluciones: Dict[str, Any], doc_id: Optional[int], registro: Dict[str, Any]) -> Dict[str, Any]:
+        if self.solo_revision:
+            return {"tipo": "planificacion_meta", "status": "skipped_solo_revision"}
+        clave_origen = (registro.get("clave_origen") or "")[:64]
+        clave_cont = (registro.get("clave_contenido") or clave_origen)[:64]
+        if not self._reclamar_fila_origen(clave_origen, doc_id, "dim_meta", clave_cont):
+            return {"tipo": "planificacion_meta", "status": "skipped", "motivo": "Meta de planificación ya cargada"}
+        gestion = int(resoluciones["gestion"])
+        mes = int(resoluciones["mes"])
+        id_tiempo = self.resolver_o_crear_tiempo(date(gestion, mes, 1))
+        meta_obj = DimMeta(
+            categoria=str(resoluciones["categoria"])[:50],
+            id_tiempo=id_tiempo,
+            monto_meta=resoluciones.get("monto_meta"),
+            tipo_programa=resoluciones.get("tipo_programa"),
+            id_documento=doc_id,
+            clave_fila_origen=clave_origen or None,
+            celda_origen=resoluciones.get("celda_origen"),
+        )
+        self.db.add(meta_obj)
+        self.db.flush()
+        return {"tipo": "planificacion_meta", "status": "loaded", "id_meta": meta_obj.id_meta}
+
+    def _cargar_planificacion_programa(self, resoluciones: Dict[str, Any], doc_id: Optional[int], registro: Dict[str, Any]) -> Dict[str, Any]:
+        if self.solo_revision:
+            return {"tipo": "planificacion", "status": "skipped_solo_revision"}
+        clave_origen = (registro.get("clave_origen") or "")[:64]
+        clave_cont = (registro.get("clave_contenido") or clave_origen)[:64]
+        if not self._reclamar_fila_origen(clave_origen, doc_id, "fact_planificacion_programa", clave_cont):
+            return {"tipo": "planificacion", "status": "skipped", "motivo": "Fila de planificación ya cargada"}
+
+        fecha_plan = resoluciones.get("fecha_plan")
+        id_tiempo_plan = self.resolver_o_crear_tiempo(fecha_plan) if fecha_plan is not None else None
+        pos_fuente = resoluciones.get("pos_code_fuente")
+        nombre_prog = resoluciones.get("nombre_programa")
+        id_modulo = (
+            self.resolver_o_crear_modulo(nombre_prog or pos_fuente, pos_code=pos_fuente, doc_id=doc_id, programa=nombre_prog)
+            if pos_fuente
+            else None
+        )
+        hecho = FactPlanificacionPrograma(
+            id_modulo=id_modulo,
+            id_tiempo_plan=id_tiempo_plan,
+            id_documento=doc_id,
+            clave_fila_origen=clave_origen,
+            clave_contenido=clave_cont.ljust(64, "0")[:64],
+            hoja=str(resoluciones.get("hoja") or "Desconocida")[:200],
+            fila_excel=int(resoluciones.get("fila_excel") or 0),
+            pos_code_fuente=pos_fuente,
+            nombre_programa=nombre_prog,
+            tipo_programa=resoluciones.get("tipo_programa"),
+            escuela=resoluciones.get("escuela"),
+            origen_programa=resoluciones.get("origen_programa"),
+            diseno_curricular=resoluciones.get("diseno_curricular"),
+            fecha_notificacion=resoluciones.get("fecha_notificacion"),
+            fecha_inicio_plan=resoluciones.get("fecha_inicio_plan"),
+            fecha_fin_plan=resoluciones.get("fecha_fin_plan"),
+            duracion_meses=resoluciones.get("duracion_meses"),
+            estado_fuente=resoluciones.get("estado_fuente"),
+            notificado=resoluciones.get("notificado"),
+            costo_programa=resoluciones.get("costo_programa"),
+            costo_descuento_20=resoluciones.get("costo_descuento_20"),
+            tarifa_contado_100=resoluciones.get("tarifa_contado_100"),
+            tarifa_contado_80=resoluciones.get("tarifa_contado_80"),
+            punto_equilibrio=resoluciones.get("punto_equilibrio"),
+            leads_fuente=resoluciones.get("leads_fuente"),
+            reservas_fuente=resoluciones.get("reservas_fuente"),
+            inscritos_fuente=resoluciones.get("inscritos_fuente"),
+            pauta_ejecutada=resoluciones.get("pauta_ejecutada"),
+            pauta_asignada=resoluciones.get("pauta_asignada"),
+            payload_fuente=resoluciones.get("payload_fuente"),
+            requiere_revision=bool((registro.get("calidad") or {}).get("requiere_revision", False)),
+        )
+        self.db.add(hecho)
+        self.db.flush()
+        return {"tipo": "planificacion", "status": "loaded", "id_hecho": hecho.id_planificacion}
+
     def cargar_registro(self, registro: Dict[str, Any], id_usuario: Optional[int] = None) -> Dict[str, Any]:
         """
         Procesa una fila estructurada del pipeline y la persiste en el DW.
@@ -1245,9 +1383,13 @@ class DWLoaderService:
         )
 
         # Determinar categoría determinísticamente desde tipo_fuente si existe
-        if tipo_fuente == "COBRANZA":
+        if (registro.get("categoria") or "").lower() in ("planificacion", "planificacion_meta"):
+            categoria = registro.get("categoria").lower()
+        elif tipo_fuente == "COBRANZA":
             categoria = "financiero"
-        elif tipo_fuente in ("ACTA", "MOODLE", "PLANIFICACION"):
+        elif tipo_fuente == "PLANIFICACION":
+            categoria = "planificacion"
+        elif tipo_fuente in ("ACTA", "MOODLE"):
             categoria = "academico"
         elif tipo_fuente == "EVALUACION_DOCENTE":
             categoria = "evaluacion_docente"
@@ -1260,6 +1402,11 @@ class DWLoaderService:
 
         resoluciones = registro.get("resoluciones") or {}
         calidad = registro.get("calidad") or {}
+
+        if categoria == "planificacion_meta":
+            return self._cargar_meta_planificacion(resoluciones, doc_id, registro)
+        if categoria == "planificacion":
+            return self._cargar_planificacion_programa(resoluciones, doc_id, registro)
 
         # 1. Extraer identificadores y nombres
         est_dict = resoluciones.get("estudiante") or {}
@@ -1613,7 +1760,7 @@ class DWLoaderService:
             cat_nom = resoluciones.get("categoria_financiera") or "Operativo"
             cat_db = self.db.query(DimCategoriaFinanciera).filter(
                 func.lower(DimCategoriaFinanciera.nombre_categoria) == cat_nom.lower()
-            ).first()
+            ).order_by(DimCategoriaFinanciera.id_categoria).first()
             if not cat_db and resoluciones.get("categoria_financiera"):
                 # Categoría de la fila (PROGRAMAS, TECHOS_CERRADOS): se crea en vez de caer en otra ajena
                 cat_db = DimCategoriaFinanciera(nombre_categoria=cat_nom, tipo="INGRESO")
@@ -1622,7 +1769,7 @@ class DWLoaderService:
             if cat_db:
                 id_cat = cat_db.id_categoria
             else:
-                cat_first = self.db.query(DimCategoriaFinanciera).first()
+                cat_first = self.db.query(DimCategoriaFinanciera).order_by(DimCategoriaFinanciera.id_categoria).first()
                 id_cat = cat_first.id_categoria if cat_first else None
 
             def _monto(*claves):
@@ -1633,6 +1780,7 @@ class DWLoaderService:
             if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_rentabilidad", registro.get("clave_contenido"), subclave=f"{id_mod_rent}|{id_tiempo}|{id_cat}"):
                 return {"tipo": "rentabilidad", "status": "skipped", "motivo": "Fila de origen ya cargada"}
 
+            prio_nueva = self._prioridad_fuente_doc(doc_id, resoluciones)
             existente_rent = self.db.query(FactRentabilidad).filter(
                 FactRentabilidad.id_categoria == id_cat,
                 FactRentabilidad.id_tiempo == id_tiempo
@@ -1641,10 +1789,13 @@ class DWLoaderService:
             if existente_rent:
                 # Misma categoría y mes: el valor nuevo reemplaza al anterior (recargar el libro no duplica montos).
                 # Si otra fuente ya había cargado otra cifra para ese mes, queda registrado para revisión.
-                # Precedencia: una fuente de menor prioridad no reemplaza la cifra de una de mayor prioridad.
-                prio_nueva = self._prioridad_fuente(self._nombre_documento(doc_id))
-                prio_previa = self._prioridad_fuente(self._nombre_documento(existente_rent.id_documento))
-                cede = prio_nueva < prio_previa
+                # Precedencia: una fuente de menor prioridad no reemplaza la cifra de una de mayor prioridad;
+                # entre fuentes de igual tipo, gana la más reciente.
+                prio_previa = self._prioridad_fuente_doc(existente_rent.id_documento)
+                if prio_nueva != prio_previa:
+                    cede = prio_nueva < prio_previa
+                else:
+                    cede = self._fecha_ingesta_doc(doc_id) < self._fecha_ingesta_doc(existente_rent.id_documento)
                 for campo, nuevo in (("monto_ejecutado", m_ejec), ("monto_meta", m_meta)):
                     previo = getattr(existente_rent, campo)
                     if nuevo == 0 and previo not in (None, 0):

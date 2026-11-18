@@ -85,7 +85,7 @@ class IdentityResolutionCascade:
             est_ci = db.query(DimEstudiante).filter(
                 (DimEstudiante.codigo_estudiante == ci_norm) |
                 (DimEstudiante.codigo_estudiante.ilike(f"{ci_norm}%"))
-            ).first()
+            ).order_by(DimEstudiante.id_estudiante).first()
 
             if est_ci:
                 return {
@@ -105,7 +105,7 @@ class IdentityResolutionCascade:
             codigo_clean = str(id_estudiante_codigo).strip().upper()
             est_codigo = db.query(DimEstudiante).filter(
                 (DimEstudiante.codigo_estudiante.ilike(codigo_clean))
-            ).first()
+            ).order_by(DimEstudiante.id_estudiante).first()
 
             # Si no coincide con codigo_estudiante, comprobar si es ID numérico
             if not est_codigo and codigo_clean.replace("EST-", "").isdigit():
@@ -134,7 +134,7 @@ class IdentityResolutionCascade:
             username = correo_clean.split("@")[0]
             est_correo = db.query(DimEstudiante).filter(
                 DimEstudiante.codigo_estudiante.ilike(f"%{username}%")
-            ).first()
+            ).order_by(DimEstudiante.id_estudiante).first()
 
             if est_correo:
                 return {

@@ -390,7 +390,7 @@ def categoria_rentabilidad(valor: Optional[str]) -> Optional[str]:
         return "TECHOS_CERRADOS"
     # Cualquier otra categoría de ingreso de la fuente ('Inscripciones', 'Diplomados', 'Cursos cortos') se conserva
     # con su propio nombre: el cargador la crea en dim_categoria_financiera. Totales y celdas numéricas no son categoría.
-    if not v or v.startswith(("TOTAL", "SUBTOTAL", "ACUMULADO")) or _a_float(v) is not None or len(v) > 60:
+    if not v or v.startswith(("TOTAL", "SUBTOTAL", "ACUMULADO", "GRAN TOTAL")) or _a_float(v) is not None or len(v) > 60:
         return None
     return re.sub(r"[^A-Z0-9]+", "_", v).strip("_")[:50] or None
 
@@ -425,11 +425,104 @@ def registros_rentabilidad(campos: Dict[str, str]) -> List[Dict[str, Any]]:
         montos = por_anio.setdefault(anio, {"monto_ejecutado": None, "monto_meta": None})
         if montos["monto_meta"] is None:
             montos["monto_meta"] = meta
+    es_metas_categoria = any(_RE_META_ANIO.match(k) for k in campos) or (
+        "CATEGORIA" in campos and any(_RE_EJECUTADO_ANIO.match(k) or _RE_META_GENERICA_ANIO.match(k) for k in campos)
+    )
     return [
-        {"categoria_financiera": categoria, "fecha": date(anio, mes, 1), **montos}
+        {"categoria_financiera": categoria, "fecha": date(anio, mes, 1), "es_fuente_metas_categoria": es_metas_categoria, **montos}
         for anio, montos in sorted(por_anio.items())
         if montos["monto_ejecutado"] is not None or montos["monto_meta"] is not None
     ]
+
+
+_CLAVES_PAYLOAD_PLAN = (
+    "REPROGRAMACIONES", "COMENTARIOS", "COMENTARIO DAF", "COMENTARIO ADMISIONES",
+    "COMENTARIO DIGITAL / VIDEO SOLICITADO", "FECHA DE INICIO - ADS", "FECHA DE FIN - ADS",
+    "DIAS ACTIVOS", "DIAS TOTALES", "VERSION", "EDICION", "COORDINADOR ACADEMICO", "ASISTENTE", "MEC",
+)
+
+
+def registro_planificacion(
+    campos: Dict[str, str],
+    hoja: str = "",
+    anio_hoja: Optional[int] = None,
+    mes_hoja: Optional[int] = None,
+) -> Dict[str, Any]:
+    """Mapea una fila de PLANIFICACION (hoja mensual o Programas Notificados) a fact_planificacion_programa."""
+    pos_raw = (campos.get("POS") or "").strip()
+    pos_norm = None
+    if pos_raw and normalizar_encabezado(pos_raw) not in ("FALSE", "TRUE", "0", "NONE", "NAN"):
+        m_pos = re.match(r"^(?:POS[\s-]?)?(\d{3,5})(?:\.0+)?$", pos_raw, re.IGNORECASE)
+        pos_norm = f"POS-{m_pos.group(1)}" if m_pos else pos_raw[:80]
+
+    nombre_prog = _primero(campos, ("PROGRAMA", "NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA"))
+    if not nombre_prog:
+        nombre_prog = next((v for k, v in campos.items() if k.startswith("PROGRAMA ") and v), None)
+
+    tipo_prog = _primero(campos, ("TIPO DE PROGRAMA", "TIPO PROGRAMA"))
+    escuela = campos.get("ESCUELA")
+    origen_prog = _primero(campos, ("ORIGEN DEL PROGRAMA", "CATEGORIA DE ORIGEN DEL PROGRAMA"))
+    diseno = _primero(campos, ("DISENO CURRICULAR",))
+
+    fecha_notif = parsear_fecha(_primero(campos, ("FECHA DE NOTIFICACION", "FECHA DE NOFITICACION")))
+    fecha_ini = parsear_fecha(_primero(campos, ("FECHA INICIO",)))
+    fecha_fin = parsear_fecha(_primero(campos, ("FECHA FIN", "FECHA DE FINALIZACION")))
+
+    # Periodo del hecho: FECHA / AÑO+MES / FECHA INICIO / FECHA DE NOTIFICACION; fallback a la hoja mensual si falta.
+    fecha_plan = parsear_fecha(campos.get("FECHA"))
+    if not fecha_plan:
+        anio_val = _a_float(_primero(campos, ("ANO", "GESTION")))
+        mes_val = _mes(campos.get("MES")) or _mes(campos.get("NOMBRE MES"))
+        if anio_val and mes_val and 2000 <= int(anio_val) <= 2100:
+            fecha_plan = date(int(anio_val), int(mes_val), 1)
+    if not fecha_plan:
+        fecha_plan = fecha_ini or fecha_notif
+    if not fecha_plan and anio_hoja and mes_hoja:
+        fecha_plan = date(int(anio_hoja), int(mes_hoja), 1)
+
+    notif_raw = normalizar_encabezado(campos.get("NOTIFICADO") or "")
+    if notif_raw in ("SI", "SÍ", "TRUE", "1", "NOTIFICADO"):
+        notificado = True
+    elif notif_raw in ("NO", "FALSE", "0"):
+        notificado = False
+    elif fecha_notif is not None:
+        notificado = True
+    else:
+        notificado = None
+
+    estado_fuente = _primero(campos, ("ESTADO", "ESTADO DEL PROGRAMA"))
+    if estado_fuente and normalizar_encabezado(estado_fuente) in ("FALSE", "TRUE", "0", "NONE", "NAN"):
+        estado_fuente = None
+
+    payload = {k: campos[k] for k in _CLAVES_PAYLOAD_PLAN if campos.get(k) is not None}
+
+    return {
+        "pos_code_fuente": pos_norm,
+        "nombre_programa": nombre_prog,
+        "tipo_programa": tipo_prog[:100] if tipo_prog else None,
+        "escuela": escuela[:120] if escuela else None,
+        "origen_programa": origen_prog[:120] if origen_prog else None,
+        "diseno_curricular": diseno[:160] if diseno else None,
+        "fecha_notificacion": fecha_notif,
+        "fecha_inicio_plan": fecha_ini,
+        "fecha_fin_plan": fecha_fin,
+        "duracion_meses": _a_float(_primero(campos, ("DURACION DEL PROGRAMA (MESES)", "DURACION (MESES)", "DURACION"))),
+        "estado_fuente": estado_fuente[:120] if estado_fuente else None,
+        "notificado": notificado,
+        "costo_programa": _a_float(campos.get("COSTO PROGRAMA")),
+        "costo_descuento_20": _a_float(campos.get("CP CON DESCUENTO 20%")),
+        "tarifa_contado_100": _a_float(campos.get("TP AL CONTADO 100%")),
+        "tarifa_contado_80": _a_float(campos.get("TP AL CONTADO 80%")),
+        "punto_equilibrio": _a_float(_primero(campos, ("PUNTO DE EQUILIBRIO", "PE", "PE A"))),
+        "leads_fuente": _a_float(campos.get("LEADS")),
+        "reservas_fuente": _a_float(campos.get("RESERVAS")),
+        "inscritos_fuente": _a_float(_primero(campos, ("N° INSCRITOS", "N INSCRITOS", "NO INSCRITOS", "INSCRITOS"))),
+        "pauta_ejecutada": _a_float(campos.get("P/EJECUTADO")),
+        "pauta_asignada": _a_float(campos.get("P/ASIGNADO")),
+        "fecha_plan": fecha_plan,
+        "hoja": hoja[:200],
+        "payload_fuente": payload or None,
+    }
 
 
 _RE_POS_EXACTO = re.compile(r"^\s*POS[\s-]?(\d{3,5})\s*$", re.IGNORECASE)

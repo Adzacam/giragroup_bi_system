@@ -55,10 +55,11 @@ def test_aprobar_con_docente_vincula_las_respuestas_del_docente_y_las_saca_de_re
     assert contar_hechos_en_revision(dw, [1]) == 0
 
 
-def test_fuente_de_referencia_tiene_precedencia_sobre_bd_egresos():
+def test_fuente_de_referencia_tiene_precedencia_sobre_bd_egresos(dw):
     from services.dw_loader import DWLoaderService
-    p = DWLoaderService._prioridad_fuente
-    assert p("EJECUTADO VS META.xlsx") > p("BD Egresos.xlsx") and p(None) == p("BD Egresos.xlsx")
+    loader = DWLoaderService(dw)
+    assert loader._prioridad_fuente_doc(None, {"es_fuente_metas_categoria": True}) > loader._prioridad_fuente_doc(None, {"es_fuente_metas_categoria": False})
+    assert loader._prioridad_fuente_doc(None) == loader._prioridad_fuente_doc(None, {"es_fuente_metas_categoria": False})
 
 
 def test_evaluacion_sin_fecha_continua_pendiente_aunque_se_indique_docente(dw):

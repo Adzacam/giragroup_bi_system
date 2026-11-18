@@ -27,6 +27,7 @@ from models.staging_entidad import StagingEntidadNoResuelta
 class TestDWLoaderResolution:
     def test_resolver_estudiante_ci_directo_existente(self):
         db = MagicMock(spec=Session)
+        db.query().filter.return_value.order_by.return_value = db.query().filter.return_value
         estudiante_mock = DimEstudiante(id_estudiante=10, codigo_estudiante="4892019", nombre_completo="Carlos Murillo")
         db.query().filter().first.return_value = estudiante_mock
 
@@ -38,6 +39,7 @@ class TestDWLoaderResolution:
 
     def test_resolver_estudiante_ci_directo_nuevo(self):
         db = MagicMock(spec=Session)
+        db.query().filter.return_value.order_by.return_value = db.query().filter.return_value
         db.query().filter().first.return_value = None  # No existe aún
 
         loader = DWLoaderService(db)
@@ -96,6 +98,7 @@ class TestDWLoaderResolution:
         # Mock de consultas
         def mock_query(model):
             m = MagicMock()
+            m.filter.return_value.order_by.return_value = m.filter.return_value
             if model == DimEstudiante:
                 m.filter().first.return_value = estudiante_mock
             elif model == DimModulo:

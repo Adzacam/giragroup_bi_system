@@ -49,9 +49,11 @@ def test_con_004_aplicada_no_se_reaplica_003():
     kpi10 = "013_renombrar_kpi10_confianza_extraccion.sql"  # requisito nuevo (ronda 9): la lista de arranque incluye 013
     captacion = "014_conversion_captacion_comprobable.sql"
     prep = "017_dataops_tarea_preparacion_revision.sql"
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision, kpi10, captacion, prep]
-    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision, kpi10, captacion, prep]
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision, kpi10, captacion, prep}) == []
+    plan_fact = "018_fact_planificacion_programa.sql"
+    plan_kpi = "019_vista_planificacion_kpi23.sql"
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision, kpi10, captacion, prep, plan_fact, plan_kpi]
+    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision, kpi10, captacion, prep, plan_fact, plan_kpi]
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision, kpi10, captacion, prep, plan_fact, plan_kpi}) == []
 
 
 def test_capa_cmi_no_pisa_la_configuracion_editada():

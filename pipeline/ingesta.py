@@ -600,7 +600,7 @@ def clasificar_contenido_agnostico(
     has_techo_meta = _contiene_tokens(joined, (
         "techo", "techos", "techo presupuestario", "presupuesto asignado", "presupuestado",
         "presupuesto", "rentabilidad", "balance financiero", "utilidad neta", "margen",
-        "ebitda", "ejecutado", "monto_ejecutado", "monto_meta", "ejecutado vs meta",
+        "ebitda", "ejecutado", "monto_ejecutado", "monto_meta",
         "categoria financiera"
     ))
 
