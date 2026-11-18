@@ -1,7 +1,7 @@
 archivo,sentencias,cubiertas,cobertura_pct
 backend\__init__.py,0,0,100.0
 backend\core\__init__.py,0,0,100.0
-backend\core\database.py,50,41,82.0
+backend\core\database.py,50,38,76.0
 backend\core\esquema_opcional.py,25,22,88.0
 backend\core\migraciones.py,8,8,100.0
 backend\core\security.py,87,76,87.36
@@ -83,7 +83,7 @@ backend\services\cronometraje.py,18,7,38.89
 backend\services\cross_source_reconciler.py,129,112,86.82
 backend\services\dataops_evaluation_service.py,157,109,69.43
 backend\services\dataops_privacy.py,146,132,90.41
-backend\services\dw_loader.py,1146,799,69.72
+backend\services\dw_loader.py,1148,800,69.69
 backend\services\email_service.py,235,192,81.7
 backend\services\extraccion_por_encabezado.py,479,432,90.19
 backend\services\financial_catalog_service.py,73,53,72.6

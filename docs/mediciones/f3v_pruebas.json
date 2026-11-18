@@ -1,19 +1,24 @@
 {
   "tarea": "V-5",
   "fecha": "2026-11-18",
-  "commit_codigo": "181bff5",
+  "commit_codigo": "f6289f2",
   "worktree_limpio": "../gira_f3v_limpio",
-  "base_datos": "beto_pg_tmpfs/giragroup_dw (127.0.0.1:55632)",
+  "base_datos": "beto_pg_f3v_verify/giragroup_dw (127.0.0.1:55635)",
   "colectadas": 875,
-  "passed": 857,
+  "passed": 856,
   "failed": 0,
-  "skipped": 11,
+  "skipped": 12,
   "xfailed": 7,
   "skips_con_motivo": [
     {
       "archivo": "tests/readiness/test_production_readiness.py",
       "cantidad": 11,
       "motivo": "READINESS_TOKEN (3), READINESS_BETO_URL (3) y READINESS_DB_URL (5) no definidos en entorno de pruebas local (puerta de produccion en vivo)"
+    },
+    {
+      "archivo": "tests/f1/test_purga_cache.py",
+      "cantidad": 1,
+      "motivo": "beto_pg_tmpfs no disponible en 127.0.0.1:55632 (la tmpfs de verificacion corrio en 127.0.0.1:55635)"
     }
   ],
   "pruebas_nuevas_f3v": {
@@ -28,9 +33,9 @@
     "vite_build": "2035 modulos, 0 errores"
   },
   "cobertura_total": {
-    "num_statements": 15692,
-    "covered_lines": 11368,
-    "missing_lines": 4324,
-    "percent_covered": 72.44
+    "num_statements": 15694,
+    "covered_lines": 11366,
+    "missing_lines": 4328,
+    "percent_covered": 72.42
   }
 }

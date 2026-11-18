@@ -18,11 +18,11 @@
     "llena_mas_klm_min": 5.95,
     "pruebas": {
       "colectadas": 875,
-      "passed": 857,
+      "passed": 856,
       "failed": 0,
-      "skipped": 11,
+      "skipped": 12,
       "xfailed": 7,
-      "cobertura_pct": 72.44
+      "cobertura_pct": 72.42
     },
     "locust": {
       "method": "",

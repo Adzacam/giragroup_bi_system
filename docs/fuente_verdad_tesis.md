@@ -6,7 +6,7 @@
 **Rama / Commit base:** `beto-integracion` (`f6289f2`)  
 **Lote congelado (10 archivos en `uploads/data/`, SHA-256):** `aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60`  
 **Modelo BETO vigente (SHA-256):** `9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92`  
-**Huella de `f3_base` (SHA-256):** `bf26e1469f5f4111b442d1a000cc0994f4704bf4be5d95488da135e74f4c855d` (`docs/mediciones/f3v_base.json.huella.json`). Coincide en 2 de 2 corridas de `f3_base` (`docs/mediciones/f3v_base.json`) y en 6 de 6 corridas de B-7 (`docs/mediciones/f3v_b7_corridas.json`).  
+**Huella de `f3_base` (SHA-256):** `bf26e1469f5f41110c86426fae78be0d72baa46fb87d73e0d262cb4b0048b0be` (`docs/mediciones/f3v_base.json.huella.json`). Coincide en 2 de 2 corridas de `f3_base` (`docs/mediciones/f3v_base.json`) y en 6 de 6 corridas de B-7 (`docs/mediciones/f3v_b7_corridas.json`).  
 **Flags de integración BETO:** `BETO_CASCADA_FINAL=False`, `BETO_ACUERDO_QC=False`, `BETO_SUGERENCIA_HITL=False`, `BETO_VENTANA=False`  
 **Snapshot histórico (10-nov-2026):** `snapshot_dw_20261110_1201` (`docs/evidencias/snapshot_dw_20261110_1201.dump`, SHA-256 `14D45F5A128F44543927911DC0AD453F681D524AC05037203F5C0C2787E3A2EB`)  
 **Acceso a las bases:** Las credenciales y cadenas de conexión se leen únicamente desde variables de entorno (`DATABASE_URL` / `docker-compose.yml`). Ninguna medición altera la DW viva ni el archivo `.dump` del snapshot.
@@ -30,55 +30,55 @@
 
 ## A. LOTE 1.387, CICLO OPERATIVO (`f3_base`) Y RENDIMIENTO (RNF-03)
 
-### Tabla A.1: Lote de Validación Controlado — Base: `lote 1.387` (`f3s_lote_1387.json`)
+### Tabla A.1: Lote de Validación Controlado — Base: `lote 1.387` (`f3v_lote_1387_r1.json`)
 
 | ID | Métrica | Valor | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) | Dónde va en tesis |
 |---|---|---|---|---|---|
-| A-01 | Total de registros evaluados en el lote | 1.387 | 1.387 | `docs/mediciones/f3s_lote_1387.json` → `lote_evaluado.total_registros` | Cap. IV Sec. 4.3; Tabla 4.1; Cuadro 3.8 |
-| A-02 | Registros vinculados directos (con regla personas) | 1.360 (98,05 %) | 1.360 (98,05 %) | `docs/mediciones/f3s_lote_1387.json` → `distribucion_bandas_con_regla_personas.directo` | Cap. III Sec. 3.4; Cap. IV Sec. 4.3; Gráf. 3.2 |
-| A-03 | Registros derivados a HITL (con regla personas) | 27 (1,95 %) | 27 (1,95 %) | `docs/mediciones/f3s_lote_1387.json` → `distribucion_bandas_con_regla_personas.hitl` | Cap. III Sec. 3.4; Cap. IV Sec. 4.3; Gráf. 3.2 |
-| A-04 | Registros rechazados a Staging directo | 0 (0,00 %) | 0 (0,00 %) | `docs/mediciones/f3s_lote_1387.json` → `distribucion_bandas_con_regla_personas.staging` | Cap. III Sec. 3.4; Cap. IV Sec. 4.3 |
-| A-05 | Registros directos sin regla de personas (solo banda) | 1.384 (99,78 %) | 1.384 (99,78 %) | `docs/mediciones/f3s_lote_1387.json` → `distribucion_bandas_sin_regla_personas.directo` | Cap. IV Sec. 4.3 |
-| A-06 | Movidos de directo a HITL por persona sin resolver | 24 | 24 | `docs/mediciones/f3s_lote_1387.json` → `registros_directo_movidos_a_hitl_por_persona_sin_resolver` | Cap. IV Sec. 4.3 |
-| A-07 | Personas evaluadas en el lote (total entidades) | 1.748 | 1.748 | `docs/mediciones/f3s_lote_1387.json` → `personas.total` | Cap. IV Sec. 4.3.2 |
-| A-08 | Personas resueltas por CI exacta (Estado A) | 1.037 (59,32 %) | 1.037 (59,32 %) | `docs/mediciones/f3s_lote_1387.json` → `personas.resueltas_CI_EXACTA` | Cap. III Sec. 3.3.4; Tabla 4.2 |
-| A-09 | Personas resueltas por coincidencia difusa (Estado B) | 182 (10,41 %) | 182 (10,41 %) | `docs/mediciones/f3s_lote_1387.json` → `personas.resueltas_FUZZY` | Cap. III Sec. 3.3.4; Tabla 4.2 |
-| A-10 | Docentes nuevos provisionales (Estado C) | 524 (29,98 %) | 524 (29,98 %) | `docs/mediciones/f3s_lote_1387.json` → `personas.nuevos_estado_C` | Cap. III Sec. 3.3.4; Tabla 4.2 |
-| A-11 | Personas sin coincidencia derivadas a HITL | 5 (0,29 %) | 5 (0,29 %) | `docs/mediciones/f3s_lote_1387.json` → `personas.sin_coincidencia_HITL` | Cap. IV Sec. 4.3.2 |
-| A-12 | Cascada: Resolución por `CI_EXACTA` | 1.850 (16,00 %) | 1.850 | `docs/mediciones/f3s_lote_1387.json` → `conteos_fuente_resolucion.CI_EXACTA` | Cap. III Sec. 3.3; Gráf. 4.2 |
-| A-13 | Cascada: Resolución por `ENCABEZADO` | 3.079 (26,63 %) | 3.079 | `docs/mediciones/f3s_lote_1387.json` → `conteos_fuente_resolucion.ENCABEZADO` | Cap. III Sec. 3.3; Gráf. 4.2 |
-| A-14 | Cascada: Resolución por `REGEX` | 3.103 (26,84 %) | 3.103 | `docs/mediciones/f3s_lote_1387.json` → `conteos_fuente_resolucion.REGEX` | Cap. III Sec. 3.3; Gráf. 4.2 |
-| A-15 | Cascada: Resolución por `BETO` (inferencia NLP) | 3.382 (29,26 %) | 3.382 | `docs/mediciones/f3s_lote_1387.json` → `conteos_fuente_resolucion.BETO` | Cap. III Sec. 3.3; Gráf. 4.2 |
-| A-16 | Cascada: Resolución por `FUZZY` (RapidFuzz) | 146 (1,26 %) | 146 | `docs/mediciones/f3s_lote_1387.json` → `conteos_fuente_resolucion.FUZZY` | Cap. III Sec. 3.3; Gráf. 4.2 |
-| A-17 | KPI-10a: Confianza media (todas las entidades, N=11.560) | 0,9538 | 0,9538 | `docs/mediciones/f3s_lote_1387.json` → `kpis.KPI_10a_media_todas_las_entidades` | Cap. IV Sec. 4.3 |
-| A-18 | KPI-10b: Confianza media (solo entidades BETO, N=3.382) | 0,8953 | 0,8953 | `docs/mediciones/f3s_lote_1387.json` → `kpis.KPI_10b_media_solo_entidades_BETO` | Cap. IV Sec. 4.3 |
-| A-19 | KPI-11: Automatización directa (con regla de personas) | 98,05 % | 98,05 % | `docs/mediciones/f3s_lote_1387.json` → `kpis.KPI_11_directo_con_regla_personas_pct` | Cap. IV Sec. 4.3 |
+| A-01 | Total de registros evaluados en el lote | 1.387 | 1.387 | `docs/mediciones/f3v_lote_1387_r1.json` → `lote_evaluado.total_registros` | Cap. IV Sec. 4.3; Tabla 4.1; Cuadro 3.8 |
+| A-02 | Registros vinculados directos (con regla personas) | 1.360 (98,05 %) | 1.360 (98,05 %) | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_bandas_con_regla_personas.directo` | Cap. III Sec. 3.4; Cap. IV Sec. 4.3; Gráf. 3.2 |
+| A-03 | Registros derivados a HITL (con regla personas) | 27 (1,95 %) | 27 (1,95 %) | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_bandas_con_regla_personas.hitl` | Cap. III Sec. 3.4; Cap. IV Sec. 4.3; Gráf. 3.2 |
+| A-04 | Registros rechazados a Staging directo | 0 (0,00 %) | 0 (0,00 %) | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_bandas_con_regla_personas.staging` | Cap. III Sec. 3.4; Cap. IV Sec. 4.3 |
+| A-05 | Registros directos sin regla de personas (solo banda) | 1.384 (99,78 %) | 1.384 (99,78 %) | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_bandas_sin_regla_personas.directo` | Cap. IV Sec. 4.3 |
+| A-06 | Movidos de directo a HITL por persona sin resolver | 24 | 24 | `docs/mediciones/f3v_lote_1387_r1.json` → `registros_directo_movidos_a_hitl_por_persona_sin_resolver` | Cap. IV Sec. 4.3 |
+| A-07 | Personas evaluadas en el lote (total entidades) | 1.748 | 1.748 | `docs/mediciones/f3v_lote_1387_r1.json` → `personas.total` | Cap. IV Sec. 4.3.2 |
+| A-08 | Personas resueltas por CI exacta (Estado A) | 1.037 (59,32 %) | 1.037 (59,32 %) | `docs/mediciones/f3v_lote_1387_r1.json` → `personas.resueltas_CI_EXACTA` | Cap. III Sec. 3.3.4; Tabla 4.2 |
+| A-09 | Personas resueltas por coincidencia difusa (Estado B) | 182 (10,41 %) | 182 (10,41 %) | `docs/mediciones/f3v_lote_1387_r1.json` → `personas.resueltas_FUZZY` | Cap. III Sec. 3.3.4; Tabla 4.2 |
+| A-10 | Docentes nuevos provisionales (Estado C) | 524 (29,98 %) | 524 (29,98 %) | `docs/mediciones/f3v_lote_1387_r1.json` → `personas.nuevos_estado_C` | Cap. III Sec. 3.3.4; Tabla 4.2 |
+| A-11 | Personas sin coincidencia derivadas a HITL | 5 (0,29 %) | 5 (0,29 %) | `docs/mediciones/f3v_lote_1387_r1.json` → `personas.sin_coincidencia_HITL` | Cap. IV Sec. 4.3.2 |
+| A-12 | Cascada: Resolución por `CI_EXACTA` | 1.850 (16,00 %) | 1.850 | `docs/mediciones/f3v_lote_1387_r1.json` → `conteos_fuente_resolucion.CI_EXACTA` | Cap. III Sec. 3.3; Gráf. 4.2 |
+| A-13 | Cascada: Resolución por `ENCABEZADO` | 3.079 (26,63 %) | 3.079 | `docs/mediciones/f3v_lote_1387_r1.json` → `conteos_fuente_resolucion.ENCABEZADO` | Cap. III Sec. 3.3; Gráf. 4.2 |
+| A-14 | Cascada: Resolución por `REGEX` | 3.103 (26,84 %) | 3.103 | `docs/mediciones/f3v_lote_1387_r1.json` → `conteos_fuente_resolucion.REGEX` | Cap. III Sec. 3.3; Gráf. 4.2 |
+| A-15 | Cascada: Resolución por `BETO` (inferencia NLP) | 3.382 (29,26 %) | 3.382 | `docs/mediciones/f3v_lote_1387_r1.json` → `conteos_fuente_resolucion.BETO` | Cap. III Sec. 3.3; Gráf. 4.2 |
+| A-16 | Cascada: Resolución por `FUZZY` (RapidFuzz) | 146 (1,26 %) | 146 | `docs/mediciones/f3v_lote_1387_r1.json` → `conteos_fuente_resolucion.FUZZY` | Cap. III Sec. 3.3; Gráf. 4.2 |
+| A-17 | KPI-10a: Confianza media (todas las entidades, N=11.560) | 0,9538 | 0,9538 | `docs/mediciones/f3v_lote_1387_r1.json` → `kpis.KPI_10a_media_todas_las_entidades` | Cap. IV Sec. 4.3 |
+| A-18 | KPI-10b: Confianza media (solo entidades BETO, N=3.382) | 0,8953 | 0,8953 | `docs/mediciones/f3v_lote_1387_r1.json` → `kpis.KPI_10b_media_solo_entidades_BETO` | Cap. IV Sec. 4.3 |
+| A-19 | KPI-11: Automatización directa (con regla de personas) | 98,05 % | 98,05 % | `docs/mediciones/f3v_lote_1387_r1.json` → `kpis.KPI_11_directo_con_regla_personas_pct` | Cap. IV Sec. 4.3 |
 
-### Tabla A.2: Desglose por Archivo del Lote Controlado — Base: `lote 1.387` (`f3s_lote_1387.json`)
+### Tabla A.2: Desglose por Archivo del Lote Controlado — Base: `lote 1.387` (`f3v_lote_1387_r1.json`)
 
 | Archivo (`uploads/data/`) | Hoja | Filas leídas | Directo | HITL | Staging | `valor_docx` (Directo / HITL) | Fuente (`docs/mediciones/` y ruta JSON) |
 |---|---|---|---|---|---|---|---|
-| `Base centralizada Académica ARCA (1).xlsx` | `ACTAS DE NOTAS` | 450 | 449 (99,78 %) | 1 (0,22 %) | 0 | 449 / 1 | `docs/mediciones/f3s_lote_1387.json` → `distribucion_por_archivo` |
-| `BD Cobranzas.xlsx` | `COBRANZAS 2024 2025` | 350 | 349 (99,71 %) | 1 (0,29 %) | 0 | 349 / 1 | `docs/mediciones/f3s_lote_1387.json` → `distribucion_por_archivo` |
-| `TBL_INSCRITOS.xlsx` | `TBL_INSCRITOS` | 250 | 249 (99,60 %) | 1 (0,40 %) | 0 | 249 / 1 | `docs/mediciones/f3s_lote_1387.json` → `distribucion_por_archivo` |
-| `Evaluación Docente y Unifranz.xlsx` | `DIP. EXP DOC. X MODULO` | 150 | 146 (97,33 %) | 4 (2,67 %) | 0 | 146 / 4 | `docs/mediciones/f3s_lote_1387.json` → `distribucion_por_archivo` |
-| `Experiencia Docente 2.0.xlsx` | `CURSOS DOC 1` | 110 | 95 (86,36 %) | 15 (13,64 %) | 0 | 95 / 15 | `docs/mediciones/f3s_lote_1387.json` → `distribucion_por_archivo` |
-| `BD Egresos.xlsx` | `egresos` | 53 | 53 (100,00 %) | 0 (0,00 %) | 0 | 53 / 0 | `docs/mediciones/f3s_lote_1387.json` → `distribucion_por_archivo` |
-| `EJECUTADO VS META.xlsx` | `EJECUTADO` | 24 | 19 (79,17 %) | 5 (20,83 %) | 0 | 19 / 5 | `docs/mediciones/f3s_lote_1387.json` → `distribucion_por_archivo` |
+| `Base centralizada Académica ARCA (1).xlsx` | `ACTAS DE NOTAS` | 450 | 449 (99,78 %) | 1 (0,22 %) | 0 | 449 / 1 | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_por_archivo` |
+| `BD Cobranzas.xlsx` | `COBRANZAS 2024 2025` | 350 | 349 (99,71 %) | 1 (0,29 %) | 0 | 349 / 1 | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_por_archivo` |
+| `TBL_INSCRITOS.xlsx` | `TBL_INSCRITOS` | 250 | 249 (99,60 %) | 1 (0,40 %) | 0 | 249 / 1 | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_por_archivo` |
+| `Evaluación Docente y Unifranz.xlsx` | `DIP. EXP DOC. X MODULO` | 150 | 146 (97,33 %) | 4 (2,67 %) | 0 | 146 / 4 | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_por_archivo` |
+| `Experiencia Docente 2.0.xlsx` | `CURSOS DOC 1` | 110 | 95 (86,36 %) | 15 (13,64 %) | 0 | 95 / 15 | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_por_archivo` |
+| `BD Egresos.xlsx` | `egresos` | 53 | 53 (100,00 %) | 0 (0,00 %) | 0 | 53 / 0 | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_por_archivo` |
+| `EJECUTADO VS META.xlsx` | `EJECUTADO` | 24 | 19 (79,17 %) | 5 (20,83 %) | 0 | 19 / 5 | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_por_archivo` |
 
-*Nota de muestreo:* `muestreo_por_archivo.criterio_documentado = false` (`docs/mediciones/f3s_lote_1387.json`). Los topes `450/350/250/150/110/53/24` toman las primeras $N$ filas no vacías en orden de archivo, sin aleatorización ni estratificación.
+*Nota de muestreo:* `muestreo_por_archivo.criterio_documentado = false` (`docs/mediciones/f3v_lote_1387_r1.json`). Los topes `450/350/250/150/110/53/24` toman las primeras $N$ filas no vacías en orden de archivo, sin aleatorización ni estratificación.
 
 ### Tabla A.3: Ciclo Mensual Completo y Cumplimiento RNF-03 — Base: `f3_base` (`f3v_base.json`, `f3v_b7_corridas.json`, `f3v_klm.json`)
 
 | ID | Métrica | Valor | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) | Dónde va en tesis |
 |---|---|---|---|---|---|
-| A-20 | Archivos procesados en el ciclo mensual | 10 archivos (11.307 registros; 12.992 líneas BETO) | 10 / 11.307 / 12.992 | `docs/mediciones/f3v_base.json` → `carga.archivos_exitosos`, `carga.registros_detectados`, `etapas_s.lineas_leidas_beto` | Cap. IV Sec. 4.4 |
+| A-20 | Archivos procesados en el ciclo mensual | 10 archivos (11.307 registros; 11.372 líneas BETO) | 10 / 11.307 / 11.372 | `docs/mediciones/f3v_base.json` → `carga.archivos_exitosos`, `carga.registros_detectados`, `etapas_s.lineas_leidas_beto` | Cap. IV Sec. 4.4 |
 | A-21 | Hechos persistidos en el ciclo (`f3_base`) | 109.256 (108.531 acad. + 725 fin.) | 109.256 | `docs/mediciones/f3v_base.json` → `consolidacion.inserted_dw`, `consolidacion.inserted_academico`, `consolidacion.inserted_financiero` | Cap. IV Sec. 4.4 |
 | A-22 | Bandeja HITL generada en el ciclo | 676 casos en 17 grupos | 676 / 17 | `docs/mediciones/f3v_base.json.huella.json` → `bandeja` | Cap. IV Sec. 4.4 |
 | A-23 | Solo máquina, caché vacía (n = 3, media ± desv.) | **424,29 ± 22,24 s** (7,07 min) | 424,29 ± 22,24 s (7,07 min) | `docs/mediciones/f3v_b7_corridas.json` → `resumen.vacia_maquina_s` | Cap. IV Sec. 4.4; RNF-03 |
 | A-24 | Solo máquina, caché llena (n = 3, media ± desv.) | **36,53 ± 0,28 s** (0,61 min) | 36,53 ± 0,28 s (0,61 min) | `docs/mediciones/f3v_b7_corridas.json` → `resumen.llena_maquina_s` | Cap. IV Sec. 4.4; RNF-03 |
 | A-25 | Corridas limpias por condición | **n = 3** (huella idéntica en todas) | n = 3 | `docs/mediciones/f3v_b7_corridas.json` → `resumen.vacia_maquina_s.n`, `huella_unica_en_todas` | Cap. IV Sec. 4.4; RNF-03 |
-| A-26 | Tiempo KLM con espera medida (`W = 2,5 s`, p95 Locust) | **320,6 s** (bloque 18,5 · fecha 9,9 · manual 288,3 · pag. 3,9) | 320,6 s | `docs/mediciones/f3v_klm.json` → `W_medido_p95_s`, `W_medido.klm_s` | Cap. IV Sec. 4.4; RNF-03 |
+| A-26 | Tiempo KLM con espera medida (`W = 2,5 s`, p95 Locust) | **320,6 s** (bloque 26,0 · fecha 11,2 · manual 279,5 · pag. 3,9) | 320,6 s | `docs/mediciones/f3v_klm.json` → `W_medido_p95_s`, `W_medido.klm_s` | Cap. IV Sec. 4.4; RNF-03 |
 | A-27 | RNF-03 total (caché vacía + KLM, `W = 2,5 s`) | **744,89 s** (12,41 min; cumple < 15 min) | 744,89 s (12,41 min) | `docs/mediciones/f3v_b7_corridas.json` → `resumen.vacia_mas_klm_s` | Cap. IV Sec. 4.4; RNF-03 |
 | A-28 | RNF-03 total (caché llena + KLM, `W = 2,5 s`) | **357,13 s** (5,95 min; cumple < 15 min) | 357,13 s (5,95 min) | `docs/mediciones/f3v_b7_corridas.json` → `resumen.llena_mas_klm_s` | Cap. IV Sec. 4.4; RNF-03 |
 | A-29 | Sensibilidad KLM (`W = 0 s` / `W = 10 s`) | KLM: 200,6 s / 680,6 s | 200,6 s / 680,6 s | `docs/mediciones/f3v_klm.json` → `W_0.klm_s`, `W_10.klm_s` | Cap. IV Sec. 4.4 |
@@ -92,17 +92,17 @@
 
 ## B. STAGING, IDEMPOTENCIA, EXCEPCIONES Y CONTENCIÓN DE CALIDAD
 
-### Tabla B.1: Excepciones y Calidad en Lote Controlado — Base: `lote 1.387` (`f3s_lote_1387.json`)
+### Tabla B.1: Excepciones y Calidad en Lote Controlado — Base: `lote 1.387` (`f3v_lote_1387_r1.json`)
 
 | ID | Métrica | Valor | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) | Dónde va en tesis |
 |---|---|---|---|---|---|
-| B-01 | Excepciones de calidad que ingresaron al DW sin control | **0** de 264 registros (0,00 %) | 0 de 264 | `docs/mediciones/f3s_lote_1387.json` → `excepciones.habrian_ingresado_al_dw_sin_control`, `excepciones.registros_afectados` | Cap. IV Sec. 4.3.1; Tabla 4.3 |
-| B-02 | Total de entidades anómalas interceptadas | **550** entidades | 550 | `docs/mediciones/f3s_lote_1387.json` → `excepciones.total_entidades` | Cap. IV Sec. 4.3.1; Tabla 4.3 |
-| B-03 | Desglose por regla: `ETIQUETA_LIKERT` (descarte) | 283 entidades (110 registros) | 283 | `docs/mediciones/f3s_lote_1387.json` → `excepciones.por_regla.ETIQUETA_LIKERT` | Tabla 4.3 |
-| B-04 | Desglose por regla: `CORREO_NO_ES_NOMBRE` (descarte) | 154 entidades (154 registros) | 154 | `docs/mediciones/f3s_lote_1387.json` → `excepciones.por_regla.CORREO_NO_ES_NOMBRE` | Tabla 4.3 |
-| B-05 | Desglose por regla: `COLUMNA_DE_COMENTARIO` (descarte) | 87 entidades (87 registros) | 87 | `docs/mediciones/f3s_lote_1387.json` → `excepciones.por_regla.COLUMNA_DE_COMENTARIO` | Tabla 4.3 |
-| B-06 | Desglose por regla: `PER_SIN_FORMA_NOMBRE` (log+descarte) | 21 entidades (21 registros) | 21 | `docs/mediciones/f3s_lote_1387.json` → `excepciones.por_regla.PER_SIN_FORMA_NOMBRE` | Tabla 4.3 |
-| B-07 | Desglose por regla: `PERSONA_SIN_COINCIDENCIA` (HITL) | 5 entidades (5 registros) | 5 | `docs/mediciones/f3s_lote_1387.json` → `excepciones.por_regla.PERSONA_SIN_COINCIDENCIA` | Tabla 4.3 |
+| B-01 | Excepciones de calidad que ingresaron al DW sin control | **0** de 264 registros (0,00 %) | 0 de 264 | `docs/mediciones/f3v_lote_1387_r1.json` → `excepciones.habrian_ingresado_al_dw_sin_control`, `excepciones.registros_afectados` | Cap. IV Sec. 4.3.1; Tabla 4.3 |
+| B-02 | Total de entidades anómalas interceptadas | **550** entidades | 550 | `docs/mediciones/f3v_lote_1387_r1.json` → `excepciones.total_entidades` | Cap. IV Sec. 4.3.1; Tabla 4.3 |
+| B-03 | Desglose por regla: `ETIQUETA_LIKERT` (descarte) | 283 entidades (110 registros) | 283 | `docs/mediciones/f3v_lote_1387_r1.json` → `excepciones.por_regla.ETIQUETA_LIKERT` | Tabla 4.3 |
+| B-04 | Desglose por regla: `CORREO_NO_ES_NOMBRE` (descarte) | 154 entidades (154 registros) | 154 | `docs/mediciones/f3v_lote_1387_r1.json` → `excepciones.por_regla.CORREO_NO_ES_NOMBRE` | Tabla 4.3 |
+| B-05 | Desglose por regla: `COLUMNA_DE_COMENTARIO` (descarte) | 87 entidades (87 registros) | 87 | `docs/mediciones/f3v_lote_1387_r1.json` → `excepciones.por_regla.COLUMNA_DE_COMENTARIO` | Tabla 4.3 |
+| B-06 | Desglose por regla: `PER_SIN_FORMA_NOMBRE` (log+descarte) | 21 entidades (21 registros) | 21 | `docs/mediciones/f3v_lote_1387_r1.json` → `excepciones.por_regla.PER_SIN_FORMA_NOMBRE` | Tabla 4.3 |
+| B-07 | Desglose por regla: `PERSONA_SIN_COINCIDENCIA` (HITL) | 5 entidades (5 registros) | 5 | `docs/mediciones/f3v_lote_1387_r1.json` → `excepciones.por_regla.PERSONA_SIN_COINCIDENCIA` | Tabla 4.3 |
 
 ### Tabla B.2: Staging, Bitácora B-9, `fk_estado` e Idempotencia — Base: `f3_base` (`f3s_extraccion_f3base.json`, `f3s_cobertura_por_archivo.json`)
 
@@ -166,16 +166,16 @@
 
 ## D. PRUEBAS AUTOMATIZADAS, COBERTURA Y PRUEBAS DE CARGA / CAJA NEGRA
 
-### Tabla D.1: Suite `pytest` y Cobertura — Base: `suite pytest` sobre el commit `181bff5` en worktree limpio (`f3v_pruebas.json`, `f3v_cobertura_archivos.csv`)
+### Tabla D.1: Suite `pytest` y Cobertura — Base: `suite pytest` sobre el commit `f6289f2` en worktree limpio (`f3v_pruebas.json`, `f3v_cobertura_archivos.csv`)
 
 | Métrica | Valor | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) | Dónde va en tesis |
 |---|---|---|---|---|
 | Pruebas colectadas | 875 | 875 | `docs/mediciones/f3v_pruebas.json` → `colectadas` | Cap. III / Cap. IV; Tabla 3.29 |
-| Aprobadas (`passed`) | **857** | 857 | `docs/mediciones/f3v_pruebas.json` → `passed` | Tabla 3.29 |
+| Aprobadas (`passed`) | **856** | 856 | `docs/mediciones/f3v_pruebas.json` → `passed` | Tabla 3.29 |
 | Fallidas (`failed`) | **0** | 0 | `docs/mediciones/f3v_pruebas.json` → `failed` | Tabla 3.29 |
-| Omitidas (`skipped`) | 11 (`tests/readiness/test_production_readiness.py` por variables `READINESS_*` no definidas) | 11 | `docs/mediciones/f3v_pruebas.json` → `skipped`, `skips_con_motivo` | Tabla 3.29 |
+| Omitidas (`skipped`) | 12 (11 `test_production_readiness.py` por `READINESS_*`; 1 `test_purga_cache.py` por puerto tmpfs) | 12 | `docs/mediciones/f3v_pruebas.json` → `skipped`, `skips_con_motivo` | Tabla 3.29 |
 | Esperadas fallidas (`xfailed`) | 7 (hallazgos `HW-IC`, `HW-GAP`, `OLS-CAGR`, `FK-*`) | 7 | `docs/mediciones/f3v_pruebas.json` → `xfailed` | Tabla 3.29 |
-| Cobertura total (`backend` + `pipeline`) | **72,44 %** (11.368 / 15.692 sentencias) | 72,44 % | `docs/mediciones/f3v_pruebas.json` → `cobertura_total` | Cap. IV; Tabla 3.30 |
+| Cobertura total (`backend` + `pipeline`) | **72,42 %** (11.366 / 15.694 sentencias) | 72,42 % | `docs/mediciones/f3v_pruebas.json` → `cobertura_total` | Cap. IV; Tabla 3.30 |
 | Frontend (`vitest` / `vite build`) | 14 archivos (84/84 passed) · 2.035 módulos (0 errores) | 84 / 84 | `docs/mediciones/f3v_pruebas.json` → `frontend` | Cap. IV |
 
 *Condiciones de la suite:* se ejecuta en un worktree limpio contra `beto_pg_tmpfs/giragroup_dw` y los 10 archivos de `uploads/data/`. El detalle por archivo está en `docs/mediciones/f3v_cobertura_archivos.csv`.
@@ -188,9 +188,9 @@
 | Locust | RPS / Latencia p50 / p95 / p99 | 41,27 RPS · 10,0 / 34,0 / 290,0 ms | 41,27 RPS · 34 ms p95 | `docs/mediciones/f3v_locust.json` → `agregado.rps`, `agregado.p50_ms`, `agregado.p95_ms`, `agregado.p99_ms` |
 | Newman (`postman_collection.json`) | Solicitudes / Aserciones totales / Fallidas | 11 req · 24 aserciones · 0 fallidas | 11 / 24 / 0 | `docs/mediciones/f3v_newman.json` → `run_stats` |
 
-*Condiciones de Locust:* escenario de `tests/carga/locustfile.py` (Tabla 3.32) contra uvicorn local sobre la copia tmpfs resultante de la corrida con caché llena, no sobre la DW viva (`docs/mediciones/f3s_locust.json` → `parametros`).
+*Condiciones de Locust:* escenario de `tests/carga/locustfile.py` (Tabla 3.32) contra uvicorn local sobre la copia tmpfs resultante de la corrida con caché llena, no sobre la DW viva (`docs/mediciones/f3v_locust.json` → `parametros`).
 
-*Condiciones de Newman:* la colección `docs/api/postman_collection.json` se corre contra una API de prueba (`APP_ENV=test`) sobre la copia tmpfs del snapshot, con un usuario QA sembrado solo en la copia y con las cabeceras de seguridad que agrega el gateway (`gateway/nginx.conf`, líneas 61-64), a través de un proxy de prueba. La credencial de prueba (`qa_password`) se pasa como variable de entorno de Newman (`--env-var`) y no se escribe en archivos; sin ella el login responde 401. La sonda de cabeceras OWASP apunta al gateway, no a uvicorn, porque las cabeceras las agrega el gateway. La colección no tiene peticiones ni aserciones modificadas (`docs/mediciones/f3s_newman_diff.txt`); la petición 2 ejecuta la rama de verificación 2FA con OTP de pruebas y aporta 3 aserciones (`docs/mediciones/f3s_newman.json` → `entorno`, `peticiones`, `aserciones`).
+*Condiciones de Newman:* la colección `docs/api/postman_collection.json` se corre contra una API de prueba (`APP_ENV=test`) sobre la copia tmpfs, con un usuario QA sembrado solo en la copia y con las cabeceras de seguridad que agrega el gateway (`gateway/nginx.conf`, líneas 61-64), a través de un proxy de prueba. La credencial de prueba (`qa_password`) se pasa como variable de entorno de Newman (`--env-var`) y no se escribe en archivos; sin ella el login responde 401. La sonda de cabeceras OWASP apunta al gateway, no a uvicorn, porque las cabeceras las agrega el gateway. La colección no tiene peticiones ni aserciones modificadas (`docs/mediciones/f3s_newman_diff.txt`); la petición 2 ejecuta la rama de verificación 2FA con OTP de pruebas y aporta 3 aserciones (`docs/mediciones/f3v_newman.json` → `run_stats`).
 
 ---
 
@@ -291,7 +291,7 @@ De acuerdo con la **Decisión 1**, los indicadores de negocio (`KPI-01`..`09`, `
 |---|---|---|---|
 | Tablas base y vistas del DW | **51** tablas base + **10** vistas `bi` (10 hechos, 7 dimensiones, 1 puente; 23 KPI en `bi.ref_kpi`) | 51 tablas + 10 vistas + 23 KPI | `docs/mediciones/f3v_invariantes.json` → `invariantes_declarados` |
 | `dim_tiempo` (filas y rango) | **2.230** filas (`2005-02-05` a `2034-01-12`) | 2.230 (2005–2034) | `docs/mediciones/f3s_extraccion_f3base.json` → `dim_tiempo` |
-| `schema_migrations` | **13** migraciones (`001`..`014` idénticas; solo varía `applied_at`, no afecta datos) | 13 | `docs/mediciones/f3r_schema_migrations.json` → `veredicto` |
+| `schema_migrations` | **17** migraciones (incluye `018` y `019` de Diseño B; solo varía `applied_at`, no afecta datos) | 17 | `docs/mediciones/f3v_base.json.huella.json` → `tablas.schema_migrations.filas` |
 | Decoradores de rutas API | **136** (`backend/routers` 115 + `main.py` 2 + `auth` 11 + `notif` 6 + `audit` 2) | 136 | `docs/mediciones/f3r_inventario_api.json` → `total_decoradores_ruta` |
 | Healthchecks Docker (`docker-compose.yml`) | 2 de 9 contenedores (`db` y `catalog_db`) | 2 de 9 | `docker-compose.yml:17,41` |
 
@@ -331,7 +331,7 @@ De acuerdo con la **Decisión 1**, los indicadores de negocio (`KPI-01`..`09`, `
 | Identificador | Archivo / Estado | Fuente a citar al pie |
 |---|---|---|
 | Gráficos 3.2, 3.4, 4.1, 4.2, 4.3, 4.5 y Figura 3.5 | Generados en `docs/evidencias/` por `scripts/generar_graficos_ronda_final.py` | Elaboración propia (`docs/evidencias/` con datos de `snapshot_dw_20261110_1201` / `f3_base`) |
-| Gráfico 3.1 (Matriz de confusión) | Datos en `docs/mediciones/f3r_matriz_confusion.json` (generación en F4) | `docs/mediciones/f3r_matriz_confusion.json` |
+| Gráfico 3.1 (Matriz de confusión) | Datos en `docs/mediciones/f3r_matriz_confusion.json` (pendiente de generación final) | `docs/mediciones/f3r_matriz_confusion.json` |
 
 ---
 
@@ -341,10 +341,10 @@ Todos los ítems de la Sección J (`J1-01`..`J1-22` y `J2-01`..`J2-15`) quedaron
 
 | ID | Tema | Estado | Valor resumen | Fuente (`docs/mediciones/` y ruta JSON) |
 |---|---|---|---|---|
-| J1-01 | Pruebas colectadas y estado | RESUELTO | 875 / 857 passed / 0 failed / 11 skip / 7 xfail | `docs/mediciones/f3v_pruebas.json` → `colectadas` |
-| J1-02 | Cobertura total a 2 decimales | RESUELTO | 72,44 % (11.368 / 15.692) | `docs/mediciones/f3v_pruebas.json` → `cobertura_total.percent_covered` |
+| J1-01 | Pruebas colectadas y estado | RESUELTO | 875 / 856 passed / 0 failed / 12 skip / 7 xfail | `docs/mediciones/f3v_pruebas.json` → `colectadas` |
+| J1-02 | Cobertura total a 2 decimales | RESUELTO | 72,42 % (11.366 / 15.694) | `docs/mediciones/f3v_pruebas.json` → `cobertura_total.percent_covered` |
 | J1-03 | Cobertura archivos | RESUELTO | `f3v_cobertura_archivos.csv` | `docs/mediciones/f3v_cobertura_archivos.csv` |
-| J1-04 | Detalle `xfail` y `skipped` | RESUELTO | 7 `xfail` + 11 `skipped` | `docs/mediciones/f3v_pruebas.json` → `skips_con_motivo` |
+| J1-04 | Detalle `xfail` y `skipped` | RESUELTO | 7 `xfail` + 12 `skipped` | `docs/mediciones/f3v_pruebas.json` → `skips_con_motivo` |
 | J1-05 | RNF-03 solo máquina (n = 3) | RESUELTO | 424,29 ± 22,24 s (vacía) / 36,53 ± 0,28 s (llena) | `docs/mediciones/f3v_b7_corridas.json` → `resumen` |
 | J1-06 | KLM con $W$ medido y sensibilidad | RESUELTO | 320,6 s ($W=2,5$ s); 200,6 / 680,6 s | `docs/mediciones/f3v_klm.json` → `W_medido` |
 | J1-07 | Ciclo operativo `f3_base` | RESUELTO | 109.256 hechos; bandeja 676/17 | `docs/mediciones/f3v_base.json` → `consolidacion` |
@@ -354,10 +354,10 @@ Todos los ítems de la Sección J (`J1-01`..`J1-22` y `J2-01`..`J2-15`) quedaron
 | J1-11 | Partición corpus y fuga = 0 | RESUELTO | 1.400 train / 350 dev; fuga 0 (4 niveles) | `docs/mediciones/f3r_evidencias_sueltas.json` → `anotacion_y_corpus_modelo_vigente` |
 | J1-12 | Ablación A/B/C | RESUELTO | 12 filas (`gold_510` y `layouts_5`) | `docs/mediciones/f3r_ablacion.json` → `filas` |
 | J1-13 | Matriz confusión Gráfico 3.1 | RESUELTO | 503 TP estricto / 510 relajado | `docs/mediciones/f3r_matriz_confusion.json` → `por_tipo_estricto` |
-| J1-14 | Lote 1.387 con modelo vigente | RESUELTO | 98,05 % directo (1.360/1.387); 27 HITL | `docs/mediciones/f3s_lote_1387.json` → `distribucion_bandas_con_regla_personas` |
+| J1-14 | Lote 1.387 con modelo vigente | RESUELTO | 98,05 % directo (1.360/1.387); 27 HITL | `docs/mediciones/f3v_lote_1387_r1.json` → `distribucion_bandas_con_regla_personas` |
 | J1-15 | Cifra F1 = 75,66 % | **RETIRADA** | No pertenece al modelo vigente | `docs/mediciones/f3r_evidencias_sueltas.json` → `f1_75_66_pct.dictamen` |
 | J1-16 | Cuadre KPI-15 en `f3_base` | RESUELTO | 725 filas (500 Mora / 7 Prev / 218 Vigente) | `docs/mediciones/f3s_kpi15_cuadre.json` → `por_estado_cartera` |
-| J1-17 | `schema_migrations` en corridas llenas | RESUELTO | 13 filas; solo difiere `applied_at` | `docs/mediciones/f3r_schema_migrations.json` → `veredicto` |
+| J1-17 | `schema_migrations` en corridas llenas | RESUELTO | 17 filas; incluye `018`/`019`, solo difiere `applied_at` | `docs/mediciones/f3v_base.json.huella.json` → `tablas.schema_migrations.filas` |
 | J1-18 | Recuento de rutas API | RESUELTO | 136 decoradores | `docs/mediciones/f3r_inventario_api.json` → `total_decoradores_ruta` |
 | J1-19 | Prueba de carga Locust | RESUELTO | 1.121 req, 0 fallos, 41,27 RPS, p95 34 ms | `docs/mediciones/f3v_locust.json` → `agregado` |
 | J1-20 | Pruebas Newman | RESUELTO | 11 req, 24 aserciones (0 fallidas) | `docs/mediciones/f3v_newman.json` → `run_stats` |
