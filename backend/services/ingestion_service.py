@@ -19,6 +19,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
 import pandas as pd
 from fastapi import HTTPException
+from sqlalchemy import bindparam, inspect, text
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
@@ -61,6 +62,11 @@ try:
     from models.log_pipeline import LogPipelineIngesta
     from models.fact_rendimiento import FactRendimientoAcademico
     from models.fact_financiero import FactSituacionFinanciera
+    from models.fact_evaluacion import FactEvaluacionDocente
+    from models.fact_rentabilidad import FactRentabilidad
+    from models.fact_costo_programa import FactCostoPrograma
+    from models.fact_techo_convenio import FactTechoConvenio
+    from models.bridge_modulo_docente import BridgeModuloDocente
     from models.staging_entidad import StagingEntidadNoResuelta
     from models.lote import Lote
     from models.log_inconsistencia import LogInconsistencia
@@ -71,6 +77,11 @@ except ImportError:
     from backend.models.log_pipeline import LogPipelineIngesta
     from backend.models.fact_rendimiento import FactRendimientoAcademico
     from backend.models.fact_financiero import FactSituacionFinanciera
+    from backend.models.fact_evaluacion import FactEvaluacionDocente
+    from backend.models.fact_rentabilidad import FactRentabilidad
+    from backend.models.fact_costo_programa import FactCostoPrograma
+    from backend.models.fact_techo_convenio import FactTechoConvenio
+    from backend.models.bridge_modulo_docente import BridgeModuloDocente
     from backend.models.staging_entidad import StagingEntidadNoResuelta
     from backend.models.lote import Lote
     from backend.models.log_inconsistencia import LogInconsistencia
@@ -1010,27 +1021,71 @@ class IngestionService:
         }
 
     @classmethod
+    def _eliminar_documentos_transaccion(cls, db: Session, doc_ids: List[int]) -> int:
+        """Elimina documentos y todos sus hechos, trazabilidad, staging y logs en una sola transacción."""
+        if not doc_ids:
+            return 0
+        docs = db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids)).all()
+        if not docs:
+            return 0
+        found_ids = [d.id_documento for d in docs]
+        doc_names = [d.nombre_archivo for d in docs]
+
+        tablas_con_doc = (
+            FactRendimientoAcademico,
+            FactSituacionFinanciera,
+            FactEvaluacionDocente,
+            FactRentabilidad,
+            FactCostoPrograma,
+            FactTechoConvenio,
+            BridgeModuloDocente,
+            StagingEntidadNoResuelta,
+            StagingRegistroCrudo,
+            LogInconsistencia,
+            LogPipelineIngesta,
+        )
+        try:
+            for modelo in tablas_con_doc:
+                db.query(modelo).filter(modelo.id_documento.in_(found_ids)).delete(synchronize_session=False)
+
+            conn = db.connection()
+            if inspect(conn).has_table("carga_fila_origen"):
+                stmt = text("DELETE FROM carga_fila_origen WHERE id_documento IN :ids").bindparams(
+                    bindparam("ids", expanding=True)
+                )
+                db.execute(stmt, {"ids": found_ids})
+
+            deleted = (
+                db.query(DimOrigenDocumental)
+                .filter(DimOrigenDocumental.id_documento.in_(found_ids))
+                .delete(synchronize_session=False)
+            )
+
+            db.add(
+                LogPipelineIngesta(
+                    id_documento=None,
+                    etapa="BORRADO",
+                    nivel="INFO",
+                    modulo="DataOps: Ingesta",
+                    mensaje=f"Borrado completo de {deleted} documento(s): {', '.join(doc_names[:5])}"[:500],
+                    metadata_json={"ids_eliminados": found_ids, "archivos": doc_names},
+                )
+            )
+            db.commit()
+            return deleted
+        except Exception:
+            db.rollback()
+            raise
+
+    @classmethod
     def eliminar_fuente(cls, db: Session, doc_id: int) -> bool:
-        """Elimina un documento y todos sus registros asociados de staging y logs."""
-        origen = db.query(DimOrigenDocumental).filter_by(id_documento=doc_id).first()
-        if not origen:
-            return False
-        db.query(StagingRegistroCrudo).filter_by(id_documento=doc_id).delete(synchronize_session=False)
-        db.query(LogPipelineIngesta).filter_by(id_documento=doc_id).delete(synchronize_session=False)
-        db.delete(origen)
-        db.commit()
-        return True
+        """Elimina un documento y todos sus hechos, staging, trazabilidad y logs en una transacción."""
+        return cls._eliminar_documentos_transaccion(db, [doc_id]) > 0
 
     @classmethod
     def eliminar_lote_fuentes(cls, db: Session, doc_ids: List[int]) -> int:
-        """Elimina un conjunto de documentos por sus IDs."""
-        if not doc_ids:
-            return 0
-        db.query(StagingRegistroCrudo).filter(StagingRegistroCrudo.id_documento.in_(doc_ids)).delete(synchronize_session=False)
-        db.query(LogPipelineIngesta).filter(LogPipelineIngesta.id_documento.in_(doc_ids)).delete(synchronize_session=False)
-        deleted = db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids)).delete(synchronize_session=False)
-        db.commit()
-        return deleted
+        """Elimina un conjunto de documentos y todos sus hechos, staging, trazabilidad y logs en una transacción."""
+        return cls._eliminar_documentos_transaccion(db, doc_ids)
 
     @classmethod
     def limpiar_todas_las_fuentes(cls, db: Session) -> int:

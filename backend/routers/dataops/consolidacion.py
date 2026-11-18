@@ -29,7 +29,7 @@ from .revision import _bloquear_documentos_editables, resolve_review_item
 from .extraccion import _docentes_con_contexto, _es_encabezado_no_estudiante, extract_entities_from_line
 from models.log_inconsistencia import LogInconsistencia
 from pipeline.config import MOTIVO_DESACUERDO_REGLA_BETO
-from .evaluacion import _resolver_documentos_lote
+from .evaluacion import _asegurar_lote_editable, _resolver_documentos_lote
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -75,6 +75,8 @@ def confirm_dw_insert(
     from services import revision_consulta as revision
     if payload.en_segundo_plano and not payload.id_lote:
         raise HTTPException(422, 'Selecciona un lote para consolidar.')
+    if payload.id_lote:
+        _asegurar_lote_editable(db, payload.id_lote)
     docs = revision.documentos(db, payload.id_lote, payload.doc_id) if (payload.id_lote or payload.doc_id) else []
     _bloquear_documentos_editables(db, docs)
     if not payload.en_segundo_plano:
@@ -527,6 +529,15 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     if not solo_revision:
         dw.finalizar_cargas()
     db.commit()
+    dw.liberar_memoria()
+    db.expunge_all()
+    import gc
+    gc.collect()
+    try:
+        import ctypes
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except Exception:
+        pass
     if not solo_revision:
         cache_consultas.invalidar()  # el DW cambió: alertas, CMI y forecast se recalculan
     inserted_total = inserted_academico + inserted_financiero

@@ -20,9 +20,19 @@ for _paso in (ingesta, lectura, revision, consolidacion, maestros):
     router.include_router(_paso.router)
 
 import threading  # noqa: E402,F401
-from core.database import SessionLocal  # noqa: E402,F401
+from core.database import SessionLocal, get_db  # noqa: E402,F401
+from core.security import get_current_user  # noqa: E402,F401
+from models.dim_origen import DimOrigenDocumental  # noqa: E402,F401
 from services import cache_lectura, tareas_dataops  # noqa: E402,F401
+from services.dataops_privacy import enmascarar_ci  # noqa: E402,F401
 from services.dw_loader import DWLoaderService  # noqa: E402,F401
+from services.revision_hechos import contar_hechos_en_revision  # noqa: E402,F401
+from services.dataops_evaluation_service import (  # noqa: E402,F401
+    calcular_indice_entidad_con_bonos,
+    calcular_porcentajes_mayor_residuo,
+    enmascarar_ci,
+)
+from services.revision_hechos import contar_hechos_en_revision  # noqa: E402,F401
 
 # Nombres públicos y auxiliares que otros módulos y las pruebas importan desde routers.dataops
 from ._comun import (  # noqa: E402,F401

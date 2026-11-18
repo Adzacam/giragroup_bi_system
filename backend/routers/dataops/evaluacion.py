@@ -1,6 +1,7 @@
 """Evaluación de lotes: resolución de documentos, lectura de BETO guardada, caché y estado del flujo."""
 import logging
 import re
+import sys
 from typing import Any, Dict, List, Optional, Tuple, Union
 from models.dim_estudiante import DimEstudiante
 from models.dim_modulo import DimModulo
@@ -814,6 +815,118 @@ def _superponer_resoluciones(db: Session, base: Dict[str, Any], doc_ids: List[in
             "autoPct": auto_pct, "auditPct": audit_pct, "inconsistenciasPct": inc_pct}
 
 
+def _reconstruir_evaluacion_desde_bd(db: Session, docs: List[DimOrigenDocumental]) -> Optional[Dict[str, Any]]:
+    """Reconstruye el resumen de lectura de BETO desde staging_registros_crudos.payload_json tras un reinicio de la API."""
+    doc_ids = sorted(d.id_documento for d in docs)
+    if not doc_ids:
+        return None
+    id_lote = next((d.id_lote for d in docs if d.id_lote is not None), None)
+    if id_lote is not None:
+        tarea = tareas_dataops.ultima(id_lote, "LECTURA_BETO")
+        if tarea and tarea.get("estado") == "EN_CURSO":
+            return None
+
+    registros = (
+        db.query(StagingRegistroCrudo)
+        .filter(
+            StagingRegistroCrudo.id_documento.in_(doc_ids),
+            StagingRegistroCrudo.es_ruido == False,
+            StagingRegistroCrudo.payload_json.isnot(None),
+        )
+        .order_by(StagingRegistroCrudo.id)
+        .all()
+    )
+    if not registros:
+        return None
+
+    doc_map = {d.id_documento: d for d in docs}
+    detalles: List[Dict[str, Any]] = []
+    auto_count = audit_count = inc_count = total_entidades = suma_indices = 0
+
+    for stg in registros:
+        payload = stg.payload_json if isinstance(stg.payload_json, dict) else {}
+        tuplas = payload.get("tuplas") or []
+        if not tuplas:
+            continue
+        orig_doc = doc_map.get(stg.id_documento)
+        doc_fuente = (payload.get("tipo_fuente") or (orig_doc.tipo_fuente if orig_doc else "ACTA") or "ACTA").upper()
+        doc_escala = payload.get("tipo_escala") or (orig_doc.tipo_escala if orig_doc else None)
+
+        for t in tuplas:
+            indice_num = int(t.get("indice_registro") or 0)
+            suma_indices += indice_num
+            motivo = t.get("motivo") or "APROBADO_AUTOMATICO"
+            est_res = t.get("estado_resolucion") or stg.estado_resolucion or "APROBADO_AUTOMATICO"
+            if est_res == "DESCARTADO" or motivo in ("CI_DUDOSA", "ESCALA_AMBIGUA", "INCONSISTENCIA"):
+                cat = "INCONSISTENCIA"
+                estado_reg = "INCONSISTENCIA"
+                inc_count += 1
+            elif est_res == "PENDIENTE" or motivo != "APROBADO_AUTOMATICO":
+                cat = "REVISION"
+                estado_reg = "AUDITORIA"
+                audit_count += 1
+            else:
+                cat = "AUTOMATICO"
+                estado_reg = "AUTOMATICO"
+                auto_count += 1
+
+            total_entidades += sum(
+                1 for k in ("estudiante", "ci_enmascarado", "modulo", "nota_original", "monto_deuda", "concepto")
+                if t.get(k) not in (None, "", "No detectado")
+            )
+            ci_masked = t.get("ci_enmascarado") or enmascarar_ci(t.get("ci_real"))
+            raw_line = t.get("raw_line") or ""
+            raw_pub = texto_sin_ci(raw_line, {t["ci_real"]}) if t.get("ci_real") else raw_line
+            detalles.append({
+                "id": t.get("id") or f"stg-{stg.id}-{t.get('line_number', 1)}",
+                "stg_id": stg.id,
+                "id_documento": stg.id_documento,
+                "nombre_archivo": orig_doc.nombre_archivo if orig_doc else f"Archivo_{stg.id_documento}",
+                "tipo_fuente": doc_fuente,
+                "tipo_escala": doc_escala,
+                "line_number": t.get("line_number", 1),
+                "raw_text": raw_pub,
+                "estado": estado_reg,
+                "categoria_particion": cat,
+                "estado_resolucion": est_res,
+                "motivo": motivo,
+                "indice_registro": indice_num,
+                "estudiante": t.get("estudiante") or "No detectado",
+                "ci": ci_masked,
+                "ci_enmascarado": ci_masked,
+                "modulo": t.get("modulo") or t.get("concepto") or "No detectado",
+                "nota_original": t.get("nota_original"),
+                "nota_normalizada": t.get("nota_normalizada"),
+                "monto": f"Bs. {t['monto_deuda']}" if t.get("monto_deuda") is not None else None,
+                "lectura": {"texto": raw_pub, "tokens": [], "entidades": []},
+                "decision": {
+                    "indice_mas_bajo": indice_num,
+                    "estado": estado_reg,
+                    "motivo_llano": t.get("motivo_llano") or "",
+                    "motivo_codigo": motivo,
+                },
+            })
+
+    total_tuplas = len(detalles)
+    if total_tuplas == 0:
+        return None
+    indice_medio = round(suma_indices / total_tuplas, 1)
+    auto_pct, audit_pct, inc_pct = calcular_porcentajes_mayor_residuo(auto_count, audit_count, inc_count)
+    return {
+        "totalDocumentos": len(docs),
+        "totalTuplas": total_tuplas,
+        "totalEntidades": total_entidades,
+        "autoCount": auto_count,
+        "auditCount": audit_count,
+        "inconsistenciasCount": inc_count,
+        "indiceMedio": indice_medio,
+        "autoPct": auto_pct,
+        "auditPct": audit_pct,
+        "inconsistenciasPct": inc_pct,
+        "detalles": detalles,
+    }
+
+
 def _evaluacion_lectura(db: Session, docs: List[DimOrigenDocumental]) -> Optional[Dict[str, Any]]:
     """Consulta pura: nunca ejecuta BETO, espera tareas ni registra cálculos en un GET."""
     doc_ids = sorted(d.id_documento for d in docs)
@@ -823,6 +936,10 @@ def _evaluacion_lectura(db: Session, docs: List[DimOrigenDocumental]) -> Optiona
     base = cache_consultas.consultar(clave)
     if base is None:
         base = cache_lectura.leer(clave)
+        if base is None:
+            base = _reconstruir_evaluacion_desde_bd(db, docs)
+            if base is not None:
+                cache_lectura.guardar(clave, base)
         if base is not None:
             cache_consultas.obtener(clave, TTL_EVALUACION_LECTURA_SEG, lambda: base)
     return _superponer_resoluciones(db, base, doc_ids) if base is not None else None
@@ -853,7 +970,10 @@ def _estado_flujo_lote(db: Session, ids_docs: List[int], pendientes_revision: in
     casos por revisar (entidades sin resolver + hechos del DW marcados en revisión); en cualquier otro caso
     'EN_CURSO' (la bandeja ④ sigue consolidando casos sueltos).
     """
-    if ids_docs and pendientes_revision == 0 and contar_hechos_en_revision(db, ids_docs) == 0             and _lote_consolidado_en_dw(db, ids_docs):
+    pkg = sys.modules.get("routers.dataops") or sys.modules.get("backend.routers.dataops")
+    contar_fn = getattr(pkg, "contar_hechos_en_revision", contar_hechos_en_revision) if pkg else contar_hechos_en_revision
+    consolidado_fn = getattr(pkg, "_lote_consolidado_en_dw", _lote_consolidado_en_dw) if pkg else _lote_consolidado_en_dw
+    if ids_docs and pendientes_revision == 0 and contar_fn(db, ids_docs) == 0 and consolidado_fn(db, ids_docs):
         return "CONSOLIDADO"
     return "EN_CURSO"
 
@@ -866,11 +986,11 @@ def _asegurar_lote_editable(db: Session, id_lote: Optional[int]) -> None:
     ids_docs = [d.id_documento for d in docs]
     if not ids_docs:
         return
-    pendientes = (
+    q_pend = (
         db.query(func.count(StagingEntidadNoResuelta.id_staging))  # no .count(): su subconsulta pide id_homonimo (migración 016)
         .filter(StagingEntidadNoResuelta.id_documento.in_(ids_docs), StagingEntidadNoResuelta.resuelto == False)
-        .scalar()
     )
+    pendientes = q_pend.scalar() if hasattr(q_pend, "scalar") else q_pend.count()
     if _estado_flujo_lote(db, ids_docs, pendientes) == "CONSOLIDADO":
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

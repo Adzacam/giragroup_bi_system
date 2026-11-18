@@ -42,8 +42,10 @@ Prueba nueva: `frontend/src/modules/dataops/__tests__/w13Correcciones.test.jsx` 
 ### Verificación visual (V1/V2, claro/oscuro)
 Hecha solo parcialmente: a 375 px se midió la barra V1; el flujo de 3 pasos se recorrió en V2 (claro) con el lote real de la DW viva (carga, lectura de BETO y revisión). **No se hicieron capturas del modo oscuro ni de V1 por paso.**
 
-### Hallazgos de la carga real (W-14)
-Ver `f3w_recarga_dw_viva.json`. Resumen: la ingesta (10/10) y la lectura de BETO (116.557 tuplas) funcionaron; la preparación de revisión y la consolidación se detienen en la línea 104.250 y la consolidación termina en ERROR. 0 hechos cargados. Sirve como prueba de punta a punta fallida del flujo de 3 pasos.
+### Hallazgos de la carga real (W-14 — corrida previa al arreglo de memoria, lote #3)
+> **Nota aclaratoria (X-6):** Esta sección documenta la primera corrida (lote #3, anterior al arreglo de escritura por bloques en `dw_loader.py`). La recarga definitiva con el código corregido (lote #4, `COMPLETADA` con 116.557 tuplas y los hechos de los 10 libros) está en la sección siguiente (*Actualización 2026-11-18*) y en [`f3w_recarga_dw_viva.json`](f3w_recarga_dw_viva.json).
+
+Ver `f3w_recarga_dw_viva.json`. Resumen de la corrida previa al arreglo: la ingesta (10/10) y la lectura de BETO (116.557 tuplas) funcionaron; la preparación de revisión y la consolidación se detienen en la línea 104.250 y la consolidación termina en ERROR. 0 hechos cargados. Sirve como prueba de punta a punta fallida del flujo de 3 pasos.
 - La interfaz muestra «Consolidar lote» inactivo si se reinicia la API después de leer (el resumen de lectura vive en memoria); se recupera con «Actualizar» en el paso ②.
 - Un lote interrumpido deja una conexión a la BD «idle in transaction» que bloquea el borrado de sus documentos (`DELETE /sources/{id}`).
 - «Historial de lotes» muestra (0) en la pantalla de carga aunque existan lotes en la BD (el contador y la tabla difieren según el estado).

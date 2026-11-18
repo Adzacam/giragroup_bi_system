@@ -1,0 +1,63 @@
+{
+  "tarea": "X-6",
+  "evidencia_f3w_verificacion_aclarada": true,
+  "dw_viva_lotes": [
+    {
+      "id_lote": 1,
+      "estado": "PROCESADO",
+      "total_archivos": 1,
+      "creado_en": "2026-11-17 22:29:16.806985",
+      "docs_vivos": 0
+    },
+    {
+      "id_lote": 2,
+      "estado": "PROCESADO",
+      "total_archivos": 8,
+      "creado_en": "2026-11-17 22:59:24.222232",
+      "docs_vivos": 0
+    },
+    {
+      "id_lote": 3,
+      "estado": "PROCESADO",
+      "total_archivos": 10,
+      "creado_en": "2026-11-18 00:08:37.720692",
+      "docs_vivos": 0
+    },
+    {
+      "id_lote": 4,
+      "estado": "PROCESADO",
+      "total_archivos": 10,
+      "creado_en": "2026-11-18 14:01:14.873267",
+      "docs_vivos": 10
+    }
+  ],
+  "lotes_vacios_1_a_3": [
+    {
+      "id_lote": 1,
+      "estado": "PROCESADO",
+      "total_archivos": 1,
+      "creado_en": "2026-11-17 22:29:16.806985",
+      "docs_vivos": 0
+    },
+    {
+      "id_lote": 2,
+      "estado": "PROCESADO",
+      "total_archivos": 8,
+      "creado_en": "2026-11-17 22:59:24.222232",
+      "docs_vivos": 0
+    },
+    {
+      "id_lote": 3,
+      "estado": "PROCESADO",
+      "total_archivos": 10,
+      "creado_en": "2026-11-18 00:08:37.720692",
+      "docs_vivos": 0
+    }
+  ],
+  "cache_indice_beto": {
+    "filas": 180585,
+    "bytes": 46088192,
+    "mb": 43.95
+  },
+  "borrado_lotes_vacios": "pendiente de Lean (DECISION 1 de PLAN_F3X.md: requiere aprobacion explicita de Lean y pg_dump previo)"
+}

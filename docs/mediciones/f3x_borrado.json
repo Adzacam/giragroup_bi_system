@@ -1,0 +1,60 @@
+{
+  "tarea": "X-1",
+  "clon": "beto_pg_f3w (127.0.0.1:55634/giragroup_dw)",
+  "documento_probado": {
+    "id_documento": 7,
+    "nombre_archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx"
+  },
+  "antes": {
+    "tablas_documento": {
+      "fact_rendimiento_academico": 0,
+      "fact_situacion_financiera": 0,
+      "fact_evaluacion_docente": 197876,
+      "fact_rentabilidad": 0,
+      "fact_costo_programa": 0,
+      "fact_techo_convenio": 0,
+      "bridge_modulo_docente": 0,
+      "staging_registros_crudos": 3,
+      "stg_entidad_no_resuelta": 123,
+      "log_inconsistencias": 394,
+      "log_pipeline_ingesta": 9,
+      "dim_origen_documental": 1,
+      "carga_fila_origen": 0
+    },
+    "dimensiones": {
+      "dim_estudiante": 15391,
+      "dim_docente": 761,
+      "dim_modulo": 4375,
+      "dim_tiempo": 2230
+    }
+  },
+  "despues": {
+    "tablas_documento": {
+      "fact_rendimiento_academico": 0,
+      "fact_situacion_financiera": 0,
+      "fact_evaluacion_docente": 0,
+      "fact_rentabilidad": 0,
+      "fact_costo_programa": 0,
+      "fact_techo_convenio": 0,
+      "bridge_modulo_docente": 0,
+      "staging_registros_crudos": 0,
+      "stg_entidad_no_resuelta": 0,
+      "log_inconsistencias": 0,
+      "log_pipeline_ingesta": 0,
+      "dim_origen_documental": 0,
+      "carga_fila_origen": 0
+    },
+    "dimensiones": {
+      "dim_estudiante": 15391,
+      "dim_docente": 761,
+      "dim_modulo": 4375,
+      "dim_tiempo": 2230
+    }
+  },
+  "dimensiones_sin_cambio": true,
+  "logs_borrado_registrados": 1,
+  "pytest_unitarios": {
+    "archivo": "tests/f3x/test_borrado_completo.py",
+    "resultado": "4 passed"
+  }
+}

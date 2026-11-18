@@ -846,14 +846,15 @@ class DWLoaderService:
 
     def _insertar_eval(self, cur, pagina: int, durante_carga: bool = False) -> int:
         """Respuestas de evaluación diferidas (una por clave_respuesta; la última lectura de una clave gana, igual que en el dict).
-        `durante_carga`: escritura antes del final; se recuerda qué filas son de esta consolidación para que el completado de
-        docente de _cargar_asignacion_docente no las toque, igual que cuando todas se escribían al final."""
+        Antes de escribir el bloque, completa `id_docente` en respuestas DOCENTE sin docente si el módulo ya tiene docente único."""
         from psycopg2.extras import execute_values
         if not self._eval_pendientes:
             return 0
-        if durante_carga and self._eval_id_previo is None:
-            cur.execute("SELECT COALESCE(MAX(id_hecho_eval), 0) FROM fact_evaluacion_docente")
-            self._eval_id_previo = cur.fetchone()[0]
+        for v in self._eval_pendientes.values():
+            if v.get("tipo_pregunta") == "DOCENTE" and v.get("id_docente") is None and v.get("id_modulo") is not None:
+                id_doc_mod = self._docente_unico_del_modulo(v["id_modulo"])
+                if id_doc_mod is not None:
+                    v["id_docente"] = id_doc_mod
         cols = ["clave_respuesta", "id_docente", "id_modulo", "id_estudiante", "id_tiempo", "pregunta_bloque", "tipo_pregunta",
                 "puntuacion", "escala_max", "comentario", "id_documento", "requiere_revision", "motivo_revision"]
         filas = [tuple([k] + [v[c] for c in cols[1:]]) for k, v in self._eval_pendientes.items()]
@@ -865,15 +866,8 @@ class DWLoaderService:
                + ", ".join((f"{c}=CASE WHEN fact_evaluacion_docente.motivo_revision IS DISTINCT FROM 'RESUELTO_HUMANO' "
                             f"THEN EXCLUDED.{c} ELSE fact_evaluacion_docente.{c} END") if c in protegidas else f"{c}=EXCLUDED.{c}"
                            for c in cols[1:]))
-        if durante_carga:
-            sql += " RETURNING clave_respuesta, id_hecho_eval"
         for i in range(0, len(filas), pagina):
-            if not durante_carga:
-                execute_values(cur, sql, filas[i:i + pagina], page_size=pagina)
-            else:
-                filas_bd = execute_values(cur, sql, filas[i:i + pagina], page_size=pagina, fetch=True)
-                # Respuestas que ya estaban en la base antes de esta consolidación y que esta consolidación reescribió
-                self._eval_previas_reescritas.update(c for c, id_h in filas_bd if id_h <= self._eval_id_previo)
+            execute_values(cur, sql, filas[i:i + pagina], page_size=pagina)
             self._latir()
         return len(filas)
 
@@ -959,6 +953,22 @@ class DWLoaderService:
 
         cur.close()
         return total_enviadas
+
+    def liberar_memoria(self) -> None:
+        """Libera cachés y acumuladores en memoria al terminar la consolidación."""
+        for attr in (
+            "_modulo_por_pos", "_tiempos", "_docente_por_modulo", "_est_fuzzy_cache",
+            "_mod_nombre_id", "_memo_modulo_nombre", "_eval_pendientes", "_eval_previas_reescritas",
+            "_aca_pendientes", "_fin_pendientes", "_cfo_pendientes", "_cache_base_programa",
+            "_cache_docente_programa", "_cache_tiempo_programa", "_cache_estudiante",
+            "_cache_modulo_docente",
+        ):
+            val = getattr(self, attr, None)
+            if isinstance(val, (dict, set, list)):
+                val.clear()
+        for attr in ("_est_nombres", "_est_solo_nombres", "_mod_por_nombre", "_cfo_existentes"):
+            if hasattr(self, attr):
+                setattr(self, attr, None)
 
     def _cargar_nombres_modulo(self) -> None:
         """Una sola consulta de (id, nombre) por instancia: antes cada módulo por nombre traía todos los DimModulo como objetos ORM."""
@@ -1058,13 +1068,8 @@ class DWLoaderService:
                     FactEvaluacionDocente.id_modulo == id_mod,
                     FactEvaluacionDocente.id_docente.is_(None),
                     FactEvaluacionDocente.tipo_pregunta == "DOCENTE",
+                    FactEvaluacionDocente.motivo_revision.is_distinct_from("RESUELTO_HUMANO"),
                 )
-                if self._eval_id_previo is not None:
-                    # Solo las respuestas de cargas anteriores: las de esta consolidación ya escritas por tramos quedan como
-                    # quedaban al escribirse todas al final (_volcar_eval_si_excede)
-                    q_eval = q_eval.filter(FactEvaluacionDocente.id_hecho_eval <= self._eval_id_previo)
-                    if self._eval_previas_reescritas:
-                        q_eval = q_eval.filter(FactEvaluacionDocente.clave_respuesta.notin_(self._eval_previas_reescritas))
                 completadas["evaluaciones"] = q_eval.update({FactEvaluacionDocente.id_docente: id_doc_modulo}, synchronize_session=False)
         return {
             "tipo": "asignacion_docente",

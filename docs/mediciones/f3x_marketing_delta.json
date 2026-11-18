@@ -1,0 +1,35 @@
+{
+  "tarea": "X-3",
+  "titulo": "Explicación de diferencia en fact_marketing (10.464 / 10.486 / 10.490)",
+  "conteos_filas": {
+    "f3u_completo_dump": 10432,
+    "clon_w13_f3w_bloqueo_consolidacion": 10464,
+    "viva_anterior_pre_w14c": 10486,
+    "viva_actual_w14": 10490
+  },
+  "totales_invariantes": {
+    "f3u_completo_dump": { "filas": 10432, "leads": 0, "reservas": 0, "inscritos": 15183 },
+    "viva_anterior_pre_w14c": { "filas": 10486, "leads": 0, "reservas": 0, "inscritos": 15183 },
+    "viva_actual_w14": { "filas": 10490, "leads": 0, "reservas": 0, "inscritos": 15183 }
+  },
+  "dim_modulo_conteo": {
+    "f3u_completo_dump": 4375,
+    "viva_anterior_pre_w14c": 4378,
+    "viva_actual_w14": 4378
+  },
+  "origen_datos": {
+    "documento": "TBL_INSCRITOS.xlsx (ADMISION)",
+    "codigo": "backend/services/dw_loader.py:1321-1337 (agrupa por id_modulo, id_tiempo e incrementa inscritos += 1)",
+    "resolucion_modulo": "backend/services/dw_loader.py:758-825 (resolver_o_crear_modulo)"
+  },
+  "explicacion_diferencias": [
+    {
+      "grupo": "MOD-GEN (filas de TBL_INSCRITOS sin código POS)",
+      "regla": "backend/services/dw_loader.py:806-825 — busca coincidencia exacta lower(nombre_modulo) y si no existe aplica fuzzy >= 80.0 contra dim_modulo antes de crear un módulo MOD-GEN nuevo.",
+      "efecto_viva_vs_pre_w14c": "Al recargar en W-14 sobre la DW viva (que ya conservaba los 4.378 registros de dim_modulo de la carga anterior, incluyendo variantes como 'Ciencias de la Comunicación Social', 'Ciencias Políticas', 'Contaduría Pública'), las filas con esos nombres hicieron match exacto con esas entradas en lugar de agruparse por fuzzy en 'CIENCIAS DE LA COMUNICACIÓN', 'CIENTISTA POLÍTICA' o 'CONTADOR PÚBLICO AUTORIZADO'. Resultado: 138 claves (modulo, mes) presentes en viva vs 77 en pre_w14c, neto +4 filas (10.490 vs 10.486), con exactamente 15.183 inscritos en ambas.",
+      "efecto_viva_vs_clon": "Entre el clon f3u_completo (4.375 módulos, 10.432 filas) / W-13 (10.464 filas) y la DW viva (4.378 módulos, 10.490 filas), la diferencia de +26/+58 filas corresponde al mismo reagrupamiento de filas de TBL_INSCRITOS según el orden de consolidación y las entradas existentes en dim_modulo; la suma total de inscritos es idéntica (15.183)."
+    }
+  ],
+  "veredicto": "regla_correcta",
+  "nota": "No hay pérdida ni duplicación de hechos: SUM(inscritos) = 15.183 en f3u_completo, pre_w14c y DW viva actual."
+}

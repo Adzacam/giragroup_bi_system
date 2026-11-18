@@ -1,0 +1,30 @@
+{
+  "tarea": "X-4",
+  "titulo": "Completado de id_docente en fact_evaluacion_docente con guardado diferido por bloques",
+  "diagnostico": {
+    "clon_18c8bc3_f3u_completo": {
+      "Evaluación Docente y Unifranz.xlsx": { "total": 14173, "null_doc": 4911, "null_doc_tipo_docente": 1887, "completables_por_bridge": 0 },
+      "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx": { "total": 197876, "null_doc": 86057, "null_doc_tipo_docente": 62247, "completables_por_bridge": 0 }
+    },
+    "dw_viva_w14_antes_del_arreglo": {
+      "Evaluación Docente y Unifranz.xlsx": { "total": 14173, "null_doc": 4907, "null_doc_tipo_docente": 1883, "completables_por_bridge": 0 },
+      "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx": { "total": 197876, "null_doc": 27588, "null_doc_tipo_docente": 3778, "completables_por_bridge": 60 },
+      "Experiencia Docente 2.0.xlsx": { "total": 503168, "null_doc": 92286, "null_doc_tipo_docente": 270, "completables_por_bridge": 135 }
+    },
+    "causa": "El filtro por _eval_id_previo en _cargar_asignacion_docente excluía filas ya volcadas por tramos en la misma consolidación, y _insertar_eval no completaba id_docente desde _docente_unico_del_modulo antes de escribir el bloque."
+  },
+  "correccion": {
+    "archivo": "backend/services/dw_loader.py",
+    "cambios": [
+      "_insertar_eval (líneas 847-858): antes de escribir cada bloque, completa v['id_docente'] = self._docente_unico_del_modulo(v['id_modulo']) para filas tipo_pregunta == 'DOCENTE' con id_docente is None.",
+      "_cargar_asignacion_docente (líneas 1051-1058): elimina la restricción por _eval_id_previo para completar también bloques ya volcados en la misma consolidación, protegiendo filas con motivo_revision == 'RESUELTO_HUMANO'."
+    ]
+  },
+  "verificacion": {
+    "prueba_nueva": "tests/f3x/test_docente_respuestas.py",
+    "resultado": "2 passed",
+    "n1_completables_sin_docente_diferido": 0,
+    "n2_completables_sin_docente_con_arreglo": 0,
+    "huella_otras_columnas": "sin cambios"
+  }
+}

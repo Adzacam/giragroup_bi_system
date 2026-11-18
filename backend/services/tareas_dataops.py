@@ -164,7 +164,7 @@ def _serializar(r) -> Optional[Dict[str, Any]]:
         return None
     d = dict(r._mapping)
     estado = d["estado"]
-    if estado == "EN_CURSO" and float(d.pop("sin_latido")) > SIN_LATIDO_SEG:
+    if estado == "EN_CURSO" and float(d.pop("sin_latido") or 0) > SIN_LATIDO_SEG:
         estado, d["error"] = "ERROR", MENSAJE_ERROR_PUBLICO
         fallar(d["id"], d["error"])
     d.pop("sin_latido", None)
