@@ -147,6 +147,9 @@ class _CatalogoPersonas:
                 for ap in pp.apellidos:
                     self.por_apellido.setdefault(ap, []).append((idx, pp))
 
+    def __len__(self) -> int:
+        return len(self.lista)
+
 
 def _preparar(personas: List[Dict[str, Any]]) -> _CatalogoPersonas:
     """Catálogo preparado, memorizado por identidad y tamaño de la lista (la misma lista se reutiliza en toda una lectura o consolidación)."""

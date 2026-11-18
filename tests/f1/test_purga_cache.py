@@ -30,6 +30,12 @@ def test_purge_isolated_table_present_empty_and_absent(tmp_path):
     try:
         conn = psycopg2.connect(f"{base_url}/postgres")
         conn.close()
+        chk = subprocess.run(
+            ["docker", "inspect", "-f", "{{.State.Running}}", "beto_pg_tmpfs"],
+            capture_output=True, text=True,
+        )
+        if chk.returncode != 0 or chk.stdout.strip() != "true":
+            pytest.skip("Contenedor beto_pg_tmpfs no está corriendo")
     except Exception:
         pytest.skip("beto_pg_tmpfs no disponible en 127.0.0.1:55632")
 
