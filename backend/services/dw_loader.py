@@ -1558,7 +1558,7 @@ class DWLoaderService:
                 nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
             ) if nombre_modulo else None
 
-            if not inmediato and self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
+            if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
                 self._fin_pendientes[(id_est, id_mod_fin or 0, id_tiempo)] = {
                     "id_estudiante": id_est,
                     "id_modulo": id_mod_fin,
@@ -1976,7 +1976,7 @@ class DWLoaderService:
         if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_rendimiento_academico", registro.get("clave_contenido"), subclave=str(id_mod)):
             return {"tipo": "academico", "status": "skipped", "motivo": "Fila de origen ya cargada"}
 
-        if not inmediato and self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
+        if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
             if id_est and nombre_programa:
                 self._programas_vistos_est.setdefault(id_est, set()).add(nombre_programa)
             self._aca_pendientes[(id_est, id_mod)] = {
