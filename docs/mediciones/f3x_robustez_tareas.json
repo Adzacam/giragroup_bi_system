@@ -3,7 +3,7 @@
   "vigilante_latido": {
     "archivo": "backend/services/tareas_dataops.py",
     "cambio": "float(d.pop('sin_latido') or 0) > SIN_LATIDO_SEG (180s); respeta tareas EN_CURSO con latido reciente.",
-    "prueba": "tests/f3x/test_robustez_tareas.py::test_vigilante_respeta_latido_reciente y test_vigilante_marca_error_sin_latido_y_tolera_none (PASSED)"
+    "prueba": "tests/f3x/test_robustez_tareas.py::test_vigilante_respeta_latido_reciente, test_vigilante_marca_error_cuando_expira_latido y test_vigilante_tolera_sin_latido_none (PASSED)"
   },
   "resumen_beto_tras_reinicio": {
     "archivo": "backend/routers/dataops/evaluacion.py",

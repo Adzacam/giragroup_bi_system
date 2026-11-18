@@ -70,6 +70,28 @@ def test_vigilante_marca_error_cuando_expira_latido(monkeypatch):
     assert len(llamadas_fallar) == 1 and llamadas_fallar[0][0] == 102
 
 
+def test_vigilante_tolera_sin_latido_none(monkeypatch):
+    llamadas_fallar = []
+    monkeypatch.setattr(tareas_dataops, "fallar", lambda tid, err: llamadas_fallar.append((tid, err)))
+
+    sin_dato = _Row({
+        "id": 103,
+        "tipo": "CONSOLIDACION",
+        "id_lote": 4,
+        "estado": "EN_CURSO",
+        "total": 100,
+        "procesados": 0,
+        "resultado": {},
+        "error": None,
+        "iniciado_por": "admin",
+        "transcurrido": 5.0,
+        "sin_latido": None,
+    })
+    res = tareas_dataops._serializar(sin_dato)
+    assert res["estado"] == "EN_CURSO"
+    assert llamadas_fallar == []
+
+
 def test_resumen_beto_se_reconstruye_desde_bd_tras_reinicio(monkeypatch):
     engine = create_engine(
         "sqlite://",

@@ -30,6 +30,6 @@
       "efecto_viva_vs_clon": "Entre el clon f3u_completo (4.375 módulos, 10.432 filas) / W-13 (10.464 filas) y la DW viva (4.378 módulos, 10.490 filas), la diferencia de +26/+58 filas corresponde al mismo reagrupamiento de filas de TBL_INSCRITOS según el orden de consolidación y las entradas existentes en dim_modulo; la suma total de inscritos es idéntica (15.183)."
     }
   ],
-  "veredicto": "regla_correcta",
-  "nota": "No hay pérdida ni duplicación de hechos: SUM(inscritos) = 15.183 en f3u_completo, pre_w14c y DW viva actual."
+  "veredicto": "defecto",
+  "nota": "Agrupación no determinista en resolver_o_crear_modulo (.first() sin ORDER BY y fuzzy >= 80.0 según estado previo de dim_modulo), sin pérdida ni duplicación de hechos: SUM(inscritos) = 15.183 en f3u_completo, pre_w14c y DW viva actual."
 }
