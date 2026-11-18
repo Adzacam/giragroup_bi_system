@@ -40,9 +40,15 @@ def test_purge_isolated_table_present_empty_and_absent(tmp_path):
         pytest.skip("beto_pg_tmpfs no disponible en 127.0.0.1:55632")
 
     test_db = "test_f1_a7_purga"
+    with psycopg2.connect(f"{base_url}/postgres") as admin_conn:
+        admin_conn.autocommit = True
+        with admin_conn.cursor() as cur:
+            cur.execute("SELECT 1 FROM pg_database WHERE datname = 'dw_vacio'")
+            has_tpl = cur.fetchone() is not None
+    create_sql = f"CREATE DATABASE {test_db} TEMPLATE dw_vacio" if has_tpl else f"CREATE DATABASE {test_db}"
     subprocess.run(
         ["docker", "exec", "beto_pg_tmpfs", "psql", "-U", "giragroup_user", "-d", "postgres",
-         "-c", f"DROP DATABASE IF EXISTS {test_db}", "-c", f"CREATE DATABASE {test_db} TEMPLATE dw_vacio"],
+         "-c", f"DROP DATABASE IF EXISTS {test_db}", "-c", create_sql],
         check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
     try:

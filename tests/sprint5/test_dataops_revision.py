@@ -85,7 +85,6 @@ def test_documento_ajeno_o_lote_inexistente_no_amplia_alcance(revision_db):
         assert exc.value.status_code == 404
 
 
-@pytest.mark.skip(reason="Contrato legacy Sprint 5: export_review_tray ahora enmascara nombres personales con dataops_privacy (cambiado en F3U/F3W)")
 def test_limites_http_roles_y_exportacion_completa(revision_db):
     with cliente(revision_db) as c:
         base = '/api/v1/dataops/review-tray'
@@ -96,7 +95,7 @@ def test_limites_http_roles_y_exportacion_completa(revision_db):
         assert exported.status_code == 200
         assert len(exported.text.splitlines()) == 15
         assert '7391000' not in exported.text and '7391013' not in exported.text
-        assert 'Persona Prueba 13' in exported.text
+        assert 'Persona Prueba 13' not in exported.text and '••••' in exported.text
     with cliente(revision_db, 'DIRECTOR') as c:
         assert c.get(base + '/export', params={'id_lote': 1}).status_code == 403
 
@@ -183,15 +182,14 @@ def test_avisos_por_rol_sin_datos_personales(revision_db, monkeypatch):
     assert all('Persona Prueba' not in n.message and '7391000' not in n.message for n in avisos)
 
 
-@pytest.mark.skip(reason="Contrato legacy Sprint 5: export_review_tray ahora enmascara nombres personales con dataops_privacy (cambiado en F3U/F3W)")
 def test_csv_filtra_todo_el_conjunto_y_evitar_formulas(revision_db):
     e = revision_db.get(StagingEntidadNoResuelta, 14)
-    e.payload_json = {**e.payload_json, 'estudiante': '=1+2', 'modulo': 'Minería 13'}
+    e.payload_json = {**e.payload_json, 'estudiante': 'Persona Secreta 13', 'modulo': '=Minería 13'}
     revision_db.commit()
     with cliente(revision_db) as c:
         r = c.get('/api/v1/dataops/review-tray/export', params={'id_lote': 1, 'search': 'mineria 13'})
     assert len(r.text.splitlines()) == 2
-    assert "'=1+2" in r.text and '7391013' not in r.text
+    assert "'=Minería 13" in r.text and 'Persona Secreta 13' not in r.text and '7391013' not in r.text
 
 
 def test_correos_y_programas_no_se_presentan_como_nombres(revision_db):

@@ -59,8 +59,9 @@ def _caso(payload):
 def test_la_api_agrega_el_campo_solo_cuando_hay_sugerencias_y_no_cambia_el_resto():
     sin = _caso(None)
     sug = [{"id": 2, "nombre": "Juan Carlos Mamani Flores", "similitud": 0.7, "probabilidad_beto": 0.99, "similitud_beto": 1.0, "score_combinado": 0.85}]
+    sug_enmascarado = [{**s, "nombre": "••••"} for s in sug]
     con = _caso({"sugerencias": sug})
-    assert "sugerencias_beto" not in sin and con["sugerencias_beto"] == sug
+    assert "sugerencias_beto" not in sin and con["sugerencias_beto"] == sug_enmascarado
     assert {k: v for k, v in con.items() if k != "sugerencias_beto"} == sin     # cambio aditivo: ninguna clave existente varía
     assert con["un_clic"] == sin["un_clic"] and con["estado_resolucion"] == "PENDIENTE"   # no autoaprueba ni marca un clic
 
