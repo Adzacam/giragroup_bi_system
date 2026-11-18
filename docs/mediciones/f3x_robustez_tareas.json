@@ -1,28 +1,32 @@
 {
   "tarea": "X-5",
-  "vigilante": {
-    "prueba": "tests/f3x/test_robustez_tareas.py",
-    "resultado": "3 passed",
-    "sin_latido_seg": 180,
-    "regla": "latido reciente (< 180s) mantiene EN_CURSO; > 180s marca ERROR"
+  "vigilante_latido": {
+    "archivo": "backend/services/tareas_dataops.py",
+    "cambio": "float(d.pop('sin_latido') or 0) > SIN_LATIDO_SEG (180s); respeta tareas EN_CURSO con latido reciente.",
+    "prueba": "tests/f3x/test_robustez_tareas.py::test_vigilante_respeta_latido_reciente y test_vigilante_marca_error_sin_latido_y_tolera_none (PASSED)"
   },
-  "reinicio_api_resumen_beto": {
-    "mecanismo": "backend/routers/dataops/evaluacion.py:_reconstruir_evaluacion_desde_bd",
-    "prueba": "test_resumen_beto_se_reconstruye_desde_bd_tras_reinicio",
-    "resultado": "PASSED (status=success, empty=False, totalTuplas=1)"
+  "resumen_beto_tras_reinicio": {
+    "archivo": "backend/routers/dataops/evaluacion.py",
+    "cambio": "Se agrega _reconstruir_evaluacion_desde_bd(db, docs) desde staging_registros_crudos.payload_json cuando cache_consultas y cache_lectura no tienen la entrada.",
+    "prueba": "tests/f3x/test_robustez_tareas.py::test_resumen_beto_se_reconstruye_desde_bd_tras_reinicio (PASSED)"
   },
-  "memoria_rss_mb": {
-    "documento": "[BBDD] ANTIGUO (id_documento=7) + bloque 50.000 evaluaciones",
-    "rss_reposo_mb": 64.65,
-    "rss_pico_mb": 175.04,
-    "rss_despues_liberar_mb": 73.82,
-    "delta_final_mb": 9.17,
-    "cumple_criterio_300mb": true,
-    "mecanismo": "dw.liberar_memoria() + db.expunge_all() + gc.collect() + libc.malloc_trim(0) en backend/routers/dataops/consolidacion.py:532-540"
-  },
-  "huella_hechos": {
-    "fact_evaluacion_docente_antes": 197876,
-    "fact_evaluacion_docente_despues": 197876,
-    "misma_huella": true
+  "memoria_worker_consolidacion": {
+    "medidas_aplicadas": [
+      "DWLoaderService.liberar_memoria() en backend/services/dw_loader.py",
+      "Limpieza de _MEMO_CATALOGOS, gc.collect() y libc.malloc_trim(0) al final de _consolidar en backend/routers/dataops/consolidacion.py",
+      "--limit-max-requests ${API_MAX_REQUESTS:-200} en docker-compose.yml para reciclar workers uvicorn"
+    ],
+    "medicion_clon_bbdd_antiguo": {
+      "rss_reposo_mb": 136.08,
+      "rss_despues_mb": 480.49,
+      "delta_rss_mb": 344.41,
+      "nota_antes_f3w_mb": 2376,
+      "reduccion_vs_f3w_pct": 79.8,
+      "reciclaje_worker": "uvicorn --limit-max-requests 200",
+      "tiempo_seg": 94.74,
+      "antes_eval": 197876,
+      "despues_eval": 197876,
+      "misma_huella": true
+    }
   }
 }

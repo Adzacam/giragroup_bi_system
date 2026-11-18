@@ -1,0 +1,59 @@
+{
+  "tarea": "X-2",
+  "commit_medido": "4f753c3",
+  "worktree_limpio": "../gira_f3x_limpio",
+  "colectadas": 859,
+  "passed": 811,
+  "failed": 24,
+  "skipped": 17,
+  "xfailed": 7,
+  "pruebas_f3x_y_regresion": {
+    "backend/tests/test_lote_estado_flujo.py": "6 passed, 0 failed",
+    "tests/f3x/": "10 passed, 0 failed (test_borrado_completo: 4, test_docente_respuestas: 2, test_robustez_tareas: 4)",
+    "tests/sprint5/test_dataops_integridad.py (aislada)": "24 passed, 0 failed",
+    "tests/sprint4/test_kpi_service.py (aislada)": "7 passed, 0 failed"
+  },
+  "skips_con_motivo": [
+    {
+      "archivo": "tests/readiness/test_production_readiness.py",
+      "cantidad": 11,
+      "motivo": "READINESS_DB_URL no definido"
+    },
+    {
+      "archivo": "tests/sprint2/test_bloques_detector.py",
+      "cantidad": 3,
+      "motivo": "Corpus real no disponible en uploads/data"
+    },
+    {
+      "archivo": "tests/sprint2/test_categorizacion_y_cierre.py",
+      "cantidad": 1,
+      "motivo": "Corpus real no disponible en uploads/data"
+    },
+    {
+      "archivo": "tests/sprint2/test_ingesta.py",
+      "cantidad": 1,
+      "motivo": "Corpus real no disponible en uploads/data"
+    },
+    {
+      "archivo": "tests/sprint3/test_area3_normalizacion_matching_fk.py",
+      "cantidad": 1,
+      "motivo": "Padron TBL_INSCRITOS no disponible en entorno de prueba"
+    }
+  ],
+  "fallos_preexistentes_o_entorno_worktree": {
+    "aislamiento_sqlite_en_sesion_completa": 14,
+    "uploads_data_no_versionado_en_worktree": 2,
+    "enmascarado_pii_f3w_vs_aserciones_antiguas": 3,
+    "migracion_017_no_listada_en_test_migraciones": 1,
+    "plantilla_dw_vacio_ausente_en_tmpfs": 1,
+    "nombre_bd_tmpfs_vs_giragroup_db": 1,
+    "catalogo_personas_len_sprint3": 1,
+    "otros_sprint4": 1
+  },
+  "cobertura_total": {
+    "num_statements": 15282,
+    "covered_lines": 10708,
+    "missing_lines": 4574,
+    "percent_covered": 70.07
+  }
+}
