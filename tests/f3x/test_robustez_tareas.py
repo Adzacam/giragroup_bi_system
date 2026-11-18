@@ -75,7 +75,6 @@ def test_resumen_beto_se_reconstruye_desde_bd_tras_reinicio(monkeypatch):
         "sqlite://",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
-        execution_options={"schema_translate_map": {"public": None}},
     )
 
     @event.listens_for(engine, "connect")

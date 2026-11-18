@@ -27,15 +27,12 @@ def _make_session():
         "sqlite://",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
-        execution_options={"schema_translate_map": {"public": None}},
     )
 
     @event.listens_for(engine, "connect")
     def _attach(dbapi_conn, _rec):
         dbapi_conn.execute("ATTACH DATABASE ':memory:' AS public")
 
-    for tbl in Base.metadata.tables.values():
-        tbl.schema = None
     Base.metadata.create_all(bind=engine)
     return sessionmaker(autocommit=False, autoflush=False, bind=engine)()
 

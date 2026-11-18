@@ -45,7 +45,6 @@ def _make_sqlite_session():
         "sqlite://",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
-        execution_options={"schema_translate_map": {"public": None}},
     )
     from sqlalchemy import event
 
@@ -53,8 +52,6 @@ def _make_sqlite_session():
     def _attach_public(dbapi_conn, _conn_record):
         dbapi_conn.execute("ATTACH DATABASE ':memory:' AS public")
 
-    for tbl in Base.metadata.tables.values():
-        tbl.schema = None
     Base.metadata.create_all(bind=engine)
     with engine.begin() as conn:
         conn.execute(
