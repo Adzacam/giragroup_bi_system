@@ -198,7 +198,7 @@ def _serializar_valor(val: Any) -> Optional[str]:
         return val.date().isoformat()
     if isinstance(val, date):
         return val.isoformat()
-    s = str(val).strip()
+    s = " ".join(str(val).splitlines()).strip()
     if not s or s.lower() == "nan":
         return None
     return s
