@@ -1,6 +1,6 @@
 # CIERRE F3W — 2026-11-18
 
-Rama / commit: `beto-integracion`. Base `18c8bc3`. Commit de la fase con backend, pruebas, scripts y documentos (rutas explícitas; hash en el commit siguiente). **El frontend de F3W no está en ese commit**: casi todos los archivos de `frontend/src/modules/dataops/` importan componentes de `frontend/src/v2/` (`AnimatedNumberV2`, `toDataopsPath`…), y Lean decidió que el frontend V2 se commitea aparte; los cambios de F3W en el frontend (DataOps, notificaciones, `App.jsx`, `Navbar.jsx`, `Sidebar.jsx`, `tokens.css` y `v2/`) siguen en el árbol de trabajo y entran con el commit de la V2. `backend/routers/powerbi.py` y los demás cambios locales de Lean quedan fuera.
+Rama / commit: `beto-integracion`. Base `18c8bc3`. Commit de la fase con backend, pruebas, scripts y documentos (rutas explícitas): `25984fa`. **El frontend de F3W no está en ese commit**: casi todos los archivos de `frontend/src/modules/dataops/` importan componentes de `frontend/src/v2/` (`AnimatedNumberV2`, `toDataopsPath`…), y Lean decidió que el frontend V2 se commitea aparte; los cambios de F3W en el frontend (DataOps, notificaciones, `App.jsx`, `Navbar.jsx`, `Sidebar.jsx`, `tokens.css` y `v2/`) siguen en el árbol de trabajo y entran con el commit de la V2. `backend/routers/powerbi.py` y los demás cambios locales de Lean quedan fuera.
 
 **No se anuncia «F3 congelado».**
 
