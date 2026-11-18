@@ -1,0 +1,44 @@
+{
+  "tarea": "W-6",
+  "defecto": "D-W5",
+  "fecha": "2026-11-17",
+  "nota_rnf03": "Tiempos de referencia en clon tmpfs; no sustituyen la medición oficial de RNF-03 en F3V.",
+  "archivo_prueba": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+  "entorno": "beto_pg_f3w (127.0.0.1:55634), copias limpias desde f3w_antiguo_pre con cache_indice_beto (17955/17955 hits)",
+  "antes": {
+    "tiempo_corrida_1_seg": 577.789,
+    "conteos": {
+      "fact_evaluacion_docente": 197876,
+      "stg_entidad_no_resuelta_no_ruido": 19,
+      "stg_entidad_no_resuelta_ruido": 104,
+      "log_inconsistencias": 394
+    },
+    "md5_negocio": {
+      "fact_evaluacion_docente": "d3c6e42245c63f548811c135e9f869aa"
+    },
+    "barra_progreso_total": 38238
+  },
+  "despues": {
+    "tiempos_3_corridas_seg": [402.549, 294.16, 369.486],
+    "promedio_seg": 355.398,
+    "min_seg": 294.16,
+    "tiempo_corrida_post_cache_fuzzy_seg": 208.292,
+    "conteos": {
+      "fact_evaluacion_docente": 197876,
+      "stg_entidad_no_resuelta_no_ruido": 19,
+      "stg_entidad_no_resuelta_ruido": 104,
+      "log_inconsistencias": 394
+    },
+    "md5_negocio": {
+      "fact_evaluacion_docente": "d3c6e42245c63f548811c135e9f869aa"
+    },
+    "barra_progreso_total": 19119
+  },
+  "huella_identica_antes_despues": true,
+  "optimizaciones_aplicadas": [
+    "pipeline/normalization/person_resolver.py: índice O(1) por CI y por apellido en _CatalogoPersonas",
+    "backend/services/extraccion_por_encabezado.py: @lru_cache(maxsize=4096) en normalizar_encabezado",
+    "backend/routers/dataops/consolidacion.py: precarga de ruido_visto/unres_visto por documento, parseo único de campos_por_encabezado por línea, avance cada 250 líneas, total real (19119 en lugar de 38238)",
+    "backend/services/dw_loader.py: execute_values en bloque para fact_rendimiento_academico, fact_situacion_financiera, fact_evaluacion_docente y carga_fila_origen; caché en _candidatos_estudiante_fuzzy"
+  ]
+}

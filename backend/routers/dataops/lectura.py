@@ -186,6 +186,12 @@ def get_lote_context(
         "MOODLE": "Reporte Aula Moodle",
         "COBRANZA": "Cobranza y pagos",
         "ADMISION": "Admisiones y matriculación",
+        "EVALUACION_DOCENTE": "Evaluación docente",
+        "EGRESOS": "Egresos",
+        "TECHOS": "Techos de convenio",
+        "RENTABILIDAD": "Rentabilidad",
+        "MARKETING": "Marketing",
+        "PLANIFICACION": "Planificación",
     }
 
     institucion = (
@@ -489,18 +495,42 @@ def get_lote_beto_reading(
     }
 
 
+def _extraer_campo_de_linea(line_txt: str, campo: str) -> Optional[str]:
+    from services.dataops_privacy import EMAIL, _sensible, _columnas
+    if not line_txt:
+        return None
+    if campo == "ci":
+        m_ci = re.search(r"\b([0-9]{5,9}\b(?:\s*(?:LP|SC|CB|OR|PT|TJ|CH|BE|PA)\b)?\??)", line_txt, re.IGNORECASE)
+        return m_ci.group(1).strip() if m_ci else None
+    if campo == "correo":
+        m_em = EMAIL.search(line_txt)
+        return m_em.group(0).strip() if m_em else None
+    if campo == "nombre":
+        for parte in re.split(r"\||;|,(?=\s*[^,:|;]{1,45}:)", line_txt):
+            rotulo, sep, valor = parte.partition(":")
+            if sep and _sensible(rotulo) == "privado" and valor.strip():
+                r_low = rotulo.lower()
+                if any(k in r_low for k in ("nombre", "estudiante", "alumno", "participante", "docente", "razon")):
+                    return valor.strip()
+        cols = _columnas(line_txt)
+        if cols and ":" not in line_txt and re.fullmatch(r"[A-Za-zÁÉÍÓÚÑÜáéíóúñü]+(?:\s+[A-Za-zÁÉÍÓÚÑÜáéíóúñü]+)+", cols[0]):
+            return cols[0].strip()
+    return None
+
+
 @router.get("/registro/{registro_id}/revelar-ci")
 def revelar_ci_registro(
     registro_id: str,
+    campo: str = Query("ci", pattern="^(ci|nombre|correo)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
 ):
     """
-    Endpoint protegido por JWT y rol (`ADMIN` o `AUDITOR_CALIDAD`) que revela el CI real
-    de un registro específico y deja constancia en auditoría (#13).
+    Endpoint protegido por JWT y rol (`ADMIN` o `AUDITOR_CALIDAD`) que revela el dato sensible
+    (`ci`, `nombre` o `correo`) de un registro específico y deja constancia en auditoría (#13, W-12).
     """
-    ci_real = None
-    contexto_audit = f"Revelación de CI para registro {registro_id}"
+    val_real = None
+    contexto_audit = f"Revelación de {campo.upper()} para registro {registro_id}"
 
     # 1. Formato REG_{stg_id}_{line_num} o {stg_id}_{line_num}
     m_reg = re.match(r"^(?:(?:REG|STG)_)?(\d+)_(\d+)$", str(registro_id).strip(), re.IGNORECASE)
@@ -512,65 +542,77 @@ def revelar_ci_registro(
             payload = stg.payload_json if isinstance(stg.payload_json, dict) else {}
             for tup in payload.get("tuplas") or []:
                 if tup.get("line_number") == line_num or tup.get("id") in (registro_id, f"REG_{stg_id}_{line_num}"):
-                    ci_real = tup.get("ci_real")
+                    if campo == "ci":
+                        val_real = tup.get("ci_real")
+                    elif campo == "nombre":
+                        val_real = tup.get("nombre_real") or tup.get("nombre")
+                    elif campo == "correo":
+                        val_real = tup.get("correo_real") or tup.get("correo")
                     break
-            if not ci_real and stg.texto_plano:
+            if not val_real and stg.texto_plano:
                 lines = [l.strip() for l in stg.texto_plano.split("\n") if l.strip()]
                 if 1 <= line_num <= len(lines):
-                    line_txt = lines[line_num - 1]
-                    m_ci = re.search(r"\b([0-9]{5,9}\b(?:\s*(?:LP|SC|CB|OR|PT|TJ|CH|BE|PA)\b)?\??)", line_txt, re.IGNORECASE)
-                    if m_ci:
-                        ci_real = m_ci.group(1).strip()
+                    val_real = _extraer_campo_de_linea(lines[line_num - 1], campo)
 
     # 2. ID numérico de StagingEntidadNoResuelta o StagingRegistroCrudo
-    if not ci_real:
+    if not val_real:
         clean_num = str(registro_id).replace("REV-", "").strip()
         if clean_num.isdigit():
             num_id = int(clean_num)
             ent = db.query(StagingEntidadNoResuelta).filter(StagingEntidadNoResuelta.id_staging == num_id).first()
             if ent:
-                if ent.ci_temporal:
-                    ci_real = ent.ci_temporal
-                elif isinstance(ent.payload_json, dict):
-                    ci_real = ent.payload_json.get("ci_real") or ent.payload_json.get("ci")
-                if not ci_real and ent.texto_original:
-                    m_ci = re.search(r"\b([0-9]{5,9}\b(?:\s*(?:LP|SC|CB|OR|PT|TJ|CH|BE|PA)\b)?\??)", ent.texto_original, re.IGNORECASE)
-                    if m_ci:
-                        ci_real = m_ci.group(1).strip()
-            if not ci_real:
+                p = ent.payload_json if isinstance(ent.payload_json, dict) else {}
+                if campo == "ci":
+                    val_real = ent.ci_temporal or p.get("ci_real") or p.get("ci")
+                elif campo == "nombre":
+                    val_real = p.get("nombre_real") or p.get("nombre") or ent.mejor_candidato
+                elif campo == "correo":
+                    val_real = p.get("correo_real") or p.get("correo")
+                if not val_real:
+                    raw_src = p.get("raw_line") or ent.texto_original or ""
+                    val_real = _extraer_campo_de_linea(raw_src, campo)
+            if not val_real:
                 stg = db.query(StagingRegistroCrudo).filter(StagingRegistroCrudo.id == num_id).first()
                 if stg and stg.texto_plano:
-                    m_ci = re.search(r"\b([0-9]{5,9}\b(?:\s*(?:LP|SC|CB|OR|PT|TJ|CH|BE|PA)\b)?\??)", stg.texto_plano, re.IGNORECASE)
-                    if m_ci:
-                        ci_real = m_ci.group(1).strip()
+                    val_real = _extraer_campo_de_linea(stg.texto_plano, campo)
 
-    if not ci_real:
-        raise HTTPException(status_code=404, detail=f"No se encontró CI para el registro '{registro_id}'.")
+    if not val_real:
+        raise HTTPException(status_code=404, detail=f"No se encontró {campo} para el registro '{registro_id}'.")
 
-    # Registrar evento de auditoría de acceso a dato sensible (#13)
+    val_enmascarado = (
+        enmascarar_ci(val_real) if campo == "ci"
+        else ("••••@••••" if campo == "correo" else "••••")
+    )
+
+    # Registrar evento de auditoría de acceso a dato sensible (#13, W-12)
     try:
         audit_entry = LogAuditoriaNlp(
             texto_original=contexto_audit[:500],
-            prediccion_beto=enmascarar_ci(ci_real),
+            prediccion_beto=val_enmascarado,
             confianza_ia=1.0,
-            correccion_humana=f"REVELAR_CI_AUTORIZADO ({current_user.username})",
+            correccion_humana=f"REVELAR_{campo.upper()}_AUTORIZADO ({current_user.username})",
             usuario_auditor=current_user.id,
         )
         db.add(audit_entry)
         db.commit()
     except Exception as e_aud:
         db.rollback()
-        logger.warning("No se pudo persistir auditoría de revelación de CI: %s", e_aud)
+        logger.warning("No se pudo persistir auditoría de revelación (%s): %s", campo, e_aud)
 
-    return {
+    resp = {
         "status": "success",
         "id": registro_id,
-        "ci": ci_real,
-        "ci_real": ci_real,
-        "ci_enmascarado": enmascarar_ci(ci_real),
+        "campo": campo,
+        "valor": val_real,
+        "valor_enmascarado": val_enmascarado,
         "auditado_por": current_user.username,
         "timestamp": datetime.utcnow().isoformat(),
     }
+    if campo == "ci":
+        resp["ci"] = val_real
+        resp["ci_real"] = val_real
+        resp["ci_enmascarado"] = val_enmascarado
+    return resp
 
 
 @router.get("/tareas/{tarea_id}")
@@ -588,7 +630,7 @@ def get_tareas_activas(_: User = Depends(get_current_user)):
 
 
 @router.get("/lote/{id_lote}/tarea")
-def get_tarea_lote(id_lote: int, tipo: str = Query("CONSOLIDACION", pattern="^(INGESTA|CONSOLIDACION|LECTURA_BETO)$")):
+def get_tarea_lote(id_lote: int, tipo: str = Query("CONSOLIDACION", pattern="^(INGESTA|CONSOLIDACION|LECTURA_BETO|PREPARACION_REVISION)$")):
     """Última tarea del lote de ese tipo (en curso o terminada), o null."""
     return tareas_dataops.ultima(id_lote, tipo)
 

@@ -1,0 +1,549 @@
+{
+ "tarea": "F3W — bloqueo de preparación/consolidación en la línea 104.250 de 116.557 (lote de 10 libros por la web)",
+ "fecha": "2026-11-18",
+ "entorno": "Solo clon beto_pg_f3w (127.0.0.1:55634, tmpfs). Bases nuevas desde f3w_vacio + cache_indice_beto de f3w_completo (90.014). Backend ejecutado dentro de giragroup_api como proceso aparte (uvicorn 127.0.0.1:8010 --workers 4 o funciones en proceso) con DATABASE_URL al clon. Nunca la DW viva, su puerto 5434 ni el gateway. Tipos como la SPA: Experiencia Docente 2.0 = EVALUACION_DOCENTE; ARCA = ACTA/CENTESIMAL_100.",
+ "nota_rnf03": "Tiempos de referencia en el clon; no son la cifra de RNF-03.",
+ "reproduccion": {
+  "A_proceso_unico_testclient_sin_correccion": {
+   "resultado": "10/10 y las 4 tareas COMPLETADAS (no se reproduce sin presión de memoria)",
+   "tiempos_seg": {
+    "upload_y_lectura_s": 465.1,
+    "preparacion_s": 436.9514083649992,
+    "consolidacion_s": 814.5606419020005
+   },
+   "traza_faulthandler_en_116557": [
+    "===== CONSOLIDACION sin avance en 116557 (volcado 1, 01:24:53) =====",
+    "Thread 0x0000731b8253f6c0 (most recent call first):",
+    "  File \"/usr/local/lib/python3.12/site-packages/psycopg2/extras.py\", line 1299 in execute_values",
+    "  File \"/app/services/dw_loader.py\", line 900 in finalizar_cargas",
+    "  File \"/app/routers/dataops/consolidacion.py\", line 526 in _consolidar",
+    "  File \"/app/routers/dataops/consolidacion.py\", line 110 in _en_segundo_plano",
+    "  File \"/usr/local/lib/python3.12/threading.py\", line 1012 in run",
+    "  File \"/usr/local/lib/python3.12/threading.py\", line 1075 in _bootstrap_inner",
+    "  File \"/usr/local/lib/python3.12/threading.py\", line 1032 in _bootstrap"
+   ],
+   "observacion": "finalizar_cargas() escribía 715.217 respuestas y 1.632.508 trazas al final sin latido (~165 s sin avance; la regla SIN_LATIDO_SEG=180 de tareas_dataops marca ERROR a los 180 s)"
+  },
+  "B_uvicorn_4_workers_con_sondeo_spa_sin_correccion": {
+   "resultado": "Preparación COMPLETADA (566 s); CONSOLIDACIÓN detenida en 104.250/116.557, igual que en la DW viva",
+   "eventos": [
+    "[01:39:42] LECTURA_BETO COMPLETADA 116557/116557 en 476.3s mem={'MemTotal': 15703, 'MemAvailable': 1503, 'SwapTotal': 4096, 'SwapFree': 2113, 'w2003': {'VmHWM': 578, 'VmRSS': 350, 'VmSwap': 0}, 'w2004': {'VmHWM': 1034, 'VmRSS': 523, 'VmSwap': 0}, 'w2005': {'VmHWM': 661, 'VmRSS': 410, 'VmSwap': 0}, 'w2006': {'VmHWM': 2423, 'VmRSS': 1878, 'VmSwap': 0}}",
+    "[01:49:08] PREPARACION_REVISION COMPLETADA 116557/116557 en 566.4s mem={'MemTotal': 15703, 'MemAvailable': 1406, 'SwapTotal': 4096, 'SwapFree': 496, 'w2003': {'VmHWM': 1091, 'VmRSS': 583, 'VmSwap': 0}, 'w2004': {'VmHWM': 1139, 'VmRSS': 631, 'VmSwap': 0}, 'w2005': {'VmHWM': 2284, 'VmRSS': 1311, 'VmSwap': 0}, 'w2006': {'VmHWM': 2781, 'VmRSS': 2264, 'VmSwap': 0}}",
+    "[01:58:50] CONSOLIDACION avance 104250/116557 estado=EN_CURSO mem={'MemTotal': 15703, 'MemAvailable': 263, 'SwapTotal': 4096, 'SwapFree': 0, 'w2003': {'VmHWM': 1091, 'VmRSS': 525, 'VmSwap': 0}, 'w2004': {'VmHWM': 1139, 'VmRSS': 672, 'VmSwap': 0}, 'w2005': {'VmHWM': 2930, 'VmRSS': 2918, 'VmSwap': 0}, 'w2006': {'VmHWM': 2781, 'VmRSS': 2201, 'VmSwap': 0}}",
+    "[01:59:50] CONSOLIDACION SIN AVANCE 60s en 104250: SIGUSR1 a [2003, 2004, 2006, 2217]",
+    "[02:00:50] CONSOLIDACION SIN AVANCE 120s en 104250: SIGUSR1 a [2003, 2004, 2006, 2217]"
+   ],
+   "uvicorn": [
+    "INFO:     Waiting for child process [2005]",
+    "INFO:     Child process [2005] died",
+    "INFO:     Started server process [2217]"
+   ],
+   "kernel": "vmstat oom_kill pasó de 0 a 1; docker inspect giragroup_api State.OOMKilled=true",
+   "faulthandler": "SIGUSR1 a los workers vivos (2003, 2004, 2006, 2217): ninguno tiene hilo consolidacion-*; el worker 2005 que lo tenía murió por SIGKILL (sin volcado)",
+   "pg_stat_activity_en_la_detencion": {
+    "etq": "CONSOLIDACION@104250#1",
+    "t": "01:59:50",
+    "act": [
+     [
+      "6512",
+      "idle",
+      "Client",
+      "ClientRead",
+      "00:00:08.110388",
+      "None",
+      "ROLLBACK"
+     ],
+     [
+      "6513",
+      "idle",
+      "Client",
+      "ClientRead",
+      "00:00:12.145997",
+      "None",
+      "ROLLBACK"
+     ],
+     [
+      "7313",
+      "idle",
+      "Client",
+      "ClientRead",
+      "00:00:02.053531",
+      "None",
+      "ROLLBACK"
+     ],
+     [
+      "6515",
+      "idle",
+      "Client",
+      "ClientRead",
+      "00:00:06.105428",
+      "None",
+      "ROLLBACK"
+     ],
+     [
+      "7292",
+      "idle",
+      "Client",
+      "ClientRead",
+      "00:00:00.029655",
+      "None",
+      "ROLLBACK"
+     ],
+     [
+      "6517",
+      "idle",
+      "Client",
+      "ClientRead",
+      "00:00:08.122021",
+      "None",
+      "ROLLBACK"
+     ],
+     [
+      "6518",
+      "idle",
+      "Client",
+      "ClientRead",
+      "00:00:10.13582",
+      "None",
+      "ROLLBACK"
+     ],
+     [
+      "7293",
+      "idle",
+      "Client",
+      "ClientRead",
+      "00:00:00.036356",
+      "None",
+      "ROLLBACK"
+     ],
+     [
+      "6550",
+      "idle",
+      "Client",
+      "ClientRead",
+      "00:00:10.134501",
+      "None",
+      "ROLLBACK"
+     ],
+     [
+      "6551",
+      "idle",
+      "Client",
+      "ClientRead",
+      "00:00:06.099213",
+      "None",
+      "ROLLBACK"
+     ]
+    ],
+    "locks": [],
+    "mem": {
+     "MemTotal": 15703,
+     "MemAvailable": 3064,
+     "SwapTotal": 4096,
+     "SwapFree": 0,
+     "w2003": {
+      "VmHWM": 1091,
+      "VmRSS": 531,
+      "VmSwap": 0
+     },
+     "w2004": {
+      "VmHWM": 1139,
+      "VmRSS": 542,
+      "VmSwap": 0
+     },
+     "w2006": {
+      "VmHWM": 2781,
+      "VmRSS": 2056,
+      "VmSwap": 0
+     },
+     "w2217": {
+      "VmHWM": 239,
+      "VmRSS": 239,
+      "VmSwap": 0
+     }
+    }
+   },
+   "tarea_4": "quedó EN_CURSO en 104250 sin excepción en el log; con el sondeo de la SPA pasa a ERROR 'El proceso se interrumpió' a los 180 s"
+  },
+  "dw_viva_solo_lectura_de_proc": {
+   "fuente": "/proc del contenedor giragroup_api (sin consultar la base viva)",
+   "worker_9_VmHWM_kB": 4130904,
+   "worker_9_utime_seg": 554.46,
+   "hilo_de_consolidacion": "ya no existe en ningún worker",
+   "swap_vm": "pswpout 1.132.663 páginas desde el arranque de la VM; sin 'Child process died' en el log de la API viva",
+   "inferencia": "en la carga viva el worker superó 4 GB y la VM quedó paginando (sin CPU, conexión 'idle in transaction' con la última consulta SELECT max(id_tiempo) de _tiempo_del_programa); no se mató por OOM sino que se quedó sin avanzar. Inferencia, no medición directa."
+  }
+ },
+ "causa": {
+  "tipo": "memoria del proceso de la API (no deadlock de threading.Lock, ni cola/executor, ni bloqueo entre sesiones de BD)",
+  "archivo_linea_antes_del_cambio": [
+   "backend/services/dw_loader.py:1470 — self._eval_pendientes[clave] = valores (todas las respuestas de evaluación del lote en memoria)",
+   "backend/services/dw_loader.py:1123 — self._cfo_pendientes[c] = (doc_id, tabla) (dos trazas por respuesta)",
+   "backend/routers/dataops/consolidacion.py:129 — dw.diferir_eval = not solo_revision; :526 — dw.finalizar_cargas() solo al final (diseño W-6/W-13)"
+  ],
+  "medicion_en_proceso_sin_correccion": {
+   "VmHWM_MB": 2376,
+   "eval_pendientes_max": 715217,
+   "cfo_pendientes_max": 1630410,
+   "seg": 799.9
+  },
+  "por_que_en_104250": "el pico crece con las respuestas diferidas: [BBDD] ANTIGUO, Evaluación Docente y Experiencia Docente (líneas 41.099–105.101) suman 715.217 respuestas; la memoria de la VM se agota en DIPLOMADOS DOC 2 de Experiencia Docente 2.0 (líneas 103.626–105.101)",
+  "secundario": "sin latido durante finalizar_cargas (~165 s en proceso único) y la regla de 180 s"
+ },
+ "cambio": {
+  "backend/services/dw_loader.py": "LIMITE_EVAL_DIFERIDAS=50000: _volcar_eval_si_excede() escribe en la misma transacción las respuestas y trazas diferidas al llegar al tope (helpers _insertar_cfo/_insertar_eval, reutilizados por finalizar_cargas). Para no cambiar lo que se carga, el completado de docente de _cargar_asignacion_docente solo toca respuestas de cargas anteriores (id_hecho_eval <= MAX previo y no reescritas por esta consolidación), igual que cuando todas se escribían al final. al_latir: callback por página de execute_values.",
+  "backend/services/tareas_dataops.py": "latir(tid): UPDATE solo de actualizado_en, como mucho 1/s",
+  "backend/routers/dataops/consolidacion.py": "dw.al_latir = lambda: tareas_dataops.latir(tarea_id) cuando hay tarea",
+  "sin_cambios": "cascada, umbrales, estados A/B/C, esquema (50 tablas), qué se carga",
+  "intento_descartado": "la primera versión (sin la guarda del completado de docente) daba +276 respuestas con id_docente (md5 fact_evaluacion_docente 72c2ae25… ≠ 3e7b4190…); se corrigió"
+ },
+ "huellas": {
+  "referencia_A_web_proceso_unico_sin_correccion": {
+   "fact_rendimiento_academico": "cba0b918d8483a1844eb118d96a9bd20",
+   "fact_situacion_financiera": "b2e00c3f3b86051240f98d6187dfeaaf",
+   "fact_evaluacion_docente": "3e7b4190bbc77decd0ceb6f016d6d30f",
+   "fact_marketing": "650eaef7f8231873420dfc60ea0b67b9",
+   "fact_rentabilidad": "76b601cf90cc24c22b4da6b3877cc7c9",
+   "fact_costo_programa": "04a4bcc4a9df10b96143987575500cd4",
+   "fact_techo_convenio": "d5f8a2458c3f3ea7c9877407dc138158",
+   "bridge_modulo_docente": "f4c13f69393b2c59f8d8d5ec8c1d60bf",
+   "carga_fila_origen_claves": "28b01e1d0f41aa5a2c685b5926dd6016"
+  },
+  "referencia_p1_consolidacion_desde_preparacion_sin_correccion": {
+   "fact_rendimiento_academico": "cba0b918d8483a1844eb118d96a9bd20",
+   "fact_situacion_financiera": "b2e00c3f3b86051240f98d6187dfeaaf",
+   "fact_evaluacion_docente": "3e7b4190bbc77decd0ceb6f016d6d30f",
+   "fact_marketing": "650eaef7f8231873420dfc60ea0b67b9",
+   "fact_rentabilidad": "76b601cf90cc24c22b4da6b3877cc7c9",
+   "fact_costo_programa": "04a4bcc4a9df10b96143987575500cd4",
+   "fact_techo_convenio": "d5f8a2458c3f3ea7c9877407dc138158",
+   "bridge_modulo_docente": "f4c13f69393b2c59f8d8d5ec8c1d60bf",
+   "carga_fila_origen_claves": "28b01e1d0f41aa5a2c685b5926dd6016"
+  },
+  "A_igual_p1": true,
+  "p4_consolidacion_con_correccion_igual_p1": true,
+  "c_web_4_workers_con_correccion_igual_p1": true,
+  "c2_web_con_correccion_hechos_md5_y_trazas_igual_p1": true,
+  "c2_diferencias_fuera_de_hechos": {
+   "stg_no_ruido": [
+    1382,
+    1993
+   ],
+   "stg_pendientes": [
+    1382,
+    1993
+   ],
+   "log_inconsistencias": [
+    22746,
+    44449
+   ]
+  },
+  "c2_nota": "c2 se midió después de la re-consolidación por HTTP: esta vuelve a registrar los descartes de ruido en log_inconsistencias (+21.703) y 611 casos en stg_entidad_no_resuelta; no se comprobó si el código anterior hace lo mismo (W-13 solo midió hechos). Hechos y carga_fila_origen idénticos.",
+  "memoria_con_correccion_en_proceso": {
+   "VmHWM_MB": 1623,
+   "eval_pendientes_max": 50000,
+   "cfo_pendientes_max": 151372,
+   "seg": 688.2
+  }
+ },
+ "verificacion_web_con_correccion": {
+  "c": {
+   "tareas": [
+    [
+     "1",
+     "INGESTA",
+     "COMPLETADA",
+     "10",
+     "10"
+    ],
+    [
+     "2",
+     "LECTURA_BETO",
+     "COMPLETADA",
+     "116557",
+     "116557"
+    ],
+    [
+     "3",
+     "PREPARACION_REVISION",
+     "COMPLETADA",
+     "116557",
+     "116557"
+    ],
+    [
+     "4",
+     "CONSOLIDACION",
+     "COMPLETADA",
+     "116557",
+     "116557"
+    ],
+    [
+     "5",
+     "CONSOLIDACION",
+     "EN_CURSO",
+     "0",
+     "0"
+    ]
+   ],
+   "consolidacion_seg": 646.7,
+   "nota": "INGESTA, LECTURA_BETO, PREPARACION_REVISION y CONSOLIDACION COMPLETADAS; una re-consolidación por HTTP en el mismo worker (que conservaba ~2 GB tras preparar y consolidar) murió por OOM al empezar (oom_kill 2) con la VM sin swap y dos pilas de API; esa base se perdió al reiniciarse Docker"
+  },
+  "c2": {
+   "tareas": [
+    [
+     "1",
+     "INGESTA",
+     "COMPLETADA",
+     "10",
+     "10"
+    ],
+    [
+     "2",
+     "LECTURA_BETO",
+     "COMPLETADA",
+     "116557",
+     "116557"
+    ],
+    [
+     "3",
+     "PREPARACION_REVISION",
+     "COMPLETADA",
+     "116557",
+     "116557"
+    ],
+    [
+     "4",
+     "CONSOLIDACION",
+     "COMPLETADA",
+     "116557",
+     "116557"
+    ],
+    [
+     "5",
+     "CONSOLIDACION",
+     "COMPLETADA",
+     "116557",
+     "116557"
+    ]
+   ],
+   "eventos": [
+    "[13:29:25] LECTURA_BETO COMPLETADA 116557/116557 en 320.7s mem={'MemTotal': 15703, 'MemAvailable': 8494, 'SwapTotal': 4096, 'SwapFree': 4096, 'w219': {'VmHWM': 644, 'VmRSS': 419, 'VmSwap': 0}, 'w220': {'VmHWM': 2425, 'VmRSS': 1884, 'VmSwap': 0}, 'w221': {'VmHWM': 239, 'VmRSS': 239, 'VmSwap': 0}, 'w222': {'VmHWM': 567, 'VmRSS': 347, 'VmSwap': 0}}",
+    "[13:35:36] PREPARACION_REVISION COMPLETADA 116557/116557 en 370.8s mem={'MemTotal': 15703, 'MemAvailable': 7142, 'SwapTotal': 4096, 'SwapFree': 4096, 'w219': {'VmHWM': 1156, 'VmRSS': 604, 'VmSwap': 0}, 'w220': {'VmHWM': 3245, 'VmRSS': 2493, 'VmSwap': 0}, 'w221': {'VmHWM': 1095, 'VmRSS': 594, 'VmSwap': 0}, 'w222': {'VmHWM': 567, 'VmRSS': 347, 'VmSwap': 0}}",
+    "[13:45:02] CONSOLIDACION COMPLETADA 116557/116557 en 566.2s mem={'MemTotal': 15703, 'MemAvailable': 5022, 'SwapTotal': 4096, 'SwapFree': 4096, 'w219': {'VmHWM': 1156, 'VmRSS': 649, 'VmSwap': 0}, 'w220': {'VmHWM': 3245, 'VmRSS': 2618, 'VmSwap': 0}, 'w221': {'VmHWM': 2039, 'VmRSS': 1499, 'VmSwap': 0}, 'w222': {'VmHWM': 1041, 'VmRSS': 531, 'VmSwap': 0}}",
+    "[13:45:02] re-consolidacion 200 {\"status\":\"accepted\",\"tarea_id\":5,\"tarea\":{\"id\":5,\"tipo\":\"CONSOLIDACION\",\"id_lote\":1,\"estado\":\"EN_CURSO\",\"total\":0,\"procesados\":0,\"resultado\":null,\"error\":null,\"iniciado_por\":null,\"transcurrido_seg\":0",
+    "[13:52:13] CONSOLIDACION COMPLETADA 116557/116557 en 430.9s mem={'MemTotal': 15703, 'MemAvailable': 3969, 'SwapTotal': 4096, 'SwapFree': 4093, 'w219': {'VmHWM': 2201, 'VmRSS': 1521, 'VmSwap': 0}, 'w220': {'VmHWM': 3245, 'VmRSS': 2618, 'VmSwap': 0}, 'w221': {'VmHWM': 2099, 'VmRSS': 1618, 'VmSwap': 0}, 'w222': {'VmHWM': 1041, 'VmRSS': 529, 'VmSwap': 0}}",
+    "[13:52:13] re-consolidacion delta {'fact_rendimiento_academico': 0, 'fact_situacion_financiera': 0, 'fact_evaluacion_docente': 0, 'fact_marketing': 0, 'fact_rentabilidad': 0, 'fact_costo_programa': 0, 'fact_techo_convenio': 0, 'bridge_modulo_docente': 0, 'carga_fila_origen': 0}"
+   ]
+  },
+  "documentos_10_de_10": [
+   [
+    "TBL_INSCRITOS.xlsx",
+    "ADMISION",
+    "None",
+    "30366"
+   ],
+   [
+    "BD Cobranzas.xlsx",
+    "COBRANZA",
+    "None",
+    "30948"
+   ],
+   [
+    "BD Techos.xlsx",
+    "TECHOS",
+    "None",
+    "414"
+   ],
+   [
+    "EJECUTADO VS META.xlsx",
+    "RENTABILIDAD",
+    "None",
+    "190"
+   ],
+   [
+    "BD Egresos.xlsx",
+    "EGRESOS",
+    "None",
+    "2890"
+   ],
+   [
+    "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+    "PLANIFICACION",
+    "None",
+    "0"
+   ],
+   [
+    "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "EVALUACION_DOCENTE",
+    "None",
+    "413458"
+   ],
+   [
+    "Evaluación Docente y Unifranz.xlsx",
+    "EVALUACION_DOCENTE",
+    "None",
+    "94244"
+   ],
+   [
+    "Experiencia Docente 2.0.xlsx",
+    "EVALUACION_DOCENTE",
+    "None",
+    "1006336"
+   ],
+   [
+    "Base centralizada Académica ARCA (1).xlsx",
+    "ACTA",
+    "CENTESIMAL_100",
+    "53662"
+   ]
+  ],
+  "carga_fila_origen_por_tabla": {
+   "bridge_modulo_docente": {
+    "filas": 3438,
+    "docs_distintos": 1
+   },
+   "fact_costo_programa": {
+    "filas": 2746,
+    "docs_distintos": 1
+   },
+   "fact_evaluacion_docente": {
+    "filas": 1514038,
+    "docs_distintos": 3
+   },
+   "fact_marketing": {
+    "filas": 30366,
+    "docs_distintos": 1
+   },
+   "fact_rendimiento_academico": {
+    "filas": 50224,
+    "docs_distintos": 1
+   },
+   "fact_rentabilidad": {
+    "filas": 334,
+    "docs_distintos": 2
+   },
+   "fact_situacion_financiera": {
+    "filas": 30948,
+    "docs_distintos": 1
+   },
+   "fact_techo_convenio": {
+    "filas": 414,
+    "docs_distintos": 1
+   }
+  },
+  "conteos_finales": {
+   "fact_rendimiento_academico": 25108,
+   "fact_situacion_financiera": 10719,
+   "fact_evaluacion_docente": 715217,
+   "fact_marketing": 10464,
+   "fact_rentabilidad": 95,
+   "fact_costo_programa": 1371,
+   "fact_techo_convenio": 206,
+   "bridge_modulo_docente": 1690,
+   "carga_fila_origen": 1632508,
+   "stg_no_ruido": 1993,
+   "stg_ruido": 12977,
+   "stg_pendientes": 1993,
+   "log_inconsistencias": 44449,
+   "dim_estudiante": 15391,
+   "dim_modulo": 4375,
+   "dim_docente": 761
+  },
+  "reconsolidacion_http_mismo_lote": {
+   "http": 200,
+   "respuesta": "{\"status\":\"accepted\",\"tarea_id\":5,\"tarea\":{\"id\":5,\"tipo\":\"CONSOLIDACION\",\"id_lote\":1,\"estado\":\"EN_CURSO\",\"total\":0,\"procesados\":0,\"resultado\":null,\"error\":null,\"iniciado_por\":null,\"transcurrido_seg\":0,\"restante_seg\":null,\"porcentaje\":0.0}}",
+   "tarea": [
+    [
+     "5",
+     "COMPLETADA",
+     "116557",
+     "116557",
+     "None",
+     "{\"status\": \"success\", \"message\": \"Transacción completada: 0 hechos persistidos en Data Warehouse (0 académicos, 0 financieros), 8308 derivados a Revisión Humana.\", \"desglose\": {\"inserted_academico\": 0, \"inserted_financiero\": 0}, \"sent_hitl\": 8308, \"inserted_dw\": 0, \"solo_revision\": false, \"descartados_ruido\": 21411, \"inserted_admision\": 13, \"inserted_revision\": 0, \"inserted_academico\": 0, \"descartes_por_regla\": {\"FILA_SIN_ENTIDAD\": 37, \"FILA_SIN_CABECERAS\": 3248, \"FILA_ACADEMICA_SIN_ESTUDIANTE\": 8891, \"FILA_EVALUACION_SIN_RESPUESTAS\": 8737, \"FILA_FINANCIERA_SIN_ESTUDIANTE\": 474, \"FILA_AGREGADA_SIN_CATEGORIA_MES\": 24}, \"inserted_financiero\": 0}"
+    ],
+    430.92021403900003,
+    null
+   ],
+   "conteos_antes": {
+    "fact_rendimiento_academico": 25108,
+    "fact_situacion_financiera": 10719,
+    "fact_evaluacion_docente": 715217,
+    "fact_marketing": 10464,
+    "fact_rentabilidad": 95,
+    "fact_costo_programa": 1371,
+    "fact_techo_convenio": 206,
+    "bridge_modulo_docente": 1690,
+    "carga_fila_origen": 1632508
+   },
+   "conteos_despues": {
+    "fact_rendimiento_academico": 25108,
+    "fact_situacion_financiera": 10719,
+    "fact_evaluacion_docente": 715217,
+    "fact_marketing": 10464,
+    "fact_rentabilidad": 95,
+    "fact_costo_programa": 1371,
+    "fact_techo_convenio": 206,
+    "bridge_modulo_docente": 1690,
+    "carga_fila_origen": 1632508
+   },
+   "delta": {
+    "fact_rendimiento_academico": 0,
+    "fact_situacion_financiera": 0,
+    "fact_evaluacion_docente": 0,
+    "fact_marketing": 0,
+    "fact_rentabilidad": 0,
+    "fact_costo_programa": 0,
+    "fact_techo_convenio": 0,
+    "bridge_modulo_docente": 0,
+    "carga_fila_origen": 0
+   }
+  }
+ },
+ "comparacion_con_w13": {
+  "w13_conteos": {
+   "fact_rendimiento_academico": 25108,
+   "fact_situacion_financiera": 10719,
+   "fact_evaluacion_docente": 715217,
+   "fact_marketing": 10464,
+   "fact_rentabilidad": 95,
+   "fact_costo_programa": 1371,
+   "fact_techo_convenio": 206,
+   "carga_fila_origen": 1632508
+  },
+  "ahora": {
+   "fact_rendimiento_academico": 25108,
+   "fact_situacion_financiera": 10719,
+   "fact_evaluacion_docente": 715217,
+   "fact_marketing": 10464,
+   "fact_rentabilidad": 95,
+   "fact_costo_programa": 1371,
+   "fact_techo_convenio": 206,
+   "carga_fila_origen": 1632508
+  },
+  "diferencias": {
+   "fact_rendimiento_academico": 0,
+   "fact_situacion_financiera": 0,
+   "fact_evaluacion_docente": 0,
+   "fact_marketing": 0,
+   "fact_rentabilidad": 0,
+   "fact_costo_programa": 0,
+   "fact_techo_convenio": 0,
+   "carga_fila_origen": 0
+  },
+  "explicacion": "Sin diferencias. Experiencia Docente 2.0 entra ahora como EVALUACION_DOCENTE (en W-13 como ACTA), pero sus 4 hojas ya eran Likert y D-A4 las ruteaba a evaluación por la categoría de la hoja; los hechos, trazas por tabla (1.514.038 de evaluación en 3 documentos) y el resto coinciden. Cambia solo dim_origen_documental.tipo_fuente."
+ },
+ "identidad": "No se aprobó ningún caso; stg_entidad_no_resuelta pendientes no-ruido en el clon: 1993",
+ "pruebas": {
+  "nueva": "tests/f3w/test_bloqueo_consolidacion.py (3 pruebas)",
+  "antes_del_cambio": "2 failed (memoria 9000 > 1000; sin tareas_dataops.latir), 1 passed (equivalencia)",
+  "despues": "3 passed; con tests/f3s, tests/f3t, backend/tests/test_w13_carga_fila_origen.py y test_w5_dos_fases.py: 17 passed"
+ },
+ "riesgos": [
+  "La API viva se reinició durante esta tarea (reinicio de Docker) y con ./backend montado ya ejecuta este cambio sin commit.",
+  "La memoria por worker no se libera entre tareas (preparación + consolidación en el mismo worker: ~2 GB retenidos; _MEMO_CATALOGOS conserva hasta 12 catálogos). Re-consolidar un lote grande en el mismo worker puede seguir sin memoria si la VM está llena.",
+  "Los clones tmpfs (beto_pg_f3w 6 GB, beto_pg_tmpfs) ocupan RAM de la misma VM; conviene detenerlos durante la carga web.",
+  "Hallazgo latente de W-6 (no corregido, por no cambiar qué se carga): con diferir_eval el completado de docente de _cargar_asignacion_docente no alcanza a las respuestas de la misma consolidación.",
+  "La preparación (solo_revision) no difiere hechos; en la viva también se detuvo en 104.250, compatible con la misma falta de memoria de la VM; no se le cambió nada.",
+  "El reinicio de Docker borró las bases tmpfs del clon (f3w_vacio, f3w_completo, W-5/W-6/W-13); se reconstruyeron f3w_completo y f3w_vacio desde output/f3ub/f3u_completo.dump como en W-0."
+ ]
+}

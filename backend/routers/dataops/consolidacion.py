@@ -3,6 +3,7 @@ import hashlib
 import logging
 import re
 import threading
+from collections import Counter
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Any, Dict, List, Optional
 from pipeline.semantic.indice_confianza import BANDA_CONSOLIDADO, BANDA_REVISION, BANDA_STAGING
@@ -23,7 +24,7 @@ from services.extraccion_por_encabezado import campos_por_encabezado, factores_e
 from datetime import datetime
 from services.dataops_evaluation_service import enmascarar_ci, strip_accents
 from core.security import require_roles
-from ._comun import ConfirmDwInsertRequest, UMBRAL_INDICE_REGISTRO_DEC
+from ._comun import ConfirmDwInsertRequest, UMBRAL_INDICE_REGISTRO_DEC, categoria_ruteo as resolver_categoria_ruteo
 from .revision import _bloquear_documentos_editables, resolve_review_item
 from .extraccion import _docentes_con_contexto, _es_encabezado_no_estudiante, extract_entities_from_line
 from models.log_inconsistencia import LogInconsistencia
@@ -32,6 +33,17 @@ from .evaluacion import _resolver_documentos_lote
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+@router.post("/preparar-revision")
+def preparar_revision(
+    payload: ConfirmDwInsertRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
+):
+    """Fase A (W-5): ejecuta resolución de identidad y crea casos HITL en stg_entidad_no_resuelta sin cargar hechos."""
+    payload.solo_revision = True
+    return confirm_dw_insert(payload=payload, db=db, current_user=current_user)
 
 
 @router.post("/confirm-dw-insert")
@@ -67,14 +79,22 @@ def confirm_dw_insert(
     _bloquear_documentos_editables(db, docs)
     if not payload.en_segundo_plano:
         return _consolidar(payload, db, current_user)
-    for tipo in ('INGESTA', 'LECTURA_BETO', 'CONSOLIDACION'):
+    tipo_tarea = 'PREPARACION_REVISION' if payload.solo_revision else 'CONSOLIDACION'
+    if payload.solo_revision and payload.id_lote:
+        for tipo_done in ('PREPARACION_REVISION', 'CONSOLIDACION'):
+            prev_done = tareas_dataops.ultima_en_sesion(db, payload.id_lote, tipo_done)
+            if prev_done and prev_done['estado'] == 'COMPLETADA':
+                return {'status': 'already_prepared', 'tarea_id': prev_done['id'], 'tarea': prev_done}
+    for tipo in ('INGESTA', 'LECTURA_BETO', 'PREPARACION_REVISION', 'CONSOLIDACION'):
         previa = tareas_dataops.ultima_en_sesion(db, payload.id_lote, tipo)
         if previa and previa['estado'] == 'EN_CURSO':
-            if tipo == 'CONSOLIDACION':
+            if tipo == tipo_tarea:
                 return {'status': 'accepted', 'tarea_id': previa['id'], 'tarea': previa}
+            if tipo in ('PREPARACION_REVISION', 'CONSOLIDACION'):
+                raise HTTPException(409, 'Espera a que termine la preparación de revisión o consolidación del lote.')
             raise HTTPException(409, 'Espera a que termine la carga y lectura del lote.')
     try:
-        tarea_id = tareas_dataops.crear_en_sesion(db, 'CONSOLIDACION', payload.id_lote)
+        tarea_id = tareas_dataops.crear_en_sesion(db, tipo_tarea, payload.id_lote)
         if not tarea_id:
             raise RuntimeError('No se reservó una tarea')
         db.commit()
@@ -104,8 +124,12 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                 tarea_id: Optional[int] = None) -> Dict[str, Any]:
     if payload.id_lote:
         _bloquear_documentos_editables(db, db.query(DimOrigenDocumental).filter_by(id_lote=payload.id_lote).all())
+    solo_revision = bool(getattr(payload, "solo_revision", False))
     dw = DWLoaderService(db)
-    dw.diferir_eval = True  # evaluación docente (decenas de miles de respuestas): inserción en bloque al final, no un INSERT por fila
+    dw.diferir_eval = not solo_revision  # evaluación docente (decenas de miles de respuestas): inserción en bloque al final, no un INSERT por fila
+    dw.solo_revision = solo_revision
+    if tarea_id:
+        dw.al_latir = lambda: tareas_dataops.latir(tarea_id)  # escrituras en bloque: la tarea sigue viva sin avanzar líneas
     thresh = payload.threshold or UMBRAL_INDICE_REGISTRO_DEC
 
     effective_doc_id = payload.doc_id
@@ -143,6 +167,19 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         o.id_documento: o
         for o in db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids_stg)).all()
     } if doc_ids_stg else {}
+    if not solo_revision and doc_ids_stg:
+        dw.casos_existentes_fase_a = Counter(
+            db.query(
+                StagingEntidadNoResuelta.id_documento,
+                StagingEntidadNoResuelta.motivo,
+                StagingEntidadNoResuelta.texto_original,
+            )
+            .filter(
+                StagingEntidadNoResuelta.id_documento.in_(doc_ids_stg),
+                StagingEntidadNoResuelta.tipo_entidad != "RUIDO",
+            )
+            .all()
+        )
 
     # Escala de notas por programa en cada archivo: un acta mezcla programas sobre 20 y sobre 100
     filas_por_doc: Dict[Any, List[Dict[str, str]]] = {}
@@ -156,14 +193,22 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         for d, filas in filas_por_doc.items()
     }
     total_lineas = sum(len([l for l in (s_reg.texto_plano or "").splitlines() if l.strip()]) for s_reg in stg_records)
-    # Avance en dos fases del mismo peso: índice de BETO de cada línea y carga al DW
+    # Avance con el total real de líneas (sin ×2 al reutilizar cache_indice_beto)
     lineas_hechas = 0
-    indexadas = [0]
-    tareas_dataops.avanzar(tarea_id, 0, total_lineas * 2, forzar=True)
+    tareas_dataops.avanzar(tarea_id, 0, total_lineas, forzar=True)
 
     def _al_indexar(n):
-        indexadas[0] += n
-        tareas_dataops.avanzar(tarea_id, indexadas[0] + lineas_hechas)
+        pass  # el avance real se reporta por bloque en el ciclo principal
+
+    # Precargar una sola vez por documento los registros ya existentes en stg_entidad_no_resuelta
+    ruido_visto_por_doc: Dict[Any, set] = {}
+    if doc_ids_stg:
+        for d_id, reg_id, txt in db.query(
+            StagingEntidadNoResuelta.id_documento,
+            StagingEntidadNoResuelta.registro_origen_id,
+            StagingEntidadNoResuelta.texto_original,
+        ).filter(StagingEntidadNoResuelta.id_documento.in_(doc_ids_stg)).all():
+            ruido_visto_por_doc.setdefault((d_id, reg_id), set()).add(txt)
 
     ocurrencias = ContadorOcurrencias()
     # Flags BETO_CASCADA_FINAL / BETO_ACUERDO_QC (services/beto_integracion.py); apagados: camino original
@@ -194,18 +239,12 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         if not lines and raw_text:
             lines = [raw_text]
 
-        categoria_ruteo = (
-            "financiero" if doc_fuente == "COBRANZA"
-            else "rentabilidad" if doc_fuente in ("EGRESOS", "TECHOS", "RENTABILIDAD")
-            else "evaluacion_docente" if doc_fuente == "EVALUACION_DOCENTE"
-            else "marketing" if doc_fuente == "MARKETING"
-            else "admision" if doc_fuente == "ADMISION"
-            else "academico"
-        )
+        categoria_ruteo = resolver_categoria_ruteo(doc_fuente, stg.categoria)
 
         # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
         # D-A8a: las filas que una regla ya resolvió (rentabilidad: categoría + mes) no van a BETO ni caen a staging por su índice
-        resueltas_regla = [fila_resuelta_por_regla(campos_por_encabezado([c.strip() for c in l.split("|")]), categoria_ruteo) for l in lines]
+        campos_por_linea = [campos_por_encabezado([c.strip() for c in l.split("|")]) for l in lines]
+        resueltas_regla = [fila_resuelta_por_regla(c, categoria_ruteo) for c in campos_por_linea]
         indices_linea = indices_cascada(lines, resueltas_regla, obtener_indices, al_avanzar=_al_indexar)
         refinadas = None
         if cliente_beto is not None:
@@ -218,27 +257,21 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                 excluir_celda=_es_encabezado_no_estudiante)
         logs_descarte_stg = []
         stg_descarte_stg = []
-        ruido_visto_stg = {
-            r[0]
-            for r in db.query(StagingEntidadNoResuelta.texto_original)
-            .filter(
-                StagingEntidadNoResuelta.id_documento == stg.id_documento,
-                StagingEntidadNoResuelta.registro_origen_id == stg.id,
-            )
-            .all()
-        }
-        for k_fila, (line, indice) in enumerate(zip(lines, indices_linea)):
+        unres_stg = []
+        ruido_visto_stg = ruido_visto_por_doc.setdefault((stg.id_documento, stg.id), set())
+        for k_fila, (line, indice, campos_linea) in enumerate(zip(lines, indices_linea, campos_por_linea)):
             lineas_hechas += 1
-            tareas_dataops.avanzar(tarea_id, indexadas[0] + lineas_hechas)
-            campos_linea = campos_por_encabezado([c.strip() for c in line.split("|")])
+            if lineas_hechas % 250 == 0:
+                tareas_dataops.avanzar(tarea_id, lineas_hechas)
             motivo_ruido = motivo_fila_sin_entidad(campos_linea, categoria_ruteo)
             if motivo_ruido:
-                # Sin entidad que enlazar (hoja de estados, catálogo, fila agregada): acumula en lote sin autoflush (F3-1)
-                _registrar_descarte_ruido(
-                    db, stg, line, indice, motivo_ruido, doc_fuente,
-                    fila_origen=(stg.fila_inicio or 0) + k_fila,
-                    logs_out=logs_descarte_stg, stg_out=stg_descarte_stg, ruido_visto=ruido_visto_stg,
-                )
+                if not solo_revision:
+                    # Sin entidad que enlazar (hoja de estados, catálogo, fila agregada): acumula en lote sin autoflush (F3-1)
+                    _registrar_descarte_ruido(
+                        db, stg, line, indice, motivo_ruido, doc_fuente,
+                        fila_origen=(stg.fila_inicio or 0) + k_fila,
+                        logs_out=logs_descarte_stg, stg_out=stg_descarte_stg, ruido_visto=ruido_visto_stg,
+                    )
                 descartados_ruido += 1
                 descartes_por_regla[motivo_ruido] = descartes_por_regla.get(motivo_ruido, 0) + 1
                 continue
@@ -264,11 +297,12 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                 # Opción 2: las reglas ven una persona que BETO no ve. La confianza baja un escalón y el hecho queda en revisión
                 score = beto_integracion.bajar_un_escalon(score)
                 en_revision = True
-                db.add(LogInconsistencia(
-                    id_documento=stg.id_documento, fila_origen=(stg.fila_inicio or 0) + k_fila, campo_afectado="persona",
-                    valor_recibido=str(next((e.get("token") for e in ents if e.get("label") in ("ESTUDIANTE", "DOCENTE") and e.get("acuerdo_beto") == beto_integracion.DESACUERDO), ""))[:2000],
-                    valor_esperado="BETO: sin entidad persona en ese tramo", tipo_regla=MOTIVO_DESACUERDO_REGLA_BETO, severidad="BAJA",
-                    estado_resolucion="PENDIENTE", descripcion="La regla resolvió una persona que BETO etiqueta como O; confianza bajada un escalón y hecho en revisión"))
+                if not solo_revision:
+                    db.add(LogInconsistencia(
+                        id_documento=stg.id_documento, fila_origen=(stg.fila_inicio or 0) + k_fila, campo_afectado="persona",
+                        valor_recibido=str(next((e.get("token") for e in ents if e.get("label") in ("ESTUDIANTE", "DOCENTE") and e.get("acuerdo_beto") == beto_integracion.DESACUERDO), ""))[:2000],
+                        valor_esperado="BETO: sin entidad persona en ese tramo", tipo_regla=MOTIVO_DESACUERDO_REGLA_BETO, severidad="BAJA",
+                        estado_resolucion="PENDIENTE", descripcion="La regla resolvió una persona que BETO etiqueta como O; confianza bajada un escalón y hecho en revisión"))
 
             ci_tok = next((e["token"] for e in ents if "CI" in e.get("label", "")), None)
             if ci_tok == "No provisto":
@@ -430,7 +464,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                         reg_item["resoluciones"].update(metricas_captacion(campos_linea))
                 for reg_item in registros_linea:
                     res = dw.cargar_registro(reg_item)
-                    if res.get("status") == "skipped":  # respuesta vacía: nada que guardar ni revisar
+                    if res.get("status") in ("skipped", "skipped_solo_revision"):  # respuesta vacía o Fase A sin carga de hechos
                         continue
                     if res.get("status") != "loaded":
                         sent_hitl += 1
@@ -452,12 +486,9 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                 elif grade_ent and grade_ent.get("canonicalId") in ("ESCALA_AMBIGUA", "NOTA_FUERA_ESCALA"):
                     motivo_canonico = grade_ent.get("canonicalId")
 
-                exists_unres = db.query(StagingEntidadNoResuelta).filter(
-                    StagingEntidadNoResuelta.id_documento == stg.id_documento,
-                    StagingEntidadNoResuelta.registro_origen_id == stg.id,
-                    StagingEntidadNoResuelta.texto_original.in_([line, line[:250]]),
-                ).first()
+                exists_unres = (line in ruido_visto_stg) or (line[:250] in ruido_visto_stg)
                 if not exists_unres:
+                    ruido_visto_stg.add(line[:250])
                     stg_unresolved = StagingEntidadNoResuelta(
                         id_documento=stg.id_documento,
                         tipo_entidad="CONCEPTO_FINANCIERO" if doc_fuente == "COBRANZA" else "ESTUDIANTE",
@@ -483,16 +514,21 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                         registro_origen_id=stg.id,
                         estado_resolucion="PENDIENTE",
                     )
-                    db.add(stg_unresolved)
+                    unres_stg.append(stg_unresolved)
 
         if logs_descarte_stg:
             db.add_all(logs_descarte_stg)
         if stg_descarte_stg:
             db.add_all(stg_descarte_stg)
+        if unres_stg:
+            db.add_all(unres_stg)
 
-    dw.finalizar_cargas()
+    tareas_dataops.avanzar(tarea_id, total_lineas, total_lineas, forzar=True)
+    if not solo_revision:
+        dw.finalizar_cargas()
     db.commit()
-    cache_consultas.invalidar()  # el DW cambió: alertas, CMI y forecast se recalculan
+    if not solo_revision:
+        cache_consultas.invalidar()  # el DW cambió: alertas, CMI y forecast se recalculan
     inserted_total = inserted_academico + inserted_financiero
 
     # Registrar auditoría en LogPipelineIngesta y emitir notificación de consolidación DW
@@ -501,10 +537,14 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         doc_ref_id = effective_doc_id or (stg_records[0].id_documento if stg_records else None)
         audit_pipe = LogPipelineIngesta(
             id_documento=doc_ref_id,
-            etapa="DW_CONSOLIDACION",
+            etapa="PREPARACION_REVISION" if solo_revision else "DW_CONSOLIDACION",
             nivel="SUCCESS",
             modulo="DataOps Pipeline",
-            mensaje=f"Consolidación exitosa en Data Warehouse por {user_name}: {inserted_total} registros (+{inserted_academico} académicos, +{inserted_financiero} financieros).",
+            mensaje=(
+                f"Preparación de revisión (Fase A) por {user_name}: {sent_hitl} casos detectados, 0 hechos cargados."
+                if solo_revision else
+                f"Consolidación exitosa en Data Warehouse por {user_name}: {inserted_total} registros (+{inserted_academico} académicos, +{inserted_financiero} financieros)."
+            ),
             metadata_json={
                 "id_lote": payload.id_lote,
                 "inserted_total": inserted_total,
@@ -524,7 +564,10 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
 
     return {
         "status": "success",
+        "solo_revision": solo_revision,
         "message": (
+            f"Revisión preparada (Fase A): {sent_hitl} casos derivados a Revisión Humana, 0 hechos cargados."
+            if solo_revision else
             f"Transacción completada: {inserted_total} hechos persistidos en Data Warehouse "
             f"({inserted_academico} académicos, {inserted_financiero} financieros), "
             f"{sent_hitl} derivados a Revisión Humana."

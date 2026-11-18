@@ -101,6 +101,8 @@ def on_startup():
                         ALTER TABLE fact_evaluacion_docente ADD COLUMN IF NOT EXISTS escala_max INTEGER;
                         ALTER TABLE fact_evaluacion_docente ADD COLUMN IF NOT EXISTS clave_respuesta VARCHAR(64);
                         CREATE UNIQUE INDEX IF NOT EXISTS uq_fact_eval_clave ON fact_evaluacion_docente (clave_respuesta);
+                        ALTER TABLE public.dataops_tarea DROP CONSTRAINT IF EXISTS dataops_tarea_tipo_check;
+                        ALTER TABLE public.dataops_tarea ADD CONSTRAINT dataops_tarea_tipo_check CHECK (tipo IN ('INGESTA', 'LECTURA_BETO', 'PREPARACION_REVISION', 'CONSOLIDACION'));
                     """))
                     conn.commit()
 

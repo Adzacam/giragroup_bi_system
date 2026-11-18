@@ -1,0 +1,22 @@
+{
+  "tarea": "W-12",
+  "decision": "DECISION 3",
+  "fecha": "2026-11-17",
+  "endpoint": "GET /api/v1/dataops/registro/{registro_id}/revelar-ci?campo=ci|nombre|correo",
+  "roles_permitidos": ["ADMIN", "AUDITOR_CALIDAD"],
+  "auditoria": "LogAuditoriaNlp con usuario_auditor, campo (REVELAR_<CAMPO>_AUTORIZADO) y registro_id",
+  "listas_enmascaradas": {
+    "texto_preparado": "dataops_privacy.texto_publico",
+    "lectura_beto": "dataops_privacy.registro_beto_publico",
+    "revision_casos": "services/revision_consulta.py::caso_guardado (estudiante='••••', nombre_extraido='••••', sugerencia='••••', correo_enmascarado='••••@••••', que_vio=texto_publico)"
+  },
+  "ui_v1_y_v2": [
+    "frontend/src/modules/dataops/components/TextoPreparadoTab.jsx",
+    "frontend/src/modules/dataops/BetoReadingFlowView.jsx",
+    "frontend/src/modules/dataops/HumanReviewFlowView.jsx"
+  ],
+  "pruebas": {
+    "pytest_w12": "3 passed (backend/tests/test_w12_revelar_por_fila.py)",
+    "vitest_w12": "2 passed (frontend/src/modules/dataops/__tests__/w12RevelarPorFila.test.jsx)"
+  }
+}

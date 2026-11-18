@@ -1,0 +1,30 @@
+{
+  "tarea": "W-9",
+  "fecha": "2026-11-17",
+  "script_generador": "scripts/generar_beto_metricas_front.py",
+  "archivo_generado": "frontend/src/constants/betoMetricas.json",
+  "fuentes": [
+    "docs/mediciones/f1_training_info.json",
+    "docs/mediciones/f3r_ablacion.json",
+    "docs/mediciones/f3r_matriz_confusion.json",
+    "docs/mediciones/f1_evaluacion_despues/matriz_confusion_ner.json"
+  ],
+  "cifras_verificadas_desde_origen": {
+    "model_base": "dccuchile/bert-base-spanish-wwm-cased",
+    "num_etiquetas_iob2": 9,
+    "epocas": 3,
+    "best_epoch": 2,
+    "best_dev_f1": 0.9979,
+    "gold_510_modo_c_f1_estricto": 0.979552,
+    "gold_510_modo_c_f1_relajado": 0.9942,
+    "tokens_per_estudiante_a_programa": 1
+  },
+  "verificaciones": {
+    "vitest_w9": "5/5 passed (frontend/src/modules/dataops/__tests__/w9MetricasModelo.test.jsx)",
+    "vitest_dataops": "35/35 passed (5 archivos en frontend/src/modules/dataops/__tests__/)",
+    "npm_run_build": "OK (vite build, 0 errores)",
+    "navigate_dataops_fijos_en_archivos_w9": 0,
+    "nota_human_review_flow_view": "HumanReviewFlowView.jsx:232 conserva navigate(`/dataops/lote/${batchId}/beto`) porque W-9 no debe tocar HumanReviewFlowView.jsx (en paralelo con W-5).",
+    "grep_tarea_1_o_2_en_frontend_src": 0
+  }
+}

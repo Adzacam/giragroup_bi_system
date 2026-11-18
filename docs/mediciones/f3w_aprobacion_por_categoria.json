@@ -1,0 +1,28 @@
+{
+  "tarea": "W-3",
+  "defecto": "D-W2",
+  "fecha": "2026-11-17",
+  "helper_compartido": "backend/routers/dataops/_comun.py::categoria_ruteo",
+  "consumidores": [
+    "backend/routers/dataops/consolidacion.py",
+    "backend/routers/dataops/revision.py::resolve_review_item"
+  ],
+  "categorias_soportadas": [
+    "evaluacion_docente",
+    "rentabilidad",
+    "marketing",
+    "admision",
+    "financiero",
+    "academico"
+  ],
+  "reproduccion_503_previo": {
+    "caso_ejemplo": "id_staging=119186 (EVALUACION_DOCENTE)",
+    "causa_previa": "resolve_review_item ruteaba todo lo que no era COBRANZA ni ADMISION a 'academico', provocando status='staged' en DWLoaderService y RuntimeError -> HTTP 503",
+    "resultado_actual": "status='success', estado_resolucion='RESUELTO_HUMANO', categoria='evaluacion_docente'"
+  },
+  "pytest": {
+    "archivo": "backend/tests/test_w3_aprobacion_categorias.py",
+    "passed": 8,
+    "failed": 0
+  }
+}

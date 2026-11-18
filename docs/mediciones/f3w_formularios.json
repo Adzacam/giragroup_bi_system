@@ -1,0 +1,105 @@
+{
+  "tarea": "W-4",
+  "defecto": "D-W6",
+  "fecha": "2026-11-17",
+  "fuente_matriz": "docs/mediciones/f3w_matriz_formularios.md",
+  "archivos_modificados": [
+    "backend/services/revision_formularios.py",
+    "backend/services/revision_consulta.py",
+    "backend/services/revision_hechos.py",
+    "backend/routers/dataops/revision.py",
+    "frontend/src/modules/dataops/HumanReviewFlowView.jsx"
+  ],
+  "cobertura_matriz_porcentaje": 100,
+  "combinaciones_cubiertas": 13,
+  "formularios": [
+    {
+      "categoria": "academico",
+      "motivo": "CI_NOMBRE_DISCORDANTE",
+      "campos": ["nombre_completo", "ci_opcional", "confirmar_identidad", "justificacion"]
+    },
+    {
+      "categoria": "academico",
+      "motivo": "BAJA_CONFIANZA_IA",
+      "campos": ["nombre_completo", "modulo_resuelto", "nota_final", "mes", "gestion", "justificacion"]
+    },
+    {
+      "categoria": "academico",
+      "motivo": "HOMONIMIA",
+      "campos": ["nombre_completo", "ci_opcional", "programa", "justificacion"]
+    },
+    {
+      "categoria": "academico",
+      "motivo": "CI_DUDOSA",
+      "campos": ["ci_corregido", "nombre_completo", "justificacion"]
+    },
+    {
+      "categoria": "evaluacion_docente",
+      "motivo": "BAJA_CONFIANZA_IA",
+      "campos": ["programa", "numero_modulo", "docente_resuelto", "escala_respuesta", "justificacion"]
+    },
+    {
+      "categoria": "evaluacion_docente",
+      "motivo": "HOMONIMIA",
+      "campos": ["nombre_completo", "ci_opcional", "programa", "numero_modulo", "justificacion"]
+    },
+    {
+      "categoria": "admision",
+      "motivo": "POS_NO_EN_DIM_MODULO",
+      "campos": ["codigo_pos", "programa_resuelto", "modulo_resuelto", "justificacion"]
+    },
+    {
+      "categoria": "admision",
+      "motivo": "CI_DUDOSA",
+      "campos": ["ci_corregido", "nombre_completo", "justificacion"]
+    },
+    {
+      "categoria": "admision",
+      "motivo": "FECHA_INSCRIPCION_INVALIDA",
+      "campos": ["fecha_inscripcion", "justificacion"]
+    },
+    {
+      "categoria": "financiero",
+      "motivo": "CI_DUDOSA",
+      "campos": ["ci_corregido", "nombre_completo", "monto_deuda", "cuotas_impagas", "justificacion"]
+    },
+    {
+      "categoria": "rentabilidad",
+      "motivo": "CI_NOMBRE_DISCORDANTE",
+      "campos": ["nombre_completo", "ci_opcional", "categoria_financiera", "justificacion"]
+    },
+    {
+      "categoria": "rentabilidad",
+      "motivo": "HOMONIMIA",
+      "campos": ["nombre_completo", "ci_opcional", "justificacion"]
+    },
+    {
+      "categoria": "marketing",
+      "motivo": "*",
+      "campos": ["institucion", "clave_convenio", "monto_convenio", "justificacion"]
+    }
+  ],
+  "validacion_422": {
+    "funcion": "backend/services/revision_formularios.py::validar_payload_correccion",
+    "invocada_en": [
+      "backend/routers/dataops/revision.py::resolve_review_item",
+      "backend/services/revision_hechos.py::resolver_caso_hecho",
+      "backend/services/revision_hechos.py::_resolver_caso_evaluacion"
+    ],
+    "comportamiento": "Rechaza con HTTP 422 cualquier campo no perteneciente a campos_correccion (ni a sus alias compatibles o campos de control) del motivo x categoria del caso."
+  },
+  "pruebas": {
+    "pytest": {
+      "comando": ".venv/Scripts/pytest.exe -q tests/test_w3_aprobacion_categorias.py tests/test_w4_formularios.py",
+      "passed": 48,
+      "failed": 0,
+      "archivo_w4": "backend/tests/test_w4_formularios.py"
+    },
+    "vitest": {
+      "comando": "npx vitest run src/modules/dataops/__tests__/w4FormulariosPorMotivo.test.jsx",
+      "passed": 13,
+      "failed": 0,
+      "archivo_w4": "frontend/src/modules/dataops/__tests__/w4FormulariosPorMotivo.test.jsx"
+    }
+  }
+}

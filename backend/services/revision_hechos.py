@@ -28,6 +28,7 @@ from models.fact_rendimiento import FactRendimientoAcademico
 from models.log_auditoria_nlp import LogAuditoriaNlp
 from models.log_pipeline import LogPipelineIngesta
 from pipeline.config import NOTA_APROBACION
+from services.revision_formularios import campos_para_caso, construir_motivo_detalle, validar_payload_correccion
 
 MOTIVO_HECHO = "HECHO_EN_REVISION"
 PREFIJO_ACA, PREFIJO_FIN, PREFIJO_EVA = "HECHO-ACA-", "HECHO-FIN-", "HECHO-EVA-"
@@ -167,6 +168,7 @@ def items_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = Non
             "destino_dw": "Evaluación Docente",
         })
         it["por_que_detuvo"] = f"Evaluación docente en revisión ({motivos or 'sin motivo'})."
+        it["motivo_detalle"] = it["por_que_detuvo"]
         items.append(it)
     return items
 
@@ -177,10 +179,13 @@ def _mes_gestion(fecha) -> Dict[str, Any]:
 
 def _item(item_id, area, doc, est, confianza, faltan, extra) -> Dict[str, Any]:
     nombre = est.nombre_completo if est else ""
+    por_que = _por_que(confianza, faltan)
     return {
         "id": item_id, "db_id": item_id, "motivo": MOTIVO_HECHO, "motivo_label": "Hecho en revisión",
+        "motivo_detalle": construir_motivo_detalle(area, MOTIVO_HECHO, {"por_que_detuvo": por_que}),
+        "campos_correccion": campos_para_caso(area, MOTIVO_HECHO),
         "tipo_entidad": "HECHO", "tipo_fuente": (doc.tipo_fuente if doc else "") or "",
-        "por_que_detuvo": _por_que(confianza, faltan),
+        "por_que_detuvo": por_que,
         # El hecho ya trae su entidad resuelta: se acepta con un clic si no falta ningún campo; si falta, se corrige
         "sugerencia": nombre, "sugerencia_catalogo": nombre, "estudiante": nombre,
         "un_clic": not faltan, "campos_faltantes": faltan,
@@ -213,6 +218,7 @@ def resolver_caso_hecho(db: Session, item_id: str, payload: Dict[str, Any], user
         return {"status": "success", "message": f"Caso {item_id} ya estaba resuelto.", "item_id": item_id}
 
     accion = (payload.get("accion") or "APROBAR").upper()
+    validar_payload_correccion(tipo, MOTIVO_HECHO, payload)
     en_bloque = bool(payload.get("aprobacion_en_bloque"))
     antes = _resumen(hecho, tipo)
     correcciones = {}
@@ -260,6 +266,7 @@ def _resolver_caso_evaluacion(db: Session, item_id: str, payload: Dict[str, Any]
     if not filas:
         return {"status": "success", "message": f"Caso {item_id} ya estaba resuelto.", "item_id": item_id}
     accion = (payload.get("accion") or "APROBAR").upper()
+    validar_payload_correccion("evaluacion_docente", MOTIVO_HECHO, payload)
     cambios, docente = {}, None
     if "DESCARTAR" in accion:
         for f in filas:
@@ -301,7 +308,7 @@ def _resolver_caso_evaluacion(db: Session, item_id: str, payload: Dict[str, Any]
 
 def _aplicar_correcciones(db: Session, hecho, tipo: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     cambios = {}
-    nombre = (payload.get("estudiante_resuelto") or "").strip()
+    nombre = (payload.get("nombre_completo") or payload.get("estudiante_resuelto") or "").strip()
     if nombre:
         est = db.query(DimEstudiante).filter(func.lower(DimEstudiante.nombre_completo) == nombre.lower()).first()
         if not est:

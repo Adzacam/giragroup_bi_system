@@ -1,0 +1,1516 @@
+{
+ "tarea": "W-1 (Recorrido por archivo sobre f3w_completo)",
+ "dw7_diagnostico": {
+  "sintoma": "En el paso 3 aparece 'docente ••••' aunque el archivo no tiene columna de docente, y respuestas Likert 1-10 podrian escalarse x10",
+  "evidencia_codigo": [
+   "pipeline/semantic/formatter.py:238-247: campos clasificados como NOTA con valor numérico (0 < num <= 10) se multiplican por 10 (val_unif = num_n * 10.0) sin distinguir si es escala Likert de evaluación docente.",
+   "pipeline/semantic/formatter.py:251: 'if any(k in col_clean.lower() for k in (\"1.\", \"2.\", \"docente\", \"explica\", \"recomiende\")):' clasifica preguntas con la palabra 'docente' en RESPUESTAS, pero extract_entities_from_line (extraccion.py) puede buscar palabras/celdas cercanas si un encabezado contiene DOCENTE."
+  ],
+  "veredicto": "defecto (D-W7)",
+  "ubicacion": "pipeline/semantic/formatter.py:238-252"
+ },
+ "recorrido_10_libros": [
+  {
+   "archivo": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+   "tipo_spa_actual": "ACTA (si no coincide con 4 tipos)",
+   "tipo_backend": null,
+   "filas_excel_totales_aprox": 19120,
+   "lineas_paso2": 0,
+   "casos_consolidacion_por_motivo": {},
+   "hechos_guardados_por_tabla": {},
+   "hojas": [
+    {
+     "hoja": "TBL EVALUACION DOCENTE",
+     "filas_no_vacias_aprox": 16451,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": "EVALUACION_DOCENTE",
+     "escala_real": "1-5",
+     "muestra_cabeceras": [
+      "Nombre Completo",
+      "Grupos",
+      "Dirección de correo",
+      "Fecha",
+      "Programa",
+      "Módulo",
+      "1. ¿La/El docente explica los conceptos de manera clara y comprensible?",
+      "2. ¿La/El docente mostró dominio sobre los temas del curso?",
+      "3. ¿La/El docente fomenta la participación de las/los estudiantes en las clases?",
+      "4. ¿La/El docente es accesible y resuelve dudas de manera oportuna?"
+     ]
+    },
+    {
+     "hoja": "TBL EXPERIENCIA UNIFRANZ",
+     "filas_no_vacias_aprox": 2539,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "1-10",
+     "muestra_cabeceras": [
+      "Grupos",
+      "Dirección de correo",
+      "Fecha",
+      "Programa",
+      "1. ¿Considera que los recursos tecnológicos proporcionados (aula virtual, videoconferencias, etc.) fueron accesibles y fáciles de utilizar?",
+      "2. ¿Cómo evaluaría el soporte técnico brindado cuando surgieron problemas con las plataformas educativas?",
+      "3. ¿Qué tan satisfecho está con la calidad de las videoconferencias y el contenido multimedia complementario (Moodle / zoom)?",
+      "1. ¿El personal administrativo fue receptivo a sus consultas y resolvió sus problemas con eficacia?",
+      "2. ¿Qué tan satisfecho/a está con la atención brindada por el personal administrativo?",
+      "3. ¿El tiempo de respuesta del personal administrativo fue adecuado?"
+     ]
+    },
+    {
+     "hoja": "Análisis de Evaluación",
+     "filas_no_vacias_aprox": 130,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "EVALUACIÓN DEL DOCENTE"
+     ]
+    }
+   ]
+  },
+  {
+   "archivo": "Evaluación Docente y Unifranz.xlsx",
+   "tipo_spa_actual": "ACTA (si no coincide con 4 tipos)",
+   "tipo_backend": "EVALUACION_DOCENTE",
+   "filas_excel_totales_aprox": 4889,
+   "lineas_paso2": 27189,
+   "casos_consolidacion_por_motivo": {
+    "BAJA_CONFIANZA_IA": 250
+   },
+   "hechos_guardados_por_tabla": {
+    "fact_evaluacion_docente": 14173
+   },
+   "hojas": [
+    {
+     "hoja": "DIP. EXP DOC. X MODULO",
+     "filas_no_vacias_aprox": 4096,
+     "filas_con_saltos_linea_celda": 1,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "información basica de las encuestas",
+      "Bloque 1. Contenido y Relevancia Estratégica\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 2. Desarrollo de Capacidades y Competencias\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 3. Cumplimiento de Objetivos y Valor Percibido\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 3.1. Cumplimiento de Objetivos y Valor Percibido\nRespuestas abiertas",
+      "Bloque 4. Calidad Docente y Liderazgo\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 5. Evaluación Global\nPor favor, responda las siguientes preguntas en una escala del 1 al 10.\n(1 = Nada satisfecho/a, 10 = Totalmente satisfecho/a)."
+     ]
+    },
+    {
+     "hoja": "DIP. EXP UNIFRANZ",
+     "filas_no_vacias_aprox": 517,
+     "filas_con_saltos_linea_celda": 1,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "información basica de las encuestas",
+      "Bloque 1. Pertinencia y Actualización Global\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 2. Desarrollo Integral de Competencias\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 3. Valor Agregado y Cumplimiento de Objetivos\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 4. Liderazgo y Calidad Docente Global\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 5. Experiencia Unifranz Postgrado\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 6. Impacto y Proyección Profesional\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 7. Evaluación Global (Indicadores Institucionales)\nPor favor, responda las siguientes preguntas en una escala del 1 al 10."
+     ]
+    },
+    {
+     "hoja": "FINAL EXPERTOCURSO",
+     "filas_no_vacias_aprox": 276,
+     "filas_con_saltos_linea_celda": 1,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "información basica de las encuestas",
+      "Bloque 1. Pertinencia y Actualización Global\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 2. Desarrollo Integral de Competencias\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 3. Valor Agregado y Cumplimiento de Objetivos\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 4. Liderazgo y Calidad Docente Global\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 5. Experiencia Unifranz Postgrado\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 6. Impacto y Proyección Profesional\nPor favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo\".",
+      "Bloque 7. Evaluación Global (Indicadores Institucionales)\nPor favor, responda las siguientes preguntas en una escala del 1 al 10."
+     ]
+    }
+   ]
+  },
+  {
+   "archivo": "TBL_INSCRITOS.xlsx",
+   "tipo_spa_actual": "ADMISION",
+   "tipo_backend": "ADMISION",
+   "filas_excel_totales_aprox": 15196,
+   "lineas_paso2": 15196,
+   "casos_consolidacion_por_motivo": {
+    "CI_DUDOSA": 5,
+    "POS_NO_EN_DIM_MODULO": 5,
+    "FECHA_INSCRIPCION_INVALIDA": 1
+   },
+   "hechos_guardados_por_tabla": {},
+   "hojas": [
+    {
+     "hoja": "TBL_INSCRITOS",
+     "filas_no_vacias_aprox": 15196,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "MARCA TEMPORAL",
+      "NUMEROPROYECTO",
+      "NOMBRE DEL PROGRAMA",
+      "ASESOR",
+      "CI",
+      "NOMBRES",
+      "PATERNO",
+      "MATERNO",
+      "CELULAR",
+      "CORREO ELECTRONICO"
+     ]
+    },
+    {
+     "hoja": "BAJAS POR DUPLICADOS",
+     "filas_no_vacias_aprox": 0,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "2025-01-13 09:34:20",
+      "POS-5376",
+      "PROGRAMA EXPERTO EN MICROSOFT POWER BI v. 10",
+      "N/A",
+      "4481263.0",
+      "DIEGO ANDRES",
+      "DAVILA",
+      "ANDIA",
+      "#ERROR!",
+      "ddavila1386@gmail.com"
+     ]
+    }
+   ]
+  },
+  {
+   "archivo": "BD Cobranzas.xlsx",
+   "tipo_spa_actual": "COBRANZA",
+   "tipo_backend": "COBRANZA",
+   "filas_excel_totales_aprox": 16036,
+   "lineas_paso2": 16034,
+   "casos_consolidacion_por_motivo": {
+    "CI_DUDOSA": 2
+   },
+   "hechos_guardados_por_tabla": {
+    "fact_situacion_financiera": 10719
+   },
+   "hojas": [
+    {
+     "hoja": "COBRANZAS 2024 2025",
+     "filas_no_vacias_aprox": 10017,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "TIPO DE PROGRAMA",
+      "FECHA DE LA PRIMERA FACTURA",
+      "POS",
+      "NOMBRE DEL PROGRAMA",
+      "ASESOR",
+      "CI",
+      "NOMBRES",
+      "PATERNO",
+      "MATERNO",
+      "CELULAR"
+     ]
+    },
+    {
+     "hoja": "Hoja 8",
+     "filas_no_vacias_aprox": 7,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "POS",
+      "NOMBRE DEL PROGRAMA",
+      "ASESOR",
+      "CI",
+      "NOMBRES",
+      "PATERNO",
+      "MATERNO",
+      "CELULAR",
+      "COMENTARIO"
+     ]
+    },
+    {
+     "hoja": "Hoja 12",
+     "filas_no_vacias_aprox": 18,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Estado academico",
+      "Estado reprobado",
+      "Estado ARCA",
+      "ESTADO ACADEMICO",
+      "ESTADO ARCA",
+      "ESTADO REPROBADO"
+     ]
+    },
+    {
+     "hoja": "Hoja 4",
+     "filas_no_vacias_aprox": 516,
+     "filas_con_saltos_linea_celda": 5,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "POS",
+      "NOMBRE DEL PROGRAMA",
+      "FECHA INICIO",
+      "FECHA FINALIZACIÓN",
+      "INSCRITOS",
+      "DIPLOMAS EMITIDOS"
+     ]
+    },
+    {
+     "hoja": "Copia de COBRANZAS 2024 2025",
+     "filas_no_vacias_aprox": 5478,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "TIPO DE PROGRAMA",
+      "FECHA DE INICIO PLANILLA MICAELA",
+      "FECHA DE LA PRIMERA FACTURA",
+      "POS",
+      "NOMBRE DEL PROGRAMA",
+      "ASESOR",
+      "CI",
+      "NOMBRES",
+      "PATERNO",
+      "MATERNO"
+     ]
+    }
+   ]
+  },
+  {
+   "archivo": "BD Techos.xlsx",
+   "tipo_spa_actual": "ACTA (si no coincide con 4 tipos)",
+   "tipo_backend": "MARKETING",
+   "filas_excel_totales_aprox": 207,
+   "lineas_paso2": 207,
+   "casos_consolidacion_por_motivo": {},
+   "hechos_guardados_por_tabla": {
+    "fact_techo_convenio": 206
+   },
+   "hojas": [
+    {
+     "hoja": "BD Techos",
+     "filas_no_vacias_aprox": 207,
+     "filas_con_saltos_linea_celda": 1,
+     "tipo_backend_hoja": "TECHOS",
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "N°",
+      "Gestión Techo",
+      "Coord.",
+      "Asistente",
+      "Asesor Comercial",
+      "Fecha Inicio",
+      "Fecha Conclusión",
+      "Escuela techo",
+      "Insitución",
+      "POS"
+     ]
+    }
+   ]
+  },
+  {
+   "archivo": "EJECUTADO VS META.xlsx",
+   "tipo_spa_actual": "ACTA (si no coincide con 4 tipos)",
+   "tipo_backend": "RENTABILIDAD",
+   "filas_excel_totales_aprox": 36,
+   "lineas_paso2": 36,
+   "casos_consolidacion_por_motivo": {},
+   "hechos_guardados_por_tabla": {
+    "fact_rentabilidad": 95
+   },
+   "hojas": [
+    {
+     "hoja": "EJECUTADO",
+     "filas_no_vacias_aprox": 24,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": "RENTABILIDAD",
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "CATEGORIA",
+      "MES",
+      "MES NUMERICO",
+      "EJECUTADO 2023",
+      "META POR CATEGORIA 2024",
+      "EJECUTADO 2024",
+      "EJECUTADO 2025",
+      "META POR CATEGORIA 2025",
+      "EJECUTADO 2026",
+      "META POR CATEGORIA 2026"
+     ]
+    },
+    {
+     "hoja": "GESTIONES",
+     "filas_no_vacias_aprox": 12,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "MES",
+      "EJECUTADO 2023",
+      "EJECUTADO 2024",
+      "EJECUTADO 2025",
+      "META 2025"
+     ]
+    }
+   ]
+  },
+  {
+   "archivo": "BD Egresos.xlsx",
+   "tipo_spa_actual": "ACTA (si no coincide con 4 tipos)",
+   "tipo_backend": "RENTABILIDAD",
+   "filas_excel_totales_aprox": 1409,
+   "lineas_paso2": 1409,
+   "casos_consolidacion_por_motivo": {
+    "CI_NOMBRE_DISCORDANTE": 2,
+    "HOMONIMIA": 1
+   },
+   "hechos_guardados_por_tabla": {
+    "fact_costo_programa": 1371
+   },
+   "hojas": [
+    {
+     "hoja": "egresos",
+     "filas_no_vacias_aprox": 1373,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": "EGRESOS",
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "PROGRAMA",
+      "EGRESO ANTERIOR",
+      "EGRESO REAL",
+      "INGRESO",
+      "RENTABILIDAD",
+      "NOMBRE DEL PROGRAMA",
+      "TIPO DE PROGRAMA",
+      "ESTADO DEL PROGRAMA",
+      "COMENTARIOS",
+      "NRO POS"
+     ]
+    },
+    {
+     "hoja": "Gestiones",
+     "filas_no_vacias_aprox": 24,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "TIPO DE INGRESO",
+      "MES",
+      "MES NUMERICO",
+      "EJECUTADO 2023",
+      "EJECUTADO 2024",
+      "EJECUTADO 2025",
+      "META 2025",
+      "% EJECUTADO 2025"
+     ]
+    },
+    {
+     "hoja": "acumulados",
+     "filas_no_vacias_aprox": 12,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "MES NUMERICO",
+      "MES",
+      "EJECUTADO 2023",
+      "EJECUTADO 2024",
+      "EJECUTADO 2025",
+      "META 2025"
+     ]
+    }
+   ]
+  },
+  {
+   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "tipo_spa_actual": "ACTA (si no coincide con 4 tipos)",
+   "tipo_backend": null,
+   "filas_excel_totales_aprox": 6802,
+   "lineas_paso2": 0,
+   "casos_consolidacion_por_motivo": {},
+   "hechos_guardados_por_tabla": {},
+   "hojas": [
+    {
+     "hoja": "Centralizado_Mensual",
+     "filas_no_vacias_aprox": 2479,
+     "filas_con_saltos_linea_celda": 108,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Julio-2025",
+     "filas_no_vacias_aprox": 23,
+     "filas_con_saltos_linea_celda": 18,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Agosto-2025",
+     "filas_no_vacias_aprox": 25,
+     "filas_con_saltos_linea_celda": 19,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Septiembre-2025",
+     "filas_no_vacias_aprox": 24,
+     "filas_con_saltos_linea_celda": 22,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Octubre-2025",
+     "filas_no_vacias_aprox": 30,
+     "filas_con_saltos_linea_celda": 23,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Noviembre-2025",
+     "filas_no_vacias_aprox": 28,
+     "filas_con_saltos_linea_celda": 20,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Julio-2025 borrador",
+     "filas_no_vacias_aprox": 24,
+     "filas_con_saltos_linea_celda": 18,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA DE PLANIFICACIÓN",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "CATEGORÍA DE ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Diciembre-2025",
+     "filas_no_vacias_aprox": 26,
+     "filas_con_saltos_linea_celda": 22,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "t",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Informe Gestión",
+     "filas_no_vacias_aprox": 58,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "RC1.1 - Incrementar el número de cursos de postgrado en un 10%"
+     ]
+    },
+    {
+     "hoja": "Programas Notificados",
+     "filas_no_vacias_aprox": 1045,
+     "filas_con_saltos_linea_celda": 5,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "AÑO",
+      "MES",
+      "Coordinador Académico",
+      "Asistente Académico",
+      "Responsable DAF",
+      "POS",
+      "Escuela",
+      "Tipo de programa",
+      "Programa",
+      "Versión"
+     ]
+    },
+    {
+     "hoja": "Enero-2026",
+     "filas_no_vacias_aprox": 22,
+     "filas_con_saltos_linea_celda": 14,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "consultor.maria.valdivieso@unifranz.edu.bo",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Febrero-2026",
+     "filas_no_vacias_aprox": 34,
+     "filas_con_saltos_linea_celda": 29,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "A",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Marzo-2026",
+     "filas_no_vacias_aprox": 64,
+     "filas_con_saltos_linea_celda": 34,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)",
+      "TC (Cliente Pregrado)"
+     ]
+    },
+    {
+     "hoja": "Abril-2026",
+     "filas_no_vacias_aprox": 67,
+     "filas_con_saltos_linea_celda": 34,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)",
+      "TC (Cliente Pregrado)"
+     ]
+    },
+    {
+     "hoja": "Mayo-2026",
+     "filas_no_vacias_aprox": 65,
+     "filas_con_saltos_linea_celda": 32,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "farma",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Junio-2026",
+     "filas_no_vacias_aprox": 1024,
+     "filas_con_saltos_linea_celda": 12,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)",
+      "TC (Cliente Pregrado)"
+     ]
+    },
+    {
+     "hoja": "Julio-2026",
+     "filas_no_vacias_aprox": 30,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Agosto-2026",
+     "filas_no_vacias_aprox": 38,
+     "filas_con_saltos_linea_celda": 2,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Septiembre-2025boor",
+     "filas_no_vacias_aprox": 31,
+     "filas_con_saltos_linea_celda": 12,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA DE PLANIFICACIÓN",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "POS",
+      "COORDINADOR ACADÉMICO",
+      "ASISTENTE"
+     ]
+    },
+    {
+     "hoja": "Septiembre-2026",
+     "filas_no_vacias_aprox": 36,
+     "filas_con_saltos_linea_celda": 2,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Octubre-2026",
+     "filas_no_vacias_aprox": 43,
+     "filas_con_saltos_linea_celda": 4,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Noviembre-2026",
+     "filas_no_vacias_aprox": 38,
+     "filas_con_saltos_linea_celda": 3,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Diciembre-2026",
+     "filas_no_vacias_aprox": 1019,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "Nº",
+      "FECHA",
+      "AÑO",
+      "MES",
+      "NOMBRE MES",
+      "TIPO DE PROGRAMA",
+      "ESCUELA",
+      "ORIGEN DEL PROGRAMA",
+      "DISEÑO CURRICULAR",
+      "TC (Cliente Externo)"
+     ]
+    },
+    {
+     "hoja": "Dashboard Programas",
+     "filas_no_vacias_aprox": 22,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "DASHBOARD DE ESTADO DE PROGRAMAS"
+     ]
+    },
+    {
+     "hoja": "Dashboard Académico",
+     "filas_no_vacias_aprox": 22,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "DASHBOARD SEGUIMIENTO ACADÉMICO"
+     ]
+    },
+    {
+     "hoja": "Julio",
+     "filas_no_vacias_aprox": 31,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "INGRESOS EJECUTADOS VERSUS PROYECTADOS MES DE JULIO"
+     ]
+    },
+    {
+     "hoja": "Agosto",
+     "filas_no_vacias_aprox": 31,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "INGRESOS EJECUTADOS VERSUS PROYECTADOS MES DE AGOSTO"
+     ]
+    },
+    {
+     "hoja": "Septiembre",
+     "filas_no_vacias_aprox": 31,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "INGRESOS EJECUTADOS VERSUS PROYECTADOS MES DE SEPTIEMBRE"
+     ]
+    },
+    {
+     "hoja": "Octubre",
+     "filas_no_vacias_aprox": 31,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "INGRESOS EJECUTADOS VERSUS PROYECTADOS MES DE OCTUBRE"
+     ]
+    },
+    {
+     "hoja": "Noviembre",
+     "filas_no_vacias_aprox": 31,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "INGRESOS EJECUTADOS VERSUS PROYECTADOS MES DE NOVIEMBRE"
+     ]
+    },
+    {
+     "hoja": "Diciembre",
+     "filas_no_vacias_aprox": 31,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "INGRESOS EJECUTADOS VERSUS PROYECTADOS MES DE DICIEMBRE"
+     ]
+    },
+    {
+     "hoja": "Detalle Presupuestado-Proyectad",
+     "filas_no_vacias_aprox": 299,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": "TECHOS",
+     "escala_real": "N/A",
+     "muestra_cabeceras": [
+      "PROYECTO (POS)",
+      "MES",
+      "FECHA DE NOTIFICACIÓN DEL PROGRAMA",
+      "FECHA DE INICIO DEL PROGRAMA",
+      "TIPO DE PROGRAMA",
+      "PROGRAMA",
+      "COSTO DE PROGRAMA",
+      "COSTO DEL PROGRAMA AL 20% DE DESC.",
+      "PUNTO DE EQUILIBRIO",
+      "TOTAL INGRESOS"
+     ]
+    }
+   ]
+  },
+  {
+   "archivo": "Experiencia Docente 2.0.xlsx",
+   "tipo_spa_actual": "ACTA",
+   "tipo_backend": "ACTA",
+   "filas_excel_totales_aprox": 17695,
+   "lineas_paso2": 17695,
+   "casos_consolidacion_por_motivo": {},
+   "hechos_guardados_por_tabla": {
+    "fact_evaluacion_docente": 503168
+   },
+   "hojas": [
+    {
+     "hoja": "CURSOS DOC 1",
+     "filas_no_vacias_aprox": 994,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "0-100",
+     "muestra_cabeceras": [
+      "Respuesta número",
+      "Nombre completo del usuario",
+      "Grupos",
+      "Dirección de correo",
+      "Fecha",
+      "Programa",
+      "1. ¿La/El docente explica los conceptos de manera clara y comprensible?",
+      "2. ¿La/El docente mostró dominio sobre los temas del curso?",
+      "3. ¿La/El docente fomenta la participación de las/los estudiantes en las clases?",
+      "4. ¿La/El docente es accesible y resuelve dudas de manera oportuna?"
+     ]
+    },
+    {
+     "hoja": "DIPLOMADOS DOCENTE",
+     "filas_no_vacias_aprox": 14397,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "0-100",
+     "muestra_cabeceras": [
+      "N°",
+      "Nombre completo del usuario",
+      "Grupos",
+      "Dirección de correo",
+      "Fecha",
+      "Programa POS",
+      "Módulo",
+      "A 1. ¿La/El docente explica los conceptos de manera clara y comprensible?",
+      "A 1. N°¿La/El docente explica los conceptos de manera clara y comprensible?",
+      "A 2. ¿La/El docente mostró dominio sobre los temas del curso?"
+     ]
+    },
+    {
+     "hoja": "CURSOS DOCENTE",
+     "filas_no_vacias_aprox": 828,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "0-100",
+     "muestra_cabeceras": [
+      "Respuesta número",
+      "Nombre completo del usuario",
+      "Grupos",
+      "Dirección de correo",
+      "Fecha",
+      "Programa",
+      "1. ¿El docente explica los conceptos de manera clara y comprensible?",
+      "1. N°¿El docente explica los conceptos de manera clara y comprensible?",
+      "2. ¿El docente tiene dominio del contenido?",
+      "2. N° ¿El docente tiene dominio del contenido?"
+     ]
+    },
+    {
+     "hoja": "DIPLOMADOS DOC 2",
+     "filas_no_vacias_aprox": 1476,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "0-100",
+     "muestra_cabeceras": [
+      "N°",
+      "Nombre completo del usuario",
+      "Grupos",
+      "Dirección de correo",
+      "Fecha",
+      "Programa",
+      "Módulo",
+      "1. ¿El docente explica los conceptos de manera clara y comprensible?",
+      "2. ¿El docente tiene dominio del contenido?",
+      "3. ¿El docente es accesible y promueve la participación con los estudiantes?"
+     ]
+    }
+   ]
+  },
+  {
+   "archivo": "Base centralizada Académica ARCA (1).xlsx",
+   "tipo_spa_actual": "ACTA",
+   "tipo_backend": "ACTA",
+   "filas_excel_totales_aprox": 11454,
+   "lineas_paso2": 11456,
+   "casos_consolidacion_por_motivo": {
+    "CI_NOMBRE_DISCORDANTE": 738,
+    "BAJA_CONFIANZA_IA": 323,
+    "HOMONIMIA": 34,
+    "CI_DUDOSA": 2
+   },
+   "hechos_guardados_por_tabla": {
+    "fact_rendimiento_academico": 25108
+   },
+   "hojas": [
+    {
+     "hoja": "ACTAS DE NOTAS",
+     "filas_no_vacias_aprox": 8660,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": "ACTA",
+     "escala_real": "0-100",
+     "muestra_cabeceras": [
+      "N°",
+      "POS - ACTAS",
+      "CÉDULA DE IDENTIDAD",
+      "MES INICO",
+      "AÑO INCIO",
+      "APELLIDO PATERNO",
+      "APELLIDO MATERNO",
+      "NOMBRES",
+      "MÓDULO 1",
+      "MÓDULO 2"
+     ]
+    },
+    {
+     "hoja": "MODULOS",
+     "filas_no_vacias_aprox": 2030,
+     "filas_con_saltos_linea_celda": 2,
+     "tipo_backend_hoja": null,
+     "escala_real": "0-100",
+     "muestra_cabeceras": [
+      "N°",
+      "POS - MODULO",
+      "N° POS",
+      "FECHA INICIO",
+      "FECHA FIN",
+      "TIPO DE PROGRAMA",
+      "DOCENTE",
+      "TIPO DE DOCENTE",
+      "MODULO",
+      "NOMBRE DEL PROGRAMA"
+     ]
+    },
+    {
+     "hoja": "Tabla dinámica 1",
+     "filas_no_vacias_aprox": 0,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": "ACTA",
+     "escala_real": "0-100",
+     "muestra_cabeceras": []
+    },
+    {
+     "hoja": "PROGRMAS  DE BAJA",
+     "filas_no_vacias_aprox": 1,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "0-100",
+     "muestra_cabeceras": [
+      "N°",
+      "POS - IBP",
+      "NOMBRE DEL PROGRAMA",
+      "VERSIÓN",
+      "MES IBP",
+      "AÑO IBP",
+      "ESCUELA",
+      "INVERSION DEL PROGRAMA",
+      "PUNTO EQUILIBRIO",
+      "HORAS CLASE"
+     ]
+    },
+    {
+     "hoja": "IBP",
+     "filas_no_vacias_aprox": 748,
+     "filas_con_saltos_linea_celda": 1,
+     "tipo_backend_hoja": null,
+     "escala_real": "0-100",
+     "muestra_cabeceras": [
+      "N°",
+      "POS - IBP",
+      "NOMBRE DEL PROGRAMA",
+      "VERSIÓN",
+      "MES IBP",
+      "AÑO IBP",
+      "ESCUELA",
+      "INVERSION DEL PROGRAMA",
+      "PUNTO EQUILIBRIO",
+      "HORAS CLASE"
+     ]
+    },
+    {
+     "hoja": "Hoja 8",
+     "filas_no_vacias_aprox": 0,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": "ACTA",
+     "escala_real": "0-100",
+     "muestra_cabeceras": []
+    },
+    {
+     "hoja": "CRITERIOS",
+     "filas_no_vacias_aprox": 15,
+     "filas_con_saltos_linea_celda": 0,
+     "tipo_backend_hoja": null,
+     "escala_real": "0-100",
+     "muestra_cabeceras": [
+      "Estado academico",
+      "Estado reprobado",
+      "Estado ARCA",
+      "Combinaciones"
+     ]
+    }
+   ]
+  }
+ ],
+ "ejemplos_por_motivo_hasta_10": {
+  "FECHA_INSCRIPCION_INVALIDA": [
+   {
+    "id_staging": 9,
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "tipo_fuente": "ADMISION",
+    "tipo_entidad": "MODULO",
+    "extracto": "DIPLOMADO EN FINANZAS CORPORATIVAS, TECNOLOGÍAS E INNOVACIÓN v.2  /  sin fecha válida"
+   }
+  ],
+  "CI_DUDOSA": [
+   {
+    "id_staging": 1,
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "tipo_fuente": "ADMISION",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "MARCA TEMPORAL: 2024-03-05 09:48:56  /  NUMEROPROYECTO: POS-4973  /  NOMBRE DEL PROGRAMA: DIPLOMADO EN DERECHO INTERNACIONAL v.1  /  ASESOR:"
+   },
+   {
+    "id_staging": 2,
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "tipo_fuente": "ADMISION",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "MARCA TEMPORAL: 2025-11-24 15:44:13  /  NUMEROPROYECTO: POS-5846  /  NOMBRE DEL PROGRAMA: DIPLOMADO EN EDUCACIÓN SUPERIOR POR COMPETENCIAS E"
+   },
+   {
+    "id_staging": 3,
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "tipo_fuente": "ADMISION",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "MARCA TEMPORAL: 2026-03-17 11:50:49  /  NUMEROPROYECTO: POS-6123  /  NOMBRE DEL PROGRAMA: DIPLOMADO EN DERECHO NOTARIAL EN BOLIVIA v. 23  / "
+   },
+   {
+    "id_staging": 4,
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "tipo_fuente": "ADMISION",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "MARCA TEMPORAL: 2026-03-17 14:43:02  /  NUMEROPROYECTO: POS-6091  /  NOMBRE DEL PROGRAMA: DIPLOMADO EN ÉTICA DIGITAL, INTELIGENCIA ARTIFICIA"
+   },
+   {
+    "id_staging": 5,
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "tipo_fuente": "ADMISION",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "MARCA TEMPORAL: 2026-05-13 19:19:19  /  NUMEROPROYECTO: POS-6153  /  NOMBRE DEL PROGRAMA: PROGRAMA EXPERTO EN GOBERNANZA DE DATOS v.4  /  AS"
+   },
+   {
+    "id_staging": 12,
+    "archivo": "BD Cobranzas.xlsx",
+    "tipo_fuente": "COBRANZA",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "TIPO DE PROGRAMA: DIPLOMADO  /  FECHA DE LA PRIMERA FACTURA: 2024-03-01 00:00:00  /  POS: POS-4973  /  NOMBRE DEL PROGRAMA: DIPLOMADO EN DER"
+   },
+   {
+    "id_staging": 13,
+    "archivo": "BD Cobranzas.xlsx",
+    "tipo_fuente": "COBRANZA",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "TIPO DE PROGRAMA: DIPLOMADO  /  FECHA DE INICIO PLANILLA MICAELA: 2024-02-27 00:00:00  /  FECHA DE LA PRIMERA FACTURA: 2024-03-01 00:00:00  "
+   },
+   {
+    "id_staging": 12429,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "tipo_fuente": "ACTA",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "N°: 11  /  POS - ACTAS: 4968  /  CÉDULA DE IDENTIDAD: ------  /  MES INICO: 6  /  AÑO INCIO: 2024  /  APELLIDO PATERNO: GUZMAN  /  APELLIDO "
+   },
+   {
+    "id_staging": 12430,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "tipo_fuente": "ACTA",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "N°: 9  /  POS - ACTAS: 4973  /  CÉDULA DE IDENTIDAD: 6835  /  MES INICO: 2  /  AÑO INCIO: 2024  /  APELLIDO PATERNO: CASTRO  /  APELLIDO MAT"
+   }
+  ],
+  "POS_NO_EN_DIM_MODULO": [
+   {
+    "id_staging": 6,
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "tipo_fuente": "ADMISION",
+    "tipo_entidad": "MODULO",
+    "extracto": ".  /  2024-08-26"
+   },
+   {
+    "id_staging": 7,
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "tipo_fuente": "ADMISION",
+    "tipo_entidad": "MODULO",
+    "extracto": "......  /  2024-10-21"
+   },
+   {
+    "id_staging": 8,
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "tipo_fuente": "ADMISION",
+    "tipo_entidad": "MODULO",
+    "extracto": ".  /  2024-12-09"
+   },
+   {
+    "id_staging": 10,
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "tipo_fuente": "ADMISION",
+    "tipo_entidad": "MODULO",
+    "extracto": "gestiondcalidad1@gmail.com  /  2025-04-08"
+   },
+   {
+    "id_staging": 11,
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "tipo_fuente": "ADMISION",
+    "tipo_entidad": "MODULO",
+    "extracto": "syscoopgestion@gmail.com  /  2025-06-09"
+   }
+  ],
+  "BAJA_CONFIANZA_IA": [
+   {
+    "id_staging": 4215,
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "Por favor, califique las siguientes afirmaciones en una escala de 1 a 5, donde 1 es \"Totalmente en desacuerdo\" y 5 es \"Totalmente de acuerdo"
+   },
+   {
+    "id_staging": 4216,
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "(1 = Nada satisfecho/a, 10 = Totalmente satisfecho/a).: 9  /  col_24: 10  /  col_25: 9"
+   },
+   {
+    "id_staging": 4217,
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "(1 = Nada satisfecho/a, 10 = Totalmente satisfecho/a).: 8  /  col_24: 9  /  col_25: 8"
+   },
+   {
+    "id_staging": 4218,
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "(1 = Nada satisfecho/a, 10 = Totalmente satisfecho/a).: 10  /  col_24: 10  /  col_25: 10"
+   },
+   {
+    "id_staging": 4219,
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "(1 = Nada satisfecho/a, 10 = Totalmente satisfecho/a).: 10  /  col_24: 9  /  col_25: 10"
+   },
+   {
+    "id_staging": 4220,
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "(1 = Nada satisfecho/a, 10 = Totalmente satisfecho/a).: 10  /  col_24: 10  /  col_25: 8"
+   },
+   {
+    "id_staging": 4221,
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "(1 = Nada satisfecho/a, 10 = Totalmente satisfecho/a).: 9  /  col_24: 5  /  col_25: 9"
+   },
+   {
+    "id_staging": 4222,
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "(1 = Nada satisfecho/a, 10 = Totalmente satisfecho/a).: 5  /  col_24: 5  /  col_25: 5"
+   },
+   {
+    "id_staging": 4223,
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "(1 = Nada satisfecho/a, 10 = Totalmente satisfecho/a).: 9  /  col_24: 9  /  col_25: 9"
+   },
+   {
+    "id_staging": 4224,
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "(1 = Nada satisfecho/a, 10 = Totalmente satisfecho/a).: 9  /  col_24: 9  /  col_25: 8"
+   }
+  ],
+  "HOMONIMIA": [
+   {
+    "id_staging": 517,
+    "archivo": "BD Egresos.xlsx",
+    "tipo_fuente": "RENTABILIDAD",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "no hay facturacion"
+   },
+   {
+    "id_staging": 4092,
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "BRAYAHAM ALEJANDRO APAZA ESPINAL"
+   },
+   {
+    "id_staging": 4093,
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "ESTEFANI MONTERO CHAVEZ"
+   },
+   {
+    "id_staging": 4094,
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "PABLO ALEJANDRO MENDOZA GÓMEZ"
+   },
+   {
+    "id_staging": 4095,
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "DANIELA CHAMBILLA RAMOS"
+   },
+   {
+    "id_staging": 4096,
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "FABRIZIO RAFAEL MERCADO NUEZ"
+   },
+   {
+    "id_staging": 4097,
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "MARYCELL PINAYA GUTIERREZ"
+   },
+   {
+    "id_staging": 4098,
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "AMPARO PATRICIA ZAVALA ROMAN"
+   },
+   {
+    "id_staging": 4099,
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "THAIS NATALY MENDOZA CLAROS"
+   },
+   {
+    "id_staging": 4100,
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "tipo_fuente": "EVALUACION_DOCENTE",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "BELIA MARITZA COPA CALCINA"
+   }
+  ],
+  "CI_NOMBRE_DISCORDANTE": [
+   {
+    "id_staging": 518,
+    "archivo": "BD Egresos.xlsx",
+    "tipo_fuente": "RENTABILIDAD",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "CI: 0991254  /  Nombre: DE VIAJERO A FAN (Discordante con: Estudiante 0991254)"
+   },
+   {
+    "id_staging": 519,
+    "archivo": "BD Egresos.xlsx",
+    "tipo_fuente": "RENTABILIDAD",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "CI: 5889213  /  Nombre: Triada Mortal (Discordante con: Estudiante 5889213)"
+   },
+   {
+    "id_staging": 12431,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "tipo_fuente": "ACTA",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "CI: 6123430  /  Nombre: SERGIO OMAR TORRICO (Discordante con: AILTON RALPF TORRICO BUKOVIC)"
+   },
+   {
+    "id_staging": 12432,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "tipo_fuente": "ACTA",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "CI: 1127118  /  Nombre: NELSON EVER CAMACHO BARBA (Discordante con: MARÍA DEL MAR GÓMEZ SUÁREZ)"
+   },
+   {
+    "id_staging": 12433,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "tipo_fuente": "ACTA",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "CI: 4958967  /  Nombre: MARÍA DEL MAR GÓMEZ SUÁREZ (Discordante con: HENRY LOZANO LOZANO CONDORI)"
+   },
+   {
+    "id_staging": 12434,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "tipo_fuente": "ACTA",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "CI: 7705376  /  Nombre: HENRY LOZANO LOZANO CONDORI (Discordante con: NELSON EVER CAMACHO BARBA)"
+   },
+   {
+    "id_staging": 12435,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "tipo_fuente": "ACTA",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "CI: 4198892  /  Nombre: JOSE IGNACIO DURÁN MOYE (Discordante con: CIRO DURÁN MOYE)"
+   },
+   {
+    "id_staging": 12436,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "tipo_fuente": "ACTA",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "CI: 12384015  /  Nombre: JUDY PAMELA PADILLA AGUILERA (Discordante con: FABIANA PADILLA AGUILERA)"
+   },
+   {
+    "id_staging": 12437,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "tipo_fuente": "ACTA",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "CI: 6279355  /  Nombre: ROGER PAUL SILVA MARISCAL (Discordante con: FERNANDO SILVA MARISCAL)"
+   },
+   {
+    "id_staging": 12438,
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "tipo_fuente": "ACTA",
+    "tipo_entidad": "ESTUDIANTE",
+    "extracto": "CI: 5871141  /  Nombre: JHONATAN YERKO SUAREZ SOLIZ (Discordante con: GERHARD SUAREZ SOLIZ)"
+   }
+  ]
+ }
+}

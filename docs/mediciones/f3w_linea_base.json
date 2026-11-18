@@ -1,0 +1,88 @@
+{
+ "tarea": "W-0 (Linea base F3W)",
+ "git_diff_stat": "backend/routers/powerbi.py                         |  25 +-\n frontend/index.html                                |   6 +-\n frontend/src/App.jsx                               | 180 +++++++-\n frontend/src/api/powerbiApi.js                     |   1 +\n .../canvas3d/IsometricCanvasBackground.jsx         |   9 +-\n frontend/src/components/layout/Navbar.jsx          |  29 +-\n frontend/src/components/profile/ProfileModal.jsx   | 112 ++++-\n .../src/components/shared/GlosarioFlotante.jsx     |  50 ++-\n frontend/src/components/shared/KpiCard.jsx         |   4 +-\n .../src/modules/academic/ProyeccionAlumnos.jsx     |  33 +-\n .../src/modules/academic/RendimientoAlertas.jsx    |  75 ++--\n frontend/src/modules/admin/AuditoriaSistema.jsx    | 140 ++++---\n frontend/src/modules/admin/CuadroMandoIntegral.jsx | 185 +++++----\n frontend/src/modules/admin/cmi/CmiDetalleKpi.jsx   | 142 ++++++-\n frontend/src/modules/admin/cmi/CmiPowerBi.jsx      |  23 +-\n frontend/src/modules/admin/cmi/CmiScorecard.jsx    | 103 ++++-\n frontend/src/modules/admin/cmi/cmi.css             |  57 ++-\n frontend/src/modules/admin/cmi/glosarioTextos.js   |  19 +\n frontend/src/modules/auth/LoginPage.jsx            | 178 ++++++--\n .../auth/components/ForgotPasswordModal.jsx        |  45 +-\n .../src/modules/auth/components/LoginHeroPane.jsx  | 455 +++++++++++++--------\n .../src/modules/auth/components/OtpInputForm.jsx   |  66 ++-\n .../src/modules/dataops/BetoReadingFlowView.jsx    |   3 +-\n .../src/modules/dataops/HumanReviewFlowView.jsx    |   3 +-\n frontend/src/modules/dataops/MasterDataView.jsx    |  19 +-\n .../modules/dataops/components/BatchFlowHeader.jsx |   3 +-\n .../modules/dataops/components/BatchFlowLayout.jsx |   2 +-\n .../dataops/components/BatchFlowStepper.jsx        |  45 +-\n .../modules/dataops/components/BatchHistory.jsx    |   5 +-\n .../src/modules/dataops/components/DataOpsTabs.jsx |  10 +-\n .../dataops/components/PipelineTelemetryDrawer.jsx |  10 +-\n .../modules/dataops/components/ProgresoTarea.jsx   |  35 +-\n frontend/src/modules/finance/MetasGestion.jsx      |  40 +-\n .../src/modules/finance/ProyeccionFinanciera.jsx   |  29 +-\n .../modules/notifications/NotificationsPage.jsx    |  80 +++-\n frontend/src/modules/reports/CentroReportes.jsx    |  38 +-\n frontend/src/services/notificationService.js       |  30 +-\n frontend/src/services/sileoToast.js                |  12 +-\n frontend/src/styles/tokens.css                     |  46 ++-\n 39 files changed, 1752 insertions(+), 595 deletions(-)",
+ "lote_sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+ "dump_f3ub_sha256": "b2c1ed32a74483f49facfd45e300dd22223051ca2f95f5e8e1fc38f6d5cf6c67",
+ "dump_sha_coincide_f3ub": true,
+ "dw_viva_antes": {
+  "lotes": [
+   "18|PROCESADO|1"
+  ],
+  "documentos": [
+   "28|_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx|EVALUACION_DOCENTE|18"
+  ],
+  "casos_abiertos_por_motivo": [
+   "HOMONIMIA|566"
+  ],
+  "conteos": {
+   "fact_rendimiento_academico": 22618,
+   "fact_situacion_financiera": 10483,
+   "fact_evaluacion_docente": 715278,
+   "fact_marketing": 9093,
+   "fact_rentabilidad": 108,
+   "fact_forecast": 24,
+   "fact_cobranzas_proyectadas": 0,
+   "fact_costo_programa": 1371,
+   "fact_techo_convenio": 206,
+   "staging_registros_crudos": 3,
+   "stg_entidad_no_resuelta": 670,
+   "log_inconsistencias": 395,
+   "log_pipeline_ingesta": 10,
+   "carga_fila_origen": 15496,
+   "lote": 1,
+   "dim_origen_documental": 1,
+   "dataops_tarea": 58,
+   "dim_modulo": 3758,
+   "dim_estudiante": 14640,
+   "dim_docente": 761,
+   "users": 5
+  }
+ },
+ "beto_pg_f3w_puerto": 55634,
+ "f3w_completo_conteos": {
+  "users": 5,
+  "dim_origen_documental": 10,
+  "lote": 10,
+  "fact_rentabilidad": 95,
+  "dataops_tarea": 30,
+  "log_pipeline_ingesta": 90,
+  "fact_techo_convenio": 206,
+  "staging_registros_crudos": 68,
+  "fact_forecast": 0,
+  "fact_cobranzas_proyectadas": 0,
+  "dim_docente": 761,
+  "fact_costo_programa": 1371,
+  "dim_modulo": 4375,
+  "fact_marketing": 10432,
+  "fact_situacion_financiera": 10719,
+  "dim_estudiante": 15391,
+  "fact_rendimiento_academico": 25108,
+  "carga_fila_origen": 30366,
+  "stg_entidad_no_resuelta": 14359,
+  "log_inconsistencias": 22746,
+  "fact_evaluacion_docente": 715217
+ },
+ "f3w_vacio_conteos": {
+  "fact_rendimiento_academico": 0,
+  "fact_situacion_financiera": 0,
+  "fact_evaluacion_docente": 0,
+  "fact_marketing": 0,
+  "fact_rentabilidad": 0,
+  "fact_forecast": 0,
+  "fact_cobranzas_proyectadas": 0,
+  "fact_costo_programa": 0,
+  "fact_techo_convenio": 0,
+  "staging_registros_crudos": 0,
+  "stg_entidad_no_resuelta": 0,
+  "log_inconsistencias": 0,
+  "log_pipeline_ingesta": 0,
+  "carga_fila_origen": 0,
+  "lote": 0,
+  "dim_origen_documental": 0,
+  "dataops_tarea": 0,
+  "dim_modulo": 4375,
+  "dim_estudiante": 15391,
+  "dim_docente": 761,
+  "users": 5
+ }
+}

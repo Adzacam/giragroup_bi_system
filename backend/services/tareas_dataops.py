@@ -80,6 +80,19 @@ def avanzar(tid: Optional[int], procesados: int, total: Optional[int] = None, fo
 
 
 @_sin_romper
+def latir(tid: Optional[int]) -> None:
+    """Señal de vida sin cambiar el avance, para escrituras en bloque largas (sin ella la regla de SIN_LATIDO_SEG
+    da por interrumpida una tarea que sigue trabajando). Como mucho una escritura por INTERVALO_SEG, como avanzar()."""
+    if not tid:
+        return
+    ahora = time.monotonic()
+    if ahora - _ultima_escritura.get(tid, 0.0) < INTERVALO_SEG:
+        return
+    _ultima_escritura[tid] = ahora
+    _ejecutar("UPDATE public.dataops_tarea SET actualizado_en = CURRENT_TIMESTAMP WHERE id = :id", {"id": tid})
+
+
+@_sin_romper
 def terminar(tid: Optional[int], resultado: Optional[Dict[str, Any]] = None) -> None:
     if not tid:
         return
@@ -113,6 +126,7 @@ def _finalizar(tid: int, estado: str, resultado: dict, error: Optional[str] = No
             nombre, paso = {
                 "INGESTA": ("Carga de archivos", "texto"),
                 "LECTURA_BETO": ("Lectura de BETO", "beto"),
+                "PREPARACION_REVISION": ("Preparación de revisión", "revision"),
                 "CONSOLIDACION": ("Consolidación de registros", "revision"),
             }.get(fila.tipo, ("Procesamiento", "revision"))
             ok = estado == "COMPLETADA"

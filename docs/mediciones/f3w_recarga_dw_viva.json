@@ -1,0 +1,270 @@
+{
+  "tarea": "W-14 (Recarga de la DW viva por la web)",
+  "fecha": "2026-11-17/18",
+  "resultado": "COMPLETADA con el código corregido (segunda carga, lote #4). La primera carga (lote #3, código anterior) se purgó antes de repetirla.",
+  "autorizacion": "Purga y recarga de la DW viva pedidas por el usuario en el chat (y DECISIÓN 6 del plan).",
+  "respaldo_previo": {
+    "archivo": "output/f3w/giragroup_db_pre_w14b.dump",
+    "sha256": "3569eeba953003df4fc43db018c035e081038c316bf97e077ecd56b6f666caf3",
+    "bytes": 21358045,
+    "estado_al_respaldar": "2 lotes (#1: 1 doc; #2: 8 docs, creados tras W-0b), 0 hechos, 59 filas de staging; dimensiones: dim_estudiante 14.640, dim_modulo 3.758, dim_docente 761, users 5",
+    "otros_respaldos": [
+      "output/f3w/giragroup_db_pre_w0b.dump (antes de W-0b)",
+      "output/f3w/giragroup_db_pre_w14.dump (intento previo)"
+    ]
+  },
+  "purga": {
+    "metodo": "DELETE /api/v1/dataops/sources/{id} (documentos 2 a 9) con la sesión del navegador del usuario; sin SQL a mano",
+    "incidente": "El primer DELETE quedó bloqueado por una conexión de la API 'idle in transaction' (pid 17161, 54 min) del job PREPARACION_REVISION interrumpido del lote #2. Se cerró solo esa conexión con pg_terminate_backend (orphan del lote que se purgaba); los DELETE terminaron.",
+    "despues": {
+      "hechos": 0,
+      "staging_registros_crudos": 0,
+      "stg_entidad_no_resuelta": 0,
+      "log_inconsistencias": 0,
+      "log_pipeline_ingesta": 0,
+      "carga_fila_origen": 0,
+      "dim_estudiante": 14640,
+      "dim_modulo": 3758,
+      "dim_docente": 761,
+      "users": 5
+    },
+    "residuos": "2 lotes vacíos (#1, #2) en la tabla lote y cache_indice_beto (168.341 filas) sin purgar; no hay endpoint de borrado de lotes vacíos ni de caché y no se usó SQL a mano"
+  },
+  "carga_por_la_web": {
+    "metodo": "Navegador integrado con la sesión del usuario; los 10 archivos de output/backups/f0_lote/originales se pasaron al selector de la zona de carga desde un servidor local temporal (127.0.0.1:8765, ya detenido) y se pulsó 'Procesar seleccionados (10)'",
+    "tipos_detectados_por_la_spa": {
+      "TBL_INSCRITOS.xlsx": "Admisiones y matriculación",
+      "BD Cobranzas.xlsx": "Cobranza y pagos",
+      "BD Techos.xlsx": "Techos de convenio",
+      "EJECUTADO VS META.xlsx": "Rentabilidad",
+      "BD Egresos.xlsx": "Egresos",
+      "PLANIFICACION Y EJECUCION ACADÉMICA": "Planificación",
+      "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE": "Evaluación docente",
+      "Evaluación Docente y Unifranz.xlsx": "Evaluación docente",
+      "Experiencia Docente 2.0.xlsx": "Evaluación docente",
+      "Base centralizada Académica ARCA (1).xlsx": "Acta de calificaciones (escala 0-100 elegida por el operador, igual que en la carga de W-13)"
+    },
+    "lote": 3,
+    "ingesta": {
+      "estado": "COMPLETADA",
+      "exitosos": 10,
+      "fallidos": 0,
+      "total_registros": 92837
+    },
+    "lectura_beto": {
+      "estado": "COMPLETADA",
+      "tuplas": 116557
+    },
+    "docs_en_dw": [
+      {
+        "id": 10,
+        "tipo": "ADMISION"
+      },
+      {
+        "id": 11,
+        "tipo": "COBRANZA"
+      },
+      {
+        "id": 12,
+        "tipo": "TECHOS"
+      },
+      {
+        "id": 13,
+        "tipo": "RENTABILIDAD"
+      },
+      {
+        "id": 14,
+        "tipo": "EGRESOS"
+      },
+      {
+        "id": 15,
+        "tipo": "PLANIFICACION"
+      },
+      {
+        "id": 16,
+        "tipo": "EVALUACION_DOCENTE"
+      },
+      {
+        "id": 17,
+        "tipo": "EVALUACION_DOCENTE"
+      },
+      {
+        "id": 18,
+        "tipo": "EVALUACION_DOCENTE"
+      },
+      {
+        "id": 19,
+        "tipo": "ACTA",
+        "escala": "CENTESIMAL_100"
+      }
+    ],
+    "casos_en_revision_tras_lectura": 9,
+    "casos_aprobados_en_la_web": 0,
+    "nota_casos": "Los 9 casos (Cédula dudosa) son decisiones de identidad; no se aprobaron por cuenta propia."
+  },
+  "fallo": {
+    "preparacion_revision": {
+      "tarea": 9,
+      "estado": "ERROR",
+      "procesados": 104250,
+      "total": 116557,
+      "sintomas": "sin avance durante >5 min; CPU de la API ~1,6 %; una conexión a la BD 'idle in transaction' con la consulta SELECT max(fact_rendimiento_academico.id_tiempo); 0 errores y 0 excepciones en el log de giragroup_api; terminó en ERROR al reiniciar la API (docker restart giragroup_api)"
+    },
+    "consolidacion": {
+      "tarea": 10,
+      "estado": "ERROR",
+      "procesados": 104250,
+      "total": 116557,
+      "inicio": "2026-11-18 00:34:22Z",
+      "error": "El proceso se interrumpió. Revisa el lote antes de reintentarlo.",
+      "sin_reinicio_de_api": true,
+      "oom": false,
+      "restarts_contenedor": 0
+    },
+    "patron": "Ambas tareas se detienen en la misma línea (104.250), dentro de Experiencia Docente 2.0 (líneas 87.407 a 105.101 del lote; 94 % del archivo). El intento previo sobre el lote #2 (8 archivos) se detuvo también cerca del final de un documento (60.000 de 87.406 y luego 86.750 de 87.406; finales de documento en 60.217 y 87.406). Hipótesis, sin comprobar: bloqueo en el cierre de un documento de evaluación (inserción en bloque o trazabilidad de W-6/W-13) en el hilo de segundo plano.",
+    "diferencia_con_el_clon": "En el clon de W-13 el mismo archivo se cargó como ACTA/CENTESIMAL_100 y los 10 libros terminaron en 1.024 s; en la web la SPA lo clasifica como 'Evaluación docente' (W-2) y el backend también lo ruta por esa vía. No se probó aún ese camino de punta a punta en el clon.",
+    "faltan_herramientas": "py-spy no está en el contenedor; no se obtuvo traza de hilos"
+  },
+  "estado_actual_dw_viva": {
+    "lotes": 3,
+    "documentos": 10,
+    "staging_registros_crudos": 68,
+    "stg_entidad_no_resuelta_pendientes": 9,
+    "log_inconsistencias": 1033,
+    "hechos": 0,
+    "carga_fila_origen": 0,
+    "dim_estudiante": 14640,
+    "dim_modulo": 3758,
+    "dim_docente": 761,
+    "users": 5,
+    "nota": "La DW viva queda con el lote #3 en staging y sin hechos: los tableros del CMI siguen vacíos. Para volver al estado previo está giragroup_db_pre_w14b.dump."
+  },
+  "criterios_del_plan": {
+    "1_10_documentos_COMPLETADA": "SÍ por tareas (INGESTA, LECTURA, PREPARACION y CONSOLIDACION COMPLETADAS para el lote #4); 10/10 documentos con staging",
+    "2_conteos_vs_clon": "8 de 9 tablas iguales; marketing +26 frente al clon (10.490 frente a 10.464), sin explicar",
+    "3_sha_dump_previo": "SÍ (pre_w14b y pre_w14c)",
+    "4_cero_5xx_en_logs": "SÍ"
+  },
+  "tiempos": "Los tiempos de esta carga no son la cifra de RNF-03.",
+  "pendiente_decision": [
+    "Aprobar o descartar los casos de identidad pendientes",
+    "Explicar la diferencia de marketing (+26 frente al clon)",
+    "Decidir si el endpoint de borrado de documentos debe eliminar también sus hechos y trazas (hoy quedan huérfanos)"
+  ],
+  "primera_carga_codigo_previo": {
+    "nota": "Intento 1 (lote #3): detenido en 104.250 por falta de memoria con el código anterior; ver f3w_bloqueo_consolidacion.json. Aun así los hechos terminaron en la DW viva (el proceso siguió escribiendo) y la tarea quedó en ERROR por el vigilante de 180 s.",
+    "hechos_al_terminar": {
+      "fact_evaluacion_docente": 715217,
+      "fact_rendimiento_academico": 25108,
+      "fact_situacion_financiera": 10719,
+      "fact_marketing": 10486,
+      "fact_rentabilidad": 95,
+      "fact_costo_programa": 1371,
+      "fact_techo_convenio": 206,
+      "bridge_modulo_docente": 1690,
+      "carga_fila_origen": 1632508
+    }
+  },
+  "segunda_carga_con_correccion": {
+    "respaldo_previo": {
+      "archivo": "output/f3w/giragroup_db_pre_w14c.dump",
+      "sha256": "f04081c8da918fac9b4677e431b402b347071d38dfd41be6e28b329caff5e7d3",
+      "bytes": 120328916,
+      "estado": "lote #3 con todos sus hechos (715.217 de evaluación, 1.632.508 en carga_fila_origen)"
+    },
+    "limpieza_de_la_carga_anterior": {
+      "hallazgo": "DELETE /api/v1/dataops/sources/{id} y /sources/delete-batch borran documento, staging y logs, pero NO los hechos ni carga_fila_origen: las FK de los hechos a dim_origen_documental son ON DELETE SET NULL y carga_fila_origen no tiene FK. Habrían quedado huérfanos y la recarga (documentos nuevos 20 a 29) los habría duplicado.",
+      "accion": "Una transacción SQL (psql -1, tras el pg_dump): DELETE de hechos con id_documento 10 a 19 (evaluación, académico, financiero, rentabilidad, costo, techo, bridge_modulo_docente), de TODO fact_marketing (no tiene id_documento y venía solo de esta carga; estaba en 0 antes) y de carga_fila_origen de los documentos 10 a 19; después POST /sources/delete-batch con los 10 documentos por la API (200, 10 eliminados). Esto se aparta del 'sin SQL a mano' de W-0b y lo autoriza la instrucción del usuario en el chat (respaldo con pg_dump y limpieza previa).",
+      "filas_borradas": {
+        "bridge_modulo_docente": 1690,
+        "fact_evaluacion_docente": 715217,
+        "fact_rendimiento_academico": 25108,
+        "fact_situacion_financiera": 10719,
+        "fact_rentabilidad": 95,
+        "fact_costo_programa": 1371,
+        "fact_techo_convenio": 206,
+        "fact_marketing": 10486,
+        "carga_fila_origen": 1632508
+      },
+      "despues_de_limpiar": "0 en hechos, 0 en carga_fila_origen, staging, stg_entidad_no_resuelta, log_inconsistencias y log_pipeline_ingesta; dimensiones sin tocar (dim_estudiante 15.541, dim_modulo 4.378, dim_docente 761, users 5); fact_forecast y fact_cobranzas_proyectadas ya estaban en 0"
+    },
+    "carga_por_la_web": {
+      "lote": 4,
+      "documentos": [
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "mismos_10_libros_y_tipos": true,
+      "escala_ARCA": "CENTESIMAL_100",
+      "tareas": {
+        "INGESTA": "COMPLETADA 10/10 (92.837 registros)",
+        "LECTURA_BETO": "COMPLETADA 116.557/116.557",
+        "PREPARACION_REVISION": "COMPLETADA 116.557/116.557",
+        "CONSOLIDACION": "COMPLETADA 116.557/116.557"
+      },
+      "duraciones_aprox_min": {
+        "ingesta": 2.5,
+        "lectura_beto": 5.5,
+        "preparacion_revision": 7.3,
+        "consolidacion": 9.8,
+        "nota": "con la caché de índices de BETO ya poblada por la carga anterior; no son la cifra de RNF-03"
+      },
+      "memoria_api_pico_gib": 5.48,
+      "oom": false,
+      "reinicios_api": 0,
+      "errores_5xx_en_log": 0,
+      "idle_in_transaction": 0
+    },
+    "conteos_finales": {
+      "fact_evaluacion_docente": 715217,
+      "fact_rendimiento_academico": 25108,
+      "fact_situacion_financiera": 10719,
+      "fact_marketing": 10490,
+      "fact_rentabilidad": 95,
+      "fact_costo_programa": 1371,
+      "fact_techo_convenio": 206,
+      "bridge_modulo_docente": 1690,
+      "carga_fila_origen": 1632508,
+      "stg_entidad_no_resuelta_pendientes": 1383,
+      "log_inconsistencias": 22746
+    },
+    "comparacion_con_carga_anterior": {
+      "iguales": [
+        "fact_evaluacion_docente",
+        "fact_rendimiento_academico",
+        "fact_situacion_financiera",
+        "fact_rentabilidad",
+        "fact_costo_programa",
+        "fact_techo_convenio",
+        "bridge_modulo_docente",
+        "carga_fila_origen",
+        "log_inconsistencias (22.746)"
+      ],
+      "distinta": {
+        "fact_marketing": "10.490 frente a 10.486 de la carga anterior en la viva y 10.464 en el clon",
+        "explicacion": "no determinada; las dimensiones de la viva crecieron entre cargas y difieren de las del clon (dim_modulo 4.378 frente a 4.375), lo que podría cambiar el emparejamiento de módulos de marketing. No se comprobó."
+      },
+      "casos_pendientes_en_staging": "1.383 en la recarga frente a 14.360 antes de la limpieza (la cifra anterior incluía descartes de ruido); no comparables 1 a 1"
+    },
+    "idempotencia": {
+      "respuesta_a_la_pregunta_del_usuario": "Se limpió la carga anterior con pg_dump previo (pre_w14c) antes de recargar; no se confió en la idempotencia para evitar duplicados, porque la purga por la API deja los hechos huérfanos.",
+      "comprobado_en_la_viva_tras_la_recarga": {
+        "hechos_con_id_documento_nulo_o_menor_a_20": 0,
+        "carga_fila_origen_filas_vs_claves_distintas": "1.632.508 = 1.632.508 (clave primaria)",
+        "documentos_con_trazabilidad": 9,
+        "planificacion_sin_hechos": "coincide con W-13"
+      },
+      "comprobado_en_el_clon": "volver a consolidar el mismo lote agrega 0 hechos y 0 carga_fila_origen (f3w_bloqueo_consolidacion.json)",
+      "no_comprobado_en_la_viva": "no se re-consolidó el lote #4 en la viva: en el clon duplica descartes en log_inconsistencias (+21.703) y agrega 611 casos, y cada consolidación retiene ~2 GB por worker"
+    },
+    "casos_de_identidad": "No se aprobó ninguno; quedan pendientes para decisión de Lean"
+  }
+}

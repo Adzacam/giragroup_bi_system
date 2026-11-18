@@ -1,0 +1,34 @@
+{
+  "tarea": "W-2",
+  "defecto": "D-W1",
+  "fecha": "2026-11-17",
+  "catalogo_frontend": [
+    { "code": "ACTA", "label": "Acta de calificaciones", "requiereEscala": true },
+    { "code": "MOODLE", "label": "Reporte Aula Moodle", "requiereEscala": true },
+    { "code": "COBRANZA", "label": "Cobranza y pagos", "requiereEscala": false },
+    { "code": "ADMISION", "label": "Admisiones y matriculación", "requiereEscala": false },
+    { "code": "EVALUACION_DOCENTE", "label": "Evaluación docente", "requiereEscala": false },
+    { "code": "EGRESOS", "label": "Egresos", "requiereEscala": false },
+    { "code": "TECHOS", "label": "Techos de convenio", "requiereEscala": false },
+    { "code": "RENTABILIDAD", "label": "Rentabilidad", "requiereEscala": false },
+    { "code": "MARKETING", "label": "Marketing", "requiereEscala": false },
+    { "code": "PLANIFICACION", "label": "Planificación", "requiereEscala": false }
+  ],
+  "evaluacion_10_libros": [
+    { "archivo": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx", "tipo_detectado": "EVALUACION_DOCENTE", "etiqueta_ui": "Evaluación docente", "selector_escala": false, "texto_escala": "Escala de respuesta: 1 a 5 / 1 a 10 (detectada)", "correcto": true },
+    { "archivo": "Evaluación Docente y Unifranz.xlsx", "tipo_detectado": "EVALUACION_DOCENTE", "etiqueta_ui": "Evaluación docente", "selector_escala": false, "texto_escala": "Escala de respuesta: 1 a 5 / 1 a 10 (detectada)", "correcto": true },
+    { "archivo": "Experiencia Docente 2.0.xlsx", "tipo_detectado": "EVALUACION_DOCENTE", "etiqueta_ui": "Evaluación docente", "selector_escala": false, "texto_escala": "Escala de respuesta: 1 a 5 / 1 a 10 (detectada)", "correcto": true },
+    { "archivo": "Base centralizada Académica ARCA (1).xlsx", "tipo_detectado": "ACTA", "etiqueta_ui": "Acta de calificaciones", "selector_escala": true, "correcto": true },
+    { "archivo": "BD Cobranzas.xlsx", "tipo_detectado": "COBRANZA", "etiqueta_ui": "Cobranza y pagos", "selector_escala": false, "correcto": true },
+    { "archivo": "TBL_INSCRITOS.xlsx", "tipo_detectado": "ADMISION", "etiqueta_ui": "Admisiones y matriculación", "selector_escala": false, "correcto": true },
+    { "archivo": "BD Egresos.xlsx", "tipo_detectado": "EGRESOS", "etiqueta_ui": "Egresos", "selector_escala": false, "correcto": true },
+    { "archivo": "BD Techos.xlsx", "tipo_detectado": "TECHOS", "etiqueta_ui": "Techos de convenio", "selector_escala": false, "correcto": true },
+    { "archivo": "EJECUTADO VS META.xlsx", "tipo_detectado": "RENTABILIDAD", "etiqueta_ui": "Rentabilidad", "selector_escala": false, "correcto": true },
+    { "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx", "tipo_detectado": "PLANIFICACION", "etiqueta_ui": "Planificación", "selector_escala": false, "correcto": true }
+  ],
+  "resumen": {
+    "aciertos": 10,
+    "total": 10,
+    "vitest": "src/modules/dataops/__tests__/w2TipoDocumental.test.jsx (3/3 passed)"
+  }
+}

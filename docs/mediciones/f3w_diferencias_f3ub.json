@@ -1,0 +1,135 @@
+{
+ "tarea": "W-1b (Diferencias F3U-B / D-W11)",
+ "archivos_con_delta": [
+  {
+   "archivo": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+   "tipo_backend": null,
+   "filas_excel_aprox": 19120,
+   "lineas_staging": 0,
+   "filas_con_saltos_linea_celda": 0,
+   "hechos_guardados": 0,
+   "casos_hitl_abiertos": 0,
+   "causas_principales": [
+    "Cabeceras multi-fila / hojas resumen / filas vacías o de totales",
+    "Reglas de descarte B-9 / deduplicación / casos derivados a bandeja HITL"
+   ]
+  },
+  {
+   "archivo": "Evaluación Docente y Unifranz.xlsx",
+   "tipo_backend": "EVALUACION_DOCENTE",
+   "filas_excel_aprox": 4889,
+   "lineas_staging": 27189,
+   "filas_con_saltos_linea_celda": 3,
+   "hechos_guardados": 14173,
+   "casos_hitl_abiertos": 250,
+   "causas_principales": [
+    "Saltos de línea internos en celdas (3 filas) o bloques de cabecera/pie",
+    "Reglas de descarte B-9 / deduplicación / casos derivados a bandeja HITL"
+   ]
+  },
+  {
+   "archivo": "TBL_INSCRITOS.xlsx",
+   "tipo_backend": "ADMISION",
+   "filas_excel_aprox": 15196,
+   "lineas_staging": 15196,
+   "filas_con_saltos_linea_celda": 0,
+   "hechos_guardados": 0,
+   "casos_hitl_abiertos": 11,
+   "causas_principales": [
+    "Cabeceras multi-fila / hojas resumen / filas vacías o de totales",
+    "Reglas de descarte B-9 / deduplicación / casos derivados a bandeja HITL"
+   ]
+  },
+  {
+   "archivo": "BD Cobranzas.xlsx",
+   "tipo_backend": "COBRANZA",
+   "filas_excel_aprox": 16036,
+   "lineas_staging": 16034,
+   "filas_con_saltos_linea_celda": 5,
+   "hechos_guardados": 10719,
+   "casos_hitl_abiertos": 2,
+   "causas_principales": [
+    "Saltos de línea internos en celdas (5 filas) o bloques de cabecera/pie",
+    "Reglas de descarte B-9 / deduplicación / casos derivados a bandeja HITL"
+   ]
+  },
+  {
+   "archivo": "BD Techos.xlsx",
+   "tipo_backend": "MARKETING",
+   "filas_excel_aprox": 207,
+   "lineas_staging": 207,
+   "filas_con_saltos_linea_celda": 1,
+   "hechos_guardados": 206,
+   "casos_hitl_abiertos": 0,
+   "causas_principales": [
+    "Saltos de línea internos en celdas (1 filas) o bloques de cabecera/pie",
+    "Reglas de descarte B-9 / deduplicación / casos derivados a bandeja HITL"
+   ]
+  },
+  {
+   "archivo": "EJECUTADO VS META.xlsx",
+   "tipo_backend": "RENTABILIDAD",
+   "filas_excel_aprox": 36,
+   "lineas_staging": 36,
+   "filas_con_saltos_linea_celda": 0,
+   "hechos_guardados": 95,
+   "casos_hitl_abiertos": 0,
+   "causas_principales": [
+    "Cabeceras multi-fila / hojas resumen / filas vacías o de totales",
+    "Expansión 1 fila -> N hechos por módulo/pregunta (evaluación docente y actas multi-módulo)"
+   ]
+  },
+  {
+   "archivo": "BD Egresos.xlsx",
+   "tipo_backend": "RENTABILIDAD",
+   "filas_excel_aprox": 1409,
+   "lineas_staging": 1409,
+   "filas_con_saltos_linea_celda": 0,
+   "hechos_guardados": 1371,
+   "casos_hitl_abiertos": 3,
+   "causas_principales": [
+    "Cabeceras multi-fila / hojas resumen / filas vacías o de totales",
+    "Reglas de descarte B-9 / deduplicación / casos derivados a bandeja HITL"
+   ]
+  },
+  {
+   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "tipo_backend": null,
+   "filas_excel_aprox": 6802,
+   "lineas_staging": 0,
+   "filas_con_saltos_linea_celda": 433,
+   "hechos_guardados": 0,
+   "casos_hitl_abiertos": 0,
+   "causas_principales": [
+    "Saltos de línea internos en celdas (433 filas) o bloques de cabecera/pie",
+    "Reglas de descarte B-9 / deduplicación / casos derivados a bandeja HITL"
+   ]
+  },
+  {
+   "archivo": "Experiencia Docente 2.0.xlsx",
+   "tipo_backend": "ACTA",
+   "filas_excel_aprox": 17695,
+   "lineas_staging": 17695,
+   "filas_con_saltos_linea_celda": 0,
+   "hechos_guardados": 503168,
+   "casos_hitl_abiertos": 0,
+   "causas_principales": [
+    "Cabeceras multi-fila / hojas resumen / filas vacías o de totales",
+    "Expansión 1 fila -> N hechos por módulo/pregunta (evaluación docente y actas multi-módulo)"
+   ]
+  },
+  {
+   "archivo": "Base centralizada Académica ARCA (1).xlsx",
+   "tipo_backend": "ACTA",
+   "filas_excel_aprox": 11454,
+   "lineas_staging": 11456,
+   "filas_con_saltos_linea_celda": 3,
+   "hechos_guardados": 25108,
+   "casos_hitl_abiertos": 1097,
+   "causas_principales": [
+    "Saltos de línea internos en celdas (3 filas) o bloques de cabecera/pie",
+    "Expansión 1 fila -> N hechos por módulo/pregunta (evaluación docente y actas multi-módulo)"
+   ]
+  }
+ ]
+}

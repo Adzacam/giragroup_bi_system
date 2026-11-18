@@ -132,17 +132,33 @@ _PREPARADAS: Dict[int, tuple] = {}
 _MAX_CATALOGOS_PREPARADOS = 8
 
 
-def _preparar(personas: List[Dict[str, Any]]) -> List[_PersonaPreparada]:
+class _CatalogoPersonas:
+    """Índice en memoria del catálogo preparado para evitar recorridos O(N) por cada fila."""
+    __slots__ = ("lista", "ci_map", "por_apellido")
+
+    def __init__(self, personas: List[Dict[str, Any]]):
+        self.lista = [_PersonaPreparada(p) for p in personas]
+        self.ci_map: Dict[str, _PersonaPreparada] = {}
+        self.por_apellido: Dict[str, List[Tuple[int, _PersonaPreparada]]] = {}
+        for idx, pp in enumerate(self.lista):
+            if pp.ci and pp.ci not in self.ci_map:
+                self.ci_map[pp.ci] = pp
+            if len(pp.toks) >= 2:
+                for ap in pp.apellidos:
+                    self.por_apellido.setdefault(ap, []).append((idx, pp))
+
+
+def _preparar(personas: List[Dict[str, Any]]) -> _CatalogoPersonas:
     """Catálogo preparado, memorizado por identidad y tamaño de la lista (la misma lista se reutiliza en toda una lectura o consolidación)."""
     clave = id(personas)
     hit = _PREPARADAS.get(clave)
     if hit is not None and hit[0] is personas and hit[1] == len(personas):
         return hit[2]
-    prep = [_PersonaPreparada(p) for p in personas]
+    cat = _CatalogoPersonas(personas)
     while len(_PREPARADAS) >= _MAX_CATALOGOS_PREPARADOS:
         _PREPARADAS.pop(next(iter(_PREPARADAS)))
-    _PREPARADAS[clave] = (personas, len(personas), prep)
-    return prep
+    _PREPARADAS[clave] = (personas, len(personas), cat)
+    return cat
 
 
 def _coincide_ctx_preparado(ctx_persona: List[str], ctx_registro: List[str]) -> bool:
@@ -188,28 +204,39 @@ def resolver_persona_detalle(
     """
     if es_correo(nombre):  # filtro previo: ni CI ni fuzzy sobre un correo
         return {"resultado": None, "motivo": "correo", "nivel": None}
-    preparadas = _preparar(personas)
+    cat = _preparar(personas)
     ci_n = _norm_ci(ci)
     if len(ci_n) >= 5:
-        for pp in preparadas:
-            if pp.ci == ci_n:
-                p = pp.p
-                return {"resultado": {"id": p["id"], "nombre": p["nombre"], "score": 1.0, "fuente": "CI_EXACTA"},
-                        "motivo": None, "nivel": "CI"}
+        pp = cat.ci_map.get(ci_n)
+        if pp is not None:
+            p = pp.p
+            return {"resultado": {"id": p["id"], "nombre": p["nombre"], "score": 1.0, "fuente": "CI_EXACTA"},
+                    "motivo": None, "nivel": "CI"}
 
     cand = quitar_titulos(nombre or "")
     toks_c = _tokens(cand)
     if len(toks_c) < 2:
         return {"resultado": None, "motivo": "sin_candidatos", "nivel": None}  # un solo token no identifica a una persona
 
+    apellido, primero = toks_c[-1], toks_c[0]
+    vistos: Dict[int, _PersonaPreparada] = {}
+    for idx, pp in cat.por_apellido.get(apellido, ()):
+        vistos[idx] = pp
+    if primero != apellido:
+        for idx, pp in cat.por_apellido.get(primero, ()):
+            vistos[idx] = pp
+    if not vistos:
+        return {"resultado": None, "motivo": "sin_candidatos", "nivel": None}
+    pre_cands = [vistos[i] for i in sorted(vistos)]
+
     ctx_mod = [quitar_titulos(c) for c in (ctx_modulo or []) if c]
     ctx_prog = [quitar_titulos(c) for c in (contexto or []) if c]
     niveles = []
     if ctx_mod:
-        niveles.append(("MODULO", [pp for pp in preparadas if _coincide_ctx_preparado(pp.modulos, ctx_mod)]))
+        niveles.append(("MODULO", [pp for pp in pre_cands if _coincide_ctx_preparado(pp.modulos, ctx_mod)]))
     if ctx_prog:
-        niveles.append(("PROGRAMA", [pp for pp in preparadas if _coincide_ctx_preparado(pp.ctx, ctx_prog)]))
-    niveles.append(("DIMENSION", preparadas))
+        niveles.append(("PROGRAMA", [pp for pp in pre_cands if _coincide_ctx_preparado(pp.ctx, ctx_prog)]))
+    niveles.append(("DIMENSION", pre_cands))
 
     empate = False
     for nivel, pool in niveles:

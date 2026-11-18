@@ -8,8 +8,11 @@ from datetime import datetime
 from fastapi import HTTPException
 from models.dim_origen import DimOrigenDocumental
 from models.staging_entidad import StagingEntidadNoResuelta
+from routers.dataops._comun import categoria_ruteo
 from services.bandeja_grupos import clave_grupo, grupos_pendientes, ids_del_grupo
 from services.dataops_evaluation_service import enmascarar_ci, texto_sin_ci, strip_accents, cis_en_entidades, NON_PERSON_WORDS
+from services.dataops_privacy import EMAIL as _EMAIL_RE, texto_publico
+from services.revision_formularios import campos_para_caso, construir_motivo_detalle
 from services.revision_hechos import items_hechos_en_revision
 from services.sugerencia_hitl import nombre_extraido, es_sugerencia_un_clic, similitud_nombre_completo
 
@@ -77,6 +80,35 @@ def proteger_ci(valor, cis=()):
     return valor
 
 
+def _entidades_publicas(entidades):
+    if not isinstance(entidades, list):
+        return []
+    salida = []
+    for e in entidades[:50]:
+        if not isinstance(e, dict):
+            continue
+        copia = dict(e)
+        lbl = strip_accents(str(copia.get('label', ''))).lower()
+        if any(k in lbl for k in ('estudiante', 'docente', 'persona', 'nombre', 'per', 'asesor')):
+            for k in ('token', 'matchedCanonical', 'text', 'valor'):
+                if copia.get(k):
+                    copia[k] = '••••'
+        elif 'correo' in lbl or 'email' in lbl:
+            for k in ('token', 'matchedCanonical', 'text', 'valor'):
+                if copia.get(k):
+                    copia[k] = '••••@••••'
+        elif 'ci' in lbl or 'documento' in lbl:
+            for k in ('token', 'matchedCanonical', 'text', 'valor'):
+                if copia.get(k):
+                    copia[k] = enmascarar_ci(str(copia[k]))
+        else:
+            for k in ('token', 'matchedCanonical', 'text', 'valor'):
+                if isinstance(copia.get(k), str):
+                    copia[k] = texto_publico(copia[k])
+        salida.append(copia)
+    return salida
+
+
 def caso_guardado(ent, doc):
     p = datos_payload(ent)
     raw = p.get('raw_line') or ent.texto_original or ''
@@ -89,28 +121,62 @@ def caso_guardado(ent, doc):
     manual = presupuesto_manual(doc, raw) or presupuesto_manual(doc, ent.texto_original)
     area = p.get('area') or ('financiera' if doc and doc.tipo_fuente == 'COBRANZA' else 'comercial' if doc and doc.tipo_fuente == 'ADMISION' else 'academica')
     motivo = ent.motivo or 'REVISION_GENERAL'
+    cat_ruteo = categoria_ruteo(doc.tipo_fuente if doc else None, p.get('categoria'))
+    campos_corr = campos_para_caso(cat_ruteo, motivo)
+    motivo_det = construir_motivo_detalle(cat_ruteo, motivo, {
+        'ci': ci,
+        'programa': p.get('programa') or p.get('modulo'),
+        'codigo_pos': p.get('codigo_pos') or p.get('programa'),
+        'confianza': ent.nivel_confianza,
+        'nombre': nombre,
+        'sugerencia': ent.mejor_candidato,
+        'fecha': p.get('fecha_inscripcion') or p.get('fecha'),
+        'institucion': p.get('institucion'),
+        'por_que_detuvo': p.get('motivo_llano'),
+    })
+    correo_detectado = None
+    if raw:
+        m_email = _EMAIL_RE.search(str(raw))
+        if m_email:
+            correo_detectado = m_email.group(0)
+    raw_protegido = texto_publico(raw) if raw else None
     publico = {
         'id': ent.id_staging, 'db_id': ent.id_staging, 'id_documento': ent.id_documento,
         'tipo_entidad': ent.tipo_entidad, 'tipo_fuente': doc.tipo_fuente if doc else None,
         'archivo_origen': doc.nombre_archivo if doc else None, 'motivo': motivo, 'motivo_label': motivo_publico(motivo),
-        'estudiante': nombre, 'nombre_extraido': nombre, 'sugerencia': ent.mejor_candidato,
+        'motivo_detalle': texto_publico(motivo_det) if motivo_det else motivo_det, 'campos_correccion': campos_corr,
+        'estudiante': '••••' if nombre else None, 'nombre_extraido': '••••' if nombre else None,
+        'tiene_nombre': bool(nombre),
+        'correo_enmascarado': '••••@••••' if correo_detectado else None,
+        'tiene_correo': bool(correo_detectado),
+        'sugerencia': '••••' if ent.mejor_candidato else None,
         'ci': enmascarar_ci(ci) if ci else None, 'ci_enmascarado': enmascarar_ci(ci) if ci else None,
-        'que_vio': raw, 'contexto_raw': raw, 'por_que_detuvo': 'Fila de presupuesto: verifica su clasificación antes de aprobar.' if manual else p.get('motivo_llano') or 'Comprueba los datos identificados antes de aprobar.',
+        'que_vio': raw_protegido, 'contexto_raw': raw_protegido,
+        'por_que_detuvo': 'Fila de presupuesto: verifica su clasificación antes de aprobar.' if manual else texto_publico(p.get('motivo_llano') or motivo_det or ''),
         'indice_registro': score, 'similitud': score,
         'ner_confidence': float(ent.nivel_confianza) if ent.nivel_confianza is not None else None,
         'modulo_detectado': p.get('modulo'), 'nota_final': p.get('nota_normalizada'),
+        'programa': p.get('programa'), 'numero_modulo': p.get('numero_modulo'),
+        'codigo_pos': p.get('codigo_pos'), 'docente': '••••' if p.get('docente') else None,
+        'fecha_inscripcion': p.get('fecha_inscripcion') or p.get('fecha'),
+        'categoria_financiera': p.get('categoria_financiera'),
+        'institucion': p.get('institucion'), 'clave_convenio': p.get('clave_convenio'),
+        'monto_convenio': p.get('monto_convenio'),
         'monto_deuda': p.get('monto_deuda'), 'cuotas_impagas': p.get('cuotas_impagas'),
-        'mes': p.get('mes'), 'gestion': p.get('gestion'), 'area': area,
+        'mes': p.get('mes'), 'gestion': p.get('gestion'), 'area': area, 'categoria_ruteo': cat_ruteo,
         'en_calidad': bool(p.get('en_calidad')), 'manual_presupuesto': manual,
         'estado_resolucion': ent.estado_resolucion or 'PENDIENTE',
         'locked': bool(ent.lock_usuario_id and ent.lock_expira and ent.lock_expira > datetime.utcnow()),
         'un_clic': not manual and es_sugerencia_un_clic(nombre, ent.mejor_candidato),
         'similitud_nombre_completo': similitud_nombre_completo(nombre, ent.mejor_candidato),
         'cuando': ent.resuelto_en.isoformat() if ent.resuelto_en else None,
-        'entidades': p.get('entities') or p.get('entidades') or [],
+        'entidades': _entidades_publicas(p.get('entities') or p.get('entidades') or []),
     }
     if p.get('sugerencias'):   # opción 3: candidatos ordenados por score combinado (campo opcional; solo orden, nunca una acción)
-        publico['sugerencias_beto'] = p['sugerencias']
+        publico['sugerencias_beto'] = [
+            {**s, 'nombre': '••••'} if isinstance(s, dict) and s.get('nombre') else s
+            for s in p['sugerencias']
+        ]
     return proteger_ci(publico, cis_en_entidades(publico['entidades'], str(ci) if ci else None))
 
 

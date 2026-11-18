@@ -14,7 +14,7 @@ import re
 import unicodedata
 from datetime import datetime, date
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple, List
+from typing import Callable, Dict, Any, Optional, Tuple, List
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func, text
 
@@ -49,6 +49,10 @@ except ImportError:
         FactMarketing = None
 
 logger = logging.getLogger("dw_loader")
+
+# Respuestas de evaluación diferidas que se acumulan en memoria antes de escribirlas en la misma transacción
+# (F3W, bloqueo de la consolidación del lote de 10 libros por falta de memoria del proceso de la API)
+LIMITE_EVAL_DIFERIDAS = 50000
 
 MESES_ES = {
     1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
@@ -229,11 +233,21 @@ class DWLoaderService:
         self._tiempos: set = set()
         self._docente_por_modulo: Dict[int, Optional[int]] = {}
         self._est_nombres: Optional[list] = None  # [(id_estudiante, nombre)] cargado una vez por instancia
+        self._est_solo_nombres: Optional[list] = None
+        self._est_fuzzy_cache: Dict[Tuple[str, int], list] = {}
         self._mod_por_nombre: Optional[Dict[str, int]] = None  # nombre normalizado (minúsculas) -> id_modulo, una carga por instancia
         self._mod_nombre_id: Dict[str, int] = {}  # nombre exacto -> id_modulo (para el fuzzy)
         self._memo_modulo_nombre: Dict[str, Optional[int]] = {}
-        self.diferir_eval = False  # True: la evaluación docente se inserta en bloque al llamar finalizar_cargas()
+        self.diferir_eval = False  # True: inserción en bloque al llamar finalizar_cargas()
         self._eval_pendientes: Dict[str, Dict[str, Any]] = {}
+        self.limite_eval_diferidas = LIMITE_EVAL_DIFERIDAS  # tope en memoria antes de escribirlas (misma transacción)
+        self.al_latir: Optional[Callable[[], None]] = None  # señal de vida durante las escrituras en bloque
+        self._eval_id_previo: Optional[int] = None  # MAX(id_hecho_eval) antes de la primera escritura por tramos
+        self._eval_previas_reescritas: set = set()  # claves de cargas anteriores que esta consolidación reescribió
+        self._aca_pendientes: Dict[Tuple[int, int], Dict[str, Any]] = {}
+        self._fin_pendientes: Dict[Tuple[int, int, int], Dict[str, Any]] = {}
+        self._cfo_pendientes: Dict[str, Tuple[Any, str]] = {}
+        self._cfo_existentes: Optional[set] = None
         self._cache_base_programa: Dict[Any, Optional[str]] = {}
         self._cache_docente_programa: Dict[Any, Optional[int]] = {}
         self._cache_tiempo_programa: Dict[Any, Optional[int]] = {}
@@ -245,6 +259,20 @@ class DWLoaderService:
         self._origen_por_doc: Dict[Any, Optional[DimOrigenDocumental]] = {}
         self._docente_por_nombre: Dict[str, Optional[int]] = {}
         self._institucion_por_nombre: Dict[str, Optional[int]] = {}
+        self.solo_revision: bool = False
+        self._programas_vistos_est: Dict[int, set] = {}
+        self.casos_existentes_fase_a: Optional[Dict[Tuple[Any, Optional[str], Optional[str]], int]] = None
+
+    def _registrar_staging_si_nuevo(self, stg: StagingEntidadNoResuelta) -> bool:
+        """Evita duplicar en Fase B los casos ya creados por Fase A (misma clave doc/motivo/texto)."""
+        if self.casos_existentes_fase_a:
+            clave = (stg.id_documento, stg.motivo, stg.texto_original)
+            if self.casos_existentes_fase_a.get(clave, 0) > 0:
+                self.casos_existentes_fase_a[clave] -= 1
+                return False
+        self.db.add(stg)
+        self.db.flush()
+        return True
 
     def _candidatos_estudiante_fuzzy(self, nombre_clean: str):
         """[(DimEstudiante, ratio)] con token_sort_ratio >= 90, mayor primero. La lista de nombres se carga una sola vez
@@ -254,15 +282,23 @@ class DWLoaderService:
             self._est_nombres = [(r[0], r[1]) for r in self.db.query(
                 DimEstudiante.id_estudiante, DimEstudiante.nombre_completo
             ).filter(DimEstudiante.deprecado == False, DimEstudiante.nombre_completo.isnot(None)).all()]
+            self._est_solo_nombres = [n for _, n in self._est_nombres]
         if not self._est_nombres:
             return []
-        hits = process.extract(nombre_clean, [n for _, n in self._est_nombres], scorer=fuzz.token_sort_ratio,
-                               score_cutoff=90.0, limit=None)
+        if self._est_solo_nombres is None or len(self._est_solo_nombres) != len(self._est_nombres):
+            self._est_solo_nombres = [n for _, n in self._est_nombres]
+        cache_key = (nombre_clean, len(self._est_nombres))
+        cached_ids = self._est_fuzzy_cache.get(cache_key)
+        if cached_ids is None:
+            hits = process.extract(nombre_clean, self._est_solo_nombres, scorer=fuzz.token_sort_ratio,
+                                   score_cutoff=90.0, limit=None)
+            cached_ids = [(self._est_nombres[idx][0], round(ratio, 2)) for _, ratio, idx in hits]
+            self._est_fuzzy_cache[cache_key] = cached_ids
         out = []
-        for _, ratio, idx in hits:
-            e = self.db.get(DimEstudiante, self._est_nombres[idx][0])
+        for id_e, ratio in cached_ids:
+            e = self.db.get(DimEstudiante, id_e)
             if e is not None and not e.deprecado:
-                out.append((e, round(ratio, 2)))
+                out.append((e, ratio))
         return out
 
     def _extra_sugerencias(self, nombre, candidatos) -> Dict[str, Any]:
@@ -437,10 +473,11 @@ class DWLoaderService:
                     match_ratio = _fuzzy_best_match(nombre.strip(), [est.nombre_completo])[1] or 0.0
                     if match_ratio < 70.0 and _es_variante_de_nombre(est.nombre_completo, nombre):
                         # CI exacta y apellido coincidente: variante de escritura, no un conflicto; queda en el log
-                        self.db.add(LogInconsistencia(
-                            id_documento=doc_id, campo_afectado="nombre_completo", valor_recibido=nombre.strip()[:2000],
-                            valor_esperado=est.nombre_completo, tipo_regla="CI_NOMBRE_VARIANTE", severidad="BAJA",
-                            estado_resolucion="REGISTRADO", descripcion=f"CI {ci_clean}: nombre resuelto automáticamente (variante)"))
+                        if not self.solo_revision:
+                            self.db.add(LogInconsistencia(
+                                id_documento=doc_id, campo_afectado="nombre_completo", valor_recibido=nombre.strip()[:2000],
+                                valor_esperado=est.nombre_completo, tipo_regla="CI_NOMBRE_VARIANTE", severidad="BAJA",
+                                estado_resolucion="REGISTRADO", descripcion=f"CI {ci_clean}: nombre resuelto automáticamente (variante)"))
                         if re.match(r"^\s*estudiante\s+ci\b", est.nombre_completo or "", re.I):
                             est.nombre_completo = nombre.strip()  # el nombre guardado era un marcador
                     elif match_ratio < 70.0:
@@ -456,8 +493,7 @@ class DWLoaderService:
                             nivel_confianza=confianza_ia,
                             resuelto=False
                         )
-                        self.db.add(stg)
-                        self.db.flush()
+                        self._registrar_staging_si_nuevo(stg)
                         return None, "C"
 
                 if not est.ci:
@@ -514,8 +550,7 @@ class DWLoaderService:
                     resuelto=False,
                     **self._extra_sugerencias(nombre_clean, candidatos_validos)
                 )
-                self.db.add(stg)
-                self.db.flush()
+                self._registrar_staging_si_nuevo(stg)
                 return None, "C"
 
             # 2b. Si hay al menos un candidato >= 90%:
@@ -529,6 +564,10 @@ class DWLoaderService:
                         DimModulo.programa.isnot(None),
                         DimModulo.programa != programa
                     ).first()
+                    if not hecho_otro_prog and (self.solo_revision or self.diferir_eval):
+                        hecho_otro_prog = any(
+                            p != programa for p in self._programas_vistos_est.get(est_encontrado.id_estudiante, ())
+                        )
                     if hecho_otro_prog:
                         stg = StagingEntidadNoResuelta(
                             id_documento=doc_id,
@@ -544,8 +583,7 @@ class DWLoaderService:
                             resuelto=False,
                             **self._extra_sugerencias(nombre_clean, candidatos_validos)
                         )
-                        self.db.add(stg)
-                        self.db.flush()
+                        self._registrar_staging_si_nuevo(stg)
                         return None, "C"
 
                 return est_encontrado.id_estudiante, "B"
@@ -565,8 +603,7 @@ class DWLoaderService:
                     nivel_confianza=confianza_ia,
                     resuelto=False
                 )
-                self.db.add(stg)
-                self.db.flush()
+                self._registrar_staging_si_nuevo(stg)
                 return None, "C"
 
             # De lo contrario (alta confianza >= 0.85), crear id_temporal determinista por institución
@@ -794,18 +831,33 @@ class DWLoaderService:
 
         return None
 
-    def finalizar_cargas(self, pagina: int = 2000) -> int:
-        """Inserta en bloque (execute_values, páginas de `pagina` filas) las respuestas de evaluación acumuladas. Idempotente por
-        clave_respuesta: ON CONFLICT actualiza la fila, salvo las ya resueltas por la bandeja (RESUELTO_HUMANO). Devuelve las filas enviadas."""
+    def _insertar_cfo(self, cur, pagina: int) -> None:
+        """Trazas carga_fila_origen reclamadas y aún no escritas. Las claves siguen en _cfo_existentes: la deduplicación
+        no cambia al escribirlas antes del final."""
+        from psycopg2.extras import execute_values
+        if not self._cfo_pendientes:
+            return
+        cfo_filas = [(c, d, t) for c, (d, t) in self._cfo_pendientes.items()]
+        self._cfo_pendientes = {}
+        sql_cfo = "INSERT INTO carga_fila_origen (clave, id_documento, tabla) VALUES %s ON CONFLICT (clave) DO NOTHING"
+        for i in range(0, len(cfo_filas), pagina):
+            execute_values(cur, sql_cfo, cfo_filas[i:i + pagina], page_size=pagina)
+            self._latir()
+
+    def _insertar_eval(self, cur, pagina: int, durante_carga: bool = False) -> int:
+        """Respuestas de evaluación diferidas (una por clave_respuesta; la última lectura de una clave gana, igual que en el dict).
+        `durante_carga`: escritura antes del final; se recuerda qué filas son de esta consolidación para que el completado de
+        docente de _cargar_asignacion_docente no las toque, igual que cuando todas se escribían al final."""
+        from psycopg2.extras import execute_values
         if not self._eval_pendientes:
             return 0
-        from psycopg2.extras import execute_values
+        if durante_carga and self._eval_id_previo is None:
+            cur.execute("SELECT COALESCE(MAX(id_hecho_eval), 0) FROM fact_evaluacion_docente")
+            self._eval_id_previo = cur.fetchone()[0]
         cols = ["clave_respuesta", "id_docente", "id_modulo", "id_estudiante", "id_tiempo", "pregunta_bloque", "tipo_pregunta",
                 "puntuacion", "escala_max", "comentario", "id_documento", "requiere_revision", "motivo_revision"]
         filas = [tuple([k] + [v[c] for c in cols[1:]]) for k, v in self._eval_pendientes.items()]
         self._eval_pendientes = {}
-        self.db.flush()
-        cur = self.db.connection().connection.cursor()
         # Misma regla que la carga fila a fila: lo que decidió la bandeja (docente, período, revisión y motivo) no se pisa en una
         # respuesta RESUELTO_HUMANO; el resto de la respuesta sí se actualiza
         protegidas = {"id_docente", "id_tiempo", "requiere_revision", "motivo_revision"}
@@ -813,10 +865,100 @@ class DWLoaderService:
                + ", ".join((f"{c}=CASE WHEN fact_evaluacion_docente.motivo_revision IS DISTINCT FROM 'RESUELTO_HUMANO' "
                             f"THEN EXCLUDED.{c} ELSE fact_evaluacion_docente.{c} END") if c in protegidas else f"{c}=EXCLUDED.{c}"
                            for c in cols[1:]))
+        if durante_carga:
+            sql += " RETURNING clave_respuesta, id_hecho_eval"
         for i in range(0, len(filas), pagina):
-            execute_values(cur, sql, filas[i:i + pagina], page_size=pagina)
-        cur.close()
+            if not durante_carga:
+                execute_values(cur, sql, filas[i:i + pagina], page_size=pagina)
+            else:
+                filas_bd = execute_values(cur, sql, filas[i:i + pagina], page_size=pagina, fetch=True)
+                # Respuestas que ya estaban en la base antes de esta consolidación y que esta consolidación reescribió
+                self._eval_previas_reescritas.update(c for c, id_h in filas_bd if id_h <= self._eval_id_previo)
+            self._latir()
         return len(filas)
+
+    def _latir(self) -> None:
+        """Señal de vida de la tarea en segundo plano mientras escribe en bloque (sin ella, 180 s sin avance = ERROR)."""
+        if self.al_latir is not None:
+            self.al_latir()
+
+    def _volcar_eval_si_excede(self, pagina: int = 2000) -> None:
+        """Escribe en la misma transacción las respuestas de evaluación diferidas (y sus trazas) al llegar a
+        `limite_eval_diferidas`. Con todo el lote en memoria hasta el final (715 mil respuestas y 1,6 millones de
+        trazas en el lote de 10 libros) el proceso de la API se quedaba sin memoria a mitad de Experiencia Docente."""
+        if len(self._eval_pendientes) < self.limite_eval_diferidas:
+            return
+        # Sin db.flush(): los ids que llevan las filas ya están en la base (cada dimensión hace flush al crearse) y no se
+        # adelanta la escritura de los demás objetos pendientes de la sesión.
+        cur = self.db.connection().connection.cursor()
+        try:
+            self._insertar_cfo(cur, pagina)
+            self._insertar_eval(cur, pagina, durante_carga=True)
+        finally:
+            cur.close()
+
+    def finalizar_cargas(self, pagina: int = 2000) -> int:
+        """Inserta en bloque (execute_values, páginas de `pagina` filas) los hechos diferidos (evaluación, académico,
+        financiero) y la trazabilidad carga_fila_origen. Devuelve el total de filas de hechos enviadas en esta llamada."""
+        if not (self._eval_pendientes or self._aca_pendientes or self._fin_pendientes or self._cfo_pendientes):
+            return 0
+        from psycopg2.extras import execute_values
+        self.db.flush()
+        cur = self.db.connection().connection.cursor()
+        total_enviadas = 0
+
+        self._insertar_cfo(cur, pagina)
+
+        if self._aca_pendientes:
+            cols_aca = [
+                "id_estudiante", "id_docente", "id_modulo", "id_tiempo", "id_documento", "id_usuario_carga",
+                "nota_final", "asistencia_pct", "incumplimiento_actividades_pct", "nivel_confianza_ia",
+                "requiere_revision", "fk_estado", "estado_academico", "estado_tutoria", "estado_arca", "tipo_alerta",
+            ]
+            filas_aca = [tuple(v[c] for c in cols_aca) for v in self._aca_pendientes.values()]
+            self._aca_pendientes = {}
+            sql_aca = (
+                f"INSERT INTO fact_rendimiento_academico ({', '.join(cols_aca)}) VALUES %s "
+                f"ON CONFLICT (id_estudiante, id_modulo) DO UPDATE SET "
+                + ", ".join(
+                    f"{c}=COALESCE(EXCLUDED.{c}, fact_rendimiento_academico.{c})"
+                    if c in ("id_docente", "id_documento", "id_usuario_carga")
+                    else f"{c}=EXCLUDED.{c}"
+                    for c in cols_aca if c not in ("id_estudiante", "id_modulo")
+                )
+            )
+            for i in range(0, len(filas_aca), pagina):
+                execute_values(cur, sql_aca, filas_aca[i:i + pagina], page_size=pagina)
+                self._latir()
+            total_enviadas += len(filas_aca)
+
+        if self._fin_pendientes:
+            cols_fin = [
+                "id_estudiante", "id_modulo", "id_tiempo", "id_documento", "concepto",
+                "monto_deuda", "monto_pagado", "cuotas_impagas", "estado_cartera", "tipo_alerta",
+                "nivel_confianza_ia", "requiere_revision", "fk_estado",
+            ]
+            filas_fin = [tuple(v[c] for c in cols_fin) for v in self._fin_pendientes.values()]
+            self._fin_pendientes = {}
+            sql_fin = (
+                f"INSERT INTO fact_situacion_financiera ({', '.join(cols_fin)}) VALUES %s "
+                f"ON CONFLICT (id_estudiante, COALESCE(id_modulo, 0), id_tiempo) DO UPDATE SET "
+                + ", ".join(
+                    f"{c}=COALESCE(EXCLUDED.{c}, fact_situacion_financiera.{c})"
+                    if c in ("concepto", "id_modulo", "id_documento")
+                    else f"{c}=EXCLUDED.{c}"
+                    for c in cols_fin if c not in ("id_estudiante", "id_modulo", "id_tiempo")
+                )
+            )
+            for i in range(0, len(filas_fin), pagina):
+                execute_values(cur, sql_fin, filas_fin[i:i + pagina], page_size=pagina)
+                self._latir()
+            total_enviadas += len(filas_fin)
+
+        total_enviadas += self._insertar_eval(cur, pagina)
+
+        cur.close()
+        return total_enviadas
 
     def _cargar_nombres_modulo(self) -> None:
         """Una sola consulta de (id, nombre) por instancia: antes cada módulo por nombre traía todos los DimModulo como objetos ORM."""
@@ -867,13 +1009,16 @@ class DWLoaderService:
         self._docente_por_modulo[id_modulo] = ids[0] if len(ids) == 1 else None
         return self._docente_por_modulo[id_modulo]
 
-    def _cargar_asignacion_docente(self, resoluciones, nombre_docente, pos_code, doc_id, institucion) -> Dict[str, Any]:
+    def _cargar_asignacion_docente(self, resoluciones, nombre_docente, pos_code, doc_id, institucion,
+                                   clave_origen: Optional[str] = None, clave_contenido: Optional[str] = None) -> Dict[str, Any]:
         """
         Registra qué docente dictó el módulo POS-XXXX-MNN (idempotente) y completa el docente de las notas y
         evaluaciones de ese módulo que se cargaron antes sin él.
         """
         if not pos_code or not nombre_docente:
             return {"tipo": "asignacion_docente", "status": "staged", "motivo": "Asignación sin POS o sin docente"}
+        if not self._reclamar_fila_origen(clave_origen, doc_id, "bridge_modulo_docente", clave_contenido, subclave=pos_code):
+            return {"tipo": "asignacion_docente", "status": "skipped", "motivo": "Fila de origen ya cargada"}
         self._docente_por_modulo.clear()  # la asignación nueva puede cambiar el docente único de un módulo
         self._cache_docente_programa.clear()
         nombre_real = resoluciones.get("nombre_modulo_real")
@@ -909,11 +1054,18 @@ class DWLoaderService:
                 FactRendimientoAcademico.id_modulo == id_mod, FactRendimientoAcademico.id_docente.is_(None)
             ).update({FactRendimientoAcademico.id_docente: id_doc_modulo}, synchronize_session=False)
             if FactEvaluacionDocente is not None:
-                completadas["evaluaciones"] = self.db.query(FactEvaluacionDocente).filter(
+                q_eval = self.db.query(FactEvaluacionDocente).filter(
                     FactEvaluacionDocente.id_modulo == id_mod,
                     FactEvaluacionDocente.id_docente.is_(None),
                     FactEvaluacionDocente.tipo_pregunta == "DOCENTE",
-                ).update({FactEvaluacionDocente.id_docente: id_doc_modulo}, synchronize_session=False)
+                )
+                if self._eval_id_previo is not None:
+                    # Solo las respuestas de cargas anteriores: las de esta consolidación ya escritas por tramos quedan como
+                    # quedaban al escribirse todas al final (_volcar_eval_si_excede)
+                    q_eval = q_eval.filter(FactEvaluacionDocente.id_hecho_eval <= self._eval_id_previo)
+                    if self._eval_previas_reescritas:
+                        q_eval = q_eval.filter(FactEvaluacionDocente.clave_respuesta.notin_(self._eval_previas_reescritas))
+                completadas["evaluaciones"] = q_eval.update({FactEvaluacionDocente.id_docente: id_doc_modulo}, synchronize_session=False)
         return {
             "tipo": "asignacion_docente",
             "status": "loaded",
@@ -924,7 +1076,7 @@ class DWLoaderService:
         }
 
     def _cargar_techo_convenio(self, resoluciones, nombre_modulo, nombre_programa, pos_code, doc_id, institucion,
-                               id_tiempo, calidad) -> Dict[str, Any]:
+                               id_tiempo, calidad, registro=None) -> Dict[str, Any]:
         """Fila de convenio de un programa con una institución; idempotente por clave_convenio."""
         from services.instituciones_convenio import canonizar_institucion
 
@@ -942,6 +1094,8 @@ class DWLoaderService:
         clave = hashlib.sha1("|".join(str(x) for x in (
             pos_code, canon.upper(), fecha_ini, resoluciones.get("monto_convenio"), resoluciones.get("n_inscritos"),
         )).encode("utf-8")).hexdigest()
+        if registro and not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_techo_convenio", registro.get("clave_contenido"), subclave=clave):
+            return {"tipo": "techo_convenio", "status": "skipped", "motivo": "Fila de origen ya cargada"}
 
         hecho = self.db.query(FactTechoConvenio).filter(FactTechoConvenio.clave_convenio == clave).first()
         if hecho is None:
@@ -1008,25 +1162,48 @@ class DWLoaderService:
 
     # ── 5. Carga de un Registro Procesado Individual ─────────────────────────
     def _reclamar_fila_origen(self, clave: Optional[str], doc_id: Optional[int], tabla: str,
-                              clave_contenido: Optional[str] = None) -> bool:
+                              clave_contenido: Optional[str] = None, subclave: Optional[str] = None) -> bool:
         """True si la fila de origen aún no se cargó (la reclama); False si ya existe. Sin clave: siempre True.
 
         La fila cuenta como ya cargada si existe su clave por archivo o su clave por contenido; así un archivo
         re-exportado (otra huella, mismo contenido) no vuelve a sumar. Se registran ambas claves."""
-        claves = [c for c in (clave, clave_contenido) if c]
-        if not claves:
+        import hashlib
+        raw_claves = [c for c in (clave, clave_contenido) if c]
+        if not raw_claves:
             return True
-        existe = self.db.execute(text("SELECT 1 FROM carga_fila_origen WHERE clave = ANY(:cs) LIMIT 1")
-                                 if self.db.get_bind().dialect.name == "postgresql"
-                                 else text("SELECT 1 FROM carga_fila_origen WHERE clave IN (" + ",".join(f":c{i}" for i in range(len(claves))) + ") LIMIT 1"),
-                                 {"cs": claves} if self.db.get_bind().dialect.name == "postgresql" else {f"c{i}": c for i, c in enumerate(claves)}).first()
-        nuevas = False
-        for c in claves:
-            r = self.db.execute(text(
-                "INSERT INTO carga_fila_origen (clave, id_documento, tabla) VALUES (:c, :d, :t) "
-                "ON CONFLICT (clave) DO NOTHING RETURNING clave"), {"c": c, "d": doc_id, "t": tabla}).first()
-            nuevas = nuevas or r is not None
-        return existe is None and nuevas
+        if subclave:
+            claves = [hashlib.sha256(f"{c}|{subclave}".encode("utf-8")).hexdigest() for c in raw_claves]
+        else:
+            claves = [c[:64] for c in raw_claves]
+
+        if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
+            if self._cfo_existentes is None:
+                self._cfo_existentes = {
+                    r[0] for r in self.db.execute(text("SELECT clave FROM carga_fila_origen")).fetchall()
+                }
+            if any(c in self._cfo_existentes or c in self._cfo_pendientes for c in claves):
+                return False
+            for c in claves:
+                self._cfo_pendientes[c] = (doc_id, tabla)
+                self._cfo_existentes.add(c)
+            return True
+
+        try:
+            existe = self.db.execute(text("SELECT 1 FROM carga_fila_origen WHERE clave = ANY(:cs) LIMIT 1")
+                                     if self.db.get_bind().dialect.name == "postgresql"
+                                     else text("SELECT 1 FROM carga_fila_origen WHERE clave IN (" + ",".join(f":c{i}" for i in range(len(claves))) + ") LIMIT 1"),
+                                     {"cs": claves} if self.db.get_bind().dialect.name == "postgresql" else {f"c{i}": c for i, c in enumerate(claves)}).first()
+            nuevas = False
+            for c in claves:
+                r = self.db.execute(text(
+                    "INSERT INTO carga_fila_origen (clave, id_documento, tabla) VALUES (:c, :d, :t) "
+                    "ON CONFLICT (clave) DO NOTHING RETURNING clave"), {"c": c, "d": doc_id, "t": tabla}).first()
+                nuevas = nuevas or r is not None
+            return existe is None and nuevas
+        except Exception as exc:
+            if self.db.get_bind().dialect.name != "postgresql" and "no such table" in str(exc).lower():
+                return True
+            raise
 
     def cargar_registro(self, registro: Dict[str, Any], id_usuario: Optional[int] = None) -> Dict[str, Any]:
         """
@@ -1149,22 +1326,20 @@ class DWLoaderService:
         # 3a. Ruteo ADMISION -> DimEstudiante
         if categoria == "admision":
             if FactMarketing and not id_tiempo and (pos_code or nombre_modulo):
-                self.db.add(StagingEntidadNoResuelta(
+                self._registrar_staging_si_nuevo(StagingEntidadNoResuelta(
                     id_documento=doc_id, tipo_entidad="MODULO", texto_original=f"{pos_code or nombre_modulo} | sin fecha válida"[:2000],
                     fk_estado="C", motivo="FECHA_INSCRIPCION_INVALIDA", nivel_confianza=confianza_ia, resuelto=False))
-                self.db.flush()
             if FactMarketing and id_tiempo and (pos_code or nombre_modulo):
                 # Cada inscrito (resuelto o no como persona) suma 1 a fact_marketing del programa y mes (alimenta ALUMNOS_* del forecast)
                 # El nombre del programa puede faltar (la etiqueta se pierde si el valor trae ':'): el código POS basta
                 id_mod_adm = self.resolver_o_crear_modulo(nombre_modulo or pos_code, pos_code=pos_code, doc_id=doc_id, institucion=institucion)
                 if not id_mod_adm:
-                    self.db.add(StagingEntidadNoResuelta(
+                    self._registrar_staging_si_nuevo(StagingEntidadNoResuelta(
                         id_documento=doc_id, tipo_entidad="MODULO", texto_original=f"{pos_code or nombre_modulo} | {fecha_encontrada}"[:2000],
                         fk_estado="C", motivo="POS_NO_EN_DIM_MODULO", nivel_confianza=confianza_ia, resuelto=False))
-                    self.db.flush()
-                elif not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing", registro.get("clave_contenido")):
-                    return {"tipo": "admision", "status": "skipped", "motivo": "Fila de origen ya cargada"}
-                else:
+                elif not self.solo_revision:
+                    if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing", registro.get("clave_contenido")):
+                        return {"tipo": "admision", "status": "skipped", "motivo": "Fila de origen ya cargada"}
                     mkt = self.db.query(FactMarketing).filter_by(id_modulo=id_mod_adm, id_tiempo=id_tiempo).first()
                     if mkt:
                         mkt.inscritos = (mkt.inscritos or 0) + 1
@@ -1178,6 +1353,13 @@ class DWLoaderService:
                     "fk_estado": "C",
                     "motivo": "Postulante no resuelto derivado a Cola de Revisión Humana"
                 }
+            if self.solo_revision:
+                return {
+                    "tipo": "admision",
+                    "status": "skipped_solo_revision",
+                    "id_estudiante": id_est,
+                    "fk_estado": fk_estado_est
+                }
             return {
                 "tipo": "admision",
                 "status": "loaded",
@@ -1185,8 +1367,20 @@ class DWLoaderService:
                 "fk_estado": fk_estado_est
             }
 
+        if self.solo_revision:
+            prog_visto = nombre_programa or nombre_modulo
+            if categoria == "academico" and id_est and prog_visto:
+                self._programas_vistos_est.setdefault(id_est, set()).add(prog_visto)
+            return {
+                "tipo": categoria,
+                "status": "staged" if not id_est else "skipped_solo_revision",
+                "fk_estado": fk_estado_est,
+            }
+
         # 3b. Ruteo COBRANZA -> FactSituacionFinanciera (#8, #9)
         if categoria == "financiero":
+            if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_situacion_financiera", registro.get("clave_contenido")):
+                return {"tipo": "financiero", "status": "skipped", "motivo": "Fila de origen ya cargada"}
             monto_deuda = float(resoluciones.get("monto_deuda") or 0.0)
             monto_pagado = float(resoluciones.get("monto_pagado") or 0.0)
             concepto = resoluciones.get("concepto") or resoluciones.get("concepto_financiero")
@@ -1208,6 +1402,31 @@ class DWLoaderService:
             id_mod_fin = self.resolver_o_crear_modulo(
                 nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
             ) if nombre_modulo else None
+
+            if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
+                self._fin_pendientes[(id_est, id_mod_fin or 0, id_tiempo)] = {
+                    "id_estudiante": id_est,
+                    "id_modulo": id_mod_fin,
+                    "id_tiempo": id_tiempo,
+                    "id_documento": doc_id,
+                    "concepto": concepto,
+                    "monto_deuda": monto_deuda,
+                    "monto_pagado": monto_pagado,
+                    "cuotas_impagas": cuotas_impagas,
+                    "estado_cartera": estado_cartera,
+                    "tipo_alerta": tipo_alerta_fin,
+                    "nivel_confianza_ia": confianza_ia,
+                    "requiere_revision": requiere_rev,
+                    "fk_estado": fk_estado_est,
+                }
+                return {
+                    "tipo": "financiero",
+                    "status": "loaded",
+                    "id_hecho": None,
+                    "id_estudiante": id_est,
+                    "tipo_alerta": tipo_alerta_fin,
+                    "fk_estado": fk_estado_est,
+                }
 
             # Upsert sobre índice único (id_estudiante, COALESCE(id_modulo, 0), id_tiempo)
             existente = self.db.query(FactSituacionFinanciera).filter(
@@ -1294,6 +1513,8 @@ class DWLoaderService:
                 motivos_rev.append("TIEMPO_IMPUTADO" if id_tiempo else "LIMITACION_FUENTE")
 
             clave = resoluciones.get("clave_respuesta")
+            if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_evaluacion_docente", registro.get("clave_contenido"), subclave=clave):
+                return {"tipo": "evaluacion_docente", "status": "skipped", "motivo": "Fila de origen ya cargada"}
             valores = dict(
                 id_docente=id_doc_eval,
                 id_modulo=id_mod_eval,
@@ -1311,6 +1532,7 @@ class DWLoaderService:
             if self.diferir_eval and clave:
                 # Carga masiva: las respuestas se acumulan y se insertan en páginas al cerrar el documento (finalizar_cargas)
                 self._eval_pendientes[clave] = valores
+                self._volcar_eval_si_excede()
                 return {"tipo": "evaluacion_docente", "status": "loaded", "id_hecho": None, "id_docente": id_doc_eval,
                         "puntuacion": puntuacion, "escala_max": escala_max}
             existente_eval = self.db.query(FactEvaluacionDocente).filter(
@@ -1340,7 +1562,7 @@ class DWLoaderService:
         # Por contenido de la fila, no por cómo se clasificó el documento (BD Techos puede llegar como MARKETING)
         if resoluciones.get("techo_convenio"):
             return self._cargar_techo_convenio(resoluciones, nombre_modulo, nombre_programa, pos_code, doc_id,
-                                               institucion, id_tiempo, calidad)
+                                               institucion, id_tiempo, calidad, registro=registro)
 
         # 3d'. Ruteo COSTO POR PROGRAMA -> FactCostoPrograma (egreso/ingreso/rentabilidad de un POS)
         if resoluciones.get("costo_programa"):
@@ -1350,6 +1572,8 @@ class DWLoaderService:
                 nombre_modulo or pos_code, pos_code=pos_code, doc_id=doc_id, institucion=institucion,
                 programa=nombre_programa,
             )
+            if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_costo_programa", registro.get("clave_contenido"), subclave=str(id_mod_costo)):
+                return {"tipo": "costo_programa", "status": "skipped", "motivo": "Fila de origen ya cargada"}
             motivo_costo = resoluciones.get("motivo_costo")
             valores = {
                 k: (float(resoluciones[k]) if resoluciones.get(k) is not None else None)
@@ -1401,6 +1625,8 @@ class DWLoaderService:
 
             m_ejec = _monto("monto_ejecutado", "gasto", "egreso")
             m_meta = _monto("monto_meta", "presupuesto", "techo")
+            if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_rentabilidad", registro.get("clave_contenido"), subclave=f"{id_mod_rent}|{id_tiempo}|{id_cat}"):
+                return {"tipo": "rentabilidad", "status": "skipped", "motivo": "Fila de origen ya cargada"}
 
             existente_rent = self.db.query(FactRentabilidad).filter(
                 FactRentabilidad.id_categoria == id_cat,
@@ -1531,7 +1757,10 @@ class DWLoaderService:
 
         # 3f'. Asignación docente-módulo (hoja MODULOS) -> dim_modulo + bridge_modulo_docente
         if resoluciones.get("asignacion_docente"):
-            return self._cargar_asignacion_docente(resoluciones, nombre_docente, pos_code, doc_id, institucion)
+            return self._cargar_asignacion_docente(
+                resoluciones, nombre_docente, pos_code, doc_id, institucion,
+                clave_origen=registro.get("clave_origen"), clave_contenido=registro.get("clave_contenido"),
+            )
 
         # 3f. Ruteo ACTA / MOODLE -> FactRendimientoAcademico
         id_doc = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id)
@@ -1584,6 +1813,44 @@ class DWLoaderService:
             else "RIESGO_ACADEMICO" if (nota is not None and float(nota) <= 70.0)
             else "NORMAL"
         )
+
+        if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_rendimiento_academico", registro.get("clave_contenido"), subclave=str(id_mod)):
+            return {"tipo": "academico", "status": "skipped", "motivo": "Fila de origen ya cargada"}
+
+        if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
+            if id_est and nombre_programa:
+                self._programas_vistos_est.setdefault(id_est, set()).add(nombre_programa)
+            self._aca_pendientes[(id_est, id_mod)] = {
+                "id_estudiante": id_est,
+                "id_docente": id_doc,
+                "id_modulo": id_mod,
+                "id_tiempo": id_tiempo,
+                "id_documento": doc_id,
+                "id_usuario_carga": id_usuario,
+                "nota_final": nota,
+                "asistencia_pct": asistencia,
+                "incumplimiento_actividades_pct": incumplimiento,
+                "nivel_confianza_ia": confianza_ia,
+                "requiere_revision": requiere_rev,
+                "fk_estado": fk_estado_est,
+                "estado_academico": estado_aca,
+                "estado_tutoria": estado_tut,
+                "estado_arca": estado_arca,
+                "tipo_alerta": tipo_alerta_aca,
+            }
+            return {
+                "tipo": "academico",
+                "status": "loaded",
+                "id_hecho": None,
+                "id_estudiante": id_est,
+                "id_modulo": id_mod,
+                "id_docente": id_doc,
+                "nota_normalizada": nota,
+                "tipo_alerta": tipo_alerta_aca,
+                "estado_academico": estado_aca,
+                "estado_motivo": resoluciones.get("estado_motivo"),
+                "fk_estado": fk_estado_est,
+            }
 
         existente = self.db.query(FactRendimientoAcademico).filter(
             FactRendimientoAcademico.id_estudiante == id_est,

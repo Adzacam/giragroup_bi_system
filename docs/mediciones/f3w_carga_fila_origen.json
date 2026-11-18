@@ -1,0 +1,47 @@
+{
+  "tarea": "W-13",
+  "defecto": "D-W10",
+  "fecha": "2026-11-17",
+  "entorno": "beto_pg_f3w (127.0.0.1:55634), copia limpia de f3w_vacio (f3w_w13_10libros)",
+  "causa_raiz_dw10": "Solo admision y marketing llamaban a _reclamar_fila_origen; academico, financiero, evaluacion_docente, rentabilidad, costo_programa, techo_convenio y asignacion_docente no registraban trazabilidad en carga_fila_origen.",
+  "solucion": "Se extendió _reclamar_fila_origen con subclave determinista para filas multi-hecho y soporte en bloque (execute_values) en finalizar_cargas(), y se integró en todos los loaders.",
+  "conteos_hechos_10_libros": {
+    "fact_rendimiento_academico": 25108,
+    "fact_situacion_financiera": 10719,
+    "fact_evaluacion_docente": 715217,
+    "fact_marketing": 10464,
+    "fact_rentabilidad": 95,
+    "fact_costo_programa": 1371,
+    "fact_techo_convenio": 206,
+    "carga_fila_origen": 1632508
+  },
+  "carga_fila_origen_por_tabla": {
+    "bridge_modulo_docente": {"filas": 3438, "docs_distintos": 1},
+    "fact_costo_programa": {"filas": 2746, "docs_distintos": 1},
+    "fact_evaluacion_docente": {"filas": 1514038, "docs_distintos": 3},
+    "fact_marketing": {"filas": 30366, "docs_distintos": 1},
+    "fact_rendimiento_academico": {"filas": 50224, "docs_distintos": 1},
+    "fact_rentabilidad": {"filas": 334, "docs_distintos": 2},
+    "fact_situacion_financiera": {"filas": 30948, "docs_distintos": 1},
+    "fact_techo_convenio": {"filas": 414, "docs_distintos": 1}
+  },
+  "docs_distintos_en_carga_fila_origen": 9,
+  "nota_doc_6": "El libro 6 (PLANIFICACION Y EJECUCION ACADEMICA) no genera filas de hechos ni asignaciones (inserted_dw=0); los 9 documentos restantes que sí insertan datos están 100 % trazados en carga_fila_origen.",
+  "idempotencia": {
+    "re_consolidacion_lote_1_inserted_dw": 0,
+    "delta_hechos": {
+      "fact_rendimiento_academico": 0,
+      "fact_situacion_financiera": 0,
+      "fact_evaluacion_docente": 0,
+      "fact_marketing": 0,
+      "fact_rentabilidad": 0,
+      "fact_costo_programa": 0,
+      "fact_techo_convenio": 0,
+      "carga_fila_origen": 0
+    }
+  },
+  "pruebas": {
+    "pytest_w13": "1 passed (backend/tests/test_w13_carga_fila_origen.py)",
+    "carga_10_libros_clon_seg": 1024.29
+  }
+}

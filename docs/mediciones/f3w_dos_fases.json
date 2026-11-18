@@ -1,0 +1,39 @@
+{
+  "tarea": "W-5",
+  "defecto": "D-W4",
+  "fecha": "2026-11-17",
+  "entorno": "beto_pg_f3w (127.0.0.1:55634), copia limpia de f3w_vacio",
+  "archivo_prueba": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+  "endpoints": {
+    "fase_a": "POST /api/v1/dataops/preparar-revision (solo_revision=true)",
+    "fase_b": "POST /api/v1/dataops/confirm-dw-insert (solo_revision=false)"
+  },
+  "verificacion_fase_a": {
+    "tiempo_seg": 160.813,
+    "hechos_tras_fase_a": {
+      "fact_rendimiento_academico": 0,
+      "fact_situacion_financiera": 0,
+      "fact_evaluacion_docente": 0,
+      "fact_marketing": 0,
+      "fact_rentabilidad": 0,
+      "fact_costo_programa": 0,
+      "fact_techo_convenio": 0
+    },
+    "casos_stg_no_ruido": 19,
+    "casos_consolidacion_directa": 19,
+    "diferencia_casos": 0
+  },
+  "verificacion_fase_b": {
+    "tiempo_seg": 208.292,
+    "fact_evaluacion_docente": 197876,
+    "md5_negocio_fact_evaluacion_docente": "d3c6e42245c63f548811c135e9f869aa",
+    "casos_stg_no_ruido_tras_fase_b": 19,
+    "stg_ruido_tras_fase_b": 104,
+    "log_inconsistencias": 394,
+    "coincide_con_directa": true
+  },
+  "invariantes_revisados": {
+    "orden_cascada_y_umbrales": "Sin cambio (CI_EXACTA -> MODULO -> PROGRAMA -> DIMENSION, umbral 0.92, bandas 0.85/0.60)",
+    "fix_adicional_main_py": "Constraint dataops_tarea_tipo_check actualizado al iniciar API para incluir PREPARACION_REVISION en DW viva"
+  }
+}

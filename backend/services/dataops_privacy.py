@@ -166,8 +166,16 @@ def registro_beto_publico(registro):
     for entidad in entidades[:50]:
         campos_entidad = ('label', 'token', 'matchedCanonical', 'betoConfidence', 'lecturaModelo', 'fuzzScore')
         e = proteger({k: entidad.get(k) for k in campos_entidad})
-        if _normalizar(entidad.get('label', '')) in ('estudiante', 'docente', 'persona', 'nombre', 'per', 'asesor'):
+        lbl_norm = _normalizar(entidad.get('label', ''))
+        if any(k in lbl_norm for k in ('estudiante', 'docente', 'persona', 'nombre', 'per', 'asesor')):
             e['token'], e['matchedCanonical'] = '••••', '••••'
+        elif 'correo' in lbl_norm or 'email' in lbl_norm:
+            e['token'], e['matchedCanonical'] = '••••@••••', '••••@••••'
+        elif 'ci' in lbl_norm or 'documento' in lbl_norm:
+            if e.get('token'):
+                e['token'] = enmascarar_ci(str(e['token']))
+            if e.get('matchedCanonical'):
+                e['matchedCanonical'] = enmascarar_ci(str(e['matchedCanonical']))
         publicas.append(e)
     # Los tokens sueltos de una persona no deben permitir reconstruir su nombre.
     publico['lectura'] = {'texto': proteger(lectura.get('texto', texto), 'texto'), 'entidades': publicas}

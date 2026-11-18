@@ -45,6 +45,8 @@ class ConfirmDwInsertRequest(BaseModel):
     threshold: Optional[float] = UMBRAL_INDICE_REGISTRO_DEC
     # Lotes grandes: la consolidación corre en segundo plano y la SPA sigue su avance (GET /tareas/{id})
     en_segundo_plano: bool = False
+    # Fase A (W-5): solo resolución de identidad y casos en stg_entidad_no_resuelta, sin cargar hechos
+    solo_revision: bool = False
 
 
 class BatchResolveRequest(BaseModel):
@@ -76,3 +78,21 @@ class AprobacionEnBloqueRequest(BaseModel):
     id_lote: Optional[str] = None
     doc_id: Optional[int] = None
     confirmar: bool = False
+
+
+def categoria_ruteo(tipo_fuente: Optional[str], stg_categoria: Optional[str] = None) -> str:
+    """Ruteo determinista compartido entre consolidación y revisión para las 6 categorías."""
+    if (stg_categoria or "").strip().lower() == "evaluacion_docente":
+        return "evaluacion_docente"
+    fuente = (tipo_fuente or "ACTA").upper().strip()
+    if fuente == "COBRANZA":
+        return "financiero"
+    if fuente in ("EGRESOS", "TECHOS", "RENTABILIDAD"):
+        return "rentabilidad"
+    if fuente == "EVALUACION_DOCENTE":
+        return "evaluacion_docente"
+    if fuente == "MARKETING":
+        return "marketing"
+    if fuente == "ADMISION":
+        return "admision"
+    return "academico"

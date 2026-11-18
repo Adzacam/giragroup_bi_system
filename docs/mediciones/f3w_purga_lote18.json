@@ -1,0 +1,67 @@
+{
+ "tarea": "W-0b (Purga lote #18 en DW viva)",
+ "dump_previo_path": "output/f3w/giragroup_db_pre_w0b.dump",
+ "dump_previo_sha256": "2d89158efcd24119b8ccbbe982ed99ddd79fbbc061d01a70a61a3ed0257697bb",
+ "endpoints_delete": [
+  {
+   "id_documento": 28,
+   "http": 200,
+   "body": {
+    "status": "success",
+    "message": "Fuente 28 eliminada exitosamente."
+   }
+  }
+ ],
+ "dw_viva_antes": {
+  "fact_rendimiento_academico": 22618,
+  "fact_situacion_financiera": 10483,
+  "fact_evaluacion_docente": 715278,
+  "fact_marketing": 9093,
+  "fact_rentabilidad": 108,
+  "fact_forecast": 24,
+  "fact_cobranzas_proyectadas": 0,
+  "fact_costo_programa": 1371,
+  "fact_techo_convenio": 206,
+  "staging_registros_crudos": 3,
+  "stg_entidad_no_resuelta": 670,
+  "log_inconsistencias": 395,
+  "log_pipeline_ingesta": 10,
+  "carga_fila_origen": 15496,
+  "lote": 1,
+  "dim_origen_documental": 1,
+  "dataops_tarea": 58,
+  "dim_modulo": 3758,
+  "dim_estudiante": 14640,
+  "dim_docente": 761,
+  "users": 5
+ },
+ "dw_viva_despues": {
+  "fact_rendimiento_academico": 22618,
+  "fact_situacion_financiera": 10483,
+  "fact_evaluacion_docente": 715278,
+  "fact_marketing": 9093,
+  "fact_rentabilidad": 108,
+  "fact_forecast": 24,
+  "fact_cobranzas_proyectadas": 0,
+  "fact_costo_programa": 1371,
+  "fact_techo_convenio": 206,
+  "staging_registros_crudos": 0,
+  "stg_entidad_no_resuelta": 0,
+  "log_inconsistencias": 1,
+  "log_pipeline_ingesta": 1,
+  "carga_fila_origen": 15496,
+  "lote": 1,
+  "dim_origen_documental": 0,
+  "dataops_tarea": 58,
+  "dim_modulo": 3758,
+  "dim_estudiante": 14640,
+  "dim_docente": 761,
+  "users": 5
+ },
+ "catalogo_y_usuarios_sin_cambio": {
+  "dim_modulo_antes": 3758,
+  "dim_modulo_despues": 3758,
+  "users_antes": 5,
+  "users_despues": 5
+ }
+}

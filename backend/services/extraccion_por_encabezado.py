@@ -10,6 +10,7 @@ import os
 import re
 import unicodedata
 from datetime import date, datetime
+from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
 MESES = {
@@ -43,6 +44,7 @@ _RE_META_GENERICA_ANIO = re.compile(r"^META (\d{4})$")
 _CLAVES_CATEGORIA_FIN = ("CATEGORIA", "TIPO DE INGRESO", "TIPO INGRESO", "CATEGORIA FINANCIERA", "SERIE")
 
 
+@lru_cache(maxsize=4096)
 def normalizar_encabezado(texto: str) -> str:
     sin_tildes = "".join(c for c in unicodedata.normalize("NFD", texto or "") if unicodedata.category(c) != "Mn")
     return " ".join(sin_tildes.upper().split())
