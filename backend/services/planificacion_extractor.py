@@ -142,7 +142,7 @@ def _detectar_cabecera_planificacion(rows_vals: List[Tuple[Any, ...]]) -> Option
         if tiene_prog and tiene_ctrl:
             headers = []
             for idx, c in enumerate(row, start=1):
-                txt = str(c).strip() if c is not None else ""
+                txt = " ".join(str(c).splitlines()).strip() if c is not None else ""
                 headers.append(txt if txt else f"col_{idx}")
             return r_idx, headers
     return None
