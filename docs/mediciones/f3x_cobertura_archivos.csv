@@ -1,7 +1,7 @@
-archivo,statements,covered,missing,percent_covered
+archivo,num_statements,covered_lines,missing_lines,percent_covered
 backend\__init__.py,0,0,0,100.0
 backend\core\__init__.py,0,0,0,100.0
-backend\core\database.py,50,40,10,80.0
+backend\core\database.py,50,41,9,82.0
 backend\core\esquema_opcional.py,25,22,3,88.0
 backend\core\migraciones.py,8,8,0,100.0
 backend\core\security.py,87,76,11,87.36

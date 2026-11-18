@@ -1,24 +1,28 @@
 {
   "tarea": "X-2",
-  "commit_medido": "1345166",
-  "worktree_limpio": "../gira_f3x_limpio",
+  "commit_medido": "68f2736",
+  "worktree_limpio": "../gira_f3x_limpio2",
   "colectadas": 859,
-  "passed": 840,
-  "failed": 1,
+  "passed": 841,
+  "failed": 0,
   "skipped": 11,
   "xfailed": 7,
-  "nota_fallo_unico": "test_forgot_password_and_login_with_temp_password fallo en sesion completa por StaleDataError en test_auth_temp.db, pero pasa 5/5 en corrida aislada (tests/sprint5/test_email_redesign_and_forgot_password.py).",
+  "pruebas_f3x_y_regresion": {
+    "backend/tests/test_lote_estado_flujo.py": "6 passed, 0 failed",
+    "backend/tests/test_beto_ner_pipeline.py": "12 passed, 3 skipped (contrato legacy / BETO_URL), 0 failed",
+    "tests/f3x/": "9 passed, 0 failed (test_borrado_completo: 4, test_docente_respuestas: 2, test_robustez_tareas: 3)"
+  },
   "skips_con_motivo": [
     {
       "archivo": "tests/readiness/test_production_readiness.py",
       "cantidad": 11,
-      "motivo": "READINESS_TOKEN / READINESS_BETO_URL / READINESS_DB_URL no definidos"
+      "motivo": "READINESS_TOKEN / READINESS_BETO_URL / READINESS_DB_URL no definidos (puerta de produccion en vivo)"
     }
   ],
   "cobertura_total": {
     "num_statements": 15284,
-    "covered_lines": 10990,
-    "missing_lines": 4294,
+    "covered_lines": 10991,
+    "missing_lines": 4293,
     "percent_covered": 71.91
   }
 }
