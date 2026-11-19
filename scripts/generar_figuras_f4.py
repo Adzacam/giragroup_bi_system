@@ -27,7 +27,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.patches as patches
-from PIL import Image, ImageDraw, ImageFont
 
 # Directorios de salida
 DIR_FIGURAS_F4 = pathlib.Path("docs/figuras/f4")
@@ -1250,152 +1249,6 @@ def generar_grafico_f3v_completo_hechos():
     guardar_figura(fig, "grafico_f3v_completo_hechos.png")
 
 
-# =============================================================================
-# F4-1: Capturas Auténticas de Terminal (Docker PS, Pytest, Cobertura)
-# =============================================================================
-def renderizar_ventana_terminal(lineas_comando, nombre_archivo_salida, titulo_pestana="PowerShell",
-                                ancho_px=1150, padding_v=18, padding_h=22):
-    """
-    Renderiza una captura auténtica de terminal Windows (PowerShell en Windows Terminal),
-    con barra de título, controles de ventana, tabs, prompt oficial y coloreado de sintaxis exacto.
-    """
-    font_path = "C:/Windows/Fonts/consola.ttf"
-    if not os.path.exists(font_path):
-        font_path = "DejaVuSansMono.ttf"
-        
-    font_tam = 14
-    try:
-        font = ImageFont.truetype(font_path, font_tam)
-        font_bold = ImageFont.truetype(font_path, font_tam)
-        font_title = ImageFont.truetype(font_path, 12)
-    except Exception:
-        font = ImageFont.load_default()
-        font_bold = font
-        font_title = font
-
-    line_height = 20
-    header_height = 36
-    total_height = header_height + padding_v * 2 + len(lineas_comando) * line_height
-
-    im = Image.new('RGB', (ancho_px, total_height), color='#0C0C0C')
-    draw = ImageDraw.Draw(im)
-
-    # Barra superior de la ventana (estilo Windows Terminal Fluent)
-    draw.rectangle([(0, 0), (ancho_px, header_height)], fill='#1F1F1F')
-    
-    # Pestaña activa
-    tab_w = 260
-    draw.rectangle([(8, 4), (tab_w, header_height)], fill='#0C0C0C')
-    draw.text((24, 11), f">_ {titulo_pestana}", fill='#FFFFFF', font=font_title)
-    draw.text((tab_w - 20, 11), "×", fill='#888888', font=font_title)
-
-    # Botones de control de ventana (Minimizar, Maximizar, Cerrar)
-    draw.text((ancho_px - 85, 9), "—", fill='#AAAAAA', font=font_title)
-    draw.text((ancho_px - 55, 9), "□", fill='#AAAAAA', font=font_title)
-    draw.text((ancho_px - 25, 9), "✕", fill='#AAAAAA', font=font_title)
-
-    # Renderizado línea por línea del cuerpo del terminal
-    cur_y = header_height + padding_v
-    for linea, color, es_bold in lineas_comando:
-        draw.text((padding_h, cur_y), linea, fill=color, font=font_bold if es_bold else font)
-        cur_y += line_height
-
-    p_out = DIR_FIGURAS_F4 / nombre_archivo_salida
-    p_evid = DIR_EVIDENCIAS / nombre_archivo_salida
-    im.save(p_out, dpi=(300, 300))
-    im.save(p_evid, dpi=(300, 300))
-    print(f"[OK] Captura de Terminal generada a 300 DPI: {p_out}")
-
-
-def generar_capturas_reales_terminal():
-    """Genera las 3 capturas reales de terminal requeridas por F4-1."""
-    
-    # 1. figura_3_44_captura_docker_ps_9_servicios.png
-    lineas_docker = [
-        ("Windows PowerShell", "#888888", False),
-        ("Copyright (C) Microsoft Corporation. Todos los derechos reservados.", "#888888", False),
-        ("", "#CCCCCC", False),
-        ("PS C:/Users/DAZA/Documents/Universidad/Proyecto de Grado 7MO semestre/giragroup_bi_system> git log -1 --format='Commit congelado: %h (%cd)'", "#CCCCCC", False),
-        ("Commit congelado: e9267cd (Wed Nov 18 2026 23:05:00 -0400)", "#00FFCC", True),
-        ("", "#CCCCCC", False),
-        ("PS C:/Users/DAZA/Documents/Universidad/Proyecto de Grado 7MO semestre/giragroup_bi_system> docker compose ps", "#FFFFFF", True),
-        ("NAME                          IMAGE                                       COMMAND                   SERVICE                 STATUS                 PORTS", "#CCCCCC", True),
-        ("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------", "#555555", False),
-        ("giragroup_api                 giragroup_bi_system-api                     'sh -c uvicorn main…'   api                     Up 7 hours             0.0.0.0:8000->8000/tcp", "#55FF55", False),
-        ("giragroup_audit_svc           giragroup_bi_system-audit-service           'uvicorn main:app --…'    audit-service           Up 9 hours             8004/tcp", "#55FF55", False),
-        ("giragroup_auth_svc            giragroup_bi_system-auth-service            'uvicorn main:app --…'    auth-service            Up 9 hours             8001/tcp", "#55FF55", False),
-        ("giragroup_catalog_db          giragroup_bi_system-catalog_db              'docker-entrypoint.s…'    catalog_db              Up 7 hours (healthy)   127.0.0.1:5433->5432/tcp", "#00FF66", True),
-        ("giragroup_db                  postgres:16-alpine                          'docker-entrypoint.s…'    db                      Up 9 hours (healthy)   127.0.0.1:5434->5432/tcp", "#00FF66", True),
-        ("giragroup_gateway             giragroup_bi_system-gateway                 '/docker-entrypoint.…'    gateway                 Up 8 hours             0.0.0.0:80->80/tcp", "#55FF55", False),
-        ("giragroup_notifications_svc   giragroup_bi_system-notifications-service   'uvicorn main:app --…'    notifications-service   Up 9 hours             8002/tcp", "#55FF55", False),
-        ("giragroup_pipeline            giragroup_bi_system-pipeline                'sh -c uvicorn pipe…'     pipeline                Up 7 hours             8006/tcp", "#55FF55", False),
-        ("giragroup_web                 giragroup_bi_system-web                     'docker-entrypoint.s…'    web                     Up 8 hours             0.0.0.0:5173->5173/tcp", "#55FF55", False),
-        ("", "#CCCCCC", False),
-        ("PS C:/Users/DAZA/Documents/Universidad/Proyecto de Grado 7MO semestre/giragroup_bi_system> # Invariante verificado: 9 servicios activos y operativos en docker compose", "#888888", False)
-    ]
-    renderizar_ventana_terminal(lineas_docker, "figura_3_44_captura_docker_ps_9_servicios.png",
-                                titulo_pestana="PowerShell - docker compose ps (9 servicios)")
-
-    # 2. figura_3_40_captura_pytest_856.png
-    lineas_pytest = [
-        ("PS C:/Users/DAZA/.../giragroup_bi_system> git status -sb", "#CCCCCC", False),
-        ("## beto-integracion...origin/beto-integracion [HEAD e9267cd]", "#00FFCC", True),
-        ("", "#CCCCCC", False),
-        ("PS C:/Users/DAZA/.../giragroup_bi_system> pytest tests/ -q", "#FFFFFF", True),
-        ("........................................................................ [  8%]", "#55FF55", False),
-        ("........................................................................ [ 16%]", "#55FF55", False),
-        ("........................................................................ [ 24%]", "#55FF55", False),
-        ("........................................................................ [ 32%]", "#55FF55", False),
-        ("........................................................................ [ 40%]", "#55FF55", False),
-        ("........................................................................ [ 48%]", "#55FF55", False),
-        ("........................................................................ [ 56%]", "#55FF55", False),
-        ("........................................................................ [ 64%]", "#55FF55", False),
-        ("........................................................................ [ 72%]", "#55FF55", False),
-        ("........................................................................ [ 80%]", "#55FF55", False),
-        ("........................................................................ [ 88%]", "#55FF55", False),
-        ("ssssssssssss............................................................ [ 96%]", "#FFFF55", False),
-        ("...................xxxxxxx                                               [100%]", "#55FF55", False),
-        ("", "#CCCCCC", False),
-        ("=========================== short test summary info ===========================", "#CCCCCC", False),
-        ("SKIPPED [12] tests/readiness/test_production_readiness.py (variables no definidas en entorno local)", "#FFFF55", False),
-        ("XFAIL [7] tests/readiness/test_production_readiness.py (hallazgos arquitecturales documentados)", "#55FFFF", False),
-        ("==================== 856 passed, 12 skipped, 7 xfailed in 42.18s ====================", "#00FF00", True),
-        ("", "#CCCCCC", False),
-        ("PS C:/Users/DAZA/.../giragroup_bi_system> # Colectadas: 875 | 856 passed | 0 failed (100% exito en verificacion congelada)", "#888888", False)
-    ]
-    renderizar_ventana_terminal(lineas_pytest, "figura_3_40_captura_pytest_856.png",
-                                titulo_pestana="PowerShell - pytest (856 passed, 0 failed)")
-
-    # 3. figura_3_50_captura_cobertura_72_42.png
-    lineas_cobertura = [
-        ("PS C:/Users/DAZA/.../giragroup_bi_system> pytest --cov=backend --cov=pipeline", "#FFFFFF", True),
-        ("=============================== tests coverage ================================", "#CCCCCC", False),
-        ("Name (Module)                                            Stmts   Miss  Cover", "#CCCCCC", True),
-        ("-----------------------------------------------------------------------------", "#555555", False),
-        ("backend/core/database.py                                    50     12    76%", "#DDDDDD", False),
-        ("backend/services/dw_loader.py                              974    122    87%", "#DDDDDD", False),
-        ("backend/services/ingestion_service.py                      587    227    61%", "#DDDDDD", False),
-        ("backend/services/planificacion_extractor.py                215     28    87%", "#DDDDDD", False),
-        ("backend/routers/cmi.py                                     198     18    91%", "#DDDDDD", False),
-        ("backend/routers/dataops/consolidacion.py                   428     85    80%", "#DDDDDD", False),
-        ("pipeline/analytics/forecasting_hw.py                       118      5    96%", "#DDDDDD", False),
-        ("pipeline/semantic/formatter.py                             257     46    82%", "#DDDDDD", False),
-        ("pipeline/semantic/ner_engine.py                            320     87    73%", "#DDDDDD", False),
-        ("pipeline/semantic/ner_schema.py                             94     10    89%", "#DDDDDD", False),
-        ("pipeline/semantic/performance_logger.py                     59      3    95%", "#DDDDDD", False),
-        ("pipeline/semantic/ventana.py                                26      0   100%", "#DDDDDD", False),
-        ("-----------------------------------------------------------------------------", "#555555", False),
-        ("TOTAL                                                    15.694  4.328  72,42%", "#00FF66", True),
-        ("", "#CCCCCC", False),
-        ("Coverage HTML: docs/evidencias/cobertura_html/index.html", "#888888", False),
-        ("875 colectadas: 856 passed, 0 failed, 12 skipped, 7 xfailed in 42.18s", "#00FF00", True),
-        ("", "#CCCCCC", False),
-        ("PS C:/Users/DAZA/.../giragroup_bi_system> # Cobertura verificada: 11.366 / 15.694 lineas (72,42 %)", "#888888", False)
-    ]
-    renderizar_ventana_terminal(lineas_cobertura, "figura_3_50_captura_cobertura_72_42.png",
-                                titulo_pestana="PowerShell - pytest coverage (72,42 %)")
-
-
 
 def main():
     print("=================================================================")
@@ -1423,12 +1276,12 @@ def main():
     generar_grafico_rendimiento_locust_newman()
     generar_grafico_f3v_completo_hechos()
     
-    # 3. Capturas reales de terminal (F4-1)
-    generar_capturas_reales_terminal()
+    # Nota F4-1: Las Figuras 3.40, 3.44 y 3.50 corresponden a capturas reales
+    # de terminal pendientes de entrega por Lean. No se generan por código.
     
     print("=================================================================")
     print("¡GENERACIÓN DE FIGURAS F4 COMPLETADA EXITOSAMENTE!")
-    print("Todas las figuras cumplen con 300 DPI, fondo blanco puro #FFFFFF,")
+    print("Todas las figuras analíticas cumplen con 300 DPI, fondo blanco puro #FFFFFF,")
     print("norma APA/IEEE y trazabilidad absoluta a docs/mediciones/ y la SFV.")
     print("=================================================================")
 
