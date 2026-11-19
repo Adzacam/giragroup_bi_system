@@ -1,0 +1,186 @@
+{
+  "tarea": "R-0",
+  "rama": "beto-integracion",
+  "commit": "4d7985789b01139b9216b5518964dddb2029ea45",
+  "health_status_code": 200,
+  "health_body": {
+    "status": "healthy",
+    "service": "giragroup-bi-api",
+    "database": "connected"
+  },
+  "dump": {
+    "archivo": "output/f5r/giragroup_db_pre_r.dump",
+    "bytes": 14735448,
+    "sha256": "d942a6df7ea5b906d44a6d22c3a761b32572b054f485e4aff57dee14a5e163ff"
+  },
+  "conteos": {
+    "fact_rendimiento_academico": 0,
+    "fact_situacion_financiera": 0,
+    "fact_evaluacion_docente": 0,
+    "fact_marketing": 0,
+    "fact_rentabilidad": 0,
+    "fact_costo_programa": 0,
+    "fact_techo_convenio": 0,
+    "fact_planificacion_programa": 1663,
+    "fact_cobranzas_proyectadas": 0,
+    "fact_forecast": 0,
+    "dim_estudiante": 0,
+    "dim_docente": 0,
+    "dim_modulo": 996,
+    "dim_tiempo": 2230,
+    "dim_origen_documental": 10,
+    "dim_meta": 58,
+    "dim_categoria_financiera": 15,
+    "bridge_modulo_docente": 0,
+    "carga_fila_origen": 3442,
+    "stg_entidad_no_resuelta": 4,
+    "log_inconsistencias": 1031,
+    "staging_registros_crudos": 68,
+    "lote": 2,
+    "dataops_tarea": 4
+  },
+  "lotes": [
+    {
+      "id_lote": 1,
+      "institucion": "GiraGroup Posgrado",
+      "periodo": "2026 (Auto)",
+      "estado": "PROCESADO",
+      "total_archivos": 1,
+      "creado_en": "2026-11-18 21:23:28.497614"
+    },
+    {
+      "id_lote": 2,
+      "institucion": "GiraGroup Posgrado",
+      "periodo": "2024–2025 (Auto)",
+      "estado": "PROCESADO",
+      "total_archivos": 9,
+      "creado_en": "2026-11-19 04:11:01.207813"
+    }
+  ],
+  "documentos": [
+    {
+      "id_documento": 1,
+      "nombre_archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+      "tipo_fuente": "PLANIFICACION",
+      "id_lote": 1,
+      "hash_sha256": "c65129c62c9cfaa13ac483d2f5d7afed5c65d4a503547adb08829a075cf8dba0"
+    },
+    {
+      "id_documento": 2,
+      "nombre_archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+      "tipo_fuente": "EVALUACION_DOCENTE",
+      "id_lote": 2,
+      "hash_sha256": "d0b87767b7dae5aa2d37ebd049a256bb83f565dfb0fc95412f46c8c2299357a0"
+    },
+    {
+      "id_documento": 3,
+      "nombre_archivo": "Base centralizada Académica ARCA (1).xlsx",
+      "tipo_fuente": "ACTA",
+      "id_lote": 2,
+      "hash_sha256": "cd6070f0c3b61e88c1b86f7f2bcd909367e0ce8f770f16e671fc93e1218ded52"
+    },
+    {
+      "id_documento": 4,
+      "nombre_archivo": "BD Cobranzas.xlsx",
+      "tipo_fuente": "COBRANZA",
+      "id_lote": 2,
+      "hash_sha256": "ccf92a5f085679301c791db664ff08e4ad1684be0a22288a3d9e5b1a58d0145c"
+    },
+    {
+      "id_documento": 5,
+      "nombre_archivo": "BD Egresos.xlsx",
+      "tipo_fuente": "EGRESOS",
+      "id_lote": 2,
+      "hash_sha256": "4b4afbddeb3c348c55cd2389542bb63ef41cbbdc2a70a04c0200c65bf6c30c5d"
+    },
+    {
+      "id_documento": 6,
+      "nombre_archivo": "BD Techos.xlsx",
+      "tipo_fuente": "TECHOS",
+      "id_lote": 2,
+      "hash_sha256": "75a797bdcf1453e35e36e498e4b7c30625ba3669a17534fcb08fdd0adaaa23d8"
+    },
+    {
+      "id_documento": 7,
+      "nombre_archivo": "EJECUTADO VS META.xlsx",
+      "tipo_fuente": "RENTABILIDAD",
+      "id_lote": 2,
+      "hash_sha256": "daee07f1f59df455ca862bda50b8a2c00d276437ddaa3a1375e86c11b2852682"
+    },
+    {
+      "id_documento": 8,
+      "nombre_archivo": "Evaluación Docente y Unifranz.xlsx",
+      "tipo_fuente": "EVALUACION_DOCENTE",
+      "id_lote": 2,
+      "hash_sha256": "6875b97a5fbbf61e9b32e26a3abf888c54620fe91fb9cfbb7e9502e255ac432a"
+    },
+    {
+      "id_documento": 9,
+      "nombre_archivo": "Experiencia Docente 2.0.xlsx",
+      "tipo_fuente": "EVALUACION_DOCENTE",
+      "id_lote": 2,
+      "hash_sha256": "bf8432b5193257446c670310d7bfeccc28a8e277a0d1c7bdab8f1b1c3b84ac5c"
+    },
+    {
+      "id_documento": 10,
+      "nombre_archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S) 1.xlsx",
+      "tipo_fuente": "PLANIFICACION",
+      "id_lote": 2,
+      "hash_sha256": "05afce82f539be772625fc2c52f838a4548916e0fc958e150ff26b01d8f8f2da"
+    }
+  ],
+  "tareas": [
+    {
+      "id": 1,
+      "tipo": "INGESTA",
+      "id_lote": 1,
+      "estado": "COMPLETADA",
+      "total": 1,
+      "procesados": 1,
+      "resultado": {
+        "exitosos": 1,
+        "fallidos": 0,
+        "total_registros": 1663
+      },
+      "error": null
+    },
+    {
+      "id": 2,
+      "tipo": "LECTURA_BETO",
+      "id_lote": 1,
+      "estado": "COMPLETADA",
+      "total": 1721,
+      "procesados": 1721,
+      "resultado": {
+        "total_tuplas": 1721
+      },
+      "error": null
+    },
+    {
+      "id": 3,
+      "tipo": "INGESTA",
+      "id_lote": 2,
+      "estado": "COMPLETADA",
+      "total": 9,
+      "procesados": 9,
+      "resultado": {
+        "exitosos": 9,
+        "fallidos": 0,
+        "total_registros": 72499
+      },
+      "error": null
+    },
+    {
+      "id": 4,
+      "tipo": "LECTURA_BETO",
+      "id_lote": 2,
+      "estado": "COMPLETADA",
+      "total": 94866,
+      "procesados": 94866,
+      "resultado": {
+        "total_tuplas": 94866
+      },
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,283 @@
+{
+  "tarea": "R-1",
+  "id_lote": 35,
+  "duracion_seg": 637.22,
+  "limpieza_previa": {
+    "status": "success",
+    "message": "9 fuente(s) eliminada(s) con éxito.",
+    "deleted_count": 9
+  },
+  "upload_batch": {
+    "status": "success",
+    "total_archivos": 9,
+    "archivos_exitosos": 9,
+    "archivos_fallidos": 0,
+    "total_registros_detectados": 86032,
+    "resultados": [
+      {
+        "id_documento": 35,
+        "nombre_archivo": "TBL_INSCRITOS.xlsx",
+        "tipo_fuente": "MARKETING",
+        "registros_detectados": 15196,
+        "status": "procesado"
+      },
+      {
+        "id_documento": 36,
+        "nombre_archivo": "BD Cobranzas.xlsx",
+        "tipo_fuente": "COBRANZA",
+        "registros_detectados": 16034,
+        "status": "procesado"
+      },
+      {
+        "id_documento": 37,
+        "nombre_archivo": "BD Techos.xlsx",
+        "tipo_fuente": "TECHOS",
+        "registros_detectados": 207,
+        "status": "procesado"
+      },
+      {
+        "id_documento": 38,
+        "nombre_archivo": "EJECUTADO VS META.xlsx",
+        "tipo_fuente": "RENTABILIDAD",
+        "registros_detectados": 36,
+        "status": "procesado"
+      },
+      {
+        "id_documento": 39,
+        "nombre_archivo": "BD Egresos.xlsx",
+        "tipo_fuente": "EGRESOS",
+        "registros_detectados": 1409,
+        "status": "procesado"
+      },
+      {
+        "id_documento": 40,
+        "nombre_archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+        "tipo_fuente": "EVALUACION_DOCENTE",
+        "registros_detectados": 19121,
+        "status": "procesado"
+      },
+      {
+        "id_documento": 41,
+        "nombre_archivo": "Evaluación Docente y Unifranz.xlsx",
+        "tipo_fuente": "EVALUACION_DOCENTE",
+        "registros_detectados": 4884,
+        "status": "procesado"
+      },
+      {
+        "id_documento": 42,
+        "nombre_archivo": "Experiencia Docente 2.0.xlsx",
+        "tipo_fuente": "ACTA",
+        "registros_detectados": 17691,
+        "status": "procesado"
+      },
+      {
+        "id_documento": 43,
+        "nombre_archivo": "Base centralizada Académica ARCA (1).xlsx",
+        "tipo_fuente": "ACTA",
+        "registros_detectados": 11454,
+        "status": "procesado"
+      }
+    ]
+  },
+  "tareas": {
+    "LECTURA_BETO": {
+      "id": 37,
+      "tipo": "LECTURA_BETO",
+      "id_lote": 35,
+      "estado": "COMPLETADA",
+      "total": 108341,
+      "procesados": 108341,
+      "resultado": {
+        "total_tuplas": 108341
+      },
+      "error": null,
+      "iniciado_por": null,
+      "transcurrido_seg": 56,
+      "restante_seg": null,
+      "porcentaje": 100.0
+    },
+    "PREPARACION_REVISION": {
+      "id": 38,
+      "tipo": "PREPARACION_REVISION",
+      "id_lote": 35,
+      "estado": "COMPLETADA",
+      "total": 108341,
+      "procesados": 108341,
+      "resultado": {
+        "status": "success",
+        "message": "Revisión preparada (Fase A): 592130 casos derivados a Revisión Humana, 0 hechos cargados.",
+        "desglose": {
+          "inserted_academico": 0,
+          "inserted_financiero": 0
+        },
+        "sent_hitl": 592130,
+        "inserted_dw": 0,
+        "solo_revision": true,
+        "descartados_ruido": 13195,
+        "inserted_admision": 0,
+        "inserted_revision": 0,
+        "inserted_academico": 0,
+        "descartes_por_regla": {
+          "FILA_SIN_ENTIDAD": 37,
+          "FILA_SIN_CABECERAS": 3088,
+          "FILA_ACADEMICA_SIN_ESTUDIANTE": 835,
+          "FILA_EVALUACION_SIN_RESPUESTAS": 8737,
+          "FILA_FINANCIERA_SIN_ESTUDIANTE": 474,
+          "FILA_AGREGADA_SIN_CATEGORIA_MES": 24
+        },
+        "inserted_financiero": 0
+      },
+      "error": null,
+      "iniciado_por": null,
+      "transcurrido_seg": 188,
+      "restante_seg": null,
+      "porcentaje": 100.0
+    },
+    "CONSOLIDACION": {
+      "id": 39,
+      "tipo": "CONSOLIDACION",
+      "id_lote": 35,
+      "estado": "COMPLETADA",
+      "total": 108341,
+      "procesados": 108341,
+      "resultado": {
+        "status": "success",
+        "message": "Transacción completada: 816346 hechos persistidos en Data Warehouse (800872 académicos, 15474 financieros), 7883 derivados a Revisión Humana.",
+        "desglose": {
+          "inserted_academico": 800872,
+          "inserted_financiero": 15474
+        },
+        "sent_hitl": 7883,
+        "inserted_dw": 816346,
+        "solo_revision": false,
+        "descartados_ruido": 13195,
+        "inserted_admision": 0,
+        "inserted_revision": 433094,
+        "inserted_academico": 800872,
+        "descartes_por_regla": {
+          "FILA_SIN_ENTIDAD": 37,
+          "FILA_SIN_CABECERAS": 3088,
+          "FILA_ACADEMICA_SIN_ESTUDIANTE": 835,
+          "FILA_EVALUACION_SIN_RESPUESTAS": 8737,
+          "FILA_FINANCIERA_SIN_ESTUDIANTE": 474,
+          "FILA_AGREGADA_SIN_CATEGORIA_MES": 24
+        },
+        "inserted_financiero": 15474
+      },
+      "error": null,
+      "iniciado_por": null,
+      "transcurrido_seg": 329,
+      "restante_seg": null,
+      "porcentaje": 100.0
+    }
+  },
+  "errores_5xx_api": 0,
+  "errores_5xx_muestra": [],
+  "conteos_vs_f3v_completo": {
+    "fact_rendimiento_academico": {
+      "f3v_completo": 25191,
+      "dw_viva": 25191,
+      "delta": 0
+    },
+    "fact_situacion_financiera": {
+      "f3v_completo": 10719,
+      "dw_viva": 10733,
+      "delta": 14
+    },
+    "fact_evaluacion_docente": {
+      "f3v_completo": 715217,
+      "dw_viva": 715217,
+      "delta": 0
+    },
+    "fact_marketing": {
+      "f3v_completo": 10510,
+      "dw_viva": 10519,
+      "delta": 9
+    },
+    "fact_rentabilidad": {
+      "f3v_completo": 95,
+      "dw_viva": 95,
+      "delta": 0
+    },
+    "fact_costo_programa": {
+      "f3v_completo": 1371,
+      "dw_viva": 1371,
+      "delta": 0
+    },
+    "fact_techo_convenio": {
+      "f3v_completo": 206,
+      "dw_viva": 206,
+      "delta": 0
+    },
+    "fact_planificacion_programa": {
+      "f3v_completo": 1663,
+      "dw_viva": 1663,
+      "delta": 0
+    },
+    "fact_cobranzas_proyectadas": {
+      "f3v_completo": 0,
+      "dw_viva": 0,
+      "delta": 0
+    },
+    "fact_forecast": {
+      "f3v_completo": 0,
+      "dw_viva": 0,
+      "delta": 0
+    },
+    "dim_estudiante": {
+      "f3v_completo": 16873,
+      "dw_viva": 16873,
+      "delta": 0
+    },
+    "dim_docente": {
+      "f3v_completo": 689,
+      "dw_viva": 689,
+      "delta": 0
+    },
+    "dim_modulo": {
+      "f3v_completo": 4527,
+      "dw_viva": 4313,
+      "delta": -214
+    },
+    "dim_tiempo": {
+      "f3v_completo": 2230,
+      "dw_viva": 2230,
+      "delta": 0
+    },
+    "dim_origen_documental": {
+      "f3v_completo": 10,
+      "dw_viva": 10,
+      "delta": 0
+    },
+    "dim_meta": {
+      "f3v_completo": 58,
+      "dw_viva": 58,
+      "delta": 0
+    },
+    "dim_categoria_financiera": {
+      "f3v_completo": 15,
+      "dw_viva": 15,
+      "delta": 0
+    },
+    "bridge_modulo_docente": {
+      "f3v_completo": 1690,
+      "dw_viva": 1690,
+      "delta": 0
+    },
+    "carga_fila_origen": {
+      "f3v_completo": 1636142,
+      "dw_viva": 1636142,
+      "delta": 0
+    },
+    "stg_entidad_no_resuelta": {
+      "f3v_completo": 10762,
+      "dw_viva": 10828,
+      "delta": 66
+    },
+    "log_inconsistencias": {
+      "f3v_completo": 27918,
+      "dw_viva": 27266,
+      "delta": -652
+    }
+  }
+}

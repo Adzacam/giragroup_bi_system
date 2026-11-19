@@ -1,0 +1,171 @@
+{
+  "tarea": "R-3",
+  "scorecards_por_gestion": {
+    "2023": {
+      "total_kpis": 23,
+      "kpis_con_valor": 5,
+      "indice_global": 20.0,
+      "perspectivas": [
+        {
+          "codigo": "FINANCIERA",
+          "indicadores": 9,
+          "indice": 20.0
+        },
+        {
+          "codigo": "CLIENTES",
+          "indicadores": 5,
+          "indice": null
+        },
+        {
+          "codigo": "PROCESOS_INTERNOS",
+          "indicadores": 4,
+          "indice": null
+        },
+        {
+          "codigo": "APRENDIZAJE",
+          "indicadores": 5,
+          "indice": null
+        }
+      ]
+    },
+    "2024": {
+      "total_kpis": 23,
+      "kpis_con_valor": 21,
+      "indice_global": 60.9,
+      "perspectivas": [
+        {
+          "codigo": "FINANCIERA",
+          "indicadores": 9,
+          "indice": 52.0
+        },
+        {
+          "codigo": "CLIENTES",
+          "indicadores": 5,
+          "indice": 60.0
+        },
+        {
+          "codigo": "PROCESOS_INTERNOS",
+          "indicadores": 4,
+          "indice": 60.0
+        },
+        {
+          "codigo": "APRENDIZAJE",
+          "indicadores": 5,
+          "indice": 73.3
+        }
+      ]
+    },
+    "2025": {
+      "total_kpis": 23,
+      "kpis_con_valor": 21,
+      "indice_global": 65.7,
+      "perspectivas": [
+        {
+          "codigo": "FINANCIERA",
+          "indicadores": 9,
+          "indice": 68.0
+        },
+        {
+          "codigo": "CLIENTES",
+          "indicadores": 5,
+          "indice": 60.0
+        },
+        {
+          "codigo": "PROCESOS_INTERNOS",
+          "indicadores": 4,
+          "indice": 60.0
+        },
+        {
+          "codigo": "APRENDIZAJE",
+          "indicadores": 5,
+          "indice": 73.3
+        }
+      ]
+    },
+    "2026": {
+      "total_kpis": 23,
+      "kpis_con_valor": 13,
+      "indice_global": 32.4,
+      "perspectivas": [
+        {
+          "codigo": "FINANCIERA",
+          "indicadores": 9,
+          "indice": 28.0
+        },
+        {
+          "codigo": "CLIENTES",
+          "indicadores": 5,
+          "indice": 20.0
+        },
+        {
+          "codigo": "PROCESOS_INTERNOS",
+          "indicadores": 4,
+          "indice": 20.0
+        },
+        {
+          "codigo": "APRENDIZAJE",
+          "indicadores": 5,
+          "indice": 60.0
+        }
+      ]
+    }
+  },
+  "kpi23_vs_f3v_kpi23_serie": [
+    {
+      "gestion": 2023,
+      "valor_dw_viva": null,
+      "valor_f3v_congelado": null,
+      "semaforo_dw_viva": "SIN_UMBRAL",
+      "semaforo_f3v_congelado": "SIN_UMBRAL",
+      "delta": 0.0
+    },
+    {
+      "gestion": 2024,
+      "valor_dw_viva": 100.0,
+      "valor_f3v_congelado": 100.0,
+      "semaforo_dw_viva": "VERDE",
+      "semaforo_f3v_congelado": "VERDE",
+      "delta": 0.0
+    },
+    {
+      "gestion": 2025,
+      "valor_dw_viva": 99.77,
+      "valor_f3v_congelado": 99.77,
+      "semaforo_dw_viva": "VERDE",
+      "semaforo_f3v_congelado": "VERDE",
+      "delta": 0.0
+    },
+    {
+      "gestion": 2026,
+      "valor_dw_viva": 46.62,
+      "valor_f3v_congelado": 46.62,
+      "semaforo_dw_viva": "ROJO",
+      "semaforo_f3v_congelado": "ROJO",
+      "delta": 0.0
+    }
+  ],
+  "alertas_kpis": {
+    "status_code": 200,
+    "total": 0,
+    "criticas": 4404,
+    "advertencias": 3423
+  },
+  "alertas_tempranas": {
+    "status_code": 200,
+    "total": 0,
+    "resumen": null
+  },
+  "pronostico_analitica_macro": {
+    "status_code": 200,
+    "claves": [
+      "caso1_demanda_global",
+      "caso2_demanda_programa",
+      "caso3_metas_mensuales",
+      "caso4_metas_anuales",
+      "fecha_calculo_iso",
+      "horizonte_meses",
+      "sin_datos",
+      "status"
+    ]
+  }
+}
