@@ -120,12 +120,38 @@ export const notificationService = {
   },
 
   /**
-   * Filtra las notificaciones por severidad.
+   * Normaliza severidades heterogéneas del backend/caché a CRITICAL | WARNING | INFO.
+   */
+  normalizeSeverity(severity) {
+    const raw = String(severity || 'INFO').trim().toUpperCase();
+    if (['CRITICAL', 'CRITICA', 'CRÍTICA', 'ERROR', 'HIGH', 'ALTA'].includes(raw)) return 'CRITICAL';
+    if (['WARNING', 'WARN', 'ADVERTENCIA', 'ALERTA', 'MEDIUM', 'MEDIA'].includes(raw)) return 'WARNING';
+    return 'INFO';
+  },
+
+  /**
+   * Calcula conteos por severidad normalizada para las pastillas de filtro.
+   */
+  getSeverityCounts(notifications = []) {
+    if (!Array.isArray(notifications)) return { ALL: 0, CRITICAL: 0, WARNING: 0, INFO: 0 };
+    return notifications.reduce(
+      (acc, n) => {
+        const sev = this.normalizeSeverity(n?.severity);
+        acc.ALL += 1;
+        acc[sev] = (acc[sev] || 0) + 1;
+        return acc;
+      },
+      { ALL: 0, CRITICAL: 0, WARNING: 0, INFO: 0 }
+    );
+  },
+
+  /**
+   * Filtra las notificaciones por severidad normalizada.
    */
   filterNotifications(notifications = [], filter = 'ALL') {
     if (!Array.isArray(notifications)) return [];
     if (filter === 'ALL') return notifications;
-    return notifications.filter(n => n.severity === filter);
+    return notifications.filter((n) => this.normalizeSeverity(n?.severity) === filter);
   },
 
   /**
@@ -149,6 +175,33 @@ export const notificationService = {
   getRoleNotifications(role) {
     const roleKey = (role || 'ADMIN').toUpperCase();
     return ROLE_NOTIFICATIONS[roleKey] || ROLE_NOTIFICATIONS.ADMIN;
+  },
+
+  /**
+   * Notifica o actualiza el progreso de una tarea sin apilar toasts por tarea_id.
+   */
+  notifyTaskProgress(tarea = {}) {
+    const tareaId = tarea.tarea_id ?? tarea.id;
+    if (!tareaId) return null;
+    const estado = String(tarea.estado || 'EN_CURSO').toUpperCase();
+    const type = estado === 'COMPLETADA' ? 'success' : estado === 'ERROR' ? 'error' : 'info';
+    const title = tarea.title || `Tarea #${tareaId}`;
+    return sileoToast.upsertTask(tareaId, {
+      type,
+      title,
+      etapa: tarea.etapa || tarea.mensaje || tarea.stage,
+      porcentaje: tarea.porcentaje,
+      duration: estado === 'EN_CURSO' ? 0 : 5000,
+    });
+  },
+
+  /**
+   * Resume eliminaciones en bloque en un único toast ("N lotes eliminados").
+   */
+  notifyBulkBatchDelete(countOrIds, opts = {}) {
+    const count = Array.isArray(countOrIds) ? countOrIds.length : Number(countOrIds || 0);
+    if (count <= 0) return null;
+    return sileoToast.bulkDeleteSummary(count, opts);
   },
 
   /**

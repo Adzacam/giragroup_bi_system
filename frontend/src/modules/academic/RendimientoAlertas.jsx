@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import usePaginacion from '../../hooks/usePaginacion';
 import Paginacion from '../../components/shared/Paginacion';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
+import AnimatedProgressBarV2 from '../../v2/motion/AnimatedProgressBarV2';
 import {
   AlertCircle,
   AlertTriangle,
@@ -876,7 +879,7 @@ export default function RendimientoAlertas() {
                   lineHeight: 1.1,
                 }}
               >
-                {Number(data.total_alumnos || 0).toLocaleString()}{' '}
+                <AnimatedNumberV2 value={Number(data.total_alumnos || 0).toLocaleString('es-BO')} />{' '}
                 <span style={{ fontSize: '15px', fontWeight: 500, color: 'var(--color-slate-gray)' }}>
                   Alumnos
                 </span>
@@ -891,7 +894,7 @@ export default function RendimientoAlertas() {
                   color: accentColor,
                 }}
               >
-                {data.subtitulo_secundario}
+                <AnimatedNumberV2 value={data.subtitulo_secundario} />
               </div>
             </button>
           );
@@ -985,7 +988,7 @@ export default function RendimientoAlertas() {
                         color: item.total_alumnos > 0 ? '#D9383A' : 'var(--color-slate-gray)',
                       }}
                     >
-                      {item.total_alumnos} casos
+                      <AnimatedNumberV2 value={item.total_alumnos} /> casos
                     </span>
                   </button>
                 );
@@ -1070,26 +1073,23 @@ export default function RendimientoAlertas() {
                               flexShrink: 0,
                             }}
                           >
-                            ({tp.total_afectados} afectados)
+                            (<AnimatedNumberV2 value={tp.total_afectados} /> afectados)
                           </span>
                         </div>
-                        <div
+                        <AnimatedProgressBarV2
+                          value={pctBar}
+                          max={100}
+                          color={idx === 0 ? '#D9383A' : '#D99B26'}
+                          trackColor="rgba(119, 123, 134, 0.16)"
                           style={{
                             height: '5px',
                             borderRadius: '999px',
-                            backgroundColor: 'rgba(119, 123, 134, 0.16)',
                             overflow: 'hidden',
+                            position: 'relative',
                           }}
-                        >
-                          <div
-                            style={{
-                              width: `${pctBar}%`,
-                              height: '100%',
-                              backgroundColor: idx === 0 ? '#D9383A' : '#D99B26',
-                              borderRadius: '999px',
-                            }}
-                          />
-                        </div>
+                          barStyle={{ display: 'block', height: '100%', borderRadius: '999px' }}
+                          ariaLabel={`Afectados en ${tp.programa}`}
+                        />
                       </div>
                     );
                   })}
@@ -1404,24 +1404,25 @@ export default function RendimientoAlertas() {
       `}</style>
 
       {/* ── MODAL: FICHA CRUZADA ACADÉMICO-FINANCIERA DEL ESTUDIANTE ── */}
-      {fichaModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Ficha Cruzada Académico-Financiera del Estudiante"
-          onClick={() => setFichaModalOpen(false)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            backgroundColor: 'rgba(12, 30, 51, 0.68)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
-          }}
-        >
+      {fichaModalOpen && (() => {
+        const modalNode = (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Ficha Cruzada Académico-Financiera del Estudiante"
+            onClick={() => setFichaModalOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 2200,
+              backgroundColor: 'rgba(12, 30, 51, 0.68)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
+            }}
+          >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
@@ -1743,7 +1744,11 @@ export default function RendimientoAlertas() {
             )}
           </div>
         </div>
-      )}
+        );
+        return typeof document !== 'undefined' && document.body?.appendChild
+          ? createPortal(modalNode, document.body)
+          : modalNode;
+      })()}
     </div>
   );
 }

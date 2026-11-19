@@ -1,15 +1,19 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { UploadCloud, FileText, Cpu, UserCheck, CheckCircle2 } from 'lucide-react';
+import { useParentChildTransitionV2 } from '../../../v2/transitions/useParentChildTransitionV2';
+import { toDataopsPath } from '../../../v2/utils/v2Routes';
 
 export default function BatchFlowStepper({ currentStep = 1, batchId = null, pendientesCount = 0, allCompleted = false }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { triggerParentChild } = useParentChildTransitionV2();
   const effectiveBatchId = batchId || localStorage.getItem('last_active_batch_id');
 
   const steps = [
     {
       num: 1,
-      title: 'Ingesta',
+      title: 'Carga',
       subtitle: '¿Qué estoy cargando y reglas?',
       path: '/dataops/ingesta',
       icon: UploadCloud,
@@ -17,14 +21,6 @@ export default function BatchFlowStepper({ currentStep = 1, batchId = null, pend
     },
     {
       num: 2,
-      title: 'Texto plano',
-      subtitle: '¿Cómo se transformó mi archivo?',
-      path: effectiveBatchId ? `/dataops/lote/${effectiveBatchId}/texto` : '/dataops/texto',
-      icon: FileText,
-      available: true
-    },
-    {
-      num: 3,
       title: 'Lectura de BETO',
       subtitle: '¿Qué entendió el modelo?',
       path: effectiveBatchId ? `/dataops/lote/${effectiveBatchId}/beto` : '/dataops/beto',
@@ -32,8 +28,8 @@ export default function BatchFlowStepper({ currentStep = 1, batchId = null, pend
       available: true
     },
     {
-      num: 4,
-      title: `Revisión humana ${pendientesCount > 0 ? `(${pendientesCount})` : ''}`,
+      num: 3,
+      title: `Revisión ${pendientesCount > 0 ? `(${pendientesCount})` : ''}`,
       subtitle: '¿Qué debo decidir yo?',
       path: effectiveBatchId ? `/dataops/lote/${effectiveBatchId}/revision` : '/dataops/revision',
       icon: UserCheck,
@@ -42,32 +38,38 @@ export default function BatchFlowStepper({ currentStep = 1, batchId = null, pend
     }
   ];
 
-  const handleStepClick = (step) => {
+  const handleStepClick = (step, sourceEl) => {
     if (step.available) {
-      navigate(step.path);
+      const target = toDataopsPath(step.path, location.pathname);
+      triggerParentChild(sourceEl, () => navigate(target));
     }
   };
 
   return (
-    <div className="floating-artifact" style={{
-      padding: '20px 24px',
+    <div className="floating-artifact v2-stepper-pill" style={{
+      padding: '16px 28px',
       marginBottom: '28px',
       overflowX: 'auto',
-      backgroundColor: 'var(--color-paper-white)'
+      borderRadius: '32px',
+      backgroundColor: 'var(--color-paper-white)',
+      width: '100%',
+      display: 'block'
     }}>
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, minmax(150px, 1fr))',
+        alignItems: 'start',
+        gap: '12px',
         position: 'relative',
-        minWidth: '680px'
+        width: '100%',
+        minWidth: '480px'
       }}>
         {/* Línea conectora de fondo */}
         <div style={{
           position: 'absolute',
-          top: '24px',
-          left: '50px',
-          right: '50px',
+          top: '36px',
+          left: '16.67%',
+          right: '16.67%',
           height: '2px',
           backgroundColor: 'var(--color-border)',
           zIndex: 0
@@ -81,7 +83,9 @@ export default function BatchFlowStepper({ currentStep = 1, batchId = null, pend
           return (
             <div
               key={step.num}
-              onClick={() => handleStepClick(step)}
+              className={`v2-stepper-step ${isCurrent ? 'is-active' : ''}`}
+              aria-current={isCurrent ? 'step' : undefined}
+              onClick={(e) => handleStepClick(step, e.currentTarget)}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -91,7 +95,10 @@ export default function BatchFlowStepper({ currentStep = 1, batchId = null, pend
                 cursor: step.available ? 'pointer' : 'not-allowed',
                 opacity: step.available ? 1 : 0.45,
                 transition: 'all 0.2s ease',
-                width: '150px'
+                padding: '12px 10px',
+                borderRadius: '22px',
+                border: isCurrent ? '1.8px solid var(--color-gira-gold)' : '1.8px solid transparent',
+                backgroundColor: isCurrent ? 'var(--color-mist-gray)' : 'transparent'
               }}
             >
               {/* Círculo del icono */}

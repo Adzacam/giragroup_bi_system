@@ -1,19 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, ShieldCheck, Sun, Moon, Eye, EyeOff, Lock } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { flushSync } from 'react-dom';
+import { ArrowRight, ShieldCheck, Sun, Moon, Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
 import { authApi } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { sileoToast } from '../../services/sileoToast';
 import { notificationService } from '../../services/notificationService';
+import { useUiVersion } from '../../v2/context/UiVersionContext';
 import GiraLogo from '../../components/common/GiraLogo';
 import DemoAccountsSelector from './components/DemoAccountsSelector';
 import OtpInputForm from './components/OtpInputForm';
 import LoginHeroPane from './components/LoginHeroPane';
 import ForgotPasswordModal from './components/ForgotPasswordModal';
+import '../../v2/styles/v2-tokens.css';
+import '../../styles/v2-login.css';
 
 export default function LoginPage() {
   const [step, setStep] = useState(1);
+  const [authTransitionDir, setAuthTransitionDir] = useState('forward');
+  const [isFallbackAnim, setIsFallbackAnim] = useState(false);
+  const [isEnteringSystem, setIsEnteringSystem] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -32,8 +39,114 @@ export default function LoginPage() {
   
   const { login } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { fontPreset } = useUiVersion();
   const navigate = useNavigate();
+  const location = useLocation();
   const otpRefs = useRef([]);
+  const enterTimerRef = useRef(null);
+
+  const isV2Route = location.pathname.startsWith('/v2');
+
+  // Sincronizar data-ui-version="v2" cuando se accede desde /v2/login
+  useEffect(() => {
+    if (!isV2Route || typeof document === 'undefined') return undefined;
+    const root = document.documentElement;
+    root.setAttribute('data-ui-version', 'v2');
+    root.setAttribute('data-v2-font', fontPreset);
+    return () => {
+      // MainLayoutV2 lo reestablecerá si navega a /v2/*; si sale a V1 se limpia
+      if (!window.location.pathname.startsWith('/v2')) {
+        root.removeAttribute('data-ui-version');
+        root.removeAttribute('data-v2-font');
+      }
+    };
+  }, [isV2Route, fontPreset]);
+
+  useEffect(() => {
+    return () => {
+      if (enterTimerRef.current) clearTimeout(enterTimerRef.current);
+    };
+  }, []);
+
+  const transitionAuthStep = useCallback((nextStep, direction = 'forward') => {
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    setAuthTransitionDir(direction);
+
+    if (
+      prefersReduced ||
+      typeof document === 'undefined' ||
+      typeof document.startViewTransition !== 'function'
+    ) {
+      setIsFallbackAnim(true);
+      setStep(nextStep);
+      return;
+    }
+
+    setIsFallbackAnim(false);
+    try {
+      const vtType = direction === 'forward' ? 'auth-forward' : 'auth-backward';
+      document.startViewTransition({
+        update: () => {
+          flushSync(() => {
+            setStep(nextStep);
+          });
+        },
+        types: [vtType],
+      });
+    } catch {
+      setIsFallbackAnim(true);
+      setStep(nextStep);
+    }
+  }, []);
+
+  const completeLoginPortal = useCallback(
+    (userData, accessToken) => {
+      const todayStr = new Date().toISOString().split('T')[0];
+      localStorage.setItem('gira_last_login_date', todayStr);
+
+      const useV2Target =
+        isV2Route ||
+        (typeof document !== 'undefined' &&
+          document.documentElement.getAttribute('data-ui-version') === 'v2');
+      const targetDashboard = useV2Target ? '/v2/dashboard' : '/';
+
+      const prefersReduced =
+        typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const performNavigate = () => {
+        notificationService.notifyPendingOnLogin(userData.role, navigate);
+        login(userData, accessToken);
+        if (typeof document !== 'undefined' && typeof document.startViewTransition === 'function' && !prefersReduced) {
+          try {
+            document.startViewTransition(() => {
+              flushSync(() => {
+                navigate(targetDashboard);
+              });
+            });
+            return;
+          } catch {
+            // fallback to direct navigate
+          }
+        }
+        navigate(targetDashboard);
+      };
+
+      if (prefersReduced) {
+        performNavigate();
+        return;
+      }
+
+      setIsEnteringSystem(true);
+      enterTimerRef.current = setTimeout(performNavigate, 380);
+    },
+    [isV2Route, login, navigate]
+  );
 
   // Dynamic greeting based on time of day and returning status
   const getGreetingData = () => {
@@ -114,21 +227,17 @@ export default function LoginPage() {
           localStorage.setItem(`gira_trusted_device_${normalizedEmail}`, res.device_token);
           localStorage.setItem(`gira_trusted_device_${email}`, res.device_token);
         }
-        const todayStr = new Date().toISOString().split('T')[0];
-        localStorage.setItem('gira_last_login_date', todayStr);
-        notificationService.notifyPendingOnLogin(res.user.role, navigate);
-        login(res.user, res.access_token);
-        navigate('/');
+        completeLoginPortal(res.user, res.access_token);
         return;
       }
 
       // Si requiere doble factor (primera vez o cuenta distinta)
       setTempToken(res.temp_token);
       setOtp(['', '', '', '', '', '']);
-      setStep(2);
+      transitionAuthStep(2, 'forward');
       setOtpTimeLeft(300);
       setResendCooldown(60);
-      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+      setTimeout(() => otpRefs.current[0]?.focus(), 140);
     } catch (err) {
       sileoToast.error({
         title: 'Acceso Denegado',
@@ -217,13 +326,8 @@ export default function LoginPage() {
         localStorage.setItem(`gira_trusted_device_${normalizedEmail}`, res.device_token);
         localStorage.setItem(`gira_trusted_device_${email}`, res.device_token);
       }
-      const todayStr = new Date().toISOString().split('T')[0];
-      localStorage.setItem('gira_last_login_date', todayStr);
-
       const token = res.access_token || res.token;
-      notificationService.notifyPendingOnLogin(res.user.role, navigate);
-      login(res.user, token);
-      navigate('/');
+      completeLoginPortal(res.user, token);
     } catch (err) {
       setError(err.response?.data?.detail || 'Código OTP inválido o expirado.');
     } finally {
@@ -257,13 +361,13 @@ export default function LoginPage() {
     setPassword(selectedPassword);
     setError('');
     if (step === 2) {
-      setStep(1);
+      transitionAuthStep(1, 'backward');
     }
   };
 
   return (
     <div className="view-content-layer">
-      <section className="login-split-grid">
+      <section className={`login-split-grid login-split-layout${isEnteringSystem ? ' v2-login-entering-system' : ''}`}>
         {/* ── Panel Izquierdo: Formulario Institucional ──────────────── */}
         <div
           className="login-left-pane"
@@ -385,8 +489,13 @@ export default function LoginPage() {
               </div>
             )}
 
-            {step === 1 ? (
-              <form onSubmit={handleStep1Submit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <div
+              key={`auth-step-${step}`}
+              className={`v2-auth-step-panel${isFallbackAnim ? ' is-fallback-anim' : ''}`}
+              data-auth-transition={authTransitionDir}
+            >
+              {step === 1 ? (
+                <form onSubmit={handleStep1Submit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                 <div>
                   <label
                     htmlFor="login-email"
@@ -530,8 +639,8 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
-                  disabled={isLocked || isLoading || !email || !password}
-                  className="btn-pill-dark"
+                  disabled={isLocked || isLoading || isEnteringSystem || !email || !password}
+                  className={`btn-pill-dark v2-login-submit-btn${isEnteringSystem ? ' is-entering' : ''}`}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -541,12 +650,26 @@ export default function LoginPage() {
                     padding: '13px 24px',
                     marginTop: '6px',
                     fontSize: '15px',
-                    cursor: isLocked || isLoading || !email || !password ? 'not-allowed' : 'pointer',
+                    cursor: isLocked || isLoading || isEnteringSystem || !email || !password ? 'not-allowed' : 'pointer',
                     opacity: isLocked || isLoading || !email || !password ? 0.6 : 1,
                   }}
                 >
-                  {isLoading ? 'Verificando credenciales...' : 'Iniciar sesión'}
-                  {!isLoading && <ArrowRight size={16} />}
+                  {isEnteringSystem ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Entrando al sistema...</span>
+                    </>
+                  ) : isLoading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Verificando credenciales...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Iniciar sesión</span>
+                      <ArrowRight size={16} />
+                    </>
+                  )}
                 </button>
               </form>
             ) : (
@@ -558,7 +681,7 @@ export default function LoginPage() {
                 onOtpPaste={handleOtpPaste}
                 otpRefs={otpRefs}
                 onSubmit={handleStep2Submit}
-                onBack={() => setStep(1)}
+                onBack={() => transitionAuthStep(1, 'backward')}
                 otpTimeLeft={otpTimeLeft}
                 resendCooldown={resendCooldown}
                 onResend={handleResend}
@@ -566,8 +689,11 @@ export default function LoginPage() {
                 formatTime={formatTime}
                 rememberDevice={rememberDevice}
                 onRememberDeviceChange={setRememberDevice}
+                error={error}
+                isEnteringSystem={isEnteringSystem}
               />
             )}
+            </div>
           </div>
 
           {/* ── Pie de Página y Auditoría de Seguridad al Fondo Absoluto ──────────────── */}

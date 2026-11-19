@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
 
 const KpiCard = memo(function KpiCard({
   numberPrefix,
@@ -77,10 +78,11 @@ const KpiCard = memo(function KpiCard({
             lineHeight: 1.1,
             color: 'var(--color-ink-black)',
             marginBottom: '8px',
+            fontVariantNumeric: 'tabular-nums',
           }}
         >
           {numberPrefix}
-          {number}
+          {number !== null && number !== undefined ? <AnimatedNumberV2 value={number} /> : number}
           {numberSuffix}
         </div>
 

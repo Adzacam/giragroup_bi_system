@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,6 +16,9 @@ import { RefreshCw, TrendingUp, Users, Award, Search, Sparkles, Filter, ChevronR
 import PageHeader from '../../components/shared/PageHeader';
 import { useTheme } from '../../context/ThemeContext';
 import forecastApi from '../../api/forecastApi';
+import { CHART_PLUGINS_V2, withChartAnimationsV2 } from '../../v2/motion/chartAnimationsV2';
+import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
+import ChartRevealV2 from '../../v2/motion/ChartRevealV2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
@@ -135,7 +139,7 @@ export default function ProyeccionAlumnos() {
     };
   }, [macroData, specificForecast, agregacion, isDark]);
 
-  const chartOptions = {
+  const chartOptions = withChartAnimationsV2({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -155,7 +159,7 @@ export default function ProyeccionAlumnos() {
       x: { grid: { color: gridColor }, ticks: { color: mutedTextColor, font: { family: 'var(--font-sohne)', size: 10 } } },
       y: { grid: { color: gridColor }, ticks: { color: mutedTextColor, font: { family: 'var(--font-sohne)', size: 10 } } }
     }
-  };
+  });
 
   // Filtrado de la Matriz de Viabilidad
   const viabilidadList = (macroData?.caso2_demanda_programa?.matriz_viabilidad || []).filter(item => {
@@ -271,7 +275,9 @@ export default function ProyeccionAlumnos() {
         {/* Gráfico Caso 1 */}
         <div style={{ height: '320px' }}>
           {chartData ? (
-            <Line data={chartData} options={chartOptions} />
+            <ChartRevealV2>
+              <Line data={chartData} options={chartOptions} plugins={CHART_PLUGINS_V2} />
+            </ChartRevealV2>
           ) : (
             <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
               {isLoading ? 'Calculando proyecciones con Holt-Winters...' : (macroData?.sin_datos?.caso1 || 'Sin datos de inscripciones en el Data Warehouse.')}
@@ -395,7 +401,8 @@ export default function ProyeccionAlumnos() {
       </div>
 
       {/* Modal de Detalle de Programa */}
-      {modalProgDetail && (
+      {modalProgDetail && (() => {
+        const modalNode = (
         <div
           style={{
             position: 'fixed',
@@ -405,7 +412,7 @@ export default function ProyeccionAlumnos() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 9999,
+            zIndex: 2200,
             padding: '20px'
           }}
           onClick={() => setModalProgDetail(null)}
@@ -471,26 +478,26 @@ export default function ProyeccionAlumnos() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                 <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos Históricos</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalProgDetail.total_historico}</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}><AnimatedNumberV2 value={modalProgDetail.total_historico} /></div>
               </div>
               <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                 <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos {modalProgDetail.anio_anterior}</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalProgDetail.inscritos_anio_anterior}</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}><AnimatedNumberV2 value={modalProgDetail.inscritos_anio_anterior} /></div>
               </div>
               <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                 <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Inscritos {modalProgDetail.anio_actual}</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}>{modalProgDetail.inscritos_anio_actual}</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)' }}><AnimatedNumberV2 value={modalProgDetail.inscritos_anio_actual} /></div>
               </div>
               <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                 <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>CAGR</div>
                 <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)', color: modalProgDetail.cagr_pct >= 0 ? 'var(--color-alert-green)' : 'var(--color-alert-red)' }}>
-                  {modalProgDetail.cagr_pct > 0 ? `+${modalProgDetail.cagr_pct}%` : `${modalProgDetail.cagr_pct}%`}
+                  <AnimatedNumberV2 value={modalProgDetail.cagr_pct > 0 ? `+${modalProgDetail.cagr_pct}%` : `${modalProgDetail.cagr_pct}%`} />
                 </div>
               </div>
               <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
                 <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase' }}>Proyección 6 Meses</div>
                 <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '2px', fontFamily: 'var(--font-mono)', color: 'var(--color-gira-gold)' }}>
-                  {modalProgDetail.proyeccion_6m} al.
+                  <AnimatedNumberV2 value={modalProgDetail.proyeccion_6m} /> al.
                 </div>
               </div>
               <div style={{ padding: '12px', borderRadius: '14px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
@@ -502,7 +509,11 @@ export default function ProyeccionAlumnos() {
             </div>
           </div>
         </div>
-      )}
+        );
+        return typeof document !== 'undefined' && document.body?.appendChild
+          ? createPortal(modalNode, document.body)
+          : modalNode;
+      })()}
     </div>
   );
 }

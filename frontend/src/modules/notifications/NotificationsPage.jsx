@@ -3,22 +3,26 @@ import { CheckCircle2, AlertCircle, Info, AlertTriangle, CheckCheck } from 'luci
 import PageHeader from '../../components/shared/PageHeader';
 import { useNotifications } from '../../context/NotificationContext';
 import { notificationService } from '../../services/notificationService';
+import { useParentChildTransitionV2 } from '../../v2/transitions/useParentChildTransitionV2';
 
 export default function NotificationsPage() {
   const [filter, setFilter] = useState('ALL');
   const { notifications, unreadCount, loading, markAsRead, markAllRead } = useNotifications();
+  const { triggerParentChild } = useParentChildTransitionV2();
 
   const getSeverityIcon = (severity) => {
-    switch (severity) {
+    switch (notificationService.normalizeSeverity(severity)) {
       case 'CRITICAL': return <AlertCircle size={20} color="var(--color-alert-red, #d9383a)" />;
       case 'WARNING': return <AlertTriangle size={20} color="var(--color-alert-amber, #b45309)" />;
-      case 'INFO': return <Info size={20} color="#0284c7" />;
+      case 'INFO': return <Info size={20} color="var(--sileo-state-info, #0284c7)" />;
       default: return <CheckCircle2 size={20} color="var(--color-slate-gray)" />;
     }
   };
 
+  const counts = notificationService.getSeverityCounts(notifications);
   const filteredNotifications = notificationService.filterNotifications(notifications, filter);
   const groupedNotifications = notificationService.groupByDate(filteredNotifications);
+  let cascadeIndex = 0;
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '32px 20px' }}>
@@ -41,8 +45,23 @@ export default function NotificationsPage() {
         }
       />
 
-      {/* ── Filters ───────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '28px', overflowX: 'auto', paddingBottom: '4px' }}>
+      {/* ── Filters (Pastilla con conteo + transición Padre→Hijo) ─── */}
+      <div
+        className="v2-pill-segment"
+        role="tablist"
+        aria-label="Filtrar notificaciones por severidad"
+        style={{
+          display: 'inline-flex',
+          flexWrap: 'wrap',
+          gap: '6px',
+          marginBottom: '28px',
+          padding: '5px',
+          borderRadius: '9999px',
+          backgroundColor: 'var(--color-mist-gray)',
+          border: '1px solid var(--color-border)',
+          maxWidth: '100%',
+        }}
+      >
         {[
           { key: 'ALL', label: 'Todas' },
           { key: 'CRITICAL', label: 'Críticas' },
@@ -50,30 +69,56 @@ export default function NotificationsPage() {
           { key: 'INFO', label: 'Informativas' },
         ].map(({ key, label }) => {
           const isActive = filter === key;
+          const count = counts[key] ?? 0;
           return (
             <button
               key={key}
-              onClick={() => setFilter(key)}
+              role="tab"
+              aria-selected={isActive}
+              onClick={(e) =>
+                triggerParentChild(e.currentTarget, () => setFilter(key), {
+                  focusTargetId: 'v2-notif-list',
+                })
+              }
               type="button"
+              className={`v2-pill-segment-btn ${isActive ? 'is-active' : ''}`}
               style={{
-                padding: '8px 18px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
                 borderRadius: '9999px',
                 fontSize: '13px',
-                fontWeight: 500,
-                border: '1px solid var(--color-border)',
+                fontWeight: isActive ? 600 : 500,
+                border: isActive ? '1.5px solid var(--color-gira-gold)' : '1.5px solid transparent',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
-                backgroundColor: isActive ? 'var(--color-ink-black)' : 'var(--color-paper-white)',
-                color: isActive ? 'var(--color-paper-white)' : 'var(--color-slate-gray)',
+                backgroundColor: isActive ? 'var(--color-paper-white)' : 'transparent',
+                color: isActive ? 'var(--color-ink-black)' : 'var(--color-slate-gray)',
+                boxShadow: isActive ? 'var(--shadow-subtle)' : 'none',
               }}
             >
-              {label}
+              <span>{label}</span>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  padding: '1px 7px',
+                  borderRadius: '9999px',
+                  backgroundColor: isActive ? 'var(--color-mist-gray)' : 'var(--color-paper-white)',
+                  color: isActive ? 'var(--color-ink-black)' : 'var(--color-slate-gray)',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {count}
+              </span>
             </button>
           );
         })}
       </div>
 
       {/* ── Content ───────────────────────────────────────── */}
+      <div id="v2-notif-list" className="v2-parent-child-panel" tabIndex={-1} style={{ outline: 'none' }}>
       {loading ? (
         <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--color-slate-gray)' }}>
           Cargando notificaciones...
@@ -92,20 +137,22 @@ export default function NotificationsPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {notifs.map((notification) => {
                   const rawTime = notification.created_at || notification.timestamp;
-                  const timeStr = rawTime ? new Date(rawTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                  const timeStr = rawTime ? new Date(rawTime).toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' }) : '';
+                  const itemDelay = `${Math.min(cascadeIndex++, 10) * 45}ms`;
 
                   return (
                     <div 
-                      key={notification.id} 
-                      className="floating-artifact"
+                      key={`${filter}-${notification.id}`} 
+                      className="floating-artifact v2-notif-cascade-item"
                       style={{
                         padding: '18px 20px',
                         display: 'flex',
                         gap: '16px',
                         alignItems: 'flex-start',
                         borderRadius: 'var(--radius-cards)',
-                        borderLeft: !notification.is_read ? '4px solid #3b82f6' : '1px solid var(--color-border)',
-                        backgroundColor: !notification.is_read ? 'rgba(251, 225, 209, 0.15)' : 'var(--color-paper-white)',
+                        borderLeft: !notification.is_read ? '4px solid var(--sileo-state-info, #3b82f6)' : '1px solid var(--color-border)',
+                        backgroundColor: !notification.is_read ? 'var(--dataops-surface-tint, rgba(251, 225, 209, 0.15))' : 'var(--color-paper-white)',
+                        animationDelay: itemDelay,
                       }}
                     >
                       <div style={{ flexShrink: 0, marginTop: '2px' }}>
@@ -170,6 +217,7 @@ export default function NotificationsPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

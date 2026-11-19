@@ -1,0 +1,257 @@
+/**
+ * GIRA Group BI — Versión 2 (V2) Transitions & Scroll-Driven Effects
+ * Implementado según modern-web-guidance:
+ *  - SidebarV2, NavbarV2 y MobileBottomNavV2 100% congelados (animation: none)
+ *  - Transiciones Padre -> Hijo en los 6 selectores y 4 drill-downs
+ *  - Scroll Entry / Exit Effects en tarjetas
+ */
+
+/* ─── 0. Congelar Shell Flotante (Sidebar, Topbar y BottomBar inmóviles) ─── */
+::view-transition-old(root),
+::view-transition-new(root),
+::view-transition-group(v2-shell-sidebar),
+::view-transition-old(v2-shell-sidebar),
+::view-transition-new(v2-shell-sidebar),
+::view-transition-group(v2-shell-topbar),
+::view-transition-old(v2-shell-topbar),
+::view-transition-new(v2-shell-topbar),
+::view-transition-group(v2-shell-bottombar),
+::view-transition-old(v2-shell-bottombar),
+::view-transition-new(v2-shell-bottombar) {
+  animation: none !important;
+}
+
+/* ─── 1. Padre -> Hijo (Selectores y Drill-downs Card Folder) ─── */
+.v2-vt-expand-source,
+[data-v2-vt-target="expand"] {
+  view-transition-name: v2-container-expand;
+}
+
+.v2-vt-expand-title,
+[data-v2-vt-target="expand-title"] {
+  view-transition-name: v2-container-title;
+  width: fit-content;
+}
+
+.v2-vt-parent-child {
+  view-transition-name: v2-parent-child-card;
+}
+
+.v2-parent-child-panel {
+  view-transition-name: v2-parent-child-panel;
+}
+
+.v2-parent-child-subpanel {
+  view-transition-name: v2-parent-child-subpanel;
+}
+
+::view-transition-old(v2-container-expand),
+::view-transition-new(v2-container-expand),
+::view-transition-old(v2-parent-child-card),
+::view-transition-new(v2-parent-child-card) {
+  height: 100%;
+}
+
+::view-transition-old(v2-parent-child-panel),
+::view-transition-old(v2-parent-child-subpanel) {
+  animation: v2-stage-exit 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+::view-transition-new(v2-parent-child-panel),
+::view-transition-new(v2-parent-child-subpanel) {
+  animation: v2-stage-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── Selectores en Pastilla con Indicador Activo Animado (V2) ─── */
+[data-ui-version="v2"] .v2-pill-segment {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
+  border-radius: 9999px;
+  background-color: var(--color-mist-gray);
+  border: 1.8px solid var(--color-border);
+  max-width: 100%;
+}
+
+[data-ui-version="v2"] .v2-pill-segment-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  border: 1.8px solid transparent;
+  background: transparent;
+  color: var(--color-slate-gray);
+  font-family: var(--font-v2-sans);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.020em;
+  cursor: pointer;
+  transition:
+    background-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 200ms ease,
+    border-color 240ms ease,
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 240ms ease;
+}
+
+[data-ui-version="v2"] .v2-pill-segment-btn:hover:not(:disabled) {
+  color: var(--color-ink-black);
+  transform: translateY(-1px);
+}
+
+[data-ui-version="v2"] .v2-pill-segment-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+[data-ui-version="v2"] .v2-pill-segment-btn.is-active,
+[data-ui-version="v2"] .v2-pill-segment-btn[aria-pressed="true"],
+[data-ui-version="v2"] .v2-pill-segment-btn[aria-selected="true"] {
+  background-color: var(--color-paper-white);
+  color: var(--color-ink-black);
+  border-color: var(--color-gira-gold);
+  font-weight: 500;
+  box-shadow: 0 4px 14px rgba(12, 30, 51, 0.08);
+}
+
+[data-ui-version="v2"] .cmi-segment {
+  border-radius: 9999px;
+  border: 1.8px solid var(--color-border);
+  background-color: var(--color-mist-gray);
+  padding: 5px;
+  gap: 6px;
+}
+
+[data-ui-version="v2"] .cmi-segment button {
+  border-radius: 9999px;
+  border: 1.8px solid transparent;
+  font-family: var(--font-v2-sans);
+  letter-spacing: -0.020em;
+  transition:
+    background-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 200ms ease,
+    border-color 240ms ease,
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 240ms ease;
+}
+
+[data-ui-version="v2"] .cmi-segment button[aria-pressed="true"] {
+  background-color: var(--color-paper-white);
+  color: var(--color-ink-black);
+  border-color: var(--color-gira-gold);
+  box-shadow: 0 4px 14px rgba(12, 30, 51, 0.08);
+}
+
+@keyframes v2-stage-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes v2-stage-exit {
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.995);
+  }
+}
+
+html:active-view-transition-type(parent-child)::view-transition-old(v2-stage-content) {
+  animation: v2-stage-exit 200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html:active-view-transition-type(parent-child)::view-transition-new(v2-stage-content) {
+  animation: v2-stage-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── 2. Hermanos sobre el Lienzo (<main class="v2-stage">) ─── */
+@keyframes v2-slide-to-left {
+  to {
+    transform: translateX(-18%);
+    opacity: 0;
+  }
+}
+
+@keyframes v2-slide-from-right {
+  from {
+    transform: translateX(18%);
+    opacity: 0;
+  }
+}
+
+@keyframes v2-slide-to-right {
+  to {
+    transform: translateX(18%);
+    opacity: 0;
+  }
+}
+
+@keyframes v2-slide-from-left {
+  from {
+    transform: translateX(-18%);
+    opacity: 0;
+  }
+}
+
+::view-transition-group(v2-stage-content) {
+  animation: 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html:active-view-transition-type(sibling-forward)::view-transition-old(v2-stage-content) {
+  animation-name: v2-slide-to-left;
+}
+
+html:active-view-transition-type(sibling-forward)::view-transition-new(v2-stage-content) {
+  animation-name: v2-slide-from-right;
+}
+
+html:active-view-transition-type(sibling-backward)::view-transition-old(v2-stage-content) {
+  animation-name: v2-slide-to-right;
+}
+
+html:active-view-transition-type(sibling-backward)::view-transition-new(v2-stage-content) {
+  animation-name: v2-slide-from-left;
+}
+
+/* ─── 3. Scroll Entry / Exit Effects en Cards y Divs ─── */
+@media (prefers-reduced-motion: no-preference) {
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    @keyframes v2-card-enter {
+      from {
+        opacity: 0.35;
+        transform: translateY(16px) scale(0.985);
+      }
+    }
+
+    @keyframes v2-card-exit {
+      to {
+        opacity: 0.65;
+        transform: translateY(-8px) scale(0.99);
+      }
+    }
+
+    .v2-scroll-card {
+      animation:
+        v2-card-enter auto linear backwards,
+        v2-card-exit auto linear forwards;
+      animation-timeline: view(block);
+      animation-range: entry, exit;
+    }
+  }
+}
+
+/* ─── 4. Accesibilidad: Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

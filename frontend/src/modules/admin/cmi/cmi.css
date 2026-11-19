@@ -1,19 +1,19 @@
 /* Cuadro de Mando Integral — scorecard y configuración */
 .cmi {
-  --cmi-ok: #1b8754;
-  --cmi-warn: #c27c0e;
-  --cmi-bad: #d9383a;
-  --cmi-muted: #9a9ca3;
+  --cmi-ok: var(--color-alert-green, #1b8754);
+  --cmi-warn: var(--color-alert-amber, #b45309);
+  --cmi-bad: var(--color-alert-red, #d9383a);
+  --cmi-muted: var(--color-smoke-gray, #a3a6af);
   --cmi-track: var(--color-mist-gray);
   --cmi-card: var(--color-paper-white);
   font-family: var(--font-sohne);
   color: var(--color-ink-black);
 }
 [data-theme="dark"] .cmi {
-  --cmi-ok: #3fb67a;
-  --cmi-warn: #f1b844;
-  --cmi-bad: #f0676a;
-  --cmi-muted: #6b7280;
+  --cmi-ok: var(--color-alert-green, #4ade80);
+  --cmi-warn: var(--color-alert-amber, #fbbf24);
+  --cmi-bad: var(--color-alert-red, #f87171);
+  --cmi-muted: var(--color-ash-gray, #6b7280);
 }
 
 .cmi-card {
@@ -288,7 +288,7 @@
 .cmi-pbi-texto h2 { font-family: var(--font-signifier); font-weight: 400; font-size: 24px; margin: 2px 0 6px; color: var(--color-ink-black); }
 .cmi-pbi-texto p { margin: 0; font-size: 13.5px; color: var(--color-slate-gray); max-width: 640px; line-height: 1.5; }
 .cmi-pbi-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 12px; font-size: 12.5px; color: var(--color-slate-gray); }
-.cmi-pbi-vigente { background: rgba(27, 135, 84, .12); color: var(--cmi-good, #1b8754); margin-left: 6px; }
+.cmi-pbi-vigente { background: rgba(27, 135, 84, .12); color: var(--cmi-ok); margin-left: 6px; }
 .cmi-pbi-meta .cmi-pbi-vigente { margin-left: 0; }
 .cmi-pbi-descargar { padding: 12px 20px; font-size: 14px; }
 .cmi-pbi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
@@ -315,11 +315,44 @@
 .cmi-kpi[role="button"]:active { transform: scale(0.99); }
 .cmi-kpi[role="button"]:focus-visible { outline: 2px solid var(--color-gira-gold); outline-offset: 2px; }
 .cmi-kpi-ver { font-size: 12px; color: var(--cmi-muted); }
-.cmi-modal-fondo { position: fixed; inset: 0; z-index: 1000; background: rgba(12, 14, 18, 0.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
-.cmi-modal { position: relative; width: min(640px, 100%); max-height: 90vh; overflow: auto; padding: 22px; }
-.cmi-modal-cerrar { position: absolute; top: 12px; right: 12px; }
+.cmi-modal-fondo { position: fixed; inset: 0; z-index: 2200; background: rgba(12, 14, 18, 0.58); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.cmi-modal { position: relative; width: min(740px, 100%); max-height: 90vh; overflow: auto; padding: 22px; background: var(--cmi-card, var(--color-paper-white)); color: var(--color-ink-black); }
+.cmi-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.cmi-modal-cerrar { flex-shrink: 0; padding: 6px; border-radius: 9999px; }
+.cmi-modal .cmi-table { min-width: 0; width: 100%; }
+.cmi-modal-summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 12px 0 16px; }
+.cmi-modal-ficha { margin-top: 14px; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-fog-white); padding: 12px 14px; }
+.cmi-modal-ficha summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--color-ink-black); display: flex; align-items: center; justify-content: space-between; list-style: none; }
+.cmi-modal-ficha summary::-webkit-details-marker { display: none; }
+.cmi-modal-ficha-body { margin-top: 10px; font-size: 12px; color: var(--color-slate-gray); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; line-height: 1.45; }
+@media (max-width: 640px) {
+  .cmi-modal { padding: 16px; }
+  .cmi-modal-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cmi-modal-ficha-body { grid-template-columns: 1fr; }
+  .cmi-modal .cmi-table th, .cmi-modal .cmi-table td { padding: 7px 6px; font-size: 12px; }
+}
+
+
 .cmi-evolucion { width: 100%; height: auto; margin: 12px 0; }
 .cmi-evolucion-txt { font-size: 11px; fill: var(--cmi-muted); }
+.cmi-evolucion-path { stroke-dasharray: 100; stroke-dashoffset: 0; }
+.cmi-evolucion-dot { transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: no-preference) {
+  .cmi-evolucion-path {
+    stroke-dashoffset: 100;
+    animation: cmi-draw-line 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .cmi-evolucion-dot {
+    transform: scale(0);
+    animation: cmi-pop-dot 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+}
+@keyframes cmi-draw-line { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+@keyframes cmi-pop-dot {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
 
 /* Glosario flotante */
 .cmi-glosario-barra { display: flex; justify-content: flex-end; margin: 0 0 12px; }

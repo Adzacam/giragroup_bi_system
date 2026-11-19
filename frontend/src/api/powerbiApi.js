@@ -32,6 +32,7 @@ const powerbiApi = {
     return client.post(BASE, fd).then((r) => r.data);
   },
   restaurar: (version) => client.put(`${BASE}/versiones/${version}/vigente`).then((r) => r.data),
+  eliminar: (version) => client.delete(`${BASE}/versiones/${version}`).then((r) => r.data),
 };
 
 export default powerbiApi;

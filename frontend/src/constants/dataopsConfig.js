@@ -29,10 +29,22 @@ export const ESCALAS_ACADEMICAS = [
   { value: 'VIGESIMAL_20', label: '0 – 20 pts (Vigesimal)', factor: 5 },
 ];
 
-/** Tipos de fuente reconocidos (#8, #15) */
+/** Tipos de fuente reconocidos (W-2: los 10 códigos del backend) */
 export const TIPOS_FUENTE_DATAOPS = [
   { code: 'ACTA', label: 'Acta de calificaciones', requiereEscala: true },
   { code: 'MOODLE', label: 'Reporte Aula Moodle', requiereEscala: true },
   { code: 'COBRANZA', label: 'Cobranza y pagos', requiereEscala: false },
   { code: 'ADMISION', label: 'Admisiones y matriculación', requiereEscala: false },
+  { code: 'EVALUACION_DOCENTE', label: 'Evaluación docente', requiereEscala: false },
+  { code: 'EGRESOS', label: 'Egresos', requiereEscala: false },
+  { code: 'TECHOS', label: 'Techos de convenio', requiereEscala: false },
+  { code: 'RENTABILIDAD', label: 'Rentabilidad', requiereEscala: false },
+  { code: 'MARKETING', label: 'Marketing', requiereEscala: false },
+  { code: 'PLANIFICACION', label: 'Planificación', requiereEscala: false },
 ];
+
+export const getTipoFuenteLabel = (code) => {
+  if (!code) return null;
+  const upper = String(code).toUpperCase().trim();
+  return TIPOS_FUENTE_DATAOPS.find((t) => t.code === upper)?.label || null;
+};

@@ -7,6 +7,7 @@ import { dataopsApi } from '../../../api/dataopsApi';
 import { DATAOPS_QUERY_KEY } from '../../../api/queryClient';
 import { sileoToast } from '../../../services/sileoToast';
 import { mensajeError } from '../../../utils/mensajeError';
+import AnimatedNumberV2 from '../../../v2/motion/AnimatedNumberV2';
 
 const value = dato => dato == null || dato === '' ? 'Sin dato' : dato;
 const date = dato => dato ? new Date(dato).toLocaleString('es-BO') : 'Sin dato';
@@ -54,8 +55,13 @@ export default function PipelineTelemetryDrawer({ isOpen, onClose, docId }) {
       <p style={{ margin: '16px 0', fontSize: 13, color: 'var(--color-slate-gray)' }}>Etapas y resultados registrados para este documento. Los mensajes internos y las muestras personales se omiten.</p>
       <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}><Button variant="ghost" isLoading={isFetching} loadingText="Consultando…" onClick={async () => { const result = await refetch(); if (!result.error) sileoToast.success({ title: 'Bitácora actualizada' }); }}>Actualizar bitácora</Button><Button variant="ghost" isLoading={downloading} loadingText="Descargando…" disabled={!data || !!error} onClick={download}>Descargar informe</Button></div>
       {error ? <p role="alert">No se pudo consultar la bitácora. Puedes reintentarlo con Actualizar bitácora.</p> : !data ? <p role="status">Consultando eventos registrados…</p> : <>
-        <div className="floating-artifact" style={{ padding: 20, display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 20 }}>
-          <span>Filas de origen registradas: <strong>{value(metrics?.total_registros)}</strong></span><span>Eventos: <strong>{value(metrics?.eventos_registrados)}</strong></span><span>Columnas registradas: <strong>{value(metrics?.columnas_mapeadas)}</strong></span>
+        <div className="floating-artifact" style={{ padding: 20, display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 14 }}>
+          <span>Filas de origen registradas: <strong><AnimatedNumberV2 value={value(metrics?.total_registros)} /></strong></span><span>Eventos: <strong><AnimatedNumberV2 value={value(metrics?.eventos_registrados)} /></strong></span><span>Columnas registradas: <strong><AnimatedNumberV2 value={value(metrics?.columnas_mapeadas)} /></strong></span>
+          <span>Latencia acumulada: <strong><AnimatedNumberV2 value={`${(data?.data || []).reduce((acc, ev) => acc + (Number(ev.tiempo_ms) || 0), 0)} ms`} /></strong></span>
+          <span>SHA-256: <strong style={{ fontFamily: 'var(--font-mono)' }}>{meta?.hash_sha256 ? `${meta.hash_sha256.slice(0, 12)}…` : 'Sin dato'}</strong></span>
+        </div>
+        <div style={{ fontSize: 11.5, color: 'var(--color-slate-gray)', marginBottom: 16 }}>
+          Cascada canónica: <strong>CI_EXACTA → ENCABEZADO → FUZZY → REGEX → BETO</strong>
         </div>
         <details style={{ marginBottom: 24 }}><summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>Detalles técnicos</summary><dl style={{ display: 'grid', gap: 10, paddingTop: 12 }}>
           {[['Documento', meta?.id_documento], ['Lote', meta?.id_lote], ['Institución', meta?.institucion], ['Periodo registrado', meta?.periodo], ['Fecha registrada', date(meta?.fecha_procesamiento)], ['Bloques guardados', metrics?.bloques_guardados], ['SHA-256', meta?.hash_sha256]].map(([label,dato]) => <div key={label}><dt style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>{label}</dt><dd style={{ overflowWrap: 'anywhere' }}>{value(dato)}</dd></div>)}

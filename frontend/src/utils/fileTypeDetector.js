@@ -10,41 +10,80 @@ import {
   FORMATOS_PERMITIDOS,
   MAX_TAMANO_ARCHIVO_BYTES,
   MAX_TAMANO_ARCHIVO_MB,
+  TIPOS_FUENTE_DATAOPS,
 } from '../constants/dataopsConfig.js';
 
 export const SOURCE_TYPE_LABELS = {
-  EXCEL_ACTA: 'Acta de Calificaciones (Excel)',
-  FORMS_INSCRIPCIONES: 'Inscripciones (Google Forms)',
-  MOODLE_AULA: 'Reporte de Aula Virtual (Moodle)',
-  SHEETS_COBRANZA: 'Cartera de Cobranza (Sheets)',
+  EXCEL_ACTA: 'Acta de calificaciones',
+  FORMS_INSCRIPCIONES: 'Admisiones y matriculación',
+  MOODLE_AULA: 'Reporte Aula Moodle',
+  SHEETS_COBRANZA: 'Cobranza y pagos',
+  EVALUACION_DOCENTE: 'Evaluación docente',
+  EGRESOS: 'Egresos',
+  TECHOS: 'Techos de convenio',
+  RENTABILIDAD: 'Rentabilidad',
+  MARKETING: 'Marketing',
+  PLANIFICACION: 'Planificación',
 };
 
-export const SOURCE_TYPES = [
-  SOURCE_TYPE_LABELS.EXCEL_ACTA,
-  SOURCE_TYPE_LABELS.MOODLE_AULA,
-  SOURCE_TYPE_LABELS.SHEETS_COBRANZA,
-  SOURCE_TYPE_LABELS.FORMS_INSCRIPCIONES,
-];
+export const SOURCE_TYPES = TIPOS_FUENTE_DATAOPS.map((t) => t.label);
 
 export const UNRECOGNIZED_SOURCE_LABEL = 'Sin reconocer — Seleccione tipo documental';
 
+const CANONICAL_CODES = new Set(TIPOS_FUENTE_DATAOPS.map((t) => t.code));
+
 /**
- * Convierte cualquier etiqueta o código al código canónico de BD ('ACTA', 'MOODLE', 'COBRANZA', 'ADMISION', o '')
+ * Convierte cualquier etiqueta o código al código canónico de BD (10 tipos o '')
  */
 export function toCanonicalSourceCode(type) {
   if (!type) return '';
-  const upper = String(type).toUpperCase().trim();
-  if (upper === 'ACTA' || type === SOURCE_TYPE_LABELS.EXCEL_ACTA || upper.includes('ACTA')) {
-    return 'ACTA';
+  const raw = String(type).trim();
+  const upper = raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase();
+
+  if (CANONICAL_CODES.has(upper)) {
+    return upper;
   }
-  if (upper === 'MOODLE' || type === SOURCE_TYPE_LABELS.MOODLE_AULA || upper.includes('MOODLE')) {
+  const byLabel = TIPOS_FUENTE_DATAOPS.find(
+    (t) =>
+      t.label
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase() === upper
+  );
+  if (byLabel) return byLabel.code;
+
+  if (upper.includes('MOODLE') || upper.includes('AULA VIRTUAL') || upper.includes('LMS')) {
     return 'MOODLE';
   }
-  if (upper === 'COBRANZA' || type === SOURCE_TYPE_LABELS.SHEETS_COBRANZA || upper.includes('COBRANZA') || upper.includes('CARTERA')) {
+  if (upper.includes('EVALUACION') || upper.includes('EXPERIENCIA DOCENTE') || upper.includes('ENCUESTA DOCENTE')) {
+    return 'EVALUACION_DOCENTE';
+  }
+  if (upper.includes('EGRESO')) {
+    return 'EGRESOS';
+  }
+  if (upper.includes('TECHO')) {
+    return 'TECHOS';
+  }
+  if (upper.includes('RENTABILIDAD') || upper.includes('EBITDA') || upper.includes('EJECUTADO VS META')) {
+    return 'RENTABILIDAD';
+  }
+  if (upper.includes('MARKETING') || upper.includes('LEAD') || upper.includes('CAMPANA')) {
+    return 'MARKETING';
+  }
+  if (upper.includes('PLANIFICA') || upper.includes('CRONOGRAMA')) {
+    return 'PLANIFICACION';
+  }
+  if (upper.includes('COBRANZA') || upper.includes('CARTERA') || upper.includes('PAGO')) {
     return 'COBRANZA';
   }
-  if (upper === 'ADMISION' || type === SOURCE_TYPE_LABELS.FORMS_INSCRIPCIONES || upper.includes('INSCRIP') || upper.includes('ADMISION') || upper.includes('FORMS')) {
+  if (upper.includes('INSCRIP') || upper.includes('ADMISION') || upper.includes('FORMS') || upper.includes('MATRICUL')) {
     return 'ADMISION';
+  }
+  if (upper.includes('ACTA') || upper.includes('CALIFIC')) {
+    return 'ACTA';
   }
   return '';
 }
@@ -54,27 +93,17 @@ export function toCanonicalSourceCode(type) {
  */
 export function toSourceTypeLabel(codeOrLabel) {
   const code = toCanonicalSourceCode(codeOrLabel);
-  switch (code) {
-    case 'ACTA':
-      return SOURCE_TYPE_LABELS.EXCEL_ACTA;
-    case 'MOODLE':
-      return SOURCE_TYPE_LABELS.MOODLE_AULA;
-    case 'COBRANZA':
-      return SOURCE_TYPE_LABELS.SHEETS_COBRANZA;
-    case 'ADMISION':
-      return SOURCE_TYPE_LABELS.FORMS_INSCRIPCIONES;
-    default:
-      return '';
-  }
+  if (!code) return '';
+  return TIPOS_FUENTE_DATAOPS.find((t) => t.code === code)?.label || '';
 }
 
 /**
- * Indica si el tipo documental requiere selector de escala de calificación (#16)
+ * Indica si el tipo documental requiere selector de escala de calificación (#16, W-2)
  * Solo aplica a archivos académicos (ACTA y MOODLE).
  */
 export function isAcademicSourceType(type) {
   const code = toCanonicalSourceCode(type);
-  return code === 'ACTA' || code === 'MOODLE';
+  return TIPOS_FUENTE_DATAOPS.find((t) => t.code === code)?.requiereEscala === true;
 }
 
 /**
@@ -103,53 +132,115 @@ function normalizeText(str) {
  * @returns {{ code: string, label: string, matchedKeywords: string[] }}
  */
 export function classifyHeadersList(rawTokens = []) {
-  const joined = rawTokens.map(normalizeText).join(' | ');
+  const normalizedTokens = rawTokens.map(normalizeText).filter(Boolean);
+  const joined = normalizedTokens.join(' | ');
   if (!joined) {
     return { code: '', label: '', matchedKeywords: [] };
   }
 
+  const labelFor = (code) => toSourceTypeLabel(code) || code;
+
+  const evaluacionPatterns = [
+    'totalmente de acuerdo', 'totalmente en desacuerdo', 'muy de acuerdo',
+    'nada satisfecho', 'escala de 1 a 5', 'escala del 1 al 10',
+    'evaluacion docente', 'evaluacion_docente', 'evaluacion del docente',
+    'experiencia docente', 'experiencia unifranz', 'tbl evaluacion docente',
+    'tbl experiencia unifranz', 'entrada anonima - persona', 'entrada anonima',
+    'docente explica', 'dominio sobre los temas', 'dominio del contenido',
+    'fomenta la participacion', 'accesible y resuelve dudas',
+    'satisfaccion general', 'probabilidad de recomendar',
+    'respuesta numero', 'numero del modulo', 'recursos tecnologicos proporcionados',
+    'personal administrativo fue receptivo',
+  ];
+
+  const egresosPatterns = [
+    'egreso anterior', 'egreso real', 'bd egresos', 'comprobante de egreso',
+    'desembolso', 'egresos', 'partida',
+  ];
+
+  const techosPatterns = [
+    'gestion techo', 'escuela techo', 'bd techos', 'techo presupuestario',
+    'techo convenio', 'techos',
+  ];
+
+  const rentabilidadPatterns = [
+    'ejecutado vs meta', 'meta por categoria', 'ejecutado 202', 'ebitda',
+    'rentabilidad', 'monto_ejecutado', 'monto_meta',
+  ];
+
+  const marketingPatterns = [
+    'medio de captacion', 'fuente lead', 'leads', 'campana',
+    'marketing', 'reservas',
+  ];
+
+  const planificacionPatterns = [
+    'planificacion y ejecucion', 'planificacion_ejecucion', 'fecha de planificacion',
+    'diseno curricular', 'coordinador academico', 'origen del programa',
+    'tc (cliente externo)', 'centralizado_mensual', 'programas notificados',
+    'cronograma', 'carga horaria', 'planificacion', 'ejecucion academica',
+  ];
+
   const cobranzaPatterns = [
     'monto_deuda', 'cuotas_impagas', 'monto_pagado', 'saldo_deuda',
     'cuotas en mora', 'en mora', 'dias de mora', 'concepto_pago', 'concepto financiero',
-    'deuda', 'arancel', 'colegiatura',
-    'bd cobranzas', 'cobranza', 'egreso anterior', 'egreso real', 'rentabilidad',
-    'gestion techo', 'escuela techo', 'estado de pago', 'meta por categoria', 'ebitda',
-    'ejecutado 202', 'ejecutado vs meta', 'egresos', 'techos'
-  ];
-  const moodlePatterns = [
-    'idnumber', 'id number', 'timemodified', 'finalgrade', 'course', 'itemid',
-    'calificacion maxima', 'retroalimentacion', 'apellido(s)', 'grade/100',
-    'last downloaded from this course', 'reporte_aula_virtual', 'aula virtual moodle', 'aula_virtual_moodle'
-  ];
-  const admisionPatterns = [
-    'marca temporal', 'timestamp', 'postulante', 'programa de interes',
-    'medio de captacion', 'medio de contacto', 'formulario de inscripcion', 'fecha_inscripcion',
-    'tipo de inscripcion', 'estado del inscrito', 'numeroproyecto', 'pos-ci inscritos',
-    'pos-ci incritos', 'tbl_inscritos', 'inscripciones_google_forms', 'inscripciones'
-  ];
-  const actaPatterns = [
-    'nota_final', 'calificacion', 'asistencia_pct', 'porcentaje_asistencia',
-    'asistencia', 'nota final', 'promedio final', 'sigla_modulo', 'acta',
-    'pos - actas', 'estado academico', 'estado tutoria', 'estado arca', 'fecha emision arca',
-    'base_academica', 'base centralizada academica', 'evaluacion_docente', 'evaluacion docente',
-    'experiencia_docente', 'experiencia docente', 'satisfaccion general con el modulo',
-    'docente explica claramente', 'probabilidad de recomendar el modulo',
-    'calidad docente', 'evaluacion global', 'planificacion_ejecucion',
-    'planificacion y ejecucion academica', 'diseno curricular', 'coordinador academico',
-    'modulo 1', 'modulo 2', 'numero del modulo'
+    'deuda', 'arancel', 'colegiatura', 'bd cobranzas', 'cobranza',
+    'estado de pago', 'fecha de la primera factura', 'cartera cerrada',
   ];
 
+  const moodlePatterns = [
+    'idnumber', 'id number', 'timemodified', 'finalgrade', 'itemid',
+    'calificacion maxima', 'retroalimentacion', 'apellido(s)', 'grade/100',
+    'last downloaded from this course', 'reporte_aula_virtual', 'aula virtual moodle',
+    'aula_virtual_moodle', 'total del curso',
+  ];
+
+  const admisionPatterns = [
+    'marca temporal', 'timestamp', 'postulante', 'programa de interes',
+    'medio de contacto', 'formulario de inscripcion', 'fecha_inscripcion',
+    'tipo de inscripcion', 'estado del inscrito', 'numeroproyecto', 'pos-ci inscritos',
+    'pos-ci incritos', 'tbl_inscritos', 'inscripciones_google_forms', 'inscripciones',
+    'bajas por duplicados',
+  ];
+
+  const actaPatterns = [
+    'nota_final', 'calificacion', 'asistencia_pct', 'porcentaje_asistencia',
+    'nota final', 'promedio final', 'sigla_modulo', 'acta', 'actas de notas',
+    'pos - actas', 'estado academico', 'estado tutoria', 'estado arca',
+    'fecha emision arca', 'base_academica', 'base centralizada academica',
+    'modulo 1', 'modulo 2',
+  ];
+
+  const matchedEval = evaluacionPatterns.filter((kw) => joined.includes(kw));
+  // Regla estructural de evaluación docente: "Programa" + "Módulo" numérico (sin nota/acta)
+  const hasPrograma = normalizedTokens.some((t) => t === 'programa' || t.startsWith('programa ') || t.includes('programa pos') || t.includes('programa -'));
+  const hasModulo = normalizedTokens.some((t) => t === 'modulo' || t === 'numero del modulo');
+  const hasNumericModulo = normalizedTokens.some((t) => /^(?:1|2|3|4|5|6|7|8|9|10)(?:\.0)?$/.test(t));
+  const hasNotaOActa = joined.includes('nota') || joined.includes('calificacion') || joined.includes('pos - actas');
+  if (hasPrograma && hasModulo && (hasNumericModulo || joined.includes('nombre completo del usuario') || joined.includes('direccion de correo')) && !hasNotaOActa) {
+    matchedEval.push('programa+modulo_numerico');
+  }
+
+  const matchedEgresos = egresosPatterns.filter((kw) => joined.includes(kw));
+  const matchedTechos = techosPatterns.filter((kw) => joined.includes(kw));
+  const matchedRent = rentabilidadPatterns.filter((kw) => joined.includes(kw));
+  const matchedMkt = marketingPatterns.filter((kw) => joined.includes(kw));
+  const matchedPlan = planificacionPatterns.filter((kw) => joined.includes(kw));
   const matchedCobranza = cobranzaPatterns.filter((kw) => joined.includes(kw));
   const matchedMoodle = moodlePatterns.filter((kw) => joined.includes(kw));
   const matchedAdmision = admisionPatterns.filter((kw) => joined.includes(kw));
   const matchedActa = actaPatterns.filter((kw) => joined.includes(kw));
 
-  // Evaluar candidatos por cantidad de coincidencias específicas
   const candidates = [
-    { code: 'ADMISION', label: SOURCE_TYPE_LABELS.FORMS_INSCRIPCIONES, matches: matchedAdmision },
-    { code: 'MOODLE', label: SOURCE_TYPE_LABELS.MOODLE_AULA, matches: matchedMoodle },
-    { code: 'COBRANZA', label: SOURCE_TYPE_LABELS.SHEETS_COBRANZA, matches: matchedCobranza },
-    { code: 'ACTA', label: SOURCE_TYPE_LABELS.EXCEL_ACTA, matches: matchedActa },
+    { code: 'EVALUACION_DOCENTE', label: labelFor('EVALUACION_DOCENTE'), matches: matchedEval },
+    { code: 'TECHOS', label: labelFor('TECHOS'), matches: matchedTechos },
+    { code: 'EGRESOS', label: labelFor('EGRESOS'), matches: matchedEgresos },
+    { code: 'RENTABILIDAD', label: labelFor('RENTABILIDAD'), matches: matchedRent },
+    { code: 'PLANIFICACION', label: labelFor('PLANIFICACION'), matches: matchedPlan },
+    { code: 'MARKETING', label: labelFor('MARKETING'), matches: matchedMkt },
+    { code: 'ADMISION', label: labelFor('ADMISION'), matches: matchedAdmision },
+    { code: 'MOODLE', label: labelFor('MOODLE'), matches: matchedMoodle },
+    { code: 'COBRANZA', label: labelFor('COBRANZA'), matches: matchedCobranza },
+    { code: 'ACTA', label: labelFor('ACTA'), matches: matchedActa },
   ].filter((c) => c.matches.length >= 1);
 
   if (candidates.length > 0) {
@@ -342,17 +433,35 @@ export function detectSourceType(file) {
   const fileName = typeof file === 'string' ? file : (file.name || '');
   const cleanName = normalizeText(fileName.replace(/\.[^.]+$/, ''));
 
-  if (['cobranza', 'cartera', 'cuotas', 'pagos', 'mora', 'deuda', 'egreso', 'techo', 'meta', 'ejecutado'].some((kw) => cleanName.includes(kw))) {
-    return SOURCE_TYPE_LABELS.SHEETS_COBRANZA;
+  if (['evaluacion', 'experiencia docente', 'experiencia', 'nps'].some((kw) => cleanName.includes(kw))) {
+    return toSourceTypeLabel('EVALUACION_DOCENTE');
+  }
+  if (['egreso', 'egresos', 'gasto'].some((kw) => cleanName.includes(kw))) {
+    return toSourceTypeLabel('EGRESOS');
+  }
+  if (['techo', 'techos'].some((kw) => cleanName.includes(kw))) {
+    return toSourceTypeLabel('TECHOS');
+  }
+  if (['rentabilidad', 'ejecutado', 'ebitda'].some((kw) => cleanName.includes(kw))) {
+    return toSourceTypeLabel('RENTABILIDAD');
+  }
+  if (['marketing', 'lead', 'campana'].some((kw) => cleanName.includes(kw))) {
+    return toSourceTypeLabel('MARKETING');
+  }
+  if (['planificacion', 'cronograma'].some((kw) => cleanName.includes(kw))) {
+    return toSourceTypeLabel('PLANIFICACION');
+  }
+  if (['cobranza', 'cartera', 'cuotas', 'pagos', 'mora', 'deuda'].some((kw) => cleanName.includes(kw))) {
+    return toSourceTypeLabel('COBRANZA');
   }
   if (['moodle', 'grades', 'aula_virtual', 'aula virtual'].some((kw) => cleanName.includes(kw))) {
-    return SOURCE_TYPE_LABELS.MOODLE_AULA;
+    return toSourceTypeLabel('MOODLE');
   }
   if (['form', 'inscrip', 'admision', 'postulante', 'tbl_inscritos'].some((kw) => cleanName.includes(kw))) {
-    return SOURCE_TYPE_LABELS.FORMS_INSCRIPCIONES;
+    return toSourceTypeLabel('ADMISION');
   }
-  if (['acta', 'calif', 'notas', 'rendimiento', 'arca', 'evaluacion', 'experiencia', 'planificacion', 'ejecucion'].some((kw) => cleanName.includes(kw))) {
-    return SOURCE_TYPE_LABELS.EXCEL_ACTA;
+  if (['acta', 'calif', 'notas', 'rendimiento', 'arca'].some((kw) => cleanName.includes(kw))) {
+    return toSourceTypeLabel('ACTA');
   }
 
   // Nunca asumir "Acta" por defecto
@@ -451,8 +560,50 @@ export function getSourceTypeMeta(type) {
       return {
         bg: '#fef3c7',
         color: '#b45309',
-        shortName: 'Cartera Cobranza',
+        shortName: 'Cobranza y pagos',
         extension: '.xlsx/.csv',
+      };
+    case 'EVALUACION_DOCENTE':
+      return {
+        bg: '#f3e8ff',
+        color: '#6b21a8',
+        shortName: 'Evaluación docente',
+        extension: '.xlsx',
+      };
+    case 'EGRESOS':
+      return {
+        bg: '#fee2e2',
+        color: '#b91c1c',
+        shortName: 'Egresos',
+        extension: '.xlsx',
+      };
+    case 'TECHOS':
+      return {
+        bg: '#e0f2fe',
+        color: '#0369a1',
+        shortName: 'Techos de convenio',
+        extension: '.xlsx',
+      };
+    case 'RENTABILIDAD':
+      return {
+        bg: '#dcfce7',
+        color: '#166534',
+        shortName: 'Rentabilidad',
+        extension: '.xlsx',
+      };
+    case 'MARKETING':
+      return {
+        bg: '#fce7f3',
+        color: '#be185d',
+        shortName: 'Marketing',
+        extension: '.xlsx/.csv',
+      };
+    case 'PLANIFICACION':
+      return {
+        bg: '#f1f5f9',
+        color: '#334155',
+        shortName: 'Planificación',
+        extension: '.xlsx',
       };
     default:
       return {

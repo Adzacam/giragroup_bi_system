@@ -1,0 +1,266 @@
+/**
+ * GIRA Group BI — Versión 2 (V2) Design Tokens
+ * Encapsulado estrictamente bajo [data-ui-version="v2"].
+ * Cero colores fuera de las 3 tablas autorizadas + 4 tokens DataOps.
+ */
+
+[data-ui-version="v2"] {
+  /* Tabla 1: Paleta Institucional */
+  --color-gira-navy: #0C1E33;
+  --color-navy-deep: #0C1E33;
+  --color-gira-gold: #D99B26;
+  --color-gira-gold-light: #F1B844;
+
+  /* Tabla 2: Superficies, Fondos y Tipografía (Claro) */
+  --color-fog-white: #FAF9F6;
+  --color-pure-white: #FFFFFF;
+  --color-paper-white: #FFFFFF;
+  --color-alabaster: #FAF9F6;
+  --color-mist-gray: #F2F2F3;
+  --color-ink-black: #17191C;
+  --color-slate-gray: #777B86;
+  --color-ash-gray: #979799;
+  --color-smoke-gray: #A3A6AF;
+  --color-border: #ECECEC;
+  --color-blush-peach: #FBE1D1;
+  --color-sienna-brown: #5D2A1A;
+
+  /* Tabla 3: Semánticos / Sileo (Claro) */
+  --color-alert-green: #1B8754;
+  --sileo-state-success: #1B8754;
+  --color-alert-red: #D9383A;
+  --sileo-state-error: #D9383A;
+  --color-alert-amber: #B45309;
+  --sileo-state-warning: #D99B26;
+  --sileo-state-info: #0284C7;
+  --sileo-state-action: #F1B844;
+  --color-toast-background: #0C1E33;
+
+  /* DataOps Adaptativos (Claro) */
+  --dataops-surface-tint: rgba(217, 155, 38, 0.08);
+  --dataops-border-subtle: #ECECEC;
+  --dataops-badge-bg: #FBE1D1;
+  --dataops-badge-text: #5D2A1A;
+
+  /* Alias semánticos internos V2 */
+  --v2-bg-canvas: var(--color-fog-white);
+  --v2-bg-surface: var(--color-paper-white);
+  --v2-bg-elevated: var(--color-mist-gray);
+  --v2-text-primary: var(--color-ink-black);
+  --v2-text-secondary: var(--color-slate-gray);
+  --v2-text-muted: var(--color-ash-gray);
+  --v2-border-hairline: 1.8px solid var(--color-border);
+
+  /* Tipografía Augen Pro (Base unificada: Geist 350/400, -0.020em) */
+  --font-v2-sans: 'Geist', system-ui, sans-serif;
+  --font-v2-heading: 'Geist', system-ui, sans-serif;
+  --font-v2-mono: 'JetBrains Mono', monospace;
+  --font-sohne: 'Geist', system-ui, sans-serif;
+  --font-signifier: 'Geist', system-ui, sans-serif;
+  --font-jakarta: 'Geist', system-ui, sans-serif;
+
+  --v2-weight-heading: 350;
+  --v2-weight-body-lg: 350;
+  --v2-weight-body: 400;
+  --v2-tracking: -0.020em;
+  --v2-leading: 1.2;
+
+  font-family: var(--font-v2-sans);
+  font-weight: var(--v2-weight-body);
+  letter-spacing: var(--v2-tracking);
+  line-height: var(--v2-leading);
+  color: var(--v2-text-primary);
+  background-color: var(--v2-bg-canvas);
+}
+
+[data-theme="dark"][data-ui-version="v2"],
+[data-theme="dark"] [data-ui-version="v2"] {
+  /* Tabla 1: Paleta Institucional (Oscuro) */
+  --color-gira-navy: #FAF9F6;
+  --color-navy-deep: #FAF9F6;
+  --color-gira-gold: #F1B844;
+  --color-gira-gold-light: #F6C866;
+
+  /* Tabla 2: Superficies, Fondos y Tipografía (Oscuro) */
+  --color-fog-white: #0C0E12;
+  --color-pure-white: #161920;
+  --color-paper-white: #161920;
+  --color-alabaster: #161920;
+  --color-mist-gray: #20252E;
+  --color-ink-black: #FAF9F6;
+  --color-slate-gray: #9CA3AF;
+  --color-ash-gray: #6B7280;
+  --color-smoke-gray: #4B5563;
+  --color-border: #29303C;
+  --color-blush-peach: #2C1A14;
+  --color-sienna-brown: #F1B844;
+
+  /* Tabla 3: Semánticos / Sileo (Oscuro) */
+  --color-alert-green: #4ADE80;
+  --sileo-state-success: #4ADE80;
+  --color-alert-red: #F87171;
+  --sileo-state-error: #F87171;
+  --color-alert-red-text: #FCA5A5;
+  --color-alert-amber: #FBBF24;
+  --sileo-state-warning: #FBBF24;
+  --color-alert-amber-text: #FDE047;
+  --sileo-state-info: #38BDF8;
+  --color-info-text: #7DD3FC;
+  --sileo-state-action: #F1B844;
+  --color-toast-background: #161920;
+
+  /* DataOps Adaptativos (Oscuro) */
+  --dataops-surface-tint: rgba(241, 184, 68, 0.10);
+  --dataops-border-subtle: #29303C;
+  --dataops-badge-bg: #2C1A14;
+  --dataops-badge-text: #F1B844;
+}
+
+/* ─── Presets Tipográficos en Vivo ─── */
+[data-ui-version="v2"][data-v2-font="augen"] {
+  --font-v2-sans: 'Geist', 'PP Neue Montreal', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-v2-heading: var(--font-v2-sans);
+  --v2-weight-heading: 350;
+  --v2-weight-body-lg: 350;
+  --v2-weight-body: 400;
+  --v2-tracking: -0.020em;
+  --v2-leading: 1.2;
+}
+
+[data-ui-version="v2"][data-v2-font="jakarta"] {
+  --font-v2-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-v2-heading: var(--font-v2-sans);
+  --v2-weight-heading: 400;
+  --v2-weight-body-lg: 400;
+  --v2-weight-body: 400;
+  --v2-tracking: -0.015em;
+  --v2-leading: 1.25;
+}
+
+[data-ui-version="v2"][data-v2-font="inter-tight"] {
+  --font-v2-sans: 'Inter Tight', system-ui, sans-serif;
+  --font-v2-heading: var(--font-v2-sans);
+  --v2-weight-heading: 350;
+  --v2-weight-body-lg: 350;
+  --v2-weight-body: 400;
+  --v2-tracking: -0.020em;
+  --v2-leading: 1.2;
+}
+
+[data-ui-version="v2"][data-v2-font="gira-original"] {
+  --font-v2-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-v2-heading: 'Newsreader', Georgia, serif;
+  --v2-weight-heading: 500;
+  --v2-weight-body-lg: 400;
+  --v2-weight-body: 400;
+  --v2-tracking: 0em;
+  --v2-leading: 1.35;
+}
+
+/* Aplicación de escala tipográfica Augen Pro dentro de V2 (Geist 350/400, -0.020em) */
+[data-ui-version="v2"],
+[data-ui-version="v2"] body,
+[data-ui-version="v2"] button,
+[data-ui-version="v2"] input,
+[data-ui-version="v2"] select,
+[data-ui-version="v2"] textarea {
+  font-family: var(--font-v2-sans);
+  font-weight: var(--v2-weight-body);
+  letter-spacing: var(--v2-tracking);
+}
+
+[data-ui-version="v2"] h1,
+[data-ui-version="v2"] h2,
+[data-ui-version="v2"] h3,
+[data-ui-version="v2"] .serif-display,
+[data-ui-version="v2"] .serif-heading,
+[data-ui-version="v2"] .cmi-num,
+[data-ui-version="v2"] .v2-heading {
+  font-family: var(--font-v2-heading);
+  font-weight: var(--v2-weight-heading);
+  letter-spacing: var(--v2-tracking);
+  line-height: var(--v2-leading);
+}
+
+/* L1-R2: Evitar que .kinetic-card quede en opacity: 0 en V2 */
+[data-ui-version="v2"] .kinetic-card,
+[data-ui-version="v2"] .kinetic-card.out-view,
+[data-ui-version="v2"] .kinetic-left.out-view,
+[data-ui-version="v2"] .kinetic-right.out-view,
+[data-ui-version="v2"] .kinetic-center.out-view {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+[data-ui-version="v2"] h1,
+[data-ui-version="v2"] .v2-heading-xl {
+  font-size: 27px;
+}
+
+[data-ui-version="v2"] .v2-body-lg {
+  font-size: 18px;
+  font-weight: var(--v2-weight-body-lg);
+  letter-spacing: var(--v2-tracking);
+  line-height: var(--v2-leading);
+}
+
+[data-ui-version="v2"] .v2-body-md {
+  font-size: 16px;
+  font-weight: var(--v2-weight-body);
+  letter-spacing: var(--v2-tracking);
+  line-height: var(--v2-leading);
+}
+
+[data-ui-version="v2"] .v2-body {
+  font-size: 14px;
+  font-weight: var(--v2-weight-body);
+  letter-spacing: var(--v2-tracking);
+  line-height: var(--v2-leading);
+}
+
+[data-ui-version="v2"] .v2-caption {
+  font-size: 10px;
+  font-weight: var(--v2-weight-body);
+  letter-spacing: var(--v2-tracking);
+  line-height: var(--v2-leading);
+}
+
+/* Override de tarjetas y superficies heredadas de V1 dentro de V2 */
+[data-ui-version="v2"] .card,
+[data-ui-version="v2"] .kpi-card,
+[data-ui-version="v2"] .panel,
+[data-ui-version="v2"] .table-container {
+  background-color: var(--color-paper-white);
+  border-color: var(--color-border);
+  color: var(--color-ink-black);
+}
+
+/* Contraste Sileo forzado en V2 (Modo Claro: #0C1E33 / #FAF9F6, Modo Oscuro: #161920 / #FAF9F6) */
+[data-ui-version="v2"] [data-sileo-pill],
+[data-ui-version="v2"] [data-sileo-body] {
+  fill: #0C1E33 !important;
+}
+
+[data-theme="dark"][data-ui-version="v2"] [data-sileo-pill],
+[data-theme="dark"][data-ui-version="v2"] [data-sileo-body],
+[data-theme="dark"] [data-ui-version="v2"] [data-sileo-pill],
+[data-theme="dark"] [data-ui-version="v2"] [data-sileo-body] {
+  fill: #161920 !important;
+}
+
+[data-ui-version="v2"] [data-sileo-title],
+[data-ui-version="v2"] [data-sileo-description] {
+  color: #FAF9F6 !important;
+}
+
+[data-ui-version="v2"] [data-sileo-button] {
+  background-color: #D99B26 !important;
+  color: #0C1E33 !important;
+}
+
+[data-theme="dark"][data-ui-version="v2"] [data-sileo-button],
+[data-theme="dark"] [data-ui-version="v2"] [data-sileo-button] {
+  background-color: #F1B844 !important;
+  color: #0C1E33 !important;
+}

@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
-import { X, KeyRound, ShieldCheck, User, Check, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, KeyRound, ShieldCheck, Check, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { authApi } from '../../api/authApi';
 import { sileoToast } from '../../services/sileoToast';
 import { useNotifications } from '../../context/NotificationContext';
 import { NOTIFICATION_CATEGORIES, NOTIFICATION_SEVERITIES } from '../../constants/systemConstants';
+import '../../styles/v2-login.css';
+
+function evaluatePasswordStrength(pwd) {
+  if (!pwd) return { percent: 0, label: '', color: 'var(--color-border)' };
+  let score = 0;
+  if (pwd.length >= 6) score += 1;
+  if (pwd.length >= 8) score += 1;
+  if (/[A-Za-z]/.test(pwd) && /\d/.test(pwd)) score += 1;
+  if (/[A-Z]/.test(pwd) || /[^A-Za-z0-9]/.test(pwd)) score += 1;
+
+  if (score <= 1) return { percent: 25, label: 'Débil (mínimo 8 caracteres)', color: 'var(--color-alert-red, #D9383A)' };
+  if (score === 2) return { percent: 52, label: 'Moderada (agrega números y letras)', color: 'var(--color-gira-gold, #D99B26)' };
+  if (score === 3) return { percent: 78, label: 'Buena', color: '#0284C7' };
+  return { percent: 100, label: 'Segura', color: 'var(--color-alert-green, #1B8754)' };
+}
 
 export default function ProfileModal({ isOpen, onClose }) {
   const { user } = useAuth();
@@ -21,8 +36,51 @@ export default function ProfileModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
+  const autoCloseTimerRef = useRef(null);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    return () => {
+      if (autoCloseTimerRef.current) clearTimeout(autoCloseTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
+      setError('');
+      setSuccess('');
+    } else if (shouldRender) {
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+        autoCloseTimerRef.current = null;
+      }
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+        setIsClosing(false);
+      }, 240);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, shouldRender]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isOpen && !loading) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, loading, onClose]);
+
+  if (!shouldRender) return null;
+
+  const strength = evaluatePasswordStrength(newPassword);
+  const passwordsMatch = confirmPassword.length > 0 && newPassword === confirmPassword;
+  const passwordsMismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
 
   const displayName = user?.name || user?.username || 'Usuario Institucional';
   const displayEmail = user?.email || (user?.username ? `${user.username}@giragroup.bo` : 'usuario@giragroup.bo');
@@ -71,7 +129,8 @@ export default function ProfileModal({ isOpen, onClose }) {
         severity: NOTIFICATION_SEVERITIES.INFO
       });
 
-      setTimeout(() => {
+      if (autoCloseTimerRef.current) clearTimeout(autoCloseTimerRef.current);
+      autoCloseTimerRef.current = setTimeout(() => {
         setSuccess('');
         onClose();
       }, 1500);
@@ -85,7 +144,13 @@ export default function ProfileModal({ isOpen, onClose }) {
 
   return (
     <div
-      className="modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Perfil de Usuario y Cambio de Contraseña"
+      className={`modal-backdrop v2-modal-backdrop${isClosing ? ' is-closing' : ''}`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !loading) onClose();
+      }}
       style={{
         position: 'fixed',
         top: 0,
@@ -102,7 +167,7 @@ export default function ProfileModal({ isOpen, onClose }) {
       }}
     >
       <div
-        className="modal-panel floating-artifact"
+        className={`modal-panel floating-artifact v2-modal-card${isClosing ? ' is-closing' : ''}`}
         style={{
           padding: '32px',
           borderRadius: 'var(--radius-cards)',
@@ -112,7 +177,6 @@ export default function ProfileModal({ isOpen, onClose }) {
           backgroundColor: 'var(--color-paper-white)',
           boxShadow: 'var(--shadow-modal)',
           position: 'relative',
-          animation: 'modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         }}
       >
         {/* Header */}
@@ -234,6 +298,7 @@ export default function ProfileModal({ isOpen, onClose }) {
 
           {success && (
             <div
+              className="v2-modal-step-enter"
               style={{
                 backgroundColor: 'rgba(27, 135, 84, 0.1)',
                 border: '1px solid rgba(27, 135, 84, 0.3)',
@@ -300,6 +365,22 @@ export default function ProfileModal({ isOpen, onClose }) {
                 {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+            {newPassword.length > 0 && (
+              <div aria-live="polite">
+                <div className="v2-strength-track">
+                  <div
+                    className="v2-strength-fill"
+                    style={{
+                      width: `${strength.percent}%`,
+                      backgroundColor: strength.color,
+                    }}
+                  />
+                </div>
+                <div style={{ fontSize: '11.5px', marginTop: '4px', color: strength.color, fontWeight: 500 }}>
+                  Seguridad: {strength.label}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Confirm Password */}
@@ -325,6 +406,23 @@ export default function ProfileModal({ isOpen, onClose }) {
                 {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+            {confirmPassword.length > 0 && (
+              <div
+                aria-live="polite"
+                style={{
+                  fontSize: '11.5px',
+                  marginTop: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  color: passwordsMatch ? 'var(--color-alert-green, #1B8754)' : 'var(--color-alert-red, #D9383A)',
+                  fontWeight: 500,
+                }}
+              >
+                {passwordsMatch ? <Check size={13} /> : <AlertCircle size={13} />}
+                <span>{passwordsMatch ? 'Las contraseñas coinciden' : passwordsMismatch ? 'Las contraseñas no coinciden' : ''}</span>
+              </div>
+            )}
           </div>
 
           {/* Form Actions */}

@@ -1,19 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
+import { ArrowRight, BarChart3, Eye, EyeOff } from 'lucide-react';
 import BatchFlowLayout from './components/BatchFlowLayout';
+import BetoMetricasModal from './components/BetoMetricasModal';
 import ProgresoTarea from './components/ProgresoTarea';
+import TextoPreparadoTab from './components/TextoPreparadoTab';
 import Button from '../../components/shared/Button';
 import Paginacion from '../../components/shared/Paginacion';
 import { FILAS_POR_PAGINA } from '../../hooks/usePaginacion';
 import { useDraftState, useLoteFlow } from './context/LoteFlowContext';
 import useLecturaBeto from './hooks/useLecturaBeto';
-import { useRevealCi } from './hooks/useRevealCi';
+import { useRevealCampo } from './hooks/useRevealCi';
 import { dataopsApi } from '../../api/dataopsApi';
 import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano';
 import { sileoToast } from '../../services/sileoToast';
 import { mensajeError } from '../../utils/mensajeError';
+import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
 import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
+import { toDataopsPath } from '../../v2/utils/v2Routes';
 
 const INITIAL = { docId: null, area: 'TODAS', condition: 'ALL', entity: 'TODOS', search: '', page: 1 };
 const ESTADOS = { AUTOMATICO: 'Aceptación directa', REVISION: 'En revisión', INCONSISTENCIA: 'Con incidencias' };
@@ -21,25 +25,45 @@ const AREAS = { academica: 'Académica', financiera: 'Financiera', comercial: 'C
 const fmt = value => typeof value === 'number' ? value.toLocaleString('es-BO') : 'Sin dato';
 
 function RegistroBeto({ record }) {
-  const [revealed, toggleCi] = useRevealCi();
-  const [revealing, setRevealing] = useState(false);
+  const { toggleCampo, getValor } = useRevealCampo();
+  const [loadingCampo, setLoadingCampo] = useState(null);
   const revealLock = useRef(false);
   const ci = record.ci_enmascarado || record.ci;
   const hasCi = ci && !['No provisto', 'No especificado'].includes(ci);
-  const reveal = async () => {
+  const ciRev = getValor(record.id, 'ci');
+  const nombreRev = getValor(record.id, 'nombre');
+  const correoRev = getValor(record.id, 'correo');
+  const rawText = record.raw_text || record.lectura?.texto || '';
+  const hasCorreo = Boolean(
+    correoRev ||
+    record.tiene_correo ||
+    (record.correo_enmascarado && !['No provisto', 'No especificado', 'Sin dato'].includes(record.correo_enmascarado)) ||
+    rawText.includes('@')
+  );
+  const reveal = async (campo) => {
     if (revealLock.current) return;
     revealLock.current = true;
-    setRevealing(true);
-    try { await toggleCi(record.id); } finally { revealLock.current = false; setRevealing(false); }
+    setLoadingCampo(campo);
+    try { await toggleCampo(record.id, campo); } finally { revealLock.current = false; setLoadingCampo(null); }
   };
   return <tr>
     <td style={{ overflowWrap: 'anywhere', verticalAlign: 'top' }}>
       <strong>Fila {record.line_number ?? 'Sin dato'}</strong>
       <p style={{ fontSize: 12, color: 'var(--color-slate-gray)', margin: '6px 0' }}>{record.nombre_archivo || 'Sin dato'}</p>
-      <p style={{ fontSize: 12 }}>Cédula: {revealed[record.id] || (hasCi ? ci : 'Sin dato')}</p>
-      {hasCi && <Button variant="ghost" onClick={reveal} isLoading={revealing} loadingText="Consultando…" aria-label={revealed[record.id] ? 'Ocultar cédula' : 'Revelar cédula con registro de auditoría'} style={{ marginTop: 6, padding: '4px 10px', fontSize: 11 }}>
-        {revealed[record.id] ? <EyeOff size={13} /> : <Eye size={13} />} {revealed[record.id] ? 'Ocultar' : 'Revelar con auditoría'}
-      </Button>}
+      <p style={{ fontSize: 12 }}>Cédula: {ciRev || (hasCi ? ci : 'Sin dato')}</p>
+      {nombreRev && <p style={{ fontSize: 12, marginTop: 4 }}>Nombre: {nombreRev}</p>}
+      {correoRev && <p style={{ fontSize: 12, marginTop: 4 }}>Correo: {correoRev}</p>}
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+        {hasCi && <Button variant="ghost" onClick={() => reveal('ci')} isLoading={loadingCampo === 'ci'} loadingText="Consultando…" aria-label={ciRev ? 'Ocultar cédula' : 'Revelar cédula con registro de auditoría'} style={{ padding: '4px 10px', fontSize: 11 }}>
+          {ciRev ? <EyeOff size={13} /> : <Eye size={13} />} {ciRev ? 'Ocultar cédula' : 'Revelar con auditoría'}
+        </Button>}
+        <Button variant="ghost" onClick={() => reveal('nombre')} isLoading={loadingCampo === 'nombre'} loadingText="Consultando…" aria-label={nombreRev ? 'Ocultar nombre' : 'Revelar nombre con auditoría'} style={{ padding: '4px 10px', fontSize: 11 }}>
+          {nombreRev ? <EyeOff size={13} /> : <Eye size={13} />} {nombreRev ? 'Ocultar nombre' : 'Revelar nombre'}
+        </Button>
+        {hasCorreo && <Button variant="ghost" onClick={() => reveal('correo')} isLoading={loadingCampo === 'correo'} loadingText="Consultando…" aria-label={correoRev ? 'Ocultar correo' : 'Revelar correo con auditoría'} style={{ padding: '4px 10px', fontSize: 11 }}>
+          {correoRev ? <EyeOff size={13} /> : <Eye size={13} />} {correoRev ? 'Ocultar correo' : 'Revelar correo'}
+        </Button>}
+      </div>
     </td>
     <td style={{ overflowWrap: 'anywhere', verticalAlign: 'top' }}>
       <p>{record.modulo && record.modulo !== 'No detectado' ? record.modulo : 'Sin módulo o concepto identificado'}</p>
@@ -65,10 +89,20 @@ function RegistroBeto({ record }) {
 
 function LecturaBeto({ batchId }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') === 'texto' ? 'texto' : 'resultados';
+  const setActiveTab = (nextTab) => {
+    const next = new URLSearchParams(searchParams);
+    if (nextTab === 'texto') next.set('tab', 'texto');
+    else next.delete('tab');
+    setSearchParams(next, { replace: true });
+  };
   const { contexto, readOnly } = useLoteFlow();
   const [filters, setFilters] = useDraftState('beto.filters.v3', INITIAL);
   const [input, setInput] = useState(filters.search || '');
   const [starting, setStarting] = useState(false);
+  const [metricasOpen, setMetricasOpen] = useState(false);
   const startLock = useRef(false);
   const { data, error, isFetching, refetch } = useLecturaBeto(batchId, filters, !!contexto);
   const processing = data?.status === 'processing';
@@ -105,25 +139,68 @@ function LecturaBeto({ batchId }) {
     const result = await refetch();
     if (!result.error) sileoToast.success({ title: 'Lectura actualizada', description: 'Se consultaron los resultados guardados.' });
   };
-  return <BatchFlowLayout currentStep={3} showReadOnlyContent selectedDocId={filters.docId} onSelectDocId={value => setFilter('docId', value)}>
+  const pctLectura = data?.tarea?.total
+    ? Math.min(100, Math.round(((data.tarea.procesados || 0) / data.tarea.total) * 100))
+    : (data?.tarea?.porcentaje ?? 0);
+  return <BatchFlowLayout currentStep={2} showReadOnlyContent selectedDocId={filters.docId} onSelectDocId={value => setFilter('docId', value)}>
     <div className="floating-artifact" style={{ padding: 24, marginBottom: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-        <div><h2 className="serif-heading" style={{ fontSize: 20 }}>Resultados de la lectura</h2><p style={{ color: 'var(--color-slate-gray)', fontSize: 13, marginTop: 6 }}>BETO identifica los datos de cada fila. Consultar esta página no inicia otro análisis.</p></div>
-        {!!batchId && <Button variant="ghost" isLoading={isFetching} loadingText="Consultando…" disabled={!contexto} onClick={refresh}>Actualizar</Button>}
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div><h2 className="serif-heading" style={{ fontSize: 20 }}>Lectura de BETO</h2><p style={{ color: 'var(--color-slate-gray)', fontSize: 13, marginTop: 6 }}>BETO identifica los datos de cada fila. Consultar esta página no inicia otro análisis.</p></div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Button variant="ghost" type="button" onClick={() => setMetricasOpen(true)}>
+            <BarChart3 size={15} /> Métricas del modelo
+          </Button>
+          {!!batchId && activeTab === 'resultados' && <Button variant="ghost" isLoading={isFetching} loadingText="Consultando…" disabled={!contexto} onClick={refresh}>Actualizar</Button>}
+        </div>
       </div>
-      <p style={{ marginTop: 12, fontSize: 12, color: 'var(--color-slate-gray)' }}>85 % o más: directo · 60 % a menos de 85 %: marcado para revisión · Menos de 60 %: bandeja.</p>
-      <details style={{ marginTop: 16 }}><summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>Cómo se decide el destino de un registro</summary>
-        <ul style={{ paddingLeft: 20, marginTop: 10, lineHeight: 1.7 }}>
-          <li><strong>85 % o más:</strong> aceptación directa cuando cumple las reglas de validación.</li>
-          <li><strong>Desde 60 % y menos de 85 %:</strong> se incorpora marcado para revisión al consolidar.</li>
-          <li><strong>Menos de 60 %:</strong> queda en la bandeja para revisión.</li>
-        </ul><p style={{ fontSize: 12, marginTop: 8, color: 'var(--color-slate-gray)' }}>Si falta un dato obligatorio o hay una inconsistencia, se requiere revisión aunque el índice alcance el 85 %. La consolidación se realiza en el paso ④.</p>
-      </details>
+      <div role="tablist" aria-label="Vistas de lectura" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 14 }}>
+        <Button
+          variant="ghost"
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'resultados'}
+          onClick={() => setActiveTab('resultados')}
+          style={{
+            borderColor: activeTab === 'resultados' ? 'var(--color-gira-gold)' : 'var(--color-border)',
+            background: activeTab === 'resultados' ? 'var(--dataops-info-bg)' : undefined,
+            color: activeTab === 'resultados' ? 'var(--dataops-info-text)' : undefined,
+          }}
+        >
+          Resultados
+        </Button>
+        <Button
+          variant="ghost"
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'texto'}
+          onClick={() => setActiveTab('texto')}
+          style={{
+            borderColor: activeTab === 'texto' ? 'var(--color-gira-gold)' : 'var(--color-border)',
+            background: activeTab === 'texto' ? 'var(--dataops-info-bg)' : undefined,
+            color: activeTab === 'texto' ? 'var(--dataops-info-text)' : undefined,
+          }}
+        >
+          Texto preparado
+        </Button>
+      </div>
+      {activeTab === 'resultados' && (
+        <>
+          <p style={{ marginTop: 12, fontSize: 12, color: 'var(--color-slate-gray)' }}>85 % o más: directo · 60 % a menos de 85 %: marcado para revisión · Menos de 60 %: bandeja.</p>
+          <details style={{ marginTop: 16 }}><summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>Cómo se decide el destino de un registro</summary>
+            <ul style={{ paddingLeft: 20, marginTop: 10, lineHeight: 1.7 }}>
+              <li><strong>85 % o más:</strong> aceptación directa cuando cumple las reglas de validación.</li>
+              <li><strong>Desde 60 % y menos de 85 %:</strong> se incorpora marcado para revisión al consolidar.</li>
+              <li><strong>Menos de 60 %:</strong> queda en la bandeja para revisión.</li>
+            </ul><p style={{ fontSize: 12, marginTop: 8, color: 'var(--color-slate-gray)' }}>Si falta un dato obligatorio o hay una inconsistencia, se requiere revisión aunque el índice alcance el 85 %. La consolidación se realiza en el paso ③.</p>
+          </details>
+        </>
+      )}
     </div>
     {!batchId ? <p className="floating-artifact" style={{ padding: 24 }}>Selecciona un lote desde el historial de carga.</p>
+      : activeTab === 'texto' ? <TextoPreparadoTab batchId={batchId} selectedDocId={filters.docId} context={contexto} />
       : error ? <div className="floating-artifact" role="alert" style={{ padding: 24 }}>No se pudo consultar la lectura. Puedes reintentarlo con Actualizar.</div>
       : !data ? <p className="floating-artifact" role="status" style={{ padding: 24 }}>Consultando resultados…</p>
-      : processing ? <ProgresoTarea titulo="BETO está analizando el lote" tarea={data.tarea} nota="El proceso sigue en segundo plano. Puedes cambiar de página." />
+      : processing ? <ProgresoTarea titulo={`Leyendo… ${pctLectura} %`} tarea={data.tarea} nota="El proceso sigue en segundo plano. Puedes cambiar de página." />
       : !ready ? <div className="floating-artifact" style={{ padding: 24 }}>
         <h3 className="serif-heading" style={{ marginBottom: 10 }}>{data.tarea?.estado === 'ERROR' ? 'La lectura se interrumpió' : 'No hay una lectura guardada disponible'}</h3>
         <p style={{ color: 'var(--color-slate-gray)', marginBottom: 16 }}>{readOnly ? 'Este lote está cerrado. Puedes consultar su resumen en Revisión.' : 'Inicia el análisis para obtener los resultados. Recibirás un aviso al terminar.'}</p>
@@ -131,7 +208,7 @@ function LecturaBeto({ batchId }) {
       </div> : <>
         <p style={{ fontSize: 12, color: 'var(--color-slate-gray)', marginBottom: 10 }}>{filters.docId ? 'Resumen del archivo seleccionado.' : 'Resumen del lote.'} Los filtros se aplican a la lista de resultados.</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 16, marginBottom: 20 }}>
-          {[['Analizados', summary?.total_procesados], ['Aceptación directa', summary?.aceptados_automaticamente], ['En revisión', summary?.por_revisar], ['Con incidencias', summary?.con_incidencias]].map(([label, value]) => <div className="floating-artifact" key={label} style={{ padding: 18 }}><p style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>{label}</p><p style={{ fontSize: 25, marginTop: 6 }}>{isFetching ? 'Consultando…' : fmt(value)}</p></div>)}
+          {[['Analizados', summary?.total_procesados], ['Aceptación directa', summary?.aceptados_automaticamente], ['En revisión', summary?.por_revisar], ['Con incidencias', summary?.con_incidencias]].map(([label, value]) => <div className="floating-artifact" key={label} style={{ padding: 18 }}><p style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>{label}</p><p style={{ fontSize: 25, marginTop: 6 }}>{isFetching ? 'Consultando…' : <AnimatedNumberV2 value={fmt(value)} />}</p></div>)}
         </div>
         <div className="floating-artifact" style={{ padding: 20, marginBottom: 20, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           <label style={{ fontSize: 12 }}>Área<select className="dataops-select" value={filters.area} onChange={e => setFilter('area', e.target.value)} aria-label="Área"><option value="TODAS">Todas</option>{Object.entries(AREAS).map(([value, text]) => <option value={value} key={value}>{text}</option>)}</select></label>
@@ -146,9 +223,10 @@ function LecturaBeto({ batchId }) {
         </div>
       </>}
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginTop: 20 }}>
-      <Button variant="ghost" disabled={!batchId} onClick={() => navigate(batchId ? `/dataops/lote/${batchId}/texto` : '/dataops/ingesta')}>Volver a texto preparado</Button>
-      {!!batchId && <Button variant="ghost" className="btn-pill-gold" onClick={() => navigate(`/dataops/lote/${batchId}/revision`)}>Ir a Revisión <ArrowRight size={15} /></Button>}
+      <Button variant="ghost" onClick={() => navigate(toDataopsPath('/ingesta', location.pathname))}>Volver a carga de archivos</Button>
+      {!!batchId && <Button variant="ghost" className="btn-pill-gold" onClick={() => navigate(toDataopsPath(`/lote/${batchId}/revision`, location.pathname))}>Ir a Revisión <ArrowRight size={15} /></Button>}
     </div>
+    <BetoMetricasModal isOpen={metricasOpen} onClose={() => setMetricasOpen(false)} />
   </BatchFlowLayout>;
 }
 

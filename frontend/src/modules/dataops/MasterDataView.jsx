@@ -13,6 +13,7 @@ import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
 import { confirmar, sileoToast } from '../../services/sileoToast';
 import { mensajeError } from '../../utils/mensajeError';
 import { useNotifications } from '../../context/NotificationContext';
+import { useParentChildTransitionV2 } from '../../v2/transitions/useParentChildTransitionV2';
 
 const EMPTY = { nombre_modulo: '', nombre_institucion: '', programa: '', pos_code: '' };
 const ESCALAS = { CENTESIMAL_100: 'Sobre 100', DECIMAL_10: 'Sobre 10', VIGESIMAL_20: 'Sobre 20' };
@@ -20,6 +21,7 @@ const tabs = [{ id: 'modulos', label: 'Módulos', icon: BookOpen }, { id: 'insti
 
 export default function MasterDataView() {
   const { refreshNotifications } = useNotifications();
+  const { triggerParentChild } = useParentChildTransitionV2();
   const [tipo, setTipo] = useState('modulos');
   const [page, setPage] = useState(1);
   const [input, setInput] = useState('');
@@ -80,14 +82,27 @@ export default function MasterDataView() {
       <Button variant="ghost" isLoading={isFetching} loadingText="Consultando…" disabled={busy} onClick={refresh}>Actualizar</Button>
       {tipo === 'modulos' && <Button disabled={busy} onClick={() => { setForm(EMPTY); setModal(true); }}>Nuevo módulo</Button>}
     </div>} />
-    <DataOpsTabs tabs={tabs} activeTab={tipo} disabled={busy} onChangeTab={value => { setTipo(value); setPage(1); setInput(''); setSearch(''); setModal(false); }} />
+    <DataOpsTabs
+      tabs={tabs}
+      activeTab={tipo}
+      disabled={busy}
+      onChangeTab={(value, sourceEl) =>
+        triggerParentChild(sourceEl, () => {
+          setTipo(value);
+          setPage(1);
+          setInput('');
+          setSearch('');
+          setModal(false);
+        })
+      }
+    />
     <form onSubmit={event => { event.preventDefault(); setSearch(input.trim()); setPage(1); }} style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
       <input className="dataops-input" aria-label="Buscar en el catálogo" placeholder={tipo === 'modulos' ? 'Nombre, código, programa o institución' : 'Nombre o sigla de la institución'} value={input} onChange={e => setInput(e.target.value)} maxLength={100} disabled={busy} style={{ flex: 1 }} />
       <Button type="submit" disabled={busy || isFetching}>Buscar</Button>
       <Button variant="ghost" disabled={busy} onClick={() => { setInput(''); setSearch(''); setPage(1); }}>Limpiar búsqueda</Button>
     </form>
     {tipo === 'instituciones' && <p style={{ color: 'var(--color-slate-gray)', marginBottom: 16, fontSize: 13 }}>Instituciones registradas en el catálogo institucional. Esta vista es de consulta.</p>}
-    <div className="floating-artifact" style={{ padding: 20 }} aria-busy={isFetching}>
+    <div className="floating-artifact v2-parent-child-panel" style={{ padding: 20 }} aria-busy={isFetching}>
       {error ? <p role="alert">No se pudo consultar el catálogo. Pulsa Actualizar para reintentarlo.</p> : isFetching || !data ? <p role="status">Consultando registros…</p> : <ResponsiveTable>
         <table className="dataops-table" style={{ width: '100%' }}><thead><tr><th>Registro</th><th>Nombre</th><th>{tipo === 'modulos' ? 'Código' : 'Sigla'}</th>{tipo === 'modulos' ? <><th>Programa</th><th>Institución</th><th>Acción</th></> : <th>Escala de referencia</th>}</tr></thead>
           <tbody>{data.data.map(row => <tr key={row.id}><td>{row.id}</td><td>{row.nombre || 'Sin dato'}</td><td>{row.codigo || 'Sin dato'}</td>{tipo === 'modulos' ? <><td>{row.programa || 'Sin dato'}</td><td>{row.institucion || 'Sin dato'}</td><td><Button variant="ghost" disabled={busy} isLoading={deleting === row.id} loadingText="Procesando…" onClick={() => remove(row)}>Eliminar</Button></td></> : <td>{ESCALAS[row.escala] || 'Sin dato'}</td>}</tr>)}</tbody></table>

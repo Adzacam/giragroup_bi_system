@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Menu, Sun, Moon, Settings } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Menu, Sun, Moon, Settings, ArrowUpRight } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { toV2Path } from '../../v2/utils/v2Routes';
 import NotificationBell from '../notifications/NotificationBell';
 import UserProfileDropdown from './UserProfileDropdown';
 import GiraGroupLogo from '../common/GiraLogo';
@@ -9,6 +10,7 @@ import GiraGroupLogo from '../common/GiraLogo';
 export default function Navbar({ onToggleSidebar, topLoadingProgress = 0, isNavigating = false }) {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const scrollBarRef = useRef(null);
 
   useEffect(() => {
@@ -83,6 +85,29 @@ export default function Navbar({ onToggleSidebar, topLoadingProgress = 0, isNavi
 
       {/* Notifications, Theme & Profile Dropdown */}
       <div className="navbar-right-group">
+        <button
+          onClick={() => {
+            const target = `${toV2Path(location.pathname)}${location.search || ''}`;
+            window.open(target, '_blank', 'noopener,noreferrer');
+          }}
+          className="btn-pill-ghost navbar-action-btn navbar-v2-btn"
+          title="Abrir Versión 2 (/v2) en nueva pestaña"
+          aria-label="Abrir Versión 2 en nueva pestaña"
+          type="button"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '0 10px',
+            width: 'auto',
+            fontSize: '11.5px',
+            fontWeight: 600,
+          }}
+        >
+          <span className="navbar-v2-label">Versión 2</span>
+          <ArrowUpRight size={13} />
+        </button>
+
         <NotificationBell />
 
         {/* Quick Dark/Light Theme Toggle */}

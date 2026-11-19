@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import usePaginacion from '../../hooks/usePaginacion';
 import Paginacion from '../../components/shared/Paginacion';
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
@@ -8,6 +9,8 @@ import CmiConfiguracion from './cmi/CmiConfiguracion';
 import GlosarioCmi from './cmi/GlosarioCmi';
 import CmiPowerBi from './cmi/CmiPowerBi';
 import useKineticScroll from '../../hooks/useKineticScroll';
+import { useParentChildTransitionV2 } from '../../v2/transitions/useParentChildTransitionV2';
+import ChartRevealV2 from '../../v2/motion/ChartRevealV2';
 import {
   ShieldCheck,
   TrendingUp,
@@ -55,6 +58,7 @@ import { useAuth } from '../../context/AuthContext';
 import forecastApi from '../../api/forecastApi';
 import { reportesApi } from '../../api/reportesApi';
 import { sileoToast } from '../../services/sileoToast';
+import { CHART_PLUGINS_V2, withChartAnimationsV2 } from '../../v2/motion/chartAnimationsV2';
 
 ChartJS.register(
   CategoryScale,
@@ -83,6 +87,7 @@ export default function CuadroMandoIntegral() {
 
   // Modo Principal: 'A' = Perspectivas Estratégicas Institucionales, 'B' = Analítica Predictiva Macro
   const [activeMode, setActiveMode] = useState('A');
+  const { triggerParentChild } = useParentChildTransitionV2();
 
 
   // Filtros en Modo B
@@ -290,7 +295,7 @@ export default function CuadroMandoIntegral() {
     };
   }, [macroData, isDark]);
 
-  const defaultChartOptions = {
+  const defaultChartOptions = withChartAnimationsV2({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -310,7 +315,7 @@ export default function CuadroMandoIntegral() {
       x: { grid: { color: gridColor }, ticks: { color: mutedTextColor, font: { family: 'var(--font-sohne)', size: 10 } } },
       y: { grid: { color: gridColor }, ticks: { color: mutedTextColor, font: { family: 'var(--font-sohne)', size: 10 } } }
     }
-  };
+  });
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', paddingBottom: '70px' }}>
@@ -319,10 +324,9 @@ export default function CuadroMandoIntegral() {
         <PageHeader
           category="ADMINISTRACIÓN ESTRATÉGICA"
           title="Cuadro de Mando Integral"
-          italicWord="Macroinstitucional"
           subtitle="Desempeño institucional en cuatro perspectivas estratégicas, con metas y semáforo comunes a la web y a Power BI."
         />
-        <div style={{ display: 'flex', gap: '10px', marginTop: '24px', position: 'relative' }}>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '24px', position: 'relative', flexWrap: 'wrap', alignItems: 'center' }}>
           <button
             onClick={() => { queryClient.invalidateQueries({ queryKey: ['cmi'] }); if (activeMode === 'B') fetchMacro(); }}
             disabled={isLoadingMacro}
@@ -336,14 +340,39 @@ export default function CuadroMandoIntegral() {
               fontWeight: 600,
               cursor: 'pointer',
               borderRadius: '9999px',
-              border: isDark ? '1px solid #2d3748' : '1px solid var(--color-border)',
-              background: isDark ? '#1e2430' : 'var(--color-paper-white)',
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-paper-white)',
               color: 'var(--color-ink-black)',
             }}
           >
             <RefreshCw size={14} className={isLoadingMacro ? 'animate-spin' : ''} />
             Actualizar
           </button>
+
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={(e) => triggerParentChild(e.currentTarget, () => setActiveMode(activeMode === 'C' ? 'A' : 'C'))}
+              aria-pressed={activeMode === 'C'}
+              className="btn-academic"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '9px 16px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                borderRadius: '9999px',
+                border: activeMode === 'C' ? '1.5px solid var(--color-gira-gold)' : '1px solid var(--color-border)',
+                background: activeMode === 'C' ? 'var(--color-mist-gray)' : 'var(--color-paper-white)',
+                color: 'var(--color-ink-black)',
+              }}
+            >
+              <SlidersHorizontal size={14} color={activeMode === 'C' ? 'var(--color-gira-gold)' : 'currentColor'} />
+              Configuración
+            </button>
+          )}
 
           {/* Botón de Exportación RBAC / Auditoría */}
           <div style={{ position: 'relative' }}>
@@ -378,8 +407,8 @@ export default function CuadroMandoIntegral() {
                   top: '110%',
                   zIndex: 50,
                   width: '200px',
-                  backgroundColor: isDark ? '#1e2430' : '#ffffff',
-                  border: isDark ? '1px solid #2d3748' : '1px solid var(--color-border)',
+                  backgroundColor: 'var(--color-paper-white)',
+                  border: '1px solid var(--color-border)',
                   borderRadius: '12px',
                   boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
                   padding: '6px',
@@ -401,14 +430,14 @@ export default function CuadroMandoIntegral() {
                     borderRadius: '8px',
                     border: 'none',
                     background: 'transparent',
-                    color: isDark ? '#FAF9F6' : '#1F2937',
+                    color: 'var(--color-ink-black)',
                     cursor: 'pointer',
                     textAlign: 'left',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDark ? '#2d3748' : '#F3F4F6'}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-mist-gray)'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
-                  <FileSpreadsheet size={15} color="#16a34a" />
+                  <FileSpreadsheet size={15} color="var(--color-alert-green)" />
                   <span>Descargar Excel (.xlsx)</span>
                 </button>
                 <button
@@ -424,14 +453,14 @@ export default function CuadroMandoIntegral() {
                     borderRadius: '8px',
                     border: 'none',
                     background: 'transparent',
-                    color: isDark ? '#FAF9F6' : '#1F2937',
+                    color: 'var(--color-ink-black)',
                     cursor: 'pointer',
                     textAlign: 'left',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = isDark ? '#2d3748' : '#F3F4F6'}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-mist-gray)'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
-                  <FileText size={15} color="#dc2626" />
+                  <FileText size={15} color="var(--color-alert-red)" />
                   <span>Descargar PDF (.pdf)</span>
                 </button>
               </div>
@@ -440,44 +469,48 @@ export default function CuadroMandoIntegral() {
         </div>
       </div>
 
-      {/* ── Selector Superior de Modo (A vs B) ──────────────────────────────── */}
+      {/* ── Selector Superior de Modo (A vs B vs C vs D) ──────────────────────────────── */}
       <div
+        className="v2-pill-segment"
         style={{
           display: 'flex',
           gap: '8px',
-          background: isDark ? 'rgba(255, 255, 255, 0.05)' : 'var(--color-mist-gray)',
+          background: 'var(--color-mist-gray)',
           padding: '6px',
-          borderRadius: '16px',
+          borderRadius: '9999px',
           margin: '20px 0 28px 0',
           width: 'fit-content',
           maxWidth: '100%',
           flexWrap: 'wrap',
-          border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'var(--color-border)'}`
+          border: '1px solid var(--color-border)'
         }}
       >
         <button
-          onClick={() => setActiveMode('A')}
+          type="button"
+          className={`v2-pill-segment-btn ${activeMode === 'A' ? 'is-active' : ''}`}
+          aria-pressed={activeMode === 'A'}
+          onClick={(e) => triggerParentChild(e.currentTarget, () => setActiveMode('A'))}
           style={{
             padding: '10px 22px',
-            borderRadius: '12px',
+            borderRadius: '9999px',
             fontSize: '13.5px',
-            fontWeight: 700,
+            fontWeight: 600,
             cursor: 'pointer',
             border: activeMode === 'A'
-              ? (isDark ? '1px solid rgba(241, 184, 68, 0.45)' : '1px solid transparent')
-              : '1px solid transparent',
+              ? '1.5px solid var(--color-gira-gold)'
+              : '1.5px solid transparent',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             transition: 'all 0.2s ease',
             backgroundColor: activeMode === 'A'
-              ? (isDark ? '#232a38' : 'var(--color-paper-white)')
+              ? 'var(--color-paper-white)'
               : 'transparent',
             color: activeMode === 'A'
-              ? (isDark ? '#FAF9F6' : '#0C1E33')
-              : (isDark ? '#9ca3af' : 'var(--color-slate-gray)'),
+              ? 'var(--color-ink-black)'
+              : 'var(--color-slate-gray)',
             boxShadow: activeMode === 'A'
-              ? (isDark ? '0 4px 14px rgba(0,0,0,0.5)' : 'var(--shadow-subtle)')
+              ? 'var(--shadow-subtle)'
               : 'none'
           }}
         >
@@ -486,76 +519,57 @@ export default function CuadroMandoIntegral() {
         </button>
 
         <button
-          onClick={() => setActiveMode('B')}
+          type="button"
+          className={`v2-pill-segment-btn ${activeMode === 'B' ? 'is-active' : ''}`}
+          aria-pressed={activeMode === 'B'}
+          onClick={(e) => triggerParentChild(e.currentTarget, () => setActiveMode('B'))}
           style={{
             padding: '10px 22px',
-            borderRadius: '12px',
+            borderRadius: '9999px',
             fontSize: '13.5px',
-            fontWeight: 700,
+            fontWeight: 600,
             cursor: 'pointer',
             border: activeMode === 'B'
-              ? (isDark ? '1px solid rgba(241, 184, 68, 0.45)' : '1px solid transparent')
-              : '1px solid transparent',
+              ? '1.5px solid var(--color-gira-gold)'
+              : '1.5px solid transparent',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             transition: 'all 0.2s ease',
             backgroundColor: activeMode === 'B'
-              ? (isDark ? '#232a38' : 'var(--color-paper-white)')
+              ? 'var(--color-paper-white)'
               : 'transparent',
             color: activeMode === 'B'
-              ? (isDark ? '#FAF9F6' : '#0C1E33')
-              : (isDark ? '#9ca3af' : 'var(--color-slate-gray)'),
+              ? 'var(--color-ink-black)'
+              : 'var(--color-slate-gray)',
             boxShadow: activeMode === 'B'
-              ? (isDark ? '0 4px 14px rgba(0,0,0,0.5)' : 'var(--shadow-subtle)')
+              ? 'var(--shadow-subtle)'
               : 'none'
           }}
         >
           <TrendingUp size={16} color={activeMode === 'B' ? 'var(--color-gira-gold)' : 'currentColor'} />
           Analítica predictiva
         </button>
-        {isAdmin && (
-          <button
-            onClick={() => setActiveMode('C')}
-            aria-pressed={activeMode === 'C'}
-            style={{
-              padding: '10px 22px',
-              borderRadius: '12px',
-              fontSize: '13.5px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              border: activeMode === 'C' && isDark ? '1px solid rgba(241, 184, 68, 0.45)' : '1px solid transparent',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.2s ease',
-              backgroundColor: activeMode === 'C' ? (isDark ? '#232a38' : 'var(--color-paper-white)') : 'transparent',
-              color: activeMode === 'C' ? (isDark ? '#FAF9F6' : '#0C1E33') : (isDark ? '#9ca3af' : 'var(--color-slate-gray)'),
-              boxShadow: activeMode === 'C' ? (isDark ? '0 4px 14px rgba(0,0,0,0.5)' : 'var(--shadow-subtle)') : 'none'
-            }}
-          >
-            <SlidersHorizontal size={16} color={activeMode === 'C' ? 'var(--color-gira-gold)' : 'currentColor'} />
-            Configuración
-          </button>
-        )}
         {veePowerBi && (
           <button
-            onClick={() => setActiveMode('D')}
+            type="button"
+            className={`v2-pill-segment-btn ${activeMode === 'D' ? 'is-active' : ''}`}
+            onClick={(e) => triggerParentChild(e.currentTarget, () => setActiveMode('D'))}
             aria-pressed={activeMode === 'D'}
             style={{
               padding: '10px 22px',
-              borderRadius: '12px',
+              borderRadius: '9999px',
               fontSize: '13.5px',
-              fontWeight: 700,
+              fontWeight: 600,
               cursor: 'pointer',
-              border: activeMode === 'D' && isDark ? '1px solid rgba(241, 184, 68, 0.45)' : '1px solid transparent',
+              border: activeMode === 'D' ? '1.5px solid var(--color-gira-gold)' : '1.5px solid transparent',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
               transition: 'all 0.2s ease',
-              backgroundColor: activeMode === 'D' ? (isDark ? '#232a38' : 'var(--color-paper-white)') : 'transparent',
-              color: activeMode === 'D' ? (isDark ? '#FAF9F6' : '#0C1E33') : (isDark ? '#9ca3af' : 'var(--color-slate-gray)'),
-              boxShadow: activeMode === 'D' ? (isDark ? '0 4px 14px rgba(0,0,0,0.5)' : 'var(--shadow-subtle)') : 'none'
+              backgroundColor: activeMode === 'D' ? 'var(--color-paper-white)' : 'transparent',
+              color: activeMode === 'D' ? 'var(--color-ink-black)' : 'var(--color-slate-gray)',
+              boxShadow: activeMode === 'D' ? 'var(--shadow-subtle)' : 'none'
             }}
           >
             <MonitorDown size={16} color={activeMode === 'D' ? 'var(--color-gira-gold)' : 'currentColor'} />
@@ -564,13 +578,17 @@ export default function CuadroMandoIntegral() {
         )}
       </div>
 
-      {activeMode === 'B' && <GlosarioCmi tema="prediccion" />}
-      {activeMode === 'C' && isAdmin && <GlosarioCmi tema="configuracion" />}
-      {activeMode === 'A' && <CmiScorecard />}
+      <div className="v2-parent-child-panel">
+        {activeMode === 'A' && <GlosarioCmi tema="scorecard" />}
+        {activeMode === 'B' && <GlosarioCmi tema="prediccion" />}
+        {activeMode === 'C' && isAdmin && <GlosarioCmi tema="configuracion" />}
+        {activeMode === 'D' && veePowerBi && <GlosarioCmi tema="powerbi" />}
+        {activeMode === 'A' && <CmiScorecard />}
 
-      {activeMode === 'C' && isAdmin && <CmiConfiguracion />}
+        {activeMode === 'C' && isAdmin && <CmiConfiguracion />}
 
-      {activeMode === 'D' && veePowerBi && <CmiPowerBi />}
+        {activeMode === 'D' && veePowerBi && <CmiPowerBi />}
+      </div>
 
 
       {/* ════════════════════════════════════════════════════════════════════════ */}
@@ -683,7 +701,9 @@ export default function CuadroMandoIntegral() {
 
               <div style={{ height: '260px' }}>
                 {chartCaso1Data ? (
-                  <Line data={chartCaso1Data} options={defaultChartOptions} />
+                  <ChartRevealV2>
+                    <Line data={chartCaso1Data} options={defaultChartOptions} plugins={CHART_PLUGINS_V2} />
+                  </ChartRevealV2>
                 ) : (
                   <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
                     {isLoadingMacro ? 'Cargando serie temporal histórica...' : (macroData?.sin_datos?.caso1 || 'Sin datos de inscripciones en el Data Warehouse.')}
@@ -846,7 +866,9 @@ export default function CuadroMandoIntegral() {
 
               <div style={{ height: '260px' }}>
                 {chartCaso3Data ? (
-                  <Bar data={chartCaso3Data} options={defaultChartOptions} />
+                  <ChartRevealV2>
+                    <Bar data={chartCaso3Data} options={defaultChartOptions} plugins={CHART_PLUGINS_V2} />
+                  </ChartRevealV2>
                 ) : (
                   <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
                     {isLoadingMacro ? 'Cargando comparativa mensual de metas...' : (macroData?.sin_datos?.caso3 || 'Sin metas ni ejecución financiera en el Data Warehouse.')}
@@ -900,7 +922,9 @@ export default function CuadroMandoIntegral() {
 
               <div style={{ height: '220px' }}>
                 {chartCaso4Data ? (
-                  <Line data={chartCaso4Data} options={defaultChartOptions} />
+                  <ChartRevealV2>
+                    <Line data={chartCaso4Data} options={defaultChartOptions} plugins={CHART_PLUGINS_V2} />
+                  </ChartRevealV2>
                 ) : (
                   <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
                     {isLoadingMacro ? 'Cargando tendencia anual...' : (macroData?.sin_datos?.caso4 || macroData?.caso4_metas_anuales?.nota_metodologica || 'Sin recaudación anual en el Data Warehouse.')}
@@ -914,7 +938,8 @@ export default function CuadroMandoIntegral() {
       )}
 
       {/* ── Modal / Drawer de Detalle Analítico ──────────────────────────────── */}
-      {modalDetail && (
+      {modalDetail && (() => {
+        const modalNode = (
         <div
           style={{
             position: 'fixed',
@@ -924,7 +949,7 @@ export default function CuadroMandoIntegral() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 9999,
+            zIndex: 2200,
             padding: '20px'
           }}
           onClick={() => setModalDetail(null)}
@@ -1171,7 +1196,11 @@ export default function CuadroMandoIntegral() {
             )}
           </div>
         </div>
-      )}
+        );
+        return typeof document !== 'undefined' && document.body?.appendChild
+          ? createPortal(modalNode, document.body)
+          : modalNode;
+      })()}
     </div>
   );
 }

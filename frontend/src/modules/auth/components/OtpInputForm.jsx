@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function OtpInputForm({
   email,
@@ -17,7 +17,24 @@ export default function OtpInputForm({
   formatTime,
   rememberDevice = true,
   onRememberDeviceChange,
+  error = '',
+  isEnteringSystem = false,
 }) {
+  const [pulsedIndex, setPulsedIndex] = useState(null);
+
+  useEffect(() => {
+    if (pulsedIndex === null) return undefined;
+    const t = setTimeout(() => setPulsedIndex(null), 240);
+    return () => clearTimeout(t);
+  }, [pulsedIndex]);
+
+  const handleDigitChange = (index, value) => {
+    if (/^\d$/.test(value)) {
+      setPulsedIndex(index);
+    }
+    onOtpChange(index, value);
+  };
+
   return (
     <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', color: 'var(--color-slate-gray)' }}>
@@ -37,15 +54,15 @@ export default function OtpInputForm({
           }}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-mist-gray)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-          title="Regresar a credenciales"
-          aria-label="Regresar a credenciales"
+          title="Volver al inicio de sesión"
+          aria-label="Volver al inicio de sesión"
         >
           <ArrowLeft size={16} />
         </button>
         <span>Verificación 2FA para <strong style={{ color: 'var(--color-ink-black)' }}>{email}</strong></span>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+      <div className={`v2-otp-grid${error ? ' has-error' : ''}`}>
         {otp.map((digit, i) => (
           <input
             key={i}
@@ -54,7 +71,10 @@ export default function OtpInputForm({
             inputMode="numeric"
             maxLength={1}
             value={digit}
-            onChange={(e) => onOtpChange(i, e.target.value)}
+            aria-label={`Dígito OTP ${i + 1}`}
+            className={`v2-otp-box${pulsedIndex === i ? ' is-pulsing' : ''}`}
+            data-filled={digit ? 'true' : 'false'}
+            onChange={(e) => handleDigitChange(i, e.target.value)}
             onKeyDown={(e) => onOtpKeyDown(i, e)}
             onPaste={onOtpPaste}
             onFocus={(e) => {
@@ -66,6 +86,7 @@ export default function OtpInputForm({
               if (!digit) e.target.style.borderColor = 'var(--color-border)';
             }}
             style={{
+              '--otp-idx': i,
               width: '52px',
               height: '60px',
               textAlign: 'center',
@@ -76,9 +97,8 @@ export default function OtpInputForm({
               background: 'var(--color-fog-white)',
               color: 'var(--color-ink-black)',
               outline: 'none',
-              transition: 'border-color 0.2s, box-shadow 0.2s',
             }}
-            disabled={isLoading || otpTimeLeft <= 0}
+            disabled={isLoading || otpTimeLeft <= 0 || isEnteringSystem}
             autoFocus={i === 0}
           />
         ))}
@@ -97,7 +117,7 @@ export default function OtpInputForm({
         <button
           type="button"
           onClick={onResend}
-          disabled={resendCooldown > 0 || isLoading}
+          disabled={resendCooldown > 0 || isLoading || isEnteringSystem}
           style={{
             background: 'none',
             border: 'none',
@@ -135,7 +155,7 @@ export default function OtpInputForm({
             cursor: 'pointer',
           }}
         />
-        <span>Recordar este equipo por 30 d�as</span>
+        <span>Recordar este equipo por 30 días</span>
       </label>
 
       <div
@@ -149,13 +169,13 @@ export default function OtpInputForm({
           lineHeight: 1.45,
         }}
       >
-        ?? Si no visualizas el correo en tu bandeja principal, por favor revisa tu carpeta de <strong>Spam</strong> o <strong>Correo no deseado</strong>.
+        📩 Si no visualizas el correo en tu bandeja principal, por favor revisa tu carpeta de <strong>Spam</strong> o <strong>Correo no deseado</strong>.
       </div>
 
       <button
         type="submit"
-        disabled={isLoading || otp.some((d) => !d) || otpTimeLeft <= 0}
-        className="btn-pill-dark"
+        disabled={isLoading || isEnteringSystem || otp.some((d) => !d) || otpTimeLeft <= 0}
+        className={`btn-pill-dark v2-login-submit-btn${isEnteringSystem ? ' is-entering' : ''}`}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -164,12 +184,26 @@ export default function OtpInputForm({
           width: '100%',
           padding: '13px 24px',
           fontSize: '15px',
-          cursor: isLoading || otp.some((d) => !d) || otpTimeLeft <= 0 ? 'not-allowed' : 'pointer',
+          cursor: isLoading || isEnteringSystem || otp.some((d) => !d) || otpTimeLeft <= 0 ? 'not-allowed' : 'pointer',
           opacity: isLoading || otp.some((d) => !d) || otpTimeLeft <= 0 ? 0.6 : 1,
         }}
       >
-        {isLoading ? 'Comprobando OTP...' : 'Verificar y Acceder'}
-        {!isLoading && <ArrowRight size={16} />}
+        {isEnteringSystem ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            <span>Entrando al sistema...</span>
+          </>
+        ) : isLoading ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            <span>Comprobando OTP...</span>
+          </>
+        ) : (
+          <>
+            <span>Verificar e Ingresar</span>
+            <ArrowRight size={16} />
+          </>
+        )}
       </button>
     </form>
   );

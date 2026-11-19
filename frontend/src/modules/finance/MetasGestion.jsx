@@ -11,6 +11,8 @@ import { useTheme } from '../../context/ThemeContext';
 import forecastApi from '../../api/forecastApi';
 import { catalogApi } from '../../api/catalogApi';
 import { kpiApi } from '../../api/kpiApi';
+import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
+import AnimatedProgressBarV2 from '../../v2/motion/AnimatedProgressBarV2';
 
 export default function MetasGestion() {
   useKineticScroll();
@@ -230,31 +232,29 @@ export default function MetasGestion() {
                             </td>
                             <td>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <div
+                                <AnimatedProgressBarV2
+                                  value={Math.min(pct, 100)}
+                                  max={100}
+                                  color={
+                                    pct >= 100
+                                      ? 'var(--color-alert-green)'
+                                      : pct >= 90
+                                      ? 'var(--color-gold-cmi)'
+                                      : 'var(--color-alert-red)'
+                                  }
+                                  trackColor={isDark ? 'rgba(255,255,255,0.08)' : 'var(--color-mist-gray)'}
                                   style={{
                                     flex: 1,
                                     height: '7px',
                                     borderRadius: '9999px',
-                                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'var(--color-mist-gray)',
                                     overflow: 'hidden',
+                                    position: 'relative',
                                   }}
-                                >
-                                  <div
-                                    style={{
-                                      width: `${Math.min(pct, 100)}%`,
-                                      height: '100%',
-                                      backgroundColor:
-                                        pct >= 100
-                                          ? 'var(--color-alert-green)'
-                                          : pct >= 90
-                                          ? 'var(--color-gold-cmi)'
-                                          : 'var(--color-alert-red)',
-                                      borderRadius: '9999px',
-                                    }}
-                                  />
-                                </div>
+                                  barStyle={{ display: 'block', height: '100%', borderRadius: '9999px' }}
+                                  ariaLabel="Cumplimiento mensual"
+                                />
                                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 600 }}>
-                                  {pct.toFixed(1)}%
+                                  <AnimatedNumberV2 value={`${pct.toFixed(1)}%`} />
                                 </span>
                               </div>
                             </td>
@@ -354,8 +354,8 @@ export default function MetasGestion() {
                                   fontSize: '11px',
                                   fontWeight: 700,
                                   fontFamily: 'var(--font-mono)',
-                                  backgroundColor: prog.chip_style?.bg || (prog.decision_estrategica === 'ABRIR NUEVA VERSIÓN' ? '#dcfce7' : prog.decision_estrategica === 'CONTINUAR' ? '#fef3c7' : '#fee2e2'),
-                                  color: prog.chip_style?.color || (prog.decision_estrategica === 'ABRIR NUEVA VERSIÓN' ? '#166534' : prog.decision_estrategica === 'CONTINUAR' ? '#92400e' : '#991b1b'),
+                                  backgroundColor: prog.chip_style?.bg || (prog.decision_estrategica === 'ABRIR NUEVA VERSIÓN' ? 'rgba(27, 135, 84, 0.12)' : prog.decision_estrategica === 'CONTINUAR' ? 'rgba(217, 155, 38, 0.14)' : 'rgba(217, 56, 58, 0.12)'),
+                                  color: prog.chip_style?.color || (prog.decision_estrategica === 'ABRIR NUEVA VERSIÓN' ? 'var(--color-alert-green)' : prog.decision_estrategica === 'CONTINUAR' ? 'var(--color-alert-amber)' : 'var(--color-alert-red)'),
                                 }}
                               >
                                 {prog.decision_estrategica}

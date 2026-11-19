@@ -304,6 +304,11 @@ export const dataopsApi = {
   /**
    * Revela el CI completo de un registro bajo demanda con auditoría (#13)
    */
+  revelarCampo: async (registroId, campo = 'ci') => {
+    const res = await client.get(`${BASE_URL}/registro/${registroId}/revelar-ci`, { params: { campo } });
+    return res.data;
+  },
+
   revelarCi: async (registroId) => {
     const res = await client.get(`${BASE_URL}/registro/${registroId}/revelar-ci`);
     return res.data;
@@ -440,6 +445,13 @@ export const dataopsApi = {
    * Confirma la inserción de registros al Data Warehouse enrutando por tipo_fuente (#8, #10)
    * o resuelve un caso individual si se provee resolved_item_id.
    */
+  /** Fase A (W-5): prepara los casos de revisión del lote en segundo plano sin cargar hechos */
+  prepararRevision: async (payload = {}) => {
+    invalidateDataopsCache();
+    const res = await client.post(`${BASE_URL}/preparar-revision`, { ...payload, solo_revision: true, en_segundo_plano: true });
+    return res.data;
+  },
+
   /** Inicia la consolidación del lote en segundo plano; devuelve { tarea_id, tarea } */
   iniciarConsolidacion: async (payload = {}) => {
     invalidateDataopsCache();

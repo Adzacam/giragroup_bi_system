@@ -215,10 +215,64 @@
   align-items: stretch;
 }
 
+.batch-flow-container {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.dataops-split-view > * {
+  min-width: 0;
+}
+
 .dataops-section-a {
   display: grid;
   grid-template-columns: 1.35fr 1fr;
   gap: 24px;
+}
+
+.dataops-section-a > * {
+  min-width: 0;
+}
+
+.dataops-queue-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dataops-bulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.dataops-row-detail {
+  background-color: var(--color-mist-gray);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--color-slate-gray);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  white-space: normal;
+}
+
+@media (max-width: 480px) {
+  .batch-flow-container {
+    padding: 0 4px !important;
+  }
+  .dataops-table th,
+  .dataops-table td {
+    padding: 8px 10px;
+  }
 }
 
 /* ── Mini-Grid Inspector de Aplanamiento Asimétrico ── */
@@ -359,7 +413,18 @@
 
 /* ── Adaptabilidad Móvil (<= 960px y 390x844) ── */
 @media (max-width: 960px) {
-  .dataops-section-a {
+  .batch-flow-container {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.dataops-split-view > * {
+  min-width: 0;
+}
+
+.dataops-section-a {
     grid-template-columns: 1fr;
     gap: 16px;
   }

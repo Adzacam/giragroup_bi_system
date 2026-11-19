@@ -8,6 +8,7 @@ import { sileoToast } from '../../services/sileoToast';
 import { useAuth } from '../../context/AuthContext';
 import { reportesApi } from '../../api/reportesApi';
 import { catalogApi } from '../../api/catalogApi';
+import { useParentChildTransitionV2 } from '../../v2/transitions/useParentChildTransitionV2';
 
 const TIPOS_REPORTE = [
   {
@@ -15,7 +16,7 @@ const TIPOS_REPORTE = [
     titulo: 'Cuadro de Mando Integral (CMI)',
     subtitulo: 'Indicadores estratégicos de las 4 perspectivas según tu rol',
     icono: Layers,
-    color: '#2563EB',
+    color: 'var(--color-gira-navy)',
     badge: 'ESTRATÉGICO',
   },
   {
@@ -23,7 +24,7 @@ const TIPOS_REPORTE = [
     titulo: 'Alertas Tempranas',
     subtitulo: 'Casos estudiantiles con umbrales críticos de notas y asistencia',
     icono: AlertTriangle,
-    color: '#D97706',
+    color: 'var(--color-gira-gold)',
     badge: 'OPERATIVO',
   },
   {
@@ -31,7 +32,7 @@ const TIPOS_REPORTE = [
     titulo: 'Cierre de Gestión y Rendimiento',
     subtitulo: 'Matrícula consolidada, recaudación y ticket promedio por programa',
     icono: Building2,
-    color: '#059669',
+    color: 'var(--color-alert-green)',
     badge: 'CONSOLIDADO',
   },
 ];
@@ -42,14 +43,14 @@ const FORMATOS = [
     nombre: 'Microsoft Excel (.xlsx)',
     descripcion: 'Libro de cálculo estructurado con estilos y cabeceras oficiales',
     icono: FileSpreadsheet,
-    color: '#16A34A',
+    color: 'var(--color-alert-green)',
   },
   {
     id: 'pdf',
     nombre: 'Documento PDF (.pdf)',
     descripcion: 'Reporte ejecutivo formal para impresión y presentación directiva',
     icono: FileText,
-    color: '#DC2626',
+    color: 'var(--color-alert-red)',
   },
 ];
 
@@ -73,6 +74,7 @@ const ROL_LEGIBLE = {
 
 export default function CentroReportes() {
   const { user, role } = useAuth();
+  const { triggerParentChild } = useParentChildTransitionV2();
   const [tipoSeleccionado, setTipoSeleccionado] = useState('kpis');
   const [formatoSeleccionado, setFormatoSeleccionado] = useState('xlsx');
   const [gestion, setGestion] = useState('Todas');
@@ -227,21 +229,22 @@ export default function CentroReportes() {
           </div>
 
           <button
+            type="button"
             onClick={cargarHistorial}
             disabled={loadingHistorial}
-            className="btn btn-secondary"
+            aria-busy={loadingHistorial}
+            className={`btn btn-secondary ${loadingHistorial ? 'is-loading' : ''}`}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              padding: '8px 14px',
+              padding: '9px 18px',
               fontSize: '13px',
-              borderRadius: '8px',
               cursor: loadingHistorial ? 'wait' : 'pointer',
             }}
           >
             <RefreshCw size={15} className={loadingHistorial ? 'animate-spin' : ''} />
-            Actualizar Historial
+            <span>{loadingHistorial ? 'Actualizando historial...' : 'Actualizar Historial'}</span>
           </button>
         </div>
       </div>
@@ -317,31 +320,37 @@ export default function CentroReportes() {
           <h2 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-ink-black)', marginTop: 0, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>1. Seleccionar Tipo de Reporte</span>
           </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div className="v2-pill-segment" style={{ display: 'flex', flexDirection: 'column', gap: '10px', borderRadius: '24px', padding: '8px', background: 'transparent', border: 'none' }}>
             {TIPOS_REPORTE.map((tipo) => {
               const Icon = tipo.icono;
               const isSelected = tipoSeleccionado === tipo.id;
               return (
                 <div
                   key={tipo.id}
-                  onClick={() => setTipoSeleccionado(tipo.id)}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isSelected}
+                  className={`v2-pill-segment-btn ${isSelected ? 'is-active' : ''}`}
+                  onClick={(e) => triggerParentChild(e.currentTarget, () => setTipoSeleccionado(tipo.id))}
+                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), triggerParentChild(e.currentTarget, () => setTipoSeleccionado(tipo.id)))}
                   style={{
                     padding: '14px',
-                    borderRadius: '10px',
+                    borderRadius: '18px',
                     border: `2px solid ${isSelected ? tipo.color : 'var(--color-border)'}`,
-                    backgroundColor: isSelected ? `${tipo.color}08` : 'transparent',
+                    backgroundColor: isSelected ? 'var(--dataops-surface-tint)' : 'transparent',
                     cursor: 'pointer',
                     transition: 'all 0.18s ease',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
+                    width: '100%',
                   }}
                 >
                   <div
                     style={{
                       padding: '8px',
                       borderRadius: '8px',
-                      backgroundColor: `${tipo.color}18`,
+                      backgroundColor: 'var(--color-mist-gray)',
                       color: tipo.color,
                       flexShrink: 0,
                     }}
@@ -378,6 +387,7 @@ export default function CentroReportes() {
 
         {/* Selector de Formato & Filtros */}
         <div
+          className="v2-parent-child-panel"
           style={{
             backgroundColor: 'var(--color-card-bg)',
             border: '1px solid var(--color-border)',

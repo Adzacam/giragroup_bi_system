@@ -1,0 +1,904 @@
+/**
+ * GIRA Group BI — Ronda 5 (V2 Auth & Hero Pane)
+ * Animaciones de Login, OTP, Modales de Recuperación/Cambio de Contraseña,
+ * Portal de Entrada al Sistema y Hero Pane Obsidiana Mate / Plata Esmerilada.
+ */
+
+/* ─── 1. Transiciones Direccionales entre Pasos de Login (Credenciales ⇄ OTP) ─── */
+.v2-auth-step-panel {
+  view-transition-name: v2-auth-step;
+}
+
+@keyframes v2-auth-slide-to-left {
+  to {
+    transform: translateX(-24px);
+    opacity: 0;
+  }
+}
+
+@keyframes v2-auth-slide-from-right {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+@keyframes v2-auth-slide-to-right {
+  to {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+@keyframes v2-auth-slide-from-left {
+  from {
+    transform: translateX(-24px);
+    opacity: 0;
+  }
+}
+
+::view-transition-group(v2-auth-step),
+::view-transition-old(v2-auth-step),
+::view-transition-new(v2-auth-step) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+html:active-view-transition-type(auth-forward)::view-transition-old(v2-auth-step) {
+  animation-name: v2-auth-slide-to-left;
+}
+
+html:active-view-transition-type(auth-forward)::view-transition-new(v2-auth-step) {
+  animation-name: v2-auth-slide-from-right;
+}
+
+html:active-view-transition-type(auth-backward)::view-transition-old(v2-auth-step) {
+  animation-name: v2-auth-slide-to-right;
+}
+
+html:active-view-transition-type(auth-backward)::view-transition-new(v2-auth-step) {
+  animation-name: v2-auth-slide-from-left;
+}
+
+/* Fallback CSS cuando document.startViewTransition no está disponible */
+@media (prefers-reduced-motion: no-preference) {
+  .v2-auth-step-panel[data-auth-transition="forward"].is-fallback-anim {
+    animation: v2-auth-slide-from-right 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .v2-auth-step-panel[data-auth-transition="backward"].is-fallback-anim {
+    animation: v2-auth-slide-from-left 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+/* ─── 2. Animaciones de las 6 Casillas OTP ─── */
+@keyframes v2-otp-box-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes v2-otp-pulse {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.045);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes v2-otp-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.v2-otp-grid {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .v2-otp-grid.has-error {
+    animation: v2-otp-shake 360ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
+  .v2-otp-box {
+    animation: v2-otp-box-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--otp-idx, 0) * 40ms);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .v2-otp-box.is-pulsing {
+    animation: v2-otp-pulse 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+/* ─── 3. Portal de Entrada al Sistema (isEnteringSystem) ─── */
+.login-split-layout {
+  transition:
+    transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 360ms ease,
+    filter 360ms ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .login-split-layout.v2-login-entering-system .login-left-pane {
+    transform: scale(1.025);
+    opacity: 0;
+    filter: blur(6px);
+    transition:
+      transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 340ms ease,
+      filter 340ms ease;
+  }
+
+  .login-split-layout.v2-login-entering-system .v2-hero-pane {
+    transform: scale(1.03);
+    opacity: 0.22;
+    filter: blur(4px);
+    transition:
+      transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 360ms ease,
+      filter 360ms ease;
+  }
+}
+
+@keyframes v2-btn-sheen {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(220%) skewX(-18deg);
+  }
+}
+
+.v2-login-submit-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.v2-login-submit-btn.is-entering::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 100%
+  );
+  animation: v2-btn-sheen 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  pointer-events: none;
+}
+
+/* ─── 4. Modales Animados (Apertura / Cierre 240ms + Pasos Internos) ─── */
+@keyframes v2-backdrop-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(10px);
+  }
+}
+
+@keyframes v2-backdrop-out {
+  from {
+    opacity: 1;
+    backdrop-filter: blur(10px);
+  }
+  to {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+}
+
+@keyframes v2-modal-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes v2-modal-card-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+
+.v2-modal-backdrop {
+  animation: v2-backdrop-in 240ms ease-out forwards;
+}
+
+.v2-modal-backdrop.is-closing {
+  animation: v2-backdrop-out 240ms ease-in forwards;
+  pointer-events: none;
+}
+
+.v2-modal-card {
+  animation: v2-modal-card-in 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.v2-modal-card.is-closing {
+  animation: v2-modal-card-out 240ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes v2-modal-step-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.v2-modal-step-enter {
+  animation: v2-modal-step-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes v2-check-circle-draw {
+  from {
+    stroke-dashoffset: 160;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes v2-check-tick-draw {
+  from {
+    stroke-dashoffset: 48;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.v2-check-svg-circle {
+  stroke-dasharray: 160;
+  stroke-dashoffset: 0;
+}
+
+.v2-check-svg-tick {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .v2-check-svg-circle {
+    stroke-dashoffset: 160;
+    animation: v2-check-circle-draw 480ms cubic-bezier(0.22, 1, 0.36, 1) 80ms forwards;
+  }
+
+  .v2-check-svg-tick {
+    stroke-dashoffset: 48;
+    animation: v2-check-tick-draw 320ms cubic-bezier(0.22, 1, 0.36, 1) 340ms forwards;
+  }
+}
+
+/* Indicador de fortaleza y coincidencia de contraseña en ProfileModal */
+.v2-strength-track {
+  width: 100%;
+  height: 5px;
+  border-radius: 9999px;
+  background-color: var(--color-mist-gray, #20252E);
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.v2-strength-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition:
+    width 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 240ms ease;
+}
+
+/* ─── 5. Hero Pane Derecho: Obsidiana Mate, Metal Oscuro Cepillado & Glassmorfismo Plata Esmerilada ─── */
+.v2-hero-pane {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(40px, 5vw, 68px) clamp(32px, 4.5vw, 56px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #0C0E12;
+  color: #FAF9F6;
+  isolation: isolate;
+}
+
+/* En Modo Claro, el Hero Pane se enmarca como una vitrina obsidiana de alto contraste */
+html:not([data-theme="dark"]) .v2-hero-pane {
+  border-left: 1px solid rgba(12, 30, 51, 0.14);
+  box-shadow: inset 1px 0 0 rgba(250, 249, 246, 0.08);
+}
+
+[data-theme="dark"] .v2-hero-pane {
+  border-left: 1px solid #29303C;
+}
+
+/* Capa 1: Lienzo Obsidiana Mate + Carbón + Pizarra + GIRA Navy */
+.v2-hero-obsidian-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(120% 95% at 14% 88%, rgba(32, 37, 46, 0.85) 0%, rgba(12, 14, 18, 0) 58%),
+    radial-gradient(95% 85% at 88% 12%, rgba(12, 30, 51, 0.82) 0%, rgba(22, 25, 32, 0.45) 48%, rgba(12, 14, 18, 0) 78%),
+    linear-gradient(145deg, #0C0E12 0%, #161920 52%, #0C1E33 100%);
+  pointer-events: none;
+}
+
+/* Capa 2: Nubes Volumétricas y Haces Diagonales en Plata Esmerilada Fría */
+.v2-hero-volumetric-clouds {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+@keyframes v2-cloud-bloom-bl {
+  0% {
+    transform: translate3d(-16%, 14%, 0) scale(0.84);
+    opacity: 0.45;
+  }
+  45% {
+    transform: translate3d(20%, -14%, 0) scale(1.26);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(4%, 8%, 0) scale(0.94);
+    opacity: 0.65;
+  }
+}
+
+@keyframes v2-cloud-bloom-tr {
+  0% {
+    transform: translate3d(16%, -14%, 0) scale(0.82);
+    opacity: 0.42;
+  }
+  50% {
+    transform: translate3d(-20%, 14%, 0) scale(1.28);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-4%, -7%, 0) scale(0.92);
+    opacity: 0.62;
+  }
+}
+
+.v2-cloud-bottom-left {
+  position: absolute;
+  left: -14%;
+  bottom: -16%;
+  width: 82%;
+  height: 80%;
+  border-radius: 50%;
+  background:
+    linear-gradient(45deg, rgba(226, 232, 240, 0.34) 0%, rgba(148, 163, 184, 0.18) 44%, transparent 76%),
+    radial-gradient(circle at 28% 72%, rgba(226, 232, 240, 0.32) 0%, rgba(148, 163, 184, 0.20) 38%, rgba(241, 184, 68, 0.06) 58%, transparent 78%);
+  filter: blur(28px);
+  will-change: transform, opacity;
+}
+
+.v2-cloud-top-right {
+  position: absolute;
+  right: -12%;
+  top: -14%;
+  width: 80%;
+  height: 78%;
+  border-radius: 50%;
+  background:
+    linear-gradient(225deg, rgba(248, 250, 252, 0.32) 0%, rgba(148, 163, 184, 0.18) 42%, rgba(241, 184, 68, 0.06) 64%, transparent 78%),
+    radial-gradient(circle at 74% 24%, rgba(226, 232, 240, 0.30) 0%, rgba(148, 163, 184, 0.19) 40%, rgba(12, 30, 51, 0.22) 64%, transparent 82%);
+  filter: blur(30px);
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .v2-cloud-bottom-left {
+    animation: v2-cloud-bloom-bl 8s ease-in-out infinite alternate;
+  }
+
+  .v2-cloud-top-right {
+    animation: v2-cloud-bloom-tr 9.5s ease-in-out infinite alternate;
+    animation-delay: -4.5s;
+  }
+}
+
+/* ─── Fondo II: Base Negra Profunda, Polvo Suspendido, Líneas Verticales y Circuitos ─── */
+.v2-hero-pane.is-bg-v2 .v2-hero-obsidian-canvas {
+  background:
+    radial-gradient(65% 65% at 50% 50%, #050608 0%, #080A0E 65%, #0C0E12 100%);
+}
+
+.v2-hero-pane.is-bg-v2 .v2-cloud-bottom-left {
+  background:
+    radial-gradient(circle at 22% 78%, rgba(226, 232, 240, 0.34) 0%, rgba(148, 163, 184, 0.20) 36%, rgba(100, 116, 139, 0.08) 56%, transparent 74%);
+  filter: blur(32px);
+}
+
+.v2-hero-pane.is-bg-v2 .v2-cloud-top-right {
+  background:
+    radial-gradient(circle at 78% 22%, rgba(226, 232, 240, 0.32) 0%, rgba(148, 163, 184, 0.19) 36%, rgba(100, 116, 139, 0.08) 56%, transparent 74%);
+  filter: blur(32px);
+  animation-delay: -4.8s;
+}
+
+.v2-hero-dust-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+@keyframes v2-dust-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(6px, -12px, 0);
+  }
+  100% {
+    transform: translate3d(-4px, -22px, 0);
+  }
+}
+
+.v2-hero-dust-speck {
+  position: absolute;
+  border-radius: 50%;
+  background-color: #E2E8F0;
+  box-shadow: 0 0 4px rgba(226, 232, 240, 0.35);
+}
+
+@keyframes v2-vertical-drop {
+  0% {
+    stroke-dasharray: 42 900;
+    stroke-dashoffset: 620;
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 0.75;
+  }
+  100% {
+    stroke-dasharray: 42 900;
+    stroke-dashoffset: -320;
+    opacity: 0;
+  }
+}
+
+@keyframes v2-circuit-glint-flow {
+  0% {
+    stroke-dasharray: 38 420;
+    stroke-dashoffset: 458;
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0.65;
+  }
+  100% {
+    stroke-dasharray: 38 420;
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .v2-hero-dust-speck {
+    animation-name: v2-dust-drift;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+
+  .v2-hero-vertical-drop {
+    animation-name: v2-vertical-drop;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+
+  .v2-hero-circuit-glint {
+    animation: v2-circuit-glint-flow 10s linear infinite;
+  }
+}
+
+.v2-hero-bg-switcher {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 6;
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 9999px;
+  background: rgba(12, 14, 18, 0.72);
+  border: 1px solid rgba(250, 249, 246, 0.14);
+  backdrop-filter: blur(12px);
+}
+
+.v2-hero-bg-pill {
+  border: none;
+  background: transparent;
+  color: rgba(250, 249, 246, 0.65);
+  font-size: 10.5px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.v2-hero-bg-pill.is-active {
+  background: rgba(250, 249, 246, 0.14);
+  color: #FAF9F6;
+}
+
+/* ─── Modo Claro Adaptativo para el Hero Pane y Cards ─── */
+html:not([data-theme="dark"]) .v2-hero-pane {
+  background-color: #F3F5F8;
+  color: #0C1E33;
+  border-left: 1px solid #ECECEC;
+  box-shadow: none;
+}
+
+html:not([data-theme="dark"]) .v2-hero-pane .v2-hero-obsidian-canvas {
+  background:
+    radial-gradient(110% 90% at 15% 85%, rgba(226, 232, 240, 0.85) 0%, rgba(250, 249, 246, 0) 60%),
+    radial-gradient(95% 85% at 88% 12%, rgba(203, 213, 225, 0.72) 0%, rgba(242, 242, 243, 0.4) 50%, rgba(250, 249, 246, 0) 80%),
+    linear-gradient(145deg, #FAF9F6 0%, #F2F2F3 55%, #E8ECF2 100%);
+}
+
+html:not([data-theme="dark"]) .v2-hero-pane.is-bg-v2 .v2-hero-obsidian-canvas {
+  background:
+    radial-gradient(65% 65% at 50% 50%, #FAF9F6 0%, #F4F6F9 65%, #EAEFF5 100%);
+}
+
+html:not([data-theme="dark"]) .v2-hero-pane .v2-cloud-bottom-left,
+html:not([data-theme="dark"]) .v2-hero-pane.is-bg-v2 .v2-cloud-bottom-left {
+  background:
+    radial-gradient(circle at 22% 78%, rgba(12, 30, 51, 0.22) 0%, rgba(100, 116, 139, 0.18) 38%, rgba(217, 155, 38, 0.11) 60%, transparent 78%);
+}
+
+html:not([data-theme="dark"]) .v2-hero-pane .v2-cloud-top-right,
+html:not([data-theme="dark"]) .v2-hero-pane.is-bg-v2 .v2-cloud-top-right {
+  background:
+    radial-gradient(circle at 78% 22%, rgba(12, 30, 51, 0.20) 0%, rgba(100, 116, 139, 0.17) 38%, rgba(217, 155, 38, 0.10) 60%, transparent 78%);
+}
+
+html:not([data-theme="dark"]) .v2-hero-pane .v2-hero-dust-speck {
+  background-color: #64748B;
+  box-shadow: 0 0 3px rgba(12, 30, 51, 0.20);
+}
+
+html:not([data-theme="dark"]) .v2-hero-pane .v2-hero-curved-lines-svg {
+  filter: contrast(1.18);
+  opacity: 0.90;
+}
+
+html:not([data-theme="dark"]) .v2-hero-pane .v2-hero-glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.86) 0%, rgba(250, 249, 246, 0.74) 100%);
+  border: 1.5px solid #ECECEC;
+  box-shadow: 0 18px 44px rgba(12, 30, 51, 0.08);
+}
+
+html:not([data-theme="dark"]) .v2-hero-pane .v2-hero-bg-switcher {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: #ECECEC;
+}
+
+html:not([data-theme="dark"]) .v2-hero-pane .v2-hero-bg-pill {
+  color: #777B86;
+}
+
+html:not([data-theme="dark"]) .v2-hero-pane .v2-hero-bg-pill.is-active {
+  background: #0C1E33;
+  color: #FAF9F6;
+}
+
+/* Clases tipográficas de las tarjetas Hero (Claro & Oscuro) */
+.v2-hero-card-eyebrow {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  color: #CBD5E1;
+}
+
+.v2-hero-card-badge {
+  font-size: 11px;
+  color: #FAF9F6;
+  background: rgba(250, 249, 246, 0.08);
+  border: 1px solid rgba(250, 249, 246, 0.16);
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.v2-hero-card-title {
+  font-family: var(--font-v2-heading, var(--font-signifier));
+  font-size: 20px;
+  font-weight: 350;
+  line-height: 1.32;
+  letter-spacing: -0.020em;
+  color: #FAF9F6;
+  margin: 0;
+}
+
+.v2-hero-card-status {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #4ADE80;
+  font-weight: 500;
+}
+
+.v2-hero-card-eyebrow-gold {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #F1B844;
+}
+
+.v2-hero-card-badge-gold {
+  font-size: 11px;
+  color: #F1B844;
+  background: rgba(241, 184, 68, 0.12);
+  border: 1px solid rgba(241, 184, 68, 0.28);
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-family: var(--font-v2-mono, var(--font-mono));
+}
+
+.v2-hero-card-desc {
+  font-size: 13px;
+  color: rgba(250, 249, 246, 0.78);
+  line-height: 1.5;
+  margin: 0;
+}
+
+html:not([data-theme="dark"]) .v2-hero-card-eyebrow {
+  color: #777B86;
+}
+
+html:not([data-theme="dark"]) .v2-hero-card-badge {
+  color: #0C1E33;
+  background: #F2F2F3;
+  border-color: #ECECEC;
+}
+
+html:not([data-theme="dark"]) .v2-hero-card-title {
+  color: #17191C;
+}
+
+html:not([data-theme="dark"]) .v2-hero-card-status {
+  color: #1B8754;
+}
+
+html:not([data-theme="dark"]) .v2-hero-card-eyebrow-gold {
+  color: #D99B26;
+}
+
+html:not([data-theme="dark"]) .v2-hero-card-badge-gold {
+  color: #5D2A1A;
+  background: #FBE1D1;
+  border-color: rgba(217, 155, 38, 0.35);
+}
+
+html:not([data-theme="dark"]) .v2-hero-card-desc {
+  color: #777B86;
+}
+
+/* Capa 3: 2 Líneas Geométricas Curvas de 90 Grados Extremadamente Finas */
+.v2-hero-curved-lines-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@keyframes v2-silver-line-flow {
+  0% {
+    stroke-dashoffset: 1160;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes v2-corner-frame-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-4px, 4px, 0);
+  }
+}
+
+.v2-hero-curve-base {
+  fill: none;
+  stroke-width: 1.15px;
+  opacity: 0.45;
+}
+
+.v2-hero-curve-glint {
+  fill: none;
+  stroke-width: 1.25px;
+  stroke-dasharray: 260 900;
+  stroke-linecap: round;
+  opacity: 0.92;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .v2-hero-curve-glint {
+    animation: v2-silver-line-flow 12s linear infinite;
+  }
+
+  .v2-hero-curve-group {
+    animation: v2-corner-frame-drift 14s ease-in-out infinite alternate;
+  }
+}
+
+/* Capa 4: Grano Cinematográfico Fino y Sutil */
+.v2-hero-film-grain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  opacity: 0.038;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* Contenedor y Cards Glassmórficas de Metal Oscuro Cepillado (Flotación Pura) */
+.v2-hero-cards-stack {
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  max-width: 490px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@keyframes v2-hero-float-card-a {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+@keyframes v2-hero-float-card-b {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0);
+  }
+}
+
+.v2-hero-glass-card {
+  background: linear-gradient(135deg, rgba(32, 37, 46, 0.72) 0%, rgba(16, 20, 28, 0.58) 100%);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(250, 249, 246, 0.14);
+  border-radius: 22px;
+  padding: 26px 28px;
+  box-shadow:
+    0 24px 54px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(250, 249, 246, 0.12);
+  color: #FAF9F6;
+}
+
+.v2-hero-glass-card-secondary {
+  margin-left: 24px;
+  background: linear-gradient(135deg, rgba(32, 37, 46, 0.64) 0%, rgba(12, 30, 51, 0.54) 100%);
+  border-color: rgba(241, 184, 68, 0.22);
+  box-shadow:
+    0 24px 54px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(241, 184, 68, 0.16);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .v2-hero-card-a {
+    animation: v2-hero-float-card-a 7.5s ease-in-out infinite;
+  }
+
+  .v2-hero-card-b {
+    animation: v2-hero-float-card-b 9s ease-in-out infinite;
+    animation-delay: -3.5s;
+  }
+}
+
+@media (max-width: 960px) {
+  .v2-hero-pane {
+    display: none !important;
+  }
+}
+
+/* ─── 6. Accesibilidad: Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(v2-auth-step),
+  ::view-transition-old(v2-auth-step),
+  ::view-transition-new(v2-auth-step) {
+    animation: none !important;
+  }
+
+  .v2-modal-backdrop,
+  .v2-modal-backdrop.is-closing,
+  .v2-modal-card,
+  .v2-modal-card.is-closing,
+  .v2-modal-step-enter,
+  .v2-hero-card-a,
+  .v2-hero-card-b,
+  .v2-cloud-bottom-left,
+  .v2-cloud-top-right,
+  .v2-hero-curve-glint,
+  .v2-hero-curve-group,
+  .v2-otp-box,
+  .v2-otp-grid.has-error,
+  .v2-login-submit-btn.is-entering::after {
+    animation: none !important;
+  }
+
+  .login-split-layout.v2-login-entering-system .login-left-pane,
+  .login-split-layout.v2-login-entering-system .v2-hero-pane {
+    transition: opacity 120ms ease !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

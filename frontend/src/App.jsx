@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useState, useEffect, useRef, useCallback } from 'react';
-import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation, useParams } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import TareasSegundoPlano from './components/shared/TareasSegundoPlano';
@@ -14,12 +14,17 @@ import MobileBottomNav from './components/layout/MobileBottomNav';
 const LoginPage           = lazy(() => import('./modules/auth/LoginPage'));
 const NotificationsPage   = lazy(() => import('./modules/notifications/NotificationsPage'));
 
-// DataOps (Flujo Canónico Guiado de 4 Pasos & Módulos Especializados)
+// DataOps (Flujo Canónico Guiado de 3 Pasos & Módulos Especializados)
 const IngestView                  = lazy(() => import('./modules/dataops/IngestView'));
-const PlainTextTransformationView = lazy(() => import('./modules/dataops/PlainTextTransformationView'));
 const BetoReadingFlowView         = lazy(() => import('./modules/dataops/BetoReadingFlowView'));
 const HumanReviewFlowView         = lazy(() => import('./modules/dataops/HumanReviewFlowView'));
 const MasterDataView              = lazy(() => import('./modules/dataops/MasterDataView'));
+
+function TextoRedirect({ prefix = '' }) {
+  const { id } = useParams();
+  const target = id ? `${prefix}/dataops/lote/${id}/beto?tab=texto` : `${prefix}/dataops/beto?tab=texto`;
+  return <Navigate to={target} replace />;
+}
 
 // Academic
 const RendimientoAlertas  = lazy(() => import('./modules/academic/RendimientoAlertas'));
@@ -42,6 +47,9 @@ const AjustesSistema      = lazy(() => import('./modules/settings/AjustesSistema
 const CentroReportes      = lazy(() => import('./modules/reports/CentroReportes'));
 
 import { ThemeProvider } from './context/ThemeContext';
+import { UiVersionProvider } from './v2/context/UiVersionContext';
+import { V2_ROLE_REDIRECTS } from './v2/utils/v2Routes';
+import MainLayoutV2 from './v2/layout/MainLayoutV2';
 
 import { queryClient } from './api/queryClient';
 import { LoteFlowRoute } from './modules/dataops/context/LoteFlowContext';
@@ -123,14 +131,17 @@ function LoadingFallback() {
 /* ─── Protected Route ─── */
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  const location = useLocation();
+  if (!isAuthenticated) {
+    return <Navigate to={location.pathname.startsWith('/v2') ? '/v2/login' : '/login'} replace />;
+  }
   return children;
 }
 
 /* ─── Role-based route guard ─── */
-function RoleRoute({ allowedRoles, children }) {
+function RoleRoute({ allowedRoles, fallbackPath = '/dashboard', children }) {
   const { role } = useAuth();
-  if (!allowedRoles.includes(role)) return <Navigate to="/dashboard" replace />;
+  if (!allowedRoles.includes(role)) return <Navigate to={fallbackPath} replace />;
   return children;
 }
 
@@ -145,6 +156,12 @@ function DashboardRedirect() {
     ANALISTA_MARKETING: '/dashboard',
   };
   return <Navigate to={redirectMap[role] || '/dashboard'} replace />;
+}
+
+/* ─── Default V2 dashboard redirect by role ─── */
+function DashboardRedirectV2() {
+  const { role } = useAuth();
+  return <Navigate to={V2_ROLE_REDIRECTS[role] || '/v2/dashboard'} replace />;
 }
 
 /* ─── Main Layout (navbar + top loading bar + sidebar + content) ─── */
@@ -348,6 +365,7 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <ThemeProvider>
+            <UiVersionProvider>
             <NotificationProvider>
               <Toaster
                 position="top-center"
@@ -367,6 +385,7 @@ function App() {
               <Routes>
                 {/* Public */}
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/v2/login" element={<LoginPage />} />
 
 
                 {/* Protected shell */}
@@ -395,24 +414,16 @@ function App() {
                   {/* System Settings (all roles) */}
                   <Route path="ajustes" element={<AjustesSistema />} />
 
-                {/* ─── DataOps: Flujo Canónico Guiado de 4 Pasos (AUDITOR_CALIDAD + ADMIN) ─── */}
+                {/* ─── DataOps: Flujo Canónico Guiado de 3 Pasos (AUDITOR_CALIDAD + ADMIN) ─── */}
                 <Route path="dataops/ingesta" element={
                   <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
                     <IngestView />
                   </RoleRoute>
                 } />
-                {/* Pasos ②③④ comparten borradores y estado de solo lectura (LoteFlowContext) */}
+                {/* Pasos ②③ comparten borradores y estado de solo lectura (LoteFlowContext) */}
                 <Route element={<LoteFlowRoute />}>
-                <Route path="dataops/texto" element={
-                  <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                    <PlainTextTransformationView />
-                  </RoleRoute>
-                } />
-                <Route path="dataops/lote/:id/texto" element={
-                  <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                    <PlainTextTransformationView />
-                  </RoleRoute>
-                } />
+                <Route path="dataops/texto" element={<TextoRedirect />} />
+                <Route path="dataops/lote/:id/texto" element={<TextoRedirect />} />
                 <Route path="dataops/beto" element={
                   <RoleRoute allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
                     <BetoReadingFlowView />
@@ -541,11 +552,163 @@ function App() {
                 } />
               </Route>
 
+              {/* ─── Versión 2 (V2) Parallel Route Tree (/v2/*) ─── */}
+              <Route path="/v2" element={
+                <ProtectedRoute>
+                  <MainLayoutV2 />
+                </ProtectedRoute>
+              }>
+                <Route index element={<DashboardRedirectV2 />} />
+                <Route path="dashboard" element={<CuadroMandoIntegral />} />
+                <Route path="cmi" element={<CuadroMandoIntegral />} />
+                <Route path="reportes" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ADMIN', 'DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD', 'ANALISTA_MARKETING']}>
+                    <CentroReportes />
+                  </RoleRoute>
+                } />
+                <Route path="notificaciones" element={<NotificationsPage />} />
+                <Route path="ajustes" element={<AjustesSistema />} />
+
+                {/* DataOps V2 */}
+                <Route path="dataops/ingesta" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
+                    <IngestView />
+                  </RoleRoute>
+                } />
+                <Route element={<LoteFlowRoute />}>
+                  <Route path="dataops/texto" element={<TextoRedirect prefix="/v2" />} />
+                  <Route path="dataops/lote/:id/texto" element={<TextoRedirect prefix="/v2" />} />
+                  <Route path="dataops/beto" element={
+                    <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
+                      <BetoReadingFlowView />
+                    </RoleRoute>
+                  } />
+                  <Route path="dataops/lote/:id/beto" element={
+                    <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
+                      <BetoReadingFlowView />
+                    </RoleRoute>
+                  } />
+                  <Route path="dataops/revision" element={
+                    <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
+                      <HumanReviewFlowView />
+                    </RoleRoute>
+                  } />
+                  <Route path="dataops/lote/:id/revision" element={
+                    <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
+                      <HumanReviewFlowView />
+                    </RoleRoute>
+                  } />
+                </Route>
+                <Route path="dataops/datos-maestros" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
+                    <MasterDataView />
+                  </RoleRoute>
+                } />
+                <Route path="dataops/beto-ner" element={<Navigate to="/v2/dataops/beto" replace />} />
+                <Route path="dataops/hitl" element={<Navigate to="/v2/dataops/revision" replace />} />
+                <Route path="dataops/auditoria-humana" element={<Navigate to="/v2/dataops/revision" replace />} />
+                <Route path="dataops/nlp-lab" element={<Navigate to="/v2/dataops/beto" replace />} />
+                <Route path="dataops/fuentes" element={<Navigate to="/v2/dataops/ingesta" replace />} />
+                <Route path="dataops/procesamiento" element={<Navigate to="/v2/dataops/ingesta" replace />} />
+                <Route path="dataops/entidades" element={<Navigate to="/v2/dataops/revision" replace />} />
+                <Route path="dataops/inconsistencias" element={<Navigate to="/v2/dataops/revision" replace />} />
+                <Route path="dataops/telemetria" element={<Navigate to="/v2/dataops/beto" replace />} />
+
+                {/* Academic V2 */}
+                <Route path="alertas-tempranas" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD', 'ADMIN']}>
+                    <RendimientoAlertas />
+                  </RoleRoute>
+                } />
+                <Route path="academico/alertas" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD', 'ADMIN']}>
+                    <RendimientoAlertas />
+                  </RoleRoute>
+                } />
+                <Route path="academico/rendimiento" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD', 'ADMIN']}>
+                    <RendimientoAlertas />
+                  </RoleRoute>
+                } />
+                <Route path="academico/docente" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN']}>
+                    <DesempenoDocente />
+                  </RoleRoute>
+                } />
+                <Route path="academico/docentes" element={<Navigate to="/v2/academico/docente" replace />} />
+                <Route path="academico/catalogo" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN', 'ANALISTA_MARKETING']}>
+                    <CatalogoCurricular />
+                  </RoleRoute>
+                } />
+                <Route path="academico/programas" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN', 'ANALISTA_MARKETING']}>
+                    <CatalogoCurricular />
+                  </RoleRoute>
+                } />
+                <Route path="academico/proyeccion" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN', 'ANALISTA_MARKETING']}>
+                    <ProyeccionAlumnos />
+                  </RoleRoute>
+                } />
+
+                {/* Finance V2 */}
+                <Route path="financiero/recaudacion" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ANALISTA_FINANCIERO', 'ADMIN']}>
+                    <RecaudacionCobranzas />
+                  </RoleRoute>
+                } />
+                <Route path="financiero/cartera" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ANALISTA_FINANCIERO', 'ADMIN']}>
+                    <CarteraMora />
+                  </RoleRoute>
+                } />
+                <Route path="financiero/metas" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ANALISTA_FINANCIERO', 'ADMIN']}>
+                    <MetasGestion />
+                  </RoleRoute>
+                } />
+                <Route path="financiero/proyeccion" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ANALISTA_FINANCIERO', 'ADMIN']}>
+                    <ProyeccionFinanciera />
+                  </RoleRoute>
+                } />
+
+                {/* Admin & Auditoría V2 */}
+                <Route path="admin/usuarios" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ADMIN']}>
+                    <GestionUsuarios />
+                  </RoleRoute>
+                } />
+                <Route path="admin/catalogos" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ADMIN']}>
+                    <CatalogosMaestros />
+                  </RoleRoute>
+                } />
+                <Route path="admin/auditoria" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ADMIN', 'AUDITOR_CALIDAD']}>
+                    <AuditoriaSistema />
+                  </RoleRoute>
+                } />
+                <Route path="admin/human-review" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ADMIN', 'AUDITOR_CALIDAD']}>
+                    <HumanReviewFlowView />
+                  </RoleRoute>
+                } />
+                <Route path="admin/revision" element={
+                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ADMIN', 'AUDITOR_CALIDAD']}>
+                    <HumanReviewFlowView />
+                  </RoleRoute>
+                } />
+                <Route path="*" element={<Navigate to="/v2" replace />} />
+              </Route>
+
               {/* Catch-all */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
             </NotificationProvider>
+            </UiVersionProvider>
           </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>

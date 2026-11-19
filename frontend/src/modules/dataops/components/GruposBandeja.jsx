@@ -15,7 +15,7 @@ export default function GruposBandeja({ data, readOnly, busy, onVerIndividual, o
         <td><details><summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>{textoMotivo(group.motivo, group.titulo)}</summary><p style={{ maxWidth: 580, overflowWrap: 'anywhere', padding: '12px 0', fontSize: 12 }}>{group.ejemplo || 'Sin ejemplo disponible'}</p></details></td>
         <td>{group.n.toLocaleString('es-BO')}</td>
         <td><Button variant="ghost" disabled={busy} onClick={() => onVerIndividual(group.clave)}>Ver casos</Button>
-          {!readOnly && group.accion_grupo !== 'MANUAL' && <Button variant="ghost" disabled={busy} onClick={() => group.accion_grupo === 'APROBAR' ? onResolver(group) : open(group)}>{group.accion_grupo === 'APROBAR' ? 'Aprobar grupo' : group.accion_grupo === 'CORREGIR_FECHA' ? 'Corregir fecha' : 'Revisar estado'}</Button>}</td>
+          {!readOnly && group.accion_grupo !== 'MANUAL' && <Button variant="ghost" disabled={busy} isLoading={busy} onClick={() => group.accion_grupo === 'APROBAR' ? onResolver(group) : open(group)}>{group.accion_grupo === 'APROBAR' ? 'Aprobar grupo' : group.accion_grupo === 'CORREGIR_FECHA' ? 'Corregir fecha' : 'Revisar estado'}</Button>}</td>
       </tr>)}</tbody>
     </table></div>}
     {dialog && <div className="floating-artifact" role="dialog" aria-label="Corregir grupo" style={{ padding: 20, marginTop: 16 }}>
@@ -25,7 +25,7 @@ export default function GruposBandeja({ data, readOnly, busy, onVerIndividual, o
         <label>Gestión<input aria-label="Gestión del grupo" className="dataops-input" type="number" min="2000" max="2100" value={gestion} onChange={e => setGestion(e.target.value)} /></label>
       </div> : <><label>Estado correcto<input className="dataops-input" value={canonico} onChange={e => setCanonico(e.target.value)} maxLength={100} /></label><p style={{ fontSize: 12 }}>Indica el estado que corresponde antes de aprobar el grupo.</p></>}
       <div style={{ display: 'flex', gap: 12, marginTop: 12 }}><Button variant="ghost" onClick={() => setDialog(null)}>Cancelar</Button>
-        <Button disabled={busy || (dialog.accion_grupo === 'CORREGIR_FECHA' ? !(Number(mes) >= 1 && Number(mes) <= 12 && Number(gestion) >= 2000 && Number(gestion) <= 2100) : !canonico.trim())} onClick={() => { onResolver(dialog, dialog.accion_grupo === 'CORREGIR_FECHA' ? { mes: Number(mes), gestion: Number(gestion) } : { canonico: canonico.trim() }); setDialog(null); }}>Programar corrección</Button></div>
+        <Button isLoading={busy} disabled={busy || (dialog.accion_grupo === 'CORREGIR_FECHA' ? !(Number(mes) >= 1 && Number(mes) <= 12 && Number(gestion) >= 2000 && Number(gestion) <= 2100) : !canonico.trim())} onClick={() => { onResolver(dialog, dialog.accion_grupo === 'CORREGIR_FECHA' ? { mes: Number(mes), gestion: Number(gestion) } : { canonico: canonico.trim() }); setDialog(null); }}>Programar corrección</Button></div>
     </div>}
   </>;
 }

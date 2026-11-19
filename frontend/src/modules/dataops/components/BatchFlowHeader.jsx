@@ -3,13 +3,14 @@ import { Layers, FileSpreadsheet, Scale, Building2, Shield, Calendar, BookOpen, 
 import { useAuth } from '../../../context/AuthContext';
 import Button from '../../../components/shared/Button';
 import { useCatalogProgramCount } from '../../../hooks/useCatalogProgramCount';
+import AnimatedNumberV2 from '../../../v2/motion/AnimatedNumberV2';
 
 export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelectBatch }) {
   const { role, user } = useAuth();
   const totalProgramas = useCatalogProgramCount();
   const activeRole = role || user?.role;
   const roleLabel = { ADMIN: 'Administrador', AUDITOR_CALIDAD: 'Auditor de calidad', DIRECTOR_ACADEMICO: 'Director académico', ANALISTA_FINANCIERO: 'Analista financiero', ANALISTA_MARKETING: 'Analista de marketing' }[activeRole] || 'Sin dato';
-  const stepTitle = { 1: 'Carga de archivos', 2: 'Texto preparado', 3: 'Lectura de BETO', 4: 'Revisión de registros' }[currentStep];
+  const stepTitle = { 1: 'Carga de archivos', 2: 'Lectura de BETO', 3: 'Revisión de registros' }[currentStep];
 
   const renderContextualBadges = () => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -43,7 +44,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
           border: '1px solid var(--dataops-info-border)',
         }}
       >
-        <BookOpen size={12} /> Programas activos: {totalProgramas?.toLocaleString('es-BO') ?? 'Sin dato'}
+        <BookOpen size={12} /> Programas activos: {totalProgramas != null ? <AnimatedNumberV2 value={totalProgramas.toLocaleString('es-BO')} /> : 'Sin dato'}
       </span>
       <span
         style={{
@@ -88,7 +89,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
               {stepTitle}
             </h1>
             <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>
-              Carga archivos .xlsx o .csv y sigue su procesamiento en cuatro pasos.
+              Carga archivos .xlsx o .csv y sigue su procesamiento en tres pasos.
             </div>
           </div>
         </div>

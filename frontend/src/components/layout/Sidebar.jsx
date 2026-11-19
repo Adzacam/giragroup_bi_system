@@ -11,10 +11,9 @@ import { useAuth } from '../../context/AuthContext';
 /* ─── Role-based menu definitions for non-admin roles ─── */
 const ROLE_MENUS = {
   AUDITOR_CALIDAD: [
-    { id: 'ingesta',          path: '/dataops/ingesta',          label: '① Ingesta de Archivos',            icon: FileUp },
-    { id: 'texto',            path: '/dataops/texto',            label: '② Texto Plano Estructurado',        icon: FileText },
-    { id: 'beto',             path: '/dataops/beto',             label: '③ Lectura de BETO',                 icon: Wand2 },
-    { id: 'revision',         path: '/dataops/revision',         label: '④ Revisión Humana',         icon: CheckSquare },
+    { id: 'ingesta',          path: '/dataops/ingesta',          label: '① Carga de Archivos',              icon: FileUp },
+    { id: 'beto',             path: '/dataops/beto',             label: '② Lectura de BETO',                 icon: Wand2 },
+    { id: 'revision',         path: '/dataops/revision',         label: '③ Revisión',                        icon: CheckSquare },
     { id: 'datos-maestros',   path: '/dataops/datos-maestros',   label: 'Datos Maestros & Catálogo',        icon: GitMerge },
     { id: 'auditoria',        path: '/admin/auditoria',          label: 'Auditoría del Sistema',             icon: ShieldCheck },
   ],
@@ -42,10 +41,9 @@ const ADMIN_OPERATIVE_CLUSTERS = [
   {
     id: 'dataops', label: 'Flujo DataOps & BETO', icon: ShieldCheck, defaultOpen: true,
     items: [
-      { path: '/dataops/ingesta',          label: '① Ingesta de Archivos',            icon: FileUp },
-      { path: '/dataops/texto',            label: '② Texto Plano Estructurado',        icon: FileText },
-      { path: '/dataops/beto',             label: '③ Lectura de BETO',                 icon: Wand2 },
-      { path: '/dataops/revision',         label: '④ Revisión Humana',         icon: CheckSquare },
+      { path: '/dataops/ingesta',          label: '① Carga de Archivos',              icon: FileUp },
+      { path: '/dataops/beto',             label: '② Lectura de BETO',                 icon: Wand2 },
+      { path: '/dataops/revision',         label: '③ Revisión',                        icon: CheckSquare },
       { path: '/dataops/datos-maestros',   label: 'Datos Maestros & Catálogo',        icon: GitMerge },
     ],
   },

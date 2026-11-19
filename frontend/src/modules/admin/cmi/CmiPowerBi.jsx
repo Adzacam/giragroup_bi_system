@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, Upload, RotateCcw, Copy, MonitorDown } from 'lucide-react';
+import { Download, Upload, RotateCcw, Copy, MonitorDown, Trash2 } from 'lucide-react';
 import usePaginacion from '../../../hooks/usePaginacion';
 import Paginacion from '../../../components/shared/Paginacion';
 import powerbiApi from '../../../api/powerbiApi';
@@ -46,6 +46,14 @@ function Versiones({ vigente, maxVersiones }) {
     },
     onError: async (e) => sileoToast.error({ title: 'No se restauró', description: await mensajeError(e) }),
   });
+  const eliminar = useMutation({
+    mutationFn: powerbiApi.eliminar,
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['powerbi'] });
+      sileoToast.success({ title: 'Versión eliminada', description: `v${res?.version ?? ''} fue eliminada del servidor.` });
+    },
+    onError: async (e) => sileoToast.error({ title: 'No se eliminó', description: await mensajeError(e) }),
+  });
   const descargar = (v) =>
     powerbiApi.descargar(v).catch(async (e) => sileoToast.error({ title: 'No se descargó', description: await mensajeError(e) }));
 
@@ -78,6 +86,19 @@ function Versiones({ vigente, maxVersiones }) {
                     <button className="cmi-btn" type="button" style={{ marginLeft: 6 }} disabled={restaurar.isPending}
                       onClick={() => restaurar.mutate(v.version)}>
                       <RotateCcw size={14} /> Restaurar
+                    </button>
+                  )}
+                  {v.version > 1 && (
+                    <button
+                      className="cmi-btn"
+                      type="button"
+                      style={{ marginLeft: 6, color: 'var(--cmi-bad)', borderColor: 'var(--cmi-bad)' }}
+                      disabled={v.vigente || eliminar.isPending}
+                      title={v.vigente ? 'Restaura otra versión antes de eliminar la vigente' : `Eliminar versión v${v.version}`}
+                      aria-label={`Eliminar v${v.version}`}
+                      onClick={() => eliminar.mutate(v.version)}
+                    >
+                      <Trash2 size={14} /> Eliminar
                     </button>
                   )}
                 </td>

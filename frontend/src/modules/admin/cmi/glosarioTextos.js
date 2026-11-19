@@ -1,5 +1,15 @@
 // Textos del glosario flotante del CMI, por pestaña.
 export const GLOSARIO_CMI = {
+  scorecard: {
+    titulo: 'Cómo leer el Cuadro de Mando Integral',
+    intro: 'El scorecard consolida el desempeño institucional en cuatro perspectivas estratégicas con metas y semáforos unificados.',
+    terminos: [
+      ['Índice global', 'Promedio ponderado de las perspectivas activas (0 a 100). En meta = 100, en alerta = 60, crítico = 20.'],
+      ['Mapa estratégico', 'Relación causa → efecto desde Aprendizaje y Crecimiento hasta la perspectiva Financiera.'],
+      ['Semáforo', 'Verde (en meta), Ámbar (en alerta) y Rojo (crítico) según los umbrales configurados para cada indicador.'],
+      ['Variación (Δ)', 'Diferencia respecto a la gestión inmediatamente anterior.'],
+    ],
+  },
   prediccion: {
     titulo: 'Cómo leer la analítica predictiva',
     intro: 'Las proyecciones se calculan con los datos ya consolidados en el sistema y se actualizan al cargar nuevas fuentes.',
@@ -24,6 +34,15 @@ export const GLOSARIO_CMI = {
       ['Activo', 'Un indicador desactivado deja de mostrarse y de puntuar, pero conserva su historial.'],
       ['Editar o quitar', 'Puedes cambiar meta, umbrales, peso y estado de cada indicador, y desactivar los que no necesites.'],
       ['Agregar un indicador nuevo', 'Un indicador nuevo necesita una fórmula de cálculo sobre los datos consolidados, por lo que se solicita al equipo de datos; una vez creado, aparece aquí para configurarlo.'],
+    ],
+  },
+  powerbi: {
+    titulo: 'Cómo usar el informe en Power BI Desktop',
+    intro: 'El archivo .pbix conecta directamente con el esquema analítico de sólo lectura para exploración avanzada.',
+    terminos: [
+      ['Versión vigente', 'Archivo .pbix oficial que descargan los roles autorizados.'],
+      ['Restaurar versión', 'Permite volver a marcar una versión anterior como vigente sin perder el historial.'],
+      ['Eliminar versión', 'Borra versiones históricas (> v1) que ya no se necesiten. La versión base v1 permanece protegida.'],
     ],
   },
 };

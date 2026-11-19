@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { ArrowUp, ArrowDown, Minus, ChevronUp } from 'lucide-react';
 import cmiApi from '../../../api/cmiApi';
 import CmiDetalleKpi from './CmiDetalleKpi';
 import { SEMAFORO, fmtValor, fmtDelta, bandaIndice, MAPA_ESTRATEGICO } from './cmiFormat';
+import { useParentChildTransitionV2 } from '../../../v2/transitions/useParentChildTransitionV2';
+import CardFolderV2 from '../../../v2/components/CardFolderV2';
+import AnimatedNumberV2 from '../../../v2/motion/AnimatedNumberV2';
+import AnimatedProgressBarV2 from '../../../v2/motion/AnimatedProgressBarV2';
+import { MOTION_DURATION_MS, MOTION_EASING_CSS, prefersReducedMotion } from '../../../v2/motion/useCountUpV2';
 import './cmi.css';
+
+function isV2Active() {
+  if (typeof document !== 'undefined' && document.documentElement.getAttribute('data-ui-version') === 'v2') {
+    return true;
+  }
+  if (typeof window !== 'undefined' && window.location?.pathname?.startsWith('/v2')) {
+    return true;
+  }
+  return false;
+}
 
 const ORDEN_SEMAFORO = ['VERDE', 'AMBAR', 'ROJO', 'SIN_UMBRAL'];
 
@@ -21,11 +36,36 @@ function Leyenda() {
 function BarraSemaforo({ verdes, ambar, rojos, sin_evaluar }) {
   const total = verdes + ambar + rojos + sin_evaluar || 1;
   const partes = { VERDE: verdes, AMBAR: ambar, ROJO: rojos, SIN_UMBRAL: sin_evaluar };
+  const skipMotion = prefersReducedMotion() || typeof requestAnimationFrame === 'undefined';
+  const [ready, setReady] = useState(skipMotion);
+
+  useEffect(() => {
+    if (skipMotion) {
+      setReady(true);
+      return undefined;
+    }
+    let raf2 = null;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setReady(true));
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      if (raf2) cancelAnimationFrame(raf2);
+    };
+  }, [skipMotion, verdes, ambar, rojos, sin_evaluar]);
+
   return (
     <div className="cmi-stack" role="img"
          aria-label={`${verdes} en meta, ${ambar} en alerta, ${rojos} críticos, ${sin_evaluar} sin evaluar`}>
       {ORDEN_SEMAFORO.filter((s) => partes[s] > 0).map((s) => (
-        <i key={s} style={{ width: `${(partes[s] / total) * 100}%`, background: SEMAFORO[s].color }} />
+        <i
+          key={s}
+          style={{
+            width: ready ? `${(partes[s] / total) * 100}%` : '0%',
+            background: SEMAFORO[s].color,
+            transition: skipMotion ? undefined : `width ${MOTION_DURATION_MS}ms ${MOTION_EASING_CSS}`,
+          }}
+        />
       ))}
     </div>
   );
@@ -38,7 +78,8 @@ function IndiceGlobal({ global, gestion }) {
       <div>
         <div className="cmi-eyebrow" id="cmi-global-t">Índice de desempeño · {gestion}</div>
         <div className="cmi-num cmi-global-num" style={{ marginTop: 10 }}>
-          {global.indice ?? '—'}{global.indice !== null && <small>/ 100</small>}
+          {global.indice !== null ? <AnimatedNumberV2 value={global.indice} /> : '—'}
+          {global.indice !== null && <small>/ 100</small>}
         </div>
         <div style={{ marginTop: 8, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
           <i className="cmi-dot" style={{ background: SEMAFORO[banda].color }} />
@@ -49,7 +90,7 @@ function IndiceGlobal({ global, gestion }) {
       <div className="cmi-counts">
         {[['VERDE', global.verdes], ['AMBAR', global.ambar], ['ROJO', global.rojos], ['SIN_UMBRAL', global.sin_evaluar]].map(([s, n]) => (
           <div key={s}>
-            <b>{n}</b>
+            <b><AnimatedNumberV2 value={n} /></b>
             <span><i className="cmi-dot" style={{ background: SEMAFORO[s].color }} />{SEMAFORO[s].label}</span>
           </div>
         ))}
@@ -89,7 +130,7 @@ function MapaEstrategico({ perspectivas, activa, onSelect }) {
                 <p>{p.objetivo}</p>
               </div>
               <div className="cmi-persp-score">
-                <div className="cmi-num">{p.indice ?? '—'}</div>
+                <div className="cmi-num">{p.indice !== null ? <AnimatedNumberV2 value={p.indice} /> : '—'}</div>
                 <span>{p.verdes + p.ambar + p.rojos} de {p.indicadores} evaluados</span>
               </div>
             </button>
@@ -128,6 +169,31 @@ function TarjetaKpi({ kpi, onAbrir }) {
   const sem = SEMAFORO[kpi.semaforo] || SEMAFORO.SIN_UMBRAL;
   const sinDato = kpi.valor === null;
   const pct = avance(kpi);
+
+  if (isV2Active()) {
+    const metaText = kpi.meta === null
+      ? 'Meta no definida'
+      : `Meta ${kpi.sentido === 'MIN' ? '≤' : '≥'} ${fmtValor(kpi.meta, kpi.unidad, { compacto: true })}`;
+    const previousText = kpi.valor_anterior !== null && kpi.valor_anterior !== undefined
+      ? `Anterior ${fmtValor(kpi.valor_anterior, kpi.unidad, { compacto: true })}`
+      : 'Sin gestión anterior';
+    return (
+      <CardFolderV2
+        code={kpi.codigo}
+        title={kpi.nombre}
+        summary={sinDato && kpi.motivo_sin_dato ? kpi.motivo_sin_dato : kpi.descripcion}
+        badge={sinDato ? 'Sin dato' : sem.label}
+        statusColor={sem.color}
+        value={fmtValor(kpi.valor, kpi.unidad, { compacto: true })}
+        trend={<Tendencia kpi={kpi} />}
+        progress={pct}
+        metaText={metaText}
+        previousText={previousText}
+        onOpen={() => onAbrir(kpi.codigo)}
+      />
+    );
+  }
+
   return (
     <article className="cmi-card cmi-kpi" role="button" tabIndex={0}
       onClick={() => onAbrir(kpi.codigo)}
@@ -145,15 +211,18 @@ function TarjetaKpi({ kpi, onAbrir }) {
       </div>
       <div className="cmi-kpi-value">
         <span className="cmi-num" style={{ color: sinDato ? 'var(--cmi-muted)' : undefined }}>
-          {fmtValor(kpi.valor, kpi.unidad, { compacto: true })}
+          <AnimatedNumberV2 value={fmtValor(kpi.valor, kpi.unidad, { compacto: true })} />
         </span>
         <Tendencia kpi={kpi} />
       </div>
       {pct !== null && (
-        <div className="cmi-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100}
-             aria-valuenow={Math.round(pct * 100)} aria-label="Avance hacia la meta">
-          <i style={{ width: `${pct * 100}%`, background: sem.color }} />
-        </div>
+        <AnimatedProgressBarV2
+          className="cmi-progress"
+          value={pct * 100}
+          max={100}
+          color={sem.color}
+          ariaLabel="Avance hacia la meta"
+        />
       )}
       <div className="cmi-kpi-foot">
         <span>Meta {kpi.meta === null ? 'no definida' : `${kpi.sentido === 'MIN' ? '≤' : '≥'} ${fmtValor(kpi.meta, kpi.unidad, { compacto: true })}`}</span>
@@ -178,7 +247,7 @@ function SeccionPerspectiva({ p, onAbrir }) {
         <div className="cmi-section-meta">
           <i className="cmi-dot" style={{ background: SEMAFORO[banda].color }} />
           <span>Índice</span>
-          <span className="cmi-num">{p.indice ?? '—'}</span>
+          <span className="cmi-num">{p.indice !== null ? <AnimatedNumberV2 value={p.indice} /> : '—'}</span>
         </div>
       </header>
       {p.kpis.length === 0
@@ -192,6 +261,7 @@ export default function CmiScorecard() {
   const [gestion, setGestion] = useState(null);
   const [activa, setActiva] = useState(null);
   const [detalle, setDetalle] = useState(null);
+  const { triggerParentChild } = useParentChildTransitionV2();
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['cmi', 'scorecard', gestion],
@@ -239,13 +309,20 @@ export default function CmiScorecard() {
       <div className="cmi-toolbar">
         <div className="cmi-segment" role="group" aria-label="Gestión">
           {data.gestiones.map((g) => (
-            <button key={g} type="button" aria-pressed={g === data.gestion} onClick={() => setGestion(g)}>{g}</button>
+            <button
+              key={g}
+              type="button"
+              aria-pressed={g === data.gestion}
+              onClick={(e) => triggerParentChild(e.currentTarget, () => setGestion(g), { focusTargetId: 'cmi-scorecard-hero' })}
+            >
+              {g}
+            </button>
           ))}
         </div>
         <Leyenda />
       </div>
 
-      <div className="cmi-hero">
+      <div className="cmi-hero v2-parent-child-subpanel" id="cmi-scorecard-hero" tabIndex={-1}>
         <IndiceGlobal global={data.global} gestion={data.gestion} />
         <MapaEstrategico perspectivas={data.perspectivas} activa={activa} onSelect={irA} />
       </div>

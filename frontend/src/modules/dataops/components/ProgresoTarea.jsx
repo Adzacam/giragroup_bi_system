@@ -1,5 +1,7 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
+import AnimatedNumberV2 from '../../../v2/motion/AnimatedNumberV2';
+import AnimatedProgressBarV2 from '../../../v2/motion/AnimatedProgressBarV2';
 
 // 75 s -> '1 min 15 s'; 3700 s -> '1 h 1 min'
 export const fmtDuracion = (seg) => {
@@ -28,16 +30,31 @@ export default function ProgresoTarea({ titulo, tarea, segundosLocal = 0, nota }
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 700, color: 'var(--color-ink-black)' }}>
         <Loader2 size={15} className="spin" style={{ animation: 'spin 1s linear infinite', color: 'var(--color-gira-gold)' }} />
         {titulo}
-        {!indeterminado && <span style={{ marginLeft: 'auto', fontVariantNumeric: 'tabular-nums' }}>{pct.toFixed(1)} %</span>}
+        {!indeterminado && (
+          <span style={{ marginLeft: 'auto', fontVariantNumeric: 'tabular-nums' }}>
+            <AnimatedNumberV2 value={`${pct.toFixed(1)} %`} />
+          </span>
+        )}
       </div>
-      <div style={{ height: '8px', borderRadius: '999px', background: 'var(--color-border)', overflow: 'hidden', margin: '10px 0 8px' }}>
-        <div style={{
-          height: '100%', borderRadius: '999px', background: 'var(--color-gira-gold)',
-          width: indeterminado ? '35%' : `${Math.max(2, pct)}%`,
-          transition: 'width .6s ease',
-          animation: indeterminado ? 'progreso-indet 1.4s ease-in-out infinite' : 'none',
-        }} />
-      </div>
+      {indeterminado ? (
+        <div style={{ height: '8px', borderRadius: '999px', background: 'var(--color-border)', overflow: 'hidden', margin: '10px 0 8px' }}>
+          <div style={{
+            height: '100%', borderRadius: '999px', background: 'var(--color-gira-gold)',
+            width: '35%',
+            animation: 'progreso-indet 1.4s ease-in-out infinite',
+          }} />
+        </div>
+      ) : (
+        <AnimatedProgressBarV2
+          value={Math.max(2, pct)}
+          max={100}
+          color="var(--color-gira-gold)"
+          trackColor="var(--color-border)"
+          style={{ height: '8px', borderRadius: '999px', overflow: 'hidden', margin: '10px 0 8px', position: 'relative' }}
+          barStyle={{ display: 'block', height: '100%', borderRadius: '999px' }}
+          ariaLabel={titulo}
+        />
+      )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontSize: '12.5px', color: 'var(--color-slate-gray)', fontVariantNumeric: 'tabular-nums' }}>
         {total > 0 && <span>{(tarea.procesados || 0).toLocaleString('es-BO')} de {total.toLocaleString('es-BO')} registros</span>}
         <span>Transcurrido: {fmtDuracion(transcurrido)}</span>

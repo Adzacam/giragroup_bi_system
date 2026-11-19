@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 const VARIANTES = { dark: 'btn-pill-dark', ghost: 'btn-pill-ghost' };
 
 export default function Button({
-  variant = 'dark', isLoading = false, disabled = false, loadingText,
+  variant = 'dark', isLoading = false, disabled = false, loadingText = 'Procesando…',
   className = '', children, type = 'button', onClick, ...rest
 }) {
   const bloqueado = disabled || isLoading;

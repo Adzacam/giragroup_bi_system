@@ -17,6 +17,9 @@ import { RefreshCw, DollarSign, Target, TrendingUp, Calendar, AlertCircle } from
 import PageHeader from '../../components/shared/PageHeader';
 import { useTheme } from '../../context/ThemeContext';
 import forecastApi from '../../api/forecastApi';
+import { CHART_PLUGINS_V2, withChartAnimationsV2 } from '../../v2/motion/chartAnimationsV2';
+import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
+import ChartRevealV2 from '../../v2/motion/ChartRevealV2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
@@ -124,7 +127,7 @@ export default function ProyeccionFinanciera() {
     };
   }, [macroData, isDark]);
 
-  const defaultChartOptions = {
+  const defaultChartOptions = withChartAnimationsV2({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -144,7 +147,7 @@ export default function ProyeccionFinanciera() {
       x: { grid: { color: gridColor }, ticks: { color: mutedTextColor, font: { family: 'var(--font-sohne)', size: 10 } } },
       y: { grid: { color: gridColor }, ticks: { color: mutedTextColor, font: { family: 'var(--font-sohne)', size: 10 } } }
     }
-  };
+  });
 
   const mesAct = macroData?.caso3_metas_mensuales?.mes_actual;
   const anualAct = macroData?.caso4_metas_anuales;
@@ -190,35 +193,35 @@ export default function ProyeccionFinanciera() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Meta Mes Actual</div>
-          <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px' }}>Bs. {bs(mesAct?.meta_mes_bs)}</div>
+          <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px' }}><AnimatedNumberV2 value={`Bs. ${bs(mesAct?.meta_mes_bs)}`} /></div>
           <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>Catálogo Oficial de Programas</div>
         </div>
 
         <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Cierre Proyectado HW</div>
           <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px', color: 'var(--color-gira-gold)' }}>
-            Bs. {bs(mesAct?.cierre_proyectado_hw_bs)}
+            <AnimatedNumberV2 value={`Bs. ${bs(mesAct?.cierre_proyectado_hw_bs)}`} />
           </div>
           <div style={{ fontSize: '12px', color: 'var(--color-alert-green)', marginTop: '2px', fontWeight: 600 }}>
-            {pct(mesAct?.cumplimiento_proyectado_pct)} de cumplimiento estimado
+            <AnimatedNumberV2 value={pct(mesAct?.cumplimiento_proyectado_pct)} /> de cumplimiento estimado
           </div>
         </div>
 
         <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Meta Anual Institucional</div>
-          <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px' }}>Bs. {bs(anualAct?.meta_anual_institucional_bs)}</div>
+          <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px' }}><AnimatedNumberV2 value={`Bs. ${bs(anualAct?.meta_anual_institucional_bs)}`} /></div>
           <div style={{ fontSize: '12px', color: 'var(--color-gira-gold)', marginTop: '2px', fontWeight: 600 }}>
-            {pct(anualAct?.porcentaje_avance_meta)} ejecutado a la fecha
+            <AnimatedNumberV2 value={pct(anualAct?.porcentaje_avance_meta)} /> ejecutado a la fecha
           </div>
         </div>
 
         <div style={{ padding: '18px', borderRadius: '20px', background: 'var(--color-paper-white)', border: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', textTransform: 'uppercase', fontWeight: 600 }}>Ritmo de Crecimiento OLS</div>
           <div style={{ fontSize: '22px', fontWeight: 700, marginTop: '4px', color: 'var(--color-alert-green)' }}>
-            Bs. {sinDato(anualAct?.pendiente_anual_bs) ? '—' : Math.round(anualAct.pendiente_anual_bs / 1000)}k / año
+            <AnimatedNumberV2 value={`Bs. ${sinDato(anualAct?.pendiente_anual_bs) ? '—' : Math.round(anualAct.pendiente_anual_bs / 1000)}k`} /> / año
           </div>
           <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '2px' }}>
-            CAGR Interanual: {pct(anualAct?.cagr_historico_pct)}
+            CAGR Interanual: <AnimatedNumberV2 value={pct(anualAct?.cagr_historico_pct)} />
           </div>
         </div>
       </div>
@@ -241,7 +244,9 @@ export default function ProyeccionFinanciera() {
 
           <div style={{ height: '300px' }}>
             {chartMensualData ? (
-              <Bar data={chartMensualData} options={defaultChartOptions} />
+              <ChartRevealV2>
+                <Bar data={chartMensualData} options={defaultChartOptions} plugins={CHART_PLUGINS_V2} />
+              </ChartRevealV2>
             ) : (
               <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
                 {isLoading ? 'Cargando datos presupuestarios mensuales...' : (macroData?.sin_datos?.caso3 || 'Sin metas ni ejecución financiera en el Data Warehouse.')}
@@ -280,7 +285,9 @@ export default function ProyeccionFinanciera() {
 
           <div style={{ height: '230px' }}>
             {chartAnualData ? (
-              <Line data={chartAnualData} options={defaultChartOptions} />
+              <ChartRevealV2>
+                <Line data={chartAnualData} options={defaultChartOptions} plugins={CHART_PLUGINS_V2} />
+              </ChartRevealV2>
             ) : (
               <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-gray)' }}>
                 {isLoading ? 'Cargando serie anual OLS...' : (macroData?.sin_datos?.caso4 || anualAct?.nota_metodologica || 'Sin recaudación anual en el Data Warehouse.')}

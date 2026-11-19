@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { ArrowRight, AlertTriangle, FileText } from 'lucide-react';
 import BatchFlowLayout from './components/BatchFlowLayout';
 import Button from '../../components/shared/Button';
@@ -9,11 +9,14 @@ import { useLoteContext } from './hooks/useLoteContext';
 import useTextoPreparado from './hooks/useTextoPreparado';
 import { sileoToast } from '../../services/sileoToast';
 import { mensajeError } from '../../utils/mensajeError';
+import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
+import { toDataopsPath } from '../../v2/utils/v2Routes';
 
 export default function PlainTextTransformationView() {
   const { id } = useParams();
   const [search] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const batchId = id || search.get('lote') || localStorage.getItem('last_active_batch_id');
   const [selection, setSelection] = useState(null);
   const selectedDocId = selection?.batchId === batchId ? selection.docId : null;
@@ -44,7 +47,7 @@ export default function PlainTextTransformationView() {
         <FileText size={28} aria-hidden="true" />
         <h2 className="serif-heading" style={{ margin: '12px 0' }}>Selecciona un lote</h2>
         <p>Abre un lote desde el historial de carga para revisar su texto.</p>
-        <Button variant="ghost" onClick={() => navigate('/dataops/ingesta')} style={{ marginTop: 16 }}>Ir a carga de archivos</Button>
+        <Button variant="ghost" onClick={() => navigate(toDataopsPath('/ingesta', location.pathname))} style={{ marginTop: 16 }}>Ir a carga de archivos</Button>
       </div> : <>
         <div className="floating-artifact" style={{ padding: 24, marginBottom: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -62,7 +65,7 @@ export default function PlainTextTransformationView() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 20 }}>
             {[['Registros preparados', kpis.filas_leidas], ['Campos por fila, máximo', kpis.columnas_detectadas], ['Filas con observaciones', kpis.total_alertas]].map(([label, value]) => <div className="floating-artifact" key={label} style={{ padding: '16px 20px' }}>
               <p style={{ color: 'var(--color-slate-gray)', fontSize: 12 }}>{label}</p>
-              <p style={{ color: 'var(--color-ink-black)', fontSize: 24, marginTop: 6 }}>{value?.toLocaleString('es-BO') ?? 'Sin dato'}</p>
+              <p style={{ color: 'var(--color-ink-black)', fontSize: 24, marginTop: 6 }}>{value == null ? 'Sin dato' : <AnimatedNumberV2 value={value.toLocaleString('es-BO')} />}</p>
             </div>)}
           </div>
           <div className="floating-artifact" style={{ padding: 24 }} aria-busy={isFetching}>
@@ -96,8 +99,8 @@ export default function PlainTextTransformationView() {
           </details>}
         </>}
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginTop: 20 }}>
-          <Button variant="ghost" onClick={() => navigate('/dataops/ingesta')}>Volver a carga de archivos</Button>
-          {!readOnly && !error && total > 0 && <Button variant="ghost" className="btn-pill-gold" disabled={isFetching} onClick={() => navigate(`/dataops/lote/${context?.id_lote || batchId}/beto`)}>Ver lectura de BETO <ArrowRight size={15} /></Button>}
+          <Button variant="ghost" onClick={() => navigate(toDataopsPath('/ingesta', location.pathname))}>Volver a carga de archivos</Button>
+          {!readOnly && !error && total > 0 && <Button variant="ghost" className="btn-pill-gold" disabled={isFetching} onClick={() => navigate(toDataopsPath(`/lote/${context?.id_lote || batchId}/beto`, location.pathname))}>Ver lectura de BETO <ArrowRight size={15} /></Button>}
         </div>
       </>}
     </BatchFlowLayout>

@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { dataopsApi } from '../../api/dataopsApi';
 import { sileoToast } from '../../services/sileoToast';
 import { useNotifications } from '../../context/NotificationContext';
 import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
 import { fmtDuracion } from '../../modules/dataops/components/ProgresoTarea';
+import { toDataopsPath } from '../../v2/utils/v2Routes';
 
 const EVENTO = 'gira:tarea-iniciada';
 const PROGRESO = 'gira:tarea-progreso';
@@ -32,6 +33,9 @@ function ProgresoAviso({ inicial }) {
 /** Un aviso persistente de Sileo por tarea; la campana lee los avisos guardados por el servidor. */
 export default function TareasSegundoPlano({ role }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const pathnameRef = useRef(location.pathname);
+  pathnameRef.current = location.pathname;
   const { refreshNotifications } = useNotifications();
   const conocidas = useRef({});
   const avisos = useRef({});
@@ -55,7 +59,16 @@ export default function TareasSegundoPlano({ role }) {
           const titulo = `${TITULO[t.tipo] || 'Procesamiento'} · Lote #${t.id_lote ?? 'Sin dato'}`;
           if (t.estado === 'EN_CURSO') {
             if (!avisos.current[t.id]) {
-              avisos.current[t.id] = sileoToast.icon({ id: `dataops-tarea-${t.id}`, type: 'loading', title: titulo, description: <ProgresoAviso inicial={t} />, icon: <Loader2 size={16} className="btn-spinner" />, duration: 0, autopilot: false });
+              avisos.current[t.id] = sileoToast.upsertTask(t.id, {
+                type: 'show',
+                title: titulo,
+                etapa: t.etapa || TITULO[t.tipo] || 'Procesando',
+                porcentaje: t.porcentaje,
+                description: <ProgresoAviso inicial={t} />,
+                icon: <Loader2 size={16} className="btn-spinner" />,
+                duration: 0,
+                autopilot: false,
+              });
             }
             window.dispatchEvent(new CustomEvent(PROGRESO, { detail: t }));
           } else if (antes !== t.estado) {
@@ -64,7 +77,21 @@ export default function TareasSegundoPlano({ role }) {
             termino = true;
             if (antes === 'EN_CURSO') {
               const ok = t.estado === 'COMPLETADA';
-              sileoToast[ok ? 'success' : 'error']({ title: `${titulo}: ${ok ? 'terminado' : 'interrumpido'}`, description: ok ? 'Los resultados están disponibles en el lote y en la campana.' : 'Revisa el historial para reintentarlo.', button: { title: 'Ver lote', onClick: () => navigate(ok && t.id_lote ? `/dataops/lote/${t.id_lote}/${DESTINO[t.tipo] || 'revision'}` : '/dataops/ingesta') } });
+              sileoToast.upsertTask(t.id, {
+                type: ok ? 'success' : 'error',
+                title: `${titulo}: ${ok ? 'terminado' : 'interrumpido'}`,
+                porcentaje: ok ? 100 : t.porcentaje,
+                description: ok ? 'Los resultados están disponibles en el lote y en la campana.' : 'Revisa el historial para reintentarlo.',
+                button: {
+                  title: 'Ver lote',
+                  onClick: () => navigate(
+                    toDataopsPath(
+                      ok && t.id_lote ? `/lote/${t.id_lote}/${DESTINO[t.tipo] || 'revision'}` : '/ingesta',
+                      pathnameRef.current
+                    )
+                  ),
+                },
+              });
             }
           }
           conocidas.current[t.id] = t.estado;

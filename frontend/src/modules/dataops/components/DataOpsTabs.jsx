@@ -13,16 +13,19 @@ export default function DataOpsTabs({ tabs = [], activeTab, onChangeTab, disable
   return (
     <div
       role="tablist"
+      className="v2-pill-segment"
       style={{
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
         gap: '8px',
         padding: '6px',
-        borderRadius: '18px',
+        borderRadius: '9999px',
         backgroundColor: 'var(--color-mist-gray, #f2f2f3)',
         border: '1px solid var(--color-border, #ececec)',
         marginBottom: '24px',
+        width: 'fit-content',
+        maxWidth: '100%',
         transition: 'all 0.2s ease',
       }}
     >
@@ -35,13 +38,14 @@ export default function DataOpsTabs({ tabs = [], activeTab, onChangeTab, disable
             key={tab.id}
             role="tab"
             aria-selected={isActive}
-            onClick={() => onChangeTab(tab.id)}
+            className={`v2-pill-segment-btn ${isActive ? 'is-active' : ''}`}
+            onClick={(e) => onChangeTab(tab.id, e.currentTarget)}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
               padding: '9px 18px',
-              borderRadius: '14px',
+              borderRadius: '9999px',
               fontSize: '13px',
               fontWeight: isActive ? 600 : 500,
               fontFamily: 'var(--font-sohne, inherit)',

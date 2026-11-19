@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle2, FileSpreadsheet, Layers, PlusCircle } from 'lucide-react';
 import GlosarioFlotante from '../../../components/shared/GlosarioFlotante';
 import Button from '../../../components/shared/Button';
@@ -8,6 +8,7 @@ import BatchFlowHeader from './BatchFlowHeader';
 import BatchFlowStepper from './BatchFlowStepper';
 import { useLoteContext } from '../hooks/useLoteContext';
 import { clearLoteFlowSession } from '../context/LoteFlowContext';
+import { toDataopsPath } from '../../../v2/utils/v2Routes';
 
 export default function BatchFlowLayout({
   currentStep = 1,
@@ -20,6 +21,7 @@ export default function BatchFlowLayout({
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const effectiveRouteId = id || searchParams.get('lote');
   let ultimoActivo = null;
   try { ultimoActivo = localStorage.getItem('last_active_batch_id'); } catch { /* sin storage */ }
@@ -33,11 +35,11 @@ export default function BatchFlowLayout({
   const handleNuevoLote = () => {
     clearLoteFlowSession(targetId);
     try { localStorage.removeItem('last_active_batch_id'); } catch { /* sin storage */ }
-    navigate('/dataops/ingesta');
+    navigate(toDataopsPath('/ingesta', location.pathname));
   };
 
   const handleSelectBatch = () => {
-    navigate('/dataops/ingesta');
+    navigate(toDataopsPath('/ingesta', location.pathname));
   };
 
   const archivosLote = batchContext?.archivos || [];
@@ -136,7 +138,7 @@ export default function BatchFlowLayout({
         </div>
       )}
 
-      <div className="batch-flow-content">
+      <div className="batch-flow-content v2-parent-child-panel">
         {targetId && isPending ? <p className="floating-artifact" role="status" style={{ padding: 24 }}>Comprobando el estado del lote…</p>
           : targetId && error ? <div className="floating-artifact" role="alert" style={{ padding: 24 }}>
             <p>No se pudo comprobar el estado del lote.</p><Button variant="ghost" onClick={() => refetch()}>Reintentar</Button>

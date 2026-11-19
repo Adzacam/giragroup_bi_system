@@ -1,21 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { X, KeyRound, Mail, ArrowRight, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { X, KeyRound, Mail, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 import { authApi } from '../../../api/authApi';
+import '../../../styles/v2-login.css';
 
 export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = '' }) {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
+      setShouldRender(true);
+      setIsClosing(false);
       setEmail(initialEmail || '');
       setIsSuccess(false);
       setErrorMessage('');
       setIsLoading(false);
+    } else if (shouldRender) {
+      setIsClosing(true);
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+        setIsClosing(false);
+      }, 240);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, initialEmail]);
+  }, [isOpen, initialEmail, shouldRender]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -27,7 +39,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = ''
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!shouldRender) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,6 +69,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = ''
       role="dialog"
       aria-modal="true"
       aria-labelledby="forgot-password-title"
+      className={`v2-modal-backdrop${isClosing ? ' is-closing' : ''}`}
       style={{
         position: 'fixed',
         inset: 0,
@@ -67,14 +80,13 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = ''
         padding: '20px',
         backgroundColor: 'rgba(12, 30, 51, 0.65)',
         backdropFilter: 'blur(8px)',
-        animation: 'fadeIn 0.2s ease-out',
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="modal-panel"
+        className={`modal-panel v2-modal-card${isClosing ? ' is-closing' : ''}`}
         style={{
           width: '100%',
           maxWidth: '480px',
@@ -121,7 +133,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = ''
         </button>
 
         {!isSuccess ? (
-          <div>
+          <div key="forgot-form" className="v2-modal-step-enter">
             {/* Cabecera Institucional */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
               <div
@@ -302,7 +314,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = ''
           </div>
         ) : (
           /* Estado de Éxito */
-          <div style={{ textAlign: 'center', padding: '12px 6px' }}>
+          <div key="forgot-success" className="v2-modal-step-enter" style={{ textAlign: 'center', padding: '12px 6px' }}>
             <div
               style={{
                 width: '56px',
@@ -317,7 +329,24 @@ export default function ForgotPasswordModal({ isOpen, onClose, initialEmail = ''
                 margin: '0 auto 18px auto',
               }}
             >
-              <CheckCircle2 size={30} />
+              <svg width="30" height="30" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+                <circle
+                  cx="26"
+                  cy="26"
+                  r="22"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  className="v2-check-svg-circle"
+                />
+                <path
+                  d="M16 26.5L22.5 33L36 19.5"
+                  stroke="currentColor"
+                  strokeWidth="3.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="v2-check-svg-tick"
+                />
+              </svg>
             </div>
 
             <h2

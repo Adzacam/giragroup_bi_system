@@ -15,9 +15,11 @@ import { kpiApi } from '../../api/kpiApi';
 import { academicApi } from '../../api/academicApi';
 import useKineticScroll from '../../hooks/useKineticScroll';
 import { sileoToast } from '../../services/sileoToast';
+import { useParentChildTransitionV2 } from '../../v2/transitions/useParentChildTransitionV2';
 
 export default function AuditoriaSistema() {
   useKineticScroll();
+  const { triggerParentChild } = useParentChildTransitionV2();
 
   // ── Tab State: 'trazabilidad' | 'alertas' ───────────────────────────
   const [activeTab, setActiveTab] = useState('trazabilidad');
@@ -146,31 +148,31 @@ export default function AuditoriaSistema() {
     switch ((sev || '').toUpperCase()) {
       case 'CRITICAL':
         return {
-          bg: '#fee2e2',
+          bg: 'rgba(217, 56, 58, 0.12)',
           color: 'var(--color-alert-red)',
-          border: '#fca5a5',
+          border: 'var(--color-alert-red)',
           label: 'CRITICAL',
         };
       case 'WARNING':
         return {
-          bg: '#fef3c7',
-          color: '#b45309',
-          border: '#fcd34d',
+          bg: 'rgba(217, 155, 38, 0.14)',
+          color: 'var(--color-alert-amber)',
+          border: 'var(--color-gira-gold)',
           label: 'WARNING',
         };
       case 'SUCCESS':
         return {
-          bg: '#dcfce7',
+          bg: 'rgba(27, 135, 84, 0.12)',
           color: 'var(--color-alert-green)',
-          border: '#86efac',
+          border: 'var(--color-alert-green)',
           label: 'SUCCESS',
         };
       case 'INFO':
       default:
         return {
-          bg: '#e0f2fe',
-          color: '#0369a1',
-          border: '#7dd3fc',
+          bg: 'rgba(2, 132, 199, 0.12)',
+          color: 'var(--sileo-state-info)',
+          border: 'var(--sileo-state-info)',
           label: 'INFO',
         };
     }
@@ -179,10 +181,10 @@ export default function AuditoriaSistema() {
   const getModuleBadge = (mod) => {
     const m = (mod || '').toLowerCase();
     if (m.includes('seguridad') || m.includes('2fa')) {
-      return { bg: '#ede9fe', color: '#6d28d9', icon: Lock };
+      return { bg: 'var(--dataops-badge-bg)', color: 'var(--dataops-badge-text)', icon: Lock };
     }
     if (m.includes('dataops') || m.includes('ingesta') || m.includes('pipeline')) {
-      return { bg: '#e0f2fe', color: '#0284c7', icon: FileSpreadsheet };
+      return { bg: 'rgba(2, 132, 199, 0.12)', color: 'var(--sileo-state-info)', icon: FileSpreadsheet };
     }
     return { bg: 'var(--color-mist-gray)', color: 'var(--color-ink-black)', icon: Activity };
   };
@@ -190,14 +192,14 @@ export default function AuditoriaSistema() {
   const getRoleBadge = (role) => {
     switch (role) {
       case 'DIRECTOR_ACADEMICO':
-        return { bg: '#dbeafe', color: '#1e40af', label: 'Dirección Académica' };
+        return { bg: 'rgba(2, 132, 199, 0.12)', color: 'var(--sileo-state-info)', label: 'Dirección Académica' };
       case 'ANALISTA_FINANCIERO':
-        return { bg: '#fef3c7', color: '#92400e', label: 'Analista Financiero' };
+        return { bg: 'rgba(217, 155, 38, 0.14)', color: 'var(--color-alert-amber)', label: 'Analista Financiero' };
       case 'AUDITOR_CALIDAD':
-        return { bg: '#f3e8ff', color: '#6b21a8', label: 'Auditor de Calidad' };
+        return { bg: 'var(--dataops-badge-bg)', color: 'var(--dataops-badge-text)', label: 'Auditor de Calidad' };
       case 'ADMIN':
       default:
-        return { bg: '#f1f5f9', color: '#334155', label: 'Administrador' };
+        return { bg: 'var(--color-mist-gray)', color: 'var(--color-ink-black)', label: 'Administrador' };
     }
   };
 
@@ -257,7 +259,7 @@ export default function AuditoriaSistema() {
       sileoToast.icon({
         title: 'Auditoría Exportada',
         description: 'Archivo CSV descargado con firma criptográfica inmutable.',
-        icon: <Download size={16} color="#34d399" />
+        icon: <Download size={16} color="var(--color-alert-green)" />
       });
     } catch (err) {
       console.error('Error al exportar CSV:', err);
@@ -273,7 +275,7 @@ export default function AuditoriaSistema() {
       sileoToast.icon({
         title: 'Parámetros Incompletos',
         description: 'Debe seleccionar un archivo (.xlsx, .csv) o ingresar un ID de documento existente.',
-        icon: <AlertCircle size={16} color="#ef4444" />
+        icon: <AlertCircle size={16} color="var(--color-alert-red)" />
       });
       return;
     }
@@ -292,7 +294,7 @@ export default function AuditoriaSistema() {
       sileoToast.icon({
         title: 'Pipeline Ejecutado con Éxito',
         description: `Procesamiento completado en ${res.tiempo_total_ms?.toFixed(0) || 0} ms.`,
-        icon: <CheckCircle2 size={16} color="#22c55e" />
+        icon: <CheckCircle2 size={16} color="var(--color-alert-green)" />
       });
 
       // Recargar bitácora y alertas para reflejar el nuevo procesamiento
@@ -303,7 +305,7 @@ export default function AuditoriaSistema() {
       sileoToast.icon({
         title: 'Error de Ejecución',
         description: errMsg,
-        icon: <AlertTriangle size={16} color="#ef4444" />
+        icon: <AlertTriangle size={16} color="var(--color-alert-red)" />
       });
     } finally {
       setIsExecutingPipeline(false);
@@ -333,7 +335,7 @@ export default function AuditoriaSistema() {
         sileoToast.icon({
           title: 'Formato no soportado',
           description: 'Solo se admiten archivos .xlsx y .csv',
-          icon: <AlertCircle size={16} color="#ef4444" />
+          icon: <AlertCircle size={16} color="var(--color-alert-red)" />
         });
       }
     }
@@ -382,7 +384,7 @@ export default function AuditoriaSistema() {
                 fontSize: '13px',
                 fontWeight: 600,
                 backgroundColor: 'var(--color-sienna-brown)',
-                color: '#ffffff',
+                color: 'var(--color-paper-white)',
                 border: 'none',
                 borderRadius: '12px',
                 cursor: 'pointer',
@@ -437,28 +439,35 @@ export default function AuditoriaSistema() {
 
       {/* ── Selector de Pestañas Institucional ── */}
       <div
+        className="v2-pill-segment"
         style={{
-          display: 'flex',
-          gap: '12px',
-          borderBottom: '1px solid var(--color-border)',
+          display: 'inline-flex',
+          flexWrap: 'wrap',
+          gap: '8px',
+          padding: '6px',
+          borderRadius: '9999px',
+          backgroundColor: 'var(--color-mist-gray)',
+          border: '1px solid var(--color-border)',
           marginBottom: '28px',
-          paddingBottom: '2px',
         }}
       >
         <button
-          onClick={() => setActiveTab('trazabilidad')}
+          type="button"
+          className={`v2-pill-segment-btn ${activeTab === 'trazabilidad' ? 'is-active' : ''}`}
+          aria-pressed={activeTab === 'trazabilidad'}
+          onClick={(e) => triggerParentChild(e.currentTarget, () => setActiveTab('trazabilidad'))}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '12px 20px',
-            fontSize: '14px',
-            fontWeight: 700,
+            padding: '10px 20px',
+            borderRadius: '9999px',
+            fontSize: '13.5px',
+            fontWeight: 600,
             cursor: 'pointer',
-            border: 'none',
-            background: 'none',
+            border: activeTab === 'trazabilidad' ? '1.5px solid var(--color-gira-gold)' : '1.5px solid transparent',
+            background: activeTab === 'trazabilidad' ? 'var(--color-paper-white)' : 'transparent',
             color: activeTab === 'trazabilidad' ? 'var(--color-ink-black)' : 'var(--color-slate-gray)',
-            borderBottom: activeTab === 'trazabilidad' ? '2.5px solid var(--color-ink-black)' : '2.5px solid transparent',
             transition: 'all 0.2s ease',
           }}
         >
@@ -467,19 +476,22 @@ export default function AuditoriaSistema() {
         </button>
 
         <button
-          onClick={() => setActiveTab('alertas')}
+          type="button"
+          className={`v2-pill-segment-btn ${activeTab === 'alertas' ? 'is-active' : ''}`}
+          aria-pressed={activeTab === 'alertas'}
+          onClick={(e) => triggerParentChild(e.currentTarget, () => setActiveTab('alertas'))}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '12px 20px',
-            fontSize: '14px',
-            fontWeight: 700,
+            padding: '10px 20px',
+            borderRadius: '9999px',
+            fontSize: '13.5px',
+            fontWeight: 600,
             cursor: 'pointer',
-            border: 'none',
-            background: 'none',
+            border: activeTab === 'alertas' ? '1.5px solid var(--color-gira-gold)' : '1.5px solid transparent',
+            background: activeTab === 'alertas' ? 'var(--color-paper-white)' : 'transparent',
             color: activeTab === 'alertas' ? 'var(--color-ink-black)' : 'var(--color-slate-gray)',
-            borderBottom: activeTab === 'alertas' ? '2.5px solid var(--color-ink-black)' : '2.5px solid transparent',
             transition: 'all 0.2s ease',
           }}
         >
@@ -491,6 +503,7 @@ export default function AuditoriaSistema() {
       {/* ══════════════════════════════════════════════════════════════════ */}
       {/* PESTAÑA 1: TRAZABILIDAD & EVENTOS INMUTABLES                      */}
       {/* ══════════════════════════════════════════════════════════════════ */}
+      <div className="v2-parent-child-panel">
       {activeTab === 'trazabilidad' && (
         <>
           {/* ── 4 KPI Cards de Auditoría ── */}
@@ -571,13 +584,13 @@ export default function AuditoriaSistema() {
                     width: '36px',
                     height: '36px',
                     borderRadius: '8px',
-                    backgroundColor: '#ede9fe',
+                    backgroundColor: 'var(--dataops-badge-bg)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <Lock size={18} color="#6d28d9" />
+                  <Lock size={18} color="var(--dataops-badge-text)" />
                 </div>
                 <h3
                   style={{
@@ -597,7 +610,7 @@ export default function AuditoriaSistema() {
                 style={{
                   fontSize: '34px',
                   fontWeight: '500',
-                  color: '#6d28d9',
+                  color: 'var(--dataops-badge-text)',
                   marginBottom: '4px',
                 }}
               >
@@ -624,13 +637,13 @@ export default function AuditoriaSistema() {
                     width: '36px',
                     height: '36px',
                     borderRadius: '8px',
-                    backgroundColor: '#e0f2fe',
+                    backgroundColor: 'rgba(2, 132, 199, 0.12)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <FileSpreadsheet size={18} color="#0284c7" />
+                  <FileSpreadsheet size={18} color="var(--sileo-state-info)" />
                 </div>
                 <h3
                   style={{
@@ -650,7 +663,7 @@ export default function AuditoriaSistema() {
                 style={{
                   fontSize: '34px',
                   fontWeight: '500',
-                  color: '#0284c7',
+                  color: 'var(--sileo-state-info)',
                   marginBottom: '4px',
                 }}
               >
@@ -677,7 +690,7 @@ export default function AuditoriaSistema() {
                     width: '36px',
                     height: '36px',
                     borderRadius: '8px',
-                    backgroundColor: '#fee2e2',
+                    backgroundColor: 'rgba(217, 56, 58, 0.12)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1048,7 +1061,7 @@ export default function AuditoriaSistema() {
                     width: '36px',
                     height: '36px',
                     borderRadius: '8px',
-                    backgroundColor: '#fee2e2',
+                    backgroundColor: 'rgba(217, 56, 58, 0.12)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1084,19 +1097,19 @@ export default function AuditoriaSistema() {
                     width: '36px',
                     height: '36px',
                     borderRadius: '8px',
-                    backgroundColor: '#fef3c7',
+                    backgroundColor: 'rgba(217, 155, 38, 0.14)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <AlertCircle size={18} color="#b45309" />
+                  <AlertCircle size={18} color="var(--color-alert-amber)" />
                 </div>
                 <h3 style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-slate-gray)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.6px' }}>
                   Advertencias Preventivas
                 </h3>
               </div>
-              <div className="serif-display" style={{ fontSize: '34px', fontWeight: '500', color: '#b45309', marginBottom: '4px' }}>
+              <div className="serif-display" style={{ fontSize: '34px', fontWeight: '500', color: 'var(--color-alert-amber)', marginBottom: '4px' }}>
                 {totalWarningAlertas} preventivas
               </div>
               <div style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)' }}>
@@ -1120,19 +1133,19 @@ export default function AuditoriaSistema() {
                     width: '36px',
                     height: '36px',
                     borderRadius: '8px',
-                    backgroundColor: '#ffe4e6',
+                    backgroundColor: 'rgba(217, 56, 58, 0.12)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <Users size={18} color="#be123c" />
+                  <Users size={18} color="var(--color-alert-red)" />
                 </div>
                 <h3 style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-slate-gray)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.6px' }}>
                   Casos con Riesgo Cruzado
                 </h3>
               </div>
-              <div className="serif-display" style={{ fontSize: '34px', fontWeight: '500', color: '#be123c', marginBottom: '4px' }}>
+              <div className="serif-display" style={{ fontSize: '34px', fontWeight: '500', color: 'var(--color-alert-red)', marginBottom: '4px' }}>
                 {casosCruzados.length} estudiantes
               </div>
               <div style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)' }}>
@@ -1372,6 +1385,7 @@ export default function AuditoriaSistema() {
           </div>
         </>
       )}
+      </div>
 
       {/* ══════════════════════════════════════════════════════════════════ */}
       {/* MODAL: EJECUCIÓN DE PIPELINE BAJO DEMANDA                          */}
@@ -1458,7 +1472,7 @@ export default function AuditoriaSistema() {
                       borderRadius: '16px',
                       padding: '24px',
                       textAlign: 'center',
-                      backgroundColor: dragActive ? '#fff1f2' : 'var(--color-fog-white)',
+                      backgroundColor: dragActive ? 'var(--dataops-surface-tint)' : 'var(--color-fog-white)',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                     }}
@@ -1549,7 +1563,7 @@ export default function AuditoriaSistema() {
                     fontSize: '13px',
                     fontWeight: 600,
                     backgroundColor: 'var(--color-ink-black)',
-                    color: '#ffffff',
+                    color: 'var(--color-paper-white)',
                     border: 'none',
                     borderRadius: '12px',
                     cursor: (isExecutingPipeline || (!selectedFile && !manualDocId)) ? 'not-allowed' : 'pointer',
@@ -1603,16 +1617,16 @@ export default function AuditoriaSistema() {
                     </div>
                   </div>
 
-                  <div style={{ padding: '12px', borderRadius: '12px', backgroundColor: '#dcfce7', border: '1px solid #86efac', textAlign: 'center' }}>
-                    <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>CARGADOS AL DATA WAREHOUSE</div>
+                  <div style={{ padding: '12px', borderRadius: '12px', backgroundColor: 'rgba(27, 135, 84, 0.12)', border: '1px solid var(--color-alert-green)', textAlign: 'center' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--color-alert-green)', fontWeight: 600 }}>CARGADOS AL DATA WAREHOUSE</div>
                     <div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--color-alert-green)', marginTop: '2px' }}>
                       {pipelineResult.hechos_cargados_dw}
                     </div>
                   </div>
 
-                  <div style={{ padding: '12px', borderRadius: '12px', backgroundColor: pipelineResult.entidades_derivadas_staging > 0 ? '#fef3c7' : 'var(--color-fog-white)', border: '1px solid var(--color-border)', textAlign: 'center' }}>
+                  <div style={{ padding: '12px', borderRadius: '12px', backgroundColor: pipelineResult.entidades_derivadas_staging > 0 ? 'rgba(217, 155, 38, 0.14)' : 'var(--color-fog-white)', border: '1px solid var(--color-border)', textAlign: 'center' }}>
                     <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', fontWeight: 600 }}>A REVISIÓN</div>
-                    <div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: pipelineResult.entidades_derivadas_staging > 0 ? '#b45309' : 'var(--color-ink-black)', marginTop: '2px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: pipelineResult.entidades_derivadas_staging > 0 ? 'var(--color-alert-amber)' : 'var(--color-ink-black)', marginTop: '2px' }}>
                       {pipelineResult.entidades_derivadas_staging}
                     </div>
                   </div>
@@ -1632,11 +1646,11 @@ export default function AuditoriaSistema() {
                       alignItems: 'center',
                       gap: '10px',
                       padding: '12px 16px',
-                      backgroundColor: '#fef3c7',
-                      border: '1px solid #fcd34d',
+                      backgroundColor: 'rgba(217, 155, 38, 0.14)',
+                      border: '1px solid var(--color-gira-gold)',
                       borderRadius: '12px',
                       fontSize: '12.5px',
-                      color: '#92400e',
+                      color: 'var(--color-alert-amber)',
                     }}
                   >
                     <AlertTriangle size={16} flexShrink={0} />

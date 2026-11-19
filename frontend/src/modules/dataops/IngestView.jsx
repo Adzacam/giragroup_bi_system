@@ -12,6 +12,8 @@ import Paginacion from '../../components/shared/Paginacion';
 import usePaginacion from '../../hooks/usePaginacion';
 import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
 import { clearLoteFlowSession } from './context/LoteFlowContext';
+import useTextoPreparado from './hooks/useTextoPreparado';
+import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
 import { dataopsApi } from '../../api/dataopsApi';
 import { mensajeError } from '../../utils/mensajeError';
 import { sileoToast } from '../../services/sileoToast';
@@ -30,12 +32,22 @@ import {
   ESCALAS_ACADEMICAS,
   TIPOS_FUENTE_DATAOPS,
   UMBRAL_INDICE_REGISTRO,
+  getTipoFuenteLabel,
 } from '../../constants/dataopsConfig';
+import {
+  getSelectedQueueFiles,
+  isAllQueueSelected,
+  toggleSelectAllQueue,
+  toggleUidSelection,
+  validateQueueSelection,
+} from './utils/cargaHistorialHelpers';
 
 export default function IngestView() {
 
   // ─── Estado de la cola multi-archivo (zona de carga) ───
   const [queuedFiles, setQueuedFiles] = useState([]);
+  const [selectedQueueUids, setSelectedQueueUids] = useState([]);
+  const [expandedDetailKey, setExpandedDetailKey] = useState(null);
   const institucion = 'GiraGroup Posgrado';
   const processingRef = useRef(false);
   const dropzoneRef = useRef(null);
@@ -49,10 +61,9 @@ export default function IngestView() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStageText, setUploadStageText] = useState('');
 
-  // ─── Estado de Lote Activo para lista de archivos y Sección C (Split View) ───
+  // ─── Estado de Lote Activo para inspección desde historial ───
   const [activeBatchId, setActiveBatchId] = useState(null);
   const [activeBatchData, setActiveBatchData] = useState(null);
-  const [selectedInspectionIndex, setSelectedInspectionIndex] = useState(0);
   const [isLoadingBatchData, setIsLoadingBatchData] = useState(false);
 
   // ─── Estados del Drawer de Bitácora Técnica y Reporte Markdown (.MD) ───
@@ -123,10 +134,18 @@ export default function IngestView() {
     setActiveBatchId(null);
     setActiveBatchData(null);
     setQueuedFiles([]);
-    setSelectedInspectionIndex(0);
+    setSelectedQueueUids([]);
+    setExpandedDetailKey(null);
     queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY });
     dropzoneRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     dropzoneRef.current?.focus({ preventScroll: true });
+  };
+
+  const handleClearQueue = () => {
+    if (processingRef.current || queueCheckRef.current) return;
+    setQueuedFiles([]);
+    setSelectedQueueUids([]);
+    setExpandedDetailKey(null);
   };
 
   const addFilesToQueue = async (fileList) => {
@@ -170,6 +189,7 @@ export default function IngestView() {
 
       if (validItems.length > 0) {
         setQueuedFiles((prev) => [...prev, ...validItems]);
+        setSelectedQueueUids((prev) => [...prev, ...validItems.map((it) => it.uid)]);
         const unrecognizedCount = validItems.filter((it) => !it.sourceType).length;
         if (unrecognizedCount > 0) {
           sileoToast.warning({
@@ -206,6 +226,8 @@ export default function IngestView() {
   const handleRemoveFile = (uid) => {
     if (processingRef.current || queueCheckRef.current) return;
     setQueuedFiles((prev) => prev.filter((item) => item.uid !== uid));
+    setSelectedQueueUids((prev) => prev.filter((id) => id !== uid));
+    if (expandedDetailKey === uid) setExpandedDetailKey(null);
   };
 
   const handleChangeFileSourceType = (uid, newCode) => {
@@ -216,40 +238,34 @@ export default function IngestView() {
         return {
           ...item,
           sourceType: newCode,
-            tipoEscala: academic ? (item.tipoEscala || '') : null,
+          tipoEscala: academic ? (item.tipoEscala || '') : null,
           status: 'En cola',
-          };
+        };
       })
     );
   };
 
-  // Validaciones del lote
-  const missingSourceTypeCount = queuedFiles.filter((it) => !it.sourceType).length;
-  const missingScaleCount = queuedFiles.filter(
-    (it) => isAcademicSourceType(it.sourceType) && !it.tipoEscala
-  ).length;
-
-  const isFormValid =
-    queuedFiles.length > 0 &&
-    queuedFiles.length <= MAX_ARCHIVOS_POR_LOTE &&
-    Boolean(institucion) &&
-    missingSourceTypeCount === 0 &&
-    missingScaleCount === 0;
+  // Validaciones de los archivos seleccionados en cola
+  const selectedQueueFiles = getSelectedQueueFiles(queuedFiles, selectedQueueUids);
+  const allQueueSelected = isAllQueueSelected(queuedFiles, selectedQueueUids);
+  const queueValidation = validateQueueSelection(selectedQueueFiles, MAX_ARCHIVOS_POR_LOTE, institucion);
+  const isFormValid = queueValidation.valid;
 
   const handleProcessBatch = async () => {
     if (!isFormValid || processingRef.current || isCheckingFiles) return;
     processingRef.current = true;
+    const filesToSend = selectedQueueFiles;
 
     try {
       setIsProcessing(true);
       setUploadProgress(0);
-      setUploadStageText(`Transfiriendo ${queuedFiles.length} archivo(s) al servidor...`);
+      setUploadStageText(`Transfiriendo ${filesToSend.length} archivo(s) al servidor...`);
       sileoToast.info({
         title: 'Cargando archivos',
-        description: `Se enviarán ${queuedFiles.length} archivo(s) para procesar.`,
+        description: `Se enviarán ${filesToSend.length} archivo(s) para procesar.`,
       });
 
-      const payload = queuedFiles.map((it) => ({
+      const payload = filesToSend.map((it) => ({
         file: it.file,
         sourceType: it.sourceType,
         tipoEscala: isAcademicSourceType(it.sourceType) ? it.tipoEscala : null,
@@ -263,7 +279,6 @@ export default function IngestView() {
             setUploadStageText(`Subiendo archivos al servidor: ${pct}% completado...`);
           } else {
             setUploadStageText('Archivos transferidos. El servidor está procesando el lote (normalización, fechas y pre-etiquetado)...');
-            // La transferencia terminó, la ingesta no: el panel global sigue el avance aunque se cambie de página
             avisarTareaIniciada();
             sileoToast.info({
               title: 'Archivos transferidos al servidor',
@@ -283,7 +298,29 @@ export default function IngestView() {
       const exitosos = uploadRes?.archivos_exitosos ?? 0;
       const fallidos = perFileResults.filter(r => r.status !== 'procesado');
       queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY });
-      setQueuedFiles(prev => prev.filter((it, idx) => perFileResults[idx]?.status !== 'procesado').map(it => ({ ...it, status: 'Por revisar' })));
+
+      const resultByUid = new Map();
+      filesToSend.forEach((it, idx) => {
+        if (perFileResults[idx]) resultByUid.set(it.uid, perFileResults[idx]);
+      });
+
+      const processedUids = new Set();
+      setQueuedFiles(prev =>
+        prev
+          .map((it) => {
+            const r = resultByUid.get(it.uid);
+            if (!r) return it;
+            if (r.status === 'procesado') {
+              processedUids.add(it.uid);
+              return null;
+            }
+            const backendCode = toCanonicalSourceCode(r.tipo_fuente) || it.sourceType;
+            return { ...it, sourceType: backendCode, status: 'Por revisar' };
+          })
+          .filter(Boolean)
+      );
+      setSelectedQueueUids((prev) => prev.filter((uid) => !processedUids.has(uid)));
+
       if (fallidos.length) {
         sileoToast.warning({ title: `${fallidos.length} archivo(s) sin procesar`, description: fallidos.map(r => `${r.nombre_archivo}: ${r.mensaje || 'Revisa el archivo.'}`).join('\n') });
       }
@@ -310,55 +347,34 @@ export default function IngestView() {
     }
   };
 
-  // ─── Datos de la lista de archivos (Tabla de Lote del Dispatcher) ───
-  const batchTableItems = queuedFiles.length > 0
-    ? queuedFiles.map((q, index) => ({
-        index, nombre: q.file.name, size: formatFileSize(q.file.size),
-        origen: TIPOS_FUENTE_DATAOPS.find(t => t.code === q.sourceType)?.label || 'Por seleccionar',
-        filas: q.resultRecords ?? 'Sin dato', fechas: 'Por detectar',
-        estado: q.status, isQueued: true,
-      }))
-    : (activeBatchData?.archivos || []).map((a, index) => ({
-        index, nombre: a.nombre_archivo || 'Sin dato', size: 'Sin dato',
-        origen: TIPOS_FUENTE_DATAOPS.find(t => t.code === a.tipo_fuente)?.label || 'Sin dato',
-        filas: a.total_registros ?? 'Sin dato', fechas: activeBatchData.rango_fechas || 'Sin dato',
-        estado: 'Texto listo', isQueued: false,
-      }));
-  const filesPagination = usePaginacion(batchTableItems);
+  const inspectedFiles = (activeBatchData?.archivos || []).map((a, index) => ({
+    key: `lote_${activeBatchId || 'x'}_${a.id_documento || index}`,
+    nombre: a.nombre_archivo || 'Sin dato',
+    size: 'Sin dato',
+    origen: getTipoFuenteLabel(a.tipo_fuente) || a.tipo_fuente || 'Sin dato',
+    filas: a.total_registros ?? 'Sin dato',
+    fechas: activeBatchData?.rango_fechas || 'Sin dato',
+    estado: 'Texto listo',
+  }));
   const queuePagination = usePaginacion(queuedFiles);
-
-  const currentSelectedFile = batchTableItems[selectedInspectionIndex] || batchTableItems[0] || null;
+  const inspectedPagination = usePaginacion(inspectedFiles);
+  const { data: prepResumen } = useTextoPreparado(activeBatchId, null, 1, !!activeBatchId && inspectedFiles.length > 0);
+  const prepKpis = prepResumen?.kpis || null;
 
   return (
     <BatchFlowLayout currentStep={1}>
-      {/* ─── SECCIÓN A: ZONA DE CARGA MULTIFUENTE Y CONFIGURACIÓN DE LOTE ─── */}
+      {/* ─── SECCIÓN A: ZONA DE CARGA MULTIFUENTE Y REGLAS ─── */}
       <div className="dataops-section-a" style={{ marginBottom: '28px' }}>
-        
-        {/* Panel Izquierdo: Dropzone Multifichero (1 a N archivos) */}
+
+        {/* Panel Izquierdo: Dropzone Multifichero + Acciones de Cola */}
         <div className="floating-artifact" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h2 className="serif-heading" style={{ fontSize: '18px', margin: '0 0 4px 0', color: 'var(--color-ink-black)' }}>
-                Cargar archivos
-              </h2>
-              <p style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)', margin: 0 }}>
-                Puedes cargar archivos de <strong>Exportaciones Moodle, Google Sheets</strong> (Actas Notas/Asistencia), <strong>Google Forms</strong> (Admisiones/Pagos). Hasta {MAX_ARCHIVOS_POR_LOTE} archivos .xlsx o .csv, de {MAX_TAMANO_ARCHIVO_MB} MB cada uno.
-              </p>
-            </div>
-            {queuedFiles.length > 0 && (
-              <Button variant="ghost"
-                disabled={isProcessing || isCheckingFiles}
-                onClick={() => setQueuedFiles([])}
-                className="sileo-btn"
-                style={{
-                  padding: '5px 12px', fontSize: '11px', borderRadius: '6px',
-                  backgroundColor: 'var(--color-mist-gray)', border: '1px solid var(--color-border)',
-                  color: 'var(--color-slate-gray)', cursor: 'pointer', fontWeight: 600
-                }}
-              >
-                Vaciar cola ({queuedFiles.length})
-              </Button>
-            )}
+          <div>
+            <h2 className="serif-heading" style={{ fontSize: '18px', margin: '0 0 4px 0', color: 'var(--color-ink-black)' }}>
+              Cargar archivos
+            </h2>
+            <p style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)', margin: 0 }}>
+              Puedes cargar archivos de <strong>Exportaciones Moodle, Google Sheets</strong> (Actas Notas/Asistencia), <strong>Google Forms</strong> (Admisiones/Pagos). Hasta {MAX_ARCHIVOS_POR_LOTE} archivos .xlsx o .csv, de {MAX_TAMANO_ARCHIVO_MB} MB cada uno.
+            </p>
           </div>
 
           {/* Badges de orígenes admitidos en colores sobrios */}
@@ -427,102 +443,34 @@ export default function IngestView() {
             </div>
           </div>
 
-          {/* Lista de archivos en cola */}
-          {queuedFiles.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto' }}>
-              {queuePagination.visibles.map((item) => {
-                const isAcademic = isAcademicSourceType(item.sourceType);
-                const needsSource = !item.sourceType;
+          {/* Botones de acción junto a la zona de carga */}
+          <div className="dataops-queue-actions">
+            <Button
+              variant="ghost"
+              onClick={handleProcessBatch}
+              isLoading={isProcessing}
+              loadingText={uploadProgress < 100 ? `Subiendo (${uploadProgress} %)…` : 'Procesando…'}
+              disabled={!isFormValid || isCheckingFiles}
+              className="btn-pill-gold"
+              style={{ padding: '10px 18px', fontSize: '13px' }}
+            >
+              <Play size={15} fill="currentColor" /> Procesar seleccionados ({selectedQueueFiles.length})
+            </Button>
 
-                return (
-                  <div
-                    key={item.uid}
-                    style={{
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      border: needsSource ? '1.5px solid var(--color-gira-gold, #D99B26)' : '1px solid var(--color-border)',
-                      backgroundColor: 'var(--color-paper-white)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '8px',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
-                        <FileSpreadsheet size={15} color="var(--color-gira-gold, #D99B26)" style={{ flexShrink: 0 }} />
-                        <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-ink-black)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {item.file.name}
-                        </span>
-                        <span style={{ fontSize: '10.5px', color: 'var(--color-ash-gray)', flexShrink: 0 }}>
-                          ({formatFileSize(item.file.size)})
-                        </span>
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span className="chip-cat chip-origen" style={{ fontSize: '10px' }}>
-                          {TIPOS_FUENTE_DATAOPS.find(t => t.code === item.sourceType)?.label || 'Por seleccionar'}
-                        </span>
-                        <Button variant="ghost"
-                          type="button"
-                          onClick={() => handleRemoveFile(item.uid)}
-                          style={{ background: 'none', border: 'none', color: 'var(--color-ash-gray)', cursor: 'pointer', padding: '2px' }}
-                          disabled={isProcessing || isCheckingFiles}
-                          aria-label={`Quitar ${item.file.name}`}
-                          title="Quitar archivo"
-                        >
-                          <Trash2 size={13} />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Selector de Tipo Documental si se requiere */}
-                    <div style={{ display: 'grid', gridTemplateColumns: isAcademic ? '1fr 1fr' : '1fr', gap: '8px' }}>
-                      <div>
-                        <select
-                          aria-label={`Tipo de archivo de ${item.file.name}`}
-                          disabled={isProcessing}
-                          value={item.sourceType}
-                          onChange={(e) => handleChangeFileSourceType(item.uid, e.target.value)}
-                          className="dataops-select"
-                          style={{ padding: '4px 8px', fontSize: '11px' }}
-                        >
-                          <option value="">{UNRECOGNIZED_SOURCE_LABEL}</option>
-                          {TIPOS_FUENTE_DATAOPS.map((tf) => (
-                            <option key={tf.code} value={tf.code}>
-                              {tf.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      {isAcademic && (
-                        <div>
-                          <select
-                            value={item.tipoEscala || ''}
-                            aria-label={`Escala de notas de ${item.file.name}`}
-                            disabled={isProcessing}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setQueuedFiles(prev => prev.map(f => f.uid === item.uid ? { ...f, tipoEscala: val } : f));
-                            }}
-                            className="dataops-select"
-                            style={{ padding: '4px 8px', fontSize: '11px' }}
-                          >
-                            <option value="">Selecciona la escala de notas</option>
-                            {ESCALAS_ACADEMICAS.map((esc) => (
-                              <option key={esc.value} value={esc.value}>
-                                {esc.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-              <Paginacion {...queuePagination} onChange={queuePagination.setPagina} />
-            </div>
-          )}
+            <Button
+              variant="ghost"
+              disabled={queuedFiles.length === 0 || isProcessing || isCheckingFiles}
+              onClick={handleClearQueue}
+              className="sileo-btn"
+              style={{
+                padding: '8px 14px', fontSize: '12px', borderRadius: '8px',
+                backgroundColor: 'var(--color-mist-gray)', border: '1px solid var(--color-border)',
+                color: 'var(--color-slate-gray)', fontWeight: 600
+              }}
+            >
+              Vaciar cola ({queuedFiles.length})
+            </Button>
+          </div>
         </div>
 
         {/* Panel Derecho: Reglas de procesamiento */}
@@ -536,7 +484,7 @@ export default function IngestView() {
             </p>
           </div>
 
-          {/* 1. Reconocimiento Temporal Multi-Semestre (Sin selector rígido) */}
+          {/* 1. Reconocimiento Temporal Multi-Semestre */}
           <div style={{
             padding: '12px 14px',
             borderRadius: '10px',
@@ -571,7 +519,6 @@ export default function IngestView() {
           {isProcessing && (
             <div style={{
               marginTop: 'auto',
-              marginBottom: '10px',
               padding: '12px 14px',
               borderRadius: '8px',
               backgroundColor: 'var(--dataops-gold-bg)',
@@ -607,146 +554,306 @@ export default function IngestView() {
               </p>
             </div>
           )}
-
-          {/* Botón de Procesamiento Principal (Gold Pill) */}
-          <Button variant="ghost"
-            onClick={handleProcessBatch}
-            isLoading={isProcessing}
-            loadingText={uploadProgress < 100 ? `Subiendo archivos (${uploadProgress} %)…` : 'Procesando archivos…'}
-            disabled={!isFormValid || isCheckingFiles}
-            className="btn-pill-gold"
-            style={{
-              marginTop: isProcessing ? '0' : 'auto',
-              padding: '12px 18px',
-              fontSize: '13.5px',
-            }}
-          >
-            {isProcessing ? (
-              <>
-                <RefreshCw size={16} className="animate-spin" /> {uploadProgress < 100 ? `Subiendo Lote (${uploadProgress}%)...` : 'Procesando en Servidor...'}
-              </>
-            ) : (
-              <>
-                <Play size={16} fill="currentColor" /> Procesar archivos ({queuedFiles.length})
-              </>
-            )}
-          </Button>
         </div>
       </div>
 
-      {/* ─── Archivos del lote (Tabla de Lote) ─── */}
-      <div className="floating-artifact" style={{ padding: '24px', marginBottom: '28px' }}>
+      {/* ─── Cola de archivos / Archivos del lote (Tabla con detalle integrado en cada fila) ─── */}
+      <div className="floating-artifact" style={{ padding: '24px', marginBottom: '28px' }} aria-busy={isLoadingBatchData}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
           <div>
             <h3 className="serif-heading" style={{ fontSize: '17px', margin: 0, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Eye size={18} color="var(--color-gira-gold, #D99B26)" /> Archivos del lote
+              <Eye size={18} color="var(--color-gira-gold, #D99B26)" /> {queuedFiles.length > 0 ? 'Cola de archivos' : 'Archivos del lote'}
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--color-slate-gray)', margin: '4px 0 0 0' }}>
-              Revisa el tipo de archivo y su estado antes de continuar.
+              {queuedFiles.length > 0
+                ? 'Selecciona los archivos a procesar, verifica su tipo documental y revisa su detalle en cada fila.'
+                : 'Detalle de los archivos del lote inspeccionado.'}
             </p>
           </div>
-          {batchTableItems.length > 0 && (
+          {queuedFiles.length > 0 ? (
             <span style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>
-              Mostrando <strong>{batchTableItems.length}</strong> archivo(s) en cola / lote activo
+              <strong>{selectedQueueFiles.length}</strong> de <strong>{queuedFiles.length}</strong> seleccionado(s)
             </span>
-          )}
+          ) : inspectedFiles.length > 0 ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>
+                Mostrando <strong>{inspectedFiles.length}</strong> archivo(s) del lote #{activeBatchId}
+              </span>
+              <Button variant="ghost" disabled={isProcessing || isCheckingFiles || isLoadingBatchData} onClick={handleNewBatch}>
+                Limpiar vista
+              </Button>
+            </div>
+          ) : null}
         </div>
 
-        {batchTableItems.length === 0 ? (
-          <div style={{ padding: '36px', textAlign: 'center', backgroundColor: 'var(--color-mist-gray)', borderRadius: '10px', color: 'var(--color-slate-gray)', fontSize: '13px' }}>
-            No hay archivos en la cola. Arrastra archivos en la zona de carga o selecciona un lote del historial para inspeccionar.
-          </div>
-        ) : (
-          <div style={{ overflowX: 'auto', borderRadius: '10px', border: '1px solid var(--color-border)' }}>
+        {isLoadingBatchData ? (
+          <p role="status" style={{ color: 'var(--color-slate-gray)', fontSize: '13px' }}>Cargando información del lote…</p>
+        ) : queuedFiles.length > 0 ? (
+          <div style={{ overflowX: 'auto', maxWidth: '100%', borderRadius: '10px', border: '1px solid var(--color-border)' }}>
             <table className="dataops-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12.5px' }}>
               <thead>
-                <tr style={{ backgroundColor: 'var(--color-mist-gray)', borderBottom: '1px solid var(--color-border)' }}>
-                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Archivo</th>
-                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Origen detectado</th>
-                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Filas</th>
-                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Protección</th>
-                  <th style={{ padding: '10px 14px', color: 'var(--color-slate-gray)' }}>Estado</th>
-                  <th style={{ padding: '10px 14px', textAlign: 'center', color: 'var(--color-slate-gray)' }}>Vista previa</th>
+                <tr>
+                  <th style={{ width: 36 }}>
+                    <input
+                      type="checkbox"
+                      aria-label="Seleccionar todo"
+                      checked={allQueueSelected}
+                      disabled={isProcessing || isCheckingFiles}
+                      onChange={() => setSelectedQueueUids((prev) => toggleSelectAllQueue(queuedFiles, prev))}
+                    />
+                  </th>
+                  <th>Archivo</th>
+                  <th>Tipo documental</th>
+                  <th>Escala</th>
+                  <th>Protección</th>
+                  <th>Estado</th>
+                  <th style={{ textAlign: 'center' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {filesPagination.visibles.map((item) => {
-                  const idx = item.index;
-                  const isSelected = selectedInspectionIndex === idx;
+                {queuePagination.visibles.map((item) => {
+                  const isSelected = selectedQueueUids.includes(item.uid);
+                  const isAcademic = isAcademicSourceType(item.sourceType);
+                  const isEvalDocente = toCanonicalSourceCode(item.sourceType) === 'EVALUACION_DOCENTE';
+                  const isExpanded = expandedDetailKey === item.uid;
+                  const tipoLabel = getTipoFuenteLabel(item.sourceType) || 'Por seleccionar';
+                  const fileSize = formatFileSize(item.file.size);
+
                   return (
-                    <tr
-                      key={idx}
-                      onClick={() => setSelectedInspectionIndex(idx)}
-                      className={`dataops-table-row ${isSelected ? 'selected' : ''}`}
-                      style={{ borderBottom: '1px solid var(--color-border)' }}
-                    >
-                      <td style={{ padding: '10px 14px', fontWeight: 600, color: 'var(--color-ink-black)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <FileSpreadsheet size={15} color="var(--color-gira-gold, #D99B26)" />
-                          <span>{item.nombre}</span>
-                          <span style={{ fontSize: '10.5px', color: 'var(--color-ash-gray)' }}>({item.size})</span>
-                        </div>
-                      </td>
-                      <td style={{ padding: '10px 14px' }}>
-                        <span className="chip-cat chip-origen" style={{ fontWeight: 700 }}>
-                          {item.origen}
-                        </span>
-                      </td>
-                      <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)' }}>
-                        {item.filas}
-                      </td>
-                      <td style={{ padding: '10px 14px' }}>
-                        <span style={{
-                          display: 'inline-flex', alignItems: 'center', gap: '4px',
-                          fontSize: '11px', fontWeight: 700, color: 'var(--color-alert-green)',
-                          backgroundColor: 'var(--dataops-success-bg)', padding: '2px 8px', borderRadius: '4px'
-                        }}>
-                          <ShieldCheck size={12} /> {item.isQueued ? 'Se protege al procesar' : 'Protección del servidor'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '10px 14px' }}>
-                        <span className="chip-cat chip-fecha">
-                          [{item.estado}]
-                        </span>
-                      </td>
-                      <td style={{ padding: '10px 14px', textAlign: 'center' }}>
-                        <Button variant="ghost"
-                          type="button"
-                          className="sileo-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedInspectionIndex(idx);
-                          }}
-                          style={{
-                            padding: '4px 10px', fontSize: '11px', borderRadius: '6px',
-                            backgroundColor: isSelected ? 'var(--color-gira-gold, #D99B26)' : 'var(--color-mist-gray)',
-                            color: isSelected ? 'var(--color-paper-white)' : 'var(--color-slate-gray)',
-                            border: '1px solid var(--color-border)',
-                            cursor: 'pointer',
-                            fontWeight: isSelected ? 700 : 500
-                          }}
-                        >
-                          {isSelected ? 'Seleccionado' : 'Ver vista previa'}
-                        </Button>
-                      </td>
-                    </tr>
+                    <React.Fragment key={item.uid}>
+                      <tr
+                        className={`dataops-table-row ${isSelected ? 'selected' : ''}`}
+                        style={{ cursor: 'default' }}
+                      >
+                        <td>
+                          <input
+                            type="checkbox"
+                            aria-label={`Seleccionar ${item.file.name}`}
+                            checked={isSelected}
+                            disabled={isProcessing || isCheckingFiles}
+                            onChange={() => setSelectedQueueUids((prev) => toggleUidSelection(prev, item.uid))}
+                          />
+                        </td>
+                        <td style={{ fontWeight: 600, color: 'var(--color-ink-black)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FileSpreadsheet size={15} color="var(--color-gira-gold, #D99B26)" style={{ flexShrink: 0 }} />
+                            <span>{item.file.name}</span>
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', fontWeight: 400, marginTop: '3px' }}>
+                            {fileSize} · {tipoLabel} · {item.status}
+                          </div>
+                        </td>
+                        <td>
+                          <select
+                            aria-label={`Tipo de archivo de ${item.file.name}`}
+                            disabled={isProcessing}
+                            value={item.sourceType}
+                            onChange={(e) => handleChangeFileSourceType(item.uid, e.target.value)}
+                            className="dataops-select"
+                            style={{ padding: '4px 8px', fontSize: '11.5px', minWidth: '150px' }}
+                          >
+                            <option value="">{UNRECOGNIZED_SOURCE_LABEL}</option>
+                            {TIPOS_FUENTE_DATAOPS.map((tf) => (
+                              <option key={tf.code} value={tf.code}>
+                                {tf.label}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          {isAcademic ? (
+                            <select
+                              value={item.tipoEscala || ''}
+                              aria-label={`Escala de notas de ${item.file.name}`}
+                              disabled={isProcessing}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setQueuedFiles(prev => prev.map(f => f.uid === item.uid ? { ...f, tipoEscala: val } : f));
+                              }}
+                              className="dataops-select"
+                              style={{ padding: '4px 8px', fontSize: '11.5px', minWidth: '150px' }}
+                            >
+                              <option value="">Selecciona la escala de notas</option>
+                              {ESCALAS_ACADEMICAS.map((esc) => (
+                                <option key={esc.value} value={esc.value}>
+                                  {esc.label}
+                                </option>
+                              ))}
+                            </select>
+                          ) : isEvalDocente ? (
+                            <div
+                              role="note"
+                              style={{
+                                fontSize: '11px',
+                                color: 'var(--color-slate-gray)',
+                                padding: '4px 8px',
+                                backgroundColor: 'var(--color-mist-gray)',
+                                borderRadius: '6px',
+                                border: '1px solid var(--color-border)',
+                              }}
+                            >
+                              Escala de respuesta: 1 a 5 / 1 a 10 (detectada)
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>No aplica</span>
+                          )}
+                        </td>
+                        <td>
+                          <span style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '4px',
+                            fontSize: '11px', fontWeight: 700, color: 'var(--color-alert-green)',
+                            backgroundColor: 'var(--dataops-success-bg)', padding: '2px 8px', borderRadius: '4px'
+                          }}>
+                            <ShieldCheck size={12} /> Se protege al procesar
+                          </span>
+                        </td>
+                        <td>
+                          <span className="chip-cat chip-fecha">[{item.status}]</span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <Button
+                              variant="ghost"
+                              type="button"
+                              onClick={() => setExpandedDetailKey(isExpanded ? null : item.uid)}
+                              style={{ padding: '4px 8px', fontSize: '11px' }}
+                            >
+                              {isExpanded ? 'Ocultar' : 'Detalle'}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              type="button"
+                              onClick={() => handleRemoveFile(item.uid)}
+                              disabled={isProcessing || isCheckingFiles}
+                              aria-label={`Quitar ${item.file.name}`}
+                              title="Quitar archivo"
+                              style={{ padding: '4px 8px' }}
+                            >
+                              <Trash2 size={13} />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan={7} style={{ padding: 0 }}>
+                            <div className="dataops-row-detail">
+                              <span><strong>Archivo:</strong> {item.file.name}</span>
+                              <span><strong>Tamaño:</strong> {fileSize}</span>
+                              <span><strong>Origen:</strong> {tipoLabel}</span>
+                              <span><strong>Fechas:</strong> Por detectar al procesar</span>
+                              <span><strong>Estado:</strong> {item.status}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
             </table>
-            <Paginacion {...filesPagination} onChange={filesPagination.setPagina} />
+            <Paginacion {...queuePagination} onChange={queuePagination.setPagina} />
+          </div>
+        ) : inspectedFiles.length > 0 ? (
+          <>
+          {prepKpis && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 14 }}>
+              {[
+                ['Registros preparados', prepKpis.filas_leidas],
+                ['Campos por fila, máximo', prepKpis.columnas_detectadas],
+                ['Filas con observaciones', prepKpis.total_alertas],
+              ].map(([label, value]) => (
+                <div key={label} style={{ padding: '12px 16px', borderRadius: 10, border: '1px solid var(--color-border)', backgroundColor: 'var(--color-mist-gray)' }}>
+                  <p style={{ color: 'var(--color-slate-gray)', fontSize: 11.5, margin: 0 }}>{label}</p>
+                  <p style={{ color: 'var(--color-ink-black)', fontSize: 20, fontWeight: 700, margin: '4px 0 0' }}>
+                    {value == null ? 'Sin dato' : <AnimatedNumberV2 value={value.toLocaleString('es-BO')} />}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={{ overflowX: 'auto', maxWidth: '100%', borderRadius: '10px', border: '1px solid var(--color-border)' }}>
+            <table className="dataops-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12.5px' }}>
+              <thead>
+                <tr>
+                  <th>Archivo</th>
+                  <th>Origen detectado</th>
+                  <th>Filas</th>
+                  <th>Protección</th>
+                  <th>Estado</th>
+                  <th style={{ textAlign: 'center' }}>Detalle</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inspectedPagination.visibles.map((item) => {
+                  const isExpanded = expandedDetailKey === item.key;
+                  return (
+                    <React.Fragment key={item.key}>
+                      <tr className="dataops-table-row" style={{ cursor: 'default' }}>
+                        <td style={{ fontWeight: 600, color: 'var(--color-ink-black)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FileSpreadsheet size={15} color="var(--color-gira-gold, #D99B26)" />
+                            <span>{item.nombre}</span>
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', fontWeight: 400, marginTop: '3px' }}>
+                            {item.origen} · Registros: {item.filas} · Fechas: {item.fechas}
+                          </div>
+                        </td>
+                        <td>
+                          <span className="chip-cat chip-origen" style={{ fontWeight: 700 }}>
+                            {item.origen}
+                          </span>
+                        </td>
+                        <td style={{ fontFamily: 'var(--font-mono)' }}>{item.filas}</td>
+                        <td>
+                          <span style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '4px',
+                            fontSize: '11px', fontWeight: 700, color: 'var(--color-alert-green)',
+                            backgroundColor: 'var(--dataops-success-bg)', padding: '2px 8px', borderRadius: '4px'
+                          }}>
+                            <ShieldCheck size={12} /> Protección del servidor
+                          </span>
+                        </td>
+                        <td>
+                          <span className="chip-cat chip-fecha">[{item.estado}]</span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <Button
+                            variant="ghost"
+                            type="button"
+                            onClick={() => setExpandedDetailKey(isExpanded ? null : item.key)}
+                            style={{ padding: '4px 10px', fontSize: '11px' }}
+                          >
+                            {isExpanded ? 'Ocultar' : 'Detalle'}
+                          </Button>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan={6} style={{ padding: 0 }}>
+                            <div className="dataops-row-detail">
+                              <span><strong>Archivo:</strong> {item.nombre}</span>
+                              <span><strong>Origen:</strong> {item.origen}</span>
+                              <span><strong>Registros:</strong> {item.filas}</span>
+                              <span><strong>Fechas:</strong> {item.fechas}</span>
+                              <span><strong>Estado:</strong> {item.estado}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+            <Paginacion {...inspectedPagination} onChange={inspectedPagination.setPagina} />
+          </div>
+          </>
+        ) : (
+          <div style={{ padding: '36px', textAlign: 'center', backgroundColor: 'var(--color-mist-gray)', borderRadius: '10px', color: 'var(--color-slate-gray)', fontSize: '13px' }}>
+            No hay archivos en la cola. Arrastra archivos en la zona de carga o selecciona un lote del historial para inspeccionar.
           </div>
         )}
-      </div>
-
-      <div className="floating-artifact" style={{ padding: '24px', marginBottom: '28px' }} aria-busy={isLoadingBatchData}>
-        <h3 className="serif-heading" style={{ fontSize: '18px', color: 'var(--color-ink-black)' }}>Archivo seleccionado</h3>
-        {isLoadingBatchData ? <p role="status">Cargando información del lote…</p> : currentSelectedFile ? <>
-          <p style={{ color: 'var(--color-ink-black)', margin: '12px 0' }}>{currentSelectedFile.nombre}</p>
-          <p style={{ color: 'var(--color-slate-gray)' }}>{currentSelectedFile.origen} · Registros: {currentSelectedFile.filas} · {currentSelectedFile.estado}</p>
-          <p style={{ color: 'var(--color-slate-gray)', fontSize: '12px', marginTop: '8px' }}>Continúa desde las acciones del historial para revisar el contenido del lote.</p>
-        </> : <p style={{ color: 'var(--color-slate-gray)', margin: '12px 0' }}>Selecciona archivos para cargar o inspecciona un lote del historial.</p>}
-        <Button variant="ghost" disabled={isProcessing || isCheckingFiles || isLoadingBatchData} onClick={handleNewBatch} style={{ marginTop: 12 }}>Limpiar selección</Button>
       </div>
 
       <BatchHistory
@@ -754,7 +861,7 @@ export default function IngestView() {
         disabled={isProcessing || isCheckingFiles}
         onInspect={(src) => {
           setActiveBatchId(src.id_lote);
-          setSelectedInspectionIndex(0);
+          setExpandedDetailKey(null);
           localStorage.setItem('last_active_batch_id', String(src.id_lote));
           loadBatchInspection(src.id_lote);
         }}
@@ -769,6 +876,7 @@ export default function IngestView() {
         isOpen={telemetryOpen}
         onClose={() => setTelemetryOpen(false)}
         docId={telemetryDoc?.id_documento}
+        docMeta={telemetryDoc}
       />
     </BatchFlowLayout>
   );

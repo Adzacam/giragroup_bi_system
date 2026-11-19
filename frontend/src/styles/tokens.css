@@ -161,19 +161,19 @@ em, i, cite, .serif-heading em, .serif-display em {
   overflow: visible !important;
 }
 
-/* Modo Claro: Fondo Ink Black refinado y borde */
+/* Modo Claro: Fondo Navy Deep (#0C1E33) y texto #FAF9F6 */
 [data-sileo-pill],
 [data-sileo-body] {
-  fill: #17191C !important;
-  stroke: rgba(255, 255, 255, 0.12) !important;
+  fill: #0C1E33 !important;
+  stroke: rgba(250, 249, 246, 0.16) !important;
   stroke-width: 1px !important;
 }
 
-/* Modo Oscuro: Fondo Ink Black refinado y borde */
+/* Modo Oscuro: Fondo Ink Dark (#161920) y texto #FAF9F6 */
 [data-theme="dark"] [data-sileo-pill],
 [data-theme="dark"] [data-sileo-body] {
   fill: #161920 !important;
-  stroke: rgba(255, 255, 255, 0.18) !important;
+  stroke: rgba(250, 249, 246, 0.2) !important;
   stroke-width: 1px !important;
 }
 
@@ -183,7 +183,7 @@ em, i, cite, .serif-heading em, .serif-display em {
   font-family: var(--font-sohne) !important;
   font-size: 13px !important;
   font-weight: 600 !important;
-  color: #FFFFFF !important;
+  color: #FAF9F6 !important;
   letter-spacing: 0.2px !important;
 }
 
@@ -212,12 +212,13 @@ em, i, cite, .serif-heading em, .serif-display em {
   background-color: rgba(255, 255, 255, 0.12) !important;
 }
 
-/* Descripción de Sileo: NUNCA hereda color oscuro, SIEMPRE blanco/gris claro nítido */
+/* Descripción de Sileo: NUNCA hereda color oscuro, SIEMPRE #FAF9F6 nítido */
 [data-sileo-description] {
   font-family: var(--font-sohne) !important;
   font-size: 12.5px !important;
   line-height: 1.45 !important;
-  color: #E2E8F0 !important;
+  color: #FAF9F6 !important;
+  opacity: 0.94 !important;
   padding: 10px 14px 14px !important;
 }
 
@@ -253,12 +254,33 @@ em, i, cite, .serif-heading em, .serif-display em {
 /* Clases utilitarias de fallback */
 .sileo-title,
 .text-white {
-  color: #FFFFFF !important;
+  color: #FAF9F6 !important;
 }
 
 .sileo-desc,
 .text-slate-300 {
-  color: #E2E8F0 !important;
+  color: #FAF9F6 !important;
+}
+
+@keyframes v2-notif-cascade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.v2-notif-cascade-item {
+  animation: v2-notif-cascade 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-notif-cascade-item {
+    animation: none !important;
+  }
 }
 
 .sileo-btn {
@@ -407,6 +429,8 @@ em, i, cite, .serif-heading em, .serif-display em {
   box-shadow: var(--shadow-artifact);
   border: 1px solid var(--color-border);
   padding: 32px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .form-input {
@@ -1257,6 +1281,47 @@ em, i, cite, .serif-heading em, .serif-display em {
   }
 }
 
+@media (max-width: 480px) {
+  .floating-navbar {
+    padding: 0 8px !important;
+  }
+  .navbar-left-group {
+    gap: 6px;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+  .navbar-brand-trigger {
+    gap: 6px;
+    min-width: 0;
+  }
+  .navbar-right-group {
+    gap: 4px;
+  }
+  .navbar-settings-btn {
+    display: none !important;
+  }
+  .navbar-v2-btn {
+    padding: 0 8px !important;
+    font-size: 11px !important;
+    height: 32px !important;
+  }
+  /* A 375 px el botón "Versión 2" queda solo con el icono para evitar scroll horizontal */
+  .navbar-v2-label {
+    display: none;
+  }
+  .navbar-brand-trigger > div {
+    min-width: 0;
+  }
+  .floating-navbar {
+    max-width: 100vw;
+  }
+  .navbar-action-btn,
+  .navbar-hamburger-btn {
+    width: 32px;
+    height: 32px;
+  }
+}
+
 .cmi-kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1625,6 +1690,9 @@ em, i, cite, .serif-heading em, .serif-display em {
 .btn-base:disabled { opacity: .55; cursor: not-allowed; }
 .btn-base:focus-visible { outline: 2px solid var(--color-border); outline-offset: 2px; }
 .btn-spinner { animation: spin 1s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .btn-spinner, .animate-spin { animation: none !important; }
+}
 .btn-pill-dark:active:not(:disabled), .btn-pill-ghost:active:not(:disabled) { transform: scale(0.97); }
 
 /* ── Paginación de tablas (5 filas por defecto) ── */
@@ -1638,9 +1706,9 @@ em, i, cite, .serif-heading em, .serif-display em {
 [data-theme="dark"] .paginacion-btn:hover:not(:disabled) { background-color: #20252e; }
 
 /* ── Glosario flotante (ayuda contextual) ── */
-.glosario-barra { display: flex; justify-content: flex-end; margin: 0 0 12px; }
+.glosario-barra { width: 100%; display: flex; justify-content: flex-end; align-items: center; margin: 0 0 12px; }
 .glosario-abrir { padding: 6px 14px; font-size: 12.5px; }
-.glosario-fondo { position: fixed; inset: 0; z-index: 1000; background: rgba(12, 14, 18, 0.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.glosario-fondo { position: fixed; inset: 0; z-index: 2200; background: rgba(12, 14, 18, 0.58); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; }
 .glosario-ventana { position: relative; width: min(640px, 100%); max-height: 90vh; overflow: auto; padding: 22px; border-radius: 20px; background: var(--color-paper-white); color: var(--color-ink-black); border: 1px solid var(--color-border); box-shadow: var(--shadow-subtle); }
 .glosario-ventana h3 { margin: 4px 0 6px; }
 .glosario-cerrar { position: absolute; top: 12px; right: 12px; }

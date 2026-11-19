@@ -3,6 +3,46 @@ import { dataopsApi } from '../../../api/dataopsApi';
 import { mensajeError } from '../../../utils/mensajeError';
 import { sileoToast } from '../../../services/sileoToast';
 
+const ETIQUETAS = {
+  ci: 'cédula',
+  nombre: 'nombre',
+  correo: 'correo',
+};
+
+/**
+ * Revela u oculta un campo sensible (ci, nombre, correo) de un registro bajo demanda
+ * (auditado en backend; solo ADMIN/AUDITOR_CALIDAD). Vive solo en memoria del componente.
+ */
+export function useRevealCampo(onReveal) {
+  const [revealed, setRevealed] = useState({});
+
+  const toggleCampo = useCallback(async (id, campo = 'ci') => {
+    const key = `${id}:${campo}`;
+    if (revealed[key]) {
+      setRevealed(({ [key]: _oculto, ...resto }) => resto);
+      return;
+    }
+    try {
+      const res = await dataopsApi.revelarCampo(id, campo);
+      const val = res?.valor || res?.ci_real || res?.ci;
+      if (val) {
+        setRevealed((prev) => ({ ...prev, [key]: val }));
+        onReveal?.(val, campo);
+      }
+    } catch (err) {
+      const label = ETIQUETAS[campo] || campo;
+      sileoToast.error({
+        title: err.response?.status === 403 ? `No tienes permiso para revelar el ${label}` : `No se pudo revelar el ${label}`,
+        description: mensajeError(err, 'Esta consulta está disponible para Administrador y Auditor de calidad.'),
+      });
+    }
+  }, [revealed, onReveal]);
+
+  const getValor = useCallback((id, campo = 'ci') => revealed[`${id}:${campo}`] || null, [revealed]);
+
+  return { revealed, toggleCampo, getValor };
+}
+
 /**
  * Revela u oculta el CI completo de un registro bajo demanda (auditado en backend; solo ADMIN/AUDITOR_CALIDAD).
  * El CI revelado vive solo en memoria del componente: nunca se persiste en borradores ni sessionStorage.

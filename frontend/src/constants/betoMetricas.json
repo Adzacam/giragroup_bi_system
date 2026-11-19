@@ -1,0 +1,218 @@
+{
+  "fuentes": [
+    "docs/mediciones/f1_training_info.json",
+    "docs/mediciones/f3r_ablacion.json",
+    "docs/mediciones/f3r_matriz_confusion.json",
+    "docs/mediciones/f1_evaluacion_despues/matriz_confusion_ner.json"
+  ],
+  "ficha_modelo": {
+    "model_base": "dccuchile/bert-base-spanish-wwm-cased",
+    "etiquetas_iob2": [
+      "O",
+      "B-PER_ESTUDIANTE",
+      "I-PER_ESTUDIANTE",
+      "B-PER_DOCENTE",
+      "I-PER_DOCENTE",
+      "B-MODULO",
+      "I-MODULO",
+      "B-PROGRAMA",
+      "I-PROGRAMA"
+    ],
+    "num_etiquetas": 9,
+    "epochs": 3,
+    "best_epoch": 2,
+    "best_dev_f1": 0.9979,
+    "learning_rate": 2.5e-05,
+    "weight_decay": 0.01,
+    "batch_size": 16,
+    "max_length": 128,
+    "seed": 42,
+    "train_size": 1400,
+    "dev_size": 350,
+    "test_gold_size": 180,
+    "train_duration_sec": 4537.58,
+    "device": "cpu",
+    "selection": "mejor checkpoint por F1 estricto en dev (sin early stopping)",
+    "model_sha256": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92"
+  },
+  "epocas": [
+    {
+      "epoch": 1,
+      "train_loss": 0.3036,
+      "dev_loss": 0.0053,
+      "dev_f1": 0.9971,
+      "dev_precision": 0.9971,
+      "dev_recall": 0.9971,
+      "time_sec": 1531.62
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.0067,
+      "dev_loss": 0.0018,
+      "dev_f1": 0.9979,
+      "dev_precision": 0.9979,
+      "dev_recall": 0.9979,
+      "time_sec": 1560.72
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.0023,
+      "dev_loss": 0.0009,
+      "dev_f1": 0.9975,
+      "dev_precision": 0.9971,
+      "dev_recall": 0.9979,
+      "time_sec": 1437.99
+    }
+  ],
+  "gold_510_modo_c": {
+    "estricto": {
+      "tp": 503,
+      "fp": 14,
+      "fn": 7,
+      "support": 510,
+      "predicted": 517,
+      "precision": 0.972921,
+      "recall": 0.986275,
+      "f1": 0.979552
+    },
+    "relajado": {
+      "tp": 510,
+      "fp": 6,
+      "fn": 0,
+      "support": 510,
+      "predicted": 516,
+      "precision": 0.9884,
+      "recall": 1.0,
+      "f1": 0.9942
+    },
+    "explicacion_503_vs_510": "En criterio estricto seqeval (coincidencia exacta de span y tipo), 503 de 510 entidades gold son TP (FN=7, FP=14, micro F1=0.979552). Los 7 FN son límites de span en PROGRAMA (6) y PER_ESTUDIANTE (1); en criterio relajado (solapamiento parcial), todas las 510 entidades gold coinciden (TP=510, FN=0, FP=6, micro F1=0.9942)."
+  },
+  "desglose_por_clase": [
+    {
+      "clase": "MODULO",
+      "support": 150,
+      "tp": 150,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_estricto": 1.0,
+      "f1_relajado": 1.0
+    },
+    {
+      "clase": "PER_DOCENTE",
+      "support": 50,
+      "tp": 50,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_estricto": 1.0,
+      "f1_relajado": 1.0
+    },
+    {
+      "clase": "PER_ESTUDIANTE",
+      "support": 130,
+      "tp": 129,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.992308,
+      "recall": 0.992308,
+      "f1_estricto": 0.992308,
+      "f1_relajado": 1.0
+    },
+    {
+      "clase": "PROGRAMA",
+      "support": 180,
+      "tp": 174,
+      "fn": 6,
+      "fp": 13,
+      "precision": 0.930481,
+      "recall": 0.966667,
+      "f1_estricto": 0.948229,
+      "f1_relajado": 0.9836
+    }
+  ],
+  "matriz_confusion_5x5": {
+    "clases": [
+      "O",
+      "MODULO",
+      "PER_DOCENTE",
+      "PER_ESTUDIANTE",
+      "PROGRAMA"
+    ],
+    "matriz": [
+      [
+        1470,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        300,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        120,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        467,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1153
+      ]
+    ],
+    "por_clase": {
+      "O": {
+        "tp": 1470,
+        "fp": 0,
+        "fn": 0,
+        "soporte": 1470
+      },
+      "MODULO": {
+        "tp": 300,
+        "fp": 0,
+        "fn": 0,
+        "soporte": 300
+      },
+      "PER_DOCENTE": {
+        "tp": 120,
+        "fp": 0,
+        "fn": 0,
+        "soporte": 120
+      },
+      "PER_ESTUDIANTE": {
+        "tp": 467,
+        "fp": 0,
+        "fn": 1,
+        "soporte": 468
+      },
+      "PROGRAMA": {
+        "tp": 1153,
+        "fp": 1,
+        "fn": 0,
+        "soporte": 1153
+      }
+    },
+    "n_tokens": 3511,
+    "n_secuencias": 180,
+    "nivel": "token (B-/I- colapsados al tipo; incluye O)",
+    "conjunto": "gold_510"
+  }
+}

@@ -1,12 +1,15 @@
 import React, { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function IsometricCanvasBackground() {
   const canvasRef = useRef(null);
   const { theme, canvasEnabled } = useTheme();
+  const location = useLocation();
+  const isLoginRoute = location.pathname === '/login' || location.pathname === '/v2/login';
 
   useEffect(() => {
-    if (!canvasEnabled) return;
+    if (!canvasEnabled || isLoginRoute) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -155,9 +158,9 @@ export default function IsometricCanvasBackground() {
       cancelAnimationFrame(animationId);
       isRunning = false;
     };
-  }, [canvasEnabled, theme]);
+  }, [canvasEnabled, isLoginRoute, theme]);
 
-  if (!canvasEnabled) return null;
+  if (!canvasEnabled || isLoginRoute) return null;
 
   return <canvas id="bg-3d-canvas" ref={canvasRef} />;
 }
