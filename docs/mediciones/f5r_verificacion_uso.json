@@ -146,14 +146,36 @@
   ],
   "alertas_kpis": {
     "status_code": 200,
-    "total": 0,
+    "total": 7827,
     "criticas": 4404,
     "advertencias": 3423
   },
   "alertas_tempranas": {
     "status_code": 200,
-    "total": 0,
-    "resumen": null
+    "total_matricula_activa": 10327,
+    "total_estudiantes_filtrados": 2696,
+    "tarjetas": {
+      "riesgo_academico": {
+        "total_alumnos": 1363,
+        "porcentaje_matricula": 13.2,
+        "monto_mora_bs": null
+      },
+      "riesgo_desercion": {
+        "total_alumnos": 0,
+        "porcentaje_matricula": 0.0,
+        "monto_mora_bs": null
+      },
+      "riesgo_financiero": {
+        "total_alumnos": 1440,
+        "porcentaje_matricula": 13.9,
+        "monto_mora_bs": 903179.09
+      },
+      "alerta_critica": {
+        "total_alumnos": 107,
+        "porcentaje_matricula": 1.0,
+        "monto_mora_bs": null
+      }
+    }
   },
   "pronostico_analitica_macro": {
     "status_code": 200,

@@ -229,14 +229,22 @@ def ejecutar_r3() -> dict:
         "kpi23_vs_f3v_kpi23_serie": kpi23_comparacion,
         "alertas_kpis": {
             "status_code": r_al_kpis.status_code,
-            "total": al_kpis.get("total", len(al_kpis.get("alertas", []))),
+            "total": al_kpis.get("total_alertas", len(al_kpis.get("data", []))),
             "criticas": al_kpis.get("criticas"),
             "advertencias": al_kpis.get("advertencias"),
         },
         "alertas_tempranas": {
             "status_code": r_al_temp.status_code,
-            "total": len(al_temp.get("alertas", [])) if isinstance(al_temp, dict) else None,
-            "resumen": al_temp.get("resumen") if isinstance(al_temp, dict) else None,
+            "total_matricula_activa": al_temp.get("total_matricula_activa") if isinstance(al_temp, dict) else None,
+            "total_estudiantes_filtrados": al_temp.get("total_estudiantes_filtrados") if isinstance(al_temp, dict) else None,
+            "tarjetas": {
+                k: {
+                    "total_alumnos": v.get("total_alumnos"),
+                    "porcentaje_matricula": v.get("porcentaje_matricula"),
+                    "monto_mora_bs": v.get("monto_mora_bs"),
+                }
+                for k, v in (al_temp.get("tarjetas") or {}).items()
+            } if isinstance(al_temp, dict) else None,
         },
         "pronostico_analitica_macro": {
             "status_code": r_fc.status_code,

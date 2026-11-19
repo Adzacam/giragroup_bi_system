@@ -26,7 +26,7 @@ Rama: `beto-integracion` (sobre `4d79857`).
 - **R-3 (Verificación de uso):**
   - `/api/v1/cmi/scorecard` devuelve **23 KPI** en las 4 gestiones (`2023`: 5 con valor, índice `20,0`; `2024`: 21 con valor, índice `60,9`; `2025`: 21 con valor, índice `65,7`; `2026`: 13 con valor, índice `32,4`).
   - **KPI-23** coincide con `f3v_kpi23_serie.json` con **Δ = 0,0** en todas las gestiones (`2023: null / SIN_UMBRAL`, `2024: 100,00 % / VERDE`, `2025: 99,77 % / VERDE`, `2026: 46,62 % / ROJO`).
-  - Alertas (`/api/v1/alertas` `200 OK`: `4.404` críticas, `3.423` advertencias; `/api/v1/riesgos/alertas-tempranas` `200 OK`) y pronósticos (`/api/v1/forecast/analitica-macro?horizonte=6` `200 OK` con los 4 casos) visibles.
+  - Alertas (`/api/v1/alertas` `200 OK`: `7.827` total — `4.404` críticas, `3.423` advertencias; `/api/v1/riesgos/alertas-tempranas` `200 OK`: `2.696` estudiantes filtrados sobre `10.327` de matrícula activa: `1.363` académico, `1.440` financiero / `903.179,09 Bs`, `107` crítica) y pronósticos (`/api/v1/forecast/analitica-macro?horizonte=6` `200 OK` con los 4 casos) visibles.
   - Capturas reales en navegador (Edge headless, protección de datos personales activa): `output/f5r/captura_cmi.png`, `output/f5r/captura_dataops_ingesta.png`, `output/f5r/captura_dataops_revision.png`.
   - Evidencia: `docs/mediciones/f5r_verificacion_uso.json`.
 
