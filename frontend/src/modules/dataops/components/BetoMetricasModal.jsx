@@ -1,8 +1,23 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Cpu, CheckCircle2 } from 'lucide-react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
 import Button from '../../../components/shared/Button';
 import betoMetricas from '../../../constants/betoMetricas.json';
+import AnimatedNumberV2 from '../../../v2/motion/AnimatedNumberV2';
+import ChartRevealV2 from '../../../v2/motion/ChartRevealV2';
+import { CHART_PLUGINS_V2, withChartAnimationsV2 } from '../../../v2/motion/chartAnimationsV2';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 function fmtPct(val, decimals = 2) {
   if (typeof val !== 'number' || Number.isNaN(val)) return 'Sin dato';
@@ -23,6 +38,57 @@ function fmtNum(val, decimals = 4) {
 function fmtInt(val) {
   if (typeof val !== 'number' || Number.isNaN(val)) return 'Sin dato';
   return val.toLocaleString('es-BO');
+}
+
+/** Datos de la curva de épocas: 3 puntos = epoch_history. */
+export function buildCurvaEpocas(epocas, bestEpoch) {
+  const best = (ep) => ep.epoch === bestEpoch;
+  return {
+    labels: epocas.map((ep) => `Época ${ep.epoch}${best(ep) ? ' (Mejor)' : ''}`),
+    datasets: [
+      {
+        label: 'F1 en validación',
+        data: epocas.map((ep) => ep.dev_f1),
+        yAxisID: 'y',
+        borderColor: '#2F7D4F',
+        backgroundColor: '#2F7D4F',
+        pointRadius: epocas.map((ep) => (best(ep) ? 8 : 4)),
+        pointStyle: epocas.map((ep) => (best(ep) ? 'star' : 'circle')),
+        tension: 0.25,
+      },
+      {
+        label: 'Error de entrenamiento',
+        data: epocas.map((ep) => ep.train_loss),
+        yAxisID: 'y1',
+        borderColor: '#D99B26',
+        backgroundColor: '#D99B26',
+        borderDash: [6, 4],
+        tension: 0.25,
+      },
+      {
+        label: 'Error de validación',
+        data: epocas.map((ep) => ep.dev_loss),
+        yAxisID: 'y1',
+        borderColor: '#8A8F98',
+        backgroundColor: '#8A8F98',
+        borderDash: [2, 3],
+        tension: 0.25,
+      },
+    ],
+  };
+}
+
+const NOTA = { fontSize: 12, color: 'var(--color-slate-gray)', margin: '8px 0 0', lineHeight: 1.45 };
+
+function MetricaFila({ etiqueta, valor }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 13 }}>
+      <span style={{ color: 'var(--color-slate-gray)' }}>{etiqueta}</span>
+      <strong style={{ fontFamily: 'var(--font-mono)' }}>
+        <AnimatedNumberV2 value={fmtPct(valor)} />
+      </strong>
+    </div>
+  );
 }
 
 export default function BetoMetricasModal({ isOpen, onClose }) {
@@ -55,6 +121,18 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
   const tokensEstAProg =
     idxEst >= 0 && idxProg >= 0 ? matriz5x5.matriz[idxEst]?.[idxProg] ?? 0 : 0;
 
+  const curvaData = buildCurvaEpocas(epocas, ficha.best_epoch);
+  const curvaOptions = withChartAnimationsV2({
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, font: { size: 11 } } } },
+    scales: {
+      y: { position: 'left', title: { display: true, text: 'F1 validación' }, min: 0.99, max: 1 },
+      y1: { position: 'right', title: { display: true, text: 'Error' }, grid: { drawOnChartArea: false }, min: 0 },
+    },
+  });
+
   const modalContent = (
     <div
       className="modal-backdrop show"
@@ -67,7 +145,7 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
         className="modal-panel"
         role="dialog"
         aria-modal="true"
-        aria-label="Métricas del modelo BETO"
+        aria-label="Métricas del Modelo BETO"
         style={{
           maxWidth: 880,
           width: '100%',
@@ -97,7 +175,7 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
               }}
             >
               <Cpu size={20} color="var(--color-gira-gold, #D99B26)" />
-              Métricas del modelo BETO
+              Métricas del Modelo BETO
             </h2>
             <p
               style={{
@@ -112,7 +190,7 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
           <Button
             variant="ghost"
             type="button"
-            aria-label="Cerrar métricas del modelo"
+            aria-label="Cerrar Métricas del Modelo BETO"
             onClick={onClose}
             style={{ padding: '6px 10px' }}
           >
@@ -180,29 +258,27 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
             marginBottom: 16,
           }}
         >
-          <div className="floating-artifact" style={{ padding: 14 }}>
-            <p style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>
-              F1 estricto (gold_510 · Modo C)
-            </p>
-            <p style={{ fontSize: 24, fontWeight: 700, marginTop: 4 }}>
-              {fmtPct(modoC.estricto.f1)}
-            </p>
-            <p style={{ fontSize: 11.5, color: 'var(--color-slate-gray)', marginTop: 4 }}>
-              TP {fmtInt(modoC.estricto.tp)} / {fmtInt(modoC.estricto.support)} · FP {fmtInt(modoC.estricto.fp)} · FN {fmtInt(modoC.estricto.fn)}
-            </p>
-          </div>
-          <div className="floating-artifact" style={{ padding: 14 }}>
-            <p style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>
-              F1 relajado (gold_510 · Modo C)
-            </p>
-            <p style={{ fontSize: 24, fontWeight: 700, marginTop: 4 }}>
-              {fmtPct(modoC.relajado.f1)}
-            </p>
-            <p style={{ fontSize: 11.5, color: 'var(--color-slate-gray)', marginTop: 4 }}>
-              TP {fmtInt(modoC.relajado.tp)} / {fmtInt(modoC.relajado.support)} · FP {fmtInt(modoC.relajado.fp)} · FN {fmtInt(modoC.relajado.fn)}
-            </p>
-          </div>
+          {[
+            { key: 'estricto', titulo: 'F1 estricto (gold_510 · Modo C)', m: modoC.estricto },
+            { key: 'relajado', titulo: 'F1 relajado (gold_510 · Modo C)', m: modoC.relajado },
+          ].map(({ key, titulo, m }) => (
+            <div key={key} className="floating-artifact" style={{ padding: 14 }}>
+              <p style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>{titulo}</p>
+              <p style={{ fontSize: 24, fontWeight: 700, margin: '4px 0 8px' }}>
+                <AnimatedNumberV2 value={fmtPct(m.f1)} />
+              </p>
+              <MetricaFila etiqueta="Precisión" valor={m.precision} />
+              <MetricaFila etiqueta="Recall" valor={m.recall} />
+              <p style={{ fontSize: 11.5, color: 'var(--color-slate-gray)', marginTop: 6 }}>
+                TP {fmtInt(m.tp)} / {fmtInt(m.support)} · FP {fmtInt(m.fp)} · FN {fmtInt(m.fn)}
+              </p>
+            </div>
+          ))}
         </div>
+        <p style={{ ...NOTA, margin: '-6px 0 16px' }}>
+          Qué significa: la precisión indica cuántos datos que BETO marcó eran correctos; el recall, cuántos de los datos reales logró encontrar.
+          El criterio estricto exige el mismo recorte exacto del dato; el relajado acepta coincidencias parciales.
+        </p>
 
         {/* 3. Desglose por clase */}
         <div
@@ -247,6 +323,9 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
               </tbody>
             </table>
           </div>
+          <p style={NOTA}>
+            Qué significa: cada fila muestra qué tan bien BETO reconoce un tipo de dato. Módulos y docentes se leen sin errores; los nombres de programa son los más difíciles de recortar bien.
+          </p>
         </div>
 
         {/* 4. Matriz de confusión 5×5 */}
@@ -283,7 +362,14 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
                       return (
                         <td
                           key={`${rowLabel}-${matriz5x5.clases[cIdx]}`}
+                          data-confusion={isError ? 'true' : undefined}
                           style={{
+                            ...(isError
+                              ? {
+                                  background: 'var(--dataops-warning-bg)',
+                                  boxShadow: 'inset 0 0 0 1.5px var(--dataops-warning-border)',
+                                }
+                              : {}),
                             fontWeight: isDiag || isError ? 700 : 400,
                             color: isError
                               ? 'var(--dataops-warning-text)'
@@ -301,6 +387,9 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
               </tbody>
             </table>
           </div>
+          <p style={NOTA}>
+            Qué significa: la diagonal son los aciertos. La celda resaltada es el único caso en que BETO tomó el nombre de un estudiante por un programa.
+          </p>
         </div>
 
         {/* 5. Historial de las 3 épocas */}
@@ -308,6 +397,14 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
           <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>
             Entrenamiento por época ({fmtInt(ficha.epochs)} épocas · best_dev_f1 = {fmtNum(ficha.best_dev_f1, 4)})
           </h3>
+          <div style={{ height: 240, marginBottom: 12 }} role="img" aria-label="Curva de entrenamiento por época: F1 y errores de entrenamiento y validación">
+            <ChartRevealV2>
+              <Line data={curvaData} options={curvaOptions} plugins={CHART_PLUGINS_V2} />
+            </ChartRevealV2>
+          </div>
+          <p style={{ ...NOTA, margin: '0 0 10px' }}>
+            Qué significa: el modelo se entrenó 3 veces sobre los mismos ejemplos. Se conserva la época {ficha.best_epoch} (marcada como Mejor) porque logró el F1 más alto en validación; los errores bajan en cada vuelta.
+          </p>
           <div style={{ overflowX: 'auto' }}>
             <table
               className="dataops-table"

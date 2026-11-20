@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { AlertTriangle, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import AnimatedNumberV2 from '../../../v2/motion/AnimatedNumberV2';
+import { toDataopsPath } from '../../../v2/utils/v2Routes';
+import useResumenPreparacion from '../hooks/useResumenPreparacion';
 import Button from '../../../components/shared/Button';
 import Paginacion from '../../../components/shared/Paginacion';
 import { FILAS_POR_PAGINA } from '../../../hooks/usePaginacion';
@@ -24,6 +28,18 @@ export default function TextoPreparadoTab({ batchId, selectedDocId, context }) {
     } finally {
       setLoadingCampo(null);
     }
+  };
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const resumen = useResumenPreparacion(data);
+  const totalObservaciones = data?.kpis?.total_alertas ?? 0;
+
+  const verResultados = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete('tab');
+    setSearchParams(next, { replace: true });
   };
 
   const rows = data?.registros || [];
@@ -81,6 +97,23 @@ export default function TextoPreparadoTab({ batchId, selectedDocId, context }) {
         </div>
       ) : (
         <>
+          {resumen && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 20 }}>
+              {resumen.map(([label, value]) => (
+                <div className="floating-artifact" key={label} style={{ padding: '16px 20px' }}>
+                  <p style={{ color: 'var(--color-slate-gray)', fontSize: 12 }}>{label}</p>
+                  <p style={{ color: 'var(--color-ink-black)', fontSize: 24, marginTop: 6 }}>
+                    {value == null ? 'Sin dato' : <AnimatedNumberV2 value={value.toLocaleString('es-BO')} />}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+          {totalObservaciones > 0 && (
+            <p role="status" style={{ color: 'var(--dataops-warning-text)', fontSize: 13, marginBottom: 16 }}>
+              <AlertTriangle size={14} aria-hidden="true" /> Algunas filas tienen observaciones; aparecen marcadas junto al texto preparado para que las revises.
+            </p>
+          )}
           <div className="floating-artifact" style={{ padding: 24 }} aria-busy={isFetching}>
             <div style={{ overflowX: 'auto' }}>
               <table className="dataops-table" style={{ width: '100%', textAlign: 'left', tableLayout: 'fixed' }}>
@@ -199,6 +232,15 @@ export default function TextoPreparadoTab({ batchId, selectedDocId, context }) {
           )}
         </>
       )}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginTop: 20 }}>
+        <Button variant="ghost" onClick={() => navigate(toDataopsPath('/ingesta', location.pathname))}>
+          Volver a carga de archivos
+        </Button>
+        <Button variant="ghost" className="btn-pill-gold" onClick={verResultados}>
+          Ver resultados de la lectura <ArrowRight size={15} />
+        </Button>
+      </div>
     </>
   );
 }

@@ -300,8 +300,13 @@ def _celda_del_tramo(texto: str, start: int) -> str:
 
 
 def mejor_propuesta(ents_beto: Sequence[EntidadBeto], tipo: str, texto: str,
-                    excluir_celda: Optional[Callable[[str], bool]] = None) -> Optional[EntidadBeto]:
-    """Entidad de BETO del tipo pedido con mayor probabilidad, fuera de las columnas que no son personas del tipo (asesor, sede…)."""
+                    excluir_celda=None) -> Optional[EntidadBeto]:
+    """Entidad de BETO del tipo pedido con mayor probabilidad, fuera de las columnas que no son personas del tipo (asesor, sede…).
+    `excluir_celda` es una función encabezado → bool o un dict {tipo: función} (F5C C-2: el docente se excluye de las columnas
+    sin rol de docente —ASESOR, COORDINADOR, RAZÓN SOCIAL, correos, comentarios— sin descartar las columnas DOCENTE reales,
+    que la exclusión del estudiante sí descartaba)."""
+    if isinstance(excluir_celda, dict):
+        excluir_celda = excluir_celda.get(tipo)
     candidatas = []
     for e in ents_beto:
         if e.tipo != tipo or len(e.texto.strip()) < 3:
@@ -369,7 +374,7 @@ def _clave_metrica(archivo: Optional[str], tipo_fuente: Optional[str]) -> str:
 def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, float, bool]], *, tipo_fuente: str,
                    cliente: ClienteBeto, contadores: Contadores, archivo: Optional[str] = None,
                    omitir: Optional[Callable[[str], bool]] = None,
-                   excluir_celda: Optional[Callable[[str], bool]] = None) -> List[Optional[ResultadoLinea]]:
+                   excluir_celda=None) -> List[Optional[ResultadoLinea]]:
     """
     Extracción de las líneas de un bloque con las opciones 1 y 2. `extraer(linea, est_beto=None, doc_beto=None)` es la extracción
     por reglas (extract_entities_from_line); `omitir(linea)` marca las filas que no se evalúan (ruido). Devuelve un ResultadoLinea por

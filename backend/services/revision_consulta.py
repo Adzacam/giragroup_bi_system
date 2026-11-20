@@ -230,13 +230,57 @@ def consultar(db, docs, page=1, page_size=5, search='', area=None, motivo=None, 
             'resolved_history': seleccion if vista == 'RESUELTOS' else []}
 
 
+_AREA_HECHO = {'academico': 'académico', 'financiero': 'financiero', 'evaluacion': 'evaluación docente'}
+
+
+def _origen_grupo(db, g, mapa_docs):
+    """Archivo (y área, si es un hecho) de donde salen los casos de un grupo; solo para el rótulo, no agrupa ni cuenta."""
+    ids_doc = []
+    area = None
+    if g.get('motivo') == 'HECHO_EN_REVISION':
+        trozos = str(g.get('valor') or '').split('|')
+        m = re.match(r'doc(\d+)$', trozos[1]) if len(trozos) > 1 else None
+        if m:
+            ids_doc = [int(m.group(1))]
+            area = _AREA_HECHO.get(trozos[0])
+            falta = next((t[6:] for t in trozos if t.startswith('falta:')), '')
+            estados = [t for t in trozos[2:] if not t.startswith(('falta:', 'estado:', 'mod'))]
+            detalle = []
+            if falta and falta != 'ninguno':
+                detalle.append('faltan ' + falta.replace(',', ', '))
+            if estados:
+                detalle.append(' / '.join(estados))
+            if any(t.startswith('estado:') and t != 'estado:OK' for t in trozos):
+                detalle.append('estado fuera de catálogo')
+            area = ' · '.join([a for a in [area] + detalle if a])
+    else:
+        ids_stg = [i for i in (g.get('ids') or []) if isinstance(i, int)]
+        if ids_stg:
+            ids_doc = [r[0] for r in db.query(StagingEntidadNoResuelta.id_documento).filter(
+                StagingEntidadNoResuelta.id_staging.in_(ids_stg)).distinct()]
+    nombres = sorted({re.sub(r'\.[A-Za-z0-9]{2,5}$', '', mapa_docs[i].nombre_archivo or '') for i in ids_doc if i in mapa_docs} - {''})
+    archivo = None
+    if 0 < len(nombres) <= 2:
+        archivo = ' y '.join(nombres)
+    elif nombres:
+        archivo = f'{len(nombres)} archivos'
+    return archivo, area
+
+
+def _titulo_grupo(titulo, archivo, area):
+    partes = [p for p in (archivo, area) if p]
+    return f"{titulo} · {' · '.join(partes)}" if partes else titulo
+
+
 def grupos_publicos(db, docs, page=1, search=''):
     ids = [d.id_documento for d in docs]
+    mapa_docs = {d.id_documento: d for d in docs}
     # La clave de agrupación interna puede contener una cédula. Solo sale su hash, nunca la clave original.
     base = grupos_pendientes(db, ids, limite=10**9)
     grupos = []
     for g in base['grupos']:
-        titulo = motivo_publico(g.get('motivo'))
+        archivo, area = _origen_grupo(db, g, mapa_docs)
+        titulo = _titulo_grupo(motivo_publico(g.get('motivo')), archivo, area)
         ejemplo = proteger_ci(g.get('ejemplo') or '')
         if search and strip_accents(search).lower() not in strip_accents(titulo + ' ' + ejemplo).lower():
             continue
@@ -244,7 +288,7 @@ def grupos_publicos(db, docs, page=1, search=''):
         if accion == 'MAPEAR_ESTADO' and '|falta:ninguno|' not in g['clave']:
             accion = 'MANUAL'
         grupos.append({'clave': token_grupo(g['clave']), 'motivo': g['motivo'], 'titulo': titulo,
-                       'ejemplo': ejemplo, 'n': g['n'], 'accion_grupo': accion})
+                       'archivo_origen': archivo, 'ejemplo': ejemplo, 'n': g['n'], 'accion_grupo': accion})
     return {'total_casos': sum(g['n'] for g in grupos), 'total_grupos': len(grupos), 'doc_ids': ids,
             'grupos': grupos[(page - 1) * 5:page * 5],
             'pagination': {'page': page, 'page_size': 5, 'total_items': len(grupos), 'total_pages': max(1, math.ceil(len(grupos) / 5))}}

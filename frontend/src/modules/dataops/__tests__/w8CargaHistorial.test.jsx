@@ -199,7 +199,7 @@ describe('W-8 — Rediseño de la carga y del historial', () => {
   describe('Renderizado de IngestView, BatchHistory y CSS responsive', () => {
     const createClient = () => new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
-    it('IngestView renderiza "Procesar seleccionados" y "Vaciar cola" junto a la zona de carga y omite el panel "Archivo seleccionado"', () => {
+    it('IngestView renderiza "Procesar archivos" y "Vaciar cola" junto a la zona de carga y omite el panel "Archivo seleccionado"', () => {
       const html = renderToStaticMarkup(
         <MemoryRouter initialEntries={['/dataops/ingesta']}>
           <QueryClientProvider client={createClient()}>
@@ -208,7 +208,7 @@ describe('W-8 — Rediseño de la carga y del historial', () => {
         </MemoryRouter>
       );
 
-      expect(html).toContain('Procesar seleccionados');
+      expect(html).toContain('Procesar archivos');
       expect(html).toContain('Vaciar cola');
       expect(html).not.toContain('Archivo seleccionado');
     });

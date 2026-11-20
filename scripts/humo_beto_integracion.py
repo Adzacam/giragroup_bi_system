@@ -15,7 +15,7 @@ from sqlalchemy import text  # noqa: E402
 
 from core.database import SessionLocal  # noqa: E402
 from models.dim_estudiante import DimEstudiante  # noqa: E402
-from routers.dataops.extraccion import _docentes_con_contexto, _es_encabezado_no_estudiante, extract_entities_from_line, fila_sin_entidad  # noqa: E402
+from routers.dataops.extraccion import EXCLUIR_CELDA_BETO, _docentes_con_contexto, extract_entities_from_line, fila_sin_entidad  # noqa: E402
 from models.dim_modulo import DimModulo  # noqa: E402
 from services import beto_integracion as bi  # noqa: E402
 
@@ -42,7 +42,7 @@ def main(n):
         sub = [m for m in muestra if m[1] == tf]
         res = bi.refinar_lineas([m[0] for m in sub],
                                 lambda l, **kw: extract_entities_from_line(l, estudiantes, docentes, modulos, tipo_escala="CENTESIMAL_100", tipo_fuente=tf, **kw),
-                                tipo_fuente=tf, cliente=cliente, contadores=cont, archivo=sub[0][2], excluir_celda=_es_encabezado_no_estudiante)
+                                tipo_fuente=tf, cliente=cliente, contadores=cont, archivo=sub[0][2], excluir_celda=EXCLUIR_CELDA_BETO)
         print(tf, len(sub), "líneas; promovidas:", sum(1 for r in res if r and r.promovida_por_beto),
               "desacuerdos:", sum(1 for r in res if r and r.acuerdo == bi.DESACUERDO), "acuerdos:", sum(1 for r in res if r and r.acuerdo == bi.ACUERDO))
     print(json.dumps(cont.como_dict(), ensure_ascii=False))

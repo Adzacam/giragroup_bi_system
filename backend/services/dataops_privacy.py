@@ -164,7 +164,9 @@ def registro_beto_publico(registro):
     publico = proteger({k: registro.get(k) for k in campos})
     publicas = []
     for entidad in entidades[:50]:
-        campos_entidad = ('label', 'token', 'matchedCanonical', 'betoConfidence', 'lecturaModelo', 'fuzzScore')
+        campos_entidad = ('label', 'token', 'matchedCanonical', 'betoConfidence', 'lecturaModelo', 'fuzzScore',
+                          # F5C C-3: confianza medida y su origen (no son datos personales; los tokens siguen enmascarados)
+                          'confianza', 'origen_confianza', 'detalleConfianza')
         e = proteger({k: entidad.get(k) for k in campos_entidad})
         lbl_norm = _normalizar(entidad.get('label', ''))
         if any(k in lbl_norm for k in ('estudiante', 'docente', 'persona', 'nombre', 'per', 'asesor')):

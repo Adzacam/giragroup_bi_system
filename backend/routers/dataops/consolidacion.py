@@ -26,7 +26,7 @@ from services.dataops_evaluation_service import enmascarar_ci, strip_accents
 from core.security import require_roles
 from ._comun import ConfirmDwInsertRequest, UMBRAL_INDICE_REGISTRO_DEC, categoria_ruteo as resolver_categoria_ruteo
 from .revision import _bloquear_documentos_editables, resolve_review_item
-from .extraccion import _docentes_con_contexto, _es_encabezado_no_estudiante, extract_entities_from_line
+from .extraccion import EXCLUIR_CELDA_BETO, _docentes_con_contexto, extract_entities_from_line
 from models.log_inconsistencia import LogInconsistencia
 from pipeline.config import MOTIVO_DESACUERDO_REGLA_BETO
 from .evaluacion import _asegurar_lote_editable, _resolver_documentos_lote
@@ -306,7 +306,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                 tipo_fuente=doc_fuente, cliente=cliente_beto, contadores=contadores_beto,
                 archivo=orig_doc.nombre_archivo if orig_doc else None,
                 omitir=lambda l: bool(motivo_fila_sin_entidad(campos_por_encabezado([c.strip() for c in l.split("|")]), categoria_ruteo)),
-                excluir_celda=_es_encabezado_no_estudiante)
+                excluir_celda=EXCLUIR_CELDA_BETO)
         logs_descarte_stg = []
         stg_descarte_stg = []
         unres_stg = []

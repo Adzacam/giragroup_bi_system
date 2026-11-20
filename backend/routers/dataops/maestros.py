@@ -354,10 +354,11 @@ def infer_beto_text(payload: BetoInferRequest, db: Session = Depends(get_db)):
         else:
             cat_match = f"{ent.get('canonicalId', 'ALTA')} (Candidato a {cat_display})"
 
-        lectura_base = min(0.99, float(ent.get("lecturaModelo", ent.get("betoConfidence", 0.85))))
+        # F5C C-3: la confianza de la entidad es la medida por su origen; la lectura del modelo solo existe si la leyó BETO
+        indice_ent = float(ent.get("confianza") or 0.0)
+        lectura_base = float(ent.get("lecturaModelo") or indice_ent)
         bono_cat = float(ent.get("bonoCatalogo", 0.0))
         bono_rep = float(ent.get("bonoRepetido", 0.0))
-        indice_ent = min(0.99, float(ent.get("betoConfidence", lectura_base)))
 
         lectura_pct = min(TOPE_INDICE_BONIFICADO, round(lectura_base * 100))
         bono_cat_pct = round(bono_cat * 100)
@@ -379,6 +380,7 @@ def infer_beto_text(payload: BetoInferRequest, db: Session = Depends(get_db)):
             "indiceEntidad": indice_pct,
             "indice_final": indice_pct,
             "conf": indice_ent,
+            "origen_confianza": ent.get("origen_confianza"),
             "catMatch": cat_match,
             "catalog": cat_display,
             "canonicalId": ent.get("canonicalId"),
@@ -480,6 +482,25 @@ def link_entity_to_catalog(entity_id: int, payload: Optional[dict] = None, db: S
     }
 
 
+def _framework_texto() -> str:
+    """Versiones de torch y transformers registradas en docs/mediciones/f1_training_info.json (sin cifra fija)."""
+    import json
+    from pathlib import Path
+    ruta = None
+    for base in Path(__file__).resolve().parents:
+        if (base / "docs" / "mediciones" / "f1_training_info.json").exists():
+            ruta = base / "docs" / "mediciones" / "f1_training_info.json"
+            break
+    try:
+        v = json.loads(ruta.read_text(encoding="utf-8")).get("versions", {}) if ruta else {}
+    except (OSError, ValueError):
+        v = {}
+    torch_v, tf_v = v.get("torch"), v.get("transformers")
+    if not torch_v:
+        return "PyTorch + HuggingFace Transformers"
+    return f"PyTorch {torch_v} + HuggingFace Transformers" + (f" {tf_v}" if tf_v else "")
+
+
 @router.get("/telemetry/summary")
 def get_telemetry_summary(db: Session = Depends(get_db)):
     resumen = get_lote_resumen("latest", doc_id=None, db=db)
@@ -496,7 +517,7 @@ def get_telemetry_summary(db: Session = Depends(get_db)):
         },
         "model_specs": {
             "architecture": "BETO dccuchile/bert-base-spanish-wwm-cased; checkpoint local de 9 etiquetas IOB2",
-            "framework": "PyTorch 2.2 + HuggingFace Transformers",
+            "framework": _framework_texto(),
             "vocabulary_size": 31002,
             "compuerta_lectura_modelo": COMPUERTA_LECTURA_MODELO_PCT,
             "umbral_indice_registro": UMBRAL_INDICE_REGISTRO,

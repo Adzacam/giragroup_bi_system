@@ -25,7 +25,7 @@ from services.revision_hechos import contar_hechos_en_revision
 from sqlalchemy import func
 from pipeline.config import MOTIVO_DESACUERDO_REGLA_BETO
 from ._comun import UMBRAL_INDICE_REGISTRO
-from .extraccion import _docentes_con_contexto, _es_encabezado_no_estudiante, extract_entities_from_line, fila_sin_entidad
+from .extraccion import EXCLUIR_CELDA_BETO, _docentes_con_contexto, elemento_confianza, extract_entities_from_line, fila_sin_entidad
 
 logger = logging.getLogger(__name__)
 
@@ -269,7 +269,7 @@ def _evaluar_documentos_lote(
                     apariciones_lote=max(1, len(lines)), **kw),
                 tipo_fuente=doc_fuente, cliente=cliente_beto, contadores=contadores_beto,
                 archivo=orig_doc.nombre_archivo if orig_doc else None,
-                omitir=lambda l: fila_sin_entidad(l, doc_fuente), excluir_celda=_es_encabezado_no_estudiante)
+                omitir=lambda l: fila_sin_entidad(l, doc_fuente), excluir_celda=EXCLUIR_CELDA_BETO)
 
         for line_idx, line in enumerate(lines):
             lineas_hechas += 1
@@ -390,48 +390,9 @@ def _evaluar_documentos_lote(
 
             # Explicabilidad por elemento con terminología unificada (#3, #6)
             confianza_elementos = []
-            if ent_est:
-                lect_est = int(round(ent_est.get("lecturaModelo", 0.88) * 100))
-                bono_cat_e = int(round(ent_est.get("bonoCatalogo", 0.0) * 100))
-                bono_rep_e = int(round(ent_est.get("bonoRepetido", 0.0) * 100))
-                ind_est = int(round(ent_est.get("betoConfidence", 0.88) * 100))
-                confianza_elementos.append({
-                    "elemento": "Estudiante",
-                    "valor": ent_est.get("token"),
-                    "indice": ind_est,
-                    "lectura_modelo": lect_est,
-                    "bono_catalogo": bono_cat_e,
-                    "bono_repetido": bono_rep_e,
-                    "explicacion": f"Lectura del modelo: {lect_est} + bono catálogo: +{bono_cat_e} + bono repetido: +{bono_rep_e}",
-                })
-            if ent_mod:
-                lect_mod = int(round(ent_mod.get("lecturaModelo", 0.85) * 100))
-                bono_cat_m = int(round(ent_mod.get("bonoCatalogo", 0.0) * 100))
-                bono_rep_m = int(round(ent_mod.get("bonoRepetido", 0.0) * 100))
-                ind_mod = int(round(ent_mod.get("betoConfidence", 0.85) * 100))
-                confianza_elementos.append({
-                    "elemento": "Módulo",
-                    "valor": ent_mod.get("matchedCanonical") or ent_mod.get("token"),
-                    "indice": ind_mod,
-                    "lectura_modelo": lect_mod,
-                    "bono_catalogo": bono_cat_m,
-                    "bono_repetido": bono_rep_m,
-                    "explicacion": f"Lectura del modelo: {lect_mod} + bono catálogo: +{bono_cat_m} + bono repetido: +{bono_rep_m}",
-                })
-            if ent_doc:
-                lect_doc = int(round(ent_doc.get("lecturaModelo", 0.85) * 100))
-                bono_cat_d = int(round(ent_doc.get("bonoCatalogo", 0.0) * 100))
-                bono_rep_d = int(round(ent_doc.get("bonoRepetido", 0.0) * 100))
-                ind_doc = int(round(ent_doc.get("betoConfidence", 0.85) * 100))
-                confianza_elementos.append({
-                    "elemento": "Docente",
-                    "valor": ent_doc.get("matchedCanonical") or ent_doc.get("token"),
-                    "indice": ind_doc,
-                    "lectura_modelo": lect_doc,
-                    "bono_catalogo": bono_cat_d,
-                    "bono_repetido": bono_rep_d,
-                    "explicacion": f"Lectura del modelo: {lect_doc} + bono catálogo: +{bono_cat_d} + bono repetido: +{bono_rep_d}",
-                })
+            for nombre_el, ent_el in (("Estudiante", ent_est), ("Módulo", ent_mod), ("Docente", ent_doc)):
+                if ent_el:
+                    confianza_elementos.append(elemento_confianza(nombre_el, ent_el))
 
             reglas = {
                 "ci": {

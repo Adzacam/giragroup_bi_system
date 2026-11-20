@@ -16,6 +16,7 @@ import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano'
 import { sileoToast } from '../../services/sileoToast';
 import { mensajeError } from '../../utils/mensajeError';
 import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
+import AnimatedProgressBarV2 from '../../v2/motion/AnimatedProgressBarV2';
 import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
 import { toDataopsPath } from '../../v2/utils/v2Routes';
 
@@ -23,6 +24,41 @@ const INITIAL = { docId: null, area: 'TODAS', condition: 'ALL', entity: 'TODOS',
 const ESTADOS = { AUTOMATICO: 'Aceptación directa', REVISION: 'En revisión', INCONSISTENCIA: 'Con incidencias' };
 const AREAS = { academica: 'Académica', financiera: 'Financiera', comercial: 'Comercial', calidad: 'Calidad' };
 const fmt = value => typeof value === 'number' ? value.toLocaleString('es-BO') : 'Sin dato';
+const fmtDec = value => typeof value === 'number' && Number.isFinite(value) ? value.toFixed(2).replace('.', ',') : null;
+
+const ORIGEN_INFO = {
+  CI_EXACTA: { label: 'Cédula exacta', bg: 'var(--dataops-success-bg)', color: 'var(--dataops-success-text)', bar: 'var(--dataops-success-text)' },
+  REGLA_ENCABEZADO: { label: 'Encabezado del archivo', bg: 'var(--color-mist-gray)', color: 'var(--color-ink-black)', bar: 'var(--color-ink-black)' },
+  ENCABEZADO: { label: 'Encabezado del archivo', bg: 'var(--color-mist-gray)', color: 'var(--color-ink-black)', bar: 'var(--color-ink-black)' },
+  FUZZY: { label: 'Coincidencia aproximada', bg: 'var(--dataops-warning-bg)', color: 'var(--dataops-warning-text)', bar: 'var(--dataops-warning-text)' },
+  REGEX: { label: 'Patrón', bg: 'var(--color-mist-gray)', color: 'var(--color-slate-gray)', bar: 'var(--color-slate-gray)' },
+  BETO: { label: 'Leído por BETO', bg: 'var(--dataops-info-bg)', color: 'var(--dataops-info-text)', bar: 'var(--color-gira-gold)' },
+};
+
+function modeloEtiqueta(entity) {
+  const lbl = String(entity?.label || '').toUpperCase();
+  if (lbl.includes('ESTUDIANTE')) return 'PER_ESTUDIANTE';
+  if (lbl.includes('DOCENTE')) return 'PER_DOCENTE';
+  if (lbl.includes('MODULO') || lbl.includes('MÓDULO')) return 'MODULO';
+  if (lbl.includes('PROGRAMA')) return 'PROGRAMA';
+  if (lbl.includes('CI') || lbl.includes('DOCUMENTO')) return 'CI (por regla)';
+  return entity?.tag || entity?.label || 'ENTIDAD';
+}
+
+function textoConfianzaEntidad(entity, info) {
+  const origen = entity?.origen_confianza || entity?.fuente_resolucion || '';
+  const conf = entity?.confianza ?? entity?.betoConfidence;
+  if (origen === 'BETO' && conf != null) return `BETO p = ${fmtDec(Number(conf))}`;
+  if (origen === 'REGLA_ENCABEZADO' || origen === 'ENCABEZADO') {
+    const sim = entity?.detalleConfianza?.similitudEncabezado;
+    const val = entity?.detalleConfianza?.validez ?? entity?.detalleConfianza?.catalogo;
+    const simTxt = sim != null ? `similitud ${fmtDec(Number(sim))}` : 'encabezado';
+    const valTxt = val != null && Number(val) < 0.99 ? `validez ${fmtDec(Number(val))}` : 'valor validado';
+    return `Regla por encabezado: ${simTxt} · ${valTxt}`;
+  }
+  if (conf != null) return `${info.label}: ${fmtDec(Number(conf))}`;
+  return info.label;
+}
 
 function RegistroBeto({ record }) {
   const { toggleCampo, getValor } = useRevealCampo();
@@ -78,10 +114,33 @@ function RegistroBeto({ record }) {
         <summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>Ver explicación y datos identificados</summary>
         <p style={{ marginTop: 10 }}>{record.decision?.motivo_llano || 'Sin observaciones adicionales.'}</p>
         <p style={{ marginTop: 10, fontSize: 12, color: 'var(--color-slate-gray)' }}>{record.raw_text || record.lectura?.texto || 'Sin texto disponible'}</p>
-        <dl style={{ marginTop: 10 }}>{(record.lectura?.entidades || []).map((entity, index) => <div key={index} style={{ marginTop: 8 }}>
-          <dt style={{ fontSize: 12, fontWeight: 600 }}>{String(entity.label || 'Dato').replaceAll('_', ' ').toLocaleLowerCase('es')}</dt>
-          <dd style={{ fontSize: 12 }}>{entity.token ?? 'Sin dato'}{entity.matchedCanonical != null && entity.matchedCanonical !== entity.token ? ` · Catálogo: ${entity.matchedCanonical}` : ''}</dd>
-        </div>)}</dl>
+        <dl style={{ marginTop: 10 }}>{(record.lectura?.entidades || []).map((entity, index) => {
+          const origen = entity.origen_confianza || entity.fuente_resolucion || 'REGLA_ENCABEZADO';
+          const info = ORIGEN_INFO[origen] || ORIGEN_INFO.REGLA_ENCABEZADO;
+          const confFinal = entity.confianza ?? entity.betoConfidence;
+          const lecturaMod = entity.lecturaModelo ?? (origen === 'BETO' ? confFinal : null);
+          return <div key={index} style={{ marginTop: 10, paddingTop: 8, borderTop: index > 0 ? '1px solid var(--color-border)' : 'none' }}>
+            <dt style={{ fontSize: 12, fontWeight: 600, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
+              <span>{String(entity.label || 'Dato').replaceAll('_', ' ').toLocaleLowerCase('es')}</span>
+              <span style={{ fontSize: 10.5, fontFamily: 'var(--font-mono)', padding: '2px 7px', borderRadius: 999, background: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', color: 'var(--color-ink-black)' }}>{modeloEtiqueta(entity)}</span>
+              <span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 999, background: info.bg, color: info.color }}>{info.label}</span>
+            </dt>
+            <dd style={{ fontSize: 12, marginTop: 4 }}>
+              {entity.token ?? 'Sin dato'}{entity.matchedCanonical != null && entity.matchedCanonical !== entity.token ? ` · Catálogo: ${entity.matchedCanonical}` : ''}
+              <p style={{ fontSize: 11, color: 'var(--color-slate-gray)', marginTop: 3 }}>{textoConfianzaEntidad(entity, info)}</p>
+              {(lecturaMod != null || confFinal != null) && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 8, marginTop: 5 }}>
+                {lecturaMod != null && <div>
+                  <span style={{ fontSize: 10.5, color: 'var(--color-slate-gray)' }}>Lectura del modelo ({Math.round(Number(lecturaMod) * 100)} %)</span>
+                  <AnimatedProgressBarV2 value={Number(lecturaMod) * 100} color="var(--color-gira-gold)" height={6} ariaLabel="Lectura del modelo" />
+                </div>}
+                {confFinal != null && <div>
+                  <span style={{ fontSize: 10.5, color: 'var(--color-slate-gray)' }}>Confianza medida ({Math.round(Number(confFinal) * 100)} %)</span>
+                  <AnimatedProgressBarV2 value={Number(confFinal) * 100} color={info.bar} height={6} ariaLabel="Confianza medida" />
+                </div>}
+              </div>}
+            </dd>
+          </div>;
+        })}</dl>
       </details>
     </td>
   </tr>;
@@ -147,8 +206,8 @@ function LecturaBeto({ batchId }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
         <div><h2 className="serif-heading" style={{ fontSize: 20 }}>Lectura de BETO</h2><p style={{ color: 'var(--color-slate-gray)', fontSize: 13, marginTop: 6 }}>BETO identifica los datos de cada fila. Consultar esta página no inicia otro análisis.</p></div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Button variant="ghost" type="button" onClick={() => setMetricasOpen(true)}>
-            <BarChart3 size={15} /> Métricas del modelo
+          <Button variant="ghost" type="button" onClick={() => setMetricasOpen(true)} title="Métricas del Modelo BETO">
+            <BarChart3 size={15} /> Métricas del Modelo BETO
           </Button>
           {!!batchId && activeTab === 'resultados' && <Button variant="ghost" isLoading={isFetching} loadingText="Consultando…" disabled={!contexto} onClick={refresh}>Actualizar</Button>}
         </div>
@@ -192,6 +251,15 @@ function LecturaBeto({ batchId }) {
               <li><strong>Desde 60 % y menos de 85 %:</strong> se incorpora marcado para revisión al consolidar.</li>
               <li><strong>Menos de 60 %:</strong> queda en la bandeja para revisión.</li>
             </ul><p style={{ fontSize: 12, marginTop: 8, color: 'var(--color-slate-gray)' }}>Si falta un dato obligatorio o hay una inconsistencia, se requiere revisión aunque el índice alcance el 85 %. La consolidación se realiza en el paso ③.</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 10, fontSize: 11.5 }}>
+              <span style={{ color: 'var(--color-slate-gray)', fontWeight: 600 }}>Cascada de resolución:</span>
+              {['CI_EXACTA', 'REGLA_ENCABEZADO', 'FUZZY', 'REGEX', 'BETO'].map((k, i) => (
+                <React.Fragment key={k}>
+                  {i > 0 && <span aria-hidden="true" style={{ color: 'var(--color-slate-gray)' }}>→</span>}
+                  <span style={{ padding: '2px 8px', borderRadius: 999, background: ORIGEN_INFO[k].bg, color: ORIGEN_INFO[k].color, fontSize: 11 }}>{ORIGEN_INFO[k].label}</span>
+                </React.Fragment>
+              ))}
+            </div>
           </details>
         </>
       )}
@@ -208,7 +276,7 @@ function LecturaBeto({ batchId }) {
       </div> : <>
         <p style={{ fontSize: 12, color: 'var(--color-slate-gray)', marginBottom: 10 }}>{filters.docId ? 'Resumen del archivo seleccionado.' : 'Resumen del lote.'} Los filtros se aplican a la lista de resultados.</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 16, marginBottom: 20 }}>
-          {[['Analizados', summary?.total_procesados], ['Aceptación directa', summary?.aceptados_automaticamente], ['En revisión', summary?.por_revisar], ['Con incidencias', summary?.con_incidencias]].map(([label, value]) => <div className="floating-artifact" key={label} style={{ padding: 18 }}><p style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>{label}</p><p style={{ fontSize: 25, marginTop: 6 }}>{isFetching ? 'Consultando…' : <AnimatedNumberV2 value={fmt(value)} />}</p></div>)}
+          {[['Analizados', summary?.total_procesados], ['Aceptación directa', summary?.aceptados_automaticamente], ['En revisión', summary?.por_revisar, 'Banda 60–85 % de lectura; el paso ③ agrupa también casos por identidad o catálogo.'], ['Con incidencias', summary?.con_incidencias]].map(([label, value, nota]) => <div className="floating-artifact" key={label} style={{ padding: 18 }}><p style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>{label}</p><p style={{ fontSize: 25, marginTop: 6 }}>{isFetching ? 'Consultando…' : <AnimatedNumberV2 value={fmt(value)} />}</p>{nota && <p style={{ fontSize: 11, color: 'var(--color-slate-gray)', marginTop: 6, lineHeight: 1.4 }}>{nota}</p>}</div>)}
         </div>
         <div className="floating-artifact" style={{ padding: 20, marginBottom: 20, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           <label style={{ fontSize: 12 }}>Área<select className="dataops-select" value={filters.area} onChange={e => setFilter('area', e.target.value)} aria-label="Área"><option value="TODAS">Todas</option>{Object.entries(AREAS).map(([value, text]) => <option value={value} key={value}>{text}</option>)}</select></label>

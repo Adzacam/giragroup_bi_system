@@ -45,9 +45,9 @@ vi.mock('../../../api/dataopsApi', () => ({
 
 import { toDataopsPath } from '../../../v2/utils/v2Routes';
 import betoMetricas from '../../../constants/betoMetricas.json';
-import BetoMetricasModal from '../components/BetoMetricasModal';
+import BetoMetricasModal, { buildCurvaEpocas } from '../components/BetoMetricasModal';
 import BetoReadingFlowView from '../BetoReadingFlowView';
-import PlainTextTransformationView from '../PlainTextTransformationView';
+import TextoPreparadoTab from '../components/TextoPreparadoTab';
 
 const REPO_ROOT = path.resolve(__dirname, '../../../../..');
 const FRONT_SRC = path.join(REPO_ROOT, 'frontend', 'src');
@@ -171,6 +171,25 @@ describe('W-9 — Rutas DataOps, KPIs animados y Métricas del modelo BETO', () 
       expect(html).toContain(fmt4(ep.dev_f1));
     }
 
+    for (const modo of ['estricto', 'relajado']) {
+      const src = modo === 'estricto' ? modoCStrict : modoCRelaxed;
+      expect(betoMetricas.gold_510_modo_c[modo].precision).toBeCloseTo(Number(src.precision), 4);
+      expect(betoMetricas.gold_510_modo_c[modo].recall).toBeCloseTo(Number(src.recall), 4);
+      expect(html).toContain(fmtPct(betoMetricas.gold_510_modo_c[modo].precision));
+      expect(html).toContain(fmtPct(betoMetricas.gold_510_modo_c[modo].recall));
+    }
+    expect(html).toContain('97,29 %');
+    expect(html).toContain('98,63 %');
+    expect(html).toContain('98,84 %');
+    expect(html).toContain('Mejor');
+
+    const curva = buildCurvaEpocas(betoMetricas.epocas, betoMetricas.ficha_modelo.best_epoch);
+    expect(curva.labels).toHaveLength(f1Training.epoch_history.length);
+    expect(curva.labels).toHaveLength(3);
+    curva.datasets.forEach((d) => expect(d.data).toHaveLength(3));
+    expect(curva.datasets[0].data).toEqual(f1Training.epoch_history.map((e) => e.dev_f1));
+    expect(curva.labels[1]).toContain('Mejor');
+
     const idxEst = matriz5x5Src.clases.indexOf('PER_ESTUDIANTE');
     const idxProg = matriz5x5Src.clases.indexOf('PROGRAMA');
     const confToken = matriz5x5Src.matriz[idxEst][idxProg];
@@ -178,7 +197,7 @@ describe('W-9 — Rutas DataOps, KPIs animados y Métricas del modelo BETO', () 
     expect(html).toContain(`${confToken} token PER_ESTUDIANTE → PROGRAMA`);
   });
 
-  it('BetoReadingFlowView renderiza el botón "Métricas del modelo" y PlainTextTransformationView usa AnimatedNumberV2', () => {
+  it('BetoReadingFlowView renderiza el botón "Métricas del modelo" y TextoPreparadoTab usa AnimatedNumberV2', () => {
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const betoHtml = renderToStaticMarkup(
       <QueryClientProvider client={qc}>
@@ -187,10 +206,10 @@ describe('W-9 — Rutas DataOps, KPIs animados y Métricas del modelo BETO', () 
         </MemoryRouter>
       </QueryClientProvider>
     );
-    expect(betoHtml).toContain('Métricas del modelo');
+    expect(betoHtml).toContain('Métricas del Modelo BETO');
 
     const plainSrc = fs.readFileSync(
-      path.join(FRONT_SRC, 'modules/dataops/PlainTextTransformationView.jsx'),
+      path.join(FRONT_SRC, 'modules/dataops/components/TextoPreparadoTab.jsx'),
       'utf-8'
     );
     expect(plainSrc).toContain('AnimatedNumberV2');

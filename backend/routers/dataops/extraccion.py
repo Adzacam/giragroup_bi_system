@@ -1,17 +1,29 @@
-"""Extracción de entidades de una línea de texto plano (lectura de BETO por reglas y catálogo)."""
+"""Extracción de entidades de una línea de texto plano (lectura de BETO por reglas y catálogo).
+
+F5C (C-2): cada entidad sale de la columna que tiene su rol por la ESTRUCTURA del encabezado (similitud con las claves
+canónicas del rol), nunca por el nombre del archivo. F5C (C-3): cada entidad lleva `confianza` y `origen_confianza`
+∈ {BETO, REGLA_ENCABEZADO, REGEX, FUZZY, CI_EXACTA}, calculadas a partir de lo que se midió (similitud del encabezado,
+validez del valor, puntaje del catálogo o probabilidad del modelo). El índice de la línea sigue siendo el mínimo.
+"""
 import re
 import threading
-from typing import Any, Dict, Optional, Tuple
+from functools import lru_cache
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 from models.dim_docente import DimDocente
-from services.dataops_evaluation_service import NON_PERSON_WORDS, calcular_indice_entidad_con_bonos, fuzzy_score, strip_accents
+from services.dataops_evaluation_service import NON_PERSON_WORDS, fuzzy_score, strip_accents
 from services.extraccion_por_encabezado import es_encabezado_metadato_pos
 from pipeline.normalization.person_resolver import resolver_persona
 from sqlalchemy import text
 from ._comun import NOTA_APROBACION, UMBRAL_INDICE_REGISTRO_DEC
 
+try:
+    from rapidfuzz import fuzz as _fuzz
+except ImportError:  # pragma: no cover
+    _fuzz = None
+
 
 # =============================================================================
-# MOTOR DE EXTRACCIÓN SEMÁNTICA, BONOS ACUMULATIVOS Y RAPIDFUZZ (#3, #4, #5, #6, #7)
+# MOTOR DE EXTRACCIÓN SEMÁNTICA Y RAPIDFUZZ (#4, #5, #7)
 # =============================================================================
 
 # Encabezados cuyo valor nunca es el nombre ni el CI del estudiante. Sin esta exclusión, la
@@ -22,12 +34,165 @@ _ENCABEZADOS_NO_ESTUDIANTE = (
     "FACTURA", "CORREO", "E-MAIL", "EMAIL",
     # Estados de la fila ('OBSERVACIÓN CARTERA: EN PROCESO DE COBRO'): un estado no es un nombre
     "ESTADO", "OBSERVACION", "CARTERA", "SITUACION",
+    # F5C C-2(d): la RAZÓN SOCIAL de la factura es una empresa o un tercero, no el estudiante
+    "RAZON SOCIAL",
 )
+# Encabezados que se comparan como palabra completa ('NIT' está dentro de 'UNITARIO' o 'COMUNITARIO')
+_PALABRAS_NO_ESTUDIANTE = ("NIT",)
+
+# Atributos del estudiante (su formación previa o su trabajo): nunca son programa, módulo ni docente
+_ATRIBUTOS_ESTUDIANTE = (
+    "CARRERA", "NIVEL ACADEMICO", "UNIVERSIDA", "INSTITUTO", "INSTITUCION", "GRADO ACADEMICO",
+    "PROFESION", "OCUPACION", "CARGO", "DIRECCION",
+)
+
+# Rol de cada columna por similitud de su encabezado con estas claves canónicas (RapidFuzz ratio sobre el encabezado
+# normalizado). Prioridad del programa: primero el código, luego el nombre.
+_ENC_CODIGO_PROGRAMA = (
+    "POS", "NUMEROPROYECTO", "NUMERO PROYECTO", "NRO PROYECTO", "N POS", "NRO POS", "NUMERO POS",
+    "CODIGO POS", "COD POS", "CODIGO PROGRAMA", "COD PROGRAMA",
+)
+_ENC_NOMBRE_PROGRAMA = ("NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA", "PROGRAMA POS", "DIPLOMADO", "MAESTRIA")
+_ENC_MODULO = (
+    "MODULO", "NOMBRE MODULO", "NOMBRE DEL MODULO", "CURSO", "COURSE", "ASIGNATURA", "MATERIA",
+    "COD MODULO", "CODIGO MODULO",
+)
+_ENC_DOCENTE = (
+    "DOCENTE", "PROFESOR", "TUTOR", "FACILITADOR", "NOMBRE DOCENTE", "NOMBRE DEL DOCENTE",
+    "EXPERTO", "NOMBRE DEL EXPERTO",
+)
+_ENC_ESTUDIANTE = (
+    "ESTUDIANTE", "ALUMNO", "POSTULANTE", "PARTICIPANTE", "USER LMS", "NOMBRE", "NOMBRES Y APELLIDOS", "NOMBRE COMPLETO",
+    "APELLIDOS Y NOMBRES", "NOMBRE COMPLETO DEL USUARIO", "NOMBRE DEL ESTUDIANTE", "NOMBRE DEL PARTICIPANTE",
+)
+_ENC_PARTES_NOMBRE = ("NOMBRES", "PATERNO", "MATERNO", "APELLIDO PATERNO", "APELLIDO MATERNO")
+_ENC_CI = ("CI", "C I", "IDNUMBER", "CARNET", "DOCUMENTO", "DOC IDENTIDAD CI", "CI ESTUDIANTE", "CEDULA DE IDENTIDAD")
+_ENC_CONCEPTO = ("CONCEPTO", "ITEM", "DESCRIPCION", "GLOSA", "RUBRO")
+
+# Similitud mínima del encabezado con la clave canónica del rol (misma cota del 85 % que la variante de CI y los docentes)
+UMBRAL_SIMILITUD_ENCABEZADO = 85.0
+# Cota superior de la escala de probabilidad [0, 1]: es el mínimo de un conjunto vacío (línea sin entidades que dudar),
+# no una confianza asignada a una entidad.
+_COTA_SUPERIOR_ESCALA = 1.0
+# Patrón estricto del código de programa (REGEX solo cuenta si el valor pasa este patrón)
+_PATRON_POS = re.compile(r"POS-\d{3,5}")
+_TITULOS_DOCENTE = re.compile(r"^(?:Dr|Dra|MSc|Lic|Ing)\.\s+[A-ZÁÉÍÓÚÑ]")
+_PISTA_DOCENTE = re.compile(r"\b(?:docente|profesor|tutor)\b|\b(?:dr|dra|msc|lic|ing)\.\s", re.IGNORECASE)
+
+# Orígenes de la confianza que ve la pantalla
+ORIGEN_BETO, ORIGEN_ENCABEZADO, ORIGEN_REGEX, ORIGEN_FUZZY, ORIGEN_CI = "BETO", "REGLA_ENCABEZADO", "REGEX", "FUZZY", "CI_EXACTA"
+ORIGENES_CONFIANZA = (ORIGEN_BETO, ORIGEN_ENCABEZADO, ORIGEN_REGEX, ORIGEN_FUZZY, ORIGEN_CI)
+# fuente_resolucion histórica (la usan los contadores y la cascada de BETO) para cada origen de confianza
+_FUENTE_DE_ORIGEN = {ORIGEN_BETO: "BETO", ORIGEN_ENCABEZADO: "ENCABEZADO", ORIGEN_REGEX: "REGEX", ORIGEN_FUZZY: "FUZZY", ORIGEN_CI: "CI_EXACTA"}
 
 
 def _es_encabezado_no_estudiante(clave: str) -> bool:
     # 'POS - ACTAS', 'POS-CI'…: identifican el programa (antes 'POS - ACTAS: POS-011' se tomaba como estudiante)
-    return any(p in clave for p in _ENCABEZADOS_NO_ESTUDIANTE) or es_encabezado_metadato_pos(clave)
+    if any(p in clave for p in _ENCABEZADOS_NO_ESTUDIANTE) or es_encabezado_metadato_pos(clave):
+        return True
+    palabras = set(_norm_enc(clave).split())
+    return any(p in palabras for p in _PALABRAS_NO_ESTUDIANTE)
+
+
+def _norm_enc(clave: str) -> str:
+    """Encabezado sin tildes, en mayúsculas y con la puntuación como espacio ('N° POS' → 'N POS', 'COD_MODULO' → 'COD MODULO')."""
+    return " ".join(re.sub(r"[^A-Z0-9]+", " ", strip_accents(clave or "").upper()).split())
+
+
+def _ratio(a: str, b: str) -> float:
+    if _fuzz is not None:
+        return float(_fuzz.ratio(a, b))
+    from difflib import SequenceMatcher
+    return SequenceMatcher(None, a, b).ratio() * 100
+
+
+@lru_cache(maxsize=8192)
+def _similitud_cache(clave: str, canonicas: Tuple[str, ...]) -> float:
+    h = _norm_enc(clave)
+    return max((_ratio(h, c) for c in canonicas), default=0.0) if h else 0.0
+
+
+def similitud_encabezado(clave: str, canonicas: Iterable[str]) -> float:
+    """Similitud (0-100, RapidFuzz ratio) del encabezado con la clave canónica más parecida del rol."""
+    return _similitud_cache(clave or "", tuple(canonicas))
+
+
+@lru_cache(maxsize=2048)
+def _similitud_compuesto_cache(clave: str, canonicas: Tuple[str, ...]) -> float:
+    h = _norm_enc(clave)
+    if not h:
+        return 0.0
+    if _fuzz is not None:
+        return max(float(_fuzz.token_set_ratio(h, c)) for c in canonicas)
+    return max(100.0 * float(set(c.split()) <= set(h.split())) for c in canonicas)
+
+
+def similitud_encabezado_compuesto(clave: str, canonicas: Iterable[str]) -> float:
+    """Encabezados compuestos 'POS - ACTAS', 'POS - IBP': la palabra del rol está entera dentro del encabezado
+    (RapidFuzz token_set_ratio). Solo se usa para el código del programa, cuyo valor además debe pasar el patrón POS."""
+    return _similitud_compuesto_cache(clave or "", tuple(canonicas))
+
+
+@lru_cache(maxsize=8192)
+def _es_atributo_estudiante(clave: str) -> bool:
+    h = _norm_enc(clave)
+    return any(a in h for a in _ATRIBUTOS_ESTUDIANTE)
+
+
+def _columnas_de_rol(labeled: Dict[str, str], canonicas: Iterable[str]) -> List[Tuple[float, str, str]]:
+    """Columnas cuyo encabezado tiene el rol (similitud >= umbral), de la más parecida a la menos; nunca un atributo del estudiante."""
+    canon = tuple(canonicas)
+    salida = []
+    for k, v in labeled.items():
+        if not v or _es_atributo_estudiante(k):
+            continue
+        s = similitud_encabezado(k, canon)
+        if s >= UMBRAL_SIMILITUD_ENCABEZADO:
+            salida.append((s, k, v))
+    salida.sort(key=lambda t: -t[0])
+    return salida
+
+
+def _es_encabezado_no_docente(clave: str) -> bool:
+    """El docente solo sale de una columna con rol de docente (DOCENTE, PROFESOR, TUTOR, FACILITADOR…). Cualquier otra
+    columna con encabezado (ASESOR, COORDINADOR, RESPONSABLE, RAZÓN SOCIAL, correos, comentarios, carrera…) se excluye,
+    también para la entidad PER de BETO."""
+    if not clave or not clave.strip():
+        return False
+    return _es_atributo_estudiante(clave) or similitud_encabezado(clave, _ENC_DOCENTE) < UMBRAL_SIMILITUD_ENCABEZADO
+
+
+# Exclusión de celdas para las propuestas de BETO, por tipo de persona (services/beto_integracion.mejor_propuesta)
+EXCLUIR_CELDA_BETO = {"ESTUDIANTE": _es_encabezado_no_estudiante, "DOCENTE": _es_encabezado_no_docente}
+
+
+# ── Validez del valor (1 si el formato se valida; fracción medida cuando el valor es parcialmente válido) ──────────
+def _validez_nombre_persona(valor: str) -> float:
+    v = (valor or "").strip()
+    palabras = v.split()
+    return float(2 <= len(palabras) <= 6 and not re.search(r"\d", v) and "@" not in v)
+
+
+def _validez_texto(valor: str) -> float:
+    v = (valor or "").strip()
+    return float(len(re.findall(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]", v)) >= 3)
+
+
+def _validez_ci(valor: str) -> float:
+    """Fracción de caracteres del documento que son dígitos válidos (sin el sufijo de departamento): 1 para '4567890 LP'."""
+    v = re.sub(r"\s*(?:LP|SC|CB|OR|PT|TJ|CH|BE|PA)\s*$", "", (valor or "").strip(), flags=re.IGNORECASE).replace(" ", "")
+    if not v:
+        return float(False)
+    digitos = len(re.sub(r"[^0-9]", "", v))
+    return round(digitos / len(v), 4) if digitos >= 5 else float(False)
+
+
+def _validez_codigo_pos(valor: str) -> float:
+    return float(bool(_PATRON_POS.fullmatch((valor or "").strip().upper())))
+
+
+def _validez_numero(valor) -> float:
+    return float(bool(re.search(r"[0-9]+(?:\.[0-9]+)?", str(valor or ""))))
 
 
 # ── Memo de emparejamiento contra catálogos ──────────────────────────────────
@@ -143,27 +308,93 @@ def _mejor_modulo(cand: str, modulos: list) -> Tuple[Any, float, str]:
     cand_clean = strip_accents(cand).lower()
     mejor = (None, 0.0, "None")
     for m in modulos:
-        m_name_clean = strip_accents(m.nombre_modulo).lower()
         score, algo = fuzzy_score(cand, m.nombre_modulo)
-        if m.pos_code and strip_accents(m.pos_code).lower() in cand_clean:
-            score = max(score, 95.0)
-            algo = "Prefix Code Match"
-        elif f"modulo {m.id_modulo // 100}" in cand_clean or f"mod {m.id_modulo // 100}" in cand_clean or ("3" in cand_clean and "302" in m_name_clean):
-            score = max(score, 89.0)
-            algo = "Jaro-Winkler Distance"
-        elif any(w in cand_clean for w in ["estetica", "medicina"]) and "estetica" in m_name_clean:
-            score = max(score, 87.5)
-            algo = "Gazetteer Alias Matching"
-        elif any(w in cand_clean for w in ["gobernanza", "datos"]) and "gobernanza" in m_name_clean:
-            score = max(score, 91.5)
-            algo = "Domain Keyword Match"
-        elif any(w in cand_clean for w in ["big data", "analytics"]) and "big data" in m_name_clean:
-            score = max(score, 93.0)
-            algo = "Domain Keyword Match"
+        # F5C C-3: el código del módulo dentro del texto es una coincidencia exacta del código (su similitud con el
+        # código del catálogo). Se quitaron los alias fijos ('estetica', 'big data', '3'↔'302'…) que daban un puntaje
+        # escrito a mano (87,5 / 89 / 91,5 / 93) a cualquier texto con esas palabras.
+        codigo = strip_accents(m.pos_code or "").lower()
+        m_cod = re.search(r"(?<![\w-])" + re.escape(codigo) + r"(?![\w-])", cand_clean) if codigo else None
+        if m_cod:
+            s_cod = _ratio(codigo, m_cod.group(0))
+            if s_cod > score:
+                score, algo = s_cod, "Prefix Code Match"
         if score > mejor[1]:
             mejor = (m, score, algo)
     memo[("mejor", cand)] = mejor
     return mejor
+
+
+def _mejor_programa(cand: str, modulos: list) -> Tuple[Optional[str], float]:
+    """Nombre de programa del catálogo (dim_modulo.programa) más parecido al leído, con su puntaje 0-100."""
+    memo = _memo_catalogo("modulos", modulos)
+    if "programas" not in memo:
+        memo["programas"] = sorted({(getattr(m, "programa", None) or "").strip() for m in modulos} - {""})
+    clave = ("programa", cand)
+    if clave not in memo:
+        mejor: Tuple[Optional[str], float] = (None, 0.0)
+        for p in memo["programas"]:
+            s, _ = fuzzy_score(cand, p)
+            if s > mejor[1]:
+                mejor = (p, s)
+        memo[clave] = mejor
+    return memo[clave]
+
+
+def _medida(origen: str, similitud: Optional[float] = None, validez: Optional[float] = None,
+            catalogo: Optional[float] = None, probabilidad: Optional[float] = None) -> Dict[str, Any]:
+    """Confianza de una entidad a partir de lo medido (C-3). Ninguna parte es una constante:
+    CI_EXACTA = puntaje de la coincidencia exacta / 100; FUZZY = puntaje RapidFuzz / 100;
+    REGLA_ENCABEZADO = similitud del encabezado / 100 × validez del valor (o puntaje del catálogo / 100);
+    REGEX = validez del valor con el patrón estricto; BETO = probabilidad del modelo."""
+    if origen == ORIGEN_BETO:
+        conf = probabilidad
+    elif origen in (ORIGEN_CI, ORIGEN_FUZZY):
+        conf = catalogo / 100.0 if catalogo is not None else None
+    elif origen == ORIGEN_ENCABEZADO:
+        factor = catalogo / 100.0 if catalogo is not None else validez
+        conf = (similitud / 100.0) * factor if (similitud is not None and factor is not None) else None
+    else:  # REGEX
+        conf = validez
+    detalle = {k: round(v, 4) for k, v in (("similitudEncabezado", similitud / 100.0 if similitud is not None else None),
+                                            ("validez", validez),
+                                            ("puntajeCatalogo", catalogo / 100.0 if catalogo is not None else None),
+                                            ("probabilidadModelo", probabilidad)) if v is not None}
+    return {"confianza": round(float(conf), 4) if conf is not None else None, "origen_confianza": origen,
+            "fuente_resolucion": _FUENTE_DE_ORIGEN[origen], "detalleConfianza": detalle}
+
+
+def _coma(x: float) -> str:
+    return f"{x:.2f}".replace(".", ",")
+
+
+def explicar_confianza(ent: Dict[str, Any]) -> str:
+    """Texto llano del origen de la confianza: «Regla por encabezado: similitud 0,96 · valor validado» o «BETO p = 0,73»."""
+    origen, det = ent.get("origen_confianza"), ent.get("detalleConfianza") or {}
+    if origen == ORIGEN_BETO:
+        return f"BETO p = {_coma(det.get('probabilidadModelo', ent.get('confianza') or 0.0))}"
+    if origen == ORIGEN_CI:
+        return "Cédula exacta en el catálogo"
+    if origen == ORIGEN_FUZZY:
+        return f"Coincidencia aproximada con el catálogo: {_coma(det.get('puntajeCatalogo', 0.0))}"
+    if origen == ORIGEN_ENCABEZADO:
+        sim = _coma(det.get("similitudEncabezado", 0.0))
+        if "puntajeCatalogo" in det:
+            return f"Regla por encabezado: similitud {sim} · catálogo {_coma(det['puntajeCatalogo'])}"
+        return f"Regla por encabezado: similitud {sim} · " + ("valor validado" if det.get("validez") == 1 else f"validez {_coma(det.get('validez', 0.0))}")
+    return "Patrón: " + ("valor validado" if det.get("validez") == 1 else "valor no validado")
+
+
+def elemento_confianza(nombre: str, ent: Dict[str, Any]) -> Dict[str, Any]:
+    """Explicabilidad por elemento para la lectura (evaluacion.py): índice = confianza medida, con su origen."""
+    conf = ent.get("confianza")
+    return {
+        "elemento": nombre,
+        "valor": ent.get("token") if nombre == "Estudiante" else (ent.get("matchedCanonical") or ent.get("token")),
+        "indice": int(round(conf * 100)) if conf is not None else None,
+        "origen_confianza": ent.get("origen_confianza"),
+        "lectura_modelo": int(round(ent["lecturaModelo"] * 100)) if ent.get("origen_confianza") == ORIGEN_BETO and ent.get("lecturaModelo") is not None else None,
+        "explicacion": explicar_confianza(ent),
+    }
 
 
 def extract_entities_from_line(
@@ -179,20 +410,20 @@ def extract_entities_from_line(
     doc_beto: Optional[dict] = None,
 ) -> Tuple[list, float, bool]:
     """
-    Extrae y resuelve entidades desde una línea de texto plano combinando:
-    1. Etiquetas base del modelo (PER -> DOCENTE/ESTUDIANTE; ORG/MISC -> auxiliar) (#4)
-    2. Resolución contra Catálogo Maestro + RapidFuzz para MÓDULO, DOCENTE, PROGRAMA y CONCEPTO_FINANCIERO (#4)
-    3. Compuerta de lectura base >= 0.70 (70) y bonos acumulativos (bono_catalogo + bono_repetido) con tope 0.99 (99) (#3, #6)
+    Extrae y resuelve entidades desde una línea de texto plano:
+    1. Rol de cada columna por la estructura de su encabezado (similitud con las claves canónicas), nunca por el archivo.
+    2. Resolución contra el catálogo (CI exacta → RapidFuzz) para estudiante, docente, módulo y programa.
+    3. Confianza por entidad medida según su origen (C-3) y el índice de la línea = mínimo de las confianzas.
     4. Normalización obligatoria de notas a base 100 según tipo_escala (#16).
 
     est_beto / doc_beto ({"nombre", "prob"}): nombre que BETO propone para el estudiante o el docente que las reglas no resolvieron
     (services/beto_integracion.py, BETO_CASCADA_FINAL). Solo se usan si no hay una resolución de reglas contra el catálogo
-    (umbral 80): BETO nunca reemplaza una resolución A/B. Sin ellos la función se comporta exactamente como antes.
+    (umbral 80): BETO nunca reemplaza una resolución A/B. `prob_override` se conserva por compatibilidad de la firma y ya no
+    cambia la confianza: una probabilidad de BETO solo cuenta cuando la entidad la resolvió BETO.
     """
     entities = []
     is_dudoso = False
     text_clean = strip_accents(raw_text).lower()
-    prob_override = prob_override or {}
 
     has_pipes = "|" in raw_text
     chunks = [c.strip() for c in raw_text.split("|") if c.strip()] if has_pipes else []
@@ -202,6 +433,7 @@ def extract_entities_from_line(
         if ":" in ch:
             k, v = ch.split(":", 1)
             labeled_data[strip_accents(k).upper().strip()] = v.strip()
+    sin_columnas = not labeled_data   # texto libre: solo ahí valen los patrones sueltos
 
     # Texto sin columnas de asesores, docentes, sedes ni contactos, para las búsquedas sueltas
     texto_permitido = " | ".join(
@@ -210,39 +442,44 @@ def extract_entities_from_line(
     ) if chunks else raw_text
 
     # 1. ESTUDIANTE (etiqueta CoNLL PER sin prefijo docente)
-    est_cands = []
+    est_cands: List[Tuple[str, Optional[float], str]] = []   # (valor, similitud del encabezado, origen)
     for k in ["ESTUDIANTE", "ALUMNO", "POSTULANTE", "USER_LMS", "NOMBRE", "NOMBRES_Y_APELLIDOS", "NOMBRE_COMPLETO",
               "NOMBRES Y APELLIDOS", "NOMBRE COMPLETO", "APELLIDOS Y NOMBRES"]:
         if k in labeled_data and labeled_data[k]:
-            est_cands.append(labeled_data[k])
+            est_cands.append((labeled_data[k], similitud_encabezado(k, _ENC_ESTUDIANTE), ORIGEN_ENCABEZADO))
             break
 
-    # Nombre repartido en columnas (cobranzas, actas ARCA): NOMBRES + PATERNO + MATERNO
+    # Nombre repartido en columnas (cobranzas, actas académicas): NOMBRES + PATERNO + MATERNO
     if not est_cands and labeled_data.get("NOMBRES"):
-        partes = [
-            labeled_data.get("NOMBRES"),
-            labeled_data.get("PATERNO") or labeled_data.get("APELLIDO PATERNO"),
-            labeled_data.get("MATERNO") or labeled_data.get("APELLIDO MATERNO"),
-        ]
-        est_cands.append(" ".join(p for p in partes if p))
+        claves = [k for k in ("NOMBRES", "PATERNO" if labeled_data.get("PATERNO") else "APELLIDO PATERNO",
+                              "MATERNO" if labeled_data.get("MATERNO") else "APELLIDO MATERNO") if labeled_data.get(k)]
+        est_cands.append((" ".join(labeled_data[k] for k in claves),
+                          min(similitud_encabezado(k, _ENC_PARTES_NOMBRE) for k in claves), ORIGEN_ENCABEZADO))
+
+    # Otra columna de nombre completo por la estructura del encabezado ('NOMBRE COMPLETO DEL USUARIO'…)
+    if not est_cands:
+        cols_est = [c for c in _columnas_de_rol(labeled_data, _ENC_ESTUDIANTE) if not _es_encabezado_no_estudiante(c[1])]
+        if cols_est:
+            est_cands.append((cols_est[0][2], cols_est[0][0], ORIGEN_ENCABEZADO))
 
     if not est_cands and chunks:
         for ch in chunks:
-            if ":" in ch and _es_encabezado_no_estudiante(strip_accents(ch.split(":", 1)[0]).upper().strip()):
+            enc = strip_accents(ch.split(":", 1)[0]).upper().strip() if ":" in ch else ""
+            if enc:
                 continue
-            val = ch.split(":", 1)[1].strip() if ":" in ch else ch
+            val = ch.strip()
             words = val.split()
             if not re.search(r"\d", val) and "@" not in val and 2 <= len(words) <= 4:
                 val_clean = strip_accents(val).lower()
                 if not any(w in val_clean for w in NON_PERSON_WORDS):
-                    est_cands.append(val)
+                    est_cands.append((val, None, ORIGEN_REGEX))
 
-    if not est_cands:
+    if not est_cands and sin_columnas:
         m_names = re.findall(r"\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})\b", texto_permitido)
         for nm in m_names:
             nm_clean = strip_accents(nm).lower()
             if not any(w in nm_clean for w in NON_PERSON_WORDS):
-                est_cands.append(nm)
+                est_cands.append((nm, None, ORIGEN_REGEX))
 
     # Contexto del propio registro (programa / módulo) para filtrar candidatos, y CI para la resolución exacta
     contexto_reg = tuple(
@@ -252,15 +489,16 @@ def extract_entities_from_line(
     ci_previo = next((labeled_data[k] for k in ("CI", "C.I.", "IDNUMBER", "CARNET", "DOCUMENTO", "DOC_IDENTIDAD/CI",
                                                 "CI_ESTUDIANTE", "CEDULA DE IDENTIDAD") if labeled_data.get(k)), None)
     best_est, best_est_score, best_est_algo, est_token = None, 0.0, "None", ""
+    est_sim, est_origen = (est_cands[0][1], est_cands[0][2]) if est_cands else (None, ORIGEN_REGEX)
     if est_cands:
-        est_token = est_cands[0]
-        for cand in est_cands:
+        est_token = est_cands[0][0]
+        for cand, sim_c, origen_c in est_cands:
             e, score, algo = _mejor_estudiante(cand, estudiantes, ci_previo, contexto_reg)
             if e is not None and score > best_est_score:
                 best_est_score = score
                 best_est_algo = algo
                 best_est = e
-                est_token = cand
+                est_token, est_sim, est_origen = cand, sim_c, origen_c
 
     est_por_beto = False
     if est_beto and not (best_est and best_est_score >= 80.0):
@@ -268,57 +506,48 @@ def extract_entities_from_line(
         if e_b is not None and score_b >= 80.0:
             best_est, best_est_score, best_est_algo, est_token, est_por_beto = e_b, score_b, algo_b + " · nombre propuesto por BETO", est_beto["nombre"], True
 
-    lectura_est_base = float(est_beto["prob"]) if est_por_beto else float(prob_override.get("ESTUDIANTE", 0.91 if (best_est and best_est_score >= 80.0) else 0.88))
-    calc_est = calcular_indice_entidad_con_bonos(
-        lectura_est_base,
-        score_rapidfuzz=best_est_score if (best_est and best_est_score >= 80.0) else 0.0,
-        apariciones_lote=apariciones_lote,
-    )
-
+    conf_est = None
     if best_est and best_est_score >= 80.0:
+        conf_est = (_medida(ORIGEN_BETO, probabilidad=float(est_beto["prob"])) if est_por_beto
+                    else _medida(ORIGEN_CI if "CI Exact" in best_est_algo else ORIGEN_FUZZY, catalogo=best_est_score))
         entities.append({
             "token": est_token,
             "label": "ESTUDIANTE",
             "tag": "B-ESTUDIANTE",
             "conllTag": "PER",
-            "lecturaModelo": round(lectura_est_base, 3),
-            "bonoCatalogo": calc_est["bono_catalogo"],
-            "bonoRepetido": calc_est["bono_repetido"],
-            "betoConfidence": round(calc_est["indice_final"], 3),
+            **conf_est,
+            **({"lecturaModelo": round(float(est_beto["prob"]), 4)} if est_por_beto else {}),
             "catalogTable": "Catálogo de Estudiantes",
             "matchedCanonical": best_est.nombre_completo,
             "canonicalId": f"EST-{best_est.id_estudiante}",
             "ci": getattr(best_est, "codigo_estudiante", None) or f"{best_est.id_estudiante}",
             "fuzzScore": round(best_est_score, 1),
             "algorithm": best_est_algo,
-            "fuente_resolucion": "BETO" if est_por_beto else ("CI_EXACTA" if "CI Exact" in best_est_algo else "FUZZY"),
             "es_nuevo_perfil": False,
         })
     elif est_token:
+        # Perfil nuevo: lo leyó una regla (encabezado o patrón), no BETO
+        conf_est = _medida(est_origen, similitud=est_sim, validez=_validez_nombre_persona(est_token))
         entities.append({
             "token": est_token,
             "label": "ESTUDIANTE",
             "tag": "B-ESTUDIANTE",
             "conllTag": "PER",
-            "lecturaModelo": round(lectura_est_base, 3),
-            "bonoCatalogo": 0.0,
-            "bonoRepetido": calc_est["bono_repetido"],
-            "betoConfidence": round(calc_est["indice_final"], 3),
+            **conf_est,
             "catalogTable": "Catálogo de Estudiantes",
             "matchedCanonical": None,
             "canonicalId": "NO_CATALOGADO",
             "ci": None,
             "fuzzScore": 0.0,
             "algorithm": "Sin coincidencia en catálogo (Perfil Nuevo)",
-            "fuente_resolucion": "BETO",
             "es_nuevo_perfil": True,
         })
 
     # 2. DOCUMENTO / CI
-    ci_match = None
+    ci_match, ci_sim = None, None
     for k in ["CI", "C.I.", "IDNUMBER", "CARNET", "DOCUMENTO", "DOC_IDENTIDAD/CI", "CI_ESTUDIANTE", "CEDULA DE IDENTIDAD"]:
         if k in labeled_data and labeled_data[k]:
-            ci_match = labeled_data[k]
+            ci_match, ci_sim = labeled_data[k], similitud_encabezado(k, _ENC_CI)
             break
 
     if not ci_match:
@@ -330,102 +559,115 @@ def extract_entities_from_line(
 
     if ci_match:
         dudoso_ci = "?" in ci_match or len(re.sub(r"[^0-9]", "", ci_match)) < 5
+        validez_ci = _validez_ci(ci_match)
         if dudoso_ci:
             is_dudoso = True
+            conf_ci = _medida(ORIGEN_ENCABEZADO if ci_sim is not None else ORIGEN_REGEX, similitud=ci_sim, validez=validez_ci)
             entities.append({
                 "token": ci_match,
                 "label": "DOCUMENTO / CI",
                 "tag": "B-CI",
                 "conllTag": "REGLA_CI",
-                "lecturaModelo": 0.540,
-                "betoConfidence": 0.540,
+                **conf_ci,
                 "catalogTable": "Catálogo de Estudiantes",
                 "matchedCanonical": f"{ci_match} (Dudoso: Sufijo ?)",
                 "canonicalId": "CI_DUDOSA",
-                "fuzzScore": 68.0,
+                "fuzzScore": round(validez_ci * 100, 1),
                 "algorithm": "Regex Validation Failed (Sufijo ?)",
-                "fuente_resolucion": "REGEX",
             })
         else:
+            ci_exacta = bool(best_est) and not est_por_beto and "CI Exact" in best_est_algo
+            conf_ci = (_medida(ORIGEN_CI, catalogo=best_est_score) if ci_exacta
+                       else _medida(ORIGEN_ENCABEZADO if ci_sim is not None else ORIGEN_REGEX, similitud=ci_sim, validez=validez_ci))
             entities.append({
                 "token": ci_match,
                 "label": "DOCUMENTO / CI",
                 "tag": "B-CI",
                 "conllTag": "REGLA_CI",
-                "lecturaModelo": 0.980,
-                "betoConfidence": 0.980,
+                **conf_ci,
                 "catalogTable": "Catálogo de Estudiantes",
                 "matchedCanonical": f"{ci_match} (Válido)",
                 "canonicalId": getattr(best_est, "codigo_estudiante", "EST-CI") if best_est else "EST-CI",
-                "fuzzScore": 100.0,
-                "algorithm": "Regex CI Exact Format",
-                "fuente_resolucion": "CI_EXACTA",
+                "fuzzScore": round((best_est_score if ci_exacta else validez_ci * 100), 1),
+                "algorithm": "CI Exact Match" if ci_exacta else "Regex CI Exact Format",
             })
     else:
+        # Sin documento: la entidad no se resuelve (validez del valor vacío = 0) y no entra en el índice
         entities.append({
             "token": "No provisto",
             "label": "DOCUMENTO / CI",
             "tag": "B-CI",
             "conllTag": "REGLA_CI",
-            "lecturaModelo": 0.880,
-            "betoConfidence": 0.880,
+            **_medida(ORIGEN_REGEX, validez=_validez_ci("")),
             "catalogTable": "Catálogo de Estudiantes",
             "matchedCanonical": "TEMP-ID (Identificador Temporal)",
             "canonicalId": "CI_NO_PROVISTO",
-            "fuzzScore": 85.0,
+            "fuzzScore": 0.0,
             "algorithm": "Identificación por Nombre / TEMP-ID",
-            "fuente_resolucion": "REGEX",
         })
 
-    # 3. DOCENTE (etiqueta CoNLL PER con marcador/título + Catálogo Maestro)
-    has_teacher_hint = any(k in text_clean for k in ["docente", "profesor", "tutor", "dr.", "msc.", "lic.", "dra.", "ing."])
-    doc_cands = []
-    for k in ["DOCENTE", "PROFESOR", "TUTOR", "FACILITADOR"]:
-        if k in labeled_data and labeled_data[k]:
-            doc_cands.append(labeled_data[k])
-            break
-
-    if not doc_cands and chunks and has_teacher_hint:
-        for ch in chunks:
-            val = ch.split(":", 1)[1].strip() if ":" in ch else ch
-            if any(pref in val.lower() for pref in ["dr.", "msc.", "lic.", "ing.", "dra."]):
-                doc_cands.append(val)
-    elif not doc_cands and has_teacher_hint:
-        m_doc = re.search(
-            r"\b(?:con el docente|con la docente|docente|profesor|tutor)\s+((?:Dr\.|MSc\.|Lic\.|Ing\.|Dra\.)?\s*[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})\b",
-            raw_text,
-        )
-        if m_doc:
-            doc_cands.append(m_doc.group(1).strip())
-        else:
-            m_pref = re.search(
-                r"\b((?:Dr\.|MSc\.|Lic\.|Ing\.|Dra\.)\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})\b",
+    # 3. DOCENTE (C-2 b): solo de una columna con rol de docente; en texto libre, por patrón ('docente X', 'Dr. X').
+    # Antes bastaba una subcadena 'ing.', 'lic.' o 'dr.' en cualquier celda ('coaching.', 'marketing.', 'dr.x@…') para
+    # tomar esa celda (CARRERA, CORREO, NOMBRE DEL PROGRAMA…) como docente.
+    doc_cands: List[Tuple[str, Optional[float], str]] = []
+    cols_doc = _columnas_de_rol(labeled_data, _ENC_DOCENTE)
+    if cols_doc:
+        s_doc, _, v_doc = cols_doc[0]
+        v_doc_s = v_doc.strip()
+        if (
+            not re.fullmatch(r"POS-?\d*", v_doc_s, re.IGNORECASE)
+            and v_doc_s.strip("-_ ./").upper() not in ("", "NA", "N/A", "NONE", "NULL", "SIN DATO", "NINGUNO")
+            and len(re.sub(r"[^A-Za-zÁÉÍÓÚÑáéíóúñ]", "", v_doc_s)) >= 3
+        ):
+            doc_cands.append((v_doc, s_doc, ORIGEN_ENCABEZADO))
+    elif sin_columnas:
+        for ch in chunks:   # celdas sin encabezado que empiezan con un título
+            if _TITULOS_DOCENTE.match(ch):
+                doc_cands.append((ch, None, ORIGEN_REGEX))
+        if not doc_cands and _PISTA_DOCENTE.search(raw_text):
+            m_doc = re.search(
+                r"\b(?:con el docente|con la docente|docente|profesor|tutor)\s+((?:Dr\.|MSc\.|Lic\.|Ing\.|Dra\.)?\s*[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})\b",
                 raw_text,
             )
-            if m_pref:
-                doc_cands.append(m_pref.group(1).strip())
+            if m_doc:
+                doc_cands.append((m_doc.group(1).strip(), None, ORIGEN_REGEX))
+            else:
+                m_pref = re.search(
+                    r"\b((?:Dr\.|MSc\.|Lic\.|Ing\.|Dra\.)\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})\b",
+                    raw_text,
+                )
+                if m_pref:
+                    doc_cands.append((m_pref.group(1).strip(), None, ORIGEN_REGEX))
 
     best_doc, best_doc_score, best_doc_algo, doc_token = None, 0.0, "None", ""
+    doc_sim, doc_origen = (doc_cands[0][1], doc_cands[0][2]) if doc_cands else (None, ORIGEN_REGEX)
     if doc_cands:
-        doc_token = doc_cands[0]
-        for cand in doc_cands:
+        doc_token = doc_cands[0][0]
+        for cand, sim_c, origen_c in doc_cands:
             d, score, algo = _mejor_docente(cand, docentes, contexto_reg)
             if d is not None and score > best_doc_score:
                 best_doc_score = score
                 best_doc_algo = algo
                 best_doc = d
-                doc_token = cand
-    elif has_teacher_hint:
+                doc_token, doc_sim, doc_origen = cand, sim_c, origen_c
+    elif sin_columnas and _PISTA_DOCENTE.search(raw_text):
+        # Coincidencia por contexto, solo en texto libre: un docente del catálogo cuyo nombre (con forma de nombre de
+        # persona, sin correos ni comentarios) aparece entero en el texto. Puntaje = % de sus palabras presentes.
+        palabras_texto = set(re.findall(r"[a-z0-9ñ]+", text_clean))
         for d in docentes:
-            d_clean = strip_accents(d.nombre_completo).lower()
-            tokens_d = [t for t in d_clean.split() if t not in ["dr.", "msc.", "lic.", "dra.", "ing."] and len(t) > 3]
-            matched_count = sum(1 for t in tokens_d if t in text_clean)
-            if matched_count >= 2:
-                best_doc = d
-                best_doc_score = 94.0 if matched_count >= len(tokens_d) - 1 else 88.0
-                best_doc_algo = "Contextual Entity Match"
-                doc_token = d.nombre_completo
-                break
+            if not _validez_nombre_persona(d.nombre_completo or ""):
+                continue
+            tokens_d = [t for t in re.findall(r"[a-z0-9ñ]+", strip_accents(d.nombre_completo).lower())
+                        if t not in ("dr", "msc", "lic", "dra", "ing") and len(t) > 3]
+            if len(tokens_d) < 2:
+                continue
+            score_ctx = 100.0 * sum(1 for t in tokens_d if t in palabras_texto) / len(tokens_d)
+            if score_ctx > best_doc_score:
+                best_doc, best_doc_score, best_doc_algo, doc_token = d, score_ctx, "Contextual Entity Match", d.nombre_completo
+        if best_doc_score < UMBRAL_SIMILITUD_ENCABEZADO:
+            best_doc, best_doc_score, best_doc_algo, doc_token = None, 0.0, "None", ""
+        else:
+            doc_origen = ORIGEN_FUZZY
 
     doc_por_beto = False
     if doc_beto and not (best_doc and best_doc_score >= 80.0):
@@ -433,125 +675,104 @@ def extract_entities_from_line(
         if d_b is not None and score_db >= 80.0:
             best_doc, best_doc_score, best_doc_algo, doc_token, doc_por_beto = d_b, score_db, algo_db + " · nombre propuesto por BETO", doc_beto["nombre"], True
 
-    lectura_doc_base = float(doc_beto["prob"]) if doc_por_beto else float(prob_override.get("DOCENTE", 0.85))
-    calc_doc = calcular_indice_entidad_con_bonos(
-        lectura_doc_base,
-        score_rapidfuzz=best_doc_score if (best_doc and best_doc_score >= 80.0) else 0.0,
-        apariciones_lote=apariciones_lote,
-    )
-
+    conf_doc = None
     if best_doc and best_doc_score >= 80.0:
+        conf_doc = (_medida(ORIGEN_BETO, probabilidad=float(doc_beto["prob"])) if doc_por_beto
+                    else _medida(ORIGEN_FUZZY, catalogo=best_doc_score) if (doc_origen == ORIGEN_FUZZY or doc_sim is None)
+                    else _medida(ORIGEN_ENCABEZADO, similitud=doc_sim, catalogo=best_doc_score))
         entities.append({
             "token": doc_token,
             "label": "DOCENTE",
             "tag": "B-DOCENTE",
             "conllTag": "PER",
-            "lecturaModelo": round(lectura_doc_base, 3),
-            "bonoCatalogo": calc_doc["bono_catalogo"],
-            "bonoRepetido": calc_doc["bono_repetido"],
-            "betoConfidence": round(calc_doc["indice_final"], 3),
+            **conf_doc,
+            **({"lecturaModelo": round(float(doc_beto["prob"]), 4)} if doc_por_beto else {}),
             "catalogTable": "Catálogo de Docentes",
             "matchedCanonical": best_doc.nombre_completo,
             "canonicalId": f"DOC-{best_doc.id_docente}",
             "fuzzScore": round(best_doc_score, 1),
             "algorithm": best_doc_algo,
-            "fuente_resolucion": "BETO" if doc_por_beto else ("FUZZY" if "Fuzzy" in best_doc_algo else "ENCABEZADO"),
             "es_nuevo_perfil": False,
         })
-    elif doc_token or doc_cands:
-        tok_val = doc_token or (doc_cands[0] if doc_cands else "Docente No Catalogado")
+    elif doc_token:
+        conf_doc = _medida(doc_origen, similitud=doc_sim, validez=_validez_nombre_persona(doc_token))
         entities.append({
-            "token": tok_val,
+            "token": doc_token,
             "label": "DOCENTE",
             "tag": "B-DOCENTE",
             "conllTag": "PER",
-            "lecturaModelo": round(lectura_doc_base, 3),
-            "bonoCatalogo": 0.0,
-            "bonoRepetido": calc_doc["bono_repetido"],
-            "betoConfidence": round(calc_doc["indice_final"], 3),
+            **conf_doc,
             "catalogTable": "Catálogo de Docentes",
             "matchedCanonical": None,
             "canonicalId": "NO_CATALOGADO",
             "fuzzScore": 0.0,
             "algorithm": "Sin coincidencia en catálogo (Perfil Nuevo en Catálogo de Docentes)",
-            "fuente_resolucion": "BETO",
             "es_nuevo_perfil": True,
         })
 
-    # 4. MÓDULO / PROGRAMA (Catálogo Maestro + RapidFuzz + señal auxiliar ORG/MISC)
-    mod_cands = []
-    for k in ["MODULO", "PROGRAMA", "COURSE", "ASIGNATURA", "MATERIA", "COD_MODULO", "CODIGO_MODULO"]:
-        if k in labeled_data and labeled_data[k]:
-            mod_cands.append(labeled_data[k])
-            break
-
-    if not mod_cands and chunks:
+    # 4. MÓDULO (C-2 c): solo de las columnas de módulo o curso; si la hoja no tiene, de la del nombre del programa.
+    # Nunca de un atributo del estudiante (NIVEL ACADÉMICO, CARRERA, INSTITUCIÓN…). En texto libre, por patrón.
+    mod_cands: List[Tuple[str, Optional[float], str]] = []
+    cols_mod = _columnas_de_rol(labeled_data, _ENC_MODULO) or _columnas_de_rol(labeled_data, _ENC_NOMBRE_PROGRAMA)
+    for s_m, _, v_m in cols_mod:
+        if _validez_texto(v_m):
+            mod_cands.append((v_m, s_m, ORIGEN_ENCABEZADO))
+    if sin_columnas and chunks:
         for ch in chunks:
-            val = ch.split(":", 1)[1].strip() if ":" in ch else ch
-            if any(k in val.lower() for k in ["mod", "modulo", "diplomado", "maestria", "gestion", "big data", "estetica", "inteligencia", "especialidad", "proyectos", "auditoria"]):
-                mod_cands.append(val)
-    elif not mod_cands:
+            if any(k in ch.lower() for k in ["mod", "modulo", "diplomado", "maestria", "gestion", "big data", "estetica", "inteligencia", "especialidad", "proyectos", "auditoria"]):
+                mod_cands.append((ch, None, ORIGEN_REGEX))
+    elif sin_columnas:
         m_prog_free = re.search(
             r"\b((?:diplomado|maestría|maestria|especialidad|curso|programa|m[oó]dulo)\s+(?:en\s+|de\s+)?[A-ZÁÉÍÓÚÑa-záéíóúñ0-9\s]{3,35}?)(?=\s+(?:con|del?|para|obteniendo|evaluado|\.|\,|$))",
             raw_text,
             re.IGNORECASE,
         )
         if m_prog_free:
-            mod_cands.append(m_prog_free.group(1).strip())
+            mod_cands.append((m_prog_free.group(1).strip(), None, ORIGEN_REGEX))
 
     best_mod, best_mod_score, best_mod_algo, mod_token = None, 0.0, "None", ""
+    mod_sim, mod_origen = (mod_cands[0][1], mod_cands[0][2]) if mod_cands else (None, ORIGEN_REGEX)
     if mod_cands:
-        mod_token = mod_cands[0]
-        for cand in mod_cands:
+        mod_token = mod_cands[0][0]
+        for cand, sim_c, origen_c in mod_cands:
             m, score, algo = _mejor_modulo(cand, modulos)
             if m is not None and score > best_mod_score:
                 best_mod_score = score
                 best_mod_algo = algo
                 best_mod = m
-                mod_token = cand
+                mod_token, mod_sim, mod_origen = cand, sim_c, origen_c
 
-    lectura_mod_base = float(prob_override.get("MODULO", prob_override.get("MÓDULO", 0.85)))
-    calc_mod = calcular_indice_entidad_con_bonos(
-        lectura_mod_base,
-        score_rapidfuzz=best_mod_score if (best_mod and best_mod_score >= 78.0) else 0.0,
-        apariciones_lote=apariciones_lote,
-    )
-
+    conf_mod = None
     if best_mod and best_mod_score >= 78.0:
+        conf_mod = (_medida(ORIGEN_ENCABEZADO, similitud=mod_sim, catalogo=best_mod_score) if mod_sim is not None
+                    else _medida(ORIGEN_FUZZY, catalogo=best_mod_score))
         entities.append({
             "token": mod_token,
             "label": "MÓDULO",
             "tag": "B-MODULO",
             "conllTag": "MISC/CATALOGO",
-            "lecturaModelo": round(lectura_mod_base, 3),
-            "bonoCatalogo": calc_mod["bono_catalogo"],
-            "bonoRepetido": calc_mod["bono_repetido"],
-            "betoConfidence": round(calc_mod["indice_final"], 3),
+            **conf_mod,
             "catalogTable": "Catálogo de Módulos",
             "matchedCanonical": best_mod.nombre_modulo,
             "canonicalId": best_mod.pos_code or f"MOD-{best_mod.id_modulo}",
             "fuzzScore": round(best_mod_score, 1),
             "algorithm": best_mod_algo,
-            "fuente_resolucion": "FUZZY" if "Fuzzy" in best_mod_algo else "ENCABEZADO",
             "es_nuevo_perfil": False,
         })
-    elif mod_token or mod_cands:
-        tok_val = mod_token or (mod_cands[0] if mod_cands else "Módulo No Catalogado")
+    elif mod_token:
+        # Módulo nuevo: lo leyó una regla; su confianza es la del encabezado y la validez del texto, no de BETO
+        conf_mod = _medida(mod_origen, similitud=mod_sim, validez=_validez_texto(mod_token))
         entities.append({
-            "token": tok_val,
+            "token": mod_token,
             "label": "MÓDULO",
             "tag": "B-MODULO",
             "conllTag": "MISC/CATALOGO",
-            "lecturaModelo": round(lectura_mod_base, 3),
-            "bonoCatalogo": 0.0,
-            "bonoRepetido": calc_mod["bono_repetido"],
-            "betoConfidence": round(calc_mod["indice_final"], 3),
+            **conf_mod,
             "catalogTable": "Catálogo de Módulos",
             "matchedCanonical": None,
             "canonicalId": "NO_CATALOGADO",
             "fuzzScore": 0.0,
             "algorithm": "Sin coincidencia en catálogo (Perfil Nuevo en Catálogo de Módulos)",
-            "fuente_resolucion": "BETO",
             "es_nuevo_perfil": True,
         })
 
@@ -559,17 +780,18 @@ def extract_entities_from_line(
     monto_val = None
     monto_pagado_val = None
     cuotas_impagas_val = None
-    concepto_val = None
+    concepto_val, concepto_sim, monto_sim = None, None, None
 
     for k in ["CONCEPTO", "ITEM", "DESCRIPCION", "GLOSA", "RUBRO"]:
         if k in labeled_data and labeled_data[k]:
-            concepto_val = labeled_data[k]
+            concepto_val, concepto_sim = labeled_data[k], similitud_encabezado(k, _ENC_CONCEPTO)
             break
     # Alias del libro de cobranzas (DEUDA TOTAL, TOTAL PAGADO HASTA LA FECHA, TOTAL CUOTAS EN MORA) primero:
     # sin ellos, monto_pagado quedaba en 0 y las cuotas en mora no se leían.
-    for k in ["DEUDA TOTAL", "MONTO", "IMPORTE", "TOTAL", "DEUDA", "SALDO", "MONTO_DEUDA", "MONTO DEUDA"]:
+    claves_monto = ["DEUDA TOTAL", "MONTO", "IMPORTE", "TOTAL", "DEUDA", "SALDO", "MONTO_DEUDA", "MONTO DEUDA"]
+    for k in claves_monto:
         if k in labeled_data and labeled_data[k]:
-            monto_val = labeled_data[k]
+            monto_val, monto_sim = labeled_data[k], similitud_encabezado(k, tuple(claves_monto))
             break
     for k in ["TOTAL PAGADO HASTA LA FECHA", "TOTAL PAGADO", "PAGADO", "MONTO_PAGADO", "MONTO PAGADO", "ABONO"]:
         if k in labeled_data and labeled_data[k]:
@@ -590,20 +812,20 @@ def extract_entities_from_line(
         if m_monto:
             monto_val = m_monto.group(1) or m_monto.group(2)
 
+    conf_con = None
     if concepto_val:
+        conf_con = _medida(ORIGEN_ENCABEZADO, similitud=concepto_sim, validez=_validez_texto(str(concepto_val)))
         entities.append({
             "token": str(concepto_val),
             "label": "CONCEPTO_FINANCIERO",
             "tag": "B-CONCEPTO_FIN",
             "conllTag": "CATALOGO_FIN",
-            "lecturaModelo": 0.920,
-            "betoConfidence": 0.920,
+            **conf_con,
             "catalogTable": "Catálogo de Conceptos Financieros",
             "matchedCanonical": str(concepto_val),
             "canonicalId": "CONCEPTO-GEN",
-            "fuzzScore": 92.0,
-            "algorithm": "Token Sort Similarity",
-            "fuente_resolucion": "FUZZY",
+            "fuzzScore": round(concepto_sim, 1),
+            "algorithm": "Encabezado del concepto",
         })
 
     if monto_val:
@@ -614,32 +836,45 @@ def extract_entities_from_line(
                 "label": "MONTO",
                 "tag": "B-MONTO",
                 "conllTag": "REGLA_MONTO",
-                "lecturaModelo": 1.0,
-                "betoConfidence": 1.0,
+                **_medida(ORIGEN_ENCABEZADO if monto_sim is not None else ORIGEN_REGEX, similitud=monto_sim, validez=_validez_numero(monto_val)),
                 "catalogTable": "Situación Financiera y Cobranzas",
                 "matchedCanonical": f"Bs. {m_num:.2f}",
                 "canonicalId": "MONTO_VALIDO",
                 "valorNumerico": m_num,
                 "montoPagado": float(re.search(r"[0-9]+(?:\.[0-9]+)?", str(monto_pagado_val)).group(0)) if (monto_pagado_val and re.search(r"[0-9]+(?:\.[0-9]+)?", str(monto_pagado_val))) else 0.0,
                 "cuotasImpagas": int(re.search(r"[0-9]+", str(cuotas_impagas_val)).group(0)) if (cuotas_impagas_val and re.search(r"[0-9]+", str(cuotas_impagas_val))) else 0,
-                "fuzzScore": 100.0,
+                "fuzzScore": round(monto_sim, 1) if monto_sim is not None else None,
                 "algorithm": "Regex Currency Format",
-                "fuente_resolucion": "REGEX",
             })
         except Exception:
             pass
 
-    # 5b. PROGRAMA ACADÉMICO
-    prog_token = None
-    for k in ["PROGRAMA", "CARRERA", "POS", "DIPLOMADO", "MAESTRIA", "ESPECIALIDAD"]:
-        if k in labeled_data and labeled_data[k]:
-            prog_token = labeled_data[k]
+    # 5b. PROGRAMA ACADÉMICO (C-2 a): primero la columna del código (POS, NUMEROPROYECTO, N° POS…) con el patrón
+    # estricto, luego la del nombre (NOMBRE DEL PROGRAMA, PROGRAMA). CARRERA, NIVEL ACADÉMICO, UNIVERSIDAD/INSTITUTO e
+    # INSTITUCIÓN DONDE TRABAJA son atributos del estudiante y nunca son el programa.
+    prog_token, prog_codigo, prog_nombre = None, None, None
+    conf_prog = None
+    cod_cols = _columnas_de_rol(labeled_data, _ENC_CODIGO_PROGRAMA) + [
+        (similitud_encabezado_compuesto(k, _ENC_CODIGO_PROGRAMA), k, v)
+        for k, v in labeled_data.items() if v and es_encabezado_metadato_pos(k) and similitud_encabezado(k, _ENC_CODIGO_PROGRAMA) < UMBRAL_SIMILITUD_ENCABEZADO]
+    for s_c, _, v_c in cod_cols:
+        if _validez_codigo_pos(v_c):
+            prog_codigo = v_c.strip().upper()
+            conf_prog = _medida(ORIGEN_ENCABEZADO, similitud=s_c, validez=_validez_codigo_pos(v_c))
             break
-
-    if not prog_token:
-        m_prog = re.search(r"\b(?:programa|diplomado|maestr[ií]a|carrera|pos)\s*:\s*([^|,\n]+)", raw_text, re.IGNORECASE)
+    cols_nom = _columnas_de_rol(labeled_data, _ENC_NOMBRE_PROGRAMA)
+    if cols_nom:
+        s_n, _, prog_nombre = cols_nom[0]
+        if conf_prog is None and _validez_texto(prog_nombre):
+            _, s_cat = _mejor_programa(prog_nombre, modulos) if modulos else (None, None)
+            conf_prog = (_medida(ORIGEN_ENCABEZADO, similitud=s_n, catalogo=s_cat) if s_cat is not None and s_cat >= 80.0
+                         else _medida(ORIGEN_ENCABEZADO, similitud=s_n, validez=_validez_texto(prog_nombre)))
+    if conf_prog is None and sin_columnas:
+        m_prog = re.search(r"\b(?:nombre[_\s]+(?:del[_\s]+)?programa|programa|diplomado|maestr[ií]a|pos)\s*:\s*([^|,\n]+)", raw_text, re.IGNORECASE)
         if m_prog:
-            prog_token = m_prog.group(1).strip()
+            prog_nombre = m_prog.group(1).strip()
+            conf_prog = _medida(ORIGEN_REGEX, validez=_validez_texto(prog_nombre))
+    prog_token = (prog_codigo or prog_nombre) if conf_prog is not None else None
 
     if prog_token:
         entities.append({
@@ -647,22 +882,23 @@ def extract_entities_from_line(
             "label": "PROGRAMA",
             "tag": "B-PROGRAMA",
             "conllTag": "ORG/CATALOGO",
-            "lecturaModelo": 0.940,
-            "betoConfidence": 0.940,
+            **conf_prog,
             "catalogTable": "Catálogo de Programas",
-            "matchedCanonical": str(prog_token),
-            "fuente_resolucion": "ENCABEZADO" if (labeled_data and any(k in labeled_data for k in ["PROGRAMA", "CARRERA", "POS", "DIPLOMADO"])) else "REGEX",
-            "canonicalId": "PROG-ADM",
-            "fuzzScore": 92.0,
-            "algorithm": "Token Pattern Matching",
+            "matchedCanonical": str(prog_nombre or prog_codigo),
+            "nombrePrograma": prog_nombre,
+            "posCodigo": prog_codigo,
+            "canonicalId": prog_codigo or "PROG-ADM",
+            "fuzzScore": round((conf_prog.get("detalleConfianza", {}).get("similitudEncabezado") or 0.0) * 100, 1),
+            "algorithm": "Código del programa (patrón POS)" if prog_codigo else "Nombre del programa por encabezado",
         })
 
     # 6. CALIFICACIÓN & NORMALIZACIÓN OBLIGATORIA A BASE 100 (#16)
-    grade_token = None
+    grade_token, grade_sim = None, None
     if (tipo_fuente or "ACTA").upper() not in ("COBRANZA", "ADMISION"):
-        for k in ["NOTA_FINAL", "NOTA FINAL", "FINAL_GRADE", "FINALGRADE", "CALIF_FINAL", "CALIFICACION FINAL", "NOTA", "PUNTAJE", "CALIFICACION", "PROMEDIO"]:
+        claves_nota = ["NOTA_FINAL", "NOTA FINAL", "FINAL_GRADE", "FINALGRADE", "CALIF_FINAL", "CALIFICACION FINAL", "NOTA", "PUNTAJE", "CALIFICACION", "PROMEDIO"]
+        for k in claves_nota:
             if k in labeled_data and labeled_data[k]:
-                grade_token = labeled_data[k]
+                grade_token, grade_sim = labeled_data[k], similitud_encabezado(k, tuple(claves_nota))
                 break
 
         if not grade_token:
@@ -709,8 +945,8 @@ def extract_entities_from_line(
                 "label": "CALIFICACIÓN",
                 "tag": "B-VALOR",
                 "conllTag": "REGLA_ESCALA",
-                "lecturaModelo": 1.0 if not grade_invalida else 0.40,
-                "betoConfidence": 1.0 if not grade_invalida else 0.40,
+                # Validez = la nota cae dentro de la escala declarada
+                **_medida(ORIGEN_ENCABEZADO if grade_sim is not None else ORIGEN_REGEX, similitud=grade_sim, validez=float(not grade_invalida)),
                 "catalogTable": "Evaluación Académica",
                 "notaOriginal": raw_grade,
                 "notaNormalizada": grade_num,
@@ -721,17 +957,17 @@ def extract_entities_from_line(
                     if (not grade_invalida and grade_num >= NOTA_APROBACION)
                     else ("NOTA_REPROBADO" if not grade_invalida else ("ESCALA_AMBIGUA" if not tipo_escala else "NOTA_FUERA_ESCALA"))
                 ),
-                "fuzzScore": 100.0 if not grade_invalida else 50.0,
+                "fuzzScore": round(grade_sim, 1) if grade_sim is not None else None,
                 "algorithm": "Explicit Scale Declared" if not grade_invalida else "Unspecified Scale Error",
-                "fuente_resolucion": "ENCABEZADO" if (labeled_data and any(k in labeled_data for k in ["NOTA", "CALIFICACION", "PUNTAJE"])) else "REGEX",
             })
 
     # 7. ASISTENCIA / INASISTENCIA (Umbral de Abandono)
-    asist_val = None
+    asist_val, asist_sim = None, None
     es_inasistencia = False
-    for k in ["ASISTENCIA", "ASIST", "INASISTENCIA", "INASIST", "FALTAS", "FALTA"]:
+    claves_asist = ["ASISTENCIA", "ASIST", "INASISTENCIA", "INASIST", "FALTAS", "FALTA"]
+    for k in claves_asist:
         if k in labeled_data and labeled_data[k]:
-            asist_val = labeled_data[k]
+            asist_val, asist_sim = labeled_data[k], similitud_encabezado(k, tuple(claves_asist))
             if "INASIST" in k or "FALTA" in k:
                 es_inasistencia = True
             break
@@ -761,60 +997,26 @@ def extract_entities_from_line(
                 "label": "ASISTENCIA",
                 "tag": "B-ASIST",
                 "conllTag": "ASISTENCIA",
-                "lecturaModelo": 0.96,
-                "betoConfidence": 0.96,
+                **_medida(ORIGEN_ENCABEZADO if asist_sim is not None else ORIGEN_REGEX, similitud=asist_sim, validez=_validez_numero(asist_val)),
                 "catalogTable": "Control de Asistencia",
                 "asistenciaPct": asist_pct,
                 "inasistenciaPct": inasist_pct,
                 "alertaDesercion": alerta_des,
                 "matchedCanonical": f"{asist_pct:.0f}% Asistencia",
                 "canonicalId": "ASIST_ALERTA_ABANDONO" if alerta_des else "ASIST_OK",
-                "fuzzScore": 100.0,
+                "fuzzScore": round(asist_sim, 1) if asist_sim is not None else None,
                 "algorithm": "Regex Attendance Pattern",
-                "fuente_resolucion": "ENCABEZADO" if (labeled_data and any(k in labeled_data for k in ["ASISTENCIA", "ASIST", "INASISTENCIA"])) else "REGEX",
             })
         except Exception:
             pass
 
-    if not entities:
-        entities.append({
-            "token": raw_text[:35],
-            "label": "REGISTRO",
-            "tag": "B-TEXT",
-            "conllTag": "O",
-            "lecturaModelo": 0.880,
-            "betoConfidence": 0.880,
-            "catalogTable": "Registros de Ingesta",
-            "matchedCanonical": "Texto plano",
-            "canonicalId": "RAW-01",
-            "fuzzScore": 85.0,
-            "algorithm": "Raw Token Parser",
-            "fuente_resolucion": "REGEX",
-        })
-
-    # ─── CÁLCULO DEL ÍNDICE DEL REGISTRO & COMPUERTAS DETERMINISTAS (#3, #6) ───
+    # ─── ÍNDICE DEL REGISTRO & COMPUERTAS DETERMINISTAS ───
+    # Agregador sin cambio: el mínimo de las confianzas de estudiante, módulo, docente, programa y concepto (las mismas
+    # entidades que antes). Sin ninguna de ellas no hay nada que dude y el mínimo es la cota superior de la escala.
     revision_forzada = is_dudoso or grade_invalida
-
-    scores_entidades = []
-    if est_token:
-        scores_entidades.append(calc_est["indice_final"])
-
-    if best_mod or mod_token:
-        scores_entidades.append(calc_mod["indice_final"])
-
-    if best_doc or doc_token:
-        scores_entidades.append(calc_doc["indice_final"])
-
-    if prog_token:
-        scores_entidades.append(0.94)
-
-    if concepto_val:
-        scores_entidades.append(0.92)
-
-    if scores_entidades:
-        score_confianza = round(min(scores_entidades), 2)
-    else:
-        score_confianza = 0.88
+    confianzas = [c["confianza"] for c in (conf_est, conf_mod, conf_doc, conf_prog, conf_con)
+                  if c is not None and c.get("confianza") is not None]
+    score_confianza = round(min(confianzas, default=_COTA_SUPERIOR_ESCALA), 2)
 
     requiere_revision = revision_forzada or (score_confianza < UMBRAL_INDICE_REGISTRO_DEC)
 

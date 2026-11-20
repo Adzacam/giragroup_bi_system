@@ -13,6 +13,7 @@ import usePaginacion from '../../hooks/usePaginacion';
 import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
 import { clearLoteFlowSession } from './context/LoteFlowContext';
 import useTextoPreparado from './hooks/useTextoPreparado';
+import useResumenPreparacion from './hooks/useResumenPreparacion';
 import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
 import { dataopsApi } from '../../api/dataopsApi';
 import { mensajeError } from '../../utils/mensajeError';
@@ -359,7 +360,7 @@ export default function IngestView() {
   const queuePagination = usePaginacion(queuedFiles);
   const inspectedPagination = usePaginacion(inspectedFiles);
   const { data: prepResumen } = useTextoPreparado(activeBatchId, null, 1, !!activeBatchId && inspectedFiles.length > 0);
-  const prepKpis = prepResumen?.kpis || null;
+  const prepKpis = useResumenPreparacion(prepResumen);
 
   return (
     <BatchFlowLayout currentStep={1}>
@@ -454,7 +455,7 @@ export default function IngestView() {
               className="btn-pill-gold"
               style={{ padding: '10px 18px', fontSize: '13px' }}
             >
-              <Play size={15} fill="currentColor" /> Procesar seleccionados ({selectedQueueFiles.length})
+              <Play size={15} fill="currentColor" /> Procesar archivos ({selectedQueueFiles.length})
             </Button>
 
             <Button
@@ -718,7 +719,7 @@ export default function IngestView() {
                               onClick={() => setExpandedDetailKey(isExpanded ? null : item.uid)}
                               style={{ padding: '4px 8px', fontSize: '11px' }}
                             >
-                              {isExpanded ? 'Ocultar' : 'Detalle'}
+                              {isExpanded ? 'Ocultar' : 'Vista previa'}
                             </Button>
                             <Button
                               variant="ghost"
@@ -758,11 +759,7 @@ export default function IngestView() {
           <>
           {prepKpis && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 14 }}>
-              {[
-                ['Registros preparados', prepKpis.filas_leidas],
-                ['Campos por fila, máximo', prepKpis.columnas_detectadas],
-                ['Filas con observaciones', prepKpis.total_alertas],
-              ].map(([label, value]) => (
+              {prepKpis.map(([label, value]) => (
                 <div key={label} style={{ padding: '12px 16px', borderRadius: 10, border: '1px solid var(--color-border)', backgroundColor: 'var(--color-mist-gray)' }}>
                   <p style={{ color: 'var(--color-slate-gray)', fontSize: 11.5, margin: 0 }}>{label}</p>
                   <p style={{ color: 'var(--color-ink-black)', fontSize: 20, fontWeight: 700, margin: '4px 0 0' }}>
@@ -781,7 +778,7 @@ export default function IngestView() {
                   <th>Filas</th>
                   <th>Protección</th>
                   <th>Estado</th>
-                  <th style={{ textAlign: 'center' }}>Detalle</th>
+                  <th style={{ textAlign: 'center' }}>Vista previa</th>
                 </tr>
               </thead>
               <tbody>
@@ -824,7 +821,7 @@ export default function IngestView() {
                             onClick={() => setExpandedDetailKey(isExpanded ? null : item.key)}
                             style={{ padding: '4px 10px', fontSize: '11px' }}
                           >
-                            {isExpanded ? 'Ocultar' : 'Detalle'}
+                            {isExpanded ? 'Ocultar' : 'Vista previa'}
                           </Button>
                         </td>
                       </tr>

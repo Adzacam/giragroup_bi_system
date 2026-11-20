@@ -176,6 +176,13 @@ _FORMULARIOS_HECHO: Dict[str, List[Dict[str, Any]]] = {
     ),
 }
 
+# Marketing (TBL_INSCRITOS) con motivo de identidad: pide identidad, no campos de convenio.
+_MOTIVOS_IDENTIDAD_MARKETING = {
+    "CI_DUDOSA": MATRIZ_FORMULARIOS[("admision", "CI_DUDOSA")],
+    "CI_NOMBRE_DISCORDANTE": MATRIZ_FORMULARIOS[("academico", "CI_NOMBRE_DISCORDANTE")],
+    "HOMONIMIA": MATRIZ_FORMULARIOS[("rentabilidad", "HOMONIMIA")],
+}
+
 _SINONIMOS_MOTIVO = {
     "CI_ILEGIBLE": "CI_DUDOSA",
     "BAJA_CONFIANZA": "BAJA_CONFIANZA_IA",
@@ -215,6 +222,8 @@ def campos_para_caso(categoria: Optional[str], motivo: Optional[str]) -> List[Di
     mot = _motivo_canonico(motivo)
 
     if cat == "marketing":
+        if mot in _MOTIVOS_IDENTIDAD_MARKETING:
+            return [dict(c) for c in _MOTIVOS_IDENTIDAD_MARKETING[mot]]
         return [dict(c) for c in MATRIZ_FORMULARIOS[("marketing", "*")]]
     if mot == "HECHO_EN_REVISION" and cat in _FORMULARIOS_HECHO:
         return [dict(c) for c in _FORMULARIOS_HECHO[cat]]

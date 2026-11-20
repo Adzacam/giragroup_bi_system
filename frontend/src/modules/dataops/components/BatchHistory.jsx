@@ -26,7 +26,7 @@ const ESTADOS = {
   CONSOLIDADO: ['Consolidado', []],
   ERROR: ['Con error', []],
 };
-const PASOS = { texto: '② Texto preparado', beto: '② BETO', revision: '③ Revisión' };
+const PASOS = { beto: '② Lectura de BETO', revision: '③ Revisión' };
 
 export default function BatchHistory({ onInspect, onLogs, onNewBatch, loadingLogs, inspecting, disabled }) {
   const navigate = useNavigate();

@@ -33,12 +33,6 @@ export const V2_ROUTE_MANIFEST = {
       qc.prefetchQuery({ queryKey: ['kpis', 'pipeline'], queryFn: () => getKpisPipeline(), staleTime: 30_000 }),
     ],
   },
-  '/dataops/texto': {
-    loadChunk: () => import('../../modules/dataops/PlainTextTransformationView'),
-    prefetch: (qc) => [
-      dataopsApi.getLotes ? qc.prefetchQuery({ queryKey: [...DATAOPS_QUERY_KEY, 'lotes'], queryFn: () => dataopsApi.getLotes(), staleTime: 30_000 }) : Promise.resolve(),
-    ],
-  },
   '/dataops/beto': {
     loadChunk: () => import('../../modules/dataops/BetoReadingFlowView'),
     prefetch: (qc) => [
