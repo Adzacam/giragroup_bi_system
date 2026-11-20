@@ -44,7 +44,7 @@
     "tarea": "V-3",
     "v1_carga": {
       "procesar_archivos": true,
-      "vista_previa": false,
+      "vista_previa": true,
       "stepper_3_pasos": true,
       "sin_paso_texto_muerto": true
     },
@@ -85,7 +85,7 @@
       "v1": {
         "carga": {
           "procesar_archivos": true,
-          "vista_previa": false,
+          "vista_previa": true,
           "stepper_3_pasos": true,
           "sin_paso_texto_muerto": true
         },
