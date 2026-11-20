@@ -1,0 +1,8 @@
+{
+  "muestra_lineas": 50,
+  "entidades_por_origen": {
+    "REGEX": 69,
+    "REGLA_ENCABEZADO": 93
+  },
+  "reglas_con_origen_beto": 0
+}

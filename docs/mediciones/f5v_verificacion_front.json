@@ -1,0 +1,155 @@
+{
+  "texto_preparado": {
+    "tarea": "V-2",
+    "tarjetas": [
+      "Registros preparados",
+      "Campos por fila, máximo",
+      "Filas con observaciones"
+    ],
+    "animadas_con": "AnimatedNumberV2",
+    "hook_comun": "frontend/src/modules/dataops/hooks/useResumenPreparacion.js (usado por IngestView y TextoPreparadoTab)",
+    "botones": [
+      "Volver a carga de archivos",
+      "Ver resultados de la lectura"
+    ],
+    "aviso_observaciones": true,
+    "huerfano_eliminado": "PlainTextTransformationView.jsx y entrada /dataops/texto del prefetcher",
+    "vitest": "14 archivos, 84 pruebas pasan",
+    "build": "ok",
+    "verificacion_visual_navegador": "ok (V1 y V2)"
+  },
+  "metricas_beto": {
+    "tarea": "V-1",
+    "fuente": "frontend/src/constants/betoMetricas.json (anclado a docs/mediciones/f3r_ablacion.json, f1_training_info.json por w9MetricasModelo.test.jsx)",
+    "estricto": {
+      "precision": 0.972921,
+      "recall": 0.986275,
+      "f1": 0.979552
+    },
+    "relajado": {
+      "precision": 0.9884,
+      "recall": 1.0,
+      "f1": 0.9942
+    },
+    "best_dev_f1": 0.9979,
+    "puntos_curva_epocas": 3,
+    "epoca_mejor": 2,
+    "celda_resaltada": "PER_ESTUDIANTE->PROGRAMA (--dataops-warning-bg/border)",
+    "reduced_motion": "AnimatedNumberV2 y withChartAnimationsV2 devuelven valor final/animation:false",
+    "vitest": "14 archivos, 84 pruebas en verde",
+    "build": "ok",
+    "verificacion_navegador": "ok (V1 y V2)"
+  },
+  "rotulos": {
+    "tarea": "V-3",
+    "v1_carga": {
+      "procesar_archivos": true,
+      "vista_previa": false,
+      "stepper_3_pasos": true,
+      "sin_paso_texto_muerto": true
+    },
+    "v2_carga": {
+      "procesar_archivos": true,
+      "vista_previa": true,
+      "stepper_3_pasos": true,
+      "sin_paso_texto_muerto": true
+    },
+    "nota_en_revision_v1": true,
+    "nota_en_revision_v2": true
+  },
+  "ner_visible": {
+    "tarea": "V-7",
+    "v1_origen_visible": true,
+    "v2_origen_visible": true,
+    "v1_etiqueta_modelo_visible": true,
+    "v2_etiqueta_modelo_visible": true,
+    "lote_36_inscritos_v1": {
+      "programa_presente": true,
+      "sin_docente_asesor": true,
+      "sin_carrera_como_programa": true,
+      "ner_origen_visible": true,
+      "ner_etiqueta_modelo_visible": true
+    },
+    "lote_36_inscritos_v2": {
+      "programa_presente": true,
+      "sin_docente_asesor": true,
+      "sin_carrera_como_programa": true,
+      "ner_origen_visible": true,
+      "ner_etiqueta_modelo_visible": true
+    }
+  },
+  "v6_navegador": {
+    "tarea": "V-6",
+    "fecha": "2026-11-19",
+    "resultados": {
+      "v1": {
+        "carga": {
+          "procesar_archivos": true,
+          "vista_previa": false,
+          "stepper_3_pasos": true,
+          "sin_paso_texto_muerto": true
+        },
+        "lectura_lote_35": {
+          "titulo_lectura_beto": true,
+          "nota_en_revision": true,
+          "modal_abierto": true,
+          "modal_titulo_beto": true,
+          "modal_precision_recall_f1": true,
+          "modal_curva_canvas": true,
+          "ner_explicacion_abierta": true,
+          "ner_origen_visible": false,
+          "texto_preparado_tab": true,
+          "texto_preparado_3_kpis": true
+        },
+        "lectura_lote_36_inscritos": {
+          "programa_presente": true,
+          "sin_docente_asesor": true,
+          "sin_carrera_como_programa": true,
+          "ner_origen_visible": true,
+          "ner_etiqueta_modelo_visible": true
+        },
+        "revision_lote_35": {
+          "pestanas_presentes": true,
+          "boton_exportar": true,
+          "boton_consolidar": true
+        }
+      },
+      "v2": {
+        "carga": {
+          "procesar_archivos": true,
+          "vista_previa": true,
+          "stepper_3_pasos": true,
+          "sin_paso_texto_muerto": true
+        },
+        "lectura_lote_35": {
+          "titulo_lectura_beto": true,
+          "nota_en_revision": true,
+          "modal_abierto": true,
+          "modal_titulo_beto": true,
+          "modal_precision_recall_f1": true,
+          "modal_curva_canvas": true,
+          "ner_explicacion_abierta": true,
+          "ner_origen_visible": false,
+          "texto_preparado_tab": true,
+          "texto_preparado_3_kpis": true
+        },
+        "lectura_lote_36_inscritos": {
+          "programa_presente": true,
+          "sin_docente_asesor": true,
+          "sin_carrera_como_programa": true,
+          "ner_origen_visible": true,
+          "ner_etiqueta_modelo_visible": true
+        },
+        "revision_lote_35": {
+          "pestanas_presentes": true,
+          "boton_exportar": true,
+          "boton_consolidar": true
+        }
+      }
+    },
+    "console_errors": 0,
+    "console_error_samples": [],
+    "exceptions": 0,
+    "exception_samples": []
+  }
+}

@@ -1,0 +1,5008 @@
+{
+ "id": "f5v_ner_origen",
+ "tarea": "PLAN_F5V V-8 (absorbida por C-1 de PLAN_F5C)",
+ "fecha": "2026-11-19",
+ "metodo": "Solo lectura. Se ejecutó extract_entities_from_line (backend/routers/dataops/extraccion.py, sin modificar) con los catálogos vivos (dim_estudiante 16.873, dim_docente 689, dim_modulo 4.313; SELECT) sobre las líneas de staging_registros_crudos.texto_plano de los lotes 35 y 1 (las mismas líneas que ingestó cada libro; DW viva, solo SELECT). BETO no se invocó: los flags BETO_* están apagados en el sistema (pipeline/config.py:51-56) y MARKETING no está en BETO_TIPOS_FUENTE_CON_PERSONA. La carga DataOps se emuló con las funciones reales de consolidacion.py:359-516 (registros_academicos, registros_asignacion_docente, registros_evaluacion, registros_techo_convenio, registros_rentabilidad, fecha_de_fila). Ninguna línea de código, umbral, cascada ni BETO cambió.",
+ "lectura_de_los_libros": "output/backups/f0_lote/originales/ (10 libros); las filas evaluadas son las del staging del lote 35 (documentos 35-43) y lote 1 (PLANIFICACION)",
+ "criterio_veredicto": "Rol de la columna por estructura del encabezado (no por nombre de archivo): ESTUDIANTE solo desde columnas de nombre de persona; CI desde columnas de documento; DOCENTE solo desde DOCENTE/PROFESOR/TUTOR/FACILITADOR; PROGRAMA desde NOMBRE DEL PROGRAMA/PROGRAMA/NUMEROPROYECTO/POS/COURSE; MÓDULO desde MODULO/MATERIA/ASIGNATURA (o desde la columna de programa cuando la hoja no tiene columna de módulo, dw_loader.py:1440); FECHA desde columnas de fecha. 'defecto' = la columna origen tiene otro rol (ASESOR, CARRERA, NIVEL ACADEMICO, RAZON SOCIAL, CORREO…) o no hay columna (texto libre). La tabla roles está en scratchpad c1/run.py (ROLES/OTROS) y se resume aquí.",
+ "enmascarado": "Nombres de persona, CI, correos y razones sociales van enmascarados en los ejemplos; no se escribe ningún dato personal en este archivo.",
+ "aviso": "Diagnóstico sin aplicar cambios. La lectura se ejecutó sobre los catálogos vivos y las líneas de staging del lote 35 (no la copia tmpfs: es la misma lectura sobre las mismas líneas; el snapshot no se tocó).",
+ "cabeceras_que_alimentan_cada_etiqueta_en_el_codigo": {
+  "ESTUDIANTE": "extraccion.py:214-245",
+  "DOCUMENTO / CI": "extraccion.py:319-329",
+  "DOCENTE": "extraccion.py:381-428 (+430-434 BETO)",
+  "MÓDULO": "extraccion.py:483-500",
+  "PROGRAMA": "extraccion.py:634-642"
+ },
+ "tabla_etiqueta_x_fuente_resolucion_x_archivo": {
+  "lineas_evaluadas": "todas las líneas de cada hoja (sin muestreo) salvo planificación",
+  "filas": [
+   {
+    "archivo": "BD Cobranzas.xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "BETO",
+    "n": 176
+   },
+   {
+    "archivo": "BD Cobranzas.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "CI_EXACTA",
+    "n": 15481
+   },
+   {
+    "archivo": "BD Cobranzas.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "REGEX",
+    "n": 553
+   },
+   {
+    "archivo": "BD Cobranzas.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "BETO",
+    "n": 9
+   },
+   {
+    "archivo": "BD Cobranzas.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "CI_EXACTA",
+    "n": 15470
+   },
+   {
+    "archivo": "BD Cobranzas.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "FUZZY",
+    "n": 4
+   },
+   {
+    "archivo": "BD Cobranzas.xlsx",
+    "etiqueta": "MÓDULO",
+    "fuente_resolucion": "BETO",
+    "n": 5
+   },
+   {
+    "archivo": "BD Cobranzas.xlsx",
+    "etiqueta": "MÓDULO",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 10527
+   },
+   {
+    "archivo": "BD Cobranzas.xlsx",
+    "etiqueta": "PROGRAMA",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 15947
+   },
+   {
+    "archivo": "BD Egresos.xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 5
+   },
+   {
+    "archivo": "BD Egresos.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "CI_EXACTA",
+    "n": 1046
+   },
+   {
+    "archivo": "BD Egresos.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "REGEX",
+    "n": 363
+   },
+   {
+    "archivo": "BD Egresos.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "BETO",
+    "n": 9
+   },
+   {
+    "archivo": "BD Egresos.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "FUZZY",
+    "n": 1
+   },
+   {
+    "archivo": "BD Egresos.xlsx",
+    "etiqueta": "MÓDULO",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 1373
+   },
+   {
+    "archivo": "BD Egresos.xlsx",
+    "etiqueta": "PROGRAMA",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 1373
+   },
+   {
+    "archivo": "BD Techos.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "CI_EXACTA",
+    "n": 2
+   },
+   {
+    "archivo": "BD Techos.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "REGEX",
+    "n": 205
+   },
+   {
+    "archivo": "BD Techos.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "BETO",
+    "n": 63
+   },
+   {
+    "archivo": "BD Techos.xlsx",
+    "etiqueta": "MÓDULO",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 204
+   },
+   {
+    "archivo": "BD Techos.xlsx",
+    "etiqueta": "PROGRAMA",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 207
+   },
+   {
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "BETO",
+    "n": 86
+   },
+   {
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 7819
+   },
+   {
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "FUZZY",
+    "n": 1943
+   },
+   {
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "CI_EXACTA",
+    "n": 8365
+   },
+   {
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "REGEX",
+    "n": 3091
+   },
+   {
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "BETO",
+    "n": 340
+   },
+   {
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "CI_EXACTA",
+    "n": 8128
+   },
+   {
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "FUZZY",
+    "n": 187
+   },
+   {
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "etiqueta": "MÓDULO",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 2551
+   },
+   {
+    "archivo": "Base centralizada Académica ARCA (1).xlsx",
+    "etiqueta": "PROGRAMA",
+    "fuente_resolucion": "REGEX",
+    "n": 2779
+   },
+   {
+    "archivo": "EJECUTADO VS META.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "CI_EXACTA",
+    "n": 27
+   },
+   {
+    "archivo": "EJECUTADO VS META.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "REGEX",
+    "n": 9
+   },
+   {
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "BETO",
+    "n": 37
+   },
+   {
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 2676
+   },
+   {
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "CI_EXACTA",
+    "n": 16
+   },
+   {
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "REGEX",
+    "n": 27173
+   },
+   {
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "BETO",
+    "n": 7774
+   },
+   {
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "FUZZY",
+    "n": 3399
+   },
+   {
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "etiqueta": "MÓDULO",
+    "fuente_resolucion": "BETO",
+    "n": 1
+   },
+   {
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "etiqueta": "MÓDULO",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 323
+   },
+   {
+    "archivo": "Evaluación Docente y Unifranz.xlsx",
+    "etiqueta": "PROGRAMA",
+    "fuente_resolucion": "REGEX",
+    "n": 560
+   },
+   {
+    "archivo": "Experiencia Docente 2.0.xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "BETO",
+    "n": 217
+   },
+   {
+    "archivo": "Experiencia Docente 2.0.xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 16362
+   },
+   {
+    "archivo": "Experiencia Docente 2.0.xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "FUZZY",
+    "n": 50
+   },
+   {
+    "archivo": "Experiencia Docente 2.0.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "CI_EXACTA",
+    "n": 4398
+   },
+   {
+    "archivo": "Experiencia Docente 2.0.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "REGEX",
+    "n": 13297
+   },
+   {
+    "archivo": "Experiencia Docente 2.0.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "BETO",
+    "n": 5478
+   },
+   {
+    "archivo": "Experiencia Docente 2.0.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "FUZZY",
+    "n": 10335
+   },
+   {
+    "archivo": "Experiencia Docente 2.0.xlsx",
+    "etiqueta": "MÓDULO",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 16629
+   },
+   {
+    "archivo": "Experiencia Docente 2.0.xlsx",
+    "etiqueta": "PROGRAMA",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 2232
+   },
+   {
+    "archivo": "Experiencia Docente 2.0.xlsx",
+    "etiqueta": "PROGRAMA",
+    "fuente_resolucion": "REGEX",
+    "n": 14397
+   },
+   {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "BETO",
+    "n": 719
+   },
+   {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 33
+   },
+   {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "CI_EXACTA",
+    "n": 15191
+   },
+   {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "REGEX",
+    "n": 5
+   },
+   {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "BETO",
+    "n": 11
+   },
+   {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "CI_EXACTA",
+    "n": 15183
+   },
+   {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "FUZZY",
+    "n": 2
+   },
+   {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "etiqueta": "MÓDULO",
+    "fuente_resolucion": "BETO",
+    "n": 3
+   },
+   {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "etiqueta": "MÓDULO",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 9980
+   },
+   {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "etiqueta": "PROGRAMA",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 15076
+   },
+   {
+    "archivo": "TBL_INSCRITOS.xlsx",
+    "etiqueta": "PROGRAMA",
+    "fuente_resolucion": "REGEX",
+    "n": 113
+   },
+   {
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "BETO",
+    "n": 262
+   },
+   {
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 16500
+   },
+   {
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "etiqueta": "DOCENTE",
+    "fuente_resolucion": "FUZZY",
+    "n": 58
+   },
+   {
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "CI_EXACTA",
+    "n": 3
+   },
+   {
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "etiqueta": "DOCUMENTO / CI",
+    "fuente_resolucion": "REGEX",
+    "n": 19116
+   },
+   {
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "BETO",
+    "n": 837
+   },
+   {
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "etiqueta": "ESTUDIANTE",
+    "fuente_resolucion": "FUZZY",
+    "n": 17691
+   },
+   {
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "etiqueta": "MÓDULO",
+    "fuente_resolucion": "BETO",
+    "n": 50
+   },
+   {
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "etiqueta": "MÓDULO",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 18945
+   },
+   {
+    "archivo": "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+    "etiqueta": "PROGRAMA",
+    "fuente_resolucion": "ENCABEZADO",
+    "n": 18990
+   }
+  ]
+ },
+ "tbl_inscritos": {
+  "lineas": 15196,
+  "veredicto_por_etiqueta_todas_las_lineas": {
+   "ESTUDIANTE": {
+    "correcta": 14438,
+    "defecto": 758,
+    "no_extraida": 0
+   },
+   "DOCUMENTO / CI": {
+    "correcta": 15196,
+    "defecto": 0,
+    "no_extraida": 0
+   },
+   "DOCENTE": {
+    "correcta": 0,
+    "defecto": 752,
+    "no_extraida": 14444
+   },
+   "MÓDULO": {
+    "correcta": 9147,
+    "defecto": 836,
+    "no_extraida": 5213
+   },
+   "PROGRAMA": {
+    "correcta": 113,
+    "defecto": 15076,
+    "no_extraida": 7
+   }
+  },
+  "veredicto_por_etiqueta_50_filas": {
+   "ESTUDIANTE": {
+    "correcta": 50
+   },
+   "DOCUMENTO / CI": {
+    "correcta": 50
+   },
+   "DOCENTE": {
+    "defecto": 3,
+    "no_extraida": 47
+   },
+   "PROGRAMA": {
+    "defecto": 49,
+    "correcta": 1
+   },
+   "MÓDULO": {
+    "no_extraida": 21,
+    "correcta": 24,
+    "defecto": 5
+   }
+  },
+  "origen_columna_por_etiqueta": {
+   "ESTUDIANTE": [
+    {
+     "columna": "NOMBRES + PATERNO + MATERNO",
+     "fuente_resolucion": "CI_EXACTA",
+     "veredicto": "correcta",
+     "n": 14347
+    },
+    {
+     "columna": "RAZON SOCIAL",
+     "fuente_resolucion": "CI_EXACTA",
+     "veredicto": "defecto",
+     "n": 756
+    },
+    {
+     "columna": "NOMBRES + MATERNO",
+     "fuente_resolucion": "CI_EXACTA",
+     "veredicto": "correcta",
+     "n": 46
+    },
+    {
+     "columna": "NOMBRES + PATERNO",
+     "fuente_resolucion": "CI_EXACTA",
+     "veredicto": "correcta",
+     "n": 32
+    },
+    {
+     "columna": "NOMBRES + PATERNO + MATERNO",
+     "fuente_resolucion": "BETO",
+     "veredicto": "correcta",
+     "n": 9
+    },
+    {
+     "columna": "NIT",
+     "fuente_resolucion": "CI_EXACTA",
+     "veredicto": "defecto",
+     "n": 2
+    },
+    {
+     "columna": "NOMBRES + PATERNO",
+     "fuente_resolucion": "BETO",
+     "veredicto": "correcta",
+     "n": 2
+    },
+    {
+     "columna": "NOMBRES + PATERNO + MATERNO",
+     "fuente_resolucion": "FUZZY",
+     "veredicto": "correcta",
+     "n": 2
+    }
+   ],
+   "DOCUMENTO / CI": [
+    {
+     "columna": "CI",
+     "fuente_resolucion": "CI_EXACTA",
+     "veredicto": "correcta",
+     "n": 15191
+    },
+    {
+     "columna": "CI",
+     "fuente_resolucion": "REGEX",
+     "veredicto": "correcta",
+     "n": 5
+    }
+   ],
+   "DOCENTE": [
+    {
+     "columna": "CARRERA",
+     "fuente_resolucion": "BETO",
+     "veredicto": "defecto",
+     "n": 482
+    },
+    {
+     "columna": "CORREO ELECTRONICO",
+     "fuente_resolucion": "BETO",
+     "veredicto": "defecto",
+     "n": 176
+    },
+    {
+     "columna": "(sin columna: texto completo/catálogo)",
+     "fuente_resolucion": "ENCABEZADO",
+     "veredicto": "defecto",
+     "n": 30
+    },
+    {
+     "columna": "NOMBRE DEL PROGRAMA",
+     "fuente_resolucion": "BETO",
+     "veredicto": "defecto",
+     "n": 26
+    },
+    {
+     "columna": "INSTITUCION DONDE TRABAJA",
+     "fuente_resolucion": "BETO",
+     "veredicto": "defecto",
+     "n": 19
+    },
+    {
+     "columna": "DIRECCION",
+     "fuente_resolucion": "BETO",
+     "veredicto": "defecto",
+     "n": 12
+    },
+    {
+     "columna": "NOMBRES",
+     "fuente_resolucion": "BETO",
+     "veredicto": "defecto",
+     "n": 2
+    },
+    {
+     "columna": "NOMBRES",
+     "fuente_resolucion": "ENCABEZADO",
+     "veredicto": "defecto",
+     "n": 1
+    }
+   ],
+   "MÓDULO": [
+    {
+     "columna": "NOMBRE DEL PROGRAMA",
+     "fuente_resolucion": "ENCABEZADO",
+     "veredicto": "correcta",
+     "n": 9147
+    },
+    {
+     "columna": "NIVEL ACADEMICO",
+     "fuente_resolucion": "ENCABEZADO",
+     "veredicto": "defecto",
+     "n": 722
+    },
+    {
+     "columna": "CARRERA",
+     "fuente_resolucion": "ENCABEZADO",
+     "veredicto": "defecto",
+     "n": 87
+    },
+    {
+     "columna": "INSTITUCION DONDE TRABAJA",
+     "fuente_resolucion": "ENCABEZADO",
+     "veredicto": "defecto",
+     "n": 13
+    },
+    {
+     "columna": "RAZON SOCIAL",
+     "fuente_resolucion": "ENCABEZADO",
+     "veredicto": "defecto",
+     "n": 6
+    },
+    {
+     "columna": "DIRECCION",
+     "fuente_resolucion": "ENCABEZADO",
+     "veredicto": "defecto",
+     "n": 3
+    },
+    {
+     "columna": "CORREO ELECTRONICO",
+     "fuente_resolucion": "BETO",
+     "veredicto": "defecto",
+     "n": 3
+    },
+    {
+     "columna": "UNIVERSIDA/INSTITUTO",
+     "fuente_resolucion": "ENCABEZADO",
+     "veredicto": "defecto",
+     "n": 2
+    }
+   ],
+   "PROGRAMA": [
+    {
+     "columna": "CARRERA",
+     "fuente_resolucion": "ENCABEZADO",
+     "veredicto": "defecto",
+     "n": 15076
+    },
+    {
+     "columna": "NOMBRE DEL PROGRAMA",
+     "fuente_resolucion": "REGEX",
+     "veredicto": "correcta",
+     "n": 113
+    }
+   ]
+  },
+  "filas_50": [
+   {
+    "linea_en_la_hoja": 1,
+    "indice_registro_lectura": 0.85,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "C*** B*** M*** T***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••709",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCENTE": {
+      "valor": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "BETO",
+      "veredicto": "defecto"
+     },
+     "PROGRAMA": {
+      "valor": "FACILITADORA EN PNL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "C*** B*** M*** T***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••709",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:BETO",
+      "veredicto": "defecto"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "FACILITADORA EN PNL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-04-14",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 304,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "C*** D*** V*** M***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••845",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN ECOGRAFÍA ABDOMINAL Y GINECO-OBSTÉTRICA v. XIV - NAL",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "MEDICO CIRUJANO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "C*** D*** V*** M***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••845",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN ECOGRAFIA ABDOMINAL Y GINECO-OBSTETRICA v.19 - NAL",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "MEDICO CIRUJANO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-02-09",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 607,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "Y*** E*** R*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••014",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "INGENIERÍA COMERCIAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "Y*** E*** R*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••014",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "INGENIERÍA COMERCIAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-02-10",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 910,
+    "indice_registro_lectura": 0.85,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "O*** F*** V*** V***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••147",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCENTE": {
+      "valor": "ING. COMERCIAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "BETO",
+      "veredicto": "defecto"
+     },
+     "PROGRAMA": {
+      "valor": "ING. COMERCIAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "O*** F*** V*** V***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••147",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": "ING. COMERCIAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:BETO",
+      "veredicto": "defecto"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "ING. COMERCIAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-02-27",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 1213,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "B*** V*** A***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••723",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "ADMINISTRACION DE EMPRESAS",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "B*** V*** A***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••723",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "ADMINISTRACION DE EMPRESAS",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-04-12",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 1516,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "G*** A*** D***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••568",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN ECOGRAFÍA ABDOMINAL Y GINECO-OBSTÉTRICA v. XVI",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "MÉDICO CIRUJANO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "G*** A*** D***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••568",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN ECOGRAFÍA ABDOMINAL Y GINECO-OBSTÉTRICA",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "MÉDICO CIRUJANO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-05-13",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 1819,
+    "indice_registro_lectura": 0.85,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "Y*** K*** T*** D*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••799",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCENTE": {
+      "valor": "[correo]",
+      "columnas": [
+       "CORREO ELECTRONICO"
+      ],
+      "fuente_resolucion": "BETO",
+      "veredicto": "defecto"
+     },
+     "PROGRAMA": {
+      "valor": "ADMINISTRACIÓN DE HOTELERÍA Y TURISMO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "Y*** K*** T*** D*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••799",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": "[correo]",
+      "columnas": [
+       "CORREO ELECTRONICO"
+      ],
+      "rama": "ner:BETO",
+      "veredicto": "defecto"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "ADMINISTRACIÓN DE HOTELERÍA Y TURISMO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-07-17",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 2122,
+    "indice_registro_lectura": 0.91,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "A*** E*** A*** R***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••234",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN NUTRICIÓN INTEGRATIVA Y FUNCIONAL CON PRÁCTICA ORTOMOLECULAR v. I - NAL",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "NUTRICIONISTA DIETISTA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "A*** E*** A*** R***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••234",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN NUTRICIÓN INTEGRATIVA Y FUNCIONAL CON PRÁCTICA ORTOMOLECULAR v.2",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "NUTRICIONISTA DIETISTA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-07-18",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 2425,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "D*** N*** A*** F***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••303",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "LICENCIADA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "D*** N*** A*** F***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••303",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "LICENCIADA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-08-10",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 2728,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "H*** N*** V*** Z***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••472",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "CONTADOR PUBLICO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "H*** N*** V*** Z***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••472",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "CONTADOR PUBLICO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-09-21",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 3031,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "G*** M*** Z*** O***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••001",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "INGENIERÍA COMERCIAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "G*** M*** Z*** O***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••001",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "INGENIERÍA COMERCIAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-10-05",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 3334,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "D*** N*** C*** M***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••784",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "ADMINISTRACIÓN DE EMPRESAS",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "D*** N*** C*** M***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••784",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "ADMINISTRACIÓN DE EMPRESAS",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-11-10",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 3637,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "L*** V*** Q*** D***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••510",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "ADMINISTRACIÓN DE HOTELERIA Y TURISMO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "L*** V*** Q*** D***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••510",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "ADMINISTRACIÓN DE HOTELERIA Y TURISMO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2023-11-23",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 3940,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "R*** M*** R***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••805",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN GERENCIA ADMINISTRATIVA FINANCIERA v.7",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "MÉDICINA VETERINARIA Y ZOOTECNIA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "R*** M*** R***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••805",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN GERENCIA ADMINISTRATIVA FINANCIERA v. 7",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "MÉDICINA VETERINARIA Y ZOOTECNIA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-06-17",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 4243,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "F*** C*** S***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••943",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN FARMACOLOGÍA TERAPÉUTICA v.1",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "LICENCIADA EN QUÍMICA FARMACÉUTICA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "F*** C*** S***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••943",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN FARMACOLOGÍA TERAPÉUTICA v.4",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "LICENCIADA EN QUÍMICA FARMACÉUTICA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-02-16",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 4546,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "H*** R*** D*** A***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••573",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN IMAGENOLOGÍA Y ECOGRAFÍA v.3",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "MÉDICO CIRUJANO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "H*** R*** D*** A***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••573",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN IMAGENOLOGÍA Y ECOGRAFÍA",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "MÉDICO CIRUJANO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-05-02",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 4849,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "J*** Á*** S*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••553",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN OZONOTERAPIA MÉDICA v.5",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "DIPLOMADO EN OZONOTERAPIA MÉDICA v.5",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "REGEX",
+      "veredicto": "correcta"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "J*** Á*** S*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••553",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN OZONOTERAPIA MÉDICA v.5",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "DIPLOMADO EN OZONOTERAPIA MÉDICA v.5",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:REGEX",
+      "veredicto": "correcta"
+     },
+     "fecha": {
+      "valor": "2024-04-26",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 5152,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "A*** M*** E*** V***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••525",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "TERAPEUTA OCUPACIONAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "A*** M*** E*** V***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••525",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "TERAPEUTA OCUPACIONAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-05-15",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 5455,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "C*** C*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••828",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "CONTADOR",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "C*** C*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••828",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "CONTADOR",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-06-14",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 5758,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "F*** M*** R*** A***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••437",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "MEDICINA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "F*** M*** R*** A***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••437",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "MEDICINA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-07-15",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 6061,
+    "indice_registro_lectura": 0.85,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "C*** E*** R*** L***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••459",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "ESPECIALIDAD",
+      "columnas": [
+       "NIVEL ACADEMICO"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "PROGRAMA": {
+      "valor": "ODONTOLOGIA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "C*** E*** R*** L***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••459",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "PROGRAMA EXPERTO EN MANEJO ESPECIALIZADO DE ECÓGRAFOS MULTIMARCA v.1",
+      "columnas": [
+       "NIVEL ACADEMICO"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "programa": {
+      "valor": "ODONTOLOGIA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-08-05",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 6364,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "C*** C*** R***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••597",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "CIENCIAS DE LA COMUNICACIÓN SOCIAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "C*** C*** R***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••597",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "CIENCIAS DE LA COMUNICACIÓN SOCIAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-08-24",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 6667,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "M*** R*** S*** V***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••427",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "MAESTRIA",
+      "columnas": [
+       "NIVEL ACADEMICO"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "PROGRAMA": {
+      "valor": "DERECHO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "M*** R*** S*** V***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••427",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "MAESTRIA",
+      "columnas": [
+       "NIVEL ACADEMICO"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "programa": {
+      "valor": "DERECHO",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-09-09",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 6970,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "L*** A*** L*** G***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••138",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "INGENIERÍA INDUSTRIAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "L*** A*** L*** G***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••138",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "INGENIERÍA INDUSTRIAL",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-09-23",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 7273,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "J*** A*** C*** Z***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••260",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "ADMINISTRACIÓN DE EMPRESAS",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "J*** A*** C*** Z***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••260",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "ADMINISTRACIÓN DE EMPRESAS",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-10-20",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 7576,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "L*** J*** M*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••874",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN ORTODONCIA CONVENCIONAL Y DIGITAL v. 1",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "ODONTOLOGIA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "L*** J*** M*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••874",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN ORTODONCIA CONVENCIONAL Y DIGITAL",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "ODONTOLOGIA",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-11-08",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 7879,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "G*** C*** D*** G***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••226",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "ADMINISTRACIÓN DE EMPRESAS",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "G*** C*** D*** G***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••226",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "ADMINISTRACIÓN DE EMPRESAS",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2024-12-03",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 8182,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "M*** S*** V***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••450",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN ANÁLISIS CLÍNICO Y MICROBIOLOGÍA LABORATORIAL v. 9",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Bioquímica y Farmacia",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "M*** S*** V***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••450",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN ANÁLISIS CLÍNICO Y MICROBIOLOGÍA LABORATORIAL v.9",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Bioquímica y Farmacia",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-01-04",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 8485,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "J*** D*** F*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••270",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN ASESORÍA JURÍDICA CORPORATIVA v. 1",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Derecho",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "J*** D*** F*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••270",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN ASESORÍA JURÍDICA CORPORATIVA v.1",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Derecho",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-01-23",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 8788,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "C*** C*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••935",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Ingeniería Comercial",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "C*** C*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••935",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "Ingeniería Comercial",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-02-12",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 9091,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "C*** M*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••421",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN LIDERAZGO COMERCIAL Y ESTRATEGÍA DE VENTAS v. 5",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Administración de Empresas",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "C*** M*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••421",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN LIDERAZGO COMERCIAL Y ESTRATEGÍA DE VENTAS v.5",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Administración de Empresas",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-03-10",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 9394,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "G*** R*** S*** M***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••485",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Economía",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "G*** R*** S*** M***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••485",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "Economía",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-04-02",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 9697,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "F*** E*** N*** I***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••438",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "Diplomado",
+      "columnas": [
+       "NIVEL ACADEMICO"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "PROGRAMA": {
+      "valor": "Psicología",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "F*** E*** N*** I***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••438",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN ULTRASONOGRAFÍA GENERAL, ECOGRAFÍA MUSCULOESQUELÉTICO Y ECOGRAFÍA PEDIÁTRICA v.2",
+      "columnas": [
+       "NIVEL ACADEMICO"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "programa": {
+      "valor": "Psicología",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-04-24",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 10000,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "R*** J*** S*** M***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••654",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN GESTIÓN Y DIRECCIÓN DE PROYECTOS CON ENFOQUE PMI v. 7",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Ingeniería Industrial",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "R*** J*** S*** M***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••654",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN GESTIÓN Y DIRECCIÓN DE PROYECTOS CON ENFOQUE PMI v. 6",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Ingeniería Industrial",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-05-14",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 10303,
+    "indice_registro_lectura": 0.85,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "H*** E*** C*** F***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••059",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "Especialidad",
+      "columnas": [
+       "NIVEL ACADEMICO"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "PROGRAMA": {
+      "valor": "Ciencias de la Comunicación - Ciencias de la Educación",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "H*** E*** C*** F***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••059",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "PROGRAMA EXPERTO EN MANEJO ESPECIALIZADO DE ECÓGRAFOS MULTIMARCA v.1",
+      "columnas": [
+       "NIVEL ACADEMICO"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "programa": {
+      "valor": "Ciencias de la Comunicación - Ciencias de la Educación",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-06-04",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 10606,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "S*** V*** V*** G***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••951",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Laboratorio Clínico",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "S*** V*** V*** G***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••951",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "Laboratorio Clínico",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-06-27",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 10909,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "C*** Y*** P*** R***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••568",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN MEDICINA ESTÉTICA v. 27",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Medicina",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "C*** Y*** P*** R***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••568",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN MEDICINA ESTÉTICA v.27",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Medicina",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-07-24",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 11212,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "M*** J*** B*** G***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••919",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Nutrición y Dietética",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "M*** J*** B*** G***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••919",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "programa": {
+      "valor": "Nutrición y Dietética",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-08-19",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 11515,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "M*** A*** G*** L***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••867",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN PSICOTERAPIA COGNITIVA COMPORTAMENTAL v. 1",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Psicología",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "M*** A*** G*** L***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••867",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN PSICOTERAPIA COGNITIVA COMPORTAMENTAL v.1",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Psicología",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-09-12",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 11818,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "V*** D*** P***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••235",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN MEDICINA ESTÉTICA v. 28",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Medicina",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "V*** D*** P***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••235",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN MEDICINA ESTÉTICA v. 29",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Medicina",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-10-13",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 12121,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "J*** B*** G*** A***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••615",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "CURSO INTELIGENCIA ARTIFICIAL APLICADA AL DERECHO v. 7",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Derecho",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "J*** B*** G*** A***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••615",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "CURSO INTELIGENCIA ARTIFICIAL APLICADA AL DERECHO v. 4",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Derecho",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-11-04",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 12424,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "G*** D*** S*** T***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••090",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "Diplomado",
+      "columnas": [
+       "NIVEL ACADEMICO"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "PROGRAMA": {
+      "valor": "Ingeniería de Sistemas",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "G*** D*** S*** T***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••090",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN ULTRASONOGRAFÍA GENERAL, ECOGRAFÍA MUSCULOESQUELÉTICO Y ECOGRAFÍA PEDIÁTRICA v.2",
+      "columnas": [
+       "NIVEL ACADEMICO"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "programa": {
+      "valor": "Ingeniería de Sistemas",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-11-25",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 12727,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "W*** B*** P*** H***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••871",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN NEUROCIENCIA E INNOVACIÓN EDUCATIVA v. 5",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "CIENCIAS DE LA EDUCACIÓN",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "W*** B*** P*** H***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••871",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN NEUROCIENCIA E INNOVACIÓN EDUCATIVA v.4",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "CIENCIAS DE LA EDUCACIÓN",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2025-12-09",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 13030,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "C*** P*** H***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••817",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN MEDICINA ESTÉTICA v. 29",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Medicina",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "C*** P*** H***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••817",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN MEDICINA ESTÉTICA v. 29",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Medicina",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2026-01-10",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 13333,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "P*** Q*** O***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••782",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN LIDERAZGO COMERCIAL Y ESTRATEGÍA DE VENTAS v. 7",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Administración de Empresas",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "P*** Q*** O***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••782",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN LIDERAZGO COMERCIAL Y ESTRATEGÍA DE VENTAS v.6",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Administración de Empresas",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2026-01-26",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 13636,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "M*** R*** C*** F***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••415",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN FORMULACIÓN MAGISTRAL DERMATOLÓGICA v. 1",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Bioquímica y farmacia",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "M*** R*** C*** F***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••415",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN FORMULACIÓN MAGISTRAL DERMATOLÓGICA",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Bioquímica y farmacia",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2026-02-13",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 13939,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "A*** A*** M*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••226",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN SALUD PÚBLICA ODONTOLÓGICA v. 1",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Odontología",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "A*** A*** M*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••226",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN SALUD PÚBLICA ODONTOLÓGICA",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Odontología",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2026-03-09",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 14242,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "V*** J*** L*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••474",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN BIG DATA v. 2",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Contaduría Publica",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "V*** J*** L*** C***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••474",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN BIG DATA",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Contaduría Publica",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2026-03-31",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 14545,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "B*** F*** Q*** A***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••896",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN ULTRASONOGRAFÍA GENERAL, ECOGRAFÍA MUSCULOESQUELÉTICO Y ECOGRAFÍA PEDIÁTRICA v.3",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Medicina",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "B*** F*** Q*** A***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••896",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN ULTRASONOGRAFÍA GENERAL, ECOGRAFÍA MUSCULOESQUELÉTICO Y ECOGRAFÍA PEDIÁTRICA v.2",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Medicina",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2026-04-21",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   },
+   {
+    "linea_en_la_hoja": 14848,
+    "indice_registro_lectura": 0.94,
+    "requiere_revision": false,
+    "lectura_por_etiqueta": {
+     "ESTUDIANTE": {
+      "valor": "A*** C*** E*** D***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "DOCUMENTO / CI": {
+      "valor": "•••737",
+      "columnas": [
+       "CI"
+      ],
+      "fuente_resolucion": "CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "MÓDULO": {
+      "valor": "DIPLOMADO EN REHABILITACIÓN INTEGRAL DEL PACIENTE ONCOLÓGICO v.2",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "PROGRAMA": {
+      "valor": "Kinesiología y Fisioterapia",
+      "columnas": [
+       "CARRERA"
+      ],
+      "fuente_resolucion": "ENCABEZADO",
+      "veredicto": "defecto"
+     }
+    },
+    "carga_por_campo": {
+     "estudiante": {
+      "valor": "A*** C*** E*** D***",
+      "columnas": [
+       "NOMBRES",
+       "PATERNO",
+       "MATERNO"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "ci": {
+      "valor": "•••737",
+      "columnas": [
+       "CI"
+      ],
+      "rama": "ner:CI_EXACTA",
+      "veredicto": "correcta"
+     },
+     "docente": {
+      "valor": null,
+      "veredicto": "no_asignado",
+      "rama": "ner"
+     },
+     "modulo": {
+      "valor": "DIPLOMADO EN REHABILITACIÓN INTEGRAL DEL PACIENTE ONCOLÓGICO",
+      "columnas": [
+       "NOMBRE DEL PROGRAMA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "correcta"
+     },
+     "programa": {
+      "valor": "Kinesiología y Fisioterapia",
+      "columnas": [
+       "CARRERA"
+      ],
+      "rama": "ner:ENCABEZADO",
+      "veredicto": "defecto"
+     },
+     "fecha": {
+      "valor": "2026-05-08",
+      "columnas": [
+       "MARCA TEMPORAL"
+      ],
+      "rama": "fecha_de_fila",
+      "veredicto": "correcta"
+     }
+    }
+   }
+  ],
+  "criterio_de_seleccion_50": "una de cada 303 líneas desde la primera (determinista)"
+ },
+ "propuesta_sin_aplicar": [
+  "PROGRAMA: buscar por similitud del encabezado con prioridad código (NUMEROPROYECTO, POS, N° POS) y luego nombre (NOMBRE DEL PROGRAMA, PROGRAMA); excluir CARRERA, NIVEL ACADEMICO, UNIVERSIDA/INSTITUTO, INSTITUCION DONDE TRABAJA (atributos del estudiante).",
+  "DOCENTE: exigir columna de rol docente (DOCENTE, PROFESOR, TUTOR, FACILITADOR) o un patrón de título al inicio del valor; no aceptar 'ing.'/'lic.' como subcadena de cualquier celda (coaching., correos). Excluir ASESOR, COORDINADOR, RESPONSABLE, RAZON SOCIAL y correos también en la entidad PER de BETO; hoy mejor_propuesta usa la lista de no-estudiante, que además descarta las columnas DOCENTE reales (beto_integracion.py:316-334).",
+  "MÓDULO: solo desde columnas de módulo o curso; sin ellas, no emitir entidad módulo (hoy se recorren todas las celdas por palabras clave, extraccion.py:488-492).",
+  "ESTUDIANTE: añadir RAZON SOCIAL, CARRERA, NIVEL ACADEMICO, INSTITUCION DONDE TRABAJA, NIT y UNIVERSIDA/INSTITUTO a la exclusión de _ENCABEZADOS_NO_ESTUDIANTE (extraccion.py:19-25).",
+  "Carga de marketing/admisión: enviar pos_canonico desde NUMEROPROYECTO y el nombre desde NOMBRE DEL PROGRAMA en la carga DataOps (consolidacion.py:416-426), como ya hace pipeline.py:246-254."
+ ],
+ "impacto_estimado_sobre_conteos": {
+  "tbl_inscritos_lineas_con_unidad_equivocada_en_la_carga": 6016,
+  "fact_marketing_viva": "4.248 de 10.519 filas (5.276 de 15.191 inscritos) en módulos MOD-GEN que no son programas; al corregir pasarían a su POS (NUMEROPROYECTO): cambia el conteo de hechos de fact_marketing y los ALUMNOS_* del forecast; es decisión de Lean y la corrección está en C-2/C-4 (volver a medir).",
+  "docentes": "ningún cambio en dim_docente por TBL_INSCRITOS (marketing no los crea); los 114 docentes no persona de las encuestas salen de otro camino (evaluación docente)."
+ }
+}

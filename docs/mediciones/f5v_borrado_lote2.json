@@ -1,0 +1,31 @@
+{
+  "tarea": "V-9",
+  "fecha": "2026-11-19",
+  "backup_previo": {
+    "archivo": "backups/f5v_pre_borrado.dump",
+    "bytes": 120581242,
+    "pg_restore_list_lineas": 654,
+    "verificado": true
+  },
+  "lote_borrado": {
+    "id_lote": 2,
+    "docs_vivos_antes": 0,
+    "tareas_eliminadas": 2,
+    "lotes_eliminados": 1
+  },
+  "lotes_restantes": [
+    {"id_lote": 35, "estado": "PROCESADO", "total_archivos": 9},
+    {"id_lote": 1, "estado": "PROCESADO", "total_archivos": 1}
+  ],
+  "conteos_hechos_despues": {
+    "fact_rendimiento_academico": 25191,
+    "fact_situacion_financiera": 10733,
+    "fact_evaluacion_docente": 715217,
+    "fact_marketing": 10519,
+    "fact_rentabilidad": 95,
+    "fact_techo_convenio": 206,
+    "fact_costo_programa": 1371,
+    "fact_planificacion_programa": 1663
+  },
+  "delta_hechos": 0
+}

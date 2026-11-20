@@ -1,0 +1,34 @@
+{
+  "tarea": "C-5",
+  "fecha": "2026-11-19",
+  "commit_codigo": "84cd352",
+  "worktree_limpio": "../gira_f5c_limpio",
+  "base_datos": "beto_pg_tmpfs/giragroup_dw (127.0.0.1:55432)",
+  "colectadas": 943,
+  "passed": 924,
+  "failed": 0,
+  "skipped": 12,
+  "xfailed": 7,
+  "skips_con_motivo": [
+    {
+      "archivo": "tests/readiness/test_production_readiness.py",
+      "cantidad": 11,
+      "motivo": "READINESS_TOKEN (3), READINESS_BETO_URL (3) y READINESS_DB_URL (5) no definidos en entorno de pruebas local (puerta de produccion en vivo)"
+    },
+    {
+      "archivo": "tests/f1/test_purga_cache.py",
+      "cantidad": 1,
+      "motivo": "beto_pg_tmpfs no disponible en 127.0.0.1:55632 (la tmpfs de verificacion corrio en 127.0.0.1:55432)"
+    }
+  ],
+  "frontend": {
+    "vitest": "16 archivos, 87/87 passed",
+    "vite_build": "2035 modulos, 0 errores"
+  },
+  "cobertura_total": {
+    "num_statements": 15869,
+    "covered_lines": 11535,
+    "missing_lines": 4334,
+    "percent_covered": 72.69
+  }
+}

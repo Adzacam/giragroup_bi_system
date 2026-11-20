@@ -1,0 +1,418 @@
+{
+  "estado_decision": "APROBADO_CONTINUAR",
+  "motivo_decision": "Tras corregir la similitud de encabezado en extraccion.py (16:42), HITL no se multiplica (bandeja.casos 676->700 = 1.04x; casos_manuales 43->67 = 1.56x) y KPI-11 = 99.78% / 97.76% (>= 85%).",
+  "f3_base_viejo": {
+    "bandeja": {
+      "casos": 676,
+      "grupos": 17,
+      "manuales": 12,
+      "casos_manuales": 43,
+      "firma": [
+        [
+          "grupo-eeb97aecd3",
+          "APROBAR",
+          594
+        ],
+        [
+          "grupo-3d630e02eb",
+          "APROBAR",
+          20
+        ],
+        [
+          "grupo-fce10f6266",
+          "MANUAL",
+          11
+        ],
+        [
+          "grupo-a370459559",
+          "MANUAL",
+          10
+        ],
+        [
+          "grupo-3a4ebffc23",
+          "MANUAL",
+          8
+        ],
+        [
+          "grupo-d2ec7470db",
+          "CORREGIR_FECHA",
+          8
+        ],
+        [
+          "grupo-3168c07273",
+          "APROBAR",
+          7
+        ],
+        [
+          "grupo-89de0bd808",
+          "APROBAR",
+          4
+        ],
+        [
+          "grupo-d4cefe4860",
+          "MANUAL",
+          3
+        ],
+        [
+          "grupo-5a9ebf94f4",
+          "MANUAL",
+          2
+        ],
+        [
+          "grupo-47eb53d9da",
+          "MANUAL",
+          2
+        ],
+        [
+          "grupo-58481de487",
+          "MANUAL",
+          2
+        ],
+        [
+          "grupo-0824c6fb74",
+          "MANUAL",
+          1
+        ],
+        [
+          "grupo-b4babd3ec1",
+          "MANUAL",
+          1
+        ],
+        [
+          "grupo-6d470fa856",
+          "MANUAL",
+          1
+        ],
+        [
+          "grupo-49f92e61a8",
+          "MANUAL",
+          1
+        ],
+        [
+          "grupo-15f47f574d",
+          "MANUAL",
+          1
+        ]
+      ]
+    },
+    "kpis": {
+      "KPI-10": null,
+      "KPI-11": null,
+      "KPI-18": 32.0
+    },
+    "tiempo_maquina_s": 562.0,
+    "tiempo_maquina_min": 9.37,
+    "tablas": {
+      "bi.ref_kpi": 23,
+      "bi.ref_perspectiva": 4,
+      "bridge_modulo_docente": 5,
+      "cache_indice_beto": 9231,
+      "carga_fila_origen": 219294,
+      "cat_categoria_financiera": 5,
+      "cat_combinacion_estado": 0,
+      "cat_concepto_financiero": 0,
+      "cat_escuela": 0,
+      "cat_estado_academico": 0,
+      "cat_estado_arca": 0,
+      "cat_estado_reprobado": 0,
+      "cat_etiqueta_clasificacion": 0,
+      "cat_guia_texto_plano": 0,
+      "cat_historico_equivalencia": 0,
+      "cat_institucion": 4,
+      "cat_institucion_convenio": 0,
+      "cat_mapeo_columna": 0,
+      "cat_modalidad": 0,
+      "cat_modulo": 0,
+      "cat_programa": 4,
+      "cat_tipo_programa": 0,
+      "dataops_tarea": 2,
+      "dim_categoria_financiera": 15,
+      "dim_docente": 673,
+      "dim_estudiante": 14978,
+      "dim_meta": 0,
+      "dim_modulo": 3814,
+      "dim_origen_documental": 10,
+      "dim_tiempo": 2230,
+      "fact_cobranzas_proyectadas": 0,
+      "fact_costo_programa": 1371,
+      "fact_evaluacion_docente": 104939,
+      "fact_forecast": 0,
+      "fact_marketing": 299,
+      "fact_planificacion_programa": 624,
+      "fact_rendimiento_academico": 1392,
+      "fact_rentabilidad": 95,
+      "fact_situacion_financiera": 725,
+      "fact_techo_convenio": 1,
+      "log_auditoria_nlp": 0,
+      "log_inconsistencias": 2788,
+      "log_pipeline_ingesta": 72,
+      "lote": 1,
+      "notifications": 6,
+      "powerbi_informe_version": 2,
+      "ref_metas_gestion": 0,
+      "schema_migrations": 16,
+      "staging_registros_crudos": 50,
+      "stg_entidad_no_resuelta": 2024,
+      "users": 5
+    },
+    "stg_desglose": [
+      {
+        "tipo_entidad": "RUIDO",
+        "motivo": "FILA_EVALUACION_SIN_RESPUESTAS",
+        "n": 1076
+      },
+      {
+        "tipo_entidad": "RUIDO",
+        "motivo": "FILA_ACADEMICA_SIN_ESTUDIANTE",
+        "n": 764
+      },
+      {
+        "tipo_entidad": "RUIDO",
+        "motivo": "FILA_SIN_CABECERAS",
+        "n": 107
+      },
+      {
+        "tipo_entidad": "ESTUDIANTE",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "n": 27
+      },
+      {
+        "tipo_entidad": "RUIDO",
+        "motivo": "FILA_AGREGADA_SIN_CATEGORIA_MES",
+        "n": 24
+      },
+      {
+        "tipo_entidad": "RUIDO",
+        "motivo": "FILA_SIN_ENTIDAD",
+        "n": 14
+      },
+      {
+        "tipo_entidad": "RUIDO",
+        "motivo": "FILA_FINANCIERA_SIN_ESTUDIANTE",
+        "n": 7
+      },
+      {
+        "tipo_entidad": "ESTUDIANTE",
+        "motivo": "CI_DUDOSA",
+        "n": 2
+      },
+      {
+        "tipo_entidad": "ESTUDIANTE",
+        "motivo": "CI_NOMBRE_DISCORDANTE",
+        "n": 2
+      },
+      {
+        "tipo_entidad": "ESTUDIANTE",
+        "motivo": "HOMONIMIA",
+        "n": 1
+      }
+    ]
+  },
+  "f3_base_nuevo": {
+    "bandeja": {
+      "casos": 700,
+      "grupos": 10,
+      "manuales": 5,
+      "casos_manuales": 67,
+      "firma": [
+        [
+          "grupo-eeb97aecd3",
+          "APROBAR",
+          594
+        ],
+        [
+          "grupo-1a626979d0",
+          "MANUAL",
+          28
+        ],
+        [
+          "grupo-5ea82d70e3",
+          "MANUAL",
+          25
+        ],
+        [
+          "grupo-3d630e02eb",
+          "APROBAR",
+          20
+        ],
+        [
+          "grupo-fce10f6266",
+          "MANUAL",
+          11
+        ],
+        [
+          "grupo-d2ec7470db",
+          "CORREGIR_FECHA",
+          8
+        ],
+        [
+          "grupo-3168c07273",
+          "APROBAR",
+          7
+        ],
+        [
+          "grupo-89de0bd808",
+          "APROBAR",
+          4
+        ],
+        [
+          "grupo-47eb53d9da",
+          "MANUAL",
+          2
+        ],
+        [
+          "grupo-49f92e61a8",
+          "MANUAL",
+          1
+        ]
+      ]
+    },
+    "kpis": {
+      "KPI-10": null,
+      "KPI-11": null,
+      "KPI-18": 56.0
+    },
+    "tiempo_maquina_s": 1852.14,
+    "tiempo_maquina_min": 30.87,
+    "tablas": {
+      "bi.ref_kpi": 23,
+      "bi.ref_perspectiva": 4,
+      "bridge_modulo_docente": 1,
+      "cache_indice_beto": 12215,
+      "carga_fila_origen": 337132,
+      "cat_categoria_financiera": 5,
+      "cat_combinacion_estado": 0,
+      "cat_concepto_financiero": 0,
+      "cat_escuela": 0,
+      "cat_estado_academico": 0,
+      "cat_estado_arca": 0,
+      "cat_estado_reprobado": 0,
+      "cat_etiqueta_clasificacion": 0,
+      "cat_guia_texto_plano": 0,
+      "cat_historico_equivalencia": 0,
+      "cat_institucion": 4,
+      "cat_institucion_convenio": 0,
+      "cat_mapeo_columna": 0,
+      "cat_modalidad": 0,
+      "cat_modulo": 0,
+      "cat_programa": 4,
+      "cat_tipo_programa": 0,
+      "dataops_tarea": 2,
+      "dim_categoria_financiera": 15,
+      "dim_docente": 638,
+      "dim_estudiante": 14977,
+      "dim_meta": 0,
+      "dim_modulo": 3829,
+      "dim_origen_documental": 10,
+      "dim_tiempo": 2230,
+      "fact_cobranzas_proyectadas": 0,
+      "fact_costo_programa": 1371,
+      "fact_evaluacion_docente": 163182,
+      "fact_forecast": 0,
+      "fact_marketing": 336,
+      "fact_planificacion_programa": 647,
+      "fact_rendimiento_academico": 1392,
+      "fact_rentabilidad": 95,
+      "fact_situacion_financiera": 1030,
+      "fact_techo_convenio": 1,
+      "log_auditoria_nlp": 0,
+      "log_inconsistencias": 2801,
+      "log_pipeline_ingesta": 72,
+      "lote": 1,
+      "notifications": 6,
+      "powerbi_informe_version": 2,
+      "ref_metas_gestion": 0,
+      "schema_migrations": 16,
+      "staging_registros_crudos": 50,
+      "stg_entidad_no_resuelta": 2062,
+      "users": 5
+    },
+    "stg_desglose": [
+      {
+        "tipo_entidad": "RUIDO",
+        "motivo": "FILA_EVALUACION_SIN_RESPUESTAS",
+        "n": 1076
+      },
+      {
+        "tipo_entidad": "RUIDO",
+        "motivo": "FILA_ACADEMICA_SIN_ESTUDIANTE",
+        "n": 764
+      },
+      {
+        "tipo_entidad": "RUIDO",
+        "motivo": "FILA_SIN_CABECERAS",
+        "n": 107
+      },
+      {
+        "tipo_entidad": "ESTUDIANTE",
+        "motivo": "BAJA_CONFIANZA_IA",
+        "n": 56
+      },
+      {
+        "tipo_entidad": "RUIDO",
+        "motivo": "FILA_AGREGADA_SIN_CATEGORIA_MES",
+        "n": 24
+      },
+      {
+        "tipo_entidad": "RUIDO",
+        "motivo": "FILA_FINANCIERA_SIN_ESTUDIANTE",
+        "n": 21
+      },
+      {
+        "tipo_entidad": "RUIDO",
+        "motivo": "FILA_SIN_ENTIDAD",
+        "n": 14
+      }
+    ]
+  },
+  "lote_1387_nuevo": {
+    "kpis": {
+      "KPI_10a_media_todas_las_entidades": 0.9538,
+      "KPI_10a_n_entidades": 11560,
+      "KPI_10b_media_solo_entidades_BETO": 0.8953,
+      "KPI_10b_n_entidades": 3382,
+      "KPI_10_previo_media_por_registro": 0.9557,
+      "KPI_11_directo_sin_regla_personas_pct": 99.78,
+      "KPI_11_directo_con_regla_personas_pct": 97.76
+    },
+    "distribucion_bandas_sin_regla_personas": {
+      "directo": {
+        "conteo": 1384,
+        "porcentaje": 99.78
+      },
+      "hitl": {
+        "conteo": 3,
+        "porcentaje": 0.22
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      }
+    },
+    "distribucion_bandas_con_regla_personas": {
+      "directo": {
+        "conteo": 1356,
+        "porcentaje": 97.76
+      },
+      "hitl": {
+        "conteo": 31,
+        "porcentaje": 2.24
+      },
+      "staging": {
+        "conteo": 0,
+        "porcentaje": 0.0
+      }
+    }
+  },
+  "delta": {
+    "bandeja_casos": 24,
+    "bandeja_casos_factor": 1.04,
+    "casos_manuales": 24,
+    "casos_manuales_factor": 1.56,
+    "kpi18": 24.0
+  },
+  "muestra_2000_lineas_bandas_nuevo": {
+    "directa (>=0.85)": 50
+  },
+  "ejemplos_baja_confianza": []
+}

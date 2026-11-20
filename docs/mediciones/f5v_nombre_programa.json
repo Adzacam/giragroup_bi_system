@@ -1,0 +1,138 @@
+{
+ "tarea": "V-5",
+ "fecha": "2026-11-19",
+ "fuente_real_staging": "beto_pg_tmpfs/giragroup_db NO disponible: el contenedor estaba Exited y su tmpfs vacío (sin base giragroup_db); no se restauró ni se cargó nada (write fuera de alcance de esta tarea)",
+ "metodo_sustituto": "solo lectura: IngestionService.serializar_bloque_con_encabezados (backend/services/ingestion_service.py:460-499) sobre las primeras 21 filas de TBL_INSCRITOS.xlsx, la misma serialización que se guarda en staging_registros_crudos.texto_plano; comparado contra la celda NOMBRE DEL PROGRAMA (columna C) de las filas 2 a 21",
+ "filas_comparadas": 20,
+ "coincidencias": 20,
+ "veredicto_simulado": "dato_original",
+ "funcion_responsable_corte": null,
+ "funciones_revisadas_sin_truncado": [
+  "IngestionService.serializar_bloque_con_encabezados (ingestion_service.py:460-499)",
+  "texto_preparado_service.py:57-58 (solo fila_original y oracion_beto)"
+ ],
+ "veredicto_staging_real": "no verificado",
+ "nota_H3": "La elipsis de la fila 1 de H3 no se reproduce con la serialización; el 88 completo llega a la lectura. Falta comparar con staging real para cerrar el veredicto",
+ "detalle": [
+  {
+   "fila_excel": 2,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 3,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 4,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 5,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 6,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 7,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 8,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 9,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 10,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 11,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 12,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 13,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 14,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 15,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 16,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 17,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 18,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 19,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 20,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  },
+  {
+   "fila_excel": 21,
+   "len_xlsx": 88,
+   "len_texto_simulado": 88,
+   "igual": true
+  }
+ ]
+}

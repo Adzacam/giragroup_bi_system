@@ -1,252 +1,252 @@
 {
-  "etiqueta": "F3V, final",
-  "tarea": "V-8 (SFV unificada final)",
+  "etiqueta": "F5C/F5V, final",
+  "tarea": "C-4(f) (SFV actualizada)",
   "entradas": [
     {
       "id": "A-01-TOTAL",
       "valor": 1387,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "lote_evaluado.total_registros"
     },
     {
       "id": "A-02-DIRECTO",
-      "valor": 1360,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "valor": 1356,
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "distribucion_bandas_con_regla_personas.directo.conteo"
     },
     {
       "id": "A-02-DIRECTO-PCT",
-      "valor": 98.05,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "valor": 97.76,
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "distribucion_bandas_con_regla_personas.directo.porcentaje"
     },
     {
       "id": "A-03-HITL",
-      "valor": 27,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "valor": 31,
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "distribucion_bandas_con_regla_personas.hitl.conteo"
     },
     {
       "id": "A-03-HITL-PCT",
-      "valor": 1.95,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "valor": 2.24,
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "distribucion_bandas_con_regla_personas.hitl.porcentaje"
     },
     {
       "id": "A-04-STAGING",
       "valor": 0,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "distribucion_bandas_con_regla_personas.staging.conteo"
     },
     {
       "id": "A-05-DIRECTO-SIN-REG",
       "valor": 1384,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "distribucion_bandas_sin_regla_personas.directo.conteo"
     },
     {
       "id": "A-05-DIRECTO-SIN-REG-PCT",
       "valor": 99.78,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "distribucion_bandas_sin_regla_personas.directo.porcentaje"
     },
     {
       "id": "A-06-MOVIDOS-HITL",
-      "valor": 24,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "valor": 28,
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "registros_directo_movidos_a_hitl_por_persona_sin_resolver"
     },
     {
       "id": "A-07-PERSONAS",
-      "valor": 1748,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "valor": 1744,
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "personas.total"
     },
     {
       "id": "A-08-PERSONAS-CI",
-      "valor": 1037,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "valor": 1033,
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "personas.resueltas_CI_EXACTA"
     },
     {
       "id": "A-09-PERSONAS-FUZZY",
       "valor": 182,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "personas.resueltas_FUZZY"
     },
     {
       "id": "A-10-PERSONAS-C",
       "valor": 524,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "personas.nuevos_estado_C"
     },
     {
       "id": "A-11-PERSONAS-HITL",
       "valor": 5,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "personas.sin_coincidencia_HITL"
     },
     {
       "id": "A-12-CI-EXACTA",
       "valor": 1850,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "conteos_fuente_resolucion.CI_EXACTA"
     },
     {
       "id": "A-13-ENCABEZADO",
       "valor": 3079,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "conteos_fuente_resolucion.ENCABEZADO"
     },
     {
       "id": "A-14-REGEX",
       "valor": 3103,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "conteos_fuente_resolucion.REGEX"
     },
     {
       "id": "A-15-BETO",
       "valor": 3382,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "conteos_fuente_resolucion.BETO"
     },
     {
       "id": "A-16-FUZZY",
       "valor": 146,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "conteos_fuente_resolucion.FUZZY"
     },
     {
       "id": "A-17-KPI10A",
       "valor": 0.9538,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "kpis.KPI_10a_media_todas_las_entidades"
     },
     {
       "id": "A-18-KPI10B",
       "valor": 0.8953,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "kpis.KPI_10b_media_solo_entidades_BETO"
     },
     {
       "id": "A-19-KPI11",
-      "valor": 98.05,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "valor": 97.76,
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "kpis.KPI_11_directo_con_regla_personas_pct"
     },
     {
       "id": "A-20-ARCHIVOS",
       "valor": 10,
-      "archivo": "docs/mediciones/f3v_base.json",
+      "archivo": "docs/mediciones/f5c_base.json",
       "ruta": "carga.archivos_exitosos"
     },
     {
       "id": "A-20-REGISTROS",
-      "valor": 11307,
-      "archivo": "docs/mediciones/f3v_base.json",
+      "valor": 14343,
+      "archivo": "docs/mediciones/f5c_base.json",
       "ruta": "carga.registros_detectados"
     },
     {
       "id": "A-20-LINEAS-BETO",
-      "valor": 11372,
-      "archivo": "docs/mediciones/f3v_base.json",
-      "ruta": "etapas_s.lineas_leidas_beto"
+      "valor": 14408,
+      "archivo": "docs/mediciones/f5c_base.json",
+      "ruta": "corridas.0.etapas_s.lineas_leidas_beto"
     },
     {
       "id": "A-21-HECHOS-CICLO",
-      "valor": 109256,
-      "archivo": "docs/mediciones/f3v_base.json",
+      "valor": 168013,
+      "archivo": "docs/mediciones/f5c_base.json",
       "ruta": "consolidacion.inserted_dw"
     },
     {
       "id": "A-22-BANDEJA-CASOS",
-      "valor": 676,
-      "archivo": "docs/mediciones/f3v_base.json.huella.json",
+      "valor": 700,
+      "archivo": "docs/mediciones/f5c_base.json.huella.json",
       "ruta": "bandeja.casos"
     },
     {
       "id": "A-22-BANDEJA-GRUPOS",
-      "valor": 17,
-      "archivo": "docs/mediciones/f3v_base.json.huella.json",
+      "valor": 10,
+      "archivo": "docs/mediciones/f5c_base.json.huella.json",
       "ruta": "bandeja.grupos"
     },
     {
       "id": "A-26-W-MEDIDO",
       "valor": 2.5,
-      "archivo": "docs/mediciones/f3v_klm.json",
+      "archivo": "docs/mediciones/f5c_klm.json",
       "ruta": "W_medido_p95_s",
       "nota": "max(p95 review-tray/grupos = 35.0 ms, p95 review-tray/approve-group = 2500.0 ms) en docs/mediciones/f3v_locust.json::por_endpoint[\"POST /api/v1/dataops/review-tray/approve-group\"].p95_ms; agregado.p95_ms = 34.0 ms"
     },
     {
       "id": "A-26-KLM-W-MEDIDO",
-      "valor": 320.6,
-      "archivo": "docs/mediciones/f3v_klm.json",
+      "valor": 474.0,
+      "archivo": "docs/mediciones/f5c_klm.json",
       "ruta": "W_medido.klm_s"
     },
     {
       "id": "A-27-VACIA-KLM-MEDIDO",
-      "valor": 744.89,
-      "archivo": "docs/mediciones/f3v_b7_corridas.json",
+      "valor": 1904.98,
+      "archivo": "docs/mediciones/f5c_b7_corridas.json",
       "ruta": "resumen.vacia_mas_klm_s"
     },
     {
       "id": "A-28-LLENA-KLM-MEDIDO",
-      "valor": 357.13,
-      "archivo": "docs/mediciones/f3v_b7_corridas.json",
+      "valor": 1231.46,
+      "archivo": "docs/mediciones/f5c_b7_corridas.json",
       "ruta": "resumen.llena_mas_klm_s"
     },
     {
       "id": "A-29-KLM-W0",
-      "valor": 200.6,
-      "archivo": "docs/mediciones/f3v_klm.json",
+      "valor": 294.0,
+      "archivo": "docs/mediciones/f5c_klm.json",
       "ruta": "W_0.klm_s"
     },
     {
       "id": "A-29-KLM-W10",
-      "valor": 680.6,
-      "archivo": "docs/mediciones/f3v_klm.json",
+      "valor": 1014.0,
+      "archivo": "docs/mediciones/f5c_klm.json",
       "ruta": "W_10.klm_s"
     },
     {
       "id": "B-01-EXCEP-SIN-CTRL",
       "valor": 0,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "excepciones.habrian_ingresado_al_dw_sin_control"
     },
     {
       "id": "B-02-EXCEP-ENTIDADES",
-      "valor": 550,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "valor": 554,
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "excepciones.total_entidades"
     },
     {
       "id": "B-03-LIKERT",
       "valor": 283,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "excepciones.por_regla.ETIQUETA_LIKERT.entidades"
     },
     {
       "id": "B-04-CORREO",
       "valor": 154,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "excepciones.por_regla.CORREO_NO_ES_NOMBRE.entidades"
     },
     {
       "id": "B-05-COMENTARIO",
       "valor": 87,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "excepciones.por_regla.COLUMNA_DE_COMENTARIO.entidades"
     },
     {
       "id": "B-06-PER-SIN-FORMA",
-      "valor": 21,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "valor": 25,
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "excepciones.por_regla.PER_SIN_FORMA_NOMBRE.entidades"
     },
     {
       "id": "B-07-PER-SIN-COINC",
       "valor": 5,
-      "archivo": "docs/mediciones/f3v_lote_1387_r1.json",
+      "archivo": "docs/mediciones/f5c_lote_1387_r1.json",
       "ruta": "excepciones.por_regla.PERSONA_SIN_COINCIDENCIA.entidades"
     },
     {
@@ -395,38 +395,38 @@
     },
     {
       "id": "D-01-PYTEST-COL",
-      "valor": 875,
-      "archivo": "docs/mediciones/f3v_pruebas.json",
+      "valor": 943,
+      "archivo": "docs/mediciones/f5c_pruebas.json",
       "ruta": "colectadas"
     },
     {
       "id": "D-02-PYTEST-PASS",
-      "valor": 856,
-      "archivo": "docs/mediciones/f3v_pruebas.json",
+      "valor": 924,
+      "archivo": "docs/mediciones/f5c_pruebas.json",
       "ruta": "passed"
     },
     {
       "id": "D-03-PYTEST-FAIL",
       "valor": 0,
-      "archivo": "docs/mediciones/f3v_pruebas.json",
+      "archivo": "docs/mediciones/f5c_pruebas.json",
       "ruta": "failed"
     },
     {
       "id": "D-03-PYTEST-SKIP",
       "valor": 12,
-      "archivo": "docs/mediciones/f3v_pruebas.json",
+      "archivo": "docs/mediciones/f5c_pruebas.json",
       "ruta": "skipped"
     },
     {
       "id": "D-03-PYTEST-XFAIL",
       "valor": 7,
-      "archivo": "docs/mediciones/f3v_pruebas.json",
+      "archivo": "docs/mediciones/f5c_pruebas.json",
       "ruta": "xfailed"
     },
     {
       "id": "D-04-PYTEST-COV",
-      "valor": 72.42,
-      "archivo": "docs/mediciones/f3v_pruebas.json",
+      "valor": 72.69,
+      "archivo": "docs/mediciones/f5c_pruebas.json",
       "ruta": "cobertura_total.percent_covered"
     },
     {
@@ -797,68 +797,68 @@
     },
     {
       "id": "A-30-FACT-EVALUACION-DOCENTE",
-      "valor": 104939,
-      "archivo": "docs/mediciones/f3v_base.json",
-      "ruta": "dw_despues.fact_evaluacion_docente"
+      "valor": 163182,
+      "archivo": "docs/mediciones/f5c_base.json",
+      "ruta": "corridas.0.dw_despues.fact_evaluacion_docente"
     },
     {
       "id": "A-30-FACT-COSTO-PROGRAMA",
       "valor": 1371,
-      "archivo": "docs/mediciones/f3v_base.json",
-      "ruta": "dw_despues.fact_costo_programa"
+      "archivo": "docs/mediciones/f5c_base.json",
+      "ruta": "corridas.0.dw_despues.fact_costo_programa"
     },
     {
       "id": "A-30-FACT-RENDIMIENTO-ACADEMICO",
       "valor": 1392,
-      "archivo": "docs/mediciones/f3v_base.json",
-      "ruta": "dw_despues.fact_rendimiento_academico"
+      "archivo": "docs/mediciones/f5c_base.json",
+      "ruta": "corridas.0.dw_despues.fact_rendimiento_academico"
     },
     {
       "id": "A-30-FACT-SITUACION-FINANCIERA",
-      "valor": 725,
-      "archivo": "docs/mediciones/f3v_base.json",
-      "ruta": "dw_despues.fact_situacion_financiera"
+      "valor": 1030,
+      "archivo": "docs/mediciones/f5c_base.json",
+      "ruta": "corridas.0.dw_despues.fact_situacion_financiera"
     },
     {
       "id": "A-30-FACT-MARKETING",
-      "valor": 302,
-      "archivo": "docs/mediciones/f3v_base.json",
-      "ruta": "dw_despues.fact_marketing"
+      "valor": 336,
+      "archivo": "docs/mediciones/f5c_base.json",
+      "ruta": "corridas.0.dw_despues.fact_marketing"
     },
     {
       "id": "A-30-FACT-RENTABILIDAD",
       "valor": 95,
-      "archivo": "docs/mediciones/f3v_base.json",
-      "ruta": "dw_despues.fact_rentabilidad"
+      "archivo": "docs/mediciones/f5c_base.json",
+      "ruta": "corridas.0.dw_despues.fact_rentabilidad"
     },
     {
       "id": "A-30-FACT-TECHO-CONVENIO",
       "valor": 1,
-      "archivo": "docs/mediciones/f3v_base.json",
-      "ruta": "dw_despues.fact_techo_convenio"
+      "archivo": "docs/mediciones/f5c_base.json",
+      "ruta": "corridas.0.dw_despues.fact_techo_convenio"
     },
     {
       "id": "A-30-DIM-ORIGEN-DOCUMENTAL",
       "valor": 10,
-      "archivo": "docs/mediciones/f3v_base.json",
-      "ruta": "dw_despues.dim_origen_documental"
+      "archivo": "docs/mediciones/f5c_base.json",
+      "ruta": "corridas.0.dw_despues.dim_origen_documental"
     },
     {
       "id": "A-23-MAQ-VACIA",
-      "valor": 424.29,
-      "archivo": "docs/mediciones/f3v_b7_corridas.json",
+      "valor": 1430.98,
+      "archivo": "docs/mediciones/f5c_b7_corridas.json",
       "ruta": "resumen.vacia_maquina_s.media"
     },
     {
       "id": "A-24-MAQ-LLENA",
-      "valor": 36.53,
-      "archivo": "docs/mediciones/f3v_b7_corridas.json",
+      "valor": 757.46,
+      "archivo": "docs/mediciones/f5c_b7_corridas.json",
       "ruta": "resumen.llena_maquina_s.media"
     },
     {
       "id": "A-25-N-CORRIDAS",
       "valor": 3,
-      "archivo": "docs/mediciones/f3v_b7_corridas.json",
+      "archivo": "docs/mediciones/f5c_b7_corridas.json",
       "ruta": "resumen.vacia_maquina_s.n"
     },
     {
@@ -899,14 +899,14 @@
     },
     {
       "id": "D-04-PYTEST-SENT",
-      "valor": 15694,
-      "archivo": "docs/mediciones/f3v_pruebas.json",
+      "valor": 15869,
+      "archivo": "docs/mediciones/f5c_pruebas.json",
       "ruta": "cobertura_total.num_statements"
     },
     {
       "id": "D-04-PYTEST-CUB",
-      "valor": 11366,
-      "archivo": "docs/mediciones/f3v_pruebas.json",
+      "valor": 11535,
+      "archivo": "docs/mediciones/f5c_pruebas.json",
       "ruta": "cobertura_total.covered_lines"
     },
     {
@@ -983,56 +983,56 @@
     },
     {
       "id": "V-01-BASE-HECHOS",
-      "valor": 109256,
-      "archivo": "docs/mediciones/f3v_base.json",
+      "valor": 168013,
+      "archivo": "docs/mediciones/f5c_base.json",
       "ruta": "consolidacion.inserted_dw"
     },
     {
       "id": "V-02-B7-VACIA-MEDIA",
-      "valor": 424.29,
-      "archivo": "docs/mediciones/f3v_b7_corridas.json",
+      "valor": 1430.98,
+      "archivo": "docs/mediciones/f5c_b7_corridas.json",
       "ruta": "resumen.vacia_maquina_s.media"
     },
     {
       "id": "V-03-B7-LLENA-MEDIA",
-      "valor": 36.53,
-      "archivo": "docs/mediciones/f3v_b7_corridas.json",
+      "valor": 757.46,
+      "archivo": "docs/mediciones/f5c_b7_corridas.json",
       "ruta": "resumen.llena_maquina_s.media"
     },
     {
       "id": "V-04-B7-N",
       "valor": 3,
-      "archivo": "docs/mediciones/f3v_b7_corridas.json",
+      "archivo": "docs/mediciones/f5c_b7_corridas.json",
       "ruta": "resumen.vacia_maquina_s.n"
     },
     {
       "id": "V-05-KLM-W-MED",
-      "valor": 320.6,
-      "archivo": "docs/mediciones/f3v_klm.json",
+      "valor": 474.0,
+      "archivo": "docs/mediciones/f5c_klm.json",
       "ruta": "W_medido.klm_s"
     },
     {
       "id": "V-06-VACIA-MAS-KLM",
-      "valor": 744.89,
-      "archivo": "docs/mediciones/f3v_b7_corridas.json",
+      "valor": 1904.98,
+      "archivo": "docs/mediciones/f5c_b7_corridas.json",
       "ruta": "resumen.vacia_mas_klm_s"
     },
     {
       "id": "V-07-LLENA-MAS-KLM",
-      "valor": 357.13,
-      "archivo": "docs/mediciones/f3v_b7_corridas.json",
+      "valor": 1231.46,
+      "archivo": "docs/mediciones/f5c_b7_corridas.json",
       "ruta": "resumen.llena_mas_klm_s"
     },
     {
       "id": "V-08-PYTEST-PASSED",
-      "valor": 856,
-      "archivo": "docs/mediciones/f3v_pruebas.json",
+      "valor": 924,
+      "archivo": "docs/mediciones/f5c_pruebas.json",
       "ruta": "passed"
     },
     {
       "id": "V-09-PYTEST-COV",
-      "valor": 72.42,
-      "archivo": "docs/mediciones/f3v_pruebas.json",
+      "valor": 72.69,
+      "archivo": "docs/mediciones/f5c_pruebas.json",
       "ruta": "cobertura_total.percent_covered"
     },
     {
@@ -1050,25 +1050,25 @@
     {
       "id": "V-12-COMPLETO-PLAN",
       "valor": 1663,
-      "archivo": "docs/mediciones/f3v_completo.json",
+      "archivo": "docs/mediciones/f5v_completo.json",
       "ruta": "conteos.fact_planificacion_programa"
     },
     {
       "id": "V-13-COMPLETO-META",
       "valor": 58,
-      "archivo": "docs/mediciones/f3v_completo.json",
+      "archivo": "docs/mediciones/f5v_completo.json",
       "ruta": "conteos.dim_meta"
     },
     {
       "id": "V-14-KPI23-2025",
       "valor": 99.77,
-      "archivo": "docs/mediciones/f3v_kpi23_serie.json",
+      "archivo": "docs/mediciones/f5v_kpi23_serie.json",
       "ruta": "kpi23_por_gestion.2.valor"
     },
     {
       "id": "V-15-KPI23-2026",
       "valor": 46.62,
-      "archivo": "docs/mediciones/f3v_kpi23_serie.json",
+      "archivo": "docs/mediciones/f5v_kpi23_serie.json",
       "ruta": "kpi23_por_gestion.3.valor"
     },
     {

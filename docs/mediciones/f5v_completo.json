@@ -1,0 +1,1032 @@
+{
+  "tarea": "V-7(f)",
+  "base_datos": "beto_pg_tmpfs/f5v_completo",
+  "tiempo_total_seg": 3987.41,
+  "por_libro": [
+    {
+      "archivo": "TBL_INSCRITOS.xlsx",
+      "tipo_fuente": "MARKETING",
+      "id_documento": 1,
+      "inserted_dw": 15196,
+      "descartados_ruido": 0,
+      "sent_hitl": 0
+    },
+    {
+      "archivo": "BD Cobranzas.xlsx",
+      "tipo_fuente": "COBRANZA",
+      "id_documento": 2,
+      "inserted_dw": 15474,
+      "descartados_ruido": 560,
+      "sent_hitl": 0
+    },
+    {
+      "archivo": "BD Techos.xlsx",
+      "tipo_fuente": "TECHOS",
+      "id_documento": 3,
+      "inserted_dw": 207,
+      "descartados_ruido": 0,
+      "sent_hitl": 0
+    },
+    {
+      "archivo": "EJECUTADO VS META.xlsx",
+      "tipo_fuente": "RENTABILIDAD",
+      "id_documento": 4,
+      "inserted_dw": 95,
+      "descartados_ruido": 12,
+      "sent_hitl": 0
+    },
+    {
+      "archivo": "BD Egresos.xlsx",
+      "tipo_fuente": "EGRESOS",
+      "id_documento": 5,
+      "inserted_dw": 1445,
+      "descartados_ruido": 12,
+      "sent_hitl": 0
+    },
+    {
+      "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+      "tipo_fuente": "PLANIFICACION",
+      "id_documento": 6,
+      "inserted_dw": 1721,
+      "descartados_ruido": 0,
+      "sent_hitl": 0
+    },
+    {
+      "archivo": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+      "tipo_fuente": "EVALUACION_DOCENTE",
+      "id_documento": 7,
+      "inserted_dw": 206729,
+      "descartados_ruido": 128,
+      "sent_hitl": 0
+    },
+    {
+      "archivo": "Evaluación Docente y Unifranz.xlsx",
+      "tipo_fuente": "EVALUACION_DOCENTE",
+      "id_documento": 8,
+      "inserted_dw": 47122,
+      "descartados_ruido": 10582,
+      "sent_hitl": 4240
+    },
+    {
+      "archivo": "Experiencia Docente 2.0.xlsx",
+      "tipo_fuente": "ACTA",
+      "id_documento": 9,
+      "inserted_dw": 503168,
+      "descartados_ruido": 1066,
+      "sent_hitl": 0
+    },
+    {
+      "archivo": "Base centralizada Académica ARCA (1).xlsx",
+      "tipo_fuente": "ACTA",
+      "id_documento": 10,
+      "inserted_dw": 26827,
+      "descartados_ruido": 835,
+      "sent_hitl": 3726
+    }
+  ],
+  "conteos": {
+    "fact_rendimiento_academico": 25108,
+    "fact_situacion_financiera": 10736,
+    "fact_evaluacion_docente": 715217,
+    "fact_marketing": 8922,
+    "fact_rentabilidad": 95,
+    "fact_costo_programa": 1371,
+    "fact_techo_convenio": 206,
+    "fact_planificacion_programa": 1663,
+    "fact_cobranzas_proyectadas": 0,
+    "fact_forecast": 0,
+    "dim_estudiante": 15390,
+    "dim_docente": 638,
+    "dim_modulo": 3815,
+    "dim_tiempo": 2230,
+    "dim_origen_documental": 10,
+    "dim_meta": 58,
+    "dim_categoria_financiera": 15,
+    "bridge_modulo_docente": 1690,
+    "carga_fila_origen": 1635976,
+    "stg_entidad_no_resuelta": 10781,
+    "log_inconsistencias": 14530
+  },
+  "scorecard_por_gestion": [
+    {
+      "gestion": 2023,
+      "codigo": "KPI-01",
+      "nombre": "Ticket promedio por estudiante",
+      "perspectiva": "FINANCIERA",
+      "unidad": "BS",
+      "valor": 2882.5,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-02",
+      "nombre": "Cumplimiento de meta del último mes",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 100.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-03",
+      "nombre": "Cumplimiento de meta a la fecha",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 100.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-13",
+      "nombre": "Avance sobre la meta anual",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 100.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-14",
+      "nombre": "Brecha a la meta anual",
+      "perspectiva": "FINANCIERA",
+      "unidad": "BS",
+      "valor": null,
+      "meta": 0.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-12",
+      "nombre": "Variación interanual de ingresos",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 10.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-05",
+      "nombre": "Estudiantes en mora",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 100.0,
+      "meta": 10.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-15",
+      "nombre": "Cartera vencida",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 100.0,
+      "meta": 10.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-04",
+      "nombre": "Estudiantes con riesgo financiero",
+      "perspectiva": "FINANCIERA",
+      "unidad": "CANT",
+      "valor": 0.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-21",
+      "nombre": "Matrícula efectiva",
+      "perspectiva": "CLIENTES",
+      "unidad": "CANT",
+      "valor": null,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-22",
+      "nombre": "Inscritos por convenio",
+      "perspectiva": "CLIENTES",
+      "unidad": "CANT",
+      "valor": 93.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-06",
+      "nombre": "Conversión de admisiones",
+      "perspectiva": "CLIENTES",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 10.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-20",
+      "nombre": "Satisfacción institucional",
+      "perspectiva": "CLIENTES",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 85.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-16",
+      "nombre": "Tasa de deserción",
+      "perspectiva": "CLIENTES",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 5.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-10",
+      "nombre": "Confianza media de extracción",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 85.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-11",
+      "nombre": "Automatización directa",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 85.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-18",
+      "nombre": "Pendientes de revisión humana",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "CANT",
+      "valor": null,
+      "meta": 0.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-07",
+      "nombre": "Promedio de calificaciones",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "PTS",
+      "valor": null,
+      "meta": 75.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-08",
+      "nombre": "Tasa de aprobación",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 85.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-19",
+      "nombre": "Satisfacción con los docentes",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 85.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-09",
+      "nombre": "Estudiantes en riesgo académico",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "CANT",
+      "valor": null,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-17",
+      "nombre": "Estudiantes en prioridad crítica",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "CANT",
+      "valor": null,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2023,
+      "codigo": "KPI-23",
+      "nombre": "Cumplimiento de inicios planificados",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 85.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-01",
+      "nombre": "Ticket promedio por estudiante",
+      "perspectiva": "FINANCIERA",
+      "unidad": "BS",
+      "valor": 1934.28,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-02",
+      "nombre": "Cumplimiento de meta del último mes",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 6.25,
+      "meta": 100.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-03",
+      "nombre": "Cumplimiento de meta a la fecha",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 102.26,
+      "meta": 100.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-13",
+      "nombre": "Avance sobre la meta anual",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 102.26,
+      "meta": 100.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-14",
+      "nombre": "Brecha a la meta anual",
+      "perspectiva": "FINANCIERA",
+      "unidad": "BS",
+      "valor": 0.0,
+      "meta": 0.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-12",
+      "nombre": "Variación interanual de ingresos",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 17.6,
+      "meta": 10.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-05",
+      "nombre": "Estudiantes en mora",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 94.3,
+      "meta": 10.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-15",
+      "nombre": "Cartera vencida",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 85.58,
+      "meta": 10.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-04",
+      "nombre": "Estudiantes con riesgo financiero",
+      "perspectiva": "FINANCIERA",
+      "unidad": "CANT",
+      "valor": 276.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-21",
+      "nombre": "Matrícula efectiva",
+      "perspectiva": "CLIENTES",
+      "unidad": "CANT",
+      "valor": 3759.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-22",
+      "nombre": "Inscritos por convenio",
+      "perspectiva": "CLIENTES",
+      "unidad": "CANT",
+      "valor": 1631.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-06",
+      "nombre": "Conversión de admisiones",
+      "perspectiva": "CLIENTES",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 10.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-20",
+      "nombre": "Satisfacción institucional",
+      "perspectiva": "CLIENTES",
+      "unidad": "PCT",
+      "valor": 22.0,
+      "meta": 85.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-16",
+      "nombre": "Tasa de deserción",
+      "perspectiva": "CLIENTES",
+      "unidad": "PCT",
+      "valor": 0.0,
+      "meta": 5.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-10",
+      "nombre": "Confianza media de extracción",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "PCT",
+      "valor": 84.09,
+      "meta": 85.0,
+      "semaforo": "AMBAR"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-11",
+      "nombre": "Automatización directa",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "PCT",
+      "valor": 54.38,
+      "meta": 85.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-18",
+      "nombre": "Pendientes de revisión humana",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "CANT",
+      "valor": null,
+      "meta": 0.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-07",
+      "nombre": "Promedio de calificaciones",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "PTS",
+      "valor": 79.04,
+      "meta": 75.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-08",
+      "nombre": "Tasa de aprobación",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "PCT",
+      "valor": 85.26,
+      "meta": 85.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-19",
+      "nombre": "Satisfacción con los docentes",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "PCT",
+      "valor": 58.61,
+      "meta": 85.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-09",
+      "nombre": "Estudiantes en riesgo académico",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "CANT",
+      "valor": 778.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-17",
+      "nombre": "Estudiantes en prioridad crítica",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "CANT",
+      "valor": 0.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2024,
+      "codigo": "KPI-23",
+      "nombre": "Cumplimiento de inicios planificados",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "PCT",
+      "valor": 100.0,
+      "meta": 85.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-01",
+      "nombre": "Ticket promedio por estudiante",
+      "perspectiva": "FINANCIERA",
+      "unidad": "BS",
+      "valor": 3655.85,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-02",
+      "nombre": "Cumplimiento de meta del último mes",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 147.83,
+      "meta": 100.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-03",
+      "nombre": "Cumplimiento de meta a la fecha",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 101.72,
+      "meta": 100.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-13",
+      "nombre": "Avance sobre la meta anual",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 101.72,
+      "meta": 100.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-14",
+      "nombre": "Brecha a la meta anual",
+      "perspectiva": "FINANCIERA",
+      "unidad": "BS",
+      "valor": 0.0,
+      "meta": 0.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-12",
+      "nombre": "Variación interanual de ingresos",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 24.74,
+      "meta": 10.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-05",
+      "nombre": "Estudiantes en mora",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 53.11,
+      "meta": 10.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-15",
+      "nombre": "Cartera vencida",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 87.38,
+      "meta": 10.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-04",
+      "nombre": "Estudiantes con riesgo financiero",
+      "perspectiva": "FINANCIERA",
+      "unidad": "CANT",
+      "valor": 618.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-21",
+      "nombre": "Matrícula efectiva",
+      "perspectiva": "CLIENTES",
+      "unidad": "CANT",
+      "valor": 3571.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-22",
+      "nombre": "Inscritos por convenio",
+      "perspectiva": "CLIENTES",
+      "unidad": "CANT",
+      "valor": 2609.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-06",
+      "nombre": "Conversión de admisiones",
+      "perspectiva": "CLIENTES",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 10.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-20",
+      "nombre": "Satisfacción institucional",
+      "perspectiva": "CLIENTES",
+      "unidad": "PCT",
+      "valor": 12.58,
+      "meta": 85.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-16",
+      "nombre": "Tasa de deserción",
+      "perspectiva": "CLIENTES",
+      "unidad": "PCT",
+      "valor": 0.0,
+      "meta": 5.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-10",
+      "nombre": "Confianza media de extracción",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "PCT",
+      "valor": 83.92,
+      "meta": 85.0,
+      "semaforo": "AMBAR"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-11",
+      "nombre": "Automatización directa",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "PCT",
+      "valor": 51.5,
+      "meta": 85.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-18",
+      "nombre": "Pendientes de revisión humana",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "CANT",
+      "valor": null,
+      "meta": 0.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-07",
+      "nombre": "Promedio de calificaciones",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "PTS",
+      "valor": 78.99,
+      "meta": 75.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-08",
+      "nombre": "Tasa de aprobación",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "PCT",
+      "valor": 85.62,
+      "meta": 85.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-19",
+      "nombre": "Satisfacción con los docentes",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "PCT",
+      "valor": 66.77,
+      "meta": 85.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-09",
+      "nombre": "Estudiantes en riesgo académico",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "CANT",
+      "valor": 607.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-17",
+      "nombre": "Estudiantes en prioridad crítica",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "CANT",
+      "valor": 79.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2025,
+      "codigo": "KPI-23",
+      "nombre": "Cumplimiento de inicios planificados",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "PCT",
+      "valor": 99.77,
+      "meta": 85.0,
+      "semaforo": "VERDE"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-01",
+      "nombre": "Ticket promedio por estudiante",
+      "perspectiva": "FINANCIERA",
+      "unidad": "BS",
+      "valor": 2957.43,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-02",
+      "nombre": "Cumplimiento de meta del último mes",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 15.28,
+      "meta": 100.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-03",
+      "nombre": "Cumplimiento de meta a la fecha",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 85.76,
+      "meta": 100.0,
+      "semaforo": "AMBAR"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-13",
+      "nombre": "Avance sobre la meta anual",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 31.69,
+      "meta": 100.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-14",
+      "nombre": "Brecha a la meta anual",
+      "perspectiva": "FINANCIERA",
+      "unidad": "BS",
+      "valor": 12278356.22,
+      "meta": 0.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-12",
+      "nombre": "Variación interanual de ingresos",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 5.52,
+      "meta": 10.0,
+      "semaforo": "AMBAR"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-05",
+      "nombre": "Estudiantes en mora",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 75.33,
+      "meta": 10.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-15",
+      "nombre": "Cartera vencida",
+      "perspectiva": "FINANCIERA",
+      "unidad": "PCT",
+      "valor": 99.23,
+      "meta": 10.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-04",
+      "nombre": "Estudiantes con riesgo financiero",
+      "perspectiva": "FINANCIERA",
+      "unidad": "CANT",
+      "valor": 864.0,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-21",
+      "nombre": "Matrícula efectiva",
+      "perspectiva": "CLIENTES",
+      "unidad": "CANT",
+      "valor": null,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-22",
+      "nombre": "Inscritos por convenio",
+      "perspectiva": "CLIENTES",
+      "unidad": "CANT",
+      "valor": null,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-06",
+      "nombre": "Conversión de admisiones",
+      "perspectiva": "CLIENTES",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 10.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-20",
+      "nombre": "Satisfacción institucional",
+      "perspectiva": "CLIENTES",
+      "unidad": "PCT",
+      "valor": 70.99,
+      "meta": 85.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-16",
+      "nombre": "Tasa de deserción",
+      "perspectiva": "CLIENTES",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 5.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-10",
+      "nombre": "Confianza media de extracción",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 85.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-11",
+      "nombre": "Automatización directa",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 85.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-18",
+      "nombre": "Pendientes de revisión humana",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "CANT",
+      "valor": 1364.0,
+      "meta": 0.0,
+      "semaforo": "ROJO"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-07",
+      "nombre": "Promedio de calificaciones",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "PTS",
+      "valor": null,
+      "meta": 75.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-08",
+      "nombre": "Tasa de aprobación",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "PCT",
+      "valor": null,
+      "meta": 85.0,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-19",
+      "nombre": "Satisfacción con los docentes",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "PCT",
+      "valor": 82.35,
+      "meta": 85.0,
+      "semaforo": "AMBAR"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-09",
+      "nombre": "Estudiantes en riesgo académico",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "CANT",
+      "valor": null,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-17",
+      "nombre": "Estudiantes en prioridad crítica",
+      "perspectiva": "APRENDIZAJE",
+      "unidad": "CANT",
+      "valor": null,
+      "meta": null,
+      "semaforo": "SIN_UMBRAL"
+    },
+    {
+      "gestion": 2026,
+      "codigo": "KPI-23",
+      "nombre": "Cumplimiento de inicios planificados",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "unidad": "PCT",
+      "valor": 46.62,
+      "meta": 85.0,
+      "semaforo": "ROJO"
+    }
+  ]
+}

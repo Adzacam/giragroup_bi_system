@@ -1,0 +1,484 @@
+{
+  "tarea": "C-5 (reproceso TBL_INSCRITOS en DW viva)",
+  "backup_previo": "backups/f5c_pre_reproceso_inscritos.dump",
+  "id_documento_borrado_x1": 35,
+  "nuevo_id_lote": 36,
+  "muestras_verificadas": 20,
+  "docentes_asesor_en_20_muestras": 0,
+  "programas_correctos_en_20_muestras": 20,
+  "grupos_bandeja_lote_36": {
+    "total_casos": 10,
+    "total_grupos": 2,
+    "doc_ids": [
+      44
+    ],
+    "grupos": [
+      {
+        "clave": "grupo-5a9ebf94f4143d10ae80b6a6cb97b221e9af2d9d8de981a6dd612005d0fb256c",
+        "motivo": "CI_DUDOSA",
+        "titulo": "Cédula dudosa · TBL_INSCRITOS",
+        "archivo_origen": "TBL_INSCRITOS",
+        "ejemplo": "MARCA TEMPORAL: 2024-03-05 09:48:56 | NUMEROPROYECTO: POS-4973 | NOMBRE DEL PROGRAMA: DIPLOMADO EN DERECHO INTERNACIONAL v.1 | ASESOR: YULIANNE MONTAÑO | CI: ••••68",
+        "n": 5,
+        "accion_grupo": "MANUAL"
+      },
+      {
+        "clave": "grupo-abe69211c8e2b284328bdef6d7e95c853ced9b37357771d8f2cd6c61ffcc3e66",
+        "motivo": "BAJA_CONFIANZA",
+        "titulo": "Lectura con baja confianza · TBL_INSCRITOS",
+        "archivo_origen": "TBL_INSCRITOS",
+        "ejemplo": "MARCA TEMPORAL: 2024-09-13 11:34:41 | NUMEROPROYECTO: POS-5170 | NOMBRE DEL PROGRAMA: DIPLOMADO EN GESTIÓN PÚBLICA MUNICIPAL Y CONTROL GUBERNAMENTAL v. 1 | ASES",
+        "n": 5,
+        "accion_grupo": "MANUAL"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 5,
+      "total_items": 2,
+      "total_pages": 1
+    }
+  },
+  "muestras": [
+    {
+      "id": "REG_116_1",
+      "line_number": 1,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_2",
+      "line_number": 2,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_3",
+      "line_number": 3,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_4",
+      "line_number": 4,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_5",
+      "line_number": 5,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_6",
+      "line_number": 6,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_7",
+      "line_number": 7,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_8",
+      "line_number": 8,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_9",
+      "line_number": 9,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_10",
+      "line_number": 10,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_11",
+      "line_number": 11,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_12",
+      "line_number": 12,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_13",
+      "line_number": 13,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_14",
+      "line_number": 14,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG••••116••••15",
+      "line_number": 15,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING•••• FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA••••ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_16",
+      "line_number": 16,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_17",
+      "line_number": 17,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. ••••ORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_18",
+      "line_number": 18,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_19",
+      "line_number": 19,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "REG_116_20",
+      "line_number": 20,
+      "indice_registro": 85,
+      "docentes": [],
+      "programas": [
+        {
+          "label": "PROGRAMA",
+          "token": "POS-4403",
+          "matchedCanonical": "ESO INTERNACIONAL DE LIDERAZGO Y COACHING. FORMANDO EQUIPOS DIVERSOS DE ALTO RENDIMIENTO",
+          "betoConfidence": null,
+          "lecturaModelo": null,
+          "fuzzScore": 100.0,
+          "confianza": 1.0,
+          "origen_confianza": "REGLA_ENCABEZADO",
+          "detalleConfianza": {
+            "similitudEncabezado": 1.0,
+            "validez": 1.0
+          }
+        }
+      ]
+    }
+  ]
+}

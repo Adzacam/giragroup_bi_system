@@ -1,0 +1,85 @@
+{
+ "tarea": "C-0",
+ "fecha": "2026-11-19",
+ "metodo": "f3s_integridad.py: json.dumps(archivos ordenados por ruta; ensure_ascii=False, sort_keys=True, separators=(',',':')) y SHA-256; 20 entradas del manifiesto (10 originales + 10 slices)",
+ "sha_lote_manifiesto": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+ "sha_lote_recalculado_backup": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+ "sha_lote_recalculado_uploads_data": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+ "coincide_backup": true,
+ "coincide_uploads_data": true,
+ "archivos_distintos_backup": [],
+ "archivos_distintos_uploads_data": [],
+ "uploads_data_n_archivos": 10,
+ "uploads_data_archivos_extra_o_faltantes": [],
+ "uploads_data": [
+  {
+   "nombre": "BD Cobranzas.xlsx",
+   "bytes": 5066985,
+   "sha256": "ccf92a5f085679301c791db664ff08e4ad1684be0a22288a3d9e5b1a58d0145c"
+  },
+  {
+   "nombre": "BD Egresos.xlsx",
+   "bytes": 174709,
+   "sha256": "4b4afbddeb3c348c55cd2389542bb63ef41cbbdc2a70a04c0200c65bf6c30c5d"
+  },
+  {
+   "nombre": "BD Techos.xlsx",
+   "bytes": 153300,
+   "sha256": "75a797bdcf1453e35e36e498e4b7c30625ba3669a17534fcb08fdd0adaaa23d8"
+  },
+  {
+   "nombre": "Base centralizada Académica ARCA (1).xlsx",
+   "bytes": 1167153,
+   "sha256": "cd6070f0c3b61e88c1b86f7f2bcd909367e0ce8f770f16e671fc93e1218ded52"
+  },
+  {
+   "nombre": "EJECUTADO VS META.xlsx",
+   "bytes": 30879,
+   "sha256": "daee07f1f59df455ca862bda50b8a2c00d276437ddaa3a1375e86c11b2852682"
+  },
+  {
+   "nombre": "Evaluación Docente y Unifranz.xlsx",
+   "bytes": 837438,
+   "sha256": "6875b97a5fbbf61e9b32e26a3abf888c54620fe91fb9cfbb7e9502e255ac432a"
+  },
+  {
+   "nombre": "Experiencia Docente 2.0.xlsx",
+   "bytes": 3409451,
+   "sha256": "bf8432b5193257446c670310d7bfeccc28a8e277a0d1c7bdab8f1b1c3b84ac5c"
+  },
+  {
+   "nombre": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "bytes": 2789515,
+   "sha256": "c65129c62c9cfaa13ac483d2f5d7afed5c65d4a503547adb08829a075cf8dba0"
+  },
+  {
+   "nombre": "TBL_INSCRITOS.xlsx",
+   "bytes": 3436775,
+   "sha256": "5b72c61c436fd5d7e7332ae734001aaee52f9fb24645400d253a6c64b3d8b572"
+  },
+  {
+   "nombre": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+   "bytes": 2693173,
+   "sha256": "d0b87767b7dae5aa2d37ebd049a256bb83f565dfb0fc95412f46c8c2299357a0"
+  }
+ ],
+ "operacion": "copia (no movimiento) de los 10 .xlsx de output/backups/f0_lote/originales/ a uploads/data/ con cp -p; las copias privadas siguen intactas",
+ "causa_vaciado_18nov_1739": {
+  "veredicto": "no determinada",
+  "dato": "uploads/data/ tiene mtime 2026-11-18 17:39:20 (solo indica que cambiaron sus entradas por última vez)",
+  "revisado_sin_hallazgo": [
+   "backend y scripts: unlink/remove/rmtree/move/replace sobre uploads: powerbi.py:71,159,196 (powerbi_informe_version), cache_lectura.py:63 (uploads/.cache_lectura), ingestion_service.py:996 (tmp de tempfile), ingestion_service.py:1185-1192 (data/landing/batches, no uploads), medir_f0.py:155 (f0_comandos_redactados.jsonl), f1_validar.py:103 (docs/mediciones), tests/f0/test_medicion.py:28,163 (tmp_path)",
+   "scripts shell (copiar_arbol.sh, medicion_final_*.sh, cronometraje_ciclo.sh): rm solo sobre /tmp del contenedor",
+   "historial PowerShell (ConsoleHost_history.txt): sin comandos de borrado sobre uploads",
+   "archivos del repo modificados entre 17:30 y 17:50 del 18-nov: output/f3v, docs/mediciones/f3v_*, data/landing/batches/1/inscripciones.csv; ninguno borra uploads"
+  ],
+  "limite_de_la_evidencia": "F3V (integridad_antes/despues.json) midió el sha sobre output/backups/f0_lote y sobre /tmp/slices_f3v del contenedor, nunca sobre uploads/data; por eso el vaciado no quedó registrado. Un borrado manual fuera del repo (Explorador, otra terminal, o un contenedor con el bind ./uploads montado) no se puede descartar con los datos disponibles"
+ },
+ "proteccion_propuesta_no_aplicada": [
+  "Antes de cada medición o carga: verificar 10 archivos y el sha del lote (script f5c_verificar_lote, pasar a scripts/) y abortar si no coincide; reutiliza el método de f3s_integridad.py",
+  "Llevar la verificación de uploads/data (no solo de output/backups) a integridad_antes/despues de cada fase",
+  "Proteger uploads/data: denegar eliminación a la cuenta DAZA con icacls (decisión del usuario; cambia permisos del sistema, no se aplicó)",
+  "Montar ./uploads como solo lectura en docker-compose para api y web salvo para cargas explícitas"
+ ],
+ "nota_R1_f5r": "docs/mediciones/f5r_recarga.json (19-nov 14:42) registra la carga de 9 libros por la web sin indicar la ruta de origen de los bytes; no prueba ni descarta el origen"
+}

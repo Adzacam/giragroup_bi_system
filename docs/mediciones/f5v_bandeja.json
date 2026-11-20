@@ -1,0 +1,64 @@
+{
+ "id_lote": 35,
+ "docs": 9,
+ "antes_5_primeros": [
+  {
+   "titulo": "Hecho cargado que necesita revisiÃ³n",
+   "n": 6226
+  },
+  {
+   "titulo": "Hecho cargado que necesita revisiÃ³n",
+   "n": 2294
+  },
+  {
+   "titulo": "Hecho cargado que necesita revisiÃ³n",
+   "n": 1067
+  },
+  {
+   "titulo": "Hecho cargado que necesita revisiÃ³n",
+   "n": 962
+  },
+  {
+   "titulo": "Hecho cargado que necesita revisiÃ³n",
+   "n": 425
+  }
+ ],
+ "despues_5_primeros": [
+  {
+   "titulo": "Hecho cargado que necesita revisiÃ³n Â· Base centralizada AcadÃ©mica ARCA (1) Â· acadÃ©mico Â· Aprobado / Aprobado / Titulado",
+   "archivo_origen": "Base centralizada AcadÃ©mica ARCA (1)",
+   "n": 6226
+  },
+  {
+   "titulo": "Hecho cargado que necesita revisiÃ³n Â· Base centralizada AcadÃ©mica ARCA (1) Â· acadÃ©mico Â· Aprobado / Aprobado / No Titulado",
+   "archivo_origen": "Base centralizada AcadÃ©mica ARCA (1)",
+   "n": 2294
+  },
+  {
+   "titulo": "Hecho cargado que necesita revisiÃ³n Â· Base centralizada AcadÃ©mica ARCA (1) Â· acadÃ©mico Â· En curso / En curso / No Titulado",
+   "archivo_origen": "Base centralizada AcadÃ©mica ARCA (1)",
+   "n": 1067
+  },
+  {
+   "titulo": "Hecho cargado que necesita revisiÃ³n Â· Base centralizada AcadÃ©mica ARCA (1) Â· acadÃ©mico Â· Reprobado / Insuficiencia acadÃ©mica / No Titulado",
+   "archivo_origen": "Base centralizada AcadÃ©mica ARCA (1)",
+   "n": 962
+  },
+  {
+   "titulo": "Hecho cargado que necesita revisiÃ³n Â· Base centralizada AcadÃ©mica ARCA (1) Â· acadÃ©mico Â· Reprobado / Abandono / No Titulado",
+   "archivo_origen": "Base centralizada AcadÃ©mica ARCA (1)",
+   "n": 425
+  }
+ ],
+ "total_casos_antes": 14265,
+ "total_casos_despues": 14265,
+ "total_grupos_antes": 843,
+ "total_grupos_despues": 843,
+ "titulos_antes_distintos": 1,
+ "titulos_despues_distintos": 5,
+ "campos_cedula_dudosa_marketing": [
+  "ci_corregido",
+  "nombre_completo",
+  "justificacion"
+ ]
+}
