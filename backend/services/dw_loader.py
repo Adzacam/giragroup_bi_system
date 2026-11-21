@@ -16,7 +16,7 @@ from datetime import datetime, date
 from pathlib import Path
 from typing import Callable, Dict, Any, Optional, Tuple, List
 from sqlalchemy.orm import Session
-from sqlalchemy import select, func, text
+from sqlalchemy import select, func, text, null
 
 from models.dim_estudiante import DimEstudiante
 from models.dim_docente import DimDocente
@@ -117,12 +117,42 @@ def calcular_tipo_alerta_financiera(cuotas_impagas: Optional[int]) -> str:
     - cuotas_impagas == 1 -> 'MORA_TEMPRANA'
     - cuotas_impagas == 0 -> 'NORMAL'
     """
+    from services.regla_mora import es_mora
     c = int(cuotas_impagas or 0)
-    if c >= 2:
+    if es_mora(c):   # DA3: el mismo umbral que las vistas bi y los KPI
         return "RIESGO_CARTERA"
-    if c == 1:
+    if c >= 1:
         return "MORA_TEMPRANA"
     return "NORMAL"
+
+
+def fusionar_hechos_financieros(previo: Dict[str, Any], nuevo: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    FU-L2: dos hechos financieros con la misma clave única (estudiante, módulo, día) en una carga.
+    - lo pagado se suma (un pago mensual que cae el mismo día que la situación de la fila, o dos filas
+      del mismo estudiante y programa que pagan el mismo mes);
+    - la deuda, las cuotas, los días y el estado de la fuente: gana el valor no nulo del hecho nuevo; si el
+      nuevo no los trae (un pago), se conservan los del previo;
+    - estado_cartera y tipo_alerta se recalculan con DA3 sobre las cuotas resultantes.
+    """
+    from services.regla_mora import estado_cartera_da3
+    out = dict(previo)
+    for c, v in nuevo.items():
+        if c == "monto_pagado":
+            out[c] = round(float(previo.get(c) or 0.0) + float(v or 0.0), 2)
+        elif c == "concepto":
+            # el rótulo de la situación manda sobre el del pago
+            out[c] = previo.get(c) if previo.get(c) == "SITUACION_CARTERA" else (v or previo.get(c))
+        elif c in ("monto_deuda", "cuotas_impagas", "dias_mora", "estado_cartera_fuente", "id_modulo", "id_documento"):
+            if v is not None:
+                out[c] = v
+        elif c == "requiere_revision":
+            out[c] = bool(previo.get(c)) or bool(v)
+        else:
+            out[c] = v
+    out["estado_cartera"] = estado_cartera_da3(out.get("cuotas_impagas"))
+    out["tipo_alerta"] = None if out.get("cuotas_impagas") is None else calcular_tipo_alerta_financiera(out["cuotas_impagas"])
+    return out
 
 
 # Títulos y grados que acompañan al nombre del docente ('Fabian Mendivil Mgr.', 'Lic. Ana Pérez'): no son parte
@@ -259,6 +289,7 @@ class DWLoaderService:
         self._eval_previas_reescritas: set = set()  # claves de cargas anteriores que esta consolidación reescribió
         self._aca_pendientes: Dict[Tuple[int, int], Dict[str, Any]] = {}
         self._fin_pendientes: Dict[Tuple[int, int, int], Dict[str, Any]] = {}
+        self._avisos_cobranza: Dict[Tuple[Any, str, str], Tuple[int, List[str]]] = {}  # FU-L2, registro agregado
         self._cfo_pendientes: Dict[str, Tuple[Any, str]] = {}
         self._cfo_existentes: Optional[set] = None
         self._cache_base_programa: Dict[Any, Optional[str]] = {}
@@ -955,6 +986,7 @@ class DWLoaderService:
     def finalizar_cargas(self, pagina: int = 2000) -> int:
         """Inserta en bloque (execute_values, páginas de `pagina` filas) los hechos diferidos (evaluación, académico,
         financiero) y la trazabilidad carga_fila_origen. Devuelve el total de filas de hechos enviadas en esta llamada."""
+        self.registrar_avisos_cobranza()  # FU-L2: avisos de calidad de cobranza, agregados
         if not (self._eval_pendientes or self._aca_pendientes or self._fin_pendientes or self._cfo_pendientes):
             return 0
         from psycopg2.extras import execute_values
@@ -988,19 +1020,24 @@ class DWLoaderService:
             total_enviadas += len(filas_aca)
 
         if self._fin_pendientes:
+            from core.esquema_opcional import columnas_fu_l2
             cols_fin = [
                 "id_estudiante", "id_modulo", "id_tiempo", "id_documento", "concepto",
                 "monto_deuda", "monto_pagado", "cuotas_impagas", "estado_cartera", "tipo_alerta",
                 "nivel_confianza_ia", "requiere_revision", "fk_estado",
-            ]
-            filas_fin = [tuple(v[c] for c in cols_fin) for v in self._fin_pendientes.values()]
+            ] + sorted(columnas_fu_l2(self.db, "fact_situacion_financiera"))
+            filas_fin = [tuple(v.get(c) for c in cols_fin) for v in self._fin_pendientes.values()]
             self._fin_pendientes = {}
+            # FU-L2: un pago mensual trae cuotas, deuda y estados en NULL; frente a un hecho ya guardado con la
+            # misma clave no los borra (COALESCE). Lo pagado y la alerta se reemplazan como antes.
+            conservar = ("concepto", "id_modulo", "id_documento", "monto_deuda", "cuotas_impagas", "estado_cartera",
+                         "estado_cartera_fuente", "dias_mora", "tipo_alerta")
             sql_fin = (
                 f"INSERT INTO fact_situacion_financiera ({', '.join(cols_fin)}) VALUES %s "
                 f"ON CONFLICT (id_estudiante, COALESCE(id_modulo, 0), id_tiempo) DO UPDATE SET "
                 + ", ".join(
                     f"{c}=COALESCE(EXCLUDED.{c}, fact_situacion_financiera.{c})"
-                    if c in ("concepto", "id_modulo", "id_documento")
+                    if c in conservar
                     else f"{c}=EXCLUDED.{c}"
                     for c in cols_fin if c not in ("id_estudiante", "id_modulo", "id_tiempo")
                 )
@@ -1185,6 +1222,164 @@ class DWLoaderService:
             "institucion": canon,
             "monto_convenio": resoluciones.get("monto_convenio"),
         }
+
+    # ── 3b. Hecho financiero (FU-L2) ────────────────────────────────────────
+    def _cargar_hecho_financiero(self, registro, resoluciones, doc_id, id_est, fk_estado_est, id_tiempo,
+                                 nombre_modulo, pos_code, institucion, confianza_ia, requiere_rev) -> Dict[str, Any]:
+        """
+        Hecho de fact_situacion_financiera. FU-L2: una fila de cobranza produce un hecho de SITUACION (deuda,
+        cuotas en mora, estado de la fuente) y un hecho PAGO_MES por mes con pago (cuotas y deuda NULL).
+        - La mora la decide DA3 (`regla_mora`): estado_cartera = 'Mora' si cuotas_impagas >= 2; el estado que
+          trae la fuente se guarda aparte, solo descriptivo (estado_cartera_fuente).
+        - Idempotencia: la situación reclama la clave de la fila; cada pago, la clave de la fila + su mes.
+        - Un pago y una situación (o dos pagos) con la misma clave única (estudiante, módulo, día) se suman en
+          un solo hecho: lo pagado se acumula y las cuotas y la deuda no se pierden.
+        """
+        from services.regla_mora import estado_cartera_da3
+        from core.esquema_opcional import columnas_fu_l2
+
+        tipo_hecho = resoluciones.get("tipo_hecho_fin")  # None: camino genérico anterior a FU-L2
+        subclave = resoluciones.get("subclave_fila")
+        if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_situacion_financiera",
+                                          registro.get("clave_contenido"), subclave=subclave):
+            return {"tipo": "financiero", "status": "skipped", "motivo": "Fila de origen ya cargada"}
+        for aviso in resoluciones.get("avisos_cobranza") or []:
+            self._registrar_aviso_cobranza(doc_id, *aviso)
+        if resoluciones.get("_revision_fila"):
+            requiere_rev = True
+
+        es_pago = tipo_hecho == "PAGO_MES"
+        monto_deuda = None if es_pago else float(resoluciones.get("monto_deuda") or 0.0)
+        monto_pagado = float(resoluciones.get("monto_pagado") or 0.0)
+        concepto = resoluciones.get("concepto") or resoluciones.get("concepto_financiero")
+        cuotas_impagas = None if es_pago else int(resoluciones.get("cuotas_impagas") or 0)
+        estado_cartera = estado_cartera_da3(cuotas_impagas)   # DA3: una sola regla de mora
+        tipo_alerta_fin = None if es_pago else calcular_tipo_alerta_financiera(cuotas_impagas)  # un pago no es una alerta
+        opcionales = columnas_fu_l2(self.db, "fact_situacion_financiera")
+        extra = {c: resoluciones.get(c) for c in ("estado_cartera_fuente", "dias_mora") if c in opcionales}
+
+        if not id_est:
+            return {
+                "tipo": "financiero",
+                "status": "staged",
+                "fk_estado": "C",
+                "motivo": "Estudiante no resuelto derivado a Cola de Revisión Humana"
+            }
+
+        id_mod_fin = self.resolver_o_crear_modulo(
+            nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
+        ) if nombre_modulo else None
+
+        nuevo = {
+            "id_estudiante": id_est,
+            "id_modulo": id_mod_fin,
+            "id_tiempo": id_tiempo,
+            "id_documento": doc_id,
+            "concepto": concepto,
+            "monto_deuda": monto_deuda,
+            "monto_pagado": monto_pagado,
+            "cuotas_impagas": cuotas_impagas,
+            "estado_cartera": estado_cartera,
+            "tipo_alerta": tipo_alerta_fin,
+            "nivel_confianza_ia": confianza_ia,
+            "requiere_revision": requiere_rev,
+            "fk_estado": fk_estado_est,
+            **extra,
+        }
+
+        if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
+            if id_tiempo is None:
+                # Sin fecha no hay clave única (NULL distinto de NULL): cada hecho sin tiempo va aparte
+                clave = (id_est, id_mod_fin or 0, -len(self._fin_pendientes) - 1)
+            else:
+                clave = (id_est, id_mod_fin or 0, id_tiempo)
+                previo = self._fin_pendientes.get(clave)
+                if previo is not None:
+                    nuevo = fusionar_hechos_financieros(previo, nuevo)
+            self._fin_pendientes[clave] = nuevo
+            return {
+                "tipo": "financiero",
+                "status": "loaded",
+                "id_hecho": None,
+                "id_estudiante": id_est,
+                "tipo_alerta": nuevo["tipo_alerta"],
+                "fk_estado": fk_estado_est,
+            }
+
+        # Upsert sobre índice único (id_estudiante, COALESCE(id_modulo, 0), id_tiempo)
+        existente = self.db.query(FactSituacionFinanciera).filter(
+            FactSituacionFinanciera.id_estudiante == id_est,
+            func.coalesce(FactSituacionFinanciera.id_modulo, 0) == (id_mod_fin or 0),
+            FactSituacionFinanciera.id_tiempo == id_tiempo
+        ).first() if id_tiempo is not None else None
+
+        if existente:
+            previo = {c: getattr(existente, c) for c in nuevo}
+            previo["monto_pagado"] = float(previo["monto_pagado"] or 0.0)
+            if previo.get("monto_deuda") is not None:
+                previo["monto_deuda"] = float(previo["monto_deuda"])
+            # FU-L2: situación y pagos de la misma clave se suman; el camino genérico sigue reemplazando
+            fusion = fusionar_hechos_financieros(previo, nuevo) if tipo_hecho else {**previo, **nuevo}
+            for c, v in fusion.items():
+                if c in ("id_estudiante", "id_tiempo"):
+                    continue
+                if c in ("id_modulo", "id_documento", "concepto") and not v:
+                    continue
+                setattr(existente, c, v)
+            fact_id = existente.id_hecho_fin
+            tipo_alerta_fin = fusion["tipo_alerta"]
+        else:
+            # NULL explícito: sin esto el ORM aplica el DEFAULT de la columna (0 o 'NORMAL') a un pago mensual
+            nuevo_hecho = FactSituacionFinanciera(**{
+                c: (null() if v is None and c in ("monto_deuda", "cuotas_impagas", "tipo_alerta") else v)
+                for c, v in nuevo.items()})
+            self.db.add(nuevo_hecho)
+            self.db.flush()
+            fact_id = nuevo_hecho.id_hecho_fin
+
+        return {
+            "tipo": "financiero",
+            "status": "loaded",
+            "id_hecho": fact_id,
+            "id_estudiante": id_est,
+            "tipo_alerta": tipo_alerta_fin,
+            "fk_estado": fk_estado_est
+        }
+
+    def _registrar_aviso_cobranza(self, doc_id: Optional[int], motivo: str, campo: str, valor: str) -> None:
+        """Acumula un aviso de calidad de cobranza; se registra agregado (uno por documento, motivo y campo)."""
+        clave = (doc_id, motivo, campo)
+        n, ejemplos = self._avisos_cobranza.get(clave, (0, []))
+        if valor not in ejemplos and len(ejemplos) < 5:
+            ejemplos = ejemplos + [valor]
+        self._avisos_cobranza[clave] = (n + 1, ejemplos)
+
+    def registrar_avisos_cobranza(self) -> int:
+        """
+        Escribe en log_inconsistencias los avisos de cobranza acumulados, uno por (documento, motivo, campo),
+        con el número de filas y hasta 5 valores de ejemplo (conteos, montos o estados; sin datos personales).
+        VALOR_FUERA_DE_CATALOGO queda PENDIENTE (lo revisa una persona); los demás, REGISTRADO (informativo).
+        """
+        if not self._avisos_cobranza or self.solo_revision:
+            self._avisos_cobranza = {}
+            return 0
+        from services.cobranza_canonica import _motivo
+        motivo_catalogo = _motivo("valor_fuera_de_catalogo", "VALOR_FUERA_DE_CATALOGO")
+        n_reg = 0
+        for (doc_id, motivo, campo), (n, ejemplos) in sorted(self._avisos_cobranza.items(), key=lambda kv: str(kv[0])):
+            pendiente = motivo == motivo_catalogo
+            self.db.add(LogInconsistencia(
+                id_documento=doc_id, fila_origen=None, campo_afectado=campo[:100],
+                valor_recibido="; ".join(ejemplos)[:2000],
+                valor_esperado="valor del vocabulario de cartera" if pendiente else "número >= 0",
+                tipo_regla=motivo, severidad="MEDIA" if pendiente else "BAJA",
+                estado_resolucion="PENDIENTE" if pendiente else "REGISTRADO",
+                descripcion=f"FU-L2: {n} fila(s) de cobranza con {motivo} en {campo} (registro agregado).",
+            ))
+            n_reg += 1
+        self._avisos_cobranza = {}
+        self.db.flush()
+        return n_reg
 
     # ── 4. Resolución DimTiempo ──────────────────────────────────────────────
     def resolver_o_crear_tiempo(self, fecha_val: Optional[Any] = None) -> Optional[int]:
@@ -1456,9 +1651,12 @@ class DWLoaderService:
                     break
 
         # 2. Resolver FKs
-        # Una fila de encuesta genera ~15 registros con el mismo estudiante: la misma entrada da el mismo resultado
+        # Una fila de encuesta genera ~15 registros con el mismo estudiante: la misma entrada da el mismo resultado.
+        # FU-L2: los pagos mensuales de una fila de cobranza resuelven la identidad con la fecha de la fila
+        # (`fecha_identidad`), no con la del mes del pago: mismo estudiante para la situación y sus pagos.
+        fecha_identidad = resoluciones["fecha_identidad"] if "fecha_identidad" in resoluciones else fecha_encontrada
         clave_est = (ci_est, nombre_est, doc_id, confianza_ia, institucion, nombre_programa or nombre_modulo,
-                     es_resuelto_humano, nombre_modulo, str(fecha_encontrada))
+                     es_resuelto_humano, nombre_modulo, str(fecha_identidad))
         if clave_est in self._cache_estudiante:
             id_est, fk_estado_est = self._cache_estudiante[clave_est]
         else:
@@ -1471,7 +1669,7 @@ class DWLoaderService:
                 programa=nombre_programa or nombre_modulo,
                 forzar_resolucion_humana=es_resuelto_humano,
                 modulo=nombre_modulo,
-                fecha=fecha_encontrada,
+                fecha=fecha_identidad,
             )
             self._cache_estudiante[clave_est] = (id_est, fk_estado_est)
         id_tiempo = self.resolver_o_crear_tiempo(fecha_encontrada)
@@ -1534,105 +1732,10 @@ class DWLoaderService:
 
         # 3b. Ruteo COBRANZA -> FactSituacionFinanciera (#8, #9)
         if categoria == "financiero":
-            if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_situacion_financiera", registro.get("clave_contenido")):
-                return {"tipo": "financiero", "status": "skipped", "motivo": "Fila de origen ya cargada"}
-            monto_deuda = float(resoluciones.get("monto_deuda") or 0.0)
-            monto_pagado = float(resoluciones.get("monto_pagado") or 0.0)
-            concepto = resoluciones.get("concepto") or resoluciones.get("concepto_financiero")
-            cuotas_impagas = int(resoluciones.get("cuotas_impagas") or 0)
-            estado_cartera = resoluciones.get("estado_cartera") or ("Mora" if cuotas_impagas > 0 else "Vigente")
-            # Nombre canónico de config.ESTADOS_CARTERA_VALIDOS ("En mora", "EN MORA" -> "Mora").
-            if "MORA" in str(estado_cartera).upper():
-                estado_cartera = "Mora"
-            tipo_alerta_fin = calcular_tipo_alerta_financiera(cuotas_impagas)
-
-            if not id_est:
-                return {
-                    "tipo": "financiero",
-                    "status": "staged",
-                    "fk_estado": "C",
-                    "motivo": "Estudiante no resuelto derivado a Cola de Revisión Humana"
-                }
-
-            id_mod_fin = self.resolver_o_crear_modulo(
-                nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
-            ) if nombre_modulo else None
-
-            if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
-                self._fin_pendientes[(id_est, id_mod_fin or 0, id_tiempo)] = {
-                    "id_estudiante": id_est,
-                    "id_modulo": id_mod_fin,
-                    "id_tiempo": id_tiempo,
-                    "id_documento": doc_id,
-                    "concepto": concepto,
-                    "monto_deuda": monto_deuda,
-                    "monto_pagado": monto_pagado,
-                    "cuotas_impagas": cuotas_impagas,
-                    "estado_cartera": estado_cartera,
-                    "tipo_alerta": tipo_alerta_fin,
-                    "nivel_confianza_ia": confianza_ia,
-                    "requiere_revision": requiere_rev,
-                    "fk_estado": fk_estado_est,
-                }
-                return {
-                    "tipo": "financiero",
-                    "status": "loaded",
-                    "id_hecho": None,
-                    "id_estudiante": id_est,
-                    "tipo_alerta": tipo_alerta_fin,
-                    "fk_estado": fk_estado_est,
-                }
-
-            # Upsert sobre índice único (id_estudiante, COALESCE(id_modulo, 0), id_tiempo)
-            existente = self.db.query(FactSituacionFinanciera).filter(
-                FactSituacionFinanciera.id_estudiante == id_est,
-                func.coalesce(FactSituacionFinanciera.id_modulo, 0) == (id_mod_fin or 0),
-                FactSituacionFinanciera.id_tiempo == id_tiempo
-            ).first()
-
-            if existente:
-                existente.monto_deuda = monto_deuda
-                existente.monto_pagado = monto_pagado
-                existente.concepto = concepto or existente.concepto
-                existente.cuotas_impagas = cuotas_impagas
-                existente.estado_cartera = estado_cartera
-                existente.tipo_alerta = tipo_alerta_fin
-                existente.nivel_confianza_ia = confianza_ia
-                existente.requiere_revision = requiere_rev
-                existente.fk_estado = fk_estado_est
-                if id_mod_fin:
-                    existente.id_modulo = id_mod_fin
-                if doc_id:
-                    existente.id_documento = doc_id
-                fact_id = existente.id_hecho_fin
-            else:
-                nuevo_hecho = FactSituacionFinanciera(
-                    id_estudiante=id_est,
-                    id_modulo=id_mod_fin,
-                    id_tiempo=id_tiempo,
-                    id_documento=doc_id,
-                    concepto=concepto,
-                    monto_deuda=monto_deuda,
-                    monto_pagado=monto_pagado,
-                    cuotas_impagas=cuotas_impagas,
-                    estado_cartera=estado_cartera,
-                    tipo_alerta=tipo_alerta_fin,
-                    nivel_confianza_ia=confianza_ia,
-                    requiere_revision=requiere_rev,
-                    fk_estado=fk_estado_est
-                )
-                self.db.add(nuevo_hecho)
-                self.db.flush()
-                fact_id = nuevo_hecho.id_hecho_fin
-
-            return {
-                "tipo": "financiero",
-                "status": "loaded",
-                "id_hecho": fact_id,
-                "id_estudiante": id_est,
-                "tipo_alerta": tipo_alerta_fin,
-                "fk_estado": fk_estado_est
-            }
+            return self._cargar_hecho_financiero(
+                registro, resoluciones, doc_id, id_est, fk_estado_est, id_tiempo, nombre_modulo, pos_code,
+                institucion, confianza_ia, requiere_rev,
+            )
 
         # 3c. Ruteo EVALUACION_DOCENTE -> FactEvaluacionDocente (una fila por respuesta)
         if categoria == "evaluacion_docente" and FactEvaluacionDocente:

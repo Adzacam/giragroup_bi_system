@@ -29,16 +29,22 @@ El perfil mide **62 hojas** en 10 libros. PLAN_FUENTES_UPLOADS.md dice 61; la di
 - **Hojas a ignorar de este tipo:** -
 - **Cabecera y escala o vocabulario:** Cabecera en fila 1. Vocabulario de `estado_cartera_fuente` (conteos del perfil): CARTERA CERRADA 9.268; VIGENTE 441; PREVISIONABLE 69; INCOBRABLE 165; EN MORA 36.
 - **Columnas usadas → campo canónico:**
-- `estado_cartera_fuente` ← `tipo de cartera`
-- `cuotas_en_mora` ← `total cuotas en mora`
-- `dias_mora` ← `dias de mora`
-- `monto_pago_mes` ← patrón `^monto (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre) \d{4}$`
+- `estado_cartera_fuente` ← `tipo de cartera` (prioridad 1), `estado de cartera`, `estado cartera` (prioridad 2). Vocabulario normalizado: CERRADA, VIGENTE, EN MORA, PREVISIONABLE, INCOBRABLE. Descriptivo: no decide la mora. Un valor fuera del vocabulario no se descarta: el hecho se carga sin estado de fuente y el aviso `VALOR_FUERA_DE_CATALOGO` queda pendiente.
+- `cuotas_en_mora` ← `total cuotas en mora` (1), `cuotas en mora`, `cuotas impagas`, `nro cuotas en mora` (2), `cuotas vencidas` (3). La cabecera suelta `mora` es **ambigua** (prioridad 9): solo vale si la hoja no trae ninguna cabecera específica de cuotas.
+- `dias_mora` ← `dias de mora` (1), `dias en mora`, `dias de atraso` (2). Va a `fact_situacion_financiera.dias_mora`; nunca a cuotas.
+- `monto_pago_mes` ← patrón `^monto (enero|…|diciembre) \d{4}$` (1) y `^(pago|abono|pagado) <mes> \d{4}$` (2); se excluyen las columnas «(PRELIMINAR)». Cada columna va al mes de su pago.
+- `monto_deuda` ← `deuda total` (1), `saldo deudor`, `saldo pendiente` (2).
+- `monto_pagado_total` ← `total pagado hasta la fecha` (1), `total pagado` (2), `monto pagado` (3). Solo se usa si la fila no trae columnas de pago mensual.
+- `fecha_inicio` ← `fecha inicio diplomado` (1), `fecha de inicio`, `fecha inicio`, `fecha inicio programa` (2). El hecho de situación cae en esa fecha.
 - `estado_academico` ← `estado academico`
 - `programa` ← `nombre del programa`
 - `pos` ← `pos`
 - `ci` ← `ci`
-- **Columnas no mapeadas:** `rango mora`, `estado arca`, `estado reprobado`, `pos-ci`, `validador pos`
-- **Reglas de calidad:** `cuotas_en_mora` negativo (p. ej. -5) o con texto («1s») → 0 o 1 con aviso (FU-L2). `dias_mora` nunca va a `cuotas_en_mora`. Las columnas «(PRELIMINAR)» no se cargan como pago mensual. Mora = `cuotas_en_mora` ≥ 2 (DA3).
+- **Columnas no mapeadas (descriptivas):** `rango mora` (tramo de días), `dias de pago pendiente`, `estado arca`, `estado reprobado`, `pos-ci`, `validador pos`
+- **Reglas de calidad (FU-L2, avisos agregados por documento y motivo, sin datos personales):** `cuotas_en_mora` negativo (p. ej. -5) → 0 (`CUOTAS_NEGATIVAS`); texto con número inicial («1s») → ese número (`CUOTAS_CON_TEXTO`); texto sin número → 0 (`CUOTAS_NO_NUMERICAS`). `monto_deuda` negativo (sobrepago) → 0 (`SOBREPAGO`). `dias_mora` negativo → 0. Las columnas «(PRELIMINAR)» no se cargan como pago mensual.
+- **Mora (DA3, decisión de Lean):** un hecho está en mora si `cuotas_en_mora` ≥ 2 (umbral en `tipos_fuente.COBRANZA.regla_mora`). Una sola regla en `bi.vw_cmi_valores` (KPI-04, 05, 15), `bi.vw_cartera_estado`, `bi.vw_riesgo_estudiante`, KPIService y risk_service (`backend/services/regla_mora.py`). `estado_cartera` = Mora/Vigente por esa regla; el estado de la fuente se guarda aparte. KPI-05 = estudiantes en mora / estudiantes con cartera; KPI-15 = deuda de esos estudiantes / deuda total.
+- **Contradicción interna documentada (no se corrige):** 1.518 filas «CARTERA CERRADA» traen 2 o más cuotas en mora; por DA3 cuentan como mora y su `estado_cartera_fuente` sigue siendo CERRADA.
+- **Hechos que produce una fila:** una `SITUACION_CARTERA` (deuda, cuotas, días, estado de la fuente) en la fecha de inicio y un `PAGO_MES` por mes con pago (cuotas, deuda y estados en NULL). Idempotencia por `carga_fila_origen` (clave de la fila; la de cada pago lleva el mes).
 - **Pueden venir vacías sin que sea error:** Las columnas de pago de meses sin ejecutar (p. ej. jun-dic 2026) pueden venir vacías; no es error. Observación y criterio libre pueden faltar. Del YAML: `observacion`, `criterio libre`, `comentario daf`.
 
 ### ACTA

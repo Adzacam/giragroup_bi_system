@@ -1,0 +1,21 @@
+metrica,anio,fuente,dw_tmpfs,diferencia,explicacion
+pagos_bs_por_mes_de_pago,2024,8071737.03,8071737.03,0.0,"suma de las columnas MONTO <MES> <AÑO> del año, sin las (PRELIMINAR); cada pago va al mes del pago"
+pagos_bs_por_mes_de_pago,2025,12422501.39,12422501.39,0.0,"suma de las columnas MONTO <MES> <AÑO> del año, sin las (PRELIMINAR); cada pago va al mes del pago"
+pagos_bs_por_mes_de_pago,2026,4841944.46,4841944.46,0.0,"suma de las columnas MONTO <MES> <AÑO> del año, sin las (PRELIMINAR); cada pago va al mes del pago"
+filas_con_cuotas_ge_2_por_anio_de_inicio,2024,369,369,0.0,DA3: cuotas >= 2; el hecho de situación cae en la fecha de inicio. Una fila sin fecha de inicio legible (10 en la fuente) se ubica por otra fecha de la fila y no cuenta en el año de la fuente
+filas_con_cuotas_ge_2_por_anio_de_inicio,2025,809,816,7.0,DA3: cuotas >= 2; el hecho de situación cae en la fecha de inicio. Una fila sin fecha de inicio legible (10 en la fuente) se ubica por otra fecha de la fila y no cuenta en el año de la fuente
+filas_con_cuotas_ge_2_por_anio_de_inicio,2026,643,645,2.0,DA3: cuotas >= 2; el hecho de situación cae en la fecha de inicio. Una fila sin fecha de inicio legible (10 en la fuente) se ubica por otra fecha de la fila y no cuenta en el año de la fuente
+estudiantes_distintos_con_cuotas_ge_2,2024,362,362,0.0,estudiantes distintos (CI) con al menos un hecho en mora en la gestión
+estudiantes_distintos_con_cuotas_ge_2,2025,801,808,7.0,estudiantes distintos (CI) con al menos un hecho en mora en la gestión
+estudiantes_distintos_con_cuotas_ge_2,2026,639,641,2.0,estudiantes distintos (CI) con al menos un hecho en mora en la gestión
+estado_cartera_fuente=CERRADA,,9268,9265,-3.0,"TIPO DE CARTERA normalizado por vocabulario; descriptivo (la mora la decide DA3). Dos filas del mismo estudiante, programa y fecha de inicio comparten hecho"
+estado_cartera_fuente=VIGENTE,,441,441,0.0,"TIPO DE CARTERA normalizado por vocabulario; descriptivo (la mora la decide DA3). Dos filas del mismo estudiante, programa y fecha de inicio comparten hecho"
+estado_cartera_fuente=EN MORA,,36,36,0.0,"TIPO DE CARTERA normalizado por vocabulario; descriptivo (la mora la decide DA3). Dos filas del mismo estudiante, programa y fecha de inicio comparten hecho"
+estado_cartera_fuente=PREVISIONABLE,,69,69,0.0,"TIPO DE CARTERA normalizado por vocabulario; descriptivo (la mora la decide DA3). Dos filas del mismo estudiante, programa y fecha de inicio comparten hecho"
+estado_cartera_fuente=INCOBRABLE,,165,165,0.0,"TIPO DE CARTERA normalizado por vocabulario; descriptivo (la mora la decide DA3). Dos filas del mismo estudiante, programa y fecha de inicio comparten hecho"
+estado_cartera_fuente=sin estado,,38,4,-34.0,"TIPO DE CARTERA normalizado por vocabulario; descriptivo (la mora la decide DA3). Dos filas del mismo estudiante, programa y fecha de inicio comparten hecho"
+filas_de_la_fuente_vs_hechos_de_situacion,,10017,9980,-37.0,filas con datos de la hoja de cobranza frente a hechos SITUACION_CARTERA (filas sin campo de cobranza no producen hecho de situación)
+cerrada_con_cuotas_ge_2,,1518,1517,-1.0,"contradicción interna de la fuente (cartera cerrada con 2 o más cuotas): se documenta, no se corrige; cuenta como mora por DA3"
+cuotas_negativas_a_cero,,428,428,0.0,aviso agregado CUOTAS_NEGATIVAS (valor 0)
+cuotas_con_texto_a_numero,,1,1,0.0,aviso agregado CUOTAS_CON_TEXTO (texto '1s' -> 1)
+deuda_negativa_a_cero,,629,629,0.0,aviso agregado SOBREPAGO (deuda 0)

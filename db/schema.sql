@@ -235,7 +235,9 @@ CREATE TABLE public.fact_situacion_financiera (
     monto_deuda NUMERIC(12, 2) DEFAULT 0.00,
     monto_pagado NUMERIC(12, 2) DEFAULT 0.00,
     cuotas_impagas INTEGER DEFAULT 0,
-    estado_cartera VARCHAR(20),
+    estado_cartera VARCHAR(20),               -- DA3: 'Mora' si cuotas_impagas >= 2; NULL en un pago mensual (FU-L2)
+    estado_cartera_fuente VARCHAR(20),        -- FU-L2 (migración 022): estado de la fuente, solo descriptivo
+    dias_mora INTEGER,                        -- FU-L2 (migración 022): días de mora de la fuente
     tipo_alerta VARCHAR(30) DEFAULT 'NORMAL',
     nivel_confianza_ia NUMERIC(5, 4) DEFAULT 1.0000,
     requiere_revision BOOLEAN DEFAULT FALSE,

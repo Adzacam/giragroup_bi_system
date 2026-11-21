@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, Numeric, String, DateTime, ForeignKey, Boolean
+from sqlalchemy.orm import deferred
 from sqlalchemy.sql import func
 from core.database import Base
 
@@ -16,7 +17,10 @@ class FactSituacionFinanciera(Base):
     monto_deuda = Column(Numeric(12, 2), default=0.00)
     monto_pagado = Column(Numeric(12, 2), default=0.00)
     cuotas_impagas = Column(Integer, default=0)
-    estado_cartera = Column(String(20))
+    estado_cartera = Column(String(20))  # derivado por DA3 (cuotas_impagas >= 2 -> 'Mora'); NULL en un pago mensual
+    # FU-L2 (migración 022): datos descriptivos de la fuente. `deferred`: una DW sin migrar no los pide en los SELECT.
+    estado_cartera_fuente = deferred(Column(String(20), nullable=True))  # CERRADA, VIGENTE, EN MORA, PREVISIONABLE, INCOBRABLE
+    dias_mora = deferred(Column(Integer, nullable=True))
     tipo_alerta = Column(String(30), default="NORMAL")
     nivel_confianza_ia = Column(Numeric(5, 4), default=1.0000)
     requiere_revision = Column(Boolean, default=False)

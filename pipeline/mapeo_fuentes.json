@@ -11,6 +11,9 @@
   "cuotas_en_mora": "Cuotas impagas. Mora = cuotas_en_mora >= 2 (DA3)",
   "dias_mora": "Días de mora. Nunca se guarda en cuotas_en_mora",
   "monto_pago_mes": "Pago de un mes calendario (una columna por mes)",
+  "monto_deuda": "Deuda total del estudiante en el programa (negativa = sobrepago, se guarda 0)",
+  "monto_pagado_total": "Total pagado hasta la fecha (solo si la fila no trae pagos por mes)",
+  "fecha_inicio": "Fecha de inicio del programa (fecha del hecho de situación de cartera)",
   "estado_academico": "Estado académico normalizado (DESERCION, ABANDONO, APROBADO, ...)",
   "nota_modulo": "Nota de un módulo (numérica o con resultado canónico, DA-FU2)",
   "leads_captacion": "Leads de captación por programa y mes",
@@ -55,6 +58,14 @@
       {
        "texto": "tipo de cartera",
        "prioridad": 1
+      },
+      {
+       "texto": "estado de cartera",
+       "prioridad": 2
+      },
+      {
+       "texto": "estado cartera",
+       "prioridad": 2
       }
      ]
     },
@@ -63,6 +74,28 @@
       {
        "texto": "total cuotas en mora",
        "prioridad": 1
+      },
+      {
+       "texto": "cuotas en mora",
+       "prioridad": 2
+      },
+      {
+       "texto": "cuotas impagas",
+       "prioridad": 2
+      },
+      {
+       "texto": "nro cuotas en mora",
+       "prioridad": 2
+      },
+      {
+       "texto": "cuotas vencidas",
+       "prioridad": 3
+      },
+      {
+       "texto": "mora",
+       "prioridad": 9,
+       "ambiguo": true,
+       "nota": "cabecera suelta: solo si no hay otra de cuotas"
       }
      ]
     },
@@ -71,15 +104,80 @@
       {
        "texto": "dias de mora",
        "prioridad": 1
+      },
+      {
+       "texto": "dias en mora",
+       "prioridad": 2
+      },
+      {
+       "texto": "dias de atraso",
+       "prioridad": 2
       }
      ]
     },
     "monto_pago_mes": {
      "sinonimos": [
       {
-       "patron": "^monto (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre) \\d{4}$",
+       "patron": "^monto (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre) \\d{4}$",
        "prioridad": 1,
        "excluir": "preliminar"
+      },
+      {
+       "patron": "^(pago|abono|pagado) (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre) \\d{4}$",
+       "prioridad": 2,
+       "excluir": "preliminar"
+      }
+     ]
+    },
+    "monto_deuda": {
+     "sinonimos": [
+      {
+       "texto": "deuda total",
+       "prioridad": 1
+      },
+      {
+       "texto": "saldo deudor",
+       "prioridad": 2
+      },
+      {
+       "texto": "saldo pendiente",
+       "prioridad": 2
+      }
+     ]
+    },
+    "monto_pagado_total": {
+     "sinonimos": [
+      {
+       "texto": "total pagado hasta la fecha",
+       "prioridad": 1
+      },
+      {
+       "texto": "total pagado",
+       "prioridad": 2
+      },
+      {
+       "texto": "monto pagado",
+       "prioridad": 3
+      }
+     ]
+    },
+    "fecha_inicio": {
+     "sinonimos": [
+      {
+       "texto": "fecha inicio diplomado",
+       "prioridad": 1
+      },
+      {
+       "texto": "fecha de inicio",
+       "prioridad": 2
+      },
+      {
+       "texto": "fecha inicio",
+       "prioridad": 2
+      },
+      {
+       "texto": "fecha inicio programa",
+       "prioridad": 2
       }
      ]
     },
@@ -121,13 +219,68 @@
     "estado arca",
     "estado reprobado",
     "pos-ci",
-    "validador pos"
+    "validador pos",
+    "dias de pago pendiente"
    ],
    "nulos_aceptables": [
     "observacion",
     "criterio libre",
     "comentario daf"
-   ]
+   ],
+   "vocabularios": {
+    "estado_cartera_fuente": {
+     "CERRADA": [
+      "cartera cerrada",
+      "cerrada"
+     ],
+     "VIGENTE": [
+      "cartera vigente",
+      "vigente",
+      "al dia"
+     ],
+     "EN MORA": [
+      "cartera en mora",
+      "en mora",
+      "mora"
+     ],
+     "PREVISIONABLE": [
+      "cartera previsionable",
+      "previsionable"
+     ],
+     "INCOBRABLE": [
+      "cartera incobrable",
+      "incobrable"
+     ]
+    }
+   },
+   "calidad": {
+    "cuotas_negativas": {
+     "valor": 0,
+     "motivo": "CUOTAS_NEGATIVAS"
+    },
+    "cuotas_con_texto": {
+     "motivo": "CUOTAS_CON_TEXTO",
+     "nota": "'1s' -> 1 (se toma el número inicial)"
+    },
+    "cuotas_no_numericas": {
+     "valor": 0,
+     "motivo": "CUOTAS_NO_NUMERICAS"
+    },
+    "deuda_negativa": {
+     "valor": 0,
+     "motivo": "SOBREPAGO"
+    },
+    "dias_mora_negativos": {
+     "valor": 0,
+     "motivo": "DIAS_MORA_NEGATIVOS"
+    },
+    "valor_fuera_de_catalogo": {
+     "motivo": "VALOR_FUERA_DE_CATALOGO"
+    }
+   },
+   "regla_mora": {
+    "umbral_cuotas": 2
+   }
   },
   "ACTA": {
    "descripcion": "Una fila por estudiante y programa, con una nota por módulo en formato ancho",
@@ -503,7 +656,8 @@
  "campos_identidad": [
   "ci",
   "pos",
-  "programa"
+  "programa",
+  "fecha_inicio"
  ],
  "tipo_por_hoja": {
   "min_campos_especificos": 2

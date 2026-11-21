@@ -279,3 +279,160 @@ def construir_plan(receta: RecetaPlan, carpeta: Path) -> Path:
     _hoja_informe_metas(wi, 2027)
     wi.sheet_state = "hidden"
     return _guardar(wb, carpeta / receta.archivo)
+
+
+# ── FU-L2: libro de cobranza con mora, cartera y pagos por mes (datos ficticios) ──────────────────
+
+# Campo canónico -> cabecera del libro ORIGINAL. Las tres columnas «MORA» del original son
+# DIAS DE MORA, RANGO MORA y TOTAL CUOTAS EN MORA; solo la última es un conteo de cuotas.
+CAB_L2_ORIGINAL = {
+    "pos": "POS", "programa": "NOMBRE DEL PROGRAMA", "ci": "CI", "nombres": "NOMBRES", "paterno": "PATERNO",
+    "dias_mora": "DIAS DE MORA", "inicio": "FECHA INICIO DIPLOMADO", "estado": "TIPO DE CARTERA",
+    "deuda": "DEUDA TOTAL", "rango": "RANGO MORA", "cuotas": "TOTAL CUOTAS EN MORA",
+    "total_pagado": "TOTAL PAGADO HASTA LA FECHA", "a_cobrar": "MONTO A COBRAR DESPUÉS DE DESCUENTO",
+}
+# Variante: sinónimos del catálogo y una cabecera «MORA» suelta con valores que, de usarse como cuotas,
+# cambiarían el resultado (la ambigua no debe pisar a la específica).
+CAB_L2_VARIANTE = {
+    "pos": "POS", "programa": "NOMBRE DEL PROGRAMA", "ci": "CI", "nombres": "NOMBRES", "paterno": "PATERNO",
+    "dias_mora": "DIAS EN MORA", "inicio": "FECHA DE INICIO", "estado": "ESTADO DE CARTERA",
+    "deuda": "SALDO DEUDOR", "rango": "RANGO MORA", "cuotas": "CUOTAS IMPAGAS",
+    "total_pagado": "TOTAL PAGADO", "a_cobrar": "MONTO A COBRAR DESPUÉS DE DESCUENTO",
+}
+MESES_L2 = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE",
+            "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"]
+
+
+# CI y nombres ficticios y distintos entre sí (CI consecutivos se confundirían con una variante de escritura, regla 85 %)
+CIS_L2 = ["4100123", "5230987", "6340456", "7451789", "8562012", "3673345", "2784678", "1895901", "9016234", "1127567"]
+NOMBRES_L2 = [("ANA", "FICTICIA"), ("LUIS", "PRUEBAS"), ("EVA", "MUESTRAL"), ("JUAN", "EJEMPLAR"), ("RUTH", "SIMULADA"),
+              ("OMAR", "FALSETTI"), ("INES", "IMAGINARIA"), ("PAUL", "VIRTUALES"), ("LEA", "SUPUESTA"), ("TITO", "INVENTADO")]
+
+
+def filas_cobranza_l2() -> List[Dict[str, object]]:
+    """10 estudiantes ficticios, uno por regla. `pagos` = {(año, mes): monto}; `preliminar` = pago que no se carga."""
+    from datetime import datetime
+
+    def f(i, estado, cuotas, deuda, inicio, pagos, dias=None, rango="", preliminar=None):
+        return {"pos": f"POS-{9300 + i}", "programa": f"DIPLOMADO FICTICIO {i}",
+                "ci": CIS_L2[i - 1], "nombres": NOMBRES_L2[i - 1][0], "paterno": NOMBRES_L2[i - 1][1], "dias_mora": dias,
+                "inicio": inicio, "estado": estado, "deuda": deuda, "rango": rango, "cuotas": cuotas,
+                "pagos": pagos, "a_cobrar": 7777 + i, "preliminar": preliminar or {}}
+
+    return [
+        f(1, "CARTERA VIGENTE", 0, 500, datetime(2024, 3, 4), {(2024, 3): 100, (2024, 4): 100}),
+        f(2, "CARTERA CERRADA", 3, 0, datetime(2024, 5, 6), {(2024, 5): 250, (2025, 1): 50}, dias=0, rango="Sin mora"),
+        f(3, "CARTERA EN MORA", 2, 1200, datetime(2025, 2, 10), {(2025, 2): 300, (2025, 3): 300}, dias=45, rango="b) 31 a 60"),
+        f(4, "CARTERA PREVISIONABLE", 1, 900, datetime(2025, 6, 2), {(2025, 6): 120}, dias=120, rango="d) Mayor 90"),
+        f(5, "CARTERA INCOBRABLE", 5, 2000, datetime(2026, 1, 15), {(2026, 1): 80}, dias=400),
+        f(6, "CARTERA VIGENTE", -4, 100, datetime(2026, 2, 3), {(2026, 2): 60}),                 # cuotas negativas -> 0
+        f(7, "CARTERA VIGENTE", "1s", 100, datetime(2026, 3, 9), {(2026, 3): 40}),                # texto «1s» -> 1
+        f(8, "CARTERA CERRADA", 0, -300, datetime(2025, 8, 12), {(2025, 8): 700}),                # sobrepago -> deuda 0
+        f(9, "CARTERA RARA", 2, 400, datetime(2025, 9, 1), {(2025, 9): 10}),                      # fuera de catálogo
+        f(10, "CARTERA VIGENTE", 0, 50, datetime(2024, 11, 20), {(2024, 11): 25}, preliminar={(2025, 9): 999}),
+    ]
+
+
+# Lo que debe cargarse (cifras de la receta, calculadas a mano): pagos por año del MES DE PAGO (sin PRELIMINAR)
+PAGOS_ESPERADOS_L2 = {2024: 100 + 100 + 250 + 25, 2025: 50 + 300 + 300 + 120 + 700 + 10, 2026: 80 + 60 + 40}
+# Situaciones en mora (cuotas >= 2, DA3) por año de inicio: filas 2 (2024), 3 y 9 (2025), 5 (2026)
+MORA_ESPERADA_L2 = {2024: 1, 2025: 2, 2026: 1}
+ESTADOS_FUENTE_ESPERADOS_L2 = {"VIGENTE": 4, "CERRADA": 2, "EN MORA": 1, "PREVISIONABLE": 1, "INCOBRABLE": 1, None: 1}
+
+
+@dataclass
+class RecetaCobranzaL2:
+    archivo: str
+    hoja_datos: str
+    hoja_oculta: str
+    cabeceras: Dict[str, str]
+    prefijo_mes: str                      # «MONTO» o «PAGO»
+    orden: List[str]                      # orden de los campos y de las columnas «mes:AAAA-MM» / «prelim:AAAA-MM»
+    con_mora_suelta: bool = False
+    filas_basura: int = 25
+    hoja_extra: str = ""                  # hoja visible de resumen (no es tabla de datos)
+
+
+ORIGINAL_L2 = RecetaCobranzaL2(
+    archivo="cobranza_ficticia.xlsx", hoja_datos="Cartera por estudiante", hoja_oculta="Cartera previa",
+    cabeceras=CAB_L2_ORIGINAL, prefijo_mes="MONTO",
+    orden=["pos", "programa", "ci", "nombres", "paterno", "dias_mora", "inicio", "estado", "a_cobrar", "deuda",
+           "mes:2024-03", "mes:2024-04", "mes:2024-05", "mes:2024-11", "mes:2025-01", "mes:2025-02",
+           "mes:2025-03", "mes:2025-06", "mes:2025-08", "mes:2025-09", "mes:2026-01", "mes:2026-02", "mes:2026-03",
+           "prelim:2025-09", "total_pagado", "rango", "cuotas"],
+    hoja_extra="Resumen mensual",
+)
+
+VARIANTE_L2 = RecetaCobranzaL2(
+    archivo="Libro de Cobros (copia final).xlsx", hoja_datos="Base deudores 24-26", hoja_oculta="respaldo viejo",
+    cabeceras=CAB_L2_VARIANTE, prefijo_mes="PAGO", con_mora_suelta=True, filas_basura=70,
+    orden=["cuotas", "mes:2026-03", "ci", "estado", "prelim:2025-09", "pos", "mes:2025-06", "deuda",
+           "mes:2024-04", "paterno", "mes:2026-01", "mes:2025-01", "inicio", "total_pagado", "mes:2025-09",
+           "programa", "mes:2024-03", "a_cobrar", "rango", "mes:2025-02", "mes:2024-05", "nombres",
+           "mes:2026-02", "mes:2024-11", "dias_mora", "mes:2025-03", "mes:2025-08"],
+    hoja_extra="Totales por mes",
+)
+
+
+def _cabecera_l2(receta: RecetaCobranzaL2, clave: str) -> str:
+    if clave.startswith(("mes:", "prelim:")):
+        tipo, periodo = clave.split(":")
+        anio, mes = periodo.split("-")
+        base = f"{receta.prefijo_mes} {MESES_L2[int(mes) - 1]} {anio}"
+        return base + (" (PRELIMINAR)" if tipo == "prelim" else "")
+    return receta.cabeceras[clave]
+
+
+def _celda_l2(fila: Dict[str, object], clave: str):
+    if clave.startswith("mes:"):
+        anio, mes = clave.split(":")[1].split("-")
+        return fila["pagos"].get((int(anio), int(mes)))
+    if clave.startswith("prelim:"):
+        anio, mes = clave.split(":")[1].split("-")
+        return fila["preliminar"].get((int(anio), int(mes)))
+    if clave == "total_pagado":
+        return sum(fila["pagos"].values())
+    return fila.get(clave)
+
+
+def construir_cobranza_l2(receta: RecetaCobranzaL2, carpeta: Path) -> Path:
+    """Libro de cobranza FU-L2: hoja de datos (con subtotal y filas basura), hoja oculta con otras cifras y un resumen."""
+    wb = openpyxl.Workbook()
+    wb.remove(wb.active)
+    filas = filas_cobranza_l2()
+    ws = wb.create_sheet(receta.hoja_datos)
+    columnas = list(receta.orden)
+    cabeceras = [_cabecera_l2(receta, c) for c in columnas]
+    if receta.con_mora_suelta:
+        columnas.insert(3, "mora_suelta")
+        cabeceras.insert(3, "MORA")
+    for c, nombre in enumerate(cabeceras, start=1):
+        ws.cell(row=1, column=c, value=nombre)
+    r = 1
+    for fila in filas:
+        r += 1
+        for c, clave in enumerate(columnas, start=1):
+            valor = 99 if clave == "mora_suelta" else _celda_l2(fila, clave)
+            if valor is not None:
+                ws.cell(row=r, column=c, value=valor)
+    r += 1
+    ws.cell(row=r, column=columnas.index("programa") + 1, value="TOTAL GENERAL")
+    for k in range(receta.filas_basura):   # filas fantasma: casilla FALSE suelta
+        r += 1
+        ws.cell(row=r, column=len(columnas), value=False if k % 2 else None)
+    wo = wb.create_sheet(receta.hoja_oculta)   # misma forma, otras cifras: no debe sumar
+    for c, nombre in enumerate(cabeceras, start=1):
+        wo.cell(row=1, column=c, value=nombre)
+    for k, fila in enumerate(filas[:3], start=2):
+        for c, clave in enumerate(columnas, start=1):
+            valor = 55555 if clave.startswith("mes:") else (99 if clave in ("cuotas", "mora_suelta") else _celda_l2(fila, clave))
+            if valor is not None:
+                wo.cell(row=k, column=c, value=valor)
+    wo.sheet_state = "hidden"
+    wr = wb.create_sheet(receta.hoja_extra)
+    for c, v in enumerate(["MES", "TOTAL"], start=1):
+        wr.cell(row=1, column=c, value=v)
+    for k, mes in enumerate(MESES_L2[:4], start=2):
+        wr.cell(row=k, column=1, value=mes)
+        wr.cell(row=k, column=2, value=f"Bs{k * 1000}")
+    return _guardar(wb, carpeta / receta.archivo)

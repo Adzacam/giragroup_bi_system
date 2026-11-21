@@ -32,6 +32,7 @@ from services.extraccion_por_encabezado import (
     campos_por_encabezado, es_encabezado_metadato_pos, estudiante_de_fila, fecha_de_fila, registros_academicos, registros_evaluacion, registros_rentabilidad, registros_costo_programa, registros_asignacion_docente, registros_techo_convenio,
     factores_escala_por_programa,
 )
+from services.cobranza_canonica import leer_fila as leer_fila_cobranza, registros_cobranza
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.log_inconsistencia import LogInconsistencia
 from core.esquema_opcional import valores_si_existen
@@ -204,7 +205,18 @@ def _resolver_linea(categoria, celdas, campos, campos_fin, factores_escala):
     entidades_fila = []
     resoluciones_lista = []
     por_reglas = False
-    if campos_fin is not None:
+    lectura_cob = registros_cobranza(campos, base["fecha"]) if (categoria == "financiero" and campos) else None
+    if lectura_cob is not None:
+        # FU-L2: fila de cobranza por campos canónicos del catálogo: situación en la fecha de inicio + un pago por mes
+        fila_fin = _resolver_fila_financiera(campos_fin or {})
+        for reg in lectura_cob[0]:
+            revision_fila = reg.pop("_revision_fila")
+            resoluciones_lista.append({**base, "estudiante": fila_fin["estudiante"], "programa": fila_fin["programa"],
+                                       **reg, "estado_cartera": None, "_revision_fila": revision_fila})
+        if fila_fin["estudiante"]:
+            entidades_fila.append({"tipo": "CI", "valor": fila_fin["estudiante"]["fk_resolucion"]["ci"]})
+        por_reglas = bool(fila_fin["estudiante"])
+    elif campos_fin is not None:
         fila_fin = _resolver_fila_financiera(campos_fin)
         resoluciones_lista.append({**base, **fila_fin, "estado_cartera": None})  # el loader deriva la cartera
         if fila_fin["estudiante"]:
@@ -369,8 +381,8 @@ def process_pipeline(
                 continue
             celdas = [c.strip() for c in linea_str.split("|")]
             campos_fin = _campos_financieros_por_encabezado(celdas) if categoria == "financiero" else None
-            if campos_fin == {}:
-                continue  # fila con encabezados pero sin montos: no es un hecho financiero
+            if campos_fin == {} and leer_fila_cobranza(campos_por_encabezado(celdas)) is None:
+                continue  # fila con encabezados pero sin montos ni campos de cobranza del catálogo: no es un hecho financiero
             lineas.append((linea_str, celdas, campos_fin))
 
         # Escala de notas por programa en el archivo (un acta mezcla programas sobre 20 y sobre 100)

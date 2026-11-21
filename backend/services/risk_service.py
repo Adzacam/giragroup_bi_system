@@ -9,6 +9,7 @@ from models.dim_origen import DimOrigenDocumental
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
 from pipeline.config import NOTA_APROBACION
+from services.regla_mora import es_mora  # DA3: regla única de mora
 
 
 
@@ -59,7 +60,8 @@ def get_riesgo_cruzado(db: Session, limite_nota: float = 70.0, min_cuotas_mora: 
         func.sum(FactSituacionFinanciera.monto_deuda).label("monto_deuda"),
         func.min(FactSituacionFinanciera.estado_cartera).label("estado_cartera"),  # "Mora" < "Vigente"
     ).group_by(FactSituacionFinanciera.id_estudiante
-    ).having(func.sum(FactSituacionFinanciera.cuotas_impagas) >= min_cuotas_mora).subquery()
+    # DA3: en mora si ALGÚN hecho de situación tiene cuotas_impagas >= umbral (antes: la suma de todos sus programas)
+    ).having(func.max(FactSituacionFinanciera.cuotas_impagas) >= min_cuotas_mora).subquery()
     resultados = db.query(
         DimEstudiante.nombre_completo,
         DimEstudiante.codigo_estudiante,
@@ -244,6 +246,7 @@ def evaluar_alertas_tempranas_deterministicas(
                 "asistencias": [],
                 "alerta_desercion_explicita": False,
                 "cuotas_mora": 0,
+                "max_cuotas_hecho": 0,
                 "deuda_mora_bs": 0.0,
             }
         return perfiles[id_est]
@@ -371,6 +374,7 @@ def evaluar_alertas_tempranas_deterministicas(
         cuotas = int(f.cuotas_impagas or 0)
         deuda = float(f.monto_deuda or 0.0)
         p["cuotas_mora"] += cuotas
+        p["max_cuotas_hecho"] = max(p.get("max_cuotas_hecho", 0), cuotas)
         if cuotas > 0 or deuda > 0:
             p["deuda_mora_bs"] += deuda
 
@@ -401,7 +405,7 @@ def evaluar_alertas_tempranas_deterministicas(
         # Reglas determinísticas estrictas IF/THEN
         regla_aca = bool(prom_notas is not None and prom_notas <= umbral_nota)
         regla_des = bool(max_incumpl > umbral_incumplimiento or p["alerta_desercion_explicita"])
-        regla_fin = bool(cuotas_mora >= umbral_cuotas_mora)
+        regla_fin = es_mora(p.get("max_cuotas_hecho", 0), umbral_cuotas_mora)  # DA3: mismo criterio que las vistas bi
 
         cant_reglas = int(regla_aca) + int(regla_des) + int(regla_fin)
 
@@ -708,7 +712,7 @@ def obtener_ficha_cruzada_estudiante(db: Session, id_estudiante: int) -> Optiona
 
     regla_aca = bool(prom_notas is not None and prom_notas <= 70.0)
     regla_des = bool(max_inc > 30.0)
-    regla_fin = bool(total_cuotas_mora >= 2)
+    regla_fin = es_mora(max((int(f.cuotas_impagas or 0) for f in hechos_fin), default=0))  # DA3
 
     tags = []
     if regla_aca:

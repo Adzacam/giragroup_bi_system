@@ -169,9 +169,56 @@ CANONICAL_HEADERS = {
     "pagado": ("monto_pagado", "NUMERIC", "Moneda normalizada"),
     "cuota": ("numero_cuota", "INTEGER", "Entero secuencial"),
     "cuotas_impagas": ("cuotas_impagas", "INTEGER", "Entero secuencial"),
-    "mora": ("cuotas_impagas", "INTEGER", "Entero secuencial"),
+    # FU-L2: 'mora' suelta es ambigua (en cobranza hay DIAS DE MORA, RANGO MORA y TOTAL CUOTAS EN MORA). Solo
+    # vale como cuotas si el bloque no trae una cabecera específica de cuotas (ver canonizar_cabeceras).
+    "mora": ("cuotas_impagas", "INTEGER", "Entero secuencial (cabecera ambigua)"),
     "concepto": ("concepto", "VARCHAR", "Homologación financiera"),
 }
+
+# FU-L2: campo canónico del catálogo de mapeo (config/mapeo_fuentes.yaml) -> columna del DW para la matriz.
+_CAMPO_CATALOGO_A_DW = {
+    "cuotas_en_mora": ("cuotas_impagas", "INTEGER", "Catálogo de mapeo (FU-L2)"),
+    "dias_mora": ("dias_mora", "INTEGER", "Catálogo de mapeo (FU-L2)"),
+    "estado_cartera_fuente": ("estado_cartera_fuente", "VARCHAR", "Catálogo de mapeo (FU-L2), vocabulario normalizado"),
+    "monto_pago_mes": ("monto_pagado", "NUMERIC", "Catálogo de mapeo (FU-L2): pago del mes de la columna"),
+    "monto_deuda": ("monto_deuda", "NUMERIC", "Catálogo de mapeo (FU-L2)"),
+    "monto_pagado_total": ("monto_pagado", "NUMERIC", "Catálogo de mapeo (FU-L2): total pagado"),
+    "fecha_inicio": ("fecha_inicio", "DATE", "Catálogo de mapeo (FU-L2)"),
+}
+
+
+def canonizar_cabeceras(cabeceras: List[str]) -> Dict[str, tuple]:
+    """
+    (campo, tipo, regla) de cada cabecera de un bloque. Primero el catálogo de mapeo de cobranza (sinónimos
+    con prioridad, FU-L2); después CANONICAL_HEADERS. Una cabecera ambigua ('mora') no pisa a la específica:
+    si otra cabecera del bloque ya es cuotas_impagas, la ambigua queda como texto sin mapear.
+    """
+    try:
+        from services.cobranza_canonica import campo_de_cabecera
+    except ImportError:
+        from backend.services.cobranza_canonica import campo_de_cabecera
+    salida: Dict[str, tuple] = {}
+    ambiguas = []
+    for c in cabeceras:
+        res = None
+        try:
+            res = campo_de_cabecera(c)
+        except Exception:  # catálogo ausente: rige el diccionario fijo
+            res = None
+        if res and not res[2] and res[0] in _CAMPO_CATALOGO_A_DW:
+            salida[c] = _CAMPO_CATALOGO_A_DW[res[0]]
+            continue
+        clave = _strip_accents(c)
+        if (res and res[2]) or clave == "mora":
+            ambiguas.append(c)
+            continue
+        salida[c] = CANONICAL_HEADERS.get(clave, (clave.replace(" ", "_"), "VARCHAR", "Mapeo inferido"))
+    hay_cuotas = any(v[0] == "cuotas_impagas" for v in salida.values())
+    for c in ambiguas:
+        clave = _strip_accents(c)
+        salida[c] = ((clave.replace(" ", "_"), "VARCHAR", "Ambigua: el bloque ya trae una cabecera de cuotas")
+                     if hay_cuotas else ("cuotas_impagas", "INTEGER", "Entero secuencial (cabecera ambigua)"))
+    return salida
 
 
 def _strip_accents(text: str) -> str:
@@ -927,13 +974,14 @@ class IngestionService:
             for nombre_hoja, b in bloques_validos:
                 if len(b) > 0:
                     fila_headers = b.iloc[0].values
+                    cabeceras_bloque = [cabecera_segura(str(v).strip(), i) for i, v in enumerate(fila_headers, start=1) if pd.notna(v)]
+                    canon_bloque = canonizar_cabeceras([c for c in cabeceras_bloque if c])  # FU-L2: por bloque
                     for pos_col, col_val in enumerate(fila_headers, start=1):
                         if pd.notna(col_val):
                             col_str = cabecera_segura(str(col_val).strip(), pos_col)  # FU-L1: sin PII en la matriz
                             if col_str and col_str not in columnas_detectadas:
                                 columnas_detectadas.add(col_str)
-                                col_lower = _strip_accents(col_str)
-                                canon = CANONICAL_HEADERS.get(col_lower, (col_lower.replace(" ", "_"), "VARCHAR", "Mapeo inferido"))
+                                canon = canon_bloque.get(col_str) or CANONICAL_HEADERS.get(_strip_accents(col_str), (_strip_accents(col_str).replace(" ", "_"), "VARCHAR", "Mapeo inferido"))
                                 matriz_normalizacion.append({
                                     "cabecera_original": col_str,
                                     "cabecera_normalizada": canon[0],
@@ -1411,12 +1459,13 @@ class IngestionService:
             linea1 = stg.texto_plano.split("\n")[0] if "\n" in stg.texto_plano else stg.texto_plano
             campos = [p.split(":")[0].strip() for p in linea1.split("|") if ":" in p]
             if campos:
+                canon = canonizar_cabeceras(campos)  # FU-L2: catálogo primero; 'mora' ambigua no pisa a la específica
                 return [
                     {
                         "cabecera_original": c,
-                        "cabecera_normalizada": CANONICAL_HEADERS.get(_strip_accents(c), (c.lower().replace(" ", "_"), "VARCHAR", "Mapeo inferido"))[0],
-                        "tipo_dato": CANONICAL_HEADERS.get(_strip_accents(c), ("", "VARCHAR", ""))[1],
-                        "regla": CANONICAL_HEADERS.get(_strip_accents(c), ("", "", "Mapeo inferido"))[2],
+                        "cabecera_normalizada": canon[c][0],
+                        "tipo_dato": canon[c][1],
+                        "regla": canon[c][2],
                         "estado": "Completado"
                     }
                     for c in campos

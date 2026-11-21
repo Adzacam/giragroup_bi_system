@@ -20,6 +20,7 @@ from models.staging_registro import StagingRegistroCrudo
 from models.user import User
 from services.confianza_service import banda_de, indices_cascada, obtener_indices
 from services import beto_integracion, cache_consultas, tareas_dataops
+from services.cobranza_canonica import registros_cobranza
 from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, fila_resuelta_por_regla, metricas_captacion, MOTIVOS_A_BANDEJA, motivo_fila_sin_entidad, normalizar_encabezado, registro_planificacion, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
 from datetime import datetime
 from services.dataops_evaluation_service import enmascarar_ci, strip_accents
@@ -487,6 +488,18 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                             },
                             "calidad": {"requiere_revision": en_revision or revision_fila},
                         })
+                elif categoria_ruteo == "financiero" and campos_linea and (lectura_cob := registros_cobranza(campos_linea, fecha_linea)) is not None:
+                    # FU-L2: fila de cobranza leída por campos canónicos del catálogo (sin nombres de columna en el
+                    # código): un hecho de situación en la fecha de inicio y un pago por mes, cada uno con su clave
+                    registros_linea = []
+                    for reg_cob in lectura_cob[0]:
+                        revision_fila = reg_cob.pop("_revision_fila")
+                        registros_linea.append({
+                            **reg_dict,
+                            "resoluciones": {**reg_dict["resoluciones"], **reg_cob, "estado_cartera": None,
+                                             "_revision_fila": revision_fila},
+                            "calidad": {"requiere_revision": en_revision or revision_fila},
+                        })
                 elif categoria_ruteo in ("marketing", "admision") and campos_linea and registros_techo_convenio(campos_linea):
                     # Convenio con institución en un documento clasificado como marketing (p. ej. BD Techos):
                     # el contenido de la fila decide el hecho, no la clasificación del documento
@@ -660,22 +673,14 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
 
 
 def derivar_estado_cartera(campos_linea: Optional[dict], cuotas_impagas: int = 0) -> str:
-    """Deriva estado_cartera del dominio existente ('Previsionable', 'Mora', 'Vigente') para F3-2 (KPI-15)."""
-    campos = campos_linea or {}
-    tipo_cartera = strip_accents(str(campos.get("TIPO DE CARTERA") or "")).upper().strip()
-    if "INCOBRABLE" in tipo_cartera:
-        return "Previsionable"
-    dias_raw = str(campos.get("DIAS DE MORA") or "").strip()
-    if dias_raw:
-        m_dias = re.search(r"-?\d+(?:\.\d+)?", dias_raw)
-        if m_dias and float(m_dias.group(0)) > 0:
-            return "Mora"
-    rango = strip_accents(str(campos.get("RANGO MORA") or "")).upper().strip()
-    if rango and rango not in ("0", "0.0", "SIN MORA", "NINGUNO", "N/A", "NA", "NULL", "NONE", "-"):
-        return "Mora"
-    if cuotas_impagas and int(cuotas_impagas) > 0:
-        return "Mora"
-    return "Vigente"
+    """
+    Estado de cartera del hecho por la regla única DA3 (decisión de Lean, 2026-11-20): 'Mora' si
+    cuotas_impagas >= 2, si no 'Vigente'. Los días de mora, el rango de mora y el tipo de cartera de la fuente
+    ya no deciden la mora (antes un día de atraso o un rango 'd) Mayor 361' bastaban: KPI-05 ≈ 94 %); el tipo de
+    cartera se guarda aparte como estado_cartera_fuente (FU-L2). `campos_linea` se mantiene por compatibilidad.
+    """
+    from services.regla_mora import estado_cartera_da3
+    return estado_cartera_da3(int(cuotas_impagas or 0))
 
 
 def _registrar_descarte_ruido(
