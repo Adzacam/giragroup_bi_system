@@ -35,5 +35,26 @@
 2. **Tarea 47:** duró 878 s, no 180 s: «exactamente 180 s» solo vale para las tareas 45 y 49.
 3. **Marketing `reservas`:** es 0 en todas las filas, no «lleno» (ver DA6).
 
-## Pendiente de L0
-- **L0-2 (capturas por módulo) y L0-3 (cruce web ↔ DW): bloqueados.** El navegador integrado está en la pantalla de inicio de sesión; el login pide 2FA y no se permite introducir credenciales ni generar un token de servicio. Hace falta que **Lean inicie sesión** en el navegador integrado (`http://localhost:5173`). Tras eso, las capturas a 1440 px, `adw_l0_cifras_web.csv` y `adw_l0_cruce_web_dw.csv` se hacen en una sesión corta. Lista de pantallas: CMI (3 modos); Académico (rendimiento, docente, catálogo, proyección); Financiero (recaudación, cartera, metas, proyección); DataOps; Auditoría; Reportes.
+## L0-2 y L0-3 (hechos el 2026-11-20, con la sesión que inició Lean)
+- **Capturas:** 18 JPG en `adw_l0_capturas/` (CMI en 2 modos; Académico: alertas, docente, catálogo, proyección; Financiero: recaudación, cartera, metas, proyección; DataOps: carga, lectura, revisión, lote 35, lote 1, datos maestros; Auditoría; Reportes). **Limitación:** la ventana se emuló a 1440 px, pero el panel devuelve las imágenes reducidas (700–800 px de ancho); no son capturas a 1440 px reales. Para las figuras del documento habría que repetirlas con otra herramienta.
+- **Cifras visibles:** `adw_l0_cifras_web.csv` (129 filas: 92 KPI del CMI + índices + cifras de los demás módulos). Los KPI se transcribieron de `adw_l0_web_kpi_transcrito.txt`; los contadores animados se leyeron tras desplazar la página (a la primera lectura salían en 0).
+- **Cruce:** `adw_l0_cruce_kpi_web_dw.csv` (92 celdas CMI frente a `bi.vw_cmi_scorecard`: **92 iguales**, tolerancia 2 % por el redondeo de pantalla), `adw_l0_cruce_dw_valores.csv` (consultas `adw_cruce_web.sql`) y `adw_l0_cruce_web_dw.csv` (28 cifras de los demás módulos: **15 difieren**, 8 coinciden (6 de ellas con matiz, p. ej. «igual solo con PROGRAMAS»), 2 confirmadas, 3 no cruzables).
+- Scripts: `scripts/auditoria_dw/cruce_kpi_web_dw.py` y `generar_l0_web.py`.
+
+## Hallazgos nuevos que no estaban en la auditoría (a decidir en qué loop entran)
+| # | Hallazgo | Evidencia | Grav. | Loop sugerido |
+|---|---|---|---|---|
+| A14 | 43 `dim_docente` tienen nombres de más de 60 caracteres: comentarios de encuestas entraron como docentes (DOC-111 en pantalla) | `adw_l0_cruce_dw_valores.csv` | 🔴 | L2 |
+| A15 | Catálogo: 634 módulos `MOD-GEN*` y 3 con nombre «0», «1» o fecha; la tarjeta dice «100 % con código POS canónico» | idem | 🟠 | L6 |
+| A16 | «Matrícula activa auditada» 10.327 = estudiantes distintos de todas las gestiones, no matrícula activa (KPI-21 = 3.773 y 3.571) | idem | 🟠 | L5 |
+| A17 | «Cartera vencida exigible» Bs 4.832.610,08 = **deuda total** de todas las gestiones y estados | `adw_l0_cartera.csv` | 🔴 | L4 |
+| A18 | «Recaudación consolidada DW» = Bs 0 en Cartera, con `monto_pagado` = 26.172.122,73 | idem | 🔴 | L4/L5 |
+| A19 | Docente: 100 de 689 docentes, 67.109 evaluaciones (DW: 449.586 válidas), satisfacción 3,28 (DW: 4,088) | idem | 🟠 | L2/L5 |
+| A21 | Las pantallas financieras usan solo la categoría PROGRAMAS (meta 16.894.995; recaudado 5.309.447,68); el CMI suma TECHOS_CERRADOS (17.973.400; 5.695.043,78). De ahí 31,4 % frente a 31,7 % | `adw_l0_rentabilidad.csv` | 🔴 | L5 |
+| A22 | Serie predictiva: N = 33 en pantalla, 43 meses con inscritos en la DW y N = 40 en el invariante | idem | 🟠 | L5/L9 |
+| A23 | Auditoría muestra «205 lotes»; la DW tiene 3 lotes y 10 documentos | idem | 🟠 | L6 |
+| A24 | «Seguridad & 2FA = 0 logs» con 2FA usado hoy | pantalla | 🟡 | fuera de alcance |
+| B3+ | La misma pantalla del CMI llama a `/api/v1/cmi/scorecard` y a `/api/v1/kpis/cmi-completo` (dos motores); Alertas: crítica 107 frente a 78 del CMI, financiero 1.440 frente a 249 de la vista | red del navegador, `adw_l0_cruce_web_dw.csv` | 🔴 | L5 |
+| B1* | La pantalla actual del CMI **no llama** a `/perspectivas/*/detalle`: el 500 de CLIENTES es latente (el front en ejecución no usa ese endpoint) | red del navegador | — | L1 |
+| L7* | `bitacora_dataops` (citada en L7) no existe como tabla; hay `log_pipeline_ingesta` (12.403 filas, 10 documentos) | `information_schema` | 🟡 | L7 |
+| D2* | Las revelaciones de PII (NOMBRE/CI/CORREO) se guardan en `log_auditoria_nlp` como «Resolución HITL»: 4 filas | pantalla de Auditoría | 🟠 | L8 |

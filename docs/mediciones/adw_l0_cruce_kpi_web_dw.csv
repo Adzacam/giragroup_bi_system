@@ -1,0 +1,93 @@
+gestion,codigo,estado_web,valor_web,valor_dw,semaforo_dw,resultado
+2026,KPI-01,Informativo,Bs 3 mil,2955.67,SIN_UMBRAL,IGUAL
+2026,KPI-02,Crítico,"15,3 %",15.28,ROJO,IGUAL
+2026,KPI-03,En alerta,"85,8 %",85.76,AMBAR,IGUAL
+2026,KPI-13,Informativo,"31,7 %",31.69,SIN_UMBRAL,IGUAL
+2026,KPI-14,Informativo,"Bs 12,28 M",12278356.22,SIN_UMBRAL,IGUAL
+2026,KPI-12,Crítico,"-1,2 %",-1.21,ROJO,IGUAL
+2026,KPI-05,Crítico,"75,3 %",75.33,ROJO,IGUAL
+2026,KPI-15,Crítico,"99,2 %",99.22,ROJO,IGUAL
+2026,KPI-04,Informativo,864,864.0,SIN_UMBRAL,IGUAL
+2026,KPI-21,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2026,KPI-22,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2026,KPI-06,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2026,KPI-20,Crítico,71 %,70.99,ROJO,IGUAL
+2026,KPI-16,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2026,KPI-10,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2026,KPI-11,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2026,KPI-18,Crítico,1.413,1413.0,ROJO,IGUAL
+2026,KPI-23,Crítico,"46,6 %",46.62,ROJO,IGUAL
+2026,KPI-07,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2026,KPI-08,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2026,KPI-19,En alerta,"82,4 %",82.35,AMBAR,IGUAL
+2026,KPI-09,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2026,KPI-17,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2025,KPI-01,Informativo,"Bs 3,7 mil",3654.51,SIN_UMBRAL,IGUAL
+2025,KPI-02,En meta,"157,5 %",157.48,VERDE,IGUAL
+2025,KPI-03,En meta,"110,5 %",110.54,VERDE,IGUAL
+2025,KPI-13,Informativo,"110,5 %",110.54,SIN_UMBRAL,IGUAL
+2025,KPI-14,Informativo,Bs 0,0.0,SIN_UMBRAL,IGUAL
+2025,KPI-12,En meta,"28,1 %",28.1,VERDE,IGUAL
+2025,KPI-05,Crítico,"53,1 %",53.11,ROJO,IGUAL
+2025,KPI-15,Crítico,"87,4 %",87.38,ROJO,IGUAL
+2025,KPI-04,Informativo,617,617.0,SIN_UMBRAL,IGUAL
+2025,KPI-21,Informativo,3.571,3571.0,SIN_UMBRAL,IGUAL
+2025,KPI-22,Informativo,2.609,2609.0,SIN_UMBRAL,IGUAL
+2025,KPI-06,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2025,KPI-20,Crítico,"12,6 %",12.58,ROJO,IGUAL
+2025,KPI-16,En meta,0 %,0.0,VERDE,IGUAL
+2025,KPI-10,En alerta,"83,9 %",83.92,AMBAR,IGUAL
+2025,KPI-11,Crítico,"51,5 %",51.51,ROJO,IGUAL
+2025,KPI-18,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2025,KPI-23,En meta,"99,8 %",99.77,VERDE,IGUAL
+2025,KPI-07,En meta,79,78.99,VERDE,IGUAL
+2025,KPI-08,En meta,"85,6 %",85.62,VERDE,IGUAL
+2025,KPI-19,Crítico,"66,8 %",66.77,ROJO,IGUAL
+2025,KPI-09,Informativo,608,608.0,SIN_UMBRAL,IGUAL
+2025,KPI-17,Informativo,78,78.0,SIN_UMBRAL,IGUAL
+2024,KPI-01,Informativo,"Bs 1,9 mil",1927.57,SIN_UMBRAL,IGUAL
+2024,KPI-02,Crítico,"6,3 %",6.25,ROJO,IGUAL
+2024,KPI-03,En meta,"102,3 %",102.26,VERDE,IGUAL
+2024,KPI-13,Informativo,"102,3 %",102.26,SIN_UMBRAL,IGUAL
+2024,KPI-14,Informativo,Bs 0,0.0,SIN_UMBRAL,IGUAL
+2024,KPI-12,En meta,"17,6 %",17.6,VERDE,IGUAL
+2024,KPI-05,Crítico,"94,3 %",94.28,ROJO,IGUAL
+2024,KPI-15,Crítico,"85,6 %",85.56,ROJO,IGUAL
+2024,KPI-04,Informativo,276,276.0,SIN_UMBRAL,IGUAL
+2024,KPI-21,Informativo,3.773,3773.0,SIN_UMBRAL,IGUAL
+2024,KPI-22,Informativo,1.631,1631.0,SIN_UMBRAL,IGUAL
+2024,KPI-06,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2024,KPI-20,Crítico,22 %,22.0,ROJO,IGUAL
+2024,KPI-16,En meta,0 %,0.0,VERDE,IGUAL
+2024,KPI-10,En alerta,"84,1 %",84.08,AMBAR,IGUAL
+2024,KPI-11,Crítico,"54,3 %",54.33,ROJO,IGUAL
+2024,KPI-18,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2024,KPI-23,En meta,100 %,100.0,VERDE,IGUAL
+2024,KPI-07,En meta,"78,8",78.83,VERDE,IGUAL
+2024,KPI-08,En meta,85 %,85.03,VERDE,IGUAL
+2024,KPI-19,Crítico,"58,6 %",58.61,ROJO,IGUAL
+2024,KPI-09,Informativo,792,792.0,SIN_UMBRAL,IGUAL
+2024,KPI-17,Informativo,0,0.0,SIN_UMBRAL,IGUAL
+2023,KPI-01,Informativo,"Bs 2,9 mil",2882.5,SIN_UMBRAL,IGUAL
+2023,KPI-05,Crítico,100 %,100.0,ROJO,IGUAL
+2023,KPI-15,Crítico,100 %,100.0,ROJO,IGUAL
+2023,KPI-04,Informativo,0,0.0,SIN_UMBRAL,IGUAL
+2023,KPI-22,Informativo,93,93.0,SIN_UMBRAL,IGUAL
+2023,KPI-02,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-03,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-13,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-14,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-12,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-21,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-06,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-20,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-16,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-10,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-11,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-18,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-23,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-07,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-08,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-19,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-09,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)
+2023,KPI-17,Sin dato,—,,SIN_UMBRAL,IGUAL (ambos sin dato)

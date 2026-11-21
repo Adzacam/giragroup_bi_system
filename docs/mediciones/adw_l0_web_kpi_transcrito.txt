@@ -1,0 +1,92 @@
+2026|KPI-01|Informativo|Bs 3 mil
+2026|KPI-02|Crítico|15,3 %
+2026|KPI-03|En alerta|85,8 %
+2026|KPI-13|Informativo|31,7 %
+2026|KPI-14|Informativo|Bs 12,28 M
+2026|KPI-12|Crítico|-1,2 %
+2026|KPI-05|Crítico|75,3 %
+2026|KPI-15|Crítico|99,2 %
+2026|KPI-04|Informativo|864
+2026|KPI-21|Sin dato|—
+2026|KPI-22|Sin dato|—
+2026|KPI-06|Sin dato|—
+2026|KPI-20|Crítico|71 %
+2026|KPI-16|Sin dato|—
+2026|KPI-10|Sin dato|—
+2026|KPI-11|Sin dato|—
+2026|KPI-18|Crítico|1.413
+2026|KPI-23|Crítico|46,6 %
+2026|KPI-07|Sin dato|—
+2026|KPI-08|Sin dato|—
+2026|KPI-19|En alerta|82,4 %
+2026|KPI-09|Sin dato|—
+2026|KPI-17|Sin dato|—
+2025|KPI-01|Informativo|Bs 3,7 mil
+2025|KPI-02|En meta|157,5 %
+2025|KPI-03|En meta|110,5 %
+2025|KPI-13|Informativo|110,5 %
+2025|KPI-14|Informativo|Bs 0
+2025|KPI-12|En meta|28,1 %
+2025|KPI-05|Crítico|53,1 %
+2025|KPI-15|Crítico|87,4 %
+2025|KPI-04|Informativo|617
+2025|KPI-21|Informativo|3.571
+2025|KPI-22|Informativo|2.609
+2025|KPI-06|Sin dato|—
+2025|KPI-20|Crítico|12,6 %
+2025|KPI-16|En meta|0 %
+2025|KPI-10|En alerta|83,9 %
+2025|KPI-11|Crítico|51,5 %
+2025|KPI-18|Sin dato|—
+2025|KPI-23|En meta|99,8 %
+2025|KPI-07|En meta|79
+2025|KPI-08|En meta|85,6 %
+2025|KPI-19|Crítico|66,8 %
+2025|KPI-09|Informativo|608
+2025|KPI-17|Informativo|78
+2024|KPI-01|Informativo|Bs 1,9 mil
+2024|KPI-02|Crítico|6,3 %
+2024|KPI-03|En meta|102,3 %
+2024|KPI-13|Informativo|102,3 %
+2024|KPI-14|Informativo|Bs 0
+2024|KPI-12|En meta|17,6 %
+2024|KPI-05|Crítico|94,3 %
+2024|KPI-15|Crítico|85,6 %
+2024|KPI-04|Informativo|276
+2024|KPI-21|Informativo|3.773
+2024|KPI-22|Informativo|1.631
+2024|KPI-06|Sin dato|—
+2024|KPI-20|Crítico|22 %
+2024|KPI-16|En meta|0 %
+2024|KPI-10|En alerta|84,1 %
+2024|KPI-11|Crítico|54,3 %
+2024|KPI-18|Sin dato|—
+2024|KPI-23|En meta|100 %
+2024|KPI-07|En meta|78,8
+2024|KPI-08|En meta|85 %
+2024|KPI-19|Crítico|58,6 %
+2024|KPI-09|Informativo|792
+2024|KPI-17|Informativo|0
+2023|KPI-01|Informativo|Bs 2,9 mil
+2023|KPI-05|Crítico|100 %
+2023|KPI-15|Crítico|100 %
+2023|KPI-04|Informativo|0
+2023|KPI-22|Informativo|93
+2023|KPI-02|Sin dato|—
+2023|KPI-03|Sin dato|—
+2023|KPI-13|Sin dato|—
+2023|KPI-14|Sin dato|—
+2023|KPI-12|Sin dato|—
+2023|KPI-21|Sin dato|—
+2023|KPI-06|Sin dato|—
+2023|KPI-20|Sin dato|—
+2023|KPI-16|Sin dato|—
+2023|KPI-10|Sin dato|—
+2023|KPI-11|Sin dato|—
+2023|KPI-18|Sin dato|—
+2023|KPI-23|Sin dato|—
+2023|KPI-07|Sin dato|—
+2023|KPI-08|Sin dato|—
+2023|KPI-19|Sin dato|—
+2023|KPI-09|Sin dato|—
+2023|KPI-17|Sin dato|—

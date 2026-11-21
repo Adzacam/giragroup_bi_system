@@ -1,0 +1,130 @@
+modulo,pantalla,gestion,cifra,valor_visible
+CMI,Perspectivas estratégicas,2026,KPI-01,valor=Bs 3 mil; estado=Informativo
+CMI,Perspectivas estratégicas,2026,KPI-02,"valor=15,3 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2026,KPI-03,"valor=85,8 %; estado=En alerta"
+CMI,Perspectivas estratégicas,2026,KPI-13,"valor=31,7 %; estado=Informativo"
+CMI,Perspectivas estratégicas,2026,KPI-14,"valor=Bs 12,28 M; estado=Informativo"
+CMI,Perspectivas estratégicas,2026,KPI-12,"valor=-1,2 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2026,KPI-05,"valor=75,3 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2026,KPI-15,"valor=99,2 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2026,KPI-04,valor=864; estado=Informativo
+CMI,Perspectivas estratégicas,2026,KPI-21,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2026,KPI-22,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2026,KPI-06,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2026,KPI-20,valor=71 %; estado=Crítico
+CMI,Perspectivas estratégicas,2026,KPI-16,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2026,KPI-10,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2026,KPI-11,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2026,KPI-18,valor=1.413; estado=Crítico
+CMI,Perspectivas estratégicas,2026,KPI-23,"valor=46,6 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2026,KPI-07,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2026,KPI-08,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2026,KPI-19,"valor=82,4 %; estado=En alerta"
+CMI,Perspectivas estratégicas,2026,KPI-09,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2026,KPI-17,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2025,KPI-01,"valor=Bs 3,7 mil; estado=Informativo"
+CMI,Perspectivas estratégicas,2025,KPI-02,"valor=157,5 %; estado=En meta"
+CMI,Perspectivas estratégicas,2025,KPI-03,"valor=110,5 %; estado=En meta"
+CMI,Perspectivas estratégicas,2025,KPI-13,"valor=110,5 %; estado=Informativo"
+CMI,Perspectivas estratégicas,2025,KPI-14,valor=Bs 0; estado=Informativo
+CMI,Perspectivas estratégicas,2025,KPI-12,"valor=28,1 %; estado=En meta"
+CMI,Perspectivas estratégicas,2025,KPI-05,"valor=53,1 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2025,KPI-15,"valor=87,4 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2025,KPI-04,valor=617; estado=Informativo
+CMI,Perspectivas estratégicas,2025,KPI-21,valor=3.571; estado=Informativo
+CMI,Perspectivas estratégicas,2025,KPI-22,valor=2.609; estado=Informativo
+CMI,Perspectivas estratégicas,2025,KPI-06,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2025,KPI-20,"valor=12,6 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2025,KPI-16,valor=0 %; estado=En meta
+CMI,Perspectivas estratégicas,2025,KPI-10,"valor=83,9 %; estado=En alerta"
+CMI,Perspectivas estratégicas,2025,KPI-11,"valor=51,5 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2025,KPI-18,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2025,KPI-23,"valor=99,8 %; estado=En meta"
+CMI,Perspectivas estratégicas,2025,KPI-07,valor=79; estado=En meta
+CMI,Perspectivas estratégicas,2025,KPI-08,"valor=85,6 %; estado=En meta"
+CMI,Perspectivas estratégicas,2025,KPI-19,"valor=66,8 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2025,KPI-09,valor=608; estado=Informativo
+CMI,Perspectivas estratégicas,2025,KPI-17,valor=78; estado=Informativo
+CMI,Perspectivas estratégicas,2024,KPI-01,"valor=Bs 1,9 mil; estado=Informativo"
+CMI,Perspectivas estratégicas,2024,KPI-02,"valor=6,3 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2024,KPI-03,"valor=102,3 %; estado=En meta"
+CMI,Perspectivas estratégicas,2024,KPI-13,"valor=102,3 %; estado=Informativo"
+CMI,Perspectivas estratégicas,2024,KPI-14,valor=Bs 0; estado=Informativo
+CMI,Perspectivas estratégicas,2024,KPI-12,"valor=17,6 %; estado=En meta"
+CMI,Perspectivas estratégicas,2024,KPI-05,"valor=94,3 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2024,KPI-15,"valor=85,6 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2024,KPI-04,valor=276; estado=Informativo
+CMI,Perspectivas estratégicas,2024,KPI-21,valor=3.773; estado=Informativo
+CMI,Perspectivas estratégicas,2024,KPI-22,valor=1.631; estado=Informativo
+CMI,Perspectivas estratégicas,2024,KPI-06,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2024,KPI-20,valor=22 %; estado=Crítico
+CMI,Perspectivas estratégicas,2024,KPI-16,valor=0 %; estado=En meta
+CMI,Perspectivas estratégicas,2024,KPI-10,"valor=84,1 %; estado=En alerta"
+CMI,Perspectivas estratégicas,2024,KPI-11,"valor=54,3 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2024,KPI-18,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2024,KPI-23,valor=100 %; estado=En meta
+CMI,Perspectivas estratégicas,2024,KPI-07,"valor=78,8; estado=En meta"
+CMI,Perspectivas estratégicas,2024,KPI-08,valor=85 %; estado=En meta
+CMI,Perspectivas estratégicas,2024,KPI-19,"valor=58,6 %; estado=Crítico"
+CMI,Perspectivas estratégicas,2024,KPI-09,valor=792; estado=Informativo
+CMI,Perspectivas estratégicas,2024,KPI-17,valor=0; estado=Informativo
+CMI,Perspectivas estratégicas,2023,KPI-01,"valor=Bs 2,9 mil; estado=Informativo"
+CMI,Perspectivas estratégicas,2023,KPI-05,valor=100 %; estado=Crítico
+CMI,Perspectivas estratégicas,2023,KPI-15,valor=100 %; estado=Crítico
+CMI,Perspectivas estratégicas,2023,KPI-04,valor=0; estado=Informativo
+CMI,Perspectivas estratégicas,2023,KPI-22,valor=93; estado=Informativo
+CMI,Perspectivas estratégicas,2023,KPI-02,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-03,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-13,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-14,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-12,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-21,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-06,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-20,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-16,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-10,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-11,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-18,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-23,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-07,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-08,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-19,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-09,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2023,KPI-17,valor=—; estado=Sin dato
+CMI,Perspectivas estratégicas,2026,ÍNDICE,"32,4 Crítico (Fin 28 · EyM 20 · PI 20 · AyC 60)"
+CMI,Perspectivas estratégicas,2025,ÍNDICE,"65,7 En alerta (68 · 60 · 60 · 73,3)"
+CMI,Perspectivas estratégicas,2024,ÍNDICE,"60,9 En alerta (52 · 60 · 60 · 73,3)"
+CMI,Perspectivas estratégicas,2023,ÍNDICE,20 Crítico (20 · — · — · —)
+CMI,Analítica predictiva,2026,Serie longitudinal,N = 33 meses (2023-09 – 2026-05)
+CMI,Analítica predictiva,2026,Inscritos proyectados 6 M,4812 (IC 95 %: 3641–5983)
+CMI,Analítica predictiva,2026,MAPE hold-out 6 M / RMSE,"14,06 % / 99,57"
+CMI,Analítica predictiva,2026,Cumplimiento proyectado del mes (dic-2026),136 %
+CMI,Analítica predictiva,2026,Avance de la meta anual,"31,4 %"
+Académico,Alertas tempranas (/academico/rendimiento),2024-2026,Matrícula activa auditada,10.327 alumnos
+Académico,Alertas tempranas,2024-2026,Riesgo académico (promedio ≤ 70),"1.363 (13,2 %)"
+Académico,Alertas tempranas,2024-2026,Riesgo deserción (incumplimiento > 30 %),"0 (0,0 %)"
+Académico,Alertas tempranas,2024-2026,Riesgo financiero (mora ≥ 2 cuotas),1.440 alumnos · Bs 903.179
+Académico,Alertas tempranas,2024-2026,Alerta crítica (2 o más reglas),107 (A+F = 107; D+F = 0; A+D = 0)
+Académico,Alertas tempranas,2024-2026,Registros en alerta,2.696
+Académico,Desempeño docente,todas,Docentes registrados,100 (lista 1–5 de 100)
+Académico,Desempeño docente,todas,Evaluaciones registradas,67.109
+Académico,Desempeño docente,todas,Satisfacción estudiantil,"3,28"
+Académico,Desempeño docente,todas,Primer docente de la lista (DOC-111),"Nombre = texto de un comentario; ★ 1,75 (24)"
+Académico,Catálogo curricular,todas,Módulos registrados / calidad curricular,4.319 / 100 % con código POS canónico
+Académico,Catálogo curricular,todas,Primeras filas,"Módulos llamados «0», «1» y «2025-06-24 17:59:00» (MOD-GEN)"
+Académico,Proyección de alumnos,todas,Tendencia OLS / MAPE / RMSE,"7,2687 al/mes / 14,06 % / 99,57"
+Financiero,Recaudación,2026,Recaudación neta registrada,"Bs 5.309.447,68"
+Financiero,Recaudación,2026,Cartera vencida exigible,"Bs 4.832.610,08"
+Financiero,Recaudación,2026,Cumplimiento presupuestario,"31,4 %"
+Financiero,Cartera y mora,todas,Estudiantes en mora (≥ 2 cuotas),"1.440 (13,9 % de la matrícula auditada)"
+Financiero,Cartera y mora,todas,Saldo exigible en mora,"Bs 903.179,09"
+Financiero,Cartera y mora,todas,Recaudación consolidada DW,Bs 0
+Financiero,Metas,2026,Meta global de gestión,Bs 16.894.995
+Financiero,Metas,2026,Recaudación acumulada / desviación presupuestaria,"Bs 5.309.448 (31,4 %) / Bs -11.585.547"
+Financiero,Metas,2026,Programas en meta / viables,25 / 25
+Financiero,Proyección,2026,Meta mes actual / cierre proyectado HW / meta anual,Bs 99.196 / Bs 134.951 (12 %) / Bs 16.894.995
+DataOps,Carga de archivos,todas,Historial de lotes,3 lotes (#36 y #35 En revisión; #1 Consolidado); columna «Registros» = 0 en los tres
+DataOps,Revisión lote 35,2024-2026,Casos pendientes (paso ③),1.403
+DataOps,Lectura de BETO lote 1,2025,Registros del lote / Analizados,1.721 / 0
+Auditoría,Trazabilidad,todas,Total eventos / lotes / alertas críticas / 2FA,400 / 205 lotes / 0 / 0 logs
+Reportes,Centro de reportes,todas,Exportaciones registradas,0 eventos
