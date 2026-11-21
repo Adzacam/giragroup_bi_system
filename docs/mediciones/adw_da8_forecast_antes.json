@@ -1,0 +1,86 @@
+{
+ "caso3": {
+  "nombre": "Caso 3: Cumplimiento de Metas / Ingresos Mensuales",
+  "rmse": 252859.49,
+  "mensaje_pronostico": null
+ },
+ "caso3_meses": 18,
+ "caso3_meta_catalogo_bs": [
+  1068196.0,
+  1115596.83,
+  1061647.2,
+  1061647.2,
+  995472.23,
+  608960.5,
+  1085960.0,
+  969607.0,
+  1241098.0,
+  1396235.0,
+  1551372.0,
+  1512588.0,
+  1622019.0,
+  1644864.0,
+  1667710.0,
+  1553483.0,
+  1484947.0,
+  1165112.0
+ ],
+ "caso3_ejecutado_real_bs": [
+  1143335.46,
+  1206945.24,
+  1124596.36,
+  1109638.17,
+  1013177.0,
+  864040.58,
+  1307697.23,
+  984911.79,
+  1353826.01,
+  1410779.33,
+  252233.32,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "caso3_proyecciones_hw": [
+  [
+   "2027-01",
+   1576557.26
+  ],
+  [
+   "2027-02",
+   1590847.5
+  ],
+  [
+   "2027-03",
+   1640095.21
+  ],
+  [
+   "2027-04",
+   1638530.14
+  ],
+  [
+   "2027-05",
+   1440005.98
+  ],
+  [
+   "2027-06",
+   1637388.12
+  ]
+ ],
+ "caso4": {
+  "nombre": "Caso 4: Cumplimiento de Metas / Ingresos Anuales",
+  "pendiente_anual_bs": 2436141.68,
+  "cagr_historico_pct": 26.76,
+  "gestion_actual": 2026,
+  "meta_anual_institucional_bs": 16894995.0,
+  "recaudado_acumulado_bs": 5309447.68,
+  "cierre_anual_proyectado_ols_bs": 15183417.34,
+  "porcentaje_avance_meta": 31.4,
+  "nota_metodologica": "Estimación de tendencia lineal indicativa sobre N=3 puntos. No se calculan intervalos de confianza al 95% debido a la reducida muestra longitudinal histórica (dof=1). Ver Cap. 4 del informe técnico."
+ },
+ "sin_datos": {}
+}

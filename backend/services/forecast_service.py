@@ -460,14 +460,14 @@ def _resumen_cartera(df: pd.DataFrame) -> Dict[str, Any]:
     }
 
 
+# ADW DA8 (Lean, 2026-11-20): meta y recaudacion cuentan TODAS las categorias (PROGRAMAS + TECHOS_CERRADOS), igual que
+# el CMI (bi.vw_metas_mensual). Antes solo PROGRAMAS y la misma pantalla contradecia al CMI (31,4 % frente a 31,7 %).
 _SQL_META_VS_EJECUTADO = text("""
     SELECT dt.gestion, dt.mes,
            SUM(fr.monto_meta)::float AS meta,
            SUM(fr.monto_ejecutado)::float AS ejecutado
     FROM public.fact_rentabilidad fr
-    JOIN public.dim_categoria_financiera dcf ON fr.id_categoria = dcf.id_categoria
     JOIN public.dim_tiempo dt ON fr.id_tiempo = dt.id_tiempo
-    WHERE dcf.nombre_categoria = 'PROGRAMAS'
     GROUP BY dt.gestion, dt.mes
     ORDER BY dt.gestion, dt.mes
 """)

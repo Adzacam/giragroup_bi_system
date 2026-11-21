@@ -120,3 +120,26 @@ def test_sin_vistas_bi_el_servicio_conserva_su_calculo_y_lo_declara(dw_sqlite):
     res = KPIService(dw_sqlite).obtener_kpis_financieros()
     assert res["fuente"] == "calculo_local (sin vistas bi)"
     assert "total_recaudado_bs" in res
+
+
+@requiere_pg
+def test_pronostico_financiero_cuenta_todas_las_categorias_igual_que_el_cmi(db):
+    """DA8 (Lean): meta y recaudación = PROGRAMAS + TECHOS_CERRADOS, igual que bi.vw_metas_mensual y el KPI-13."""
+    from services.forecast_service import obtener_analitica_macro_completa
+
+    c4 = obtener_analitica_macro_completa(db)["caso4_metas_anuales"]
+    g = c4["gestion_actual"]
+    total = db.execute(text(
+        "SELECT SUM(fr.monto_ejecutado), SUM(fr.monto_meta) FROM fact_rentabilidad fr JOIN dim_tiempo t USING(id_tiempo) WHERE t.gestion=:g"),
+        {"g": g}).one()
+    assert c4["recaudado_acumulado_bs"] == pytest.approx(float(total[0]), abs=0.01)
+    assert c4["meta_anual_institucional_bs"] == pytest.approx(float(total[1]), abs=0.01)
+    kpi13 = _cmi(db, g).get("KPI-13")
+    assert kpi13 is not None and c4["porcentaje_avance_meta"] == pytest.approx(kpi13, abs=0.06)
+
+
+def test_las_consultas_del_pronostico_ya_no_filtran_por_categoria():
+    fuentes = [(ROOT / "backend" / "services" / "forecast_service.py").read_text(encoding="utf-8"),
+               (ROOT / "pipeline" / "analytics" / "time_series_extractor.py").read_text(encoding="utf-8")]
+    for src in fuentes:
+        assert "nombre_categoria = 'PROGRAMAS'" not in src, "una consulta de metas vuelve a filtrar solo PROGRAMAS (DA8)"

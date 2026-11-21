@@ -73,15 +73,17 @@ QUERIES = {
         GROUP BY dt.periodo_mes
         ORDER BY dt.periodo_mes;
     """,
+    # ADW DA8 (Lean, 2026-11-20): todas las categorias (PROGRAMAS + TECHOS_CERRADOS); la clave conserva su nombre.
+    # Por mes: lo ejecutado si el mes tiene algun dato ejecutado; si no, la meta. No se mezcla ejecutado de una
+    # categoria con meta de otra dentro del mismo mes.
     "META_MENSUAL_PROGRAMAS": """
-        SELECT 
+        SELECT
             dt.periodo_mes,
-            COALESCE(fr.monto_ejecutado, fr.monto_meta)::numeric AS valor
+            (CASE WHEN COUNT(fr.monto_ejecutado) > 0 THEN SUM(fr.monto_ejecutado) ELSE SUM(fr.monto_meta) END)::numeric AS valor
         FROM public.fact_rentabilidad fr
-        JOIN public.dim_categoria_financiera dcf ON fr.id_categoria = dcf.id_categoria
         JOIN public.dim_tiempo dt ON fr.id_tiempo = dt.id_tiempo
-        WHERE dcf.nombre_categoria = 'PROGRAMAS'
-          AND COALESCE(fr.monto_ejecutado, fr.monto_meta) IS NOT NULL
+        GROUP BY dt.periodo_mes
+        HAVING COUNT(fr.monto_ejecutado) > 0 OR COUNT(fr.monto_meta) > 0
         ORDER BY dt.periodo_mes;
     """,
     "META_ANUAL": """
@@ -89,10 +91,8 @@ QUERIES = {
             dt.gestion AS anio,
             SUM(fr.monto_ejecutado)::numeric AS valor
         FROM public.fact_rentabilidad fr
-        JOIN public.dim_categoria_financiera dcf ON fr.id_categoria = dcf.id_categoria
         JOIN public.dim_tiempo dt ON fr.id_tiempo = dt.id_tiempo
-        WHERE dcf.nombre_categoria = 'PROGRAMAS'
-          AND fr.monto_ejecutado IS NOT NULL
+        WHERE fr.monto_ejecutado IS NOT NULL
           AND dt.gestion < EXTRACT(YEAR FROM CURRENT_DATE)
         GROUP BY dt.gestion
         ORDER BY dt.gestion;
