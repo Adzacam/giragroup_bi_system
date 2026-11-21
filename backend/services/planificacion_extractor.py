@@ -210,12 +210,14 @@ def _serializar_valor(val: Any) -> Optional[str]:
     return s
 
 
-def extraer_libro_planificacion(ruta_xlsx: str) -> Dict[str, Any]:
+def extraer_libro_planificacion(ruta_xlsx: str, hojas_excluidas: Optional[set] = None) -> Dict[str, Any]:
     """
     Extrae de un libro PLANIFICACION:
-    - `metas`: filas de Informe Gestión para `dim_meta`
+    - `metas`: filas del informe de gestión (detectado por contenido) para `dim_meta`
     - `filas`: filas útiles de hojas fuente para `fact_planificacion_programa`
     - `hojas_resumen`: conteo y clasificación por hoja
+    `hojas_excluidas` (FU-L1b): hojas que el clasificador genérico ignora (pipeline/lector_hojas.py). La ingesta
+    las pasa para que clasificador y extractor tomen una sola decisión por hoja.
     """
     wb_vals = openpyxl.load_workbook(ruta_xlsx, read_only=True, data_only=True)
     wb_form = openpyxl.load_workbook(ruta_xlsx, read_only=True, data_only=False)
@@ -225,6 +227,9 @@ def extraer_libro_planificacion(ruta_xlsx: str) -> Dict[str, Any]:
         hojas_resumen: List[Dict[str, Any]] = []
 
         for nombre_hoja in wb_vals.sheetnames:
+            if hojas_excluidas and nombre_hoja in hojas_excluidas:
+                hojas_resumen.append({"hoja": nombre_hoja, "tipo": "ignorada_por_clasificador", "filas": 0})
+                continue
             if es_hoja_borrador(nombre_hoja):
                 hojas_resumen.append({"hoja": nombre_hoja, "tipo": "borrador", "filas": 0})
                 continue

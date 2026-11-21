@@ -68,7 +68,17 @@ def conflictos_planificacion(ruta: Path, libro: dict) -> list[dict]:
     if not sugeridos or sugeridos.count("PLANIFICACION") * 2 <= len(sugeridos):
         return []
     from services.planificacion_extractor import extraer_libro_planificacion
-    datos = extraer_libro_planificacion(str(ruta))
+    # Igual que la ingesta (FU-L1b): el extractor recibe las hojas que el clasificador ignora
+    datos = extraer_libro_planificacion(str(ruta), hojas_excluidas={n for n, h in libro.items() if not h.usada})
+    sin_excluir = extraer_libro_planificacion(str(ruta))
+    EXTRACTOR.append({
+        "archivo": ruta.name,
+        "filas_con_clasificador": len(datos["filas"]), "metas_con_clasificador": len(datos["metas"]),
+        "filas_sin_clasificador": len(sin_excluir["filas"]), "metas_sin_clasificador": len(sin_excluir["metas"]),
+        "filas_de_ocultas_rescatadas": sum(1 for f in datos["filas"] if libro[f["hoja"]].meta.estado != "visible"),
+        "metas_de_ocultas_rescatadas": sum(1 for m in datos["metas"]
+                                           if libro[str(m.get("celda_origen", "")).split("!")[0]].meta.estado != "visible"),
+    })
     filas_por_hoja = {}
     for f in datos["filas"]:
         filas_por_hoja[f["hoja"]] = filas_por_hoja.get(f["hoja"], 0) + 1
@@ -89,6 +99,7 @@ def conflictos_planificacion(ruta: Path, libro: dict) -> list[dict]:
 
 
 CONFLICTOS: list[dict] = []
+EXTRACTOR: list[dict] = []
 
 
 def clasificar_directorio(entrada: Path) -> list[dict]:
@@ -148,6 +159,8 @@ def main(argv=None) -> int:
         "subtotales_cortados_hojas_usadas": sum(int(f["subtotales_cortados"]) for f in filas if f["decision"] == "usar"),
         "formulas_sin_valor_hojas_usadas": sum(int(f["formulas_sin_valor"]) for f in filas if f["decision"] == "usar"),
         "conflictos_extractor_planificacion": CONFLICTOS,
+        "extractor_planificacion": EXTRACTOR,
+        "ocultas_usadas": [(f["archivo"], f["hoja"], f["motivo"]) for f in filas if f["estado"] != "visible" and f["decision"] == "usar"],
         "por_regla": {r: sum(f["regla"] == r for f in filas) for r in sorted({f["regla"] for f in filas})},
         "segundos": round(time.perf_counter() - t0, 1),
     }

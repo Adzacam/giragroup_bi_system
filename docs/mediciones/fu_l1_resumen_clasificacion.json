@@ -1,87 +1,72 @@
 {
  "hojas": 62,
- "usar": 29,
- "ignorar": 33,
+ "usar": 36,
+ "ignorar": 26,
  "en_contrato": 62,
- "diferencias_contrato": [
-  [
-   "Base centralizada Académica ARCA (1).xlsx",
-   "MODULOS",
-   "usar",
-   "ignorar"
-  ]
- ],
- "filas_leidas": 77833,
- "filas_fantasma_cortadas_hojas_usadas": 3072,
- "subtotales_cortados_hojas_usadas": 0,
+ "diferencias_contrato": [],
+ "filas_leidas": 78005,
+ "filas_fantasma_cortadas_hojas_usadas": 3084,
+ "subtotales_cortados_hojas_usadas": 8,
  "formulas_sin_valor_hojas_usadas": 83908,
- "conflictos_extractor_planificacion": [
+ "conflictos_extractor_planificacion": [],
+ "extractor_planificacion": [
   {
    "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
-   "hoja": "Julio-2025",
-   "estado": "hidden",
-   "regla": "oculta",
-   "filas_extractor": 22,
-   "metas_extractor": 0
-  },
-  {
-   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
-   "hoja": "Agosto-2025",
-   "estado": "hidden",
-   "regla": "oculta",
-   "filas_extractor": 20,
-   "metas_extractor": 0
-  },
-  {
-   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
-   "hoja": "Septiembre-2025",
-   "estado": "hidden",
-   "regla": "oculta",
-   "filas_extractor": 24,
-   "metas_extractor": 0
-  },
-  {
-   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
-   "hoja": "Octubre-2025",
-   "estado": "hidden",
-   "regla": "oculta",
-   "filas_extractor": 30,
-   "metas_extractor": 0
-  },
-  {
-   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
-   "hoja": "Noviembre-2025",
-   "estado": "hidden",
-   "regla": "oculta",
-   "filas_extractor": 20,
-   "metas_extractor": 0
-  },
-  {
-   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
-   "hoja": "Diciembre-2025",
-   "estado": "hidden",
-   "regla": "oculta",
-   "filas_extractor": 24,
-   "metas_extractor": 0
-  },
-  {
-   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
-   "hoja": "Informe Gestión",
-   "estado": "hidden",
-   "regla": "oculta",
-   "filas_extractor": 0,
-   "metas_extractor": 58
+   "filas_con_clasificador": 1663,
+   "metas_con_clasificador": 58,
+   "filas_sin_clasificador": 1663,
+   "metas_sin_clasificador": 58,
+   "filas_de_ocultas_rescatadas": 140,
+   "metas_de_ocultas_rescatadas": 58
   }
+ ],
+ "ocultas_usadas": [
+  [
+   "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "Julio-2025",
+   "oculta rescatada: período sin hoja visible"
+  ],
+  [
+   "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "Agosto-2025",
+   "oculta rescatada: período sin hoja visible"
+  ],
+  [
+   "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "Septiembre-2025",
+   "oculta rescatada: período sin hoja visible"
+  ],
+  [
+   "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "Octubre-2025",
+   "oculta rescatada: período sin hoja visible"
+  ],
+  [
+   "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "Noviembre-2025",
+   "oculta rescatada: período sin hoja visible"
+  ],
+  [
+   "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "Diciembre-2025",
+   "oculta rescatada: período sin hoja visible"
+  ],
+  [
+   "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "Informe Gestión",
+   "oculta rescatada: informe de metas sin hoja visible equivalente"
+  ]
  ],
  "por_regla": {
   "cabecera_dispersa": 1,
   "hoja_numerada": 3,
-  "oculta": 23,
+  "oculta": 16,
+  "oculta_rescatada": 7,
   "resumen_montos_texto": 2,
   "sin_filas_de_datos": 2,
   "tabla_de_datos": 29,
   "texto_sin_valores": 1,
   "una_sola_fila": 1
  },
- "segundos": 46.5
+ "segundos": 49.7
 }

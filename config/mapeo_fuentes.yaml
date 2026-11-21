@@ -335,6 +335,27 @@ reglas_hoja:
     - {id: dashboard, patron: "^dashboard", motivo: "panel de gráficos"}
     - {id: centralizado, patron: "^centralizado", motivo: "consolidado de otras hojas"}
   usar_por_defecto: "cabecera detectada y filas_datos >= 1 y no cae en ninguna regla anterior"
+  # FU-L1b (decisión de Lean, 2026-11-20): una hoja OCULTA se rescata como usada cuando:
+  #  - por contenido es de un tipo de `tipos` (hoja mensual de detalle con período dominante, o informe de metas),
+  #  - no cae en ninguna regla de forma ni de nombre (borrador, copia, tabla dinámica, dashboard, centralizado…), y
+  #  - su período (año-mes) o su entidad (informe de metas) no lo cubre ninguna hoja visible usada del mismo libro
+  #    (deduplicación por período con prioridad a la hoja visible de detalle, DA6).
+  # Si el período ya está cubierto, la oculta se ignora como duplicada. Las demás ocultas siguen ignoradas.
+  rescate_ocultas:
+    tipos: [PLANIFICACION]
+    columnas_anio: ["ano", "anio", "gestion"]
+    columnas_mes: ["mes"]
+    columnas_fecha: ["fecha"]   # si no hay año y mes: período de una fecha AAAA-MM-DD
+    meses: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+    min_proporcion_periodo_dominante: 0.8   # hoja mensual: al menos el 80 % de sus filas con año y mes son del mismo mes
+    informe_metas:
+      filas_busqueda: 45
+      patron_gestion: 'gestion (20\d{2})'      # rótulo de bloque anual
+      patron_columna_meta: '^meta\b'           # columna de meta en la misma fila que la columna 'mes'
+      columna_mes: "mes"
+    motivo_rescate: "oculta rescatada: período sin hoja visible"
+    motivo_rescate_informe: "oculta rescatada: informe de metas sin hoja visible equivalente"
+    motivo_duplicada: "oculta: período ya cubierto por una hoja visible"
   # Hojas que el plan saca del descarte: se usan aunque una regla débil o de nombre las ignore.
   # Con las reglas de FU-L1 ninguna de las dos cae en una regla (se usan por contenido); quedan como red.
   # 'aplica_a_ocultas: true' haría que una excepción rescate también una hoja oculta.

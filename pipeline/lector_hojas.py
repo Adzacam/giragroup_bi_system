@@ -210,6 +210,8 @@ class MetadatosHoja:
     filas_descartadas: List[int] = field(default_factory=list)  # fantasma o subtotal antes del corte
     campos_por_tipo: Dict[str, List[str]] = field(default_factory=dict)
     tipo_sugerido: Optional[str] = None
+    periodo_dominante: Optional[str] = None      # 'AAAA-MM' si casi todas las filas son del mismo mes (FU-L1b)
+    gestiones_metas: List[int] = field(default_factory=list)  # años de un informe de metas (FU-L1b)
 
     def como_dict(self, con_indices: bool = False) -> dict:
         d = asdict(self)
@@ -307,6 +309,78 @@ def medir_forma(df: pd.DataFrame, meta: MetadatosHoja, config: Optional[dict] = 
     return meta
 
 
+def _mes_de(valor: Any, meses: List[str]) -> Optional[int]:
+    if vacio(valor):
+        return None
+    t = normalizar(valor)
+    try:
+        n = int(float(t))
+        return n if 1 <= n <= 12 else None
+    except ValueError:
+        return meses.index(t) + 1 if t in meses else None
+
+
+def _anio_de(valor: Any) -> Optional[int]:
+    if vacio(valor):
+        return None
+    try:
+        n = int(float(normalizar(valor)))
+        return n if 1990 <= n <= 2100 else None
+    except ValueError:
+        return None
+
+
+def medir_periodo(df: pd.DataFrame, meta: MetadatosHoja, config: Optional[dict] = None) -> MetadatosHoja:
+    """
+    FU-L1b. Período dominante (año-mes) de una hoja de detalle, leído de sus columnas de año y mes, y
+    años de un informe de metas (rótulos 'gestión AAAA' + fila con 'mes' y columnas de meta). Por contenido,
+    nunca por el nombre de la hoja.
+    """
+    rr = (reglas_hoja(config).get("rescate_ocultas") or {})
+    if not rr or df.empty:
+        return meta
+    meses = [normalizar(m) for m in rr.get("meses", [])]
+    cab = [normalizar(c) for c in meta.cabeceras]
+    col_a = next((i for i, c in enumerate(cab) if c in {normalizar(x) for x in rr.get("columnas_anio", [])}), None)
+    col_m = next((i for i, c in enumerate(cab) if c in {normalizar(x) for x in rr.get("columnas_mes", [])}), None)
+    col_f = next((i for i, c in enumerate(cab) if c in {normalizar(x) for x in rr.get("columnas_fecha", [])}), None)
+    usa_fecha = (col_a is None or col_m is None) and col_f is not None
+    if ((col_a is not None and col_m is not None) or usa_fecha) and meta.fila_cabecera is not None:
+        conteo: Dict[str, int] = {}
+        fin = meta.corte_final if meta.corte_final is not None else len(df)
+        for fila in df.iloc[meta.fila_cabecera + 1:fin].itertuples(index=False):
+            if usa_fecha:
+                m_f = re.match(r"^\s*(\d{4})-(\d{2})", str(fila[col_f])) if not vacio(fila[col_f]) else None
+                anio, mes = (int(m_f.group(1)), int(m_f.group(2))) if m_f else (None, None)
+            else:
+                anio, mes = _anio_de(fila[col_a]), _mes_de(fila[col_m], meses)
+            if anio and mes:
+                clave = f"{anio:04d}-{mes:02d}"
+                conteo[clave] = conteo.get(clave, 0) + 1
+        total = sum(conteo.values())
+        if total:
+            clave, n = max(conteo.items(), key=lambda kv: kv[1])
+            if n / total >= float(rr.get("min_proporcion_periodo_dominante", 0.8)):
+                meta.periodo_dominante = clave
+    im = rr.get("informe_metas") or {}
+    if im:
+        pat_g = re.compile(im.get("patron_gestion", r"gestion (20\d{2})"))
+        pat_m = re.compile(im.get("patron_columna_meta", r"^meta(\s|$)"))
+        col_mes = normalizar(im.get("columna_mes", "mes"))
+        gestiones, fila_metas = set(), False
+        for fila in df.iloc[: int(im.get("filas_busqueda", 45))].itertuples(index=False):
+            celdas = [normalizar(v) for v in fila if isinstance(v, str) and v.strip()]
+            for c in celdas:
+                m = pat_g.search(c)
+                if m:
+                    gestiones.add(int(m.group(1)))
+            if col_mes in celdas and any(pat_m.search(c) for c in celdas):
+                fila_metas = True
+        if gestiones and fila_metas:
+            meta.gestiones_metas = sorted(gestiones)
+    return meta
+
+
 def _contar_combinadas_xml(archivo: zipfile.ZipFile, ruta_xml: str) -> int:
     """Celdas combinadas contadas en el XML de la hoja (el modo de solo lectura de openpyxl no las expone)."""
     try:
@@ -384,6 +458,7 @@ def leer_metadatos(ruta: str, hojas: Dict[str, pd.DataFrame], config: Optional[d
         medir_forma(df, meta, config)
         meta.campos_por_tipo = campos_por_tipo(meta.cabeceras, config)
         meta.tipo_sugerido = tipo_sugerido(meta.campos_por_tipo, config)
+        medir_periodo(df, meta, config)
         metas[nombre] = meta
     # Hojas que openpyxl ve pero pandas no devolvió (no debería pasar): se conservan con forma vacía
     return metas
@@ -530,6 +605,48 @@ def _clasificar_sola(meta: MetadatosHoja, reglas: dict) -> Tuple[str, str, str, 
     return USAR, "tabla_de_datos", "tabla de datos con cabecera detectada", False
 
 
+def _rescatar_ocultas(metas: Dict[str, MetadatosHoja], previas: Dict[str, Tuple[str, str, str, bool]],
+                      reglas: dict) -> Dict[str, Tuple[str, str, str, bool]]:
+    """
+    FU-L1b: decisión de las hojas ocultas que por contenido son de un tipo rescatable (`rescate_ocultas`).
+    - Se evalúan como si fueran visibles: si cae una regla de forma o de nombre (borrador, copia, centralizado,
+      tabla dinámica, dashboard, filas repetidas…), sigue ignorada con su motivo de oculta.
+    - Hoja mensual de detalle (período dominante): se usa si ninguna hoja visible usada del libro, del mismo
+      tipo, cubre ese período; si lo cubre, se ignora como duplicada.
+    - Informe de metas (rótulos de gestión + columnas de meta): se usa si ninguna hoja visible usada es un
+      informe de metas de alguna de esas gestiones.
+    """
+    rr = reglas.get("rescate_ocultas") or {}
+    tipos = set(rr.get("tipos") or [])
+    if not tipos:
+        return {}
+    visibles = [m for n, m in metas.items() if m.estado == "visible" and previas[n][0] == USAR]
+    periodos_visibles = {m.periodo_dominante for m in visibles if m.periodo_dominante and m.tipo_sugerido in tipos}
+    gestiones_visibles = {g for m in visibles for g in m.gestiones_metas}
+    cambios = {}
+    for nombre, meta in metas.items():
+        if previas[nombre][1] != "oculta":
+            continue
+        es_mensual = meta.tipo_sugerido in tipos and meta.periodo_dominante
+        es_informe = bool(meta.gestiones_metas)
+        if not (es_mensual or es_informe):
+            continue
+        como_visible = _clasificar_sola(MetadatosHoja(**{**meta.__dict__, "estado": "visible"}), reglas)
+        if como_visible[0] != USAR:
+            continue  # borrador, copia, centralizado, resumen…: sigue ignorada como oculta
+        if es_mensual:
+            if meta.periodo_dominante in periodos_visibles:
+                cambios[nombre] = (IGNORAR, "oculta_duplicada", rr.get("motivo_duplicada", "oculta duplicada"), False)
+            else:
+                cambios[nombre] = (USAR, "oculta_rescatada", rr.get("motivo_rescate", "oculta rescatada"), False)
+        elif not (set(meta.gestiones_metas) & gestiones_visibles):
+            cambios[nombre] = (USAR, "oculta_rescatada",
+                               rr.get("motivo_rescate_informe", rr.get("motivo_rescate", "oculta rescatada")), False)
+        else:
+            cambios[nombre] = (IGNORAR, "oculta_duplicada", rr.get("motivo_duplicada", "oculta duplicada"), False)
+    return cambios
+
+
 def clasificar_libro(metas: Dict[str, MetadatosHoja], config: Optional[dict] = None) -> Dict[str, ClasificacionHoja]:
     """
     Decisión por hoja. Las reglas débiles (forma dudosa o nombre como señal) solo ignoran la hoja
@@ -537,6 +654,7 @@ def clasificar_libro(metas: Dict[str, MetadatosHoja], config: Optional[dict] = N
     """
     reglas = reglas_hoja(config)
     previas = {n: _clasificar_sola(m, reglas) for n, m in metas.items()}
+    previas.update(_rescatar_ocultas(metas, previas, reglas))
     hay_usada_fuerte = any(d == USAR for d, _, _, _ in previas.values())
     resultado: Dict[str, ClasificacionHoja] = {}
     for nombre, (decision, regla, motivo, debil) in previas.items():

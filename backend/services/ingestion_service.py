@@ -611,6 +611,7 @@ class IngestionService:
         "derivada_sin_cabecera": "sin cabecera de programa (extractor de planificación)",
         "derivada_formulas": "hoja derivada por fórmulas de otra hoja (extractor de planificación)",
         "dato_fuente": "sin filas con programa o POS (extractor de planificación)",
+        "ignorada_por_clasificador": "ignorada por el clasificador de hojas",
     }
 
     @classmethod
@@ -992,7 +993,9 @@ class IngestionService:
             )
             if final_tipo_fuente == "PLANIFICACION" and ext in (".xlsx", ".xlsm"):
                 from services.planificacion_extractor import extraer_libro_planificacion
-                plan_data = extraer_libro_planificacion(tmp_path)
+                # FU-L1b: una sola decisión por hoja; el extractor no lee lo que el clasificador ignora
+                plan_data = extraer_libro_planificacion(
+                    tmp_path, hojas_excluidas={n for n, h in libro.items() if not h.usada} if libro else None)
                 por_hoja: Dict[str, List[Dict[str, Any]]] = {}
                 for f_plan in plan_data["filas"]:
                     por_hoja.setdefault(f_plan["hoja"], []).append(f_plan)

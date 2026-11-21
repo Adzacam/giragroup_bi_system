@@ -164,9 +164,9 @@ def _hoja_plan(ws, n, mes):
             ws.cell(row=r, column=c, value=v)
 
 
-def test_libro_de_planificacion_registra_hojas_y_avisa_conflicto_con_el_extractor(ingesta, tmp_path):
-    """El extractor de planificación conserva su selección (cifras congeladas); el lector registra las hojas sin
-    filas como HOJA_IGNORADA y avisa si el extractor lee una hoja que las reglas genéricas ignoran (oculta)."""
+def test_libro_de_planificacion_una_sola_decision_por_hoja(ingesta, tmp_path):
+    """FU-L1b: la oculta de un período sin hoja visible (fecha 2025-12) se rescata y la lee el extractor; borrador y
+    dashboard quedan como HOJA_IGNORADA; ya no hay aviso de contradicción entre clasificador y extractor."""
     import openpyxl
     db, _, procesar = ingesta
     wb = openpyxl.Workbook()
@@ -186,4 +186,4 @@ def test_libro_de_planificacion_registra_hojas_y_avisa_conflicto_con_el_extracto
     ign = {i.campo_afectado: i.descripcion for i in _ignoradas(db, doc.id_documento)}
     assert set(ign) == {"Enero-2026 borrador", "Dashboard Ficticio"}
     avisos = [l.mensaje for l in db.query(LogPipelineIngesta).filter_by(id_documento=doc.id_documento, nivel="WARN")]
-    assert any("Diciembre-2025" in a and "extractor de planificación" in a for a in avisos)
+    assert not any("extractor de planificación" in a for a in avisos)

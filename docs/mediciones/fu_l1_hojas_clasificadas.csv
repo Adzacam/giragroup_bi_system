@@ -3,7 +3,7 @@ archivo,hoja,estado,decision,regla,motivo,filas_leidas,filas_fantasma_cortadas,s
 [BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx,TBL EXPERIENCIA UNIFRANZ,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,2539,0,0,0,0,EVALUACION_DOCENTE,,usar,si
 [BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx,Análisis de Evaluación,visible,ignorar,cabecera_dispersa,resumen o panel: la mitad de las columnas no tiene cabecera y la hoja está casi vacía,0,1,0,254,58,EVALUACION_DOCENTE,,ignorar,si
 Base centralizada Académica ARCA (1).xlsx,ACTAS DE NOTAS,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,8660,0,0,8663,0,ACTA,,usar,si
-Base centralizada Académica ARCA (1).xlsx,MODULOS,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,2030,0,0,864,0,,,ignorar,no
+Base centralizada Académica ARCA (1).xlsx,MODULOS,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,2030,0,0,864,0,,,usar,si
 Base centralizada Académica ARCA (1).xlsx,Tabla dinámica 1,visible,ignorar,sin_filas_de_datos,solo cabecera o vacía,0,0,0,0,0,,,ignorar,si
 Base centralizada Académica ARCA (1).xlsx,PROGRMAS  DE BAJA,visible,ignorar,una_sola_fila,una sola fila de datos: no es una tabla,0,0,0,0,0,,,ignorar,si
 Base centralizada Académica ARCA (1).xlsx,IBP,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,748,0,0,748,0,PLANIFICACION,,usar,si
@@ -28,14 +28,14 @@ Experiencia Docente 2.0.xlsx,DIPLOMADOS DOCENTE,visible,usar,tabla_de_datos,tabl
 Experiencia Docente 2.0.xlsx,CURSOS DOCENTE,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,828,0,0,13248,0,EVALUACION_DOCENTE,,usar,si
 Experiencia Docente 2.0.xlsx,DIPLOMADOS DOC 2,hidden,ignorar,oculta,hoja oculta,0,805,0,0,0,EVALUACION_DOCENTE,,ignorar,si
 PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Centralizado_Mensual,hidden,ignorar,oculta,hoja oculta,0,1997,0,28320,65,PLANIFICACION,,ignorar,si
-PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Julio-2025,hidden,ignorar,oculta,hoja oculta,0,1,0,132,0,PLANIFICACION,,ignorar,si
-PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Agosto-2025,hidden,ignorar,oculta,hoja oculta,0,5,0,120,0,PLANIFICACION,,ignorar,si
-PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Septiembre-2025,hidden,ignorar,oculta,hoja oculta,0,0,0,190,0,PLANIFICACION,,ignorar,si
-PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Octubre-2025,hidden,ignorar,oculta,hoja oculta,0,0,0,189,0,PLANIFICACION,,ignorar,si
-PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Noviembre-2025,hidden,ignorar,oculta,hoja oculta,0,4,0,123,0,PLANIFICACION,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Julio-2025,hidden,usar,oculta_rescatada,oculta rescatada: período sin hoja visible,22,1,0,132,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Agosto-2025,hidden,usar,oculta_rescatada,oculta rescatada: período sin hoja visible,20,5,0,120,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Septiembre-2025,hidden,usar,oculta_rescatada,oculta rescatada: período sin hoja visible,24,0,0,190,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Octubre-2025,hidden,usar,oculta_rescatada,oculta rescatada: período sin hoja visible,30,0,0,189,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Noviembre-2025,hidden,usar,oculta_rescatada,oculta rescatada: período sin hoja visible,24,4,0,123,0,PLANIFICACION,,usar,si
 PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Julio-2025 borrador,hidden,ignorar,oculta,hoja oculta,0,2,0,132,0,PLANIFICACION,,ignorar,si
-PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Diciembre-2025,hidden,ignorar,oculta,hoja oculta,0,2,0,141,0,PLANIFICACION,,ignorar,si
-PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Informe Gestión,hidden,ignorar,oculta,hoja oculta,0,0,8,834,0,,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Diciembre-2025,hidden,usar,oculta_rescatada,oculta rescatada: período sin hoja visible,24,2,0,141,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Informe Gestión,hidden,usar,oculta_rescatada,oculta rescatada: informe de metas sin hoja visible equivalente,28,0,8,834,0,,,usar,si
 PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Programas Notificados,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,1045,0,0,3373,784,,784 celdas con fórmula sin valor guardado o con error (se leen vacías),usar,si
 PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Enero-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,22,0,0,111,0,PLANIFICACION,,usar,si
 PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Febrero-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,34,0,0,214,3,PLANIFICACION,3 celdas con fórmula sin valor guardado o con error (se leen vacías),usar,si

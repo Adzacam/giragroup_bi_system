@@ -632,6 +632,46 @@
    }
   ],
   "usar_por_defecto": "cabecera detectada y filas_datos >= 1 y no cae en ninguna regla anterior",
+  "rescate_ocultas": {
+   "tipos": [
+    "PLANIFICACION"
+   ],
+   "columnas_anio": [
+    "ano",
+    "anio",
+    "gestion"
+   ],
+   "columnas_mes": [
+    "mes"
+   ],
+   "columnas_fecha": [
+    "fecha"
+   ],
+   "meses": [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre"
+   ],
+   "min_proporcion_periodo_dominante": 0.8,
+   "informe_metas": {
+    "filas_busqueda": 45,
+    "patron_gestion": "gestion (20\\d{2})",
+    "patron_columna_meta": "^meta\\b",
+    "columna_mes": "mes"
+   },
+   "motivo_rescate": "oculta rescatada: período sin hoja visible",
+   "motivo_rescate_informe": "oculta rescatada: informe de metas sin hoja visible equivalente",
+   "motivo_duplicada": "oculta: período ya cubierto por una hoja visible"
+  },
   "excepciones_usar": [
    {
     "hoja_patron": "^dip\\. exp doc\\. x modulo$",

@@ -220,3 +220,62 @@ def _guardar(wb, ruta: Path) -> Path:
 
 def construir_par(carpeta: Path, receta_a: Optional[Receta] = None, receta_b: Optional[Receta] = None):
     return construir(receta_a or ORIGINAL, carpeta), construir(receta_b or VARIANTE, carpeta)
+
+
+# ── FU-L1b: libro de planificación con hojas ocultas ──────────────────
+
+CABECERAS_PLAN = ["N°", "AÑO", "MES", "POS", "PROGRAMA", "ESTADO", "N° INSCRITOS", "LEADS"]
+
+
+def _hoja_plan_mensual(ws, anio: int, mes: int, n: int, base_pos: int) -> None:
+    for c, v in enumerate(CABECERAS_PLAN, start=1):
+        ws.cell(row=1, column=c, value=v)
+    for i in range(n):
+        r = 2 + i
+        for c, v in enumerate([i + 1, anio, mes, base_pos + i, f"DIPLOMADO FICTICIO {base_pos + i}",
+                               "Inicio Confirmado", 2 + i, 20 + 3 * i], start=1):
+            ws.cell(row=r, column=c, value=v)
+
+
+def _hoja_informe_metas(ws, gestion: int) -> None:
+    ws.cell(row=1, column=1, value=f"GESTIÓN {gestion}")
+    cab = ["MES", "META (PROGRAMAS REGULARES Y TECHOS)", "INGRESO PROYECTADO TECHOS", "META"]
+    for c, v in enumerate(cab, start=1):
+        ws.cell(row=2, column=c, value=v)
+    for i, mes in enumerate(["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO"]):
+        for c, v in enumerate([mes, 100000 + 1000 * i, 5000 + 100 * i, 3 + i], start=1):
+            ws.cell(row=3 + i, column=c, value=v)
+
+
+@dataclass
+class RecetaPlan:
+    archivo: str
+    visible: str          # período 2027-03, visible
+    oculta_libre: str     # período 2027-01, oculta, sin hoja visible -> se usa
+    oculta_cubierta: str  # período 2027-03, oculta, ya cubierto por la visible -> se ignora como duplicada
+    oculta_borrador: str  # período 2027-02, oculta y borrador -> se ignora
+    oculta_informe: str   # informe de metas oculto -> se usa
+
+
+PLAN_ORIGINAL = RecetaPlan(archivo="plan_ficticio.xlsx", visible="Marzo-2027", oculta_libre="Enero-2027",
+                           oculta_cubierta="Marzo-2027 (2)", oculta_borrador="Febrero-2027 borrador",
+                           oculta_informe="Informe anual")
+PLAN_VARIANTE = RecetaPlan(archivo="Seguimiento captación v3.xlsx", visible="Programas del trimestre",
+                           oculta_libre="respaldo enero", oculta_cubierta="tercer mes viejo",
+                           oculta_borrador="feb boor", oculta_informe="Metas de la gestión")
+
+
+def construir_plan(receta: RecetaPlan, carpeta: Path) -> Path:
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = receta.visible
+    _hoja_plan_mensual(ws, 2027, 3, 5, 9300)
+    for titulo, mes, n, base in ((receta.oculta_libre, 1, 4, 9100), (receta.oculta_cubierta, 3, 5, 9300),
+                                 (receta.oculta_borrador, 2, 3, 9200)):
+        wo = wb.create_sheet(titulo)
+        _hoja_plan_mensual(wo, 2027, mes, n, base)
+        wo.sheet_state = "hidden"
+    wi = wb.create_sheet(receta.oculta_informe)
+    _hoja_informe_metas(wi, 2027)
+    wi.sheet_state = "hidden"
+    return _guardar(wb, carpeta / receta.archivo)

@@ -9,25 +9,25 @@ Hecho (máx. 10 líneas):
 - Test del principio rector: ningún nombre de libro u hoja en `backend/` ni `pipeline/`, con lista blanca comentada.
 - Fixtures sintéticas en `tests/fixtures/fuentes_sinteticas/` (otros nombres, columnas reordenadas, ocultas, borradores, subtotales, fantasma, fórmula sin valor).
 - Corregido en la revisión: el contrato marcaba MODULOS «ignorar», pero alimenta `bridge_modulo_docente`; queda «usar».
+- FU-L1b (decisión de Lean, 2026-11-20: las 7 hojas ocultas de planificación se usan): regla genérica `rescate_ocultas` en el YAML. Una oculta se rescata si por contenido es de planificación (período dominante ≥ 80 % o informe de metas), no cae en reglas de forma y ningún período visible la cubre. Clasificador y extractor ahora deciden igual (sin WARN de contradicción).
 
 No hecho y por qué:
-- No se cambió la selección de hojas del extractor de planificación (lee 7 hojas ocultas que alimentan cifras congeladas). Solo emite un WARN. Ver decisión pendiente.
 - `fk_resolver.py` sigue buscando el padrón por una ruta fija de libro; cambiarlo afecta la resolución de identidad. Queda en lista blanca como deuda.
 - Sin recarga de la DW (fuera de este loop).
 
 Invariantes cambiados: no
 
-Pruebas: 992 colectadas / 968 passed / 6 failed / 13 skipped / 7 xfailed · cobertura 73 % (sentencias; backend + pipeline).
-- Las 6 fallas son las mismas de FU-L0, por entorno: 4 de BETO (falta `seqeval`), 1 de `test_f2_b8_intervalos` y 1 de Holt-Winters (`statsmodels`). `tests/fu_l1`: 29 de 29.
+Pruebas: 1.026 colectadas / 1.000 passed / 6 failed / 13 skipped / 7 xfailed · cobertura 73 % (sentencias; backend + pipeline).
+- Las 6 fallas son las mismas de FU-L0, por entorno: 4 de BETO (falta `seqeval`), 1 de `test_f2_b8_intervalos` y 1 de Holt-Winters (`statsmodels`). `tests/fu_l1`: 36 de 36.
 
 Servicios reconstruidos + estado de docker compose ps: `api` y `pipeline` reconstruidos; ambos Up, `catalog_db` healthy. `/health` y `/docs` responden 200; el lector se importa dentro del contenedor.
 
 Cambios de esquema o API: ninguno. Nuevo tipo de registro `HOJA_IGNORADA` en `log_inconsistencias`.
 
 Cifras nuevas (cifra | valor | archivo en docs/mediciones/):
-- Hojas usadas / ignoradas | 29 / 33 (de 62) | fu_l1_hojas_clasificadas.csv
-- Filas leídas en hojas usadas | 77.833 | fu_l1_resumen_clasificacion.json
-- Filas fantasma cortadas | 3.072 | fu_l1_resumen_clasificacion.json
+- Hojas usadas / ignoradas | 36 / 26 (de 62; 29 visibles + 7 ocultas rescatadas) | fu_l1_hojas_clasificadas.csv
+- Filas leídas en hojas usadas | 78.005 | fu_l1_resumen_clasificacion.json
+- Filas fantasma cortadas | 3.084 | fu_l1_resumen_clasificacion.json
 - Líneas `LINEA_SIN_ENTIDAD` antes → después | 3.689 → 71 | fu_l1_descartes_antes_despues.csv
 - Líneas que dejan de cargarse (hojas ocultas duplicadas) | 6.862 | fu_l1_descartes_antes_despues.csv
 - Fórmulas sin valor en hojas usadas | 83.908 | fu_l1_hojas_clasificadas.csv
@@ -35,7 +35,7 @@ Cifras nuevas (cifra | valor | archivo en docs/mediciones/):
 Impacto en el documento (sección o tabla): ninguno todavía. La recarga de FU-L9 cambiará pagos de cobranza y evaluación docente al quitar duplicados de hojas ocultas.
 
 Riesgos abiertos:
-- El extractor de planificación sigue leyendo 7 hojas ocultas (6 mensuales jul–dic 2025 con 140 de las 1.663 filas de `fact_planificacion`; `Informe Gestión` con las 58 metas de `dim_meta`, KPI-23). DA6 pide KPI-06 desde jul-2025 y esos datos están solo ahí. **Decisión pendiente de Lean: usarlas o no.**
+- Cifras congeladas de planificación intactas con y sin clasificador: `fact_planificacion` 1.663 filas (140 de las 6 mensuales ocultas) y `dim_meta` 58 metas (KPI-23). Conflictos clasificador–extractor: 0. Ocultas de planificación que siguen ignoradas (12): centralizado, 2 borradores, 2 dashboards, 6 mensuales antiguas sin año y 1 sin contenido de planificación.
 - IBP entra a `fact_planificacion` como +748 filas sin periodo ni POS; no afecta el KPI-23 (la vista filtra sin periodo). Completar mes, año y POS queda para FU-L3.
 - El lote congelado 1387 incluye 110 filas de la hoja oculta `CURSOS DOC 1`; su script la lee por nombre, así que la medición no cambia, pero queda incoherente con lo que el sistema carga.
 - Para leer el YAML directo en el contenedor harían falta el volumen `./config` y PyYAML; mientras tanto rige el espejo JSON (un test falla si se desincroniza).
