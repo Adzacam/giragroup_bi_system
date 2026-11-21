@@ -32,7 +32,6 @@ _CLAVES_MES = ("MES INICIO", "MES INICO", "MES")
 _CLAVES_ANIO = ("ANO INICIO", "ANO INCIO", "ANO", "GESTION")
 # Moodle no trae la fecha del curso: la única es la de exportación del reporte, que se toma como fecha de corte
 _CLAVE_DESCARGA_MOODLE = "LAST DOWNLOADED FROM THIS COURSE"
-_RE_MODULO_N = re.compile(r"^MODULO (\d{1,2})$")
 _RE_FECHA_LARGA = re.compile(r"(\d{1,2}) DE ([A-Z]+) DE (\d{4})")
 # Google Forms escribe la cédula como 'CI-4892019' / 'ci 4892019' / 'C.I. 4892019': el prefijo no es parte del número
 _RE_PREFIJO_CI = re.compile(r"^\s*c\.?\s*i\.?\s*[-:]?\s*(?=\d)", re.IGNORECASE)
@@ -159,8 +158,13 @@ def fecha_corte_moodle(campos: Dict[str, str]) -> Optional[date]:
 
 
 def estudiante_de_fila(campos: Dict[str, str]) -> Optional[Dict[str, Any]]:
-    ci_raw = _primero(campos, _CLAVES_CI)
-    ci = "".join(ch for ch in _RE_PREFIJO_CI.sub("", ci_raw) if ch.isalnum()) if ci_raw else None
+    from services import acta_canonica   # FU-L4: CI por sinónimos del catálogo y complemento separado del número
+    ci_raw = _primero(campos, _CLAVES_CI) or acta_canonica.valor_de_campo(campos, "ci")
+    ci_num, ci_comp = acta_canonica.separar_ci(ci_raw)
+    # Con número al inicio ('4892019-1C', '4892019 CBBA', '4892019.0') se separan número y complemento: antes el cargador
+    # tomaba los dígitos de '48920191C' como número y el CI resolvía a otro estudiante. Sin número al inicio (CI extranjera,
+    # relleno) se conserva la lectura anterior.
+    ci = (ci_num + (ci_comp or "")) if ci_num else ("".join(ch for ch in _RE_PREFIJO_CI.sub("", ci_raw) if ch.isalnum()) if ci_raw else None)
     nombre = _primero(campos, _CLAVES_NOMBRE_COMPLETO)
     if not nombre and campos.get("FIRST NAME"):  # Moodle
         nombre = " ".join(p for p in (campos.get("FIRST NAME"), campos.get("SURNAME")) if p)
@@ -171,12 +175,15 @@ def estudiante_de_fila(campos: Dict[str, str]) -> Optional[Dict[str, Any]]:
             campos.get("MATERNO") or campos.get("APELLIDO MATERNO"),
         ]
         nombre = " ".join(p for p in partes if p)
+    if nombre:
+        nombre = " ".join(nombre.split())   # espacios dobles de la planilla
     if not ci and not nombre:
         return None
-    return {
-        "valor_extraido": nombre or ci,
-        "fk_resolucion": {"ci": ci, "fk_estado": "A" if ci else "B", "nombre_resuelto": nombre or f"Estudiante CI {ci}"},
-    }
+    fk = {"ci": ci, "fk_estado": "A" if ci else "B", "nombre_resuelto": nombre or f"Estudiante CI {ci}"}
+    if ci_num:   # número y complemento explícitos: la identidad se resuelve por el número (el CI escrito conserva su extensión)
+        fk["ci_numero"] = ci_num
+        fk["ci_complemento"] = ci_comp
+    return {"valor_extraido": nombre or ci, "fk_resolucion": fk}
 
 
 def _pos(campos: Dict[str, str]) -> Optional[str]:
@@ -193,20 +200,24 @@ def _pos(campos: Dict[str, str]) -> Optional[str]:
 
 def estados_de_fila(campos: Dict[str, str]) -> Dict[str, Any]:
     """
-    Estados del acta tal como vienen en la fuente (ESTADO ACADEMICO / ESTADO TUTORIA / ESTADO ARCA),
-    llevados a su nombre de catálogo y validados contra las combinaciones de CRITERIOS.
-    'estado_revision' es True si algún estado no está en catálogo o la combinación no es válida.
+    Estados del acta tal como vienen en la fuente, llevados a su nombre de catálogo y validados contra las combinaciones
+    de CRITERIOS. Las columnas se reconocen por sinónimos del catálogo de fuentes (campos canónicos estado_academico,
+    estado_tutoria y estado_arca; FU-L4), no por nombre de columna. Mayúsculas, acentos y espacios no cambian el estado.
+    'estado_revision' es True si algún estado no está en catálogo o la combinación no es válida; un estado desconocido
+    no se descarta: se guarda como vino y 'avisos_estado' lo registra como VALOR_FUERA_DE_CATALOGO.
     """
+    from services import acta_canonica
     from services.catalogo_estados import reglas_estado
     from pipeline.normalization.quality_rules import canonizar_estado, validar_combinacion_estados
 
     reglas = reglas_estado()  # cat_estado_* y cat_combinacion_estado; config solo si el catálogo no responde
-    aca, ok_aca = canonizar_estado(campos.get("ESTADO ACADEMICO"), reglas.academicos)
-    tut, ok_tut = canonizar_estado(
-        campos.get("ESTADO TUTORIA") or campos.get("ESTADO REPROBADO"), reglas.tutoria
-    )
-    arca, ok_arca = canonizar_estado(campos.get("ESTADO ARCA"), reglas.arca)
+    aca, ok_aca = canonizar_estado(acta_canonica.valor_de_campo(campos, "estado_academico"), reglas.academicos)
+    tut, ok_tut = canonizar_estado(acta_canonica.valor_de_campo(campos, "estado_tutoria"), reglas.tutoria)
+    arca, ok_arca = canonizar_estado(acta_canonica.valor_de_campo(campos, "estado_arca"), reglas.arca)
     motivos = [f"ESTADO_FUERA_DE_CATALOGO: '{v}'" for v, ok in ((aca, ok_aca), (tut, ok_tut), (arca, ok_arca)) if not ok]
+    avisos = [(acta_canonica.motivo("valor_fuera_de_catalogo", "VALOR_FUERA_DE_CATALOGO"), campo, str(v)[:40])
+              for campo, v, ok in (("estado_academico", aca, ok_aca), ("estado_tutoria", tut, ok_tut), ("estado_arca", arca, ok_arca))
+              if not ok]
     if not motivos:
         valida, motivo = validar_combinacion_estados(aca, tut, arca, reglas.combinaciones)
         if not valida:
@@ -217,6 +228,7 @@ def estados_de_fila(campos: Dict[str, str]) -> Dict[str, Any]:
         "estado_arca": arca,
         "estado_motivo": "; ".join(motivos) or None,
         "estado_revision": bool(motivos),
+        "avisos_estado": avisos,
     }
 
 
@@ -241,8 +253,8 @@ def factor_escala_fila(notas: List[float]) -> float:
 
 
 def _notas_modulo_validas(campos: Dict[str, str]) -> List[float]:
-    notas = (_a_float(v) for k, v in campos.items() if _RE_MODULO_N.match(k))
-    return [x for x in notas if x is not None and 0.0 <= x <= 100.0]
+    from services import acta_canonica
+    return acta_canonica.notas_numericas(campos)   # columnas de nota por sinónimos del catálogo (FU-L4), valores de 0 a 100
 
 
 def factores_escala_por_programa(filas: List[Dict[str, str]], tipo_escala: Optional[str] = None) -> Dict[Optional[str], float]:
@@ -288,11 +300,16 @@ def coherencia_estado_notas(estado_academico: Optional[str], notas: Dict[int, fl
 def registros_academicos(campos: Dict[str, str],
                          factores_escala: Optional[Dict[Optional[str], float]] = None) -> List[Dict[str, Any]]:
     """
-    Resoluciones académicas de una fila. Acta ARCA (columnas MÓDULO 1..12): un registro por módulo con
-    nota, del programa POS de la fila. Otras fuentes: un registro con la columna de nota final.
+    Resoluciones académicas de una fila. Acta (una columna de nota por módulo, reconocida por sinónimos del catálogo): un
+    registro por módulo con valor, del programa POS de la fila. Otras fuentes: un registro con la columna de nota final.
     Escala: la del programa en el archivo (factores_escala, ver factores_escala_por_programa); sin ella, la de la fila.
-    Cada registro trae 'requiere_revision' si falta nota o fecha.
+    FU-L4 (DA-FU2): cada registro trae `nota_final` (numérica o None) y `resultado` canónico (APROBADO, REPROBADO,
+    INASISTENCIA, EXIMIDO, SIN_NOTA o None). Una celda con texto del vocabulario aporta su resultado sin nota; un 0 con estado
+    Deserción o Abandono es INASISTENCIA; un número fuera de 0-100 o un texto fuera del catálogo dejan la nota en None y la fila
+    a revisión (`avisos_acta` lleva el aviso sin publicar el valor). Cada registro trae 'requiere_revision' si falta nota o fecha.
     """
+    from services import acta_canonica as ac
+
     estudiante = estudiante_de_fila(campos)
     if estudiante is None:
         return []  # hoja sin estudiante (MODULOS, IBP, catálogos): no es un hecho académico
@@ -300,78 +317,87 @@ def registros_academicos(campos: Dict[str, str],
     pos = _pos(campos)
     estados = estados_de_fila(campos)
     revision_estado = estados.pop("estado_revision")
+    avisos_estado = estados.pop("avisos_estado")
+    desercion = ac.es_desercion(estados.get("estado_academico"), estados.get("estado_tutoria"))
 
-    notas_modulo = {}
-    for k, v in campos.items():
-        m = _RE_MODULO_N.match(k)
-        if m:
-            notas_modulo[int(m.group(1))] = _a_float(v)
+    celdas = {n: ac.leer_celda(v) for n, v in ac.columnas_modulo(campos).items()}
+    celdas = {n: c for n, c in celdas.items() if c.clase != "VACIA"}
+    # Un número fuera de 0-100 (en el acta real, un CI pegado) o un texto fuera del vocabulario no es una nota: no genera hecho
+    # del módulo (queda NULL), deja la fila en revisión y se avisa agregado y sin el valor
+    avisos_anomalas = []
+    for n in sorted(celdas):
+        if celdas[n].clase == "FUERA_DE_RANGO":
+            avisos_anomalas.append((ac.motivo("nota_fuera_de_rango", "NOTA_FUERA_DE_RANGO"), "nota_modulo", "número fuera de 0-100"))
+        elif celdas[n].clase == "FUERA_DE_CATALOGO":
+            avisos_anomalas.append((ac.motivo("valor_fuera_de_catalogo", "VALOR_FUERA_DE_CATALOGO"), "nota_modulo", "texto fuera del vocabulario"))
+    anomalas = list(avisos_anomalas)
+    celdas = {n: c for n, c in celdas.items() if c.clase in ("NUMERO", "TEXTO")}
+    numericas = {n: c.numero for n, c in celdas.items() if c.clase == "NUMERO"}
 
-    # Un valor fuera de 0-100 en MÓDULO N no es una nota (en ARCA hay CIs pegados en esas columnas):
-    # se descarta y los hechos de la fila van a revisión
-    fuera_de_rango = any(x is not None and not (0.0 <= x <= 100.0) for x in notas_modulo.values())
-    notas_modulo = {n: (x if x is not None and 0.0 <= x <= 100.0 else None) for n, x in notas_modulo.items()}
-
-    if notas_modulo and not any(x is not None for x in notas_modulo.values()):
-        # Acta sin ninguna nota: un hecho del programa con nota null, a revisión
-        return [{
-            "estudiante": estudiante,
-            "modulo": {"valor_extraido": f"{pos} · Sin módulo con nota"} if pos else None,
-            "programa": {"valor_extraido": pos, "metadata": {"pos_canonico": f"{pos}-M00"}} if pos else None,
-            "nota_final": None,
-            "nota_ya_normalizada": True,
-            "sin_nota_por_acta": True,  # el acta no trae ninguna nota (Deserción, Reprobado, En curso): límite de la fuente, no un error
-            "fecha": fecha,
-            **estados,
-            "requiere_revision": fecha is None or revision_estado,
-        }]
-
-    if notas_modulo:
+    if celdas:
         # Cada programa tiene su propio número de módulos (uno llega al 5, otro al 11): las columnas vacías
         # no son notas faltantes, sólo módulos que ese programa no tiene.
-        con_nota = {n: x for n, x in notas_modulo.items() if x is not None}
         if factores_escala is not None and pos in factores_escala:
             factor = factores_escala[pos]  # escala del programa en todo el archivo
         else:
-            factor = factor_escala_fila(list(con_nota.values()))
+            factor = factor_escala_fila(list(numericas.values()))
         motivo_notas = coherencia_estado_notas(
-            estados.get("estado_academico"), {n: x * factor for n, x in con_nota.items()},
+            estados.get("estado_academico"),
+            {n: x * factor for n, x in numericas.items() if not (x == 0 and desercion)},
         )
         if motivo_notas:
             estados["estado_motivo"] = "; ".join(m for m in (estados.get("estado_motivo"), motivo_notas) if m)
             revision_estado = True
         registros = []
-        for n in sorted(con_nota):
-            nota = round(con_nota[n] * factor, 2)
+        for n in sorted(celdas):
+            celda = celdas[n]
+            avisos: List[Any] = []
+            if celda.clase == "NUMERO":
+                nota, resultado = ac.resolver_numero(round(celda.numero * factor, 2), desercion)
+                if resultado == ac.INASISTENCIA:
+                    avisos.append((ac.motivo("cero_inasistencia", "CERO_COMO_INASISTENCIA"), "nota_modulo", "0"))
+            else:
+                nota, resultado = None, celda.resultado
             codigo = f"{pos}-M{n:02d}" if pos else None
             registros.append({
                 "estudiante": estudiante,
                 "modulo": {"valor_extraido": f"{pos or 'POS-SIN-CODIGO'} · Módulo {n}"},
                 "programa": {"valor_extraido": pos, "metadata": {"pos_canonico": codigo}} if pos else None,
                 "nota_final": nota,
+                "resultado": resultado,
                 "nota_ya_normalizada": True,
+                "sin_nota_por_acta": nota is None and resultado is not None,   # nota nula esperada: el acta trae un resultado sin número
                 "fecha": fecha,
                 **estados,
-                "requiere_revision": fecha is None or fuera_de_rango or revision_estado,
+                "avisos_acta": avisos,
+                "requiere_revision": fecha is None or bool(anomalas) or revision_estado,
             })
+        registros[0]["avisos_acta"] = registros[0]["avisos_acta"] + avisos_anomalas + avisos_estado
         return registros
 
     nota_raw = _a_float(_primero(campos, _CLAVES_NOTA))
-    nota = None
+    nota, resultado = None, None
     if nota_raw is not None:
-        nota = round(nota_raw * 10.0, 2) if 0.0 <= nota_raw <= 10.0 else round(nota_raw, 2)
+        nota_100 = round(nota_raw * 10.0, 2) if 0.0 <= nota_raw <= 10.0 else round(nota_raw, 2)
+        if 0.0 <= nota_100 <= 100.0:
+            nota, resultado = ac.resolver_numero(nota_100, desercion)
+        else:
+            nota = nota_100   # fuera de 0-100: el cargador la deja en NULL y la fila queda en revisión
     modulo = campos.get("MODULO") or campos.get("CURSO") or campos.get("MATERIA") or campos.get("COURSE")
     return [{
         "estudiante": estudiante,
         "modulo": {"valor_extraido": modulo} if modulo else None,
         "programa": {"valor_extraido": pos} if pos else None,
         "nota_final": nota,
+        "resultado": resultado,
         "nota_ya_normalizada": True,
         # acta con estado de origen (Aprobado/Titulado...) pero sin nota: límite de la fuente, no un error de lectura
         "sin_nota_por_acta": nota is None and bool(estados.get("estado_academico") or estados.get("estado_arca")),
         "fecha": fecha,
         **estados,
-        "requiere_revision": (nota is None and not (estados.get("estado_academico") or estados.get("estado_arca"))) or fecha is None or revision_estado,
+        "avisos_acta": list(avisos_anomalas) + list(avisos_estado),
+        "requiere_revision": (nota is None and not (estados.get("estado_academico") or estados.get("estado_arca"))) or fecha is None
+                             or revision_estado or bool(anomalas),
     }]
 
 

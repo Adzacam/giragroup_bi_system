@@ -30,6 +30,22 @@ class KPIService:
     def __init__(self, db: Session):
         self.db = db
 
+    def _reglas_resultado(self):
+        """
+        DA-FU2 (KPI-07 y KPI-08) para el cálculo local: (condición de «aprobado», condición de «evaluado») sobre el
+        resultado canónico del módulo. Aprobado = APROBADO (nota >= 70 o texto «Aprobó»); evaluado = APROBADO + REPROBADO +
+        INASISTENCIA (EXIMIDO y SIN_NOTA quedan fuera). Una fila sin resultado (anterior a la migración 024) se deduce de la nota.
+        Sin la columna `resultado` en la DW (sin migrar) rige la regla anterior (nota >= 70 sobre notas no nulas).
+        """
+        from core.esquema_opcional import columnas_fu_l4
+        F = FactRendimientoAcademico
+        if "resultado" not in columnas_fu_l4(self.db, "fact_rendimiento_academico"):
+            return F.nota_final >= NOTA_APROBACION, F.nota_final.isnot(None)
+        aprobado = or_(F.resultado == "APROBADO", (F.resultado.is_(None)) & (F.nota_final >= NOTA_APROBACION))
+        evaluado = or_(F.resultado.in_(("APROBADO", "REPROBADO", "INASISTENCIA")),
+                       (F.resultado.is_(None)) & F.nota_final.isnot(None))
+        return aprobado, evaluado
+
     def _contexto_cmi(self, gestion: Optional[int], programa: Optional[str]):
         """(gestion efectiva, valores del CMI, fuente). Sin filtro de programa la gestion es la del CMI (la pedida o la
         ultima, nunca «todas») y las cifras que el CMI tambien publica salen de sus vistas (ADW-L5). Con filtro de
@@ -49,10 +65,12 @@ class KPIService:
         prog_label = func.coalesce(func.nullif(DimModulo.programa, ""), DimModulo.nombre_modulo, "Programa General")
         gestion_filtro, cmi, fuente = self._contexto_cmi(gestion_filtro, programa_filtro)
 
+        cond_aprobado, cond_evaluado = self._reglas_resultado()
         q = self.db.query(
             func.count(FactRendimientoAcademico.id_hecho_aca).label("total"),
-            func.avg(FactRendimientoAcademico.nota_final).label("avg_nota"),
-            func.count(FactRendimientoAcademico.id_hecho_aca).filter(FactRendimientoAcademico.nota_final >= NOTA_APROBACION).label("aprobados"),
+            func.avg(FactRendimientoAcademico.nota_final).label("avg_nota"),   # KPI-07: INASISTENCIA, EXIMIDO y SIN_NOTA no tienen nota
+            func.count(FactRendimientoAcademico.id_hecho_aca).filter(cond_aprobado).label("aprobados"),
+            func.count(FactRendimientoAcademico.id_hecho_aca).filter(cond_evaluado).label("evaluados"),
             func.count(FactRendimientoAcademico.id_hecho_aca).filter(
                 FactRendimientoAcademico.nota_final.isnot(None),
                 FactRendimientoAcademico.nota_final <= 70.0
@@ -82,7 +100,9 @@ class KPIService:
         riesgo_aca = row.riesgo_aca or 0
         riesgo_des = row.riesgo_des or 0
 
-        tasa_apr = round((aprobados / total_eval) * 100.0, 2) if total_eval > 0 else None
+        evaluados = getattr(row, "evaluados", None)
+        evaluados = total_eval if evaluados is None else evaluados
+        tasa_apr = round((aprobados / evaluados) * 100.0, 2) if evaluados > 0 else None   # KPI-08 (DA-FU2)
         tasa_rep = round(100.0 - tasa_apr, 2) if tasa_apr is not None else None
 
         return self._academicos_con_cmi({
@@ -593,13 +613,12 @@ class KPIService:
             tasa_reprobacion_global = None
             desglose_modulos = []
         else:
+            cond_aprobado, cond_evaluado = self._reglas_resultado()   # DA-FU2
             q_mod = self.db.query(
                 DimModulo.nombre_modulo,
                 func.count(FactRendimientoAcademico.id_hecho_aca).label("evaluados"),
-                func.count(FactRendimientoAcademico.id_hecho_aca).filter(FactRendimientoAcademico.nota_final >= NOTA_APROBACION).label("aprobados")
-            ).outerjoin(DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo).filter(
-                FactRendimientoAcademico.nota_final.isnot(None)
-            )
+                func.count(FactRendimientoAcademico.id_hecho_aca).filter(cond_aprobado).label("aprobados")
+            ).outerjoin(DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo).filter(cond_evaluado)
             if gestion_filtro:
                 q_mod = q_mod.join(DimTiempo, FactRendimientoAcademico.id_tiempo == DimTiempo.id_tiempo).filter(DimTiempo.gestion == gestion_filtro)
             if prog_filtro:

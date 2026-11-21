@@ -1,0 +1,54 @@
+metrica,anio,fuente,dw_tmpfs,diferencia,explicacion
+estado_academico[aprobado],2024,3531,3463,-68,en revisión humana (staging): 42; residuo tras sumarlas: -26
+estado_academico[desercion],2024,255,219,-36,en revisión humana (staging): 6; residuo tras sumarlas: -30
+estado_academico[participo],2024,326,309,-17,en revisión humana (staging): 12; residuo tras sumarlas: -5
+estado_academico[reprobado],2024,568,517,-51,en revisión humana (staging): 13; residuo tras sumarlas: -38
+estado_academico[aprobado],2025,1808,1773,-35,en revisión humana (staging): 10; residuo tras sumarlas: -25
+estado_academico[desercion],2025,176,170,-6,en revisión humana (staging): 1; residuo tras sumarlas: -5
+estado_academico[en curso],2025,1391,1366,-25,en revisión humana (staging): 10; residuo tras sumarlas: -15
+estado_academico[participo],2025,122,119,-3,en revisión humana (staging): 2; residuo tras sumarlas: -1
+estado_academico[reprobado],2025,294,284,-10,en revisión humana (staging): 6; residuo tras sumarlas: -4
+estado_academico[aprobado],,45,37,-8,en revisión humana (staging): 8; residuo tras sumarlas: 0
+estado_academico[desercion],,58,58,0,en revisión humana (staging): 0; residuo tras sumarlas: 0
+estado_academico[en curso],,78,67,-11,en revisión humana (staging): 11; residuo tras sumarlas: 0
+estado_tutoria[abandono],2024,204,187,-17,en revisión humana (staging): 7; residuo tras sumarlas: -10
+estado_tutoria[aprobado],2024,3445,3377,-68,en revisión humana (staging): 42; residuo tras sumarlas: -26
+estado_tutoria[desercion],2024,255,219,-36,en revisión humana (staging): 6; residuo tras sumarlas: -30
+estado_tutoria[insuficiencia academica],2024,671,622,-49,en revisión humana (staging): 18; residuo tras sumarlas: -31
+estado_tutoria[tutoria],2024,105,103,-2,en revisión humana (staging): 0; residuo tras sumarlas: -2
+estado_tutoria[abandono],2025,64,61,-3,en revisión humana (staging): 4; residuo tras sumarlas: 1
+estado_tutoria[aprobado],2025,1801,1766,-35,en revisión humana (staging): 10; residuo tras sumarlas: -25
+estado_tutoria[desercion],2025,176,170,-6,en revisión humana (staging): 1; residuo tras sumarlas: -5
+estado_tutoria[en curso],2025,1391,1366,-25,en revisión humana (staging): 10; residuo tras sumarlas: -15
+estado_tutoria[insuficiencia academica],2025,339,330,-9,en revisión humana (staging): 3; residuo tras sumarlas: -6
+estado_tutoria[tutoria],2025,20,19,-1,en revisión humana (staging): 1; residuo tras sumarlas: 0
+estado_tutoria[aprobado],,45,37,-8,en revisión humana (staging): 8; residuo tras sumarlas: 0
+estado_tutoria[desercion],,58,58,0,en revisión humana (staging): 0; residuo tras sumarlas: 0
+estado_tutoria[en curso],,78,67,-11,en revisión humana (staging): 11; residuo tras sumarlas: 0
+filas_fuente_vs_pares_estudiante_programa,todos,8660,8652,-8,"la diferencia son filas repetidas (mismo estudiante y programa): la fuente cuenta filas, la DW un hecho por estudiante y módulo"
+revision_humana_por_motivo[BAJA_CONFIANZA_IA],todos,,318,,"casos que la cascada de identidad (invariante, sin cambios) no resolvió y dejó en staging; explican el residuo de estados y notas"
+revision_humana_por_motivo[CI_NOMBRE_DISCORDANTE],todos,,140,,"casos que la cascada de identidad (invariante, sin cambios) no resolvió y dejó en staging; explican el residuo de estados y notas"
+revision_humana_por_motivo[DOCENTE_NO_ESTUDIANTE],todos,,69,,"casos que la cascada de identidad (invariante, sin cambios) no resolvió y dejó en staging; explican el residuo de estados y notas"
+revision_humana_por_motivo[BAJA_CONFIANZA],todos,,47,,"casos que la cascada de identidad (invariante, sin cambios) no resolvió y dejó en staging; explican el residuo de estados y notas"
+revision_humana_por_motivo[HOMONIMIA],todos,,43,,"casos que la cascada de identidad (invariante, sin cambios) no resolvió y dejó en staging; explican el residuo de estados y notas"
+revision_humana_por_motivo[CI_DUDOSA],todos,,2,,"casos que la cascada de identidad (invariante, sin cambios) no resolvió y dejó en staging; explican el residuo de estados y notas"
+revision_humana_por_motivo[FILA_SIN_IDENTIDAD],todos,,1,,"casos que la cascada de identidad (invariante, sin cambios) no resolvió y dejó en staging; explican el residuo de estados y notas"
+filas_en_revision_humana,todos,,121,,"filas del acta que el flujo dejó en staging (confianza < 0,60 o identidad no resuelta); no están en la DW"
+celdas_de_nota_con_valor_sin_dudosas,todos,27792,27731,-61,un hecho por celda con nota o resultado; las celdas fuera de rango o de catálogo no generan hecho; en filas repetidas se reescribe (estudiante x módulo único); en revisión humana (staging): 260; residuo tras sumarlas: 199
+notas_numericas_validas_mayores_de_0,todos,24791,24102,-689,nota_final no nula sin los ceros reales; en revisión humana (staging): 211; residuo tras sumarlas: -478
+ceros_reales,todos,1251,1175,-76,"0 sin estado Deserción ni Abandono: nota_final = 0, REPROBADO; en revisión humana (staging): 6; residuo tras sumarlas: -70"
+ceros_como_inasistencia,todos,1717,1509,-208,"0 con estado Deserción o Abandono: resultado INASISTENCIA, nota_final NULL (aviso agregado CERO_COMO_INASISTENCIA); en revisión humana (staging): 14; residuo tras sumarlas: -194"
+inasistencia_por_texto,todos,10,10,0,"«No asistió», «Nunca ingresó», «Faltas y no envió»…; en revisión humana (staging): 10; residuo tras sumarlas: 10"
+aprobado_por_texto,todos,1,1,0,«Aprobó»; en revisión humana (staging): 0; residuo tras sumarlas: 0
+eximido,todos,3,3,0,«EXIMIDA»; en revisión humana (staging): 0; residuo tras sumarlas: 0
+sin_nota,todos,19,16,-3,«SIN NOTAS EN EL ACTA…» y comentarios equivalentes; en revisión humana (staging): 19; residuo tras sumarlas: 16
+notas_fuera_de_rango_a_revision,todos,29,27,-2,"números mayores de 100 (en el acta real son CI pegados): nota NULL, aviso agregado sin el valor; en revisión humana (staging): 0; residuo tras sumarlas: -2"
+texto_fuera_de_catalogo_a_revision,todos,4,4,0,"apellidos y comentarios fuera del vocabulario: nota NULL, aviso agregado sin el texto; en revisión humana (staging): 1; residuo tras sumarlas: 1"
+filas_con_ci_con_complemento_o_ciudad,todos,13,12,-1,fuente: filas; DW: estudiantes distintos con ci_complemento (varias filas pueden ser la misma persona)
+estudiantes_con_complemento_pegado_al_numero,todos,0,0,0,ci_numero con letras pegadas al número (antes: '48920191C')
+matricula_estudiantes_distintos,2024,4466,4388,-78,estudiantes sin CI se identifican por nombre; las que la cascada no resuelve van a revisión y no entran a la DW
+desertores_y_abandono_estudiantes_distintos,2024,454,406,-48,KPI-16 fuente independiente (sobre la matrícula de la fuente) = 10.17 %
+solo_desercion_estudiantes_distintos,2024,253,219,-34,solo el estado académico Deserción (sin Abandono de tutoría): 5.67 % de la matrícula de la fuente
+matricula_estudiantes_distintos,2025,3600,3537,-63,estudiantes sin CI se identifican por nombre; las que la cascada no resuelve van a revisión y no entran a la DW
+desertores_y_abandono_estudiantes_distintos,2025,237,228,-9,KPI-16 fuente independiente (sobre la matrícula de la fuente) = 6.58 %
+solo_desercion_estudiantes_distintos,2025,173,167,-6,solo el estado académico Deserción (sin Abandono de tutoría): 4.81 % de la matrícula de la fuente

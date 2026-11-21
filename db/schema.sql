@@ -220,6 +220,8 @@ CREATE TABLE public.fact_rendimiento_academico (
     estado_tutoria VARCHAR(50),
     estado_arca VARCHAR(50),
     tipo_alerta VARCHAR(30),
+    resultado VARCHAR(20) CONSTRAINT chk_fact_rendimiento_resultado CHECK (resultado IS NULL OR resultado IN ('APROBADO', 'REPROBADO', 'INASISTENCIA', 'EXIMIDO', 'SIN_NOTA')),  -- FU-L4 (migración 024, DA-FU2)
+    estado_de_fuente BOOLEAN,                 -- FU-L4 (migración 024): el estado viene de la fuente (no se dedujo de la nota)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

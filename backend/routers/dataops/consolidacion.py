@@ -19,7 +19,7 @@ from models.staging_entidad import StagingEntidadNoResuelta
 from models.staging_registro import StagingRegistroCrudo
 from models.user import User
 from services.confianza_service import banda_de, indices_cascada, obtener_indices
-from services import beto_integracion, cache_consultas, tareas_dataops
+from services import acta_canonica, beto_integracion, cache_consultas, tareas_dataops
 from services.cobranza_canonica import registros_cobranza
 from services.captacion_canonica import leer_identidad as leer_identidad_captacion
 from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, fila_resuelta_por_regla, metricas_captacion, MOTIVOS_A_BANDEJA, motivo_fila_sin_entidad, normalizar_encabezado, registro_planificacion, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
@@ -190,9 +190,9 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     filas_por_doc: Dict[Any, List[Dict[str, str]]] = {}
     for s_reg in stg_records:
         for l in (s_reg.texto_plano or "").splitlines():
-            if "MODULO" in normalizar_encabezado(l):
-                filas_por_doc.setdefault(s_reg.id_documento, []).append(
-                    campos_por_encabezado([c.strip() for c in l.split("|")]))
+            campos_l = campos_por_encabezado([c.strip() for c in l.split("|")])
+            if acta_canonica.tiene_notas_modulo(campos_l):   # FU-L4: columnas de nota por sinónimos del catálogo, no por la palabra MODULO
+                filas_por_doc.setdefault(s_reg.id_documento, []).append(campos_l)
     factores_por_doc = {
         d: factores_escala_por_programa(filas, (origenes_map.get(d).tipo_escala if origenes_map.get(d) else None))
         for d, filas in filas_por_doc.items()

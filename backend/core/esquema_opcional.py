@@ -83,3 +83,37 @@ def _presentes_fu_l2(db) -> frozenset:
 def columnas_fu_l2(db, tabla: str) -> frozenset:
     """Columnas FU-L2 de `tabla` que existen en la base de la sesión."""
     return frozenset(c for t, c in _presentes_fu_l2(db) if t == tabla)
+
+
+# FU-L4 (migración 024): resultado canónico por módulo y procedencia del estado académico.
+COLUMNAS_FU_L4 = {
+    "fact_rendimiento_academico": ("resultado", "estado_de_fuente"),
+}
+
+_CACHE_FU_L4: "weakref.WeakKeyDictionary" = weakref.WeakKeyDictionary()
+
+
+def columnas_fu_l4(db, tabla: str) -> frozenset:
+    """Columnas FU-L4 de `tabla` que existen en la base de la sesión (una inspección por engine; misma técnica que FU-L2)."""
+    engine = db.get_bind()
+    if engine not in _CACHE_FU_L4:
+        esperadas = {(t, c) for t, cs in COLUMNAS_FU_L4.items() for c in cs}
+        try:
+            from sqlalchemy import inspect
+            insp = inspect(db.connection())
+            filas = set()
+            for t in COLUMNAS_FU_L4:
+                try:
+                    columnas = insp.get_columns(t)
+                except Exception:
+                    columnas = insp.get_columns(t, schema="public")   # el modelo declara el esquema public (SQLite de pruebas con `public` adjunto)
+                filas |= {(t, col["name"]) for col in columnas}
+        except Exception as ex:
+            logger.warning("No se pudo inspeccionar columnas FU-L4 (%s); se omiten", ex)
+            return frozenset()
+        presentes = frozenset(esperadas & filas)
+        faltan = sorted(f"{t}.{c}" for t, c in esperadas - presentes)
+        if faltan:
+            logger.warning("DW sin migración 024 (FU-L4): faltan %s; se carga sin esas columnas", ", ".join(faltan))
+        _CACHE_FU_L4[engine] = presentes
+    return frozenset(c for t, c in _CACHE_FU_L4[engine] if t == tabla)

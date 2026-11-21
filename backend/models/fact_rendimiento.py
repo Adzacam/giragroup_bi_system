@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, Numeric, Boolean, String, DateTime, ForeignKey
 from sqlalchemy.sql import func
+from sqlalchemy.orm import deferred
 from core.database import Base
 
 
@@ -27,6 +28,9 @@ class FactRendimientoAcademico(Base):
     estado_tutoria = Column(String(50), nullable=True)   # 'Estado reprobado' de CRITERIOS
     estado_arca = Column(String(50), nullable=True)      # Titulado / No Titulado
     tipo_alerta = Column(String(30), nullable=True)
+    # FU-L4 (migración 024). `deferred`: una DW sin migrar no los pide en los SELECT.
+    resultado = deferred(Column(String(20), nullable=True))      # APROBADO, REPROBADO, INASISTENCIA, EXIMIDO, SIN_NOTA (DA-FU2)
+    estado_de_fuente = deferred(Column(Boolean, nullable=True))  # el estado académico viene de la fuente (no se dedujo de la nota); NULL: anterior a la 024
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     @property

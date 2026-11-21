@@ -54,12 +54,17 @@ El perfil mide **62 hojas** en 10 libros. PLAN_FUENTES_UPLOADS.md dice 61; la di
 - **Hojas a ignorar de este tipo:** -
 - **Cabecera y escala o vocabulario:** Cabecera en fila 1. Vocabulario de estado académico (conteos del perfil): Aprobado 5.388; En curso 1.471; Reprobado 858 (+6 en minúscula); Deserción 488 (+1); Participó 448. El estado de tutoría añade Abandono (251 + 18 en minúscula) e Insuficiencia académica.
 - **Columnas usadas → campo canónico:**
-- `ci` ← `cedula de identidad`
+- `ci` ← `cedula de identidad` (1), `ci`, `carnet de identidad`, `documento de identidad` (2), `nro de ci` (3). FU-L4: un CI con complemento o ciudad en el texto (`4892019-1C`, `4892019 CBBA`, `4892019.0`) se separa en `ci_numero` y `ci_complemento` antes de la cascada de identidad; resuelve al mismo estudiante (estado A) que `4892019`.
 - `pos` ← `pos - actas`
-- `estado_academico` ← `estado academico`, `estado tutoria`
-- `nota_modulo` ← patrón `^modulo \d{1,2}$`
+- `estado_academico` ← `estado academico` (1), `estado final`, `condicion academica`, `situacion academica` (2)
+- `estado_tutoria` ← `estado tutoria` (1), `estado reprobado`, `estado de tutoria` (2). Puede traer Abandono o Deserción.
+- `estado_arca` ← `estado arca` (1), `estado de titulacion` (2)
+- `nota_modulo` ← patrón `^(nota )?(modulo|mod.?) ?\d{1,2}$`; el número de módulo sale de la cabecera.
 - **Columnas no mapeadas:** `nombres`, `apellido paterno`, `apellido materno`, `pos-ci`, `comentarios`, `fecha emision arca`
-- **Reglas de calidad:** Notas con texto («Aprobó», «EXIMIDA», «No asistió», apellidos) → resultado canónico o revisión (DA-FU2). Un 0 cuenta como INASISTENCIA solo con estado Deserción o Abandono. Una nota fuera de 0-100 → NOTA_FUERA_DE_RANGO.
+- **Estados (FU-L4):** los tres estados se llevan a su nombre de catálogo (`cat_estado_*`) sin importar mayúsculas, acentos ni espacios (`reprobado` = `Reprobado`, `deserción` = `Deserción`, `abandono` = `Abandono`). Un estado fuera del catálogo no se descarta: se guarda como vino, la fila queda en revisión y se registra `VALOR_FUERA_DE_CATALOGO` (agregado). Vocabulario de deserción (`vocabularios.estado_desercion`): `DESERCION` y `ABANDONO`.
+- **Resultado por módulo (DA-FU2, FU-L4):** cada celda de nota guarda `nota_final` (número de 0 a 100) y un `resultado` canónico: un número ≥ 70 es `APROBADO` y uno menor `REPROBADO`; el texto sale de `vocabularios.resultado_nota`: «Aprobó» → `APROBADO`; «No asistió», «Nunca ingresó», «Faltas y no envió»… → `INASISTENCIA`; «EXIMIDA» → `EXIMIDO`; «SIN NOTAS EN EL ACTA…» y «Aparece en ARCA pero no en el acta» → `SIN_NOTA` (en estos casos `nota_final` es NULL). Un **0** es `INASISTENCIA` (nota NULL) si el estado académico o de tutoría es Deserción o Abandono; si no, es un 0 real (nota 0, `REPROBADO`). Una celda vacía o «-» no genera hecho.
+- **Reglas de calidad:** un número fuera de 0-100 (en el acta hay CI pegados) → nota NULL, fila a revisión y aviso `NOTA_FUERA_DE_RANGO`; un texto fuera del vocabulario (apellidos, comentarios) → nota NULL, fila a revisión y aviso `VALOR_FUERA_DE_CATALOGO`. Los avisos son agregados por documento y motivo y nunca publican el valor. El `CERO_COMO_INASISTENCIA` es informativo.
+- **KPI que lee (campos canónicos, no la fuente):** KPI-07 = promedio de notas numéricas sin `INASISTENCIA`, `EXIMIDO` ni `SIN_NOTA` (un 0 real entra); KPI-08 = `APROBADO` / (`APROBADO` + `REPROBADO` + `INASISTENCIA`); KPI-16 (DA2-bis) = estudiantes con estado `DESERCION` o `ABANDONO` (académico o de tutoría) / matrícula de la gestión, desde cualquier fuente que traiga el estado; sin fuente con estado en la gestión, «sin dato» (nunca 0). `fact_rendimiento_academico.estado_de_fuente` distingue el estado de la fuente del que el cargador deduce de la nota.
 - **Pueden venir vacías sin que sea error:** Estado de tutoría, comentarios y fecha de emisión pueden faltar. Una nota de módulo no cursado puede venir vacía. Del YAML: `comentarios`, `estado tutoria`.
 
 ### EVALUACION_DOCENTE

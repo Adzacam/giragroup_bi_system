@@ -22,6 +22,8 @@ campos_canonicos:
   monto_pagado_total: "Total pagado hasta la fecha (solo si la fila no trae pagos por mes)"
   fecha_inicio: "Fecha de inicio del programa (fecha del hecho de situación de cartera)"
   estado_academico: "Estado académico normalizado (DESERCION, ABANDONO, APROBADO, ...)"
+  estado_tutoria: "Estado de tutoría (Aprobado, Insuficiencia académica, Abandono, ...); Abandono o Deserción cuentan para el KPI-16"
+  estado_arca: "Estado de titulación (Titulado, No Titulado)"
   nota_modulo: "Nota de un módulo (numérica o con resultado canónico, DA-FU2)"
   leads_captacion: "Leads de captación por programa y mes"
   inscritos_captacion: "Inscritos de captación por programa y mes"
@@ -145,20 +147,36 @@ tipos_fuente:
   ACTA:
     descripcion: "Una fila por estudiante y programa, con una nota por módulo en formato ancho"
     granularidad: "estudiante x programa"
+    # FU-L4: el cargador lee el acta por estos campos canónicos (backend/services/acta_canonica.py), no por nombre de columna.
     campos:
       ci:
         sinonimos:
           - {texto: "cedula de identidad", prioridad: 1}
+          - {texto: "ci", prioridad: 2}
+          - {texto: "carnet de identidad", prioridad: 2}
+          - {texto: "documento de identidad", prioridad: 2}
+          - {texto: "nro de ci", prioridad: 3}
       pos:
         sinonimos:
           - {texto: "pos - actas", prioridad: 1}
       estado_academico:
         sinonimos:
           - {texto: "estado academico", prioridad: 1}
-          - {texto: "estado tutoria", prioridad: 2, nota: "solo cuenta si el valor es Abandono o Deserción"}
+          - {texto: "estado final", prioridad: 2}
+          - {texto: "condicion academica", prioridad: 2}
+          - {texto: "situacion academica", prioridad: 2}
+      estado_tutoria:
+        sinonimos:
+          - {texto: "estado tutoria", prioridad: 1, nota: "puede traer Abandono o Deserción: cuenta para el KPI-16 igual que estado_academico (DA2-bis)"}
+          - {texto: "estado reprobado", prioridad: 2}
+          - {texto: "estado de tutoria", prioridad: 2}
+      estado_arca:
+        sinonimos:
+          - {texto: "estado arca", prioridad: 1}
+          - {texto: "estado de titulacion", prioridad: 2}
       nota_modulo:
         sinonimos:
-          - {patron: '^modulo \d{1,2}$', prioridad: 1}
+          - {patron: '^(nota )?(modulo|mod\.?) ?\d{1,2}$', prioridad: 1, nota: "una columna por módulo; el número de módulo sale de la cabecera"}
     no_mapear:
       - "nombres"
       - "apellido paterno"
@@ -169,6 +187,24 @@ tipos_fuente:
     nulos_aceptables:
       - "comentarios"
       - "estado tutoria"
+    # FU-L4 (DA-FU2 y DA2-bis, decisiones de Lean 2026-11-20). Los textos se comparan normalizados (minúsculas, sin acentos).
+    vocabularios:
+      # estado_academico / estado_tutoria -> código canónico. Solo estos dos cuentan para el KPI-16 y para el 0 como inasistencia.
+      estado_desercion:
+        DESERCION: ["desercion", "desertor", "desertora"]
+        ABANDONO: ["abandono"]
+      # Texto de una celda de nota -> resultado canónico del módulo. Se busca como fragmento del texto normalizado.
+      resultado_nota:
+        APROBADO: ["aprobo", "aprobado"]
+        INASISTENCIA: ["no asistio", "nunca ingreso", "faltas y no envio", "no envio ningun trabajo", "ingreso unicamente", "solo asistio"]
+        EXIMIDO: ["eximida", "eximido"]
+        SIN_NOTA: ["sin notas", "no aparece", "aparece en arca", "aparecen en arca", "aparece arca", "solo aparece", "solo aparecen"]
+      # Celdas que no son ni nota ni comentario: se tratan como vacías.
+      nota_vacia: ["-", "--", "n/a", "s/n"]
+    calidad:
+      nota_fuera_de_rango: {minimo: 0, maximo: 100, motivo: "NOTA_FUERA_DE_RANGO", nota: "un número fuera de 0-100 (en el acta real hay CI pegados) queda NULL y a revisión"}
+      valor_fuera_de_catalogo: {motivo: "VALOR_FUERA_DE_CATALOGO", nota: "texto de nota o estado que no está en el vocabulario: NULL y a revisión; nunca se publica el texto"}
+      cero_inasistencia: {motivo: "CERO_COMO_INASISTENCIA", nota: "un 0 con estado Deserción o Abandono es INASISTENCIA (nota NULL); si no, es un 0 real"}
 
   EVALUACION_DOCENTE:
     descripcion: "Una fila por respuesta a una evaluación; una columna por pregunta"

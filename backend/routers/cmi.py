@@ -39,7 +39,7 @@ FALTANTES = {
     'KPI-08': 'No hay calificaciones con fecha de esta gestión para calcular la aprobación.',
     'KPI-10': 'No hay registros académicos con índice de confianza y fecha de esta gestión.',
     'KPI-11': 'No hay registros académicos con índice de confianza y fecha de esta gestión.',
-    'KPI-16': 'No hay registros académicos con fecha de esta gestión para calcular este indicador.',
+    'KPI-16': 'Ninguna fuente de esta gestión trae el estado académico (deserción o abandono) de los estudiantes.',
     'KPI-21': 'No hay estudiantes vinculados a registros académicos con fecha de esta gestión.',
     'KPI-22': 'No hay cifras de inscritos en convenios vinculados a esta gestión.',
     'KPI-23': 'No hay registros de planificación con estado conocido en esta gestión.',

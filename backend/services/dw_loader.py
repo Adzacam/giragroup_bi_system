@@ -290,6 +290,7 @@ class DWLoaderService:
         self._aca_pendientes: Dict[Tuple[int, int], Dict[str, Any]] = {}
         self._fin_pendientes: Dict[Tuple[int, int, int], Dict[str, Any]] = {}
         self._avisos_cobranza: Dict[Tuple[Any, str, str], Tuple[int, List[str]]] = {}  # FU-L2, registro agregado
+        self._avisos_acta: Dict[Tuple[Any, str, str], Tuple[int, List[str]]] = {}  # FU-L4, registro agregado
         self._cfo_pendientes: Dict[str, Tuple[Any, str]] = {}
         self._cfo_existentes: Optional[set] = None
         self._cache_base_programa: Dict[Any, Optional[str]] = {}
@@ -509,6 +510,8 @@ class DWLoaderService:
         forzar_resolucion_humana: bool = False,
         modulo: Optional[str] = None,
         fecha: Optional[Any] = None,
+        ci_complemento: Optional[str] = None,
+        ci_numero: Optional[str] = None,
     ) -> Tuple[Optional[int], str]:
         """
         Retorna (id_estudiante, fk_estado).
@@ -530,6 +533,9 @@ class DWLoaderService:
 
         es_sintetico = not ci or ci.startswith("TEMP-CI-") or "TEMP" in (ci or "")
         ci_num, ci_comp = normalizar_ci(ci) if not es_sintetico else (None, None)
+        if not es_sintetico:   # FU-L4: número y complemento ya separados por la lectura del acta, antes de la cascada
+            ci_num = ci_numero or ci_num
+            ci_comp = (str(ci_complemento).strip().upper()[:10] if ci_complemento else None) or ci_comp
 
         if ci and not es_sintetico:
             ci_clean = ci.strip()
@@ -987,6 +993,7 @@ class DWLoaderService:
         """Inserta en bloque (execute_values, páginas de `pagina` filas) los hechos diferidos (evaluación, académico,
         financiero) y la trazabilidad carga_fila_origen. Devuelve el total de filas de hechos enviadas en esta llamada."""
         self.registrar_avisos_cobranza()  # FU-L2: avisos de calidad de cobranza, agregados
+        self.registrar_avisos_acta()      # FU-L4: avisos de calidad de actas, agregados
         if not (self._eval_pendientes or self._aca_pendientes or self._fin_pendientes or self._cfo_pendientes):
             return 0
         from psycopg2.extras import execute_values
@@ -1002,7 +1009,9 @@ class DWLoaderService:
                 "nota_final", "asistencia_pct", "incumplimiento_actividades_pct", "nivel_confianza_ia",
                 "requiere_revision", "fk_estado", "estado_academico", "estado_tutoria", "estado_arca", "tipo_alerta",
             ]
-            filas_aca = [tuple(v[c] for c in cols_aca) for v in self._aca_pendientes.values()]
+            from core.esquema_opcional import columnas_fu_l4
+            cols_aca += sorted(columnas_fu_l4(self.db, "fact_rendimiento_academico"))   # FU-L4: resultado, estado_de_fuente
+            filas_aca = [tuple(v.get(c) for c in cols_aca) for v in self._aca_pendientes.values()]
             self._aca_pendientes = {}
             sql_aca = (
                 f"INSERT INTO fact_rendimiento_academico ({', '.join(cols_aca)}) VALUES %s "
@@ -1381,6 +1390,42 @@ class DWLoaderService:
         self.db.flush()
         return n_reg
 
+    def _registrar_aviso_acta(self, doc_id: Optional[int], motivo: str, campo: str, valor: str) -> None:
+        """Acumula un aviso de calidad de acta; se registra agregado (uno por documento, motivo y campo). Sin datos personales."""
+        clave = (doc_id, motivo, campo)
+        n, ejemplos = self._avisos_acta.get(clave, (0, []))
+        if valor not in ejemplos and len(ejemplos) < 5:
+            ejemplos = ejemplos + [valor]
+        self._avisos_acta[clave] = (n + 1, ejemplos)
+
+    def registrar_avisos_acta(self) -> int:
+        """
+        Escribe en log_inconsistencias los avisos de acta acumulados (NOTA_FUERA_DE_RANGO, VALOR_FUERA_DE_CATALOGO,
+        CERO_COMO_INASISTENCIA), uno por (documento, motivo, campo), con el número de celdas y una descripción genérica del
+        valor (nunca el valor: puede ser una CI o un apellido). Los dos primeros quedan PENDIENTE (revisión); el cero
+        como inasistencia es informativo (REGISTRADO). El motivo legible en la bandeja lo pule FU-L7.
+        """
+        if not self._avisos_acta or self.solo_revision:
+            self._avisos_acta = {}
+            return 0
+        from services import acta_canonica
+        informativo = acta_canonica.motivo("cero_inasistencia", "CERO_COMO_INASISTENCIA")
+        n_reg = 0
+        for (doc_id, motivo, campo), (n, ejemplos) in sorted(self._avisos_acta.items(), key=lambda kv: str(kv[0])):
+            pendiente = motivo != informativo
+            self.db.add(LogInconsistencia(
+                id_documento=doc_id, fila_origen=None, campo_afectado=campo[:100],
+                valor_recibido="; ".join(ejemplos)[:2000],
+                valor_esperado="nota numérica de 0 a 100 o texto del vocabulario" if pendiente else "0 con estado Deserción o Abandono",
+                tipo_regla=motivo, severidad="MEDIA" if pendiente else "BAJA",
+                estado_resolucion="PENDIENTE" if pendiente else "REGISTRADO",
+                descripcion=f"FU-L4: {n} celda(s) de acta con {motivo} en {campo} (registro agregado).",
+            ))
+            n_reg += 1
+        self._avisos_acta = {}
+        self.db.flush()
+        return n_reg
+
     # ── 4. Resolución DimTiempo ──────────────────────────────────────────────
     def resolver_o_crear_tiempo(self, fecha_val: Optional[Any] = None) -> Optional[int]:
         """
@@ -1633,6 +1678,8 @@ class DWLoaderService:
         est_dict = resoluciones.get("estudiante") or {}
         fk_res = est_dict.get("fk_resolucion") or {}
         ci_est = fk_res.get("ci") or resoluciones.get("ci")
+        ci_comp_est = fk_res.get("ci_complemento")
+        ci_num_est = fk_res.get("ci_numero")
         nombre_est = fk_res.get("nombre_resuelto") or est_dict.get("valor_extraido") or resoluciones.get("nombre_estudiante")
 
         doc_info = resoluciones.get("docente") or {}
@@ -1678,7 +1725,7 @@ class DWLoaderService:
         # FU-L2: los pagos mensuales de una fila de cobranza resuelven la identidad con la fecha de la fila
         # (`fecha_identidad`), no con la del mes del pago: mismo estudiante para la situación y sus pagos.
         fecha_identidad = resoluciones["fecha_identidad"] if "fecha_identidad" in resoluciones else fecha_encontrada
-        clave_est = (ci_est, nombre_est, doc_id, confianza_ia, institucion, nombre_programa or nombre_modulo,
+        clave_est = (ci_est, ci_num_est, ci_comp_est, nombre_est, doc_id, confianza_ia, institucion, nombre_programa or nombre_modulo,
                      es_resuelto_humano, nombre_modulo, str(fecha_identidad))
         if clave_est in self._cache_estudiante:
             id_est, fk_estado_est = self._cache_estudiante[clave_est]
@@ -1693,6 +1740,8 @@ class DWLoaderService:
                 forzar_resolucion_humana=es_resuelto_humano,
                 modulo=nombre_modulo,
                 fecha=fecha_identidad,
+                ci_complemento=ci_comp_est,
+                ci_numero=ci_num_est,
             )
             self._cache_estudiante[clave_est] = (id_est, fk_estado_est)
         id_tiempo = self.resolver_o_crear_tiempo(fecha_encontrada)
@@ -2100,12 +2149,19 @@ class DWLoaderService:
         incumplimiento = _pct_valido(resoluciones.get("incumplimiento_actividades_pct")) or 0.00
         # El estado del acta (Participó, Deserción, En curso…) manda; solo sin estado en la fuente se deduce de la nota
         estado_aca = resoluciones.get("estado_academico") or (
-            "Aprobado" if (nota is not None and float(nota) >= NOTA_APROBACION) else "Reprobado" if nota is not None else "En curso"
+            "Aprobado" if ((nota is not None and float(nota) >= NOTA_APROBACION) or resoluciones.get("resultado") == "APROBADO")
+            else "Reprobado" if nota is not None else "En curso"
         )
         estado_tut = resoluciones.get("estado_tutoria")
         estado_arca = resoluciones.get("estado_arca")
         if resoluciones.get("estado_motivo"):
             requiere_rev = True  # estado fuera de catálogo o combinación no admitida por CRITERIOS
+        # FU-L4 (DA-FU2): resultado canónico del módulo. Lo trae la lectura del acta; las demás fuentes lo derivan de la nota.
+        resultado = resoluciones.get("resultado")
+        if resultado is None and not resoluciones.get("avisos_acta") and nota is not None:
+            from services import acta_canonica
+            nota, resultado = acta_canonica.resolver_numero(float(nota), acta_canonica.es_desercion(estado_aca, estado_tut))
+        estado_de_fuente = bool(resoluciones.get("estado_academico") or resoluciones.get("estado_tutoria"))
         tipo_alerta_aca = (
             "RIESGO_CRITICO" if (nota is not None and float(nota) < 51.0)
             else "RIESGO_ACADEMICO" if (nota is not None and float(nota) <= 70.0)
@@ -2114,6 +2170,11 @@ class DWLoaderService:
 
         if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_rendimiento_academico", registro.get("clave_contenido"), subclave=str(id_mod)):
             return {"tipo": "academico", "status": "skipped", "motivo": "Fila de origen ya cargada"}
+        for aviso in resoluciones.get("avisos_acta") or []:
+            self._registrar_aviso_acta(doc_id, *aviso)
+        from core.esquema_opcional import columnas_fu_l4
+        opcionales_aca = columnas_fu_l4(self.db, "fact_rendimiento_academico")
+        extra_aca = {c: v for c, v in (("resultado", resultado), ("estado_de_fuente", estado_de_fuente)) if c in opcionales_aca}
 
         if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
             if id_est and nombre_programa:
@@ -2135,6 +2196,7 @@ class DWLoaderService:
                 "estado_tutoria": estado_tut,
                 "estado_arca": estado_arca,
                 "tipo_alerta": tipo_alerta_aca,
+                **extra_aca,
             }
             return {
                 "tipo": "academico",
@@ -2166,6 +2228,8 @@ class DWLoaderService:
             existente.estado_tutoria = estado_tut
             existente.estado_arca = estado_arca
             existente.tipo_alerta = tipo_alerta_aca
+            for c, v in extra_aca.items():
+                setattr(existente, c, v)
             if id_doc:
                 existente.id_docente = id_doc
             if doc_id:
@@ -2188,7 +2252,8 @@ class DWLoaderService:
                 estado_academico=estado_aca,
                 estado_tutoria=estado_tut,
                 estado_arca=estado_arca,
-                tipo_alerta=tipo_alerta_aca
+                tipo_alerta=tipo_alerta_aca,
+                **extra_aca,
             )
             self.db.add(nuevo_hecho)
             self.db.flush()

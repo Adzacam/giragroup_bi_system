@@ -1,0 +1,7 @@
+kpi,gestion,antes_dw_viva,despues_tmpfs,diferencia,fuente_independiente,despues_tmpfs_con_estudiantes_previos,nota
+KPI-07,2024,78.8281094172959,80.71955364586674,1.8914,,82.39609952925353,"promedio de notas numéricas (el 0 real entra; inasistencia, eximidos y sin nota no)"
+KPI-07,2025,78.99050694852221,81.92162329615861,2.9311,,81.81037802776933,"promedio de notas numéricas (el 0 real entra; inasistencia, eximidos y sin nota no)"
+KPI-08,2024,85.02635703091609,80.8930487659473,-4.1333,,85.20879593152353,aprobados / (aprobados + reprobados + inasistencias); eximidos y sin nota fuera
+KPI-08,2025,85.6234096692112,85.74279157936745,0.1194,,85.62481651825031,aprobados / (aprobados + reprobados + inasistencias); eximidos y sin nota fuera
+KPI-16,2024,0.0,9.252506836827711,9.2525,10.1657,5.160947060388401,estudiantes con Deserción o Abandono / matrícula de la gestión; sin dato si ninguna fuente trae el estado
+KPI-16,2025,0.0,6.446140797285835,6.4461,6.5833,6.4407728927471295,estudiantes con Deserción o Abandono / matrícula de la gestión; sin dato si ninguna fuente trae el estado
