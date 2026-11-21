@@ -1,0 +1,19 @@
+{
+  "fuente": "fu_l6_pg_tmpfs (127.0.0.1:55441/giragroup_db)",
+  "motivos_registrados": 27,
+  "motivos_informativos_fuera_bandeja": [
+    "HOJA_IGNORADA",
+    "SIN_INFORMACION"
+  ],
+  "antes_staging_pendientes_raw": 1635,
+  "antes_hoja_ignorada_en_staging": 0,
+  "despues_grupos_publicos": {
+    "total_casos": 2197,
+    "total_grupos": 1353,
+    "hoja_ignorada_en_bandeja": 0,
+    "descartadas_vacias_confianza_cero": 0,
+    "patrones_count": 3,
+    "grupos_con_explicacion": 5
+  },
+  "pii": false
+}

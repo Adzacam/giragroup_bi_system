@@ -1,0 +1,110 @@
+{
+  "preview_workbook": {
+    "http_status": 200,
+    "resumen_hojas": {
+      "total": 3,
+      "usadas": 1,
+      "ignoradas": 2,
+      "ocultas": 1
+    },
+    "hojas": [
+      {
+        "hoja": "DATOS_ACTA",
+        "estado_visibilidad": "visible",
+        "decision": "usada",
+        "regla": "tabla_de_datos",
+        "motivo": "tabla de datos con cabecera detectada",
+        "filas_estimadas": 2,
+        "filas_fantasma_cortadas": 0,
+        "subtotales_cortados": 0,
+        "formulas_sin_valor": 0
+      },
+      {
+        "hoja": "Copia oculta",
+        "estado_visibilidad": "oculta",
+        "decision": "ignorada",
+        "regla": "oculta",
+        "motivo": "hoja oculta",
+        "filas_estimadas": 0,
+        "filas_fantasma_cortadas": 0,
+        "subtotales_cortados": 0,
+        "formulas_sin_valor": 0
+      },
+      {
+        "hoja": "Hoja 4",
+        "estado_visibilidad": "visible",
+        "decision": "ignorada",
+        "regla": "casi_vacia",
+        "motivo": "resumen o panel: casi todas las filas traen una o dos celdas",
+        "filas_estimadas": 0,
+        "filas_fantasma_cortadas": 0,
+        "subtotales_cortados": 0,
+        "formulas_sin_valor": 0
+      }
+    ],
+    "mapeo_columnas_count": 4,
+    "campos_canonicos_disponibles": [
+      "categoria_financiera",
+      "celular",
+      "ci",
+      "correo_institucional",
+      "cuotas_impagas",
+      "dias_mora",
+      "docente",
+      "estado_academico",
+      "estado_cartera_fuente",
+      "fecha",
+      "gestion",
+      "ignorar",
+      "inscritos_captacion",
+      "institucion",
+      "leads_captacion",
+      "mes",
+      "modulo",
+      "monto_deuda",
+      "monto_ejecutado",
+      "monto_meta",
+      "monto_pagado",
+      "nombre_completo",
+      "nota_final",
+      "programa",
+      "puntuacion"
+    ]
+  },
+  "resumen_cascada_ejemplo": {
+    "CI_EXACTA": 1,
+    "ENCABEZADO": 1,
+    "FUZZY": 1,
+    "REGEX": 1,
+    "BETO": 1,
+    "total_entidades": 5,
+    "etapas": [
+      {
+        "etapa": "CI_EXACTA",
+        "cantidad": 1,
+        "porcentaje": 20.0
+      },
+      {
+        "etapa": "ENCABEZADO",
+        "cantidad": 1,
+        "porcentaje": 20.0
+      },
+      {
+        "etapa": "FUZZY",
+        "cantidad": 1,
+        "porcentaje": 20.0
+      },
+      {
+        "etapa": "REGEX",
+        "cantidad": 1,
+        "porcentaje": 20.0
+      },
+      {
+        "etapa": "BETO",
+        "cantidad": 1,
+        "porcentaje": 20.0
+      }
+    ]
+  },
+  "pii": false
+}

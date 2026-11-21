@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from '../../../components/shared/Button';
-import { textoMotivo } from '../../../constants/motivosBandeja';
+import { maskTexto, textoMotivo } from '../../../constants/motivosBandeja';
 
 export default function GruposBandeja({ data, readOnly, busy, onVerIndividual, onResolver }) {
   const [dialog, setDialog] = useState(null);
@@ -9,10 +9,39 @@ export default function GruposBandeja({ data, readOnly, busy, onVerIndividual, o
   const [canonico, setCanonico] = useState('');
   const open = group => { setMes(''); setGestion(''); setCanonico(''); setDialog(group); };
   return <>
-    {!data?.grupos?.length ? <p role="status">No hay grupos para esta selección.</p> : <div style={{ overflowX: 'auto' }}><table className="dataops-table" style={{ width: '100%' }}>
-      <thead><tr><th>Motivo</th><th>Casos</th><th>Revisión</th></tr></thead>
+    {data?.patrones?.length > 0 && (
+      <section aria-label="Patrones detectados en la bandeja" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+        {data.patrones.map((pat) => (
+          <div key={pat.patron} style={{ padding: '6px 12px', borderRadius: 999, background: 'var(--dataops-warning-bg)', color: 'var(--dataops-warning-text)', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <strong>{pat.n.toLocaleString('es-BO')}</strong>
+            <span>{pat.patron}</span>
+            <span style={{ opacity: 0.8 }}>({pat.grupos} grupos)</span>
+          </div>
+        ))}
+      </section>
+    )}
+    {!data?.grupos?.length ? <p role="status">No hay grupos para esta selección.</p> : <div tabIndex={0} role="region" aria-label="Grupos de revisión humana" style={{ overflowX: 'auto' }}><table className="dataops-table" style={{ width: '100%' }}>
+      <thead><tr><th scope="col">Motivo</th><th scope="col">Casos</th><th scope="col">Revisión</th></tr></thead>
       <tbody>{data.grupos.map(group => <tr key={group.clave}>
-        <td><details><summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>{textoMotivo(group.motivo, group.titulo)}</summary><p style={{ maxWidth: 580, overflowWrap: 'anywhere', padding: '12px 0', fontSize: 12 }}>{group.ejemplo || 'Sin ejemplo disponible'}</p></details></td>
+        <td>
+          <details>
+            <summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>
+              {textoMotivo(group.motivo, group.titulo)}
+              {group.patron && <span style={{ marginLeft: 8, fontSize: 11, padding: '2px 8px', borderRadius: 999, background: 'var(--dataops-warning-bg)', color: 'var(--dataops-warning-text)' }}>{group.patron}</span>}
+            </summary>
+            <div style={{ maxWidth: 620, overflowWrap: 'anywhere', padding: '12px 0', fontSize: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {group.explicacion && (
+                <div style={{ padding: 10, borderRadius: 10, background: 'var(--color-mist-gray)', border: '1px solid var(--color-border)' }}>
+                  <p style={{ fontWeight: 600, color: 'var(--color-ink-black)', marginBottom: 4 }}>Por qué está aquí</p>
+                  <p style={{ color: 'var(--color-slate-gray)' }}><strong>Regla:</strong> {group.explicacion.regla}</p>
+                  <p style={{ color: 'var(--color-slate-gray)' }}><strong>Umbral / criterio:</strong> {group.explicacion.umbral}</p>
+                  <p style={{ color: 'var(--color-slate-gray)' }}><strong>Valor de la fuente:</strong> {maskTexto(group.explicacion.valor_enmascarado || group.ejemplo || 'Sin valor')}</p>
+                </div>
+              )}
+              <p style={{ color: 'var(--color-slate-gray)' }}>{maskTexto(group.ejemplo) || 'Sin ejemplo disponible'}</p>
+            </div>
+          </details>
+        </td>
         <td>{group.n.toLocaleString('es-BO')}</td>
         <td><Button variant="ghost" disabled={busy} onClick={() => onVerIndividual(group.clave)}>Ver casos</Button>
           {!readOnly && group.accion_grupo !== 'MANUAL' && <Button variant="ghost" disabled={busy} isLoading={busy} onClick={() => group.accion_grupo === 'APROBAR' ? onResolver(group) : open(group)}>{group.accion_grupo === 'APROBAR' ? 'Aprobar grupo' : group.accion_grupo === 'CORREGIR_FECHA' ? 'Corregir fecha' : 'Revisar estado'}</Button>}</td>

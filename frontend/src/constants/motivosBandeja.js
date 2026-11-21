@@ -23,7 +23,18 @@ export const MOTIVOS_BANDEJA = {
   ENTIDAD_NUEVA: 'Entidad nueva',
   REVISION_GENERAL: 'Revisión general',
   DOCENTE_SIN_VINCULAR: 'Docente sin vincular en la fuente',
+  HOJA_IGNORADA: 'Hoja ignorada por regla de lectura (solo informativo)',
+  NOTA_FUERA_DE_RANGO: 'Nota fuera de rango (debe estar entre 0 y 100)',
+  RESPUESTA_EN_COLUMNA_EQUIVOCADA: 'Respuesta en columna equivocada (escala cruzada)',
+  CUOTAS_NEGATIVAS: 'Cuotas en mora negativas en la fuente (ajustadas a 0)',
+  CONFLICTO_META: 'Conflicto de meta entre fuentes (resuelto por prioridad)',
+  CONFLICTO_FUENTES: 'Conflicto entre fuentes (resuelto por prioridad)',
+  VALOR_FUERA_DE_CATALOGO: 'Valor fuera de catálogo o vocabulario',
+  PUNTUACION_FUERA_DE_ESCALA: 'Puntuación fuera de escala',
+  ESCALA_NO_INFERIBLE: 'Escala de evaluación no inferible',
 };
+
+export const MOTIVOS_INFORMATIVOS = new Set(['HOJA_IGNORADA', 'SIN_INFORMACION']);
 
 export const textoMotivo = (motivo, etiquetaServidor) =>
   MOTIVOS_BANDEJA[String(motivo || '').toUpperCase()] || etiquetaServidor || String(motivo || '').replace(/_/g, ' ').toLowerCase();

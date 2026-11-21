@@ -9,7 +9,15 @@ from fastapi import HTTPException
 from models.dim_origen import DimOrigenDocumental
 from models.staging_entidad import StagingEntidadNoResuelta
 from routers.dataops._comun import categoria_ruteo
-from services.bandeja_grupos import clave_grupo, grupos_pendientes, ids_del_grupo
+from services.bandeja_grupos import (
+    MOTIVOS_CATALOGO,
+    MOTIVOS_INFORMATIVOS,
+    clave_grupo,
+    es_fila_vacia_sin_confianza,
+    explicacion_motivo,
+    grupos_pendientes,
+    ids_del_grupo,
+)
 from services.dataops_evaluation_service import enmascarar_ci, texto_sin_ci, strip_accents, cis_en_entidades, NON_PERSON_WORDS
 from services.dataops_privacy import EMAIL as _EMAIL_RE, texto_publico
 from services.revision_formularios import campos_para_caso, construir_motivo_detalle
@@ -32,6 +40,7 @@ MOTIVOS = {
     'CATALOGO_PROGRAMA_NO_PAGO': 'Fila de catálogo de programas (no es un pago)',
     'DOCENTE_NO_ESTUDIANTE': 'Fila de docente (no es un estudiante)',
     'FILA_SIN_IDENTIDAD': 'Fila sin identidad reconocible: revisar si hay un pago o un estado que conservar',
+    **MOTIVOS_CATALOGO,
 }
 
 
@@ -176,6 +185,13 @@ def caso_guardado(ent, doc):
         'similitud_nombre_completo': similitud_nombre_completo(nombre, ent.mejor_candidato),
         'cuando': ent.resuelto_en.isoformat() if ent.resuelto_en else None,
         'entidades': _entidades_publicas(p.get('entities') or p.get('entidades') or []),
+        'explicacion': explicacion_motivo(
+            motivo,
+            raw_protegido,
+            score_fuzzy=score,
+            nivel_confianza=float(ent.nivel_confianza) if ent.nivel_confianza is not None else None,
+            payload=p,
+        ),
     }
     if p.get('sugerencias'):   # opción 3: candidatos ordenados por score combinado (campo opcional; solo orden, nunca una acción)
         publico['sugerencias_beto'] = [
@@ -193,6 +209,11 @@ def iterar_casos(db, docs, resueltos=False):
         StagingEntidadNoResuelta.id_documento.in_(ids)).order_by(StagingEntidadNoResuelta.id_staging)
     # La respuesta solo materializa cinco casos. El recorrido usa bloques acotados, sin modelos NLP.
     for ent in q.yield_per(200):
+        if not resueltos:
+            if (ent.motivo or '').upper() in MOTIVOS_INFORMATIVOS:
+                continue
+            if es_fila_vacia_sin_confianza(ent.texto_original, ent.nivel_confianza):
+                continue
         yield caso_guardado(ent, mapa.get(ent.id_documento)), clave_grupo(ent.motivo, ent.texto_original)
     if not resueltos:
         offset = 0
@@ -292,11 +313,28 @@ def grupos_publicos(db, docs, page=1, search=''):
         accion = g.get('accion_grupo') or 'MANUAL'
         if accion == 'MAPEAR_ESTADO' and '|falta:ninguno|' not in g['clave']:
             accion = 'MANUAL'
-        grupos.append({'clave': token_grupo(g['clave']), 'motivo': g['motivo'], 'titulo': titulo,
-                       'archivo_origen': archivo, 'ejemplo': ejemplo, 'n': g['n'], 'accion_grupo': accion})
-    return {'total_casos': sum(g['n'] for g in grupos), 'total_grupos': len(grupos), 'doc_ids': ids,
-            'grupos': grupos[(page - 1) * 5:page * 5],
-            'pagination': {'page': page, 'page_size': 5, 'total_items': len(grupos), 'total_pages': max(1, math.ceil(len(grupos) / 5))}}
+        item = {
+            'clave': token_grupo(g['clave']),
+            'motivo': g['motivo'],
+            'titulo': titulo,
+            'archivo_origen': archivo,
+            'ejemplo': ejemplo,
+            'n': g['n'],
+            'accion_grupo': accion,
+            'explicacion': proteger_ci(g.get('explicacion') or explicacion_motivo(g.get('motivo'), ejemplo)),
+        }
+        if g.get('patron'):
+            item['patron'] = g['patron']
+        grupos.append(item)
+    return {
+        'total_casos': sum(g['n'] for g in grupos),
+        'total_grupos': len(grupos),
+        'doc_ids': ids,
+        'grupos': grupos[(page - 1) * 5:page * 5],
+        'patrones': base.get('patrones', []),
+        'descartadas_vacias': base.get('descartadas_vacias', 0),
+        'pagination': {'page': page, 'page_size': 5, 'total_items': len(grupos), 'total_pages': max(1, math.ceil(len(grupos) / 5))},
+    }
 
 
 def clave_interna(db, clave, ids):

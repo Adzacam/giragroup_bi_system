@@ -60,6 +60,26 @@ def get_review_tray(
         valor(vista, str, 'PENDIENTES'), valor(grupo, str))
 
 
+@router.get("/review-tray/motivos")
+def get_review_tray_motivos():
+    """Catálogo público de motivos de revisión humana y su clasificación (accionable vs informativo)."""
+    from services.bandeja_grupos import EXPLICACION_MOTIVOS, MOTIVOS_INFORMATIVOS
+    from services.revision_consulta import MOTIVOS
+    return {
+        "motivos": [
+            {
+                "codigo": codigo,
+                "etiqueta": etiqueta,
+                "informativo": codigo in MOTIVOS_INFORMATIVOS,
+                "en_bandeja_pendiente": codigo not in MOTIVOS_INFORMATIVOS,
+                "regla": EXPLICACION_MOTIVOS.get(codigo, ("Regla de validación DataOps", ""))[0],
+                "umbral": EXPLICACION_MOTIVOS.get(codigo, ("", "Cumplimiento de catálogo y esquema"))[1],
+            }
+            for codigo, etiqueta in sorted(MOTIVOS.items())
+        ]
+    }
+
+
 @router.get("/review-tray/grupos")
 def get_review_tray_groups(
     doc_id: Optional[int] = Query(None), id_lote: Optional[str] = Query(None),

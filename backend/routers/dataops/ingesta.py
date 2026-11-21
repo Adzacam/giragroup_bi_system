@@ -715,3 +715,163 @@ def get_normalization_matrix(doc_id: int, page: int = Query(1, ge=1), db: Sessio
     matriz = matriz_registrada(db, doc_id)
     page = page if isinstance(page, int) else 1
     return {'status': 'success', 'data': matriz[(page - 1) * 5:page * 5], 'pagination': paginacion(page, len(matriz))}
+
+
+_SINONIMOS_PREVIEW = {
+    "ci": ("CEDULA DE IDENTIDAD", "CI", "C.I.", "DOC_IDENTIDAD/CI", "CI_ESTUDIANTE", "IDNUMBER", "ID NUMBER", "CEDULA"),
+    "nombre_completo": ("NOMBRE COMPLETO", "NOMBRES Y APELLIDOS", "APELLIDOS Y NOMBRES", "ESTUDIANTE", "ALUMNO", "PARTICIPANTE"),
+    "programa": ("PROGRAMA", "NOMBRE DEL PROGRAMA", "DIPLOMADO", "CURSO", "POS", "CODIGO POS", "POS - ACTAS"),
+    "modulo": ("MODULO", "NOMBRE DEL MODULO", "MATERIA", "ASIGNATURA"),
+    "docente": ("DOCENTE", "PROFESOR", "FACILITADOR", "INSTRUCTOR"),
+    "nota_final": ("NOTA FINAL", "NOTA", "CALIFICACION", "GRADE/100.00", "GRADE/100", "PROMEDIO FINAL"),
+    "estado_academico": ("ESTADO ACADEMICO", "ESTADO", "ESTADO ARCA", "ESTADO TUTORIA"),
+    "estado_cartera_fuente": ("TIPO DE CARTERA", "ESTADO CARTERA", "CARTERA"),
+    "cuotas_impagas": ("TOTAL CUOTAS EN MORA", "CUOTAS EN MORA", "CUOTAS IMPAGAS"),
+    "dias_mora": ("DIAS DE MORA", "DIAS MORA"),
+    "monto_deuda": ("DEUDA TOTAL", "MONTO DEUDA", "SALDO"),
+    "monto_pagado": ("TOTAL PAGADO", "MONTO PAGADO", "PAGADO"),
+    "leads_captacion": ("LEADS", "INTERESADOS", "PROSPECTOS"),
+    "inscritos_captacion": ("N° INSCRITOS", "NRO INSCRITOS", "INSCRITOS"),
+    "puntuacion": ("PUNTUACION", "CALIFICACION DOCENTE", "SATISFACCION"),
+    "fecha": ("FECHA", "FECHA INICIO", "FECHA DE PAGO", "FECHA EVALUACION", "MARCA TEMPORAL"),
+    "gestion": ("GESTION", "ANO", "ANO INICIO"),
+    "mes": ("MES", "MES INICIO"),
+}
+
+_CAMPOS_CANONICOS_DISPONIBLES = sorted(list(_SINONIMOS_PREVIEW.keys()) + ["correo_institucional", "celular", "institucion", "categoria_financiera", "monto_meta", "monto_ejecutado", "ignorar"])
+
+
+def _inferir_campo_canonico(nombre_col: str) -> str:
+    from services.extraccion_por_encabezado import normalizar_encabezado
+    norm = normalizar_encabezado(nombre_col)
+    for campo, sinonimos in _SINONIMOS_PREVIEW.items():
+        if norm in sinonimos or any(s in norm for s in sinonimos if len(s) >= 5):
+            return campo
+    return ""
+
+
+@router.post("/preview-workbook")
+def preview_workbook(
+    file: UploadFile = File(...),
+    tipo_fuente: Optional[str] = Form(None),
+):
+    """
+    FU-L8: Vista previa sin escritura en DW ni PII.
+    Devuelve hojas (usada / ignorada / oculta + motivo + filas estimadas) y mapeo editable columna -> campo canónico.
+    """
+    import io
+    import tempfile
+    import pandas as pd
+    from pipeline.ingesta import leer_archivo_con_metadatos
+    from pipeline.lector_hojas import resumen_publico
+    from services.ingestion_service import detectar_tipo_fuente_por_cabeceras, normalizar_codigo_tipo_fuente
+
+    filename = os.path.basename(file.filename or "archivo.xlsx")
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in (".xlsx", ".xlsm", ".csv"):
+        raise HTTPException(status_code=400, detail="Solo se admiten archivos .xlsx, .xlsm o .csv para vista previa.")
+
+    raw_bytes = file.file.read()
+    if not raw_bytes:
+        raise HTTPException(status_code=400, detail="El archivo está vacío.")
+
+    hojas_out: List[Dict[str, Any]] = []
+    lectura_dfs: Dict[str, Any] = {}
+    columnas_vistas: Dict[str, Dict[str, Any]] = {}
+
+    if ext == ".csv":
+        try:
+            df_csv = pd.read_csv(io.BytesIO(raw_bytes))
+        except Exception as exc:
+            raise HTTPException(status_code=422, detail=f"No se pudo leer el CSV: {exc}")
+        lectura_dfs["CSV"] = df_csv
+        hojas_out.append({
+            "hoja": "CSV",
+            "estado_visibilidad": "visible",
+            "decision": "usada",
+            "regla": "tabla_de_datos",
+            "motivo": "Archivo tabular CSV",
+            "filas_estimadas": int(len(df_csv)),
+            "filas_fantasma_cortadas": 0,
+            "subtotales_cortados": 0,
+            "formulas_sin_valor": 0,
+        })
+        for col in df_csv.columns:
+            c_str = str(col).strip()
+            if c_str and not c_str.lower().startswith("unnamed"):
+                columnas_vistas.setdefault(c_str, {
+                    "columna_origen": c_str,
+                    "campo_canonico": _inferir_campo_canonico(c_str),
+                    "hoja": "CSV",
+                })
+    else:
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
+                tmp.write(raw_bytes)
+                tmp_path = tmp.name
+            libro = leer_archivo_con_metadatos(tmp_path)
+            resumen = resumen_publico(libro)
+            for item in resumen:
+                nombre_h = item.get("hoja")
+                h_obj = libro.get(nombre_h)
+                vis = "oculta" if item.get("estado") == "hidden" else "visible"
+                dec = "usada" if item.get("decision") == "usar" else "ignorada"
+                est_filas = int(item.get("filas_leidas") or 0)
+                if dec == "usada" and est_filas == 0 and h_obj is not None:
+                    est_filas = max(0, int(len(h_obj.df_recortado())) - 1)
+                hojas_out.append({
+                    "hoja": nombre_h,
+                    "estado_visibilidad": vis,
+                    "decision": dec,
+                    "regla": item.get("regla"),
+                    "motivo": item.get("motivo"),
+                    "filas_estimadas": est_filas,
+                    "filas_fantasma_cortadas": int(item.get("filas_fantasma_cortadas") or 0),
+                    "subtotales_cortados": int(item.get("subtotales_cortados") or 0),
+                    "formulas_sin_valor": int(item.get("formulas_sin_valor") or 0),
+                })
+            for nombre, h in libro.items():
+                if not h.usada:
+                    continue
+                df_rec = h.df_recortado()
+                lectura_dfs[nombre] = df_rec
+                if len(df_rec) > 0:
+                    # Primera fila no vacía como cabecera si las columnas son numéricas
+                    cols = list(df_rec.columns)
+                    if all(isinstance(c, int) or str(c).startswith("Unnamed") for c in cols):
+                        vals = [str(v).strip() for v in df_rec.iloc[0].tolist() if pd.notna(v) and str(v).strip()]
+                    else:
+                        vals = [str(c).strip() for c in cols if str(c).strip() and not str(c).startswith("Unnamed")]
+                    for c_str in vals:
+                        columnas_vistas.setdefault(c_str, {
+                            "columna_origen": c_str,
+                            "campo_canonico": _inferir_campo_canonico(c_str),
+                            "hoja": nombre,
+                        })
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                try:
+                    os.remove(tmp_path)
+                except OSError:
+                    pass
+
+    tipo_detectado = detectar_tipo_fuente_por_cabeceras(lectura_dfs, filename) if lectura_dfs else None
+    tipo_sugerido = normalizar_codigo_tipo_fuente(tipo_fuente) if tipo_fuente else None
+    n_usadas = sum(1 for h in hojas_out if h["decision"] == "usada")
+    n_ocultas = sum(1 for h in hojas_out if h["estado_visibilidad"] == "oculta")
+
+    return {
+        "status": "success",
+        "nombre_archivo": filename,
+        "tipo_fuente_detectado": tipo_detectado or tipo_sugerido,
+        "resumen_hojas": {
+            "total": len(hojas_out),
+            "usadas": n_usadas,
+            "ignoradas": len(hojas_out) - n_usadas,
+            "ocultas": n_ocultas,
+        },
+        "hojas": hojas_out,
+        "mapeo_columnas": list(columnas_vistas.values()),
+        "campos_canonicos_disponibles": _CAMPOS_CANONICOS_DISPONIBLES,
+    }

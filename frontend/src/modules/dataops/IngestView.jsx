@@ -71,6 +71,44 @@ export default function IngestView() {
   const [telemetryOpen, setTelemetryOpen] = useState(false);
   const [telemetryDoc, setTelemetryDoc] = useState(null);
 
+  // ─── Vista previa por hoja y mapeo editable (FU-L8) ───
+  const [workbookPreviews, setWorkbookPreviews] = useState({});
+  const [loadingPreviewUid, setLoadingPreviewUid] = useState(null);
+
+  const handleTogglePreview = async (item) => {
+    if (expandedDetailKey === item.uid) {
+      setExpandedDetailKey(null);
+      return;
+    }
+    setExpandedDetailKey(item.uid);
+    if (workbookPreviews[item.uid] || loadingPreviewUid === item.uid) return;
+    setLoadingPreviewUid(item.uid);
+    try {
+      const prev = await dataopsApi.previewWorkbook(item.file, item.sourceType || null);
+      setWorkbookPreviews((curr) => ({ ...curr, [item.uid]: prev }));
+    } catch (err) {
+      sileoToast.error({ title: 'No se pudo generar la vista previa', description: mensajeError(err) });
+    } finally {
+      setLoadingPreviewUid(null);
+    }
+  };
+
+  const handleChangeColumnMapping = (uid, columnaOrigen, nuevoCampo) => {
+    setWorkbookPreviews((curr) => {
+      const prev = curr[uid];
+      if (!prev) return curr;
+      return {
+        ...curr,
+        [uid]: {
+          ...prev,
+          mapeo_columnas: (prev.mapeo_columnas || []).map((m) =>
+            m.columna_origen === columnaOrigen ? { ...m, campo_canonico: nuevoCampo } : m
+          ),
+        },
+      };
+    });
+  };
+
   const loadInitialData = async () => {
     try {
       const lastId = localStorage.getItem('last_active_batch_id');
@@ -397,7 +435,7 @@ export default function IngestView() {
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleFileDrop}
             style={{
-              border: isDragging ? '2px dashed var(--color-gira-gold, #D99B26)' : '2px dashed var(--color-border)',
+              border: isDragging ? '2px dashed var(--color-gira-gold)' : '2px dashed var(--color-border)',
               backgroundColor: isDragging ? 'var(--dataops-gold-bg, rgba(217, 155, 38, 0.08))' : 'var(--color-mist-gray)',
               borderRadius: '12px',
               padding: '24px 20px',
@@ -430,7 +468,7 @@ export default function IngestView() {
 
             <div style={{
               width: '44px', height: '44px', borderRadius: '50%',
-              backgroundColor: 'var(--dataops-gold-bg)', color: 'var(--color-gira-gold, #D99B26)',
+              backgroundColor: 'var(--dataops-gold-bg)', color: 'var(--color-gira-gold)',
               display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
               <UploadCloud size={22} />
@@ -495,7 +533,7 @@ export default function IngestView() {
             alignItems: 'flex-start',
             gap: '10px',
           }}>
-            <Calendar size={18} color="var(--color-gira-gold, #D99B26)" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <Calendar size={18} color="var(--color-gira-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
               <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>Fechas:</span>
@@ -527,10 +565,10 @@ export default function IngestView() {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                 <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <RefreshCw size={13} className="animate-spin" color="var(--color-gira-gold, #D99B26)" />
+                  <RefreshCw size={13} className="animate-spin" color="var(--color-gira-gold)" />
                   {uploadProgress < 100 ? 'Subiendo archivos...' : 'Procesando en servidor...'}
                 </span>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-gira-gold, #D99B26)' }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-gira-gold)' }}>
                   {uploadProgress}%
                 </span>
               </div>
@@ -563,7 +601,7 @@ export default function IngestView() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
           <div>
             <h3 className="serif-heading" style={{ fontSize: '17px', margin: 0, color: 'var(--color-ink-black)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Eye size={18} color="var(--color-gira-gold, #D99B26)" /> {queuedFiles.length > 0 ? 'Cola de archivos' : 'Archivos del lote'}
+              <Eye size={18} color="var(--color-gira-gold)" /> {queuedFiles.length > 0 ? 'Cola de archivos' : 'Archivos del lote'}
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--color-slate-gray)', margin: '4px 0 0 0' }}>
               {queuedFiles.length > 0
@@ -637,7 +675,7 @@ export default function IngestView() {
                         </td>
                         <td style={{ fontWeight: 600, color: 'var(--color-ink-black)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <FileSpreadsheet size={15} color="var(--color-gira-gold, #D99B26)" style={{ flexShrink: 0 }} />
+                            <FileSpreadsheet size={15} color="var(--color-gira-gold)" style={{ flexShrink: 0 }} />
                             <span>{item.file.name}</span>
                           </div>
                           <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', fontWeight: 400, marginTop: '3px' }}>
@@ -716,7 +754,7 @@ export default function IngestView() {
                             <Button
                               variant="ghost"
                               type="button"
-                              onClick={() => setExpandedDetailKey(isExpanded ? null : item.uid)}
+                              onClick={() => handleTogglePreview(item)}
                               style={{ padding: '4px 8px', fontSize: '11px' }}
                             >
                               {isExpanded ? 'Ocultar' : 'Vista previa'}
@@ -744,6 +782,98 @@ export default function IngestView() {
                               <span><strong>Origen:</strong> {tipoLabel}</span>
                               <span><strong>Fechas:</strong> Por detectar al procesar</span>
                               <span><strong>Estado:</strong> {item.status}</span>
+                            </div>
+                            <div style={{ padding: '12px 16px', borderTop: '1px solid var(--color-border)', backgroundColor: 'var(--color-alabaster)' }}>
+                              {loadingPreviewUid === item.uid ? (
+                                <p role="status" style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>Analizando hojas y encabezados del libro…</p>
+                              ) : workbookPreviews[item.uid] ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 12 }}>
+                                    <span style={{ padding: '2px 10px', borderRadius: 999, backgroundColor: 'var(--color-mist-gray)', color: 'var(--color-ink-black)' }}>
+                                      Hojas totales: <strong>{workbookPreviews[item.uid].resumen_hojas?.total ?? 0}</strong>
+                                    </span>
+                                    <span style={{ padding: '2px 10px', borderRadius: 999, backgroundColor: 'var(--dataops-success-bg)', color: 'var(--dataops-success-text)' }}>
+                                      Usadas: <strong>{workbookPreviews[item.uid].resumen_hojas?.usadas ?? 0}</strong>
+                                    </span>
+                                    <span style={{ padding: '2px 10px', borderRadius: 999, backgroundColor: 'var(--dataops-warning-bg)', color: 'var(--dataops-warning-text)' }}>
+                                      Ignoradas: <strong>{workbookPreviews[item.uid].resumen_hojas?.ignoradas ?? 0}</strong>
+                                    </span>
+                                    <span style={{ padding: '2px 10px', borderRadius: 999, backgroundColor: 'var(--color-mist-gray)', color: 'var(--color-slate-gray)' }}>
+                                      Ocultas: <strong>{workbookPreviews[item.uid].resumen_hojas?.ocultas ?? 0}</strong>
+                                    </span>
+                                  </div>
+                                  <div tabIndex={0} role="region" aria-label={`Hojas de ${item.file.name}`} style={{ overflowX: 'auto' }}>
+                                    <table className="dataops-table" style={{ width: '100%', fontSize: 12 }}>
+                                      <thead>
+                                        <tr>
+                                          <th scope="col">Hoja</th>
+                                          <th scope="col">Visibilidad</th>
+                                          <th scope="col">Decisión</th>
+                                          <th scope="col">Motivo</th>
+                                          <th scope="col">Filas estimadas</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {(workbookPreviews[item.uid].hojas || []).map((h) => (
+                                          <tr key={h.hoja}>
+                                            <td><strong>{h.hoja}</strong></td>
+                                            <td>{h.estado_visibilidad}</td>
+                                            <td>
+                                              <span style={{
+                                                padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600,
+                                                backgroundColor: h.decision === 'usada' ? 'var(--dataops-success-bg)' : 'var(--dataops-warning-bg)',
+                                                color: h.decision === 'usada' ? 'var(--dataops-success-text)' : 'var(--dataops-warning-text)',
+                                              }}>
+                                                {h.decision}
+                                              </span>
+                                            </td>
+                                            <td style={{ color: 'var(--color-slate-gray)' }}>{h.motivo}</td>
+                                            <td style={{ fontVariantNumeric: 'tabular-nums' }}>{(h.filas_estimadas ?? 0).toLocaleString('es-BO')}</td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                  {workbookPreviews[item.uid].mapeo_columnas?.length > 0 && (
+                                    <div tabIndex={0} role="region" aria-label={`Mapeo de columnas de ${item.file.name}`} style={{ overflowX: 'auto' }}>
+                                      <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-ink-black)', marginBottom: 6 }}>Mapeo editable columna → campo canónico</p>
+                                      <table className="dataops-table" style={{ width: '100%', fontSize: 12 }}>
+                                        <thead>
+                                          <tr>
+                                            <th scope="col">Columna del archivo</th>
+                                            <th scope="col">Hoja</th>
+                                            <th scope="col">Campo canónico</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {workbookPreviews[item.uid].mapeo_columnas.map((m) => (
+                                            <tr key={`${m.hoja}-${m.columna_origen}`}>
+                                              <td>{m.columna_origen}</td>
+                                              <td style={{ color: 'var(--color-slate-gray)' }}>{m.hoja}</td>
+                                              <td>
+                                                <select
+                                                  className="dataops-select"
+                                                  aria-label={`Campo canónico para ${m.columna_origen}`}
+                                                  value={m.campo_canonico || ''}
+                                                  onChange={(e) => handleChangeColumnMapping(item.uid, m.columna_origen, e.target.value)}
+                                                  style={{ padding: '4px 8px', fontSize: 11.5 }}
+                                                >
+                                                  <option value="">Sin asignar…</option>
+                                                  {(workbookPreviews[item.uid].campos_canonicos_disponibles || []).map((c) => (
+                                                    <option key={c} value={c}>{c}</option>
+                                                  ))}
+                                                </select>
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <p style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>Sin datos de vista previa disponibles.</p>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -789,7 +919,7 @@ export default function IngestView() {
                       <tr className="dataops-table-row" style={{ cursor: 'default' }}>
                         <td style={{ fontWeight: 600, color: 'var(--color-ink-black)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <FileSpreadsheet size={15} color="var(--color-gira-gold, #D99B26)" />
+                            <FileSpreadsheet size={15} color="var(--color-gira-gold)" />
                             <span>{item.nombre}</span>
                           </div>
                           <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)', fontWeight: 400, marginTop: '3px' }}>

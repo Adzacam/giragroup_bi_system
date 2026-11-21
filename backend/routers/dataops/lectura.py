@@ -74,6 +74,38 @@ def get_lote_integridad(id_lote: str, page: int = Query(1, ge=1),
     return resultado
 
 
+_ETAPAS_CASCADA = ("CI_EXACTA", "ENCABEZADO", "FUZZY", "REGEX", "BETO")
+
+
+def _calcular_resumen_cascada(detalles: list) -> dict:
+    """Cuenta entidades resueltas por cada etapa de la cascada (CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO)."""
+    conteos = {etapa: 0 for etapa in _ETAPAS_CASCADA}
+    for reg in detalles or []:
+        lectura = reg.get("lectura") or {}
+        entidades = lectura.get("entidades") or reg.get("entidades") or []
+        for ent in entidades:
+            if not isinstance(ent, dict):
+                continue
+            origen = str(ent.get("origen_confianza") or ent.get("fuente_resolucion") or "").upper()
+            if origen == "REGLA_ENCABEZADO":
+                origen = "ENCABEZADO"
+            if origen in conteos:
+                conteos[origen] += 1
+    total = sum(conteos.values())
+    return {
+        **conteos,
+        "total_entidades": total,
+        "etapas": [
+            {
+                "etapa": k,
+                "cantidad": conteos[k],
+                "porcentaje": round(conteos[k] * 100.0 / total, 1) if total else 0.0,
+            }
+            for k in _ETAPAS_CASCADA
+        ],
+    }
+
+
 @router.get("/lote/{id_lote}/resumen")
 def get_lote_resumen(
     id_lote: str,
@@ -114,6 +146,7 @@ def get_lote_resumen(
             "inconsistenciasPct": 0.0,
             "mensaje_vacio": "Sin registros en el lote activo — Suba un archivo en ① Ingesta para visualizar la distribución",
             "archivos": archivos_tabs,
+            "resumen_cascada": _calcular_resumen_cascada([]),
             "umbrales": {
                 "compuerta_lectura_modelo": COMPUERTA_LECTURA_MODELO_PCT,
                 "umbral_indice_registro": UMBRAL_INDICE_REGISTRO,
@@ -138,6 +171,7 @@ def get_lote_resumen(
         "auditPct": eval_res["auditPct"],
         "inconsistenciasPct": eval_res["inconsistenciasPct"],
         "archivos": archivos_tabs,
+        "resumen_cascada": _calcular_resumen_cascada(eval_res.get("detalles") or []),
         "umbrales": {
             "compuerta_lectura_modelo": COMPUERTA_LECTURA_MODELO_PCT,
             "umbral_indice_registro": UMBRAL_INDICE_REGISTRO,
@@ -478,6 +512,7 @@ def get_lote_beto_reading(
         "capaA": capa_resumen,
         "capa_a_resumen": capa_resumen,
         "resumen_ejecutivo": resumen_ejecutivo,
+        "resumen_cascada": _calcular_resumen_cascada(detalles_all),
         "areas": areas_dict,
         "pendientes_revision": a_revision,
         "pagination": {

@@ -1,0 +1,14 @@
+{
+  "componentes": [
+    "frontend/src/constants/motivosBandeja.js",
+    "frontend/src/modules/dataops/IngestView.jsx",
+    "frontend/src/modules/dataops/BetoReadingFlowView.jsx",
+    "frontend/src/modules/dataops/HumanReviewFlowView.jsx",
+    "frontend/src/modules/dataops/components/GruposBandeja.jsx"
+  ],
+  "vitest_test_files_passed": 12,
+  "vitest_tests_passed": 56,
+  "vite_build": "passed",
+  "hex_sueltos_en_archivos_modificados": 0,
+  "pii": false
+}

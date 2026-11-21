@@ -278,6 +278,40 @@ function LecturaBeto({ batchId }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 16, marginBottom: 20 }}>
           {[['Analizados', summary?.total_procesados], ['Aceptación directa', summary?.aceptados_automaticamente], ['En revisión', summary?.por_revisar, 'Banda 60–85 % de lectura; el paso ③ agrupa también casos por identidad o catálogo.'], ['Con incidencias', summary?.con_incidencias]].map(([label, value, nota]) => <div className="floating-artifact" key={label} style={{ padding: 18 }}><p style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>{label}</p><p style={{ fontSize: 25, marginTop: 6 }}>{isFetching ? 'Consultando…' : <AnimatedNumberV2 value={fmt(value)} />}</p>{nota && <p style={{ fontSize: 11, color: 'var(--color-slate-gray)', marginTop: 6, lineHeight: 1.4 }}>{nota}</p>}</div>)}
         </div>
+        {data?.resumen_cascada && (
+          <section className="floating-artifact rounded-2xl" aria-label="Resumen de cascada de resolución" style={{ padding: 20, marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, alignItems: 'baseline', marginBottom: 12 }}>
+              <h3 className="serif-heading" style={{ fontSize: 16, margin: 0, color: 'var(--color-ink-black)' }}>Cascada de resolución por etapa</h3>
+              <span style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>
+                Total entidades evaluadas: <strong style={{ color: 'var(--color-ink-black)' }}>{fmt(data.resumen_cascada.total_entidades)}</strong>
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12 }}>
+              {(data.resumen_cascada.etapas || [
+                { etapa: 'CI_EXACTA', cantidad: data.resumen_cascada.CI_EXACTA ?? 0, porcentaje: 0 },
+                { etapa: 'ENCABEZADO', cantidad: data.resumen_cascada.ENCABEZADO ?? 0, porcentaje: 0 },
+                { etapa: 'FUZZY', cantidad: data.resumen_cascada.FUZZY ?? 0, porcentaje: 0 },
+                { etapa: 'REGEX', cantidad: data.resumen_cascada.REGEX ?? 0, porcentaje: 0 },
+                { etapa: 'BETO', cantidad: data.resumen_cascada.BETO ?? 0, porcentaje: 0 },
+              ]).map((et) => {
+                const info = ORIGEN_INFO[et.etapa] || ORIGEN_INFO.ENCABEZADO;
+                return (
+                  <div key={et.etapa} style={{ padding: 12, borderRadius: 12, background: 'var(--color-mist-gray)', border: '1px solid var(--color-border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: info.bg, color: info.color }}>{info.label}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: 'var(--color-ink-black)' }}>{fmt(et.cantidad)}</span>
+                    </div>
+                    <AnimatedProgressBarV2 value={Number(et.porcentaje || 0)} color={info.bar} height={6} ariaLabel={`${info.label}: ${et.porcentaje ?? 0} %`} />
+                    <p style={{ fontSize: 11, color: 'var(--color-slate-gray)', marginTop: 4 }}>{et.porcentaje ?? 0} % del total</p>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: 14, padding: 12, borderRadius: 12, background: 'var(--dataops-info-bg)', color: 'var(--dataops-info-text)', fontSize: 12, lineHeight: 1.5 }}>
+              <strong>Qué significa:</strong> El sistema resuelve primero por cédula exacta y encabezados confiables; luego aplica coincidencia aproximada y patrones, y reserva a BETO solo para las filas residuales sin sobrescribir vínculos exactos ni crear perfiles nuevos.
+            </div>
+          </section>
+        )}
         <div className="floating-artifact" style={{ padding: 20, marginBottom: 20, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           <label style={{ fontSize: 12 }}>Área<select className="dataops-select" value={filters.area} onChange={e => setFilter('area', e.target.value)} aria-label="Área"><option value="TODAS">Todas</option>{Object.entries(AREAS).map(([value, text]) => <option value={value} key={value}>{text}</option>)}</select></label>
           <label style={{ fontSize: 12 }}>Condición<select className="dataops-select" value={filters.condition} onChange={e => setFilter('condition', e.target.value)} aria-label="Condición">{[['ALL','Todas'],['BAJA_CONFIANZA','Confianza menor al 85 %'],['CONFLICTOS','En revisión o con incidencias'],['CATALOGO','Sin coincidencia en catálogo'],['ABANDONO','Alerta de abandono']].map(([value,text]) => <option value={value} key={value}>{text}</option>)}</select></label>

@@ -127,6 +127,14 @@ export function CasoRevision({ item, readOnly, busy, schedule }) {
     <summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}><strong>Caso {item.id}</strong> · {textoMotivo(item.motivo)} · {nombreRev || item.estudiante || 'Sin nombre identificado'}</summary>
     <p style={{ fontSize: 12, color: 'var(--color-slate-gray)', margin: '12px 0' }}>{item.archivo_origen || 'Sin archivo'} · {AREAS[item.area] || 'Sin área'} · Índice: {item.indice_registro == null ? 'Sin dato' : `${item.indice_registro} %`}</p>
     <p data-testid={`motivo-detalle-${item.id}`}>{item.motivo_detalle || item.por_que_detuvo}</p>
+    {item.explicacion && (
+      <div style={{ padding: 10, borderRadius: 10, background: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', fontSize: 12, margin: '10px 0' }}>
+        <p style={{ fontWeight: 600, color: 'var(--color-ink-black)', marginBottom: 4 }}>Por qué está aquí</p>
+        <p style={{ color: 'var(--color-slate-gray)' }}><strong>Regla:</strong> {item.explicacion.regla}</p>
+        <p style={{ color: 'var(--color-slate-gray)' }}><strong>Umbral / criterio:</strong> {item.explicacion.umbral}</p>
+        <p style={{ color: 'var(--color-slate-gray)' }}><strong>Valor de la fuente:</strong> {item.explicacion.valor_enmascarado}</p>
+      </div>
+    )}
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '12px 0' }}>
       <span>Cédula: {ciRev || item.ci_enmascarado || 'Sin dato'}</span>
       {hasCi && <Button variant="ghost" isLoading={loadingCampo === 'ci'} loadingText="Consultando…" onClick={() => reveal('ci')}>{ciRev ? 'Ocultar cédula' : 'Revelar con auditoría'}</Button>}

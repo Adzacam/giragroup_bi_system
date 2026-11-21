@@ -469,6 +469,17 @@ export const dataopsApi = {
   getTareaLote: async (idLote, tipo = 'CONSOLIDACION') =>
     (await client.get(`${BASE_URL}/lote/${idLote}/tarea`, { params: { tipo } })).data,
 
+  /** FU-L8: Vista previa sin escritura de hojas y mapeo editable columna -> campo canónico */
+  previewWorkbook: async (file, tipoFuente = null) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    if (tipoFuente) fd.append('tipo_fuente', tipoFuente);
+    const res = await client.post(`${BASE_URL}/preview-workbook`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  },
+
   confirmDwInsert: async (payload = {}) => {
     invalidateDataopsCache();
     if (payload && payload.resolved_item_id) {

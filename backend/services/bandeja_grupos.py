@@ -14,6 +14,84 @@ from sqlalchemy.orm import Session
 from models.fact_financiero import FactSituacionFinanciera
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.staging_entidad import StagingEntidadNoResuelta
+from services.dataops_privacy import texto_publico
+
+MOTIVOS_INFORMATIVOS = frozenset({"HOJA_IGNORADA", "SIN_INFORMACION"})
+
+MOTIVOS_CATALOGO = {
+    "HOJA_IGNORADA": "Hoja ignorada por regla de lectura (solo informativo)",
+    "NOTA_FUERA_DE_RANGO": "Nota fuera de rango (debe estar entre 0 y 100)",
+    "RESPUESTA_EN_COLUMNA_EQUIVOCADA": "Respuesta en columna equivocada (escala cruzada)",
+    "CUOTAS_NEGATIVAS": "Cuotas en mora negativas en la fuente (ajustadas a 0)",
+    "CONFLICTO_META": "Conflicto de meta entre fuentes (resuelto por prioridad)",
+    "CONFLICTO_FUENTES": "Conflicto entre fuentes (resuelto por prioridad)",
+    "VALOR_FUERA_DE_CATALOGO": "Valor fuera de catálogo o vocabulario",
+    "PUNTUACION_FUERA_DE_ESCALA": "Puntuación fuera de escala",
+    "ESCALA_NO_INFERIBLE": "Escala de evaluación no inferible",
+}
+
+EXPLICACION_MOTIVOS = {
+    "HOJA_IGNORADA": ("Regla de lectura por contenido y visibilidad", "Hoja oculta, auxiliar, resumen o sin tabla de datos"),
+    "NOTA_FUERA_DE_RANGO": ("Rango válido de nota académica", "0 ≤ nota ≤ 100"),
+    "RESPUESTA_EN_COLUMNA_EQUIVOCADA": ("Correspondencia de etiqueta con la escala de la pregunta", "Etiqueta perteneciente al diccionario de la columna"),
+    "CUOTAS_NEGATIVAS": ("Validación de cuotas en mora", "cuotas_impagas ≥ 0 (negativos ajustados a 0)"),
+    "CONFLICTO_META": ("Prioridad por tipo de fuente (RENTABILIDAD > EGRESOS)", "Diferencia entre fuentes > 0,02 Bs"),
+    "CONFLICTO_FUENTES": ("Prioridad por tipo de fuente (RENTABILIDAD > EGRESOS)", "Diferencia entre fuentes > 0,02 Bs"),
+    "VALOR_FUERA_DE_CATALOGO": ("Validación contra vocabulario canónico del catálogo", "Valor reconocido en cat_* o diccionario YAML"),
+    "PUNTUACION_FUERA_DE_ESCALA": ("Rango válido de puntuación de encuesta", "1 ≤ puntuación ≤ escala_max (5 o 10)"),
+    "ESCALA_NO_INFERIBLE": ("Detección de escala máxima de encuesta", "Cabecera o ≥ 1 respuesta numérica en [1, 10]"),
+    "CI_NOMBRE_DISCORDANTE": ("Cruce de cédula exacta vs nombre en catálogo", "Similitud de nombre < 85 %"),
+    "HOMONIMIA": ("Detección de homónimos por similitud de nombre", "Similitud ≥ 90 % sin CI exacta"),
+    "CI_DUDOSA": ("Validación de formato y longitud de cédula", "Cédula numérica válida (5–10 dígitos)"),
+    "CI_ILEGIBLE": ("Validación de formato y longitud de cédula", "Cédula numérica válida (5–10 dígitos)"),
+    "BAJA_CONFIANZA_IA": ("Compuerta de confianza de lectura BETO", "Confianza ≥ 0,85 para aceptación directa"),
+    "BAJA_CONFIANZA": ("Compuerta de confianza de lectura BETO", "Confianza ≥ 0,85 para aceptación directa"),
+    "HECHO_EN_REVISION": ("Validación de integridad de hecho cargado", "Campos obligatorios completos y estado en catálogo"),
+    "POS_NO_EN_DIM_MODULO": ("Resolución de programa/módulo contra catálogo", "Similitud ≥ 80 % con dim_modulo"),
+    "FECHA_INSCRIPCION_INVALIDA": ("Validación de fecha de inscripción", "Fecha válida dentro del rango académico"),
+    "FILA_SIN_IDENTIDAD": ("Cascada de identidad (CI → Encabezado → Fuzzy → Regex → BETO)", "Al menos estudiante o CI identificable"),
+}
+
+
+def es_fila_vacia_sin_confianza(texto: Optional[str], nivel_confianza: Optional[float]) -> bool:
+    """Descarta filas vacías con confianza 0,0000 (p. ej. 5 filas vacías del doc 44)."""
+    if nivel_confianza is None or float(nivel_confianza) > 0.0:
+        return False
+    t = (texto or "").strip()
+    if not t:
+        return True
+    celdas = [c.strip() for c in t.split("|") if c.strip()]
+    for c in celdas:
+        _, sep, val = c.partition(":")
+        contenido = val.strip() if sep else c
+        if contenido and re.search(r"[A-Za-z0-9ÁÉÍÓÚÑáéíóúñ]", contenido):
+            return False
+    return True
+
+
+def explicacion_motivo(
+    motivo: Optional[str],
+    texto: Optional[str] = None,
+    score_fuzzy: Optional[float] = None,
+    nivel_confianza: Optional[float] = None,
+    payload: Optional[Dict[str, Any]] = None,
+) -> Dict[str, str]:
+    """Explicación estructurada sin PII (regla, umbral, valor_enmascarado) vía dataops_privacy.py."""
+    m = (motivo or "REVISION_GENERAL").upper()
+    regla, umbral = EXPLICACION_MOTIVOS.get(
+        m, ("Regla de validación DataOps", "Cumplimiento de catálogo y esquema")
+    )
+    if m == "CI_NOMBRE_DISCORDANTE" and score_fuzzy is not None:
+        umbral = f"Similitud {float(score_fuzzy):.1f} % < 85 %"
+    elif m in ("BAJA_CONFIANZA_IA", "BAJA_CONFIANZA") and nivel_confianza is not None:
+        umbral = f"Confianza {float(nivel_confianza):.2f} < 0,85"
+    bruto = texto or (payload.get("ejemplo") if isinstance(payload, dict) else "") or ""
+    valor_enmascarado = texto_publico(str(bruto))[:240] if bruto else "Sin valor registrado"
+    return {
+        "regla": regla,
+        "umbral": umbral,
+        "valor_enmascarado": valor_enmascarado,
+    }
 
 
 def _sin_acentos(t: str) -> str:
@@ -29,6 +107,8 @@ def valor_normalizado(motivo: Optional[str], texto: Optional[str]) -> str:
     if m == "HOMONIMIA":
         from pipeline.normalization.person_resolver import quitar_titulos
         return quitar_titulos(t)[:80]
+    if m == "VALOR_FUERA_DE_CATALOGO":
+        return re.sub(r"\d+", "#", _sin_acentos(t).lower())[:120]
     celdas = [c.strip() for c in t.split("|") if c.strip()]
     hdrs = [c.partition(": ")[0] for c in celdas if ": " in c]
     base = " | ".join(hdrs) if hdrs else " | ".join(celdas)
@@ -60,20 +140,41 @@ def patron_discordancia(score_fuzzy) -> str:
 
 def grupos_pendientes(db: Session, doc_ids: Optional[List[int]] = None, limite: int = 500) -> Dict[str, Any]:
     """Grupos de casos de staging pendientes: [{clave, motivo, valor, n, ejemplo, ids}] por tamaño; total de casos y de grupos."""
-    q = db.query(StagingEntidadNoResuelta.id_staging, StagingEntidadNoResuelta.motivo, StagingEntidadNoResuelta.texto_original,
-                 StagingEntidadNoResuelta.score_fuzzy).filter(
-        StagingEntidadNoResuelta.resuelto == False)  # noqa: E712
+    q = db.query(
+        StagingEntidadNoResuelta.id_staging,
+        StagingEntidadNoResuelta.motivo,
+        StagingEntidadNoResuelta.texto_original,
+        StagingEntidadNoResuelta.score_fuzzy,
+        StagingEntidadNoResuelta.nivel_confianza,
+    ).filter(
+        StagingEntidadNoResuelta.resuelto == False  # noqa: E712
+    )
     if doc_ids is not None:
         q = q.filter(StagingEntidadNoResuelta.id_documento.in_(list(doc_ids)))
     grupos: Dict[str, Dict[str, Any]] = {}
     n_casos = 0
     patrones: Dict[str, Dict[str, Any]] = {}
-    for id_stg, motivo, texto, score in q.order_by(StagingEntidadNoResuelta.id_staging).yield_per(200):
+    descartadas_vacias = 0
+    for id_stg, motivo, texto, score, conf in q.order_by(StagingEntidadNoResuelta.id_staging).yield_per(200):
+        m_up = (motivo or "").upper()
+        if m_up in MOTIVOS_INFORMATIVOS:
+            continue
+        if es_fila_vacia_sin_confianza(texto, conf):
+            descartadas_vacias += 1
+            continue
         n_casos += 1
         k = clave_grupo(motivo, texto)
-        g = grupos.setdefault(k, {"clave": k, "motivo": motivo, "valor": valor_normalizado(motivo, texto), "n": 0, "ejemplo": (texto or "")[:160], "ids": []})
+        g = grupos.setdefault(k, {
+            "clave": k,
+            "motivo": motivo,
+            "valor": valor_normalizado(motivo, texto),
+            "n": 0,
+            "ejemplo": (texto or "")[:160],
+            "ids": [],
+            "explicacion": explicacion_motivo(motivo, texto, score_fuzzy=score, nivel_confianza=conf),
+        })
         g["n"] += 1
-        if (motivo or "").upper() == "CI_NOMBRE_DISCORDANTE":
+        if m_up == "CI_NOMBRE_DISCORDANTE":
             etiqueta = patron_discordancia(score)
             g.setdefault("patron", etiqueta)
             pat = patrones.setdefault(etiqueta, {"motivo": "CI_NOMBRE_DISCORDANTE", "patron": etiqueta, "n": 0, "grupos": set()})
@@ -83,10 +184,17 @@ def grupos_pendientes(db: Session, doc_ids: Optional[List[int]] = None, limite: 
             g["ids"].append(id_stg)
     for k, g in _grupos_hechos(db, doc_ids).items():
         n_casos += g["n"]
+        g.setdefault("explicacion", explicacion_motivo("HECHO_EN_REVISION", g.get("ejemplo")))
         grupos[k] = g
     ordenados = sorted(grupos.values(), key=lambda g: -g["n"])
     lista_patrones = sorted(({**p, "grupos": len(p["grupos"])} for p in patrones.values()), key=lambda p: -p["n"])
-    return {"total_casos": n_casos, "total_grupos": len(ordenados), "grupos": ordenados[:limite], "patrones": lista_patrones}
+    return {
+        "total_casos": n_casos,
+        "total_grupos": len(ordenados),
+        "grupos": ordenados[:limite],
+        "patrones": lista_patrones,
+        "descartadas_vacias": descartadas_vacias,
+    }
 
 
 def motivo_estado(aca, tut, arca) -> str:
@@ -151,17 +259,27 @@ def _grupos_hechos(db: Session, doc_ids: Optional[List[int]] = None) -> Dict[str
 
 def ids_del_grupo(db: Session, clave: str, doc_ids: Optional[List[int]] = None) -> List[Any]:
     motivo = clave.split("::", 1)[0]
+    if motivo.upper() in MOTIVOS_INFORMATIVOS:
+        return []
     if motivo == "HECHO_EN_REVISION":
         g = _grupos_hechos(db, doc_ids).get(clave)
         if not g:
             return []
         # los ids del grupo (todos, no solo los 50 de muestra) se recuperan con la misma regla
         return _ids_hechos(db, clave, doc_ids)
-    q = db.query(StagingEntidadNoResuelta.id_staging, StagingEntidadNoResuelta.motivo, StagingEntidadNoResuelta.texto_original).filter(
+    q = db.query(
+        StagingEntidadNoResuelta.id_staging,
+        StagingEntidadNoResuelta.motivo,
+        StagingEntidadNoResuelta.texto_original,
+        StagingEntidadNoResuelta.nivel_confianza,
+    ).filter(
         StagingEntidadNoResuelta.resuelto == False, StagingEntidadNoResuelta.motivo == motivo)  # noqa: E712
     if doc_ids is not None:
         q = q.filter(StagingEntidadNoResuelta.id_documento.in_(list(doc_ids)))
-    return [i for i, m, t in q.order_by(StagingEntidadNoResuelta.id_staging).all() if clave_grupo(m, t) == clave]
+    return [
+        i for i, m, t, conf in q.order_by(StagingEntidadNoResuelta.id_staging).all()
+        if not es_fila_vacia_sin_confianza(t, conf) and clave_grupo(m, t) == clave
+    ]
 
 
 def _ids_hechos(db: Session, clave: str, doc_ids: Optional[List[int]]) -> List[str]:
