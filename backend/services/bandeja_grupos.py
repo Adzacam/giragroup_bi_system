@@ -39,26 +39,54 @@ def clave_grupo(motivo: Optional[str], texto: Optional[str]) -> str:
     return f"{(motivo or '').upper()}::{valor_normalizado(motivo, texto)}"
 
 
+# ADW-L8: 748 discordancias de nombre de una sola fuente (ARCA) tenían 720 CI distintas, así que agrupar por CI no
+# agrupaba nada. El patrón de triage es qué tan distinto es el nombre; la aprobación sigue siendo por CI (nunca se
+# aprueba de una vez a personas distintas).
+PATRONES_DISCORDANCIA = (
+    (30, "Nombre muy distinto (similitud < 30): probable CI mal digitada o persona distinta"),
+    (60, "Nombre parcialmente distinto (30 a 59): variante, orden o apellidos incompletos"),
+    (101, "Nombre casi igual (60 o más): diferencia menor de escritura"),
+)
+
+
+def patron_discordancia(score_fuzzy) -> str:
+    if score_fuzzy is None:
+        return "Sin similitud calculada"
+    for tope, etiqueta in PATRONES_DISCORDANCIA:
+        if float(score_fuzzy) < tope:
+            return etiqueta
+    return PATRONES_DISCORDANCIA[-1][1]
+
+
 def grupos_pendientes(db: Session, doc_ids: Optional[List[int]] = None, limite: int = 500) -> Dict[str, Any]:
     """Grupos de casos de staging pendientes: [{clave, motivo, valor, n, ejemplo, ids}] por tamaño; total de casos y de grupos."""
-    q = db.query(StagingEntidadNoResuelta.id_staging, StagingEntidadNoResuelta.motivo, StagingEntidadNoResuelta.texto_original).filter(
+    q = db.query(StagingEntidadNoResuelta.id_staging, StagingEntidadNoResuelta.motivo, StagingEntidadNoResuelta.texto_original,
+                 StagingEntidadNoResuelta.score_fuzzy).filter(
         StagingEntidadNoResuelta.resuelto == False)  # noqa: E712
     if doc_ids is not None:
         q = q.filter(StagingEntidadNoResuelta.id_documento.in_(list(doc_ids)))
     grupos: Dict[str, Dict[str, Any]] = {}
     n_casos = 0
-    for id_stg, motivo, texto in q.order_by(StagingEntidadNoResuelta.id_staging).yield_per(200):
+    patrones: Dict[str, Dict[str, Any]] = {}
+    for id_stg, motivo, texto, score in q.order_by(StagingEntidadNoResuelta.id_staging).yield_per(200):
         n_casos += 1
         k = clave_grupo(motivo, texto)
         g = grupos.setdefault(k, {"clave": k, "motivo": motivo, "valor": valor_normalizado(motivo, texto), "n": 0, "ejemplo": (texto or "")[:160], "ids": []})
         g["n"] += 1
+        if (motivo or "").upper() == "CI_NOMBRE_DISCORDANTE":
+            etiqueta = patron_discordancia(score)
+            g.setdefault("patron", etiqueta)
+            pat = patrones.setdefault(etiqueta, {"motivo": "CI_NOMBRE_DISCORDANTE", "patron": etiqueta, "n": 0, "grupos": set()})
+            pat["n"] += 1
+            pat["grupos"].add(k)
         if len(g["ids"]) < 50:
             g["ids"].append(id_stg)
     for k, g in _grupos_hechos(db, doc_ids).items():
         n_casos += g["n"]
         grupos[k] = g
     ordenados = sorted(grupos.values(), key=lambda g: -g["n"])
-    return {"total_casos": n_casos, "total_grupos": len(ordenados), "grupos": ordenados[:limite]}
+    lista_patrones = sorted(({**p, "grupos": len(p["grupos"])} for p in patrones.values()), key=lambda p: -p["n"])
+    return {"total_casos": n_casos, "total_grupos": len(ordenados), "grupos": ordenados[:limite], "patrones": lista_patrones}
 
 
 def motivo_estado(aca, tut, arca) -> str:

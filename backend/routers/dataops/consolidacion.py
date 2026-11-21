@@ -20,7 +20,7 @@ from models.staging_registro import StagingRegistroCrudo
 from models.user import User
 from services.confianza_service import banda_de, indices_cascada, obtener_indices
 from services import beto_integracion, cache_consultas, tareas_dataops
-from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, fila_resuelta_por_regla, metricas_captacion, motivo_fila_sin_entidad, normalizar_encabezado, registro_planificacion, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
+from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, fila_resuelta_por_regla, metricas_captacion, MOTIVOS_A_BANDEJA, motivo_fila_sin_entidad, normalizar_encabezado, registro_planificacion, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
 from datetime import datetime
 from services.dataops_evaluation_service import enmascarar_ci, strip_accents
 from core.security import require_roles
@@ -162,6 +162,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     sent_hitl = 0
     inserted_revision = 0
     descartados_ruido = 0
+    enviados_a_bandeja_sin_identidad = 0
     descartes_por_regla = {}
 
     doc_ids_stg = {s.id_documento for s in stg_records if s.id_documento}
@@ -323,7 +324,12 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                         db, stg, line, indice, motivo_ruido, doc_fuente,
                         fila_origen=(stg.fila_inicio or 0) + k_fila,
                         logs_out=logs_descarte_stg, stg_out=stg_descarte_stg, ruido_visto=ruido_visto_stg,
+                        pendiente=motivo_ruido in MOTIVOS_A_BANDEJA,
                     )
+                if motivo_ruido in MOTIVOS_A_BANDEJA:
+                    # ADW-L8 (DA7): sin estudiante pero con dinero o sin patrón claro: no se descarta, la ve una persona
+                    enviados_a_bandeja_sin_identidad += 1
+                    continue
                 descartados_ruido += 1
                 descartes_por_regla[motivo_ruido] = descartes_por_regla.get(motivo_ruido, 0) + 1
                 continue
@@ -636,6 +642,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         "sent_hitl": sent_hitl,
         "descartados_ruido": descartados_ruido,
         "descartes_por_regla": descartes_por_regla,
+        "enviados_a_bandeja_sin_identidad": enviados_a_bandeja_sin_identidad,
         **({"beto": contadores_beto.como_dict()} if cliente_beto is not None else {}),
     }
     dw.liberar_memoria()
@@ -682,8 +689,10 @@ def _registrar_descarte_ruido(
     logs_out: Optional[list] = None,
     stg_out: Optional[list] = None,
     ruido_visto: Optional[set] = None,
+    pendiente: bool = False,
 ) -> None:
-    """Deja constancia de una línea descartada como ruido: en log_inconsistencias (1:1 por línea) y en stg_entidad_no_resuelta."""
+    """Deja constancia de una línea descartada como ruido: en log_inconsistencias (1:1 por línea) y en stg_entidad_no_resuelta.
+    Con `pendiente=True` (ADW-L8, DA7) la línea no se descarta: queda PENDIENTE en la bandeja de revisión humana."""
     from core.esquema_opcional import valores_si_existen
 
     log_obj = LogInconsistencia(
@@ -691,11 +700,12 @@ def _registrar_descarte_ruido(
         fila_origen=fila_origen,
         campo_afectado=(stg.hoja or "")[:100],
         valor_recibido=(line or "")[:500],
-        tipo_regla="LINEA_SIN_ENTIDAD",
+        tipo_regla="LINEA_SIN_IDENTIDAD" if pendiente else "LINEA_SIN_ENTIDAD",
         **valores_si_existen(db, "log_inconsistencias", regla_origen=(motivo or "")[:80]),
-        severidad="BAJA",
-        estado_resolucion="DESCARTADO",
-        descripcion=f"Línea descartada por regla ({motivo}) en hoja '{stg.hoja}'",
+        severidad="MEDIA" if pendiente else "BAJA",
+        estado_resolucion="PENDIENTE" if pendiente else "DESCARTADO",
+        descripcion=(f"Línea sin identidad reconocible enviada a revisión ({motivo}) en hoja '{stg.hoja}'" if pendiente
+                     else f"Línea descartada por regla ({motivo}) en hoja '{stg.hoja}'"),
     )
     if logs_out is not None:
         logs_out.append(log_obj)
@@ -718,15 +728,15 @@ def _registrar_descarte_ruido(
 
     stg_obj = StagingEntidadNoResuelta(
         id_documento=stg.id_documento,
-        tipo_entidad="RUIDO",
+        tipo_entidad="ESTUDIANTE" if pendiente else "RUIDO",
         texto_original=clave_txt,
         fk_estado="C",
         nivel_confianza=indice,
-        resuelto=True,
-        resuelto_en=datetime.utcnow(),
+        resuelto=not pendiente,
+        resuelto_en=None if pendiente else datetime.utcnow(),
         motivo=motivo,
-        estado_resolucion="DESCARTADO",
-        payload_json={"raw_line": line, "tipo_fuente": doc_fuente, "descarte": "RUIDO"},
+        estado_resolucion="PENDIENTE" if pendiente else "DESCARTADO",
+        payload_json={"raw_line": line, "tipo_fuente": doc_fuente, **({} if pendiente else {"descarte": "RUIDO"})},
         registro_origen_id=stg.id,
     )
     if stg_out is not None:

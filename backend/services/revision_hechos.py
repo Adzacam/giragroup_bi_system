@@ -17,6 +17,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
+from services.auditoria_hitl import APROBACION_BLOQUE
 from models.dim_estudiante import DimEstudiante
 from models.dim_modulo import DimModulo
 from models.dim_origen import DimOrigenDocumental
@@ -232,8 +233,11 @@ def resolver_caso_hecho(db: Session, item_id: str, payload: Dict[str, Any], user
             db.rollback()
             raise HTTPException(422, 'Completa los datos obligatorios antes de aprobar: ' + ', '.join(faltan) + '.')
         hecho.requiere_revision = False
-        resultado = ("Aprobación en bloque" if en_bloque else "Aprobado") + (
-            f" con corrección ({', '.join(correcciones)})" if correcciones else " sin cambios")
+        if en_bloque and not correcciones:
+            resultado = APROBACION_BLOQUE   # ADW-L8: no es una corrección humana (ver services/auditoria_hitl.py)
+        else:
+            resultado = ("Aprobación en bloque" if en_bloque else "Aprobado") + (
+                f" con corrección ({', '.join(correcciones)})" if correcciones else " sin cambios")
 
     db.add(LogAuditoriaNlp(
         texto_original=f"{item_id}: {antes}"[:500], prediccion_beto=f"Hecho {tipo} en revisión"[:200],

@@ -173,3 +173,16 @@ def test_aprobar_entidad_de_acta_carga_las_notas_reales_y_no_inventa_75(dw):
     nuevos = [h for h in dw.query(FactRendimientoAcademico).all() if h.id_hecho_aca not in antes]
     assert sorted(float(h.nota_final) for h in nuevos) == [70.0, 83.0]
     assert 75.0 not in [float(h.nota_final) for h in nuevos if h.nota_final is not None]
+
+
+def test_aprobacion_en_bloque_no_se_registra_como_correccion_humana(dw):
+    """ADW-L8 (D2): miles de aprobaciones «sin cambios» no son correcciones; llevan su propio marcador."""
+    from models.log_auditoria_nlp import LogAuditoriaNlp
+    from routers import dataops
+    from services.auditoria_hitl import APROBACION_BLOQUE, es_correccion_humana
+
+    dataops.aprobar_casos_un_clic(dataops.AprobacionEnBloqueRequest(doc_id=1, confirmar=True), db=dw, current_user=None)
+    filas = dw.query(LogAuditoriaNlp).all()
+    assert len(filas) == 2
+    assert all(f.correccion_humana == APROBACION_BLOQUE for f in filas)
+    assert not any(es_correccion_humana(f.correccion_humana) for f in filas)

@@ -897,7 +897,40 @@ def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[
     if estudiante_de_fila(campos) is not None:
         return None
     if categoria == "academico":
-        return None if registros_asignacion_docente(campos) else "FILA_ACADEMICA_SIN_ESTUDIANTE"
+        if registros_asignacion_docente(campos):
+            return None
+        return _detalle_academica_sin_estudiante(campos)
+    if categoria == "financiero" and _es_pago_sin_estudiante(campos):
+        return MOTIVO_SIN_IDENTIDAD
     if _pos(campos) or any(campos.get(k) for k in _CLAVES_ENTIDAD_PROGRAMA):
-        return "FILA_FINANCIERA_SIN_ESTUDIANTE" if categoria == "financiero" else None
+        return MOTIVO_CATALOGO_NO_PAGO if categoria == "financiero" else None
     return "FILA_SIN_ENTIDAD"
+
+
+# ADW-L8 (DA7): lo que antes era un único «FILA_*_SIN_ESTUDIANTE» ahora dice qué es la fila.
+MOTIVO_CATALOGO_NO_ALUMNO = "CATALOGO_PROGRAMA_NO_ALUMNO"   # se descarta con motivo
+MOTIVO_CATALOGO_NO_PAGO = "CATALOGO_PROGRAMA_NO_PAGO"       # se descarta con motivo
+MOTIVO_DOCENTE_NO_ESTUDIANTE = "DOCENTE_NO_ESTUDIANTE"      # se descarta con motivo
+MOTIVO_SIN_IDENTIDAD = "FILA_SIN_IDENTIDAD"                  # NO se descarta: va a la bandeja de revisión
+MOTIVOS_A_BANDEJA = frozenset({MOTIVO_SIN_IDENTIDAD})
+
+_ENCABEZADOS_DOCENTE = ("POS - MODULO", "PAGO DOCENTE", "HRS MODULO", "TIPO DE DOCENTE")
+_ENCABEZADOS_CATALOGO = ("POS - IBP", "MES IBP", "ANO IBP", "PUNTO EQUILIBRIO", "INVERSION DEL PROGRAMA", "ESTADO PROGRAMA")
+
+
+def _tiene_encabezado(campos: Dict[str, str], candidatos) -> bool:
+    return any(k in campos or any(c.startswith(k) for c in campos) for k in candidatos)
+
+
+def _detalle_academica_sin_estudiante(campos: Dict[str, str]) -> str:
+    """Fila académica sin estudiante: docente (hoja POS - MODULO), catálogo de programas (hoja IBP) o sin identidad."""
+    if _tiene_encabezado(campos, _ENCABEZADOS_DOCENTE):
+        return MOTIVO_DOCENTE_NO_ESTUDIANTE
+    if _tiene_encabezado(campos, _ENCABEZADOS_CATALOGO):
+        return MOTIVO_CATALOGO_NO_ALUMNO
+    return MOTIVO_SIN_IDENTIDAD
+
+
+def _es_pago_sin_estudiante(campos: Dict[str, str]) -> bool:
+    """Una factura o pago (monto, NIT, razón social) sin código de estudiante: hay dinero, así que alguien debe verlo."""
+    return any(k.startswith("MONTO") or k.startswith("N DE FACTURA") or "FACTURA" in k or k in ("NIT", "RAZON SOCIAL") for k in campos)

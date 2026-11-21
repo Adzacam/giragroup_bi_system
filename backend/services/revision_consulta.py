@@ -27,6 +27,11 @@ MOTIVOS = {
     'REVISION_GENERAL': 'Revisión general', 'NOTA_FUERA_ESCALA': 'Nota fuera de escala',
     'ENTIDAD_NUEVA': 'Entidad nueva', 'ESCALA_AMBIGUA': 'Escala no declarada',
     'DESACUERDO_REGLA_BETO': 'Las reglas y BETO no coinciden en la persona',
+    # ADW-L8 (DA7): filas sin estudiante. Las tres primeras se descartan con motivo; la última va a la bandeja.
+    'CATALOGO_PROGRAMA_NO_ALUMNO': 'Fila de catálogo de programas (no es un alumno)',
+    'CATALOGO_PROGRAMA_NO_PAGO': 'Fila de catálogo de programas (no es un pago)',
+    'DOCENTE_NO_ESTUDIANTE': 'Fila de docente (no es un estudiante)',
+    'FILA_SIN_IDENTIDAD': 'Fila sin identidad reconocible: revisar si hay un pago o un estado que conservar',
 }
 
 

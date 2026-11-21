@@ -17,6 +17,7 @@ from core.security import require_roles
 from models.user import User
 from models.log_pipeline import LogPipelineIngesta
 from models.log_auditoria_nlp import LogAuditoriaNlp
+from services.auditoria_hitl import accion_de_auditoria
 
 router = APIRouter(
     prefix="/api/v1/audit",
@@ -133,7 +134,7 @@ def get_audit_logs(
                 "timestamp": ts,
                 "modulo": "DataOps",
                 "usuario_rol": user_lbl,
-                "accion": "Resolución HITL: Validación de Entidad",
+                "accion": accion_de_auditoria(n.correccion_humana),
                 "ip_canal": "192.168.1.10 (Web UI)",
                 "severidad": "INFO",
                 "detalles": f"Texto: '{n.texto_original[:70]}...' | Predicción BETO: {n.prediccion_beto} (Conf: {conf * 100:.1f}%) -> Fijado Humano: {n.correccion_humana}"

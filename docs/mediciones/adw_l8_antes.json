@@ -1,0 +1,43 @@
+{
+ "bandeja": {
+  "total_casos": 1941,
+  "total_grupos": 834,
+  "patrones": [
+   {
+    "motivo": "CI_NOMBRE_DISCORDANTE",
+    "patron": "Nombre parcialmente distinto (30 a 59): variante, orden o apellidos incompletos",
+    "n": 387,
+    "grupos": 376
+   },
+   {
+    "motivo": "CI_NOMBRE_DISCORDANTE",
+    "patron": "Nombre muy distinto (similitud < 30): probable CI mal digitada o persona distinta",
+    "n": 360,
+    "grupos": 341
+   },
+   {
+    "motivo": "CI_NOMBRE_DISCORDANTE",
+    "patron": "Nombre casi igual (60 o más): diferencia menor de escritura",
+    "n": 9,
+    "grupos": 9
+   }
+  ]
+ },
+ "pendientes_por_motivo": {
+  "CI_NOMBRE_DISCORDANTE": 756,
+  "BAJA_CONFIANZA_IA": 573,
+  "HOMONIMIA": 70,
+  "CI_DUDOSA": 9,
+  "BAJA_CONFIANZA": 5
+ },
+ "log_auditoria_nlp": {
+  "total": 12336,
+  "valores": {
+   "REVELAR_CORREO_AUTORIZADO (admin_general": 2,
+   "REVELAR_CI_AUTORIZADO (admin_general)": 1,
+   "REVELAR_NOMBRE_AUTORIZADO (admin_general": 7,
+   "Aprobación en bloque sin cambios": 12326
+  },
+  "cuentan_como_correccion_humana": 0
+ }
+}

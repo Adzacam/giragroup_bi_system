@@ -24,12 +24,12 @@ def _motivo(linea, categoria):
     ("Estado académico: Aprobado | Estado reprobado: Aprobado | Estado ARCA: Titulado", "financiero", "FILA_SIN_ENTIDAD"),
     ("Estado académico: Participó | Estado reprobado: Tutoria", "financiero", "FILA_SIN_ENTIDAD"),
     ("N°: 1 | POS - MODULO: POS-006 | N° POS: 6 | TIPO DE PROGRAMA: ESPECIALIDAD | DOCENTE: Dr. María Huanca",
-     "academico", "FILA_ACADEMICA_SIN_ESTUDIANTE"),
+     "academico", "DOCENTE_NO_ESTUDIANTE"),  # ADW-L8 (DA7): antes FILA_ACADEMICA_SIN_ESTUDIANTE
     ("MES: JULIO | EJECUTADO 2025: 188464.8", "rentabilidad", "FILA_AGREGADA_SIN_CATEGORIA_MES"),
     ("solo texto sin cabeceras", "academico", "FILA_SIN_CABECERAS"),
     # Hoja 'Resumen por Programa' de cobranzas: sin estudiante no hay hecho financiero
     ("POS: POS-5478 | NOMBRE DEL PROGRAMA: CURSO EN MARKETING DIGITAL 15ª Versión | INSCRITOS: 41 | "
-     "TIPO CARTERA: CARTERA CERRADA | OBSERVACIÓN CARTERA: EN PROCESO DE COBRO", "financiero", "FILA_FINANCIERA_SIN_ESTUDIANTE"),
+     "TIPO CARTERA: CARTERA CERRADA | OBSERVACIÓN CARTERA: EN PROCESO DE COBRO", "financiero", "CATALOGO_PROGRAMA_NO_PAGO"),  # ADW-L8 (DA7): antes FILA_FINANCIERA_SIN_ESTUDIANTE
 ])
 def test_lineas_sin_entidad_se_descartan_con_motivo(linea, categoria, motivo):
     assert _motivo(linea, categoria) == motivo
