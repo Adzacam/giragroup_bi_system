@@ -75,6 +75,7 @@
 
 [data-theme="dark"][data-ui-version="v2"],
 [data-theme="dark"] [data-ui-version="v2"] {
+  color-scheme: dark;
   /* Tabla 1: Paleta Institucional (Oscuro) */
   --color-gira-navy: #FAF9F6;
   --color-navy-deep: #FAF9F6;

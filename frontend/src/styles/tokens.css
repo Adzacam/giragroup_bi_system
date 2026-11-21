@@ -50,6 +50,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --color-gira-gold: #F1B844;
   --color-gira-gold-light: #F6C866;
   --color-ink-black: #FAF9F6;
@@ -1270,10 +1271,12 @@ em, i, cite, .serif-heading em, .serif-display em {
   }
   .notif-popover-dropdown {
     position: fixed !important;
-    top: 64px !important;
+    top: 76px !important;
     left: 12px !important;
     right: 12px !important;
     width: auto !important;
+    max-width: calc(100vw - 24px) !important;
+    padding: 0 !important;
   }
   .section-loading-banner {
     flex-direction: column;

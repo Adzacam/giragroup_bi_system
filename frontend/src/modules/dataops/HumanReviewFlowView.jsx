@@ -126,7 +126,7 @@ export function CasoRevision({ item, readOnly, busy, schedule }) {
   return <details className="floating-artifact" style={{ padding: 18, marginBottom: 12 }}>
     <summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}><strong>Caso {item.id}</strong> · {textoMotivo(item.motivo)} · {nombreRev || item.estudiante || 'Sin nombre identificado'}</summary>
     <p style={{ fontSize: 12, color: 'var(--color-slate-gray)', margin: '12px 0' }}>{item.archivo_origen || 'Sin archivo'} · {AREAS[item.area] || 'Sin área'} · Índice: {item.indice_registro == null ? 'Sin dato' : `${item.indice_registro} %`}</p>
-    <p data-testid={`motivo-detalle-${item.id}`}>{item.motivo_detalle || item.por_que_detuvo}</p>
+    <p data-testid={`motivo-detalle-${item.id}`}>{maskTexto(item.motivo_detalle || item.por_que_detuvo)}</p>
     {item.explicacion && (
       <div style={{ padding: 10, borderRadius: 10, background: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', fontSize: 12, margin: '10px 0' }}>
         <p style={{ fontWeight: 600, color: 'var(--color-ink-black)', marginBottom: 4 }}>Por qué está aquí</p>

@@ -690,7 +690,7 @@ export default function IngestView() {
                             value={item.sourceType}
                             onChange={(e) => handleChangeFileSourceType(item.uid, e.target.value)}
                             className="dataops-select"
-                            style={{ padding: '4px 8px', fontSize: '11.5px', minWidth: '150px' }}
+                            style={{ padding: '4px 8px', fontSize: '11.5px', minWidth: '150px', backgroundColor: 'var(--color-paper-white)', color: 'var(--color-ink-black)' }}
                           >
                             <option value="">{UNRECOGNIZED_SOURCE_LABEL}</option>
                             {TIPOS_FUENTE_DATAOPS.map((tf) => (
@@ -711,7 +711,7 @@ export default function IngestView() {
                                 setQueuedFiles(prev => prev.map(f => f.uid === item.uid ? { ...f, tipoEscala: val } : f));
                               }}
                               className="dataops-select"
-                              style={{ padding: '4px 8px', fontSize: '11.5px', minWidth: '150px' }}
+                              style={{ padding: '4px 8px', fontSize: '11.5px', minWidth: '150px', backgroundColor: 'var(--color-paper-white)', color: 'var(--color-ink-black)' }}
                             >
                               <option value="">Selecciona la escala de notas</option>
                               {ESCALAS_ACADEMICAS.map((esc) => (
@@ -890,7 +890,7 @@ export default function IngestView() {
                                       aria-label={`Campo canónico para ${m.columna_origen}`}
                                       value={m.campo_canonico || ''}
                                       onChange={(e) => handleChangeColumnMapping(previewItem.uid, m.columna_origen, e.target.value)}
-                                      style={{ padding: '4px 8px', fontSize: 11.5 }}
+                                      style={{ padding: '4px 8px', fontSize: 11.5, backgroundColor: 'var(--color-paper-white)', color: 'var(--color-ink-black)' }}
                                     >
                                       <option value="">Sin asignar…</option>
                                       {(previewData.campos_canonicos_disponibles || []).map((c) => (

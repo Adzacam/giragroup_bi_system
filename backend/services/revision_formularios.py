@@ -332,8 +332,13 @@ def construir_motivo_detalle(
     prog_txt = f" en {programa}" if programa else ""
     conf = datos.get("confianza")
     conf_txt = f"{float(conf):.2f}".replace(".", ",") if conf is not None else "sin dato"
-    nombre = datos.get("nombre") or "sin nombre"
-    sugerencia = datos.get("sugerencia")
+    nombre_raw = datos.get("nombre")
+    nombre = "••••" if nombre_raw and str(nombre_raw).strip() else "sin nombre"
+    sug_raw = datos.get("sugerencia")
+    sugerencia = None
+    if sug_raw and str(sug_raw).strip():
+        sug_str = str(sug_raw).strip()
+        sugerencia = sug_str if "•" in sug_str else "••••"
     fecha = datos.get("fecha") or "sin fecha"
 
     if mot == "CI_NOMBRE_DISCORDANTE":

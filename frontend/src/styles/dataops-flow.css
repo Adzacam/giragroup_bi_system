@@ -48,7 +48,7 @@
   --dataops-chip-bg: #20252e;
   --dataops-row-hover: rgba(241, 184, 68, 0.08);
   --dataops-row-selected: rgba(241, 184, 68, 0.20);
-  --dataops-input-bg: #161920;
+  --dataops-input-bg: var(--color-paper-white);
 }
 
 /* ── Banners Informativos y de Regla de Negocio ── */
@@ -97,12 +97,26 @@
   padding: 10px 14px;
   border-radius: 10px;
   border: 1px solid var(--color-border);
-  background-color: var(--dataops-input-bg);
+  background-color: var(--color-paper-white, var(--dataops-input-bg));
   color: var(--color-ink-black);
   font-family: var(--font-sohne, 'Plus Jakarta Sans', sans-serif);
   font-size: 13px;
   outline: none;
   transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.dataops-select option {
+  background-color: var(--color-paper-white);
+  color: var(--color-ink-black);
+}
+
+[data-theme="dark"] .dataops-select,
+[data-theme="dark"] .dataops-select option,
+[data-theme="dark"] .dataops-input {
+  background-color: var(--color-paper-white);
+  color: var(--color-ink-black);
+  border-color: var(--color-border);
+  color-scheme: dark;
 }
 
 .dataops-select:focus,

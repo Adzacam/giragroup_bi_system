@@ -142,8 +142,8 @@ def caso_guardado(ent, doc):
         'programa': p.get('programa') or p.get('modulo'),
         'codigo_pos': p.get('codigo_pos') or p.get('programa'),
         'confianza': ent.nivel_confianza,
-        'nombre': nombre,
-        'sugerencia': ent.mejor_candidato,
+        'nombre': '••••' if nombre else None,
+        'sugerencia': ent.mejor_candidato if ent.mejor_candidato and '•' in str(ent.mejor_candidato) else ('••••' if ent.mejor_candidato else None),
         'fecha': p.get('fecha_inscripcion') or p.get('fecha'),
         'institucion': p.get('institucion'),
         'por_que_detuvo': p.get('motivo_llano'),
@@ -307,7 +307,7 @@ def grupos_publicos(db, docs, page=1, search=''):
     for g in base['grupos']:
         archivo, area = _origen_grupo(db, g, mapa_docs)
         titulo = _titulo_grupo(motivo_publico(g.get('motivo')), archivo, area)
-        ejemplo = proteger_ci(g.get('ejemplo') or '')
+        ejemplo = proteger_ci(texto_publico(g.get('ejemplo') or ''))
         if search and strip_accents(search).lower() not in strip_accents(titulo + ' ' + ejemplo).lower():
             continue
         accion = g.get('accion_grupo') or 'MANUAL'

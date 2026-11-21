@@ -25,6 +25,7 @@ def _sensible(clave):
 
 EMAIL = re.compile(r'[^\s@,|;]+@[^\s@,|;]+\.[A-Za-z]{2,}')
 DOCUMENTO = re.compile(r'\b(CI|C[ÉE]DULA(?: DE IDENTIDAD)?|NIT|CELULAR|TEL[ÉE]FONO)\s*[:=#-]?\s*(\+?\d[\d .()-]{4,}\d(?:\s+[A-Z]{2})?)', re.I)
+NOMBRE_ENTRE_COMILLAS = re.compile(r"\b(el\s+nombre)\s+'([^']+)'", re.I)
 
 
 def _numero_publico(valor):
@@ -44,6 +45,7 @@ def texto_publico(valor):
             partes[i] = f'{rotulo}: {protegido}'
     texto = ''.join(partes)
     texto = DOCUMENTO.sub(lambda m: f'{m[1]} {_numero_publico(m[2])}', texto)
+    texto = NOMBRE_ENTRE_COMILLAS.sub(lambda m: f"{m[1]} '••••'", texto)
     return EMAIL.sub('••••@••••', texto)
 
 

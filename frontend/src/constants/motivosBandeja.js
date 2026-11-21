@@ -76,9 +76,17 @@ export const maskNombre = (nombre) => {
 export const maskTexto = (t) => {
   if (!t) return '';
   return String(t)
-    .replace(/CI:\s*([0-9A-Za-z\-]+)/gi, (m, ci) => `CI: ${maskCi(ci)}`)
-    .replace(/Nombre:\s*([^()|]+)/gi, (m, nom) => `Nombre: ${maskNombre(nom)}`)
-    .replace(/Discordante con:\s*([^()|]+)/gi, (m, nom) => `Discordante con: ${maskNombre(nom)}`)
+    .replace(/\b(CI|C[eé]dula(?:\s+de\s+identidad)?|Celular|Tel[eé]fono|NIT)\s*:\s*([0-9A-Za-z•\-]+)/gi, (m, lbl, ci) =>
+      ci.includes('•') ? `${lbl}: ${ci}` : `${lbl}: ${maskCi(ci)}`
+    )
+    .replace(
+      /\b(Nombre(?:s)?(?:\s+completo(?:s)?|\s+y\s+apellidos?)?|Estudiante|Docente|Asesor|Participante|Alumno|Raz[oó]n\s+social|Discordante\s+con)\s*:\s*([^()|;\n]+)/gi,
+      (m, lbl, nom) => (nom.trim().includes('•') ? `${lbl}: ${nom.trim()}` : `${lbl}: ${maskNombre(nom)}`)
+    )
+    .replace(/\b(el\s+nombre)\s+'([^']+)'/gi, (m, prefix, nom) =>
+      nom.includes('•') ? `${prefix} '${nom}'` : `${prefix} '••••'`
+    )
+    .replace(/[^\s@,|;]+@[^\s@,|;]+\.[A-Za-z]{2,}/g, '••••@••••')
     .replace(/\b\d{6,10}\b/g, (m) => maskCi(m));
 };
 

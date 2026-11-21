@@ -169,7 +169,7 @@ def grupos_pendientes(db: Session, doc_ids: Optional[List[int]] = None, limite: 
             "motivo": motivo,
             "valor": valor_normalizado(motivo, texto),
             "n": 0,
-            "ejemplo": (texto or "")[:160],
+            "ejemplo": texto_publico(texto or "")[:160],
             "ids": [],
             "explicacion": explicacion_motivo(motivo, texto, score_fuzzy=score, nivel_confianza=conf),
         })

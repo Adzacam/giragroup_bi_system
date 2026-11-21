@@ -155,3 +155,61 @@ def test_agrupa_1255_valor_fuera_de_catalogo(db):
     assert res["total_grupos"] == 2
     assert sum(g["n"] for g in res["grupos"]) == 1255
     assert res["grupos"][0]["explicacion"]["regla"]
+
+
+def test_regresion_cero_pii_lote35_discordante_y_lote36_asesor(db):
+    from services.revision_formularios import construir_motivo_detalle
+
+    # Caso 1 (Lote #35): CI_NOMBRE_DISCORDANTE individual no debe filtrar el nombre real en motivo_detalle
+    doc_35 = _doc(db, id_doc=35, nombre="ARCA_35.xlsx", tipo="ACTA")
+    ent_35 = StagingEntidadNoResuelta(
+        id_documento=35,
+        tipo_entidad="ESTUDIANTE",
+        texto_original="CI: 8349269 | Estudiante: JUAN CARLOS PEREZ",
+        ci_temporal="8349269",
+        mejor_candidato="JUANITA PEREZ",
+        motivo="CI_NOMBRE_DISCORDANTE",
+        score_fuzzy=40.0,
+        nivel_confianza=0.75,
+        resuelto=False,
+    )
+    db.add(ent_35)
+    db.commit()
+
+    caso = caso_guardado(ent_35, doc_35)
+    assert "JUAN CARLOS PEREZ" not in (caso.get("motivo_detalle") or "")
+    assert "JUANITA PEREZ" not in (caso.get("motivo_detalle") or "")
+    assert "JUAN CARLOS PEREZ" not in (caso.get("por_que_detuvo") or "")
+    assert "8349269" not in (caso.get("motivo_detalle") or "")
+    assert "••••" in (caso.get("motivo_detalle") or "")
+
+    detalle_directo = construir_motivo_detalle(
+        "academico",
+        "CI_NOMBRE_DISCORDANTE",
+        {"ci": "8349269", "nombre": "JUAN CARLOS PEREZ", "sugerencia": "JUANITA PEREZ"},
+    )
+    assert "JUAN CARLOS PEREZ" not in detalle_directo
+    assert "JUANITA PEREZ" not in detalle_directo
+
+    # Caso 2 (Lote #36): Por grupos -> CI_DUDOSA no debe filtrar ASESOR: <NOMBRE REAL> en ejemplo ni explicacion
+    doc_36 = _doc(db, id_doc=36, nombre="TBL_INSCRITOS_36.xlsx", tipo="ADMISION")
+    db.add(
+        StagingEntidadNoResuelta(
+            id_documento=36,
+            tipo_entidad="ESTUDIANTE",
+            texto_original="ASESOR: CARLOS MENDOZA ROJAS | CI: 1234X | Estudiante: MARIA LOPEZ",
+            motivo="CI_DUDOSA",
+            nivel_confianza=0.65,
+            resuelto=False,
+        )
+    )
+    db.commit()
+
+    res_grupos = grupos_publicos(db, [doc_36], page=1)
+    assert res_grupos["total_casos"] == 1
+    g = res_grupos["grupos"][0]
+    assert "CARLOS MENDOZA ROJAS" not in g["ejemplo"]
+    assert "MARIA LOPEZ" not in g["ejemplo"]
+    assert "ASESOR: ••••" in g["ejemplo"]
+    assert "CARLOS MENDOZA ROJAS" not in g["explicacion"]["valor_enmascarado"]
+    assert "MARIA LOPEZ" not in g["explicacion"]["valor_enmascarado"]

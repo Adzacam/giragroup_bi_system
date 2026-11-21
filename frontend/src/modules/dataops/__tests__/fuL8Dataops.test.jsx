@@ -16,6 +16,7 @@ import {
 } from '../../../constants/motivosBandeja';
 import GruposBandeja from '../components/GruposBandeja';
 import BetoReadingFlowView from '../BetoReadingFlowView';
+import { CasoRevision } from '../HumanReviewFlowView';
 import { LoteFlowProvider } from '../context/LoteFlowContext';
 import { NotificationProvider } from '../../../context/NotificationContext';
 
@@ -192,5 +193,62 @@ describe('FU-B3 — DataOps FU-L8 (motivosBandeja, GruposBandeja, BetoReadingFlo
       const matches = contenido.match(/#[0-9a-fA-F]{3,8}\b/g) || [];
       expect(matches, `Hex sueltos encontrados en ${rel}: ${matches.join(', ')}`).toEqual([]);
     }
+  });
+
+  it('regresión cero PII en Step 3: CI_NOMBRE_DISCORDANTE individual y CI_DUDOSA con ASESOR en GruposBandeja', () => {
+    const maskedMsg = maskTexto("La CI ••••269 coincide con una persona del catálogo (Estudiante ••••269), pero el nombre 'JUAN PEREZ' difiere.");
+    expect(maskedMsg).not.toContain('JUAN PEREZ');
+
+    const maskedAsesor = maskTexto('ASESOR: CARLOS MENDOZA | CI: 88776655');
+    expect(maskedAsesor).not.toContain('CARLOS MENDOZA');
+    expect(maskedAsesor).not.toContain('88776655');
+
+    const htmlGrupos = renderToStaticMarkup(
+      <GruposBandeja
+        data={{
+          patrones: [],
+          grupos: [
+            {
+              clave: 'grupo-ci-dudosa',
+              motivo: 'CI_DUDOSA',
+              titulo: 'Cédula dudosa',
+              n: 2,
+              accion_grupo: 'MANUAL',
+              ejemplo: 'ASESOR: CARLOS MENDOZA | CI: 1234X',
+              explicacion: {
+                regla: 'Validación de formato y longitud de cédula',
+                umbral: 'Cédula numérica válida (5–10 dígitos)',
+                valor_enmascarado: 'ASESOR: •••• | CI: 1234X',
+              },
+            },
+          ],
+        }}
+        readOnly={false}
+        busy={false}
+        onVerIndividual={() => {}}
+        onResolver={() => {}}
+      />
+    );
+    expect(htmlGrupos).not.toContain('CARLOS MENDOZA');
+
+    const qc = new QueryClient();
+    const htmlCaso = renderToStaticMarkup(
+      <QueryClientProvider client={qc}>
+        <CasoRevision
+          item={{
+            id: 3501,
+            motivo: 'CI_NOMBRE_DISCORDANTE',
+            estudiante: '••••',
+            ci_enmascarado: '••••269',
+            motivo_detalle: "La CI ••••269 coincide con una persona del catálogo (Estudiante ••••269), pero el nombre 'JUAN PEREZ' difiere.",
+            campos_correccion: [],
+          }}
+          readOnly={false}
+          busy={false}
+          schedule={() => {}}
+        />
+      </QueryClientProvider>
+    );
+    expect(htmlCaso).not.toContain('JUAN PEREZ');
   });
 });
