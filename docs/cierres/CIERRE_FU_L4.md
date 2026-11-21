@@ -35,7 +35,7 @@ Cifras nuevas (cifra | valor | archivo en docs/mediciones/):
 Impacto en el documento (sección o tabla): KPI-07, KPI-08 y KPI-16 por gestión. No se tocan hasta el recongelado de FU-L9.
 
 Riesgos abiertos:
-- **Decisión de Lean:** KPI-16 incluye Abandono (de ESTADO TUTORÍA) como pide DA2-bis, y da 10,17 % (2024) y 6,58 % (2025). El 6,5 % y 4,5 % del plan corresponden solo a Deserción (medido 5,67 % y 4,81 % sobre la matrícula de la fuente). Falta confirmar qué cifra va al documento.
+- **Decisión de Lean (2026-11-21, resuelta): KPI-16 = Deserción + Abandono.** Da 10,17 % (2024) y 6,58 % (2025) sobre la matrícula de la fuente; 9,25 % y 6,45 % sobre la matrícula cargada en la DW limpia. Esa es la cifra para el recongelado de FU-L9; el 6,5 % y 4,5 % del plan (solo Deserción: 5,67 % y 4,81 %) quedan descartados.
 - `nota_final` queda NULL en INASISTENCIA, EXIMIDO, SIN_NOTA y «Aprobó»; el 0 real se guarda como 0. Efecto lateral: KPI-09 y KPI-17 (`vw_riesgo_estudiante`, sin tocar) dejan de contar los 0 de desertores.
 - Las mediciones previas del plan no coinciden con lo medido: 13 filas con CI con complemento o ciudad (no 34) y 9 + 29 nombres con dígito o doble espacio (no 125).
 - En la copia que conserva los estudiantes del snapshot, 709 filas quedan bloqueadas por CI_NOMBRE_DISCORDANTE contra nombres antiguos; es comportamiento de la cascada, documentado en `fu_l4_arca_fuente_vs_dw_con_estudiantes_previos.csv`.
