@@ -1,0 +1,11 @@
+tabla,claves,hechos,razon
+bridge_modulo_docente,3438,,
+dim_meta,116,,
+fact_costo_programa,2746,,
+fact_evaluacion_docente,1514038,715217,2.12
+fact_marketing,30392,13860,2.19
+fact_planificacion_programa,3326,,
+fact_rendimiento_academico,50390,25191,2.00
+fact_rentabilidad,334,95,3.52
+fact_situacion_financiera,30948,10733,2.88
+fact_techo_convenio,414,,
