@@ -77,9 +77,18 @@ def _q_eval(db: Session, doc_ids: Optional[Sequence[int]]):
         FactEvaluacionDocente.id_documento, FactEvaluacionDocente.id_modulo)
 
 
+def _contar_hechos(db: Session, modelo, col_id, doc_ids: Optional[Sequence[int]]) -> int:
+    # No usar Query(modelo).count(): en SQLAlchemy 2.0 su subconsulta incluye columnas deferred
+    # (p. ej. resultado/estado_de_fuente de migración 024 o estado_cartera_fuente/dias_mora de 022).
+    q = db.query(func.count(col_id)).filter(modelo.requiere_revision == True)  # noqa: E712
+    if doc_ids is not None:
+        q = q.filter(modelo.id_documento.in_(list(doc_ids)))
+    return int(q.scalar() or 0)
+
+
 def contar_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = None) -> int:
-    return (_q_hechos(db, FactRendimientoAcademico, FactRendimientoAcademico.id_hecho_aca, doc_ids).count()
-            + _q_hechos(db, FactSituacionFinanciera, FactSituacionFinanciera.id_hecho_fin, doc_ids).count()
+    return (_contar_hechos(db, FactRendimientoAcademico, FactRendimientoAcademico.id_hecho_aca, doc_ids)
+            + _contar_hechos(db, FactSituacionFinanciera, FactSituacionFinanciera.id_hecho_fin, doc_ids)
             + _q_eval(db, doc_ids).count())
 
 
@@ -89,8 +98,8 @@ def items_hechos_en_revision(db: Session, doc_ids: Optional[Sequence[int]] = Non
     en SQL sobre la secuencia académicos + financieros y solo se cargan las dimensiones de esa página."""
     q_aca = _q_hechos(db, FactRendimientoAcademico, FactRendimientoAcademico.id_hecho_aca, doc_ids)
     q_fin = _q_hechos(db, FactSituacionFinanciera, FactSituacionFinanciera.id_hecho_fin, doc_ids)
-    n_aca = q_aca.count() if (offset or limit is not None) else 0
-    n_fin_total = q_fin.count() if (offset or limit is not None) else 0
+    n_aca = _contar_hechos(db, FactRendimientoAcademico, FactRendimientoAcademico.id_hecho_aca, doc_ids) if (offset or limit is not None) else 0
+    n_fin_total = _contar_hechos(db, FactSituacionFinanciera, FactSituacionFinanciera.id_hecho_fin, doc_ids) if (offset or limit is not None) else 0
     restante = limit
     if offset < n_aca or not (offset or limit is not None):
         h_aca = (q_aca.offset(offset).limit(restante).all() if restante is not None else q_aca.offset(offset).all())

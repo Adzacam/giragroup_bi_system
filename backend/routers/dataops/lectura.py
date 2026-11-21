@@ -200,12 +200,13 @@ def get_lote_context(
     doc_ids = [d.id_documento for d in docs_lote]
     total_tuplas = sum(a["total_registros"] for a in archivos_tabs)
     total_hitl = (
-        db.query(StagingEntidadNoResuelta)
+        db.query(func.count(StagingEntidadNoResuelta.id_staging))
         .filter(
             StagingEntidadNoResuelta.id_documento.in_(doc_ids),
             StagingEntidadNoResuelta.resuelto == False,
         )
-        .count()
+        .scalar()
+        or 0
         if doc_ids
         else 0
     )
