@@ -17,6 +17,8 @@ MIGRACIONES_EN_ARRANQUE = (
     "017_dataops_tarea_preparacion_revision.sql",
     "018_fact_planificacion_programa.sql",
     "019_vista_planificacion_kpi23.sql",
+    "020_retirar_rol_powerbi_reader.sql",
+    "021_esquema_app_personalizacion.sql",
 )
 MIGRACION_LOTE = "003_dataops_lote_and_facts_alignment.sql"
 MIGRACION_TIPO_FUENTE = "004_extend_tipo_fuente_sources.sql"

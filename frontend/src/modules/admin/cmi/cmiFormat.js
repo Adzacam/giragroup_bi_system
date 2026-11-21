@@ -1,5 +1,5 @@
 // Formato y semántica compartidos por el scorecard y la configuración del CMI.
-// Los colores y la regla de semáforo son los mismos que usa el tema de Power BI.
+// Los colores y la regla de semáforo siguen los tokens institucionales del tema CMI.
 
 export const SEMAFORO = {
   VERDE: { label: 'En meta', color: 'var(--cmi-ok)' },

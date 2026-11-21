@@ -1,0 +1,25 @@
+﻿backend/core/migraciones.py:9:    "007_powerbi_informe_version.sql",
+backend/core/migraciones.py:20:    "020_retirar_rol_powerbi_reader.sql",
+backend/scripts/migrations/006_capa_semantica_cmi.sql:4:-- Fuente única de verdad del CMI: la SPA (GET /api/v1/cmi/*) y Power BI leen las mismas
+backend/scripts/migrations/006_capa_semantica_cmi.sql:314:-- Gestiones con al menos un indicador evaluable: con dato y con umbral (filtro de gestión en web y Power BI)
+backend/scripts/migrations/006_capa_semantica_cmi.sql:374:-- 11. Rol de solo lectura para Power BI (PoLP). La contraseña se asigna fuera del repo:
+backend/scripts/migrations/006_capa_semantica_cmi.sql:375:--     ALTER ROLE powerbi_reader PASSWORD '<secreto>';
+backend/scripts/migrations/006_capa_semantica_cmi.sql:376:--     Sin acceso a dim_estudiante (nombre, CI): la PII queda fuera del modelo Power BI.
+backend/scripts/migrations/006_capa_semantica_cmi.sql:379:    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'powerbi_reader') THEN
+backend/scripts/migrations/006_capa_semantica_cmi.sql:380:        CREATE ROLE powerbi_reader LOGIN;
+backend/scripts/migrations/006_capa_semantica_cmi.sql:382:    GRANT USAGE ON SCHEMA bi TO powerbi_reader;
+backend/scripts/migrations/006_capa_semantica_cmi.sql:383:    GRANT SELECT ON ALL TABLES IN SCHEMA bi TO powerbi_reader;
+backend/scripts/migrations/006_capa_semantica_cmi.sql:384:    ALTER DEFAULT PRIVILEGES IN SCHEMA bi GRANT SELECT ON TABLES TO powerbi_reader;
+backend/scripts/migrations/006_capa_semantica_cmi.sql:386:    RAISE NOTICE 'Sin privilegio para crear powerbi_reader; crearlo con un superusuario.';
+backend/scripts/migrations/007_powerbi_informe_version.sql:2:-- 007 · Versiones del informe de Power BI Desktop (giragroup_cmi.pbix)
+backend/scripts/migrations/007_powerbi_informe_version.sql:4:-- Power BI se usa en Desktop (sin Power BI Service ni licencia Pro). El ADMIN descarga el
+backend/scripts/migrations/007_powerbi_informe_version.sql:5:-- .pbix desde el CMI, lo edita y sube una nueva versión; los roles con acceso de lectura
+backend/scripts/migrations/007_powerbi_informe_version.sql:6:-- descargan siempre la versión vigente. El archivo vive en uploads/powerbi/ y aquí sólo su
+backend/scripts/migrations/007_powerbi_informe_version.sql:11:CREATE TABLE IF NOT EXISTS public.powerbi_informe_version (
+backend/scripts/migrations/007_powerbi_informe_version.sql:25:CREATE UNIQUE INDEX IF NOT EXISTS ux_powerbi_informe_vigente
+backend/scripts/migrations/007_powerbi_informe_version.sql:26:    ON public.powerbi_informe_version (vigente) WHERE vigente;
+backend/scripts/migrations/007_powerbi_informe_version.sql:29:VALUES ('007_powerbi_informe_version.sql', CURRENT_TIMESTAMP)
+frontend/src/api/cmiApi.js:3:// Cuadro de Mando Integral sobre la capa semántica bi (la misma que consume Power BI)
+frontend/src/modules/admin/cmi/CmiConfiguracion.jsx:232:          indicador. Los cambios se aplican al CMI de la web y al informe de Power BI en su próxima actualización: ambos leen
+tests/sprint1/test_migraciones_arranque.py:43:    pbi = "007_powerbi_informe_version.sql"
+tests/sprint1/test_migraciones_arranque.py:54:    retirar_pbi_rol = "020_retirar_rol_powerbi_reader.sql"

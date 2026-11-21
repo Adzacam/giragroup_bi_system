@@ -2,7 +2,7 @@
 backend/schemas/kpi_schemas.py
 -------------------------------
 Esquemas Pydantic v2 para exposición de métricas clave (KPIs) y Alertas
-al Cuadro de Mando Integral (CMI) y herramientas de Business Intelligence (Power BI).
+al Cuadro de Mando Integral (CMI) y módulos de analítica del sistema.
 """
 
 from typing import List, Optional, Dict, Any

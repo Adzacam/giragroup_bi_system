@@ -1,0 +1,6 @@
+# L0-1 Línea base de pruebas — 2026-11-20
+- Frontend vitest: 16 files passed, 87 tests passed
+- Frontend vite build: 2035 modules transformed, built in 2.74s
+- Backend tests/sprint1: 29 passed in 11.84s
+- Backend tests/f3v: 15 passed in 18.76s
+- Backend tests/sprint5: 170+ passed (se detuvo en test lento/bloqueante al ~80%)

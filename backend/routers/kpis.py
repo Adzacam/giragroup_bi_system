@@ -1,7 +1,7 @@
 """
 backend/routers/kpis.py
 -----------------------
-Router FastAPI para exposición de KPIs consolidados del CMI y feed de alertas para Power BI.
+Router FastAPI para exposición de KPIs consolidados del CMI y feed de alertas institucionales.
 Aplica RBAC estricto según la matriz de mínimo privilegio (PoLP).
 """
 
@@ -33,7 +33,7 @@ TTL_CMI_SEG = 60
 @router.get(
     "/kpis",
     response_model=KpiGeneralResponse,
-    summary="Obtener consolidado general de KPIs para CMI y Power BI"
+    summary="Obtener consolidado general de KPIs para el CMI"
 )
 def get_kpis_general(
     db: Session = Depends(get_db),
@@ -108,7 +108,7 @@ def get_kpis_pipeline(
 @router.get(
     "/alertas",
     response_model=AlertasListResponse,
-    summary="Feed unificado de alertas institucionales para Power BI y CMI"
+    summary="Feed unificado de alertas institucionales para el CMI"
 )
 def get_alertas(
     db: Session = Depends(get_db),

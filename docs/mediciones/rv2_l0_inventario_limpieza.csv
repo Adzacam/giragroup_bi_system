@@ -1,0 +1,14 @@
+ruta,versionado,tamano,referencias,propuesta
+frontend/borrador web,no,152.9 KB,1,Borrar
+__pycache__,no,9.0 KB,8,Borrar
+.pytest_cache,no,181.6 KB,4,Borrar
+.coverage,no,100.0 KB,35,Borrar
+node_modules,no,1991.9 KB,12,Borrar
+backend/uploads,no,26.8 KB,0,Borrar
+_archivo,si,4452.3 KB,306,No tocar
+.agent,no,8.7 KB,14,No tocar
+.agents,no,8.7 KB,2,No tocar
+.codex,no,8.7 KB,1,No tocar
+AGENTS.md,no,4.6 KB,3,No tocar
+output,si,15184194.2 KB,177,No tocar
+backups,no,236001.0 KB,41,No tocar

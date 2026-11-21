@@ -31,7 +31,6 @@ vi.mock('../../hooks/useKineticScroll', () => ({ default: () => {} }));
 import CardFolderV2 from '../components/CardFolderV2';
 import CmiDetalleKpi from '../../modules/admin/cmi/CmiDetalleKpi';
 import CuadroMandoIntegral from '../../modules/admin/CuadroMandoIntegral';
-import CmiPowerBi from '../../modules/admin/cmi/CmiPowerBi';
 import NotificationsPage from '../../modules/notifications/NotificationsPage';
 import { notificationService } from '../../services/notificationService';
 
@@ -135,28 +134,6 @@ describe('Ronda 3 (L1-R3 a L4-R3)', () => {
     expect(html).not.toContain('Macroinstitucional');
     expect(html).toContain('Configuración');
     expect(html).toContain('Ayuda y glosario');
-  });
-
-  it('L3-R3: CmiPowerBi habilita botón Eliminar solo para versiones > 1 (v1 protegida)', () => {
-    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    qc.setQueryData(['powerbi', 'informe'], {
-      vigente: { version: 2, subido_en: '2026-11-16T10:00:00Z', subido_por: 'admin', tamano_bytes: 204800 },
-      conexion: { servidor: '127.0.0.1:5434', base_datos: 'giragroup_db', usuario: 'powerbi_reader' },
-      puede_editar: true,
-      max_versiones: 3,
-    });
-    qc.setQueryData(['powerbi', 'versiones'], [
-      { version: 2, vigente: false, subido_en: '2026-11-16T10:00:00Z', subido_por: 'admin', tamano_bytes: 204800 },
-      { version: 1, vigente: true, subido_en: '2026-11-15T10:00:00Z', subido_por: 'admin', tamano_bytes: 102400 },
-    ]);
-
-    const html = renderToStaticMarkup(
-      <QueryClientProvider client={qc}>
-        <CmiPowerBi />
-      </QueryClientProvider>
-    );
-    expect(html).toContain('Eliminar v2');
-    expect(html).not.toContain('Eliminar v1');
   });
 
   it('L4-R3: notificationService normaliza severidades y NotificationsPage renderiza pastilla con conteos y cascada', () => {

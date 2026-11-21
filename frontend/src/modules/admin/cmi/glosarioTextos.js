@@ -25,7 +25,7 @@ export const GLOSARIO_CMI = {
   },
   configuracion: {
     titulo: 'Cómo configurar los indicadores',
-    intro: 'Aquí se ajusta cómo se evalúa cada indicador. Los cambios se reflejan en la web y en Power BI al actualizar.',
+    intro: 'Aquí se ajusta cómo se evalúa cada indicador. Los cambios se reflejan en el Cuadro de Mando al actualizar.',
     terminos: [
       ['Meta', 'Valor que la dirección quiere alcanzar. Sin meta, el indicador se muestra como informativo y no puntúa.'],
       ['Sentido', '"Más es mejor" o "Menos es mejor". Define cómo se compara el valor con la meta.'],
@@ -34,15 +34,6 @@ export const GLOSARIO_CMI = {
       ['Activo', 'Un indicador desactivado deja de mostrarse y de puntuar, pero conserva su historial.'],
       ['Editar o quitar', 'Puedes cambiar meta, umbrales, peso y estado de cada indicador, y desactivar los que no necesites.'],
       ['Agregar un indicador nuevo', 'Un indicador nuevo necesita una fórmula de cálculo sobre los datos consolidados, por lo que se solicita al equipo de datos; una vez creado, aparece aquí para configurarlo.'],
-    ],
-  },
-  powerbi: {
-    titulo: 'Cómo usar el informe en Power BI Desktop',
-    intro: 'El archivo .pbix conecta directamente con el esquema analítico de sólo lectura para exploración avanzada.',
-    terminos: [
-      ['Versión vigente', 'Archivo .pbix oficial que descargan los roles autorizados.'],
-      ['Restaurar versión', 'Permite volver a marcar una versión anterior como vigente sin perder el historial.'],
-      ['Eliminar versión', 'Borra versiones históricas (> v1) que ya no se necesiten. La versión base v1 permanece protegida.'],
     ],
   },
 };

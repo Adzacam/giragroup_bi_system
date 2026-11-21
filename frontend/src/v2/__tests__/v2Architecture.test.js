@@ -172,7 +172,11 @@ describe('Loop 4: Topbar largo en pastilla sin BottomBar ni Aa, Sidebar en pasti
 describe('Loop 5 & Ronda 2: CmiScorecard Hooks/CardFolder, queryKeys reales y flushSync Padre->Hijo', () => {
   it('CmiScorecard invoca useParentChildTransitionV2 antes de los early returns y usa CardFolderV2', () => {
     const scorecardSrc = fs.readFileSync(
-      path.resolve(V2_DIR, '..', 'modules', 'admin', 'cmi', 'CmiScorecard.jsx'),
+      path.resolve(V2_DIR, '..', 'modules', 'admin', 'cmi', 'scorecard', 'CmiScorecard.jsx'),
+      'utf8'
+    );
+    const tarjetaSrc = fs.readFileSync(
+      path.resolve(V2_DIR, '..', 'modules', 'admin', 'cmi', 'scorecard', 'TarjetaKpi.jsx'),
       'utf8'
     );
     const hookPos = scorecardSrc.indexOf('useParentChildTransitionV2()');
@@ -180,7 +184,7 @@ describe('Loop 5 & Ronda 2: CmiScorecard Hooks/CardFolder, queryKeys reales y fl
     expect(hookPos).toBeGreaterThan(-1);
     expect(loadingPos).toBeGreaterThan(-1);
     expect(hookPos).toBeLessThan(loadingPos);
-    expect(scorecardSrc).toContain('CardFolderV2');
+    expect(tarjetaSrc).toContain('CardFolderV2');
   });
 
   it('routeDataPrefetcherV2 usa las queryKeys reales de las vistas', () => {
