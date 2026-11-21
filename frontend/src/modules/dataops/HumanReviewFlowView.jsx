@@ -145,7 +145,7 @@ export function CasoRevision({ item, readOnly, busy, schedule }) {
         <Button variant="ghost" isLoading={loadingCampo === 'correo'} loadingText="Consultando…" onClick={() => reveal('correo')}>{correoRev ? 'Ocultar correo' : 'Revelar correo'}</Button>
       </>}
     </div>
-    <details style={{ marginBottom: 12 }}><summary style={{ cursor: 'pointer' }}>Ver texto original protegido</summary><p style={{ fontSize: 12, overflowWrap: 'anywhere', padding: '12px 0' }}>{item.que_vio || 'Sin texto disponible'}</p></details>
+    <details style={{ marginBottom: 12 }}><summary style={{ cursor: 'pointer' }}>Ver texto original protegido</summary><p style={{ fontSize: 12, overflowWrap: 'anywhere', padding: '12px 0' }}>{item.que_vio ? maskTexto(item.que_vio) : 'Sin texto disponible'}</p></details>
     {item.sugerencia && <p style={{ marginBottom: 12 }}>Sugerencia guardada: {item.sugerencia}</p>}
     {item.sugerencias_beto?.length > 0 && <div style={{ marginBottom: 12 }}>
       <p style={{ fontSize: 12, marginBottom: 6 }}>Candidatos ordenados por score combinado (similitud y probabilidad de BETO). Solo ordenan: la decisión es tuya.</p>

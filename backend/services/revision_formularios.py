@@ -8,6 +8,7 @@ para la bandeja de revisión humana (W-4 / D-W6).
 Fuente de verdad: docs/mediciones/f3w_matriz_formularios.md
 """
 
+import re
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 from fastapi import HTTPException
 
@@ -338,7 +339,11 @@ def construir_motivo_detalle(
     sugerencia = None
     if sug_raw and str(sug_raw).strip():
         sug_str = str(sug_raw).strip()
-        sugerencia = sug_str if "•" in sug_str else "••••"
+        sugerencia = (
+            sug_str
+            if re.fullmatch(r"(?:Estudiante|Docente|Persona|Asesor)?\s*•+\d*", sug_str, re.I)
+            else "••••"
+        )
     fecha = datos.get("fecha") or "sin fecha"
 
     if mot == "CI_NOMBRE_DISCORDANTE":

@@ -203,6 +203,11 @@ describe('FU-B3 — DataOps FU-L8 (motivosBandeja, GruposBandeja, BetoReadingFlo
     expect(maskedAsesor).not.toContain('CARLOS MENDOZA');
     expect(maskedAsesor).not.toContain('88776655');
 
+    const maskedMixto = maskTexto('ASESOR: CARLOS •••• | PATERNO: PEREZ | MATERNO: LOPEZ');
+    expect(maskedMixto).not.toContain('CARLOS');
+    expect(maskedMixto).not.toContain('PEREZ');
+    expect(maskedMixto).not.toContain('LOPEZ');
+
     const htmlGrupos = renderToStaticMarkup(
       <GruposBandeja
         data={{

@@ -73,18 +73,21 @@ export const maskNombre = (nombre) => {
   return parts.map((p) => (p ? `${p[0]}.` : '')).join(' ') + ' (Anonimizado)';
 };
 
+const YA_ENMASCARADO_NUM = /^[•*\s\d-]+$/;
+const YA_ENMASCARADO_TXT = /^(?:•+|Estudiante\s+•+\d*|••••@••••)$/i;
+
 export const maskTexto = (t) => {
   if (!t) return '';
   return String(t)
     .replace(/\b(CI|C[eé]dula(?:\s+de\s+identidad)?|Celular|Tel[eé]fono|NIT)\s*:\s*([0-9A-Za-z•\-]+)/gi, (m, lbl, ci) =>
-      ci.includes('•') ? `${lbl}: ${ci}` : `${lbl}: ${maskCi(ci)}`
+      YA_ENMASCARADO_NUM.test(ci.trim()) && ci.includes('•') ? `${lbl}: ${ci}` : `${lbl}: ${maskCi(ci)}`
     )
     .replace(
-      /\b(Nombre(?:s)?(?:\s+completo(?:s)?|\s+y\s+apellidos?)?|Estudiante|Docente|Asesor|Participante|Alumno|Raz[oó]n\s+social|Discordante\s+con)\s*:\s*([^()|;\n]+)/gi,
-      (m, lbl, nom) => (nom.trim().includes('•') ? `${lbl}: ${nom.trim()}` : `${lbl}: ${maskNombre(nom)}`)
+      /\b(Nombre(?:s)?(?:\s+completo(?:s)?|\s+y\s+apellidos?)?|Paterno|Materno|Apellido(?:\s+paterno|\s+materno)?|Estudiante|Docente|Asesor|Participante|Alumno|Raz[oó]n\s+social|Direcci[oó]n(?:\s+de\s+domicilio)?|Fecha(?:\s+de)?\s+nacimiento|Discordante\s+con)\s*:\s*([^()|;\n]+)/gi,
+      (m, lbl, nom) => (YA_ENMASCARADO_TXT.test(nom.trim()) ? `${lbl}: ${nom.trim()}` : `${lbl}: ${maskNombre(nom)}`)
     )
     .replace(/\b(el\s+nombre)\s+'([^']+)'/gi, (m, prefix, nom) =>
-      nom.includes('•') ? `${prefix} '${nom}'` : `${prefix} '••••'`
+      YA_ENMASCARADO_TXT.test(nom.trim()) ? `${prefix} '${nom}'` : `${prefix} '••••'`
     )
     .replace(/[^\s@,|;]+@[^\s@,|;]+\.[A-Za-z]{2,}/g, '••••@••••')
     .replace(/\b\d{6,10}\b/g, (m) => maskCi(m));

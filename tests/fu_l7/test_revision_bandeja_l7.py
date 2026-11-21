@@ -186,10 +186,14 @@ def test_regresion_cero_pii_lote35_discordante_y_lote36_asesor(db):
     detalle_directo = construir_motivo_detalle(
         "academico",
         "CI_NOMBRE_DISCORDANTE",
-        {"ci": "8349269", "nombre": "JUAN CARLOS PEREZ", "sugerencia": "JUANITA PEREZ"},
+        {"ci": "8349269", "nombre": "JUAN CARLOS PEREZ", "sugerencia": "JUANITA PEREZ (••••269)"},
     )
     assert "JUAN CARLOS PEREZ" not in detalle_directo
     assert "JUANITA PEREZ" not in detalle_directo
+
+    ent_35.mejor_candidato = "JUANITA PEREZ ••••269"
+    caso_parcial = caso_guardado(ent_35, doc_35)
+    assert "JUANITA PEREZ" not in (caso_parcial.get("motivo_detalle") or "")
 
     # Caso 2 (Lote #36): Por grupos -> CI_DUDOSA no debe filtrar ASESOR: <NOMBRE REAL> en ejemplo ni explicacion
     doc_36 = _doc(db, id_doc=36, nombre="TBL_INSCRITOS_36.xlsx", tipo="ADMISION")

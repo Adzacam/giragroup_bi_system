@@ -143,7 +143,11 @@ def caso_guardado(ent, doc):
         'codigo_pos': p.get('codigo_pos') or p.get('programa'),
         'confianza': ent.nivel_confianza,
         'nombre': '••••' if nombre else None,
-        'sugerencia': ent.mejor_candidato if ent.mejor_candidato and '•' in str(ent.mejor_candidato) else ('••••' if ent.mejor_candidato else None),
+        'sugerencia': (
+            str(ent.mejor_candidato).strip()
+            if ent.mejor_candidato and re.fullmatch(r'(?:Estudiante|Docente|Persona|Asesor)?\s*•+\d*', str(ent.mejor_candidato).strip(), re.I)
+            else ('••••' if ent.mejor_candidato else None)
+        ),
         'fecha': p.get('fecha_inscripcion') or p.get('fecha'),
         'institucion': p.get('institucion'),
         'por_que_detuvo': p.get('motivo_llano'),
