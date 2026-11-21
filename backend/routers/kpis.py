@@ -72,11 +72,12 @@ def get_cmi_completo(
     summary="KPIs de la perspectiva académica"
 )
 def get_kpis_academico(
+    gestion: Optional[int] = Query(None, ge=2000, le=2100, description="Gestión; sin ella, la última del CMI"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["DIRECTOR_ACADEMICO", "ADMIN"]))
 ):
     service = KPIService(db)
-    return service.obtener_kpis_academicos()
+    return service.obtener_kpis_academicos(gestion_filtro=gestion)
 
 
 @router.get(
@@ -85,11 +86,12 @@ def get_kpis_academico(
     summary="KPIs de la perspectiva financiera y recaudación"
 )
 def get_kpis_financiero(
+    gestion: Optional[int] = Query(None, ge=2000, le=2100, description="Gestión; sin ella, la última del CMI"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["ANALISTA_FINANCIERO", "ADMIN"]))
 ):
     service = KPIService(db)
-    return service.obtener_kpis_financieros()
+    return service.obtener_kpis_financieros(gestion_filtro=gestion)
 
 
 @router.get(

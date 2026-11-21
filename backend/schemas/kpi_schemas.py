@@ -16,6 +16,8 @@ class KpisAcademicos(BaseModel):
     estudiantes_en_riesgo_academico: int
     estudiantes_en_riesgo_desercion: int
     total_evaluaciones_registradas: int
+    gestion: Optional[int] = None
+    fuente: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -27,6 +29,12 @@ class KpisFinancieros(BaseModel):
     estudiantes_cartera_previsionable: int
     estudiantes_cartera_mora: int
     estudiantes_cartera_vigente: int
+    total_recaudado_bs: Optional[float] = None
+    mora_estudiantes_pct: Optional[float] = None
+    cartera_vencida_pct: Optional[float] = None
+    estudiantes_con_riesgo_financiero: Optional[int] = None
+    gestion: Optional[int] = None
+    fuente: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -74,4 +82,6 @@ class CmiCompletoResponse(BaseModel):
     status: str = "success"
     fecha_calculo_iso: str
     perspectivas: Dict[str, Any]
+    filtros: Optional[Dict[str, Any]] = None
+    fuente: Optional[str] = None
 

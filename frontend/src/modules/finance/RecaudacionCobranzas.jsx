@@ -115,13 +115,13 @@ export default function RecaudacionCobranzas() {
           badgeType={datosCobro.recaudacionNetaBs != null ? 'success' : 'neutral'}
         />
         <KpiCard
-          label="Cartera Vencida Exigible"
+          label="Deuda Total Registrada"
           numberPrefix="Bs. "
           number={Number(datosCobro.totalDeudaMoraBs || 0).toLocaleString()}
           numberSuffix=""
-          sublabel="Saldo pendiente en fact_situacion_financiera"
-          badgeText={datosCobro.totalDeudaMoraBs > 0 ? "Mora Activa" : "Sana"}
-          badgeType={datosCobro.totalDeudaMoraBs > 0 ? "warning" : "success"}
+          sublabel="Saldo de la gestión (todas las cuotas, no solo las vencidas)"
+          badgeText={datosCobro.totalDeudaMoraBs > 0 ? "Con saldo" : "Sin saldo"}
+          badgeType={datosCobro.totalDeudaMoraBs > 0 ? "neutral" : "success"}
         />
         <KpiCard
           label="Cumplimiento Presupuestario"

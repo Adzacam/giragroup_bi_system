@@ -22,11 +22,24 @@ from models.dim_tiempo import DimTiempo
 from models.dim_origen import DimOrigenDocumental
 from models.staging_entidad import StagingEntidadNoResuelta
 from pipeline.config import NOTA_APROBACION
+from services.regla_mora import UMBRAL_CUOTAS_MORA  # DA3: regla única de mora
+from services import cmi_valores
 
 
 class KPIService:
     def __init__(self, db: Session):
         self.db = db
+
+    def _contexto_cmi(self, gestion: Optional[int], programa: Optional[str]):
+        """(gestion efectiva, valores del CMI, fuente). Sin filtro de programa la gestion es la del CMI (la pedida o la
+        ultima, nunca «todas») y las cifras que el CMI tambien publica salen de sus vistas (ADW-L5). Con filtro de
+        programa no hay equivalente en el CMI: se calcula aqui y la respuesta lo declara."""
+        if programa:
+            return gestion, {}, "calculo_local (filtro de programa)"
+        g = cmi_valores.gestion_vigente(self.db, gestion)
+        if g is None:
+            return gestion, {}, cmi_valores.FUENTE_LOCAL
+        return g, cmi_valores.valores(self.db, g), cmi_valores.FUENTE_CMI
 
     def obtener_kpis_academicos(
         self,
@@ -34,6 +47,7 @@ class KPIService:
         programa_filtro: Optional[str] = None
     ) -> Dict[str, Any]:
         prog_label = func.coalesce(func.nullif(DimModulo.programa, ""), DimModulo.nombre_modulo, "Programa General")
+        gestion_filtro, cmi, fuente = self._contexto_cmi(gestion_filtro, programa_filtro)
 
         q = self.db.query(
             func.count(FactRendimientoAcademico.id_hecho_aca).label("total"),
@@ -55,14 +69,14 @@ class KPIService:
         row = q.first()
         total_eval = row.total or 0 if row else 0
         if total_eval == 0:
-            return {
+            return self._academicos_con_cmi({
                 "promedio_general_notas": None,
                 "tasa_aprobacion_pct": None,
                 "tasa_reprobacion_pct": None,
                 "estudiantes_en_riesgo_academico": 0,
                 "estudiantes_en_riesgo_desercion": 0,
                 "total_evaluaciones_registradas": 0
-            }
+            }, cmi, gestion_filtro, fuente)
         avg_nota = row.avg_nota
         aprobados = row.aprobados or 0
         riesgo_aca = row.riesgo_aca or 0
@@ -71,14 +85,27 @@ class KPIService:
         tasa_apr = round((aprobados / total_eval) * 100.0, 2) if total_eval > 0 else None
         tasa_rep = round(100.0 - tasa_apr, 2) if tasa_apr is not None else None
 
-        return {
+        return self._academicos_con_cmi({
             "promedio_general_notas": round(float(avg_nota), 2) if avg_nota is not None else None,
             "tasa_aprobacion_pct": tasa_apr,
             "tasa_reprobacion_pct": tasa_rep,
             "estudiantes_en_riesgo_academico": int(riesgo_aca),
             "estudiantes_en_riesgo_desercion": int(riesgo_des),
             "total_evaluaciones_registradas": int(total_eval)
-        }
+        }, cmi, gestion_filtro, fuente)
+
+    @staticmethod
+    def _academicos_con_cmi(res: Dict[str, Any], cmi: Dict[str, Optional[float]], gestion: Optional[int], fuente: str) -> Dict[str, Any]:
+        """KPI-07 promedio, KPI-08 aprobacion y KPI-09 riesgo academico: el valor del CMI manda (ADW-L5)."""
+        if cmi:
+            res["promedio_general_notas"] = cmi_valores.redondear(cmi.get("KPI-07"))
+            res["tasa_aprobacion_pct"] = cmi_valores.redondear(cmi.get("KPI-08"))
+            res["tasa_reprobacion_pct"] = None if res["tasa_aprobacion_pct"] is None else round(100.0 - res["tasa_aprobacion_pct"], 2)
+            kpi09 = cmi.get("KPI-09")
+            res["estudiantes_en_riesgo_academico"] = int(kpi09) if kpi09 is not None else 0
+        res["gestion"] = gestion
+        res["fuente"] = fuente
+        return res
 
     def obtener_kpis_financieros(
         self,
@@ -86,10 +113,12 @@ class KPIService:
         programa_filtro: Optional[str] = None
     ) -> Dict[str, Any]:
         prog_label = func.coalesce(func.nullif(DimModulo.programa, ""), DimModulo.nombre_modulo, "Programa General")
+        gestion_filtro, cmi, fuente = self._contexto_cmi(gestion_filtro, programa_filtro)
 
         q = self.db.query(
             func.count(FactSituacionFinanciera.id_hecho_fin).label("total"),
             func.sum(FactSituacionFinanciera.monto_deuda).label("total_deuda"),
+            func.sum(FactSituacionFinanciera.monto_pagado).label("total_pagado"),
             func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.cuotas_impagas > 0).label("con_mora"),
             func.sum(FactSituacionFinanciera.cuotas_impagas).label("sum_cuotas"),
             func.count(FactSituacionFinanciera.id_hecho_fin).filter(FactSituacionFinanciera.estado_cartera == "Previsionable").label("previsionable"),
@@ -104,14 +133,15 @@ class KPIService:
         row = q.first()
         total_fin = row.total or 0 if row else 0
         if total_fin == 0:
-            return {
+            return self._financieros_con_cmi({
                 "monto_total_deuda_bs": None,
+                "total_recaudado_bs": None,
                 "estudiantes_con_cuotas_impagas": 0,
                 "total_cuotas_impagas": 0,
                 "estudiantes_cartera_previsionable": 0,
                 "estudiantes_cartera_mora": 0,
                 "estudiantes_cartera_vigente": 0
-            }
+            }, cmi, gestion_filtro, fuente)
         total_deuda = row.total_deuda
         con_mora = row.con_mora or 0
         sum_cuotas = row.sum_cuotas or 0
@@ -119,14 +149,27 @@ class KPIService:
         mora = row.mora or 0
         vigente = row.vigente or 0
 
-        return {
+        return self._financieros_con_cmi({
             "monto_total_deuda_bs": round(float(total_deuda), 2) if total_deuda is not None else None,
+            "total_recaudado_bs": round(float(getattr(row, "total_pagado", None)), 2) if getattr(row, "total_pagado", None) is not None else None,
             "estudiantes_con_cuotas_impagas": int(con_mora),
             "total_cuotas_impagas": int(sum_cuotas),
             "estudiantes_cartera_previsionable": int(previsionable),
             "estudiantes_cartera_mora": int(mora),
             "estudiantes_cartera_vigente": int(vigente)
-        }
+        }, cmi, gestion_filtro, fuente)
+
+    @staticmethod
+    def _financieros_con_cmi(res: Dict[str, Any], cmi: Dict[str, Optional[float]], gestion: Optional[int], fuente: str) -> Dict[str, Any]:
+        """Los conteos por estado de cartera son descriptivos (no son KPI del CMI). Los KPI de mora salen del CMI."""
+        if cmi:
+            res["mora_estudiantes_pct"] = cmi_valores.redondear(cmi.get("KPI-05"))
+            res["cartera_vencida_pct"] = cmi_valores.redondear(cmi.get("KPI-15"))
+            kpi04 = cmi.get("KPI-04")
+            res["estudiantes_con_riesgo_financiero"] = int(kpi04) if kpi04 is not None else None
+        res["gestion"] = gestion
+        res["fuente"] = fuente
+        return res
 
     @staticmethod
     def calcular_ticket_promedio(recaudacion: float, matricula: int) -> float:
@@ -232,8 +275,11 @@ class KPIService:
             StagingEntidadNoResuelta.resuelto == False
         ).scalar() or 0
 
-        if total_hechos > 0:
-            tasa_calidad = round(max(0.0, 100.0 - ((req_rev / total_hechos) * 100.0)), 2)
+        # ADW-L5 (B4): la calidad cuenta tambien las entidades pendientes en staging; antes solo se contaban los hechos y
+        # la tasa salia cerca de 99,6 % con 1.413 casos esperando revision.
+        universo = total_hechos + int(stg_count)
+        if universo > 0:
+            tasa_calidad = round(max(0.0, 100.0 - (((req_rev + int(stg_count)) / universo) * 100.0)), 2)
         else:
             tasa_calidad = None
 
@@ -281,6 +327,9 @@ class KPIService:
         # ticket_promedio_programa = recaudación del programa / matriculados del programa
         # Tablas: fact_situacion_financiera, fact_rendimiento_academico, dim_modulo, dim_tiempo
         # ─────────────────────────────────────────────────────────────────────────
+        # ADW-L5: sin filtro de programa, la gestion es la del CMI (la pedida o la ultima), no «todas»
+        gestion_filtro, cmi, fuente = self._contexto_cmi(gestion_filtro, prog_filtro)
+
         try:
             ticket_programas = self.calcular_ticket_promedio_por_programa(
                 programa_filtro=prog_filtro,
@@ -362,7 +411,8 @@ class KPIService:
 
         # ─────────────────────────────────────────────────────────────────────────
         # 4. KPI 4: ESTUDIANTES CON RIESGO FINANCIERO (Perspectiva Financiera)
-        # nº de estudiantes DISTINTOS con cuotas_impagas ≥ 2 o estado_cartera = 'Previsionable'
+        # nº de estudiantes DISTINTOS en mora por la regla única DA3: cuotas_impagas ≥ 2 (services/regla_mora.py).
+        # 'Previsionable' ya no cuenta: el estado de cartera de la fuente es solo descriptivo (FU-L2).
         # Tablas: fact_situacion_financiera, dim_tiempo, dim_modulo
         # ─────────────────────────────────────────────────────────────────────────
         q_fin_base = self.db.query(FactSituacionFinanciera.id_hecho_fin)
@@ -379,10 +429,7 @@ class KPIService:
             q_riesgo_fin = self.db.query(
                 func.count(func.distinct(FactSituacionFinanciera.id_estudiante))
             ).filter(
-                or_(
-                    FactSituacionFinanciera.cuotas_impagas >= 2,
-                    FactSituacionFinanciera.estado_cartera == "Previsionable"
-                )
+                FactSituacionFinanciera.cuotas_impagas >= UMBRAL_CUOTAS_MORA
             )
             if gestion_filtro:
                 q_riesgo_fin = q_riesgo_fin.join(DimTiempo, FactSituacionFinanciera.id_tiempo == DimTiempo.id_tiempo).filter(DimTiempo.gestion == gestion_filtro)
@@ -443,7 +490,7 @@ class KPIService:
                     "riesgo": "Bajo"
                 },
                 {
-                    "estado": "Mora (30 a 90 días)",
+                    "estado": f"Mora (≥ {UMBRAL_CUOTAS_MORA} cuotas impagas, DA3)",
                     "alumnos": mora_count,
                     "pct_total": round((mora_count / total_alumnos_cartera) * 100.0, 1) if total_alumnos_cartera > 0 else 0.0,
                     "monto_estimado_bs": cart_map.get("Mora", cart_map.get("En Mora", (0, 0.0)))[1],
@@ -682,6 +729,29 @@ class KPIService:
         # ─────────────────────────────────────────────────────────────────────────
         # Estructura consolidada CMI en 4 Perspectivas Estratégicas y 11 KPIs
         # ─────────────────────────────────────────────────────────────────────────
+        if cmi:
+            # Cifras que el CMI tambien publica: su valor manda, tambien cuando es «sin dato» (None).
+            def _v(codigo, n=2):
+                return cmi_valores.redondear(cmi.get(codigo), n)
+
+            def _entero(codigo):
+                return None if cmi.get(codigo) is None else int(cmi[codigo])
+
+            ticket_promedio_general = _v("KPI-01")
+            cumplimiento_metas_mensual = _v("KPI-02")
+            cumplimiento_metas_anual = _v("KPI-13")
+            estudiantes_riesgo_financiero = _entero("KPI-04")
+            mora_total_pct = _v("KPI-05")
+            tasa_conversion_admisiones = _v("KPI-06")
+            total_matricula_acumulada = _entero("KPI-21")
+            promedio_acumulado_general = _v("KPI-07")
+            tasa_aprobacion_global = _v("KPI-08")
+            tasa_reprobacion_global = None if tasa_aprobacion_global is None else round(100.0 - tasa_aprobacion_global, 2)
+            estudiantes_riesgo_academico = _entero("KPI-09")
+            confianza_media_beto = None if cmi.get("KPI-10") is None else round(float(cmi["KPI-10"]) / 100.0, 4)
+            tasa_automatizacion_directa = _v("KPI-11")
+            stg_count = _entero("KPI-18") or 0
+
         perspectiva_financiera = {
             "ticket_promedio_bs": ticket_promedio_general,
             "ticket_promedio_programas": ticket_programas,
@@ -757,6 +827,7 @@ class KPIService:
                 "gestion": gestion_filtro,
                 "programa": prog_filtro
             },
+            "fuente": fuente,
             "kpis": kpis_exactos_11,
             "perspectivas": {
                 "financiera": perspectiva_financiera,
