@@ -93,6 +93,7 @@ try:
     from models.fact_costo_programa import FactCostoPrograma
     from models.fact_techo_convenio import FactTechoConvenio
     from models.fact_planificacion import FactPlanificacionPrograma
+    from models.fact_marketing import FactMarketing
     from models.dim_meta import DimMeta
     from models.bridge_modulo_docente import BridgeModuloDocente
     from models.staging_entidad import StagingEntidadNoResuelta
@@ -110,6 +111,7 @@ except ImportError:
     from backend.models.fact_costo_programa import FactCostoPrograma
     from backend.models.fact_techo_convenio import FactTechoConvenio
     from backend.models.fact_planificacion import FactPlanificacionPrograma
+    from backend.models.fact_marketing import FactMarketing
     from backend.models.dim_meta import DimMeta
     from backend.models.bridge_modulo_docente import BridgeModuloDocente
     from backend.models.staging_entidad import StagingEntidadNoResuelta
@@ -652,6 +654,15 @@ class IngestionService:
         db.flush()
         return log_entry
 
+    @staticmethod
+    def _prioridad_captacion(libro: Optional[Dict[str, Any]], nombre_hoja: str) -> int:
+        """FU-L3: prioridad de la hoja como fuente de captación (menor gana): detalle mensual visible primero."""
+        from services.captacion_canonica import prioridad_de_hoja, prioridad_sin_metadatos
+        h = libro.get(nombre_hoja) if libro else None
+        if h is None:
+            return prioridad_sin_metadatos()
+        return prioridad_de_hoja(h.meta.estado, h.meta.periodo_dominante)
+
     # Motivo legible de las hojas que el extractor de planificación deja sin filas (planificacion_extractor)
     _MOTIVO_EXTRACTOR = {
         "borrador": "borrador (extractor de planificación)",
@@ -1065,6 +1076,7 @@ class IngestionService:
                             "anio_hoja": filas_h[0]["anio_hoja"],
                             "mes_hoja": filas_h[0]["mes_hoja"],
                             "filas_excel": [f["fila_excel"] for f in filas_h],
+                            "prioridad_captacion": cls._prioridad_captacion(libro, nom_h),
                         },
                     ))
                     bloques_insertados += 1
@@ -1113,6 +1125,8 @@ class IngestionService:
                         "rango_fechas": asym_info.get("rango_fechas", periodo_final),
                         "fechas_reconocidas": asym_info.get("fechas_reconocidas", [])
                     }
+                    if categoria == "planificacion":
+                        payload_data["prioridad_captacion"] = cls._prioridad_captacion(libro, nombre_hoja)
                     staging_entry = StagingRegistroCrudo(
                         id_documento=doc_id,
                         hoja=nombre_hoja,
@@ -1289,6 +1303,10 @@ class IngestionService:
         found_ids = [d.id_documento for d in docs]
         doc_names = [d.nombre_archivo for d in docs]
 
+        # FU-L3: la captación de planificación (fact_marketing con id_documento NULL) se recalcula sin las filas que se van
+        from services import captacion_dw
+        afectados_captacion = captacion_dw.afectados_por_documentos(db, found_ids)
+
         tablas_con_doc = (
             FactRendimientoAcademico,
             FactSituacionFinanciera,
@@ -1296,6 +1314,7 @@ class IngestionService:
             FactRentabilidad,
             FactCostoPrograma,
             FactTechoConvenio,
+            FactMarketing,   # FU-L3: sin esto las inscripciones sobrevivían al borrado y se sumaban otra vez al re-subir el libro
             FactPlanificacionPrograma,
             DimMeta,
             BridgeModuloDocente,
@@ -1307,6 +1326,9 @@ class IngestionService:
         try:
             for modelo in tablas_con_doc:
                 db.query(modelo).filter(modelo.id_documento.in_(found_ids)).delete(synchronize_session=False)
+
+            if afectados_captacion:
+                captacion_dw.recalcular_pares(db, afectados_captacion)
 
             conn = db.connection()
             if inspect(conn).has_table("carga_fila_origen"):

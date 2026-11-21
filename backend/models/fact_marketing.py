@@ -16,3 +16,6 @@ class FactMarketing(Base):
     leads_captacion = Column(Integer, nullable=True)
     inscritos_captacion = Column(Integer, nullable=True)
     costo_programa = Column(Numeric(12, 2))
+    # FU-L3 (migración 023): documento de origen de las inscripciones de la fila. Borrar el documento borra la fila; NULL =
+    # captación de planificación (una cifra por programa y mes entre varios documentos) o fila anterior a la migración.
+    id_documento = Column(Integer, ForeignKey("dim_origen_documental.id_documento", ondelete="CASCADE"), nullable=True, index=True)

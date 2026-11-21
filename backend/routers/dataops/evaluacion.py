@@ -554,7 +554,12 @@ def _evaluar_documentos_lote(
             stg.requiere_revision = bloque_requiere_rev
             if stg.estado_resolucion not in ("RESUELTO_HUMANO", "DESCARTADO"):
                 stg.estado_resolucion = "PENDIENTE" if bloque_requiere_rev else "APROBADO_AUTOMATICO"
+            # FU-L3: la lectura conserva lo que la ingesta dejó para consolidar (período y filas de la hoja de planificación,
+            # prioridad de la hoja como fuente de captación y metas del informe de gestión). Antes lo reemplazaba por completo:
+            # sin él se perdían el período de la hoja, las 58 metas de dim_meta y la prioridad de la hoja de detalle.
+            previo = stg.payload_json if isinstance(stg.payload_json, dict) else {}
             stg.payload_json = {
+                **{k: previo[k] for k in CLAVES_PAYLOAD_INGESTA if k in previo},
                 "tipo_fuente": doc_fuente,
                 "tipo_escala": doc_escala,
                 "tuplas": tuplas_bloque_payload,
@@ -716,6 +721,9 @@ def _evaluar_lote_en_segundo_plano(doc_ids: List[int], id_lote: Optional[int], t
 
 
 TTL_EVALUACION_LECTURA_SEG = 1800
+
+# Claves del payload de staging que pone la ingesta y que la consolidación necesita después de la lectura BETO
+CLAVES_PAYLOAD_INGESTA = ("anio_hoja", "mes_hoja", "filas_excel", "prioridad_captacion", "metas_planificacion")
 
 
 def _huella_evaluacion(db: Session, doc_ids: List[int]) -> Tuple:

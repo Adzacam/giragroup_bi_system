@@ -1,0 +1,78 @@
+metrica,anio_mes,fuente,dw_tmpfs,diferencia,explicacion
+inscritos_por_anio,2022,53,53,0.0,una inscripción = 1; sin diferencia
+inscritos_por_anio,2023,3551,3551,0.0,una inscripción = 1; sin diferencia
+inscritos_por_anio,2024,4563,4563,0.0,una inscripción = 1; sin diferencia
+inscritos_por_anio,2025,4737,4737,0.0,una inscripción = 1; sin diferencia
+inscritos_por_anio,2026,2292,2292,0.0,una inscripción = 1; sin diferencia
+inscritos_dw_viva_antes,2022,53,106,53.0,DW viva antes de la corrección (duplicados): solo lectura
+inscritos_dw_viva_antes,2023,3551,7102,3551.0,DW viva antes de la corrección (duplicados): solo lectura
+inscritos_dw_viva_antes,2024,4563,9124,4561.0,DW viva antes de la corrección (duplicados): solo lectura
+inscritos_dw_viva_antes,2025,4737,9472,4735.0,DW viva antes de la corrección (duplicados): solo lectura
+inscritos_dw_viva_antes,2026,2292,4576,2284.0,DW viva antes de la corrección (duplicados): solo lectura
+inscritos_tmpfs_codigo_anterior,2022,53,53,0.0,recarga en la tmpfs con el código de antes de FU-L3 en una DW limpia: 1 por inscripción (no reproduce el ×2); la diferencia son 5 inscripciones con CI incompleta que el código anterior contaba 0 y 1 con marca temporal con milisegundos que quedaba sin mes (id_tiempo vacío)
+inscritos_tmpfs_codigo_anterior,2023,3551,3551,0.0,recarga en la tmpfs con el código de antes de FU-L3 en una DW limpia: 1 por inscripción (no reproduce el ×2); la diferencia son 5 inscripciones con CI incompleta que el código anterior contaba 0 y 1 con marca temporal con milisegundos que quedaba sin mes (id_tiempo vacío)
+inscritos_tmpfs_codigo_anterior,2024,4563,4562,-1.0,recarga en la tmpfs con el código de antes de FU-L3 en una DW limpia: 1 por inscripción (no reproduce el ×2); la diferencia son 5 inscripciones con CI incompleta que el código anterior contaba 0 y 1 con marca temporal con milisegundos que quedaba sin mes (id_tiempo vacío)
+inscritos_tmpfs_codigo_anterior,2025,4737,4736,-1.0,recarga en la tmpfs con el código de antes de FU-L3 en una DW limpia: 1 por inscripción (no reproduce el ×2); la diferencia son 5 inscripciones con CI incompleta que el código anterior contaba 0 y 1 con marca temporal con milisegundos que quedaba sin mes (id_tiempo vacío)
+inscritos_tmpfs_codigo_anterior,2026,2292,2288,-4.0,recarga en la tmpfs con el código de antes de FU-L3 en una DW limpia: 1 por inscripción (no reproduce el ×2); la diferencia son 5 inscripciones con CI incompleta que el código anterior contaba 0 y 1 con marca temporal con milisegundos que quedaba sin mes (id_tiempo vacío)
+leads_captacion,2025-07,5104,5104,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+inscritos_captacion,2025-07,288,288,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+referencia_plan_sin_validar_leads,2025-07,5104.0,5104,0.0,suma de la hoja sin la regla DA6; la diferencia son filas sin inscritos o con inscritos > leads
+referencia_plan_sin_validar_inscritos,2025-07,356.0,288,-68.0,ídem (las filas con inscritos > leads o sin leads no cuentan)
+leads_captacion,2025-08,4549,4549,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+inscritos_captacion,2025-08,202,202,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+referencia_plan_sin_validar_leads,2025-08,4549.0,4549,0.0,suma de la hoja sin la regla DA6; la diferencia son filas sin inscritos o con inscritos > leads
+referencia_plan_sin_validar_inscritos,2025-08,202.0,202,0.0,ídem (las filas con inscritos > leads o sin leads no cuentan)
+leads_captacion,2025-09,4821,4821,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+inscritos_captacion,2025-09,281,281,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+referencia_plan_sin_validar_leads,2025-09,4821.0,4821,0.0,suma de la hoja sin la regla DA6; la diferencia son filas sin inscritos o con inscritos > leads
+referencia_plan_sin_validar_inscritos,2025-09,281.0,281,0.0,ídem (las filas con inscritos > leads o sin leads no cuentan)
+leads_captacion,2025-10,5651,5651,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+inscritos_captacion,2025-10,232,232,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+referencia_plan_sin_validar_leads,2025-10,5651.0,5651,0.0,suma de la hoja sin la regla DA6; la diferencia son filas sin inscritos o con inscritos > leads
+referencia_plan_sin_validar_inscritos,2025-10,232.0,232,0.0,ídem (las filas con inscritos > leads o sin leads no cuentan)
+leads_captacion,2025-11,6909,6909,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+inscritos_captacion,2025-11,180,180,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+referencia_plan_sin_validar_leads,2025-11,6909.0,6909,0.0,suma de la hoja sin la regla DA6; la diferencia son filas sin inscritos o con inscritos > leads
+referencia_plan_sin_validar_inscritos,2025-11,180.0,180,0.0,ídem (las filas con inscritos > leads o sin leads no cuentan)
+leads_captacion,2025-12,8051,8051,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+inscritos_captacion,2025-12,168,168,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+referencia_plan_sin_validar_leads,2025-12,8051.0,8051,0.0,suma de la hoja sin la regla DA6; la diferencia son filas sin inscritos o con inscritos > leads
+referencia_plan_sin_validar_inscritos,2025-12,168.0,168,0.0,ídem (las filas con inscritos > leads o sin leads no cuentan)
+leads_captacion,2026-01,9958,9958,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+inscritos_captacion,2026-01,278,278,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+referencia_plan_sin_validar_leads,2026-01,19916.0,9958,-9958.0,suma de la hoja sin la regla DA6; la diferencia son filas sin inscritos o con inscritos > leads
+referencia_plan_sin_validar_inscritos,2026-01,547.0,278,-269.0,ídem (las filas con inscritos > leads o sin leads no cuentan)
+leads_captacion,2026-02,9591,9591,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+inscritos_captacion,2026-02,290,290,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+referencia_plan_sin_validar_leads,2026-02,18658.0,9591,-9067.0,suma de la hoja sin la regla DA6; la diferencia son filas sin inscritos o con inscritos > leads
+referencia_plan_sin_validar_inscritos,2026-02,563.0,290,-273.0,ídem (las filas con inscritos > leads o sin leads no cuentan)
+leads_captacion,2026-03,7073,7073,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+inscritos_captacion,2026-03,250,250,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+referencia_plan_sin_validar_leads,2026-03,13557.0,7073,-6484.0,suma de la hoja sin la regla DA6; la diferencia son filas sin inscritos o con inscritos > leads
+referencia_plan_sin_validar_inscritos,2026-03,484.0,250,-234.0,ídem (las filas con inscritos > leads o sin leads no cuentan)
+leads_captacion,2026-04,9489,9489,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+inscritos_captacion,2026-04,278,278,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+referencia_plan_sin_validar_leads,2026-04,16171.0,9489,-6682.0,suma de la hoja sin la regla DA6; la diferencia son filas sin inscritos o con inscritos > leads
+referencia_plan_sin_validar_inscritos,2026-04,483.0,278,-205.0,ídem (las filas con inscritos > leads o sin leads no cuentan)
+leads_captacion,2026-05,8090,8090,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+inscritos_captacion,2026-05,209,209,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+referencia_plan_sin_validar_leads,2026-05,16180.0,8090,-8090.0,suma de la hoja sin la regla DA6; la diferencia son filas sin inscritos o con inscritos > leads
+referencia_plan_sin_validar_inscritos,2026-05,418.0,209,-209.0,ídem (las filas con inscritos > leads o sin leads no cuentan)
+leads_captacion,2026-06,690,690,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+inscritos_captacion,2026-06,17,17,0.0,"misma cifra: ambos datos, 0 <= inscritos <= leads, un POS y mes una sola vez"
+referencia_plan_sin_validar_leads,2026-06,690.0,690,0.0,suma de la hoja sin la regla DA6; la diferencia son filas sin inscritos o con inscritos > leads
+referencia_plan_sin_validar_inscritos,2026-06,17.0,17,0.0,ídem (las filas con inscritos > leads o sin leads no cuentan)
+leads_captacion_gestion,2025,35085,35085,0.0,"meses con dato: fuente 6, DW 6 de 12"
+inscritos_captacion_gestion,2025,1351,1351,0.0,"meses con dato: fuente 6, DW 6 de 12"
+kpi06_gestion_pct,2025,3.85,3.85,0.0,Σ inscritos / Σ leads de la gestión (DA6)
+cobertura_meses,2025,6,6,0.0,meses con dato de los 12 de la gestión
+leads_captacion_gestion,2026,44891,44891,0.0,"meses con dato: fuente 6, DW 6 de 12"
+inscritos_captacion_gestion,2026,1322,1322,0.0,"meses con dato: fuente 6, DW 6 de 12"
+kpi06_gestion_pct,2026,2.94,2.94,0.0,Σ inscritos / Σ leads de la gestión (DA6)
+cobertura_meses,2026,6,6,0.0,meses con dato de los 12 de la gestión
+kpi06_cmi_gestion_pct,2022,,sin dato,,Sin leads en esta gestión: la fuente de captación trae interesados e inscritos de un mismo programa y mes desde julio de 2025.
+kpi06_cmi_gestion_pct,2023,,sin dato,,Sin leads en esta gestión: la fuente de captación trae interesados e inscritos de un mismo programa y mes desde julio de 2025.
+kpi06_cmi_gestion_pct,2024,,sin dato,,Sin leads en esta gestión: la fuente de captación trae interesados e inscritos de un mismo programa y mes desde julio de 2025.
+kpi06_cmi_gestion_pct,2025,,3.85,,
+kpi06_cmi_gestion_pct,2026,,2.94,,
+programas_distintos_en_fact_marketing,,,984,,programas (módulos) con inscripciones o captación

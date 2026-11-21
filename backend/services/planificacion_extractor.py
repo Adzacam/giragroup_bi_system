@@ -132,8 +132,20 @@ def _extraer_informe_gestion(rows_vals: List[Tuple[Any, ...]], nombre_hoja: str)
     return metas
 
 
+def _campo_canonico(cabecera: str) -> Optional[str]:
+    """FU-L3: campo canónico de una cabecera según los sinónimos del catálogo (pos, programa, leads…), o None."""
+    from services.captacion_canonica import campo_de_cabecera
+    res = campo_de_cabecera(cabecera) if cabecera and cabecera.strip() else None
+    return res[0] if res else None
+
+
 def _es_col_programa(h_norm: str) -> bool:
-    return h_norm in ("PROGRAMA", "NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA") or h_norm.startswith("PROGRAMA ")
+    return (h_norm in ("PROGRAMA", "NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA") or h_norm.startswith("PROGRAMA ")
+            or _campo_canonico(h_norm) == "programa")
+
+
+def _es_col_pos(h_norm: str) -> bool:
+    return h_norm == "POS" or _campo_canonico(h_norm) == "pos"
 
 
 def _detectar_cabecera_planificacion(rows_vals: List[Tuple[Any, ...]]) -> Optional[Tuple[int, List[str]]]:
@@ -142,6 +154,7 @@ def _detectar_cabecera_planificacion(rows_vals: List[Tuple[Any, ...]]) -> Option
         tiene_prog = any(_es_col_programa(c) for c in norm_cells)
         tiene_ctrl = any(
             c in ("POS", "TIPO DE PROGRAMA", "ESTADO", "ESTADO DEL PROGRAMA", "COSTO PROGRAMA", "FECHA INICIO")
+            or _campo_canonico(c) in ("pos", "leads_captacion", "inscritos_captacion")
             for c in norm_cells
         )
         if tiene_prog and tiene_ctrl:
@@ -158,7 +171,7 @@ def _es_hoja_derivada_por_formulas(ws_form, header_row_idx: int, headers: List[s
     norm_headers = [_norm(h) for h in headers]
     cols_clave = [
         i for i, h in enumerate(norm_headers)
-        if _es_col_programa(h) or h in ("POS", "ESTADO", "ESTADO DEL PROGRAMA")
+        if _es_col_programa(h) or _es_col_pos(h) or h in ("ESTADO", "ESTADO DEL PROGRAMA")
     ]
     if not cols_clave:
         return True
@@ -257,7 +270,7 @@ def extraer_libro_planificacion(ruta_xlsx: str, hojas_excluidas: Optional[set] =
             anio_hoja, mes_hoja = anio_mes_de_hoja(nombre_hoja)
             norm_headers = [_norm(h) for h in headers]
             idx_prog = next((i for i, h in enumerate(norm_headers) if _es_col_programa(h)), None)
-            idx_pos = next((i for i, h in enumerate(norm_headers) if h == "POS"), None)
+            idx_pos = next((i for i, h in enumerate(norm_headers) if _es_col_pos(h)), None)
 
             count_hoja = 0
             for r_idx, row in enumerate(ws_v.iter_rows(min_row=header_row_idx + 1, values_only=True), start=header_row_idx + 1):

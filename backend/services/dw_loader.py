@@ -1509,6 +1509,13 @@ class DWLoaderService:
             if pos_fuente
             else None
         )
+        # FU-L3: el origen de la captación (mes y prioridad de la hoja) viaja en el JSON de la fila, sin columnas nuevas
+        payload_fuente = dict(resoluciones.get("payload_fuente") or {})
+        fecha_capt = resoluciones.get("fecha_captacion")
+        if fecha_capt is not None:
+            payload_fuente["mes_captacion"] = fecha_capt.isoformat()
+        if resoluciones.get("prioridad_captacion") is not None:
+            payload_fuente["prioridad_captacion"] = int(resoluciones["prioridad_captacion"])
         hecho = FactPlanificacionPrograma(
             id_modulo=id_modulo,
             id_tiempo_plan=id_tiempo_plan,
@@ -1539,12 +1546,28 @@ class DWLoaderService:
             inscritos_fuente=resoluciones.get("inscritos_fuente"),
             pauta_ejecutada=resoluciones.get("pauta_ejecutada"),
             pauta_asignada=resoluciones.get("pauta_asignada"),
-            payload_fuente=resoluciones.get("payload_fuente"),
+            payload_fuente=payload_fuente or None,
             requiere_revision=bool((registro.get("calidad") or {}).get("requiere_revision", False)),
         )
         self.db.add(hecho)
         self.db.flush()
+        # FU-L3 (DA6): la captación válida de este programa y mes pasa a fact_marketing, una sola vez por POS x mes
+        if id_modulo and fecha_capt and resoluciones.get("leads_fuente") is not None and resoluciones.get("inscritos_fuente") is not None:
+            self._recalcular_captacion(id_modulo, fecha_capt)
         return {"tipo": "planificacion", "status": "loaded", "id_hecho": hecho.id_planificacion}
+
+    def _recalcular_captacion(self, id_modulo: int, mes: date) -> Optional[Dict[str, Any]]:
+        """
+        FU-L3 (DA6). Deja en `fact_marketing.leads_captacion` / `inscritos_captacion` del programa y mes la cifra de UNA
+        sola hoja: entre las filas válidas de `fact_planificacion_programa` (ambos datos, 0 <= inscritos <= leads) con
+        ese programa y mes, gana la hoja de menor prioridad (detalle mensual visible antes que tabla por programa u
+        oculta rescatada) y se suman sus filas. Es un recálculo, no una suma: el resultado no depende del orden de
+        carga ni se duplica al recargar. No toca `inscritos` (inscripciones individuales: KPI-21 y pronóstico).
+        """
+        from services import captacion_dw
+        if FactMarketing is None or self.resolver_o_crear_tiempo(mes) is None:   # asegura la fila de dim_tiempo del mes
+            return None
+        return captacion_dw.recalcular(self.db, id_modulo, mes)
 
     def cargar_registro(self, registro: Dict[str, Any], id_usuario: Optional[int] = None) -> Dict[str, Any]:
         """
@@ -1693,11 +1716,14 @@ class DWLoaderService:
                 elif not self.solo_revision:
                     if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing", registro.get("clave_contenido")):
                         return {"tipo": "admision", "status": "skipped", "motivo": "Fila de origen ya cargada"}
-                    mkt = self.db.query(FactMarketing).filter_by(id_modulo=id_mod_adm, id_tiempo=id_tiempo).first()
+                    # FU-L3: la fila lleva su documento: borrar el documento retira sus inscripciones (antes quedaban y,
+                    # al volver a subir el libro, se sumaban otra vez: ×2)
+                    mkt = self.db.query(FactMarketing).filter_by(id_modulo=id_mod_adm, id_tiempo=id_tiempo, id_documento=doc_id).first()
                     if mkt:
                         mkt.inscritos = (mkt.inscritos or 0) + 1
                     else:
-                        self.db.add(FactMarketing(id_modulo=id_mod_adm, id_tiempo=id_tiempo, leads=0, reservas=0, inscritos=1, costo_programa=0.0))
+                        self.db.add(FactMarketing(id_modulo=id_mod_adm, id_tiempo=id_tiempo, leads=0, reservas=0, inscritos=1,
+                                                  costo_programa=0.0, id_documento=doc_id))
                     self.db.flush()
             if not id_est:
                 return {
@@ -1960,6 +1986,13 @@ class DWLoaderService:
 
         # 3e. Ruteo MARKETING -> FactMarketing
         if categoria == "marketing" and FactMarketing:
+            if id_tiempo is None and resoluciones.get("inscripcion_individual"):
+                # FU-L3: una inscripción sin fecha válida no se suma a un mes inventado ni queda con id_tiempo vacío
+                # (invisible para cualquier gestión): va a revisión como en la ruta de admisión, sin reclamar su clave
+                self._registrar_staging_si_nuevo(StagingEntidadNoResuelta(
+                    id_documento=doc_id, tipo_entidad="MODULO", texto_original=f"{pos_code or nombre_modulo} | sin fecha válida"[:2000],
+                    fk_estado="C", motivo="FECHA_INSCRIPCION_INVALIDA", nivel_confianza=confianza_ia, resuelto=False))
+                return {"tipo": "marketing", "status": "staged", "motivo": "FECHA_INSCRIPCION_INVALIDA"}
             if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_marketing", registro.get("clave_contenido")):
                 return {"tipo": "marketing", "status": "skipped", "motivo": "Fila de origen ya cargada"}
             id_mod_mkt = self.resolver_o_crear_modulo(
@@ -1967,7 +2000,8 @@ class DWLoaderService:
             ) or self.resolver_o_crear_modulo("Difusión Institucional", pos_code="MKT-GEN", institucion=institucion)
 
             reservas = int(resoluciones.get("reservas") or 0)
-            inscritos = int(resoluciones.get("inscritos") if resoluciones.get("inscritos") is not None else (1 if id_est else 0))
+            inscritos = int(resoluciones.get("inscritos") if resoluciones.get("inscritos") is not None
+                            else (1 if (id_est or resoluciones.get("inscripcion_individual")) else 0))
             leads = int(resoluciones.get("leads") or 0)
             # Una inscripción no demuestra cuántos interesados hubo. La conversión
             # usa únicamente parejas explícitas, válidas y del mismo registro.
@@ -1978,7 +2012,8 @@ class DWLoaderService:
 
             existente_mkt = self.db.query(FactMarketing).filter(
                 FactMarketing.id_modulo == id_mod_mkt,
-                FactMarketing.id_tiempo == id_tiempo
+                FactMarketing.id_tiempo == id_tiempo,
+                FactMarketing.id_documento == doc_id,   # FU-L3: una fila por documento (migración 023)
             ).first()
 
             if existente_mkt:
@@ -2005,7 +2040,8 @@ class DWLoaderService:
                     inscritos=inscritos,
                     leads_captacion=leads if captacion else None,
                     inscritos_captacion=inscritos if captacion else None,
-                    costo_programa=costo_prog
+                    costo_programa=costo_prog,
+                    id_documento=doc_id,
                 )
                 self.db.add(nuevo_mkt)
                 self.db.flush()

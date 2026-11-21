@@ -25,7 +25,11 @@ campos_canonicos:
   nota_modulo: "Nota de un módulo (numérica o con resultado canónico, DA-FU2)"
   leads_captacion: "Leads de captación por programa y mes"
   inscritos_captacion: "Inscritos de captación por programa y mes"
-  reservas: "Reservas del embudo (no entra en el KPI-06)"
+  reservas: "Reservas del embudo (se guardan; no entran en el KPI-06)"
+  anio_periodo: "Año del período de una fila programa x mes (columna de año)"
+  mes_periodo: "Mes del período de una fila programa x mes (número o nombre)"
+  fecha_periodo: "Fecha del período de una fila programa x mes (se toma su año y mes)"
+  fecha_inscripcion: "Fecha de una inscripción individual (una fila por inscripción)"
   puntuacion: "Respuesta numérica de una pregunta de evaluación"
   escala_max: "Escala máxima de la pregunta (5 por defecto, 10 si la pregunta lo dice)"
   monto_meta: "Meta monetaria por categoría o mes"
@@ -206,6 +210,16 @@ tipos_fuente:
       programa:
         sinonimos:
           - {texto: "nombre del programa", prioridad: 1}
+      # FU-L3: código del programa y fecha de la inscripción, para que cada inscripción sume 1 al programa y mes de SU fila
+      pos:
+        sinonimos:
+          - {texto: "numeroproyecto", prioridad: 1}
+          - {texto: "numero proyecto", prioridad: 1}
+          - {texto: "pos", prioridad: 1}
+      fecha_inscripcion:
+        sinonimos:
+          - {texto: "marca temporal", prioridad: 1}
+          - {texto: "fecha de inscripcion", prioridad: 1}
       ci:
         sinonimos:
           - {texto: "ci", prioridad: 1}
@@ -316,16 +330,40 @@ tipos_fuente:
         sinonimos:
           - {texto: "programa", prioridad: 1}
           - {texto: "nombre del programa", prioridad: 1}
+      # FU-L3 (DA6): leads e inscritos de captación de CUALQUIER hoja programa x mes. Un tipo de fuente nuevo con
+      # estos campos se lee igual (captacion_canonica.py une los sinónimos de todos los tipos). Los sinónimos
+      # se escriben normalizados: sin acentos, sin «°».
       leads_captacion:
         sinonimos:
           - {texto: "leads", prioridad: 1}
+          - {texto: "interesados", prioridad: 1}
+          - {texto: "total interesados", prioridad: 1}
+          - {texto: "prospectos", prioridad: 1}
       inscritos_captacion:
         sinonimos:
           - {texto: "n inscritos", prioridad: 1}
           - {texto: "n de inscritos", prioridad: 1}
+          - {texto: "inscritos", prioridad: 2}
+          - {texto: "total inscritos", prioridad: 2}
       reservas:
         sinonimos:
           - {texto: "reservas", prioridad: 1}
+          - {texto: "total reservas", prioridad: 2}
+      anio_periodo:
+        sinonimos:
+          - {texto: "ano", prioridad: 1}
+          - {texto: "anio", prioridad: 1}
+          - {texto: "gestion", prioridad: 1}
+          - {texto: "ano ibp", prioridad: 2}
+          - {texto: "anio ibp", prioridad: 2}
+      mes_periodo:
+        sinonimos:
+          - {texto: "mes", prioridad: 1}
+          - {texto: "nombre mes", prioridad: 2}
+          - {texto: "mes ibp", prioridad: 2}
+      fecha_periodo:
+        sinonimos:
+          - {texto: "fecha", prioridad: 1}
     no_mapear:
       - "costo programa"
       - "punto de equilibrio"
@@ -341,9 +379,28 @@ tipos_fuente:
       - "comentario digital / video solicitado"
       - "comentario admisiones"
 
+# Captación (FU-L3, decisión DA6 de Lean, 2026-11-20): leads e inscritos de captación por programa y mes, KPI-06.
+# Los campos leads_captacion / inscritos_captacion / reservas y el período salen de los sinónimos de cualquier tipo
+# de fuente (ver tipos_fuente.*.campos); aquí solo van las reglas de uso, no nombres de columna.
+captacion:
+  # Una fila cuenta para el KPI-06 solo con ambos datos y 0 <= inscritos <= leads (migración 014). Las reservas
+  # se guardan en fact_planificacion_programa.reservas_fuente y no entran en el KPI.
+  # Deduplicación: el mismo programa (POS) y mes en varias hojas se cuenta una sola vez. Gana la hoja de menor
+  # prioridad; las hojas de detalle mensual (un único mes dominante) van antes que las tablas por programa con el
+  # mes en cada fila, y las visibles antes que las ocultas rescatadas (FU-L1b). Las ocultas ignoradas no llegan aquí.
+  prioridad_origen:
+    detalle_mensual_visible: 1
+    detalle_mensual_oculta: 2
+    por_programa_visible: 3
+    por_programa_oculta: 4
+  prioridad_sin_metadatos: 3
+  motivos_sin_dato:
+    sin_leads: "Sin leads en esta gestión: la fuente de captación trae interesados e inscritos de un mismo programa y mes desde {desde}."
+    sin_ninguna: "No hay interesados e inscritos de un mismo programa y mes en ninguna fuente cargada."
+
 # Campos que identifican la fila pero no el tipo de fuente (aparecen en casi todas las fuentes).
 # El tipo de una hoja se sugiere solo con los campos específicos (FU-L1, pipeline/lector_hojas.py).
-campos_identidad: [ci, pos, programa, fecha_inicio]   # fecha_inicio (FU-L2) aparece también en catálogos de módulos
+campos_identidad: [ci, pos, programa, fecha_inicio, anio_periodo, mes_periodo, fecha_periodo, fecha_inscripcion]   # fecha_inicio (FU-L2) y el período (FU-L3) aparecen en muchas fuentes
 
 # Una hoja cuyo contenido es de otro tipo que su libro (p. ej. una hoja de planificación con leads
 # e inscritos dentro de un libro de actas) toma su propio tipo si trae al menos este número de campos

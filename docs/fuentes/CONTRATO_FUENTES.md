@@ -84,10 +84,12 @@ El perfil mide **62 hojas** en 10 libros. PLAN_FUENTES_UPLOADS.md dice 61; la di
 - **Cabecera y escala o vocabulario:** Cabecera en fila 1. El género viene en cuatro formas (MUJER, Femenino, HOMBRE, Masculino) → catálogo `genero`.
 - **Columnas usadas → campo canónico:**
 - `programa` ← `nombre del programa`
+- `pos` ← `numeroproyecto`, `numero proyecto`, `pos` (FU-L3: cada inscripción suma al programa de su fila)
+- `fecha_inscripcion` ← `marca temporal`, `fecha de inscripcion` (FU-L3)
 - `ci` ← `ci`
 - `genero` ← `genero`, `genero l`
 - **Columnas no mapeadas:** `nombres`, `paterno`, `materno`, `celular`, `correo electronico`, `direccion`, `nit`, `razon social`, `asesor`, `pos-ci incritos`
-- **Reglas de calidad:** Esta fuente **no** tiene leads, así que no alimenta KPI-06 (DA6). Cada fila es una inscripción: no se cuenta dos veces (origen del ×2 en la DW, FU-L3).
+- **Reglas de calidad:** Esta fuente **no** tiene leads, así que no alimenta KPI-06 (DA6). Cada fila es una inscripción y suma 1 al programa (POS de su fila) y mes de su fecha de inscripción. FU-L3: el ×2 de la DW viva venía de que `fact_marketing` no guardaba el documento de origen: borrar el documento quitaba sus claves de idempotencia pero no sus inscripciones, y al volver a subir el libro se sumaban otra vez. Desde la migración 023 cada fila de inscripciones lleva su `id_documento` y el borrado la retira. Las dos claves por fila de `carga_fila_origen` (por archivo y por contenido) son por diseño: 30.392 = 2 × 15.196 no es duplicado.
 - **Pueden venir vacías sin que sea error:** NIT, razón social, celular y correo pueden venir vacíos. Las columnas derivadas `… L` pueden estar 100 % vacías. Del YAML: `rango edad`, `nivel academico l`, `universidad`.
 
 ### EGRESOS
@@ -141,11 +143,12 @@ El perfil mide **62 hojas** en 10 libros. PLAN_FUENTES_UPLOADS.md dice 61; la di
 - **Columnas usadas → campo canónico:**
 - `pos` ← `pos`, `pos - ibp`
 - `programa` ← `programa`, `nombre del programa`
-- `leads_captacion` ← `leads`
-- `inscritos_captacion` ← `n inscritos`, `n de inscritos`
-- `reservas` ← `reservas`
+- `leads_captacion` ← `leads`, `interesados`, `total interesados`, `prospectos` (FU-L3)
+- `inscritos_captacion` ← `n inscritos`, `n de inscritos`, `inscritos`, `total inscritos` (FU-L3)
+- `reservas` ← `reservas`, `total reservas`
+- `anio_periodo` ← `ano`, `anio`, `gestion`, `ano ibp`, `anio ibp` · `mes_periodo` ← `mes`, `nombre mes`, `mes ibp` · `fecha_periodo` ← `fecha` (FU-L3: período de la fila; sin él se usa el de la hoja mensual, nunca la fecha de inicio del programa)
 - **Columnas no mapeadas:** `costo programa`, `punto de equilibrio`, `estado`, `comentarios`, `comentario daf`, `p/ejecutado`, `p/asignado`, `tc (cliente externo)`
-- **Reglas de calidad:** Leads e inscritos de captación (DA6): sumar por mes solo filas con ambos datos y 0 ≤ inscritos ≤ leads. Las reservas se guardan y no entran en el KPI. POS × mes en varias hojas: se cuenta una vez, con prioridad a la hoja visible de detalle.
+- **Reglas de calidad:** Leads e inscritos de captación (DA6, FU-L3): sumar por mes solo filas con ambos datos y 0 ≤ inscritos ≤ leads (una fila con leads y sin inscritos, o con más inscritos que leads, no cuenta). Las reservas se guardan en `fact_planificacion_programa.reservas_fuente` y no entran en el KPI. POS × mes en varias hojas: se cuenta una vez, con prioridad a la hoja de detalle mensual visible; la tabla por programa (IBP, con el mes en cada fila) solo aporta los POS y meses que el detalle no trae; las ocultas repetidas y los borradores no cuentan. Prioridades en `captacion.prioridad_origen` del YAML (1 detalle visible, 2 detalle oculto rescatado, 3 tabla por programa visible, 4 oculta). El resultado queda en `fact_marketing.leads_captacion` / `inscritos_captacion` (un recálculo, no una suma: recargar no duplica). Gestión sin leads → KPI-06 «sin dato» con motivo (desde qué mes hay datos) y cobertura mensual (meses con dato de 12) en el drill-down de Clientes. Otra hoja con leads e inscritos por programa y mes (de cualquier libro) se lee igual con solo añadir el sinónimo.
 - **Pueden venir vacías sin que sea error:** Leads e inscritos vacíos en jul-dic 2026 (no hay ejecución cargada); no es error. Columnas de pauta y de digital pueden venir vacías. Del YAML: `comentarios`, `comentario daf`, `comentario digital / video solicitado`, `comentario admisiones`.
 
 ### Hojas sin tipo en este contrato
@@ -174,7 +177,7 @@ Criterio: las 62 hojas tienen decisión (usar o ignorar) con motivo. «DIP. EXP 
 | Base centralizada Académica ARCA (1).xlsx | MODULOS | visible | usar | Alimenta `bridge_modulo_docente` (corregido en FU-L1; las columnas de contacto no se publican) | ACTA |
 | Base centralizada Académica ARCA (1).xlsx | Tabla dinámica 1 | visible | ignorar | Tabla dinámica vacía (0 filas) | - |
 | Base centralizada Académica ARCA (1).xlsx | PROGRMAS  DE BAJA | visible | ignorar | Una sola fila de datos; notas de criterio de baja sin granularidad de fuente | - |
-| Base centralizada Académica ARCA (1).xlsx | IBP | visible | usar | Excepción del plan (DA6): única fuente de leads e inscritos 2026 junto con planificación; cabecera en fila 1 | PLANIFICACION |
+| Base centralizada Académica ARCA (1).xlsx | IBP | visible | usar | Excepción del plan (DA6): tabla por programa con el mes en cada fila (POS - IBP, MES IBP, AÑO IBP); aporta leads e inscritos de captación solo donde la hoja mensual de detalle no trae el programa y mes (FU-L3); cabecera en fila 1 | PLANIFICACION |
 | Base centralizada Académica ARCA (1).xlsx | Hoja 8 | visible | ignorar | Hoja vacía (0 filas) | - |
 | Base centralizada Académica ARCA (1).xlsx | CRITERIOS | visible | ignorar | Notas de criterio en texto (15 filas); no es tabla de datos | - |
 | BD Cobranzas.xlsx | COBRANZAS 2024 2025 | visible | usar | Hoja principal visible; una fila por estudiante y programa; fórmulas de cartera; cabecera en fila 1 | COBRANZA |
@@ -205,19 +208,19 @@ Criterio: las 62 hojas tienen decisión (usar o ignorar) con motivo. «DIP. EXP 
 | PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Diciembre-2025 | hidden | usar | Oculta rescatada: período sin hoja visible (2025-12); hoja mensual de detalle con LEADS e inscritos (FU-L1b, decisión de Lean) | PLANIFICACION |
 | PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Informe Gestión | hidden | usar | Oculta rescatada: informe de metas (gestiones 2025 y 2026) sin hoja visible equivalente; fuente de las 58 metas de `dim_meta` (FU-L1b, decisión de Lean) | PLANIFICACION |
 | PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Programas Notificados | visible | usar | Hoja visible del catálogo de programas notificados; POS y programa | PLANIFICACION |
-| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Enero-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; ignorar filas repetidas y vacías (FU-L3) | PLANIFICACION |
-| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Febrero-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; ignorar filas repetidas y vacías (FU-L3) | PLANIFICACION |
-| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Marzo-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; ignorar filas repetidas y vacías (FU-L3) | PLANIFICACION |
-| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Abril-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; ignorar filas repetidas y vacías (FU-L3) | PLANIFICACION |
-| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Mayo-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; ignorar filas repetidas y vacías (FU-L3) | PLANIFICACION |
-| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Junio-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; ignorar filas repetidas y vacías (FU-L3) | PLANIFICACION |
-| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Julio-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; ignorar filas repetidas y vacías (FU-L3) | PLANIFICACION |
-| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Agosto-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; ignorar filas repetidas y vacías (FU-L3) | PLANIFICACION |
+| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Enero-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; leads e inscritos por programa y mes de captación, KPI-06 (FU-L3) | PLANIFICACION |
+| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Febrero-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; leads e inscritos por programa y mes de captación, KPI-06 (FU-L3) | PLANIFICACION |
+| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Marzo-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; leads e inscritos por programa y mes de captación, KPI-06 (FU-L3) | PLANIFICACION |
+| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Abril-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; leads e inscritos por programa y mes de captación, KPI-06 (FU-L3) | PLANIFICACION |
+| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Mayo-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; leads e inscritos por programa y mes de captación, KPI-06 (FU-L3) | PLANIFICACION |
+| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Junio-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; leads e inscritos por programa y mes de captación, KPI-06 (FU-L3) | PLANIFICACION |
+| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Julio-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; leads e inscritos por programa y mes de captación, KPI-06 (FU-L3) | PLANIFICACION |
+| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Agosto-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; leads e inscritos por programa y mes de captación, KPI-06 (FU-L3) | PLANIFICACION |
 | PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Septiembre-2025boor | hidden | ignorar | Oculta (hidden); borrador, copia, resumen o duplicado de otra hoja; no se usa | - |
-| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Septiembre-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; ignorar filas repetidas y vacías (FU-L3) | PLANIFICACION |
-| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Octubre-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; ignorar filas repetidas y vacías (FU-L3) | PLANIFICACION |
-| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Noviembre-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; ignorar filas repetidas y vacías (FU-L3) | PLANIFICACION |
-| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Diciembre-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; ignorar filas repetidas y vacías (FU-L3) | PLANIFICACION |
+| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Septiembre-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; leads e inscritos por programa y mes de captación, KPI-06 (FU-L3) | PLANIFICACION |
+| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Octubre-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; leads e inscritos por programa y mes de captación, KPI-06 (FU-L3) | PLANIFICACION |
+| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Noviembre-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; leads e inscritos por programa y mes de captación, KPI-06 (FU-L3) | PLANIFICACION |
+| PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Diciembre-2026 | visible | usar | Hoja mensual visible 2026 con LEADS, N° INSCRITOS y RESERVAS; leads e inscritos por programa y mes de captación, KPI-06 (FU-L3) | PLANIFICACION |
 | PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Dashboard Programas | hidden | ignorar | Oculta (hidden); borrador, copia, resumen o duplicado de otra hoja; no se usa | - |
 | PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Dashboard Académico | hidden | ignorar | Oculta (hidden); borrador, copia, resumen o duplicado de otra hoja; no se usa | - |
 | PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Julio | hidden | ignorar | Oculta (hidden); borrador, copia, resumen o duplicado de otra hoja; no se usa | - |

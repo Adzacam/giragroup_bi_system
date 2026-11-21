@@ -282,8 +282,10 @@ CREATE TABLE public.fact_marketing (
     inscritos INTEGER DEFAULT 0,
     leads_captacion INTEGER,
     inscritos_captacion INTEGER,
-    costo_programa NUMERIC(12, 2)
+    costo_programa NUMERIC(12, 2),
+    id_documento INTEGER REFERENCES public.dim_origen_documental(id_documento) ON DELETE CASCADE  -- FU-L3 (migración 023)
 );
+CREATE INDEX IF NOT EXISTS ix_fact_marketing_documento ON public.fact_marketing (id_documento);
 
 -- E. Rentabilidad General / OKR's Ejecutivos
 CREATE TABLE public.fact_rentabilidad (
@@ -498,7 +500,7 @@ CREATE POLICY "Analista_Insert_Dims" ON public.dim_estudiante FOR INSERT WITH CH
 -- ==========================================
 -- 8. RESTRICCIONES DE UNICIDAD (DEDUPLICACIÓN AUTOMÁTICA EN INGESTA)
 -- ==========================================
-ALTER TABLE public.fact_marketing ADD CONSTRAINT uq_fact_marketing_modulo_tiempo UNIQUE (id_modulo, id_tiempo);
+CREATE UNIQUE INDEX uq_fact_marketing_modulo_tiempo_documento ON public.fact_marketing (id_modulo, id_tiempo, COALESCE(id_documento, 0));  -- FU-L3 (023): reemplaza uq_fact_marketing_modulo_tiempo (modulo, tiempo)
 ALTER TABLE public.fact_rentabilidad ADD CONSTRAINT uq_fact_rentabilidad_categoria_tiempo UNIQUE (id_categoria, id_tiempo);
 ALTER TABLE public.fact_rendimiento_academico ADD CONSTRAINT uq_fact_rendimiento_estudiante_modulo UNIQUE (id_estudiante, id_modulo);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_fact_fin_est_mod_tiempo ON public.fact_situacion_financiera (id_estudiante, COALESCE(id_modulo, 0), id_tiempo);

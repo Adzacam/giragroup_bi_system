@@ -24,10 +24,17 @@ FUENTE_LOCAL = "calculo_local (sin vistas bi)"
 
 
 def gestiones(db: Session) -> List[int]:
+    savepoint = getattr(db, "begin_nested", None)
     try:
-        return [int(r[0]) for r in db.execute(text("SELECT gestion FROM bi.vw_cmi_gestiones ORDER BY gestion"))]
+        # SAVEPOINT: sin las vistas bi (SQLite de pruebas o una base sin migrar) solo se deshace esta lectura;
+        # un rollback de toda la sesión descartaba lo que el llamador aún no había confirmado (FU-L3).
+        if savepoint is None:
+            return [int(r[0]) for r in db.execute(text("SELECT gestion FROM bi.vw_cmi_gestiones ORDER BY gestion"))]
+        with savepoint():
+            return [int(r[0]) for r in db.execute(text("SELECT gestion FROM bi.vw_cmi_gestiones ORDER BY gestion"))]
     except SQLAlchemyError:
-        db.rollback()
+        if savepoint is None:
+            db.rollback()
         return []
 
 
@@ -43,10 +50,16 @@ def valores(db: Session, gestion: Optional[int]) -> Dict[str, Optional[float]]:
     """{KPI-xx: valor} de la gestión; un KPI sin dato vale None. Vacío si no hay vistas bi o gestión."""
     if gestion is None:
         return {}
+    savepoint = getattr(db, "begin_nested", None)
     try:
-        filas = db.execute(text("SELECT codigo, valor FROM bi.vw_cmi_valores WHERE gestion = :g"), {"g": gestion}).all()
+        if savepoint is None:
+            filas = db.execute(text("SELECT codigo, valor FROM bi.vw_cmi_valores WHERE gestion = :g"), {"g": gestion}).all()
+        else:
+            with savepoint():
+                filas = db.execute(text("SELECT codigo, valor FROM bi.vw_cmi_valores WHERE gestion = :g"), {"g": gestion}).all()
     except SQLAlchemyError:
-        db.rollback()
+        if savepoint is None:
+            db.rollback()
         logger.warning("No se pudieron leer los valores del CMI para la gestión %s; se usa el cálculo local.", gestion)
         return {}
     return {str(c): (None if v is None else float(v)) for c, v in filas}

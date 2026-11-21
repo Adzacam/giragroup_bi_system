@@ -21,6 +21,7 @@ from models.user import User
 from services.confianza_service import banda_de, indices_cascada, obtener_indices
 from services import beto_integracion, cache_consultas, tareas_dataops
 from services.cobranza_canonica import registros_cobranza
+from services.captacion_canonica import leer_identidad as leer_identidad_captacion
 from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, fila_resuelta_por_regla, metricas_captacion, MOTIVOS_A_BANDEJA, motivo_fila_sin_entidad, normalizar_encabezado, registro_planificacion, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
 from datetime import datetime
 from services.dataops_evaluation_service import enmascarar_ci, strip_accents
@@ -279,6 +280,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     campos_linea, hoja=stg.hoja or "", anio_hoja=anio_hoja, mes_hoja=mes_hoja
                 )
                 reg_plan["fila_excel"] = fila_ex
+                reg_plan["prioridad_captacion"] = payload_stg.get("prioridad_captacion")
                 c_orig = hashlib.sha256(f"{sha_doc}|{stg.hoja}|{fila_ex}|{line}".encode("utf-8")).hexdigest()
                 c_cont = clave_contenido(doc_fuente, stg.hoja or "", line, ocurrencias.siguiente(stg.hoja or "", line))
                 res = dw.cargar_registro({
@@ -530,6 +532,18 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                                 "resoluciones": {**reg_dict["resoluciones"], **reg_costo},
                                 "calidad": {"requiere_revision": en_revision or revision_fila},
                             })
+                if categoria_ruteo in ("marketing", "admision") and campos_linea and registros_linea == [reg_dict]:
+                    # FU-L3: una inscripción suma al programa y mes de SU fila (código POS y nombre del catálogo de sinónimos),
+                    # no a un «módulo» que el NER lea de otra columna (carrera o profesión del inscrito)
+                    pos_fila, programa_fila, _, _ = leer_identidad_captacion(campos_linea)
+                    if pos_fila:
+                        reg_dict["resoluciones"]["programa"] = {"valor_extraido": programa_fila or nombre_prog,
+                                                                "metadata": {"pos_canonico": pos_fila}}
+                        reg_dict["resoluciones"]["modulo"] = {"valor_extraido": programa_fila or pos_fila}
+                        if not metricas_captacion(campos_linea):
+                            # fila de una inscripción individual (sin cifras agregadas de leads o inscritos): suma 1 aunque
+                            # su CI no valide como persona (6 inscripciones de la fuente real traen una CI incompleta)
+                            reg_dict["resoluciones"]["inscripcion_individual"] = True
                 if categoria_ruteo == "marketing" and campos_linea:
                     for reg_item in registros_linea:
                         reg_item["resoluciones"].update(metricas_captacion(campos_linea))

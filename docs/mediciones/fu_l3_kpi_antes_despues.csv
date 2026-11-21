@@ -1,0 +1,10 @@
+kpi,gestion,antes_dw_viva,despues_tmpfs,diferencia,nota
+INSCRITOS-fact_marketing,2022,106.0,53.0,-53.0,Σ fact_marketing.inscritos por gestión (serie Clientes y pronóstico): la DW viva trae el doble; la tmpfs 1 por inscripción
+INSCRITOS-fact_marketing,2023,7102.0,3551.0,-3551.0,Σ fact_marketing.inscritos por gestión (serie Clientes y pronóstico): la DW viva trae el doble; la tmpfs 1 por inscripción
+INSCRITOS-fact_marketing,2024,9124.0,4563.0,-4561.0,Σ fact_marketing.inscritos por gestión (serie Clientes y pronóstico): la DW viva trae el doble; la tmpfs 1 por inscripción
+INSCRITOS-fact_marketing,2025,9472.0,4737.0,-4735.0,Σ fact_marketing.inscritos por gestión (serie Clientes y pronóstico): la DW viva trae el doble; la tmpfs 1 por inscripción
+INSCRITOS-fact_marketing,2026,4576.0,2292.0,-2284.0,Σ fact_marketing.inscritos por gestión (serie Clientes y pronóstico): la DW viva trae el doble; la tmpfs 1 por inscripción
+KPI-06,2025,,3.85,,Σ inscritos / Σ leads de captación por gestión (DA6); vacío = sin dato (la DW viva no carga leads de planificación)
+KPI-06,2026,,2.94,,Σ inscritos / Σ leads de captación por gestión (DA6); vacío = sin dato (la DW viva no carga leads de planificación)
+KPI-21,2024,3773.0,3146.0,-627.0,"matrícula = estudiantes distintos con rendimiento académico: no lee fact_marketing, así que FU-L3 no la mueve; la diferencia viene del estado de la copia tmpfs (snapshot) frente a la DW viva"
+KPI-21,2025,3571.0,3455.0,-116.0,"matrícula = estudiantes distintos con rendimiento académico: no lee fact_marketing, así que FU-L3 no la mueve; la diferencia viene del estado de la copia tmpfs (snapshot) frente a la DW viva"

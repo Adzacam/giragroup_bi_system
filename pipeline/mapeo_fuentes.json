@@ -18,7 +18,11 @@
   "nota_modulo": "Nota de un módulo (numérica o con resultado canónico, DA-FU2)",
   "leads_captacion": "Leads de captación por programa y mes",
   "inscritos_captacion": "Inscritos de captación por programa y mes",
-  "reservas": "Reservas del embudo (no entra en el KPI-06)",
+  "reservas": "Reservas del embudo (se guardan; no entran en el KPI-06)",
+  "anio_periodo": "Año del período de una fila programa x mes (columna de año)",
+  "mes_periodo": "Mes del período de una fila programa x mes (número o nombre)",
+  "fecha_periodo": "Fecha del período de una fila programa x mes (se toma su año y mes)",
+  "fecha_inscripcion": "Fecha de una inscripción individual (una fila por inscripción)",
   "puntuacion": "Respuesta numérica de una pregunta de evaluación",
   "escala_max": "Escala máxima de la pregunta (5 por defecto, 10 si la pregunta lo dice)",
   "monto_meta": "Meta monetaria por categoría o mes",
@@ -406,6 +410,34 @@
       }
      ]
     },
+    "pos": {
+     "sinonimos": [
+      {
+       "texto": "numeroproyecto",
+       "prioridad": 1
+      },
+      {
+       "texto": "numero proyecto",
+       "prioridad": 1
+      },
+      {
+       "texto": "pos",
+       "prioridad": 1
+      }
+     ]
+    },
+    "fecha_inscripcion": {
+     "sinonimos": [
+      {
+       "texto": "marca temporal",
+       "prioridad": 1
+      },
+      {
+       "texto": "fecha de inscripcion",
+       "prioridad": 1
+      }
+     ]
+    },
     "ci": {
      "sinonimos": [
       {
@@ -611,6 +643,18 @@
       {
        "texto": "leads",
        "prioridad": 1
+      },
+      {
+       "texto": "interesados",
+       "prioridad": 1
+      },
+      {
+       "texto": "total interesados",
+       "prioridad": 1
+      },
+      {
+       "texto": "prospectos",
+       "prioridad": 1
       }
      ]
     },
@@ -623,6 +667,14 @@
       {
        "texto": "n de inscritos",
        "prioridad": 1
+      },
+      {
+       "texto": "inscritos",
+       "prioridad": 2
+      },
+      {
+       "texto": "total inscritos",
+       "prioridad": 2
       }
      ]
     },
@@ -630,6 +682,58 @@
      "sinonimos": [
       {
        "texto": "reservas",
+       "prioridad": 1
+      },
+      {
+       "texto": "total reservas",
+       "prioridad": 2
+      }
+     ]
+    },
+    "anio_periodo": {
+     "sinonimos": [
+      {
+       "texto": "ano",
+       "prioridad": 1
+      },
+      {
+       "texto": "anio",
+       "prioridad": 1
+      },
+      {
+       "texto": "gestion",
+       "prioridad": 1
+      },
+      {
+       "texto": "ano ibp",
+       "prioridad": 2
+      },
+      {
+       "texto": "anio ibp",
+       "prioridad": 2
+      }
+     ]
+    },
+    "mes_periodo": {
+     "sinonimos": [
+      {
+       "texto": "mes",
+       "prioridad": 1
+      },
+      {
+       "texto": "nombre mes",
+       "prioridad": 2
+      },
+      {
+       "texto": "mes ibp",
+       "prioridad": 2
+      }
+     ]
+    },
+    "fecha_periodo": {
+     "sinonimos": [
+      {
+       "texto": "fecha",
        "prioridad": 1
       }
      ]
@@ -653,11 +757,28 @@
    ]
   }
  },
+ "captacion": {
+  "prioridad_origen": {
+   "detalle_mensual_visible": 1,
+   "detalle_mensual_oculta": 2,
+   "por_programa_visible": 3,
+   "por_programa_oculta": 4
+  },
+  "prioridad_sin_metadatos": 3,
+  "motivos_sin_dato": {
+   "sin_leads": "Sin leads en esta gestión: la fuente de captación trae interesados e inscritos de un mismo programa y mes desde {desde}.",
+   "sin_ninguna": "No hay interesados e inscritos de un mismo programa y mes en ninguna fuente cargada."
+  }
+ },
  "campos_identidad": [
   "ci",
   "pos",
   "programa",
-  "fecha_inicio"
+  "fecha_inicio",
+  "anio_periodo",
+  "mes_periodo",
+  "fecha_periodo",
+  "fecha_inscripcion"
  ],
  "tipo_por_hoja": {
   "min_campos_especificos": 2

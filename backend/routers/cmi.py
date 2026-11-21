@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import require_roles
 from models.user import User
-from services import cache_consultas
+from services import cache_consultas, captacion_cobertura
 from services.cmi_personalizacion_service import (
     ejecutar_consulta_medida,
     evaluar_kpi_personalizado,
@@ -57,6 +57,15 @@ VISIBILIDAD: Dict[str, set] = {
 ROLES_CONFIG = ["ADMIN", "ANALISTA_FINANCIERO", "ANALISTA_MARKETING"]
 
 
+def _plantillas_captacion() -> dict:
+    """Textos del motivo «sin dato» del KPI-06 (editables en config/mapeo_fuentes.yaml, sección captacion)."""
+    try:
+        from pipeline.lector_hojas import cargar_config
+        return (cargar_config().get("captacion") or {}).get("motivos_sin_dato") or {}
+    except Exception:  # sin catálogo se usan los textos por defecto
+        return {}
+
+
 def _num(v: Any) -> Any:
     return float(v) if isinstance(v, Decimal) else v
 
@@ -85,10 +94,23 @@ def _scorecard(db: Session, gestion: Optional[int], permitidas: List[str]) -> di
         FROM bi.vw_cmi_scorecard
         WHERE gestion = :g AND perspectiva = ANY(:p)
         ORDER BY orden""", params)
+    captacion = None   # FU-L3: se lee una sola vez y solo si el KPI-06 se muestra
     for p in perspectivas:
         p["kpis"] = [k for k in kpis if k["perspectiva"] == p["codigo"]]
         for k in p['kpis']:
             k['motivo_sin_dato'] = FALTANTES.get(k['codigo']) if k['valor'] is None else None
+            if k['codigo'] == 'KPI-06':
+                if captacion is None:
+                    captacion = captacion_cobertura.por_mes(db)
+                cob = captacion_cobertura.cobertura(captacion).get(gestion)
+                # Cobertura mensual de la gestión (meses con dato de los 12) y, sin dato, desde qué mes hay datos
+                k['cobertura'] = ({"meses_con_dato": cob["meses_con_dato"], "meses_gestion": cob["meses_gestion"],
+                                   "desde": cob["desde"], "hasta": cob["hasta"]} if cob else
+                                  {"meses_con_dato": 0, "meses_gestion": captacion_cobertura.MESES_GESTION,
+                                   "desde": None, "hasta": None})
+                if k['valor'] is None:
+                    k['motivo_sin_dato'] = captacion_cobertura.motivo_sin_dato(
+                        captacion, gestion, _plantillas_captacion())
 
     # Índice global sólo sobre las perspectivas visibles para el rol
     con_indice = [p for p in perspectivas if p["indice"] is not None]
@@ -203,8 +225,16 @@ def _detalle_perspectiva(db: Session, codigo: str, gestion: Optional[int]) -> di
             HAVING SUM(f.inscritos) > 0
             ORDER BY inscritos DESC
             LIMIT 12""", {"g": gestion})
-        # La conversión por fuente de captación se retira hasta que exista la fuente (KPI-06, hallazgo A5).
-        avisos.append("La conversión por fuente de captación no se muestra: no hay interesados comprobables en una misma fuente (KPI-06).")
+        # FU-L3 (DA6): captación por mes y cobertura de la gestión (leads e inscritos de un mismo programa y mes)
+        todos_los_meses = captacion_cobertura.por_mes(db)
+        series["captacion_mensual"] = [m for m in todos_los_meses if m["gestion"] == gestion]
+        cob = captacion_cobertura.cobertura(todos_los_meses).get(gestion)
+        series["captacion_cobertura"] = [cob] if cob else []
+        if not cob:
+            avisos.append(captacion_cobertura.motivo_sin_dato(todos_los_meses, gestion, _plantillas_captacion()))
+        elif cob["meses_con_dato"] < cob["meses_gestion"]:
+            avisos.append(f"Conversión de captación con dato en {cob['meses_con_dato']} de {cob['meses_gestion']} meses "
+                          f"de la gestión ({cob['desde']} a {cob['hasta']}).")
     elif codigo == "PROCESOS_INTERNOS":
         serie("dataops_documento", """
             SELECT tipo_fuente, COUNT(*) AS documentos, COALESCE(SUM(registros), 0) AS registros,

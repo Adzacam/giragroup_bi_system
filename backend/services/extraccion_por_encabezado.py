@@ -78,17 +78,10 @@ def _a_float(valor: Optional[str]) -> Optional[float]:
 
 
 def metricas_captacion(campos: Dict[str, str]) -> Dict[str, int]:
-    """Contadores explícitos; no deduce interesados a partir de personas o inscripciones."""
-    resultado = {}
-    for campo, claves in {
-        "leads": ("LEADS", "INTERESADOS", "TOTAL INTERESADOS"),
-        "inscritos": ("INSCRITOS", "TOTAL INSCRITOS"),
-        "reservas": ("RESERVAS", "TOTAL RESERVAS"),
-    }.items():
-        valor = _a_float(_primero(campos, claves))
-        if valor is not None and valor >= 0 and valor == int(valor):
-            resultado[campo] = int(valor)
-    return resultado
+    """Contadores explícitos; no deduce interesados a partir de personas o inscripciones.
+    FU-L3: las cabeceras salen de los sinónimos del catálogo (services.captacion_canonica), no de una lista fija."""
+    from services.captacion_canonica import metricas_enteras
+    return metricas_enteras(campos)
 
 
 ANIO_MIN, ANIO_MAX = 2000, 2100  # rango de gestiones de negocio
@@ -112,7 +105,8 @@ def _parsear_fecha_cruda(valor: Optional[Any]) -> Optional[date]:
     if isinstance(valor, date):
         return valor
     texto = str(valor).strip()
-    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%d/%m/%Y %H:%M:%S", "%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y"):
+    # FU-L3: «2025-01-10 09:17:19.521000» (milisegundos de una marca temporal) también es una fecha válida
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d", "%d/%m/%Y %H:%M:%S", "%d/%m/%Y", "%Y/%m/%d", "%d-%m-%Y"):
         try:
             return datetime.strptime(texto, fmt).date()
         except ValueError:
@@ -449,11 +443,10 @@ def registro_planificacion(
     mes_hoja: Optional[int] = None,
 ) -> Dict[str, Any]:
     """Mapea una fila de PLANIFICACION (hoja mensual o Programas Notificados) a fact_planificacion_programa."""
-    pos_raw = (campos.get("POS") or "").strip()
-    pos_norm = None
-    if pos_raw and normalizar_encabezado(pos_raw) not in ("FALSE", "TRUE", "0", "NONE", "NAN"):
-        m_pos = re.match(r"^(?:POS[\s-]?)?(\d{3,5})(?:\.0+)?$", pos_raw, re.IGNORECASE)
-        pos_norm = f"POS-{m_pos.group(1)}" if m_pos else pos_raw[:80]
+    # FU-L3: POS, período y datos de captación por campos canónicos del catálogo (sinónimos), no por nombre de columna
+    from services import captacion_canonica
+    pos_norm, _prog_canon, periodo_fila, _periodo_de_hoja = captacion_canonica.leer_identidad(campos, anio_hoja, mes_hoja)
+    fila_capt = captacion_canonica.leer_fila(campos, anio_hoja, mes_hoja)
 
     nombre_prog = _primero(campos, ("PROGRAMA", "NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA"))
     if not nombre_prog:
@@ -468,13 +461,9 @@ def registro_planificacion(
     fecha_ini = parsear_fecha(_primero(campos, ("FECHA INICIO",)))
     fecha_fin = parsear_fecha(_primero(campos, ("FECHA FIN", "FECHA DE FINALIZACION")))
 
-    # Periodo del hecho: FECHA / AÑO+MES / FECHA INICIO / FECHA DE NOTIFICACION; fallback a la hoja mensual si falta.
-    fecha_plan = parsear_fecha(campos.get("FECHA"))
-    if not fecha_plan:
-        anio_val = _a_float(_primero(campos, ("ANO", "GESTION")))
-        mes_val = _mes(campos.get("MES")) or _mes(campos.get("NOMBRE MES"))
-        if anio_val and mes_val and 2000 <= int(anio_val) <= 2100:
-            fecha_plan = date(int(anio_val), int(mes_val), 1)
+    # Periodo del hecho: FECHA / AÑO+MES (campos de período del catálogo) / FECHA INICIO / FECHA DE NOTIFICACION;
+    # fallback a la hoja mensual si falta. El período de captación (KPI-06) nunca usa fecha de inicio ni de notificación.
+    fecha_plan = periodo_fila if (periodo_fila and not _periodo_de_hoja) else None
     if not fecha_plan:
         fecha_plan = fecha_ini or fecha_notif
     if not fecha_plan and anio_hoja and mes_hoja:
@@ -514,9 +503,11 @@ def registro_planificacion(
         "tarifa_contado_100": _a_float(campos.get("TP AL CONTADO 100%")),
         "tarifa_contado_80": _a_float(campos.get("TP AL CONTADO 80%")),
         "punto_equilibrio": _a_float(_primero(campos, ("PUNTO DE EQUILIBRIO", "PE", "PE A"))),
-        "leads_fuente": _a_float(campos.get("LEADS")),
-        "reservas_fuente": _a_float(campos.get("RESERVAS")),
-        "inscritos_fuente": _a_float(_primero(campos, ("N° INSCRITOS", "N INSCRITOS", "NO INSCRITOS", "INSCRITOS"))),
+        "leads_fuente": fila_capt.leads if fila_capt else None,
+        "reservas_fuente": fila_capt.reservas if fila_capt else None,
+        "inscritos_fuente": fila_capt.inscritos if fila_capt else None,
+        # Período de captación: el de la fila o, sin él, el de la hoja mensual (nunca la fecha de inicio del programa)
+        "fecha_captacion": captacion_canonica.mes_de(periodo_fila),
         "pauta_ejecutada": _a_float(campos.get("P/EJECUTADO")),
         "pauta_asignada": _a_float(campos.get("P/ASIGNADO")),
         "fecha_plan": fecha_plan,
