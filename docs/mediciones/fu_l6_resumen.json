@@ -5,16 +5,12 @@
  ],
  "filas_comparadas_fact_rentabilidad": 129,
  "filas_comparadas_dim_meta": 58,
- "iguales": 129,
- "diferentes": 58,
+ "iguales": 187,
+ "diferentes": 0,
  "iguales_con_fuentes_en_conflicto": 31,
  "conflictos_esperados_desde_la_fuente": 10,
  "conflictos_en_la_dw_resueltos_por_regla": 10,
  "conflictos_en_la_dw_pendientes": 0,
  "conflictos_con_diferencia_multiplo_100000": 7,
- "orden_inverso": {
-  "mismos_conflictos": 10,
-  "distintos": 0,
-  "fact_rentabilidad_identica": true
- }
+ "orden_inverso": null
 }

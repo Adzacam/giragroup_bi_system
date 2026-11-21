@@ -15,7 +15,7 @@ import { dataopsApi } from '../../api/dataopsApi';
 import { sileoToast } from '../../services/sileoToast';
 import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
 import { mensajeError } from '../../utils/mensajeError';
-import { textoMotivo } from '../../constants/motivosBandeja';
+import { maskTexto, textoMotivo } from '../../constants/motivosBandeja';
 import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano';
 import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
 import { toDataopsPath } from '../../v2/utils/v2Routes';
@@ -132,7 +132,7 @@ export function CasoRevision({ item, readOnly, busy, schedule }) {
         <p style={{ fontWeight: 600, color: 'var(--color-ink-black)', marginBottom: 4 }}>Por qué está aquí</p>
         <p style={{ color: 'var(--color-slate-gray)' }}><strong>Regla:</strong> {item.explicacion.regla}</p>
         <p style={{ color: 'var(--color-slate-gray)' }}><strong>Umbral / criterio:</strong> {item.explicacion.umbral}</p>
-        <p style={{ color: 'var(--color-slate-gray)' }}><strong>Valor de la fuente:</strong> {item.explicacion.valor_enmascarado}</p>
+        <p style={{ color: 'var(--color-slate-gray)' }}><strong>Valor de la fuente:</strong> {maskTexto(item.explicacion.valor_enmascarado)}</p>
       </div>
     )}
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '12px 0' }}>

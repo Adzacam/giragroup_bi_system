@@ -764,6 +764,7 @@ def preview_workbook(
     import pandas as pd
     from pipeline.ingesta import leer_archivo_con_metadatos
     from pipeline.lector_hojas import resumen_publico
+    from services.dataops_privacy import texto_publico
     from services.ingestion_service import detectar_tipo_fuente_por_cabeceras, normalizar_codigo_tipo_fuente
 
     filename = os.path.basename(file.filename or "archivo.xlsx")
@@ -844,8 +845,9 @@ def preview_workbook(
                     else:
                         vals = [str(c).strip() for c in cols if str(c).strip() and not str(c).startswith("Unnamed")]
                     for c_str in vals:
-                        columnas_vistas.setdefault(c_str, {
-                            "columna_origen": c_str,
+                        c_pub = texto_publico(c_str)
+                        columnas_vistas.setdefault(c_pub, {
+                            "columna_origen": c_pub,
                             "campo_canonico": _inferir_campo_canonico(c_str),
                             "hoja": nombre,
                         })
