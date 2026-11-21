@@ -338,7 +338,7 @@ def construir_motivo_detalle(
 
     if mot == "CI_NOMBRE_DISCORDANTE":
         if cat == "rentabilidad":
-            return f"Discordancia de nombre/CI ({ci_txt}) en BD Egresos{prog_txt}."
+            return f"Discordancia de nombre/CI ({ci_txt}) en la fuente de egresos{prog_txt}."
         sug_txt = f" ({sugerencia})" if sugerencia else ""
         return f"La CI {ci_txt} coincide con una persona del catálogo{sug_txt}, pero el nombre '{nombre}' difiere."
 
@@ -351,13 +351,13 @@ def construir_motivo_detalle(
         if cat == "evaluacion_docente":
             return f"Otra persona con el mismo nombre{prog_txt}, {ci_txt}."
         if cat == "rentabilidad":
-            return f"Posible homonimia en BD Egresos{prog_txt}, {ci_txt}."
+            return f"Posible homonimia en la fuente de egresos{prog_txt}, {ci_txt}."
         return f"Dos personas con nombre similar (>90 %){prog_txt}, {ci_txt}."
 
     if mot == "CI_DUDOSA":
         origen = {
-            "admision": " en TBL_INSCRITOS",
-            "financiero": " en BD Cobranzas",
+            "admision": " en la fuente de inscritos",
+            "financiero": " en la fuente de cobranzas",
         }.get(cat, "")
         return f"CI con formato inválido o dudoso ({ci_txt}){origen}."
 

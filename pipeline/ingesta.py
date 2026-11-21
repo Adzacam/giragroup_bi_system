@@ -178,6 +178,23 @@ def leer_archivo(ruta: str) -> dict[str, pd.DataFrame]:
     return lector(ruta)
 
 
+def leer_archivo_con_metadatos(ruta: str) -> dict:
+    """
+    API paralela a `leer_archivo` (FU-L1): {nombre_hoja: HojaLeida} con el mismo DataFrame
+    crudo que `leer_archivo`, los metadatos de la hoja (estado, combinadas, fórmulas, forma)
+    y su clasificación (usar / ignorar + motivo). Ver pipeline/lector_hojas.py.
+    Nunca lanza: si el archivo no se puede leer devuelve {}.
+    """
+    try:
+        from pipeline.lector_hojas import leer_libro
+    except ImportError:  # ejecución con pipeline/ en sys.path (contenedor)
+        from lector_hojas import leer_libro
+    hojas = leer_archivo(ruta)
+    if not hojas:
+        return {}
+    return leer_libro(ruta, hojas)
+
+
 def leer_corpus(directorio: str) -> dict[str, dict[str, pd.DataFrame]]:
     """
     Lee todos los archivos soportados dentro de un directorio.
@@ -244,6 +261,7 @@ def detectar_islas(
     df: pd.DataFrame,
     gap_threshold: int = GAP_THRESHOLD,
     min_filas: int = MIN_FILAS_ISLA,
+    filas_transparentes: Optional[set] = None,
 ) -> list[dict]:
     """
     Detecta bloques de datos (islas) dentro de un DataFrame crudo.
@@ -259,9 +277,14 @@ def detectar_islas(
         }
 
     Si el DataFrame está completamente vacío, retorna lista vacía.
+
+    `filas_transparentes` (FU-L1): posiciones de filas fantasma o de subtotal. Cuentan como no
+    vacías para trazar los límites de las islas (así las islas son las mismas que sin el corte),
+    pero se quitan del contenido de cada isla: no son filas leídas ni líneas descartadas.
     """
     if df.empty or len(df) == 0:
         return []
+    transp = filas_transparentes or set()
 
     # Marcar cada fila como vacía o no
     vacias = [_fila_esta_vacia(df.iloc[i]) for i in range(len(df))]
@@ -300,11 +323,18 @@ def detectar_islas(
 
     # Construir resultado
     resultado = []
-    for idx, (inicio, fin) in enumerate(islas):
-        sub_df = df.iloc[inicio:fin + 1].reset_index(drop=True)
+    for inicio, fin in islas:
+        if transp:
+            conservar = [r for r in range(inicio, fin + 1) if r not in transp]
+            if not conservar:
+                continue
+            sub_df = df.iloc[conservar].reset_index(drop=True)
+            inicio, fin = conservar[0], conservar[-1]
+        else:
+            sub_df = df.iloc[inicio:fin + 1].reset_index(drop=True)
         n_filas = len(sub_df)
         resultado.append({
-            "indice": idx,
+            "indice": len(resultado),
             "fila_inicio": inicio,
             "fila_fin": fin,
             "n_filas": n_filas,
@@ -319,6 +349,7 @@ def detectar_bloques(
     df: pd.DataFrame,
     gap_threshold: int = GAP_THRESHOLD,
     min_filas: int = MIN_FILAS_ISLA,
+    filas_transparentes: Optional[set] = None,
 ) -> list[pd.DataFrame]:
     """
     Función directa de Loop 2: detecta tablas dentro de un DataFrame y retorna
@@ -329,8 +360,10 @@ def detectar_bloques(
         - df.attrs['fila_inicio']
         - df.attrs['fila_fin']
         - df.attrs['es_ruido']
+    `filas_transparentes`: ver detectar_islas (FU-L1).
     """
-    islas = detectar_islas(df, gap_threshold=gap_threshold, min_filas=min_filas)
+    islas = detectar_islas(df, gap_threshold=gap_threshold, min_filas=min_filas,
+                           filas_transparentes=filas_transparentes)
     bloques = []
     for isla in islas:
         sub_df = isla["df"].copy()

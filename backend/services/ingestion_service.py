@@ -56,6 +56,32 @@ except ImportError:
         def a_texto_plano(b): return ""
         def clasificar_categoria(b, *args): return "academico"
 
+# FU-L1: lector con metadatos y clasificación genérica de hojas (estado y forma, no nombre)
+try:
+    from pipeline.ingesta import leer_archivo_con_metadatos
+    from pipeline.lector_hojas import (
+        CATEGORIA_POR_TIPO, USAR as HOJA_USADA, cabecera_segura, enmascarar_texto,
+        resumen_publico, tipo_de_hoja_distinto,
+    )
+except ImportError:
+    try:
+        from ingesta import leer_archivo_con_metadatos
+        from lector_hojas import (
+            CATEGORIA_POR_TIPO, USAR as HOJA_USADA, cabecera_segura, enmascarar_texto,
+            resumen_publico, tipo_de_hoja_distinto,
+        )
+    except ImportError:
+        leer_archivo_con_metadatos = None
+        CATEGORIA_POR_TIPO, HOJA_USADA = {}, "usar"
+        def cabecera_segura(v, pos): return v
+        def enmascarar_texto(v): return str(v)
+        def resumen_publico(libro): return []
+        def tipo_de_hoja_distinto(meta, tipo): return None
+
+# Motivo informativo de una hoja que el lector no usa (FU-L1). No va a la bandeja de revisión humana:
+# queda en log_inconsistencias con estado REGISTRADO (como SUBTOTAL), una vez por hoja.
+MOTIVO_HOJA_IGNORADA = "HOJA_IGNORADA"
+
 try:
     from models.dim_origen import DimOrigenDocumental
     from models.staging_registro import StagingRegistroCrudo
@@ -479,6 +505,8 @@ class IngestionService:
             )
             header_idx = _fila_subencabezado(b, header_idx)
             headers_row = [str(h).strip() if pd.notna(h) else "" for h in b.iloc[header_idx].values]
+            # FU-L1: una cabecera con PII (correo, CI) no se copia a cada línea de staging
+            headers_row = [cabecera_segura(h, p + 1) if h else "" for p, h in enumerate(headers_row)]
             primera_fila = header_idx + 1
         lineas_datos = []
         for row_idx in range(primera_fila, len(b)):
@@ -577,6 +605,78 @@ class IngestionService:
         db.flush()
         return log_entry
 
+    # Motivo legible de las hojas que el extractor de planificación deja sin filas (planificacion_extractor)
+    _MOTIVO_EXTRACTOR = {
+        "borrador": "borrador (extractor de planificación)",
+        "derivada_sin_cabecera": "sin cabecera de programa (extractor de planificación)",
+        "derivada_formulas": "hoja derivada por fórmulas de otra hoja (extractor de planificación)",
+        "dato_fuente": "sin filas con programa o POS (extractor de planificación)",
+    }
+
+    @classmethod
+    def _registrar_hojas_no_usadas(
+        cls,
+        db: Session,
+        doc_id: int,
+        libro: Optional[Dict[str, Any]],
+        usadas: set,
+        logs_generados: list,
+        motivos_extractor: Optional[Dict[str, str]] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        FU-L1: cada hoja que no genera líneas queda registrada UNA vez como HOJA_IGNORADA (motivo, estado y filas),
+        informativa (estado REGISTRADO, no va a la bandeja), en vez de N líneas LINEA_SIN_ENTIDAD.
+        Ninguna hoja se descarta en silencio. Si el clasificador ignora una hoja que el extractor de planificación
+        sí usa, se avisa en el log (conflicto de reglas pendiente de decisión).
+        """
+        if not libro:
+            return []
+        registradas = []
+        conflictos = []
+        for nombre, h in libro.items():
+            clasif, meta = h.clasificacion, h.meta
+            if nombre in usadas:
+                if not h.usada:
+                    conflictos.append(enmascarar_texto(nombre))
+                continue
+            if h.usada and motivos_extractor is not None:
+                regla = f"extractor_{motivos_extractor.get(nombre) or 'sin_filas'}"
+                motivo = cls._MOTIVO_EXTRACTOR.get(motivos_extractor.get(nombre) or "", "sin filas útiles (extractor de planificación)")
+            else:
+                regla, motivo = clasif.regla, clasif.motivo
+            hoja_pub = enmascarar_texto(nombre)
+            registradas.append({"hoja": hoja_pub, "estado": meta.estado, "filas": meta.filas_datos, "regla": regla, "motivo": motivo})
+            db.add(LogInconsistencia(
+                id_documento=doc_id,
+                fila_origen=None,
+                campo_afectado=hoja_pub[:100],
+                valor_recibido=f"estado={meta.estado}; filas_datos={meta.filas_datos}; filas_fantasma={meta.filas_fantasma}",
+                valor_esperado=None,
+                tipo_regla=MOTIVO_HOJA_IGNORADA,
+                **valores_si_existen(db, "log_inconsistencias", regla_origen=regla[:80]),
+                severidad="BAJA",
+                estado_resolucion="REGISTRADO",
+                descripcion=f"Hoja '{hoja_pub}' ignorada: {motivo}"[:2000],
+            ))
+        if registradas:
+            logger.info("FU_L1_HOJAS_IGNORADAS doc_id=%s n=%s reglas=%s", doc_id, len(registradas),
+                        sorted({r["regla"] for r in registradas}))
+            logs_generados.append(cls._registrar_log(
+                db, doc_id, "CLEAN", "INFO", "lector_hojas.py",
+                f"{len(registradas)} hoja(s) ignorada(s) con motivo: "
+                + "; ".join(f"'{r['hoja']}' ({r['motivo']})" for r in registradas)[:400],
+                1, {"hojas_ignoradas": registradas},
+            ))
+        if conflictos:
+            logger.warning("FU_L1_HOJA_IGNORADA_USADA doc_id=%s hojas=%s", doc_id, conflictos)
+            logs_generados.append(cls._registrar_log(
+                db, doc_id, "CLEAN", "WARN", "lector_hojas.py",
+                f"{len(conflictos)} hoja(s) que las reglas genéricas ignoran (ocultas o de resumen) siguen siendo leídas por el "
+                f"extractor de planificación: {', '.join(conflictos)[:300]}. Requiere decisión de Lean (FU-L1, hojas ocultas de planificación).",
+                1, {"hojas_conflicto": conflictos},
+            ))
+        return registradas
+
     @classmethod
     def procesar_archivo(
         cls,
@@ -638,7 +738,15 @@ class IngestionService:
 
         try:
             t0_disp = time.perf_counter()
-            hojas = leer_archivo(tmp_path)
+            # FU-L1: DataFrames iguales a leer_archivo + metadatos y decisión por hoja (usar / ignorar + motivo)
+            libro = None
+            if leer_archivo_con_metadatos:
+                try:
+                    libro = leer_archivo_con_metadatos(tmp_path)
+                except Exception as e_lector:  # sin catálogo o libro raro: se lee como antes, sin clasificar
+                    logger.warning("FU_L1_LECTOR_NO_DISPONIBLE archivo=%s error=%s", safe_filename, type(e_lector).__name__)
+                    libro = None
+            hojas = {n: h.df for n, h in libro.items()} if libro is not None else leer_archivo(tmp_path)
             t_ms_2 = max(1, int((time.perf_counter() - t0_disp) * 1000) + 65)
 
             if not hojas:
@@ -656,8 +764,14 @@ class IngestionService:
                     logger.warning("No se pudo ejecutar AsymmetricFlattener: %s", e_asym)
                     asym_info = {}
 
+            # Hojas que se leen: las ignoradas (ocultas, borradores, resúmenes…) no votan el tipo ni generan líneas.
+            # Sin ninguna usada (libro solo con hojas vacías) se sigue con todas, como antes de FU-L1.
+            hojas_lectura = (
+                {n: h.df_recortado() for n, h in libro.items() if h.usada} if libro else {}
+            ) or hojas
+
             # Detectar tipo_fuente: primero por cabeceras reales (#15), o por el parámetro explícito del usuario
-            detected_fuente = detectar_tipo_fuente_por_cabeceras(hojas, safe_filename)
+            detected_fuente = detectar_tipo_fuente_por_cabeceras(hojas_lectura, safe_filename)
             explicit_fuente = normalizar_codigo_tipo_fuente(tipo_fuente) or normalizar_codigo_tipo_fuente(source_type)
             final_tipo_fuente = elegir_tipo_fuente(explicit_fuente, detected_fuente)
             if not final_tipo_fuente and asym_info.get("origen_detectado"):
@@ -735,14 +849,27 @@ class IngestionService:
 
             # ── ETAPA 2: Dispatcher ────────────────────────────────
             total_hojas = len(hojas)
+            hojas_resumen = resumen_publico(libro) if libro else []
+            n_usadas = sum(1 for h in hojas_resumen if h["decision"] == HOJA_USADA) if libro else total_hojas
             log2 = cls._registrar_log(
                 db, doc_id, "DISPATCH", "INFO", "dispatcher.py",
-                f"Dispatcher enrutó '{safe_filename}' por extensión '{ext}'. {total_hojas} hoja(s) leída(s). Tipo fuente: {final_tipo_fuente or 'SIN_RECONOCER'}.",
+                f"Dispatcher enrutó '{safe_filename}' por extensión '{ext}'. {total_hojas} hoja(s) leída(s), "
+                f"{n_usadas} usada(s) y {total_hojas - n_usadas} ignorada(s). Tipo fuente: {final_tipo_fuente or 'SIN_RECONOCER'}.",
                 t_ms_2,
-                {"total_hojas": total_hojas, "tipo_fuente": final_tipo_fuente}
+                {"total_hojas": total_hojas, "tipo_fuente": final_tipo_fuente, "hojas": hojas_resumen}
             )
             logs_generados.append(log2)
             stages_info.append({"id": 2, "name": "Dispatcher", "time": f"{t_ms_2}ms", "desc": (final_tipo_fuente or "TABULAR")[:15], "status": "completed"})
+            # Fórmulas sin valor guardado: un aviso por hoja usada (no por celda)
+            for h_res in hojas_resumen:
+                if h_res["decision"] == HOJA_USADA and h_res["formulas_sin_valor"]:
+                    logger.warning("FU_L1_FORMULAS_SIN_VALOR doc_id=%s hoja=%s celdas=%s", doc_id, h_res["hoja"], h_res["formulas_sin_valor"])
+                    logs_generados.append(cls._registrar_log(
+                        db, doc_id, "DISPATCH", "WARN", "lector_hojas.py",
+                        f"Hoja '{h_res['hoja']}': {h_res['formulas_sin_valor']} celda(s) con fórmula sin valor guardado o con error; "
+                        "se leen vacías. Abrir y guardar el libro en Excel recalcula los valores.",
+                        1, {"hoja": h_res["hoja"], "formulas_sin_valor": h_res["formulas_sin_valor"]},
+                    ))
 
             # ── ETAPA 3: Limpieza e Islas Tabulares ────────────────
             t0 = time.perf_counter()
@@ -750,16 +877,30 @@ class IngestionService:
             total_filas_raw = 0
             total_bloques = 0
             bloques_validos = []
+            filas_fantasma_cortadas = 0
+            subtotales_cortados = 0
+            meta_por_hoja = {n: h.meta for n, h in libro.items()} if libro else {}
 
             for nombre_hoja, df_hoja in hojas.items():
                 total_filas_raw += len(df_hoja)
+                hoja_leida = libro.get(nombre_hoja) if libro else None
+                transparentes = None
+                if hoja_leida is not None:
+                    if not hoja_leida.usada and nombre_hoja not in hojas_lectura:
+                        continue  # ignorada: se registra una sola vez como HOJA_IGNORADA, no línea a línea
+                    # FU-L1: sin la cola de filas fantasma; fantasma y subtotales intermedios no son filas leídas
+                    df_hoja = hoja_leida.df_recortado()
+                    transparentes = set(hoja_leida.meta.filas_descartadas) or None
+                    filas_fantasma_cortadas += hoja_leida.meta.filas_fantasma
+                    subtotales_cortados += hoja_leida.meta.filas_subtotal
                 if es_reporte_moodle(df_hoja, safe_filename):
                     df_hoja = adaptar_moodle_df(df_hoja)
+                    transparentes = None  # el adaptador reindexa las filas
                     if not final_tipo_fuente:
                         final_tipo_fuente = "MOODLE"
                         origen.tipo_fuente = "MOODLE"
 
-                bloques = detectar_bloques(df_hoja)
+                bloques = detectar_bloques(df_hoja, filas_transparentes=transparentes)
                 bloques_por_hoja[nombre_hoja] = bloques
                 total_bloques += len(bloques)
                 for b in bloques:
@@ -769,8 +910,10 @@ class IngestionService:
             t_ms_3 = max(1, int((time.perf_counter() - t0) * 1000) + 120)
             log3 = cls._registrar_log(
                 db, doc_id, "CLEAN", "INFO", "cleaner.py",
-                f"Limpieza estructural completada: {total_filas_raw} filas crudas evaluadas, {len(bloques_validos)} islas válidas detectadas.",
-                t_ms_3
+                f"Limpieza estructural completada: {total_filas_raw} filas crudas evaluadas, {len(bloques_validos)} islas válidas detectadas"
+                f" ({filas_fantasma_cortadas} filas fantasma y {subtotales_cortados} subtotales cortados).",
+                t_ms_3,
+                {"filas_fantasma_cortadas": filas_fantasma_cortadas, "subtotales_cortados": subtotales_cortados},
             )
             logs_generados.append(log3)
             stages_info.append({"id": 3, "name": "Limpieza", "time": f"{t_ms_3}ms", "desc": "Sanitizado", "status": "completed"})
@@ -783,9 +926,9 @@ class IngestionService:
             for nombre_hoja, b in bloques_validos:
                 if len(b) > 0:
                     fila_headers = b.iloc[0].values
-                    for col_val in fila_headers:
+                    for pos_col, col_val in enumerate(fila_headers, start=1):
                         if pd.notna(col_val):
-                            col_str = str(col_val).strip()
+                            col_str = cabecera_segura(str(col_val).strip(), pos_col)  # FU-L1: sin PII en la matriz
                             if col_str and col_str not in columnas_detectadas:
                                 columnas_detectadas.add(col_str)
                                 col_lower = _strip_accents(col_str)
@@ -879,9 +1022,10 @@ class IngestionService:
                         f"CATEGORIA: {m['categoria']} | GESTION: {m['gestion']} | MES: {m['mes']} | MONTO: {m['monto_meta']} | CELDA: {m['celda_origen']}"
                         for m in plan_data["metas"]
                     )
+                    hoja_metas = next((h["hoja"] for h in plan_data.get("hojas_resumen", []) if h.get("tipo") == "informe_gestion"), "")
                     db.add(StagingRegistroCrudo(
                         id_documento=doc_id,
-                        hoja="Informe Gestión",
+                        hoja=hoja_metas,
                         bloque_id=999,
                         categoria="planificacion_meta",
                         texto_plano=texto_m,
@@ -893,11 +1037,21 @@ class IngestionService:
                         payload_json={"metas_planificacion": plan_data["metas"]},
                     ))
                     bloques_insertados += 1
+                usadas_extractor = set(por_hoja) | ({hoja_metas} if plan_data["metas"] else set())
+                cls._registrar_hojas_no_usadas(
+                    db, doc_id, libro, usadas_extractor, logs_generados,
+                    motivos_extractor={h["hoja"]: h.get("tipo") for h in plan_data.get("hojas_resumen", [])},
+                )
             else:
+                cls._registrar_hojas_no_usadas(db, doc_id, libro, set(hojas_lectura), logs_generados)
                 for nombre_hoja, b in bloques_validos:
                     # Una hoja de encuesta (preguntas + respuestas Likert) es evaluación docente aunque el libro se haya
                     # clasificado como ACTA o COBRANZA: el contenido del bloque manda sobre el tipo del documento.
+                    # FU-L1: lo mismo con una hoja cuyas cabeceras son de otro tipo del catálogo (p. ej. planificación con
+                    # leads e inscritos dentro de un libro de actas): toma la categoría de su tipo, no la del libro.
+                    tipo_hoja = tipo_de_hoja_distinto(meta_por_hoja[nombre_hoja], final_tipo_fuente) if nombre_hoja in meta_por_hoja else None
                     categoria = ("evaluacion_docente" if es_encuesta_likert(b)
+                                 else CATEGORIA_POR_TIPO.get(tipo_hoja) if tipo_hoja
                                  else categoria_por_fuente or clasificar_categoria(b, safe_filename, nombre_hoja))
                     texto = cls.serializar_bloque_con_encabezados(b)
                     n_b_filas = max(1, len(b) - 1) if len(b) > 1 else len(b)
@@ -978,6 +1132,7 @@ class IngestionService:
                 "stages": stages_info,
                 "kpis": kpis,
                 "normalization_matrix": matriz_normalizacion,
+                "hojas": hojas_resumen,  # FU-L1: usada / ignorada + motivo por hoja (vista previa FU-L8)
                 "logs": logs_output,
                 "diagnostico_estructural": asym_info.get("diagnostico_estructural", {}),
                 "chips_catalogo": asym_info.get("chips_catalogo", {}),

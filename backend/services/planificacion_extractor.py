@@ -16,6 +16,11 @@ from openpyxl.utils import get_column_letter
 
 from services.extraccion_por_encabezado import MESES, _a_float, normalizar_encabezado, parsear_fecha
 
+try:
+    from pipeline.lector_hojas import dato_sensible
+except ImportError:  # contenedor con pipeline/ en sys.path
+    from lector_hojas import dato_sensible
+
 _RE_MES_ANIO_HOJA = re.compile(
     r"^\s*([A-Z]+)\s*[-_\s]\s*(20\d{2})\s*$",
     re.IGNORECASE,
@@ -143,7 +148,8 @@ def _detectar_cabecera_planificacion(rows_vals: List[Tuple[Any, ...]]) -> Option
             headers = []
             for idx, c in enumerate(row, start=1):
                 txt = " ".join(str(c).splitlines()).strip() if c is not None else ""
-                headers.append(txt if txt else f"col_{idx}")
+                # FU-L1: una cabecera con PII (p. ej. un correo personal en A1) no se copia a cada línea
+                headers.append(txt if txt and not dato_sensible(txt) else f"col_{idx}")
             return r_idx, headers
     return None
 

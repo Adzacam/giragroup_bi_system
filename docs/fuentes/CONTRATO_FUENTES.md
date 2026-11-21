@@ -143,7 +143,7 @@ El perfil mide **62 hojas** en 10 libros. PLAN_FUENTES_UPLOADS.md dice 61; la di
 
 ### Hojas sin tipo en este contrato
 
-- `MODULOS` (catálogo de módulos con datos de docentes): ignorada. No tiene campo canónico que la justifique; si un KPI la necesita, se crea un tipo nuevo con sus sinónimos.
+- `MODULOS` (catálogo de módulos con docente): **usada** (corrección de FU-L1). Produce las asignaciones módulo-docente que llenan `bridge_modulo_docente`, la única tabla puente de la DW. Sus columnas de contacto del docente no se publican en informes.
 
 ## 3. Prioridad de fuentes por campo (DA-FU3)
 
@@ -164,7 +164,7 @@ Criterio: las 62 hojas tienen decisión (usar o ignorar) con motivo. «DIP. EXP 
 | [BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx | TBL EXPERIENCIA UNIFRANZ | visible | usar | Hoja visible con respuestas cruzadas entre preguntas (RESPUESTA_EN_COLUMNA_EQUIVOCADA); se usa con reglas de FU-L5 | EVALUACION_DOCENTE |
 | [BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx | Análisis de Evaluación | visible | ignorar | Resumen con 254 fórmulas de agregado sobre la tabla de respuestas (129 filas); no es fuente de respuestas | - |
 | Base centralizada Académica ARCA (1).xlsx | ACTAS DE NOTAS | visible | usar | Hoja visible; una fila por estudiante y programa; cabecera en fila 1; estado académico y notas por módulo | ACTA |
-| Base centralizada Académica ARCA (1).xlsx | MODULOS | visible | ignorar | Catálogo de módulos con datos personales de docentes (celular, correo); ningún campo canónico del mapeo; no alimenta KPI | - |
+| Base centralizada Académica ARCA (1).xlsx | MODULOS | visible | usar | Alimenta `bridge_modulo_docente` (corregido en FU-L1; las columnas de contacto no se publican) | ACTA |
 | Base centralizada Académica ARCA (1).xlsx | Tabla dinámica 1 | visible | ignorar | Tabla dinámica vacía (0 filas) | - |
 | Base centralizada Académica ARCA (1).xlsx | PROGRMAS  DE BAJA | visible | ignorar | Una sola fila de datos; notas de criterio de baja sin granularidad de fuente | - |
 | Base centralizada Académica ARCA (1).xlsx | IBP | visible | usar | Excepción del plan (DA6): única fuente de leads e inscritos 2026 junto con planificación; cabecera en fila 1 | PLANIFICACION |
@@ -228,5 +228,5 @@ Criterio: las 62 hojas tienen decisión (usar o ignorar) con motivo. «DIP. EXP 
 - FU-L5: confirmar la regla del par texto/número en `DIPLOMADOS DOCENTE` y `CURSOS DOCENTE`.
 - FU-L4: confirmar el diccionario de estados académicos (acentos y minúsculas).
 - FU-L6: confirmar la lista de conflictos de meta 2025 con su diferencia.
-- `MODULOS`: decidir si entra como tipo propio.
+- `MODULOS`: resuelto en FU-L1, queda como «usar».
 

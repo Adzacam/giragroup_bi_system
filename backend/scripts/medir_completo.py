@@ -10,7 +10,9 @@ from models.user import User
 app.dependency_overrides[get_current_user] = lambda: User(id=2, username="auditor", email="a@giragroup.bo", role="AUDITOR_CALIDAD", is_active=True)
 c = TestClient(app, raise_server_exceptions=False)
 out = []
-ARCHIVOS = sys.argv[1:] or ["Evaluación Docente y Unifranz.xlsx", "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx"]
+ARCHIVOS = sys.argv[1:]  # FU-L1: los libros se pasan por argumento (principio rector: sin nombres quemados)
+if not ARCHIVOS:
+    sys.exit("Uso: python /app/scripts/medir_completo.py <libro.xlsx> [<libro.xlsx> ...] (archivos de /app/uploads/data)")
 for nombre in ARCHIVOS:
     f = Path("/app/uploads/data") / nombre
     t = time.perf_counter()

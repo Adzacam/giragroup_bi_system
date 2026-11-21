@@ -1,0 +1,63 @@
+archivo,hoja,estado,decision,regla,motivo,filas_leidas,filas_fantasma_cortadas,subtotales_cortados,formulas,formulas_sin_valor,tipo_sugerido,aviso,decision_contrato,coincide_contrato
+[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx,TBL EVALUACION DOCENTE,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,16451,0,0,2,0,EVALUACION_DOCENTE,,usar,si
+[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx,TBL EXPERIENCIA UNIFRANZ,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,2539,0,0,0,0,EVALUACION_DOCENTE,,usar,si
+[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx,Análisis de Evaluación,visible,ignorar,cabecera_dispersa,resumen o panel: la mitad de las columnas no tiene cabecera y la hoja está casi vacía,0,1,0,254,58,EVALUACION_DOCENTE,,ignorar,si
+Base centralizada Académica ARCA (1).xlsx,ACTAS DE NOTAS,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,8660,0,0,8663,0,ACTA,,usar,si
+Base centralizada Académica ARCA (1).xlsx,MODULOS,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,2030,0,0,864,0,,,ignorar,no
+Base centralizada Académica ARCA (1).xlsx,Tabla dinámica 1,visible,ignorar,sin_filas_de_datos,solo cabecera o vacía,0,0,0,0,0,,,ignorar,si
+Base centralizada Académica ARCA (1).xlsx,PROGRMAS  DE BAJA,visible,ignorar,una_sola_fila,una sola fila de datos: no es una tabla,0,0,0,0,0,,,ignorar,si
+Base centralizada Académica ARCA (1).xlsx,IBP,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,748,0,0,748,0,PLANIFICACION,,usar,si
+Base centralizada Académica ARCA (1).xlsx,Hoja 8,visible,ignorar,sin_filas_de_datos,solo cabecera o vacía,0,0,0,0,0,,,ignorar,si
+Base centralizada Académica ARCA (1).xlsx,CRITERIOS,visible,ignorar,texto_sin_valores,"notas o criterios en texto, sin valores medibles",0,0,0,0,0,,,ignorar,si
+BD Cobranzas.xlsx,COBRANZAS 2024 2025,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,10017,0,0,197065,82734,COBRANZA,82734 celdas con fórmula sin valor guardado o con error (se leen vacías),usar,si
+BD Cobranzas.xlsx,Hoja 8,visible,ignorar,hoja_numerada,nombre: hoja auxiliar sin nombre,0,0,0,0,0,,,ignorar,si
+BD Cobranzas.xlsx,Hoja 12,visible,ignorar,hoja_numerada,nombre: hoja auxiliar sin nombre,0,0,0,7,0,,,ignorar,si
+BD Cobranzas.xlsx,Hoja 4,visible,ignorar,hoja_numerada,nombre: hoja auxiliar sin nombre,0,0,0,516,0,,,ignorar,si
+BD Cobranzas.xlsx,Copia de COBRANZAS 2024 2025,hidden,ignorar,oculta,hoja oculta,0,1,0,30989,1,COBRANZA,,ignorar,si
+BD Egresos.xlsx,egresos,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,1373,0,0,8237,0,EGRESOS,,usar,si
+BD Egresos.xlsx,Gestiones,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,24,0,0,0,0,,,usar,si
+BD Egresos.xlsx,acumulados,visible,ignorar,resumen_montos_texto,resumen de totales con montos escritos como texto ('Bs…'),0,0,0,0,0,,,ignorar,si
+BD Techos.xlsx,BD Techos,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,207,0,0,327,0,,,usar,si
+EJECUTADO VS META.xlsx,EJECUTADO,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,24,0,0,16,0,,,usar,si
+EJECUTADO VS META.xlsx,GESTIONES,visible,ignorar,resumen_montos_texto,resumen de totales con montos escritos como texto ('Bs…'),0,0,0,12,0,,,ignorar,si
+Evaluación Docente y Unifranz.xlsx,DIP. EXP DOC. X MODULO,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,3250,845,0,0,0,,,usar,si
+Evaluación Docente y Unifranz.xlsx,DIP. EXP UNIFRANZ,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,285,231,0,0,0,,,usar,si
+Evaluación Docente y Unifranz.xlsx,FINAL EXPERTOCURSO,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,275,0,0,0,0,,,usar,si
+Experiencia Docente 2.0.xlsx,CURSOS DOC 1,hidden,ignorar,oculta,hoja oculta,0,0,0,0,0,EVALUACION_DOCENTE,,ignorar,si
+Experiencia Docente 2.0.xlsx,DIPLOMADOS DOCENTE,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,14397,0,0,227596,0,EVALUACION_DOCENTE,,usar,si
+Experiencia Docente 2.0.xlsx,CURSOS DOCENTE,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,828,0,0,13248,0,EVALUACION_DOCENTE,,usar,si
+Experiencia Docente 2.0.xlsx,DIPLOMADOS DOC 2,hidden,ignorar,oculta,hoja oculta,0,805,0,0,0,EVALUACION_DOCENTE,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Centralizado_Mensual,hidden,ignorar,oculta,hoja oculta,0,1997,0,28320,65,PLANIFICACION,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Julio-2025,hidden,ignorar,oculta,hoja oculta,0,1,0,132,0,PLANIFICACION,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Agosto-2025,hidden,ignorar,oculta,hoja oculta,0,5,0,120,0,PLANIFICACION,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Septiembre-2025,hidden,ignorar,oculta,hoja oculta,0,0,0,190,0,PLANIFICACION,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Octubre-2025,hidden,ignorar,oculta,hoja oculta,0,0,0,189,0,PLANIFICACION,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Noviembre-2025,hidden,ignorar,oculta,hoja oculta,0,4,0,123,0,PLANIFICACION,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Julio-2025 borrador,hidden,ignorar,oculta,hoja oculta,0,2,0,132,0,PLANIFICACION,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Diciembre-2025,hidden,ignorar,oculta,hoja oculta,0,2,0,141,0,PLANIFICACION,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Informe Gestión,hidden,ignorar,oculta,hoja oculta,0,0,8,834,0,,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Programas Notificados,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,1045,0,0,3373,784,,784 celdas con fórmula sin valor guardado o con error (se leen vacías),usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Enero-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,22,0,0,111,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Febrero-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,34,0,0,214,3,PLANIFICACION,3 celdas con fórmula sin valor guardado o con error (se leen vacías),usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Marzo-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,55,9,0,317,11,PLANIFICACION,11 celdas con fórmula sin valor guardado o con error (se leen vacías),usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Abril-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,50,17,0,311,8,PLANIFICACION,8 celdas con fórmula sin valor guardado o con error (se leen vacías),usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Mayo-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,64,1,0,275,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Junio-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,53,971,0,282,12,PLANIFICACION,12 celdas con fórmula sin valor guardado o con error (se leen vacías),usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Julio-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,30,0,0,180,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Agosto-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,37,1,0,222,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Septiembre-2025boor,hidden,ignorar,oculta,hoja oculta,0,2,0,217,0,PLANIFICACION,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Septiembre-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,36,0,0,216,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Octubre-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,43,0,0,258,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Noviembre-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,37,1,0,222,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Diciembre-2026,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,23,996,0,138,0,PLANIFICACION,,usar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Dashboard Programas,hidden,ignorar,oculta,hoja oculta,0,0,0,0,0,,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Dashboard Académico,hidden,ignorar,oculta,hoja oculta,0,1,0,1,0,,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Julio,hidden,ignorar,oculta,hoja oculta,0,1,0,775,252,,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Agosto,hidden,ignorar,oculta,hoja oculta,0,1,0,775,252,,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Septiembre,hidden,ignorar,oculta,hoja oculta,0,1,0,775,252,,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Octubre,hidden,ignorar,oculta,hoja oculta,0,1,0,775,252,,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Noviembre,hidden,ignorar,oculta,hoja oculta,0,1,0,775,252,,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Diciembre,hidden,ignorar,oculta,hoja oculta,0,1,0,775,252,,,ignorar,si
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Detalle Presupuestado-Proyectad,hidden,ignorar,oculta,hoja oculta,0,0,0,8372,371,,,ignorar,si
+TBL_INSCRITOS.xlsx,TBL_INSCRITOS,visible,usar,tabla_de_datos,tabla de datos con cabecera detectada,15196,0,0,68328,356,MARKETING,356 celdas con fórmula sin valor guardado o con error (se leen vacías),usar,si
+TBL_INSCRITOS.xlsx,BAJAS POR DUPLICADOS,hidden,ignorar,oculta,hoja oculta,0,0,0,0,0,,,ignorar,si

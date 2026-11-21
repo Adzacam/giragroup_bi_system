@@ -286,15 +286,47 @@ tipos_fuente:
       - "comentario digital / video solicitado"
       - "comentario admisiones"
 
+# Campos que identifican la fila pero no el tipo de fuente (aparecen en casi todas las fuentes).
+# El tipo de una hoja se sugiere solo con los campos específicos (FU-L1, pipeline/lector_hojas.py).
+campos_identidad: [ci, pos, programa]
+
+# Una hoja cuyo contenido es de otro tipo que su libro (p. ej. una hoja de planificación con leads
+# e inscritos dentro de un libro de actas) toma su propio tipo si trae al menos este número de campos
+# específicos de ese tipo y ninguno específico del tipo del libro.
+tipo_por_hoja:
+  min_campos_especificos: 2
+
+# Filas que no son datos (FU-L1). Se miden sobre la hoja tal como la lee la ingesta.
+filas:
+  filas_busqueda_cabecera: 40
+  # Celdas que el formato arrastrado deja llenas sin dato (casillas de verificación, ceros de fórmula, errores).
+  # Una fila cuyas celdas son solo estos valores (o solo un número de orden) es una fila fantasma.
+  valores_plantilla: ["true", "false", "verdadero", "falso", "0", "0.0", "-", "--", "n/a", "#n/a", "#value!", "#ref!", "#div/0!", "#name?", "#null!", "#num!"]
+  # Cabeceras (normalizadas) de columnas de número de orden: su valor solo no hace de una fila un dato.
+  columnas_ordinales: ["n", "no", "nro", "nro.", "n.", "#", "numero", "item"]
+  # Subtotal: la primera o segunda celda útil es un rótulo corto de total.
+  patron_subtotal: '^(sub ?)?total(es)?\b|^gran total\b'
+  max_largo_subtotal: 40
+  proporcion_casi_vacia: 0.10     # fila casi vacía: 1 a max(1, ceil(0.10 * columnas)) celdas llenas
+
 # Reglas de hoja genéricas. Se aplican por ESTADO y FORMA; el nombre es solo una señal más.
+# Se evalúan en orden (estado, forma, nombre) y gana la primera que aplica.
+# 'debil: true' = la regla solo ignora la hoja si otra hoja del mismo libro se usa: nunca deja un
+# libro sin datos (un CSV o un libro de una sola hoja «Hoja 1» se usa, con aviso).
 # El resultado sale en la vista previa (FU-L8) para que el usuario lo confirme.
+# FU-L1 reemplazó la regla 'resumen_de_formulas' de FU-L0: con sus condiciones ignoraba hojas mensuales
+# de datos con fórmulas (4 hojas de planificación 2026) y la tabla de ejecutado frente a meta.
 reglas_hoja:
   ignorar_por_estado:
-    - {id: oculta, condicion: "estado en [hidden, veryHidden]", motivo: "hoja oculta"}
+    - {id: oculta, estados: [hidden, veryHidden], motivo: "hoja oculta"}
   ignorar_por_forma:
-    - {id: sin_filas_de_datos, condicion: "filas_datos == 0", motivo: "solo cabecera o vacía"}
-    - {id: resumen_de_formulas, condicion: "n_formulas > 0 y formulas_sin_valor == 0 y filas_datos < 50 y columnas con tipos mezclados == 0", motivo: "resumen o tabla dinámica de agregados"}
-    - {id: cabecera_repetida_o_pivote, condicion: "filas_duplicadas > 50% de filas_datos", motivo: "copia o tabla pivote con filas repetidas"}
+    - {id: sin_filas_de_datos, max_filas_datos: 0, motivo: "solo cabecera o vacía"}
+    - {id: una_sola_fila, max_filas_datos: 1, debil: true, motivo: "una sola fila de datos: no es una tabla"}
+    - {id: casi_vacia, min_proporcion_casi_vacias: 0.8, debil: true, motivo: "resumen o panel: casi todas las filas traen una o dos celdas"}
+    - {id: cabecera_dispersa, min_proporcion_cabeceras_vacias: 0.5, max_densidad: 0.3, debil: true, motivo: "resumen o panel: la mitad de las columnas no tiene cabecera y la hoja está casi vacía"}
+    - {id: resumen_montos_texto, max_filas_datos: 49, min_proporcion_montos_texto: 0.3, debil: true, motivo: "resumen de totales con montos escritos como texto ('Bs…')"}
+    - {id: texto_sin_valores, max_filas_datos: 199, max_proporcion_celdas_con_digito: 0.10, debil: true, motivo: "notas o criterios en texto, sin valores medibles"}
+    - {id: cabecera_repetida_o_pivote, min_proporcion_duplicadas: 0.5, debil: true, motivo: "copia o tabla pivote con filas repetidas"}
   ignorar_por_nombre_senal:
     - {id: borrador, patron: "borrador|boor", motivo: "borrador"}
     - {id: copia, patron: "^copia de ", motivo: "copia antigua"}
@@ -303,9 +335,10 @@ reglas_hoja:
     - {id: dashboard, patron: "^dashboard", motivo: "panel de gráficos"}
     - {id: centralizado, patron: "^centralizado", motivo: "consolidado de otras hojas"}
   usar_por_defecto: "cabecera detectada y filas_datos >= 1 y no cae en ninguna regla anterior"
-  nota: "Las reglas por nombre son señales. El perfil (scripts/auditoria_fuentes) mide estado y forma; FU-L1 aplica estas reglas."
-
-# Hojas que el plan saca del descarte: se usan aunque su nombre coincida con una regla.
-excepciones_usar:
-  - {hoja_patron: "^dip\\. exp doc\\. x modulo$", motivo: "evaluación por módulo (DA, FU-L5)"}
-  - {hoja_patron: "^ibp$", motivo: "única fuente de leads e inscritos 2026 junto con planificación (DA6)"}
+  # Hojas que el plan saca del descarte: se usan aunque una regla débil o de nombre las ignore.
+  # Con las reglas de FU-L1 ninguna de las dos cae en una regla (se usan por contenido); quedan como red.
+  # 'aplica_a_ocultas: true' haría que una excepción rescate también una hoja oculta.
+  excepciones_usar:
+    - {hoja_patron: "^dip\\. exp doc\\. x modulo$", motivo: "evaluación por módulo (DA, FU-L5)"}
+    - {hoja_patron: "^ibp$", motivo: "única fuente de leads e inscritos 2026 junto con planificación (DA6)"}
+  nota: "Las reglas por nombre son señales. El perfil (scripts/auditoria_fuentes) mide estado y forma; FU-L1 (pipeline/lector_hojas.py) aplica estas reglas."

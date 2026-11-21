@@ -1,0 +1,87 @@
+{
+ "hojas": 62,
+ "usar": 29,
+ "ignorar": 33,
+ "en_contrato": 62,
+ "diferencias_contrato": [
+  [
+   "Base centralizada Académica ARCA (1).xlsx",
+   "MODULOS",
+   "usar",
+   "ignorar"
+  ]
+ ],
+ "filas_leidas": 77833,
+ "filas_fantasma_cortadas_hojas_usadas": 3072,
+ "subtotales_cortados_hojas_usadas": 0,
+ "formulas_sin_valor_hojas_usadas": 83908,
+ "conflictos_extractor_planificacion": [
+  {
+   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "hoja": "Julio-2025",
+   "estado": "hidden",
+   "regla": "oculta",
+   "filas_extractor": 22,
+   "metas_extractor": 0
+  },
+  {
+   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "hoja": "Agosto-2025",
+   "estado": "hidden",
+   "regla": "oculta",
+   "filas_extractor": 20,
+   "metas_extractor": 0
+  },
+  {
+   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "hoja": "Septiembre-2025",
+   "estado": "hidden",
+   "regla": "oculta",
+   "filas_extractor": 24,
+   "metas_extractor": 0
+  },
+  {
+   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "hoja": "Octubre-2025",
+   "estado": "hidden",
+   "regla": "oculta",
+   "filas_extractor": 30,
+   "metas_extractor": 0
+  },
+  {
+   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "hoja": "Noviembre-2025",
+   "estado": "hidden",
+   "regla": "oculta",
+   "filas_extractor": 20,
+   "metas_extractor": 0
+  },
+  {
+   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "hoja": "Diciembre-2025",
+   "estado": "hidden",
+   "regla": "oculta",
+   "filas_extractor": 24,
+   "metas_extractor": 0
+  },
+  {
+   "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+   "hoja": "Informe Gestión",
+   "estado": "hidden",
+   "regla": "oculta",
+   "filas_extractor": 0,
+   "metas_extractor": 58
+  }
+ ],
+ "por_regla": {
+  "cabecera_dispersa": 1,
+  "hoja_numerada": 3,
+  "oculta": 23,
+  "resumen_montos_texto": 2,
+  "sin_filas_de_datos": 2,
+  "tabla_de_datos": 29,
+  "texto_sin_valores": 1,
+  "una_sola_fila": 1
+ },
+ "segundos": 46.5
+}

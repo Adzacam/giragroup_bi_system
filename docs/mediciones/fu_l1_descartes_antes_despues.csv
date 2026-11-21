@@ -1,0 +1,63 @@
+archivo,hoja,estado,decision,regla,camino,tipo_libro_antes,tipo_libro_despues,tipo_hoja,lineas_con_entidad_antes,lineas_descartadas_antes,lineas_planificacion_antes,lineas_con_entidad_despues,lineas_descartadas_despues,lineas_planificacion_despues,registro_hoja_ignorada
+[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx,TBL EVALUACION DOCENTE,visible,usar,tabla_de_datos,generico,EVALUACION_DOCENTE,EVALUACION_DOCENTE,,16451,0,0,16451,0,0,0
+[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx,TBL EXPERIENCIA UNIFRANZ,visible,usar,tabla_de_datos,generico,EVALUACION_DOCENTE,EVALUACION_DOCENTE,,2539,0,0,2539,0,0,0
+[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx,Análisis de Evaluación,visible,ignorar,cabecera_dispersa,generico,EVALUACION_DOCENTE,EVALUACION_DOCENTE,,1,128,0,0,0,0,1
+Base centralizada Académica ARCA (1).xlsx,ACTAS DE NOTAS,visible,usar,tabla_de_datos,generico,ACTA,ACTA,,8660,0,0,8660,0,0,0
+Base centralizada Académica ARCA (1).xlsx,MODULOS,visible,usar,tabla_de_datos,generico,ACTA,ACTA,,1961,71,0,1961,71,0,0
+Base centralizada Académica ARCA (1).xlsx,Tabla dinámica 1,visible,ignorar,sin_filas_de_datos,generico,ACTA,ACTA,,0,0,0,0,0,0,1
+Base centralizada Académica ARCA (1).xlsx,PROGRMAS  DE BAJA,visible,ignorar,una_sola_fila,generico,ACTA,ACTA,,0,1,0,0,0,0,1
+Base centralizada Académica ARCA (1).xlsx,IBP,visible,usar,tabla_de_datos,generico,ACTA,ACTA,PLANIFICACION,0,748,0,0,0,748,0
+Base centralizada Académica ARCA (1).xlsx,Hoja 8,visible,ignorar,sin_filas_de_datos,generico,ACTA,ACTA,,0,0,0,0,0,0,1
+Base centralizada Académica ARCA (1).xlsx,CRITERIOS,visible,ignorar,texto_sin_valores,generico,ACTA,ACTA,,0,15,0,0,0,0,1
+BD Cobranzas.xlsx,COBRANZAS 2024 2025,visible,usar,tabla_de_datos,generico,COBRANZA,COBRANZA,,10017,0,0,10017,0,0,0
+BD Cobranzas.xlsx,Hoja 8,visible,ignorar,hoja_numerada,generico,COBRANZA,COBRANZA,,7,0,0,0,0,0,1
+BD Cobranzas.xlsx,Hoja 12,visible,ignorar,hoja_numerada,generico,COBRANZA,COBRANZA,,0,16,0,0,0,0,1
+BD Cobranzas.xlsx,Hoja 4,visible,ignorar,hoja_numerada,generico,COBRANZA,COBRANZA,,0,516,0,0,0,0,1
+BD Cobranzas.xlsx,Copia de COBRANZAS 2024 2025,hidden,ignorar,oculta,generico,COBRANZA,COBRANZA,,5450,28,0,0,0,0,1
+BD Egresos.xlsx,egresos,visible,usar,tabla_de_datos,generico,RENTABILIDAD,RENTABILIDAD,,1373,0,0,1373,0,0,0
+BD Egresos.xlsx,Gestiones,visible,usar,tabla_de_datos,generico,RENTABILIDAD,RENTABILIDAD,,24,0,0,24,0,0,0
+BD Egresos.xlsx,acumulados,visible,ignorar,resumen_montos_texto,generico,RENTABILIDAD,RENTABILIDAD,,0,12,0,0,0,0,1
+BD Techos.xlsx,BD Techos,visible,usar,tabla_de_datos,generico,MARKETING,MARKETING,,207,0,0,207,0,0,0
+EJECUTADO VS META.xlsx,EJECUTADO,visible,usar,tabla_de_datos,generico,RENTABILIDAD,RENTABILIDAD,,24,0,0,24,0,0,0
+EJECUTADO VS META.xlsx,GESTIONES,visible,ignorar,resumen_montos_texto,generico,RENTABILIDAD,RENTABILIDAD,,0,12,0,0,0,0,1
+Evaluación Docente y Unifranz.xlsx,DIP. EXP DOC. X MODULO,visible,usar,tabla_de_datos,generico,EVALUACION_DOCENTE,EVALUACION_DOCENTE,,3250,845,0,3250,0,0,0
+Evaluación Docente y Unifranz.xlsx,DIP. EXP UNIFRANZ,visible,usar,tabla_de_datos,generico,EVALUACION_DOCENTE,EVALUACION_DOCENTE,,285,231,0,285,0,0,0
+Evaluación Docente y Unifranz.xlsx,FINAL EXPERTOCURSO,visible,usar,tabla_de_datos,generico,EVALUACION_DOCENTE,EVALUACION_DOCENTE,,275,0,0,275,0,0,0
+Experiencia Docente 2.0.xlsx,CURSOS DOC 1,hidden,ignorar,oculta,generico,ACTA,ACTA,,733,261,0,0,0,0,1
+Experiencia Docente 2.0.xlsx,DIPLOMADOS DOCENTE,visible,usar,tabla_de_datos,generico,ACTA,ACTA,,14397,0,0,14397,0,0,0
+Experiencia Docente 2.0.xlsx,CURSOS DOCENTE,visible,usar,tabla_de_datos,generico,ACTA,ACTA,,828,0,0,828,0,0,0
+Experiencia Docente 2.0.xlsx,DIPLOMADOS DOC 2,hidden,ignorar,oculta,generico,ACTA,ACTA,,671,805,0,0,0,0,1
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Centralizado_Mensual,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Julio-2025,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Agosto-2025,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Septiembre-2025,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Octubre-2025,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Noviembre-2025,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Julio-2025 borrador,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Diciembre-2025,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Informe Gestión,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Programas Notificados,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Enero-2026,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Febrero-2026,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Marzo-2026,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Abril-2026,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Mayo-2026,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Junio-2026,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Julio-2026,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Agosto-2026,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Septiembre-2025boor,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Septiembre-2026,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Octubre-2026,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Noviembre-2026,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Diciembre-2026,visible,usar,tabla_de_datos,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Dashboard Programas,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Dashboard Académico,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Julio,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Agosto,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Septiembre,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Octubre,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Noviembre,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Diciembre,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx,Detalle Presupuestado-Proyectad,hidden,ignorar,oculta,extractor_planificacion,RENTABILIDAD,RENTABILIDAD,,,,,,,,
+TBL_INSCRITOS.xlsx,TBL_INSCRITOS,visible,usar,tabla_de_datos,generico,ADMISION,ADMISION,,15196,0,0,15196,0,0,0
+TBL_INSCRITOS.xlsx,BAJAS POR DUPLICADOS,hidden,ignorar,oculta,generico,ADMISION,ADMISION,,0,0,0,0,0,0,1
