@@ -15,7 +15,9 @@ Uso de BETO (servicio :8006, POST /infer-batch) en el paso ③ y en la bandeja, 
   BETO_VENTANA          los textos de más de 128 tokens se leen con ventanas deslizantes (lo hace el servicio).
 
 Con los flags apagados nada de este módulo se ejecuta: los llamadores conservan su camino original.
-Las entidades de BETO se guardan en cache_beto_entidades (migración 015) por hash del texto y configuración del modelo.
+Las entidades de BETO se guardan en cache_beto_entidades por hash del texto y configuración del modelo.
+La tabla NO es una migración: se crea sola en el primer uso (DDL_CACHE), solo si algún flag está encendido, para no
+cambiar el conteo de 51 tablas de la DW. No existe una «migración 015» (ADW-L7, B5).
 """
 import hashlib
 import json
@@ -145,7 +147,7 @@ class CacheMemoria:
 
 
 class CacheEntidades:
-    """cache_beto_entidades (migración 015). Si la base no responde, el cliente sigue sin caché."""
+    """cache_beto_entidades (se crea en el primer uso, sin migración). Si la base no responde, el cliente sigue sin caché."""
     LOTE_SQL = 2000
     _tabla_lista = False
 

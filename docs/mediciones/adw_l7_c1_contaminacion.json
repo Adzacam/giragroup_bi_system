@@ -1,0 +1,9 @@
+{
+  "hallazgo": "C1: las tareas INGESTA/LECTURA_BETO 'del lote 1' (ids 44-55 en la DW viva) las crea pytest, no un usuario",
+  "causa": "tests/sprint5/test_ingesta_sin_timeout.py::test_upload_batch_no_evalua_antes_de_responder llama a upload_batch con una base SQLite, pero tareas_dataops abre su propia sesion contra DATABASE_URL (la DW). Cada corrida deja una INGESTA COMPLETADA (total_registros = 1, el CSV de la prueba) y una LECTURA_BETO EN_CURSO que, sin latido, pasa a ERROR a los 180 s (SIN_LATIDO_SEG).",
+  "pistas": ["INGESTA de 0,03 s con total_registros = 1 (un archivo de 1.721 filas no se ingesta en 0,03 s)", "id_lote = 1 en cada pareja, aunque lote 1 ya estaba CONSOLIDADO (la sesion SQLite crea el lote con id 1)", "iniciar-lectura sobre el lote 1 real responde 409 (lote consolidado), no se cuelga"],
+  "reproduccion_tmpfs_antes_del_arreglo": {"dataops_tarea_antes": {"filas": 16, "max_id": 49}, "dataops_tarea_despues": {"filas": 18, "max_id": 51}, "nuevas": ["50 INGESTA lote 1 COMPLETADA total_registros=1", "51 LECTURA_BETO lote 1 EN_CURSO"]},
+  "tras_el_arreglo": {"prueba_en_tmpfs": "0 filas nuevas (tests/adw/test_l7_pipeline.py::test_la_prueba_de_upload_batch_no_deja_tareas_en_la_base)", "suite_completa_contra_DW_viva": {"antes": {"filas": 22, "max_id": 55}, "despues": {"filas": 22, "max_id": 55}}},
+  "parejas_en_la_DW_viva_utc": ["2026-11-20 16:32", "2026-11-20 16:36", "2026-11-20 20:15", "2026-11-20 23:59", "2026-11-21 00:47", "2026-11-21 00:48"],
+  "nota": "Las parejas de 23:59, 00:47 y 00:48 las crearon las corridas de pytest de este chat (L0 y L1) antes del arreglo."
+}

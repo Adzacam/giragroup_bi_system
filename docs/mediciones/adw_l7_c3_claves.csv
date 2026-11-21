@@ -1,0 +1,14 @@
+tabla,id_documento,nombre_archivo,claves,filas_reclamadas,hechos,razon_claves_hechos,reclamadas_sin_hecho
+bridge_modulo_docente,43,Base centralizada Académica ARCA (1).xlsx,3438,1719.0,,,1719.0
+dim_meta,1,PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx,116,58.0,,,58.0
+fact_costo_programa,39,BD Egresos.xlsx,2746,1373.0,,,1373.0
+fact_evaluacion_docente,40,_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx,413458,206729.0,197876,2.09,8853.0
+fact_evaluacion_docente,41,Evaluación Docente y Unifranz.xlsx,94244,47122.0,14173,6.65,32949.0
+fact_evaluacion_docente,42,Experiencia Docente 2.0.xlsx,1006336,503168.0,503168,2.00,0.0
+fact_marketing,44,TBL_INSCRITOS.xlsx,30392,15196.0,,,15196.0
+fact_planificacion_programa,1,PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx,3326,1663.0,1663,2.00,0.0
+fact_rendimiento_academico,43,Base centralizada Académica ARCA (1).xlsx,50390,25195.0,25191,2.00,4.0
+fact_rentabilidad,38,EJECUTADO VS META.xlsx,190,95.0,95,2.00,0.0
+fact_rentabilidad,39,BD Egresos.xlsx,144,72.0,,,72.0
+fact_situacion_financiera,36,BD Cobranzas.xlsx,30948,15474.0,10733,2.88,4741.0
+fact_techo_convenio,37,BD Techos.xlsx,414,207.0,206,2.01,1.0

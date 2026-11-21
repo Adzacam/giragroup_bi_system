@@ -1,0 +1,28 @@
+{
+ "id_lote": 1,
+ "antes": {
+  "id": 49,
+  "estado": "ERROR",
+  "total": 0,
+  "procesados": 0,
+  "error": "El proceso se interrumpió. Revisa el lote antes de reintentarlo.",
+  "sin_latido": "16422.373049"
+ },
+ "muestras": [],
+ "http": 409,
+ "respuesta": {
+  "detail": {
+   "mensaje": "El lote ya fue consolidado y está en modo solo lectura.",
+   "estado_flujo": "CONSOLIDADO"
+  }
+ },
+ "segundos_llamada": 0.1,
+ "despues": {
+  "id": 49,
+  "estado": "ERROR",
+  "total": 0,
+  "procesados": 0,
+  "error": "El proceso se interrumpió. Revisa el lote antes de reintentarlo.",
+  "sin_latido": "16422.470343"
+ }
+}

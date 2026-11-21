@@ -75,6 +75,11 @@ def test_upload_batch_no_evalua_antes_de_responder(dw, monkeypatch):
         raise AssertionError("upload-batch no debe evaluar el lote antes de responder")
 
     parchear(monkeypatch, "_evaluar_documentos_lote", _no_sincrono)
+    # ADW-C1: el seguimiento de tareas usa su propia sesión (la base real). Sin este aislamiento cada corrida de pytest
+    # dejaba en la DW una tarea INGESTA y otra LECTURA_BETO «del lote 1» que terminaba en ERROR a los 180 s.
+    for metodo in ("avanzar", "terminar", "fallar"):
+        monkeypatch.setattr(dataops.tareas_dataops, metodo, lambda *a, **kw: None)
+    monkeypatch.setattr(dataops.tareas_dataops, "crear", lambda *a, **kw: 1)
     contenido = "Nombre Completo,Cédula de Identidad,Ciudad\nAdriano Daza Camargo,CI-4892019,Cochabamba\n".encode("utf-8")
     archivo = UploadFile(file=BytesIO(contenido), filename="inscripciones.csv", headers=Headers({"content-type": "text/csv"}))
     tareas = BackgroundTasks()
