@@ -1279,10 +1279,11 @@ class IngestionService:
 
             n_dw = 0
             try:
-                n_dw_aca = db.query(FactRendimientoAcademico).filter_by(id_documento=d.id_documento).count()
-                n_dw_fin = db.query(FactSituacionFinanciera).filter_by(id_documento=d.id_documento).count()
+                n_dw_aca = db.query(func.count(FactRendimientoAcademico.id_hecho_aca)).filter(FactRendimientoAcademico.id_documento == d.id_documento).scalar() or 0
+                n_dw_fin = db.query(func.count(FactSituacionFinanciera.id_hecho_fin)).filter(FactSituacionFinanciera.id_documento == d.id_documento).scalar() or 0
                 n_dw = n_dw_aca + n_dw_fin
             except Exception:
+                db.rollback()
                 n_dw = 0
 
             n_hitl_pend = 0

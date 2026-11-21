@@ -10,6 +10,7 @@ from models.dim_origen import DimOrigenDocumental
 from models.log_auditoria_nlp import LogAuditoriaNlp
 from models.lote import Lote
 from typing import Optional
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.staging_registro import StagingRegistroCrudo
