@@ -17,7 +17,7 @@ El perfil mide **62 hojas** en 10 libros. PLAN_FUENTES_UPLOADS.md dice 61; la di
 - **Normalización de cabeceras:** minúsculas, sin acentos, espacios colapsados. El símbolo «°» se pierde: «N° INSCRITOS» queda «n inscritos».
 - **Filas que no son datos:** vacías, subtotales («total…») y repetidas no cuentan como datos.
 - **Mora:** `cuotas_en_mora` es el conteo de cuotas impagas. Otras columnas con «mora» (`rango mora`, `dias de mora`) no se mapean a ese campo.
-- **Etiquetas Likert:** se llevan a número con diccionario `cat_*` (FU-L5). Un 0 o «Sin Información» es NULL (DA1).
+- **Etiquetas Likert:** se llevan a número con el diccionario `vocabularios.etiquetas` del YAML (FU-L5). Un 0 o «Sin Información» es NULL (DA1).
 
 ## 2. Contrato por tipo de fuente
 
@@ -69,17 +69,21 @@ El perfil mide **62 hojas** en 10 libros. PLAN_FUENTES_UPLOADS.md dice 61; la di
 
 ### EVALUACION_DOCENTE
 
-- **Granularidad:** Una fila por respuesta. Una columna por pregunta.
+- **Granularidad:** Una fila por respuesta. Una columna por pregunta (docente o experiencia institucional).
 - **Hojas oficiales (usar):** TBL EVALUACION DOCENTE ([BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx); TBL EXPERIENCIA UNIFRANZ ([BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx); DIP. EXP DOC. X MODULO (Evaluación Docente y Unifranz.xlsx); DIP. EXP UNIFRANZ (Evaluación Docente y Unifranz.xlsx); FINAL EXPERTOCURSO (Evaluación Docente y Unifranz.xlsx); DIPLOMADOS DOCENTE (Experiencia Docente 2.0.xlsx); CURSOS DOCENTE (Experiencia Docente 2.0.xlsx)
 - **Hojas a ignorar de este tipo:** -
-- **Cabecera y escala o vocabulario:** Cabecera en fila 1 (encuestas ANTIGUO y Experiencia 2.0), fila 2 (DIP. EXP. DOC. X MODULO, DIP. EXP. UNIFRANZ, FINAL EXPERTOCURSO). Escala 1-5; las preguntas «escala del 1 al 10» tienen `escala_max` = 10. Experiencia 2.0 es 0-5 con dos columnas por pregunta (texto y número).
+- **Cómo se reconoce (FU-L5, por contenido):** una hoja es una encuesta si al menos 3 de sus columnas traen respuestas tipo Likert del diccionario («5/Totalmente de acuerdo», «Satisfecho»…) en la mitad o más de sus celdas (`encuesta.clasificacion` del YAML). Un libro es EVALUACION_DOCENTE si esas hojas son la mitad o más de sus filas, aunque se suba como ACTA / CENTESIMAL_100 (el libro «Experiencia Docente 2.0» pasaba por acta porque su cabecera trae «promedio»). Una hoja de encuesta no se pasa por el adaptador de reportes de Moodle aunque comparta cabeceras («Dirección de correo»): ese adaptador tomaba la fila de grupos como cabecera.
+- **Cabecera y escala o vocabulario:** Cabecera por contenido: fila 1 (encuestas ANTIGUO y Experiencia 2.0) o fila 2 con una fila de grupos arriba (DIP. EXP. DOC. X MODULO, DIP. EXP. UNIFRANZ, FINAL EXPERTOCURSO). Escala **por pregunta** (no por libro): 1-5 por defecto y 1-10 cuando la cabecera lo dice («escala del 1 al 10») o cuando los números sueltos de la columna son la mayoría de sus respuestas y pasan de 5; una etiqueta «n/Etiqueta» es siempre de 1-5; una columna con números por encima de 10 no tiene escala inferible (ESCALA_NO_INFERIBLE, sin respuesta). Experiencia 2.0 trae el 0 como «0/Sin Información» y dos columnas por pregunta (texto y número).
 - **Columnas usadas → campo canónico:**
-- `puntuacion` ← patrón `^(a )?\d+\. `
-- `escala_max` ← regla de escala (ver YAML)
+- `puntuacion` ← columna de pregunta puntuada, detectada por sus valores (el patrón `^(a )?\d+\. ` queda como sinónimo de cabecera numerada)
+- `escala_max` ← `encuesta.escala` del YAML (cabecera, valores de la columna)
 - `programa` ← `programa`, `programa pos`, `programa - pos`
+- **Pares texto + número:** dos columnas de la misma pregunta («A 1. ¿…?» y «A 1. N°¿…?») son una sola respuesta; se lee la numérica y la otra no suma (`encuesta.pares`). Si falta la numérica, manda el diccionario. Las columnas calculadas («promedio docente») no son respuestas (`encuesta.columnas_derivadas`).
+- **Diccionario de etiquetas** (`vocabularios.etiquetas` del YAML, editable): familias acuerdo, satisfacción, probabilidad, facilidad, calidad, utilidad y carga, cada una de 1 a 5; «Neutral» (3) vale en cualquier familia. Solo acuerdo, satisfacción y probabilidad pueden venir sin número («Satisfecho», «Muy probable»); «Excelente», «Bueno», «Útiles», «Adecuada»… solo valen escritas «n/Etiqueta» (sueltas son una palabra de un comentario).
 - **Columnas no mapeadas:** `nombre completo del usuario`, `direccion de correo`, `grupos`, `fecha`, `modulo`, `numero del modulo`, `respuesta numero`
-- **Reglas de calidad:** 0 o «Sin Información» → NULL (DA1). Etiquetas sin número («Satisfecho», «Probable», «Neutral») → diccionario de FU-L5. Respuesta en la columna de otra pregunta → RESPUESTA_EN_COLUMNA_EQUIVOCADA, agrupada. Con par texto/número se lee solo la columna numérica.
-- **Pueden venir vacías sin que sea error:** Comentarios, sugerencias y datos de contacto pueden faltar. La numérica de un par puede venir vacía si la pregunta no aplica. Del YAML: `comentarios`.
+- **Tipo de pregunta (KPI-19 / KPI-20 / NPS):** por palabras del catálogo (`encuesta.tipo_pregunta`). NPS: las de recomendación («recomiende»); DOCENTE: las que nombran al docente; INSTITUCIONAL: plataforma, atención, soporte, administración, comunicación institucional, recursos tecnológicos. Una pregunta sin palabra clave toma el tipo de su hoja: institucional si ninguna pregunta de la hoja nombra al docente, docente si alguna lo hace.
+- **Reglas de calidad (DA1):** cuenta solo `puntuacion` en [1, `escala_max`]; un 0, «Sin Información», un número fuera de escala, una etiqueta desconocida o una respuesta cruzada es NULL y no genera hecho (el NPS 0-10 es la excepción: allí el 0 vale y va aparte, fuera de KPI-19 y KPI-20). Cada caso queda en `log_inconsistencias` agregado por documento, hoja y pregunta, con el número de respuestas y un ejemplo que no publica texto libre: `SIN_INFORMACION` (informativo), `PUNTUACION_FUERA_DE_ESCALA`, `RESPUESTA_EN_COLUMNA_EQUIVOCADA` (etiqueta de otra familia, etiqueta de 1-5 en una pregunta de 1-10, texto de otra pregunta o una respuesta escrita en la columna del módulo), `VALOR_FUERA_DE_CATALOGO` y `ESCALA_NO_INFERIBLE`, estos cuatro a revisión. La vista `bi.vw_cmi_valores` (migración 025) aplica el mismo filtro.
+- **Pueden venir vacías sin que sea error:** Comentarios, sugerencias y datos de contacto pueden faltar; el comentario con «0/Sin Información» es «sin comentario». La numérica de un par puede venir vacía si la pregunta es de comentario. Una hoja puede no traer nombre, correo ni fecha (solo agregados). Del YAML: `comentarios`.
 
 ### MARKETING
 
@@ -176,7 +180,7 @@ Criterio: las 62 hojas tienen decisión (usar o ignorar) con motivo. «DIP. EXP 
 | archivo | hoja | estado | decisión | motivo | tipo |
 |---|---|---|---|---|---|
 | [BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx | TBL EVALUACION DOCENTE | visible | usar | Hoja visible de respuestas 1-5 con texto 'n/Etiqueta'; cabecera en fila 1 | EVALUACION_DOCENTE |
-| [BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx | TBL EXPERIENCIA UNIFRANZ | visible | usar | Hoja visible con respuestas cruzadas entre preguntas (RESPUESTA_EN_COLUMNA_EQUIVOCADA); se usa con reglas de FU-L5 | EVALUACION_DOCENTE |
+| [BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx | TBL EXPERIENCIA UNIFRANZ | visible | usar | Hoja visible con respuestas cruzadas entre preguntas (RESPUESTA_EN_COLUMNA_EQUIVOCADA, agrupadas) y 1-5 con 1-10; se lee con las reglas de FU-L5 | EVALUACION_DOCENTE |
 | [BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx | Análisis de Evaluación | visible | ignorar | Resumen con 254 fórmulas de agregado sobre la tabla de respuestas (129 filas); no es fuente de respuestas | - |
 | Base centralizada Académica ARCA (1).xlsx | ACTAS DE NOTAS | visible | usar | Hoja visible; una fila por estudiante y programa; cabecera en fila 1; estado académico y notas por módulo | ACTA |
 | Base centralizada Académica ARCA (1).xlsx | MODULOS | visible | usar | Alimenta `bridge_modulo_docente` (corregido en FU-L1; las columnas de contacto no se publican) | ACTA |
@@ -196,12 +200,12 @@ Criterio: las 62 hojas tienen decisión (usar o ignorar) con motivo. «DIP. EXP 
 | BD Techos.xlsx | BD Techos | visible | usar | Hoja visible; una fila por convenio; alimenta KPI-22 | TECHOS |
 | EJECUTADO VS META.xlsx | EJECUTADO | visible | usar | Hoja visible; ejecutado y meta por categoría y mes; prioridad sobre EGRESOS en metas (DA-FU3) | RENTABILIDAD |
 | EJECUTADO VS META.xlsx | GESTIONES | visible | ignorar | Totales mensuales en texto con prefijo 'Bs' mezclado con números; duplica EJECUTADO; no se lee como numérico | - |
-| Evaluación Docente y Unifranz.xlsx | DIP. EXP DOC. X MODULO | visible | usar | Excepción del plan: evaluación por módulo 2025-11 a 2026-05 (DA, FU-L5); cabecera en fila 2 | EVALUACION_DOCENTE |
+| Evaluación Docente y Unifranz.xlsx | DIP. EXP DOC. X MODULO | visible | usar | Evaluación por módulo 2025-11 a 2026-05; por contenido es una encuesta (FU-L5) y deja de descartarse; cabecera en fila 2 | EVALUACION_DOCENTE |
 | Evaluación Docente y Unifranz.xlsx | DIP. EXP UNIFRANZ | visible | usar | Hoja visible con mezcla de escalas (1-5 y 1-10) y etiquetas en columna equivocada; se usa con reglas de FU-L5 | EVALUACION_DOCENTE |
 | Evaluación Docente y Unifranz.xlsx | FINAL EXPERTOCURSO | visible | usar | Hoja visible con etiquetas sin número ('Satisfecho', 'Probable'); se usa con diccionario de FU-L5 | EVALUACION_DOCENTE |
 | Experiencia Docente 2.0.xlsx | CURSOS DOC 1 | hidden | ignorar | Oculta; versión previa del curso | - |
-| Experiencia Docente 2.0.xlsx | DIPLOMADOS DOCENTE | visible | usar | Hoja visible 0-5 con dos columnas por pregunta (texto y número); se lee solo la numérica | EVALUACION_DOCENTE |
-| Experiencia Docente 2.0.xlsx | CURSOS DOCENTE | visible | usar | Hoja visible 0-5; identificación (nombre, correo, fecha) 100 % vacía; solo agregados | EVALUACION_DOCENTE |
+| Experiencia Docente 2.0.xlsx | DIPLOMADOS DOCENTE | visible | usar | Hoja visible con dos columnas por pregunta (texto y número) y «0/Sin Información» explícito; se lee solo la numérica y el 0 es NULL (DA1) | EVALUACION_DOCENTE |
+| Experiencia Docente 2.0.xlsx | CURSOS DOCENTE | visible | usar | Hoja visible con dos columnas por pregunta; identificación (nombre, correo, fecha) 100 % vacía; el 0 es NULL (DA1) | EVALUACION_DOCENTE |
 | Experiencia Docente 2.0.xlsx | DIPLOMADOS DOC 2 | hidden | ignorar | Oculta; versión previa del diplomado | - |
 | PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Centralizado_Mensual | hidden | ignorar | Oculta (hidden); borrador, copia, resumen o duplicado de otra hoja; no se usa | - |
 | PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx | Julio-2025 | hidden | usar | Oculta rescatada: período sin hoja visible (2025-07); hoja mensual de detalle con LEADS e inscritos (FU-L1b, decisión de Lean) | PLANIFICACION |

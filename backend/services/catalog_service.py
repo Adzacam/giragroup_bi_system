@@ -167,7 +167,10 @@ class CatalogService:
                         FactEvaluacionDocente.puntuacion * 5.0 / func.coalesce(FactEvaluacionDocente.escala_max, 5)
                     ).label("promedio"),
                     func.count(FactEvaluacionDocente.puntuacion).label("n"),
-                ).filter(FactEvaluacionDocente.id_docente.in_(ids))
+                ).filter(FactEvaluacionDocente.id_docente.in_(ids),
+                         # DA1 (FU-L5): cuenta solo la puntuación en [1, escala_max]; un 0 o un valor fuera de escala no promedia
+                         FactEvaluacionDocente.puntuacion >= 1,
+                         FactEvaluacionDocente.puntuacion <= func.coalesce(FactEvaluacionDocente.escala_max, 5))
                 .group_by(FactEvaluacionDocente.id_docente).all()
             }
         data = []

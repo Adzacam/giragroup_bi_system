@@ -22,6 +22,7 @@ from services.confianza_service import banda_de, indices_cascada, obtener_indice
 from services import acta_canonica, beto_integracion, cache_consultas, tareas_dataops
 from services.cobranza_canonica import registros_cobranza
 from services.captacion_canonica import leer_identidad as leer_identidad_captacion
+from services import encuesta_canonica
 from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, fila_resuelta_por_regla, metricas_captacion, MOTIVOS_A_BANDEJA, motivo_fila_sin_entidad, normalizar_encabezado, registro_planificacion, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
 from datetime import datetime
 from services.dataops_evaluation_service import enmascarar_ci, strip_accents
@@ -32,6 +33,13 @@ from .extraccion import EXCLUIR_CELDA_BETO, _docentes_con_contexto, extract_enti
 from models.log_inconsistencia import LogInconsistencia
 from pipeline.config import MOTIVO_DESACUERDO_REGLA_BETO
 from .evaluacion import _asegurar_lote_editable, _resolver_documentos_lote
+
+
+def _motivo_sin_entidad(campos, categoria, perfil_encuesta=None):
+    """motivo_fila_sin_entidad; una encuesta se lee con el perfil de su hoja (FU-L5), el resto como siempre."""
+    if perfil_encuesta is None:
+        return motivo_fila_sin_entidad(campos, categoria)
+    return motivo_fila_sin_entidad(campos, categoria, perfil_encuesta)
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -300,6 +308,8 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         # Índice final real (BETO local) por línea: >= 0.85 hecho, [0.60, 0.85) hecho en revisión, < 0.60 staging
         # D-A8a: las filas que una regla ya resolvió (rentabilidad: categoría + mes) no van a BETO ni caen a staging por su índice
         campos_por_linea = [campos_por_encabezado([c.strip() for c in l.split("|")]) for l in lines]
+        # FU-L5: una encuesta se lee con el perfil de sus columnas (escala, familia de etiquetas, pares), no fila por fila
+        perfil_encuesta = encuesta_canonica.perfilar(campos_por_linea) if categoria_ruteo == "evaluacion_docente" else None
         resueltas_regla = [fila_resuelta_por_regla(c, categoria_ruteo) for c in campos_por_linea]
         indices_linea = indices_cascada(lines, resueltas_regla, obtener_indices, al_avanzar=_al_indexar)
         refinadas = None
@@ -309,7 +319,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                 lambda l, **kw: extract_entities_from_line(l, estudiantes, docentes, modulos, tipo_escala=doc_escala, tipo_fuente=doc_fuente, **kw),
                 tipo_fuente=doc_fuente, cliente=cliente_beto, contadores=contadores_beto,
                 archivo=orig_doc.nombre_archivo if orig_doc else None,
-                omitir=lambda l: bool(motivo_fila_sin_entidad(campos_por_encabezado([c.strip() for c in l.split("|")]), categoria_ruteo)),
+                omitir=lambda l: bool(_motivo_sin_entidad(campos_por_encabezado([c.strip() for c in l.split("|")]), categoria_ruteo, perfil_encuesta)),
                 excluir_celda=EXCLUIR_CELDA_BETO)
         logs_descarte_stg = []
         stg_descarte_stg = []
@@ -319,7 +329,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
             lineas_hechas += 1
             if lineas_hechas % 250 == 0:
                 tareas_dataops.avanzar(tarea_id, lineas_hechas)
-            motivo_ruido = motivo_fila_sin_entidad(campos_linea, categoria_ruteo)
+            motivo_ruido = _motivo_sin_entidad(campos_linea, categoria_ruteo, perfil_encuesta)
             if motivo_ruido:
                 if not solo_revision:
                     # Sin entidad que enlazar (hoja de estados, catálogo, fila agregada): acumula en lote sin autoflush (F3-1)
@@ -475,7 +485,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     # Encuesta: un hecho por pregunta respondida. La identidad sale de las columnas, no del NER:
                     # una respuesta anónima queda sin estudiante en vez de crear 'ENTRADA ANONIMA - PERSONA 5'
                     registros_linea = []
-                    for reg_eval in registros_evaluacion(campos_linea):
+                    for reg_eval in registros_evaluacion(campos_linea, perfil_encuesta):
                         revision_fila = reg_eval.pop("requiere_revision")
                         registros_linea.append({
                             **reg_dict,
@@ -483,6 +493,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                                 **reg_dict["resoluciones"],
                                 **reg_eval,
                                 "estudiante": reg_eval["estudiante"] or {},
+                                "hoja_origen": stg.hoja,
                                 "anonima": reg_eval["estudiante"] is None,
                                 "docente": reg_eval["docente"] or reg_dict["resoluciones"].get("docente"),
                                 "modulo": reg_eval["modulo"] or reg_dict["resoluciones"].get("modulo"),

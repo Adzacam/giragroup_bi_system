@@ -291,6 +291,7 @@ class DWLoaderService:
         self._fin_pendientes: Dict[Tuple[int, int, int], Dict[str, Any]] = {}
         self._avisos_cobranza: Dict[Tuple[Any, str, str], Tuple[int, List[str]]] = {}  # FU-L2, registro agregado
         self._avisos_acta: Dict[Tuple[Any, str, str], Tuple[int, List[str]]] = {}  # FU-L4, registro agregado
+        self._avisos_encuesta: Dict[Tuple[Any, str, str, str], Tuple[int, List[str]]] = {}  # FU-L5, por documento, hoja, pregunta y motivo
         self._cfo_pendientes: Dict[str, Tuple[Any, str]] = {}
         self._cfo_existentes: Optional[set] = None
         self._cache_base_programa: Dict[Any, Optional[str]] = {}
@@ -994,6 +995,7 @@ class DWLoaderService:
         financiero) y la trazabilidad carga_fila_origen. Devuelve el total de filas de hechos enviadas en esta llamada."""
         self.registrar_avisos_cobranza()  # FU-L2: avisos de calidad de cobranza, agregados
         self.registrar_avisos_acta()      # FU-L4: avisos de calidad de actas, agregados
+        self.registrar_avisos_encuesta()  # FU-L5: avisos de calidad de encuestas, agregados
         if not (self._eval_pendientes or self._aca_pendientes or self._fin_pendientes or self._cfo_pendientes):
             return 0
         from psycopg2.extras import execute_values
@@ -1426,6 +1428,59 @@ class DWLoaderService:
         self.db.flush()
         return n_reg
 
+    @staticmethod
+    def _puntuacion_en_escala(puntuacion: float, escala_max: Optional[float], tipo_pregunta: Optional[str]) -> bool:
+        """DA1 (FU-L5): una puntuación vale si está en [1, escala_max]; el NPS en escala 10 admite el 0."""
+        escala = float(escala_max or 5)
+        minimo = 0.0 if (tipo_pregunta == "NPS" and escala == 10) else 1.0
+        return minimo <= float(puntuacion) <= escala
+
+    def _registrar_aviso_encuesta(self, doc_id: Optional[int], hoja: Optional[str], motivo: str, pregunta: str, ejemplo: str) -> None:
+        """Acumula un aviso de calidad de encuesta; se registra agregado (uno por documento, hoja, pregunta y motivo), sin el valor."""
+        from pipeline.lector_hojas import enmascarar_texto
+        clave = (doc_id, enmascarar_texto(hoja or ""), str(pregunta), motivo)
+        n, ejemplos = self._avisos_encuesta.get(clave, (0, []))
+        if ejemplo not in ejemplos and len(ejemplos) < 3:
+            ejemplos = ejemplos + [ejemplo]
+        self._avisos_encuesta[clave] = (n + 1, ejemplos)
+
+    def registrar_avisos_encuesta(self) -> int:
+        """
+        Escribe en log_inconsistencias los avisos de encuesta acumulados, uno por (documento, hoja, pregunta, motivo): el número
+        de respuestas y un ejemplo publicable (una etiqueta del diccionario o la forma del texto, nunca el texto). Es idempotente:
+        si el aviso ya existe (la misma consolidación repetida) se reemplaza, no se duplica. SIN_INFORMACION es informativo
+        (REGISTRADO); los demás quedan PENDIENTE para la bandeja (FU-L7). Devuelve cuántos escribió.
+        """
+        if not self._avisos_encuesta or self.solo_revision:
+            self._avisos_encuesta = {}
+            return 0
+        from services import encuesta_canonica
+        n_reg = 0
+        for (doc_id, hoja, pregunta, motivo), (n, ejemplos) in sorted(self._avisos_encuesta.items(), key=lambda kv: str(kv[0])):
+            campo = f"{hoja[:24]}::{pregunta}"[:100]
+            estado = encuesta_canonica.estado_aviso(motivo)
+            pendiente = estado == "PENDIENTE"
+            descripcion = (f"FU-L5: {n} respuesta(s) con {motivo} en la pregunta «{pregunta[:150]}» de la hoja «{hoja[:60]}» "
+                           f"(registro agregado).")
+            valor = "; ".join(ejemplos)[:2000]
+            previo = self.db.query(LogInconsistencia).filter(
+                LogInconsistencia.id_documento == doc_id, LogInconsistencia.tipo_regla == motivo,
+                LogInconsistencia.campo_afectado == campo, LogInconsistencia.descripcion.like("FU-L5:%")).first()
+            if previo is not None:
+                previo.valor_recibido, previo.descripcion = valor, descripcion
+                n_reg += 1
+                continue
+            self.db.add(LogInconsistencia(
+                id_documento=doc_id, fila_origen=None, campo_afectado=campo, valor_recibido=valor,
+                valor_esperado="puntuación en [1, escala] o etiqueta del diccionario",
+                tipo_regla=motivo, severidad="MEDIA" if pendiente else "BAJA",
+                estado_resolucion="PENDIENTE" if pendiente else "REGISTRADO", descripcion=descripcion,
+            ))
+            n_reg += 1
+        self._avisos_encuesta = {}
+        self.db.flush()
+        return n_reg
+
     # ── 4. Resolución DimTiempo ──────────────────────────────────────────────
     def resolver_o_crear_tiempo(self, fecha_val: Optional[Any] = None) -> Optional[int]:
         """
@@ -1814,6 +1869,10 @@ class DWLoaderService:
 
         # 3c. Ruteo EVALUACION_DOCENTE -> FactEvaluacionDocente (una fila por respuesta)
         if categoria == "evaluacion_docente" and FactEvaluacionDocente:
+            # FU-L5: avisos de calidad de la lectura (sin respuesta por 0, fuera de escala, respuesta cruzada, etiqueta desconocida);
+            # se acumulan agregados por hoja y pregunta y se escriben al cerrar la consolidación (nunca el valor).
+            for aviso in resoluciones.get("avisos_encuesta") or []:
+                self._registrar_aviso_encuesta(doc_id, resoluciones.get("hoja_origen"), *aviso)
             puntuacion_raw = resoluciones.get("puntuacion")
             if puntuacion_raw is None:
                 puntuacion_raw = resoluciones.get("rating")
@@ -1821,11 +1880,16 @@ class DWLoaderService:
             escala_max = resoluciones.get("escala_max") or (5 if puntuacion is not None else None)
             comentario = resoluciones.get("comentario")
             comentario_str = str(comentario)[:1000] if comentario else None
+            pregunta = str(resoluciones.get("pregunta_bloque") or resoluciones.get("criterio") or "Evaluación de desempeño docente")[:500]
+            tipo_preg = resoluciones.get("tipo_pregunta") or "DOCENTE"
+            if puntuacion is not None and not self._puntuacion_en_escala(puntuacion, escala_max, tipo_preg):
+                # DA1: cuenta solo [1, escala_max] (el NPS 0-10 admite el 0). Una puntuación fuera de escala es sin respuesta, nunca 0
+                self._registrar_aviso_encuesta(doc_id, resoluciones.get("hoja_origen"), "PUNTUACION_FUERA_DE_ESCALA", pregunta, "número fuera de escala")
+                puntuacion = None
+                escala_max = None
             if puntuacion is None and not comentario_str:
                 # Sin puntaje ni comentario no hay respuesta que guardar: nunca un 5.0 de relleno
                 return {"tipo": "evaluacion_docente", "status": "skipped", "motivo": "RESPUESTA_VACIA"}
-            pregunta = str(resoluciones.get("pregunta_bloque") or resoluciones.get("criterio") or "Evaluación de desempeño docente")[:500]
-            tipo_preg = resoluciones.get("tipo_pregunta") or "DOCENTE"
 
             id_mod_eval = self.resolver_o_crear_modulo(
                 nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion

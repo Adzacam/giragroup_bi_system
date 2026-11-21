@@ -458,7 +458,7 @@
    }
   },
   "EVALUACION_DOCENTE": {
-   "descripcion": "Una fila por respuesta a una evaluación; una columna por pregunta",
+   "descripcion": "Una fila por respuesta a una evaluación; una columna por pregunta (docente o experiencia institucional)",
    "granularidad": "respuesta (persona x módulo o curso)",
    "campos": {
     "puntuacion": {
@@ -466,7 +466,7 @@
       {
        "patron": "^(a )?\\d+\\. ",
        "prioridad": 1,
-       "nota": "una columna por pregunta; si la pregunta tiene columna de texto y de número, se lee solo la numérica"
+       "nota": "una columna por pregunta; si la pregunta tiene columna de texto y de número, se lee solo la numérica (encuesta.pares)"
       }
      ]
     },
@@ -474,7 +474,8 @@
      "regla": {
       "por_defecto": 5,
       "si_patron": "escala (del|de) 1 a 10|escala del 1 al 10",
-      "valor_si_cumple": 10
+      "valor_si_cumple": 10,
+      "nota": "Descriptivo; la regla viva está en encuesta.escala (cabecera y valores de la columna)"
      }
     },
     "programa": {
@@ -506,12 +507,286 @@
    "nulos_aceptables": [
     "comentarios"
    ],
-   "etiquetas": {
-    "nota": "Las etiquetas de respuesta (De acuerdo, Satisfecho, Fácil, Probable…) se llevan a número con diccionario cat_* (FU-L5). Un 0 o 'Sin Información' es NULL (DA1)."
+   "encuesta": {
+    "pares": {
+     "prefijo_pregunta": "^(?:A\\s+)?\\d+(?:\\.\\d+)?\\s*[.)\\-]\\s*",
+     "marcadores_numericos": [
+      "^N\\s*[°º]\\s*",
+      "^NRO\\.?\\s+",
+      "^NUM\\.?\\s+"
+     ]
+    },
+    "columnas_derivadas": [
+     "PROMEDIO",
+     "MEDIA ARITMETICA"
+    ],
+    "min_proporcion_puntuada": 0.5,
+    "min_celdas_perfil": 3,
+    "clasificacion": {
+     "min_columnas_likert": 3,
+     "min_proporcion_likert": 0.5
+    },
+    "escala": {
+     "por_defecto": 5,
+     "cabecera": [
+      {
+       "patron": "(del|de) 1 (a|al) 10|\\(1-?10\\)|(del|de) 0 (a|al) 10|\\(0-?10\\)",
+       "escala": 10
+      },
+      {
+       "patron": "(del|de) 1 (a|al) 5|\\(1-?5\\)",
+       "escala": 5
+      }
+     ],
+     "min_proporcion_numeros_sueltos": 0.5,
+     "min_proporcion_mayor_a_5": 0.2,
+     "maximo_admitido": 10,
+     "min_proporcion_sobre_maximo": 0.05
+    },
+    "nps": {
+     "minimo": 0
+    },
+    "puntuacion_minima": 1,
+    "tipo_pregunta": {
+     "nps": [
+      "RECOMENDAR",
+      "RECOMENDARIA",
+      "RECOMENDACION",
+      "RECOMIENDE",
+      "RECOMIENDA",
+      "DEL 0 AL 10",
+      "DEL 1 AL 10",
+      "0 A 10",
+      "1 A 10"
+     ],
+     "docente": [
+      "DOCENTE",
+      "PROFESOR",
+      "FACILITADOR"
+     ],
+     "institucional": [
+      "PLATAFORMA",
+      "MOODLE",
+      "ZOOM",
+      "TEAMS",
+      "AULA VIRTUAL",
+      "ATENCION",
+      "ADMINISTRATIV",
+      "COORDINACION",
+      "COORDINADOR",
+      "INSTITUCION",
+      "UNIFRANZ",
+      "SOPORTE",
+      "SERVICIO",
+      "INSCRIPCION",
+      "PAGO",
+      "CERTIFICA",
+      "INFRAESTRUCTURA",
+      "ORGANIZACION",
+      "ASESOR",
+      "RECURSOS TECNOLOGICOS",
+      "TECNOLOGIC"
+     ],
+     "defecto_hoja_sin_docente": "INSTITUCIONAL",
+     "defecto": "DOCENTE"
+    },
+    "calidad": {
+     "sin_informacion": {
+      "motivo": "SIN_INFORMACION",
+      "estado": "REGISTRADO",
+      "nota": "0 o «Sin Información»: sin respuesta (DA1); informativo"
+     },
+     "fuera_de_escala": {
+      "motivo": "PUNTUACION_FUERA_DE_ESCALA",
+      "estado": "PENDIENTE",
+      "nota": "número fuera de [1, escala_max]: NULL (DA1)"
+     },
+     "respuesta_cruzada": {
+      "motivo": "RESPUESTA_EN_COLUMNA_EQUIVOCADA",
+      "estado": "PENDIENTE",
+      "nota": "etiqueta de otra escala o texto de otra pregunta en una columna puntuada: NULL"
+     },
+     "valor_fuera_de_catalogo": {
+      "motivo": "VALOR_FUERA_DE_CATALOGO",
+      "estado": "PENDIENTE",
+      "nota": "etiqueta que no está en el diccionario: NULL"
+     },
+     "escala_no_inferible": {
+      "motivo": "ESCALA_NO_INFERIBLE",
+      "estado": "PENDIENTE",
+      "nota": "no se puede deducir 1-5 ni 1-10 de la cabecera ni de los valores: sin respuesta"
+     }
+    }
    },
-   "columna_numerica_de_par": {
-    "patron_marcador": "^(a )?\\d+\\. n",
-    "nota": "En las hojas con doble columna el encabezado numérico lleva una 'N' tras el número de pregunta (p. ej. 'A 1. N° ...'). Confirmar en FU-L5."
+   "vocabularios": {
+    "etiquetas": {
+     "acuerdo": {
+      "5": [
+       "totalmente de acuerdo",
+       "muy de acuerdo"
+      ],
+      "4": [
+       "de acuerdo"
+      ],
+      "2": [
+       "en desacuerdo"
+      ],
+      "1": [
+       "totalmente en desacuerdo",
+       "muy en desacuerdo"
+      ]
+     },
+     "satisfaccion": {
+      "5": [
+       "muy satisfecho",
+       "muy satisfecha",
+       "totalmente satisfecho",
+       "totalmente satisfecha"
+      ],
+      "4": [
+       "satisfecho",
+       "satisfecha"
+      ],
+      "2": [
+       "insatisfecho",
+       "insatisfecha",
+       "poco satisfecho",
+       "poco satisfecha"
+      ],
+      "1": [
+       "muy insatisfecho",
+       "muy insatisfecha",
+       "totalmente insatisfecho",
+       "totalmente insatisfecha"
+      ]
+     },
+     "probabilidad": {
+      "5": [
+       "muy probable"
+      ],
+      "4": [
+       "probable"
+      ],
+      "2": [
+       "poco probable",
+       "improbable"
+      ],
+      "1": [
+       "nada probable",
+       "muy improbable"
+      ]
+     },
+     "facilidad": {
+      "5": [
+       "muy facil"
+      ],
+      "4": [
+       "facil"
+      ],
+      "2": [
+       "dificil"
+      ],
+      "1": [
+       "muy dificil"
+      ]
+     },
+     "calidad": {
+      "5": [
+       "excelente"
+      ],
+      "4": [
+       "bueno",
+       "buena"
+      ],
+      "3": [
+       "adecuado",
+       "regular"
+      ],
+      "2": [
+       "deficiente"
+      ],
+      "1": [
+       "muy deficiente"
+      ]
+     },
+     "utilidad": {
+      "5": [
+       "muy utiles",
+       "muy util"
+      ],
+      "4": [
+       "utiles",
+       "util"
+      ],
+      "3": [
+       "medianamente utiles",
+       "medianamente util"
+      ],
+      "2": [
+       "poco utiles",
+       "poco util"
+      ],
+      "1": [
+       "nada utiles",
+       "nada util"
+      ]
+     },
+     "carga": {
+      "5": [
+       "muy pesada"
+      ],
+      "4": [
+       "pesada"
+      ],
+      "3": [
+       "adecuada"
+      ],
+      "2": [
+       "ligera"
+      ],
+      "1": [
+       "muy ligera"
+      ]
+     }
+    },
+    "comodin": {
+     "3": [
+      "neutral",
+      "ni de acuerdo ni en desacuerdo",
+      "neutro"
+     ]
+    },
+    "etiquetas_solas": [
+     "acuerdo",
+     "satisfaccion",
+     "probabilidad"
+    ],
+    "sin_informacion": [
+     "sin informacion",
+     "sin respuesta",
+     "no responde",
+     "no aplica",
+     "no contesta"
+    ],
+    "texto_vacio": [
+     ".",
+     "..",
+     "...",
+     "-",
+     "--",
+     "_",
+     "*",
+     "x",
+     "n/a",
+     "na",
+     "nd",
+     "s/n",
+     "sn",
+     "no",
+     "ninguno",
+     "ninguna",
+     "nada"
+    ]
    }
   },
   "MARKETING": {

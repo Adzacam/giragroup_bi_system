@@ -207,17 +207,21 @@ tipos_fuente:
       cero_inasistencia: {motivo: "CERO_COMO_INASISTENCIA", nota: "un 0 con estado Deserción o Abandono es INASISTENCIA (nota NULL); si no, es un 0 real"}
 
   EVALUACION_DOCENTE:
-    descripcion: "Una fila por respuesta a una evaluación; una columna por pregunta"
+    descripcion: "Una fila por respuesta a una evaluación; una columna por pregunta (docente o experiencia institucional)"
     granularidad: "respuesta (persona x módulo o curso)"
+    # FU-L5: la encuesta se lee por contenido (backend/services/encuesta_canonica.py): cada columna se perfila con sus
+    # valores (puntuada o comentario, escala 5 o 10, familia de etiquetas) y cada celda se interpreta con el diccionario
+    # de `vocabularios`. Nada depende del nombre del libro, de la hoja ni del orden de las columnas.
     campos:
       puntuacion:
         sinonimos:
-          - {patron: '^(a )?\d+\. ', prioridad: 1, nota: "una columna por pregunta; si la pregunta tiene columna de texto y de número, se lee solo la numérica"}
+          - {patron: '^(a )?\d+\. ', prioridad: 1, nota: "una columna por pregunta; si la pregunta tiene columna de texto y de número, se lee solo la numérica (encuesta.pares)"}
       escala_max:
         regla:
           por_defecto: 5
           si_patron: 'escala (del|de) 1 a 10|escala del 1 al 10'
           valor_si_cumple: 10
+          nota: "Descriptivo; la regla viva está en encuesta.escala (cabecera y valores de la columna)"
       programa:
         sinonimos:
           - {texto: "programa", prioridad: 1}
@@ -233,11 +237,112 @@ tipos_fuente:
       - "respuesta numero"
     nulos_aceptables:
       - "comentarios"
-    etiquetas:
-      nota: "Las etiquetas de respuesta (De acuerdo, Satisfecho, Fácil, Probable…) se llevan a número con diccionario cat_* (FU-L5). Un 0 o 'Sin Información' es NULL (DA1)."
-    columna_numerica_de_par:
-      patron_marcador: '^(a )?\d+\. n'
-      nota: "En las hojas con doble columna el encabezado numérico lleva una 'N' tras el número de pregunta (p. ej. 'A 1. N° ...'). Confirmar en FU-L5."
+    # FU-L5 (DA1, decisión de Lean 2026-11-20): cuenta solo puntuacion en [1, escala_max]. Cero, «Sin Información» o fuera
+    # de escala quedan NULL (sin respuesta) y se registran agregados en log_inconsistencias. El NPS (0-10) va aparte: allí el 0 vale.
+    encuesta:
+      # Dos columnas por pregunta (texto «n/Etiqueta» y número): se lee solo la numérica para no contar la respuesta dos veces.
+      # Se emparejan por el texto de la pregunta: el prefijo de número («A 1.», «6.») y el marcador de la columna numérica
+      # («N°») no cuentan. Los patrones se aplican a la cabecera en mayúsculas sin acentos.
+      pares:
+        prefijo_pregunta: '^(?:A\s+)?\d+(?:\.\d+)?\s*[.)\-]\s*'
+        marcadores_numericos: ['^N\s*[°º]\s*', '^NRO\.?\s+', '^NUM\.?\s+']
+      # Columnas calculadas (promedios): no son una respuesta. Patrón sobre la cabecera en mayúsculas sin acentos.
+      columnas_derivadas: ['PROMEDIO', 'MEDIA ARITMETICA']
+      # Una columna es de puntuación si al menos esta proporción de sus celdas llenas es número, «n/Etiqueta», etiqueta del
+      # diccionario o «Sin Información»; si no, es de comentarios.
+      min_proporcion_puntuada: 0.5
+      min_celdas_perfil: 3
+      # Clasificación de una hoja como encuesta por sus valores: columnas cuyas celdas son respuestas tipo Likert
+      # («5/Totalmente de acuerdo», «Satisfecho») según el diccionario; ni el nombre del libro ni el de la hoja deciden.
+      clasificacion:
+        min_columnas_likert: 3
+        min_proporcion_likert: 0.5
+      escala:
+        por_defecto: 5
+        # Pista de la cabecera (en minúsculas y sin acentos). Gana a los valores.
+        cabecera:
+          - {patron: '(del|de) 1 (a|al) 10|\(1-?10\)|(del|de) 0 (a|al) 10|\(0-?10\)', escala: 10}
+          - {patron: '(del|de) 1 (a|al) 5|\(1-?5\)', escala: 5}
+        # Por valores: la columna es de 1-10 si los números sueltos (sin etiqueta) son la mayoría de las respuestas puntuadas
+        # y al menos esta proporción de ellos pasa de 5. Una etiqueta «n/Etiqueta» es siempre de 1-5.
+        min_proporcion_numeros_sueltos: 0.5
+        min_proporcion_mayor_a_5: 0.2
+        # Números sueltos por encima de este máximo (con esta proporción) no son de 1-5 ni de 1-10: escala no inferible.
+        maximo_admitido: 10
+        min_proporcion_sobre_maximo: 0.05
+      # NPS: pregunta de recomendación en escala 0-10 (el 0 es un puntaje válido).
+      nps: {minimo: 0}
+      puntuacion_minima: 1
+      # Tipo de pregunta (KPI-19 docente / KPI-20 institucional). Palabras sobre la cabecera en mayúsculas sin acentos.
+      tipo_pregunta:
+        nps: ["RECOMENDAR", "RECOMENDARIA", "RECOMENDACION", "RECOMIENDE", "RECOMIENDA", "DEL 0 AL 10", "DEL 1 AL 10", "0 A 10", "1 A 10"]
+        docente: ["DOCENTE", "PROFESOR", "FACILITADOR"]
+        institucional: ["PLATAFORMA", "MOODLE", "ZOOM", "TEAMS", "AULA VIRTUAL", "ATENCION", "ADMINISTRATIV",
+                        "COORDINACION", "COORDINADOR", "INSTITUCION", "UNIFRANZ", "SOPORTE", "SERVICIO",
+                        "INSCRIPCION", "PAGO", "CERTIFICA", "INFRAESTRUCTURA", "ORGANIZACION", "ASESOR",
+                        "RECURSOS TECNOLOGICOS", "TECNOLOGIC"]
+        # Hoja sin ninguna pregunta que nombre al docente: sus preguntas sin palabra clave son de experiencia institucional.
+        defecto_hoja_sin_docente: "INSTITUCIONAL"
+        defecto: "DOCENTE"
+      # Motivos que se registran, agregados por hoja y pregunta (nunca el valor: puede ser un texto con datos personales).
+      calidad:
+        sin_informacion: {motivo: "SIN_INFORMACION", estado: "REGISTRADO", nota: "0 o «Sin Información»: sin respuesta (DA1); informativo"}
+        fuera_de_escala: {motivo: "PUNTUACION_FUERA_DE_ESCALA", estado: "PENDIENTE", nota: "número fuera de [1, escala_max]: NULL (DA1)"}
+        respuesta_cruzada: {motivo: "RESPUESTA_EN_COLUMNA_EQUIVOCADA", estado: "PENDIENTE", nota: "etiqueta de otra escala o texto de otra pregunta en una columna puntuada: NULL"}
+        valor_fuera_de_catalogo: {motivo: "VALOR_FUERA_DE_CATALOGO", estado: "PENDIENTE", nota: "etiqueta que no está en el diccionario: NULL"}
+        escala_no_inferible: {motivo: "ESCALA_NO_INFERIBLE", estado: "PENDIENTE", nota: "no se puede deducir 1-5 ni 1-10 de la cabecera ni de los valores: sin respuesta"}
+    # FU-L5: diccionario etiqueta -> número (escala 1-5), por familia de respuesta. Editable: una etiqueta nueva se añade aquí.
+    # Los textos se comparan normalizados (minúsculas, sin acentos). Una etiqueta de una familia distinta a la dominante de su
+    # columna es una respuesta cruzada. Las del grupo `comodin` valen para cualquier familia.
+    vocabularios:
+      etiquetas:
+        acuerdo:
+          "5": ["totalmente de acuerdo", "muy de acuerdo"]
+          "4": ["de acuerdo"]
+          "2": ["en desacuerdo"]
+          "1": ["totalmente en desacuerdo", "muy en desacuerdo"]
+        satisfaccion:
+          "5": ["muy satisfecho", "muy satisfecha", "totalmente satisfecho", "totalmente satisfecha"]
+          "4": ["satisfecho", "satisfecha"]
+          "2": ["insatisfecho", "insatisfecha", "poco satisfecho", "poco satisfecha"]
+          "1": ["muy insatisfecho", "muy insatisfecha", "totalmente insatisfecho", "totalmente insatisfecha"]
+        probabilidad:
+          "5": ["muy probable"]
+          "4": ["probable"]
+          "2": ["poco probable", "improbable"]
+          "1": ["nada probable", "muy improbable"]
+        facilidad:
+          "5": ["muy facil"]
+          "4": ["facil"]
+          "2": ["dificil"]
+          "1": ["muy dificil"]
+        calidad:
+          "5": ["excelente"]
+          "4": ["bueno", "buena"]
+          "3": ["adecuado", "regular"]
+          "2": ["deficiente"]
+          "1": ["muy deficiente"]
+        utilidad:
+          "5": ["muy utiles", "muy util"]
+          "4": ["utiles", "util"]
+          "3": ["medianamente utiles", "medianamente util"]
+          "2": ["poco utiles", "poco util"]
+          "1": ["nada utiles", "nada util"]
+        carga:
+          "5": ["muy pesada"]
+          "4": ["pesada"]
+          "3": ["adecuada"]
+          "2": ["ligera"]
+          "1": ["muy ligera"]
+      comodin:
+        "3": ["neutral", "ni de acuerdo ni en desacuerdo", "neutro"]
+      # Familias cuya etiqueta puede venir SOLA, sin número («Satisfecho»). Las demás («Excelente», «Bueno», «Útiles», «Adecuada»)
+      # solo valen escritas «n/Etiqueta»: sueltas son una palabra de un comentario.
+      etiquetas_solas: ["acuerdo", "satisfaccion", "probabilidad"]
+      # Etiquetas de «no hay respuesta» (el 0/Sin Información de la fuente): NULL, nunca 0.
+      sin_informacion: ["sin informacion", "sin respuesta", "no responde", "no aplica", "no contesta"]
+      # Celdas que no son respuesta ni comentario: se tratan como vacías.
+      texto_vacio: [".", "..", "...", "-", "--", "_", "*", "x", "n/a", "na", "nd", "s/n", "sn", "no", "ninguno", "ninguna", "nada"]
 
   MARKETING:
     descripcion: "Una fila por inscripción individual"

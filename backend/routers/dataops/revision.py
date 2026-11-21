@@ -14,7 +14,7 @@ from models.staging_entidad import StagingEntidadNoResuelta
 from models.staging_registro import StagingRegistroCrudo
 from models.user import User
 from services.cronometraje import ahora, registrar_aprobacion
-from services import cache_consultas
+from services import cache_consultas, encuesta_canonica
 from services.extraccion_por_encabezado import (
     campos_por_encabezado,
     fecha_de_fila,
@@ -481,7 +481,9 @@ def resolve_review_item(
                             raise RuntimeError('La corrección no pudo incorporarse.')
 
                 elif categoria_ruteo == "evaluacion_docente":
-                    regs_eval = registros_evaluacion(campos_linea) if campos_linea else []
+                    # FU-L5: la fila se lee con el perfil de su hoja (escala, etiquetas, pares), no sola
+                    perfil_eval = encuesta_canonica.perfil_de_texto(stg_parent.texto_plano, clave=("stg", stg_parent.id)) if (stg_parent and campos_linea) else None
+                    regs_eval = registros_evaluacion(campos_linea, perfil_eval) if campos_linea else []
                     if regs_eval:
                         cargados_eval = 0
                         for reg_eval in regs_eval:
@@ -495,7 +497,7 @@ def resolve_review_item(
                                 "docente": doc_val,
                                 "modulo": payload.get("modulo_resuelto") or (f"Módulo {payload.get('numero_modulo')}" if payload.get("numero_modulo") not in (None, "") else None) or reg_eval.get("modulo") or p_json.get("modulo"),
                                 "programa": programa_def or reg_eval.get("programa") or p_json.get("programa"),
-                                "escala_max": escala_def,
+                                "escala_max": reg_eval.get("escala_max") or escala_def,
                                 "nivel_confianza_ia": 0.99,
                             }})
                             if res_load.get("status") == "loaded":

@@ -305,6 +305,33 @@ def _contiene_tokens(texto: str, palabras_o_frases: tuple[str, ...]) -> bool:
     return False
 
 
+def _bloque_es_encuesta(b: "pd.DataFrame") -> bool:
+    """FU-L5: el bloque trae varias columnas de respuestas tipo Likert (contenido), aunque sus cabeceras no sean preguntas."""
+    from services import encuesta_canonica
+    try:
+        return encuesta_canonica.hoja_es_encuesta(b.iloc[:80].values.tolist())
+    except Exception:
+        return False
+
+
+def _filas_de_encuesta(hojas: Dict[str, "pd.DataFrame"]) -> tuple[int, int]:
+    """(filas de hojas que son encuesta por sus valores, filas totales). FU-L5: el contenido (respuestas tipo Likert del
+    diccionario del catálogo) decide si una hoja es una encuesta, no el nombre del libro, de la hoja ni sus cabeceras."""
+    from services import encuesta_canonica
+    en_encuesta = total = 0
+    for df in (hojas or {}).values():
+        if df is None or df.empty:
+            continue
+        total += len(df)
+        try:
+            if encuesta_canonica.hoja_es_encuesta(df.iloc[:80].values.tolist()):
+                en_encuesta += len(df)
+        except Exception as ex:  # el catálogo no responde: se decide como antes, por cabeceras
+            logger.warning("FU_L5_CLASIFICACION_ENCUESTA_NO_DISPONIBLE error=%s", type(ex).__name__)
+            return 0, total
+    return en_encuesta, total
+
+
 def detectar_tipo_fuente_por_cabeceras(
     hojas: Dict[str, pd.DataFrame],
     filename: str = ""
@@ -433,6 +460,13 @@ def detectar_tipo_fuente_por_cabeceras(
         scores["EVALUACION_DOCENTE"] += 10
     elif has_eval_doc and not has_nota:
         scores["EVALUACION_DOCENTE"] += 6
+
+    # FU-L5: un libro cuyas hojas son en su mayoría respuestas tipo Likert es una encuesta aunque sus cabeceras traigan
+    # «promedio» (que lo hacía pasar por un acta) o no nombren al docente. Un libro de actas con una sola hoja de encuesta
+    # se queda como acta (la hoja toma su categoría por contenido).
+    filas_encuesta, filas_totales = _filas_de_encuesta(hojas)
+    if filas_totales and filas_encuesta * 2 >= filas_totales:
+        scores["EVALUACION_DOCENTE"] = max(scores["EVALUACION_DOCENTE"], 16)
 
     # 4. Rentabilidad / Egresos / Techos
     has_egreso = _contiene_tokens(joined_headers, (
@@ -952,7 +986,9 @@ class IngestionService:
                     transparentes = set(hoja_leida.meta.filas_descartadas) or None
                     filas_fantasma_cortadas += hoja_leida.meta.filas_fantasma
                     subtotales_cortados += hoja_leida.meta.filas_subtotal
-                if es_reporte_moodle(df_hoja, safe_filename):
+                # FU-L5: una hoja de encuesta (respuestas tipo Likert) no es un libro de calificaciones aunque comparta cabeceras de Moodle
+                # («Nombre completo del usuario», «Dirección de correo»): el adaptador tomaba la fila de grupos como cabecera
+                if es_reporte_moodle(df_hoja, safe_filename) and not _bloque_es_encuesta(df_hoja):
                     df_hoja = adaptar_moodle_df(df_hoja)
                     transparentes = None  # el adaptador reindexa las filas
                     if not final_tipo_fuente:
@@ -1113,7 +1149,7 @@ class IngestionService:
                     # FU-L1: lo mismo con una hoja cuyas cabeceras son de otro tipo del catálogo (p. ej. planificación con
                     # leads e inscritos dentro de un libro de actas): toma la categoría de su tipo, no la del libro.
                     tipo_hoja = tipo_de_hoja_distinto(meta_por_hoja[nombre_hoja], final_tipo_fuente) if nombre_hoja in meta_por_hoja else None
-                    categoria = ("evaluacion_docente" if es_encuesta_likert(b)
+                    categoria = ("evaluacion_docente" if (es_encuesta_likert(b) or _bloque_es_encuesta(b))
                                  else CATEGORIA_POR_TIPO.get(tipo_hoja) if tipo_hoja
                                  else categoria_por_fuente or clasificar_categoria(b, safe_filename, nombre_hoja))
                     texto = cls.serializar_bloque_con_encabezados(b)

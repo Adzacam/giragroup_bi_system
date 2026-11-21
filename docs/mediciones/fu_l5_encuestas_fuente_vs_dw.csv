@@ -1,0 +1,95 @@
+metrica,libro,hoja,fuente,dw_tmpfs,diferencia,explicacion
+respuestas válidas únicas (1 <= puntuacion <= escala_max),libro A,"hoja 1 (docente, escalas 1-5, con comentarios; 16451 filas)",135820,135820,0,igual
+respuestas válidas repetidas (misma fila y pregunta),libro A,"hoja 1 (docente, escalas 1-5, con comentarios; 16451 filas)",6494,0,,filas idénticas del libro: la DW las guarda una vez (clave por fila y pregunta)
+comentarios con texto (sin puntuación),libro A,"hoja 1 (docente, escalas 1-5, con comentarios; 16451 filas)",22643,22643,0,igual
+"NULL por 0 o «Sin Información» (celdas, par contado una vez)",libro A,"hoja 1 (docente, escalas 1-5, con comentarios; 16451 filas)",9,,,informativo: el aviso agregado de la DW se compara a nivel de libro (los avisos no distinguen la hoja)
+NULL por puntuación fuera de escala,libro A,"hoja 1 (docente, escalas 1-5, con comentarios; 16451 filas)",563,,,avisos de la DW a nivel de libro
+respuestas cruzadas entre columnas (celdas),libro A,"hoja 1 (docente, escalas 1-5, con comentarios; 16451 filas)",9928,,,"RESPUESTA_EN_COLUMNA_EQUIVOCADA, agrupada por hoja y pregunta"
+respuestas cruzadas: preguntas afectadas (grupos),libro A,"hoja 1 (docente, escalas 1-5, con comentarios; 16451 filas)",9,,,"un aviso por hoja y pregunta, con conteo y ejemplo enmascarado"
+etiqueta fuera del diccionario (celdas),libro A,"hoja 1 (docente, escalas 1-5, con comentarios; 16451 filas)",1102,,,VALOR_FUERA_DE_CATALOGO
+duplicados evitados por la doble columna texto + número (celdas),libro A,"hoja 1 (docente, escalas 1-5, con comentarios; 16451 filas)",0,0,,habrían contado la respuesta dos veces; la DW lee solo la columna numérica
+respuestas válidas únicas (1 <= puntuacion <= escala_max),libro A,"hoja 2 (experiencia institucional, escalas 1-5 y 1-10, con comentarios; 2539 filas)",24539,24539,0,igual
+respuestas válidas repetidas (misma fila y pregunta),libro A,"hoja 2 (experiencia institucional, escalas 1-5 y 1-10, con comentarios; 2539 filas)",800,0,,filas idénticas del libro: la DW las guarda una vez (clave por fila y pregunta)
+comentarios con texto (sin puntuación),libro A,"hoja 2 (experiencia institucional, escalas 1-5 y 1-10, con comentarios; 2539 filas)",3490,3490,0,igual
+"NULL por 0 o «Sin Información» (celdas, par contado una vez)",libro A,"hoja 2 (experiencia institucional, escalas 1-5 y 1-10, con comentarios; 2539 filas)",0,,,informativo: el aviso agregado de la DW se compara a nivel de libro (los avisos no distinguen la hoja)
+NULL por puntuación fuera de escala,libro A,"hoja 2 (experiencia institucional, escalas 1-5 y 1-10, con comentarios; 2539 filas)",0,,,avisos de la DW a nivel de libro
+respuestas cruzadas entre columnas (celdas),libro A,"hoja 2 (experiencia institucional, escalas 1-5 y 1-10, con comentarios; 2539 filas)",37,,,"RESPUESTA_EN_COLUMNA_EQUIVOCADA, agrupada por hoja y pregunta"
+respuestas cruzadas: preguntas afectadas (grupos),libro A,"hoja 2 (experiencia institucional, escalas 1-5 y 1-10, con comentarios; 2539 filas)",5,,,"un aviso por hoja y pregunta, con conteo y ejemplo enmascarado"
+etiqueta fuera del diccionario (celdas),libro A,"hoja 2 (experiencia institucional, escalas 1-5 y 1-10, con comentarios; 2539 filas)",6,,,VALOR_FUERA_DE_CATALOGO
+duplicados evitados por la doble columna texto + número (celdas),libro A,"hoja 2 (experiencia institucional, escalas 1-5 y 1-10, con comentarios; 2539 filas)",0,0,,habrían contado la respuesta dos veces; la DW lee solo la columna numérica
+TOTAL respuestas válidas únicas,libro A,todas las hojas,160359,160359,0,igual: todas las respuestas válidas de la fuente están en la DW; la DW no trae respuestas fuera de la fuente
+"puntuaciones fuera de [1, escala_max] en la DW (NPS 0-10 aparte)",libro A,todas las hojas,0,0,0,criterio: 0
+hechos en la DW (con y sin puntuación),libro A,todas las hojas,186492,186492,,puntuadas + comentarios
+claves de idempotencia (carga_fila_origen) por hecho,libro A,todas las hojas,,390212 / 186492,,2 claves por hecho por diseño (una por archivo y otra por contenido); antes eran el doble de hechos por la doble columna
+celdas crudas «n/Sin Información» del libro (openpyxl),libro A,todas las hojas,0,,,"incluye la columna de texto de cada par y las columnas de comentario con «0/Sin Información» (sin comentario); los avisos cuentan solo preguntas puntuadas, una vez por par"
+avisos SIN_INFORMACION registrados (celdas),libro A,todas las hojas,9,9,0,agregados por hoja y pregunta; coincide con la fuente
+avisos PUNTUACION_FUERA_DE_ESCALA registrados (celdas),libro A,todas las hojas,563,563,0,2 grupos (hoja y pregunta)
+avisos RESPUESTA_EN_COLUMNA_EQUIVOCADA registrados (celdas),libro A,todas las hojas,9965,10010,45,15 grupos (hoja y pregunta); la diferencia son respuestas Likert escritas en la columna del módulo (no son celdas de pregunta; la fuente las cuenta aparte)
+avisos VALOR_FUERA_DE_CATALOGO registrados (celdas),libro A,todas las hojas,1108,1108,0,7 grupos (hoja y pregunta)
+tipo de fuente detectado,libro A,todas las hojas,EVALUACION_DOCENTE,EVALUACION_DOCENTE / escala None,,se sube como acta (CENTESIMAL_100) y el sistema lo corrige por contenido
+respuestas válidas únicas (1 <= puntuacion <= escala_max),libro B,"hoja 1 (docente, escalas 1-5 y 1-10, con comentarios; 3250 filas)",52975,52975,0,igual
+respuestas válidas repetidas (misma fila y pregunta),libro B,"hoja 1 (docente, escalas 1-5 y 1-10, con comentarios; 3250 filas)",0,0,,filas idénticas del libro: la DW las guarda una vez (clave por fila y pregunta)
+comentarios con texto (sin puntuación),libro B,"hoja 1 (docente, escalas 1-5 y 1-10, con comentarios; 3250 filas)",5567,5567,0,igual
+"NULL por 0 o «Sin Información» (celdas, par contado una vez)",libro B,"hoja 1 (docente, escalas 1-5 y 1-10, con comentarios; 3250 filas)",0,,,informativo: el aviso agregado de la DW se compara a nivel de libro (los avisos no distinguen la hoja)
+NULL por puntuación fuera de escala,libro B,"hoja 1 (docente, escalas 1-5 y 1-10, con comentarios; 3250 filas)",0,,,avisos de la DW a nivel de libro
+respuestas cruzadas entre columnas (celdas),libro B,"hoja 1 (docente, escalas 1-5 y 1-10, con comentarios; 3250 filas)",530,,,"RESPUESTA_EN_COLUMNA_EQUIVOCADA, agrupada por hoja y pregunta"
+respuestas cruzadas: preguntas afectadas (grupos),libro B,"hoja 1 (docente, escalas 1-5 y 1-10, con comentarios; 3250 filas)",4,,,"un aviso por hoja y pregunta, con conteo y ejemplo enmascarado"
+etiqueta fuera del diccionario (celdas),libro B,"hoja 1 (docente, escalas 1-5 y 1-10, con comentarios; 3250 filas)",104,,,VALOR_FUERA_DE_CATALOGO
+duplicados evitados por la doble columna texto + número (celdas),libro B,"hoja 1 (docente, escalas 1-5 y 1-10, con comentarios; 3250 filas)",0,0,,habrían contado la respuesta dos veces; la DW lee solo la columna numérica
+respuestas válidas únicas (1 <= puntuacion <= escala_max),libro B,"hoja 2 (docente, escalas 1-5 y 1-10; 285 filas)",6318,6318,0,igual
+respuestas válidas repetidas (misma fila y pregunta),libro B,"hoja 2 (docente, escalas 1-5 y 1-10; 285 filas)",0,0,,filas idénticas del libro: la DW las guarda una vez (clave por fila y pregunta)
+comentarios con texto (sin puntuación),libro B,"hoja 2 (docente, escalas 1-5 y 1-10; 285 filas)",0,0,0,igual
+"NULL por 0 o «Sin Información» (celdas, par contado una vez)",libro B,"hoja 2 (docente, escalas 1-5 y 1-10; 285 filas)",0,,,informativo: el aviso agregado de la DW se compara a nivel de libro (los avisos no distinguen la hoja)
+NULL por puntuación fuera de escala,libro B,"hoja 2 (docente, escalas 1-5 y 1-10; 285 filas)",19,,,avisos de la DW a nivel de libro
+respuestas cruzadas entre columnas (celdas),libro B,"hoja 2 (docente, escalas 1-5 y 1-10; 285 filas)",65,,,"RESPUESTA_EN_COLUMNA_EQUIVOCADA, agrupada por hoja y pregunta"
+respuestas cruzadas: preguntas afectadas (grupos),libro B,"hoja 2 (docente, escalas 1-5 y 1-10; 285 filas)",7,,,"un aviso por hoja y pregunta, con conteo y ejemplo enmascarado"
+etiqueta fuera del diccionario (celdas),libro B,"hoja 2 (docente, escalas 1-5 y 1-10; 285 filas)",3,,,VALOR_FUERA_DE_CATALOGO
+duplicados evitados por la doble columna texto + número (celdas),libro B,"hoja 2 (docente, escalas 1-5 y 1-10; 285 filas)",0,0,,habrían contado la respuesta dos veces; la DW lee solo la columna numérica
+respuestas válidas únicas (1 <= puntuacion <= escala_max),libro B,"hoja 3 (docente, escalas 1-5 y 1-10; 275 filas)",5630,5630,0,igual
+respuestas válidas repetidas (misma fila y pregunta),libro B,"hoja 3 (docente, escalas 1-5 y 1-10; 275 filas)",0,0,,filas idénticas del libro: la DW las guarda una vez (clave por fila y pregunta)
+comentarios con texto (sin puntuación),libro B,"hoja 3 (docente, escalas 1-5 y 1-10; 275 filas)",0,0,0,igual
+"NULL por 0 o «Sin Información» (celdas, par contado una vez)",libro B,"hoja 3 (docente, escalas 1-5 y 1-10; 275 filas)",0,,,informativo: el aviso agregado de la DW se compara a nivel de libro (los avisos no distinguen la hoja)
+NULL por puntuación fuera de escala,libro B,"hoja 3 (docente, escalas 1-5 y 1-10; 275 filas)",43,,,avisos de la DW a nivel de libro
+respuestas cruzadas entre columnas (celdas),libro B,"hoja 3 (docente, escalas 1-5 y 1-10; 275 filas)",146,,,"RESPUESTA_EN_COLUMNA_EQUIVOCADA, agrupada por hoja y pregunta"
+respuestas cruzadas: preguntas afectadas (grupos),libro B,"hoja 3 (docente, escalas 1-5 y 1-10; 275 filas)",6,,,"un aviso por hoja y pregunta, con conteo y ejemplo enmascarado"
+etiqueta fuera del diccionario (celdas),libro B,"hoja 3 (docente, escalas 1-5 y 1-10; 275 filas)",40,,,VALOR_FUERA_DE_CATALOGO
+duplicados evitados por la doble columna texto + número (celdas),libro B,"hoja 3 (docente, escalas 1-5 y 1-10; 275 filas)",0,0,,habrían contado la respuesta dos veces; la DW lee solo la columna numérica
+TOTAL respuestas válidas únicas,libro B,todas las hojas,64923,64923,0,igual: todas las respuestas válidas de la fuente están en la DW; la DW no trae respuestas fuera de la fuente
+"puntuaciones fuera de [1, escala_max] en la DW (NPS 0-10 aparte)",libro B,todas las hojas,0,0,0,criterio: 0
+hechos en la DW (con y sin puntuación),libro B,todas las hojas,70490,70490,,puntuadas + comentarios
+claves de idempotencia (carga_fila_origen) por hecho,libro B,todas las hojas,,140980 / 70490,,2 claves por hecho por diseño (una por archivo y otra por contenido); antes eran el doble de hechos por la doble columna
+celdas crudas «n/Sin Información» del libro (openpyxl),libro B,todas las hojas,0,,,"incluye la columna de texto de cada par y las columnas de comentario con «0/Sin Información» (sin comentario); los avisos cuentan solo preguntas puntuadas, una vez por par"
+avisos SIN_INFORMACION registrados (celdas),libro B,todas las hojas,0,0,0,agregados por hoja y pregunta; coincide con la fuente
+avisos PUNTUACION_FUERA_DE_ESCALA registrados (celdas),libro B,todas las hojas,62,62,0,3 grupos (hoja y pregunta)
+avisos RESPUESTA_EN_COLUMNA_EQUIVOCADA registrados (celdas),libro B,todas las hojas,741,741,0,17 grupos (hoja y pregunta); la diferencia son respuestas Likert escritas en la columna del módulo (no son celdas de pregunta; la fuente las cuenta aparte)
+avisos VALOR_FUERA_DE_CATALOGO registrados (celdas),libro B,todas las hojas,147,147,0,5 grupos (hoja y pregunta)
+tipo de fuente detectado,libro B,todas las hojas,EVALUACION_DOCENTE,EVALUACION_DOCENTE / escala None,,se sube como acta (CENTESIMAL_100) y el sistema lo corrige por contenido
+respuestas válidas únicas (1 <= puntuacion <= escala_max),libro C,"hoja 1 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 14397 filas)",125591,125591,0,igual
+respuestas válidas repetidas (misma fila y pregunta),libro C,"hoja 1 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 14397 filas)",0,0,,filas idénticas del libro: la DW las guarda una vez (clave por fila y pregunta)
+comentarios con texto (sin puntuación),libro C,"hoja 1 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 14397 filas)",19734,19734,0,igual
+"NULL por 0 o «Sin Información» (celdas, par contado una vez)",libro C,"hoja 1 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 14397 filas)",73210,,,informativo: el aviso agregado de la DW se compara a nivel de libro (los avisos no distinguen la hoja)
+NULL por puntuación fuera de escala,libro C,"hoja 1 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 14397 filas)",0,,,avisos de la DW a nivel de libro
+respuestas cruzadas entre columnas (celdas),libro C,"hoja 1 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 14397 filas)",0,,,"RESPUESTA_EN_COLUMNA_EQUIVOCADA, agrupada por hoja y pregunta"
+respuestas cruzadas: preguntas afectadas (grupos),libro C,"hoja 1 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 14397 filas)",0,,,"un aviso por hoja y pregunta, con conteo y ejemplo enmascarado"
+etiqueta fuera del diccionario (celdas),libro C,"hoja 1 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 14397 filas)",0,,,VALOR_FUERA_DE_CATALOGO
+duplicados evitados por la doble columna texto + número (celdas),libro C,"hoja 1 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 14397 filas)",198801,0,,habrían contado la respuesta dos veces; la DW lee solo la columna numérica
+respuestas válidas únicas (1 <= puntuacion <= escala_max),libro C,"hoja 2 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 828 filas)",6909,6909,0,igual
+respuestas válidas repetidas (misma fila y pregunta),libro C,"hoja 2 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 828 filas)",0,0,,filas idénticas del libro: la DW las guarda una vez (clave por fila y pregunta)
+comentarios con texto (sin puntuación),libro C,"hoja 2 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 828 filas)",643,643,0,igual
+"NULL por 0 o «Sin Información» (celdas, par contado una vez)",libro C,"hoja 2 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 828 filas)",4683,,,informativo: el aviso agregado de la DW se compara a nivel de libro (los avisos no distinguen la hoja)
+NULL por puntuación fuera de escala,libro C,"hoja 2 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 828 filas)",0,,,avisos de la DW a nivel de libro
+respuestas cruzadas entre columnas (celdas),libro C,"hoja 2 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 828 filas)",0,,,"RESPUESTA_EN_COLUMNA_EQUIVOCADA, agrupada por hoja y pregunta"
+respuestas cruzadas: preguntas afectadas (grupos),libro C,"hoja 2 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 828 filas)",0,,,"un aviso por hoja y pregunta, con conteo y ejemplo enmascarado"
+etiqueta fuera del diccionario (celdas),libro C,"hoja 2 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 828 filas)",0,,,VALOR_FUERA_DE_CATALOGO
+duplicados evitados por la doble columna texto + número (celdas),libro C,"hoja 2 (docente, escalas 1-5, dos columnas por pregunta (texto y número), con comentarios; 828 filas)",11592,0,,habrían contado la respuesta dos veces; la DW lee solo la columna numérica
+TOTAL respuestas válidas únicas,libro C,todas las hojas,132500,132500,0,igual: todas las respuestas válidas de la fuente están en la DW; la DW no trae respuestas fuera de la fuente
+"puntuaciones fuera de [1, escala_max] en la DW (NPS 0-10 aparte)",libro C,todas las hojas,0,0,0,criterio: 0
+hechos en la DW (con y sin puntuación),libro C,todas las hojas,152877,152877,,puntuadas + comentarios
+claves de idempotencia (carga_fila_origen) por hecho,libro C,todas las hojas,,305754 / 152877,,2 claves por hecho por diseño (una por archivo y otra por contenido); antes eran el doble de hechos por la doble columna
+celdas crudas «n/Sin Información» del libro (openpyxl),libro C,todas las hojas,94578,,,"incluye la columna de texto de cada par y las columnas de comentario con «0/Sin Información» (sin comentario); los avisos cuentan solo preguntas puntuadas, una vez por par"
+avisos SIN_INFORMACION registrados (celdas),libro C,todas las hojas,77893,77893,0,agregados por hoja y pregunta; coincide con la fuente
+avisos PUNTUACION_FUERA_DE_ESCALA registrados (celdas),libro C,todas las hojas,0,0,0,0 grupos (hoja y pregunta)
+avisos RESPUESTA_EN_COLUMNA_EQUIVOCADA registrados (celdas),libro C,todas las hojas,0,0,0,0 grupos (hoja y pregunta); la diferencia son respuestas Likert escritas en la columna del módulo (no son celdas de pregunta; la fuente las cuenta aparte)
+avisos VALOR_FUERA_DE_CATALOGO registrados (celdas),libro C,todas las hojas,0,0,0,0 grupos (hoja y pregunta)
+tipo de fuente detectado,libro C,todas las hojas,EVALUACION_DOCENTE,EVALUACION_DOCENTE / escala None,,se sube como acta (CENTESIMAL_100) y el sistema lo corrige por contenido
+NULL por puntuación sin gestión (no entra al KPI por fecha),todos,todas las hojas,11171,,,filas sin fecha: la DW les asigna el último período del programa si lo tiene

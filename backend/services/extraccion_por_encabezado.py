@@ -747,18 +747,9 @@ _CLAVES_IDENTIDAD_ENCUESTA = (
     "MATERIA", "DOCENTE", "PROFESOR", "FACILITADOR", "TUTOR", "GRUPO", "SEDE", "CIUDAD", "N°", "Nº", "NRO",
     "ID", "RESPUESTA", "INSTITUCION",
 ) + _CLAVES_CI + _CLAVES_FECHA_ACADEMICA
-# '5/Totalmente de acuerdo', '3 - Adecuada', '8', '4,5'
-_RE_LIKERT = re.compile(r"^\s*(\d{1,2}(?:[.,]\d+)?)\s*(?:[/\-–:.)]\s*\D.*)?$")
 _RE_ANONIMO = re.compile(r"ANONIM|SIN NOMBRE|^PERSONA \d+$")
 _RE_POS_VALOR = re.compile(r"POS[\s-]?(\d{3,5})")
 _RE_NRO_MODULO = re.compile(r"(\d{1,2})")
-# Comentarios sin contenido: no se guardan. 'Todo conforme' sí es una opinión y se conserva.
-_COMENTARIOS_VACIOS = {"", ".", "-", "_", "NINGUNO", "NINGUNA", "NADA", "NO", "N/A", "NA", "SIN COMENTARIOS",
-                       "NINGUN COMENTARIO", "NO HAY", "NO HAY DATOS", "S/C", "X"}
-_PALABRAS_INSTITUCIONAL = ("PLATAFORMA", "MOODLE", "ZOOM", "TEAMS", "AULA VIRTUAL", "ATENCION", "ADMINISTRATIV",
-                           "COORDINACION", "COORDINADOR", "INSTITUCION", "UNIFRANZ", "SOPORTE", "SERVICIO",
-                           "INSCRIPCION", "PAGO", "CERTIFICA", "INFRAESTRUCTURA", "ORGANIZACION", "ASESOR")
-_PALABRAS_NPS = ("RECOMENDAR", "RECOMENDARIA", "RECOMENDACION", "DEL 0 AL 10", "DEL 1 AL 10", "0 A 10", "1 A 10")
 
 
 def _es_columna_identidad(encabezado: str) -> bool:
@@ -769,22 +760,10 @@ def _parece_pregunta(encabezado: str) -> bool:
     return "?" in encabezado or "¿" in encabezado or len(encabezado) >= 30
 
 
-def tipo_pregunta(encabezado: str) -> str:
-    """NPS (recomendación 0-10), INSTITUCIONAL (plataforma, atención, gestión) o DOCENTE."""
-    if any(p in encabezado for p in _PALABRAS_NPS):
-        return "NPS"
-    if "DOCENTE" in encabezado or "PROFESOR" in encabezado or "FACILITADOR" in encabezado:
-        return "DOCENTE"
-    if any(p in encabezado for p in _PALABRAS_INSTITUCIONAL):
-        return "INSTITUCIONAL"
-    return "DOCENTE"
-
-
-def _escala(encabezado: str, valor: float, tipo: str) -> int:
-    """Escala de la pregunta: 10 si es NPS, si la cabecera la menciona o si el valor pasa de 5; si no, 5."""
-    if tipo == "NPS" or "10" in encabezado or valor > 5:
-        return 10
-    return 5
+def tipo_pregunta(encabezado: str, defecto_hoja: Optional[str] = None) -> str:
+    """NPS (recomendación 0-10), DOCENTE o INSTITUCIONAL (plataforma, atención, gestión); palabras del catálogo (FU-L5)."""
+    from services import encuesta_canonica
+    return encuesta_canonica.tipo_pregunta(encabezado, defecto_hoja)
 
 
 def _estudiante_encuesta(campos: Dict[str, str]) -> Optional[Dict[str, Any]]:
@@ -799,10 +778,15 @@ def _estudiante_encuesta(campos: Dict[str, str]) -> Optional[Dict[str, Any]]:
     return est
 
 
-def registros_evaluacion(campos: Dict[str, str]) -> List[Dict[str, Any]]:
+def registros_evaluacion(campos: Dict[str, str], perfil: Optional[Any] = None) -> List[Dict[str, Any]]:
     """
     Una fila de encuesta -> un registro por pregunta (fact_evaluacion_docente: una fila por respuesta).
-    - Pregunta con puntaje ('5/Totalmente de acuerdo', '8'): puntuacion + escala_max (5 o 10).
+    FU-L5: las respuestas se leen por contenido con `services.encuesta_canonica` (diccionario de etiquetas, escala por columna,
+    pares texto + número, DA1). `perfil` es el perfil de las columnas de su hoja (`encuesta_canonica.perfilar`); sin él la
+    fila se lee sola, con la pista de su cabecera.
+    - Pregunta con puntaje ('5/Totalmente de acuerdo', '8', 'Satisfecho'): puntuacion en [1, escala_max] + escala_max (5 o 10).
+    - Cero, «Sin Información», fuera de escala, etiqueta desconocida o respuesta cruzada: NULL. No genera hecho; deja un
+      registro con puntuacion y comentario vacíos y `avisos_encuesta` (motivo, pregunta, ejemplo sin datos personales).
     - Pregunta abierta (cabecera tipo pregunta, valor de texto): comentario, puntuacion NULL.
     - tipo_pregunta DOCENTE / INSTITUCIONAL / NPS: solo DOCENTE se atribuye al docente.
     - Anónima ('ENTRADA ANONIMA - PERSONA 5'): sin estudiante, nunca se crea uno ficticio.
@@ -810,6 +794,7 @@ def registros_evaluacion(campos: Dict[str, str]) -> List[Dict[str, Any]]:
     Lista vacía si la fila no tiene respuestas (listas de comentarios de una hoja de gráficos, totales).
     """
     import hashlib
+    from services import encuesta_canonica as ec
 
     estudiante = _estudiante_encuesta(campos)
     # Cabeceras cortas que nombran el programa ('PROGRAMA', 'PROGRAMA - POS', 'PROGRAMA POS', 'CURSO'); las
@@ -818,34 +803,28 @@ def registros_evaluacion(campos: Dict[str, str]) -> List[Dict[str, Any]]:
                               if v and len(k) <= 40 and re.search(r"\b(PROGRAMA|CURSO|COURSE|POS)\b", k))
     m_pos = _RE_POS_VALOR.search(texto_programa.upper())
     pos = f"POS-{m_pos.group(1)}" if m_pos else _pos(campos)
-    # Número de módulo bajo cualquier cabecera corta con 'MODULO' ('MODULO', 'N° MODULO', 'NUMERO DEL MODULO');
-    # el valor debe ser corto ('1', 'M02', 'Módulo 3'), no el nombre del módulo ni una respuesta.
-    valor_mod = next((v for k, v in campos.items()
-                      if v and len(k) <= 30 and "MODULO" in k and len(v.strip()) <= 12), "")
-    m_mod = _RE_NRO_MODULO.search(valor_mod)
-    nro_modulo = int(m_mod.group(1)) if m_mod else None
+    # Número de módulo bajo cualquier cabecera corta con 'MODULO' ('MODULO', 'N° MODULO', 'NUMERO DEL MODULO'); el valor debe ser
+    # corto ('1', 'M02', 'Módulo 3'), no el nombre del módulo ni una respuesta. FU-L5: una respuesta tipo Likert escrita en la
+    # columna del módulo ('4/De acuerdo') no es un número de módulo: se avisa y el módulo queda sin número.
+    avisos_fila: List[Any] = []
+    nro_modulo = None
+    for k, v in campos.items():
+        if not (v and len(k) <= 30 and "MODULO" in k and len(v.strip()) <= 12):
+            continue
+        if ec.valor_es_respuesta_likert(v):
+            avisos_fila.append((ec.motivo("respuesta_cruzada", "RESPUESTA_EN_COLUMNA_EQUIVOCADA"), k, ec.leer_valor(v).etiqueta or "etiqueta"))
+            continue
+        m_mod = _RE_NRO_MODULO.search(v)
+        if m_mod:
+            nro_modulo = int(m_mod.group(1))
+            break
     docente = next((campos[k] for k in ("DOCENTE", "PROFESOR", "FACILITADOR", "TUTOR") if campos.get(k)), None)
     fecha = fecha_de_fila(campos, "academico")
 
-    respuestas = []
-    for enc, valor in campos.items():
-        if _es_columna_identidad(enc) or valor is None:
-            continue
-        v = str(valor).strip()
-        m = _RE_LIKERT.match(v)
-        # Un número suelto solo es respuesta bajo una cabecera de pregunta (no 'EDAD', 'HORAS', 'GESTION')
-        if m and (_parece_pregunta(enc) or not v.replace(",", ".").replace(".", "", 1).isdigit()):
-            num = float(m.group(1).replace(",", "."))
-            tipo = tipo_pregunta(enc)
-            esc = _escala(enc, num, tipo)
-            if 0.0 <= num <= esc:
-                respuestas.append((enc, num, esc, tipo, None))
-            continue
-        if _parece_pregunta(enc) and normalizar_encabezado(v) not in _COMENTARIOS_VACIOS:
-            respuestas.append((enc, None, None, tipo_pregunta(enc), v[:1000]))
-
+    leidas = ec.leer_fila(campos, perfil)
+    con_respuesta = [r for r in leidas if r.clase in (ec.PUNTUADA, ec.COMENTARIO)]
     # Sin puntajes ni identidad: lista suelta de comentarios de una hoja de gráficos, o fila de resumen
-    if not respuestas or (not any(r[1] is not None for r in respuestas) and not (pos or estudiante)):
+    if not con_respuesta or (not any(r.puntuacion is not None for r in con_respuesta) and not (pos or estudiante)):
         return []
 
     if pos and nro_modulo:
@@ -856,24 +835,34 @@ def registros_evaluacion(campos: Dict[str, str]) -> List[Dict[str, Any]]:
         modulo = {"valor_extraido": campos.get("NOMBRE DEL PROGRAMA") or pos}
     else:
         programa = None
-        nombre_mod = campos.get("MODULO") or campos.get("CURSO") or campos.get("PROGRAMA")
+        modulo_ok = campos.get("MODULO") if campos.get("MODULO") and not ec.valor_es_respuesta_likert(campos["MODULO"]) else None
+        nombre_mod = modulo_ok or campos.get("CURSO") or campos.get("PROGRAMA")
         modulo = {"valor_extraido": nombre_mod} if nombre_mod else None
 
     fila_canonica = "|".join(f"{k}={campos[k]}" for k in sorted(campos))
-    return [{
-        "estudiante": estudiante,
-        "docente": {"valor_extraido": docente} if docente else None,
-        "programa": programa,
-        "modulo": modulo,
-        "fecha": fecha,
-        "pregunta_bloque": enc[:500],
-        "tipo_pregunta": tipo,
-        "puntuacion": num,
-        "escala_max": esc,
-        "comentario": coment,
-        "clave_respuesta": hashlib.sha1(f"{fila_canonica}||{enc}".encode("utf-8")).hexdigest(),
-        "requiere_revision": fecha is None,
-    } for enc, num, esc, tipo, coment in respuestas]
+    registros = []
+    for r in leidas:
+        avisos = list(avisos_fila) if not registros else []
+        if r.aviso:
+            avisos.append(r.aviso)
+        sin_respuesta = r.clase not in (ec.PUNTUADA, ec.COMENTARIO)
+        registros.append({
+            "estudiante": estudiante,
+            "docente": {"valor_extraido": docente} if docente else None,
+            "programa": programa,
+            "modulo": modulo,
+            "fecha": fecha,
+            "pregunta_bloque": r.cabecera[:500],
+            "tipo_pregunta": r.tipo_pregunta,
+            "puntuacion": r.puntuacion,
+            "escala_max": r.escala_max,
+            "comentario": r.comentario[:1000] if r.comentario else None,
+            "clave_respuesta": hashlib.sha1(f"{fila_canonica}||{r.cabecera}{'||aviso' if sin_respuesta else ''}".encode("utf-8")).hexdigest(),
+            "avisos_encuesta": avisos,
+            "par_evitado": r.par_evitado,
+            "requiere_revision": fecha is None,
+        })
+    return registros
 
 
 def fila_resuelta_por_regla(campos: Dict[str, str], categoria: str) -> bool:
@@ -893,7 +882,7 @@ def fila_resuelta_por_regla(campos: Dict[str, str], categoria: str) -> bool:
     return False
 
 
-def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[str]:
+def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str, perfil_encuesta: Optional[Any] = None) -> Optional[str]:
     """
     Motivo por el que una línea no puede producir un hecho (se descarta como ruido, no va a revisión), o None.
     - academico: sin estudiante (hojas MODULOS, IBP, catálogos): registros_academicos no generaría hechos.
@@ -910,7 +899,7 @@ def motivo_fila_sin_entidad(campos: Dict[str, str], categoria: str) -> Optional[
             return None
         return "FILA_AGREGADA_SIN_CATEGORIA_MES"
     if categoria == "evaluacion_docente":
-        return None if registros_evaluacion(campos) else "FILA_EVALUACION_SIN_RESPUESTAS"
+        return None if registros_evaluacion(campos, perfil_encuesta) else "FILA_EVALUACION_SIN_RESPUESTAS"
     if estudiante_de_fila(campos) is not None:
         return None
     if categoria == "academico":
