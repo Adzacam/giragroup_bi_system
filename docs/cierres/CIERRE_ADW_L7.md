@@ -8,7 +8,7 @@ Hecho (máx. 10 líneas):
 No hecho y por qué:
 - **C4** (hojas descartadas) y **C5** (10 `CONFLICTO_FUENTES`): el plan FU los reemplaza (FU-L1 y FU-L6); L4-0 ya documentó los conflictos.
 - **Purga de claves «huérfanas»:** no hay forma de identificar cuáles claves concretas no tienen hecho (el hecho no guarda la clave), y borrar por conteo sería inseguro. Las filas reclamadas sin hecho se corrigen en la fuente (FU-L1/L2/L5) y con la recarga por documento, que ya borra las claves del documento (`ingestion_service`).
-- **Limpieza de las tareas basura de la DW viva** (ids 44–55, 12 filas: 6 INGESTA y 6 LECTURA_BETO): requiere borrar filas de la DW viva; queda a decisión de Lean. SQL: `DELETE FROM public.dataops_tarea WHERE id BETWEEN 44 AND 55 AND id_lote = 1;`. Hasta entonces la UI sigue mostrando «Lectura de BETO · Lote #1».
+- **Limpieza de las tareas basura de la DW viva:** hecha con autorización escrita de Lean (2026-11-20). `DELETE FROM public.dataops_tarea WHERE id BETWEEN 44 AND 55 AND id_lote = 1 AND tipo IN ('INGESTA','LECTURA_BETO')` borró 12 filas (6 INGESTA y 6 LECTURA_BETO, todas con `total_registros = 1` o ERROR sin procesados). `dataops_tarea` pasó de 22 a 10 filas; quedan las tareas legítimas 1 y 2 del lote 1. Es la única escritura en la DW viva de este loop.
 - No se midió el acierto de la caché de entidades: con los flags apagados no se usa.
 - Tarea hecha en línea por el chat de desarrollo, no delegada a `dev-alta`.
 Invariantes cambiados: no (cascada, umbrales y 51 tablas / 10 vistas / 23 KPI intactos).
@@ -22,7 +22,7 @@ Cifras nuevas (cifra | valor | archivo en docs/mediciones/):
 - Fuentes con razón claves/hechos = 2,00 | 5 de 9 (docs 1, 37, 38, 42, 43) | adw_l7_c3_claves.csv
 Impacto en el documento (sección o tabla): ninguno. La corrección de B5/C1 desmiente dos hallazgos de la auditoría: avisar al chat 1 para que los retire del plan.
 Riesgos abiertos:
-- **Efecto secundario que causé:** mis corridas de pytest en L0 y L1 dejaron 6 filas en `dataops_tarea` de la DW viva (ids 50–55). Ya no se generan más.
+- **Efecto secundario que causé:** mis corridas de pytest en L0 y L1 dejaron 6 filas en `dataops_tarea` de la DW viva (ids 50–55). Ya no se generan más y las 12 filas basura se borraron (ver arriba).
 - Filas reclamadas sin hecho = datos que una recarga normal se saltaría (la clave existe, el hecho no): puede haber pérdida silenciosa en doc 41 y doc 36. Lo cubren FU-L1, FU-L2 y FU-L5; verificar antes de la recarga FU-L9.
 - `fact_marketing` no guarda `id_documento`, así que su trazabilidad por documento no es verificable.
 - RV2 y L1 ya están commiteados; el resto del árbol sigue sin commit.
