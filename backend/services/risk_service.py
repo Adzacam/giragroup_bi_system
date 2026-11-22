@@ -11,6 +11,9 @@ from models.fact_financiero import FactSituacionFinanciera
 from pipeline.config import NOTA_APROBACION
 from services.regla_mora import es_mora  # DA3: regla única de mora
 
+# Tope de opciones por selector de filtro (programa, módulo, docente): más opciones congelan el navegador.
+MAX_OPCIONES_FILTRO = 100
+
 
 
 def _formatear_periodo(tiempo: Optional[DimTiempo], doc_periodo: Optional[str] = None) -> str:
@@ -396,6 +399,9 @@ def evaluar_alertas_tempranas_deterministicas(
 
     afectados_por_programa: Dict[str, Dict[str, Any]] = {}
     estudiantes_en_alerta: List[Dict[str, Any]] = []
+    # Opciones de filtro: solo valores que aparecen en estudiantes con alguna alerta, sin duplicados por
+    # mayúsculas/espacios y ordenadas por casos (acotadas: el selector no debe recibir miles de opciones).
+    conteo_filtros: Dict[str, Dict[str, List[Any]]] = {"programas": {}, "modulos": {}, "docentes": {}}
 
     for id_est, p in perfiles.items():
         prom_notas = round(sum(p["notas"]) / len(p["notas"]), 1) if p["notas"] else None
@@ -432,6 +438,14 @@ def evaluar_alertas_tempranas_deterministicas(
 
         if cant_reglas == 0:
             continue
+
+        for clave_filtro, valores in (("programas", p["programas"]), ("modulos", p["modulos"]), ("docentes", p["docentes"])):
+            for valor in valores:
+                texto = (valor or "").strip()
+                if not texto or texto in ("Módulo General", "Programa General", "Sin Docente Asignado"):
+                    continue
+                entrada = conteo_filtros[clave_filtro].setdefault(" ".join(texto.split()).casefold(), [texto, 0])
+                entrada[1] += 1
 
         tags_partes = []
         if regla_aca:
@@ -583,6 +597,22 @@ def evaluar_alertas_tempranas_deterministicas(
         {"codigo": "A+D+F", "etiqueta": "Triple Alerta (A+D+F)", "total_alumnos": cnt_adf},
     ]
 
+    def _opciones(clave_filtro: str, seleccionado: Optional[str]) -> List[str]:
+        ordenadas = sorted(conteo_filtros[clave_filtro].values(), key=lambda e: (-e[1], e[0].casefold()))
+        nombres = [e[0] for e in ordenadas[:MAX_OPCIONES_FILTRO]]
+        # el valor elegido por el usuario siempre debe poder mostrarse aunque quede fuera del tope
+        if seleccionado and seleccionado.upper() != "TODOS" and seleccionado.casefold() not in {n.casefold() for n in nombres}:
+            nombres.insert(0, seleccionado)
+        return nombres
+
+    filtros_disponibles = {
+        "periodos": sorted(list(periodos_set), reverse=True),
+        "programas": _opciones("programas", programa),
+        "modulos": _opciones("modulos", modulo),
+        "docentes": _opciones("docentes", docente),
+    }
+    filtros_totales = {c: len(conteo_filtros[c]) for c in ("programas", "modulos", "docentes")}
+
     total_filtrados = len(estudiantes_en_alerta)
     if limit is not None:
         estudiantes_pagina = estudiantes_en_alerta[offset : offset + limit]
@@ -598,12 +628,8 @@ def evaluar_alertas_tempranas_deterministicas(
         "tarjetas": tarjetas,
         "matriz_interseccion": matriz_interseccion,
         "top_programas": top_programas,
-        "filtros_disponibles": {
-            "periodos": sorted(list(periodos_set), reverse=True),
-            "programas": sorted(list(programas_set)),
-            "modulos": sorted(list(modulos_set)),
-            "docentes": sorted(list(docentes_set)),
-        },
+        "filtros_disponibles": filtros_disponibles,
+        "filtros_totales": filtros_totales,
         "total_estudiantes_filtrados": total_filtrados,
         "estudiantes": estudiantes_pagina,
     }

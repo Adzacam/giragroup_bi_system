@@ -170,23 +170,29 @@ export default function RendimientoAlertas() {
     )),
     [datosAlertas.filtros_disponibles?.periodos],
   );
+  // El backend acota cada selector (más casos primero); si hay más valores, un aviso remite a la búsqueda.
+  const opcionesConAviso = (lista = [], total = 0) => {
+    const opciones = lista.map((valor) => <option key={valor} value={valor}>{valor}</option>);
+    if (total > lista.length) {
+      opciones.push(
+        <option key="__mas__" value="__mas__" disabled>
+          {`… ${total - lista.length} más: usa la búsqueda`}
+        </option>,
+      );
+    }
+    return opciones;
+  };
   const programasOptions = useMemo(
-    () => (datosAlertas.filtros_disponibles?.programas || []).map((prog) => (
-      <option key={prog} value={prog}>{prog}</option>
-    )),
-    [datosAlertas.filtros_disponibles?.programas],
+    () => opcionesConAviso(datosAlertas.filtros_disponibles?.programas, datosAlertas.filtros_totales?.programas),
+    [datosAlertas.filtros_disponibles?.programas, datosAlertas.filtros_totales?.programas],
   );
   const modulosOptions = useMemo(
-    () => (datosAlertas.filtros_disponibles?.modulos || []).map((mod) => (
-      <option key={mod} value={mod}>{mod}</option>
-    )),
-    [datosAlertas.filtros_disponibles?.modulos],
+    () => opcionesConAviso(datosAlertas.filtros_disponibles?.modulos, datosAlertas.filtros_totales?.modulos),
+    [datosAlertas.filtros_disponibles?.modulos, datosAlertas.filtros_totales?.modulos],
   );
   const docentesOptions = useMemo(
-    () => (datosAlertas.filtros_disponibles?.docentes || []).map((doc) => (
-      <option key={doc} value={doc}>{doc}</option>
-    )),
-    [datosAlertas.filtros_disponibles?.docentes],
+    () => opcionesConAviso(datosAlertas.filtros_disponibles?.docentes, datosAlertas.filtros_totales?.docentes),
+    [datosAlertas.filtros_disponibles?.docentes, datosAlertas.filtros_totales?.docentes],
   );
 
   // Query separada e independiente para la ficha del estudiante seleccionado

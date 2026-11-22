@@ -101,6 +101,7 @@ class AlertasTempranasResponse(BaseModel):
     matriz_interseccion: List[MatrizInterseccionItem]
     top_programas: List[TopProgramaAfectadoItem]
     filtros_disponibles: FiltrosDisponiblesAlertas
+    filtros_totales: Dict[str, int] = {}
     total_estudiantes_filtrados: int = 0
     estudiantes: List[EstudianteAlertaNominalItem]
 
