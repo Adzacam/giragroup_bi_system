@@ -165,7 +165,9 @@ def ejecutar_accion_contextual(
         if not nuevo_nombre:
             raise HTTPException(422, "Indica el nuevo nombre para el padrón.")
         if ent.ci_temporal:
-            est = db.query(DimEstudiante).filter(DimEstudiante.ci_nit == ent.ci_temporal).first()
+            est = db.query(DimEstudiante).filter(
+                (DimEstudiante.ci == ent.ci_temporal) | (DimEstudiante.ci_numero == ent.ci_temporal)
+            ).first()
             if est:
                 creado_undo["nombre_padron_anterior"] = est.nombre_completo
                 creado_undo["id_estudiante_actualizado"] = est.id_estudiante
@@ -182,9 +184,10 @@ def ejecutar_accion_contextual(
         est = db.query(DimEstudiante).filter(DimEstudiante.id_estudiante == int(id_cand)).first()
         if not est:
             raise HTTPException(404, "La persona seleccionada no existe en el padrón.")
+        est_ci = est.ci or est.ci_numero
         ent.mejor_candidato = est.nombre_completo
-        ent.ci_temporal = est.ci_nit or ent.ci_temporal
-        ent.fk_estado = "A" if est.ci_nit else "B"
+        ent.ci_temporal = est_ci or ent.ci_temporal
+        ent.fk_estado = "A" if est_ci else "B"
         ent.resuelto = True
         ent.estado_resolucion = "APROBACION_BLOQUE" if es_bloque else "RESUELTO_HUMANO"
         ent.resuelto_en = datetime.utcnow()
@@ -197,7 +200,8 @@ def ejecutar_accion_contextual(
         ci_opt = (payload.get("ci_opcional") or "").strip() or None
         nuevo_est = DimEstudiante(
             nombre_completo=nombre,
-            ci_nit=ci_opt,
+            ci=ci_opt,
+            ci_numero=ci_opt,
             fk_estado="C",
         )
         db.add(nuevo_est)
@@ -234,7 +238,7 @@ def ejecutar_accion_contextual(
         prog = (payload.get("programa_resuelto") or "").strip()
         if not cod_pos or not nom_mod:
             raise HTTPException(422, "Código POS y nombre de módulo son obligatorios.")
-        nuevo_mod = DimModulo(codigo_pos=cod_pos, nombre_modulo=nom_mod, programa=prog or None)
+        nuevo_mod = DimModulo(pos_code=cod_pos, nombre_modulo=nom_mod, programa=prog or None)
         db.add(nuevo_mod)
         db.flush()
         creado_undo["id_modulo_creado"] = nuevo_mod.id_modulo
@@ -320,10 +324,11 @@ def reabrir_caso(db: Session, item_id: str, user_name: str) -> Dict[str, Any]:
         est = db.query(DimEstudiante).filter_by(id_estudiante=int(undo["id_estudiante_creado"])).first()
         if est:
             try:
-                db.delete(est)
-                db.flush()
+                with db.begin_nested():
+                    db.delete(est)
+                    db.flush()
             except Exception:
-                db.rollback()
+                pass
     if undo.get("id_estudiante_actualizado") and undo.get("nombre_padron_anterior"):
         est = db.query(DimEstudiante).filter_by(id_estudiante=int(undo["id_estudiante_actualizado"])).first()
         if est:
@@ -332,10 +337,11 @@ def reabrir_caso(db: Session, item_id: str, user_name: str) -> Dict[str, Any]:
         mod = db.query(DimModulo).filter_by(id_modulo=int(undo["id_modulo_creado"])).first()
         if mod:
             try:
-                db.delete(mod)
-                db.flush()
+                with db.begin_nested():
+                    db.delete(mod)
+                    db.flush()
             except Exception:
-                db.rollback()
+                pass
     if undo.get("sinonimo"):
         _deshacer_sinonimo_catalogo(undo["sinonimo"])
 

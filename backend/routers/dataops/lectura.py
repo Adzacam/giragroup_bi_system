@@ -304,7 +304,7 @@ def get_lote_raw_vs_text(
     doc_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1),
-    page_size: int = Query(5, ge=1, le=5),
+    page_size: int = Query(20, ge=1, le=50),
 ):
     """Paso ②: cinco filas protegidas por página, sin ejecutar inferencia."""
     from services.texto_preparado_service import obtener_texto_preparado
@@ -322,7 +322,7 @@ def get_lote_plain_text_alias(
     doc_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1),
-    page_size: int = Query(5, ge=1, le=5),
+    page_size: int = Query(20, ge=1, le=50),
 ):
     """Alias del paso ②: conserva la misma paginación y protección."""
     return get_lote_raw_vs_text(id_lote=id_lote, doc_id=doc_id, db=db, page=page, page_size=page_size)
@@ -338,7 +338,7 @@ def get_lote_beto_reading(
     filtro_global: Optional[str] = Query(None),
     tipo_entidad: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
-    page_size: int = Query(5, ge=1, le=5),
+    page_size: int = Query(20, ge=1, le=50),
     search: Optional[str] = Query(None, max_length=200),
     db: Session = Depends(get_db),
 ):
@@ -363,7 +363,7 @@ def get_lote_beto_reading(
     if not isinstance(page, int):
         page = 1
     if not isinstance(page_size, int):
-        page_size = 5
+        page_size = 20
 
     lote_obj, docs_lote, docs_filtrados = _resolver_documentos_lote(db, id_lote, doc_id_filter=doc_id)
     if not docs_lote or (doc_id is not None and doc_id not in {d.id_documento for d in docs_lote}):

@@ -74,3 +74,59 @@ def test_df_l11_fixtures_heterogeneas():
             ents, score, req_rev = extract_entities_from_line(linea, [], [], [])
             assert isinstance(ents, list)
             assert 0.0 <= float(score) <= 1.0
+
+
+def test_df_l2_r4_precarga_desde_raw_y_sin_lectura_por_que():
+    from types import SimpleNamespace
+    from services.revision_consulta import caso_guardado
+
+    ent = SimpleNamespace(
+        id_staging=12081,
+        id_documento=54,
+        tipo_entidad="ESTUDIANTE",
+        motivo="BAJA_CONFIANZA",
+        nivel_confianza=0.0,
+        score_fuzzy=0.0,
+        mejor_candidato=None,
+        ci_temporal=None,
+        texto_original="Nombre Completo: Juan Perez | Programa: POS-5310 | Módulo: 1",
+        estado_resolucion="PENDIENTE",
+        lock_usuario_id=None,
+        lock_expira=None,
+        resuelto_en=None,
+        payload_json={"motivo_llano": "Índice del registro (0) inferior al umbral de pase directo (85)."},
+    )
+    doc = SimpleNamespace(id_documento=54, tipo_fuente="EVALUACION_DOCENTE", nombre_archivo="libro_4.xlsx")
+    caso = caso_guardado(ent, doc, db=None, rol_usuario="ADMIN")
+    assert caso["motivo"] == "SIN_LECTURA"
+    assert "índice del registro (0)" not in caso["por_que_detuvo"].lower()
+    assert caso["programa"] == "POS-5310"
+    assert caso["numero_modulo"] == 1
+    assert caso["acciones"][0]["precarga"]["programa"] == "POS-5310"
+    assert caso["acciones"][0]["precarga"]["numero_modulo"] == 1
+
+
+def test_df_l2_dim_models_fields_en_ejecutor_y_rapidfuzz():
+    from models.dim_estudiante import DimEstudiante
+    from models.dim_modulo import DimModulo
+    from pathlib import Path
+
+    assert hasattr(DimEstudiante, "ci")
+    assert hasattr(DimEstudiante, "programa_origen")
+    assert not hasattr(DimEstudiante, "ci_nit")
+    assert hasattr(DimModulo, "pos_code")
+    assert not hasattr(DimModulo, "codigo_pos")
+
+    ej_src = Path("backend/services/revision_acciones_ejecutor.py").read_text(encoding="utf-8")
+    rc_src = Path("backend/services/revision_consulta.py").read_text(encoding="utf-8")
+    assert "ci_nit" not in ej_src
+    assert "ci_nit" not in rc_src
+    assert "programa_academico" not in rc_src
+    assert "DimModulo(pos_code=" in ej_src
+    assert "begin_nested()" in ej_src
+
+
+def test_df_l4_lectura_acepta_page_size_20():
+    lec_src = Path("backend/routers/dataops/lectura.py").read_text(encoding="utf-8")
+    assert "Query(5, ge=1, le=5)" not in lec_src
+    assert "Query(20, ge=1, le=50)" in lec_src

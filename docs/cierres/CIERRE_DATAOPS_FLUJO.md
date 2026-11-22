@@ -7,17 +7,19 @@ Hecho (máx. 10 líneas):
 - **DF-L4 (DD7):** `beto_ents` persistido en `payload_json` de `staging_registro_crudo` sin crear tabla #52 (`CacheMemoria` por defecto en `beto_integracion.py`), sin hex fijos en `evaluacion.py`, texto `paso ②` en `lectura.py`, `EntityHighlightText.jsx`, paginación 20 y skeleton.
 - **DF-L5 / DF-L7 / DF-L8 / DF-L9(f) / DF-L11:** bitácora timeline con SHA-256, lote = tipo + período, `fk_resolver.py` y `extraccion.py` sin listas fijas, `requirements-dev.txt`, DD3 enmascaramiento y `/riesgos/estudiante/{id}/revelar`, `AuditoriaSistema.jsx` con `GET /api/v1/health` y filtro de eventos, `CONTRATO_FUENTES.md` + fixtures sintéticas.
 
+- **DF-L8 (b) completo:** todos los componentes de `frontend/src/modules/dataops/` quedaron `<= 300` líneas (`IngestView.jsx` 300, `HumanReviewFlowView.jsx` 264, `BetoReadingFlowView.jsx` 174, `BetoMetricasModal.jsx` 116) mediante extracción de subcomponentes (`IngestDropzonePanel`, `IngestRulesPanel`, `IngestQueueTable`, `IngestWorkbookPreview`, `IngestBatchFilesTable`, `BetoMetricasTablas`, `BetoCascadaResumen`, `RegistroBetoRow`).
+- **DF-L9 (verificación visual Chrome CDP):** ejecutado `node e2e/dataops_flujo.mjs` con Chrome headless vía CDP sobre `/v2/dataops/ingesta`, `/v2/dataops/lote/46/beto`, `/v2/dataops/lote/46/revision`, `/v2/admin/auditoria` y `/v2/academico/rendimiento` en `1440`, `768` y `375` px (modos claro y oscuro): `0` errores de consola, `0` desbordamientos horizontales y `0` menciones de `tarea \d` en el DOM; capturas guardadas en `docs/mediciones/df_l9_capturas/`.
+- **Correcciones de revisión:** corregido `page_size` `<= 50` en `lectura.py` (evitaba HTTP 422 en paso ② con `FILAS_BETO = 20`), corregidos atributos ORM (`ci`/`programa_origen` en `DimEstudiante`, `pos_code` en `DimModulo`) y `begin_nested()` en `revision_acciones_ejecutor.py` y `revision_consulta.py`, y añadida precarga `Programa`/`Módulo` desde texto plano (`R4`) + `por_que_detuvo` coherente en `SIN_LECTURA`.
+
 No hecho y por qué:
-- **DF-L9 (capturas Playwright en vivo):** `e2e/dataops_flujo.mjs` quedó escrito, pero `playwright` no está instalado en este entorno local (ni Node ni Python), por lo que no se tomaron capturas PNG en navegador real.
 - **DF-L10 (lote congelado v2 `df_lote_1387_v2.json`):** no ejecutado en este turno; requiere corrida controlada del lote completo y recongelado de SFV.
-- **DF-L8 (b) parcial:** `HumanReviewFlowView.jsx` bajó a 244 líneas, pero `IngestView.jsx` (996), `BetoMetricasModal.jsx` (448) y `BetoReadingFlowView.jsx` (343) siguen > 300 líneas (`docs/mediciones/df_l8_lineas.txt`).
 
 Invariantes cambiados: no (49 tablas `public` / 51 DW intactas, 10 vistas `bi`, cascada y umbrales 0,92/90/85/80 y bandas 0,85/0,60 sin cambios).
 
 Pruebas:
-- **Frontend (`vitest`):** 20 archivos / 106 passed / 0 failed + `vite build` OK (2.80 s).
-- **Backend/Pipeline (`pytest` línea base completa):** 1292 passed / 41 skipped / 7 xfailed.
-- **Backend/Pipeline (`pytest` tras cambios en `dataops_flujo`, `adw`, `f3v`, `f5c`):** 127 passed / 3 skipped / 0 failed.
+- **Frontend (`vitest`):** 20 archivos / 106 passed / 0 failed + `vite build` OK (2.85 s).
+- **Backend/Pipeline (`pytest` tras correcciones en `dataops_flujo`, `adw`, `f3v`, `f5c`):** 130 passed / 3 skipped / 0 failed (línea base completa previa: 1292 passed / 41 skipped / 7 xfailed).
+- **E2E Chrome CDP (`node e2e/dataops_flujo.mjs`):** `ok: true` (`consoleErrors: []`, `overflowIssues: []`, `taskLeakIssues: []`).
 
 Servicios reconstruidos + estado de docker compose ps:
 - Reconstruidos y reiniciados `giragroup_web` (Up, :5173) y `giragroup_api` (Up, :8000).

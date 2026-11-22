@@ -144,9 +144,9 @@ def _candidatos_homonimia_rapidfuzz(db, nombre, limit=5):
         estudiantes = db.query(
             DimEstudiante.id_estudiante,
             DimEstudiante.nombre_completo,
-            DimEstudiante.ci_nit,
-            DimEstudiante.programa_academico,
-        ).limit(2000).all()
+            DimEstudiante.ci,
+            DimEstudiante.programa_origen,
+        ).filter(DimEstudiante.deprecado == False).limit(2000).all()  # noqa: E712
         scored = []
         for est_id, nom_est, ci_est, prog_est in estudiantes:
             if not nom_est:
@@ -168,6 +168,34 @@ def _candidatos_homonimia_rapidfuzz(db, nombre, limit=5):
         ]
     except Exception:
         return []
+
+
+def _extraer_campos_raw(raw: str) -> dict:
+    """Extrae programa, módulo, docente y código POS desde el texto plano estructurado (R4)."""
+    if not raw:
+        return {}
+    out = {}
+    for seg in str(raw).split('|'):
+        if ':' not in seg:
+            continue
+        k, v = seg.split(':', 1)
+        kl = strip_accents(k).strip().lower()
+        val = v.strip()
+        if not val or val in ('.', '-', '••••'):
+            continue
+        if kl in ('programa', 'pos', 'codigo pos', 'codigo_pos') and 'programa' not in out:
+            out['programa'] = val
+            if re.match(r'^[A-Z]{2,5}[-_ ]?\d+', val, re.I):
+                out['codigo_pos'] = val
+        elif kl in ('modulo', 'nro modulo', 'numero_modulo', 'num modulo') and 'modulo' not in out:
+            if val.isdigit():
+                out['numero_modulo'] = int(val)
+                out['modulo'] = f'Módulo {val}'
+            else:
+                out['modulo'] = val
+        elif kl in ('docente', 'profesor', 'facilitador') and 'docente' not in out:
+            out['docente'] = val
+    return out
 
 
 def caso_guardado(ent, doc, db=None, rol_usuario=None):
@@ -213,6 +241,17 @@ def caso_guardado(ent, doc, db=None, rol_usuario=None):
         if m_email:
             correo_detectado = m_email.group(0)
     raw_protegido = texto_publico(raw) if raw else None
+    extra_raw = _extraer_campos_raw(raw)
+    programa_val = p.get('programa') or extra_raw.get('programa')
+    modulo_val = p.get('modulo') or extra_raw.get('modulo')
+    num_mod_val = p.get('numero_modulo') if p.get('numero_modulo') is not None else extra_raw.get('numero_modulo')
+    codigo_pos_val = p.get('codigo_pos') or extra_raw.get('codigo_pos')
+    docente_present = bool(p.get('docente') or extra_raw.get('docente'))
+    por_que = (
+        'Fila de presupuesto: verifica su clasificación antes de aprobar.' if manual
+        else ('La fila no tiene datos legibles (sin lectura de BETO).' if motivo == 'SIN_LECTURA'
+              else texto_publico(p.get('motivo_llano') or motivo_det or ''))
+    )
     publico = {
         'id': ent.id_staging, 'db_id': ent.id_staging, 'id_documento': ent.id_documento,
         'tipo_entidad': ent.tipo_entidad, 'tipo_fuente': doc.tipo_fuente if doc else None,
@@ -225,12 +264,12 @@ def caso_guardado(ent, doc, db=None, rol_usuario=None):
         'sugerencia': '••••' if ent.mejor_candidato else None,
         'ci': enmascarar_ci(ci) if ci else None, 'ci_enmascarado': enmascarar_ci(ci) if ci else None,
         'que_vio': raw_protegido, 'contexto_raw': raw_protegido,
-        'por_que_detuvo': 'Fila de presupuesto: verifica su clasificación antes de aprobar.' if manual else texto_publico(p.get('motivo_llano') or motivo_det or ''),
+        'por_que_detuvo': por_que,
         'indice_registro': score, 'similitud': score,
         'ner_confidence': float(ent.nivel_confianza) if ent.nivel_confianza is not None else None,
-        'modulo_detectado': p.get('modulo'), 'nota_final': p.get('nota_normalizada'),
-        'programa': p.get('programa'), 'numero_modulo': p.get('numero_modulo'),
-        'codigo_pos': p.get('codigo_pos'), 'docente': '••••' if p.get('docente') else None,
+        'modulo_detectado': modulo_val, 'nota_final': p.get('nota_normalizada'),
+        'programa': programa_val, 'numero_modulo': num_mod_val,
+        'codigo_pos': codigo_pos_val, 'docente': '••••' if docente_present else None,
         'fecha_inscripcion': p.get('fecha_inscripcion') or p.get('fecha'),
         'categoria_financiera': p.get('categoria_financiera'),
         'institucion': p.get('institucion'), 'clave_convenio': p.get('clave_convenio'),
