@@ -162,7 +162,14 @@ export default function CmiDetalleKpi({ codigo, onClose }) {
                     return (
                       <tr key={s.gestion}>
                         <td>{s.gestion}</td>
-                        <td>{fmtValor(s.valor, data.unidad)}</td>
+                        <td>
+                          {fmtValor(s.valor, data.unidad)}
+                          {s.n_respuestas != null && (
+                            <span style={{ display: 'block', fontSize: 11, color: 'var(--color-slate-gray)', fontVariantNumeric: 'tabular-nums' }}>
+                              n = {Number(s.n_respuestas).toLocaleString('es-BO')} resp.
+                            </span>
+                          )}
+                        </td>
                         <td>{s.meta == null ? 'No definida' : fmtValor(s.meta, data.unidad)}</td>
                         <td style={{ fontVariantNumeric: 'tabular-nums' }}>{deltaTexto}</td>
                         <td><i className="cmi-dot" style={{ background: sem.color }} /> {s.valor === null ? 'Sin dato' : sem.label}</td>

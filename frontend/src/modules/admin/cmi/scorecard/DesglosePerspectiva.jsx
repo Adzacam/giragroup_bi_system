@@ -113,18 +113,22 @@ export default function DesglosePerspectiva({ perspectiva, gestion, onVolver, on
         tipo: 'bar',
         empty: 'No hay inscripciones por programa en esta gestión.',
       });
-      const cf = series.conversion_fuente || [];
+      const cm = series.captacion_mensual || [];
+      const cob = (series.captacion_cobertura || [])[0];
       out.push({
-        titulo: 'Captación por fuente',
-        data: cf.length ? {
-          labels: cf.map((r) => r.fuente),
+        titulo: 'Captación mensual (leads vs. inscritos)',
+        subtitulo: cob
+          ? `Cobertura: ${cob.meses_con_dato} de ${cob.meses_gestion} meses (${cob.desde} a ${cob.hasta})`
+          : null,
+        data: cm.length ? {
+          labels: cm.map((r) => r.periodo_mes || `M${r.mes}`),
           datasets: [
-            { label: 'Interesados', data: cf.map((r) => r.interesados ?? 0), backgroundColor: tokens.metaBarBg, borderRadius: 6 },
-            { label: 'Inscritos', data: cf.map((r) => r.inscritos ?? 0), backgroundColor: tokens.ok, borderRadius: 6 },
+            { label: 'Interesados (leads)', data: cm.map((r) => r.leads ?? 0), backgroundColor: tokens.metaBarBg, borderRadius: 6 },
+            { label: 'Inscritos', data: cm.map((r) => r.inscritos ?? 0), backgroundColor: tokens.ok, borderRadius: 6 },
           ],
         } : null,
         tipo: 'bar',
-        empty: 'No hay cifras de captación comprobables por fuente en esta gestión.',
+        empty: 'No hay cifras de captación comprobables por mes en esta gestión.',
       });
     } else if (perspectiva.codigo === 'PROCESOS_INTERNOS') {
       const dd = series.dataops_documento || [];
@@ -227,6 +231,7 @@ export default function DesglosePerspectiva({ perspectiva, gestion, onVolver, on
           <article key={i} className="cmi-card cmi-ov-card">
             <span className="cmi-eyebrow">Analítica de perspectiva</span>
             <h3>{g.titulo}</h3>
+            {g.subtitulo && <p className="cmi-kpi-desc" style={{ marginTop: 2 }}>{g.subtitulo}</p>}
             <div className="cmi-ov-chart">
               {loadingDet ? (
                 <div className="cmi-pred-empty">Cargando serie analítica...</div>

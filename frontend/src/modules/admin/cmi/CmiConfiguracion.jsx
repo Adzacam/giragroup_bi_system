@@ -6,7 +6,12 @@ import ConfigGraficosTab from './config/ConfigGraficosTab';
 import PanelPerspectiva from './config/PanelPerspectiva';
 import './cmi.css';
 
-const COLORES_PERSPECTIVA = ['#0C1E33', '#D99B26', '#1b8754', '#5b6b8c'];
+const COLORES_PERSPECTIVA = [
+  'var(--color-gira-navy)',
+  'var(--color-gira-gold)',
+  'var(--color-alert-green)',
+  'var(--color-slate-gray)',
+];
 
 export default function CmiConfiguracion() {
   const [tab, setTab] = useState('indicadores');

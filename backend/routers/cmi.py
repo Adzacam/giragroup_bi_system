@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import require_roles
 from models.user import User
-from services import cache_consultas, captacion_cobertura
+from services import cache_consultas, captacion_cobertura, metas_cobertura
 from services.cmi_personalizacion_service import (
     ejecutar_consulta_medida,
     evaluar_kpi_personalizado,
@@ -74,6 +74,34 @@ def _filas(db: Session, sql: str, params: Optional[dict] = None) -> List[dict]:
     return [{k: _num(v) for k, v in r.items()} for r in db.execute(text(sql), params or {}).mappings()]
 
 
+def _n_respuestas_eval(db: Session, gestion: Optional[int] = None) -> Dict[tuple, int]:
+    """Conteo de respuestas válidas en [1, escala_max] por (gestion, tipo_pregunta) para KPI-19 y KPI-20 (DA1)."""
+    sql = """
+        SELECT dt.gestion AS gestion, ev.tipo_pregunta AS tipo_pregunta, COUNT(*) AS n
+        FROM public.fact_evaluacion_docente ev
+        JOIN public.dim_tiempo dt ON dt.id_tiempo = ev.id_tiempo
+        WHERE ev.puntuacion IS NOT NULL
+          AND ev.escala_max > 0
+          AND ev.puntuacion >= 1
+          AND ev.puntuacion <= ev.escala_max
+          AND ev.tipo_pregunta IN ('DOCENTE', 'INSTITUCIONAL')
+          AND (:g IS NULL OR dt.gestion = :g)
+        GROUP BY dt.gestion, ev.tipo_pregunta
+    """
+    savepoint = getattr(db, "begin_nested", None)
+    try:
+        if savepoint is None:
+            filas = _filas(db, sql, {"g": gestion})
+        else:
+            with savepoint():
+                filas = _filas(db, sql, {"g": gestion})
+    except SQLAlchemyError:
+        if savepoint is None:
+            db.rollback()
+        return {}
+    return {(int(f["gestion"]), f["tipo_pregunta"]): int(f["n"]) for f in filas}
+
+
 def _scorecard(db: Session, gestion: Optional[int], permitidas: List[str]) -> dict:
     gestiones = [r["gestion"] for r in _filas(db, "SELECT gestion FROM bi.vw_cmi_gestiones ORDER BY gestion")]
     if not gestiones:
@@ -95,10 +123,19 @@ def _scorecard(db: Session, gestion: Optional[int], permitidas: List[str]) -> di
         WHERE gestion = :g AND perspectiva = ANY(:p)
         ORDER BY orden""", params)
     captacion = None   # FU-L3: se lee una sola vez y solo si el KPI-06 se muestra
+    resp_eval = None   # ADW-M2 (DA1): n_respuestas válidas para KPI-19 / KPI-20
     for p in perspectivas:
         p["kpis"] = [k for k in kpis if k["perspectiva"] == p["codigo"]]
         for k in p['kpis']:
             k['motivo_sin_dato'] = FALTANTES.get(k['codigo']) if k['valor'] is None else None
+            if k['codigo'] in ('KPI-19', 'KPI-20'):
+                if resp_eval is None:
+                    resp_eval = _n_respuestas_eval(db, gestion)
+                tipo_eval = 'DOCENTE' if k['codigo'] == 'KPI-19' else 'INSTITUCIONAL'
+                k['n_respuestas'] = resp_eval.get((gestion, tipo_eval))
+            if k['codigo'] == 'KPI-02' and k['valor'] is None:
+                # FU-L6 (DA4): sin meta mensual el KPI-02 queda sin dato y dice si la fuente solo trae meta anual o ninguna
+                k['motivo_sin_dato'] = metas_cobertura.motivo_sin_dato_kpi02(db, gestion)
             if k['codigo'] == 'KPI-06':
                 if captacion is None:
                     captacion = captacion_cobertura.por_mes(db)
@@ -325,10 +362,20 @@ def get_historial_kpi(
     if not filas:
         raise HTTPException(status_code=404, detail="Indicador no encontrado o sin acceso para tu rol.")
     ultima = filas[-1]
+    resp_eval = None
+    if codigo in ("KPI-19", "KPI-20"):
+        resp_eval = _n_respuestas_eval(db)
+    tipo_eval = "DOCENTE" if codigo == "KPI-19" else ("INSTITUCIONAL" if codigo == "KPI-20" else None)
     return {
         "codigo": codigo, "nombre": ultima["nombre"], "descripcion": ultima["descripcion"],
         "unidad": ultima["unidad"], "sentido": ultima["sentido"],
-        "serie": [{k: f[k] for k in ("gestion", "valor", "meta", "semaforo")} for f in filas],
+        "serie": [
+            {
+                **{k: f[k] for k in ("gestion", "valor", "meta", "semaforo")},
+                **({"n_respuestas": resp_eval.get((int(f["gestion"]), tipo_eval))} if tipo_eval else {}),
+            }
+            for f in filas
+        ],
     }
 
 

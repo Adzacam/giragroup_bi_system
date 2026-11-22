@@ -1,0 +1,10 @@
+indicador,gestion,antes,despues,nota
+KPI-18,2022,,4,Asignado a gestion del dato (sin created_at)
+KPI-18,2023,,18,Asignado a gestion del dato (sin created_at)
+KPI-18,2024,,26,Asignado a gestion del dato (sin created_at)
+KPI-18,2025,,818,Asignado a gestion del dato (sin created_at)
+KPI-18,2026,1635,769,De 1635 agrupados por created_at a 769 propios de 2026
+vw_cmi_gestiones,2023,visible (4 KPI),filtrada,Gestion residual filtrada (< 10 KPI o < 5 con umbral)
+vw_cmi_gestiones,2024,visible (20 KPI),visible (21 KPI),Suma KPI-18
+vw_cmi_gestiones,2025,visible (22 KPI),visible (23 KPI),Suma KPI-18
+vw_cmi_gestiones,2026,visible (14 KPI),visible (14 KPI),Mantiene KPI-18

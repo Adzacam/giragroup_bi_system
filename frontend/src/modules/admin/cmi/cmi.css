@@ -1,19 +1,19 @@
 /* Cuadro de Mando Integral — scorecard y configuración */
 .cmi {
-  --cmi-ok: var(--color-alert-green, #1b8754);
-  --cmi-warn: var(--color-alert-amber, #b45309);
-  --cmi-bad: var(--color-alert-red, #d9383a);
-  --cmi-muted: var(--color-smoke-gray, #a3a6af);
+  --cmi-ok: var(--color-alert-green);
+  --cmi-warn: var(--color-alert-amber);
+  --cmi-bad: var(--color-alert-red);
+  --cmi-muted: var(--color-smoke-gray);
   --cmi-track: var(--color-mist-gray);
   --cmi-card: var(--color-paper-white);
   font-family: var(--font-sohne);
   color: var(--color-ink-black);
 }
 [data-theme="dark"] .cmi {
-  --cmi-ok: var(--color-alert-green, #4ade80);
-  --cmi-warn: var(--color-alert-amber, #fbbf24);
-  --cmi-bad: var(--color-alert-red, #f87171);
-  --cmi-muted: var(--color-ash-gray, #6b7280);
+  --cmi-ok: var(--color-alert-green);
+  --cmi-warn: var(--color-alert-amber);
+  --cmi-bad: var(--color-alert-red);
+  --cmi-muted: var(--color-ash-gray);
 }
 
 .cmi-card {
@@ -200,6 +200,7 @@
 .cmi-progress { height: 6px; border-radius: 9999px; background: var(--cmi-track); position: relative; overflow: hidden; }
 .cmi-progress > i { position: absolute; inset: 0 auto 0 0; border-radius: 9999px; }
 .cmi-kpi-foot { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--color-slate-gray); flex-wrap: wrap; }
+.cmi-kpi-n-respuestas { font-variant-numeric: tabular-nums; }
 .cmi-kpi-desc { font-size: 12px; color: var(--color-slate-gray); line-height: 1.45; margin: 0; }
 
 .cmi-empty, .cmi-error {
@@ -230,8 +231,8 @@
   cursor: pointer;
 }
 .cmi-btn:disabled { opacity: .5; cursor: not-allowed; }
-.cmi-btn-primary { background: var(--color-gira-navy); border-color: var(--color-gira-navy); color: #fff; }
-[data-theme="dark"] .cmi-btn-primary { background: var(--color-gira-gold); border-color: var(--color-gira-gold); color: #0c1e33; }
+.cmi-btn-primary { background: var(--color-gira-navy); border-color: var(--color-gira-navy); color: var(--color-pure-white); }
+[data-theme="dark"] .cmi-btn-primary { background: var(--color-gira-gold); border-color: var(--color-gira-gold); color: var(--color-gira-navy); }
 
 .cmi-cfg-intro { padding: 18px 20px; margin-bottom: 20px; display: flex; gap: 18px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
 .cmi-cfg-intro p { margin: 0; font-size: 13px; color: var(--color-slate-gray); max-width: 640px; line-height: 1.5; }
@@ -369,7 +370,7 @@
   max-width: 100%;
 }
 [data-theme="dark"] .cmi-page-header p {
-  color: var(--color-slate-gray, #9CA3AF) !important;
+  color: var(--color-slate-gray) !important;
 }
 .cmi-header-btn {
   display: inline-flex;
@@ -421,9 +422,16 @@
   cursor: pointer;
   border-radius: 9999px;
   border: 1px solid rgba(217, 155, 38, 0.5);
-  background: #0C1E33;
-  color: #FAF9F6;
+  background: var(--color-gira-navy);
+  color: var(--color-alabaster);
   box-shadow: 0 2px 8px rgba(12, 30, 51, 0.15);
+}
+[data-theme="dark"] .cmi-export-btn {
+  color: var(--color-ink-black);
+}
+[data-theme="dark"] [data-ui-version="v2"] .cmi-export-btn,
+[data-theme="dark"][data-ui-version="v2"] .cmi-export-btn {
+  color: var(--color-alabaster);
 }
 .cmi-export-menu {
   position: absolute;
@@ -554,7 +562,7 @@
 }
 [data-theme="dark"] .cmi-btn-recalcular {
   background: var(--color-gira-gold);
-  color: #0C1E33;
+  color: var(--color-gira-navy);
 }
 .cmi-pred-card {
   padding: 24px;
@@ -790,11 +798,15 @@
   gap: 12px;
   min-width: 0;
 }
+.cmi-map-horiz-wrap .cmi-map-head {
+  margin-bottom: 14px;
+}
 .cmi-map-horiz-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   align-items: stretch;
+  padding-top: 10px;
 }
 .cmi-map-connector {
   display: none;

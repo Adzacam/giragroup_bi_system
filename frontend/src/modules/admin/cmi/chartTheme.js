@@ -8,17 +8,17 @@ function cssVar(name, fallback) {
 
 export function getChartTokens(isDark) {
   return {
-    text: cssVar('--color-ink-black', isDark ? '#FAF9F6' : '#17191C'),
-    muted: cssVar('--color-slate-gray', isDark ? '#9CA3AF' : '#777B86'),
-    navy: cssVar('--color-gira-navy', isDark ? '#FAF9F6' : '#0C1E33'),
-    gold: cssVar('--color-gira-gold', '#D99B26'),
-    goldLight: cssVar('--color-gira-gold-light', '#F1B844'),
-    ok: cssVar('--color-alert-green', '#1B8754'),
-    warn: cssVar('--color-alert-amber', '#B45309'),
-    bad: cssVar('--color-alert-red', '#D9383A'),
+    text: cssVar('--color-ink-black', isDark ? 'rgb(250, 249, 246)' : 'rgb(23, 25, 28)'),
+    muted: cssVar('--color-slate-gray', isDark ? 'rgb(156, 163, 175)' : 'rgb(119, 123, 134)'),
+    navy: cssVar('--color-gira-navy', isDark ? 'rgb(250, 249, 246)' : 'rgb(12, 30, 51)'),
+    gold: cssVar('--color-gira-gold', 'rgb(217, 155, 38)'),
+    goldLight: cssVar('--color-gira-gold-light', 'rgb(241, 184, 68)'),
+    ok: cssVar('--color-alert-green', 'rgb(27, 135, 84)'),
+    warn: cssVar('--color-alert-amber', 'rgb(180, 83, 9)'),
+    bad: cssVar('--color-alert-red', 'rgb(217, 56, 58)'),
     grid: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
-    tooltipBg: isDark ? '#20252E' : '#0C1E33',
-    tooltipText: '#FAF9F6',
+    tooltipBg: isDark ? 'rgb(32, 37, 46)' : 'rgb(12, 30, 51)',
+    tooltipText: cssVar('--color-alabaster', 'rgb(250, 249, 246)'),
     icBand: 'rgba(217, 155, 38, 0.14)',
     metaBarBg: isDark ? 'rgba(119, 123, 134, 0.35)' : 'rgba(12, 30, 51, 0.18)',
   };

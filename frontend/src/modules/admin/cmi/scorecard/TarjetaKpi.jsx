@@ -44,13 +44,19 @@ export default function TarjetaKpi({ kpi, onAbrir, forceClassicCard = false }) {
   const sinDato = kpi.valor === null;
   const pct = avance(kpi);
 
+  const tieneRespuestas = kpi.n_respuestas !== null && kpi.n_respuestas !== undefined;
+  const textoRespuestas = tieneRespuestas
+    ? `n = ${Number(kpi.n_respuestas).toLocaleString('es-BO')} resp.`
+    : null;
+
   if (isV2Active() && !forceClassicCard) {
     const metaText = kpi.meta === null
       ? 'Meta no definida'
       : `Meta ${kpi.sentido === 'MIN' ? '≤' : '≥'} ${fmtValor(kpi.meta, kpi.unidad, { compacto: true })}`;
-    const previousText = kpi.valor_anterior !== null && kpi.valor_anterior !== undefined
+    const basePrev = kpi.valor_anterior !== null && kpi.valor_anterior !== undefined
       ? `Anterior ${fmtValor(kpi.valor_anterior, kpi.unidad, { compacto: true })}`
       : 'Sin gestión anterior';
+    const previousText = textoRespuestas ? `${basePrev} · ${textoRespuestas}` : basePrev;
     return (
       <CardFolderV2
         code={kpi.codigo}
@@ -105,6 +111,7 @@ export default function TarjetaKpi({ kpi, onAbrir, forceClassicCard = false }) {
       <div className="cmi-kpi-foot">
         <span>Meta {kpi.meta === null ? 'no definida' : `${kpi.sentido === 'MIN' ? '≤' : '≥'} ${fmtValor(kpi.meta, kpi.unidad, { compacto: true })}`}</span>
         {kpi.valor_anterior !== null && <span>Anterior {fmtValor(kpi.valor_anterior, kpi.unidad, { compacto: true })}</span>}
+        {textoRespuestas && <span className="cmi-kpi-n-respuestas">{textoRespuestas}</span>}
       </div>
       {(kpi.motivo_sin_dato || kpi.descripcion) && (
         <p className="cmi-kpi-desc">{sinDato && kpi.motivo_sin_dato ? kpi.motivo_sin_dato : kpi.descripcion}</p>

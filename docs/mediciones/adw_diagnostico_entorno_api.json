@@ -1,0 +1,41 @@
+{
+  "fecha": "2026-11-21",
+  "tarea": "ADW-B2",
+  "entorno_paquetes": {
+    "local": {
+      "python": "3.14.6",
+      "pytest": "9.1.1",
+      "seqeval": "no instalado (ModuleNotFoundError)",
+      "statsmodels": "no instalado (ModuleNotFoundError; Holt-Winters usa motor nativo NumPy)",
+      "torch": "no instalado (ModuleNotFoundError)",
+      "transformers": "no instalado (ModuleNotFoundError)"
+    },
+    "contenedor_giragroup_api": {
+      "pytest": "9.2.0",
+      "statsmodels": "0.15.0",
+      "seqeval": "no instalado (dependencia de entrenamiento/evaluación NLP, no runtime API)",
+      "torch": "no instalado",
+      "transformers": "no instalado"
+    }
+  },
+  "pytest_sprint1_a_6": {
+    "passed": 651,
+    "failed": 4,
+    "fallas": [
+      "tests/sprint3/test_beto_entrenamiento_endurecimiento.py::test_training_info_sha_formato_sin_entrenar",
+      "tests/sprint3/test_beto_entrenamiento_endurecimiento.py::test_salida_modelo_protegida_y_no_vacia",
+      "tests/sprint3/test_beto_entrenamiento_endurecimiento.py::test_relajado_matching_uno_a_uno",
+      "tests/sprint3/test_beto_entrenamiento_endurecimiento.py::test_inferencia_alineacion_y_truncado_sin_modelo"
+    ],
+    "causa": "Dependencias de entrenamiento/evaluación BETO (seqeval, torch, transformers) no instaladas en el Python local 3.14; statsmodels ausente en local genera fallback a NumPy."
+  },
+  "diagnostico_http_502": {
+    "evento_observado": "21/Nov/2026:23:58:28 +0000 - GET /api/v1/dataops/tareas -> HTTP 502 (559 bytes) en giragroup_gateway",
+    "causa_raiz": "Reinicio/rebuild reciente de giragroup_api (Up 3 min vs giragroup_gateway Up 37 min). Durante la ventana de arranque del contenedor api, nginx recibe Connection refused (111) / Connection reset by peer (104) y responde 502 Bad Gateway; además, si api cambia de IP al recrearse sin recargar gateway, nginx puede retener una IP previa.",
+    "estado_actual": {
+      "gateway_health": 200,
+      "api_health": 200,
+      "api_ip": "172.18.0.9"
+    }
+  }
+}

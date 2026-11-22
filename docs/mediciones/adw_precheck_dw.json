@@ -1,0 +1,60 @@
+{
+  "fecha": "2026-11-21",
+  "tarea": "ADW-B3",
+  "backup_preventivo": {
+    "archivo": "backups/giragroup_db_pre_adw_l6_20261121.dump",
+    "bytes": 121135306,
+    "origen": "giragroup_db (localhost:5434)"
+  },
+  "doble_aplicacion_tmpfs": {
+    "entorno": "tmpfs limpia (postgres:16-alpine, restaurada desde backup preventivo, destruida al finalizar)",
+    "secuencia": [
+      "022_fu_l2_cobranza_mora_da3.sql",
+      "023_fu_l3_fact_marketing_documento.sql",
+      "024_fu_l4_actas_resultado_desercion.sql",
+      "025_fu_l5_encuestas_escala_da1.sql",
+      "026_fu_l6_metas_granularidad.sql",
+      "027_adw_l6_cmi_config.sql"
+    ],
+    "pasada_1_exit_code": 0,
+    "pasada_2_exit_code": 0,
+    "idempotente": true
+  },
+  "conteo_sql_verificado": {
+    "tablas_public_y_bi": 51,
+    "vistas_bi": 10,
+    "kpis_bi_ref_kpi": 23
+  },
+  "inventario_contenedores_huerfanos": [
+    {
+      "nombre": "fu_l6_pg_tmpfs",
+      "estado": "Up 2 hours",
+      "puertos": "127.0.0.1:55441->5432/tcp",
+      "imagen": "postgres:16-alpine"
+    },
+    {
+      "nombre": "fu_l5_pg_tmpfs",
+      "estado": "Up 4 hours",
+      "puertos": "127.0.0.1:55440->5432/tcp",
+      "imagen": "postgres:16-alpine"
+    },
+    {
+      "nombre": "adw_pg_tmpfs",
+      "estado": "Up 10 hours",
+      "puertos": "127.0.0.1:55433->5432/tcp",
+      "imagen": "postgres:16-alpine"
+    },
+    {
+      "nombre": "beto_pg_tmpfs",
+      "estado": "Exited (255) 35 hours ago",
+      "puertos": "127.0.0.1:55432->5432/tcp",
+      "imagen": "postgres:16-alpine"
+    },
+    {
+      "nombre": "beto_pg_f3w",
+      "estado": "Exited (0) 3 days ago",
+      "puertos": "",
+      "imagen": "postgres:16-alpine"
+    }
+  ]
+}

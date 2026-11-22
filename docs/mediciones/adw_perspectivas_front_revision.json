@@ -1,0 +1,26 @@
+{
+  "fecha": "2026-11-21",
+  "tarea": "ADW-M2",
+  "cambios": {
+    "backend_routers_cmi": [
+      "Exposición de n_respuestas en _scorecard y get_historial_kpi para KPI-19 (DOCENTE) y KPI-20 (INSTITUCIONAL) con regla DA1 (puntuacion en [1, escala_max]) y SAVEPOINT defensivo."
+    ],
+    "frontend_cmi": [
+      "DesglosePerspectiva.jsx: sustitución de conversion_fuente por captacion_mensual + captacion_cobertura en CLIENTES con subtítulo de cobertura.",
+      "TarjetaKpi.jsx: visualización de n_respuestas en tarjeta clásica y CardFolderV2.",
+      "CmiDetalleKpi.jsx: visualización de n_respuestas en la tabla histórica por gestión.",
+      "chartTheme.js, CmiConfiguracion.jsx, cmi.css: eliminación de hex sueltos (#RRGGBB); uso exclusivo de tokens de tokens.css y fallbacks rgb() en chartTheme."
+    ]
+  },
+  "verificacion": {
+    "vitest": "19 archivos, 103/103 tests passed",
+    "vite_build": "built in 4.85s, 0 errores",
+    "hex_sueltos_cmi": 0,
+    "perspectivas_alineadas_por_area": {
+      "FINANCIERA": ["metas_mensual", "cartera_estado"],
+      "CLIENTES": ["inscritos_programa", "captacion_mensual", "captacion_cobertura"],
+      "PROCESOS_INTERNOS": ["dataops_documento"],
+      "APRENDIZAJE": ["riesgo_estudiante"]
+    }
+  }
+}
