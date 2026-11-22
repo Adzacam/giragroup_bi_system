@@ -17,11 +17,20 @@ from models.user import User  # noqa: E402
 from routers.dataops.lectura import _calcular_resumen_cascada  # noqa: E402
 
 
-def _cliente():
+@pytest.fixture()
+def cliente_auditor():
+    """Cliente con usuario auditor; restaura el override al terminar para no contaminar otros tests (auth/RBAC)."""
+    previo = app.dependency_overrides.get(get_current_user)
     app.dependency_overrides[get_current_user] = lambda: User(
         id=1, username="auditor", email="auditor@ejemplo.test", role="AUDITOR_CALIDAD", is_active=True
     )
-    return TestClient(app)
+    try:
+        yield TestClient(app)
+    finally:
+        if previo is None:
+            app.dependency_overrides.pop(get_current_user, None)
+        else:
+            app.dependency_overrides[get_current_user] = previo
 
 
 def _xlsx_sintetico() -> bytes:
@@ -46,8 +55,8 @@ def _xlsx_sintetico() -> bytes:
     return buf.getvalue()
 
 
-def test_preview_workbook_sin_pii_y_con_mapeo_editable():
-    cli = _cliente()
+def test_preview_workbook_sin_pii_y_con_mapeo_editable(cliente_auditor):
+    cli = cliente_auditor
     contenido = _xlsx_sintetico()
     res = cli.post(
         "/api/v1/dataops/preview-workbook",
