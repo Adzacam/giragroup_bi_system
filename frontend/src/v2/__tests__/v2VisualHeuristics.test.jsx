@@ -96,6 +96,12 @@ describe('Correcciones visuales y heurísticas V2', () => {
     expect(css).toContain('.btn-pill-gold:disabled');
     expect(css).toContain('[data-theme="dark"] .btn-pill-gold:disabled');
     expect(css).toContain('var(--color-ink-black)');
+
+    const dropzoneSrc = fs.readFileSync(
+      path.resolve(process.cwd(), 'src/modules/dataops/components/IngestDropzonePanel.jsx'),
+      'utf8'
+    );
+    expect(dropzoneSrc).not.toContain('sileo-btn');
   });
 
   it('AvisosTab aplica overflowWrap anywhere y minWidth 0 para códigos largos en móvil', () => {

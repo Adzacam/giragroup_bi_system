@@ -90,7 +90,6 @@ export default function IngestDropzonePanel({
           variant="ghost"
           disabled={queuedFiles.length === 0 || isProcessing || isCheckingFiles}
           onClick={onClearQueue}
-          className="sileo-btn"
           style={{
             padding: '8px 14px',
             fontSize: '12px',
