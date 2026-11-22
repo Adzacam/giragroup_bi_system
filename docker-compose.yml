@@ -92,6 +92,8 @@ services:
       - ./uploads:/app/uploads
       # Catálogo guía (seed_catalogos.sql) que lee pipeline/normalization/catalog_repository.py
       - ./db:/app/db:ro
+      # Catálogo M5 de encabezados y extracción (config/mapeo_fuentes.yaml)
+      - ./config:/app/config:ro
 
   # 5. Microservicio Auth & IAM (Puerto 8001 aislado en red interna Docker)
   auth-service:

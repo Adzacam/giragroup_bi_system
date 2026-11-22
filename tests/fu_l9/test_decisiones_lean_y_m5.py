@@ -65,10 +65,29 @@ def test_migracion_028_contiene_decisiones_lean():
 
 
 def test_riesgos_router_tiene_resumen_vista():
+    from unittest.mock import MagicMock
     from routers import riesgos
 
     rutas = {r.path for r in riesgos.router.routes}
     assert "/api/v1/riesgos/resumen-vista" in rutas
+
+    db_mock = MagicMock()
+    fila = {
+        "gestion": 2026,
+        "total_estudiantes": 2082,
+        "regla_academico": 0,
+        "regla_desercion": 0,
+        "regla_financiero": 641,
+        "criticos": 0,
+        "moderados": 641,
+        "sin_alerta": 1441,
+    }
+    db_mock.execute.return_value.mappings.return_value.all.return_value = [fila]
+    res = riesgos.obtener_resumen_riesgo_vista(gestion=2026, db=db_mock, current_user=None)
+    assert res["status"] == "success"
+    assert res["fuente"] == "bi.vw_riesgo_estudiante"
+    assert res["gestiones"] == [fila]
+    assert "bi.vw_riesgo_estudiante" in str(db_mock.execute.call_args[0][0])
 
 
 def test_encuestas_sin_fecha_no_imputan_tiempo_del_programa():
