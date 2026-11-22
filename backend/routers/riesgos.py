@@ -40,6 +40,56 @@ ROLES_ALERTAS = ["ADMIN", "DIRECTOR_ACADEMICO", "ANALISTA_FINANCIERO", "AUDITOR_
 
 
 @router.get(
+    "/estudiante/{id_estudiante}/revelar",
+    summary="Revelar nombre o CI de un estudiante con auditoría (DD3)",
+)
+def revelar_campo_estudiante(
+    id_estudiante: int = Path(..., ge=1),
+    campo: str = Query("nombre", pattern="^(nombre|ci)$"),
+    motivo: str = Query("Consulta operativa autorizada", max_length=200),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "ANALISTA_FINANCIERO", "DIRECTOR_ACADEMICO"])),
+):
+    from models.dim_estudiante import DimEstudiante
+    from models.log_pipeline import LogPipelineIngesta
+
+    est = db.query(DimEstudiante).filter(DimEstudiante.id_estudiante == id_estudiante).first()
+    if not est:
+        raise HTTPException(status_code=404, detail="Estudiante no encontrado.")
+
+    valor = (
+        (est.nombre_completo or "").strip()
+        if campo == "nombre"
+        else (est.ci or est.ci_numero or est.codigo_estudiante or "S/C").strip()
+    )
+    user_name = getattr(current_user, "username", None) or "Usuario"
+    user_role = getattr(current_user, "role", None) or "SIN_ROL"
+    try:
+        db.add(
+            LogPipelineIngesta(
+                id_documento=None,
+                etapa="REVELACION_PII",
+                nivel="INFO",
+                modulo="Riesgos y Cartera",
+                mensaje=f"{user_name} ({user_role}) reveló {campo} de estudiante #{id_estudiante}.",
+                metadata_json={
+                    "id_estudiante": id_estudiante,
+                    "campo": campo,
+                    "usuario": user_name,
+                    "rol": user_role,
+                    "motivo": motivo,
+                },
+            )
+        )
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        logger.warning("No se pudo auditar revelación de estudiante %s: %s", id_estudiante, exc)
+
+    return {"status": "success", "id_estudiante": id_estudiante, "campo": campo, "valor": valor}
+
+
+@router.get(
     "/cruzado",
     response_model=RiesgoCruzadoResponse,
     summary="Obtener alertas de riesgo académico-financiero cruzado",

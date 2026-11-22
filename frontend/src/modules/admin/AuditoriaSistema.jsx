@@ -38,7 +38,24 @@ export default function AuditoriaSistema() {
   // Filtros de Auditoría
   const [filterModulo, setFilterModulo] = useState('Todos');
   const [filterSeveridad, setFilterSeveridad] = useState('Todos');
+  const [filterTipoEvento, setFilterTipoEvento] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
+  const [dwHealth, setDwHealth] = useState(null);
+  const [checkingHealth, setCheckingHealth] = useState(false);
+
+  const checkHealth = async () => {
+    setCheckingHealth(true);
+    try {
+      const res = await auditApi.getHealth();
+      setDwHealth(res);
+    } finally {
+      setCheckingHealth(false);
+    }
+  };
+
+  useEffect(() => {
+    checkHealth();
+  }, []);
 
   // ── Reglas y Alertas de Negocio (Pestaña 2) ──────────────────────────
   const [alertas, setAlertas] = useState([]);
@@ -357,7 +374,17 @@ export default function AuditoriaSistema() {
       return true;
     });
   }, [alertas, filterTipoAlerta, filterSeveridadAlerta, searchAlertas]);
-  const pagLogs = usePaginacion(logs);
+  const filteredLogs = useMemo(() => {
+    if (filterTipoEvento === 'Todos') return logs;
+    return logs.filter((l) => {
+      const txt = `${l.etapa || ''} ${l.evento || ''} ${l.mensaje || ''} ${l.accion || ''}`.toUpperCase();
+      if (filterTipoEvento === 'APROBACION_BLOQUE') return txt.includes('APROBACION_EN_BLOQUE') || txt.includes('APROBACION_BLOQUE');
+      if (filterTipoEvento === 'REVELACION') return txt.includes('REVELACION');
+      return true;
+    });
+  }, [logs, filterTipoEvento]);
+
+  const pagLogs = usePaginacion(filteredLogs);
   const pagAlertas = usePaginacion(filteredAlertas);
 
   const totalCriticasAlertas = alertas.filter((a) => a.severidad === 'CRITICAL').length;
@@ -371,7 +398,43 @@ export default function AuditoriaSistema() {
         title="Auditoría, Trazabilidad y Alertas"
         subtitle="Monitoreo cronológico inmutable de eventos, evaluación multidimensional de reglas de riesgo e ingesta bajo demanda."
         action={
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+            {dwHealth && (
+              <div
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 12px',
+                  borderRadius: 999, fontSize: 12, fontWeight: 600,
+                  background: dwHealth.healthy ? 'var(--dataops-success-bg, rgba(16,185,129,0.12))' : 'var(--dataops-danger-bg, rgba(239,68,68,0.12))',
+                  color: dwHealth.healthy ? 'var(--dataops-success-text, #047857)' : 'var(--color-alert-red, #b91c1c)',
+                  border: '1px solid var(--color-border)',
+                }}
+                title={`Última verificación: ${dwHealth.checkedAt}`}
+              >
+                <Database size={14} />
+                <span>{dwHealth.healthy ? 'DW Conectado' : 'DW Sin Conexión'}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>{dwHealth.latencyMs} ms · {dwHealth.checkedAt}</span>
+                <button
+                  type="button"
+                  onClick={checkHealth}
+                  disabled={checkingHealth}
+                  aria-label="Refrescar salud del sistema"
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'inherit', padding: 2 }}
+                >
+                  <RefreshCw size={12} className={checkingHealth ? 'spin' : ''} />
+                </button>
+              </div>
+            )}
+            <select
+              aria-label="Filtrar por tipo de evento"
+              className="dataops-select"
+              value={filterTipoEvento}
+              onChange={(e) => setFilterTipoEvento(e.target.value)}
+              style={{ fontSize: 12, padding: '6px 10px' }}
+            >
+              <option value="Todos">Todos los eventos</option>
+              <option value="APROBACION_BLOQUE">Aprobación en bloque</option>
+              <option value="REVELACION">Revelación autorizada</option>
+            </select>
             <button
               onClick={() => setIsModalOpen(true)}
               type="button"

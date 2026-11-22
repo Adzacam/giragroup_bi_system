@@ -550,6 +550,21 @@ class CatalogRepository:
 
         return None
 
+    def sinonimos_campo(self, campo_canonico: str) -> List[str]:
+        """Devuelve todos los encabezados sinónimos registrados en cat_mapeo_columna para un campo canónico."""
+        objetivo = (campo_canonico or "").strip().lower()
+        res = []
+        for alias, mapeo in (self.mapeos_columna or {}).items():
+            can = str(mapeo.get("campo_canonico") or mapeo.get("campo") or "").strip().lower()
+            if can == objetivo or objetivo in can:
+                res.append(alias.upper())
+        return res
+
+    def registrar_sinonimo(self, valor_recibido: str, valor_canonico: str, campo_objetivo: str = "modulo") -> None:
+        clean = (valor_recibido or "").strip().lower()
+        if clean:
+            self.mapeos_columna[clean] = {"campo_canonico": valor_canonico, "tipo_entidad": campo_objetivo}
+
     def obtener_guia_texto_plano(self, subtipo: str) -> Dict[str, Any]:
         """
         Retorna la plantilla y metadatos de serialización para un subtipo dado.

@@ -47,17 +47,64 @@ router = APIRouter()
 def get_review_tray(
     doc_id: Optional[int] = Query(None), id_lote: Optional[str] = Query(None),
     motivo: Optional[str] = Query(None), estado: Optional[str] = Query(None),
-    page: int = Query(1, ge=1), page_size: int = Query(5, ge=1, le=5),
+    page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=50),
     search: Optional[str] = Query(None, max_length=200), area: Optional[str] = Query(None),
     vista: str = Query("PENDIENTES", pattern="^(PENDIENTES|RESUELTOS)$"),
-    grupo: Optional[str] = Query(None, max_length=80), db: Session = Depends(get_db),
+    grupo: Optional[str] = Query(None, max_length=80),
+    rol: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
 ):
     from services import revision_consulta as revision
     valor = lambda v, tipo, defecto=None: v if isinstance(v, tipo) else defecto
     docs = revision.documentos(db, valor(id_lote, (str, int)), valor(doc_id, int))
-    return revision.consultar(db, docs, valor(page, int, 1), valor(page_size, int, 5),
+    return revision.consultar(db, docs, valor(page, int, 1), valor(page_size, int, 20),
         valor(search, str, ''), valor(area, str), valor(motivo, str), valor(estado, str),
-        valor(vista, str, 'PENDIENTES'), valor(grupo, str))
+        valor(vista, str, 'PENDIENTES'), valor(grupo, str), rol_usuario=valor(rol, str) or "AUDITOR_CALIDAD")
+
+
+@router.get("/review-tray/avisos")
+def get_review_tray_avisos(
+    doc_id: Optional[int] = Query(None),
+    id_lote: Optional[str] = Query(None),
+    estado: str = Query("PENDIENTE", pattern="^(PENDIENTE|RESUELTO_HUMANO|DESCARTADO|TODOS)$"),
+    rol: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    """Expone los avisos de `log_inconsistencias` para revisión accionable en la bandeja (DF-L2 c)."""
+    from services import revision_consulta as revision
+    from services.revision_acciones_ejecutor import consultar_avisos
+    docs = revision.documentos(db, id_lote, doc_id) if (id_lote is not None or doc_id is not None) else []
+    doc_ids = [d.id_documento for d in docs]
+    return consultar_avisos(db, doc_ids, estado=estado, rol_usuario=rol or "AUDITOR_CALIDAD")
+
+
+@router.post("/review-tray/avisos/{aviso_id}/resolver")
+def resolve_review_tray_aviso(
+    aviso_id: int,
+    payload: Optional[dict] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
+):
+    from services.revision_acciones_ejecutor import resolver_aviso
+    user_name = getattr(current_user, "username", None) or "Auditor Calidad"
+    user_role = getattr(current_user, "role", None) or "AUDITOR_CALIDAD"
+    res = resolver_aviso(db, aviso_id, dict(payload or {}), user_name, user_role)
+    cache_consultas.invalidar()
+    return res
+
+
+@router.post("/review-tray/{item_id}/reabrir")
+def reopen_review_item(
+    item_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
+):
+    """Reabre un caso resuelto mientras el lote no esté consolidado (DF-L2 d / DD2)."""
+    from services.revision_acciones_ejecutor import reabrir_caso
+    user_name = getattr(current_user, "username", None) or "Auditor Calidad"
+    res = reabrir_caso(db, item_id, user_name)
+    cache_consultas.invalidar()
+    return res
 
 
 @router.get("/review-tray/motivos")
@@ -352,9 +399,13 @@ def resolve_review_item(
                 raise HTTPException(422, 'Esta fila de presupuesto requiere corregir su clasificación antes de aprobarla como persona.')
             user_name = current_user.username if (current_user and hasattr(current_user, "username")) else "Auditor Calidad"
             user_id = current_user.id if (current_user and hasattr(current_user, "id")) else None
+            user_role = getattr(current_user, "role", None) or "AUDITOR_CALIDAD"
             accion = (payload.get("accion") or "APROBAR").upper()
             if accion not in ('APROBAR', 'DESCARTAR'):
-                raise HTTPException(422, 'Selecciona aprobar o descartar.')
+                from services.revision_acciones_ejecutor import ejecutar_accion_contextual
+                res_ctx = ejecutar_accion_contextual(db, ent, payload, user_name, user_role)
+                cache_consultas.invalidar()
+                return res_ctx
 
             if "DESCARTAR" in accion:
                 if not str(payload.get('motivo_descarte') or '').strip():
@@ -623,14 +674,15 @@ def resolve_review_item(
                 logger.exception("No se pudo guardar el caso %s", item_id)
                 raise HTTPException(503, 'No se pudo guardar el caso. Continúa pendiente; inténtalo de nuevo.') from e_res
 
+            estado_final = "APROBACION_BLOQUE" if payload.get("aprobacion_en_bloque") else "RESUELTO_HUMANO"
             ent.resuelto = True
-            ent.estado_resolucion = "RESUELTO_HUMANO"
+            ent.estado_resolucion = estado_final
             ent.resuelto_en = datetime.now()
             if ent.registro_origen_id:
                 stg_parent = db.query(StagingRegistroCrudo).filter_by(id=ent.registro_origen_id).first()
                 if stg_parent:
                     stg_parent.resuelto = True
-                    stg_parent.estado_resolucion = "RESUELTO_HUMANO"
+                    stg_parent.estado_resolucion = estado_final
                     stg_parent.resuelto_en = datetime.now()
             db.commit()
 
@@ -640,7 +692,7 @@ def resolve_review_item(
                     texto_original=(ent.texto_original or "")[:500],
                     prediccion_beto=(ent.mejor_candidato or ent.tipo_entidad or "")[:200],
                     confianza_ia=float(ent.nivel_confianza or 0.70),
-                    correccion_humana=nom_clean[:200],
+                    correccion_humana="APROBACION_BLOQUE" if payload.get("aprobacion_en_bloque") else nom_clean[:200],
                     usuario_auditor=user_id,
                 )
                 db.add(audit_nlp)

@@ -148,7 +148,7 @@ export default function BatchHistory({ onInspect, onLogs, onNewBatch, loadingLog
   const locked = disabled || !!busy || inspecting;
   return (
     <details className="floating-artifact" style={{ padding: '20px 24px' }}>
-      <summary style={{ cursor: 'pointer', color: 'var(--color-ink-black)' }}>Historial de lotes (<AnimatedNumberV2 value={total} />)</summary>
+      <summary style={{ cursor: 'pointer', color: 'var(--color-ink-black)' }}>Historial de lotes ({Number(total || 0).toLocaleString('es-BO')})</summary>
       <div className="dataops-bulk-bar">
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
           {selectedBatches.length > 0 && (
@@ -224,8 +224,8 @@ export default function BatchHistory({ onInspect, onLogs, onNewBatch, loadingLog
                       onChange={() => setSelectedIds((prev) => toggleBatchSelection(prev, src.id_lote))}
                     />
                   </td>
-                  <td>{src.name === `Lote #${src.id_lote}` ? src.name : `Lote #${src.id_lote} · ${src.name || 'Sin dato'}`}<br /><small>{src.total_archivos} archivo(s)</small></td>
-                  <td>{source}</td><td>{src.records != null ? <AnimatedNumberV2 value={src.records} /> : 'Sin dato'}</td>
+                  <td>{`Lote #${src.id_lote} · ${source}${src.periodo ? ` · ${src.periodo}` : ''}`}<br /><small>{src.name && src.name !== `Lote #${src.id_lote}` ? `${src.name} · ` : ''}{src.total_archivos} archivo(s)</small></td>
+                  <td>{source}</td><td>{src.records != null ? Number(src.records).toLocaleString('es-BO') : 'Sin dato'}</td>
                   <td>{date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString('es-BO') : 'Sin dato'}</td><td>{label}</td>
                   <td><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {src.id_documento && steps.map(step => <Button key={step} disabled={locked} variant="ghost" onClick={() => navigate(toDataopsPath(`/lote/${src.id_lote}/${step}`, location.pathname))}>{PASOS[step]}</Button>)}

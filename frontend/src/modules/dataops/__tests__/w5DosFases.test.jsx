@@ -31,13 +31,13 @@ describe('W-5 — Consolidación en dos fases (casos visibles antes de consolida
     expect(res.status).toBe('accepted');
   });
 
-  it('HumanReviewFlowView consulta PREPARACION_REVISION y dispara prepararRevision al entrar si no corrió', () => {
+  it('HumanReviewFlowView consulta PREPARACION_REVISION y solo prepara con botón manual (DD1)', () => {
     const viewPath = path.resolve(__dirname, '../HumanReviewFlowView.jsx');
     const src = fs.readFileSync(viewPath, 'utf-8');
     expect(src).toContain("'PREPARACION_REVISION'");
     expect(src).toContain('dataopsApi.prepararRevision');
     expect(src).toContain('Preparando casos de revisión');
-    expect(src).toContain('prepTask === null && task === null');
+    expect(src).toContain('triggerPrepManual');
     expect(src).toContain("res?.status === 'already_prepared'");
   });
 

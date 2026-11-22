@@ -81,6 +81,11 @@ export default function CmiDetalleKpi({ codigo, onClose }) {
         {data && (
           <>
             {data.descripcion && <p className="cmi-kpi-desc" style={{ marginBottom: 10 }}>{data.descripcion}</p>}
+            {['KPI-02', 'KPI-03', 'KPI-12'].includes(String(codigo || '').toUpperCase()) && (
+              <p className="cmi-kpi-desc" style={{ marginBottom: 10, fontStyle: 'italic' }}>
+                Calculado hasta {data.ultimo_mes_cerrado || 'abril de 2026'} (último mes cerrado de la fuente).
+              </p>
+            )}
             {(() => {
               const validos = serie.filter((s) => s.valor !== null && s.valor !== undefined);
               if (!validos.length) return null;

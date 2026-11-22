@@ -1,0 +1,5 @@
+# Dependencias de desarrollo y pruebas completas (DF-L7 f)
+torch>=2.2.0
+transformers>=4.40.0
+seqeval>=1.2.2
+statsmodels>=0.14.0

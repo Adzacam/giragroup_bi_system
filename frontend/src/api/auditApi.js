@@ -3,6 +3,28 @@ import client from './client';
 const BASE_URL = '/api/v1/audit';
 
 export const auditApi = {
+  getHealth: async () => {
+    const t0 = performance.now();
+    try {
+      const res = await client.get('/api/v1/health');
+      const latencyMs = Math.round(performance.now() - t0);
+      return {
+        healthy: res.data?.status === 'healthy',
+        latencyMs,
+        checkedAt: new Date().toLocaleTimeString('es-BO'),
+        data: res.data,
+      };
+    } catch {
+      const latencyMs = Math.round(performance.now() - t0);
+      return {
+        healthy: false,
+        latencyMs,
+        checkedAt: new Date().toLocaleTimeString('es-BO'),
+        data: null,
+      };
+    }
+  },
+
   /**
    * Obtiene la bitácora consolidada de auditoría del sistema con filtros y KPIs
    * @param {Object} params - { modulo, severidad, busqueda, limit, offset }

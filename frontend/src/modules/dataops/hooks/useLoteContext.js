@@ -40,7 +40,11 @@ export async function fetchLoteContext(batchId) {
     institucion: found.institucion || '—',
     tipo_fuente: found.tipo_fuente || found.tipo_documento || 'ACTA',
     tipo_escala: found.tipo_escala || null,
-    escala_label: ESCALA_LABEL[found.tipo_escala] || 'No aplica',
+    escala_label: ESCALA_LABEL[found.tipo_escala] || (
+      ['ENCUESTA', 'EVALUACION_DOCENTE', 'EVALUACION'].includes(String(found.tipo_fuente || '').toUpperCase())
+        ? 'Likert 1–5 / 1–10'
+        : 'No aplica'
+    ),
     periodo: found.periodo || 'Por detectar',
     total_archivos: 1,
     total_registros: registros,

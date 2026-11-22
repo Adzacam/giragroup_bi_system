@@ -640,6 +640,17 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     if not solo_revision:
         cache_consultas.invalidar()  # el DW cambió: alertas, CMI y forecast se recalculan
     inserted_total = inserted_academico + inserted_financiero
+    doc_ids_lote = [d.id_documento for d in docs] if docs else []
+    casos_bandeja_lote = (
+        db.query(StagingEntidadNoResuelta)
+        .filter(
+            StagingEntidadNoResuelta.id_documento.in_(doc_ids_lote),
+            StagingEntidadNoResuelta.resuelto == False,  # noqa: E712
+        )
+        .count()
+        if doc_ids_lote
+        else 0
+    )
 
     # Registrar auditoría en LogPipelineIngesta y emitir notificación de consolidación DW
     try:
@@ -651,7 +662,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
             nivel="SUCCESS",
             modulo="DataOps Pipeline",
             mensaje=(
-                f"Preparación de revisión (Fase A) por {user_name}: {sent_hitl} casos detectados, 0 hechos cargados."
+                f"Preparación de revisión (Fase A) por {user_name}: {casos_bandeja_lote} casos detectados, 0 hechos cargados."
                 if solo_revision else
                 f"Consolidación exitosa en Data Warehouse por {user_name}: {inserted_total} registros (+{inserted_academico} académicos, +{inserted_financiero} financieros)."
             ),
@@ -660,7 +671,8 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                 "inserted_total": inserted_total,
                 "inserted_academico": inserted_academico,
                 "inserted_financiero": inserted_financiero,
-                "sent_hitl": sent_hitl,
+                "sent_hitl": casos_bandeja_lote,
+                "sent_hitl_subitems": sent_hitl,
                 "inserted_revision": inserted_revision,
                 "usuario": user_name,
                 **({"beto": contadores_beto.como_dict()} if cliente_beto is not None else {}),
@@ -676,11 +688,11 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         "status": "success",
         "solo_revision": solo_revision,
         "message": (
-            f"Revisión preparada (Fase A): {sent_hitl} casos derivados a Revisión Humana, 0 hechos cargados."
+            f"Revisión preparada (Fase A): {casos_bandeja_lote} casos derivados a Revisión Humana, 0 hechos cargados."
             if solo_revision else
             f"Transacción completada: {inserted_total} hechos persistidos en Data Warehouse "
             f"({inserted_academico} académicos, {inserted_financiero} financieros), "
-            f"{sent_hitl} derivados a Revisión Humana."
+            f"{casos_bandeja_lote} derivados a Revisión Humana."
         ),
         "inserted_dw": inserted_total,
         "desglose": {
@@ -691,7 +703,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         "inserted_financiero": inserted_financiero,
         "inserted_admision": inserted_admision,
         "inserted_revision": inserted_revision,
-        "sent_hitl": sent_hitl,
+        "sent_hitl": casos_bandeja_lote,
         "descartados_ruido": descartados_ruido,
         "descartes_por_regla": descartes_por_regla,
         "enviados_a_bandeja_sin_identidad": enviados_a_bandeja_sin_identidad,

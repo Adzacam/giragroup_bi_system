@@ -198,7 +198,12 @@ _ALIASES_POR_CAMPO = {
     "justificacion": ("nota_auditor",),
 }
 
-_CAMPOS_CONTROL = {"accion", "aprobacion_en_bloque", "motivo_descarte"}
+_CAMPOS_CONTROL = {
+    "accion", "aprobacion_en_bloque", "motivo_descarte",
+    "id_estudiante_candidato", "id_modulo_destino", "valor_canonico", "recordar_sinonimo",
+    "pregunta_destino", "valor_corregido", "ci_numero", "ci_complemento",
+    "entidad_tipo", "entidad_texto", "fuente_prioritaria",
+}
 
 
 def normalizar_categoria(categoria: Optional[str]) -> str:
@@ -351,6 +356,9 @@ def construir_motivo_detalle(
             return f"Discordancia de nombre/CI ({ci_txt}) en la fuente de egresos{prog_txt}."
         sug_txt = f" ({sugerencia})" if sugerencia else ""
         return f"La CI {ci_txt} coincide con una persona del catálogo{sug_txt}, pero el nombre '{nombre}' difiere."
+
+    if mot == "SIN_LECTURA" or (mot == "BAJA_CONFIANZA_IA" and (conf is None or float(conf) <= 0.0)):
+        return f"La fila no tiene datos legibles (sin lectura de BETO){prog_txt}."
 
     if mot == "BAJA_CONFIANZA_IA":
         if cat == "evaluacion_docente":

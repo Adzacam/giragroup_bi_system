@@ -7,7 +7,7 @@ export default function useLecturaBeto(batchId, filters, enabled) {
     queryKey: [...DATAOPS_QUERY_KEY, 'beto-reading', String(batchId), filters],
     queryFn: () => dataopsApi.getLoteBetoReading(batchId, {
       docId: filters.docId, area: filters.area, filtroGlobal: filters.condition,
-      tipoEntidad: filters.entity, search: filters.search, page: filters.page,
+      tipoEntidad: filters.entity, search: filters.search, page: filters.page, pageSize: 20,
     }),
     enabled: !!batchId && enabled,
     placeholderData: previous => previous,

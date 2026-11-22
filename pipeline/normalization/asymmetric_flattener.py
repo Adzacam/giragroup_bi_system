@@ -88,18 +88,23 @@ class AsymmetricFlattener:
 
     @classmethod
     def calcular_rango_fechas(cls, lista_fechas: List[str]) -> str:
-        """Determina la representación compacta del rango temporal detectado."""
+        """Determina la representación compacta del rango temporal detectado, acotado a años plausibles."""
+        from datetime import datetime, timezone
+        max_plausible = datetime.now(timezone.utc).year + 1
+        min_plausible = 2018
         anios = []
         for item in lista_fechas:
             for y in REGEX_YEARS.findall(item):
-                anios.append(int(y))
+                yi = int(y)
+                if min_plausible <= yi <= max_plausible:
+                    anios.append(yi)
         if anios:
             min_y = min(anios)
             max_y = max(anios)
             if min_y == max_y:
                 return f"{min_y} (Auto)"
             return f"{min_y}–{max_y} (Auto)"
-        return "Auto (Sin fecha explícita)"
+        return "Sin fechas"
 
     @classmethod
     def clasificar_origen_documental(

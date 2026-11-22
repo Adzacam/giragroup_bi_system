@@ -1,0 +1,20 @@
+HumanReviewFlowView.jsx: 244
+MasterDataView.jsx: 118
+BetoReadingFlowView.jsx: 343 (pendiente extraer subcomponentes si se requiere <= 300)
+BetoMetricasModal.jsx: 448 (pendiente extraer subcomponentes si se requiere <= 300)
+IngestView.jsx: 996 (pendiente extraer cola/vista previa si se requiere <= 300)
+AvisosTab.jsx: 52
+BatchFlowHeader.jsx: 210
+BatchFlowLayout.jsx: 170
+BatchFlowStepper.jsx: 167
+BatchHistory.jsx: 239
+CasoDetallePanel.jsx: 118
+DataOpsTabs.jsx: 102
+EntityHighlightText.jsx: 92
+GruposBandeja.jsx: 59
+IntegridadLote.jsx: 36
+PipelineTelemetryDrawer.jsx: 86
+ProgresoTarea.jsx: 65
+ReviewActionRenderer.jsx: 220
+SystemCapabilitiesStrip.jsx: 74
+TextoPreparadoTab.jsx: 234

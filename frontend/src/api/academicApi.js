@@ -42,10 +42,16 @@ export const getFichaCruzadaEstudiante = async (idEstudiante) => {
   return res.data;
 };
 
+export const revelarEstudianteCampo = async (idEstudiante, campo = 'nombre') => {
+  const res = await client.get(`/api/v1/riesgos/estudiante/${idEstudiante}/revelar`, { params: { campo } });
+  return res.data;
+};
+
 export const academicApi = {
   getRiesgoCruzado,
   getAlertasTempranas,
   getFichaCruzadaEstudiante,
+  revelarEstudianteCampo,
 };
 
 export default academicApi;

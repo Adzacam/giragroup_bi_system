@@ -408,7 +408,11 @@ def _evaluar_documentos_lote(
                     "motivo": (
                         f"Convertida a base 100 según escala {doc_escala}"
                         if (ent_cal and not nota_invalida)
-                        else ("No aplica (Fuente no académica)" if doc_fuente in ("COBRANZA", "ADMISION") else "Sin nota o fuera de escala")
+                        else (
+                            "Likert 1–5 / 1–10"
+                            if doc_fuente in ("ENCUESTA", "EVALUACION_DOCENTE", "EVALUACION")
+                            else ("No aplica (Fuente no académica)" if doc_fuente in ("COBRANZA", "ADMISION") else "Sin nota o fuera de escala")
+                        )
                     ),
                 },
                 "monto": {
@@ -428,20 +432,32 @@ def _evaluar_documentos_lote(
                         if e.get("label") == "ESTUDIANTE"
                         else ("book" if e.get("label") == "MÓDULO" else ("award" if e.get("label") == "CALIFICACIÓN" else "file"))
                     ),
-                    "color": (
-                        "#3b82f6"
+                    "tone": (
+                        "info"
                         if e.get("label") == "ESTUDIANTE"
-                        else ("#10b981" if e.get("label") == "MÓDULO" else ("#f59e0b" if e.get("label") == "CALIFICACIÓN" else "#8b5cf6"))
+                        else ("success" if e.get("label") == "MÓDULO" else ("warning" if e.get("label") == "CALIFICACIÓN" else "accent"))
                     ),
                 }
                 for e in ents_pub
             ]
 
+            beto_ents_pub = [
+                {
+                    "tipo": be.tipo,
+                    "texto": texto_sin_ci(be.texto, cis_linea),
+                    "start": be.start,
+                    "end": be.end,
+                    "score": round(float(be.score), 4),
+                }
+                for be in (r_beto.beto_ents if (r_beto is not None and r_beto.beto_ents) else [])
+            ]
+
             ent_prog = next((e for e in ents if e.get("label") == "PROGRAMA"), None)
             ent_asist = next((e for e in ents if e.get("label") == "ASISTENCIA"), None)
+            es_encuesta = doc_fuente in ("ENCUESTA", "EVALUACION_DOCENTE", "EVALUACION")
             es_comercial = doc_fuente in ("ADMISION", "COMERCIAL", "INSCRIPCIONES", "LEADS") or "INSCRIPCI" in doc_fuente or "META" in line.upper() or "CANAL" in line.upper()
-            es_financiero = (doc_fuente in ("COBRANZA", "FINANCIERO", "PAGOS") or ent_mon is not None or (ent_con and "PAGO" in ent_con.get("token", "").upper())) and not es_comercial
-            area_reg = "comercial" if es_comercial else ("financiera" if es_financiero else "academica")
+            es_financiero = (doc_fuente in ("COBRANZA", "FINANCIERO", "PAGOS") or ent_mon is not None or (ent_con and "PAGO" in ent_con.get("token", "").upper())) and not es_comercial and not es_encuesta
+            area_reg = "evaluacion_docente" if es_encuesta else ("comercial" if es_comercial else ("financiera" if es_financiero else "academica"))
 
             es_nuevo_cat = bool(ent_mod and ent_mod.get("es_nuevo_perfil"))
             en_calidad = (estado_reg != "AUTOMATICO") or es_nuevo_cat or ci_dudosa or nota_invalida
@@ -477,6 +493,7 @@ def _evaluar_documentos_lote(
                     "texto": line_pub,
                     "tokens": tokens_visuales,
                     "entidades": ents_pub,
+                    "beto_ents": beto_ents_pub,
                 },
                 "confianza_elementos": confianza_elementos,
                 "verificacion_reglas": reglas,
@@ -507,6 +524,7 @@ def _evaluar_documentos_lote(
                 "motivo": motivo_codigo,
                 "motivo_llano": motivo_decision,
                 "estado_resolucion": estado_res_row,
+                **({"beto_ents": beto_ents_pub} if beto_ents_pub else {}),
             })
 
             if persistir_staging and estado_reg != "AUTOMATICO" and not exists_hitl:
@@ -708,6 +726,28 @@ def _evaluar_lote_en_segundo_plano(doc_ids: List[int], id_lote: Optional[int], t
         if cache_lectura.guardar(clave, res) is False:
             raise RuntimeError("No se pudieron guardar los resultados de la lectura. Inténtalo de nuevo.")
         tareas_dataops.terminar(tarea_id, {"total_tuplas": res.get("totalTuplas"), **({"beto": res["beto"]} if "beto" in res else {})})
+        # DD1: encadenar PREPARACION_REVISION de forma idempotente al terminar LECTURA_BETO
+        if id_lote:
+            ya_preparado = any(
+                (t := tareas_dataops.ultima_en_sesion(db_bg, id_lote, k)) and t["estado"] in ("COMPLETADA", "EN_CURSO")
+                for k in ("PREPARACION_REVISION", "CONSOLIDACION")
+            )
+            if not ya_preparado:
+                prep_tarea_id = tareas_dataops.crear("PREPARACION_REVISION", id_lote)
+                try:
+                    from ._comun import ConfirmDwInsertRequest
+                    from .consolidacion import _consolidar
+                    res_prep = _consolidar(
+                        ConfirmDwInsertRequest(id_lote=id_lote, solo_revision=True, en_segundo_plano=False),
+                        db_bg,
+                        None,
+                        tarea_id=prep_tarea_id,
+                    )
+                    tareas_dataops.terminar(prep_tarea_id, res_prep)
+                except Exception as e_prep:
+                    db_bg.rollback()
+                    logger.warning("No se pudo encadenar PREPARACION_REVISION para lote %s: %s", id_lote, e_prep)
+                    tareas_dataops.fallar(prep_tarea_id, str(e_prep))
     except Exception as e_eval_batch:
         db_bg.rollback()
         logger.warning("No se pudo evaluar lote %s post-ingesta: %s", id_lote, e_eval_batch)

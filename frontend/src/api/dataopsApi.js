@@ -272,7 +272,7 @@ export const dataopsApi = {
    * Paso ③: Obtiene la lectura estructurada de BETO (Capas A, B y C) con filtro opcional por archivo y paginación (#13, #17)
    */
   getLoteBetoReading: async (idLote, options = {}) => {
-      const params = { page: options.page || 1, page_size: 5 };
+      const params = { page: options.page || 1, page_size: options.pageSize || 20 };
       if (options.docId) params.doc_id = options.docId;
       if (options.area && options.area !== 'TODAS') params.area = options.area;
       if (options.page) params.page = options.page;
@@ -291,9 +291,23 @@ export const dataopsApi = {
    */
   getReviewTray: async (idLote, options = {}) => (await client.get(`${BASE_URL}/review-tray`, {
     params: { id_lote: idLote, doc_id: options.docId || undefined, page: options.page || 1,
-      page_size: 5, search: options.search || undefined, area: options.area,
+      page_size: options.pageSize || 20, search: options.search || undefined, area: options.area,
       vista: options.vista === 'RESUELTOS' ? 'RESUELTOS' : 'PENDIENTES', grupo: options.grupo || undefined },
   })).data,
+
+  getReviewTrayAvisos: async (idLote, docId = null, estado = 'PENDIENTE') => (await client.get(`${BASE_URL}/review-tray/avisos`, {
+    params: { id_lote: idLote || undefined, doc_id: docId || undefined, estado },
+  })).data,
+
+  resolveReviewAviso: async (avisoId, payload = {}) => mutar(async () => {
+    const res = await client.post(`${BASE_URL}/review-tray/avisos/${avisoId}/resolver`, payload);
+    return res.data;
+  }),
+
+  reopenReviewItem: async (itemId) => mutar(async () => {
+    const res = await client.post(`${BASE_URL}/review-tray/${itemId}/reabrir`);
+    return res.data;
+  }),
 
   exportIncidencias: async (idLote, options = {}) => (await client.get(`${BASE_URL}/review-tray/export`, {
     params: { id_lote: idLote, doc_id: options.docId || undefined, search: options.search || undefined,

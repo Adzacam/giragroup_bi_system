@@ -8,6 +8,7 @@ import PageHeader from '../../components/shared/PageHeader';
 import KpiCard from '../../components/shared/KpiCard';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import useKineticScroll from '../../hooks/useKineticScroll';
+import useRevealEstudiante from '../../hooks/useRevealEstudiante';
 import { academicApi } from '../../api/academicApi';
 import { kpiApi } from '../../api/kpiApi';
 
@@ -15,6 +16,7 @@ export default function CarteraMora() {
   useKineticScroll();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const { toggle: toggleReveal, getValor: getRevealed } = useRevealEstudiante();
 
   const maskCi = (ci) => {
     if (!ci || ci === 'S/C') return 'S/C';
@@ -229,7 +231,17 @@ export default function CarteraMora() {
                   <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '13px' }}>
                     {maskCi(item.ci)}
                   </td>
-                  <td style={{ fontWeight: 600 }}>{item.nombre_completo}</td>
+                  <td style={{ fontWeight: 600 }}>
+                    <span>{getRevealed(item.id_estudiante, 'nombre') || item.nombre_enmascarado || item.nombre_completo}</span>
+                    <button
+                      type="button"
+                      className="btn-pill-ghost"
+                      style={{ marginLeft: 8, padding: '2px 8px', fontSize: 11 }}
+                      onClick={() => toggleReveal(item.id_estudiante, 'nombre')}
+                    >
+                      {getRevealed(item.id_estudiante, 'nombre') ? 'Ocultar' : 'Revelar'}
+                    </button>
+                  </td>
                   <td style={{ fontSize: '12.5px', color: 'var(--color-slate-gray)' }}>
                     {item.programa} · {item.modulo}
                   </td>

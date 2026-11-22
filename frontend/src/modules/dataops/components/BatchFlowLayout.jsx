@@ -5,6 +5,7 @@ import GlosarioFlotante from '../../../components/shared/GlosarioFlotante';
 import Button from '../../../components/shared/Button';
 import { GLOSARIO_DATAOPS } from '../../../constants/glosarioDataops';
 import BatchFlowHeader from './BatchFlowHeader';
+import SystemCapabilitiesStrip from './SystemCapabilitiesStrip';
 import BatchFlowStepper from './BatchFlowStepper';
 import { useLoteContext } from '../hooks/useLoteContext';
 import { clearLoteFlowSession } from '../context/LoteFlowContext';
@@ -139,7 +140,18 @@ export default function BatchFlowLayout({
       )}
 
       <div className="batch-flow-content v2-parent-child-panel">
-        {targetId && isPending ? <p className="floating-artifact" role="status" style={{ padding: 24 }}>Comprobando el estado del lote…</p>
+        <SystemCapabilitiesStrip step={currentStep} />
+        {targetId && isPending ? (
+          <div className="floating-artifact" role="status" aria-label="Comprobando el estado del lote" style={{ padding: 24, display: 'grid', gap: 14 }}>
+            <div className="skeleton-shimmer" style={{ height: 22, width: '38%', borderRadius: 8 }} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+              <div className="skeleton-shimmer" style={{ height: 74, borderRadius: 12 }} />
+              <div className="skeleton-shimmer" style={{ height: 74, borderRadius: 12 }} />
+              <div className="skeleton-shimmer" style={{ height: 74, borderRadius: 12 }} />
+            </div>
+            <div className="skeleton-shimmer" style={{ height: 140, borderRadius: 12 }} />
+          </div>
+        )
           : targetId && error ? <div className="floating-artifact" role="alert" style={{ padding: 24 }}>
             <p>No se pudo comprobar el estado del lote.</p><Button variant="ghost" onClick={() => refetch()}>Reintentar</Button>
           </div> : readOnly && !showReadOnlyContent ? (

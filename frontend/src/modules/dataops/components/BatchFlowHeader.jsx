@@ -44,7 +44,7 @@ export default function BatchFlowHeader({ batchContext, currentStep = 1, onSelec
           border: '1px solid var(--dataops-info-border)',
         }}
       >
-        <BookOpen size={12} /> Programas activos: {totalProgramas != null ? <AnimatedNumberV2 value={totalProgramas.toLocaleString('es-BO')} /> : 'Sin dato'}
+        <BookOpen size={12} /> Programas activos: {totalProgramas != null ? totalProgramas.toLocaleString('es-BO') : 'Sin dato'}
       </span>
       <span
         style={{

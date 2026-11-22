@@ -1,0 +1,5 @@
+hallazgo,metrica,valor,evidencia
+baja_confianza_74,total_filas,74,"stg_entidad_no_resuelta (docs 45, 46, 53, 54); mayormente nivel_confianza=0.0000 -> reclasificado a SIN_LECTURA en DF-L2"
+hechos_sin_id_tiempo,fact_rendimiento_academico,162,"Filas de actas sin fecha explícita en la fuente; conservadas con id_tiempo NULL para no inventar fechas"
+hechos_sin_id_tiempo,fact_situacion_financiera,34,"Filas de cobranzas sin fecha explícita en la fuente; conservadas con id_tiempo NULL"
+kpi_22_2023,bi_vw_cmi_valores,93,"Coincide con adw_l9_remedicion_final.csv (2022=3, 2023=93, 2024=1631, 2025=2609)"

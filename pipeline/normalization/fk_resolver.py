@@ -9,12 +9,14 @@ Implementa la máquina de estados A/B/C:
 """
 
 import hashlib
+import os
 import re
 from pathlib import Path
 from typing import Dict, Any, Optional
 
 import pandas as pd
 from pipeline.config import DATA_DIR, UMBRAL_CONFIANZA_ALTO, UMBRAL_CONFIANZA_BAJO, PATRON_CI_BOLIVIA
+from pipeline.normalization.catalog_repository import obtener_catalogo_repositorio
 from pipeline.normalization.fuzzy_normalizer import FuzzyNormalizer
 
 
@@ -28,9 +30,12 @@ class FKResolver:
     """
 
     def __init__(self, ruta_inscritos: Optional[Path] = None):
-        self.ruta_inscritos = ruta_inscritos or (DATA_DIR / "TBL_INSCRITOS.xlsx")
+        env_padron = os.getenv("PADRON_INSCRITOS_PATH")
+        self.ruta_inscritos = Path(ruta_inscritos) if ruta_inscritos else (Path(env_padron) if env_padron else None)
         self.padron_nombres: Dict[str, str] = {}  # nombre_limpio -> ci
         self.nombres_originales: Dict[str, str] = {}  # nombre_limpio -> nombre_original
+        if self.ruta_inscritos is None:
+            return
         # El padrón (15 mil filas de un xlsx) se leía en cada /pipeline/process (~3 s por archivo): se reutiliza mientras
         # el archivo no cambie (ruta + fecha de modificación + tamaño)
         try:
@@ -53,8 +58,9 @@ class FKResolver:
 
         try:
             df = pd.read_excel(self.ruta_inscritos, dtype=str)
-            col_ci = next((c for c in df.columns
-                           if str(c).strip().upper() in ("CI", "CARNET", "CEDULA", "NRO_DOCUMENTO", "DOCUMENTO")), None)
+            repo = obtener_catalogo_repositorio()
+            sinonimos_ci = {s.upper() for s in (repo.sinonimos_campo("ci") if hasattr(repo, "sinonimos_campo") else ())}
+            col_ci = next((c for c in df.columns if str(c).strip().upper() in sinonimos_ci), None)
             nombres = self._nombres_del_padron(df)
 
             if col_ci and nombres is not None:

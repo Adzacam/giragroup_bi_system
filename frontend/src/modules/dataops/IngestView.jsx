@@ -823,6 +823,17 @@ export default function IngestView() {
                   ) : previewData ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 12 }}>
+                        {previewData.tipo_fuente && (
+                          <span style={{ padding: '2px 10px', borderRadius: 999, backgroundColor: 'var(--dataops-info-bg)', color: 'var(--dataops-info-text)', fontWeight: 600 }}>
+                            Detectado: {getTipoFuenteLabel(previewData.tipo_fuente) || previewData.tipo_fuente}
+                            {previewData.confianza != null ? ` (${Math.round(Number(previewData.confianza) * 100)} %)` : ''}
+                          </span>
+                        )}
+                        {Array.isArray(previewData.senales) && previewData.senales.slice(0, 3).map((s, idx) => (
+                          <span key={idx} style={{ padding: '2px 8px', borderRadius: 999, backgroundColor: 'var(--color-mist-gray)', color: 'var(--color-slate-gray)', fontSize: 11 }}>
+                            {String(s)}
+                          </span>
+                        ))}
                         <span style={{ padding: '2px 10px', borderRadius: 999, backgroundColor: 'var(--color-mist-gray)', color: 'var(--color-ink-black)' }}>
                           Hojas totales: <strong>{previewData.resumen_hojas?.total ?? 0}</strong>
                         </span>

@@ -875,7 +875,9 @@ def extract_entities_from_line(
     # 6. CALIFICACIÓN & NORMALIZACIÓN OBLIGATORIA A BASE 100 (#16)
     grade_token, grade_sim = None, None
     if (tipo_fuente or "ACTA").upper() not in ("COBRANZA", "ADMISION"):
-        claves_nota = ["NOTA_FINAL", "NOTA FINAL", "FINAL_GRADE", "FINALGRADE", "CALIF_FINAL", "CALIFICACION FINAL", "NOTA", "PUNTAJE", "CALIFICACION", "PROMEDIO"]
+        from pipeline.normalization.catalog_repository import obtener_catalogo_repositorio
+        _repo_cat = obtener_catalogo_repositorio()
+        claves_nota = _repo_cat.sinonimos_campo("nota") or list(labeled_data.keys() & {"NOTA_FINAL", "NOTA"})
         for k in claves_nota:
             if k in labeled_data and labeled_data[k]:
                 grade_token, grade_sim = labeled_data[k], similitud_encabezado(k, tuple(claves_nota))
@@ -944,7 +946,9 @@ def extract_entities_from_line(
     # 7. ASISTENCIA / INASISTENCIA (Umbral de Abandono)
     asist_val, asist_sim = None, None
     es_inasistencia = False
-    claves_asist = ["ASISTENCIA", "ASIST", "INASISTENCIA", "INASIST", "FALTAS", "FALTA"]
+    from pipeline.normalization.catalog_repository import obtener_catalogo_repositorio
+    _repo_asist = obtener_catalogo_repositorio()
+    claves_asist = _repo_asist.sinonimos_campo("asistencia") or list(labeled_data.keys() & {"ASISTENCIA", "INASISTENCIA"})
     for k in claves_asist:
         if k in labeled_data and labeled_data[k]:
             asist_val, asist_sim = labeled_data[k], similitud_encabezado(k, tuple(claves_asist))

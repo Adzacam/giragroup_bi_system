@@ -251,3 +251,13 @@ Criterio: las 62 hojas tienen decisión (usar o ignorar) con motivo. «DIP. EXP 
 - FU-L6: resuelto. La lista de conflictos de meta con su diferencia está en `docs/mediciones/fu_l6_conflictos_metas.csv`.
 - `MODULOS`: resuelto en FU-L1, queda como «usar».
 
+
+
+---
+
+## Texto heterogéneo admitido (DF-L11)
+
+Se admite como entrada heterogénea cualquier archivo `.xlsx`, `.xls` o `.csv` que contenga:
+1. **Tablas con encabezados desplazados o columnas en otro orden:** se normalizan vía `asymmetric_flattener.py` y `cat_mapeo_columna` (sin listas fijas de cabeceras).
+2. **Comentarios mezclados con datos o texto narrativo largo:** cada bloque se serializa al contrato de texto plano (`col: val | ...` o texto libre) sin descartar silenciosamente.
+3. **Bloques u hojas sin cabecera reconocible:** el motor PLN/NER (`extract_entities_from_line` + BETO IOB2) muestra en el paso ② qué normalizó y qué entidades reconoció; **nunca** carga como hecho en el DW lo que carece de estructura tabular o identidad verificada, derivándolo a revisión humana con su motivo explícito.

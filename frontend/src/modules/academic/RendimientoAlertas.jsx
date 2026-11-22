@@ -29,12 +29,14 @@ import {
 import PageHeader from '../../components/shared/PageHeader';
 import ResponsiveTable from '../../components/shared/ResponsiveTable';
 import { academicApi } from '../../api/academicApi';
+import useRevealEstudiante from '../../hooks/useRevealEstudiante';
 import { reportesApi } from '../../api/reportesApi';
 import { sileoToast } from '../../services/sileoToast';
 import { useAuth } from '../../context/AuthContext';
 
 export default function RendimientoAlertas() {
   const { role } = useAuth();
+  const { toggle: toggleReveal, getValor: getRevealed } = useRevealEstudiante();
   const canRevealPii = ['ADMIN', 'DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD'].includes(role);
 
   const [revealCi, setRevealCi] = useState(false);
@@ -1257,8 +1259,16 @@ export default function RendimientoAlertas() {
                             {maskCi(est.ci)}
                           </td>
                           <td>
-                            <div style={{ fontWeight: 700, color: 'var(--color-ink-black)', fontSize: '13px' }}>
-                              {est.nombre_completo}
+                            <div style={{ fontWeight: 700, color: 'var(--color-ink-black)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                              <span>{getRevealed(est.id_estudiante, 'nombre') || est.nombre_enmascarado || est.nombre_completo}</span>
+                              <button
+                                type="button"
+                                className="btn-pill-ghost"
+                                style={{ padding: '1px 7px', fontSize: 10.5 }}
+                                onClick={(e) => { e.stopPropagation(); toggleReveal(est.id_estudiante, 'nombre'); }}
+                              >
+                                {getRevealed(est.id_estudiante, 'nombre') ? 'Ocultar' : 'Revelar'}
+                              </button>
                             </div>
                             <div style={{ fontSize: '11px', color: 'var(--color-slate-gray)' }}>
                               Periodo: {est.periodo} · Docente: {est.docente}

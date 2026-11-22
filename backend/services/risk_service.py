@@ -10,7 +10,15 @@ from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
 from pipeline.config import NOTA_APROBACION
 from services.acta_canonica import es_desercion  # DA2-bis: Deserción/Abandono según el vocabulario del catálogo
-from services.regla_mora import es_mora  # DA3: regla única de mora
+from services.regla_mora import es_mora
+from services.dataops_evaluation_service import enmascarar_ci
+
+
+def _enmascarar_nombre(nombre: Optional[str]) -> str:
+    partes = [p for p in str(nombre or "").strip().split() if p]
+    if not partes:
+        return "••••"
+    return " ".join(f"{p[0]}••••" for p in partes)  # DA3: regla única de mora
 
 # Tope de opciones por selector de filtro (programa, módulo, docente): más opciones congelan el navegador.
 MAX_OPCIONES_FILTRO = 100
@@ -82,8 +90,9 @@ def get_riesgo_cruzado(db: Session, limite_nota: float = 70.0, min_cuotas_mora: 
     alertas_cruzadas = []
     for row in resultados:
         alertas_cruzadas.append({
-            "estudiante": row.nombre_completo,
-            "codigo": row.codigo_estudiante or row.ci or "S/C",
+            "estudiante": _enmascarar_nombre(row.nombre_completo),
+            "nombre_enmascarado": _enmascarar_nombre(row.nombre_completo),
+            "codigo": enmascarar_ci(row.codigo_estudiante or row.ci or "S/C"),
             "rendimiento": {
                 "nota_actual": float(row.nota_final),
                 "estado_academico": "CRÍTICO"
@@ -524,6 +533,10 @@ def evaluar_alertas_tempranas_deterministicas(
             if f_busqueda not in texto_busqueda:
                 continue
 
+        nom_mask = _enmascarar_nombre(item_nominal["nombre_completo"])
+        item_nominal["nombre_enmascarado"] = nom_mask
+        item_nominal["nombre_completo"] = nom_mask
+        item_nominal["ci"] = enmascarar_ci(item_nominal["ci"]) if item_nominal.get("ci") and item_nominal["ci"] != "S/C" else "S/C"
         estudiantes_en_alerta.append(item_nominal)
 
     estudiantes_en_alerta.sort(
@@ -765,13 +778,15 @@ def obtener_ficha_cruzada_estudiante(db: Session, id_estudiante: int) -> Optiona
         tags.append("F")
 
     ci_limpio = (est.ci or est.ci_numero or est.codigo_estudiante or "S/C").strip()
+    nom_mask = _enmascarar_nombre(est.nombre_completo)
 
     return {
         "status": "success",
         "id_estudiante": est.id_estudiante,
-        "nombre_completo": est.nombre_completo,
-        "ci": ci_limpio,
-        "codigo_estudiante": est.codigo_estudiante or ci_limpio,
+        "nombre_completo": nom_mask,
+        "nombre_enmascarado": nom_mask,
+        "ci": enmascarar_ci(ci_limpio) if ci_limpio != "S/C" else "S/C",
+        "codigo_estudiante": enmascarar_ci(est.codigo_estudiante or ci_limpio) if (est.codigo_estudiante or ci_limpio) != "S/C" else "S/C",
         "programa_origen": est.programa_origen or (historial_aca[0]["programa"] if historial_aca else "Programa General"),
         "ciudad": est.ciudad or "Bolivia",
         "resumen_reglas": {

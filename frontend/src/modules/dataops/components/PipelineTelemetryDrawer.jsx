@@ -68,7 +68,17 @@ export default function PipelineTelemetryDrawer({ isOpen, onClose, docId }) {
         </dl></details>
         <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}><Button variant={tab === 'eventos' ? 'dark' : 'ghost'} onClick={() => setTab('eventos')}>Eventos</Button><Button variant={tab === 'columnas' ? 'dark' : 'ghost'} onClick={() => setTab('columnas')}>Columnas registradas</Button></div>
         <div aria-busy={isFetching} style={{ overflowX: 'auto' }}>{isFetching ? <p role="status">Consultando página…</p> : tab === 'eventos' ? <>
-          <table className="dataops-table" style={{ width: '100%' }}><thead><tr><th>Fecha registrada</th><th>Etapa</th><th>Nivel</th><th>Duración registrada</th></tr></thead><tbody>{data.data.map(event => <tr key={event.id}><td>{date(event.fecha)}</td><td>{event.etapa}</td><td>{event.nivel}</td><td>{event.tiempo_ms == null ? 'Sin dato' : `${event.tiempo_ms} ms`}</td></tr>)}</tbody></table>{!data.data.length && <p style={{ padding: 20 }}>No hay eventos registrados para este documento.</p>}
+          <ol style={{ listStyle: 'none', padding: 0, margin: '0 0 14px 0', display: 'grid', gap: 8 }}>
+            {data.data.map((event, idx) => (
+              <li key={event.id || idx} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, border: '1px solid var(--color-border)', background: 'var(--color-mist-gray)', fontSize: 12 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-gira-gold)', flexShrink: 0 }} />
+                <strong style={{ minWidth: 140 }}>{event.etapa}</strong>
+                <span style={{ color: 'var(--color-slate-gray)' }}>{date(event.fecha)}</span>
+                <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 11 }}>{event.tiempo_ms == null ? 'Sin dato' : `${event.tiempo_ms} ms`}</span>
+              </li>
+            ))}
+          </ol>
+          {!data.data.length && <p style={{ padding: 20 }}>No hay eventos registrados para este documento.</p>}
         </> : <><table className="dataops-table" style={{ width: '100%' }}><thead><tr><th>Columna del archivo</th><th>Campo identificado</th><th>Regla registrada</th><th>Tipo</th></tr></thead><tbody>{data.normalization_matrix.map((row,index) => <tr key={index}><td>{value(row.original)}</td><td>{value(row.normalizado)}</td><td>{value(row.regla)}</td><td>{value(row.tipo)}</td></tr>)}</tbody></table>{!data.normalization_matrix.length && <p style={{ padding: 20 }}>No hay un mapeo de columnas registrado para este documento.</p>}</>}
         </div>
         <Paginacion pagina={tab === 'eventos' ? page : mapPage} totalPaginas={pag?.total_pages || 1} total={pag?.total_items || 0} filasPorPagina={5} disabled={isFetching} onChange={tab === 'eventos' ? setPage : setMapPage} />

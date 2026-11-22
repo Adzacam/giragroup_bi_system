@@ -25,6 +25,7 @@ class FinanzasInfo(BaseModel):
 class AlertaCruzadaItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
     estudiante: str
+    nombre_enmascarado: Optional[str] = None
     codigo: str
     rendimiento: RendimientoInfo
     finanzas: FinanzasInfo
@@ -69,6 +70,7 @@ class EstudianteAlertaNominalItem(BaseModel):
     ci: str
     codigo_estudiante: Optional[str] = None
     nombre_completo: str
+    nombre_enmascarado: Optional[str] = None
     programa: str
     modulo: str
     docente: str

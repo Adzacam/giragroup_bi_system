@@ -5,9 +5,9 @@ import BatchFlowLayout from './components/BatchFlowLayout';
 import BetoMetricasModal from './components/BetoMetricasModal';
 import ProgresoTarea from './components/ProgresoTarea';
 import TextoPreparadoTab from './components/TextoPreparadoTab';
+import EntityHighlightText from './components/EntityHighlightText';
 import Button from '../../components/shared/Button';
 import Paginacion from '../../components/shared/Paginacion';
-import { FILAS_POR_PAGINA } from '../../hooks/usePaginacion';
 import { useDraftState, useLoteFlow } from './context/LoteFlowContext';
 import useLecturaBeto from './hooks/useLecturaBeto';
 import { useRevealCampo } from './hooks/useRevealCi';
@@ -20,9 +20,10 @@ import AnimatedProgressBarV2 from '../../v2/motion/AnimatedProgressBarV2';
 import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
 import { toDataopsPath } from '../../v2/utils/v2Routes';
 
+const FILAS_BETO = 20;
 const INITIAL = { docId: null, area: 'TODAS', condition: 'ALL', entity: 'TODOS', search: '', page: 1 };
 const ESTADOS = { AUTOMATICO: 'Aceptación directa', REVISION: 'En revisión', INCONSISTENCIA: 'Con incidencias' };
-const AREAS = { academica: 'Académica', financiera: 'Financiera', comercial: 'Comercial', calidad: 'Calidad' };
+const AREAS = { academica: 'Académica', evaluacion_docente: 'Evaluación docente', financiera: 'Financiera', comercial: 'Comercial', calidad: 'Calidad' };
 const fmt = value => typeof value === 'number' ? value.toLocaleString('es-BO') : 'Sin dato';
 const fmtDec = value => typeof value === 'number' && Number.isFinite(value) ? value.toFixed(2).replace('.', ',') : null;
 
@@ -110,6 +111,13 @@ function RegistroBeto({ record }) {
     <td style={{ verticalAlign: 'top', fontVariantNumeric: 'tabular-nums' }}>{record.indice_registro == null ? 'Sin dato' : `${fmt(record.indice_registro)} %`}</td>
     <td style={{ overflowWrap: 'anywhere', verticalAlign: 'top' }}>
       <strong style={{ color: record.estado === 'AUTOMATICO' ? 'var(--dataops-success-text)' : 'var(--dataops-warning-text)' }}>{ESTADOS[record.estado] || 'Sin dato'}</strong>
+      <div style={{ marginTop: 8, fontSize: 12, color: 'var(--color-slate-gray)' }}>
+        <EntityHighlightText
+          text={record.raw_text || record.lectura?.texto || ''}
+          betoEnts={record.lectura?.beto_ents || []}
+          entidades={record.lectura?.entidades || []}
+        />
+      </div>
       <details style={{ marginTop: 10 }}>
         <summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>Ver explicación y datos identificados</summary>
         <p style={{ marginTop: 10 }}>{record.decision?.motivo_llano || 'Sin observaciones adicionales.'}</p>
@@ -284,6 +292,8 @@ function LecturaBeto({ batchId }) {
               <h3 className="serif-heading" style={{ fontSize: 16, margin: 0, color: 'var(--color-ink-black)' }}>Cascada de resolución por etapa</h3>
               <span style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>
                 Total entidades evaluadas: <strong style={{ color: 'var(--color-ink-black)' }}>{fmt(data.resumen_cascada.total_entidades)}</strong>
+                {' · '}Leído por BETO: <strong style={{ color: 'var(--color-ink-black)' }}>{fmt(data.resumen_cascada.beto_leidas ?? 0)}</strong>
+                {' · '}Aceptado por BETO: <strong style={{ color: 'var(--color-ink-black)' }}>{fmt(data.resumen_cascada.beto_aceptadas ?? data.resumen_cascada.BETO ?? 0)}</strong>
               </span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12 }}>
@@ -308,7 +318,7 @@ function LecturaBeto({ batchId }) {
               })}
             </div>
             <div style={{ marginTop: 14, padding: 12, borderRadius: 12, background: 'var(--dataops-info-bg)', color: 'var(--dataops-info-text)', fontSize: 12, lineHeight: 1.5 }}>
-              <strong>Qué significa:</strong> El sistema resuelve primero por cédula exacta y encabezados confiables; luego aplica coincidencia aproximada y patrones, y reserva a BETO solo para las filas residuales sin sobrescribir vínculos exactos ni crear perfiles nuevos.
+              <strong>Qué significa:</strong> El sistema resuelve primero por cédula exacta y encabezados confiables; luego aplica coincidencia aproximada y patrones, y reserva a BETO solo para las filas residuales sin sobrescribir vínculos exactos ni crear perfiles nuevos. Cuando una fuente no trae cédula (por ejemplo encuestas de evaluación docente), <em>Cédula exacta = 0</em> es esperable.
             </div>
           </section>
         )}
@@ -321,7 +331,7 @@ function LecturaBeto({ batchId }) {
         </div>
         <div className="floating-artifact" style={{ padding: 20 }} aria-busy={isFetching}>
           {isFetching ? <p role="status">Cargando página {filters.page}…</p> : <div style={{ overflowX: 'auto' }}><table className="dataops-table" style={{ width: '100%', tableLayout: 'fixed', textAlign: 'left' }}><thead><tr><th>Fila y documento</th><th>Módulo o concepto</th><th style={{ width: 100 }}>Índice</th><th>Resultado</th></tr></thead><tbody>{(data.registros || []).map(record => <RegistroBeto key={record.id} record={record} />)}</tbody></table>{!data.registros?.length && <p role="status" style={{ padding: 20 }}>No se encontraron registros para estos filtros.</p>}</div>}
-          <Paginacion pagina={filters.page} totalPaginas={pagination?.total_pages || 1} total={pagination?.total_items || 0} filasPorPagina={FILAS_POR_PAGINA} disabled={isFetching} onChange={value => setFilters(prev => ({ ...prev, page: value }))} />
+          <Paginacion pagina={filters.page} totalPaginas={pagination?.total_pages || 1} total={pagination?.total_items || 0} filasPorPagina={FILAS_BETO} disabled={isFetching} onChange={value => setFilters(prev => ({ ...prev, page: value }))} />
         </div>
       </>}
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginTop: 20 }}>

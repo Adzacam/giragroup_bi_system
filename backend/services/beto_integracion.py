@@ -213,7 +213,8 @@ class ClienteBeto:
 
     def __init__(self, cache=None, post: Optional[Callable[[List[str]], List[List[EntidadBeto]]]] = None,
                  configuracion: Optional[str] = None, contadores: Optional[Contadores] = None):
-        self.cache = cache if cache is not None else CacheEntidades()
+        # DD7: usar caché en memoria por defecto para no crear la tabla #52 en giragroup_db
+        self.cache = cache if cache is not None else CacheMemoria()
         self.post = post or _post_infer_batch
         self.configuracion = configuracion or configuracion_modelo()
         self.contadores = contadores or Contadores()

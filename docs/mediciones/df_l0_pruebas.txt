@@ -1,0 +1,7 @@
+DF-L0 Línea base de pruebas (2026-11-22)
+========================================
+Frontend (vitest): 19 test files passed, 103 passed (0 failed)
+Backend/Pipeline (pytest): 1292 passed, 41 skipped, 7 xfailed (0 failed) en 396.52s
+Notas:
+- 41 skipped corresponden a pruebas PG tmpfs y readiness sin variables de entorno externas.
+- 7 xfailed corresponden a hallazgos conocidos en tests/readiness/test_production_readiness.py.

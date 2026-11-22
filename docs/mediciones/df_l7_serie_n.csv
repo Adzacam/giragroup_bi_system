@@ -1,0 +1,4 @@
+definicion,n_meses,uso,nota
+serie_mensual_ols_canonica,40,"Invariante OLS mensual (N=40)","40 meses cerrados con actividad continua en el rango histórico consolidado"
+serie_bruta_con_huecos_o_parcial,43,"Solo referencia bruta","Incluye meses extremos con mes parcial o baja densidad antes del acotado"
+serie_subconjunto_filtrado,33,"Subconjunto específico","Ventana acotada sin los meses iniciales de baja actividad; se mantiene N=40 como definición única"

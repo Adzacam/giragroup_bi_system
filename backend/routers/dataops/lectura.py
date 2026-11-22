@@ -81,9 +81,12 @@ _ETAPAS_CASCADA = ("CI_EXACTA", "ENCABEZADO", "FUZZY", "REGEX", "BETO")
 def _calcular_resumen_cascada(detalles: list) -> dict:
     """Cuenta entidades resueltas por cada etapa de la cascada (CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO)."""
     conteos = {etapa: 0 for etapa in _ETAPAS_CASCADA}
+    beto_leidas = 0
     for reg in detalles or []:
         lectura = reg.get("lectura") or {}
         entidades = lectura.get("entidades") or reg.get("entidades") or []
+        beto_ents = lectura.get("beto_ents") or reg.get("beto_ents") or []
+        beto_leidas += len(beto_ents)
         for ent in entidades:
             if not isinstance(ent, dict):
                 continue
@@ -95,6 +98,8 @@ def _calcular_resumen_cascada(detalles: list) -> dict:
     total = sum(conteos.values())
     return {
         **conteos,
+        "beto_leidas": beto_leidas,
+        "beto_aceptadas": conteos["BETO"],
         "total_entidades": total,
         "etapas": [
             {
@@ -125,7 +130,7 @@ def get_lote_resumen(
     from services.lectura_beto_service import seleccionar_documento
     eval_res = _evaluacion_lectura(db, docs_lote)
     if eval_res is None:
-        return {"status": "pending", "empty": False, "mensaje_vacio": "La lectura de BETO aún no está disponible. Ábrela en el paso ③.", "id_lote": lote_obj.id_lote if lote_obj else None}
+        return {"status": "pending", "empty": False, "mensaje_vacio": "La lectura de BETO aún no está disponible. Ábrela en el paso ②.", "id_lote": lote_obj.id_lote if lote_obj else None}
     eval_res = seleccionar_documento(eval_res, doc_id)
     archivos_tabs = _serializar_archivos_lote(db, docs_lote)
 
@@ -255,7 +260,15 @@ def get_lote_context(
         tipo_fuente_display = fuente_label_map.get(tf_code, tf_code or "Acta de calificaciones")
 
     escala_activa = active_doc.tipo_escala if active_doc else None
-    escala_label = escala_map.get(escala_activa, "No aplica (Finanzas/Admisión)" if not escala_activa else escala_activa)
+    tf_activa = (active_doc.tipo_fuente or "").upper() if active_doc else ""
+    if escala_activa in escala_map:
+        escala_label = escala_map[escala_activa]
+    elif tf_activa in ("ENCUESTA", "EVALUACION_DOCENTE", "EVALUACION"):
+        escala_label = "Likert 1–5 / 1–10"
+    elif not escala_activa:
+        escala_label = "No aplica (Finanzas/Admisión)"
+    else:
+        escala_label = escala_activa
 
     estado_flujo = _estado_flujo_lote(db, doc_ids, total_hitl)
     if estado_flujo == "CONSOLIDADO" or total_hitl > 0 or (doc_ids and contar_hechos_en_revision(db, doc_ids) > 0):

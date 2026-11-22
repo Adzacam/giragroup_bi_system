@@ -21,6 +21,7 @@ from services.bandeja_grupos import (
 from services.dataops_evaluation_service import enmascarar_ci, texto_sin_ci, strip_accents, cis_en_entidades, NON_PERSON_WORDS
 from services.dataops_privacy import EMAIL as _EMAIL_RE, texto_publico
 from services.revision_formularios import campos_para_caso, construir_motivo_detalle
+from services.revision_acciones_descriptor import construir_acciones
 from services.revision_hechos import items_hechos_en_revision
 from services.sugerencia_hitl import nombre_extraido, es_sugerencia_un_clic, similitud_nombre_completo
 
@@ -28,11 +29,17 @@ MOTIVOS = {
     'CI_DUDOSA': 'Cédula dudosa', 'CI_ILEGIBLE': 'Cédula ilegible',
     'CI_NOMBRE_DISCORDANTE': 'La cédula coincide pero el nombre es distinto',
     'BAJA_CONFIANZA_IA': 'Lectura con baja confianza', 'BAJA_CONFIANZA': 'Lectura con baja confianza',
+    'SIN_LECTURA': 'Fila sin datos legibles',
     'HOMONIMIA': 'Posible homonimia: nombre parecido a otra persona',
     'FECHA_INSCRIPCION_INVALIDA': 'Fecha de inscripción no válida',
     'POS_NO_EN_DIM_MODULO': 'Programa sin coincidencia en el catálogo',
     'HECHO_EN_REVISION': 'Hecho cargado que necesita revisión',
     'REVISION_GENERAL': 'Revisión general', 'NOTA_FUERA_ESCALA': 'Nota fuera de escala',
+    'NOTA_FUERA_DE_RANGO': 'Nota fuera de rango',
+    'PUNTUACION_FUERA_DE_ESCALA': 'Puntuación fuera de escala',
+    'VALOR_FUERA_DE_CATALOGO': 'Valor fuera de catálogo',
+    'RESPUESTA_EN_COLUMNA_EQUIVOCADA': 'Respuesta en columna equivocada',
+    'CONFLICTO_FUENTES': 'Conflicto entre fuentes',
     'ENTIDAD_NUEVA': 'Entidad nueva', 'ESCALA_AMBIGUA': 'Escala no declarada',
     'DESACUERDO_REGLA_BETO': 'Las reglas y BETO no coinciden en la persona',
     # ADW-L8 (DA7): filas sin estudiante. Las tres primeras se descartan con motivo; la última va a la bandeja.
@@ -40,6 +47,7 @@ MOTIVOS = {
     'CATALOGO_PROGRAMA_NO_PAGO': 'Fila de catálogo de programas (no es un pago)',
     'DOCENTE_NO_ESTUDIANTE': 'Fila de docente (no es un estudiante)',
     'FILA_SIN_IDENTIDAD': 'Fila sin identidad reconocible: revisar si hay un pago o un estado que conservar',
+    'LINEA_SIN_IDENTIDAD': 'Línea sin identidad reconocible',
     **MOTIVOS_CATALOGO,
 }
 
@@ -123,7 +131,46 @@ def _entidades_publicas(entidades):
     return salida
 
 
-def caso_guardado(ent, doc):
+def _candidatos_homonimia_rapidfuzz(db, nombre, limit=5):
+    """Poblado bajo demanda vía RapidFuzz (DF-L2 h) cuando BETO_SUGERENCIA_HITL=False."""
+    if not db or not nombre:
+        return []
+    try:
+        from rapidfuzz import fuzz
+        from models.dim_estudiante import DimEstudiante
+        objetivo = strip_accents(str(nombre)).lower().strip()
+        if not objetivo:
+            return []
+        estudiantes = db.query(
+            DimEstudiante.id_estudiante,
+            DimEstudiante.nombre_completo,
+            DimEstudiante.ci_nit,
+            DimEstudiante.programa_academico,
+        ).limit(2000).all()
+        scored = []
+        for est_id, nom_est, ci_est, prog_est in estudiantes:
+            if not nom_est:
+                continue
+            sim = float(fuzz.token_sort_ratio(objetivo, strip_accents(nom_est).lower().strip()))
+            if sim >= 60.0:
+                scored.append((sim, est_id, ci_est, prog_est))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [
+            {
+                'id_estudiante': est_id,
+                'nombre': '••••',
+                'ci_enmascarada': enmascarar_ci(ci_est) if ci_est else 'Sin CI',
+                'programa': prog_est or 'Sin programa',
+                'similitud': round(sim, 1),
+                'probabilidad_beto': None,
+            }
+            for sim, est_id, ci_est, prog_est in scored[:limit]
+        ]
+    except Exception:
+        return []
+
+
+def caso_guardado(ent, doc, db=None, rol_usuario=None):
     p = datos_payload(ent)
     raw = p.get('raw_line') or ent.texto_original or ''
     nombre = p.get('estudiante') or nombre_extraido(ent.texto_original, p.get('raw_line'))
@@ -133,8 +180,16 @@ def caso_guardado(ent, doc):
     ci = ent.ci_temporal or p.get('ci_real') or p.get('ci')
     score = float(ent.score_fuzzy) if ent.score_fuzzy is not None else None
     manual = presupuesto_manual(doc, raw) or presupuesto_manual(doc, ent.texto_original)
-    area = p.get('area') or ('financiera' if doc and doc.tipo_fuente == 'COBRANZA' else 'comercial' if doc and doc.tipo_fuente == 'ADMISION' else 'academica')
+    tf_upper = (doc.tipo_fuente or '').upper() if doc else ''
+    area = p.get('area') or (
+        'evaluacion_docente' if tf_upper in ('ENCUESTA', 'EVALUACION_DOCENTE', 'EVALUACION')
+        else 'financiera' if tf_upper == 'COBRANZA'
+        else 'comercial' if tf_upper == 'ADMISION'
+        else 'academica'
+    )
     motivo = ent.motivo or 'REVISION_GENERAL'
+    if motivo in ('BAJA_CONFIANZA', 'BAJA_CONFIANZA_IA') and (ent.nivel_confianza is None or float(ent.nivel_confianza) <= 0.0):
+        motivo = 'SIN_LECTURA'
     cat_ruteo = categoria_ruteo(doc.tipo_fuente if doc else None, p.get('categoria'))
     campos_corr = campos_para_caso(cat_ruteo, motivo)
     motivo_det = construir_motivo_detalle(cat_ruteo, motivo, {
@@ -197,34 +252,46 @@ def caso_guardado(ent, doc):
             payload=p,
         ),
     }
+    candidatos = []
     if p.get('sugerencias'):   # opción 3: candidatos ordenados por score combinado (campo opcional; solo orden, nunca una acción)
-        publico['sugerencias_beto'] = [
+        candidatos = [
             {**s, 'nombre': '••••'} if isinstance(s, dict) and s.get('nombre') else s
             for s in p['sugerencias']
         ]
+        publico['sugerencias_beto'] = candidatos
+    elif motivo == 'HOMONIMIA' and db is not None:
+        candidatos = _candidatos_homonimia_rapidfuzz(db, nombre or ent.mejor_candidato)
+    publico['candidatos'] = candidatos
+    publico['acciones'] = construir_acciones(motivo, cat_ruteo, publico, rol_usuario=rol_usuario, candidatos=candidatos)
     return proteger_ci(publico, cis_en_entidades(publico['entidades'], str(ci) if ci else None))
 
 
-def iterar_casos(db, docs, resueltos=False):
+def iterar_casos(db, docs, resueltos=False, rol_usuario=None):
     ids = [d.id_documento for d in docs]
     mapa = {d.id_documento: d for d in docs}
     q = db.query(StagingEntidadNoResuelta).filter(
         StagingEntidadNoResuelta.resuelto == resueltos,
         StagingEntidadNoResuelta.id_documento.in_(ids)).order_by(StagingEntidadNoResuelta.id_staging)
-    # La respuesta solo materializa cinco casos. El recorrido usa bloques acotados, sin modelos NLP.
+    # El recorrido usa bloques acotados, sin modelos NLP.
     for ent in q.yield_per(200):
         if not resueltos:
             if (ent.motivo or '').upper() in MOTIVOS_INFORMATIVOS:
                 continue
             if es_fila_vacia_sin_confianza(ent.texto_original, ent.nivel_confianza):
                 continue
-        yield caso_guardado(ent, mapa.get(ent.id_documento)), clave_grupo(ent.motivo, ent.texto_original)
+        yield caso_guardado(ent, mapa.get(ent.id_documento), db=db, rol_usuario=rol_usuario), clave_grupo(ent.motivo, ent.texto_original)
     if not resueltos:
         offset = 0
         while True:
             bloque = items_hechos_en_revision(db, ids, offset=offset, limit=200)
             for caso in bloque:
                 caso['motivo_label'] = motivo_publico(caso.get('motivo'))
+                caso['acciones'] = construir_acciones(
+                    caso.get('motivo'),
+                    caso.get('categoria_ruteo') or 'academico',
+                    caso,
+                    rol_usuario=rol_usuario,
+                )
                 yield proteger_ci(caso), None
             if len(bloque) < 200:
                 break
@@ -242,10 +309,10 @@ def coincide(caso, search='', area=None, motivo=None, estado=None):
     return not search or strip_accents(search).lower() in strip_accents(texto).lower()
 
 
-def consultar(db, docs, page=1, page_size=5, search='', area=None, motivo=None, estado=None, vista='PENDIENTES', grupo=None):
+def consultar(db, docs, page=1, page_size=20, search='', area=None, motivo=None, estado=None, vista='PENDIENTES', grupo=None, rol_usuario=None):
     seleccion, total, un_clic = [], 0, 0
     ids_grupo = set(str(i) for i in ids_del_grupo(db, clave_interna(db, grupo, [d.id_documento for d in docs]), [d.id_documento for d in docs])) if grupo else None
-    for caso, clave in iterar_casos(db, docs, vista == 'RESUELTOS'):
+    for caso, clave in iterar_casos(db, docs, vista == 'RESUELTOS', rol_usuario=rol_usuario):
         if ids_grupo is not None and str(caso['id']) not in ids_grupo:
             continue
         if not coincide(caso, search, area, motivo, estado):
