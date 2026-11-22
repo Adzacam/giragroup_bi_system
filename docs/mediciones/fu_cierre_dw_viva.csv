@@ -1,0 +1,25 @@
+loop,metrica,referencia_fuente_o_tmpfs,dw_viva,diferencia,estado,nota
+FU-L3,inscritos 2022 (fuente = DW),53,53,0,IGUAL,fu_l3_inscritos_conversion.csv
+FU-L3,inscritos 2023,3551,3551,0,IGUAL,
+FU-L3,inscritos 2024,4563,4563,0,IGUAL,
+FU-L3,inscritos 2025,4737,4737,0,IGUAL,
+FU-L3,inscritos 2026,2292,2292,0,IGUAL,
+FU-L2,pagos 2024 (Bs),8071737.03,8071737.03,0,IGUAL,fu_l2_cobranza_fuente_vs_dw.csv
+FU-L2,pagos 2025 (Bs),12422501.39,12422501.39,0,IGUAL,
+FU-L2,pagos 2026 (Bs),4841944.46,4841944.46,0,IGUAL,
+FU-L2,estudiantes con >=2 cuotas 2024,362,362,0,IGUAL,"DA3; la fuente da 362/801/639, la DW 362/808/641 (filas sin fecha de inicio legible, explicado en FU-L2)"
+FU-L2,estudiantes con >=2 cuotas 2025,808,808,0,IGUAL,
+FU-L2,estudiantes con >=2 cuotas 2026,641,641,0,IGUAL,
+FU-L5,hechos de evaluacion docente,409859,409859,0,IGUAL,fu_l5_encuestas_fuente_vs_dw.csv
+FU-L5,"puntuaciones fuera de [1, escala_max] o iguales a 0",0,0,0,IGUAL,
+FU-L5,"hechos con id_tiempo NULL (sin fecha, fuera de gestion)",n/a,12937,n/a,INFORMATIVO,decision de Lean en FU-L9; no entran a ningun KPI
+FU-L4,filas de rendimiento academico (tmpfs limpia vs viva),27731,25208,-2523,EXPLICADA,"la DW viva conserva los estudiantes del snapshot y la cascada de identidad bloquea filas (CI_NOMBRE_DISCORDANTE, HOMONIMIA); fu_l4_arca_fuente_vs_dw_con_estudiantes_previos.csv"
+FU-L4,KPI-07 2024,80.72,82.32,1.60,EXPLICADA,misma causa
+FU-L4,KPI-08 2024,80.89,84.98,4.09,EXPLICADA,misma causa
+FU-L4,KPI-16 2024 (Desercion + Abandono),9.25 (fuente 10.17),5.38,-3.87,DECISION_LEAN_PENDIENTE,exige depurar filas bloqueadas por la cascada
+FU-L4,KPI-16 2025 (Desercion + Abandono),6.45 (fuente 6.58),6.47,0.02,IGUAL,
+FU-L6,KPI-02 2024,sin dato,sin dato,0,IGUAL,DA4
+FU-L6,KPI-02 2025,157.48,157.48,0,IGUAL,
+FU-L6,KPI-02 2026,100.99,100.99,0,IGUAL,ultimo mes cerrado (abril)
+FU-L9,tablas / vistas bi / KPI en bi.ref_kpi,51 / 10 / 23,51 / 10 / 23,0,IGUAL,invariantes
+FU-L9,pendientes de revision humana en staging,n/a,1516,n/a,INFORMATIVO,"CI_NOMBRE_DISCORDANTE 747, HOMONIMIA 363, BAJA_CONFIANZA_IA 323, BAJA_CONFIANZA 74, CI_DUDOSA 8, FILA_SIN_IDENTIDAD 1"
