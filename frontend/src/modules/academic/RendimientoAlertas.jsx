@@ -84,7 +84,7 @@ export default function RendimientoAlertas() {
         riesgo_desercion: {
           codigo: 'DESERCION',
           titulo: 'RIESGO DESERC.',
-          regla_texto: 'Regla: Incumpl. > 30%',
+          regla_texto: 'Regla: Incumpl. > 30% o Deserción/Abandono',
           severidad: 'ROJO',
           total_alumnos: 0,
           porcentaje_matricula: 0,

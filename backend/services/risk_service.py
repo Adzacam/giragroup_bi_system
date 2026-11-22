@@ -9,6 +9,7 @@ from models.dim_origen import DimOrigenDocumental
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
 from pipeline.config import NOTA_APROBACION
+from services.acta_canonica import es_desercion  # DA2-bis: Deserción/Abandono según el vocabulario del catálogo
 from services.regla_mora import es_mora  # DA3: regla única de mora
 
 # Tope de opciones por selector de filtro (programa, módulo, docente): más opciones congelan el navegador.
@@ -167,6 +168,8 @@ def evaluar_alertas_tempranas_deterministicas(
             FactRendimientoAcademico.incumplimiento_actividades_pct,
             FactRendimientoAcademico.asistencia_pct,
             FactRendimientoAcademico.tipo_alerta,
+            FactRendimientoAcademico.estado_academico,
+            FactRendimientoAcademico.estado_tutoria,
         )
         .all()
     )
@@ -323,7 +326,8 @@ def evaluar_alertas_tempranas_deterministicas(
             inc_val = max(inc_val, inasist_val)
         p["incumplimientos"].append(inc_val)
 
-        if (h.tipo_alerta or "").upper() == "DESERCION":
+        # Deserción explícita: alerta cargada o estado académico/de tutoría Deserción o Abandono (DA2-bis)
+        if (h.tipo_alerta or "").upper() == "DESERCION" or es_desercion(h.estado_academico, h.estado_tutoria):
             p["alerta_desercion_explicita"] = True
 
     # Procesar hechos financieros
@@ -561,7 +565,7 @@ def evaluar_alertas_tempranas_deterministicas(
         "riesgo_desercion": {
             "codigo": "DESERCION",
             "titulo": "RIESGO DESERC.",
-            "regla_texto": f"Regla: Incumpl. > {int(umbral_incumplimiento)}%",
+            "regla_texto": f"Regla: Incumpl. > {int(umbral_incumplimiento)}% o Deserción/Abandono",
             "severidad": "ROJO",
             "total_alumnos": cnt_desercion,
             "porcentaje_matricula": pct_des,
@@ -692,6 +696,8 @@ def obtener_ficha_cruzada_estudiante(db: Session, id_estudiante: int) -> Optiona
             reglas_fila.append("IF nota_final <= 70 -> RIESGO_ACADEMICO")
         if inc_f > 30.0:
             reglas_fila.append("IF incumplimiento > 30% -> RIESGO_DESERCION")
+        elif es_desercion(h.estado_academico, h.estado_tutoria):
+            reglas_fila.append("IF estado = Deserción/Abandono -> RIESGO_DESERCION")
 
         historial_aca.append({
             "id_hecho_aca": h.id_hecho_aca,
