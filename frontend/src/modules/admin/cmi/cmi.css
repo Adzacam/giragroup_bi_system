@@ -232,7 +232,7 @@
 }
 .cmi-btn:disabled { opacity: .5; cursor: not-allowed; }
 .cmi-btn-primary { background: var(--color-gira-navy); border-color: var(--color-gira-navy); color: var(--color-pure-white); }
-[data-theme="dark"] .cmi-btn-primary { background: var(--color-gira-gold); border-color: var(--color-gira-gold); color: var(--color-gira-navy); }
+[data-theme="dark"] .cmi-btn-primary { background: var(--color-gira-gold); border-color: var(--color-gira-gold); color: var(--color-alabaster); }
 
 .cmi-cfg-intro { padding: 18px 20px; margin-bottom: 20px; display: flex; gap: 18px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
 .cmi-cfg-intro p { margin: 0; font-size: 13px; color: var(--color-slate-gray); max-width: 640px; line-height: 1.5; }
@@ -562,7 +562,7 @@
 }
 [data-theme="dark"] .cmi-btn-recalcular {
   background: var(--color-gira-gold);
-  color: var(--color-gira-navy);
+  color: var(--color-alabaster);
 }
 .cmi-pred-card {
   padding: 24px;
@@ -806,7 +806,7 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   align-items: stretch;
-  padding-top: 10px;
+  padding-top: 68px;
 }
 .cmi-map-connector {
   display: none;
