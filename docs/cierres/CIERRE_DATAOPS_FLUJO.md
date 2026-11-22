@@ -13,7 +13,7 @@ Hecho (máx. 10 líneas):
 - **Correcciones de revisión:** corregido `page_size` `<= 50` en `lectura.py` (evitaba HTTP 422 en paso ② con `FILAS_BETO = 20`), corregidos atributos ORM (`ci`/`programa_origen` en `DimEstudiante`, `pos_code` en `DimModulo`) y `begin_nested()` en `revision_acciones_ejecutor.py` y `revision_consulta.py`, y añadida precarga `Programa`/`Módulo` desde texto plano (`R4`) + `por_que_detuvo` coherente en `SIN_LECTURA`.
 
 No hecho y por qué:
-- **DF-L10 (lote congelado v2 `df_lote_1387_v2.json`):** no ejecutado en este turno; no existe aún el script generador de `df_lote_1387_v2.json` en `scripts/` y su ejecución requiere corrida controlada del corpus completo, 2 corridas con diferencia 0, tabla antes/después A-01..A-13 y recongelado de SFV (coordinación con chats 1, 3 y 4 sin tocar `snapshot_dw_20261110_1201`).
+- **DF-L10 (lote congelado v2 `df_lote_1387_v2.json`):** no ejecutado en este turno; `scripts/reejecutar_lote_1387_uploads_data.py` aún conserva la lista fija `MUESTRAS` de v1 (pendiente refactorización DD6 sin nombres de archivo/hoja) y su ejecución requiere corrida controlada del corpus completo, 2 corridas con diferencia 0, tabla antes/después A-01..A-13 y recongelado de SFV (coordinación con chats 1, 3 y 4 sin tocar `snapshot_dw_20261110_1201`).
 
 Invariantes cambiados: no (49 tablas `public` / 51 DW intactas, 10 vistas `bi`, cascada y umbrales 0,92/90/85/80 y bandas 0,85/0,60 sin cambios).
 
