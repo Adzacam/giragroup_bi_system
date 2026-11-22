@@ -23,9 +23,19 @@
 - Scorecard vivo frente a `adw_l9_remedicion_final.csv`: 2 celdas difieren de 92: redondeo (KPI-03 2026: 109,07 frente a 109,0750) y **KPI-22 2023** (vivo sin valor; congelado 93). Revisar en el siguiente corte.
 - `dataops_tarea`: 30 filas, sin tareas basura nuevas (el arreglo de pytest sigue vigente).
 
+## Verificación en el navegador (2026-11-22, con sesión de Lean)
+- **CMI:** índice 2026 = 49,4 (antes 32,4); el selector ya no ofrece 2023 (A11 resuelto, y con ello KPI-22 de 2023 deja de ser visible).
+- **CLIENTES (L1):** `/cmi/perspectivas/CLIENTES/detalle?gestion=2026` → 200 y la gráfica «Inscritos por programa» se muestra.
+- **Recaudación:** neta Bs 5.695.043,78, tarjeta «Deuda Total Registrada» (Bs 1.041.769,19) y cumplimiento 31,7 % = KPI-13 (DA8).
+- **Cartera:** «Recaudación consolidada» Bs 4.841.944,46 (ya no 0); 1.785 estudiantes en mora (≥ 2 cuotas).
+- **Metas:** meta 2026 Bs 17.973.400 y avance 31,7 %.
+- **Auditoría:** las 200 filas visibles son eventos de la recarga FU-L9; los eventos HITL quedan fuera de esa ventana, así que las etiquetas «Aprobación en bloque» y «Revelación» solo se comprobaron por API (L8), no en pantalla.
+- **Observación nueva:** Cartera y Alertas muestran el nombre completo del estudiante con la CI enmascarada. Revisar si es lo deseado (privacidad).
+- Capturas «después»: no guardadas (el panel las devuelve reducidas).
+
 ## Pendiente (no bloquea el cierre)
-1. Verificar las pantallas en el navegador y repetir las capturas a 1440 px reales (necesita sesión con 2FA de Lean).
-2. KPI-22 de 2023: confirmar por qué el scorecard vivo no lo muestra.
+1. Capturas «después» a 1440 px reales y comprobar en pantalla las etiquetas de Auditoría (L8).
+2. Nombres de estudiantes visibles en Cartera/Alertas (privacidad).
 3. Las 74 filas `BAJA_CONFIANZA` pendientes (eran 5 con índice 0 en el doc 44; ahora 74): revisar su origen.
 4. N de la serie predictiva (33 en pantalla, 43 meses con inscritos, 40 en el invariante).
 5. 162 hechos académicos sin `id_tiempo` (A13) y catálogo con módulos `MOD-GEN*`.
