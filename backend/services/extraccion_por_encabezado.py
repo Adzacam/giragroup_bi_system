@@ -18,20 +18,25 @@ MESES = {
     "AGOSTO": 8, "SEPTIEMBRE": 9, "SETIEMBRE": 9, "OCTUBRE": 10, "NOVIEMBRE": 11, "DICIEMBRE": 12,
 }
 
-_CLAVES_CI = ("CEDULA DE IDENTIDAD", "CI", "C.I.", "DOC_IDENTIDAD/CI", "CI_ESTUDIANTE", "IDNUMBER", "ID NUMBER")
-_CLAVES_NOMBRE_COMPLETO = ("NOMBRE COMPLETO", "NOMBRES Y APELLIDOS", "APELLIDOS Y NOMBRES", "ESTUDIANTE", "ALUMNO")
-_CLAVES_NOTA = ("GRADE/100.00", "GRADE/100", "NOTA FINAL", "NOTA_FINAL", "CALIFICACION FINAL", "CALIF_FINAL", "FINALGRADE", "FINAL_GRADE",
-                "PROMEDIO FINAL", "PROMEDIO", "NOTA", "CALIFICACION", "PUNTAJE")
+def _extraccion_cfg() -> dict:
+    from pipeline.lector_hojas import cargar_config
+    return (cargar_config() or {}).get("extraccion") or {}
+
+
+def _tupla_cfg(clave: str) -> tuple:
+    return tuple(_extraccion_cfg().get(clave) or ())
+
+
+_CLAVES_CI = _tupla_cfg("claves_ci")
+_CLAVES_NOMBRE_COMPLETO = _tupla_cfg("claves_nombre_completo")
+_CLAVES_NOTA = _tupla_cfg("claves_nota")
 # Cobranzas: la fecha de pago más reciente; si no, la primera factura o el inicio del programa
-_CLAVES_FECHA_FINANCIERA = ("FECHA ULTIMA FACTURA", "FECHA DE PAGO", "FECHA PAGO", "FECHA DE VENCIMIENTO",
-                            "FECHA VENCIMIENTO", "FECHA DE LA PRIMERA FACTURA", "FECHA INICIO DIPLOMADO")
-_CLAVES_FECHA_ACADEMICA = ("FECHA", "FECHA EVALUACION", "FECHA DE EVALUACION", "FECHA ASENTAMIENTO",
-                           "FECHA DE CIERRE", "FECHA FIN", "MARCA TEMPORAL", "FECHA DE ENVIO", "FINALIZADO",
-                           "COMPLETADO", "COMENZADO EL")
-_CLAVES_MES = ("MES INICIO", "MES INICO", "MES")
-_CLAVES_ANIO = ("ANO INICIO", "ANO INCIO", "ANO", "GESTION")
+_CLAVES_FECHA_FINANCIERA = _tupla_cfg("claves_fecha_financiera")
+_CLAVES_FECHA_ACADEMICA = _tupla_cfg("claves_fecha_academica")
+_CLAVES_MES = _tupla_cfg("claves_mes")
+_CLAVES_ANIO = _tupla_cfg("claves_anio")
 # Moodle no trae la fecha del curso: la única es la de exportación del reporte, que se toma como fecha de corte
-_CLAVE_DESCARGA_MOODLE = "LAST DOWNLOADED FROM THIS COURSE"
+_CLAVE_DESCARGA_MOODLE = str(_extraccion_cfg().get("clave_descarga_moodle") or "LAST DOWNLOADED FROM THIS COURSE")
 _RE_FECHA_LARGA = re.compile(r"(\d{1,2}) DE ([A-Z]+) DE (\d{4})")
 # Google Forms escribe la cédula como 'CI-4892019' / 'ci 4892019' / 'C.I. 4892019': el prefijo no es parte del número
 _RE_PREFIJO_CI = re.compile(r"^\s*c\.?\s*i\.?\s*[-:]?\s*(?=\d)", re.IGNORECASE)

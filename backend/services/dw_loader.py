@@ -1916,8 +1916,10 @@ class DWLoaderService:
                 if not id_doc_eval:
                     motivos_rev.append("LIMITACION_FUENTE")  # la encuesta no nombra al docente: no es un caso de revisión
             if not id_tiempo:
-                id_tiempo = self._tiempo_del_programa(id_mod_eval)  # último período con actas del programa
-                motivos_rev.append("TIEMPO_IMPUTADO" if id_tiempo else "LIMITACION_FUENTE")
+                # Decisión Lean (FU-L5/FU-L9): respuestas sin fecha quedan con id_tiempo = NULL
+                # (fuera de gestión, sin asignar al último período del programa).
+                id_tiempo = None
+                motivos_rev.append("LIMITACION_FUENTE")
 
             clave = resoluciones.get("clave_respuesta")
             if not self._reclamar_fila_origen(registro.get("clave_origen"), doc_id, "fact_evaluacion_docente", registro.get("clave_contenido"), subclave=clave):

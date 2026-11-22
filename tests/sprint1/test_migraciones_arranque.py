@@ -53,9 +53,17 @@ def test_con_004_aplicada_no_se_reaplica_003():
     plan_kpi = "019_vista_planificacion_kpi23.sql"
     retirar_pbi_rol = "020_retirar_rol_powerbi_reader.sql"
     app_pers = "021_esquema_app_personalizacion.sql"
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision, kpi10, captacion, prep, plan_fact, plan_kpi, retirar_pbi_rol, app_pers]
-    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == [alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision, kpi10, captacion, prep, plan_fact, plan_kpi, retirar_pbi_rol, app_pers]
-    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision, kpi10, captacion, prep, plan_fact, plan_kpi, retirar_pbi_rol, app_pers}) == []
+    fu_l2 = "022_fu_l2_cobranza_mora_da3.sql"
+    fu_l3 = "023_fu_l3_fact_marketing_documento.sql"
+    fu_l4 = "024_fu_l4_actas_resultado_desercion.sql"
+    fu_l5 = "025_fu_l5_encuestas_escala_da1.sql"
+    fu_l6 = "026_fu_l6_metas_granularidad.sql"
+    adw_l6 = "027_adw_l6_cmi_config.sql"
+    fu_l9 = "028_fu_l9_decisiones_lean.sql"
+    esperadas = [alineacion, cmi, pbi, tarea, cache, ingesta, drops, revision, kpi10, captacion, prep, plan_fact, plan_kpi, retirar_pbi_rol, app_pers, fu_l2, fu_l3, fu_l4, fu_l5, fu_l6, adw_l6, fu_l9]
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE}) == esperadas
+    assert migraciones_a_aplicar({"001_initial_constellation_baseline.sql", MIGRACION_TIPO_FUENTE}) == esperadas
+    assert migraciones_a_aplicar({MIGRACION_TIPO_FUENTE, *esperadas}) == []
 
 
 def test_capa_cmi_no_pisa_la_configuracion_editada():

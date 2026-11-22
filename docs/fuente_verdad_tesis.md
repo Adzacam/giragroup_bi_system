@@ -1,6 +1,6 @@
 # ÚNICA FUENTE DE VERDAD (SFV) — PROYECTO DE GRADO GIRAGROUP BI
 
-**Estado:** **CONGELADO** — 19 de noviembre de 2026  
+**Estado:** **CONGELADO** — 21 de noviembre de 2026 (recongelado tras `FU-L9` + `ADW-L9`, migraciones `022`..`028`)  
 **Título del Proyecto:** *Sistema de Inteligencia de Negocios basado en BETO y Cuadro de Mando Integral para mitigar la fragmentación informacional en GiraGroup S.R.L.*  
 **Autor:** Lean (Adriano Daza)  
 **Rama / Commit base:** `beto-integracion` (`F5C/F5V`)  
@@ -226,31 +226,35 @@
 
 De acuerdo con la **Decisión 1**, los indicadores de negocio (`KPI-01`..`09`, `KPI-12`..`17`, `KPI-19`..`22`) provienen del `snapshot 10-nov` (`f3r_snapshot_kpi.json`), mientras que los dependientes del modelo (`KPI-10`, `KPI-11`, `KPI-18`) y el cuadre de `KPI-15` por fila de origen provienen de `f3_base` / `lote 1.387`. En el snapshot, `KPI-10`, `KPI-11` y `KPI-18` están marcados `no_usar_dependiente_del_modelo`.
 
-### Tabla F.1: KPIs de Negocio (Gestiones 2024 y 2025) — Base: `snapshot 10-nov` (`f3r_snapshot_kpi.json`)
+### Tabla F.1: KPIs de Negocio (Gestiones 2024, 2025 y 2026) — Base: `giragroup_db` recarga `FU-L9` (`adw_l9_remedicion_final.csv`)
 
-| Código | Indicador | Gestión 2024 | Gestión 2025 | `valor_docx` (2025) | Fuente (`docs/mediciones/` y ruta JSON) |
-|---|---|---|---|---|---|
-| KPI-01 | Ticket promedio por estudiante (Bs) | 2.311,15 | **3.773,91** | 3.773,91 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-01.api` |
-| KPI-02 | Cumplimiento de meta del último mes (%) | 6,25 % | **157,48 %** | 157,48 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-02.api` |
-| KPI-03 | Cumplimiento de meta a la fecha (%) | 102,26 % | **110,54 %** | 110,54 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-03.api` |
-| KPI-04 | Estudiantes con riesgo financiero (cant.) | 314 | **623** | 623 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-04.api` |
-| KPI-05 | Estudiantes en mora (%) | 14,08 % | **18,36 %** | 18,36 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-05.api` |
-| KPI-06 | Conversión de admisiones (%) | 100,00 % (tautológico) | **100,00 %** (tautológico; declarar **N/D**) | N/D | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-06.api` |
-| KPI-07 | Promedio de calificaciones (pts) | 78,94 | **79,02** | 79,02 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-07.api` |
-| KPI-08 | Tasa de aprobación (nota ≥ 70) | 85,50 % | **85,61 %** | 85,61 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-08.api` |
-| KPI-09 | Estudiantes en riesgo académico (cant.) | 674 | **588** | 588 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-09.api` |
-| KPI-12 | Variación interanual de ingresos (%) | 17,60 % | **28,10 %** | 28,10 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-12.api` |
-| KPI-13 | Avance sobre la meta anual (%) | 102,26 % | **110,54 %** | 110,54 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-13.api` |
-| KPI-14 | Brecha a la meta anual (Bs) | 0,00 | **0,00** | 0,00 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-14.api` |
-| KPI-15 | Cartera vencida (%) | 43,58 % | **20,56 %** | 20,56 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-15.api` |
-| KPI-16 | Tasa de deserción (%) | 0,00 % | **0,00 %** | 0,00 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-16.api` |
-| KPI-17 | Estudiantes en prioridad crítica (cant.) | 90 | **124** | 124 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-17.api` |
-| KPI-19 | Satisfacción con los docentes (%) | N/D (`null`) | **81,23 %** | 81,23 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-19.api` |
-| KPI-20 | Satisfacción institucional (%) | N/D (`null`) | **84,39 %** | 84,39 % | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-20.api` |
-| KPI-21 | Matrícula efectiva (cant.) | 3.147 | **3.455** | 3.455 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-21.api` |
-| KPI-22 | Inscritos por convenio (cant.) | 1.631 | **2.609** | 2.609 | `docs/mediciones/f3r_snapshot_kpi.json` → `gestiones.2025.KPI-22.api` |
+| Código | Indicador | Gestión 2024 | Gestión 2025 | Gestión 2026 | `valor_docx` (2025) | Fuente (`docs/mediciones/`) |
+|---|---|---|---|---|---|---|
+| KPI-01 | Ticket promedio por estudiante (Bs) | 2.279,51 | **2.571,95** | 2.325,62 | 2.571,95 | `docs/mediciones/adw_l9_remedicion_final.csv` (denominador `pagantes`) |
+| KPI-02 | Cumplimiento de meta del último mes (%) | N/D (sin meta mensual) | **157,48 %** | 100,99 % | 157,48 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-03 | Cumplimiento de meta a la fecha (%) | 102,26 % | **110,54 %** | 109,08 % | 110,54 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-04 | Estudiantes con riesgo financiero (cant.) | 362 | **808** | 641 | 808 | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-05 | Estudiantes en mora (%) | 10,60 % | **18,46 %** | 37,75 % | 18,46 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-06 | Conversión de admisiones (%) | N/D | **3,85 %** | 2,94 % | 3,85 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-07 | Promedio de calificaciones (pts) | 82,32 | **81,81** | N/D | 81,81 | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-08 | Tasa de aprobación (nota ≥ 70) | 84,98 % | **85,62 %** | N/D | 85,62 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-09 | Estudiantes en riesgo académico (cant.) | 667 | **445** | N/D | 445 | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-10 | Confianza media de extracción (%) | 84,09 % | **83,92 %** | N/D | 83,92 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-11 | Automatización directa (%) | 54,34 % | **51,51 %** | N/D | 51,51 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-12 | Variación interanual de ingresos (%) | 17,60 % | **28,10 %** | 20,61 % | 28,10 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-13 | Avance sobre la meta anual (%) | 102,26 % | **110,54 %** | 31,69 % | 110,54 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-14 | Brecha a la meta anual (Bs) | 0,00 | **0,00** | 12.278.356,22 | 0,00 | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-15 | Cartera vencida (%) | 69,61 % | **78,06 %** | 23,07 % | 78,06 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-16 | Tasa de deserción (%) | 5,38 % | **6,47 %** | N/D | 6,47 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-17 | Estudiantes en prioridad crítica (cant.) | 66 | **116** | N/D | 116 | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-18 | Pendientes de revisión humana (cant.) | 204 | **948** | 364 | 948 | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-19 | Satisfacción con los docentes (%) | 81,10 % | **82,00 %** | 84,01 % | 82,00 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-20 | Satisfacción institucional (%) | 79,72 % | **77,75 %** | 80,20 % | 77,75 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-21 | Matrícula efectiva (cant.) | 3.773 | **3.571** | N/D | 3.571 | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-22 | Inscritos por convenio (cant.) | 1.631 | **2.609** | N/D | 2.609 | `docs/mediciones/adw_l9_remedicion_final.csv` |
+| KPI-23 | Cumplimiento de inicios planificados (%) | 100,00 % | **99,77 %** | 46,62 % | 99,77 % | `docs/mediciones/adw_l9_remedicion_final.csv` |
 
-*Nota sobre `KPI-02` 2024 (`6,25 %`):* en 2024 la fuente registra meta solo para diciembre (TECHOS/CERRADOS, 10.719.694 Bs) (`docs/mediciones/f3s_d_a8b.json` → `verificacion_1_meta_2024`).
+*Notas de recongelado (`FU-L9 + ADW-L9`, 21-nov-2026):* `KPI-01` usa `pagantes` como denominador único (2023–2026); `KPI-02` 2024 es N/D por ausencia de meta mensual en la fuente (DA4); `KPI-09` y `KPI-17` en 2026 son N/D por ausencia de registros académicos (guarda NULL en `bi.vw_cmi_valores`); respuestas de encuestas sin fecha quedan con `id_tiempo = NULL` (`12.937` filas fuera de gestión); NPS queda solo informativo (`23` KPI en `bi.ref_kpi`); los 9 KPI sin umbral y `KPI-13` se mantienen sin cambios (DA5). **DA8 (pronóstico financiero todas las categorías):** pendiente OLS anual `+2.360.251,66 Bs/año`, CAGR `22,85 %`, meta anual 2026 `17.973.400 Bs`, recaudado acumulado 2026 `5.695.043,78 Bs` (`docs/mediciones/adw_da8_forecast_despues.json`).
 
 ### Tabla F.2: KPIs Operativos y Cuadre de KPI-15 — Base: `f3_base` (`f3s_extraccion_f3base.json`, `f3s_kpi15_cuadre.json`)
 

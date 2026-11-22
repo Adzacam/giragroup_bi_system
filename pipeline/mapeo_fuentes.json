@@ -1387,5 +1387,269 @@
    }
   ],
   "nota": "Las reglas por nombre son señales. El perfil (scripts/auditoria_fuentes) mide estado y forma; FU-L1 (pipeline/lector_hojas.py) aplica estas reglas."
+ },
+ "extraccion": {
+  "claves_ci": [
+   "CEDULA DE IDENTIDAD",
+   "CI",
+   "C.I.",
+   "DOC_IDENTIDAD/CI",
+   "CI_ESTUDIANTE",
+   "IDNUMBER",
+   "ID NUMBER"
+  ],
+  "claves_nombre_completo": [
+   "NOMBRE COMPLETO",
+   "NOMBRES Y APELLIDOS",
+   "APELLIDOS Y NOMBRES",
+   "ESTUDIANTE",
+   "ALUMNO"
+  ],
+  "claves_nota": [
+   "GRADE/100.00",
+   "GRADE/100",
+   "NOTA FINAL",
+   "NOTA_FINAL",
+   "CALIFICACION FINAL",
+   "CALIF_FINAL",
+   "FINALGRADE",
+   "FINAL_GRADE",
+   "PROMEDIO FINAL",
+   "PROMEDIO",
+   "NOTA",
+   "CALIFICACION",
+   "PUNTAJE"
+  ],
+  "claves_fecha_financiera": [
+   "FECHA ULTIMA FACTURA",
+   "FECHA DE PAGO",
+   "FECHA PAGO",
+   "FECHA DE VENCIMIENTO",
+   "FECHA VENCIMIENTO",
+   "FECHA DE LA PRIMERA FACTURA",
+   "FECHA INICIO DIPLOMADO"
+  ],
+  "claves_fecha_academica": [
+   "FECHA",
+   "FECHA EVALUACION",
+   "FECHA DE EVALUACION",
+   "FECHA ASENTAMIENTO",
+   "FECHA DE CIERRE",
+   "FECHA FIN",
+   "MARCA TEMPORAL",
+   "FECHA DE ENVIO",
+   "FINALIZADO",
+   "COMPLETADO",
+   "COMENZADO EL"
+  ],
+  "claves_mes": [
+   "MES INICIO",
+   "MES INICO",
+   "MES"
+  ],
+  "claves_anio": [
+   "ANO INICIO",
+   "ANO INCIO",
+   "ANO",
+   "GESTION"
+  ],
+  "clave_descarga_moodle": "LAST DOWNLOADED FROM THIS COURSE",
+  "financieros": {
+   "ci": [
+    "CI",
+    "CEDULA DE IDENTIDAD",
+    "DOC_IDENTIDAD/CI",
+    "CI_ESTUDIANTE"
+   ],
+   "monto_deuda": [
+    "DEUDA TOTAL",
+    "MONTO_DEUDA",
+    "SALDO DEUDOR",
+    "SALDO",
+    "DEUDA"
+   ],
+   "monto_pagado": [
+    "TOTAL PAGADO HASTA LA FECHA",
+    "TOTAL PAGADO",
+    "MONTO PAGADO",
+    "MONTO_PAGADO",
+    "PAGADO"
+   ],
+   "cuotas_impagas": [
+    "TOTAL CUOTAS EN MORA",
+    "CUOTAS EN MORA",
+    "CUOTAS IMPAGAS",
+    "CUOTAS_IMPAGAS"
+   ],
+   "nombre_completo": [
+    "NOMBRE COMPLETO",
+    "ESTUDIANTE"
+   ],
+   "nombres": [
+    "NOMBRES"
+   ],
+   "paterno": [
+    "PATERNO"
+   ],
+   "materno": [
+    "MATERNO"
+   ],
+   "programa": [
+    "NOMBRE DEL PROGRAMA",
+    "PROGRAMA"
+   ]
+  },
+  "no_estudiante": [
+   "ASESOR",
+   "DOCENTE",
+   "PROFESOR",
+   "TUTOR",
+   "EXPERTO",
+   "COORDINADOR",
+   "RESPONSABLE",
+   "RESIDENCIA",
+   "SEDE",
+   "CIUDAD",
+   "ESCUELA",
+   "PROGRAMA",
+   "MODULO",
+   "CELULAR",
+   "TELEFONO",
+   "FACTURA",
+   "CORREO",
+   "E-MAIL",
+   "EMAIL",
+   "ESTADO",
+   "OBSERVACION",
+   "CARTERA",
+   "SITUACION",
+   "RAZON SOCIAL"
+  ],
+  "palabras_no_estudiante": [
+   "NIT"
+  ],
+  "atributos_estudiante": [
+   "CARRERA",
+   "NIVEL ACADEMICO",
+   "UNIVERSIDA",
+   "INSTITUTO",
+   "INSTITUCION",
+   "GRADO ACADEMICO",
+   "PROFESION",
+   "OCUPACION",
+   "CARGO",
+   "DIRECCION"
+  ],
+  "roles": {
+   "codigo_programa": [
+    "POS",
+    "NUMEROPROYECTO",
+    "NUMERO PROYECTO",
+    "NRO PROYECTO",
+    "N POS",
+    "NRO POS",
+    "NUMERO POS",
+    "CODIGO POS",
+    "COD POS",
+    "CODIGO PROGRAMA",
+    "COD PROGRAMA"
+   ],
+   "nombre_programa": [
+    "NOMBRE DEL PROGRAMA",
+    "NOMBRE PROGRAMA",
+    "PROGRAMA",
+    "PROGRAMA POS",
+    "DIPLOMADO",
+    "MAESTRIA"
+   ],
+   "modulo": [
+    "MODULO",
+    "NOMBRE MODULO",
+    "NOMBRE DEL MODULO",
+    "CURSO",
+    "COURSE",
+    "ASIGNATURA",
+    "MATERIA",
+    "COD MODULO",
+    "CODIGO MODULO"
+   ],
+   "docente": [
+    "DOCENTE",
+    "PROFESOR",
+    "TUTOR",
+    "FACILITADOR",
+    "NOMBRE DOCENTE",
+    "NOMBRE DEL DOCENTE",
+    "EXPERTO",
+    "NOMBRE DEL EXPERTO"
+   ],
+   "estudiante": [
+    "ESTUDIANTE",
+    "ALUMNO",
+    "POSTULANTE",
+    "PARTICIPANTE",
+    "USER LMS",
+    "NOMBRE",
+    "NOMBRES Y APELLIDOS",
+    "NOMBRE COMPLETO",
+    "APELLIDOS Y NOMBRES",
+    "NOMBRE COMPLETO DEL USUARIO",
+    "NOMBRE DEL ESTUDIANTE",
+    "NOMBRE DEL PARTICIPANTE"
+   ],
+   "partes_nombre": [
+    "NOMBRES",
+    "PATERNO",
+    "MATERNO",
+    "APELLIDO PATERNO",
+    "APELLIDO MATERNO"
+   ],
+   "ci": [
+    "CI",
+    "C I",
+    "IDNUMBER",
+    "CARNET",
+    "DOCUMENTO",
+    "DOC IDENTIDAD CI",
+    "CI ESTUDIANTE",
+    "CEDULA DE IDENTIDAD"
+   ],
+   "concepto": [
+    "CONCEPTO",
+    "ITEM",
+    "DESCRIPCION",
+    "GLOSA",
+    "RUBRO"
+   ],
+   "monto": [
+    "DEUDA TOTAL",
+    "MONTO",
+    "IMPORTE",
+    "TOTAL",
+    "DEUDA",
+    "SALDO",
+    "MONTO_DEUDA",
+    "MONTO DEUDA"
+   ],
+   "monto_pagado": [
+    "TOTAL PAGADO HASTA LA FECHA",
+    "TOTAL PAGADO",
+    "PAGADO",
+    "MONTO_PAGADO",
+    "MONTO PAGADO",
+    "ABONO"
+   ],
+   "cuotas_impagas": [
+    "TOTAL CUOTAS EN MORA",
+    "CUOTAS EN MORA",
+    "CUOTAS_IMPAGAS",
+    "CUOTAS IMPAGAS",
+    "CUOTAS VENCIDAS",
+    "CUOTAS_VENCIDAS",
+    "MORA",
+    "CUOTAS_MORA",
+    "CUOTA"
+   ]
+  }
  }
 }

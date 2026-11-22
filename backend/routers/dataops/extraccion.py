@@ -26,48 +26,31 @@ except ImportError:  # pragma: no cover
 # MOTOR DE EXTRACCIÓN SEMÁNTICA Y RAPIDFUZZ (#4, #5, #7)
 # =============================================================================
 
-# Encabezados cuyo valor nunca es el nombre ni el CI del estudiante. Sin esta exclusión, la
-# heurística tomaba el ASESOR o la RESIDENCIA DOCENTE como estudiante y el CELULAR como CI.
-_ENCABEZADOS_NO_ESTUDIANTE = (
-    "ASESOR", "DOCENTE", "PROFESOR", "TUTOR", "EXPERTO", "COORDINADOR", "RESPONSABLE",
-    "RESIDENCIA", "SEDE", "CIUDAD", "ESCUELA", "PROGRAMA", "MODULO", "CELULAR", "TELEFONO",
-    "FACTURA", "CORREO", "E-MAIL", "EMAIL",
-    # Estados de la fila ('OBSERVACIÓN CARTERA: EN PROCESO DE COBRO'): un estado no es un nombre
-    "ESTADO", "OBSERVACION", "CARTERA", "SITUACION",
-    # F5C C-2(d): la RAZÓN SOCIAL de la factura es una empresa o un tercero, no el estudiante
-    "RAZON SOCIAL",
-)
-# Encabezados que se comparan como palabra completa ('NIT' está dentro de 'UNITARIO' o 'COMUNITARIO')
-_PALABRAS_NO_ESTUDIANTE = ("NIT",)
+def _extraccion_cfg() -> dict:
+    from pipeline.lector_hojas import cargar_config
+    return (cargar_config() or {}).get("extraccion") or {}
 
-# Atributos del estudiante (su formación previa o su trabajo): nunca son programa, módulo ni docente
-_ATRIBUTOS_ESTUDIANTE = (
-    "CARRERA", "NIVEL ACADEMICO", "UNIVERSIDA", "INSTITUTO", "INSTITUCION", "GRADO ACADEMICO",
-    "PROFESION", "OCUPACION", "CARGO", "DIRECCION",
-)
 
-# Rol de cada columna por similitud de su encabezado con estas claves canónicas (RapidFuzz ratio sobre el encabezado
-# normalizado). Prioridad del programa: primero el código, luego el nombre.
-_ENC_CODIGO_PROGRAMA = (
-    "POS", "NUMEROPROYECTO", "NUMERO PROYECTO", "NRO PROYECTO", "N POS", "NRO POS", "NUMERO POS",
-    "CODIGO POS", "COD POS", "CODIGO PROGRAMA", "COD PROGRAMA",
-)
-_ENC_NOMBRE_PROGRAMA = ("NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA", "PROGRAMA POS", "DIPLOMADO", "MAESTRIA")
-_ENC_MODULO = (
-    "MODULO", "NOMBRE MODULO", "NOMBRE DEL MODULO", "CURSO", "COURSE", "ASIGNATURA", "MATERIA",
-    "COD MODULO", "CODIGO MODULO",
-)
-_ENC_DOCENTE = (
-    "DOCENTE", "PROFESOR", "TUTOR", "FACILITADOR", "NOMBRE DOCENTE", "NOMBRE DEL DOCENTE",
-    "EXPERTO", "NOMBRE DEL EXPERTO",
-)
-_ENC_ESTUDIANTE = (
-    "ESTUDIANTE", "ALUMNO", "POSTULANTE", "PARTICIPANTE", "USER LMS", "NOMBRE", "NOMBRES Y APELLIDOS", "NOMBRE COMPLETO",
-    "APELLIDOS Y NOMBRES", "NOMBRE COMPLETO DEL USUARIO", "NOMBRE DEL ESTUDIANTE", "NOMBRE DEL PARTICIPANTE",
-)
-_ENC_PARTES_NOMBRE = ("NOMBRES", "PATERNO", "MATERNO", "APELLIDO PATERNO", "APELLIDO MATERNO")
-_ENC_CI = ("CI", "C I", "IDNUMBER", "CARNET", "DOCUMENTO", "DOC IDENTIDAD CI", "CI ESTUDIANTE", "CEDULA DE IDENTIDAD")
-_ENC_CONCEPTO = ("CONCEPTO", "ITEM", "DESCRIPCION", "GLOSA", "RUBRO")
+def _roles_cfg() -> dict:
+    return _extraccion_cfg().get("roles") or {}
+
+
+# Encabezados y roles cargados desde config/mapeo_fuentes.yaml (M5: sin listas fijas en código).
+_ENCABEZADOS_NO_ESTUDIANTE = tuple(_extraccion_cfg().get("no_estudiante") or ())
+_PALABRAS_NO_ESTUDIANTE = tuple(_extraccion_cfg().get("palabras_no_estudiante") or ())
+_ATRIBUTOS_ESTUDIANTE = tuple(_extraccion_cfg().get("atributos_estudiante") or ())
+
+_ENC_CODIGO_PROGRAMA = tuple(_roles_cfg().get("codigo_programa") or ())
+_ENC_NOMBRE_PROGRAMA = tuple(_roles_cfg().get("nombre_programa") or ())
+_ENC_MODULO = tuple(_roles_cfg().get("modulo") or ())
+_ENC_DOCENTE = tuple(_roles_cfg().get("docente") or ())
+_ENC_ESTUDIANTE = tuple(_roles_cfg().get("estudiante") or ())
+_ENC_PARTES_NOMBRE = tuple(_roles_cfg().get("partes_nombre") or ())
+_ENC_CI = tuple(_roles_cfg().get("ci") or ())
+_ENC_CONCEPTO = tuple(_roles_cfg().get("concepto") or ())
+_ENC_MONTO = tuple(_roles_cfg().get("monto") or ())
+_ENC_MONTO_PAGADO = tuple(_roles_cfg().get("monto_pagado") or ())
+_ENC_CUOTAS_IMPAGAS = tuple(_roles_cfg().get("cuotas_impagas") or ())
 
 # Similitud mínima del encabezado con la clave canónica del rol (misma cota del 85 % que la variante de CI y los docentes)
 UMBRAL_SIMILITUD_ENCABEZADO = 85.0
@@ -782,23 +765,20 @@ def extract_entities_from_line(
     cuotas_impagas_val = None
     concepto_val, concepto_sim, monto_sim = None, None, None
 
-    for k in ["CONCEPTO", "ITEM", "DESCRIPCION", "GLOSA", "RUBRO"]:
+    for k in _ENC_CONCEPTO:
         if k in labeled_data and labeled_data[k]:
             concepto_val, concepto_sim = labeled_data[k], similitud_encabezado(k, _ENC_CONCEPTO)
             break
-    # Alias del libro de cobranzas (DEUDA TOTAL, TOTAL PAGADO HASTA LA FECHA, TOTAL CUOTAS EN MORA) primero:
-    # sin ellos, monto_pagado quedaba en 0 y las cuotas en mora no se leían.
-    claves_monto = ["DEUDA TOTAL", "MONTO", "IMPORTE", "TOTAL", "DEUDA", "SALDO", "MONTO_DEUDA", "MONTO DEUDA"]
-    for k in claves_monto:
+    # Alias del catálogo (M5: config/mapeo_fuentes.yaml)
+    for k in _ENC_MONTO:
         if k in labeled_data and labeled_data[k]:
-            monto_val, monto_sim = labeled_data[k], similitud_encabezado(k, tuple(claves_monto))
+            monto_val, monto_sim = labeled_data[k], similitud_encabezado(k, _ENC_MONTO)
             break
-    for k in ["TOTAL PAGADO HASTA LA FECHA", "TOTAL PAGADO", "PAGADO", "MONTO_PAGADO", "MONTO PAGADO", "ABONO"]:
+    for k in _ENC_MONTO_PAGADO:
         if k in labeled_data and labeled_data[k]:
             monto_pagado_val = labeled_data[k]
             break
-    for k in ["TOTAL CUOTAS EN MORA", "CUOTAS EN MORA", "CUOTAS_IMPAGAS", "CUOTAS IMPAGAS", "CUOTAS VENCIDAS",
-              "CUOTAS_VENCIDAS", "MORA", "CUOTAS_MORA", "CUOTA"]:
+    for k in _ENC_CUOTAS_IMPAGAS:
         if k in labeled_data and labeled_data[k]:
             cuotas_impagas_val = labeled_data[k]
             break

@@ -9,6 +9,7 @@ Implementa validaciones de rango numérico (OWASP A04) y respuesta tipada Pydant
 import logging
 from typing import Optional
 from fastapi import APIRouter, Depends, Query, Path, HTTPException, status
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import require_roles
@@ -159,4 +160,47 @@ def obtener_ficha_cruzada(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error interno al consultar la ficha cruzada del estudiante.",
+        )
+
+
+@router.get(
+    "/resumen-vista",
+    summary="Resumen de riesgo estudiantil por gestión desde bi.vw_riesgo_estudiante",
+)
+def obtener_resumen_riesgo_vista(
+    gestion: Optional[int] = Query(None, ge=2000, le=2100, description="Gestión opcional"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(ROLES_ALERTAS)),
+):
+    """Consulta agregada sobre `bi.vw_riesgo_estudiante` (unión académico + financiero por gestión)."""
+    try:
+        where = "WHERE gestion = :g" if gestion is not None else ""
+        params = {"g": gestion} if gestion is not None else {}
+        filas = db.execute(
+            text(f"""
+                SELECT gestion,
+                       COUNT(*) AS total_estudiantes,
+                       COUNT(*) FILTER (WHERE regla_a_academico = 1) AS regla_academico,
+                       COUNT(*) FILTER (WHERE regla_d_desercion = 1) AS regla_desercion,
+                       COUNT(*) FILTER (WHERE regla_f_financiero = 1) AS regla_financiero,
+                       COUNT(*) FILTER (WHERE k_reglas >= 2) AS criticos,
+                       COUNT(*) FILTER (WHERE nivel_prioridad = 'MODERADA') AS moderados,
+                       COUNT(*) FILTER (WHERE nivel_prioridad = 'SIN_ALERTA') AS sin_alerta
+                FROM bi.vw_riesgo_estudiante
+                {where}
+                GROUP BY gestion
+                ORDER BY gestion DESC
+            """),
+            params,
+        ).mappings().all()
+        return {
+            "status": "success",
+            "fuente": "bi.vw_riesgo_estudiante",
+            "gestiones": [dict(f) for f in filas],
+        }
+    except Exception as e:
+        logger.error(f"Falla al consultar bi.vw_riesgo_estudiante: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno al consultar el resumen de riesgo por gestión.",
         )

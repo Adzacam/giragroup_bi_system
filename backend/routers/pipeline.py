@@ -45,19 +45,14 @@ logger = logging.getLogger("pipeline_router")
 router = APIRouter(prefix="/api/v1/pipeline", tags=["Pipeline Integrado"])
 
 
-# Encabezados de cobranza reconocidos (sin tildes, mayúsculas). Sin ellos, la heurística
-# posicional tomaba el CI como deuda y el celular como CI, y nunca asignaba monto_pagado.
-_ENCABEZADOS_FINANCIEROS: Dict[str, tuple] = {
-    "ci": ("CI", "CEDULA DE IDENTIDAD", "DOC_IDENTIDAD/CI", "CI_ESTUDIANTE"),
-    "monto_deuda": ("DEUDA TOTAL", "MONTO_DEUDA", "SALDO DEUDOR", "SALDO", "DEUDA"),
-    "monto_pagado": ("TOTAL PAGADO HASTA LA FECHA", "TOTAL PAGADO", "MONTO PAGADO", "MONTO_PAGADO", "PAGADO"),
-    "cuotas_impagas": ("TOTAL CUOTAS EN MORA", "CUOTAS EN MORA", "CUOTAS IMPAGAS", "CUOTAS_IMPAGAS"),
-    "nombre_completo": ("NOMBRE COMPLETO", "ESTUDIANTE"),
-    "nombres": ("NOMBRES",),
-    "paterno": ("PATERNO",),
-    "materno": ("MATERNO",),
-    "programa": ("NOMBRE DEL PROGRAMA", "PROGRAMA"),
-}
+# Encabezados de cobranza reconocidos (sin tildes, mayúsculas), cargados desde config/mapeo_fuentes.yaml (M5).
+def _cargar_encabezados_financieros() -> Dict[str, tuple]:
+    from pipeline.lector_hojas import cargar_config
+    fin = ((cargar_config() or {}).get("extraccion") or {}).get("financieros") or {}
+    return {campo: tuple(alias) for campo, alias in fin.items()}
+
+
+_ENCABEZADOS_FINANCIEROS: Dict[str, tuple] = _cargar_encabezados_financieros()
 
 
 def _normalizar_encabezado(texto: str) -> str:

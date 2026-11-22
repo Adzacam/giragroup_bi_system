@@ -19,6 +19,13 @@ MIGRACIONES_EN_ARRANQUE = (
     "019_vista_planificacion_kpi23.sql",
     "020_retirar_rol_powerbi_reader.sql",
     "021_esquema_app_personalizacion.sql",
+    "022_fu_l2_cobranza_mora_da3.sql",
+    "023_fu_l3_fact_marketing_documento.sql",
+    "024_fu_l4_actas_resultado_desercion.sql",
+    "025_fu_l5_encuestas_escala_da1.sql",
+    "026_fu_l6_metas_granularidad.sql",
+    "027_adw_l6_cmi_config.sql",
+    "028_fu_l9_decisiones_lean.sql",
 )
 MIGRACION_LOTE = "003_dataops_lote_and_facts_alignment.sql"
 MIGRACION_TIPO_FUENTE = "004_extend_tipo_fuente_sources.sql"
