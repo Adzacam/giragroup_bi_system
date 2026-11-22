@@ -48,7 +48,7 @@ export default function IngestBatchFilesTable({ prepKpis, inspectedPagination, e
                         <ShieldCheck size={12} /> Protección del servidor
                       </span>
                     </td>
-                    <td><span className="chip-cat chip-fecha">[{item.estado}]</span></td>
+                    <td><span className="chip-cat chip-fecha">{item.estado}</span></td>
                     <td style={{ textAlign: 'center' }}>
                       <Button variant="ghost" type="button" onClick={() => onToggleExpand(isExpanded ? null : item.key)} style={{ padding: '4px 10px', fontSize: '11px' }}>
                         {isExpanded ? 'Ocultar' : 'Vista previa'}

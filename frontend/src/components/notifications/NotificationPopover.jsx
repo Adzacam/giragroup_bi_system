@@ -12,12 +12,16 @@ export default function NotificationPopover({ notifications, onMarkAllRead, onCl
 
   return (
     <div
+      role="dialog"
+      aria-label="Notificaciones"
       className="floating-artifact notif-popover-dropdown"
       style={{
         position: 'absolute',
         right: 0,
         top: 'calc(100% + 14px)',
         width: 'min(410px, calc(100vw - 32px))',
+        maxWidth: 'calc(100vw - 24px)',
+        padding: 0,
         backgroundColor: 'var(--color-paper-white)',
         backdropFilter: 'blur(16px)',
         borderRadius: 'var(--radius-cards)',

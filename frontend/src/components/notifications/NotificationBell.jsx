@@ -14,8 +14,17 @@ export default function NotificationBell() {
         setIsOpen(false);
       }
     }
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const requestBrowserPermission = async () => {
@@ -61,6 +70,8 @@ export default function NotificationBell() {
           e.currentTarget.style.backgroundColor = 'transparent';
         }}
         aria-label="Notificaciones"
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
         title="Notificaciones"
       >
         <Bell size={20} />

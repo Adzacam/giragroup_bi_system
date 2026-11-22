@@ -22,12 +22,21 @@ export default function GruposBandeja({ data, readOnly, busy, onVerIndividual, o
     )}
     {!data?.grupos?.length ? <p role="status">No hay grupos para esta selección.</p> : <div tabIndex={0} role="region" aria-label="Grupos de revisión humana" style={{ overflowX: 'auto' }}><table className="dataops-table" style={{ width: '100%' }}>
       <thead><tr><th scope="col">Motivo</th><th scope="col">Casos</th><th scope="col">Revisión</th></tr></thead>
-      <tbody>{data.grupos.map(group => <tr key={group.clave}>
+      <tbody>{data.grupos.map(group => {
+        const codigoCorto = group.clave ? `#${String(group.clave).replace(/^grupo-/, '').slice(0, 6)}` : null;
+        const diferenciador = [group.archivo_origen, codigoCorto].filter(Boolean).join(' · ');
+        return (
+      <tr key={group.clave}>
         <td>
           <details>
             <summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>
-              {textoMotivo(group.motivo, group.titulo)}
+              <span>{textoMotivo(group.motivo, group.titulo)}</span>
               {group.patron && <span style={{ marginLeft: 8, fontSize: 11, padding: '2px 8px', borderRadius: 999, background: 'var(--dataops-warning-bg)', color: 'var(--dataops-warning-text)' }}>{group.patron}</span>}
+              {diferenciador && (
+                <span style={{ display: 'block', fontSize: 11, color: 'var(--color-slate-gray)', marginTop: 2, fontWeight: 400, overflowWrap: 'anywhere' }}>
+                  {diferenciador}
+                </span>
+              )}
             </summary>
             <div style={{ maxWidth: 620, overflowWrap: 'anywhere', padding: '12px 0', fontSize: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
               {group.explicacion && (
@@ -45,7 +54,9 @@ export default function GruposBandeja({ data, readOnly, busy, onVerIndividual, o
         <td>{group.n.toLocaleString('es-BO')}</td>
         <td><Button variant="ghost" disabled={busy} onClick={() => onVerIndividual(group.clave)}>Ver casos</Button>
           {!readOnly && group.accion_grupo !== 'MANUAL' && <Button variant="ghost" disabled={busy} isLoading={busy} onClick={() => group.accion_grupo === 'APROBAR' ? onResolver(group) : open(group)}>{group.accion_grupo === 'APROBAR' ? 'Aprobar grupo' : group.accion_grupo === 'CORREGIR_FECHA' ? 'Corregir fecha' : 'Revisar estado'}</Button>}</td>
-      </tr>)}</tbody>
+      </tr>
+        );
+      })}</tbody>
     </table></div>}
     {dialog && <div className="floating-artifact" role="dialog" aria-label="Corregir grupo" style={{ padding: 20, marginTop: 16 }}>
       <p>La corrección se aplicará a los {dialog.n} casos del grupo.</p>

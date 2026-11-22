@@ -33,20 +33,20 @@ export default function AvisosTab({ batchId, docId = null, readOnly = false }) {
   if (!items.length) return <p role="status">No hay avisos pendientes en este lote.</p>;
 
   return (
-    <div style={{ display: 'grid', gap: 14 }}>
+    <div style={{ display: 'grid', gap: 14, minWidth: 0 }}>
       <p style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>
         Avisos registrados en bitácora de inconsistencias ({items.length}).
       </p>
       {items.map((aviso) => (
-        <div key={aviso.id} style={{ padding: 14, borderRadius: 12, border: '1px solid var(--color-border)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-            <strong>{aviso.tipo_regla}</strong>
-            <span style={{ fontSize: 11.5, color: 'var(--color-slate-gray)' }}>
+        <div key={aviso.id} style={{ padding: 14, borderRadius: 12, border: '1px solid var(--color-border)', minWidth: 0, overflowWrap: 'anywhere' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, minWidth: 0 }}>
+            <strong style={{ minWidth: 0, maxWidth: '100%', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{aviso.tipo_regla}</strong>
+            <span style={{ fontSize: 11.5, color: 'var(--color-slate-gray)', minWidth: 0, overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
               Fila {aviso.fila_origen ?? '—'} · Campo: {aviso.campo_afectado || '—'} · Severidad: {aviso.severidad || 'MEDIA'}
             </span>
           </div>
           {aviso.valor_recibido && (
-            <p style={{ fontSize: 12, color: 'var(--color-slate-gray)', marginTop: 6 }}>Valor recibido: {aviso.valor_recibido}</p>
+            <p style={{ fontSize: 12, color: 'var(--color-slate-gray)', marginTop: 6, overflowWrap: 'anywhere', wordBreak: 'break-word' }}>Valor recibido: {aviso.valor_recibido}</p>
           )}
           <ReviewActionRenderer item={aviso} readOnly={readOnly} busy={busy} onExecute={handleExecute} />
         </div>

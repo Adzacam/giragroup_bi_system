@@ -73,19 +73,23 @@ export default function VistaGeneralCmi({ scorecard, resumen, searchQuery, onOpe
   const globalLineData = useMemo(() => {
     const serie = resumen?.global_por_gestion || [];
     if (!serie.length) return null;
+    const lineColor = isDark ? tokens.gold : tokens.navy;
+    const pointColor = isDark ? tokens.goldLight : tokens.gold;
     return {
       labels: serie.map((g) => String(g.gestion)),
       datasets: [{
         label: 'Índice Global CMI (0–100)',
         data: serie.map((g) => g.indice),
-        borderColor: tokens.navy,
-        backgroundColor: tokens.gold,
+        borderColor: lineColor,
+        backgroundColor: pointColor,
+        pointBackgroundColor: pointColor,
+        pointBorderColor: lineColor,
         borderWidth: 2.5,
         pointRadius: 4,
         tension: 0.25,
       }],
     };
-  }, [resumen, tokens]);
+  }, [resumen, tokens, isDark]);
 
   const chartOpts = useMemo(() => buildChartOptions(isDark, {
     scales: {

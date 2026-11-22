@@ -36,7 +36,7 @@ export { CasoDetallePanel as CasoRevision };
 function RevisionBandeja({ batchId }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { contexto, lectura: summary, readOnly } = useLoteFlow();
+  const { contexto, lectura, readOnly } = useLoteFlow();
   const [filters, setFilters] = useDraftState('rev.filters.v4', INITIAL);
   const [input, setInput] = useState(filters.search || '');
   const [exporting, setExporting] = useState(false);
@@ -46,6 +46,15 @@ function RevisionBandeja({ batchId }) {
   const exportLock = useRef(false);
   const actions = useRevisionAcciones();
   const { data, error, isFetching, refetch } = useRevision(batchId, filters, !!contexto && filters.vista !== 'AVISOS');
+  const { data: lecturaData } = useQuery({
+    queryKey: [...DATAOPS_QUERY_KEY, 'beto-reading-summary', String(batchId || ''), filters.docId || ''],
+    queryFn: () => dataopsApi.getLoteBetoReading(batchId, { docId: filters.docId, page: 1, pageSize: 1 }),
+    enabled: !lectura && !!batchId && !!contexto && typeof dataopsApi.getLoteBetoReading === 'function',
+  });
+  const summary = lectura || (lecturaData ? {
+    status: lecturaData.status,
+    autoCount: lecturaData.resumen_ejecutivo?.aceptados_automaticamente,
+  } : undefined);
   const { data: task } = useQuery({
     queryKey: [...DATAOPS_QUERY_KEY, 'consolidacion-task', String(batchId)],
     queryFn: () => dataopsApi.getBatchTask(batchId, 'CONSOLIDACION'),

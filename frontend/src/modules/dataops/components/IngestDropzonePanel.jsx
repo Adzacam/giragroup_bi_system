@@ -91,7 +91,16 @@ export default function IngestDropzonePanel({
           disabled={queuedFiles.length === 0 || isProcessing || isCheckingFiles}
           onClick={onClearQueue}
           className="sileo-btn"
-          style={{ padding: '8px 14px', fontSize: '12px', borderRadius: '8px', backgroundColor: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', color: 'var(--color-slate-gray)', fontWeight: 600 }}
+          style={{
+            padding: '8px 14px',
+            fontSize: '12px',
+            borderRadius: '8px',
+            backgroundColor: 'var(--color-mist-gray)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-ink-black)',
+            opacity: queuedFiles.length === 0 || isProcessing || isCheckingFiles ? 0.78 : 1,
+            fontWeight: 600,
+          }}
         >
           Vaciar cola ({queuedFiles.length})
         </Button>

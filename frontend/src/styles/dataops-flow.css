@@ -150,8 +150,13 @@
   filter: brightness(1.05);
 }
 
-.btn-pill-gold:disabled {
-  opacity: 0.55;
+.btn-pill-gold:disabled,
+[data-ui-version="v2"] .btn-pill-gold:disabled,
+[data-ui-version="v2"] .btn-pill-ghost.btn-pill-gold:disabled {
+  background: var(--color-mist-gray);
+  color: var(--color-ink-black) !important;
+  border: 1.5px solid var(--color-border);
+  opacity: 0.78;
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -160,6 +165,16 @@
   background: linear-gradient(135deg, #F1B844 0%, #D99B26 100%);
   color: #0C1E33 !important;
   box-shadow: 0 4px 14px rgba(241, 184, 68, 0.30);
+}
+
+[data-theme="dark"] .btn-pill-gold:disabled,
+[data-theme="dark"] [data-ui-version="v2"] .btn-pill-gold:disabled,
+[data-theme="dark"] [data-ui-version="v2"] .btn-pill-ghost.btn-pill-gold:disabled {
+  background: var(--color-mist-gray);
+  color: var(--color-ink-black) !important;
+  border: 1.5px solid var(--color-border);
+  opacity: 0.82;
+  box-shadow: none;
 }
 
 .btn-pill-secondary {
