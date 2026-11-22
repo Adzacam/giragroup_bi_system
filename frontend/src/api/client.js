@@ -21,8 +21,12 @@ client.interceptors.response.use(
       localStorage.removeItem('gira_user');
       localStorage.removeItem('token');
       localStorage.removeItem('role');
-      if (typeof window !== 'undefined' && window.location && window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      const isLoginPath =
+        typeof window !== 'undefined' &&
+        window.location &&
+        (window.location.pathname === '/login' || window.location.pathname === '/v2/login');
+      if (typeof window !== 'undefined' && window.location && !isLoginPath) {
+        window.location.href = '/v2/login';
       }
     }
     return Promise.reject(error);

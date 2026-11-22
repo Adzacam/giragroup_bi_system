@@ -133,29 +133,23 @@ function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   if (!isAuthenticated) {
-    return <Navigate to={location.pathname.startsWith('/v2') ? '/v2/login' : '/login'} replace />;
+    const isExplicitV1 = location.pathname !== '/' && !location.pathname.startsWith('/v2');
+    return <Navigate to={isExplicitV1 ? '/login' : '/v2/login'} replace />;
   }
   return children;
 }
 
 /* ─── Role-based route guard ─── */
-function RoleRoute({ allowedRoles, fallbackPath = '/dashboard', children }) {
+function RoleRoute({ allowedRoles, fallbackPath = '/v2/dashboard', children }) {
   const { role } = useAuth();
   if (!allowedRoles.includes(role)) return <Navigate to={fallbackPath} replace />;
   return children;
 }
 
-/* ─── Default dashboard redirect by role ─── */
+/* ─── Default dashboard redirect by role (V2 principal) ─── */
 function DashboardRedirect() {
   const { role } = useAuth();
-  const redirectMap = {
-    ADMIN: '/dashboard',
-    AUDITOR_CALIDAD: '/dataops/ingesta',
-    DIRECTOR_ACADEMICO: '/academico/rendimiento',
-    ANALISTA_FINANCIERO: '/financiero/recaudacion',
-    ANALISTA_MARKETING: '/dashboard',
-  };
-  return <Navigate to={redirectMap[role] || '/dashboard'} replace />;
+  return <Navigate to={V2_ROLE_REDIRECTS[role] || '/v2/dashboard'} replace />;
 }
 
 /* ─── Default V2 dashboard redirect by role ─── */

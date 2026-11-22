@@ -8,6 +8,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { sileoToast } from '../../services/sileoToast';
 import { notificationService } from '../../services/notificationService';
 import { useUiVersion } from '../../v2/context/UiVersionContext';
+import { V2_ROLE_REDIRECTS } from '../../v2/utils/v2Routes';
 import GiraLogo from '../../components/common/GiraLogo';
 import DemoAccountsSelector from './components/DemoAccountsSelector';
 import OtpInputForm from './components/OtpInputForm';
@@ -108,11 +109,11 @@ export default function LoginPage() {
       const todayStr = new Date().toISOString().split('T')[0];
       localStorage.setItem('gira_last_login_date', todayStr);
 
-      const useV2Target =
-        isV2Route ||
-        (typeof document !== 'undefined' &&
-          document.documentElement.getAttribute('data-ui-version') === 'v2');
-      const targetDashboard = useV2Target ? '/v2/dashboard' : '/';
+      const searchParams = new URLSearchParams(location.search || '');
+      const forceV1 = searchParams.get('ui') === 'v1';
+      const targetDashboard = forceV1
+        ? '/dashboard'
+        : V2_ROLE_REDIRECTS[userData?.role] || '/v2/dashboard';
 
       const prefersReduced =
         typeof window !== 'undefined' &&

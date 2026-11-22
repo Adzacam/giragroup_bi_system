@@ -31,7 +31,7 @@ export const V2_FONT_PRESETS = [
 const STORAGE_KEY = 'gira_v2_font_preset';
 
 const UiVersionContext = createContext({
-  uiVersion: 'v1',
+  uiVersion: 'v2',
   fontPreset: 'augen',
   setFontPreset: () => {},
   toV2Path,
@@ -73,7 +73,7 @@ export function UiVersionProvider({ children }) {
   return (
     <UiVersionContext.Provider
       value={{
-        uiVersion: 'v1',
+        uiVersion: 'v2',
         fontPreset,
         setFontPreset,
         toV2Path,

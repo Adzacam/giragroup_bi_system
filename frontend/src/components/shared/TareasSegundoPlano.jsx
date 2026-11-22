@@ -7,6 +7,7 @@ import { useNotifications } from '../../context/NotificationContext';
 import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
 import { fmtDuracion } from '../../modules/dataops/components/ProgresoTarea';
 import { toDataopsPath } from '../../v2/utils/v2Routes';
+import { useAuth } from '../../context/AuthContext';
 
 const EVENTO = 'gira:tarea-iniciada';
 const PROGRESO = 'gira:tarea-progreso';
@@ -39,7 +40,14 @@ export default function TareasSegundoPlano({ role }) {
   const { refreshNotifications } = useNotifications();
   const conocidas = useRef({});
   const avisos = useRef({});
-  const habilitado = ['ADMIN', 'AUDITOR_CALIDAD'].includes(role);
+  const { isAuthenticated, token } = useAuth();
+  const enLogin = location.pathname === '/login' || location.pathname === '/v2/login';
+  const habilitado = Boolean(
+    isAuthenticated &&
+    token &&
+    !enLogin &&
+    ['ADMIN', 'AUDITOR_CALIDAD'].includes(role)
+  );
   useEffect(() => {
     if (!habilitado) return undefined;
     let activo = true;

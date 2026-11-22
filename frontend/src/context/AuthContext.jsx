@@ -10,6 +10,7 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
+      if (!localStorage.getItem('gira_token')) return null;
       const stored = localStorage.getItem('gira_user');
       if (!stored) return null;
       return JSON.parse(stored);
@@ -17,7 +18,7 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   });
-  const [token, setToken] = useState(() => localStorage.getItem('gira_token'));
+  const [token, setToken] = useState(() => localStorage.getItem('gira_token') || null);
 
   const login = useCallback((userData, accessToken) => {
     localStorage.setItem('gira_token', accessToken);

@@ -320,6 +320,27 @@ def _notificar_revision(db, titulo, mensaje, id_lote=None):
         logger.exception('No se pudo guardar el aviso de revisión')
 
 
+def _resolver_hecho_en_bandeja(db: Session, item_id: str, payload: dict, current_user: User) -> dict:
+    from services.revision_hechos import _cargar
+    if str(item_id).startswith('HECHO-EVA-'):
+        doc_id, hecho = int(str(item_id).split('-')[2]), None
+    else:
+        hecho, _ = _cargar(db, item_id)
+        doc_id = hecho.id_documento if hecho else None
+    if doc_id:
+        _bloquear_documentos_editables(db, db.query(DimOrigenDocumental).filter_by(id_documento=doc_id).all())
+    pendiente_antes = bool(hecho.requiere_revision) if not str(item_id).startswith('HECHO-EVA-') and hecho else True
+    resultado = resolver_caso_hecho(
+        db, str(item_id), payload,
+        user_id=getattr(current_user, "id", None),
+        user_name=getattr(current_user, "username", None) or "Auditor Calidad",
+    )
+    if pendiente_antes and resultado.get('status') == 'success' and not payload.get('aprobacion_en_bloque'):
+        _notificar_revision(db, 'Caso revisado', 'La corrección quedó guardada. Abre Revisión para consultar el resultado.')
+    cache_consultas.invalidar()
+    return resultado
+
+
 @router.patch("/review-tray/{item_id}/resolve")
 @router.post("/review-tray/{item_id}/resolve")
 def resolve_review_item(
@@ -329,408 +350,45 @@ def resolve_review_item(
     current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
 ):
     """Aprueba y consolida un registro individual en la bandeja de revisión humana."""
-    payload = dict(payload or {})
-    for campo, minimo, maximo in (
-        ('nota_final', 0, 100),
-        ('monto_deuda', 0, None),
-        ('monto_convenio', 0, None),
-        ('cuotas_impagas', 0, None),
-        ('mes', 1, 12),
-        ('gestion', 2000, 2100),
-        ('numero_modulo', 1, None),
-    ):
-        valor = payload.get(campo)
-        if valor not in (None, ''):
-            try:
-                numero = float(valor)
-                if not math.isfinite(numero) or numero < minimo or (maximo is not None and numero > maximo) or (campo in ('cuotas_impagas', 'mes', 'gestion', 'numero_modulo') and not numero.is_integer()):
-                    raise ValueError()
-            except (ValueError, TypeError):
-                raise HTTPException(422, 'Revisa los valores numéricos y la fecha de la corrección.')
-            payload[campo] = int(numero) if campo in ('cuotas_impagas', 'mes', 'gestion', 'numero_modulo') else numero
+    from services.revision_acciones_ejecutor import (
+        ejecutar_accion_contextual,
+        resolver_entidad_legacy,
+        validar_numericos_payload,
+    )
+    payload = validar_numericos_payload(dict(payload or {}))
     if es_caso_hecho(item_id):
-        from services.revision_hechos import _cargar
-        if str(item_id).startswith('HECHO-EVA-'):
-            doc_id = int(str(item_id).split('-')[2])
-        else:
-            hecho, _ = _cargar(db, item_id)
-            doc_id = hecho.id_documento if hecho else None
-        if doc_id:
-            _bloquear_documentos_editables(db, db.query(DimOrigenDocumental).filter_by(id_documento=doc_id).all())
-        pendiente_antes = bool(hecho.requiere_revision) if not str(item_id).startswith('HECHO-EVA-') and hecho else True
-        resultado = resolver_caso_hecho(
-            db, str(item_id), payload,
-            user_id=getattr(current_user, "id", None),
-            user_name=getattr(current_user, "username", None) or "Auditor Calidad",
-        )
-        if pendiente_antes and resultado.get('status') == 'success' and not payload.get('aprobacion_en_bloque'):
-            _notificar_revision(db, 'Caso revisado', 'La corrección quedó guardada. Abre Revisión para consultar el resultado.')
-        cache_consultas.invalidar()
-        return resultado
+        return _resolver_hecho_en_bandeja(db, item_id, payload, current_user)
     clean_id = str(item_id).replace("REV-", "").strip()
-    if clean_id.isdigit():
-        previo = db.get(StagingEntidadNoResuelta, int(clean_id))
-        if previo:
-            _bloquear_documentos_editables(db, db.query(DimOrigenDocumental).filter_by(id_documento=previo.id_documento).all())
-        # FOR UPDATE serializa dos resoluciones simultáneas del mismo caso hasta el commit de la primera
-        ent = (
-            db.query(StagingEntidadNoResuelta)
-            .filter(StagingEntidadNoResuelta.id_staging == int(clean_id))
-            .with_for_update()
-            .first()
-        )
-        if ent:
-            if ent.resuelto:
-                db.rollback()
-                raise HTTPException(status_code=409, detail=f"El registro {item_id} ya fue resuelto.")
-            if (
-                ent.lock_usuario_id
-                and ent.lock_usuario_id != getattr(current_user, "id", None)
-                and ent.lock_expira
-                and ent.lock_expira > datetime.utcnow()
-            ):
-                db.rollback()
-                raise HTTPException(status_code=409, detail="El registro está bloqueado por otro auditor.")
-            from services.revision_consulta import presupuesto_manual, datos_payload
-            doc_caso = db.query(DimOrigenDocumental).filter_by(id_documento=ent.id_documento).first()
-            cat_caso = resolver_categoria_ruteo(doc_caso.tipo_fuente if doc_caso else None)
-            fila_presupuesto = presupuesto_manual(doc_caso, ent.texto_original) or presupuesto_manual(doc_caso, datos_payload(ent).get('raw_line'))
-            if (payload.get('accion') or 'APROBAR').upper() != 'DESCARTAR' and fila_presupuesto and cat_caso != 'rentabilidad':
-                raise HTTPException(422, 'Esta fila de presupuesto requiere corregir su clasificación antes de aprobarla como persona.')
-            user_name = current_user.username if (current_user and hasattr(current_user, "username")) else "Auditor Calidad"
-            user_id = current_user.id if (current_user and hasattr(current_user, "id")) else None
-            user_role = getattr(current_user, "role", None) or "AUDITOR_CALIDAD"
-            accion = (payload.get("accion") or "APROBAR").upper()
-            if accion not in ('APROBAR', 'DESCARTAR'):
-                from services.revision_acciones_ejecutor import ejecutar_accion_contextual
-                res_ctx = ejecutar_accion_contextual(db, ent, payload, user_name, user_role)
-                cache_consultas.invalidar()
-                return res_ctx
-
-            if "DESCARTAR" in accion:
-                if not str(payload.get('motivo_descarte') or '').strip():
-                    raise HTTPException(422, 'Escribe el motivo del descarte.')
-                ent.resuelto = True
-                ent.estado_resolucion = "DESCARTADO"
-                ent.resuelto_en = datetime.now()
-                if ent.registro_origen_id:
-                    stg_parent = db.query(StagingRegistroCrudo).filter_by(id=ent.registro_origen_id).first()
-                    if stg_parent:
-                        stg_parent.resuelto = True
-                        stg_parent.estado_resolucion = "DESCARTADO"
-                db.commit()
-
-                # Auditoría de descarte
-                try:
-                    audit_nlp = LogAuditoriaNlp(
-                        texto_original=(ent.texto_original or "")[:500],
-                        prediccion_beto=(ent.mejor_candidato or ent.tipo_entidad or "")[:200],
-                        confianza_ia=float(ent.nivel_confianza or 0.70),
-                        correccion_humana="Descartado",
-                        usuario_auditor=user_id,
-                    )
-                    db.add(audit_nlp)
-                    audit_pipe = LogPipelineIngesta(
-                        id_documento=ent.id_documento,
-                        etapa="HITL_RESOLUCION_INDIVIDUAL",
-                        nivel="WARNING",
-                        modulo="DataOps HITL",
-                        mensaje=f"Registro {item_id} descartado por {user_name}.",
-                        metadata_json={"item_id": item_id, "accion": "DESCARTAR", "usuario": user_name, "motivo": payload.get("motivo_descarte")}
-                    )
-                    db.add(audit_pipe)
-                    db.commit()
-                except Exception as e_desc_aud:
-                    logger.warning("No se pudo auditar descarte de item %s: %s", item_id, e_desc_aud)
-
-                if not payload.get('aprobacion_en_bloque'):
-                    _notificar_revision(db, 'Caso descartado', 'El descarte y su motivo quedaron guardados en Revisión.')
-                cache_consultas.invalidar()
-                return {
-                    "status": "success",
-                    "message": f"Registro {item_id} descartado.",
-                    "id": item_id,
-                    "estado_resolucion": "DESCARTADO",
-                }
-
-            orig_doc = db.query(DimOrigenDocumental).filter_by(id_documento=ent.id_documento).first() if ent.id_documento else None
-            stg_parent = db.query(StagingRegistroCrudo).filter_by(id=ent.registro_origen_id).first() if ent.registro_origen_id else None
-            doc_fuente = (orig_doc.tipo_fuente if orig_doc and orig_doc.tipo_fuente else "ACTA").upper().strip()
-            categoria_ruteo = resolver_categoria_ruteo(doc_fuente, stg_parent.categoria if stg_parent else None)
-            validar_payload_correccion(categoria_ruteo, getattr(ent, "motivo", None), payload)
-            if categoria_ruteo == "evaluacion_docente":
-                doc_fuente = "EVALUACION_DOCENTE"
-            doc_escala = orig_doc.tipo_escala if orig_doc else "CENTESIMAL_100"
-            p_json = ent.payload_json if isinstance(ent.payload_json, dict) else {}
-
-            ci_corregida = payload.get("ci_corregido") or payload.get("ci_opcional") or payload.get("ci_corregida")
-            if ci_corregida and '•' in str(ci_corregida):
-                ci_corregida = None  # La máscara nunca debe guardarse como una cédula real.
-            est_resuelto = (
-                payload.get("nombre_completo")
-                or payload.get("estudiante_resuelto")
-                or payload.get("texto_editado")
-                or p_json.get("estudiante")
-            )
-
-            otra_persona = str(payload.get("confirmar_identidad") or "").strip().lower().startswith("no")
-            ci_raw = ci_corregida if otra_persona else (ci_corregida or ent.ci_temporal or p_json.get("ci_real"))
-            if not ci_raw or str(ci_raw).strip().lower() in ("no especificado", "no provisto", "none", "null", ""):
-                ci_clean = f"TEMP-{ent.id_staging}"
-            else:
-                ci_clean = str(ci_raw).replace("?", "").strip()
-
-            if categoria_ruteo in ("evaluacion_docente", "marketing", "rentabilidad") and not est_resuelto:
-                nom_clean = ""
-            elif not est_resuelto and getattr(ent, "motivo", None) in ("POS_NO_EN_DIM_MODULO", "FECHA_INSCRIPCION_INVALIDA"):
-                nom_clean = ""
-            else:
-                nom_clean = (est_resuelto or ent.texto_original or '').strip()
-                if not nom_clean:
-                    raise HTTPException(422, 'Indica el nombre del estudiante antes de aprobar.')
-                if len(nom_clean) > 200:  # el caso trae la línea completa como "nombre": el auditor debe escribir el nombre (antes: 500 por VARCHAR(200))
-                    db.rollback()
-                    raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,
-                                        detail="El caso trae la línea completa; indique el nombre del estudiante en texto_editado.")
-
-            try:
-                dw = DWLoaderService(db)
-                base_registro = {
-                    "categoria": categoria_ruteo,
-                    "tipo_fuente": doc_fuente,
-                    "tipo_escala": doc_escala,
-                    "doc_id": ent.id_documento,
-                    "calidad": {"requiere_revision": False, "resuelto_por_humano": True},
-                }
-                estudiante_res = (
-                    {"fk_resolucion": {"ci": ci_clean, "nombre_resuelto": nom_clean}, "valor_extraido": nom_clean}
-                    if nom_clean
-                    else {}
-                )
-                linea_origen = p_json.get("raw_line") or (ent.texto_original if "|" in (ent.texto_original or "") else None)
-                campos_linea = campos_por_encabezado([c.strip() for c in linea_origen.split("|")]) if linea_origen else {}
-                fecha_linea = fecha_de_fila(campos_linea, categoria_ruteo) if campos_linea else None
-                modulo_def = (
-                    payload.get("modulo_resuelto")
-                    or (f"Módulo {payload.get('numero_modulo')}" if payload.get("numero_modulo") not in (None, "") else None)
-                    or p_json.get("modulo")
-                    or "Módulo Académico"
-                )
-                programa_def = payload.get("programa_resuelto") or payload.get("programa") or payload.get("codigo_pos") or p_json.get("programa")
-                fecha_mes_gestion = (
-                    date(int(payload["gestion"]), int(payload["mes"]), 1).isoformat()
-                    if payload.get("mes") not in (None, "") and payload.get("gestion") not in (None, "")
-                    else None
-                )
-                fecha_def = payload.get("fecha_inscripcion") or fecha_mes_gestion or fecha_linea or payload.get("fecha") or p_json.get("fecha")
-                escala_def = 10 if str(payload.get("escala_respuesta") or "").strip() == "1 a 10" else (
-                    5 if str(payload.get("escala_respuesta") or "").strip() == "1 a 5" else (payload.get("escala_max") or p_json.get("escala_max") or 5)
-                )
-
-                res_load = {}
-                if categoria_ruteo == "academico":
-                    registros_acta = registros_academicos(campos_linea) if (campos_linea and payload.get("nota_final") is None) else []
-                    if registros_acta:
-                        for reg_aca in registros_acta:
-                            reg_aca.pop("requiere_revision", None)
-                            res_load = dw.cargar_registro({**base_registro, "resoluciones": {
-                                **{k: v for k, v in reg_aca.items() if v is not None or k in ("nota_final", "fecha")},
-                                "estudiante": estudiante_res, "nivel_confianza_ia": 0.99,
-                            }})
-                            if res_load.get('status') != 'loaded':
-                                raise RuntimeError('La corrección no pudo incorporarse.')
-                    else:
-                        nota_payload = payload.get("nota_final")
-                        res_load = dw.cargar_registro({**base_registro, "resoluciones": {
-                            "estudiante": estudiante_res,
-                            "modulo": {"valor_extraido": modulo_def},
-                            "nota_final": nota_payload if nota_payload not in (None, "") else p_json.get("nota_normalizada"),
-                            "fecha": fecha_mes_gestion or fecha_linea or payload.get("fecha") or p_json.get("fecha"),
-                            "nivel_confianza_ia": 0.99,
-                        }})
-                        if res_load.get('status') != 'loaded':
-                            raise RuntimeError('La corrección no pudo incorporarse.')
-
-                elif categoria_ruteo == "evaluacion_docente":
-                    # FU-L5: la fila se lee con el perfil de su hoja (escala, etiquetas, pares), no sola
-                    perfil_eval = encuesta_canonica.perfil_de_texto(stg_parent.texto_plano, clave=("stg", stg_parent.id)) if (stg_parent and campos_linea) else None
-                    regs_eval = registros_evaluacion(campos_linea, perfil_eval) if campos_linea else []
-                    if regs_eval:
-                        cargados_eval = 0
-                        for reg_eval in regs_eval:
-                            reg_eval.pop("requiere_revision", None)
-                            doc_val = payload.get("docente_resuelto") or reg_eval.get("docente") or p_json.get("docente")
-                            est_eval = estudiante_res if nom_clean else (reg_eval.get("estudiante") or {})
-                            res_load = dw.cargar_registro({**base_registro, "resoluciones": {
-                                **reg_eval,
-                                "estudiante": est_eval,
-                                "anonima": not bool(est_eval),
-                                "docente": doc_val,
-                                "modulo": payload.get("modulo_resuelto") or (f"Módulo {payload.get('numero_modulo')}" if payload.get("numero_modulo") not in (None, "") else None) or reg_eval.get("modulo") or p_json.get("modulo"),
-                                "programa": programa_def or reg_eval.get("programa") or p_json.get("programa"),
-                                "escala_max": reg_eval.get("escala_max") or escala_def,
-                                "nivel_confianza_ia": 0.99,
-                            }})
-                            if res_load.get("status") == "loaded":
-                                cargados_eval += 1
-                            elif res_load.get("status") != "skipped":
-                                raise RuntimeError('La corrección no pudo incorporarse.')
-                        if cargados_eval == 0:
-                            res_load = {"status": "loaded", "tipo": "evaluacion_docente"}
-                    else:
-                        puntuacion_val = payload.get("puntuacion") if payload.get("puntuacion") is not None else p_json.get("puntuacion")
-                        comentario_val = payload.get("comentario") or payload.get("justificacion") or payload.get("nota_auditor") or p_json.get("comentario")
-                        res_load = dw.cargar_registro({**base_registro, "resoluciones": {
-                            "estudiante": estudiante_res,
-                            "anonima": not bool(nom_clean),
-                            "docente": payload.get("docente_resuelto") or p_json.get("docente"),
-                            "modulo": modulo_def,
-                            "programa": programa_def,
-                            "puntuacion": puntuacion_val,
-                            "escala_max": escala_def,
-                            "comentario": comentario_val,
-                            "fecha": fecha_def,
-                            "nivel_confianza_ia": 0.99,
-                        }})
-                        if res_load.get("status") not in ("loaded", "skipped"):
-                            raise RuntimeError('La corrección no pudo incorporarse.')
-
-                elif categoria_ruteo == "rentabilidad":
-                    regs_rent = (
-                        (registros_rentabilidad(campos_linea) or registros_costo_programa(campos_linea) or registros_techo_convenio(campos_linea))
-                        if campos_linea else []
-                    )
-                    if regs_rent:
-                        for reg_r in regs_rent:
-                            reg_r.pop("requiere_revision", None)
-                            res_load = dw.cargar_registro({**base_registro, "resoluciones": {
-                                **reg_r,
-                                "nivel_confianza_ia": 0.99,
-                            }})
-                            if res_load.get("status") != "loaded":
-                                raise RuntimeError('La corrección no pudo incorporarse.')
-                    else:
-                        res_load = dw.cargar_registro({**base_registro, "resoluciones": {
-                            "modulo": {"valor_extraido": modulo_def},
-                            "categoria_financiera": payload.get("categoria_financiera") or p_json.get("categoria_financiera") or "Operativo",
-                            "monto_ejecutado": payload.get("monto_ejecutado") if payload.get("monto_ejecutado") is not None else p_json.get("monto_ejecutado"),
-                            "monto_meta": payload.get("monto_meta") if payload.get("monto_meta") is not None else p_json.get("monto_meta"),
-                            "fecha": fecha_linea or payload.get("fecha") or p_json.get("fecha"),
-                            "nivel_confianza_ia": 0.99,
-                        }})
-                        if res_load.get("status") != "loaded":
-                            raise RuntimeError('La corrección no pudo incorporarse.')
-
-                elif categoria_ruteo == "marketing":
-                    regs_techo = registros_techo_convenio(campos_linea) if campos_linea else []
-                    if regs_techo:
-                        for reg_t in regs_techo:
-                            reg_t.pop("requiere_revision", None)
-                            res_load = dw.cargar_registro({**base_registro, "resoluciones": {
-                                **reg_t,
-                                "nivel_confianza_ia": 0.99,
-                            }})
-                            if res_load.get("status") != "loaded":
-                                raise RuntimeError('La corrección no pudo incorporarse.')
-                    else:
-                        extra_mkt = metricas_captacion(campos_linea) if campos_linea else {}
-                        res_load = dw.cargar_registro({**base_registro, "resoluciones": {
-                            "estudiante": estudiante_res,
-                            "modulo": {"valor_extraido": modulo_def},
-                            "institucion": payload.get("institucion") or p_json.get("institucion"),
-                            "clave_convenio": payload.get("clave_convenio") or p_json.get("clave_convenio"),
-                            "monto_convenio": payload.get("monto_convenio") if payload.get("monto_convenio") is not None else p_json.get("monto_convenio"),
-                            "fecha": fecha_def,
-                            **extra_mkt,
-                            "nivel_confianza_ia": 0.99,
-                        }})
-                        if res_load.get("status") != "loaded":
-                            raise RuntimeError('La corrección no pudo incorporarse.')
-
-                else:
-                    # financiero, admision
-                    programa_adm = (
-                        {"valor_extraido": programa_def, "metadata": {"pos_canonico": str(payload["codigo_pos"]).strip()}}
-                        if payload.get("codigo_pos")
-                        else programa_def
-                    )
-                    res_load = dw.cargar_registro({**base_registro, "resoluciones": {
-                        "estudiante": estudiante_res,
-                        "modulo": {"valor_extraido": modulo_def},
-                        "programa": programa_adm,
-                        "nota_final": payload.get("nota_final") if payload.get("nota_final") not in (None, "") else p_json.get("nota_normalizada"),
-                        "monto_deuda": payload.get("monto_deuda") if payload.get("monto_deuda") is not None else p_json.get("monto_deuda"),
-                        "monto_pagado": payload.get("monto_pagado") if payload.get("monto_pagado") is not None else p_json.get("monto_pagado"),
-                        "cuotas_impagas": payload.get("cuotas_impagas") if payload.get("cuotas_impagas") is not None else (p_json.get("cuotas_impagas") or 0),
-                        "concepto": payload.get("concepto") or p_json.get("concepto"),
-                        "fecha": fecha_def,
-                        "nivel_confianza_ia": 0.99,
-                    }})
-                    if res_load.get('status') != 'loaded':
-                        raise RuntimeError('La corrección no pudo incorporarse.')
-                ent.id_dimension_resuelta = res_load.get("id_estudiante")
-            except Exception as e_res:
-                db.rollback()
-                logger.exception("No se pudo guardar el caso %s", item_id)
-                raise HTTPException(503, 'No se pudo guardar el caso. Continúa pendiente; inténtalo de nuevo.') from e_res
-
-            estado_final = "APROBACION_BLOQUE" if payload.get("aprobacion_en_bloque") else "RESUELTO_HUMANO"
-            ent.resuelto = True
-            ent.estado_resolucion = estado_final
-            ent.resuelto_en = datetime.now()
-            if ent.registro_origen_id:
-                stg_parent = db.query(StagingRegistroCrudo).filter_by(id=ent.registro_origen_id).first()
-                if stg_parent:
-                    stg_parent.resuelto = True
-                    stg_parent.estado_resolucion = estado_final
-                    stg_parent.resuelto_en = datetime.now()
-            db.commit()
-
-            # Auditoría en LogAuditoriaNlp, LogPipelineIngesta y notificación
-            try:
-                audit_nlp = LogAuditoriaNlp(
-                    texto_original=(ent.texto_original or "")[:500],
-                    prediccion_beto=(ent.mejor_candidato or ent.tipo_entidad or "")[:200],
-                    confianza_ia=float(ent.nivel_confianza or 0.70),
-                    correccion_humana="APROBACION_BLOQUE" if payload.get("aprobacion_en_bloque") else nom_clean[:200],
-                    usuario_auditor=user_id,
-                )
-                db.add(audit_nlp)
-
-                audit_pipe = LogPipelineIngesta(
-                    id_documento=ent.id_documento,
-                    etapa="HITL_RESOLUCION_INDIVIDUAL",
-                    nivel="INFO",
-                    modulo="DataOps HITL",
-                    mensaje=f"Registro {item_id} resuelto y consolidado en el DW por {user_name}: {nom_clean}.",
-                    metadata_json={
-                        "item_id": item_id,
-                        "accion": "APROBAR",
-                        "usuario": user_name,
-                        "ci": ci_clean,
-                        "nombre": nom_clean,
-                        "modulo": payload.get("modulo_resuelto") or modulo_def,
-                        "justificacion": payload.get("justificacion") or payload.get("nota_auditor"),
-                    }
-                )
-                db.add(audit_pipe)
-                db.commit()
-
-                if not payload.get('aprobacion_en_bloque'):
-                    _notificar_revision(db, 'Caso revisado', 'La corrección quedó guardada. Abre Revisión para consultar el resultado.',
-                                        orig_doc.id_lote if orig_doc else None)
-            except Exception as e_aud_ind:
-                logger.warning("No se pudo registrar auditoría de resolución individual: %s", e_aud_ind)
-
-    if not clean_id.isdigit() or not ent:
+    if not clean_id.isdigit():
         raise HTTPException(404, 'El caso no existe.')
-    cache_consultas.invalidar()
-    return {
-        "status": "success",
-        "message": f"Registro {item_id} aprobado y consolidado en el Data Warehouse.",
-        "id": item_id,
-        "resolved_at": datetime.now().isoformat(),
-    }
+    previo = db.get(StagingEntidadNoResuelta, int(clean_id))
+    if previo:
+        _bloquear_documentos_editables(db, db.query(DimOrigenDocumental).filter_by(id_documento=previo.id_documento).all())
+    ent = (
+        db.query(StagingEntidadNoResuelta)
+        .filter(StagingEntidadNoResuelta.id_staging == int(clean_id))
+        .with_for_update()
+        .first()
+    )
+    if not ent:
+        raise HTTPException(404, 'El caso no existe.')
+    if ent.resuelto:
+        db.rollback()
+        raise HTTPException(status_code=409, detail=f"El registro {item_id} ya fue resuelto.")
+    if ent.lock_usuario_id and ent.lock_usuario_id != getattr(current_user, "id", None) and ent.lock_expira and ent.lock_expira > datetime.utcnow():
+        db.rollback()
+        raise HTTPException(status_code=409, detail="El registro está bloqueado por otro auditor.")
+    user_name = getattr(current_user, "username", None) or "Auditor Calidad"
+    user_role = getattr(current_user, "role", None) or "AUDITOR_CALIDAD"
+    accion = (payload.get("accion") or "APROBAR").upper()
+    if accion not in ('APROBAR', 'DESCARTAR'):
+        res_ctx = ejecutar_accion_contextual(db, ent, payload, user_name, user_role)
+        cache_consultas.invalidar()
+        return res_ctx
+    return resolver_entidad_legacy(
+        db, ent, item_id, payload, current_user,
+        dw_loader_cls=DWLoaderService, notificar_cb=_notificar_revision,
+    )
 
 
 @router.post("/review-tray/{item_id}/lock")
