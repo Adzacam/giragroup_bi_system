@@ -173,7 +173,9 @@ def _dw_session_factory():
     import os
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
-    url = os.getenv("DW_TEST_URL") or os.environ["DATABASE_URL"]
+    url = os.getenv("DW_TEST_URL") or os.environ.get("DATABASE_URL", "")
+    if "@giragroup_db:" in url:
+        url = url.replace("@giragroup_db:5432", "@localhost:5434").replace("@giragroup_db:", "@localhost:5434:")
     return sessionmaker(autocommit=False, autoflush=False, bind=create_engine(url))
 
 client = TestClient(app)

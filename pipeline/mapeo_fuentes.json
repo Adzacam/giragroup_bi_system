@@ -54,6 +54,44 @@
   ],
   "nota": "Si dos fuentes del mismo lote dan valores distintos para el mismo campo y mes, gana la de mayor prioridad y se registra CONFLICTO_FUENTES resuelto por regla."
  },
+ "metas": {
+  "columnas": {
+   "ejecutado": [
+    "^ejecutado (\\d{4})$"
+   ],
+   "meta_especifica": [
+    "^meta por categoria (\\d{4})$"
+   ],
+   "meta_generica": [
+    "^meta (\\d{4})$"
+   ]
+  },
+  "claves_categoria": [
+   "categoria",
+   "tipo de ingreso",
+   "tipo ingreso",
+   "categoria financiera",
+   "serie"
+  ],
+  "granularidad": {
+   "mensual": "MENSUAL",
+   "anual": "ANUAL",
+   "min_meses_mensual": 2
+  },
+  "conflicto": {
+   "motivo": "CONFLICTO_FUENTES",
+   "estado_resuelto": "RESUELTO_REGLA",
+   "estado_pendiente": "PENDIENTE",
+   "regla_origen": "FU-L6:PRIORIDAD_POR_TIPO_DE_FUENTE",
+   "multiplo_aviso": 100000
+  },
+  "mes_de_corte_parcial": true,
+  "motivos_sin_dato": {
+   "kpi_02_solo_anual": "La fuente solo trae meta anual.",
+   "kpi_02_sin_meta": "No hay meta cargada para esta gestión.",
+   "kpi_02_sin_mes_cerrado": "La gestión no tiene ningún mes cerrado con ejecución y meta mensual."
+  }
+ },
  "tipos_fuente": {
   "COBRANZA": {
    "descripcion": "Una fila por estudiante y programa, con una columna de pago por mes",

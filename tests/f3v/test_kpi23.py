@@ -15,7 +15,9 @@ from routers.cmi import _scorecard  # noqa: E402
 
 
 def _pg_url():
-    url = os.environ.get("DATABASE_URL", "")
+    url = os.environ.get("DW_TEST_URL") or os.environ.get("DATABASE_URL", "")
+    if "@giragroup_db:" in url:
+        url = url.replace("@giragroup_db:5432", "@localhost:5434").replace("@giragroup_db:", "@localhost:5434:")
     return url if url.startswith("postgresql") else None
 
 

@@ -21,9 +21,9 @@ if SQLALCHEMY_DATABASE_URL.startswith("postgresql://"):
     SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 if os.getenv("DOCKER_ENV") and _can_resolve("giragroup_db"):
-    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("@localhost:", "@giragroup_db:")
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("@localhost:5434", "@giragroup_db:5432").replace("@localhost:", "@giragroup_db:")
 elif "@giragroup_db:" in SQLALCHEMY_DATABASE_URL and not _can_resolve("giragroup_db"):
-    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("@giragroup_db:", "@localhost:")
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("@giragroup_db:5432", "@localhost:5434").replace("@giragroup_db:", "@localhost:")
 
 _engine_kwargs = {
     "pool_pre_ping": True,

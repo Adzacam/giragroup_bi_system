@@ -114,7 +114,7 @@ El perfil mide **62 hojas** en 10 libros. PLAN_FUENTES_UPLOADS.md dice 61; la di
 - `programa` ← `nombre del programa`
 - `pos` ← `nro pos`
 - **Columnas no mapeadas:** `ingreso`, `rentabilidad`, `comentarios`, `tipo de cambio`, `egreso anterior`
-- **Reglas de calidad:** Ejecutado 2023-2025 y meta 2025 en el resumen. Meta 2024 sin detalle mensual (DA4). Prioridad de `monto_meta` y `monto_ejecutado`: RENTABILIDAD > EGRESOS (DA-FU3).
+- **Reglas de calidad:** Ejecutado 2023-2025 y meta 2025 en el resumen. Prioridad de `monto_meta` y `monto_ejecutado`: RENTABILIDAD > EGRESOS (DA-FU3, FU-L6): si esta fuente trae otra cifra para la misma categoría y mes, se carga la de RENTABILIDAD y el conflicto queda `CONFLICTO_FUENTES` resuelto por regla (informativo). Para `monto_egreso` y los costos por programa manda EGRESOS (la prioridad está en el catálogo, `prioridad_fuentes`).
 - **Pueden venir vacías sin que sea error:** Columnas en dólares y tipo de cambio pueden venir vacías en filas sin conversión. Del YAML: -.
 
 ### RENTABILIDAD
@@ -127,7 +127,9 @@ El perfil mide **62 hojas** en 10 libros. PLAN_FUENTES_UPLOADS.md dice 61; la di
 - `monto_meta` ← patrón `^meta( por categoria)? \d{4}`
 - `monto_ejecutado` ← patrón `^ejecutado \d{4}$`, patrón `^ejec\. \d{4}$`
 - **Columnas no mapeadas:** `ebitda meta 2024`, `ebitda ejecutado 2024`, `ebitda meta 2025`, `ebitda ejecutado 2025`, `proyeccion maestrias`, `categoria`, `mes`, `mes numerico`
-- **Reglas de calidad:** Metas 2025 distintas entre archivos con diferencias exactas de 100.000: gana esta fuente y el conflicto se registra como CONFLICTO_FUENTES resuelto por regla (FU-L6).
+- **Reglas de calidad:** Metas 2025 distintas entre archivos (7 de las 10 diferencias son exactas de 100.000): gana esta fuente y el conflicto se registra como `CONFLICTO_FUENTES` resuelto por regla (estado `RESUELTO_REGLA`, con los dos valores, la diferencia y la señal de múltiplo de 100.000 para avisar al área financiera; FU-L6, `fu_l6_conflictos_metas.csv`).
+- **Granularidad de la meta (DA4, FU-L6):** el cargador marca cada meta `MENSUAL` o `ANUAL` por la FORMA de la hoja (no por el año): por categoría y año se cuentan los meses con meta; una sola celda es `ANUAL` y no se coloca como meta de ningún mes (`fact_rentabilidad.granularidad_meta`, migración 026); dos o más meses son `MENSUAL`; una hoja que solo cubre un mes se lee como mensual. Las columnas «año» (`monto_ejecutado`, `monto_meta` por año) y la columna de serie salen de `metas.columnas` y `metas.claves_categoria` del catálogo.
+- **KPI que lee (FU-L6):** KPI-02 = último mes cerrado frente a la meta MENSUAL de ese mes (sin meta mensual: «sin dato», con el motivo «La fuente solo trae meta anual.» o «No hay meta cargada para esta gestión.»); KPI-03 = ejecutado de los meses cerrados frente a la meta de esos meses más la meta anual completa; KPI-13 y KPI-14 usan la meta anual (mensual + anual) y el ejecutado acumulado; KPI-12 compara los meses cerrados con los mismos de la gestión anterior. El mes de corte (último mes con ejecutado de toda la fuente) es parcial salvo diciembre y no cuenta en KPI-02, KPI-03 ni KPI-12.
 - **Pueden venir vacías sin que sea error:** Columnas EBITDA de años sin dato y las dos columnas sin nombre (residuos de redondeo) pueden venir vacías. Del YAML: `ebitda meta 2024`, `ebitda ejecutado 2024`.
 
 ### TECHOS
@@ -171,7 +173,7 @@ El perfil mide **62 hojas** en 10 libros. PLAN_FUENTES_UPLOADS.md dice 61; la di
 | `monto_meta`, `monto_ejecutado` | RENTABILIDAD > EGRESOS |
 | `monto_egreso`, costos | EGRESOS > RENTABILIDAD |
 
-Un conflicto entre dos fuentes del mismo lote y mes se resuelve con esta regla y se registra como `CONFLICTO_FUENTES` informativo (FU-L6).
+Un conflicto entre dos fuentes de DISTINTO tipo para el mismo campo, categoría y mes se resuelve con esta regla (llegue primero o después) y se registra como `CONFLICTO_FUENTES` con estado `RESUELTO_REGLA` (informativo, no pendiente; FU-L6). Un hueco (vacío o 0) de la fuente prioritaria lo llena la otra sin conflicto. Dos fuentes del MISMO tipo con valores distintos no tienen regla: el conflicto queda `PENDIENTE`. La prioridad es del catálogo (`prioridad_fuentes`); cambiar el orden allí cambia quién gana sin tocar código.
 
 ## 4. Hojas (62): decisión y motivo
 
@@ -246,6 +248,6 @@ Criterio: las 62 hojas tienen decisión (usar o ignorar) con motivo. «DIP. EXP 
 
 - FU-L5: confirmar la regla del par texto/número en `DIPLOMADOS DOCENTE` y `CURSOS DOCENTE`.
 - FU-L4: confirmar el diccionario de estados académicos (acentos y minúsculas).
-- FU-L6: confirmar la lista de conflictos de meta 2025 con su diferencia.
+- FU-L6: resuelto. La lista de conflictos de meta con su diferencia está en `docs/mediciones/fu_l6_conflictos_metas.csv`.
 - `MODULOS`: resuelto en FU-L1, queda como «usar».
 

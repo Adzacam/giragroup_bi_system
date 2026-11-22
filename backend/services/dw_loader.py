@@ -304,6 +304,7 @@ class DWLoaderService:
         self._texto_beto: Optional[str] = None
         self._origen_por_doc: Dict[Any, Optional[DimOrigenDocumental]] = {}
         self._cache_prio_fuente: Dict[int, int] = {}
+        self._cache_tipo_fuente: Dict[int, Optional[str]] = {}
         self._docente_por_nombre: Dict[str, Optional[int]] = {}
         self._institucion_por_nombre: Dict[str, Optional[int]] = {}
         self.solo_revision: bool = False
@@ -436,6 +437,15 @@ class DWLoaderService:
                         break
             self._cache_prio_fuente[id_documento] = prio
         return prio
+
+    def _tipo_fuente_doc(self, id_documento: Optional[int]) -> Optional[str]:
+        """Tipo de fuente del documento (RENTABILIDAD, EGRESOS...) con el que la prioridad por campo del catálogo (DA-FU3) decide."""
+        if not id_documento:
+            return None
+        if id_documento not in self._cache_tipo_fuente:
+            tipo = self.db.query(DimOrigenDocumental.tipo_fuente).filter(DimOrigenDocumental.id_documento == id_documento).scalar()
+            self._cache_tipo_fuente[id_documento] = (tipo or "").upper().strip() or None
+        return self._cache_tipo_fuente[id_documento]
 
     def _fecha_ingesta_doc(self, id_documento: Optional[int]) -> Tuple[Any, int]:
         if not id_documento:
@@ -2026,6 +2036,10 @@ class DWLoaderService:
                 return {"tipo": "rentabilidad", "status": "skipped", "motivo": "Fila de origen ya cargada"}
 
             prio_nueva = self._prioridad_fuente_doc(doc_id, resoluciones)
+            from core.esquema_opcional import columnas_fu_l6
+            from services import metas_canonica
+            con_granularidad = "granularidad_meta" in columnas_fu_l6(self.db, "fact_rentabilidad")
+            granularidad = resoluciones.get("granularidad_meta") if con_granularidad else None
             existente_rent = self.db.query(FactRentabilidad).filter(
                 FactRentabilidad.id_categoria == id_cat,
                 FactRentabilidad.id_tiempo == id_tiempo
@@ -2033,42 +2047,70 @@ class DWLoaderService:
 
             if existente_rent:
                 # Misma categoría y mes: el valor nuevo reemplaza al anterior (recargar el libro no duplica montos).
-                # Si otra fuente ya había cargado otra cifra para ese mes, queda registrado para revisión.
-                # Precedencia: una fuente de menor prioridad no reemplaza la cifra de una de mayor prioridad;
-                # entre fuentes de igual tipo, gana la más reciente.
+                # Si otra fuente ya había cargado otra cifra para ese mes, queda registrado.
+                # Precedencia (FU-L6, DA-FU3): entre fuentes de DISTINTO tipo manda la prioridad por tipo y campo del catálogo
+                # (`prioridad_fuentes`: RENTABILIDAD sobre EGRESOS en monto_meta y monto_ejecutado) y el conflicto queda
+                # RESUELTO por regla (informativo). Sin regla que decida (mismo tipo o tipo fuera de la lista) rige la estructura
+                # del libro (una fuente de menor prioridad no reemplaza a una de mayor) y, entre iguales, gana la más reciente:
+                # ese conflicto queda PENDIENTE para una persona.
                 prio_previa = self._prioridad_fuente_doc(existente_rent.id_documento)
                 if prio_nueva != prio_previa:
-                    cede = prio_nueva < prio_previa
+                    cede_estructura = prio_nueva < prio_previa
                 else:
-                    cede = self._fecha_ingesta_doc(doc_id) < self._fecha_ingesta_doc(existente_rent.id_documento)
+                    cede_estructura = self._fecha_ingesta_doc(doc_id) < self._fecha_ingesta_doc(existente_rent.id_documento)
+                tipo_nuevo = self._tipo_fuente_doc(doc_id)
+                tipo_previo = self._tipo_fuente_doc(existente_rent.id_documento)
+                cfg_conf = metas_canonica.configuracion_conflicto()
+                aplicado: Dict[str, Optional[float]] = {}
                 for campo, nuevo in (("monto_ejecutado", m_ejec), ("monto_meta", m_meta)):
                     previo = getattr(existente_rent, campo)
                     if nuevo == 0 and previo not in (None, 0):
                         # Un 0 de otra fuente es un mes aún no ejecutado, no una cifra: no pisa el monto real
-                        if campo == "monto_ejecutado":
-                            m_ejec = None
-                        else:
-                            m_meta = None
                         nuevo = None
+                    gana_nueva = metas_canonica.decidir(campo, tipo_nuevo, tipo_previo)   # True / False / None (sin regla)
+                    cede = (not gana_nueva) if gana_nueva is not None else cede_estructura
+                    if cede and nuevo is not None and previo in (None, 0):
+                        # Un hueco (vacío o 0) de la fuente vigente no es una cifra: la otra fuente lo llena sin conflicto. Así el
+                        # resultado no depende de qué libro llegó primero.
+                        cede = False
                     if nuevo is not None and previo not in (None, 0) and abs(float(previo) - nuevo) > max(1.0, 0.01 * abs(float(previo))):
-                        self.db.add(LogInconsistencia(
-                            id_documento=doc_id,
-                            campo_afectado=f"fact_rentabilidad.{campo}",
-                            valor_recibido=str(nuevo),
-                            valor_esperado=str(previo),
-                            tipo_regla="CONFLICTO_FUENTES",
-                            severidad="MEDIA",
-                            estado_resolucion="PENDIENTE",
-                            descripcion=(f"{cat_nom} id_tiempo={id_tiempo}: se conserva {previo}; la fuente de menor precedencia trae {nuevo}" if cede
-                                         else f"{cat_nom} id_tiempo={id_tiempo}: la fuente nueva reemplaza {previo} por {nuevo}"),
-                        ))
-                if cede:
-                    m_ejec = m_meta = None  # la cifra vigente viene de la fuente de referencia
-                if m_ejec is not None:
-                    existente_rent.monto_ejecutado = m_ejec
-                if m_meta is not None:
-                    existente_rent.monto_meta = m_meta
-                if (m_ejec is not None or m_meta is not None) and doc_id:
+                        if gana_nueva is not None:
+                            elegido, descartado = (nuevo, float(previo)) if gana_nueva else (float(previo), nuevo)
+                            self.db.add(LogInconsistencia(
+                                id_documento=doc_id,
+                                campo_afectado=f"fact_rentabilidad.{campo}",
+                                valor_recibido=str(nuevo),
+                                valor_esperado=str(previo),
+                                tipo_regla=cfg_conf["motivo"],
+                                severidad="BAJA",
+                                estado_resolucion=cfg_conf["estado_resuelto"],
+                                resuelto_en=datetime.now(),
+                                descripcion=metas_canonica.describir_conflicto(
+                                    cat_nom, id_tiempo, campo,
+                                    tipo_nuevo if gana_nueva else tipo_previo, tipo_previo if gana_nueva else tipo_nuevo,
+                                    elegido, descartado),
+                                **valores_si_existen(self.db, "log_inconsistencias", regla_origen=cfg_conf.get("regla_origen")),
+                            ))
+                        else:
+                            self.db.add(LogInconsistencia(
+                                id_documento=doc_id,
+                                campo_afectado=f"fact_rentabilidad.{campo}",
+                                valor_recibido=str(nuevo),
+                                valor_esperado=str(previo),
+                                tipo_regla=cfg_conf["motivo"],
+                                severidad="MEDIA",
+                                estado_resolucion=cfg_conf["estado_pendiente"],
+                                descripcion=(f"{cat_nom} id_tiempo={id_tiempo}: se conserva {previo}; la fuente de menor precedencia trae {nuevo}" if cede
+                                             else f"{cat_nom} id_tiempo={id_tiempo}: la fuente nueva reemplaza {previo} por {nuevo}"),
+                            ))
+                    aplicado[campo] = None if cede else nuevo
+                if aplicado["monto_ejecutado"] is not None:
+                    existente_rent.monto_ejecutado = aplicado["monto_ejecutado"]
+                if aplicado["monto_meta"] is not None:
+                    existente_rent.monto_meta = aplicado["monto_meta"]
+                    if granularidad is not None:
+                        existente_rent.granularidad_meta = granularidad   # la bandera sigue al valor de la meta vigente
+                if any(v is not None for v in aplicado.values()) and doc_id:
                     existente_rent.id_documento = doc_id
                 self.db.flush()
                 return {
@@ -2079,6 +2121,7 @@ class DWLoaderService:
                     "monto_meta": existente_rent.monto_meta
                 }
             else:
+                extra_rent = {"granularidad_meta": granularidad} if (con_granularidad and m_meta is not None and granularidad is not None) else {}
                 nuevo_rent = FactRentabilidad(
                     id_modulo=id_mod_rent,
                     id_tiempo=id_tiempo,
@@ -2086,6 +2129,7 @@ class DWLoaderService:
                     monto_ejecutado=m_ejec,  # mes solo con meta (2026): ejecutado vacío, no 0 inventado
                     monto_meta=m_meta,
                     id_documento=doc_id,
+                    **extra_rent,
                 )
                 self.db.add(nuevo_rent)
                 self.db.flush()

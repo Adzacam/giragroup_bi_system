@@ -12,5 +12,9 @@
  "conflictos_en_la_dw_resueltos_por_regla": 10,
  "conflictos_en_la_dw_pendientes": 0,
  "conflictos_con_diferencia_multiplo_100000": 7,
- "orden_inverso": null
+ "orden_inverso": {
+  "mismos_conflictos": 10,
+  "distintos": 0,
+  "fact_rentabilidad_identica": true
+ }
 }

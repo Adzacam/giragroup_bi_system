@@ -19,7 +19,7 @@ from models.staging_entidad import StagingEntidadNoResuelta
 from models.staging_registro import StagingRegistroCrudo
 from models.user import User
 from services.confianza_service import banda_de, indices_cascada, obtener_indices
-from services import acta_canonica, beto_integracion, cache_consultas, tareas_dataops
+from services import acta_canonica, beto_integracion, cache_consultas, metas_canonica, tareas_dataops
 from services.cobranza_canonica import registros_cobranza
 from services.captacion_canonica import leer_identidad as leer_identidad_captacion
 from services import encuesta_canonica
@@ -205,6 +205,20 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         d: factores_escala_por_programa(filas, (origenes_map.get(d).tipo_escala if origenes_map.get(d) else None))
         for d, filas in filas_por_doc.items()
     }
+    # FU-L6 (DA4): la granularidad de una meta (MENSUAL / ANUAL) sale de la forma de TODA la hoja, no de un bloque de líneas
+    # ni de una fila: se perfila una vez por (documento, hoja) con las filas de todos sus bloques.
+    filas_metas_por_hoja: Dict[Any, List[Dict[str, str]]] = {}
+    for s_reg in stg_records:
+        orig_m = origenes_map.get(s_reg.id_documento) if s_reg.id_documento else None
+        fuente_m = (orig_m.tipo_fuente if (orig_m and orig_m.tipo_fuente) else "ACTA").upper().strip()
+        if resolver_categoria_ruteo(fuente_m, s_reg.categoria) != "rentabilidad":
+            continue
+        for l in (s_reg.texto_plano or "").splitlines():
+            if l.strip():
+                filas_metas_por_hoja.setdefault((s_reg.id_documento, s_reg.hoja), []).append(
+                    campos_por_encabezado([c.strip() for c in l.split("|")]))
+    perfiles_metas = {k: metas_canonica.perfilar(filas) for k, filas in filas_metas_por_hoja.items()}
+    filas_metas_por_hoja = {}
     total_lineas = sum(len([l for l in (s_reg.texto_plano or "").splitlines() if l.strip()]) for s_reg in stg_records)
     # Avance con el total real de líneas (sin ×2 al reutilizar cache_indice_beto)
     lineas_hechas = 0
@@ -526,7 +540,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                         })
                 elif categoria_ruteo == "rentabilidad" and campos_linea:
                     # EJECUTADO VS META: un hecho por año con dato, con la categoría y el mes de la fila
-                    registros_rent = registros_rentabilidad(campos_linea)
+                    registros_rent = registros_rentabilidad(campos_linea, perfiles_metas.get((stg.id_documento, stg.hoja)))
                     if registros_rent:
                         registros_linea = [
                             {**reg_dict, "resoluciones": {**reg_dict["resoluciones"], **reg_rent}}

@@ -35,12 +35,8 @@ _CLAVE_DESCARGA_MOODLE = "LAST DOWNLOADED FROM THIS COURSE"
 _RE_FECHA_LARGA = re.compile(r"(\d{1,2}) DE ([A-Z]+) DE (\d{4})")
 # Google Forms escribe la cédula como 'CI-4892019' / 'ci 4892019' / 'C.I. 4892019': el prefijo no es parte del número
 _RE_PREFIJO_CI = re.compile(r"^\s*c\.?\s*i\.?\s*[-:]?\s*(?=\d)", re.IGNORECASE)
-# EJECUTADO VS META: una fila por categoría y mes, con columnas EJECUTADO <año> y META POR CATEGORIA <año>
-_RE_EJECUTADO_ANIO = re.compile(r"^EJECUTADO (\d{4})$")
-_RE_META_ANIO = re.compile(r"^META POR CATEGORIA (\d{4})$")
-_RE_META_GENERICA_ANIO = re.compile(r"^META (\d{4})$")
-# Columna que dice a qué serie pertenece la fila: CATEGORIA en EJECUTADO VS META, TIPO DE INGRESO en BD Egresos
-_CLAVES_CATEGORIA_FIN = ("CATEGORIA", "TIPO DE INGRESO", "TIPO INGRESO", "CATEGORIA FINANCIERA", "SERIE")
+# Metas y ejecutado por categoría y mes: las columnas «año» y la columna de serie salen del catálogo (FU-L6, services.metas_canonica,
+# sección `metas` de config/mapeo_fuentes.yaml), no de una lista fija.
 
 
 @lru_cache(maxsize=4096)
@@ -415,44 +411,53 @@ def categoria_rentabilidad(valor: Optional[str]) -> Optional[str]:
     return re.sub(r"[^A-Z0-9]+", "_", v).strip("_")[:50] or None
 
 
-def registros_rentabilidad(campos: Dict[str, str]) -> List[Dict[str, Any]]:
+def registros_rentabilidad(campos: Dict[str, str], perfil: Optional[Any] = None) -> List[Dict[str, Any]]:
     """
     Una fila mensual de EJECUTADO VS META trae varios años (EJECUTADO 2023..2026, META POR CATEGORIA 2024..2026).
     Devuelve un registro por año con dato, con la fecha del primer día de ese mes: así cada fila conserva su
     categoría y su mes en fact_rentabilidad (clave id_categoria + id_tiempo) en vez de colapsar en una sola.
+
+    FU-L6 (DA4): con el `perfil` de la hoja (services.metas_canonica.perfilar) cada registro con meta lleva `granularidad_meta`
+    (`MENSUAL` / `ANUAL`) según la forma de la fuente; sin perfil queda en None (el cargador no la marca).
     """
+    from services import metas_canonica as mc
     categoria = next(
-        (c for c in (categoria_rentabilidad(campos.get(k)) for k in _CLAVES_CATEGORIA_FIN) if c), None
+        (c for c in (categoria_rentabilidad(campos.get(k)) for k in mc.claves_categoria()) if c), None
     )
     mes = _mes(campos.get("MES NUMERICO")) or _mes(campos.get("MES"))
     if not categoria or not mes:
         return []  # sin categoría: hoja de totales (GESTIONES, acumulados), derivada de las categorías
     por_anio: Dict[int, Dict[str, Optional[float]]] = {}
     metas_genericas: Dict[int, Optional[float]] = {}
+    hay_meta_especifica = hay_ejecutado = hay_meta_generica = False
     for k, v in campos.items():
-        m_ejec, m_meta = _RE_EJECUTADO_ANIO.match(k), _RE_META_ANIO.match(k)
-        if m_ejec or m_meta:
-            anio = int((m_ejec or m_meta).group(1))
+        a_ejec, a_meta = mc.anio_de_columna(k, "ejecutado"), mc.anio_de_columna(k, "meta_especifica")
+        if a_ejec is not None or a_meta is not None:
+            anio = a_ejec if a_ejec is not None else a_meta
             por_anio.setdefault(anio, {"monto_ejecutado": None, "monto_meta": None})
-            por_anio[anio]["monto_ejecutado" if m_ejec else "monto_meta"] = _a_float(v)
+            por_anio[anio]["monto_ejecutado" if a_ejec is not None else "monto_meta"] = _a_float(v)
+            hay_ejecutado = hay_ejecutado or a_ejec is not None
+            hay_meta_especifica = hay_meta_especifica or a_meta is not None
             continue
-        m_gen = _RE_META_GENERICA_ANIO.match(k)
-        if m_gen:
-            metas_genericas[int(m_gen.group(1))] = _a_float(v)
+        a_gen = mc.anio_de_columna(k, "meta_generica")
+        if a_gen is not None:
+            metas_genericas[a_gen] = _a_float(v)
+            hay_meta_generica = True
     # 'META 2025' solo cuenta si la fila no trae 'META POR CATEGORIA 2025' (en EJECUTADO VS META son la misma
     # serie; 'META 2026' allí es otra cifra y no debe pisarla)
     for anio, meta in metas_genericas.items():
         montos = por_anio.setdefault(anio, {"monto_ejecutado": None, "monto_meta": None})
         if montos["monto_meta"] is None:
             montos["monto_meta"] = meta
-    es_metas_categoria = any(_RE_META_ANIO.match(k) for k in campos) or (
-        "CATEGORIA" in campos and any(_RE_EJECUTADO_ANIO.match(k) or _RE_META_GENERICA_ANIO.match(k) for k in campos)
-    )
-    return [
-        {"categoria_financiera": categoria, "fecha": date(anio, mes, 1), "es_fuente_metas_categoria": es_metas_categoria, **montos}
-        for anio, montos in sorted(por_anio.items())
-        if montos["monto_ejecutado"] is not None or montos["monto_meta"] is not None
-    ]
+    es_metas_categoria = hay_meta_especifica or ("CATEGORIA" in campos and (hay_ejecutado or hay_meta_generica))
+    registros = []
+    for anio, montos in sorted(por_anio.items()):
+        if montos["monto_ejecutado"] is None and montos["monto_meta"] is None:
+            continue
+        granularidad = (perfil.granularidad(categoria, anio) if (perfil is not None and montos["monto_meta"] is not None) else None)
+        registros.append({"categoria_financiera": categoria, "fecha": date(anio, mes, 1), "es_fuente_metas_categoria": es_metas_categoria,
+                          "granularidad_meta": granularidad, **montos})
+    return registros
 
 
 _CLAVES_PAYLOAD_PLAN = (

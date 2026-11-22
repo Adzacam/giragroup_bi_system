@@ -50,6 +50,39 @@ prioridad_fuentes:
   costos: [EGRESOS, RENTABILIDAD]
   nota: "Si dos fuentes del mismo lote dan valores distintos para el mismo campo y mes, gana la de mayor prioridad y se registra CONFLICTO_FUENTES resuelto por regla."
 
+# Metas y ejecutado financiero (FU-L6; DA4 y DA-FU3, decisiones de Lean 2026-11-20). Nada aquí nombra un libro ni una hoja.
+metas:
+  # Columnas «año» de una fila categoría x mes (patrones sobre la cabecera en minúsculas y sin acentos; el grupo captura el año).
+  # La meta específica por categoría gana a la genérica del mismo año. «ejec. 2025» (total de todas las categorías) no es ejecutado por categoría.
+  columnas:
+    ejecutado: ['^ejecutado (\d{4})$']
+    meta_especifica: ['^meta por categoria (\d{4})$']
+    meta_generica: ['^meta (\d{4})$']
+  # Columna que dice a qué serie (categoría de ingreso) pertenece la fila. Cabeceras normalizadas.
+  claves_categoria: ["categoria", "tipo de ingreso", "tipo ingreso", "categoria financiera", "serie"]
+  # DA4: la granularidad de una meta sale de la FORMA de la fuente, no del año. Por categoría y año de la hoja se cuentan los meses
+  # distintos con meta: una sola celda = ANUAL (no se coloca en ningún mes); dos o más = MENSUAL.
+  granularidad:
+    mensual: "MENSUAL"
+    anual: "ANUAL"
+    min_meses_mensual: 2
+  # DA-FU3: dos fuentes de DISTINTO tipo con otro valor para el mismo campo y mes -> se carga el de la fuente prioritaria
+  # (`prioridad_fuentes` de más abajo) y el conflicto queda RESUELTO por regla (informativo, no pendiente). Dos fuentes del
+  # mismo tipo con valores distintos siguen PENDIENTES: no hay regla que decida.
+  conflicto:
+    motivo: "CONFLICTO_FUENTES"
+    estado_resuelto: "RESUELTO_REGLA"
+    estado_pendiente: "PENDIENTE"
+    regla_origen: "FU-L6:PRIORIDAD_POR_TIPO_DE_FUENTE"
+    multiplo_aviso: 100000        # una diferencia múltiplo de este monto se señala para avisar al área financiera
+  # Mes de corte: el último mes con ejecutado de toda la fuente. Se considera parcial (no cerrado) salvo que sea el último
+  # mes de la gestión; KPI-02, KPI-03 y KPI-12 solo usan meses cerrados. (La regla vive en bi.vw_cmi_valores, migración 026.)
+  mes_de_corte_parcial: true
+  motivos_sin_dato:
+    kpi_02_solo_anual: "La fuente solo trae meta anual."
+    kpi_02_sin_meta: "No hay meta cargada para esta gestión."
+    kpi_02_sin_mes_cerrado: "La gestión no tiene ningún mes cerrado con ejecución y meta mensual."
+
 # Un tipo de fuente = una forma de tabla. El archivo actual es solo un ejemplo.
 tipos_fuente:
 

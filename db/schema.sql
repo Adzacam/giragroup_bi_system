@@ -297,7 +297,8 @@ CREATE TABLE public.fact_rentabilidad (
     id_categoria INTEGER REFERENCES public.dim_categoria_financiera(id_categoria) ON DELETE CASCADE,
     monto_ejecutado NUMERIC(14, 2),
     monto_meta NUMERIC(14, 2),
-    id_documento INTEGER REFERENCES public.dim_origen_documental(id_documento) ON DELETE SET NULL
+    id_documento INTEGER REFERENCES public.dim_origen_documental(id_documento) ON DELETE SET NULL,
+    granularidad_meta VARCHAR(10) CONSTRAINT chk_fact_rentabilidad_granularidad_meta CHECK (granularidad_meta IS NULL OR granularidad_meta IN ('MENSUAL', 'ANUAL'))  -- FU-L6 (migración 026, DA4): MENSUAL o ANUAL; NULL = anterior a la 026 (se lee como MENSUAL)
 );
 
 -- E2. Costos por programa (grano: un POS; fact_rentabilidad es mensual por categoría)

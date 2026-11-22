@@ -472,21 +472,41 @@ _SQL_META_VS_EJECUTADO = text("""
     ORDER BY dt.gestion, dt.mes
 """)
 
+# FU-L6 (DA4): la serie MENSUAL de metas no incluye una meta ANUAL (una sola celda de la gestión: no es la meta de ningún mes).
+# Una fila sin bandera (DW sin la migración 026 o anterior a ella) se lee como mensual.
+_SQL_META_VS_EJECUTADO_MENSUAL = text("""
+    SELECT dt.gestion, dt.mes,
+           SUM(fr.monto_meta) FILTER (WHERE COALESCE(fr.granularidad_meta, 'MENSUAL') = 'MENSUAL')::float AS meta,
+           SUM(fr.monto_ejecutado)::float AS ejecutado,
+           SUM(fr.monto_meta) FILTER (WHERE fr.granularidad_meta = 'ANUAL')::float AS meta_anual
+    FROM public.fact_rentabilidad fr
+    JOIN public.dim_tiempo dt ON fr.id_tiempo = dt.id_tiempo
+    GROUP BY dt.gestion, dt.mes
+    ORDER BY dt.gestion, dt.mes
+""")
+
 _MESES_CORTOS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 _MESES_LARGOS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto",
                  "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 
 
 def _meta_vs_ejecutado(db: Optional[Session]) -> pd.DataFrame:
+    columnas = ["gestion", "mes", "meta", "ejecutado", "meta_anual"]
     if db is None:
-        return pd.DataFrame(columns=["gestion", "mes", "meta", "ejecutado"])
+        return pd.DataFrame(columns=columnas)
     try:
-        rows = db.execute(_SQL_META_VS_EJECUTADO).fetchall()
+        try:
+            from core.esquema_opcional import columnas_fu_l6
+            con_granularidad = "granularidad_meta" in columnas_fu_l6(db, "fact_rentabilidad")
+        except Exception:
+            con_granularidad = False
+        rows = db.execute(_SQL_META_VS_EJECUTADO_MENSUAL if con_granularidad else _SQL_META_VS_EJECUTADO).fetchall()
     except Exception as e:
         logger.warning(f"No se pudo leer fact_rentabilidad: {e}")
         db.rollback()
         rows = []
-    return pd.DataFrame(rows, columns=["gestion", "mes", "meta", "ejecutado"])
+    df = pd.DataFrame([tuple(r) + (None,) * (5 - len(tuple(r))) for r in rows], columns=columnas)
+    return df
 
 
 def _num(v) -> Optional[float]:
@@ -593,7 +613,10 @@ def obtener_analitica_macro_completa(
     serie_anual = extraer_serie_temporal("META_ANUAL", engine=engine)
     anio_actual = pd.Timestamp.now().year
     del_anio = mve[mve["gestion"] == anio_actual] if not mve.empty else mve
-    meta_anual = _num(del_anio["meta"].sum(min_count=1)) if not del_anio.empty else None
+    # meta anual de la gestión = metas mensuales + metas anuales de celda única (FU-L6, DA4)
+    if not del_anio.empty and "meta_anual" not in del_anio.columns:
+        del_anio = del_anio.assign(meta_anual=None)
+    meta_anual = (_num(del_anio[["meta", "meta_anual"]].astype(float).sum(axis=1, min_count=1).sum(min_count=1)) if not del_anio.empty else None)
     recaudado = _num(del_anio["ejecutado"].sum(min_count=1)) if not del_anio.empty else None
     caso4 = None
     if serie_anual.empty and meta_anual is None and recaudado is None:

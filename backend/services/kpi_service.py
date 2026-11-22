@@ -10,7 +10,7 @@ si no existen registros en el DW para un indicador o filtro, retorna null (None)
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Union
 from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
+from sqlalchemy import case, func, or_
 
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
@@ -386,10 +386,17 @@ class KPIService:
         # cumplimiento_metas_mensual = ejecutado del mes / meta del mes × 100
         # Tablas: fact_rentabilidad, dim_tiempo, dim_modulo
         # ─────────────────────────────────────────────────────────────────────────
+        # FU-L6 (DA4): solo cuenta la meta MENSUAL (una meta anual no es la meta de ningún mes) y solo un mes CERRADO: el mes de corte de
+        # la fuente (último mes con ejecutado de toda la tabla) es parcial, salvo diciembre. Sin meta mensual en el mes, KPI sin dato.
+        from core.esquema_opcional import columnas_fu_l6
+        meta_mensual_sql = (
+            func.sum(case((FactRentabilidad.granularidad_meta == "ANUAL", None), else_=FactRentabilidad.monto_meta))
+            if "granularidad_meta" in columnas_fu_l6(self.db, "fact_rentabilidad") else func.sum(FactRentabilidad.monto_meta)
+        )
         q_rent_m = self.db.query(
             DimTiempo.periodo_mes,
             func.sum(FactRentabilidad.monto_ejecutado).label("ejecutado"),
-            func.sum(FactRentabilidad.monto_meta).label("meta")
+            meta_mensual_sql.label("meta")
         ).join(DimTiempo, FactRentabilidad.id_tiempo == DimTiempo.id_tiempo)
 
         if gestion_filtro:
@@ -397,8 +404,15 @@ class KPIService:
         if prog_filtro:
             q_rent_m = q_rent_m.join(DimModulo, FactRentabilidad.id_modulo == DimModulo.id_modulo).filter(prog_label.ilike(f"%{prog_filtro}%"))
 
+        corte_ejecutado = self.db.query(func.max(DimTiempo.periodo_mes)).join(
+            FactRentabilidad, FactRentabilidad.id_tiempo == DimTiempo.id_tiempo).filter(FactRentabilidad.monto_ejecutado > 0).scalar()
         q_rent_m = q_rent_m.group_by(DimTiempo.periodo_mes).order_by(DimTiempo.periodo_mes.desc())
-        row_rent_m = q_rent_m.first()
+        row_rent_m = next(
+            (r for r in q_rent_m.all()
+             if r.ejecutado is not None and float(r.ejecutado) > 0
+             and (r.periodo_mes != corte_ejecutado or str(r.periodo_mes or "").endswith("-12"))),
+            None,
+        )
 
         if row_rent_m and row_rent_m.meta and float(row_rent_m.meta) > 0:
             cumplimiento_metas_mensual = round((float(row_rent_m.ejecutado or 0.0) / float(row_rent_m.meta)) * 100.0, 2)
