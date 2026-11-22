@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import usePaginacion from '../../hooks/usePaginacion';
+import { FILAS_POR_PAGINA } from '../../hooks/usePaginacion';
 import Paginacion from '../../components/shared/Paginacion';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
@@ -48,6 +48,7 @@ export default function RendimientoAlertas() {
   const [reglaFiltro, setReglaFiltro] = useState('TODOS');
   const [busqueda, setBusqueda] = useState('');
   const [debouncedBusqueda, setDebouncedBusqueda] = useState('');
+  const [pagina, setPagina] = useState(1);
 
   // Debounce para búsqueda nominal (350 ms)
   useEffect(() => {
@@ -56,6 +57,10 @@ export default function RendimientoAlertas() {
     }, 350);
     return () => clearTimeout(handler);
   }, [busqueda]);
+
+  useEffect(() => {
+    setPagina(1);
+  }, [periodo, programa, modulo, docente, reglaFiltro, debouncedBusqueda]);
 
   // Selección de alumno y Modal de Ficha Cruzada Académico-Financiera
   const [selectedStudentId, setSelectedStudentId] = useState(null);
@@ -125,7 +130,7 @@ export default function RendimientoAlertas() {
     isError,
     refetch: cargarAlertas,
   } = useQuery({
-    queryKey: ['alertasTempranas', periodo, programa, modulo, docente, reglaFiltro, debouncedBusqueda],
+    queryKey: ['alertasTempranas', periodo, programa, modulo, docente, reglaFiltro, debouncedBusqueda, pagina],
     queryFn: async () => {
       setErrorMsg('');
       const res = await academicApi.getAlertasTempranas({
@@ -135,6 +140,8 @@ export default function RendimientoAlertas() {
         docente,
         regla_filtro: reglaFiltro,
         busqueda: debouncedBusqueda || undefined,
+        limit: FILAS_POR_PAGINA,
+        offset: (pagina - 1) * FILAS_POR_PAGINA,
       });
       if (res && res.status === 'success') {
         return res;
@@ -152,7 +159,35 @@ export default function RendimientoAlertas() {
       setSelectedStudentId(datosAlertas.estudiantes[0].id_estudiante);
     }
   }, [datosAlertas.estudiantes, selectedStudentId]);
-  const pagEst = usePaginacion(datosAlertas.estudiantes || []);
+
+  const totalEstudiantesFiltrados = datosAlertas.total_estudiantes_filtrados || 0;
+  const totalPaginas = Math.max(1, Math.ceil(totalEstudiantesFiltrados / FILAS_POR_PAGINA));
+  const estudiantesVisibles = datosAlertas.estudiantes || [];
+
+  const periodosOptions = useMemo(
+    () => (datosAlertas.filtros_disponibles?.periodos || []).map((p) => (
+      <option key={p} value={p}>{p}</option>
+    )),
+    [datosAlertas.filtros_disponibles?.periodos],
+  );
+  const programasOptions = useMemo(
+    () => (datosAlertas.filtros_disponibles?.programas || []).map((prog) => (
+      <option key={prog} value={prog}>{prog}</option>
+    )),
+    [datosAlertas.filtros_disponibles?.programas],
+  );
+  const modulosOptions = useMemo(
+    () => (datosAlertas.filtros_disponibles?.modulos || []).map((mod) => (
+      <option key={mod} value={mod}>{mod}</option>
+    )),
+    [datosAlertas.filtros_disponibles?.modulos],
+  );
+  const docentesOptions = useMemo(
+    () => (datosAlertas.filtros_disponibles?.docentes || []).map((doc) => (
+      <option key={doc} value={doc}>{doc}</option>
+    )),
+    [datosAlertas.filtros_disponibles?.docentes],
+  );
 
   // Query separada e independiente para la ficha del estudiante seleccionado
   const {
@@ -216,8 +251,27 @@ export default function RendimientoAlertas() {
     }
   };
 
-  const handleExportarCsv = () => {
-    const filas = datosAlertas.estudiantes || [];
+  const handleExportarCsv = async () => {
+    let filas = datosAlertas.estudiantes || [];
+    if (totalEstudiantesFiltrados > filas.length) {
+      try {
+        const resAll = await academicApi.getAlertasTempranas({
+          periodo,
+          programa,
+          modulo,
+          docente,
+          regla_filtro: reglaFiltro,
+          busqueda: debouncedBusqueda || undefined,
+          limit: 5000,
+          offset: 0,
+        });
+        if (resAll?.estudiantes?.length) {
+          filas = resAll.estudiantes;
+        }
+      } catch (err) {
+        console.error('Error al obtener listado completo para CSV:', err);
+      }
+    }
     if (filas.length === 0) return;
 
     const cabeceras = [
@@ -583,11 +637,7 @@ export default function RendimientoAlertas() {
               style={{ width: '100%', padding: '8px 12px', fontSize: '12.5px' }}
             >
               <option value="TODOS">Todos los periodos</option>
-              {(datosAlertas.filtros_disponibles?.periodos || []).map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
+              {periodosOptions}
             </select>
           </div>
 
@@ -612,11 +662,7 @@ export default function RendimientoAlertas() {
               style={{ width: '100%', padding: '8px 12px', fontSize: '12.5px' }}
             >
               <option value="TODOS">Todos los programas</option>
-              {(datosAlertas.filtros_disponibles?.programas || []).map((prog) => (
-                <option key={prog} value={prog}>
-                  {prog}
-                </option>
-              ))}
+              {programasOptions}
             </select>
           </div>
 
@@ -641,11 +687,7 @@ export default function RendimientoAlertas() {
               style={{ width: '100%', padding: '8px 12px', fontSize: '12.5px' }}
             >
               <option value="TODOS">Todos los módulos</option>
-              {(datosAlertas.filtros_disponibles?.modulos || []).map((mod) => (
-                <option key={mod} value={mod}>
-                  {mod}
-                </option>
-              ))}
+              {modulosOptions}
             </select>
           </div>
 
@@ -670,11 +712,7 @@ export default function RendimientoAlertas() {
               style={{ width: '100%', padding: '8px 12px', fontSize: '12.5px' }}
             >
               <option value="TODOS">Todos los docentes</option>
-              {(datosAlertas.filtros_disponibles?.docentes || []).map((doc) => (
-                <option key={doc} value={doc}>
-                  {doc}
-                </option>
-              ))}
+              {docentesOptions}
             </select>
           </div>
 
@@ -1177,7 +1215,7 @@ export default function RendimientoAlertas() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(datosAlertas.estudiantes || []).length === 0 ? (
+                  {estudiantesVisibles.length === 0 ? (
                     <tr>
                       <td
                         colSpan="8"
@@ -1191,7 +1229,7 @@ export default function RendimientoAlertas() {
                       </td>
                     </tr>
                   ) : (
-                    pagEst.visibles.map((est) => {
+                    estudiantesVisibles.map((est) => {
                       const isRowSelected = selectedStudentId === est.id_estudiante;
                       const promStr =
                         est.promedio_notas !== null && est.promedio_notas !== undefined
@@ -1325,7 +1363,13 @@ export default function RendimientoAlertas() {
                   )}
                 </tbody>
               </table>
-              <Paginacion {...pagEst} onChange={pagEst.setPagina} />
+              <Paginacion
+                pagina={pagina}
+                totalPaginas={totalPaginas}
+                total={totalEstudiantesFiltrados}
+                filasPorPagina={FILAS_POR_PAGINA}
+                onChange={setPagina}
+              />
             </ResponsiveTable>
 
             {/* Barra de acciones al pie de la Tabla Nominal */}

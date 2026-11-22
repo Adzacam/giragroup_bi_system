@@ -177,20 +177,28 @@ WITH aca AS (
         SELECT f.id_documento, dt.gestion FROM public.fact_rentabilidad f JOIN public.dim_tiempo dt ON dt.id_tiempo = f.id_tiempo WHERE f.id_documento IS NOT NULL
     ) t
     GROUP BY id_documento
+), reg_gestion AS MATERIALIZED (
+    SELECT DISTINCT s.registro_origen_id,
+           COALESCE(
+               (regexp_match(left(r.texto_plano, 8192), '\m(202[0-9])\M'))[1]::int,
+               (regexp_match(r.texto_plano, '\m(202[0-9])\M'))[1]::int,
+               (regexp_match(COALESCE(r.hoja, ''), '\m(202[0-9])\M'))[1]::int
+           ) AS gestion
+    FROM public.stg_entidad_no_resuelta s
+    JOIN public.staging_registros_crudos r ON r.id = s.registro_origen_id
+    WHERE s.resuelto = FALSE
+      AND s.registro_origen_id IS NOT NULL
+      AND (regexp_match(COALESCE(s.payload_json::text, ''), '\m(202[0-9])\M'))[1] IS NULL
 ), backlog_raw AS (
     SELECT COALESCE(
-               (regexp_match(
-                   COALESCE(s.payload_json::text, '') || ' ' ||
-                   COALESCE(r.texto_plano, '') || ' ' ||
-                   COALESCE(r.hoja, '') || ' ' ||
-                   COALESCE(s.texto_original, ''),
-                   '\m(202[0-9])\M'
-               ))[1]::int,
+               (regexp_match(COALESCE(s.payload_json::text, ''), '\m(202[0-9])\M'))[1]::int,
+               rg.gestion,
+               (regexp_match(COALESCE(s.texto_original, ''), '\m(202[0-9])\M'))[1]::int,
                dg.gestion,
                (regexp_match(COALESCE(d.periodo, ''), '\m(202[0-9])\M'))[1]::int
            ) AS gestion
     FROM public.stg_entidad_no_resuelta s
-    LEFT JOIN public.staging_registros_crudos r ON r.id = s.registro_origen_id
+    LEFT JOIN reg_gestion rg ON rg.registro_origen_id = s.registro_origen_id
     LEFT JOIN public.dim_origen_documental d ON d.id_documento = s.id_documento
     LEFT JOIN doc_gestion dg ON dg.id_documento = s.id_documento
     WHERE s.resuelto = FALSE

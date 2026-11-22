@@ -106,6 +106,8 @@ def evaluar_alertas_tempranas_deterministicas(
     umbral_nota: float = 70.0,
     umbral_incumplimiento: float = 30.0,
     umbral_cuotas_mora: int = 2,
+    limit: Optional[int] = None,
+    offset: int = 0,
 ) -> Dict[str, Any]:
     """
     Evalúa estrictamente mediante reglas determinísticas IF/THEN (sin inferencia ML individual)
@@ -581,6 +583,14 @@ def evaluar_alertas_tempranas_deterministicas(
         {"codigo": "A+D+F", "etiqueta": "Triple Alerta (A+D+F)", "total_alumnos": cnt_adf},
     ]
 
+    total_filtrados = len(estudiantes_en_alerta)
+    if limit is not None:
+        estudiantes_pagina = estudiantes_en_alerta[offset : offset + limit]
+    elif offset > 0:
+        estudiantes_pagina = estudiantes_en_alerta[offset:]
+    else:
+        estudiantes_pagina = estudiantes_en_alerta
+
     return {
         "status": "success",
         "motor_reglas": "DETERMINISTICO_IF_THEN_ESTRICTO",
@@ -594,8 +604,8 @@ def evaluar_alertas_tempranas_deterministicas(
             "modulos": sorted(list(modulos_set)),
             "docentes": sorted(list(docentes_set)),
         },
-        "total_estudiantes_filtrados": len(estudiantes_en_alerta),
-        "estudiantes": estudiantes_en_alerta,
+        "total_estudiantes_filtrados": total_filtrados,
+        "estudiantes": estudiantes_pagina,
     }
 
 

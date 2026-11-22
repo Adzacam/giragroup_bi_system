@@ -100,6 +100,8 @@ def obtener_alertas_tempranas(
     umbral_nota: float = Query(70.0, ge=0.0, le=100.0),
     umbral_incumplimiento: float = Query(30.0, ge=0.0, le=100.0),
     umbral_cuotas_mora: int = Query(2, ge=1, le=60),
+    limit: int = Query(50, ge=1, le=5000, description="Máximo de estudiantes retornados por página"),
+    offset: int = Query(0, ge=0, description="Desplazamiento para paginación de estudiantes"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(ROLES_ALERTAS)),
 ):
@@ -110,7 +112,7 @@ def obtener_alertas_tempranas(
     """
     try:
         clave = ("alertas", periodo, programa, modulo, docente, regla_filtro, busqueda,
-                 umbral_nota, umbral_incumplimiento, umbral_cuotas_mora)
+                 umbral_nota, umbral_incumplimiento, umbral_cuotas_mora, limit, offset)
         return cache_consultas.obtener(clave, TTL_ALERTAS_SEG, lambda: evaluar_alertas_tempranas_deterministicas(
             db=db,
             periodo=periodo,
@@ -122,6 +124,8 @@ def obtener_alertas_tempranas(
             umbral_nota=umbral_nota,
             umbral_incumplimiento=umbral_incumplimiento,
             umbral_cuotas_mora=umbral_cuotas_mora,
+            limit=limit,
+            offset=offset,
         ))
     except Exception as e:
         logger.error(f"Falla al evaluar alertas tempranas determinísticas: {e}", exc_info=True)
