@@ -437,10 +437,26 @@ export const dataopsApi = {
   },
 
   /**
-   * Obtiene los catálogos maestros (Módulos, Docentes, Estudiantes) de PostgreSQL
+   * Obtiene los catálogos maestros (Módulos e Instituciones Propia/Convenio) de PostgreSQL
    */
-  getCatalogs: async ({ tipo = 'modulos', page = 1, search = '' } = {}) =>
-    (await client.get(`${BASE_URL}/catalogs`, { params: { tipo, page, search } })).data,
+  getCatalogs: async ({
+    tipo = 'modulos',
+    page = 1,
+    search = '',
+    solo_genericos = false,
+    sin_programa = false,
+    uso = 'todos',
+    grupo = 'todos',
+  } = {}) =>
+    (await client.get(`${BASE_URL}/catalogs`, {
+      params: { tipo, page, search, solo_genericos, sin_programa, uso, grupo },
+    })).data,
+
+  previewLimpiarModulosSinUso: async () =>
+    (await client.get(`${BASE_URL}/catalogs/modulos-sin-uso/preview`)).data,
+
+  limpiarModulosSinUso: async () =>
+    (await client.delete(`${BASE_URL}/catalogs/modulos-sin-uso`)).data,
 
   /**
    * Ejecuta inferencia BETO NER y matching sobre texto libre (#5, #6)

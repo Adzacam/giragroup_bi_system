@@ -237,28 +237,77 @@ def construir_acciones(
             ),
         ]
     elif mot == "VALOR_FUERA_DE_CATALOGO":
-        campos_cat = [_campo_desc("valor_canonico", "Valor canónico", "text", required=True, max_length=150)]
-        if es_admin_o_auditor:
-            campos_cat.append(_campo_desc("recordar_sinonimo", "Recordar como sinónimo", "checkbox", required=False, default=True))
-        campos_cat.append(campo_just)
-        acciones = [
-            _accion(
-                "ASIGNAR_CANONICO",
-                "Asignar un valor canónico",
-                "CatalogPicker",
-                campos_cat,
-                precarga={"valor_recibido": datos.get("valor_recibido") or "", "opciones_catalogo": datos.get("opciones_catalogo") or [], "justificacion": ""},
-                efecto="asigna_valor_canonico",
-            ),
-            _accion(
-                "MARCAR_SIN_DATO",
-                "Marcar sin dato",
-                "CatalogPicker",
-                [campo_just],
-                precarga={"justificacion": ""},
-                efecto="marca_sin_dato",
-            ),
-        ]
+        if (datos.get("campo_afectado") or "").lower() == "modulo":
+            acciones = [
+                _accion(
+                    "VINCULAR_MODULO",
+                    "Vincular a un módulo existente",
+                    "ModuleSearch",
+                    [_campo_desc("id_modulo_destino", "Módulo existente", "module_search", required=True), campo_just],
+                    precarga={
+                        "valor_recibido": datos.get("valor_recibido") or "",
+                        "codigo_pos": datos.get("codigo_pos") or "",
+                        "programa": datos.get("programa") or "",
+                        "justificacion": "",
+                    },
+                    efecto="vincula_modulo",
+                ),
+            ]
+            if es_admin_o_auditor:
+                acciones.append(
+                    _accion(
+                        "CREAR_MODULO",
+                        "Crear módulo",
+                        "ModuleSearch",
+                        [
+                            _campo_desc("codigo_pos", "Código POS", "text", required=True, max_length=60),
+                            _campo_desc("modulo_resuelto", "Nombre del módulo", "text", required=True, max_length=150),
+                            _campo_desc("programa_resuelto", "Programa", "text", required=False, max_length=150),
+                            campo_just,
+                        ],
+                        precarga={
+                            "codigo_pos": datos.get("codigo_pos") or "",
+                            "modulo_resuelto": datos.get("valor_recibido") or "",
+                            "programa_resuelto": datos.get("programa") or "",
+                            "justificacion": "",
+                        },
+                        efecto="crea_modulo_en_dim",
+                        confirmacion="Se creará un nuevo módulo en el catálogo institucional.",
+                    )
+                )
+            acciones.append(
+                _accion(
+                    "MARCAR_SIN_DATO",
+                    "Marcar sin dato",
+                    "CatalogPicker",
+                    [campo_just],
+                    precarga={"justificacion": ""},
+                    efecto="marca_sin_dato",
+                )
+            )
+        else:
+            campos_cat = [_campo_desc("valor_canonico", "Valor canónico", "text", required=True, max_length=150)]
+            if es_admin_o_auditor:
+                campos_cat.append(_campo_desc("recordar_sinonimo", "Recordar como sinónimo", "checkbox", required=False, default=True))
+            campos_cat.append(campo_just)
+            acciones = [
+                _accion(
+                    "ASIGNAR_CANONICO",
+                    "Asignar un valor canónico",
+                    "CatalogPicker",
+                    campos_cat,
+                    precarga={"valor_recibido": datos.get("valor_recibido") or "", "opciones_catalogo": datos.get("opciones_catalogo") or [], "justificacion": ""},
+                    efecto="asigna_valor_canonico",
+                ),
+                _accion(
+                    "MARCAR_SIN_DATO",
+                    "Marcar sin dato",
+                    "CatalogPicker",
+                    [campo_just],
+                    precarga={"justificacion": ""},
+                    efecto="marca_sin_dato",
+                ),
+            ]
     elif mot == "RESPUESTA_EN_COLUMNA_EQUIVOCADA":
         acciones = [
             _accion(

@@ -10,6 +10,7 @@ a la tabla stg_entidad_no_resuelta para gobernanza y revisión asistida.
 
 import json
 import logging
+import os
 import re
 import unicodedata
 from datetime import datetime, date
@@ -292,6 +293,7 @@ class DWLoaderService:
         self._avisos_cobranza: Dict[Tuple[Any, str, str], Tuple[int, List[str]]] = {}  # FU-L2, registro agregado
         self._avisos_acta: Dict[Tuple[Any, str, str], Tuple[int, List[str]]] = {}  # FU-L4, registro agregado
         self._avisos_encuesta: Dict[Tuple[Any, str, str, str], Tuple[int, List[str]]] = {}  # FU-L5, por documento, hoja, pregunta y motivo
+        self._avisos_modulo: Dict[Tuple[Any, str], Tuple[int, str]] = {}  # CAT-L1: módulo fuera de catálogo
         self._cfo_pendientes: Dict[str, Tuple[Any, str]] = {}
         self._cfo_existentes: Optional[set] = None
         self._cache_base_programa: Dict[Any, Optional[str]] = {}
@@ -493,7 +495,7 @@ class DWLoaderService:
                 DimModulo.pos_code.like(f"{base}%")).scalar()
         return self._cache_tiempo_programa[base]
 
-    def _resolver_id_institucion(self, institucion: Optional[str]) -> Optional[int]:
+    def _resolver_id_institucion(self, institucion: Optional[str], db_catalog=None) -> Optional[int]:
         if not institucion:
             return None
         clave = institucion.strip().lower()
@@ -501,13 +503,85 @@ class DWLoaderService:
             return self._institucion_por_nombre[clave]
         id_inst = None
         try:
-            cat = self.db.query(CatInstitucion).filter(func.lower(CatInstitucion.nombre_institucion) == clave).order_by(CatInstitucion.id_institucion).first()
+            cat = (
+                self.db.query(CatInstitucion)
+                .filter(
+                    (func.lower(CatInstitucion.nombre_institucion) == clave)
+                    | (func.lower(CatInstitucion.sigla) == clave)
+                )
+                .order_by(CatInstitucion.id_institucion)
+                .first()
+            )
+            if not cat:
+                canon_nombre = self._buscar_sinonimo_institucion(clave, db_catalog=db_catalog)
+                if canon_nombre:
+                    cat = (
+                        self.db.query(CatInstitucion)
+                        .filter(func.lower(CatInstitucion.nombre_institucion) == canon_nombre.lower())
+                        .order_by(CatInstitucion.id_institucion)
+                        .first()
+                    )
             if cat:
                 id_inst = cat.id_institucion
         except Exception:
             pass
         self._institucion_por_nombre[clave] = id_inst
         return id_inst
+
+    def _buscar_sinonimo_institucion(self, clave_lower: str, db_catalog=None) -> Optional[str]:
+        session = db_catalog
+        cerrar = False
+        if session is None and os.getenv("TESTING") != "true" and os.getenv("APP_ENV") != "test":
+            try:
+                from core.database import CatalogSessionLocal
+                session = CatalogSessionLocal()
+                cerrar = True
+            except Exception:
+                session = None
+        if session is None:
+            return None
+        try:
+            from models.catalogos import CatMapeoColumna
+            fila = (
+                session.query(CatMapeoColumna)
+                .filter(
+                    CatMapeoColumna.tipo_entidad == "INSTITUCION",
+                    func.lower(CatMapeoColumna.alias_columna) == clave_lower,
+                )
+                .first()
+            )
+            return fila.campo_canonico if fila else None
+        except Exception:
+            return None
+        finally:
+            if cerrar:
+                session.close()
+
+    def _programa_por_pos(self, pos_code: str, db_catalog=None) -> Optional[str]:
+        """CAT-L4: autocompleta el programa desde cat_programa (catalog_db) por código POS."""
+        if not pos_code:
+            return None
+        base = re.sub(r"-M\d+$", "", pos_code.strip().upper())
+        session = db_catalog
+        cerrar = False
+        if session is None and os.getenv("TESTING") != "true" and os.getenv("APP_ENV") != "test":
+            try:
+                from core.database import CatalogSessionLocal
+                session = CatalogSessionLocal()
+                cerrar = True
+            except Exception:
+                session = None
+        if session is None:
+            return None
+        try:
+            from models.catalogos import CatPrograma
+            fila = session.query(CatPrograma).filter(func.upper(CatPrograma.pos_code) == base).first()
+            return fila.nombre_programa[:200] if (fila and fila.nombre_programa) else None
+        except Exception:
+            return None
+        finally:
+            if cerrar:
+                session.close()
 
     # ── 1. Resolución DimEstudiante ───────────────────────────────────────────
     def resolver_o_crear_estudiante(
@@ -889,6 +963,9 @@ class DWLoaderService:
             if m_pos:
                 pos_code = nombre_modulo = f"POS-{m_pos.group(1)}"
 
+        if pos_code and pos_code.strip().upper() == "MOD-GEN":
+            pos_code = None
+
         if pos_code:
             clave_pos = pos_code.strip()
             if clave_pos in self._modulo_por_pos:
@@ -897,14 +974,15 @@ class DWLoaderService:
             if mod:
                 self._modulo_por_pos[clave_pos] = mod.id_modulo
                 return mod.id_modulo
-            if nombre_modulo:
+            if nombre_modulo and re.match(r"^POS-\d+", clave_pos, flags=re.I):
                 # El código POS es autoritativo: sin él, el fuzzy fusionaba 'POS-X · Módulo 1' con 'Módulo 2'
+                prog_resuelto = programa or self._programa_por_pos(clave_pos)
                 nuevo_mod = DimModulo(
                     nombre_modulo=nombre_modulo.strip(),
                     nombre_institucion=institucion or "GiraGroup Posgrado",
                     id_institucion=self._resolver_id_institucion(institucion),
-                    pos_code=pos_code.strip(),
-                    programa=programa,
+                    pos_code=clave_pos,
+                    programa=prog_resuelto,
                 )
                 self.db.add(nuevo_mod)
                 self.db.flush()
@@ -914,6 +992,12 @@ class DWLoaderService:
 
         if nombre_modulo:
             clean_name = nombre_modulo.strip()
+            from services.modulo_validador import validar_nombre_modulo
+            es_valido, motivo_rechazo = validar_nombre_modulo(clean_name)
+            if not es_valido:
+                self._registrar_aviso_modulo(doc_id, clean_name, motivo_rechazo or "INVALIDO")
+                return None
+
             clave_nom = clean_name.lower()
             if clave_nom not in self._memo_modulo_nombre:  # una consulta por nombre distinto y por instancia
                 mod = self.db.query(DimModulo).filter(func.lower(DimModulo.nombre_modulo) == clave_nom).order_by(DimModulo.id_modulo).first()
@@ -926,17 +1010,9 @@ class DWLoaderService:
                 if mejor_cand and score_fuzz is not None and score_fuzz >= 80.0:
                     return self._mod_nombre_id[mejor_cand]
 
-            id_inst = self._resolver_id_institucion(institucion)
-            nuevo_mod = DimModulo(
-                nombre_modulo=clean_name,
-                nombre_institucion=institucion or "GiraGroup Posgrado",
-                id_institucion=id_inst,
-                pos_code=pos_code or "MOD-GEN"
-            )
-            self.db.add(nuevo_mod)
-            self.db.flush()
-            self._registrar_nombre_modulo(nuevo_mod.id_modulo, clean_name)
-            return nuevo_mod.id_modulo
+            # CAT-L1: nunca crear MOD-GEN; registrar VALOR_FUERA_DE_CATALOGO para bandeja HITL
+            self._registrar_aviso_modulo(doc_id, clean_name, "SIN_COINCIDENCIA")
+            return None
 
         return None
 
@@ -1006,6 +1082,7 @@ class DWLoaderService:
         self.registrar_avisos_cobranza()  # FU-L2: avisos de calidad de cobranza, agregados
         self.registrar_avisos_acta()      # FU-L4: avisos de calidad de actas, agregados
         self.registrar_avisos_encuesta()  # FU-L5: avisos de calidad de encuestas, agregados
+        self.registrar_avisos_modulo()    # CAT-L1: módulos inválidos o fuera de catálogo
         if not (self._eval_pendientes or self._aca_pendientes or self._fin_pendientes or self._cfo_pendientes):
             return 0
         from psycopg2.extras import execute_values
@@ -1202,7 +1279,7 @@ class DWLoaderService:
     def _cargar_techo_convenio(self, resoluciones, nombre_modulo, nombre_programa, pos_code, doc_id, institucion,
                                id_tiempo, calidad, registro=None) -> Dict[str, Any]:
         """Fila de convenio de un programa con una institución; idempotente por clave_convenio."""
-        from services.instituciones_convenio import canonizar_institucion
+        from services.instituciones_convenio import canonizar_o_registrar_institucion
 
         if not pos_code or not resoluciones.get("institucion_cliente"):
             return {"tipo": "techo_convenio", "status": "staged", "motivo": "Convenio sin POS o sin institución"}
@@ -1211,7 +1288,9 @@ class DWLoaderService:
             programa=nombre_programa,
         )
         existentes = [n for (n,) in self.db.query(FactTechoConvenio.institucion).distinct().all()]
-        canon, id_conv, score = canonizar_institucion(resoluciones["institucion_cliente"], existentes)
+        canon, id_conv, score, estado_inst = canonizar_o_registrar_institucion(
+            resoluciones["institucion_cliente"], existentes
+        )
         fecha_ini = resoluciones.get("fecha_inicio")
         # Fila repetida tal cual -> mismo hecho; otro pago del mismo convenio (otro monto) -> otro hecho
         import hashlib
@@ -1231,9 +1310,23 @@ class DWLoaderService:
         for campo in ("monto_convenio", "n_inscritos", "gestion", "fecha_fin"):
             setattr(hecho, campo, resoluciones.get(campo))
         motivos = [m for m in (resoluciones.get("motivo_techo"),) if m]
-        if score < 100.0:
+        if estado_inst == "DUDOSA":
+            motivos.append(f"INSTITUCION_DUDOSA: '{resoluciones['institucion_cliente']}' ({score:.0f}%)")
+            if not self.solo_revision:
+                self.db.add(LogInconsistencia(
+                    id_documento=doc_id,
+                    fila_origen=None,
+                    campo_afectado="institucion_convenio",
+                    valor_recibido=str(resoluciones["institucion_cliente"])[:2000],
+                    valor_esperado="institución canónica de cat_institucion_convenio",
+                    tipo_regla="VALOR_FUERA_DE_CATALOGO",
+                    severidad="MEDIA",
+                    estado_resolucion="PENDIENTE",
+                    descripcion=f"CAT-L7: institución de convenio dudosa ({score:.0f}% similitud).",
+                ))
+        elif score < 100.0:
             motivos.append(f"INSTITUCION_FUZZY: '{resoluciones['institucion_cliente']}' -> '{canon}' ({score:.0f})")
-        hecho.requiere_revision = bool(resoluciones.get("motivo_techo")) or bool(calidad.get("requiere_revision"))
+        hecho.requiere_revision = bool(resoluciones.get("motivo_techo")) or bool(calidad.get("requiere_revision")) or estado_inst == "DUDOSA"
         hecho.motivo_revision = ("; ".join(motivos) or None) and "; ".join(motivos)[:300]
         self.db.flush()
         return {
@@ -1366,6 +1459,38 @@ class DWLoaderService:
             "tipo_alerta": tipo_alerta_fin,
             "fk_estado": fk_estado_est
         }
+
+    def _registrar_aviso_modulo(self, doc_id: Optional[int], valor: str, detalle: str) -> None:
+        """Acumula un valor de módulo rechazado o no encontrado para registrarlo en log_inconsistencias."""
+        limpio = (valor or "").strip()[:200]
+        if not limpio:
+            return
+        clave = (doc_id, limpio)
+        n, det = self._avisos_modulo.get(clave, (0, detalle))
+        self._avisos_modulo[clave] = (n + 1, det)
+
+    def registrar_avisos_modulo(self) -> int:
+        """Escribe en log_inconsistencias los valores de módulo fuera de catálogo (PENDIENTE)."""
+        if not self._avisos_modulo or self.solo_revision:
+            self._avisos_modulo = {}
+            return 0
+        n_reg = 0
+        for (doc_id, valor), (n, detalle) in sorted(self._avisos_modulo.items(), key=lambda kv: str(kv[0])):
+            self.db.add(LogInconsistencia(
+                id_documento=doc_id,
+                fila_origen=None,
+                campo_afectado="modulo",
+                valor_recibido=valor[:2000],
+                valor_esperado="módulo válido del catálogo (dim_modulo)",
+                tipo_regla="VALOR_FUERA_DE_CATALOGO",
+                severidad="MEDIA",
+                estado_resolucion="PENDIENTE",
+                descripcion=f"CAT-L1: {n} fila(s) con módulo fuera de catálogo ({detalle}).",
+            ))
+            n_reg += 1
+        self._avisos_modulo = {}
+        self.db.flush()
+        return n_reg
 
     def _registrar_aviso_cobranza(self, doc_id: Optional[int], motivo: str, campo: str, valor: str) -> None:
         """Acumula un aviso de calidad de cobranza; se registra agregado (uno por documento, motivo y campo)."""
@@ -1903,7 +2028,7 @@ class DWLoaderService:
 
             id_mod_eval = self.resolver_o_crear_modulo(
                 nombre_modulo, pos_code=pos_code, doc_id=doc_id, institucion=institucion
-            ) or self.resolver_o_crear_modulo("Módulo General", pos_code="MOD-GEN", institucion=institucion)
+            )
             id_doc_eval = None
             if tipo_preg == "DOCENTE":  # plataforma, atención y NPS no son del docente
                 id_doc_eval = self.resolver_o_crear_docente(nombre_docente, doc_id=doc_id) \
@@ -2234,8 +2359,7 @@ class DWLoaderService:
             }
 
         if not id_mod:
-            id_mod = self.resolver_o_crear_modulo("Módulo General", pos_code="MOD-GEN", institucion=institucion)
-            requiere_rev = True  # sin módulo identificado
+            requiere_rev = True  # sin módulo identificado (CAT-L1: nunca crear MOD-GEN)
         if not id_doc:
             id_doc = self._docente_unico_del_modulo(id_mod)  # el acta no nombra al docente; la hoja MODULOS sí
 

@@ -422,7 +422,27 @@ def resolver_aviso(
         raise HTTPException(404, "Aviso no encontrado.")
     accion = str(payload.get("accion") or "DESCARTAR").upper()
     estado_anterior = aviso.estado_resolucion
-    if accion == "ASIGNAR_CANONICO" and payload.get("recordar_sinonimo"):
+    if accion == "CREAR_MODULO":
+        if (user_role or "").upper() not in ("ADMIN", "AUDITOR_CALIDAD"):
+            raise HTTPException(403, "Solo ADMIN o AUDITOR_CALIDAD pueden crear módulos.")
+        nom_mod = (payload.get("modulo_resuelto") or aviso.valor_recibido or "").strip()
+        cod_pos = (payload.get("codigo_pos") or "").strip()
+        prog = (payload.get("programa_resuelto") or "").strip()
+        if not nom_mod or not cod_pos:
+            raise HTTPException(422, "Indica código POS y nombre del módulo.")
+        mod = db.query(DimModulo).filter(DimModulo.pos_code == cod_pos).first()
+        if not mod:
+            mod = DimModulo(pos_code=cod_pos, nombre_modulo=nom_mod, programa=prog or None)
+            db.add(mod)
+            db.flush()
+    elif accion == "VINCULAR_MODULO":
+        id_mod = payload.get("id_modulo_destino")
+        if not id_mod:
+            raise HTTPException(422, "Selecciona un módulo destino.")
+        mod = db.query(DimModulo).filter(DimModulo.id_modulo == int(id_mod)).first()
+        if not mod:
+            raise HTTPException(404, "Módulo destino no encontrado.")
+    elif accion == "ASIGNAR_CANONICO" and payload.get("recordar_sinonimo"):
         if (user_role or "").upper() not in ("ADMIN", "AUDITOR_CALIDAD"):
             raise HTTPException(403, "Solo ADMIN o AUDITOR_CALIDAD pueden guardar sinónimos.")
         _registrar_sinonimo_catalogo(aviso.valor_recibido or "", str(payload.get("valor_canonico") or ""))

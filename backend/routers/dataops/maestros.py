@@ -16,7 +16,7 @@ from models.user import User
 from services.dataops_evaluation_service import calcular_indice_entidad_con_bonos, fuzzy_score
 from datetime import datetime
 from services.sugerencia_hitl import es_sugerencia_un_clic
-from core.security import get_current_user
+from core.security import get_current_user, require_roles
 from core.database import get_db
 from sqlalchemy import text
 from ._comun import BetoInferRequest, COMPUERTA_LECTURA_MODELO_PCT, TOPE_INDICE_BONIFICADO, UMBRAL_INDICE_REGISTRO, UMBRAL_INDICE_REGISTRO_DEC
@@ -460,11 +460,60 @@ def infer_beto_text(payload: BetoInferRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/catalogs")
-def get_master_catalogs(tipo: str = Query('modulos', pattern='^(modulos|instituciones)$'),
-                        page: int = Query(1, ge=1), search: str = Query('', max_length=100),
-                        db: Session = Depends(get_db)):
+def get_master_catalogs(
+    tipo: str = Query('modulos', pattern='^(modulos|instituciones)$'),
+    page: int = Query(1, ge=1),
+    search: str = Query('', max_length=100),
+    solo_genericos: bool = Query(False),
+    sin_programa: bool = Query(False),
+    uso: str = Query('todos', pattern='^(todos|en_uso|sin_uso)$'),
+    grupo: str = Query('todos', pattern='^(todos|propia|convenio)$'),
+    db: Session = Depends(get_db),
+):
     from services.catalogo_dataops import consultar
-    return consultar(db, tipo, page, search.strip())
+    return consultar(
+        db,
+        tipo,
+        page=page,
+        search=search.strip(),
+        solo_genericos=solo_genericos,
+        sin_programa=sin_programa,
+        uso=uso,
+        grupo=grupo,
+    )
+
+
+@router.get("/catalogs/modulos-sin-uso/preview")
+def preview_limpiar_modulos_sin_uso(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN"])),
+):
+    from services.catalogo_dataops import preview_modulos_sin_uso
+    return preview_modulos_sin_uso(db)
+
+
+@router.delete("/catalogs/modulos-sin-uso")
+def ejecutar_limpiar_modulos_sin_uso(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN"])),
+):
+    from services.catalogo_dataops import limpiar_modulos_sin_uso
+    from services import cache_consultas
+    from models.log_pipeline import LogPipelineIngesta
+    eliminados = limpiar_modulos_sin_uso(db)
+    cache_consultas.invalidar()
+    try:
+        db.add(LogPipelineIngesta(
+            etapa="CATALOGO_MODULO",
+            nivel="INFO",
+            modulo="Catálogo de referencia",
+            mensaje=f"Limpieza masiva de {eliminados} módulo(s) sin uso por ADMIN.",
+            metadata_json={"eliminados": eliminados, "usuario": getattr(current_user, "id", None)},
+        ))
+        db.commit()
+    except Exception:
+        db.rollback()
+    return {"status": "success", "eliminados": eliminados}
 
 
 @router.post("/entities/{entity_id}/link")
