@@ -32,6 +32,8 @@ export const MOTIVOS_BANDEJA = {
   VALOR_FUERA_DE_CATALOGO: 'Valor fuera de catálogo o vocabulario',
   PUNTUACION_FUERA_DE_ESCALA: 'Puntuación fuera de escala',
   ESCALA_NO_INFERIBLE: 'Escala de evaluación no inferible',
+  DESACUERDO_REGLA_BETO: 'Desacuerdo entre reglas y BETO (requiere verificación)',
+  RELACION_INCOHERENTE: 'Relación incoherente entre entidades o fechas',
 };
 
 export const MOTIVOS_INFORMATIVOS = new Set(['HOJA_IGNORADA', 'SIN_INFORMACION']);

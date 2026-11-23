@@ -76,6 +76,8 @@ ACTA = [{'POS - ACTAS': 'POS-9876', 'NOMBRE COMPLETO': 'ANA TORREZ SALINAS', 'ME
 
 
 def test_con_los_flags_apagados_no_hay_rastro_de_beto(entorno, monkeypatch, tmp_path):
+    for f in ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_SUGERENCIA_HITL", "BETO_VENTANA"):
+        monkeypatch.setenv(f, "0")
     llamadas = _servicio(monkeypatch, [])
     lote, docs = _ingestar(entorno, tmp_path, ACTA)
     lectura = dataops._evaluar_documentos_lote(entorno, docs)
@@ -98,11 +100,12 @@ def test_acuerdo_qc_en_lectura_y_consolidacion(entorno, monkeypatch, tmp_path):
     assert (lectura['autoCount'], lectura['auditCount']) == (1, 1)
 
     res = dataops._consolidar(dataops.ConfirmDwInsertRequest(id_lote=lote.id_lote), entorno, None)
-    assert res['beto']['desacuerdos'] == 1 and res['inserted_revision'] == 1      # el hecho de LUIS; el de ANA entra directo
+    # BA-L3: con el ruteo nuevo, DESACUERDO_REGLA_BETO va a bandeja sin insertar el hecho (inserted_revision == 0)
+    assert res['beto']['desacuerdos'] == 1 and res['inserted_revision'] == 0 and res['sent_hitl'] >= 1
     hechos = {h.id_estudiante: h for h in entorno.query(FactRendimientoAcademico).all()}
     luis_id = entorno.query(DimEstudiante).filter_by(nombre_completo='LUIS PEREZ ROJAS').one().id_estudiante
     ana_id = entorno.query(DimEstudiante).filter_by(nombre_completo='ANA TORREZ SALINAS').one().id_estudiante
-    assert hechos[luis_id].requiere_revision is True and float(hechos[luis_id].nivel_confianza_ia) == pytest.approx(0.84)
+    assert luis_id not in hechos
     assert hechos[ana_id].requiere_revision is False and float(hechos[ana_id].nivel_confianza_ia) == pytest.approx(0.95)
     log = entorno.query(LogInconsistencia).filter_by(tipo_regla='DESACUERDO_REGLA_BETO').all()
     assert len(log) == 1 and log[0].valor_recibido == 'LUIS PEREZ ROJAS' and log[0].estado_resolucion == 'PENDIENTE'

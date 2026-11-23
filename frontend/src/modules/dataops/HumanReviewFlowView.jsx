@@ -246,9 +246,16 @@ function RevisionBandeja({ batchId }) {
                   const active = String(it.id) === String(selectedItem?.id);
                   return (
                     <button key={it.id} type="button" role="option" aria-selected={active} onClick={() => { setSelectedId(it.id); setActiveActionIdx(0); }} style={{ textAlign: 'left', padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: `1px solid ${active ? 'var(--color-gira-gold)' : 'var(--color-border)'}`, background: active ? 'var(--dataops-info-bg)' : 'var(--color-pure-white)', color: 'var(--color-ink-black)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, fontSize: 12, fontWeight: 700 }}>
                         <span>{textoMotivo(it.motivo, it.motivo_label)}</span>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-slate-gray)' }}>#{it.id}</span>
+                        <span style={{ display: 'flex', gap: 6, alignItems: 'center', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-slate-gray)' }}>
+                          {it.prioridad && (
+                            <span style={{ fontFamily: 'inherit', fontSize: 10, padding: '1px 6px', borderRadius: 999, background: it.prioridad === 'ALTA' ? 'var(--dataops-warning-bg)' : 'var(--dataops-info-bg)', color: it.prioridad === 'ALTA' ? 'var(--dataops-warning-text)' : 'var(--dataops-info-text)' }}>
+                              {it.prioridad}
+                            </span>
+                          )}
+                          #{it.id}
+                        </span>
                       </div>
                       <p style={{ fontSize: 11.5, color: 'var(--color-slate-gray)', marginTop: 4 }}>{it.archivo_origen || 'Sin archivo'} · {it.ci_enmascarado || 'Sin CI'}</p>
                     </button>

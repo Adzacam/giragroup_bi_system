@@ -59,14 +59,19 @@ def test_la_prueba_de_upload_batch_no_deja_tareas_en_la_base():
 
 
 # ── B5 ────────────────────────────────────────────────────────────────────────────────────────────────────────
-def test_cache_beto_no_es_migracion_y_los_flags_van_apagados():
+def test_cache_beto_no_es_migracion_y_los_flags_a3_activos(monkeypatch):
     from core.migraciones import MIGRACIONES_EN_ARRANQUE
     from pipeline import config as cfg
     from services import beto_integracion
 
     assert not any("cache_beto" in m or m.startswith("015") for m in MIGRACIONES_EN_ARRANQUE)
     assert "CREATE TABLE IF NOT EXISTS public.cache_beto_entidades" in beto_integracion.DDL_CACHE
-    assert not any(cfg.BETO_FLAGS_POR_DEFECTO.values()), "con flags apagados la caché de entidades ni se toca"
+    assert cfg.BETO_FLAGS_POR_DEFECTO == {
+        "BETO_CASCADA_FINAL": True,
+        "BETO_ACUERDO_QC": True,
+        "BETO_SUGERENCIA_HITL": True,
+        "BETO_VENTANA": False,
+    }
     assert "migración 015" not in (beto_integracion.__doc__ or "").replace("No existe una «migración 015»", "")
 
 

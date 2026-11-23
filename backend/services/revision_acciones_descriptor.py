@@ -400,6 +400,61 @@ def construir_acciones(
                 )
             )
         return acciones
+    elif mot == "RELACION_INCOHERENTE":
+        acciones = [
+            _accion(
+                "VINCULAR_RELACION",
+                "Vincular a…",
+                "ModuleSearch",
+                [_campo_desc("id_modulo_destino", "Programa o módulo destino", "module_search", required=True), campo_just],
+                precarga={
+                    "regla": datos.get("regla_relacion") or "",
+                    "valor": datos.get("valor_incoherente") or "",
+                    "codigo_pos": datos.get("codigo_pos") or "",
+                    "justificacion": "",
+                },
+                efecto="vincula_modulo",
+            ),
+            _accion(
+                "CORREGIR_FECHA",
+                "Corregir fecha",
+                "DatePicker",
+                [
+                    _campo_desc("mes", "Mes", "number", required=True, min_val=1, max_val=12),
+                    _campo_desc("gestion", "Gestión (año)", "number", required=True, min_val=2015, max_val=2030),
+                    campo_just,
+                ],
+                precarga={"mes": precarga_base["mes"], "gestion": precarga_base["gestion"], "justificacion": ""},
+                efecto="corrige_fecha_y_consolida",
+            ),
+            _accion(
+                "MARCAR_SIN_DATO",
+                "Marcar sin dato",
+                "ValueCorrector",
+                [campo_just],
+                precarga={"regla": datos.get("regla_relacion") or "", "justificacion": ""},
+                efecto="anula_valor",
+            ),
+        ]
+    elif mot == "DESACUERDO_REGLA_BETO":
+        acciones = [
+            _accion(
+                "APROBAR",
+                "Confirmar persona leída por regla",
+                "StudentSearch",
+                [campo_just],
+                precarga={"justificacion": "", "candidatos": candidatos or []},
+                efecto="resuelve_caso",
+            ),
+            _accion(
+                "VINCULAR_ESTUDIANTE",
+                "Vincular a otra persona del padrón",
+                "StudentSearch",
+                [_campo_desc("id_estudiante_destino", "Persona del padrón", "student_search", required=True), campo_just],
+                precarga={"candidatos": candidatos or [], "justificacion": ""},
+                efecto="vincula_estudiante",
+            ),
+        ]
     else:
         acciones = [
             _accion(

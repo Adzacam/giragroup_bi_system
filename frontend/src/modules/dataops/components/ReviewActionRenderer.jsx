@@ -87,19 +87,23 @@ export default function ReviewActionRenderer({
         </div>
       )}
 
-      {accion?.widget === 'CandidateSelector' && candidatos.length > 0 && (
+      {(accion?.widget === 'CandidateSelector' || (Array.isArray(item?.sugerencias_beto) && item.sugerencias_beto.length > 0)) && candidatos.length > 0 && (
         <div style={{ marginBottom: 12 }}>
           <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Candidatos sugeridos (haz clic para elegir):</p>
           <div style={{ display: 'grid', gap: 6 }}>
             {candidatos.map((cand, i) => {
               const cid = cand.id_estudiante ?? cand.id ?? i;
-              const selected = String(form.id_estudiante_candidato ?? '') === String(cid);
+              const selected = String(form.id_estudiante_candidato ?? form.id_estudiante_destino ?? '') === String(cid);
+              const ciLabel = cand.ci_enmascarada || cand.ci_enmascarado || 'Sin CI';
+              const simPct = cand.similitud != null
+                ? (Number(cand.similitud) <= 1 ? Math.round(Number(cand.similitud) * 1000) / 10 : cand.similitud)
+                : '—';
               return (
                 <button
                   key={cid}
                   type="button"
                   disabled={busy || readOnly}
-                  onClick={() => setForm((prev) => ({ ...prev, id_estudiante_candidato: cid }))}
+                  onClick={() => setForm((prev) => ({ ...prev, id_estudiante_candidato: cid, id_estudiante_destino: cid }))}
                   style={{
                     textAlign: 'left',
                     padding: '8px 12px',
@@ -115,9 +119,9 @@ export default function ReviewActionRenderer({
                     fontSize: 12,
                   }}
                 >
-                  <span><strong>{cand.nombre || '••••'}</strong> · CI {cand.ci_enmascarada || 'Sin CI'} · {cand.programa || 'Sin programa'}</span>
+                  <span><strong>{cand.nombre || '••••'}</strong> · CI {ciLabel} · {cand.programa || 'Sin programa'}</span>
                   <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--color-slate-gray)' }}>
-                    Similitud {cand.similitud ?? '—'} %{cand.probabilidad_beto != null ? ` · BETO ${Math.round(Number(cand.probabilidad_beto) * 100)} %` : ''}
+                    Similitud {simPct} %{cand.probabilidad_beto != null ? ` · Probabilidad BETO ${Math.round(Number(cand.probabilidad_beto) * 100)} %` : ''}
                   </span>
                 </button>
               );

@@ -78,14 +78,36 @@ export default function CasoDetallePanel({
           <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--color-slate-gray)' }}>Caso #{item.id}</span>
           <h3 className="serif-heading" style={{ fontSize: 17, margin: '2px 0' }}>{textoMotivo(item.motivo, item.motivo_label)}</h3>
         </div>
-        <span style={{ fontSize: 11.5, padding: '3px 10px', borderRadius: 999, background: 'var(--dataops-info-bg)', color: 'var(--dataops-info-text)', alignSelf: 'start' }}>
-          {item.area || 'academica'}
-        </span>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', alignSelf: 'start', flexWrap: 'wrap' }}>
+          {item.prioridad && (
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                padding: '3px 9px',
+                borderRadius: 999,
+                background: item.prioridad === 'ALTA' ? 'var(--dataops-warning-bg)' : 'var(--dataops-info-bg)',
+                color: item.prioridad === 'ALTA' ? 'var(--dataops-warning-text)' : 'var(--dataops-info-text)',
+              }}
+            >
+              Prioridad {item.prioridad}
+            </span>
+          )}
+          <span style={{ fontSize: 11.5, padding: '3px 10px', borderRadius: 999, background: 'var(--dataops-info-bg)', color: 'var(--dataops-info-text)' }}>
+            {item.area || 'academica'}
+          </span>
+        </div>
       </div>
 
       <p style={{ fontSize: 13, color: 'var(--color-ink-black)', marginBottom: 8 }}>
         {maskTexto(item.motivo_detalle || item.por_que_detuvo)}
       </p>
+      {item.regla_relacion && (
+        <div style={{ fontSize: 12, padding: '8px 10px', borderRadius: 8, background: 'var(--dataops-info-bg)', color: 'var(--dataops-info-text)', marginBottom: 10 }}>
+          <strong>Regla:</strong> {item.regla_relacion}{item.valor_relacion ? ` · Valor: ${item.valor_relacion}` : ''}
+          {item.detalle_relacion ? ` — ${item.detalle_relacion}` : ''}
+        </div>
+      )}
       <p style={{ fontSize: 12, color: 'var(--color-slate-gray)', marginBottom: 10 }}>
         Archivo: <strong>{item.archivo_origen || 'Sin dato'}</strong> · CI: <strong>{ciRev || item.ci_enmascarado || 'Sin CI'}</strong>
         {nomRev ? ` · Nombre: ${nomRev}` : ''}{(mailRev || (hasCorreo && item.correo_enmascarado)) ? ` · Correo: ${mailRev || item.correo_enmascarado}` : ''}
