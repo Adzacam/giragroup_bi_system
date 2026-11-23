@@ -191,8 +191,8 @@ def ejecutar_accion_contextual(
         ent.estado_resolucion = "RESUELTO_HUMANO"
         ent.resuelto_en = datetime.utcnow()
         p["accion_aplicada"] = accion
-    elif accion in ("VINCULAR_CANDIDATO", "VINCULAR_PERSONA"):
-        id_cand = payload.get("id_estudiante_candidato")
+    elif accion in ("VINCULAR_CANDIDATO", "VINCULAR_PERSONA", "VINCULAR_ESTUDIANTE"):
+        id_cand = payload.get("id_estudiante_candidato") or payload.get("id_estudiante_destino")
         if not id_cand:
             raise HTTPException(422, "Selecciona un candidato o persona del padrón.")
         est = db.query(DimEstudiante).filter(DimEstudiante.id_estudiante == int(id_cand)).first()
@@ -263,7 +263,7 @@ def ejecutar_accion_contextual(
         ent.estado_resolucion = "RESUELTO_HUMANO"
         ent.resuelto_en = datetime.utcnow()
         p["accion_aplicada"] = accion
-    elif accion == "VINCULAR_MODULO":
+    elif accion in ("VINCULAR_MODULO", "VINCULAR_RELACION"):
         id_mod = payload.get("id_modulo_destino")
         if not id_mod:
             raise HTTPException(422, "Selecciona un módulo existente.")
@@ -272,6 +272,20 @@ def ejecutar_accion_contextual(
             raise HTTPException(404, "El módulo seleccionado no existe.")
         p["modulo"] = mod.nombre_modulo
         p["id_modulo_vinculado"] = mod.id_modulo
+        ent.resuelto = True
+        ent.estado_resolucion = "RESUELTO_HUMANO"
+        ent.resuelto_en = datetime.utcnow()
+        p["accion_aplicada"] = accion
+    elif accion == "CORREGIR_FECHA":
+        mes = payload.get("mes")
+        gestion = payload.get("gestion")
+        if mes is None or gestion is None:
+            raise HTTPException(422, "Indica mes y gestión válidos.")
+        mes_i, gestion_i = int(mes), int(gestion)
+        if not (1 <= mes_i <= 12) or not (2015 <= gestion_i <= 2030):
+            raise HTTPException(422, "Mes (1–12) o gestión (2015–2030) fuera de rango.")
+        p["mes"] = mes_i
+        p["gestion"] = gestion_i
         ent.resuelto = True
         ent.estado_resolucion = "RESUELTO_HUMANO"
         ent.resuelto_en = datetime.utcnow()

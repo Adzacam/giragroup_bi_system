@@ -446,8 +446,8 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     "docente": {"valor_extraido": nombre_doc},
                     "modulo": {"valor_extraido": nombre_mod},
                     "programa": {"valor_extraido": nombre_prog, "metadata": {"pos_canonico": pos_rel_m.group(1).upper() if pos_rel_m else None}},
-                    "fecha": fecha_linea,
-                    "gestion": campos_linea.get("GESTION") if campos_linea else None,
+                    "fecha": fecha_linea or ((campos_linea.get("FECHA") or campos_linea.get("FECHA INICIO") or campos_linea.get("FECHA_INICIO")) if campos_linea else None),
+                    "gestion": next((campos_linea[k] for k in ("GESTION", "ANO", "ANIO", "ANO INICIO", "ANIO INICIO") if campos_linea and campos_linea.get(k)), None),
                 },
             }
             fallos_rel = validar_registro(reg_para_validar, ctx_relaciones)
@@ -594,6 +594,41 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     for reg_item in registros_linea:
                         reg_item["resoluciones"].update(metricas_captacion(campos_linea))
                 for reg_item in registros_linea:
+                    fallos_item = validar_registro(reg_item, ctx_relaciones)
+                    if fallos_item:
+                        sent_hitl += 1
+                        falla_rel_item = fallos_item[0]
+                        if not solo_revision:
+                            exists_item = (line in ruido_visto_stg) or (line[:250] in ruido_visto_stg)
+                            if not exists_item:
+                                ruido_visto_stg.add(line[:250])
+                                db.add(StagingEntidadNoResuelta(
+                                    id_documento=stg.id_documento,
+                                    tipo_entidad="CONCEPTO_FINANCIERO" if doc_fuente == "COBRANZA" else "ESTUDIANTE",
+                                    texto_original=line[:250],
+                                    ci_temporal=ci_clean,
+                                    mejor_candidato=nombre_est or nombre_mod,
+                                    score_fuzzy=round((score or 0.0) * 100, 2),
+                                    fk_estado="C",
+                                    nivel_confianza=score,
+                                    resuelto=False,
+                                    motivo=MOTIVO_RELACION_INCOHERENTE,
+                                    payload_json={
+                                        "raw_line": line,
+                                        "ci_real": ci_clean,
+                                        "ci_enmascarado": enmascarar_ci(ci_clean),
+                                        "entities": ents,
+                                        "score": score,
+                                        "prioridad": "MEDIA" if (score is not None and score >= 0.60) else "ALTA",
+                                        "tipo_fuente": doc_fuente,
+                                        "tipo_escala": doc_escala,
+                                        "regla_relacion": falla_rel_item.regla,
+                                        "valor_relacion": falla_rel_item.valor,
+                                        "detalle_relacion": falla_rel_item.detalle,
+                                    },
+                                    registro_origen_id=stg.id,
+                                ))
+                        continue
                     res = dw.cargar_registro(reg_item)
                     if res.get("status") in ("skipped", "skipped_solo_revision"):  # respuesta vacía o Fase A sin carga de hechos
                         continue

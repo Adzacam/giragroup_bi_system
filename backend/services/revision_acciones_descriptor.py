@@ -409,7 +409,7 @@ def construir_acciones(
                 [_campo_desc("id_modulo_destino", "Programa o módulo destino", "module_search", required=True), campo_just],
                 precarga={
                     "regla": datos.get("regla_relacion") or "",
-                    "valor": datos.get("valor_incoherente") or "",
+                    "valor": datos.get("valor_relacion") or datos.get("valor_incoherente") or "",
                     "codigo_pos": datos.get("codigo_pos") or "",
                     "justificacion": "",
                 },

@@ -78,6 +78,11 @@ def test_regla_c_docente_modulo_bridge():
     f = validar_registro(bad, ctx)
     assert len(f) == 1 and f[0].regla == "DOCENTE_MODULO_BRIDGE"
 
+    ctx.bridge_docente_modulo = {("CARLOS MENDOZA", "POS-5252", 1)}
+    bad_mod = {"categoria": "evaluacion_docente", "resoluciones": {"programa": {"valor_extraido": "POS-5252"}, "numero_modulo": 2, "docente": {"valor_extraido": "Carlos Mendoza"}}}
+    f_mod = validar_registro(bad_mod, ctx)
+    assert len(f_mod) == 1 and f_mod[0].regla == "DOCENTE_MODULO_BRIDGE" and "DOCENTE_SIN_VINCULAR" in f_mod[0].detalle
+
 
 def test_regla_d_pago_inscripcion_programa():
     ctx = _ctx_completo()

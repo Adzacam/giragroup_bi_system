@@ -29,6 +29,8 @@ def _run_single(combinacion: str, flags: dict, repeticiones: int = 1, warm_cache
         db = SessionLocal()
         try:
             docs = db.query(DimOrigenDocumental).filter_by(id_lote=1).order_by(DimOrigenDocumental.id_documento).all()
+            n_est_antes = db.execute(text("SELECT count(*) FROM dim_estudiante")).scalar() or 0
+            n_doc_antes = db.execute(text("SELECT count(*) FROM dim_docente")).scalar() or 0
             t0 = time.perf_counter()
             res_cons = consolidacion._consolidar(
                 consolidacion.ConfirmDwInsertRequest(id_lote=1, en_segundo_plano=False, solo_revision=False),
@@ -40,8 +42,9 @@ def _run_single(combinacion: str, flags: dict, repeticiones: int = 1, warm_cache
             desacuerdos_log = db.execute(
                 text("SELECT count(*) FROM log_inconsistencias WHERE tipo_regla = 'DESACUERDO_REGLA_BETO'")
             ).scalar() or 0
-            # Invariantes: perfiles creados por BETO (fuente_resolucion='BETO' nunca debe crear dim_estudiante/dim_docente)
-            # y sobrescrituras A/B == 0
+            n_est_despues = db.execute(text("SELECT count(*) FROM dim_estudiante")).scalar() or 0
+            n_doc_despues = db.execute(text("SELECT count(*) FROM dim_docente")).scalar() or 0
+            perfiles_creados = max(0, (n_est_despues - n_est_antes) + (n_doc_despues - n_doc_antes))
             beto_stats = res_cons.get("beto") or {}
             resultados.append({
                 "combinacion": combinacion,
@@ -59,8 +62,8 @@ def _run_single(combinacion: str, flags: dict, repeticiones: int = 1, warm_cache
                 "inserted_dw": res_cons.get("inserted_dw", 0),
                 "inserted_academico": res_cons.get("desglose", {}).get("inserted_academico", 0),
                 "inserted_financiero": res_cons.get("desglose", {}).get("inserted_financiero", 0),
-                "sobrescrituras_ab": 0,
-                "perfiles_creados_beto": 0,
+                "sobrescrituras_ab": beto_stats.get("sobrescrituras_ab", 0),
+                "perfiles_creados_beto": perfiles_creados if combinacion != "a0" else 0,
             })
         finally:
             db.close()

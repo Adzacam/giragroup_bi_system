@@ -78,7 +78,7 @@ def get_lote_integridad(id_lote: str, page: int = Query(1, ge=1),
 _ETAPAS_CASCADA = ("CI_EXACTA", "ENCABEZADO", "FUZZY", "REGEX", "BETO")
 
 
-_FUENTES_SOLO_REGLA = frozenset({"EGRESOS", "TECHOS", "RENTABILIDAD"})
+_FUENTES_SOLO_REGLA = frozenset({"EGRESOS", "TECHOS", "RENTABILIDAD", "PLANIFICACION"})
 
 
 def _calcular_resumen_cascada(detalles: list) -> dict:
@@ -92,7 +92,8 @@ def _calcular_resumen_cascada(detalles: list) -> dict:
     acuerdo_ok = 0
     for reg in detalles or []:
         tf = str(reg.get("tipo_fuente") or "").upper()
-        if tf and tf not in _FUENTES_SOLO_REGLA:
+        conf_flag = reg.get("confianza_beto_calculada")
+        if conf_flag is True or (conf_flag is None and tf and tf not in _FUENTES_SOLO_REGLA):
             lineas_confianza_beto += 1
         lectura = reg.get("lectura") or {}
         entidades = lectura.get("entidades") or reg.get("entidades") or []

@@ -119,3 +119,14 @@ def test_resumen_cascada_etapas_ordenadas():
     assert cascada["total_entidades"] == 6
     assert [e["etapa"] for e in cascada["etapas"]] == ["CI_EXACTA", "ENCABEZADO", "FUZZY", "REGEX", "BETO"]
     assert sum(e["cantidad"] for e in cascada["etapas"]) == 6
+
+
+def test_resumen_cascada_lineas_confianza_solo_no_regla():
+    detalles = [
+        {"tipo_fuente": "ACTA", "lectura": {"entidades": []}},
+        {"tipo_fuente": "PLANIFICACION", "lectura": {"entidades": []}},
+        {"tipo_fuente": "RENTABILIDAD", "lectura": {"entidades": []}},
+        {"tipo_fuente": "ACTA", "confianza_beto_calculada": False, "lectura": {"entidades": []}},
+    ]
+    cascada = _calcular_resumen_cascada(detalles)
+    assert cascada["lineas_confianza_beto"] == 1

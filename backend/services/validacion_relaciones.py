@@ -86,6 +86,7 @@ class ContextoRelaciones:
     modulos_por_pos: Dict[str, Set[int]] = field(default_factory=dict)
     periodos_por_pos: Dict[str, Tuple[int, int]] = field(default_factory=dict)
     bridge_docente_pos: Set[Tuple[str, str]] = field(default_factory=set)
+    bridge_docente_modulo: Set[Tuple[str, str, int]] = field(default_factory=set)
     inscripciones_est_pos: Set[Tuple[str, str]] = field(default_factory=set)
 
 
@@ -160,8 +161,8 @@ def cargar_contexto_relaciones(dw_db=None, catalog_url: Optional[str] = None) ->
                     m_num = re.search(r"\bM[ÓO]DULO\s*(\d{1,2})\b", str(nom_mod or "").upper())
                     if m_num:
                         ctx.modulos_por_pos.setdefault(p, set()).add(int(m_num.group(1)))
-            for (doc_nom, pos) in dw_db.execute(text("""
-                SELECT DISTINCT d.nombre_completo, m.pos_code
+            for (doc_nom, pos, nom_mod) in dw_db.execute(text("""
+                SELECT DISTINCT d.nombre_completo, m.pos_code, m.nombre_modulo
                   FROM public.bridge_modulo_docente b
                   JOIN public.dim_docente d ON d.id_docente = b.id_docente
                   JOIN public.dim_modulo m ON m.id_modulo = b.id_modulo
@@ -170,6 +171,22 @@ def cargar_contexto_relaciones(dw_db=None, catalog_url: Optional[str] = None) ->
                 p = _extraer_pos(pos) or _norm(pos)
                 if p and doc_nom:
                     ctx.bridge_docente_pos.add((_norm(doc_nom), p))
+                    m_num = re.search(r"\bM[ÓO]DULO\s*(\d{1,2})\b", str(nom_mod or "").upper())
+                    if m_num:
+                        ctx.bridge_docente_modulo.add((_norm(doc_nom), p, int(m_num.group(1))))
+            for (pos, ini, fin) in dw_db.execute(text("""
+                SELECT pos_code_fuente,
+                       MIN(EXTRACT(YEAR FROM fecha_inicio_plan))::int AS ini,
+                       MAX(EXTRACT(YEAR FROM fecha_fin_plan))::int AS fin
+                  FROM public.fact_planificacion_programa
+                 WHERE pos_code_fuente IS NOT NULL
+                   AND fecha_inicio_plan IS NOT NULL
+                   AND fecha_fin_plan IS NOT NULL
+                 GROUP BY pos_code_fuente
+            """)):
+                p = _extraer_pos(pos) or _norm(pos)
+                if p and ini is not None and fin is not None:
+                    ctx.periodos_por_pos[p] = (int(ini), int(fin))
             for (est_nom, prog) in dw_db.execute(text("""
                 SELECT nombre_completo, programa_origen
                   FROM public.dim_estudiante
@@ -221,7 +238,8 @@ def validar_registro(reg_item: Dict[str, Any], ctx: ContextoRelaciones) -> List[
             ))
         elif r.parametros.get("validar_periodo", True) and pos_code and anio and pos_code in ctx.periodos_por_pos:
             ini, fin = ctx.periodos_por_pos[pos_code]
-            if not (ini <= anio <= fin):
+            tol_anios = int(r.parametros.get("tolerancia_meses", 0) or 0) // 12
+            if not ((ini - tol_anios) <= anio <= (fin + tol_anios)):
                 fallos.append(FalloRelacion(
                     regla=r.codigo_regla, nombre_regla=r.nombre_regla, valor=f"{pos_code} ({anio})",
                     detalle=f"La gestión {anio} cae fuera del período del programa {pos_code} ({ini}–{fin}).",
@@ -240,11 +258,18 @@ def validar_registro(reg_item: Dict[str, Any], ctx: ContextoRelaciones) -> List[
 
     # (c) Docente <-> Módulo (bridge_modulo_docente)
     if (r := ctx.reglas.get("DOCENTE_MODULO_BRIDGE")) and r.activa:
-        if doc_nom and pos_code and ctx.bridge_docente_pos:
-            if (_norm(doc_nom), pos_code) not in ctx.bridge_docente_pos:
+        if doc_nom and pos_code:
+            sin_vincular = False
+            if num_mod is not None and ctx.bridge_docente_modulo:
+                sin_vincular = (_norm(doc_nom), pos_code, int(num_mod)) not in ctx.bridge_docente_modulo
+            elif ctx.bridge_docente_pos:
+                sin_vincular = (_norm(doc_nom), pos_code) not in ctx.bridge_docente_pos
+            if sin_vincular:
+                motivo_sv = r.parametros.get("motivo_sin_vincular", "DOCENTE_SIN_VINCULAR")
+                val_rel = f"{doc_nom} · {pos_code}" + (f" · Mód. {num_mod}" if num_mod is not None else "")
                 fallos.append(FalloRelacion(
-                    regla=r.codigo_regla, nombre_regla=r.nombre_regla, valor=f"{doc_nom} · {pos_code}",
-                    detalle=f"El docente '{doc_nom}' no figura vinculado en bridge_modulo_docente para {pos_code}.",
+                    regla=r.codigo_regla, nombre_regla=r.nombre_regla, valor=val_rel,
+                    detalle=f"{motivo_sv}: El docente '{doc_nom}' no figura vinculado en bridge_modulo_docente para {pos_code}.",
                     acciones=r.acciones_sugeridas,
                 ))
 
