@@ -1,4 +1,8 @@
 combinacion,alcance,cache,corrida,lineas_evaluadas,tiempo_consolidacion_s,tiempo_extrapolado_full_min,residuales_enviadas,resueltas_por_beto,acuerdos_qc,desacuerdos_qc,tasa_acuerdo,desacuerdos_log,casos_bandeja,sent_hitl,inserted_dw,inserted_academico,inserted_financiero,f1_gold_510,sobrescrituras_ab,perfiles_creados_beto
 a0,full_lote,llena,1,78027,1050.39,17.51,0,0,0,0,,0,1115,1115,476808,449533,27275,1.0,0,0
-a0,slice_10pct,llena,1,8143,73.69,11.77,0,0,0,0,,0,2351,2351,28659,25799,2860,1.0,0,0
-a3,slice_10pct,llena,1,8143,353.67,56.49,204,0,5965,4,0.9962,4,2353,2353,28651,25791,2860,1.0,0,0
+a0,lote_1387,vacia,1,1387,20.37,19.1,0,0,0,0,,0,248,248,5554,4596,958,1.0,0,0
+a3,lote_1387,vacia,1,1387,34.55,32.39,4,1,210,1,0.9953,1,249,249,5553,4595,958,1.0,0,0
+a3,lote_1387,llena,1,1387,22.11,20.73,4,1,210,1,0.9953,1,249,249,5553,4595,958,1.0,0,0
+a0,slice_10pct,vacia,1,7818,76.69,12.76,0,0,0,0,,0,2351,2351,28347,25483,2864,1.0,0,0
+a3,slice_10pct,vacia,1,7818,195.72,32.56,209,1,3424,7,0.9879,7,2354,2354,28326,25462,2864,1.0,0,0
+a3,slice_10pct,llena,1,7818,78.28,13.02,209,1,3424,7,0.9879,7,2354,2354,28326,25462,2864,1.0,0,0
