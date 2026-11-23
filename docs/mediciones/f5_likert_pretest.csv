@@ -1,0 +1,11 @@
+participante,rol_operativo,area,rol_rbac,fecha,momento,C1,C2,C3,C4,I1,I2,I3,I4,I5,I6,I7,I8,I9
+P01,Coordinador Financiero,Financiera,Analista Financiero,15/04/2026,pre,12,6,0,4 (sin reg. sist.),2,1,1,1,2,2,2,2,
+P02,Coordinador Financiero,Financiera,Analista Financiero,15/04/2026,pre,8,6,0,3 (sin reg. sist.),2,1,1,2,,2,2,2,2
+P03,Coordinador de Admisiones,Admisiones,Analista de Marketing,16/04/2026,pre,10,6,0,4 (sin reg. sist.),2,1,1,1,,2,,2,2
+P04,Agente de Admisiones,Admisiones,Analista de Marketing,16/04/2026,pre,,4,0,,2,,,2,,,,,3
+P05,Analista de Datos de Marketing,Marketing,Analista de Marketing,16/04/2026,pre,,5,0,,3,1,2,2,,2,2,2,2
+P06,Comunicador de Marketing,Marketing,Analista de Marketing,17/04/2026,pre,,3,0,,,,,,,2,,3,3
+P07,Director Académico,Academia,Director Académico,17/04/2026,pre,,4,0,,2,2,,2,2,1,2,2,2
+P08,Encargado Académico,Academia,Director Académico,17/04/2026,pre,,5,0,,3,2,2,2,2,3,,,
+P09,Encargado de Sistemas (DataOps),Calidad,Auditor de Calidad (DataOps),18/04/2026,pre,,6,0,,2,1,2,1,2,2,2,2,2
+P10,Encargado de Sistemas (Admin),Calidad,Administrador del Sistema,18/04/2026,pre,,5,0,,2,2,,2,,2,,,

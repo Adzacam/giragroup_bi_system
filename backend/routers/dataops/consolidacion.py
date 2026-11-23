@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 from pipeline.semantic.indice_confianza import BANDA_CONSOLIDADO, BANDA_REVISION, BANDA_STAGING
 from services.clave_fila import ContadorOcurrencias, clave_contenido
 from services.dw_loader import DWLoaderService, normalizar_nota_base_100
+from services.programa_normalizador import normalizar_programa, partes_pos
 from models.dim_estudiante import DimEstudiante
 from models.dim_modulo import DimModulo
 from models.dim_origen import DimOrigenDocumental
@@ -244,7 +245,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
             ruido_visto_por_doc.setdefault((d_id, reg_id), set()).add(txt)
 
     ocurrencias = ContadorOcurrencias()
-    # Flags BETO_CASCADA_FINAL / BETO_ACUERDO_QC (services/beto_integracion.py); apagados: camino original
+    # Aplica el mismo rescate residual que Evaluar antes de la validación de relaciones.
     contadores_beto = beto_integracion.Contadores()
     cliente_beto = beto_integracion.ClienteBeto(contadores=contadores_beto) if beto_integracion.necesita_refinar() else None
     if cliente_beto is not None:
@@ -303,6 +304,8 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
             for k_fila, line in enumerate(lines):
                 lineas_hechas += 1
                 if lineas_hechas % 250 == 0:
+                    if tarea_id and tareas_dataops.esta_cancelada(tarea_id):
+                        raise RuntimeError("Consolidación cancelada por el usuario.")
                     tareas_dataops.avanzar(tarea_id, lineas_hechas)
                 campos_linea = campos_por_encabezado([c.strip() for c in line.split("|")])
                 fila_ex = filas_excel[k_fila] if k_fila < len(filas_excel) else ((stg.fila_inicio or 0) + k_fila)
@@ -351,6 +354,8 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         for k_fila, (line, indice, campos_linea) in enumerate(zip(lines, indices_linea, campos_por_linea)):
             lineas_hechas += 1
             if lineas_hechas % 250 == 0:
+                if tarea_id and tareas_dataops.esta_cancelada(tarea_id):
+                    raise RuntimeError("Consolidación cancelada por el usuario.")
                 tareas_dataops.avanzar(tarea_id, lineas_hechas)
             motivo_ruido = _motivo_sin_entidad(campos_linea, categoria_ruteo, perfil_encuesta)
             if motivo_ruido:
@@ -402,8 +407,21 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
 
             nombre_est = next((e.get("matchedCanonical") or e.get("token") for e in ents if e.get("label") in ("ESTUDIANTE", "ALUMNO")), None)
             nombre_doc = next((e.get("matchedCanonical") or e.get("token") for e in ents if e.get("label") == "DOCENTE"), None)
-            nombre_mod = next((e.get("matchedCanonical") or e.get("token") for e in ents if e.get("label") == "MÓDULO"), None)
-            nombre_prog = next((e.get("matchedCanonical") or e.get("token") for e in ents if e.get("label") == "PROGRAMA"), None)
+            ent_modulo = next((e for e in ents if e.get("label") == "MÓDULO"), {})
+            ent_programa = next((e for e in ents if e.get("label") == "PROGRAMA"), {})
+            nombre_mod = ent_modulo.get("matchedCanonical") or ent_modulo.get("token")
+            programa = normalizar_programa(ent_programa.get("matchedCanonical") or ent_programa.get("token"))
+            nombre_prog = programa.nombre
+            pos_programa = partes_pos(ent_programa.get("posCodigo"))[0] or programa.pos_code
+            token_modulo = ent_modulo.get("token")
+            pos_modulo = normalizar_programa(token_modulo).pos_code
+            pos_linea = pos_programa or pos_modulo
+            if pos_modulo and pos_modulo == pos_linea and partes_pos(token_modulo)[1] is not None:
+                pos_linea = token_modulo.strip()
+            if ent_modulo.get("fuente_resolucion") == "BETO":
+                pos_linea = ent_modulo["canonicalId"]
+                pos_modulo = partes_pos(pos_linea)[0]
+            ambiguedad_academica = beto_integracion.ambiguedad_academica(ents)
 
             grade_ent = next((e for e in ents if e.get("label") == "CALIFICACIÓN"), None)
             grade_norm = grade_ent.get("notaNormalizada") if grade_ent else None
@@ -441,14 +459,13 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                         concepto_str = v_ch.strip()
 
             fecha_linea = fecha_de_fila(campos_linea, categoria_ruteo) if campos_linea else None
-            pos_rel_m = re.search(r"(POS-\d{3,5})", str(nombre_prog or nombre_mod or ""), re.IGNORECASE)
             reg_para_validar = {
                 "categoria": categoria_ruteo,
                 "resoluciones": {
                     "estudiante": {"valor_extraido": nombre_est, "fk_resolucion": {"ci": ci_clean, "nombre_resuelto": nombre_est}},
                     "docente": {"valor_extraido": nombre_doc},
                     "modulo": {"valor_extraido": nombre_mod},
-                    "programa": {"valor_extraido": nombre_prog, "metadata": {"pos_canonico": pos_rel_m.group(1).upper() if pos_rel_m else None}},
+                    "programa": {"valor_extraido": nombre_prog, "metadata": {"pos_canonico": pos_programa or pos_modulo}},
                     "fecha": fecha_linea or ((campos_linea.get("FECHA") or campos_linea.get("FECHA INICIO") or campos_linea.get("FECHA_INICIO")) if campos_linea else None),
                     "gestion": next((campos_linea[k] for k in ("GESTION", "ANO", "ANIO", "ANO INICIO", "ANIO INICIO") if campos_linea and campos_linea.get(k)), None),
                 },
@@ -480,7 +497,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                         },
                         "docente": {"valor_extraido": nombre_doc},
                         "modulo": {"valor_extraido": nombre_mod},
-                        "programa": {"valor_extraido": nombre_prog},
+                        "programa": {"valor_extraido": nombre_prog, "metadata": {"pos_canonico": pos_linea}},
                         "nota_final": grade_norm,
                         "nota_ya_normalizada": True,
                         "monto_deuda": monto_deuda_val,
@@ -586,7 +603,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     # no a un «módulo» que el NER lea de otra columna (carrera o profesión del inscrito)
                     pos_fila, programa_fila, _, _ = leer_identidad_captacion(campos_linea)
                     if pos_fila:
-                        reg_dict["resoluciones"]["programa"] = {"valor_extraido": programa_fila or nombre_prog,
+                        reg_dict["resoluciones"]["programa"] = {"valor_extraido": normalizar_programa(programa_fila).nombre or nombre_prog,
                                                                 "metadata": {"pos_canonico": pos_fila}}
                         reg_dict["resoluciones"]["modulo"] = {"valor_extraido": programa_fila or pos_fila}
                         if not metricas_captacion(campos_linea):
@@ -655,6 +672,8 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     motivo_canonico = MOTIVO_DESACUERDO_REGLA_BETO
                 elif falla_rel is not None:
                     motivo_canonico = MOTIVO_RELACION_INCOHERENTE
+                elif ambiguedad_academica:
+                    motivo_canonico = "VALOR_FUERA_DE_CATALOGO"
                 elif ci_tok and "?" in ci_tok:
                     motivo_canonico = "CI_DUDOSA"
                 elif grade_ent and grade_ent.get("canonicalId") in ("ESCALA_AMBIGUA", "NOTA_FUERA_ESCALA"):
@@ -673,7 +692,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     ruido_visto_stg.add(line[:250])
                     stg_unresolved = StagingEntidadNoResuelta(
                         id_documento=stg.id_documento,
-                        tipo_entidad="CONCEPTO_FINANCIERO" if doc_fuente == "COBRANZA" else "ESTUDIANTE",
+                        tipo_entidad="MODULO" if ambiguedad_academica else ("CONCEPTO_FINANCIERO" if doc_fuente == "COBRANZA" else "ESTUDIANTE"),
                         texto_original=line[:250],
                         ci_temporal=ci_clean,
                         mejor_candidato=nombre_est or nombre_mod,
@@ -691,6 +710,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                             "prioridad": prioridad_bandeja,
                             "tipo_fuente": doc_fuente,
                             "tipo_escala": doc_escala,
+                            **({"motivo_rescate_beto": ambiguedad_academica} if ambiguedad_academica else {}),
                             **({"regla_relacion": falla_rel.regla, "valor_relacion": falla_rel.valor, "detalle_relacion": falla_rel.detalle} if falla_rel is not None else {}),
                         },
                         registro_origen_id=stg.id,

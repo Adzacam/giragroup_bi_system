@@ -1,6 +1,7 @@
 """
 Pruebas de verificación de PLAN_DATAOPS_FLUJO (DF-L1, DF-L2, DF-L4, DF-L7, DF-L11).
 """
+import ast
 import json
 from pathlib import Path
 
@@ -122,7 +123,10 @@ def test_df_l2_dim_models_fields_en_ejecutor_y_rapidfuzz():
     assert "ci_nit" not in ej_src
     assert "ci_nit" not in rc_src
     assert "programa_academico" not in rc_src
-    assert "DimModulo(pos_code=" in ej_src
+    creaciones_modulo = [nodo for nodo in ast.walk(ast.parse(ej_src))
+                         if isinstance(nodo, ast.Call) and isinstance(nodo.func, ast.Name) and nodo.func.id == "DimModulo"]
+    assert creaciones_modulo
+    assert all(any(campo.arg in (None, "pos_code") for campo in creacion.keywords) for creacion in creaciones_modulo)
     assert "begin_nested()" in ej_src
 
 

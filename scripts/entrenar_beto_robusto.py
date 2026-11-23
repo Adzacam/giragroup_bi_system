@@ -8,9 +8,9 @@ Pipeline de Fine-Tuning y Evaluación de BETO para GiraGroup BI.
 2. 9 Etiquetas Institucionales IOB2:
    O, B-PER_ESTUDIANTE, I-PER_ESTUDIANTE, B-PER_DOCENTE, I-PER_DOCENTE,
    B-MODULO, I-MODULO, B-PROGRAMA, I-PROGRAMA
-3. Optimizador: AdamW (lr=LR, weight_decay=WEIGHT_DECAY), 3 épocas fijas, batch 16, CPU.
-4. NO hay early stopping: siempre se corren las 3 épocas y se conserva el checkpoint de
-   mayor F1 estricto en dev (selección de mejor checkpoint, no parada anticipada).
+3. Optimizador: AdamW (lr=LR, weight_decay=WEIGHT_DECAY), batch 16, CPU por defecto.
+4. Sin early stopping. Por defecto conserva el mejor checkpoint de dev;
+   con --solo-dev guarda el checkpoint de la última época y omite la evaluación final.
 5. Evaluación final sobre:
    a) Test Gold Real (180 líneas, 510 entidades)
    b) test.conll sintético (230 oraciones; límite conocido: micro F1 ~0,71)
@@ -21,6 +21,7 @@ Uso (no pisa pipeline/semantic/beto_local ; siempre en directorio nuevo):
     PYTHONHASHSEED=0 python scripts/entrenar_beto_robusto.py --datos <dir con jsonl> --salida <dir nuevo>
 """
 import argparse
+from contextlib import nullcontext
 import hashlib
 import os
 import sys
@@ -65,6 +66,11 @@ ID2LABEL: Dict[int, str] = {i: label for i, label in enumerate(LABEL_LIST)}
 
 MODEL_NAME = "dccuchile/bert-base-spanish-wwm-cased"
 MODELO_VIGENTE_DIR = os.path.join(str(BASE_DIR), "pipeline", "semantic", "beto_local")
+EPOCHS = 3
+LR = 2.5e-5
+WEIGHT_DECAY = 0.01
+BATCH_SIZE = 16
+MAX_LEN = 128
 
 
 def sha256_archivo(ruta) -> str:
@@ -76,7 +82,8 @@ def sha256_archivo(ruta) -> str:
 
 
 def construir_training_info(*, salida, datos_dir, historial, best_epoch, best_dev_f1, duracion, device,
-                            tamanos, comando=None, semilla=SEED, versiones=None, timestamp=None) -> Dict[str, Any]:
+                            tamanos, comando=None, semilla=SEED, versiones=None, timestamp=None,
+                            epochs=EPOCHS, solo_dev=False) -> Dict[str, Any]:
     """Arma el training_info.json con trazabilidad: hashes del modelo y del corpus, versiones, comando y semilla."""
     import platform
     if versiones is None:
@@ -95,7 +102,7 @@ def construir_training_info(*, salida, datos_dir, historial, best_epoch, best_de
         "timestamp": timestamp or datetime.now().isoformat(),
         "model_base": MODEL_NAME,
         "output_dir": str(salida),
-        "epochs": EPOCHS,
+        "epochs": epochs,
         "best_epoch": best_epoch,
         "learning_rate": LR,
         "weight_decay": WEIGHT_DECAY,
@@ -104,30 +111,27 @@ def construir_training_info(*, salida, datos_dir, historial, best_epoch, best_de
         "seed": semilla,
         "train_size": tamanos["train"],
         "dev_size": tamanos["dev"],
-        "test_gold_size": tamanos["test"],
+        "test_gold_size": tamanos.get("test"),
         "classes": LABEL_LIST,
         "best_dev_f1": round(best_dev_f1, 4),
         "train_duration_sec": round(duracion, 2),
         "device": str(device),
         "determinism": {"algorithms": True, "cpu_threads": 1, "PYTHONHASHSEED": os.environ.get("PYTHONHASHSEED")},
-        "selection": "mejor checkpoint por F1 estricto en dev (sin early stopping)",
+        "selection": ("checkpoint de la última época (sin early stopping)" if solo_dev
+                      else "mejor checkpoint por F1 estricto en dev (sin early stopping)"),
+        "saved_epoch": epochs if solo_dev else best_epoch,
+        "training_dtype": "bfloat16 autocast" if str(device).startswith("cuda") else "float32",
         "command": comando if comando is not None else {"argv": [sys.executable] + sys.argv, "PYTHONHASHSEED": os.environ.get("PYTHONHASHSEED"), "cwd": os.getcwd()},
         "versions": versiones,
         "sha256": {
             "model.safetensors": sha256_archivo(Path(salida) / "model.safetensors"),
             "train_robusto.jsonl": sha256_archivo(datos_dir / "train_robusto.jsonl"),
             "dev_robusto.jsonl": sha256_archivo(datos_dir / "dev_robusto.jsonl"),
-            "test_gold_real.jsonl": sha256_archivo(datos_dir / "test_gold_real.jsonl"),
+            **({} if solo_dev else {"test_gold_real.jsonl": sha256_archivo(datos_dir / "test_gold_real.jsonl")}),
         },
         "epoch_history": historial,
     }
 
-
-EPOCHS = 3
-LR = 2.5e-5
-WEIGHT_DECAY = 0.01
-BATCH_SIZE = 16
-MAX_LEN = 128
 
 class NerDataset(Dataset):
     def __init__(self, data_path: str, tokenizer, max_len: int = 128):
@@ -205,16 +209,14 @@ def evaluar_modelo(model, dataloader, device):
             total_loss += outputs.loss.item()
 
             logits = outputs.logits
-            preds = torch.argmax(logits, dim=-1)
+            preds = torch.argmax(logits, dim=-1).tolist()
 
-            for b_idx in range(len(input_ids)):
+            for labels_fila, preds_fila in zip(batch["labels"].tolist(), preds):
                 cur_true = []
                 cur_pred = []
-                for t_idx in range(len(input_ids[b_idx])):
-                    l_id = labels[b_idx, t_idx].item()
+                for l_id, p_id in zip(labels_fila, preds_fila):
                     if l_id != -100:
                         cur_true.append(ID2LABEL.get(l_id, "O"))
-                        p_id = preds[b_idx, t_idx].item()
                         cur_pred.append(ID2LABEL.get(p_id, "O"))
 
                 if cur_true:
@@ -227,7 +229,7 @@ def evaluar_modelo(model, dataloader, device):
     rec = recall_score(y_true_all, y_pred_all, mode="strict", scheme=IOB2)
 
     report_dict = classification_report(
-        y_true_all, y_pred_all, mode="strict", scheme=IOB2, output_dict=True, digits=4
+        y_true_all, y_pred_all, mode="strict", scheme=IOB2, output_dict=True, digits=4, zero_division=0
     )
 
     return {
@@ -240,8 +242,14 @@ def evaluar_modelo(model, dataloader, device):
         "y_pred": y_pred_all
     }
 
-def entrenar_beto(datos_dir="data", salida=None):
+def entrenar_beto(datos_dir="data", salida=None, epochs=EPOCHS, *, dispositivo="cpu", solo_dev=False):
     validar_salida(salida)
+    if epochs < 1:
+        raise ValueError("--epochs debe ser un entero positivo")
+    if dispositivo == "cuda":
+        if not torch.cuda.is_available() or not torch.cuda.is_bf16_supported():
+            raise ValueError("--dispositivo cuda requiere una GPU con soporte bfloat16")
+        os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
     random.seed(SEED)
     np.random.seed(SEED)
     torch.manual_seed(SEED)
@@ -250,7 +258,7 @@ def entrenar_beto(datos_dir="data", salida=None):
     salida = str(salida)
     datos_dir = Path(datos_dir)
     os.makedirs(salida, exist_ok=True)
-    device = torch.device("cpu")
+    device = torch.device(dispositivo)
     print(f"Iniciando fine-tuning de BETO en: {device}")
     t0_global = time.time()
 
@@ -267,22 +275,24 @@ def entrenar_beto(datos_dir="data", salida=None):
     print("Cargando Datasets de Train y Dev...")
     train_ds = NerDataset(str(datos_dir / "train_robusto.jsonl"), tokenizer, max_len=MAX_LEN)
     dev_ds = NerDataset(str(datos_dir / "dev_robusto.jsonl"), tokenizer, max_len=MAX_LEN)
-    test_gold_ds = NerDataset(str(datos_dir / "test_gold_real.jsonl"), tokenizer, max_len=MAX_LEN)
-
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
     dev_loader = DataLoader(dev_ds, batch_size=BATCH_SIZE, shuffle=False)
-    test_gold_loader = DataLoader(test_gold_ds, batch_size=BATCH_SIZE, shuffle=False)
+    tamanos = {"train": len(train_ds), "dev": len(dev_ds)}
+    if not solo_dev:
+        test_gold_ds = NerDataset(str(datos_dir / "test_gold_real.jsonl"), tokenizer, max_len=MAX_LEN)
+        test_gold_loader = DataLoader(test_gold_ds, batch_size=BATCH_SIZE, shuffle=False)
+        tamanos["test"] = len(test_gold_ds)
 
-    print(f"Train samples: {len(train_ds)}, Dev samples: {len(dev_ds)}, Test Gold samples: {len(test_gold_ds)}")
+    print(f"Particiones y tamaños: {tamanos}")
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=2.5e-5, weight_decay=0.01)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
 
     best_dev_f1 = -1.0
     best_epoch = 0
     history = []
 
     print("\n--- INICIO DE ENTRENAMIENTO ---")
-    for epoch in range(1, EPOCHS + 1):
+    for epoch in range(1, epochs + 1):
         t0_epoch = time.time()
         model.train()
         epoch_loss = 0.0
@@ -293,14 +303,16 @@ def entrenar_beto(datos_dir="data", salida=None):
             attention_mask = batch["attention_mask"].to(device)
             labels = batch["labels"].to(device)
 
-            outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
-            loss = outputs.loss
+            precision = torch.autocast("cuda", dtype=torch.bfloat16) if device.type == "cuda" else nullcontext()
+            with precision:
+                outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+                loss = outputs.loss
             loss.backward()
             optimizer.step()
 
             epoch_loss += loss.item()
             if (step + 1) % 25 == 0 or (step + 1) == len(train_loader):
-                print(f"Epoch {epoch}/{EPOCHS} | Step {step+1}/{len(train_loader)} | Loss: {loss.item():.4f}")
+                print(f"Epoch {epoch}/{epochs} | Step {step+1}/{len(train_loader)} | Loss: {loss.item():.4f}")
 
         avg_train_loss = epoch_loss / len(train_loader)
 
@@ -314,16 +326,23 @@ def entrenar_beto(datos_dir="data", salida=None):
             "epoch": epoch,
             "train_loss": round(avg_train_loss, 4),
             "dev_loss": round(dev_res["loss"], 4),
-            "dev_f1": round(dev_res["f1"], 4),
+            "dev_f1": float(dev_res["f1"]),
             "dev_precision": round(dev_res["precision"], 4),
             "dev_recall": round(dev_res["recall"], 4),
+            "dev_por_etiqueta": {
+                etiqueta: {metrica: valor.item() if isinstance(valor, np.generic) else valor
+                           for metrica, valor in valores.items()}
+                for etiqueta, valores in dev_res["report"].items()
+            },
             "time_sec": round(epoch_time, 2)
         })
 
-        if dev_res["f1"] > best_dev_f1:
+        mejora = dev_res["f1"] > best_dev_f1
+        if mejora:
             best_dev_f1 = dev_res["f1"]
             best_epoch = epoch
-            print(f"    [MEJOR MODELO DEV] Guardando checkpoint en {salida}...")
+        if (solo_dev and epoch == epochs) or (not solo_dev and mejora):
+            print(f"    Guardando checkpoint de época {epoch} en {salida}...")
             model.save_pretrained(salida, safe_serialization=True)
             tokenizer.save_pretrained(salida)
 
@@ -334,10 +353,12 @@ def entrenar_beto(datos_dir="data", salida=None):
     training_info = construir_training_info(
         salida=salida, datos_dir=datos_dir, historial=history, best_epoch=best_epoch,
         best_dev_f1=best_dev_f1, duracion=duracion_total, device=device,
-        tamanos={"train": len(train_ds), "dev": len(dev_ds), "test": len(test_gold_ds)},
+        tamanos=tamanos, epochs=epochs, solo_dev=solo_dev,
     )
     with open(os.path.join(salida, "training_info.json"), "w", encoding="utf-8") as f:
         json.dump(training_info, f, indent=2, ensure_ascii=False)
+    if solo_dev:
+        return
 
     print("\n--- EVALUACIÓN FINAL CIEGA ---")
     # Cargar mejor modelo guardado
@@ -466,9 +487,14 @@ def _parsear_args(argv=None):
     ap = argparse.ArgumentParser(description="Fine-tuning de BETO para NER institucional")
     ap.add_argument("--datos", default=str(BASE_DIR / "data"), help="Directorio con train/dev/test_gold_real .jsonl")
     ap.add_argument("--salida", required=True, help="Directorio de salida del modelo (obligatorio)")
+    ap.add_argument("--epochs", default=EPOCHS, type=int, help="Número de épocas (por defecto: %(default)s)")
+    ap.add_argument("--dispositivo", choices=("cpu", "cuda"), default="cpu")
+    ap.add_argument("--solo-dev", action="store_true", help="Guarda la última época sin consultar ningún conjunto reservado")
     args = ap.parse_args(argv)
     try:
         validar_salida(args.salida)
+        if args.epochs < 1:
+            raise ValueError("--epochs debe ser un entero positivo")
     except ValueError as exc:
         ap.error(str(exc))
     return args
@@ -476,4 +502,5 @@ def _parsear_args(argv=None):
 
 if __name__ == "__main__":
     _a = _parsear_args()
-    entrenar_beto(datos_dir=_a.datos, salida=_a.salida)
+    entrenar_beto(datos_dir=_a.datos, salida=_a.salida, epochs=_a.epochs,
+                  dispositivo=_a.dispositivo, solo_dev=_a.solo_dev)

@@ -1,0 +1,156 @@
+{
+  "version": "CF-L2 corpus v2",
+  "semilla": 42,
+  "fraccion_dev_personas": 0.2,
+  "tamanos": {
+    "train": 1788,
+    "dev": 424,
+    "test": 180
+  },
+  "sha256": {
+    "train_robusto.jsonl": "f49effc30a5d32c147290824c9ea5f44574675f60e399cab71442304ba7d2996",
+    "dev_robusto.jsonl": "662010c1d01d220893965e4e17c78b8b0c7b09057ee01c30fb5953f43c493b47",
+    "test_gold_real.jsonl": "7dce0bec4dd3a60b94a7e6e5a48df29a6844fc93d28375697aa04f1b9a3d51a5"
+  },
+  "fuentes_sha256": {
+    "scripts/preparar_corpus_robusto.py": "26e9c06871bd87184b4dba2e86f8f0cc21682d45df3f8e7bd7251359c10893a0",
+    "docs/mediciones/cf_l0_familias_residuales.csv": "ca461729c86cd254af25b0089dee5e72025ac1e4182650d5112d3f1d18926751",
+    "db/seeds/seed_catalogos_config.sql": "368a8d0398b18de394d49228386c3d75467c463cabfa32b0a92aa80222cd0e26",
+    "data/test_gold_real.jsonl": "7dce0bec4dd3a60b94a7e6e5a48df29a6844fc93d28375697aa04f1b9a3d51a5",
+    "uploads/test/layouts_adversarios/gold_layouts_adversarios.json": "3102ef272ce6ffea599c2d52e102bbd97c2a4f3661dc8b1a83949c2ca6939221",
+    "data/ner/test.conll": "283a454ff4be74683a26bdae97cdda3c9ed1fae0066fa576c78e7507afb38fa6",
+    "uploads/data/Base centralizada Académica ARCA (1).xlsx": "cd6070f0c3b61e88c1b86f7f2bcd909367e0ce8f770f16e671fc93e1218ded52",
+    "uploads/data/TBL_INSCRITOS.xlsx": "5b72c61c436fd5d7e7332ae734001aaee52f9fb24645400d253a6c64b3d8b572"
+  },
+  "metodo": "Base programática de Excel fuente particionada por identidad antes de generar muestras. Las claves de identidad agrupan tildes, títulos, puntuación y permutaciones de nombres. Aumento por familia heurística CF-L0, con prioridad temática empresarial y negativos de la seed MODULO_RECHAZO etiquetados O.",
+  "reglas_modulo_rechazo_seed": {
+    "CENTINELA": 17,
+    "PREFIJO_TITULO": 30,
+    "PROFESION_OCUPACION": 41
+  },
+  "clases_de_muestras": {
+    "train": {
+      "base": 1400,
+      "negativo_PREFIJO_TITULO": 23,
+      "modulo_otro": 80,
+      "negativo_PROFESION_OCUPACION": 34,
+      "modulo_empresarial": 160,
+      "oferta_con_marcador": 80,
+      "negativo_CENTINELA": 11
+    },
+    "dev": {
+      "base": 350,
+      "modulo_otro": 20,
+      "negativo_PROFESION_OCUPACION": 7,
+      "modulo_empresarial": 17,
+      "oferta_con_marcador": 20,
+      "negativo_PREFIJO_TITULO": 5,
+      "negativo_CENTINELA": 5
+    }
+  },
+  "descartes": {
+    "train": {
+      "texto_normalizado_repetido": 2
+    },
+    "dev": {
+      "texto_normalizado_repetido": 1
+    }
+  },
+  "etiquetas_iob2": [
+    "O",
+    "B-PER_ESTUDIANTE",
+    "I-PER_ESTUDIANTE",
+    "B-PER_DOCENTE",
+    "I-PER_DOCENTE",
+    "B-MODULO",
+    "I-MODULO",
+    "B-PROGRAMA",
+    "I-PROGRAMA"
+  ],
+  "tokenizador": {
+    "modelo": "dccuchile/bert-base-spanish-wwm-cased",
+    "transformers": "5.14.1",
+    "tokenizers": "0.22.2",
+    "sha256_json": "36a279aaf9b1175602c08874bb0a0cf55e7f896b1d8bfcb2ca67d5444eea773a",
+    "limite": 128,
+    "maximos_sin_truncar_con_especiales": {
+      "train": 98,
+      "dev": 93,
+      "test_gold_real": 65,
+      "layouts_5": 38,
+      "test_conll": 44
+    }
+  },
+  "reservados": {
+    "test_gold_real": 180,
+    "layouts_5": 25,
+    "test_conll": 230
+  },
+  "solapamiento": {
+    "personas_unicas": {
+      "test_gold_real": 83,
+      "layouts_5": 19,
+      "test_conll": 112,
+      "train": 1947,
+      "dev": 482
+    },
+    "personas_normalizadas_compartidas": {
+      "test_gold_real/layouts_5": 0,
+      "test_gold_real/test_conll": 23,
+      "test_gold_real/train": 0,
+      "test_gold_real/dev": 0,
+      "layouts_5/test_conll": 0,
+      "layouts_5/train": 0,
+      "layouts_5/dev": 0,
+      "test_conll/train": 0,
+      "test_conll/dev": 0,
+      "train/dev": 0
+    },
+    "textos_exactos_compartidos": {
+      "test_gold_real/layouts_5": 0,
+      "test_gold_real/test_conll": 0,
+      "test_gold_real/train": 0,
+      "test_gold_real/dev": 0,
+      "layouts_5/test_conll": 0,
+      "layouts_5/train": 0,
+      "layouts_5/dev": 0,
+      "test_conll/train": 0,
+      "test_conll/dev": 0,
+      "train/dev": 0
+    },
+    "textos_normalizados_compartidos": {
+      "test_gold_real/layouts_5": 0,
+      "test_gold_real/test_conll": 0,
+      "test_gold_real/train": 0,
+      "test_gold_real/dev": 0,
+      "layouts_5/test_conll": 0,
+      "layouts_5/train": 0,
+      "layouts_5/dev": 0,
+      "test_conll/train": 0,
+      "test_conll/dev": 0,
+      "train/dev": 0
+    }
+  },
+  "reproduccion": {
+    "comando": "python scripts/preparar_corpus_robusto.py --salida output/cf/corpus_v2 --inventario-cf docs/mediciones/cf_l0_familias_residuales.csv",
+    "PYTHONHASHSEED_verificados": [
+      0,
+      131
+    ],
+    "archivos_identicos_byte_a_byte": [
+      "train_robusto.jsonl",
+      "dev_robusto.jsonl",
+      "test_gold_real.jsonl"
+    ],
+    "gold_original_identico_byte_a_byte": true,
+    "identidades_compactadas_compartidas": {
+      "train/dev": 0,
+      "train/test_gold_real": 0,
+      "train/layouts_5": 0,
+      "train/test_conll": 0,
+      "dev/test_gold_real": 0,
+      "dev/layouts_5": 0,
+      "dev/test_conll": 0
+    }
+  }
+}

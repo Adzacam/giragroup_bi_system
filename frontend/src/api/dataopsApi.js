@@ -83,6 +83,8 @@ export const dataopsApi = {
   retryBatchReading: async (id) => mutar(async () => (await client.post(`${BASE_URL}/lote/${id}/reintentar-lectura`)).data),
   startBatchReading: async (id) => mutar(async () => (await client.post(`${BASE_URL}/lote/${id}/iniciar-lectura`)).data),
   deleteFailedBatch: async (id) => mutar(async () => (await client.delete(`${BASE_URL}/lote/${id}/fallido`)).data),
+  reiniciarLote: async (id) => mutar(async () => (await client.delete(`${BASE_URL}/lote/${id}`)).data),
+  cancelarTarea: async (tareaId) => mutar(async () => (await client.post(`${BASE_URL}/tareas/${tareaId}/cancelar`)).data),
 
   /**
    * Obtiene la lista de fuentes documentales y métricas KPI de ingesta (con caché en memoria)
@@ -186,7 +188,7 @@ export const dataopsApi = {
    * @param {Array<{ file: File, sourceType: string, tipoEscala?: string|null }>} filesWithTypes
    * @param {Function} onProgress
    */
-  uploadBatch: async (filesWithTypes, onProgress = null, batchMeta = {}) => {
+  uploadBatch: async (filesWithTypes, onProgress = null, batchMeta = {}, signal = null) => {
     invalidateDataopsCache();
     const formData = new FormData();
     filesWithTypes.forEach(({ file, sourceType, tipoEscala }) => {
@@ -205,6 +207,7 @@ export const dataopsApi = {
     const res = await client.post(`${BASE_URL}/upload-batch`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 600000, // 10 minutos para transferencia y ejecución de pipeline de lote
+      ...(signal ? { signal } : {}),
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);

@@ -31,12 +31,20 @@ Al cerrar: pytest + cobertura · rebuild de lo tocado · commit · CIERRE_<fase>
 Ejecuta docs/cierres/PLAN_<fase>.md. ...
 ```
 
-## Asignación de agentes
-| Dificultad | Ejemplos | Agente |
-|---|---|---|
-| Alta | Medición A/B, fine-tuning, cambio de cascada o esquema, cifra final de tiempo | `dev-alta` (Opus). Una tarea en un solo agente, sin fragmentarla |
-| Media | Funcionalidad con pruebas, KPI faltantes, KLM, análisis de desacuerdos | `dev-media` (Sonnet). En paralelo si no tocan los mismos archivos |
-| Baja | Consultas SQL, conteos, purgas, merge, rebuild, inventarios | `dev-baja` (Haiku). En paralelo |
+## Asignación de agentes por fase y rol
+
+### 1. Fase de Planificación y Arquitectura
+- **Arquitecto principal (`dev-alta` — Modelos Insignia: Claude Opus 5.5 medio / Gemini 4 Argon medio o Neon / GPT-6.2 Astra medio)**:
+  - Diseñar la estructura de la base de datos, definir la arquitectura del sistema, evaluar tecnologías o crear la hoja de ruta completa del proyecto.
+  - Tareas de dificultad alta: medición A/B, fine-tuning, cambios de cascada o esquema, cifra final de tiempo. Una tarea completa por agente, sin fragmentarla.
+- **Desglose de tareas (`dev-media` — Modelos Intermedios-Altos: Claude Sonnet 5.5 medio / Gemini 4 Neon o Hydrogen medio / GPT-6.2 Sol medio)**:
+  - Dividir el plan general en tickets pequeños, redactar los pasos de implementación y crear listas de verificación técnicas.
+
+### 2. Fase de Programación (Escritura y Depuración)
+- **Desarrollador principal (`dev-media` — Modelos Intermedios-Altos: Claude Sonnet 5.5 / Gemini 4 Neon o Hydrogen / GPT-6.2 Sol medio)**:
+  - Escribir funciones complejas, conectar APIs, refactorizar módulos completos y resolver errores (bugs) difíciles con potencia de razonamiento sin volverse lentos ni costosos. Funcionalidad con pruebas, KPI faltantes, KLM, análisis de desacuerdos. En paralelo si no tocan los mismos archivos.
+- **Asistente rápido en el editor (`dev-baja` — Modelos Equilibrados: Haiku 5.5 bajo / Gemini 3.8 medio / GPT-6.1 Terra)**:
+  - Autocompletar código en tiempo real, escribir pruebas unitarias (unit tests), generar documentación técnica, hacer consultas rápidas de sintaxis o correr comandos con resultados. Consultas SQL, conteos, purgas, merge, rebuild, inventarios. En paralelo.
 
 ## Reglas
 - Si una tarea exige cambiar un invariante, no la planifiques: ponla en DECISIONES PENDIENTES.

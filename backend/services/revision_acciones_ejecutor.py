@@ -25,6 +25,8 @@ from models.lote import Lote
 from models.staging_entidad import StagingEntidadNoResuelta
 from models.staging_registro import StagingRegistroCrudo
 from services import cache_consultas, encuesta_canonica
+from services.catalog_service import campos_modulo_dw
+from services.programa_normalizador import codigo_dimension, es_invalido
 from services.extraccion_por_encabezado import (
     campos_por_encabezado,
     fecha_de_fila,
@@ -250,15 +252,15 @@ def ejecutar_accion_contextual(
         cod_pos = (payload.get("codigo_pos") or "").strip()
         nom_mod = (payload.get("modulo_resuelto") or "").strip()
         prog = (payload.get("programa_resuelto") or "").strip()
-        if not cod_pos or not nom_mod:
+        if not codigo_dimension(cod_pos) or not nom_mod or es_invalido(nom_mod) or es_invalido(prog):
             raise HTTPException(422, "Código POS y nombre de módulo son obligatorios.")
-        nuevo_mod = DimModulo(pos_code=cod_pos, nombre_modulo=nom_mod, programa=prog or None)
+        nuevo_mod = DimModulo(**campos_modulo_dw(db, nom_mod, prog or None, cod_pos))
         db.add(nuevo_mod)
         db.flush()
         creado_undo["id_modulo_creado"] = nuevo_mod.id_modulo
-        p["modulo"] = nom_mod
-        p["codigo_pos"] = cod_pos
-        p["programa"] = prog
+        p["modulo"] = nuevo_mod.nombre_modulo
+        p["codigo_pos"] = nuevo_mod.pos_code
+        p["programa"] = nuevo_mod.programa
         ent.resuelto = True
         ent.estado_resolucion = "RESUELTO_HUMANO"
         ent.resuelto_en = datetime.utcnow()
@@ -442,11 +444,12 @@ def resolver_aviso(
         nom_mod = (payload.get("modulo_resuelto") or aviso.valor_recibido or "").strip()
         cod_pos = (payload.get("codigo_pos") or "").strip()
         prog = (payload.get("programa_resuelto") or "").strip()
-        if not nom_mod or not cod_pos:
+        if not nom_mod or not codigo_dimension(cod_pos) or es_invalido(nom_mod) or es_invalido(prog):
             raise HTTPException(422, "Indica código POS y nombre del módulo.")
-        mod = db.query(DimModulo).filter(DimModulo.pos_code == cod_pos).first()
+        campos = campos_modulo_dw(db, nom_mod, prog or None, cod_pos)
+        mod = db.query(DimModulo).filter_by(pos_code=campos["pos_code"], nombre_modulo=campos["nombre_modulo"]).first()
         if not mod:
-            mod = DimModulo(pos_code=cod_pos, nombre_modulo=nom_mod, programa=prog or None)
+            mod = DimModulo(**campos)
             db.add(mod)
             db.flush()
     elif accion == "VINCULAR_MODULO":

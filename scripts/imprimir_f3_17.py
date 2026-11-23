@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 
 def main():
-    json_path = Path("docs/evidencias/lote_1387_uploads_data_arquitectura_b.json")
+    json_path = Path("docs/mediciones/f5c_lote_1387_r1.json")
     if not json_path.exists():
         print(f"Error: No se encontró {json_path}")
         return
@@ -49,6 +49,9 @@ def main():
     print(f"  • Consolidación directa   (Banda >= 0,85):   {fmt_num(directo_cnt):>5} ({fmt_pct(directo_pct)} %)")
     print(f"  • Revisión humana HITL    (Banda 0,60-0,85): {fmt_num(hitl_cnt):>5} ({fmt_pct(hitl_pct)} %)")
     print(f"  • Retenido en Staging     (Banda < 0,60):    {fmt_num(stg_cnt):>5} ({fmt_pct(stg_pct)} %)")
+    if "excepciones" in d:
+        exc = d["excepciones"]
+        print(f"  • Excepciones interceptadas en preproceso:   {fmt_num(exc['total_entidades']):>5} ({fmt_num(exc['registros_afectados'])} reg., 0 al DW sin control)")
     print("-" * 78)
     print(f"RESOLUCIONES EXITOSAS POR CASCADA HÍBRIDA MULTI-ETAPA (N = {fmt_num(total_cascada)}):")
     print(f"  1. Documento de Identidad (CI_EXACTA):   {fmt_num(ci_cnt):>5} ({fmt_pct(ci_cnt / total_cascada * 100)} %)")

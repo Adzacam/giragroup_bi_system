@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Eye } from 'lucide-react';
+import { Eye, RotateCcw } from 'lucide-react';
 import BatchFlowLayout from './components/BatchFlowLayout';
 import PipelineTelemetryDrawer from './components/PipelineTelemetryDrawer';
 import BatchHistory from './components/BatchHistory';
@@ -16,7 +16,7 @@ import useTextoPreparado from './hooks/useTextoPreparado';
 import useResumenPreparacion from './hooks/useResumenPreparacion';
 import { dataopsApi } from '../../api/dataopsApi';
 import { mensajeError } from '../../utils/mensajeError';
-import { sileoToast } from '../../services/sileoToast';
+import { confirmar, sileoToast } from '../../services/sileoToast';
 import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano';
 import { inspectFileHeaders, validateFileSecurityClient, isAcademicSourceType, toCanonicalSourceCode } from '../../utils/fileTypeDetector';
 import { MAX_ARCHIVOS_POR_LOTE, getTipoFuenteLabel } from '../../constants/dataopsConfig';
@@ -28,12 +28,14 @@ export default function IngestView() {
   const [expandedDetailKey, setExpandedDetailKey] = useState(null);
   const institucion = 'GiraGroup Posgrado';
   const processingRef = useRef(false);
+  const uploadAbortRef = useRef(null);
   const dropzoneRef = useRef(null);
   const queueCheckRef = useRef(false);
   const [isCheckingFiles, setIsCheckingFiles] = useState(false);
   const [loadingLogs, setLoadingLogs] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isResettingBatch, setIsResettingBatch] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStageText, setUploadStageText] = useState('');
   const [activeBatchId, setActiveBatchId] = useState(null);
@@ -124,9 +126,65 @@ export default function IngestView() {
     dropzoneRef.current?.focus({ preventScroll: true });
   };
 
-  const handleClearQueue = () => {
-    if (processingRef.current || queueCheckRef.current) return;
+  const handleClearQueue = async () => {
+    if (processingRef.current || queueCheckRef.current || queuedFiles.length === 0) return;
+    const ok = await confirmar({
+      title: 'Vaciar cola de archivos',
+      description: `Se quitarán ${queuedFiles.length} archivo(s) pendientes de la cola.`,
+      confirmText: 'Vaciar cola',
+    });
+    if (!ok) return;
     setQueuedFiles([]); setSelectedQueueUids([]); setExpandedDetailKey(null);
+  };
+
+  const handleCancelUpload = async () => {
+    if (!processingRef.current) return;
+    const ok = await confirmar({
+      title: 'Cancelar carga en curso',
+      description: 'Se detendrá la carga del lote actual para que puedas corregir los archivos.',
+      confirmText: 'Cancelar carga',
+    });
+    if (!ok) return;
+    uploadAbortRef.current?.abort();
+    try {
+      const activas = await dataopsApi.getTareasActivas();
+      const ingestaActiva = (activas || []).find((t) => t.tipo === 'INGESTA' && t.estado === 'EN_CURSO');
+      if (ingestaActiva?.id) {
+        await dataopsApi.cancelarTarea(ingestaActiva.id);
+      }
+    } catch { /* Si ya terminó o no hay tarea registrada, basta abortar la petición HTTP. */ }
+    processingRef.current = false;
+    setIsProcessing(false);
+    setUploadProgress(0);
+    setUploadStageText('');
+  };
+
+  const handleResetBatch = async () => {
+    if (!activeBatchId || processingRef.current || queueCheckRef.current || isResettingBatch) return;
+    const ok = await confirmar({
+      title: `Reiniciar lote #${activeBatchId}`,
+      description: 'Se eliminará este lote y sus archivos cargados en staging para que puedas volver a subir los archivos correctos.',
+      confirmText: 'Reiniciar lote',
+    });
+    if (!ok) return;
+    setIsResettingBatch(true);
+    try {
+      const idBorrado = activeBatchId;
+      await dataopsApi.reiniciarLote(idBorrado);
+      clearLoteFlowSession(idBorrado);
+      localStorage.removeItem('last_active_batch_id');
+      setActiveBatchId(null);
+      setActiveBatchData(null);
+      setQueuedFiles([]);
+      setSelectedQueueUids([]);
+      setExpandedDetailKey(null);
+      queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY });
+      sileoToast.success({ title: `Lote #${idBorrado} reiniciado`, description: 'Puedes cargar los archivos correctos ahora.' });
+    } catch (err) {
+      sileoToast.error({ title: 'No se pudo reiniciar el lote', description: mensajeError(err) });
+    } finally {
+      setIsResettingBatch(false);
+    }
   };
 
   const addFilesToQueue = async (fileList) => {
@@ -175,6 +233,8 @@ export default function IngestView() {
   const handleProcessBatch = async () => {
     if (!isFormValid || processingRef.current || isCheckingFiles) return;
     processingRef.current = true;
+    const controller = new AbortController();
+    uploadAbortRef.current = controller;
     const filesToSend = selectedQueueFiles;
     try {
       setIsProcessing(true); setUploadProgress(0);
@@ -189,7 +249,7 @@ export default function IngestView() {
           avisarTareaIniciada();
           sileoToast.info({ title: 'Archivos transferidos al servidor', description: 'La ingesta sigue en el servidor. Puedes cambiar de página: te avisaremos al terminar.' });
         }
-      }, { institucion, periodo: 'Auto' });
+      }, { institucion, periodo: 'Auto' }, controller.signal);
       const perFileResults = uploadRes?.archivos_procesados || uploadRes?.resultados || [];
       const loteId = uploadRes?.id_lote || uploadRes?.doc_ids?.[0];
       const exitosos = uploadRes?.archivos_exitosos ?? 0;
@@ -213,8 +273,12 @@ export default function IngestView() {
         sileoToast.success({ title: `Lote #${loteId} procesado exitosamente`, description: `${exitosos} archivo(s) cargados. Ya puedes revisar su contenido.` });
       }
     } catch (err) {
-      sileoToast.error({ title: 'Error en ingesta de lote', description: mensajeError(err, 'No se pudieron procesar los archivos. Inténtalo de nuevo.') });
-    } finally { processingRef.current = false; setIsProcessing(false); setUploadStageText(''); }
+      if (err?.name === 'CanceledError' || err?.code === 'ERR_CANCELED' || controller.signal.aborted) {
+        sileoToast.info({ title: 'Carga cancelada', description: 'Se detuvo la transferencia. Puedes corregir los archivos y volver a intentarlo.' });
+      } else {
+        sileoToast.error({ title: 'Error en ingesta de lote', description: mensajeError(err, 'No se pudieron procesar los archivos. Inténtalo de nuevo.') });
+      }
+    } finally { uploadAbortRef.current = null; processingRef.current = false; setIsProcessing(false); setUploadStageText(''); }
   };
 
   const inspectedFiles = (activeBatchData?.archivos || []).map((a, index) => ({
@@ -238,9 +302,9 @@ export default function IngestView() {
           isFormValid={isFormValid} queuedFiles={queuedFiles} selectedQueueFiles={selectedQueueFiles}
           onDrop={(e) => { e.preventDefault(); setIsDragging(false); if (e.dataTransfer.files?.length) addFilesToQueue(e.dataTransfer.files); }}
           onFileSelect={(e) => { if (e.target.files?.length) { addFilesToQueue(e.target.files); e.target.value = ''; } }}
-          onProcessBatch={handleProcessBatch} onClearQueue={handleClearQueue}
+          onProcessBatch={handleProcessBatch} onClearQueue={handleClearQueue} onCancelUpload={handleCancelUpload}
         />
-        <IngestRulesPanel isProcessing={isProcessing} uploadProgress={uploadProgress} uploadStageText={uploadStageText} />
+        <IngestRulesPanel isProcessing={isProcessing} uploadProgress={uploadProgress} uploadStageText={uploadStageText} onCancelUpload={handleCancelUpload} />
       </div>
 
       <div className="floating-artifact" style={{ padding: '24px', marginBottom: '28px' }} aria-busy={isLoadingBatchData}>
@@ -258,7 +322,19 @@ export default function IngestView() {
           ) : inspectedFiles.length > 0 ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <span style={{ fontSize: '12px', color: 'var(--color-slate-gray)' }}>Mostrando <strong>{inspectedFiles.length}</strong> archivo(s) del lote #{activeBatchId}</span>
-              <Button variant="ghost" disabled={isProcessing || isCheckingFiles || isLoadingBatchData} onClick={handleNewBatch}>Limpiar vista</Button>
+              {activeBatchData?.estado_flujo !== 'CONSOLIDADO' && (
+                <Button
+                  variant="ghost"
+                  className="dataops-btn-danger"
+                  disabled={isProcessing || isCheckingFiles || isLoadingBatchData || isResettingBatch}
+                  isLoading={isResettingBatch}
+                  loadingText="Reiniciando…"
+                  onClick={handleResetBatch}
+                >
+                  <RotateCcw size={13} /> Reiniciar lote
+                </Button>
+              )}
+              <Button variant="ghost" disabled={isProcessing || isCheckingFiles || isLoadingBatchData || isResettingBatch} onClick={handleNewBatch}>Limpiar vista</Button>
             </div>
           ) : null}
         </div>

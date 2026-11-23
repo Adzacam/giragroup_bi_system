@@ -35,6 +35,7 @@ import argparse
 import difflib
 import os
 import re
+import sys
 import unicodedata
 from collections import Counter, defaultdict
 from datetime import datetime
@@ -44,6 +45,9 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import openpyxl
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(BASE_DIR))
+from backend.services.programa_normalizador import normalizar_programa, partes_pos
+
 SEEDS_DIR = Path(__file__).resolve().parent
 DIR_DATOS = BASE_DIR / "uploads" / "data"
 
@@ -101,28 +105,16 @@ def entero(val: Any) -> Optional[int]:
 
 def pos_code(val: Any) -> Optional[str]:
     """'4895', 4895.0, 'POS-4895', 'POS 4895' → 'POS-4895'."""
-    m = re.search(r"(\d{3,6})", limpiar_texto(val))
-    return f"POS-{m.group(1)}" if m else None
-
-
-_ROMANOS = {"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5, "VI": 6, "VII": 7, "VIII": 8, "IX": 9, "X": 10,
-            "XI": 11, "XII": 12, "XIII": 13, "XIV": 14, "XV": 15}
-_RE_VERSION = re.compile(r"\bv\s*\.?\s*(\d+|[IVX]{1,5})\b", re.IGNORECASE)
+    texto = limpiar_texto(val)
+    m = re.fullmatch(r"(\d{3,6})(?:\.0)?", texto)
+    return f"POS-{m.group(1)}" if m else partes_pos(texto)[0]
 
 
 def separar_version(nombre: str, columna: Any = None) -> Tuple[str, Optional[int]]:
     """Separa el sufijo de versión ('v. 28', 'v27', 'v. I - NAL') del nombre canónico."""
-    version = None
-    m = _RE_VERSION.search(nombre)
-    if m:
-        tok = m.group(1).upper()
-        version = int(tok) if tok.isdigit() else _ROMANOS.get(tok)
-        nombre = nombre[:m.start()]
-    nombre = re.sub(r"\s*-\s*NAL\b.*$", "", nombre, flags=re.IGNORECASE)
-    nombre = re.sub(r"^POS\s*-?\s*\d+\s*[-:]?\s*", "", nombre, flags=re.IGNORECASE)  # 'POS-4244 DIPLOMADO…'
-    if version is None:
-        version = entero(columna)
-    return limpiar_texto(nombre).strip(" -"), version
+    programa = normalizar_programa(nombre)
+    version = programa.version if programa.version is not None else entero(columna)
+    return programa.nombre or "", version
 
 
 def sql(val: Any) -> str:

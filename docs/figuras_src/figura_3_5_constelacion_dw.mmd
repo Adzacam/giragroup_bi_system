@@ -1,8 +1,8 @@
 erDiagram
     %% =========================================================================
     %% FIGURA 3.5: ESQUEMA FÍSICO DE LA CONSTELACIÓN DEL DATA WAREHOUSE
-    %% GiraGroup S.R.L. - Snapshot snapshot_dw_20261110_1201
-    %% 9 Tablas de Hechos, 7 Dimensiones y 1 Tabla Puente (Bridge)
+    %% GiraGroup S.R.L. - Invariantes congelados DECISIÓN 3 F3V (18-nov-2026)
+    %% 10 Tablas de Hechos, 7 Dimensiones, 1 Tabla Puente (Bridge) y 10 Vistas bi
     %% =========================================================================
 
     %% --- DIMENSIONES CONFORMADAS (7) ---
@@ -79,6 +79,9 @@ erDiagram
         INTEGER meta_matriculados
         NUMERIC meta_recaudacion
         BOOLEAN activo
+        INTEGER id_documento FK
+        VARCHAR clave_fila_origen FK
+        VARCHAR celda_origen
     }
 
     %% --- TABLA PUENTE (BRIDGE M:N) ---
@@ -89,7 +92,7 @@ erDiagram
         BOOLEAN es_titular
     }
 
-    %% --- TABLAS DE HECHOS (9) ---
+    %% --- TABLAS DE HECHOS (10) ---
     fact_rendimiento_academico {
         INTEGER id_rendimiento PK
         INTEGER id_estudiante FK
@@ -194,6 +197,30 @@ erDiagram
         INTEGER gestion
     }
 
+    fact_planificacion_programa {
+        BIGINT id_planificacion PK
+        INTEGER id_modulo FK
+        INTEGER id_tiempo_plan FK
+        INTEGER id_documento FK
+        VARCHAR clave_fila_origen FK
+        VARCHAR pos_code_fuente
+        VARCHAR nombre_programa
+        VARCHAR tipo_programa
+        VARCHAR escuela
+        DATE fecha_notificacion
+        DATE fecha_inicio_plan
+        DATE fecha_fin_plan
+        NUMERIC duracion_meses
+        VARCHAR estado_fuente
+        BOOLEAN notificado
+        NUMERIC costo_programa
+        NUMERIC tarifa_contado_100
+        NUMERIC punto_equilibrio
+        NUMERIC inscritos_fuente
+        NUMERIC pauta_ejecutada
+        BOOLEAN requiere_revision
+    }
+
     %% --- RELACIONES REFERENCIALES (FK) ---
     dim_estudiante ||--o{ fact_rendimiento_academico : "registra calificaciones"
     dim_docente ||--o{ fact_rendimiento_academico : "evalua"
@@ -233,3 +260,8 @@ erDiagram
 
     dim_modulo ||--o{ bridge_modulo_docente : "asignado a"
     dim_docente ||--o{ bridge_modulo_docente : "docente asignado"
+
+    dim_modulo ||--o{ fact_planificacion_programa : "modulo planificado"
+    dim_tiempo ||--o{ fact_planificacion_programa : "mes inicio plan"
+    dim_origen_documental ||--o{ fact_planificacion_programa : "archivo plan"
+    dim_origen_documental ||--o{ dim_meta : "archivo metas"

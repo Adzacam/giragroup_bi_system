@@ -1,0 +1,2053 @@
+{
+  "protocolo": {
+    "seleccion": "Mayor F1 micro IOB2 estricto INT8 en dev de formatos; en empate gana la menor época.",
+    "metrica_reservados": "Seqeval estricto IOB2 en tokens de referencia. Una predicción por token, desde el primer subtoken.",
+    "diagnostico": false,
+    "max_tokens": 128,
+    "rnf_04_minimo_f1_micro": 0.85,
+    "precision_vigente": "int8",
+    "cuantizacion": "Dinámica en CPU de torch.nn.Linear con qint8, como BETO_INT8=1 en producción.",
+    "motor_int8": "x86",
+    "torch": "2.15.0+cu132",
+    "comando_evaluacion": [
+      "/usr/local/bin/python",
+      "scripts/evaluar_beto_cf.py",
+      "--corridas",
+      "output/cf/recuperacion",
+      "--dev-formatos",
+      "output/cf/corpus_recuperacion/dev_layout_cf.jsonl",
+      "--vigente",
+      "pipeline/semantic/beto_local",
+      "--salida",
+      "docs/mediciones/cf_l3_finetuning_recuperacion.json"
+    ]
+  },
+  "datasets_reservados": {
+    "test_gold_real": {
+      "ruta": "data/test_gold_real.jsonl",
+      "sha256": "7dce0bec4dd3a60b94a7e6e5a48df29a6844fc93d28375697aa04f1b9a3d51a5",
+      "filas": 180
+    },
+    "layouts_5": {
+      "ruta": "uploads/test/layouts_adversarios/gold_layouts_adversarios.json",
+      "sha256": "3102ef272ce6ffea599c2d52e102bbd97c2a4f3661dc8b1a83949c2ca6939221",
+      "filas": 25
+    }
+  },
+  "resultados_dev": [
+    {
+      "ruta": "output/cf/recuperacion/beto_e2",
+      "train_info": {
+        "status": "trained_success",
+        "timestamp": "2026-11-23T16:14:01.397352",
+        "model_base": "dccuchile/bert-base-spanish-wwm-cased",
+        "output_dir": "output/cf/recuperacion/beto_e2",
+        "epochs": 2,
+        "best_epoch": 1,
+        "learning_rate": 2.5e-05,
+        "weight_decay": 0.01,
+        "batch_size": 16,
+        "max_length": 128,
+        "seed": 42,
+        "train_size": 2088,
+        "dev_size": 424,
+        "test_gold_size": null,
+        "classes": [
+          "O",
+          "B-PER_ESTUDIANTE",
+          "I-PER_ESTUDIANTE",
+          "B-PER_DOCENTE",
+          "I-PER_DOCENTE",
+          "B-MODULO",
+          "I-MODULO",
+          "B-PROGRAMA",
+          "I-PROGRAMA"
+        ],
+        "best_dev_f1": 0.9933,
+        "train_duration_sec": 44.51,
+        "device": "cuda",
+        "determinism": {
+          "algorithms": true,
+          "cpu_threads": 1,
+          "PYTHONHASHSEED": "0"
+        },
+        "selection": "checkpoint de la última época (sin early stopping)",
+        "saved_epoch": 2,
+        "training_dtype": "bfloat16 autocast",
+        "command": {
+          "argv": [
+            "/usr/local/bin/python",
+            "scripts/entrenar_beto_robusto.py",
+            "--datos",
+            "output/cf/corpus_recuperacion",
+            "--epochs",
+            "2",
+            "--salida",
+            "output/cf/recuperacion/beto_e2",
+            "--dispositivo",
+            "cuda",
+            "--solo-dev"
+          ],
+          "PYTHONHASHSEED": "0",
+          "cwd": "/workspace"
+        },
+        "versions": {
+          "python": "3.11.18",
+          "torch": "2.15.0+cu132",
+          "transformers": "5.23.0",
+          "seqeval": "1.2.2",
+          "numpy": "2.4.6"
+        },
+        "sha256": {
+          "model.safetensors": "16f5ad21507a37e4a29e3d94137faa5ebb919a22d9e84631f78117e0494d9d94",
+          "train_robusto.jsonl": "83e3af41ca47dba75876b4f2acbce9dd1230b95615f6f65e38c04aef77b0c977",
+          "dev_robusto.jsonl": "662010c1d01d220893965e4e17c78b8b0c7b09057ee01c30fb5953f43c493b47"
+        },
+        "epoch_history": [
+          {
+            "epoch": 1,
+            "train_loss": 0.2747,
+            "dev_loss": 0.0096,
+            "dev_f1": 0.9933110367892978,
+            "dev_precision": 0.9926,
+            "dev_recall": 0.994,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9948453608247423,
+                "recall": 0.9974160206718347,
+                "f1-score": 0.9961290322580645,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9830028328611898,
+                "recall": 0.9914285714285714,
+                "f1-score": 0.9871977240398293,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 0.9971509971509972,
+                "recall": 1.0,
+                "f1-score": 0.9985734664764622,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.995049504950495,
+                "recall": 0.9877149877149877,
+                "f1-score": 0.9913686806411838,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.9926470588235294,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9933110367892978,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.9925121739468561,
+                "recall": 0.9941398949538485,
+                "f1-score": 0.9933172258538849,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9926667628234886,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9933125202045079,
+                "support": 1494
+              }
+            },
+            "time_sec": 24.51
+          },
+          {
+            "epoch": 2,
+            "train_loss": 0.0117,
+            "dev_loss": 0.0039,
+            "dev_f1": 0.9929789368104314,
+            "dev_precision": 0.992,
+            "dev_recall": 0.994,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9922680412371134,
+                "recall": 0.9948320413436692,
+                "f1-score": 0.9935483870967742,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9914285714285714,
+                "recall": 0.9914285714285714,
+                "f1-score": 0.9914285714285714,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.9853300733496333,
+                "recall": 0.9901719901719902,
+                "f1-score": 0.9877450980392156,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.9919839679358717,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9929789368104314,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.9922566715038296,
+                "recall": 0.9941081507360577,
+                "f1-score": 0.9931805141411404,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9919926852825058,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9929822494701555,
+                "support": 1494
+              }
+            },
+            "time_sec": 13.51
+          }
+        ]
+      },
+      "resultado_dev": {
+        "epoch": 2,
+        "train_loss": 0.0117,
+        "dev_loss": 0.0039,
+        "dev_f1": 0.9929789368104314,
+        "dev_precision": 0.992,
+        "dev_recall": 0.994,
+        "dev_por_etiqueta": {
+          "MODULO": {
+            "precision": 0.9922680412371134,
+            "recall": 0.9948320413436692,
+            "f1-score": 0.9935483870967742,
+            "support": 387
+          },
+          "PER_DOCENTE": {
+            "precision": 0.9914285714285714,
+            "recall": 0.9914285714285714,
+            "f1-score": 0.9914285714285714,
+            "support": 350
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 350
+          },
+          "PROGRAMA": {
+            "precision": 0.9853300733496333,
+            "recall": 0.9901719901719902,
+            "f1-score": 0.9877450980392156,
+            "support": 407
+          },
+          "micro avg": {
+            "precision": 0.9919839679358717,
+            "recall": 0.9939759036144579,
+            "f1-score": 0.9929789368104314,
+            "support": 1494
+          },
+          "macro avg": {
+            "precision": 0.9922566715038296,
+            "recall": 0.9941081507360577,
+            "f1-score": 0.9931805141411404,
+            "support": 1494
+          },
+          "weighted avg": {
+            "precision": 0.9919926852825058,
+            "recall": 0.9939759036144579,
+            "f1-score": 0.9929822494701555,
+            "support": 1494
+          }
+        },
+        "time_sec": 13.51
+      },
+      "dev_recuperacion_int8": {
+        "formatos": {
+          "PER_ESTUDIANTE": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 0
+          },
+          "PER_DOCENTE": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 0
+          },
+          "MODULO": {
+            "precision": 0.9590163934426229,
+            "recall": 0.9435483870967742,
+            "f1-score": 0.951219512195122,
+            "support": 124
+          },
+          "PROGRAMA": {
+            "precision": 0.9666666666666667,
+            "recall": 0.9586776859504132,
+            "f1-score": 0.9626556016597511,
+            "support": 121
+          },
+          "micro avg": {
+            "precision": 0.9628099173553719,
+            "recall": 0.9510204081632653,
+            "f1-score": 0.9568788501026693,
+            "support": 245
+          },
+          "macro avg": {
+            "precision": 0.9628415300546448,
+            "recall": 0.9511130365235938,
+            "f1-score": 0.9569375569274365,
+            "support": 245
+          },
+          "weighted avg": {
+            "precision": 0.9627946916471506,
+            "recall": 0.9510204081632653,
+            "f1-score": 0.9568675400531632,
+            "support": 245
+          }
+        },
+        "general": {
+          "PER_ESTUDIANTE": {
+            "precision": 0.9971509971509972,
+            "recall": 1.0,
+            "f1-score": 0.9985734664764622,
+            "support": 350
+          },
+          "PER_DOCENTE": {
+            "precision": 0.9857549857549858,
+            "recall": 0.9885714285714285,
+            "f1-score": 0.9871611982881597,
+            "support": 350
+          },
+          "MODULO": {
+            "precision": 0.9896640826873385,
+            "recall": 0.9896640826873385,
+            "f1-score": 0.9896640826873385,
+            "support": 387
+          },
+          "PROGRAMA": {
+            "precision": 0.9901477832512315,
+            "recall": 0.9877149877149877,
+            "f1-score": 0.9889298892988929,
+            "support": 407
+          },
+          "micro avg": {
+            "precision": 0.9906354515050168,
+            "recall": 0.9912985274431058,
+            "f1-score": 0.9909668785547006,
+            "support": 1494
+          },
+          "macro avg": {
+            "precision": 0.9906794622111383,
+            "recall": 0.9914876247434387,
+            "f1-score": 0.9910821591877134,
+            "support": 1494
+          },
+          "weighted avg": {
+            "precision": 0.9906340306561882,
+            "recall": 0.9912985274431058,
+            "f1-score": 0.9909649247739406,
+            "support": 1494
+          }
+        }
+      }
+    },
+    {
+      "ruta": "output/cf/recuperacion/beto_e3",
+      "train_info": {
+        "status": "trained_success",
+        "timestamp": "2026-11-23T16:14:55.909220",
+        "model_base": "dccuchile/bert-base-spanish-wwm-cased",
+        "output_dir": "output/cf/recuperacion/beto_e3",
+        "epochs": 3,
+        "best_epoch": 3,
+        "learning_rate": 2.5e-05,
+        "weight_decay": 0.01,
+        "batch_size": 16,
+        "max_length": 128,
+        "seed": 42,
+        "train_size": 2088,
+        "dev_size": 424,
+        "test_gold_size": null,
+        "classes": [
+          "O",
+          "B-PER_ESTUDIANTE",
+          "I-PER_ESTUDIANTE",
+          "B-PER_DOCENTE",
+          "I-PER_DOCENTE",
+          "B-MODULO",
+          "I-MODULO",
+          "B-PROGRAMA",
+          "I-PROGRAMA"
+        ],
+        "best_dev_f1": 0.996,
+        "train_duration_sec": 49.65,
+        "device": "cuda",
+        "determinism": {
+          "algorithms": true,
+          "cpu_threads": 1,
+          "PYTHONHASHSEED": "0"
+        },
+        "selection": "checkpoint de la última época (sin early stopping)",
+        "saved_epoch": 3,
+        "training_dtype": "bfloat16 autocast",
+        "command": {
+          "argv": [
+            "/usr/local/bin/python",
+            "scripts/entrenar_beto_robusto.py",
+            "--datos",
+            "output/cf/corpus_recuperacion",
+            "--epochs",
+            "3",
+            "--salida",
+            "output/cf/recuperacion/beto_e3",
+            "--dispositivo",
+            "cuda",
+            "--solo-dev"
+          ],
+          "PYTHONHASHSEED": "0",
+          "cwd": "/workspace"
+        },
+        "versions": {
+          "python": "3.11.18",
+          "torch": "2.15.0+cu132",
+          "transformers": "5.23.0",
+          "seqeval": "1.2.2",
+          "numpy": "2.4.6"
+        },
+        "sha256": {
+          "model.safetensors": "49d2e50208ed796a21f1de25e776280ada999b56c9c0e7cf2510ea7aa144110e",
+          "train_robusto.jsonl": "83e3af41ca47dba75876b4f2acbce9dd1230b95615f6f65e38c04aef77b0c977",
+          "dev_robusto.jsonl": "662010c1d01d220893965e4e17c78b8b0c7b09057ee01c30fb5953f43c493b47"
+        },
+        "epoch_history": [
+          {
+            "epoch": 1,
+            "train_loss": 0.2747,
+            "dev_loss": 0.0096,
+            "dev_f1": 0.9933110367892978,
+            "dev_precision": 0.9926,
+            "dev_recall": 0.994,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9948453608247423,
+                "recall": 0.9974160206718347,
+                "f1-score": 0.9961290322580645,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9830028328611898,
+                "recall": 0.9914285714285714,
+                "f1-score": 0.9871977240398293,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 0.9971509971509972,
+                "recall": 1.0,
+                "f1-score": 0.9985734664764622,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.995049504950495,
+                "recall": 0.9877149877149877,
+                "f1-score": 0.9913686806411838,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.9926470588235294,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9933110367892978,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.9925121739468561,
+                "recall": 0.9941398949538485,
+                "f1-score": 0.9933172258538849,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9926667628234886,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9933125202045079,
+                "support": 1494
+              }
+            },
+            "time_sec": 14.27
+          },
+          {
+            "epoch": 2,
+            "train_loss": 0.0117,
+            "dev_loss": 0.0039,
+            "dev_f1": 0.9929789368104314,
+            "dev_precision": 0.992,
+            "dev_recall": 0.994,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9922680412371134,
+                "recall": 0.9948320413436692,
+                "f1-score": 0.9935483870967742,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9914285714285714,
+                "recall": 0.9914285714285714,
+                "f1-score": 0.9914285714285714,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.9853300733496333,
+                "recall": 0.9901719901719902,
+                "f1-score": 0.9877450980392156,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.9919839679358717,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9929789368104314,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.9922566715038296,
+                "recall": 0.9941081507360577,
+                "f1-score": 0.9931805141411404,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9919926852825058,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9929822494701555,
+                "support": 1494
+              }
+            },
+            "time_sec": 15.54
+          },
+          {
+            "epoch": 3,
+            "train_loss": 0.0033,
+            "dev_loss": 0.0033,
+            "dev_f1": 0.9959866220735786,
+            "dev_precision": 0.9953,
+            "dev_recall": 0.9967,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9922680412371134,
+                "recall": 0.9948320413436692,
+                "f1-score": 0.9935483870967742,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9943019943019943,
+                "recall": 0.9971428571428571,
+                "f1-score": 0.9957203994293866,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.995085995085995,
+                "recall": 0.995085995085995,
+                "f1-score": 0.995085995085995,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.9953208556149733,
+                "recall": 0.9966532797858099,
+                "f1-score": 0.9959866220735786,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.9954140076562756,
+                "recall": 0.9967652233931303,
+                "f1-score": 0.9960886954030389,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9953235809668414,
+                "recall": 0.9966532797858099,
+                "f1-score": 0.9959875271798774,
+                "support": 1494
+              }
+            },
+            "time_sec": 14.44
+          }
+        ]
+      },
+      "resultado_dev": {
+        "epoch": 3,
+        "train_loss": 0.0033,
+        "dev_loss": 0.0033,
+        "dev_f1": 0.9959866220735786,
+        "dev_precision": 0.9953,
+        "dev_recall": 0.9967,
+        "dev_por_etiqueta": {
+          "MODULO": {
+            "precision": 0.9922680412371134,
+            "recall": 0.9948320413436692,
+            "f1-score": 0.9935483870967742,
+            "support": 387
+          },
+          "PER_DOCENTE": {
+            "precision": 0.9943019943019943,
+            "recall": 0.9971428571428571,
+            "f1-score": 0.9957203994293866,
+            "support": 350
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 350
+          },
+          "PROGRAMA": {
+            "precision": 0.995085995085995,
+            "recall": 0.995085995085995,
+            "f1-score": 0.995085995085995,
+            "support": 407
+          },
+          "micro avg": {
+            "precision": 0.9953208556149733,
+            "recall": 0.9966532797858099,
+            "f1-score": 0.9959866220735786,
+            "support": 1494
+          },
+          "macro avg": {
+            "precision": 0.9954140076562756,
+            "recall": 0.9967652233931303,
+            "f1-score": 0.9960886954030389,
+            "support": 1494
+          },
+          "weighted avg": {
+            "precision": 0.9953235809668414,
+            "recall": 0.9966532797858099,
+            "f1-score": 0.9959875271798774,
+            "support": 1494
+          }
+        },
+        "time_sec": 14.44
+      },
+      "dev_recuperacion_int8": {
+        "formatos": {
+          "PER_ESTUDIANTE": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 0
+          },
+          "PER_DOCENTE": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 0
+          },
+          "MODULO": {
+            "precision": 0.9918032786885246,
+            "recall": 0.9758064516129032,
+            "f1-score": 0.983739837398374,
+            "support": 124
+          },
+          "PROGRAMA": {
+            "precision": 0.9669421487603306,
+            "recall": 0.9669421487603306,
+            "f1-score": 0.9669421487603306,
+            "support": 121
+          },
+          "micro avg": {
+            "precision": 0.9794238683127572,
+            "recall": 0.9714285714285714,
+            "f1-score": 0.9754098360655737,
+            "support": 245
+          },
+          "macro avg": {
+            "precision": 0.9793727137244276,
+            "recall": 0.9713743001866169,
+            "f1-score": 0.9753409930793523,
+            "support": 245
+          },
+          "weighted avg": {
+            "precision": 0.9795249247239879,
+            "recall": 0.9714285714285714,
+            "f1-score": 0.9754438360710138,
+            "support": 245
+          }
+        },
+        "general": {
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 350
+          },
+          "PER_DOCENTE": {
+            "precision": 0.9745762711864406,
+            "recall": 0.9857142857142858,
+            "f1-score": 0.9801136363636362,
+            "support": 350
+          },
+          "MODULO": {
+            "precision": 0.9948320413436692,
+            "recall": 0.9948320413436692,
+            "f1-score": 0.9948320413436692,
+            "support": 387
+          },
+          "PROGRAMA": {
+            "precision": 1.0,
+            "recall": 0.9975429975429976,
+            "f1-score": 0.998769987699877,
+            "support": 407
+          },
+          "micro avg": {
+            "precision": 0.9926519706078825,
+            "recall": 0.9946452476572959,
+            "f1-score": 0.9936476094951522,
+            "support": 1494
+          },
+          "macro avg": {
+            "precision": 0.9923520781325275,
+            "recall": 0.9945223311502381,
+            "f1-score": 0.9934289163517955,
+            "support": 1494
+          },
+          "weighted avg": {
+            "precision": 0.9927052844144941,
+            "recall": 0.9946452476572959,
+            "f1-score": 0.9936674415804033,
+            "support": 1494
+          }
+        }
+      }
+    },
+    {
+      "ruta": "output/cf/recuperacion/beto_e4",
+      "train_info": {
+        "status": "trained_success",
+        "timestamp": "2026-11-23T16:16:06.461205",
+        "model_base": "dccuchile/bert-base-spanish-wwm-cased",
+        "output_dir": "output/cf/recuperacion/beto_e4",
+        "epochs": 4,
+        "best_epoch": 3,
+        "learning_rate": 2.5e-05,
+        "weight_decay": 0.01,
+        "batch_size": 16,
+        "max_length": 128,
+        "seed": 42,
+        "train_size": 2088,
+        "dev_size": 424,
+        "test_gold_size": null,
+        "classes": [
+          "O",
+          "B-PER_ESTUDIANTE",
+          "I-PER_ESTUDIANTE",
+          "B-PER_DOCENTE",
+          "I-PER_DOCENTE",
+          "B-MODULO",
+          "I-MODULO",
+          "B-PROGRAMA",
+          "I-PROGRAMA"
+        ],
+        "best_dev_f1": 0.996,
+        "train_duration_sec": 65.3,
+        "device": "cuda",
+        "determinism": {
+          "algorithms": true,
+          "cpu_threads": 1,
+          "PYTHONHASHSEED": "0"
+        },
+        "selection": "checkpoint de la última época (sin early stopping)",
+        "saved_epoch": 4,
+        "training_dtype": "bfloat16 autocast",
+        "command": {
+          "argv": [
+            "/usr/local/bin/python",
+            "scripts/entrenar_beto_robusto.py",
+            "--datos",
+            "output/cf/corpus_recuperacion",
+            "--epochs",
+            "4",
+            "--salida",
+            "output/cf/recuperacion/beto_e4",
+            "--dispositivo",
+            "cuda",
+            "--solo-dev"
+          ],
+          "PYTHONHASHSEED": "0",
+          "cwd": "/workspace"
+        },
+        "versions": {
+          "python": "3.11.18",
+          "torch": "2.15.0+cu132",
+          "transformers": "5.23.0",
+          "seqeval": "1.2.2",
+          "numpy": "2.4.6"
+        },
+        "sha256": {
+          "model.safetensors": "963b84595be67c19b920438f724163e65238d75bb7e50e1c81407bba767be8c9",
+          "train_robusto.jsonl": "83e3af41ca47dba75876b4f2acbce9dd1230b95615f6f65e38c04aef77b0c977",
+          "dev_robusto.jsonl": "662010c1d01d220893965e4e17c78b8b0c7b09057ee01c30fb5953f43c493b47"
+        },
+        "epoch_history": [
+          {
+            "epoch": 1,
+            "train_loss": 0.2747,
+            "dev_loss": 0.0096,
+            "dev_f1": 0.9933110367892978,
+            "dev_precision": 0.9926,
+            "dev_recall": 0.994,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9948453608247423,
+                "recall": 0.9974160206718347,
+                "f1-score": 0.9961290322580645,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9830028328611898,
+                "recall": 0.9914285714285714,
+                "f1-score": 0.9871977240398293,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 0.9971509971509972,
+                "recall": 1.0,
+                "f1-score": 0.9985734664764622,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.995049504950495,
+                "recall": 0.9877149877149877,
+                "f1-score": 0.9913686806411838,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.9926470588235294,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9933110367892978,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.9925121739468561,
+                "recall": 0.9941398949538485,
+                "f1-score": 0.9933172258538849,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9926667628234886,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9933125202045079,
+                "support": 1494
+              }
+            },
+            "time_sec": 14.16
+          },
+          {
+            "epoch": 2,
+            "train_loss": 0.0117,
+            "dev_loss": 0.0039,
+            "dev_f1": 0.9929789368104314,
+            "dev_precision": 0.992,
+            "dev_recall": 0.994,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9922680412371134,
+                "recall": 0.9948320413436692,
+                "f1-score": 0.9935483870967742,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9914285714285714,
+                "recall": 0.9914285714285714,
+                "f1-score": 0.9914285714285714,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.9853300733496333,
+                "recall": 0.9901719901719902,
+                "f1-score": 0.9877450980392156,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.9919839679358717,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9929789368104314,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.9922566715038296,
+                "recall": 0.9941081507360577,
+                "f1-score": 0.9931805141411404,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9919926852825058,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9929822494701555,
+                "support": 1494
+              }
+            },
+            "time_sec": 15.36
+          },
+          {
+            "epoch": 3,
+            "train_loss": 0.0033,
+            "dev_loss": 0.0033,
+            "dev_f1": 0.9959866220735786,
+            "dev_precision": 0.9953,
+            "dev_recall": 0.9967,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9922680412371134,
+                "recall": 0.9948320413436692,
+                "f1-score": 0.9935483870967742,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9943019943019943,
+                "recall": 0.9971428571428571,
+                "f1-score": 0.9957203994293866,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.995085995085995,
+                "recall": 0.995085995085995,
+                "f1-score": 0.995085995085995,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.9953208556149733,
+                "recall": 0.9966532797858099,
+                "f1-score": 0.9959866220735786,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.9954140076562756,
+                "recall": 0.9967652233931303,
+                "f1-score": 0.9960886954030389,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9953235809668414,
+                "recall": 0.9966532797858099,
+                "f1-score": 0.9959875271798774,
+                "support": 1494
+              }
+            },
+            "time_sec": 15.08
+          },
+          {
+            "epoch": 4,
+            "train_loss": 0.0026,
+            "dev_loss": 0.0067,
+            "dev_f1": 0.9923102641257106,
+            "dev_precision": 0.9913,
+            "dev_recall": 0.9933,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9974160206718347,
+                "recall": 0.9974160206718347,
+                "f1-score": 0.9974160206718347,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9745042492917847,
+                "recall": 0.9828571428571429,
+                "f1-score": 0.9786628733997155,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.9926289926289926,
+                "recall": 0.9926289926289926,
+                "f1-score": 0.9926289926289926,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.991315965263861,
+                "recall": 0.9933065595716198,
+                "f1-score": 0.9923102641257106,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.991137315648153,
+                "recall": 0.9932255390394925,
+                "f1-score": 0.9921769716751357,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9913497237296685,
+                "recall": 0.9933065595716198,
+                "f1-score": 0.9923239663252346,
+                "support": 1494
+              }
+            },
+            "time_sec": 15.01
+          }
+        ]
+      },
+      "resultado_dev": {
+        "epoch": 4,
+        "train_loss": 0.0026,
+        "dev_loss": 0.0067,
+        "dev_f1": 0.9923102641257106,
+        "dev_precision": 0.9913,
+        "dev_recall": 0.9933,
+        "dev_por_etiqueta": {
+          "MODULO": {
+            "precision": 0.9974160206718347,
+            "recall": 0.9974160206718347,
+            "f1-score": 0.9974160206718347,
+            "support": 387
+          },
+          "PER_DOCENTE": {
+            "precision": 0.9745042492917847,
+            "recall": 0.9828571428571429,
+            "f1-score": 0.9786628733997155,
+            "support": 350
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 350
+          },
+          "PROGRAMA": {
+            "precision": 0.9926289926289926,
+            "recall": 0.9926289926289926,
+            "f1-score": 0.9926289926289926,
+            "support": 407
+          },
+          "micro avg": {
+            "precision": 0.991315965263861,
+            "recall": 0.9933065595716198,
+            "f1-score": 0.9923102641257106,
+            "support": 1494
+          },
+          "macro avg": {
+            "precision": 0.991137315648153,
+            "recall": 0.9932255390394925,
+            "f1-score": 0.9921769716751357,
+            "support": 1494
+          },
+          "weighted avg": {
+            "precision": 0.9913497237296685,
+            "recall": 0.9933065595716198,
+            "f1-score": 0.9923239663252346,
+            "support": 1494
+          }
+        },
+        "time_sec": 15.01
+      },
+      "dev_recuperacion_int8": {
+        "formatos": {
+          "PER_ESTUDIANTE": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 0
+          },
+          "PER_DOCENTE": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 0
+          },
+          "MODULO": {
+            "precision": 0.9918032786885246,
+            "recall": 0.9758064516129032,
+            "f1-score": 0.983739837398374,
+            "support": 124
+          },
+          "PROGRAMA": {
+            "precision": 0.9669421487603306,
+            "recall": 0.9669421487603306,
+            "f1-score": 0.9669421487603306,
+            "support": 121
+          },
+          "micro avg": {
+            "precision": 0.9794238683127572,
+            "recall": 0.9714285714285714,
+            "f1-score": 0.9754098360655737,
+            "support": 245
+          },
+          "macro avg": {
+            "precision": 0.9793727137244276,
+            "recall": 0.9713743001866169,
+            "f1-score": 0.9753409930793523,
+            "support": 245
+          },
+          "weighted avg": {
+            "precision": 0.9795249247239879,
+            "recall": 0.9714285714285714,
+            "f1-score": 0.9754438360710138,
+            "support": 245
+          }
+        },
+        "general": {
+          "PER_ESTUDIANTE": {
+            "precision": 0.9971509971509972,
+            "recall": 1.0,
+            "f1-score": 0.9985734664764622,
+            "support": 350
+          },
+          "PER_DOCENTE": {
+            "precision": 0.98005698005698,
+            "recall": 0.9828571428571429,
+            "f1-score": 0.9814550641940085,
+            "support": 350
+          },
+          "MODULO": {
+            "precision": 0.9948320413436692,
+            "recall": 0.9948320413436692,
+            "f1-score": 0.9948320413436692,
+            "support": 387
+          },
+          "PROGRAMA": {
+            "precision": 1.0,
+            "recall": 0.995085995085995,
+            "f1-score": 0.9975369458128079,
+            "support": 407
+          },
+          "micro avg": {
+            "precision": 0.9933065595716198,
+            "recall": 0.9933065595716198,
+            "f1-score": 0.9933065595716198,
+            "support": 1494
+          },
+          "macro avg": {
+            "precision": 0.9930100046379117,
+            "recall": 0.9931937948217018,
+            "f1-score": 0.993099379456737,
+            "support": 1494
+          },
+          "weighted avg": {
+            "precision": 0.9933218152762998,
+            "recall": 0.9933065595716198,
+            "f1-score": 0.9933115948329836,
+            "support": 1494
+          }
+        }
+      }
+    },
+    {
+      "ruta": "output/cf/recuperacion/beto_e5",
+      "train_info": {
+        "status": "trained_success",
+        "timestamp": "2026-11-23T16:17:33.559820",
+        "model_base": "dccuchile/bert-base-spanish-wwm-cased",
+        "output_dir": "output/cf/recuperacion/beto_e5",
+        "epochs": 5,
+        "best_epoch": 5,
+        "learning_rate": 2.5e-05,
+        "weight_decay": 0.01,
+        "batch_size": 16,
+        "max_length": 128,
+        "seed": 42,
+        "train_size": 2088,
+        "dev_size": 424,
+        "test_gold_size": null,
+        "classes": [
+          "O",
+          "B-PER_ESTUDIANTE",
+          "I-PER_ESTUDIANTE",
+          "B-PER_DOCENTE",
+          "I-PER_DOCENTE",
+          "B-MODULO",
+          "I-MODULO",
+          "B-PROGRAMA",
+          "I-PROGRAMA"
+        ],
+        "best_dev_f1": 0.9973,
+        "train_duration_sec": 81.92,
+        "device": "cuda",
+        "determinism": {
+          "algorithms": true,
+          "cpu_threads": 1,
+          "PYTHONHASHSEED": "0"
+        },
+        "selection": "checkpoint de la última época (sin early stopping)",
+        "saved_epoch": 5,
+        "training_dtype": "bfloat16 autocast",
+        "command": {
+          "argv": [
+            "/usr/local/bin/python",
+            "scripts/entrenar_beto_robusto.py",
+            "--datos",
+            "output/cf/corpus_recuperacion",
+            "--epochs",
+            "5",
+            "--salida",
+            "output/cf/recuperacion/beto_e5",
+            "--dispositivo",
+            "cuda",
+            "--solo-dev"
+          ],
+          "PYTHONHASHSEED": "0",
+          "cwd": "/workspace"
+        },
+        "versions": {
+          "python": "3.11.18",
+          "torch": "2.15.0+cu132",
+          "transformers": "5.23.0",
+          "seqeval": "1.2.2",
+          "numpy": "2.4.6"
+        },
+        "sha256": {
+          "model.safetensors": "00011459020858595eb29e1d159798a8b28360175a3f253ae9cda2386502cf17",
+          "train_robusto.jsonl": "83e3af41ca47dba75876b4f2acbce9dd1230b95615f6f65e38c04aef77b0c977",
+          "dev_robusto.jsonl": "662010c1d01d220893965e4e17c78b8b0c7b09057ee01c30fb5953f43c493b47"
+        },
+        "epoch_history": [
+          {
+            "epoch": 1,
+            "train_loss": 0.2747,
+            "dev_loss": 0.0096,
+            "dev_f1": 0.9933110367892978,
+            "dev_precision": 0.9926,
+            "dev_recall": 0.994,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9948453608247423,
+                "recall": 0.9974160206718347,
+                "f1-score": 0.9961290322580645,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9830028328611898,
+                "recall": 0.9914285714285714,
+                "f1-score": 0.9871977240398293,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 0.9971509971509972,
+                "recall": 1.0,
+                "f1-score": 0.9985734664764622,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.995049504950495,
+                "recall": 0.9877149877149877,
+                "f1-score": 0.9913686806411838,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.9926470588235294,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9933110367892978,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.9925121739468561,
+                "recall": 0.9941398949538485,
+                "f1-score": 0.9933172258538849,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9926667628234886,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9933125202045079,
+                "support": 1494
+              }
+            },
+            "time_sec": 15.21
+          },
+          {
+            "epoch": 2,
+            "train_loss": 0.0117,
+            "dev_loss": 0.0039,
+            "dev_f1": 0.9929789368104314,
+            "dev_precision": 0.992,
+            "dev_recall": 0.994,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9922680412371134,
+                "recall": 0.9948320413436692,
+                "f1-score": 0.9935483870967742,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9914285714285714,
+                "recall": 0.9914285714285714,
+                "f1-score": 0.9914285714285714,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.9853300733496333,
+                "recall": 0.9901719901719902,
+                "f1-score": 0.9877450980392156,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.9919839679358717,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9929789368104314,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.9922566715038296,
+                "recall": 0.9941081507360577,
+                "f1-score": 0.9931805141411404,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9919926852825058,
+                "recall": 0.9939759036144579,
+                "f1-score": 0.9929822494701555,
+                "support": 1494
+              }
+            },
+            "time_sec": 15.6
+          },
+          {
+            "epoch": 3,
+            "train_loss": 0.0033,
+            "dev_loss": 0.0033,
+            "dev_f1": 0.9959866220735786,
+            "dev_precision": 0.9953,
+            "dev_recall": 0.9967,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9922680412371134,
+                "recall": 0.9948320413436692,
+                "f1-score": 0.9935483870967742,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9943019943019943,
+                "recall": 0.9971428571428571,
+                "f1-score": 0.9957203994293866,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.995085995085995,
+                "recall": 0.995085995085995,
+                "f1-score": 0.995085995085995,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.9953208556149733,
+                "recall": 0.9966532797858099,
+                "f1-score": 0.9959866220735786,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.9954140076562756,
+                "recall": 0.9967652233931303,
+                "f1-score": 0.9960886954030389,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9953235809668414,
+                "recall": 0.9966532797858099,
+                "f1-score": 0.9959875271798774,
+                "support": 1494
+              }
+            },
+            "time_sec": 15.43
+          },
+          {
+            "epoch": 4,
+            "train_loss": 0.0026,
+            "dev_loss": 0.0067,
+            "dev_f1": 0.9923102641257106,
+            "dev_precision": 0.9913,
+            "dev_recall": 0.9933,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 0.9974160206718347,
+                "recall": 0.9974160206718347,
+                "f1-score": 0.9974160206718347,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9745042492917847,
+                "recall": 0.9828571428571429,
+                "f1-score": 0.9786628733997155,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.9926289926289926,
+                "recall": 0.9926289926289926,
+                "f1-score": 0.9926289926289926,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.991315965263861,
+                "recall": 0.9933065595716198,
+                "f1-score": 0.9923102641257106,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.991137315648153,
+                "recall": 0.9932255390394925,
+                "f1-score": 0.9921769716751357,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9913497237296685,
+                "recall": 0.9933065595716198,
+                "f1-score": 0.9923239663252346,
+                "support": 1494
+              }
+            },
+            "time_sec": 15.12
+          },
+          {
+            "epoch": 5,
+            "train_loss": 0.0009,
+            "dev_loss": 0.0023,
+            "dev_f1": 0.9973226238286479,
+            "dev_precision": 0.9973,
+            "dev_recall": 0.9973,
+            "dev_por_etiqueta": {
+              "MODULO": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 387
+              },
+              "PER_DOCENTE": {
+                "precision": 0.9971428571428571,
+                "recall": 0.9971428571428571,
+                "f1-score": 0.9971428571428571,
+                "support": 350
+              },
+              "PER_ESTUDIANTE": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 350
+              },
+              "PROGRAMA": {
+                "precision": 0.9926289926289926,
+                "recall": 0.9926289926289926,
+                "f1-score": 0.9926289926289926,
+                "support": 407
+              },
+              "micro avg": {
+                "precision": 0.9973226238286479,
+                "recall": 0.9973226238286479,
+                "f1-score": 0.9973226238286479,
+                "support": 1494
+              },
+              "macro avg": {
+                "precision": 0.9974429624429625,
+                "recall": 0.9974429624429625,
+                "f1-score": 0.9974429624429625,
+                "support": 1494
+              },
+              "weighted avg": {
+                "precision": 0.9973226238286479,
+                "recall": 0.9973226238286479,
+                "f1-score": 0.9973226238286479,
+                "support": 1494
+              }
+            },
+            "time_sec": 14.99
+          }
+        ]
+      },
+      "resultado_dev": {
+        "epoch": 5,
+        "train_loss": 0.0009,
+        "dev_loss": 0.0023,
+        "dev_f1": 0.9973226238286479,
+        "dev_precision": 0.9973,
+        "dev_recall": 0.9973,
+        "dev_por_etiqueta": {
+          "MODULO": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 387
+          },
+          "PER_DOCENTE": {
+            "precision": 0.9971428571428571,
+            "recall": 0.9971428571428571,
+            "f1-score": 0.9971428571428571,
+            "support": 350
+          },
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 350
+          },
+          "PROGRAMA": {
+            "precision": 0.9926289926289926,
+            "recall": 0.9926289926289926,
+            "f1-score": 0.9926289926289926,
+            "support": 407
+          },
+          "micro avg": {
+            "precision": 0.9973226238286479,
+            "recall": 0.9973226238286479,
+            "f1-score": 0.9973226238286479,
+            "support": 1494
+          },
+          "macro avg": {
+            "precision": 0.9974429624429625,
+            "recall": 0.9974429624429625,
+            "f1-score": 0.9974429624429625,
+            "support": 1494
+          },
+          "weighted avg": {
+            "precision": 0.9973226238286479,
+            "recall": 0.9973226238286479,
+            "f1-score": 0.9973226238286479,
+            "support": 1494
+          }
+        },
+        "time_sec": 14.99
+      },
+      "dev_recuperacion_int8": {
+        "formatos": {
+          "PER_ESTUDIANTE": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 0
+          },
+          "PER_DOCENTE": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 0
+          },
+          "MODULO": {
+            "precision": 0.9918032786885246,
+            "recall": 0.9758064516129032,
+            "f1-score": 0.983739837398374,
+            "support": 124
+          },
+          "PROGRAMA": {
+            "precision": 0.9669421487603306,
+            "recall": 0.9669421487603306,
+            "f1-score": 0.9669421487603306,
+            "support": 121
+          },
+          "micro avg": {
+            "precision": 0.9794238683127572,
+            "recall": 0.9714285714285714,
+            "f1-score": 0.9754098360655737,
+            "support": 245
+          },
+          "macro avg": {
+            "precision": 0.9793727137244276,
+            "recall": 0.9713743001866169,
+            "f1-score": 0.9753409930793523,
+            "support": 245
+          },
+          "weighted avg": {
+            "precision": 0.9795249247239879,
+            "recall": 0.9714285714285714,
+            "f1-score": 0.9754438360710138,
+            "support": 245
+          }
+        },
+        "general": {
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 350
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 350
+          },
+          "MODULO": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 387
+          },
+          "PROGRAMA": {
+            "precision": 0.9975369458128078,
+            "recall": 0.995085995085995,
+            "f1-score": 0.9963099630996309,
+            "support": 407
+          },
+          "micro avg": {
+            "precision": 0.999330207635633,
+            "recall": 0.998661311914324,
+            "f1-score": 0.9989956478071643,
+            "support": 1494
+          },
+          "macro avg": {
+            "precision": 0.999384236453202,
+            "recall": 0.9987714987714987,
+            "f1-score": 0.9990774907749077,
+            "support": 1494
+          },
+          "weighted avg": {
+            "precision": 0.9993290073265145,
+            "recall": 0.998661311914324,
+            "f1-score": 0.9989947489836344,
+            "support": 1494
+          }
+        }
+      }
+    }
+  ],
+  "epoca_elegida": 3,
+  "vigente": {
+    "ruta": "pipeline/semantic/beto_local",
+    "sha256": {
+      "config.json": "498c02a8c4e13f243eec6589d53ed77fcea645890deebb2d2374961a8710be60",
+      "metricas_ner_robusto.json": "287f26f784f3696f27df8a1fccaa6341f2af56e0f6c23fa9fcc96add641873fd",
+      "model.safetensors": "9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92",
+      "predicciones_test_gold.json": "4594b81fc936aea692f40fcebf4399056b0dc42724f9219f804a76e5ea721a8e",
+      "tokenizer.json": "29f908924ecfc985bb4ddf8b856fd94407f48792b11e069d56d40e8b55ebfb61",
+      "tokenizer_config.json": "3400e0fe6e6d4148ee825295d3565d024f7556beaf3c3e1739f8a3f2a7694f75",
+      "training_info.json": "4b882cdc2e90a3f8736220720326dbe3773029d92b3b1c4f3277017c4d3e143b"
+    },
+    "capas_lineales_int8": 73,
+    "resultados": {
+      "fp32": {
+        "test_gold_real": {
+          "PER_ESTUDIANTE": {
+            "precision": 0.9923076923076923,
+            "recall": 0.9923076923076923,
+            "f1-score": 0.9923076923076923,
+            "support": 130
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 50
+          },
+          "MODULO": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 150
+          },
+          "PROGRAMA": {
+            "precision": 0.9354838709677419,
+            "recall": 0.9666666666666667,
+            "f1-score": 0.9508196721311476,
+            "support": 180
+          },
+          "micro avg": {
+            "precision": 0.9748062015503876,
+            "recall": 0.9862745098039216,
+            "f1-score": 0.9805068226120858,
+            "support": 510
+          },
+          "macro avg": {
+            "precision": 0.9819478908188586,
+            "recall": 0.9897435897435898,
+            "f1-score": 0.98578184110971,
+            "support": 510
+          },
+          "weighted avg": {
+            "precision": 0.975268817204301,
+            "recall": 0.9862745098039216,
+            "f1-score": 0.9806814529090325,
+            "support": 510
+          }
+        },
+        "layouts_5": {
+          "PER_ESTUDIANTE": {
+            "precision": 0.9,
+            "recall": 0.4090909090909091,
+            "f1-score": 0.5625000000000001,
+            "support": 22
+          },
+          "PER_DOCENTE": {
+            "precision": 0.34782608695652173,
+            "recall": 0.4444444444444444,
+            "f1-score": 0.3902439024390244,
+            "support": 18
+          },
+          "MODULO": {
+            "precision": 0.18181818181818182,
+            "recall": 0.11764705882352941,
+            "f1-score": 0.14285714285714285,
+            "support": 17
+          },
+          "PROGRAMA": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 15
+          },
+          "micro avg": {
+            "precision": 0.296875,
+            "recall": 0.2638888888888889,
+            "f1-score": 0.2794117647058824,
+            "support": 72
+          },
+          "macro avg": {
+            "precision": 0.3574110671936759,
+            "recall": 0.24279560308972076,
+            "f1-score": 0.2739002613240419,
+            "support": 72
+          },
+          "weighted avg": {
+            "precision": 0.4048858146684233,
+            "recall": 0.2638888888888889,
+            "f1-score": 0.30316613433991485,
+            "support": 72
+          }
+        }
+      },
+      "int8": {
+        "test_gold_real": {
+          "PER_ESTUDIANTE": {
+            "precision": 0.9923076923076923,
+            "recall": 0.9923076923076923,
+            "f1-score": 0.9923076923076923,
+            "support": 130
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 50
+          },
+          "MODULO": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 150
+          },
+          "PROGRAMA": {
+            "precision": 0.958041958041958,
+            "recall": 0.7611111111111111,
+            "f1-score": 0.848297213622291,
+            "support": 180
+          },
+          "micro avg": {
+            "precision": 0.985200845665962,
+            "recall": 0.9137254901960784,
+            "f1-score": 0.9481180061037641,
+            "support": 510
+          },
+          "macro avg": {
+            "precision": 0.9875874125874126,
+            "recall": 0.9383547008547009,
+            "f1-score": 0.9601512264824958,
+            "support": 510
+          },
+          "weighted avg": {
+            "precision": 0.9832304949952009,
+            "recall": 0.9137254901960784,
+            "f1-score": 0.9444970557882595,
+            "support": 510
+          }
+        },
+        "layouts_5": {
+          "PER_ESTUDIANTE": {
+            "precision": 0.9,
+            "recall": 0.4090909090909091,
+            "f1-score": 0.5625000000000001,
+            "support": 22
+          },
+          "PER_DOCENTE": {
+            "precision": 0.4090909090909091,
+            "recall": 0.5,
+            "f1-score": 0.45,
+            "support": 18
+          },
+          "MODULO": {
+            "precision": 0.26666666666666666,
+            "recall": 0.23529411764705882,
+            "f1-score": 0.25,
+            "support": 17
+          },
+          "PROGRAMA": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1-score": 0.0,
+            "support": 15
+          },
+          "micro avg": {
+            "precision": 0.36666666666666664,
+            "recall": 0.3055555555555556,
+            "f1-score": 0.3333333333333333,
+            "support": 72
+          },
+          "macro avg": {
+            "precision": 0.3939393939393939,
+            "recall": 0.286096256684492,
+            "f1-score": 0.31562500000000004,
+            "support": 72
+          },
+          "weighted avg": {
+            "precision": 0.44023569023569026,
+            "recall": 0.3055555555555556,
+            "f1-score": 0.3434027777777778,
+            "support": 72
+          }
+        }
+      }
+    }
+  },
+  "candidato": {
+    "ruta": "output/cf/recuperacion/beto_e3",
+    "sha256": {
+      "config.json": "d3b0d29dfb5cc6a9d8fb1c74c6a4733e29585a9b30c1fbd26934a86c0d02fa3e",
+      "model.safetensors": "49d2e50208ed796a21f1de25e776280ada999b56c9c0e7cf2510ea7aa144110e",
+      "tokenizer.json": "29f908924ecfc985bb4ddf8b856fd94407f48792b11e069d56d40e8b55ebfb61",
+      "tokenizer_config.json": "6ba7a742b99137ef06fa523ec28098e0856a5b3406af5e8163fe549893dd4711",
+      "training_info.json": "d1fdaae6a13888e8d4c74e99e454472f7862c76696723bb77d645692a80acd32"
+    },
+    "capas_lineales_int8": 73,
+    "resultados": {
+      "fp32": {
+        "test_gold_real": {
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 0.9923076923076923,
+            "f1-score": 0.9961389961389961,
+            "support": 130
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 50
+          },
+          "MODULO": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 150
+          },
+          "PROGRAMA": {
+            "precision": 0.9834254143646409,
+            "recall": 0.9888888888888889,
+            "f1-score": 0.9861495844875346,
+            "support": 180
+          },
+          "micro avg": {
+            "precision": 0.9941176470588236,
+            "recall": 0.9941176470588236,
+            "f1-score": 0.9941176470588236,
+            "support": 510
+          },
+          "macro avg": {
+            "precision": 0.9958563535911602,
+            "recall": 0.9952991452991453,
+            "f1-score": 0.9955721451566327,
+            "support": 510
+          },
+          "weighted avg": {
+            "precision": 0.9941501462463438,
+            "recall": 0.9941176470588236,
+            "f1-score": 0.9941274405996584,
+            "support": 510
+          }
+        },
+        "layouts_5": {
+          "PER_ESTUDIANTE": {
+            "precision": 0.8571428571428571,
+            "recall": 0.2727272727272727,
+            "f1-score": 0.41379310344827586,
+            "support": 22
+          },
+          "PER_DOCENTE": {
+            "precision": 0.37037037037037035,
+            "recall": 0.5555555555555556,
+            "f1-score": 0.4444444444444445,
+            "support": 18
+          },
+          "MODULO": {
+            "precision": 0.3181818181818182,
+            "recall": 0.4117647058823529,
+            "f1-score": 0.358974358974359,
+            "support": 17
+          },
+          "PROGRAMA": {
+            "precision": 0.5,
+            "recall": 0.4666666666666667,
+            "f1-score": 0.4827586206896552,
+            "support": 15
+          },
+          "micro avg": {
+            "precision": 0.42857142857142855,
+            "recall": 0.4166666666666667,
+            "f1-score": 0.4225352112676056,
+            "support": 72
+          },
+          "macro avg": {
+            "precision": 0.5114237614237614,
+            "recall": 0.42667855020796197,
+            "f1-score": 0.4249926318891836,
+            "support": 72
+          },
+          "weighted avg": {
+            "precision": 0.5337902837902838,
+            "recall": 0.4166666666666667,
+            "f1-score": 0.42288044012181947,
+            "support": 72
+          }
+        }
+      },
+      "int8": {
+        "test_gold_real": {
+          "PER_ESTUDIANTE": {
+            "precision": 1.0,
+            "recall": 0.9923076923076923,
+            "f1-score": 0.9961389961389961,
+            "support": 130
+          },
+          "PER_DOCENTE": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 50
+          },
+          "MODULO": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 150
+          },
+          "PROGRAMA": {
+            "precision": 0.9508196721311475,
+            "recall": 0.9666666666666667,
+            "f1-score": 0.9586776859504132,
+            "support": 180
+          },
+          "micro avg": {
+            "precision": 0.982421875,
+            "recall": 0.9862745098039216,
+            "f1-score": 0.9843444227005871,
+            "support": 510
+          },
+          "macro avg": {
+            "precision": 0.9877049180327868,
+            "recall": 0.9897435897435898,
+            "f1-score": 0.9887041705223524,
+            "support": 510
+          },
+          "weighted avg": {
+            "precision": 0.9826422372227579,
+            "recall": 0.9862745098039216,
+            "f1-score": 0.9844314764100862,
+            "support": 510
+          }
+        },
+        "layouts_5": {
+          "PER_ESTUDIANTE": {
+            "precision": 0.875,
+            "recall": 0.3181818181818182,
+            "f1-score": 0.4666666666666667,
+            "support": 22
+          },
+          "PER_DOCENTE": {
+            "precision": 0.22580645161290322,
+            "recall": 0.3888888888888889,
+            "f1-score": 0.2857142857142857,
+            "support": 18
+          },
+          "MODULO": {
+            "precision": 0.3181818181818182,
+            "recall": 0.4117647058823529,
+            "f1-score": 0.358974358974359,
+            "support": 17
+          },
+          "PROGRAMA": {
+            "precision": 0.45454545454545453,
+            "recall": 0.3333333333333333,
+            "f1-score": 0.3846153846153846,
+            "support": 15
+          },
+          "micro avg": {
+            "precision": 0.3611111111111111,
+            "recall": 0.3611111111111111,
+            "f1-score": 0.3611111111111111,
+            "support": 72
+          },
+          "macro avg": {
+            "precision": 0.468383431085044,
+            "recall": 0.3630421865715983,
+            "f1-score": 0.373992673992674,
+            "support": 72
+          },
+          "weighted avg": {
+            "precision": 0.4936359563375692,
+            "recall": 0.3611111111111111,
+            "f1-score": 0.3789072039072039,
+            "support": 72
+          }
+        }
+      }
+    }
+  },
+  "delta_f1_micro_layouts_int8": 0.02777777777777779,
+  "puertas": {
+    "rnf_04_int8_gold_f1_micro_min_0_85": true,
+    "mejora_int8_layouts_f1_micro": true
+  },
+  "aprobado_calidad_cf_l3": true,
+  "protocolo_recuperacion": {
+    "criterio": "Mayor F1 micro IOB2 estricto INT8 en dev de formatos; en empate gana la menor época.",
+    "minimo_f1_micro_int8_dev_general": 0.85,
+    "particiones": {
+      "formatos": {
+        "ruta": "output/cf/corpus_recuperacion/dev_layout_cf.jsonl",
+        "sha256": "5075a854d4e9d63d8425bba945ef5a585362b26ede21803cc6add41b46bd253c",
+        "filas": 144
+      },
+      "general": {
+        "ruta": "output/cf/corpus_recuperacion/dev_robusto.jsonl",
+        "sha256": "662010c1d01d220893965e4e17c78b8b0c7b09057ee01c30fb5953f43c493b47",
+        "filas": 424
+      }
+    },
+    "nota": "Los reservados históricos se consultan una vez tras fijar el candidato; ya se usaron en CF-L3 inicial."
+  }
+}

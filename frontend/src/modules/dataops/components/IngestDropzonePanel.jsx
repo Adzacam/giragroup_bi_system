@@ -1,5 +1,5 @@
 import React from 'react';
-import { UploadCloud, Play } from 'lucide-react';
+import { UploadCloud, Play, XCircle } from 'lucide-react';
 import Button from '../../../components/shared/Button';
 import { MAX_ARCHIVOS_POR_LOTE, MAX_TAMANO_ARCHIVO_MB } from '../../../constants/dataopsConfig';
 
@@ -17,6 +17,7 @@ export default function IngestDropzonePanel({
   onFileSelect,
   onProcessBatch,
   onClearQueue,
+  onCancelUpload,
 }) {
   return (
     <div className="floating-artifact" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -103,6 +104,22 @@ export default function IngestDropzonePanel({
         >
           Vaciar cola ({queuedFiles.length})
         </Button>
+
+        {isProcessing && onCancelUpload && (
+          <Button
+            variant="ghost"
+            className="dataops-btn-danger"
+            onClick={onCancelUpload}
+            style={{
+              padding: '8px 14px',
+              fontSize: '12px',
+              borderRadius: '8px',
+              fontWeight: 600,
+            }}
+          >
+            <XCircle size={14} /> Cancelar carga
+          </Button>
+        )}
       </div>
     </div>
   );

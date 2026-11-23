@@ -309,6 +309,14 @@
   box-shadow: 0 8px 24px rgba(12, 30, 51, 0.04);
 }
 
+[data-theme="dark"] .v2-topbar-sticky,
+[data-theme="dark"] [data-ui-version="v2"] .v2-topbar-sticky {
+  background-color: var(--color-paper-white);
+  border-color: var(--color-border);
+  color: var(--color-ink-black);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
 .v2-topbar-progress-track {
   position: absolute;
   inset: 0;
@@ -1008,6 +1016,38 @@
 
   .v2-actions-slot {
     gap: 2px;
+  }
+
+  .v2-mobile-bottom-wrap {
+    left: 8px;
+    right: 8px;
+  }
+
+  .v2-mobile-pill {
+    width: 100%;
+    height: auto;
+    min-height: 54px;
+    padding: 4px 6px;
+    justify-content: space-around;
+    gap: 2px;
+    overflow: hidden;
+  }
+
+  .v2-mobile-pill-item {
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 4px;
+    font-size: 10px;
+    line-height: 1.1;
+  }
+
+  .v2-mobile-pill-item span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 

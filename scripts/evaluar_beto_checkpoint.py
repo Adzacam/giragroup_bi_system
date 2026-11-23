@@ -9,11 +9,13 @@ sys.path.insert(0, str(ROOT))
 from scripts.beto_metricas import load_conll, metricas_relajadas
 from scripts.matriz_confusion_ner import generar
 
+MAX_LENGTH = 128
+
 
 def predecir(tokens, tokenizer, model):
     import torch
     enc = tokenizer(tokens, is_split_into_words=True, return_tensors="pt",
-                    truncation=True, max_length=512)
+                    truncation=True, max_length=MAX_LENGTH)
     ids = enc.word_ids()
     cubiertos = {i for i in ids if i is not None}
     if len(cubiertos) != len(tokens):

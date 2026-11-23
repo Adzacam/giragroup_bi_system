@@ -92,6 +92,7 @@ def get_historial_lotes(
             "status": estado,
             "puede_reintentar_lectura": bool(ids and lectura and lectura["estado"] == "ERROR"),
             "puede_eliminar": lote.estado == "CON_ERRORES" and not ids,
+            "puede_reiniciar": estado != "CONSOLIDADO",
         })
     return {"data": items, "total": total, "page": page, "page_size": page_size}
 
@@ -106,6 +107,44 @@ def eliminar_lote_fallido(id_lote: int, db: Session = Depends(get_db)):
     db.delete(lote)
     db.commit()
     return {"status": "success"}
+
+
+@router.delete("/lote/{id_lote}")
+def reiniciar_lote(id_lote: int, db: Session = Depends(get_db)):
+    """
+    Elimina y reinicia un lote no consolidado (incluyendo sus archivos en staging,
+    logs y copias en landing), cancelando cualquier tarea EN_CURSO asociada.
+    Protegido por el router DataOps (ADMIN / AUDITOR_CALIDAD).
+    """
+    import shutil
+    from .evaluacion import _asegurar_lote_editable
+
+    lote = db.query(Lote).filter_by(id_lote=id_lote).first()
+    if not lote:
+        raise HTTPException(status_code=404, detail="El lote no existe.")
+
+    _asegurar_lote_editable(db, id_lote)
+    tareas_dataops.cancelar_por_lote(id_lote, "Cancelada por reinicio de lote.")
+
+    docs = db.query(DimOrigenDocumental).filter_by(id_lote=id_lote).all()
+    doc_ids = [d.id_documento for d in docs]
+    eliminados = 0
+    if doc_ids:
+        eliminados = IngestionService._eliminar_documentos_transaccion(db, doc_ids)
+
+    db.query(Lote).filter_by(id_lote=id_lote).delete(synchronize_session=False)
+    db.commit()
+
+    batch_landing_dir = os.path.join(LANDING_DIR, str(id_lote))
+    if os.path.isdir(batch_landing_dir):
+        shutil.rmtree(batch_landing_dir, ignore_errors=True)
+
+    return {
+        "status": "success",
+        "id_lote": id_lote,
+        "archivos_eliminados": eliminados,
+        "message": f"Lote #{id_lote} reiniciado correctamente.",
+    }
 
 
 @router.delete("/sources/clear-completed")
@@ -346,7 +385,31 @@ def upload_batch(
     hashes_en_lote = set()
     docs_creados_ids: List[int] = []
 
+    def _cancelar_upload_lote() -> BatchUploadResponse:
+        import shutil
+        if docs_creados_ids:
+            IngestionService._eliminar_documentos_transaccion(db, docs_creados_ids)
+        db.query(Lote).filter_by(id_lote=nuevo_lote.id_lote).delete(synchronize_session=False)
+        db.commit()
+        if os.path.isdir(batch_landing_dir):
+            shutil.rmtree(batch_landing_dir, ignore_errors=True)
+        return BatchUploadResponse(
+            status="cancelled",
+            message=f"Carga del Lote #{nuevo_lote.id_lote} cancelada por el usuario.",
+            id_lote=None,
+            total_archivos=len(files),
+            archivos_exitosos=0,
+            files_processed=0,
+            archivos_fallidos=len(files),
+            total_registros_detectados=0,
+            resultados=[],
+            archivos_procesados=[],
+            errores=[],
+        )
+
     for idx, f in enumerate(files):
+        if tareas_dataops.esta_cancelada(tarea_ingesta):
+            return _cancelar_upload_lote()
         tareas_dataops.avanzar(tarea_ingesta, idx, forzar=True)
         raw_name = f.filename or f"archivo_{idx + 1}.xlsx"
         safe_name = IngestionService.sanitizar_nombre_archivo(raw_name)
@@ -537,6 +600,9 @@ def upload_batch(
                 status="error_validacion",
                 mensaje=err_msg,
             ))
+
+    if tareas_dataops.esta_cancelada(tarea_ingesta):
+        return _cancelar_upload_lote()
 
     exitosos = [r for r in resultados if r.status == "procesado"]
     nuevo_lote.total_archivos = len(exitosos)

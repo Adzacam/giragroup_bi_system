@@ -1,8 +1,11 @@
 import React from 'react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import MasterDataView from '../MasterDataView';
+import DataOpsTabs from '../components/DataOpsTabs';
 
 const mockRole = { value: 'ADMIN' };
 const mockQueryData = { value: null };
@@ -73,5 +76,42 @@ describe('CAT-L5 / CAT-L7 — MasterDataView', () => {
     mockRole.value = 'AUDITOR_CALIDAD';
     const html = renderStatic();
     expect(html).not.toContain('Limpiar módulos sin uso (3)');
+  });
+
+  it('aplica min-width:0 al input de búsqueda y tokens adaptativos en MasterDataView.css', () => {
+    const html = renderStatic();
+    expect(html).toContain('min-width:0');
+
+    const css = readFileSync(resolve(__dirname, '../MasterDataView.css'), 'utf8');
+    expect(css).not.toMatch(/--color-surface\b/);
+    expect(css).not.toMatch(/--color-ink(?!-black)\b/);
+    expect(css).toContain('flex-wrap: wrap');
+    expect(css).toContain('--dataops-success-bg');
+    expect(css).toContain('--dataops-info-bg');
+    expect(css).toContain('--dataops-gold-bg');
+  });
+
+  it('usa tokens adaptativos para los badges count en DataOpsTabs (activo e inactivo)', () => {
+    const html = renderToStaticMarkup(
+      <DataOpsTabs
+        activeTab="a"
+        onChangeTab={() => {}}
+        tabs={[
+          { id: 'a', label: 'Activa', count: 5 },
+          { id: 'b', label: 'Inactiva', count: 12 },
+        ]}
+      />,
+    );
+    expect(html).toContain('var(--color-paper-white, #ffffff)');
+    expect(html).toContain('var(--color-ink-black, #17191c)');
+    expect(html).not.toContain('background-color:rgba(0, 0, 0, 0.08)');
+    expect(html).toContain('border:1px solid var(--color-border, #ececec)');
+  });
+
+  it('alinea data-label="Años con techo / Escala" en la tabla de instituciones', () => {
+    const jsx = readFileSync(resolve(__dirname, '../MasterDataView.jsx'), 'utf8');
+    expect(jsx).toContain('<th>Años con techo / Escala</th>');
+    expect(jsx).toContain('data-label="Años con techo / Escala"');
+    expect(jsx).not.toContain('data-label="Detalle"');
   });
 });

@@ -1,0 +1,1142 @@
+{
+ "etiqueta": "F3, aporte operativo 10 archivos",
+ "modelo": "beto-v2",
+ "modelo_sha256_prefijo": "9ff7fb9d",
+ "lote_congelado": {
+  "archivos": 10,
+  "sha256": "aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60",
+  "lineas_totales": 12992,
+  "entorno": "beto_pg_tmpfs (copia tmpfs aislada, PYTHONHASHSEED=0, semilla=42)"
+ },
+ "modos": {
+  "A": {
+   "descripcion": "Sin BETO (solo reglas determinísticas: CI_EXACTA + ENCABEZADO + FUZZY + REGEX)",
+   "tiempo_maquina_s": {
+    "cache_vacia": {
+     "valores": [
+      462.99,
+      251.41,
+      251.92
+     ],
+     "media": 322.11,
+     "de": 122.01,
+     "min": 251.41,
+     "max": 462.99
+    },
+    "cache_llena": {
+     "valores": [
+      291.71,
+      265.53,
+      263.53
+     ],
+     "media": 273.59,
+     "de": 15.72,
+     "min": 263.53,
+     "max": 291.71
+    }
+   },
+   "desglose_etapas_s": {
+    "cache_vacia_media": {
+     "carga_y_lectura_s": 168.51,
+     "consolidacion_s": 153.21,
+     "revision_maquina_s": 0.37
+    },
+    "cache_llena_media": {
+     "carga_y_lectura_s": 132.76,
+     "consolidacion_s": 140.49,
+     "revision_maquina_s": 0.32
+    }
+   },
+   "bandeja": {
+    "casos": 20,
+    "grupos": 6,
+    "grupos_manuales": 4,
+    "casos_manuales": 5
+   },
+   "klm": {
+    "con_espera_10s_s": 104.0,
+    "sin_espera_s": 34.0
+   },
+   "kpis": {
+    "KPI-10_lote": 0.9662,
+    "KPI-11_lote": 100.0,
+    "KPI-18_bandeja": 5.0,
+    "scorecard_2026": {
+     "KPI-10": null,
+     "KPI-11": null,
+     "KPI-18": 5.0
+    },
+    "scorecard_2025": {
+     "KPI-10": 98.02,
+     "KPI-11": 100.0,
+     "KPI-18": null
+    }
+   },
+   "fact_marketing_total": 299,
+   "por_archivo": {
+    "BD Cobranzas.xlsx": {
+     "id_documento": 1,
+     "tipo_fuente": "COBRANZA",
+     "lineas_staging": 746,
+     "hechos_cargados": 725,
+     "directo": 725,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 21,
+     "personas_fk_estado": {
+      "A": 725,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": 0.9391,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 1450,
+      "ENCABEZADO": 1269,
+      "FUZZY": 0,
+      "REGEX": 718,
+      "BETO": 0
+     }
+    },
+    "BD Egresos.xlsx": {
+     "id_documento": 2,
+     "tipo_fuente": "RENTABILIDAD",
+     "lineas_staging": 1409,
+     "hechos_cargados": 1371,
+     "directo": 1371,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 2,
+     "staging": 15,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 1046,
+      "ENCABEZADO": 2756,
+      "FUZZY": 0,
+      "REGEX": 351,
+      "BETO": 0
+     }
+    },
+    "BD Techos.xlsx": {
+     "id_documento": 3,
+     "tipo_fuente": "MARKETING",
+     "lineas_staging": 1,
+     "hechos_cargados": 1,
+     "directo": 0,
+     "directo_pct": 0.0,
+     "hitl_casos": 1,
+     "hitl_grupos_staging": 0,
+     "staging": 0,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 0.0,
+      "KPI-18": 1
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 0,
+      "ENCABEZADO": 2,
+      "FUZZY": 0,
+      "REGEX": 1,
+      "BETO": 0
+     }
+    },
+    "Base centralizada Académica ARCA (1).xlsx": {
+     "id_documento": 4,
+     "tipo_fuente": "ACTA",
+     "lineas_staging": 1201,
+     "hechos_cargados": 1404,
+     "directo": 1404,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 764,
+     "personas_fk_estado": {
+      "A": 1397,
+      "B": 7,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": 0.9802,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 849,
+      "ENCABEZADO": 61,
+      "FUZZY": 12,
+      "REGEX": 23,
+      "BETO": 0
+     }
+    },
+    "EJECUTADO VS META.xlsx": {
+     "id_documento": 5,
+     "tipo_fuente": "RENTABILIDAD",
+     "lineas_staging": 36,
+     "hechos_cargados": 95,
+     "directo": 95,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 12,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 24,
+      "ENCABEZADO": 0,
+      "FUZZY": 0,
+      "REGEX": 0,
+      "BETO": 0
+     }
+    },
+    "Evaluación Docente y Unifranz.xlsx": {
+     "id_documento": 6,
+     "tipo_fuente": "EVALUACION_DOCENTE",
+     "lineas_staging": 4886,
+     "hechos_cargados": 71458,
+     "directo": 71458,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 1076,
+     "personas_fk_estado": {
+      "A": 16830,
+      "B": 589,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 0,
+      "ENCABEZADO": 1388,
+      "FUZZY": 3589,
+      "REGEX": 7620,
+      "BETO": 0
+     }
+    },
+    "Experiencia Docente 2.0.xlsx": {
+     "id_documento": 7,
+     "tipo_fuente": "ACTA",
+     "lineas_staging": 1137,
+     "hechos_cargados": 29866,
+     "directo": 29866,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 0,
+     "personas_fk_estado": {
+      "A": 761,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 64,
+      "ENCABEZADO": 2553,
+      "FUZZY": 225,
+      "REGEX": 1138,
+      "BETO": 0
+     }
+    },
+    "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx": {
+     "id_documento": 8,
+     "tipo_fuente": "RENTABILIDAD",
+     "lineas_staging": 2303,
+     "hechos_cargados": 0,
+     "directo": 0,
+     "directo_pct": 0.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 1911,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": null,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 0,
+      "ENCABEZADO": 0,
+      "FUZZY": 0,
+      "REGEX": 0,
+      "BETO": 0
+     }
+    },
+    "TBL_INSCRITOS.xlsx": {
+     "id_documento": 9,
+     "tipo_fuente": "ADMISION",
+     "lineas_staging": 391,
+     "hechos_cargados": 0,
+     "directo": 0,
+     "directo_pct": 0.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 1,
+     "staging": 4,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": null,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 778,
+      "ENCABEZADO": 721,
+      "FUZZY": 2,
+      "REGEX": 2,
+      "BETO": 0
+     }
+    },
+    "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx": {
+     "id_documento": 10,
+     "tipo_fuente": "EVALUACION_DOCENTE",
+     "lineas_staging": 883,
+     "hechos_cargados": 3671,
+     "directo": 3671,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 107,
+     "personas_fk_estado": {
+      "A": 248,
+      "B": 51,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 5,
+      "ENCABEZADO": 502,
+      "FUZZY": 644,
+      "REGEX": 747,
+      "BETO": 0
+     }
+    }
+   }
+  },
+  "B": {
+   "descripcion": "Cascada determinística + rescate semántico BETO (BETO_CASCADA_FINAL=1 + índice BETO)",
+   "tiempo_maquina_s": {
+    "cache_vacia": {
+     "valores": [
+      738.23,
+      764.09,
+      744.96
+     ],
+     "media": 749.09,
+     "de": 13.42,
+     "min": 738.23,
+     "max": 764.09
+    },
+    "cache_llena": {
+     "valores": [
+      254.16,
+      287.81,
+      406.14
+     ],
+     "media": 316.04,
+     "de": 79.83,
+     "min": 254.16,
+     "max": 406.14
+    }
+   },
+   "desglose_etapas_s": {
+    "cache_vacia_media": {
+     "carga_y_lectura_s": 134.09,
+     "consolidacion_s": 612.6,
+     "revision_maquina_s": 2.38
+    },
+    "cache_llena_media": {
+     "carga_y_lectura_s": 155.25,
+     "consolidacion_s": 156.99,
+     "revision_maquina_s": 3.78
+    }
+   },
+   "bandeja": {
+    "casos": 676,
+    "grupos": 17,
+    "grupos_manuales": 12,
+    "casos_manuales": 43
+   },
+   "klm": {
+    "con_espera_10s_s": 680.6,
+    "sin_espera_s": 200.6
+   },
+   "kpis": {
+    "KPI-10_lote": 0.8793,
+    "KPI-11_lote": 99.99,
+    "KPI-18_bandeja": 32.0,
+    "scorecard_2026": {
+     "KPI-10": null,
+     "KPI-11": null,
+     "KPI-18": 32.0
+    },
+    "scorecard_2025": {
+     "KPI-10": 84.64,
+     "KPI-11": 54.85,
+     "KPI-18": null
+    }
+   },
+   "fact_marketing_total": 299,
+   "por_archivo": {
+    "BD Cobranzas.xlsx": {
+     "id_documento": 1,
+     "tipo_fuente": "COBRANZA",
+     "lineas_staging": 746,
+     "hechos_cargados": 725,
+     "directo": 725,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 21,
+     "personas_fk_estado": {
+      "A": 725,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": 0.9435,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 1454,
+      "ENCABEZADO": 1275,
+      "FUZZY": 0,
+      "REGEX": 720,
+      "BETO": 0
+     }
+    },
+    "BD Egresos.xlsx": {
+     "id_documento": 2,
+     "tipo_fuente": "RENTABILIDAD",
+     "lineas_staging": 1409,
+     "hechos_cargados": 1371,
+     "directo": 1371,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 2,
+     "staging": 15,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 1046,
+      "ENCABEZADO": 2756,
+      "FUZZY": 0,
+      "REGEX": 351,
+      "BETO": 0
+     }
+    },
+    "BD Techos.xlsx": {
+     "id_documento": 3,
+     "tipo_fuente": "MARKETING",
+     "lineas_staging": 1,
+     "hechos_cargados": 1,
+     "directo": 0,
+     "directo_pct": 0.0,
+     "hitl_casos": 1,
+     "hitl_grupos_staging": 0,
+     "staging": 0,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 0.0,
+      "KPI-18": 1
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 0,
+      "ENCABEZADO": 2,
+      "FUZZY": 0,
+      "REGEX": 1,
+      "BETO": 0
+     }
+    },
+    "Base centralizada Académica ARCA (1).xlsx": {
+     "id_documento": 4,
+     "tipo_fuente": "ACTA",
+     "lineas_staging": 1201,
+     "hechos_cargados": 1392,
+     "directo": 1381,
+     "directo_pct": 99.21,
+     "hitl_casos": 11,
+     "hitl_grupos_staging": 1,
+     "staging": 773,
+     "personas_fk_estado": {
+      "A": 1385,
+      "B": 7,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": 0.8458,
+      "KPI-11": 99.21,
+      "KPI-18": 11
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 850,
+      "ENCABEZADO": 61,
+      "FUZZY": 12,
+      "REGEX": 23,
+      "BETO": 1
+     }
+    },
+    "EJECUTADO VS META.xlsx": {
+     "id_documento": 5,
+     "tipo_fuente": "RENTABILIDAD",
+     "lineas_staging": 36,
+     "hechos_cargados": 95,
+     "directo": 95,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 12,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 24,
+      "ENCABEZADO": 0,
+      "FUZZY": 0,
+      "REGEX": 0,
+      "BETO": 0
+     }
+    },
+    "Evaluación Docente y Unifranz.xlsx": {
+     "id_documento": 6,
+     "tipo_fuente": "EVALUACION_DOCENTE",
+     "lineas_staging": 4886,
+     "hechos_cargados": 71458,
+     "directo": 71458,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 1076,
+     "personas_fk_estado": {
+      "A": 16830,
+      "B": 589,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 0,
+      "ENCABEZADO": 1388,
+      "FUZZY": 3589,
+      "REGEX": 7620,
+      "BETO": 0
+     }
+    },
+    "Experiencia Docente 2.0.xlsx": {
+     "id_documento": 7,
+     "tipo_fuente": "ACTA",
+     "lineas_staging": 1137,
+     "hechos_cargados": 29866,
+     "directo": 29866,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 0,
+     "personas_fk_estado": {
+      "A": 761,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 64,
+      "ENCABEZADO": 2553,
+      "FUZZY": 225,
+      "REGEX": 1138,
+      "BETO": 0
+     }
+    },
+    "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx": {
+     "id_documento": 8,
+     "tipo_fuente": "RENTABILIDAD",
+     "lineas_staging": 2303,
+     "hechos_cargados": 0,
+     "directo": 0,
+     "directo_pct": 0.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 1911,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": null,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 0,
+      "ENCABEZADO": 0,
+      "FUZZY": 0,
+      "REGEX": 0,
+      "BETO": 0
+     }
+    },
+    "TBL_INSCRITOS.xlsx": {
+     "id_documento": 9,
+     "tipo_fuente": "ADMISION",
+     "lineas_staging": 391,
+     "hechos_cargados": 0,
+     "directo": 0,
+     "directo_pct": 0.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 1,
+     "staging": 4,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": null,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 780,
+      "ENCABEZADO": 724,
+      "FUZZY": 2,
+      "REGEX": 2,
+      "BETO": 0
+     }
+    },
+    "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx": {
+     "id_documento": 10,
+     "tipo_fuente": "EVALUACION_DOCENTE",
+     "lineas_staging": 883,
+     "hechos_cargados": 3615,
+     "directo": 3615,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 1,
+     "staging": 125,
+     "personas_fk_estado": {
+      "A": 152,
+      "B": 51,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 5,
+      "ENCABEZADO": 502,
+      "FUZZY": 644,
+      "REGEX": 747,
+      "BETO": 0
+     }
+    }
+   }
+  },
+  "C": {
+   "descripcion": "Solo BETO NER para extracción de personas (sin pistas de encabezado/CI previo) + índice BETO",
+   "tiempo_maquina_s": {
+    "cache_vacia": {
+     "valores": [
+      866.75,
+      2049.04,
+      1263.69
+     ],
+     "media": 1393.16,
+     "de": 601.68,
+     "min": 866.75,
+     "max": 2049.04
+    },
+    "cache_llena": {
+     "valores": [
+      497.27,
+      420.15,
+      412.37
+     ],
+     "media": 443.26,
+     "de": 46.93,
+     "min": 412.37,
+     "max": 497.27
+    }
+   },
+   "desglose_etapas_s": {
+    "cache_vacia_media": {
+     "carga_y_lectura_s": 250.44,
+     "consolidacion_s": 1113.33,
+     "revision_maquina_s": 29.36
+    },
+    "cache_llena_media": {
+     "carga_y_lectura_s": 206.34,
+     "consolidacion_s": 207.25,
+     "revision_maquina_s": 29.64
+    }
+   },
+   "bandeja": {
+    "casos": 892,
+    "grupos": 216,
+    "grupos_manuales": 211,
+    "casos_manuales": 260
+   },
+   "klm": {
+    "con_espera_10s_s": 3770.6,
+    "sin_espera_s": 1120.6
+   },
+   "kpis": {
+    "KPI-10_lote": 0.8809,
+    "KPI-11_lote": 99.92,
+    "KPI-18_bandeja": 33.0,
+    "scorecard_2026": {
+     "KPI-10": null,
+     "KPI-11": null,
+     "KPI-18": 33.0
+    },
+    "scorecard_2025": {
+     "KPI-10": 84.64,
+     "KPI-11": 54.85,
+     "KPI-18": null
+    }
+   },
+   "fact_marketing_total": 299,
+   "por_archivo": {
+    "BD Cobranzas.xlsx": {
+     "id_documento": 1,
+     "tipo_fuente": "COBRANZA",
+     "lineas_staging": 746,
+     "hechos_cargados": 724,
+     "directo": 650,
+     "directo_pct": 89.78,
+     "hitl_casos": 74,
+     "hitl_grupos_staging": 0,
+     "staging": 95,
+     "personas_fk_estado": {
+      "A": 724,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": 0.9484,
+      "KPI-11": 89.78,
+      "KPI-18": 74
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 970,
+      "ENCABEZADO": 1764,
+      "FUZZY": 471,
+      "REGEX": 960,
+      "BETO": 5
+     }
+    },
+    "BD Egresos.xlsx": {
+     "id_documento": 2,
+     "tipo_fuente": "RENTABILIDAD",
+     "lineas_staging": 1409,
+     "hechos_cargados": 1371,
+     "directo": 1371,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 2,
+     "staging": 15,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 1046,
+      "ENCABEZADO": 2756,
+      "FUZZY": 0,
+      "REGEX": 351,
+      "BETO": 0
+     }
+    },
+    "BD Techos.xlsx": {
+     "id_documento": 3,
+     "tipo_fuente": "MARKETING",
+     "lineas_staging": 1,
+     "hechos_cargados": 1,
+     "directo": 0,
+     "directo_pct": 0.0,
+     "hitl_casos": 1,
+     "hitl_grupos_staging": 0,
+     "staging": 0,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 0.0,
+      "KPI-18": 1
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 0,
+      "ENCABEZADO": 2,
+      "FUZZY": 0,
+      "REGEX": 1,
+      "BETO": 0
+     }
+    },
+    "Base centralizada Académica ARCA (1).xlsx": {
+     "id_documento": 4,
+     "tipo_fuente": "ACTA",
+     "lineas_staging": 1201,
+     "hechos_cargados": 1392,
+     "directo": 1381,
+     "directo_pct": 99.21,
+     "hitl_casos": 11,
+     "hitl_grupos_staging": 1,
+     "staging": 773,
+     "personas_fk_estado": {
+      "A": 1385,
+      "B": 7,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": 0.8458,
+      "KPI-11": 99.21,
+      "KPI-18": 11
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 569,
+      "ENCABEZADO": 121,
+      "FUZZY": 293,
+      "REGEX": 23,
+      "BETO": 0
+     }
+    },
+    "EJECUTADO VS META.xlsx": {
+     "id_documento": 5,
+     "tipo_fuente": "RENTABILIDAD",
+     "lineas_staging": 36,
+     "hechos_cargados": 95,
+     "directo": 95,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 12,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 24,
+      "ENCABEZADO": 0,
+      "FUZZY": 0,
+      "REGEX": 0,
+      "BETO": 0
+     }
+    },
+    "Evaluación Docente y Unifranz.xlsx": {
+     "id_documento": 6,
+     "tipo_fuente": "EVALUACION_DOCENTE",
+     "lineas_staging": 4886,
+     "hechos_cargados": 71458,
+     "directo": 71458,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 1076,
+     "personas_fk_estado": {
+      "A": 16830,
+      "B": 589,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 0,
+      "ENCABEZADO": 1388,
+      "FUZZY": 3589,
+      "REGEX": 7620,
+      "BETO": 0
+     }
+    },
+    "Experiencia Docente 2.0.xlsx": {
+     "id_documento": 7,
+     "tipo_fuente": "ACTA",
+     "lineas_staging": 1137,
+     "hechos_cargados": 29866,
+     "directo": 29866,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 0,
+     "personas_fk_estado": {
+      "A": 761,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 64,
+      "ENCABEZADO": 3045,
+      "FUZZY": 225,
+      "REGEX": 1138,
+      "BETO": 0
+     }
+    },
+    "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx": {
+     "id_documento": 8,
+     "tipo_fuente": "RENTABILIDAD",
+     "lineas_staging": 2303,
+     "hechos_cargados": 0,
+     "directo": 0,
+     "directo_pct": 0.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 0,
+     "staging": 1911,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": null,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 0,
+      "ENCABEZADO": 0,
+      "FUZZY": 0,
+      "REGEX": 0,
+      "BETO": 0
+     }
+    },
+    "TBL_INSCRITOS.xlsx": {
+     "id_documento": 9,
+     "tipo_fuente": "ADMISION",
+     "lineas_staging": 391,
+     "hechos_cargados": 0,
+     "directo": 0,
+     "directo_pct": 0.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 1,
+     "staging": 148,
+     "personas_fk_estado": {
+      "A": 0,
+      "B": 0,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": null,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 533,
+      "ENCABEZADO": 1258,
+      "FUZZY": 245,
+      "REGEX": 4,
+      "BETO": 10
+     }
+    },
+    "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx": {
+     "id_documento": 10,
+     "tipo_fuente": "EVALUACION_DOCENTE",
+     "lineas_staging": 883,
+     "hechos_cargados": 3615,
+     "directo": 3615,
+     "directo_pct": 100.0,
+     "hitl_casos": 0,
+     "hitl_grupos_staging": 1,
+     "staging": 125,
+     "personas_fk_estado": {
+      "A": 152,
+      "B": 51,
+      "C": 0
+     },
+     "kpis": {
+      "KPI-10": null,
+      "KPI-11": 100.0,
+      "KPI-18": 0
+     },
+     "entidades_por_etapa": {
+      "CI_EXACTA": 5,
+      "ENCABEZADO": 502,
+      "FUZZY": 644,
+      "REGEX": 747,
+      "BETO": 0
+     }
+    }
+   }
+  }
+ },
+ "aporte_marginal_B_menos_A": {
+  "global": {
+   "entidades_solo_beto": 1,
+   "casos_bandeja_A": 20,
+   "casos_bandeja_B": 676,
+   "grupos_bandeja_A": 6,
+   "grupos_bandeja_B": 17,
+   "nota_bandeja_A_vs_B": "En Modo A sin BETO, la confianza proviene solo de reglas determinísticas (20 casos en bandeja). En Modo B, el índice probabilístico de BETO evalúa semánticamente todas las filas y envía 676 casos ambiguos a revisión; frente al baseline con índice BETO pero sin cascada NER (f3_b7: 680 casos / 19 grupos), BETO_CASCADA_FINAL=1 evita 4 casos y 2 grupos."
+  },
+  "por_archivo": {
+   "BD Cobranzas.xlsx": {
+    "entidades_solo_beto": 0,
+    "casos_evitados_bandeja_A_menos_B": 0,
+    "diferencia_hechos_B_menos_A": 0,
+    "diferencia_directo_pp": 0.0
+   },
+   "BD Egresos.xlsx": {
+    "entidades_solo_beto": 0,
+    "casos_evitados_bandeja_A_menos_B": 0,
+    "diferencia_hechos_B_menos_A": 0,
+    "diferencia_directo_pp": 0.0
+   },
+   "BD Techos.xlsx": {
+    "entidades_solo_beto": 0,
+    "casos_evitados_bandeja_A_menos_B": 0,
+    "diferencia_hechos_B_menos_A": 0,
+    "diferencia_directo_pp": 0.0
+   },
+   "Base centralizada Académica ARCA (1).xlsx": {
+    "entidades_solo_beto": 1,
+    "casos_evitados_bandeja_A_menos_B": -11,
+    "diferencia_hechos_B_menos_A": -12,
+    "diferencia_directo_pp": -0.79
+   },
+   "EJECUTADO VS META.xlsx": {
+    "entidades_solo_beto": 0,
+    "casos_evitados_bandeja_A_menos_B": 0,
+    "diferencia_hechos_B_menos_A": 0,
+    "diferencia_directo_pp": 0.0
+   },
+   "Evaluación Docente y Unifranz.xlsx": {
+    "entidades_solo_beto": 0,
+    "casos_evitados_bandeja_A_menos_B": 0,
+    "diferencia_hechos_B_menos_A": 0,
+    "diferencia_directo_pp": 0.0
+   },
+   "Experiencia Docente 2.0.xlsx": {
+    "entidades_solo_beto": 0,
+    "casos_evitados_bandeja_A_menos_B": 0,
+    "diferencia_hechos_B_menos_A": 0,
+    "diferencia_directo_pp": 0.0
+   },
+   "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx": {
+    "entidades_solo_beto": 0,
+    "casos_evitados_bandeja_A_menos_B": 0,
+    "diferencia_hechos_B_menos_A": 0,
+    "diferencia_directo_pp": 0.0
+   },
+   "TBL_INSCRITOS.xlsx": {
+    "entidades_solo_beto": 0,
+    "casos_evitados_bandeja_A_menos_B": 0,
+    "diferencia_hechos_B_menos_A": 0,
+    "diferencia_directo_pp": 0.0
+   },
+   "_BBDD_ ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx": {
+    "entidades_solo_beto": 0,
+    "casos_evitados_bandeja_A_menos_B": 0,
+    "diferencia_hechos_B_menos_A": -56,
+    "diferencia_directo_pp": 0.0
+   }
+  }
+ },
+ "validacion_calidad": {
+  "n_disponibles_solo_beto_en_B": 1,
+  "n_muestra_solicitada": 100,
+  "n_muestra_generada": 1,
+  "semilla": 42,
+  "csv": "docs/mediciones/f3_muestra_100_beto.csv",
+  "nota_tamano": "En el lote congelado de 10 archivos estándar, la cascada determinística ya resuelve >99.9% de las entidades; BETO en Modo B solo necesitó rescatar 1 entidad(es).",
+  "estado_validacion_humana": "pendiente_revision_lean",
+  "precision_observada_ic95": null,
+  "formula_ic95": "Wilson score interval (z = 1.96) una vez Lean complete la columna validacion_lean (correcto/incorrecto)."
+ },
+ "aclaracion_lote_1387_9964_9986_vs_9755": {
+  "pregunta": "¿Por qué lote_1387 da 99,64 % / 99,86 % y el documento 97,55 %?",
+  "respuesta": "Son dos métricas distintas sobre el lote de 1.387 registros: (1) El 97,55 % (1.353/1.387) proviene de KPI_11_directo_con_regla_personas_pct en docs/evidencias/lote_1387_uploads_data_arquitectura_b.json, que aplica la regla estricta de mover a HITL los 31 registros cuyo índice era >=0.85 pero sin persona resuelta en catálogo (con beto-v2 esa misma métrica subió a 98,05 % = 1.360/1.387 en docs/mediciones/f3r_lote_1387.json). (2) El 99,64 % (Modo A: 1.382/1.387) y 99,86 % (Modo B: 1.385/1.387) provienen de scripts/ablacion_beto.py (docs/evidencias/ablacion_beto_resultados.csv), que evalúa las bandas de confianza del parser estructural (clasificar_banda >= 0.85) sin aplicar esa regla adicional de degradación por persona no resuelta.",
+  "nota_sin_v1_en_tabla": "Ninguna cifra de beto-v1 forma parte de las tablas de medición de los 10 archivos en este JSON."
+ }
+}

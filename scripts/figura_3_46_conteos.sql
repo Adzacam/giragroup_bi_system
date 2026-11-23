@@ -1,10 +1,11 @@
--- Figura 3.46: constelación del DW (9 hechos + 7 dimensiones + 1 bridge) con conteo de filas reales
+-- Figura 3.46: constelación del DW (10 hechos + 7 dimensiones + 1 bridge) con conteo de filas reales
 SELECT tipo, tabla, replace(to_char(filas,'FM999,999,999'), ',', '.') AS filas FROM (
   SELECT 1 o,'HECHO' tipo,'fact_cobranzas_proyectadas' tabla,(SELECT count(*) FROM fact_cobranzas_proyectadas) filas UNION ALL
   SELECT 1,'HECHO','fact_costo_programa',(SELECT count(*) FROM fact_costo_programa) UNION ALL
   SELECT 1,'HECHO','fact_evaluacion_docente',(SELECT count(*) FROM fact_evaluacion_docente) UNION ALL
   SELECT 1,'HECHO','fact_forecast',(SELECT count(*) FROM fact_forecast) UNION ALL
   SELECT 1,'HECHO','fact_marketing',(SELECT count(*) FROM fact_marketing) UNION ALL
+  SELECT 1,'HECHO','fact_planificacion_programa',(SELECT count(*) FROM fact_planificacion_programa) UNION ALL
   SELECT 1,'HECHO','fact_rendimiento_academico',(SELECT count(*) FROM fact_rendimiento_academico) UNION ALL
   SELECT 1,'HECHO','fact_rentabilidad',(SELECT count(*) FROM fact_rentabilidad) UNION ALL
   SELECT 1,'HECHO','fact_situacion_financiera',(SELECT count(*) FROM fact_situacion_financiera) UNION ALL

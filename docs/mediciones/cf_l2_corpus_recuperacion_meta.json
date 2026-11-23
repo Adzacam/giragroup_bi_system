@@ -1,0 +1,80 @@
+{
+  "cohorte": "CF-L2b recuperación independiente",
+  "semilla": 42,
+  "procedencia_sha256": {
+    "cf_l0_familias_residuales.csv": "ca461729c86cd254af25b0089dee5e72025ac1e4182650d5112d3f1d18926751",
+    "preparar_corpus_cf_recuperacion.py": "bf9006d8722d8074f96edb96cf91dc4453c48d4d83901378028042bded066562",
+    "cf_l2_corpus_meta.json": "6279e628daba622b09b2e3ebbcced865f66b539ba29de88b0dd4327ebbb1c62a"
+  },
+  "tamanos": {
+    "train": 2088,
+    "aumento_train": 300,
+    "dev_general": 424,
+    "dev_formatos": 144,
+    "test_gold_real": 180
+  },
+  "sha256": {
+    "train_robusto.jsonl": "83e3af41ca47dba75876b4f2acbce9dd1230b95615f6f65e38c04aef77b0c977",
+    "dev_robusto.jsonl": "662010c1d01d220893965e4e17c78b8b0c7b09057ee01c30fb5953f43c493b47",
+    "test_gold_real.jsonl": "7dce0bec4dd3a60b94a7e6e5a48df29a6844fc93d28375697aa04f1b9a3d51a5",
+    "dev_layout_cf.jsonl": "5075a854d4e9d63d8425bba945ef5a585362b26ede21803cc6add41b46bd253c"
+  },
+  "familias_nuevas_dev": 12,
+  "familias_dev_presentes_en_train": 0,
+  "nombres_de_asignatura_dev_presentes_en_train": 0,
+  "filas_exactas_o_normalizadas_repetidas_dev_formatos_vs_train": 0,
+  "aumentos_con_personas_anotadas": 0,
+  "etiquetas_iob2": [
+    "O",
+    "B-PER_ESTUDIANTE",
+    "I-PER_ESTUDIANTE",
+    "B-PER_DOCENTE",
+    "I-PER_DOCENTE",
+    "B-MODULO",
+    "I-MODULO",
+    "B-PROGRAMA",
+    "I-PROGRAMA"
+  ],
+  "tokenizador": {
+    "modelo": "dccuchile/bert-base-spanish-wwm-cased",
+    "limite": 128,
+    "maximos_con_especiales": {
+      "aumento_train": 105,
+      "dev_formatos": 87
+    }
+  },
+  "formatos_de_muestras": {
+    "aumento_train": {
+      "narrativo": 38,
+      "columnas_sin_nombre": 38,
+      "exportacion": 38,
+      "traspuesto": 38,
+      "membrete": 39,
+      "campos_intercalados": 38
+    },
+    "dev_formatos": {
+      "narrativo": 18,
+      "columnas_sin_nombre": 18,
+      "exportacion": 20,
+      "traspuesto": 17,
+      "membrete": 20,
+      "campos_intercalados": 18
+    }
+  },
+  "perfiles_de_muestras": {
+    "aumento_train": {
+      "solo_programa": 23,
+      "solo_modulo": 24,
+      "ninguno": 24,
+      "ambos": 229
+    },
+    "dev_formatos": {
+      "solo_programa": 10,
+      "solo_modulo": 13,
+      "ninguno": 10,
+      "ambos": 111
+    }
+  },
+  "reservados": "Los diseños se derivan de CF-L0. Gold se copia en bytes. No se consultan ejemplos de layouts_5, gold o CoNLL para generar muestras.",
+  "protocolo": "cf_l2_recuperacion_protocolo.json"
+}

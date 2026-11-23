@@ -44,49 +44,59 @@ def generar_figura_3_25():
             fontsize=7.8, family="monospace", fontweight="bold", ha="center", va="center", color="#000000")
 
     json_alumnos = """{
-  "caso_uso": "ALUMNOS_GLOBAL",
-  "tipo_solicitado": "GLOBAL",
-  "metodo": "HoltWinters",
-  "origen": "database_fact_forecast",
-  "horizonte_meses": 6,
-  "proyecciones": [
-    {
-      "periodo": "2026-06",
-      "valor_forecast": 430.54,
-      "ic_lower": 165.70,
-      "ic_upper": 695.39
+  "status": "success",
+  "data": {
+    "caso_uso": "ALUMNOS_GLOBAL",
+    "tipo_solicitado": "GLOBAL",
+    "metodo": "HoltWinters",
+    "parametros": {
+      "damped_trend": true,
+      "phi": 0.9072,
+      "m": 12
     },
-    {
-      "periodo": "2026-07",
-      "valor_forecast": 524.52,
-      "ic_lower": 259.68,
-      "ic_upper": 789.37
-    },
-    {
-      "periodo": "2026-08",
-      "valor_forecast": 574.48,
-      "ic_lower": 309.63,
-      "ic_upper": 839.32
-    },
-    {
-      "periodo": "2026-09",
-      "valor_forecast": 572.10,
-      "ic_lower": 307.25,
-      "ic_upper": 836.94
-    },
-    {
-      "periodo": "2026-10",
-      "valor_forecast": 523.82,
-      "ic_lower": 258.98,
-      "ic_upper": 788.67
-    },
-    {
-      "periodo": "2026-11",
-      "valor_forecast": 369.19,
-      "ic_lower": 104.34,
-      "ic_upper": 634.03
-    }
-  ]
+    "n_observaciones": 43,
+    "rmse": 59.57,
+    "mape_pct": 15.67,
+    "horizonte_meses": 6,
+    "proyecciones": [
+      {
+        "periodo": "2026-06",
+        "valor_forecast": 396.44,
+        "ic_lower": 279.68,
+        "ic_upper": 513.19
+      },
+      {
+        "periodo": "2026-07",
+        "valor_forecast": 423.55,
+        "ic_lower": 306.80,
+        "ic_upper": 540.30
+      },
+      {
+        "periodo": "2026-08",
+        "valor_forecast": 479.38,
+        "ic_lower": 362.63,
+        "ic_upper": 596.13
+      },
+      {
+        "periodo": "2026-09",
+        "valor_forecast": 440.72,
+        "ic_lower": 323.96,
+        "ic_upper": 557.47
+      },
+      {
+        "periodo": "2026-10",
+        "valor_forecast": 416.17,
+        "ic_lower": 299.42,
+        "ic_upper": 532.92
+      },
+      {
+        "periodo": "2026-11",
+        "valor_forecast": 402.81,
+        "ic_lower": 286.05,
+        "ic_upper": 519.56
+      }
+    ]
+  }
 }"""
     ax.text(3.5, 89.5, json_alumnos, fontsize=7.4, family="monospace", va="top", ha="left", color="#111111")
 
@@ -135,6 +145,12 @@ def generar_figura_3_25():
     plt.savefig(out_file, dpi=300, facecolor="#FFFFFF", bbox_inches="tight")
     plt.close()
     print(f"Figura 3.25 generada exitosamente en: {out_file}")
+
+    v2_dir = os.path.abspath("docs/evidencias/graficos_v2")
+    os.makedirs(v2_dir, exist_ok=True)
+    dst_v2 = os.path.join(v2_dir, "figura_3_25_captura_respuesta_json_forecast.png")
+    shutil.copy2(out_file, dst_v2)
+    print(f"Copiada a: {dst_v2}")
 
     if os.path.exists(BRAIN_DIR):
         dst = os.path.join(BRAIN_DIR, "figura_3_25_captura_respuesta_json_forecast.png")

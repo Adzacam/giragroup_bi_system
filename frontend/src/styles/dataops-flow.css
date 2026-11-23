@@ -22,6 +22,10 @@
   --dataops-success-border: rgba(27, 135, 84, 0.28);
   --dataops-success-text: #1B8754;
 
+  --dataops-danger-bg: rgba(185, 28, 28, 0.08);
+  --dataops-danger-border: rgba(185, 28, 28, 0.28);
+  --dataops-danger-text: #B91C1C;
+
   --dataops-chip-bg: var(--color-paper-white, #FFFFFF);
   --dataops-row-hover: rgba(12, 30, 51, 0.04);
   --dataops-row-selected: rgba(217, 155, 38, 0.14);
@@ -44,6 +48,10 @@
   --dataops-success-bg: rgba(27, 135, 84, 0.20);
   --dataops-success-border: rgba(27, 135, 84, 0.45);
   --dataops-success-text: #4ADE80;
+
+  --dataops-danger-bg: rgba(239, 68, 68, 0.14);
+  --dataops-danger-border: rgba(248, 113, 113, 0.40);
+  --dataops-danger-text: #FCA5A5;
 
   --dataops-chip-bg: #20252e;
   --dataops-row-hover: rgba(241, 184, 68, 0.08);
@@ -88,6 +96,16 @@
   font-family: var(--font-sohne, 'Plus Jakarta Sans', sans-serif);
   font-size: 13px;
   line-height: 1.45;
+}
+
+.dataops-btn-danger {
+  background-color: var(--dataops-danger-bg) !important;
+  border: 1px solid var(--dataops-danger-border) !important;
+  color: var(--dataops-danger-text) !important;
+}
+
+.dataops-btn-danger:hover:not(:disabled) {
+  filter: brightness(0.96);
 }
 
 /* ── Selects e Inputs Adaptativos para DataOps ── */

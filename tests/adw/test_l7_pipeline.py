@@ -1,7 +1,7 @@
 """ADW L7: pipeline y BETO.
 
 C1  las tareas «del lote 1» en ERROR eran contaminación de pytest sobre la DW (el seguimiento de tareas usa su propia sesión).
-B5  la caché de entidades de BETO no es una migración: se crea sola en el primer uso y los flags van apagados.
+B5  la caché de entidades de BETO se crea en el primer uso. a3 sigue activo y el rescate académico requiere un flag.
 C3  cada fila de origen deja dos claves de idempotencia (posición y contenido).
 """
 import os
@@ -70,8 +70,13 @@ def test_cache_beto_no_es_migracion_y_los_flags_a3_activos(monkeypatch):
         "BETO_CASCADA_FINAL": True,
         "BETO_ACUERDO_QC": True,
         "BETO_SUGERENCIA_HITL": True,
+        "BETO_RESCATE_ACADEMICO": False,
         "BETO_VENTANA": False,
     }
+    monkeypatch.delenv("BETO_RESCATE_ACADEMICO", raising=False)
+    assert not beto_integracion.activo("BETO_RESCATE_ACADEMICO")
+    monkeypatch.setenv("BETO_RESCATE_ACADEMICO", "1")
+    assert beto_integracion.activo("BETO_RESCATE_ACADEMICO")
     assert "migración 015" not in (beto_integracion.__doc__ or "").replace("No existe una «migración 015»", "")
 
 

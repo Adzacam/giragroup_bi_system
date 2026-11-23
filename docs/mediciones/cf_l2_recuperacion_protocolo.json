@@ -1,0 +1,24 @@
+{
+  "cohorte": "CF-L2b / CF-L3b recuperación",
+  "fecha": "2026-11-23",
+  "registrado_antes_de_entrenar_o_evaluar_la_cohorte": true,
+  "motivacion": "La primera cohorte no superó al modelo vigente en layouts_5. Se amplían los patrones de desarrollo con datos institucionales de CF-L0.",
+  "datos": {
+    "train": "train CF-L2 y un aumento sintético de formatos basado en CF-L0",
+    "dev_general": "dev_robusto.jsonl de CF-L2, preservado en bytes",
+    "dev_formatos": "dev_layout_cf.jsonl con familias ausentes de train y ejemplos sin personas",
+    "reservados": "test_gold_real y layouts_5, ya consultados en la primera cohorte. Se reevalúan una vez después de seleccionar el candidato y se declara la reutilización."
+  },
+  "seleccion": {
+    "criterio": "Mayor F1 micro IOB2 estricto INT8 en dev_layout_cf",
+    "desempate": "Menor época",
+    "guardarrail": "F1 micro IOB2 estricto INT8 >= 0.85 en dev general",
+    "diagnostico": "F1 estricto por etiqueta, incluidos MODULO y PROGRAMA",
+    "epocas": [2, 3, 4, 5],
+    "semilla": 42
+  },
+  "aceptacion": {
+    "rnf04": "F1 micro IOB2 estricto INT8 >= 0.85 sobre test_gold_real",
+    "mejora_layouts": "F1 micro IOB2 estricto INT8 superior al vigente, revaluado con el mismo conjunto y método"
+  }
+}

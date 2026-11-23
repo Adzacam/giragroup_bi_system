@@ -7,11 +7,14 @@ validez del valor, puntaje del catálogo o probabilidad del modelo). El índice 
 """
 import re
 import threading
+from collections import defaultdict
 from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 from models.dim_docente import DimDocente
 from services.dataops_evaluation_service import NON_PERSON_WORDS, fuzzy_score, strip_accents
 from services.extraccion_por_encabezado import es_encabezado_metadato_pos
+from services.modulo_validador import validar_nombre_modulo
+from services.programa_normalizador import candidato_modulo, es_invalido, normalizar_programa, numero_modulo, partes_pos, titulo_oferta
 from pipeline.normalization.person_resolver import resolver_persona
 from sqlalchemy import text
 from ._comun import NOTA_APROBACION, UMBRAL_INDICE_REGISTRO_DEC
@@ -58,7 +61,6 @@ UMBRAL_SIMILITUD_ENCABEZADO = 85.0
 # no una confianza asignada a una entidad.
 _COTA_SUPERIOR_ESCALA = 1.0
 # Patrón estricto del código de programa (REGEX solo cuenta si el valor pasa este patrón)
-_PATRON_POS = re.compile(r"POS-\d{3,5}")
 _TITULOS_DOCENTE = re.compile(r"^(?:Dr|Dra|MSc|Lic|Ing)\.\s+[A-ZÁÉÍÓÚÑ]")
 _PISTA_DOCENTE = re.compile(r"\b(?:docente|profesor|tutor)\b|\b(?:dr|dra|msc|lic|ing)\.\s", re.IGNORECASE)
 
@@ -146,7 +148,15 @@ def _es_encabezado_no_docente(clave: str) -> bool:
 
 
 # Exclusión de celdas para las propuestas de BETO, por tipo de persona (services/beto_integracion.mejor_propuesta)
-EXCLUIR_CELDA_BETO = {"ESTUDIANTE": _es_encabezado_no_estudiante, "DOCENTE": _es_encabezado_no_docente}
+def _es_encabezado_no_academico(clave: str) -> bool:
+    if _es_atributo_estudiante(clave):
+        return True
+    otros_roles = (_ENC_ESTUDIANTE, _ENC_PARTES_NOMBRE, _ENC_DOCENTE, _ENC_CI, _ENC_CONCEPTO, _ENC_MONTO)
+    return any(similitud_encabezado(clave, rol) >= UMBRAL_SIMILITUD_ENCABEZADO for rol in otros_roles if rol)
+
+
+EXCLUIR_CELDA_BETO = {"ESTUDIANTE": _es_encabezado_no_estudiante, "DOCENTE": _es_encabezado_no_docente,
+                    "PROGRAMA": _es_encabezado_no_academico, "MODULO": _es_encabezado_no_academico}
 
 
 # ── Validez del valor (1 si el formato se valida; fracción medida cuando el valor es parcialmente válido) ──────────
@@ -171,7 +181,8 @@ def _validez_ci(valor: str) -> float:
 
 
 def _validez_codigo_pos(valor: str) -> float:
-    return float(bool(_PATRON_POS.fullmatch((valor or "").strip().upper())))
+    pos, numero = partes_pos(valor)
+    return float(pos is not None and numero is None)
 
 
 def _validez_numero(valor) -> float:
@@ -284,13 +295,29 @@ def _mejor_docente(cand: str, docentes: list, contexto: tuple = ()) -> Tuple[Any
     return _resolver_persona_cascada("docentes", cand, docentes, None, contexto)
 
 
-def _mejor_modulo(cand: str, modulos: list) -> Tuple[Any, float, str]:
+def _modulos_por_oferta(modulos: list) -> dict:
     memo = _memo_catalogo("modulos", modulos)
-    if ("mejor", cand) in memo:
-        return memo[("mejor", cand)]
+    if 'por_oferta' not in memo:
+        por_oferta = defaultdict(list)
+        for modulo in modulos:
+            pos, _ = partes_pos(modulo.pos_code)
+            if pos:
+                por_oferta[pos].append(modulo)
+        memo['por_oferta'] = por_oferta
+    return memo['por_oferta']
+
+
+def _mejor_modulo(cand: str, modulos: list, oferta: str | None = None) -> Tuple[Any, float, str]:
+    memo = _memo_catalogo("modulos", modulos)
+    clave = ("mejor", cand, oferta)
+    if clave in memo:
+        return memo[clave]
     cand_clean = strip_accents(cand).lower()
     mejor = (None, 0.0, "None")
-    for m in modulos:
+    candidatos = modulos
+    if oferta:
+        candidatos = _modulos_por_oferta(modulos).get(oferta, [])
+    for m in candidatos:
         score, algo = fuzzy_score(cand, m.nombre_modulo)
         # F5C C-3: el código del módulo dentro del texto es una coincidencia exacta del código (su similitud con el
         # código del catálogo). Se quitaron los alias fijos ('estetica', 'big data', '3'↔'302'…) que daban un puntaje
@@ -303,7 +330,7 @@ def _mejor_modulo(cand: str, modulos: list) -> Tuple[Any, float, str]:
                 score, algo = s_cod, "Prefix Code Match"
         if score > mejor[1]:
             mejor = (m, score, algo)
-    memo[("mejor", cand)] = mejor
+    memo[clave] = mejor
     return mejor
 
 
@@ -321,6 +348,94 @@ def _mejor_programa(cand: str, modulos: list) -> Tuple[Optional[str], float]:
                 mejor = (p, s)
         memo[clave] = mejor
     return memo[clave]
+
+
+def _resolver_programa_beto(valor: str, oferta: str | None, modulos: list):
+    propuesta = normalizar_programa(valor)
+    if es_invalido(valor) or not (propuesta.nombre or propuesta.pos_code):
+        return None, 'TITULO_INVALIDO'
+    if oferta and propuesta.pos_code and propuesta.pos_code != oferta:
+        return None, 'POS_INCOMPATIBLE'
+    pos = oferta or propuesta.pos_code
+    memo = _memo_catalogo('modulos', modulos)
+    if 'ofertas_completas' not in memo:
+        por_pos, por_familia = defaultdict(dict), defaultdict(dict)
+        for codigo, filas in _modulos_por_oferta(modulos).items():
+            for modulo in filas:
+                if not titulo_oferta(modulo.nombre_modulo, modulo.programa, modulo.pos_code):
+                    continue
+                canonico = normalizar_programa(modulo.programa or modulo.nombre_modulo)
+                if canonico.nombre:
+                    por_pos[codigo].setdefault(canonico.clave_familia, canonico.nombre)
+                    por_familia[canonico.clave_familia].setdefault(codigo, canonico.nombre)
+        memo['ofertas_completas'] = por_pos, por_familia
+    por_pos, por_familia = memo['ofertas_completas']
+    if pos and propuesta.nombre:
+        nombre = por_pos.get(pos, {}).get(propuesta.clave_familia)
+        candidatos = [(pos, nombre)] if nombre else []
+    elif pos:
+        candidatos = [(pos, nombre) for nombre in por_pos.get(pos, {}).values()]
+    else:
+        candidatos = list(por_familia.get(propuesta.clave_familia, {}).items())
+    if len(candidatos) == 1:
+        return candidatos[0], None
+    return None, 'AMBIGUO' if candidatos else 'SIN_CANDIDATO'
+
+
+def _resolver_modulo_beto(valor: str, oferta: str | None, modulos: list):
+    valido, rechazo = validar_nombre_modulo(valor)
+    if not valido or es_invalido(valor) or valor.upper() == 'MOD-GEN':
+        return None, rechazo or 'TITULO_INVALIDO'
+    pos, numero = partes_pos(valor)
+    if oferta and pos and oferta != pos:
+        return None, 'POS_INCOMPATIBLE'
+    codigo = valor if numero is not None else (oferta or pos)
+    oferta = oferta or pos
+    filas = [m for m in _modulos_por_oferta(modulos).get(oferta, ()) if m.id_cat_modulo]
+    candidatos = [((partes_pos(m.pos_code)[1] or numero_modulo(m.nombre_modulo) or -1), m.nombre_modulo, m.id_cat_modulo)
+                  for m in filas]
+    id_cat, motivo = candidato_modulo(valor, None, codigo, candidatos)
+    if id_cat is None:
+        return None, motivo
+    return min((m for m in filas if m.id_cat_modulo == id_cat), key=lambda m: m.id_modulo), None
+
+
+def _aplicar_rescate_academico(entities, propuestas, modulos, oferta):
+    confianzas = {}
+    revision = False
+    for tipo, label in (("PROGRAMA", "PROGRAMA"), ("MODULO", "MÓDULO")):
+        propuesta = propuestas.get(tipo)
+        previa = next((e for e in entities if e.get('label') == label), None)
+        if propuesta is None or (previa and previa.get('matchedCanonical')):
+            continue
+        if tipo == 'PROGRAMA':
+            resuelto, motivo = _resolver_programa_beto(propuesta['nombre'], oferta, modulos)
+            if resuelto:
+                oferta, nombre = resuelto
+                campos = dict(matchedCanonical=nombre, canonicalId=oferta, posCodigo=oferta, nombrePrograma=propuesta['nombre'])
+        else:
+            resuelto, motivo = _resolver_modulo_beto(propuesta['nombre'], oferta, modulos)
+            if resuelto:
+                campos = dict(matchedCanonical=resuelto.nombre_modulo, canonicalId=resuelto.pos_code,
+                              idModulo=resuelto.id_modulo)
+        if not resuelto:
+            if motivo in ('AMBIGUO', 'NUMEROS_CONTRADICTORIOS', 'POS_INCOMPATIBLE'):
+                revision = True
+                if previa is None:
+                    previa = dict(label=label, token=propuesta['nombre'])
+                    entities.append(previa)
+                previa['motivoRescateBeto'] = motivo
+            continue
+        medida = _medida(ORIGEN_BETO, probabilidad=propuesta['prob'])
+        rescatada = dict(token=propuesta['nombre'], label=label, tag=f'B-{tipo}', conllTag='ORG/CATALOGO',
+                         es_nuevo_perfil=False, algorithm='BETO + catálogo institucional', **medida, **campos)
+        if previa is not None:
+            rescatada['valorPrevio'] = previa.get('token')
+            entities[entities.index(previa)] = rescatada
+        else:
+            entities.append(rescatada)
+        confianzas[tipo] = medida
+    return confianzas, revision
 
 
 def _medida(origen: str, similitud: Optional[float] = None, validez: Optional[float] = None,
@@ -391,6 +506,7 @@ def extract_entities_from_line(
     apariciones_lote: int = 1,
     est_beto: Optional[dict] = None,
     doc_beto: Optional[dict] = None,
+    academico_beto: Optional[dict] = None,
 ) -> Tuple[list, float, bool]:
     """
     Extrae y resuelve entidades desde una línea de texto plano:
@@ -696,6 +812,10 @@ def extract_entities_from_line(
     # 4. MÓDULO (C-2 c): solo de las columnas de módulo o curso; si la hoja no tiene, de la del nombre del programa.
     # Nunca de un atributo del estudiante (NIVEL ACADÉMICO, CARRERA, INSTITUCIÓN…). En texto libre, por patrón.
     mod_cands: List[Tuple[str, Optional[float], str]] = []
+    cod_cols = _columnas_de_rol(labeled_data, _ENC_CODIGO_PROGRAMA) + [
+        (similitud_encabezado_compuesto(k, _ENC_CODIGO_PROGRAMA), k, v)
+        for k, v in labeled_data.items() if v and es_encabezado_metadato_pos(k) and similitud_encabezado(k, _ENC_CODIGO_PROGRAMA) < UMBRAL_SIMILITUD_ENCABEZADO]
+    oferta_modulo = next((partes_pos(v)[0] for _, _, v in cod_cols if _validez_codigo_pos(v)), None)
     cols_mod = _columnas_de_rol(labeled_data, _ENC_MODULO) or _columnas_de_rol(labeled_data, _ENC_NOMBRE_PROGRAMA)
     for s_m, _, v_m in cols_mod:
         if _validez_texto(v_m):
@@ -718,7 +838,7 @@ def extract_entities_from_line(
     if mod_cands:
         mod_token = mod_cands[0][0]
         for cand, sim_c, origen_c in mod_cands:
-            m, score, algo = _mejor_modulo(cand, modulos)
+            m, score, algo = _mejor_modulo(cand, modulos, oferta_modulo or normalizar_programa(cand).pos_code)
             if m is not None and score > best_mod_score:
                 best_mod_score = score
                 best_mod_algo = algo
@@ -726,7 +846,7 @@ def extract_entities_from_line(
                 mod_token, mod_sim, mod_origen = cand, sim_c, origen_c
 
     conf_mod = None
-    if best_mod and best_mod_score >= 78.0:
+    if best_mod and best_mod_score >= 80.0:
         conf_mod = (_medida(ORIGEN_ENCABEZADO, similitud=mod_sim, catalogo=best_mod_score) if mod_sim is not None
                     else _medida(ORIGEN_FUZZY, catalogo=best_mod_score))
         entities.append({
@@ -834,19 +954,16 @@ def extract_entities_from_line(
     # INSTITUCIÓN DONDE TRABAJA son atributos del estudiante y nunca son el programa.
     prog_token, prog_codigo, prog_nombre = None, None, None
     conf_prog = None
-    cod_cols = _columnas_de_rol(labeled_data, _ENC_CODIGO_PROGRAMA) + [
-        (similitud_encabezado_compuesto(k, _ENC_CODIGO_PROGRAMA), k, v)
-        for k, v in labeled_data.items() if v and es_encabezado_metadato_pos(k) and similitud_encabezado(k, _ENC_CODIGO_PROGRAMA) < UMBRAL_SIMILITUD_ENCABEZADO]
     for s_c, _, v_c in cod_cols:
         if _validez_codigo_pos(v_c):
-            prog_codigo = v_c.strip().upper()
+            prog_codigo = partes_pos(v_c)[0]
             conf_prog = _medida(ORIGEN_ENCABEZADO, similitud=s_c, validez=_validez_codigo_pos(v_c))
             break
     cols_nom = _columnas_de_rol(labeled_data, _ENC_NOMBRE_PROGRAMA)
     if cols_nom:
         s_n, _, prog_nombre = cols_nom[0]
         if conf_prog is None and _validez_texto(prog_nombre):
-            _, s_cat = _mejor_programa(prog_nombre, modulos) if modulos else (None, None)
+            _, s_cat = _mejor_programa(normalizar_programa(prog_nombre).nombre or prog_nombre, modulos) if modulos else (None, None)
             conf_prog = (_medida(ORIGEN_ENCABEZADO, similitud=s_n, catalogo=s_cat) if s_cat is not None and s_cat >= 80.0
                          else _medida(ORIGEN_ENCABEZADO, similitud=s_n, validez=_validez_texto(prog_nombre)))
     if conf_prog is None and sin_columnas:
@@ -854,9 +971,11 @@ def extract_entities_from_line(
         if m_prog:
             prog_nombre = m_prog.group(1).strip()
             conf_prog = _medida(ORIGEN_REGEX, validez=_validez_texto(prog_nombre))
+    programa = normalizar_programa(prog_nombre)
+    prog_codigo = prog_codigo or programa.pos_code
     prog_token = (prog_codigo or prog_nombre) if conf_prog is not None else None
 
-    if prog_token:
+    if prog_token and (programa.nombre or prog_codigo):
         entities.append({
             "token": str(prog_token),
             "label": "PROGRAMA",
@@ -864,8 +983,11 @@ def extract_entities_from_line(
             "conllTag": "ORG/CATALOGO",
             **conf_prog,
             "catalogTable": "Catálogo de Programas",
-            "matchedCanonical": str(prog_nombre or prog_codigo),
+            "matchedCanonical": programa.nombre or prog_codigo,
             "nombrePrograma": prog_nombre,
+            "versionPrograma": programa.version,
+            "edicionPrograma": programa.edicion,
+            "alcancePrograma": programa.alcance,
             "posCodigo": prog_codigo,
             "canonicalId": prog_codigo or "PROG-ADM",
             "fuzzScore": round((conf_prog.get("detalleConfianza", {}).get("similitudEncabezado") or 0.0) * 100, 1),
@@ -997,7 +1119,13 @@ def extract_entities_from_line(
     # ─── ÍNDICE DEL REGISTRO & COMPUERTAS DETERMINISTAS ───
     # Agregador sin cambio: el mínimo de las confianzas de estudiante, módulo, docente, programa y concepto (las mismas
     # entidades que antes). Sin ninguna de ellas no hay nada que dude y el mínimo es la cota superior de la escala.
-    revision_forzada = is_dudoso or grade_invalida
+    revision_rescate = False
+    if academico_beto:
+        oferta = prog_codigo or (partes_pos(best_mod.pos_code)[0] if best_mod and conf_mod else None)
+        rescatadas, revision_rescate = _aplicar_rescate_academico(entities, academico_beto, modulos, oferta)
+        conf_prog = rescatadas.get('PROGRAMA', conf_prog)
+        conf_mod = rescatadas.get('MODULO', conf_mod)
+    revision_forzada = is_dudoso or grade_invalida or revision_rescate
     confianzas = [c["confianza"] for c in (conf_est, conf_mod, conf_doc, conf_prog, conf_con)
                   if c is not None and c.get("confianza") is not None]
     score_confianza = round(min(confianzas, default=_COTA_SUPERIOR_ESCALA), 2)

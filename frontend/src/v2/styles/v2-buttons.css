@@ -46,10 +46,26 @@
 
 [data-theme="dark"][data-ui-version="v2"] .btn-primary,
 [data-theme="dark"][data-ui-version="v2"] .btn-pill-dark,
-[data-theme="dark"][data-ui-version="v2"] .btn-academic {
+[data-theme="dark"][data-ui-version="v2"] .btn-academic,
+[data-theme="dark"] [data-ui-version="v2"] .btn-primary,
+[data-theme="dark"] [data-ui-version="v2"] .btn-pill-dark,
+[data-theme="dark"] [data-ui-version="v2"] .btn-academic {
   background-color: var(--color-gira-gold);
   color: var(--color-fog-white);
   border-color: var(--color-gira-gold);
+}
+
+[data-theme="dark"][data-ui-version="v2"] .btn,
+[data-theme="dark"][data-ui-version="v2"] .btn-secondary,
+[data-theme="dark"][data-ui-version="v2"] .btn-pill-ghost,
+[data-theme="dark"][data-ui-version="v2"] .cmi-btn,
+[data-theme="dark"] [data-ui-version="v2"] .btn,
+[data-theme="dark"] [data-ui-version="v2"] .btn-secondary,
+[data-theme="dark"] [data-ui-version="v2"] .btn-pill-ghost,
+[data-theme="dark"] [data-ui-version="v2"] .cmi-btn {
+  background-color: var(--color-paper-white);
+  color: var(--color-ink-black);
+  border-color: var(--color-border);
 }
 
 [data-ui-version="v2"] .btn:hover:not(:disabled),

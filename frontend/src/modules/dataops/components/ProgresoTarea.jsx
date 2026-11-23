@@ -1,7 +1,8 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, XCircle } from 'lucide-react';
 import AnimatedNumberV2 from '../../../v2/motion/AnimatedNumberV2';
 import AnimatedProgressBarV2 from '../../../v2/motion/AnimatedProgressBarV2';
+import Button from '../../../components/shared/Button';
 
 // 75 s -> '1 min 15 s'; 3700 s -> '1 h 1 min'
 export const fmtDuracion = (seg) => {
@@ -17,7 +18,7 @@ export const fmtDuracion = (seg) => {
  * Avance de una tarea larga de DataOps: barra, registros procesados, tiempo transcurrido y restante estimado.
  * Con `tarea` null (aún sin dato del servidor) muestra una barra indeterminada con el tiempo local.
  */
-export default function ProgresoTarea({ titulo, tarea, segundosLocal = 0, nota }) {
+export default function ProgresoTarea({ titulo, tarea, segundosLocal = 0, nota, onCancel, canceling = false, cancelLabel = 'Cancelar' }) {
   const pct = tarea?.porcentaje ?? 0;
   const total = tarea?.total || 0;
   const indeterminado = !tarea || !total;
@@ -27,13 +28,25 @@ export default function ProgresoTarea({ titulo, tarea, segundosLocal = 0, nota }
       border: '1px solid var(--dataops-gold-border)', background: 'var(--dataops-gold-bg)',
       borderRadius: '14px', padding: '14px 16px',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', fontWeight: 700, color: 'var(--color-ink-black)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', fontSize: '13.5px', fontWeight: 700, color: 'var(--color-ink-black)' }}>
         <Loader2 size={15} className="spin" style={{ animation: 'spin 1s linear infinite', color: 'var(--color-gira-gold)' }} />
-        {titulo}
+        <span>{titulo}</span>
         {!indeterminado && (
           <span style={{ marginLeft: 'auto', fontVariantNumeric: 'tabular-nums' }}>
             <AnimatedNumberV2 value={`${pct.toFixed(1)} %`} />
           </span>
+        )}
+        {onCancel && (
+          <Button
+            variant="ghost"
+            className="dataops-btn-danger"
+            isLoading={canceling}
+            loadingText="Cancelando…"
+            onClick={onCancel}
+            style={{ marginLeft: indeterminado ? 'auto' : '8px', padding: '5px 11px', fontSize: '12px' }}
+          >
+            <XCircle size={13} /> {cancelLabel}
+          </Button>
         )}
       </div>
       {indeterminado ? (

@@ -705,6 +705,21 @@ def get_tarea(tarea_id: int, _: User = Depends(require_roles(["ADMIN", "AUDITOR_
     return tarea
 
 
+@router.post("/tareas/{tarea_id}/cancelar")
+def cancelar_tarea(
+    tarea_id: int,
+    current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
+):
+    """Cancela una tarea DataOps en curso (INGESTA, LECTURA_BETO, PREPARACION_REVISION, CONSOLIDACION)."""
+    tarea = tareas_dataops.obtener(tarea_id)
+    if not tarea:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"No existe la tarea {tarea_id}.")
+    if tarea.get("estado") != "EN_CURSO":
+        return {"status": "ok", "cancelada": False, "tarea": tarea, "message": "La tarea ya no está en curso."}
+    actualizada = tareas_dataops.cancelar(tarea_id, usuario=getattr(current_user, "username", None))
+    return {"status": "success", "cancelada": True, "tarea": actualizada}
+
+
 @router.get("/tareas")
 def get_tareas_activas(_: User = Depends(get_current_user)):
     """Tareas largas en curso (y las terminadas hace menos de 2 min) para el panel global de la SPA."""

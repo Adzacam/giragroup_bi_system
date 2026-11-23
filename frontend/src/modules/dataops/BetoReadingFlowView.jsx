@@ -13,7 +13,7 @@ import { useDraftState, useLoteFlow } from './context/LoteFlowContext';
 import useLecturaBeto from './hooks/useLecturaBeto';
 import { dataopsApi } from '../../api/dataopsApi';
 import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano';
-import { sileoToast } from '../../services/sileoToast';
+import { confirmar, sileoToast } from '../../services/sileoToast';
 import { mensajeError } from '../../utils/mensajeError';
 import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
 import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
@@ -49,6 +49,7 @@ function LecturaBeto({ batchId }) {
   const [filters, setFilters] = useDraftState('beto.filters.v3', INITIAL);
   const [input, setInput] = useState(filters.search || '');
   const [starting, setStarting] = useState(false);
+  const [cancelingTask, setCancelingTask] = useState(false);
   const [metricasOpen, setMetricasOpen] = useState(false);
   const startLock = useRef(false);
   const { data, error, isFetching, refetch } = useLecturaBeto(batchId, filters, !!contexto);
@@ -80,6 +81,20 @@ function LecturaBeto({ batchId }) {
       sileoToast.error({ title: 'No se pudo iniciar la lectura', description: mensajeError(err) });
       if (err.response?.status === 409) queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY });
     } finally { startLock.current = false; setStarting(false); }
+  };
+  const cancelReading = async () => {
+    const tid = data?.tarea?.id;
+    if (!tid || cancelingTask) return;
+    if (!await confirmar({ title: 'Cancelar lectura en curso', description: 'Se detendrá la lectura de BETO para este lote. Podrás reintentarla o reiniciar el lote.', confirmText: 'Cancelar lectura' })) return;
+    setCancelingTask(true);
+    try {
+      await dataopsApi.cancelarTarea(tid);
+      sileoToast.info({ title: 'Lectura cancelada', description: 'La tarea se detuvo. Puedes reintentar o reiniciar el lote.' });
+      await queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY });
+      await refetch();
+    } catch (err) {
+      sileoToast.error({ title: 'No se pudo cancelar la lectura', description: mensajeError(err) });
+    } finally { setCancelingTask(false); }
   };
   const refresh = async () => {
     const result = await refetch();
@@ -134,7 +149,7 @@ function LecturaBeto({ batchId }) {
         : activeTab === 'texto' ? <TextoPreparadoTab batchId={batchId} selectedDocId={filters.docId} context={contexto} />
         : error ? <div className="floating-artifact" role="alert" style={{ padding: 24 }}>No se pudo consultar la lectura. Puedes reintentarlo con Actualizar.</div>
         : !data ? <BetoSkeleton />
-        : processing ? <ProgresoTarea titulo={`Leyendo… ${pctLectura} %`} tarea={data.tarea} nota="El proceso sigue en segundo plano. Puedes cambiar de página." />
+        : processing ? <ProgresoTarea titulo={`Leyendo… ${pctLectura} %`} tarea={data.tarea} nota="El proceso sigue en segundo plano. Puedes cambiar de página." onCancel={data?.tarea?.id ? cancelReading : undefined} canceling={cancelingTask} cancelLabel="Cancelar lectura" />
         : !ready ? <div className="floating-artifact" style={{ padding: 24 }}>
           <h3 className="serif-heading" style={{ marginBottom: 10 }}>{data.tarea?.estado === 'ERROR' ? 'La lectura se interrumpió' : 'No hay una lectura guardada disponible'}</h3>
           <p style={{ color: 'var(--color-slate-gray)', marginBottom: 16 }}>{readOnly ? 'Este lote está cerrado. Puedes consultar su resumen en Revisión.' : 'Inicia el análisis para obtener los resultados. Recibirás un aviso al terminar.'}</p>

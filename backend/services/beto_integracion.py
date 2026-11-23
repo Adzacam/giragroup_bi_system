@@ -28,6 +28,7 @@ import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
+from functools import partial
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from pipeline import config as cfg
@@ -38,6 +39,11 @@ logger = logging.getLogger("beto_integracion")
 URL_INFER_BATCH = os.getenv("BETO_INFER_BATCH_URL", "http://pipeline:8006/infer-batch")
 TIPOS_PERSONA = ("ESTUDIANTE", "DOCENTE")
 TIPOS_NO_PERSONA = ("MODULO", "PROGRAMA", "POS")
+ETIQUETAS_ACADEMICAS = {"PROGRAMA": "PROGRAMA", "MODULO": "MÓDULO"}
+_FUENTES_CON_MODULOS = {"ACTA", "MOODLE", "EVALUACION_DOCENTE"}
+_FUENTES_CON_OFERTAS = _FUENTES_CON_MODULOS | {"TECHOS"}
+_CONTEXTO_OFERTA = re.compile(r"\bPOS[- ]\d{3,6}\b|\b(?:POS|PROGRAMA|DIPLOMADO|CURSO|MAESTR[IÍ]A)\s*:", re.I)
+_CONTEXTO_MODULO = re.compile(r"\bPOS-\d{3,6}-M\d+\b|\bM[ÓO]DULO(?:\s+\d+)?\s*:", re.I)
 ACUERDO, DESACUERDO, NO_EVALUABLE, TIPO_DISTINTO = "ACUERDO", "DESACUERDO", "NO_EVALUABLE", "TIPO_DISTINTO"
 
 DDL_CACHE = """CREATE TABLE IF NOT EXISTS public.cache_beto_entidades (
@@ -56,7 +62,7 @@ def activo(nombre: str) -> bool:
 
 def necesita_refinar() -> bool:
     """True si alguna opción que lee las entidades de BETO por línea (1 o 2) está encendida."""
-    return activo("BETO_CASCADA_FINAL") or activo("BETO_ACUERDO_QC")
+    return any(activo(flag) for flag in ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_RESCATE_ACADEMICO"))
 
 
 def stride_ventana() -> int:
@@ -96,6 +102,9 @@ class Contadores:
     """Resumen de una pasada (lectura o consolidación) con BETO. Se suma entre archivos con sumar()."""
     lineas_totales: int = 0
     residuales_enviadas: int = 0
+    residuales_academicas_enviadas: int = 0
+    lineas_academicas_rescatadas: int = 0
+    lineas_academicas_ambiguas: int = 0
     resueltas_por_beto: int = 0
     a_hitl: int = 0
     tiempo_beto_s: float = 0.0
@@ -312,12 +321,35 @@ def persona_sin_resolver(ents: Sequence[Dict[str, Any]], etiqueta: str) -> bool:
     return e is not None and bool(e.get("es_nuevo_perfil"))   # docente: solo si había candidato y no se resolvió
 
 
+def academico_sin_resolver(ents: Sequence[Dict[str, Any]], tipo: str) -> bool:
+    previa = entidad(ents, ETIQUETAS_ACADEMICAS[tipo])
+    return previa is None or not previa.get("matchedCanonical")
+
+
+def _residuales_academicas(linea: str, ents: Sequence[Dict[str, Any]], tipo_fuente: str) -> list[str]:
+    tiene_modulo = bool(entidad(ents, "MÓDULO") or _CONTEXTO_MODULO.search(linea))
+    tiene_oferta = bool(entidad(ents, "PROGRAMA") or _CONTEXTO_OFERTA.search(linea))
+    campos = {
+        "PROGRAMA": tiene_oferta or tiene_modulo or tipo_fuente in _FUENTES_CON_OFERTAS,
+        "MODULO": tiene_modulo or (tiene_oferta and tipo_fuente in _FUENTES_CON_MODULOS),
+    }
+    return [tipo for tipo, esperado in campos.items() if esperado and academico_sin_resolver(ents, tipo)]
+
+
+def ambiguedad_academica(ents: Sequence[Dict[str, Any]]) -> Optional[str]:
+    return next((e["motivoRescateBeto"] for e in ents if e.get("motivoRescateBeto")), None)
+
+
 def precargar_desde_staging(cliente: ClienteBeto, stg_records: Iterable[Any]) -> int:
     """Precarga en la caché del cliente las entidades `beto_ents` guardadas en `staging_registros_crudos.payload_json` durante el paso ②."""
     precargados: Dict[str, List[EntidadBeto]] = {}
     for s_reg in stg_records:
         p_json = getattr(s_reg, "payload_json", None)
         if not isinstance(p_json, dict):
+            continue
+        if p_json.get('configuracion_beto') and p_json['configuracion_beto'] != cliente.configuracion:
+            continue
+        if activo('BETO_RESCATE_ACADEMICO') and p_json.get('configuracion_beto') != cliente.configuracion:
             continue
         for tupla in p_json.get("tuplas") or ():
             if not isinstance(tupla, dict) or "beto_ents" not in tupla:
@@ -441,6 +473,8 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
     línea (None para las omitidas). La opción 1 repite la extracción solo de las residuales, con el nombre propuesto por BETO.
     """
     cascada, acuerdo = activo("BETO_CASCADA_FINAL"), activo("BETO_ACUERDO_QC")
+    rescate_academico = activo("BETO_RESCATE_ACADEMICO") and tipo_fuente not in (
+        "PLANIFICACION", "ERROR", "RECHAZADO", "DUPLICADO", "SIN_RECONOCER")
     incluir_ci_acuerdo = not _omitir_ci_exacta_en_acuerdo()
     base: List[Optional[ResultadoLinea]] = []
     for linea in lineas:
@@ -451,6 +485,7 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
     contadores.lineas_totales += sum(1 for r in base if r is not None)
 
     necesita: Dict[int, str] = {}   # índice → texto para BETO
+    academicas = {}
     for i, r in enumerate(base):
         if r is None:
             continue
@@ -460,7 +495,10 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
             persona_resuelta_por_reglas(entidad(r.ents, "ESTUDIANTE"), incluir_ci_exacta=incluir_ci_acuerdo)
             or persona_resuelta_por_reglas(entidad(r.ents, "DOCENTE"), incluir_ci_exacta=incluir_ci_acuerdo)
         )
-        if residual or comparable:
+        if rescate_academico and (tipos := _residuales_academicas(lineas[i], r.ents, tipo_fuente)):
+            academicas[i] = tipos
+            contadores.residuales_academicas_enviadas += 1
+        if residual or comparable or i in academicas:
             necesita[i] = texto_para_beto(lineas[i])
             contadores.residuales_enviadas += int(bool(residual))
     leidas = cliente.entidades(necesita.values()) if necesita else {}
@@ -472,8 +510,19 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
         if ents_beto is None:   # el servicio falló: la línea sigue como la dejaron las reglas
             contadores.a_hitl += int(cascada and (persona_sin_resolver(r.ents, "ESTUDIANTE") or persona_sin_resolver(r.ents, "DOCENTE")))
             continue
+        propuestas = {}
+        for tipo in academicas.get(i, ()):
+            propuesta = mejor_propuesta(ents_beto, tipo, texto, excluir_celda)
+            if propuesta and propuesta.score >= cfg.UMBRAL_CONFIANZA_MEDIO:
+                propuestas[tipo] = {"nombre": propuesta.texto.strip(), "prob": propuesta.score}
+        if propuestas:
+            r.ents, r.score, r.req_rev = extraer(linea, academico_beto=propuestas)
+            contadores.lineas_academicas_rescatadas += any(
+                e.get("label") in ETIQUETAS_ACADEMICAS.values() and e.get("fuente_resolucion") == "BETO" for e in r.ents)
+            contadores.lineas_academicas_ambiguas += bool(ambiguedad_academica(r.ents))
         if cascada and tipo_fuente in cfg.BETO_TIPOS_FUENTE_CON_PERSONA:
-            _aplicar_cascada(r, linea, texto, ents_beto, extraer, contadores, excluir_celda)
+            extraer_persona = partial(extraer, academico_beto=propuestas) if propuestas else extraer
+            _aplicar_cascada(r, linea, texto, ents_beto, extraer_persona, contadores, excluir_celda)
         if acuerdo:
             _aplicar_acuerdo(r, texto, ents_beto, contadores, _clave_metrica(archivo, tipo_fuente), incluir_ci_exacta=incluir_ci_acuerdo)
     return base

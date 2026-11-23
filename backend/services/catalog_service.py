@@ -6,9 +6,11 @@ Aplica filtrado por Mínimo Privilegio (PoLP) en la vista de detalle.
 """
 
 from datetime import date
+import os
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session, load_only
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, or_, select, text
+from sqlalchemy.exc import SQLAlchemyError
 
 from models.dim_estudiante import DimEstudiante
 from models.dim_docente import DimDocente
@@ -18,6 +20,45 @@ from models.fact_marketing import FactMarketing
 from models.fact_evaluacion import FactEvaluacionDocente
 from models.fact_rendimiento import FactRendimientoAcademico
 from models.fact_financiero import FactSituacionFinanciera
+from services.programa_normalizador import candidato_modulo, es_invalido, normalizar_campos_modulo, partes_pos
+
+
+def programa_por_oferta(codigo: str | None, db_catalog=None) -> str | None:
+    pos, _ = partes_pos(codigo)
+    if not pos:
+        return None
+    if db_catalog is not None:
+        return db_catalog.execute(text("SELECT nombre_programa FROM cat_programa WHERE pos_code = :pos"), {"pos": pos}).scalar()
+    if os.getenv("TESTING") == "true" or os.getenv("APP_ENV") == "test":
+        return None
+    from core.database import CatalogSessionLocal
+    try:
+        with CatalogSessionLocal() as session:
+            return programa_por_oferta(codigo, session)
+    except SQLAlchemyError:
+        return None
+
+
+def modulos_locales_por_oferta(db: Session, pos: str | None) -> list[tuple[int, str, int]]:
+    if not pos or db.get_bind().dialect.name != "postgresql":
+        return []
+    filas = db.execute(text("""
+        SELECT id_modulo, codigo_modulo, COALESCE(nombre_modulo, nombre_canonico) AS nombre
+        FROM cat_modulo WHERE UPPER(codigo_modulo) LIKE :prefijo
+    """), {"prefijo": f"{pos}-M%"})
+    candidatos = []
+    for fila in filas:
+        base, numero = partes_pos(fila.codigo_modulo)
+        if base == pos and numero is not None:
+            candidatos.append((numero, fila.nombre, fila.id_modulo))
+    return candidatos
+
+
+def campos_modulo_dw(db: Session, nombre: str, programa: str | None, codigo: str | None) -> dict:
+    nombre, programa, codigo = normalizar_campos_modulo(nombre, programa, codigo, programa_por_oferta(codigo))
+    id_cat_modulo, _ = candidato_modulo(nombre, programa, codigo, modulos_locales_por_oferta(db, partes_pos(codigo)[0]))
+    return dict(nombre_modulo=nombre, programa=programa, pos_code=codigo,
+                id_cat_modulo=id_cat_modulo)
 
 
 def _apply_options(query, *opts):
@@ -321,13 +362,19 @@ class CatalogService:
         import hashlib
         import json
         from fastapi import HTTPException
-        from sqlalchemy import text
         campos = {k: str(data.get(k) or '').strip() or None for k in
                   ('nombre_modulo', 'nombre_institucion', 'programa', 'pos_code')}
         if not campos['nombre_modulo'] or not campos['nombre_institucion']:
             raise HTTPException(422, 'Indica el nombre del módulo y su institución.')
         if not any(c.isalnum() for c in campos['nombre_modulo']):
             raise HTTPException(422, 'Escribe un nombre de módulo que incluya letras o números.')
+        if any(es_invalido(campos[c]) for c in ('nombre_modulo', 'programa', 'pos_code')):
+            raise HTTPException(422, 'Corrige el código o nombre inválido del módulo.')
+        if (campos['pos_code'] or '').upper() == 'MOD-GEN':
+            raise HTTPException(422, 'Indica un código de módulo específico.')
+        datos_modulo = campos_modulo_dw(self.db, campos['nombre_modulo'], campos['programa'], campos['pos_code'])
+        id_cat_modulo = datos_modulo.pop('id_cat_modulo')
+        campos.update(datos_modulo)
         # Serializa dos altas idénticas, también cuando todavía no hay una fila que bloquear.
         if self.db.get_bind().dialect.name == 'postgresql':
             clave = int.from_bytes(hashlib.sha256(json.dumps(campos, sort_keys=True).lower().encode()).digest()[:8], signed=True)
@@ -339,7 +386,7 @@ class CatalogService:
         if q.first():
             self.db.rollback()
             raise HTTPException(409, 'Este módulo ya está registrado con los mismos datos.')
-        mod = DimModulo(**campos)
+        mod = DimModulo(**campos, id_cat_modulo=id_cat_modulo)
         self.db.add(mod)
         self.db.commit()
         self.db.refresh(mod)

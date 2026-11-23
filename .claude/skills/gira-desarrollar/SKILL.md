@@ -8,9 +8,9 @@ description: Chat de desarrollo de GiraGroup BI en el equipo local. Usar solo pa
 Solo ejecutas lo que trae `docs/cierres/PLAN_<fase>.md`. **Nada fuera del plan.** Si falta el PLAN, pídelo y no empieces.
 
 ## Al empezar
-1. Lee `CLAUDE.md` (invariantes) y el `PLAN_<fase>.md` indicado.
+1. Lee `CLAUDE.md` / `AGENTS.md` (invariantes y matriz de modelos por fase y rol) y el `PLAN_<fase>.md` indicado.
 2. Si el plan tiene DECISIONES PENDIENTES sin respuesta de Lean, ejecuta solo las tareas que no dependen de ellas.
-3. Delega cada tarea al agente que indica el plan (`dev-alta`, `dev-media`, `dev-baja`). Las marcadas como paralelas se lanzan juntas.
+3. Delega cada tarea al agente que indica el plan (`dev-alta`, `dev-media`, `dev-baja` según el modelo asignado para la plataforma activa: Claude, Antigravity o Codex). Las marcadas como paralelas se lanzan juntas.
 
 ## Reglas
 - Si una tarea exige cambiar un invariante (cascada, umbrales 0,92/90/85/80, bandas 0,85/0,60, catálogo sin docentes ni estudiantes, 128 tokens, 50 tablas, 22 KPI), **detente y repórtalo**.

@@ -270,7 +270,7 @@ export default function MasterDataView() {
             onChange={e => setInput(e.target.value)}
             maxLength={100}
             disabled={busy}
-            style={{ flex: 1 }}
+            style={{ flex: 1, minWidth: 0 }}
           />
           <Button type="submit" disabled={busy || isFetching}>
             Buscar
@@ -426,7 +426,7 @@ export default function MasterDataView() {
                       <td data-label="Sigla">{row.codigo || '—'}</td>
                       <td data-label="Programas">{row.n_programas ?? 0}</td>
                       <td data-label="Inscritos">{row.n_inscritos ?? 0}</td>
-                      <td data-label="Detalle">
+                      <td data-label="Años con techo / Escala">
                         {row.grupo === 'propia'
                           ? ESCALAS[row.escala] || 'Sobre 100'
                           : row.anios?.length

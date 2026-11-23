@@ -1,0 +1,30 @@
+CF-L4 · 2026-11-23
+
+Configuración: BETO_RESCATE_ACADEMICO apagado por defecto. Los ensayos lo activaron
+por proceso; las respuestas NER fueron fixtures de inferencia y no miden F1 o tiempos
+de producción. Las fuentes EVALUACION_DOCENTE y TECHOS ejercitan el rescate fuera de
+BETO_TIPOS_FUENTE_CON_PERSONA. PLANIFICACION conserva su carga determinista.
+
+Pruebas reproducibles
+.venv\Scripts\python -m pytest tests/beto_activo/test_cf_l4_rescate_academico.py -q
+11 passed. Casos: rescate de programa y módulo, homonimia de oferta/asignatura,
+rechazo de centinelas y valores fuera de catálogo, preservación de A y B y de
+un programa ya resuelto, egreso sin contexto, flag apagado y caché de otro modelo.
+
+.venv\Scripts\python -m pytest tests/cat tests/beto_activo tests/sprint4/test_dw_loader.py tests/sprint5/test_catalogo_modulos.py -q --cov=backend --cov=pipeline --cov-report=term-missing
+99 passed, 12 warnings, cobertura 23 % de backend y pipeline para esta selección.
+
+Integración de solo lectura en beto_pg_tmpfs / cf_l1_dw + cf_l1_catalog
+Entrada: POS: POS-5252 | CONTENIDO: Gerencia Estratégica del Marketing.
+Fuente EVALUACION_DOCENTE. Fixture MODULO con probabilidad 0,98. Rescate académico
+activo, cascada de personas y acuerdo desactivados para aislar la prueba.
+refinar_lineas → extract_entities_from_line → DWLoaderService.resolver_o_crear_modulo
+en una transacción PostgreSQL READ ONLY. Resultado: POS-5252-M01, dim_modulo 2105,
+cat_modulo local 703, requiere_revision=false. Contadores observados:
+lineas_totales=1, residuales_enviadas=0, residuales_academicas_enviadas=1,
+lineas_academicas_rescatadas=1, lineas_academicas_ambiguas=0, peticiones=1,
+textos_inferidos=1. Resultado sobre una dimensión existente, con cero escrituras.
+
+Los fixtures con dos ofertas de la misma familia o dos módulos del mismo nombre
+en una oferta quedaron con requiere_revision=true y motivo AMBIGUO. El ruteo de
+Evaluar y Consolidar usa VALOR_FUERA_DE_CATALOGO para derivados a la bandeja.

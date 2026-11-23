@@ -20,6 +20,7 @@ SIN_LATIDO_SEG = 180     # EN_CURSO sin avance en 3 min: la API se reinició y l
 MENSAJE_ERROR_PUBLICO = "El proceso se interrumpió. Revisa el lote antes de reintentarlo."
 
 _ultima_escritura: Dict[int, float] = {}
+_ultima_verificacion_cancel: Dict[int, tuple] = {}
 logger = logging.getLogger("tareas_dataops")
 
 
@@ -105,7 +106,68 @@ def fallar(tid: Optional[int], error: str) -> None:
     if not tid:
         return
     _ultima_escritura.pop(tid, None)
+    _ultima_verificacion_cancel.pop(tid, None)
     _finalizar(tid, "ERROR", {}, str(error)[:2000])
+
+
+@_sin_romper
+def cancelar(tid: Optional[int], usuario: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Cancela una tarea EN_CURSO marcándola como ERROR con motivo explícito de cancelación."""
+    if not tid:
+        return None
+    _ultima_escritura.pop(tid, None)
+    _ultima_verificacion_cancel[tid] = (time.monotonic(), True)
+    motivo = f"Cancelada por el usuario ({usuario})." if usuario else "Cancelada por el usuario."
+    _finalizar(tid, "ERROR", {"cancelada": True}, motivo)
+    return obtener(tid)
+
+
+@_sin_romper
+def cancelar_por_lote(id_lote: int, motivo: str = "Cancelada por reinicio de lote.") -> int:
+    """Marca como ERROR todas las tareas EN_CURSO asociadas a un lote."""
+    db = SessionLocal()
+    try:
+        filas = db.execute(text("""
+            UPDATE public.dataops_tarea
+               SET estado = 'ERROR',
+                   error = :motivo,
+                   actualizado_en = CURRENT_TIMESTAMP,
+                   terminado_en = CURRENT_TIMESTAMP
+             WHERE id_lote = :l AND estado = 'EN_CURSO'
+         RETURNING id
+        """), {"l": id_lote, "motivo": motivo[:2000]}).all()
+        db.commit()
+        for f in filas:
+            _ultima_escritura.pop(f.id, None)
+            _ultima_verificacion_cancel[f.id] = (time.monotonic(), True)
+        return len(filas)
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
+@_sin_romper
+def esta_cancelada(tid: Optional[int]) -> bool:
+    """Devuelve True si la tarea dejó de estar EN_CURSO (ej. cancelada por el usuario). Cacheado 1s."""
+    if not tid:
+        return False
+    ahora = time.monotonic()
+    prev = _ultima_verificacion_cancel.get(tid)
+    if prev and (ahora - prev[0] < INTERVALO_SEG):
+        return prev[1]
+    db = SessionLocal()
+    try:
+        estado = db.execute(
+            text("SELECT estado FROM public.dataops_tarea WHERE id = :id"),
+            {"id": tid},
+        ).scalar()
+        cancelada = estado is not None and estado != "EN_CURSO"
+        _ultima_verificacion_cancel[tid] = (ahora, cancelada)
+        return cancelada
+    finally:
+        db.close()
 
 
 def _finalizar(tid: int, estado: str, resultado: dict, error: Optional[str] = None):

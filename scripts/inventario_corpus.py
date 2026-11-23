@@ -33,7 +33,7 @@ def leer(f):
             pass
     return {}
 
-R = pathlib.Path(sys.argv[1])
+R = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path("uploads/data")
 print('|Archivo|Hoja|Filas|Cols|KB|Filas por gestión|\n|-|-|-|-|-|-|')
 total_filas = 0
 totales_anios = {}

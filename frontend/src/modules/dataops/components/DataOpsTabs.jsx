@@ -90,8 +90,20 @@ export default function DataOpsTabs({ tabs = [], activeTab, onChangeTab, disable
                   fontSize: '11px',
                   fontWeight: 600,
                   fontFamily: 'var(--font-mono, monospace)',
-                  backgroundColor: tab.badgeColor || (isActive ? 'var(--color-ink-black, #17191c)' : 'rgba(0, 0, 0, 0.08)'),
-                  color: isActive ? '#ffffff' : 'inherit',
+                  backgroundColor:
+                    tab.badgeColor ||
+                    (isActive
+                      ? 'var(--color-ink-black, #17191c)'
+                      : 'var(--color-paper-white, #ffffff)'),
+                  color: tab.badgeColor
+                    ? '#ffffff'
+                    : isActive
+                      ? 'var(--color-paper-white, #ffffff)'
+                      : 'var(--color-ink-black, #17191c)',
+                  border:
+                    tab.badgeColor || isActive
+                      ? '1px solid transparent'
+                      : '1px solid var(--color-border, #ececec)',
                 }}
               >
                 {tab.count}

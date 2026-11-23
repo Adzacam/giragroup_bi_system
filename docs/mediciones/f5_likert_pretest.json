@@ -1,0 +1,111 @@
+{
+ "fuente": "Encuestas_F2_Pretest_P01-P10_GiraGroup.docx (Lean, 15-18/04/2026), transcrito por el chat 1 el 19-nov",
+ "sha256_docx": "b38f7cf7ad2a0a203e522d59c25352a255c2f951e99b61423d5f214e1237dfa0",
+ "momento": "pre",
+ "participantes": 10,
+ "items": {
+  "I1": {
+   "dimension": "Disponibilidad",
+   "n": 9,
+   "sin_respuesta": 1,
+   "media": 2.22,
+   "de_muestral": 0.44
+  },
+  "I2": {
+   "dimension": "Automatización",
+   "n": 8,
+   "sin_respuesta": 2,
+   "media": 1.38,
+   "de_muestral": 0.52
+  },
+  "I3": {
+   "dimension": "Eficiencia temporal",
+   "n": 6,
+   "sin_respuesta": 4,
+   "media": 1.5,
+   "de_muestral": 0.55
+  },
+  "I4": {
+   "dimension": "Integración de datos",
+   "n": 9,
+   "sin_respuesta": 1,
+   "media": 1.67,
+   "de_muestral": 0.5
+  },
+  "I5": {
+   "dimension": "Alertas académicas",
+   "n": 4,
+   "sin_respuesta": 6,
+   "media": 2,
+   "de_muestral": 0.0
+  },
+  "I6": {
+   "dimension": "CMI / Decisiones",
+   "n": 9,
+   "sin_respuesta": 1,
+   "media": 2,
+   "de_muestral": 0.5
+  },
+  "I7": {
+   "dimension": "Ticket promedio",
+   "n": 5,
+   "sin_respuesta": 5,
+   "media": 2,
+   "de_muestral": 0.0
+  },
+  "I8": {
+   "dimension": "Metas",
+   "n": 7,
+   "sin_respuesta": 3,
+   "media": 2.14,
+   "de_muestral": 0.38
+  },
+  "I9": {
+   "dimension": "Conversión",
+   "n": 7,
+   "sin_respuesta": 3,
+   "media": 2.29,
+   "de_muestral": 0.49
+  }
+ },
+ "promedio_de_medias_por_item": 1.91,
+ "nota": "Las celdas '-' del cuestionario son 'sin respuesta / no aplica' y se excluyen; n varía por ítem.",
+ "C1_horas_consolidacion": {
+  "n": 3,
+  "valores": [
+   12.0,
+   8.0,
+   10.0
+  ],
+  "media": 10.0,
+  "media_min": 600.0
+ },
+ "C3_kpis_sin_trabajo_manual": {
+  "valores": [
+   "0",
+   "0",
+   "0",
+   "0",
+   "0",
+   "0",
+   "0",
+   "0",
+   "0",
+   "0"
+  ]
+ },
+ "C2_archivos": {
+  "valores": [
+   6,
+   6,
+   6,
+   4,
+   5,
+   3,
+   4,
+   5,
+   6,
+   5
+  ]
+ }
+}

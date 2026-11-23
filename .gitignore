@@ -125,3 +125,16 @@ output/historicos_nuevos/
 
 # F3S: JSON completo de Newman (37 MB, con cuerpos de respuesta); no se versiona
 output/f3s/
+
+# Salidas locales temporales y respaldos pesados
+backups/
+backend/output/
+uploads/otras_versiones/
+.playwright-mcp/
+output/*
+!output/README.md
+!output/lote1387_archivos/
+!output/lote1387_archivos/EJECUTADO_VS_META_lote1387_24_filas.xlsx
+output/lote*/ARCA_*.xlsx
+!output/sprint2_documentos.jsonl
+

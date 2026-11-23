@@ -1,0 +1,711 @@
+# Catálogo de mapeo de fuentes (FU-L0). Versionado. Editable sin tocar código.
+# Principio rector: el sistema no depende de nombres de archivo ni de hoja.
+# Un archivo nuevo con otras cabeceras se incorpora añadiendo un sinónimo aquí.
+# Los sinónimos salen de cabeceras reales de uploads/data (ver docs/fuentes/CONTRATO_FUENTES.md).
+# Las cabeceras se comparan después de normalizarlas (ver `normalizacion`).
+
+version: 1
+
+normalizacion:
+  minusculas: true
+  quitar_acentos: true          # NFKD + descarte de no ASCII (Ó -> O, ñ -> n)
+  colapsar_espacios: true       # "MONTO ENERO 2026  (PRELIMINAR)" -> una sola separación
+  nota: "El símbolo ° se descarta: 'N° INSCRITOS' queda 'n inscritos'. Los sinónimos se escriben ya normalizados."
+
+# Campos canónicos. Los KPI leen estos campos, nunca el nombre de la columna de origen.
+campos_canonicos:
+  estado_cartera_fuente: "Estado de cartera de la fuente (CERRADA, VIGENTE, EN MORA, PREVISIONABLE, INCOBRABLE)"
+  cuotas_en_mora: "Cuotas impagas. Mora = cuotas_en_mora >= 2 (DA3)"
+  dias_mora: "Días de mora. Nunca se guarda en cuotas_en_mora"
+  monto_pago_mes: "Pago de un mes calendario (una columna por mes)"
+  monto_deuda: "Deuda total del estudiante en el programa (negativa = sobrepago, se guarda 0)"
+  monto_pagado_total: "Total pagado hasta la fecha (solo si la fila no trae pagos por mes)"
+  fecha_inicio: "Fecha de inicio del programa (fecha del hecho de situación de cartera)"
+  estado_academico: "Estado académico normalizado (DESERCION, ABANDONO, APROBADO, ...)"
+  estado_tutoria: "Estado de tutoría (Aprobado, Insuficiencia académica, Abandono, ...); Abandono o Deserción cuentan para el KPI-16"
+  estado_arca: "Estado de titulación (Titulado, No Titulado)"
+  nota_modulo: "Nota de un módulo (numérica o con resultado canónico, DA-FU2)"
+  leads_captacion: "Leads de captación por programa y mes"
+  inscritos_captacion: "Inscritos de captación por programa y mes"
+  reservas: "Reservas del embudo (se guardan; no entran en el KPI-06)"
+  anio_periodo: "Año del período de una fila programa x mes (columna de año)"
+  mes_periodo: "Mes del período de una fila programa x mes (número o nombre)"
+  fecha_periodo: "Fecha del período de una fila programa x mes (se toma su año y mes)"
+  fecha_inscripcion: "Fecha de una inscripción individual (una fila por inscripción)"
+  puntuacion: "Respuesta numérica de una pregunta de evaluación"
+  escala_max: "Escala máxima de la pregunta (5 por defecto, 10 si la pregunta lo dice)"
+  monto_meta: "Meta monetaria por categoría o mes"
+  monto_ejecutado: "Monto ejecutado por categoría o mes"
+  monto_egreso: "Egreso real por programa (campo adicional al mínimo)"
+  ci: "Documento de identidad (valor sensible, nunca se publica)"
+  pos: "Código del programa (POS)"
+  programa: "Nombre del programa"
+  genero: "Género normalizado por catálogo (FEMENINO, MASCULINO)"
+
+# Prioridad de fuentes por campo (DA-FU3). Gana el primero de la lista.
+prioridad_fuentes:
+  monto_meta: [RENTABILIDAD, EGRESOS]
+  monto_ejecutado: [RENTABILIDAD, EGRESOS]
+  monto_egreso: [EGRESOS, RENTABILIDAD]
+  costos: [EGRESOS, RENTABILIDAD]
+  nota: "Si dos fuentes del mismo lote dan valores distintos para el mismo campo y mes, gana la de mayor prioridad y se registra CONFLICTO_FUENTES resuelto por regla."
+
+# Metas y ejecutado financiero (FU-L6; DA4 y DA-FU3, decisiones de Lean 2026-11-20). Nada aquí nombra un libro ni una hoja.
+metas:
+  # Columnas «año» de una fila categoría x mes (patrones sobre la cabecera en minúsculas y sin acentos; el grupo captura el año).
+  # La meta específica por categoría gana a la genérica del mismo año. «ejec. 2025» (total de todas las categorías) no es ejecutado por categoría.
+  columnas:
+    ejecutado: ['^ejecutado (\d{4})$']
+    meta_especifica: ['^meta por categoria (\d{4})$']
+    meta_generica: ['^meta (\d{4})$']
+  # Columna que dice a qué serie (categoría de ingreso) pertenece la fila. Cabeceras normalizadas.
+  claves_categoria: ["categoria", "tipo de ingreso", "tipo ingreso", "categoria financiera", "serie"]
+  # DA4: la granularidad de una meta sale de la FORMA de la fuente, no del año. Por categoría y año de la hoja se cuentan los meses
+  # distintos con meta: una sola celda = ANUAL (no se coloca en ningún mes); dos o más = MENSUAL.
+  granularidad:
+    mensual: "MENSUAL"
+    anual: "ANUAL"
+    min_meses_mensual: 2
+  # DA-FU3: dos fuentes de DISTINTO tipo con otro valor para el mismo campo y mes -> se carga el de la fuente prioritaria
+  # (`prioridad_fuentes` de más abajo) y el conflicto queda RESUELTO por regla (informativo, no pendiente). Dos fuentes del
+  # mismo tipo con valores distintos siguen PENDIENTES: no hay regla que decida.
+  conflicto:
+    motivo: "CONFLICTO_FUENTES"
+    estado_resuelto: "RESUELTO_REGLA"
+    estado_pendiente: "PENDIENTE"
+    regla_origen: "FU-L6:PRIORIDAD_POR_TIPO_DE_FUENTE"
+    multiplo_aviso: 100000        # una diferencia múltiplo de este monto se señala para avisar al área financiera
+  # Mes de corte: el último mes con ejecutado de toda la fuente. Se considera parcial (no cerrado) salvo que sea el último
+  # mes de la gestión; KPI-02, KPI-03 y KPI-12 solo usan meses cerrados. (La regla vive en bi.vw_cmi_valores, migración 026.)
+  mes_de_corte_parcial: true
+  motivos_sin_dato:
+    kpi_02_solo_anual: "La fuente solo trae meta anual."
+    kpi_02_sin_meta: "No hay meta cargada para esta gestión."
+    kpi_02_sin_mes_cerrado: "La gestión no tiene ningún mes cerrado con ejecución y meta mensual."
+
+# Un tipo de fuente = una forma de tabla. El archivo actual es solo un ejemplo.
+tipos_fuente:
+
+  COBRANZA:
+    descripcion: "Una fila por estudiante y programa, con una columna de pago por mes"
+    granularidad: "estudiante x programa"
+    # FU-L2: cada campo se toma del sinónimo de menor 'prioridad' presente en la fila. Un sinónimo
+    # 'ambiguo: true' (p. ej. la cabecera suelta 'mora') solo se usa si la fila no trae ningún sinónimo
+    # específico del mismo campo; nunca pisa 'total cuotas en mora'.
+    campos:
+      estado_cartera_fuente:
+        sinonimos:
+          - {texto: "tipo de cartera", prioridad: 1}
+          - {texto: "estado de cartera", prioridad: 2}
+          - {texto: "estado cartera", prioridad: 2}
+      cuotas_en_mora:
+        sinonimos:
+          - {texto: "total cuotas en mora", prioridad: 1}
+          - {texto: "cuotas en mora", prioridad: 2}
+          - {texto: "cuotas impagas", prioridad: 2}
+          - {texto: "nro cuotas en mora", prioridad: 2}
+          - {texto: "cuotas vencidas", prioridad: 3}
+          - {texto: "mora", prioridad: 9, ambiguo: true, nota: "cabecera suelta: solo si no hay otra de cuotas"}
+      dias_mora:
+        sinonimos:
+          - {texto: "dias de mora", prioridad: 1}
+          - {texto: "dias en mora", prioridad: 2}
+          - {texto: "dias de atraso", prioridad: 2}
+      monto_pago_mes:
+        sinonimos:
+          - {patron: '^monto (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre) \d{4}$', prioridad: 1, excluir: 'preliminar'}
+          - {patron: '^(pago|abono|pagado) (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre) \d{4}$', prioridad: 2, excluir: 'preliminar'}
+      monto_deuda:
+        sinonimos:
+          - {texto: "deuda total", prioridad: 1}
+          - {texto: "saldo deudor", prioridad: 2}
+          - {texto: "saldo pendiente", prioridad: 2}
+      monto_pagado_total:
+        sinonimos:
+          - {texto: "total pagado hasta la fecha", prioridad: 1}
+          - {texto: "total pagado", prioridad: 2}
+          - {texto: "monto pagado", prioridad: 3}
+      fecha_inicio:
+        sinonimos:
+          - {texto: "fecha inicio diplomado", prioridad: 1}
+          - {texto: "fecha de inicio", prioridad: 2}
+          - {texto: "fecha inicio", prioridad: 2}
+          - {texto: "fecha inicio programa", prioridad: 2}
+      estado_academico:
+        sinonimos:
+          - {texto: "estado academico", prioridad: 1}
+      programa:
+        sinonimos:
+          - {texto: "nombre del programa", prioridad: 1}
+      pos:
+        sinonimos:
+          - {texto: "pos", prioridad: 1}
+      ci:
+        sinonimos:
+          - {texto: "ci", prioridad: 1}
+    no_mapear:
+      - "rango mora"          # contiene 'mora' pero no es un conteo de cuotas (descriptivo: tramo de días)
+      - "estado arca"
+      - "estado reprobado"
+      - "pos-ci"              # clave compuesta, no el CI
+      - "validador pos"
+      - "dias de pago pendiente"   # otra medida de atraso; nunca va a cuotas_en_mora
+    nulos_aceptables:
+      - "observacion"
+      - "criterio libre"
+      - "comentario daf"
+    # FU-L2: vocabulario normalizado de estado_cartera_fuente (descriptivo; la mora la decide DA3).
+    # Los valores se comparan normalizados (minúsculas, sin acentos). Un valor que no está aquí no se
+    # descarta: el hecho se carga sin estado de fuente y va a revisión como VALOR_FUERA_DE_CATALOGO.
+    vocabularios:
+      estado_cartera_fuente:
+        CERRADA: ["cartera cerrada", "cerrada"]
+        VIGENTE: ["cartera vigente", "vigente", "al dia"]
+        EN MORA: ["cartera en mora", "en mora", "mora"]
+        PREVISIONABLE: ["cartera previsionable", "previsionable"]
+        INCOBRABLE: ["cartera incobrable", "incobrable"]
+    # FU-L2: reglas de calidad. Se registran de forma agregada (una entrada por documento y motivo).
+    calidad:
+      cuotas_negativas: {valor: 0, motivo: "CUOTAS_NEGATIVAS"}
+      cuotas_con_texto: {motivo: "CUOTAS_CON_TEXTO", nota: "'1s' -> 1 (se toma el número inicial)"}
+      cuotas_no_numericas: {valor: 0, motivo: "CUOTAS_NO_NUMERICAS"}
+      deuda_negativa: {valor: 0, motivo: "SOBREPAGO"}
+      dias_mora_negativos: {valor: 0, motivo: "DIAS_MORA_NEGATIVOS"}
+      valor_fuera_de_catalogo: {motivo: "VALOR_FUERA_DE_CATALOGO"}
+    # Mora (DA3, decisión de Lean): un hecho está en mora si cuotas_en_mora >= umbral. Misma regla en
+    # las vistas bi y en los servicios (backend/services/regla_mora.py lee este valor).
+    regla_mora:
+      umbral_cuotas: 2
+
+  ACTA:
+    descripcion: "Una fila por estudiante y programa, con una nota por módulo en formato ancho"
+    granularidad: "estudiante x programa"
+    # FU-L4: el cargador lee el acta por estos campos canónicos (backend/services/acta_canonica.py), no por nombre de columna.
+    campos:
+      ci:
+        sinonimos:
+          - {texto: "cedula de identidad", prioridad: 1}
+          - {texto: "ci", prioridad: 2}
+          - {texto: "carnet de identidad", prioridad: 2}
+          - {texto: "documento de identidad", prioridad: 2}
+          - {texto: "nro de ci", prioridad: 3}
+      pos:
+        sinonimos:
+          - {texto: "pos - actas", prioridad: 1}
+      estado_academico:
+        sinonimos:
+          - {texto: "estado academico", prioridad: 1}
+          - {texto: "estado final", prioridad: 2}
+          - {texto: "condicion academica", prioridad: 2}
+          - {texto: "situacion academica", prioridad: 2}
+      estado_tutoria:
+        sinonimos:
+          - {texto: "estado tutoria", prioridad: 1, nota: "puede traer Abandono o Deserción: cuenta para el KPI-16 igual que estado_academico (DA2-bis)"}
+          - {texto: "estado reprobado", prioridad: 2}
+          - {texto: "estado de tutoria", prioridad: 2}
+      estado_arca:
+        sinonimos:
+          - {texto: "estado arca", prioridad: 1}
+          - {texto: "estado de titulacion", prioridad: 2}
+      nota_modulo:
+        sinonimos:
+          - {patron: '^(nota )?(modulo|mod\.?) ?\d{1,2}$', prioridad: 1, nota: "una columna por módulo; el número de módulo sale de la cabecera"}
+    no_mapear:
+      - "nombres"
+      - "apellido paterno"
+      - "apellido materno"
+      - "pos-ci"
+      - "comentarios"
+      - "fecha emision arca"
+    nulos_aceptables:
+      - "comentarios"
+      - "estado tutoria"
+    # FU-L4 (DA-FU2 y DA2-bis, decisiones de Lean 2026-11-20). Los textos se comparan normalizados (minúsculas, sin acentos).
+    vocabularios:
+      # estado_academico / estado_tutoria -> código canónico. Solo estos dos cuentan para el KPI-16 y para el 0 como inasistencia.
+      estado_desercion:
+        DESERCION: ["desercion", "desertor", "desertora"]
+        ABANDONO: ["abandono"]
+      # Texto de una celda de nota -> resultado canónico del módulo. Se busca como fragmento del texto normalizado.
+      resultado_nota:
+        APROBADO: ["aprobo", "aprobado"]
+        INASISTENCIA: ["no asistio", "nunca ingreso", "faltas y no envio", "no envio ningun trabajo", "ingreso unicamente", "solo asistio"]
+        EXIMIDO: ["eximida", "eximido"]
+        SIN_NOTA: ["sin notas", "no aparece", "aparece en arca", "aparecen en arca", "aparece arca", "solo aparece", "solo aparecen"]
+      # Celdas que no son ni nota ni comentario: se tratan como vacías.
+      nota_vacia: ["-", "--", "n/a", "s/n"]
+    calidad:
+      nota_fuera_de_rango: {minimo: 0, maximo: 100, motivo: "NOTA_FUERA_DE_RANGO", nota: "un número fuera de 0-100 (en el acta real hay CI pegados) queda NULL y a revisión"}
+      valor_fuera_de_catalogo: {motivo: "VALOR_FUERA_DE_CATALOGO", nota: "texto de nota o estado que no está en el vocabulario: NULL y a revisión; nunca se publica el texto"}
+      cero_inasistencia: {motivo: "CERO_COMO_INASISTENCIA", nota: "un 0 con estado Deserción o Abandono es INASISTENCIA (nota NULL); si no, es un 0 real"}
+
+  EVALUACION_DOCENTE:
+    descripcion: "Una fila por respuesta a una evaluación; una columna por pregunta (docente o experiencia institucional)"
+    granularidad: "respuesta (persona x módulo o curso)"
+    # FU-L5: la encuesta se lee por contenido (backend/services/encuesta_canonica.py): cada columna se perfila con sus
+    # valores (puntuada o comentario, escala 5 o 10, familia de etiquetas) y cada celda se interpreta con el diccionario
+    # de `vocabularios`. Nada depende del nombre del libro, de la hoja ni del orden de las columnas.
+    campos:
+      puntuacion:
+        sinonimos:
+          - {patron: '^(a )?\d+\. ', prioridad: 1, nota: "una columna por pregunta; si la pregunta tiene columna de texto y de número, se lee solo la numérica (encuesta.pares)"}
+      escala_max:
+        regla:
+          por_defecto: 5
+          si_patron: 'escala (del|de) 1 a 10|escala del 1 al 10'
+          valor_si_cumple: 10
+          nota: "Descriptivo; la regla viva está en encuesta.escala (cabecera y valores de la columna)"
+      programa:
+        sinonimos:
+          - {texto: "programa", prioridad: 1}
+          - {texto: "programa pos", prioridad: 1}
+          - {texto: "programa - pos", prioridad: 1}
+    no_mapear:
+      - "nombre completo del usuario"
+      - "direccion de correo"
+      - "grupos"
+      - "fecha"
+      - "modulo"
+      - "numero del modulo"
+      - "respuesta numero"
+    nulos_aceptables:
+      - "comentarios"
+    # FU-L5 (DA1, decisión de Lean 2026-11-20): cuenta solo puntuacion en [1, escala_max]. Cero, «Sin Información» o fuera
+    # de escala quedan NULL (sin respuesta) y se registran agregados en log_inconsistencias. El NPS (0-10) va aparte: allí el 0 vale.
+    encuesta:
+      # Dos columnas por pregunta (texto «n/Etiqueta» y número): se lee solo la numérica para no contar la respuesta dos veces.
+      # Se emparejan por el texto de la pregunta: el prefijo de número («A 1.», «6.») y el marcador de la columna numérica
+      # («N°») no cuentan. Los patrones se aplican a la cabecera en mayúsculas sin acentos.
+      pares:
+        prefijo_pregunta: '^(?:A\s+)?\d+(?:\.\d+)?\s*[.)\-]\s*'
+        marcadores_numericos: ['^N\s*[°º]\s*', '^NRO\.?\s+', '^NUM\.?\s+']
+      # Columnas calculadas (promedios): no son una respuesta. Patrón sobre la cabecera en mayúsculas sin acentos.
+      columnas_derivadas: ['PROMEDIO', 'MEDIA ARITMETICA']
+      # Una columna es de puntuación si al menos esta proporción de sus celdas llenas es número, «n/Etiqueta», etiqueta del
+      # diccionario o «Sin Información»; si no, es de comentarios.
+      min_proporcion_puntuada: 0.5
+      min_celdas_perfil: 3
+      # Clasificación de una hoja como encuesta por sus valores: columnas cuyas celdas son respuestas tipo Likert
+      # («5/Totalmente de acuerdo», «Satisfecho») según el diccionario; ni el nombre del libro ni el de la hoja deciden.
+      clasificacion:
+        min_columnas_likert: 3
+        min_proporcion_likert: 0.5
+      escala:
+        por_defecto: 5
+        # Pista de la cabecera (en minúsculas y sin acentos). Gana a los valores.
+        cabecera:
+          - {patron: '(del|de) 1 (a|al) 10|\(1-?10\)|(del|de) 0 (a|al) 10|\(0-?10\)', escala: 10}
+          - {patron: '(del|de) 1 (a|al) 5|\(1-?5\)', escala: 5}
+        # Por valores: la columna es de 1-10 si los números sueltos (sin etiqueta) son la mayoría de las respuestas puntuadas
+        # y al menos esta proporción de ellos pasa de 5. Una etiqueta «n/Etiqueta» es siempre de 1-5.
+        min_proporcion_numeros_sueltos: 0.5
+        min_proporcion_mayor_a_5: 0.2
+        # Números sueltos por encima de este máximo (con esta proporción) no son de 1-5 ni de 1-10: escala no inferible.
+        maximo_admitido: 10
+        min_proporcion_sobre_maximo: 0.05
+      # NPS: pregunta de recomendación en escala 0-10 (el 0 es un puntaje válido).
+      nps: {minimo: 0}
+      puntuacion_minima: 1
+      # Tipo de pregunta (KPI-19 docente / KPI-20 institucional). Palabras sobre la cabecera en mayúsculas sin acentos.
+      tipo_pregunta:
+        nps: ["RECOMENDAR", "RECOMENDARIA", "RECOMENDACION", "RECOMIENDE", "RECOMIENDA", "DEL 0 AL 10", "DEL 1 AL 10", "0 A 10", "1 A 10"]
+        docente: ["DOCENTE", "PROFESOR", "FACILITADOR"]
+        institucional: ["PLATAFORMA", "MOODLE", "ZOOM", "TEAMS", "AULA VIRTUAL", "ATENCION", "ADMINISTRATIV",
+                        "COORDINACION", "COORDINADOR", "INSTITUCION", "UNIFRANZ", "SOPORTE", "SERVICIO",
+                        "INSCRIPCION", "PAGO", "CERTIFICA", "INFRAESTRUCTURA", "ORGANIZACION", "ASESOR",
+                        "RECURSOS TECNOLOGICOS", "TECNOLOGIC"]
+        # Hoja sin ninguna pregunta que nombre al docente: sus preguntas sin palabra clave son de experiencia institucional.
+        defecto_hoja_sin_docente: "INSTITUCIONAL"
+        defecto: "DOCENTE"
+      # Motivos que se registran, agregados por hoja y pregunta (nunca el valor: puede ser un texto con datos personales).
+      calidad:
+        sin_informacion: {motivo: "SIN_INFORMACION", estado: "REGISTRADO", nota: "0 o «Sin Información»: sin respuesta (DA1); informativo"}
+        fuera_de_escala: {motivo: "PUNTUACION_FUERA_DE_ESCALA", estado: "PENDIENTE", nota: "número fuera de [1, escala_max]: NULL (DA1)"}
+        respuesta_cruzada: {motivo: "RESPUESTA_EN_COLUMNA_EQUIVOCADA", estado: "PENDIENTE", nota: "etiqueta de otra escala o texto de otra pregunta en una columna puntuada: NULL"}
+        valor_fuera_de_catalogo: {motivo: "VALOR_FUERA_DE_CATALOGO", estado: "PENDIENTE", nota: "etiqueta que no está en el diccionario: NULL"}
+        escala_no_inferible: {motivo: "ESCALA_NO_INFERIBLE", estado: "PENDIENTE", nota: "no se puede deducir 1-5 ni 1-10 de la cabecera ni de los valores: sin respuesta"}
+    # FU-L5: diccionario etiqueta -> número (escala 1-5), por familia de respuesta. Editable: una etiqueta nueva se añade aquí.
+    # Los textos se comparan normalizados (minúsculas, sin acentos). Una etiqueta de una familia distinta a la dominante de su
+    # columna es una respuesta cruzada. Las del grupo `comodin` valen para cualquier familia.
+    vocabularios:
+      etiquetas:
+        acuerdo:
+          "5": ["totalmente de acuerdo", "muy de acuerdo"]
+          "4": ["de acuerdo"]
+          "2": ["en desacuerdo"]
+          "1": ["totalmente en desacuerdo", "muy en desacuerdo"]
+        satisfaccion:
+          "5": ["muy satisfecho", "muy satisfecha", "totalmente satisfecho", "totalmente satisfecha"]
+          "4": ["satisfecho", "satisfecha"]
+          "2": ["insatisfecho", "insatisfecha", "poco satisfecho", "poco satisfecha"]
+          "1": ["muy insatisfecho", "muy insatisfecha", "totalmente insatisfecho", "totalmente insatisfecha"]
+        probabilidad:
+          "5": ["muy probable"]
+          "4": ["probable"]
+          "2": ["poco probable", "improbable"]
+          "1": ["nada probable", "muy improbable"]
+        facilidad:
+          "5": ["muy facil"]
+          "4": ["facil"]
+          "2": ["dificil"]
+          "1": ["muy dificil"]
+        calidad:
+          "5": ["excelente"]
+          "4": ["bueno", "buena"]
+          "3": ["adecuado", "regular"]
+          "2": ["deficiente"]
+          "1": ["muy deficiente"]
+        utilidad:
+          "5": ["muy utiles", "muy util"]
+          "4": ["utiles", "util"]
+          "3": ["medianamente utiles", "medianamente util"]
+          "2": ["poco utiles", "poco util"]
+          "1": ["nada utiles", "nada util"]
+        carga:
+          "5": ["muy pesada"]
+          "4": ["pesada"]
+          "3": ["adecuada"]
+          "2": ["ligera"]
+          "1": ["muy ligera"]
+      comodin:
+        "3": ["neutral", "ni de acuerdo ni en desacuerdo", "neutro"]
+      # Familias cuya etiqueta puede venir SOLA, sin número («Satisfecho»). Las demás («Excelente», «Bueno», «Útiles», «Adecuada»)
+      # solo valen escritas «n/Etiqueta»: sueltas son una palabra de un comentario.
+      etiquetas_solas: ["acuerdo", "satisfaccion", "probabilidad"]
+      # Etiquetas de «no hay respuesta» (el 0/Sin Información de la fuente): NULL, nunca 0.
+      sin_informacion: ["sin informacion", "sin respuesta", "no responde", "no aplica", "no contesta"]
+      # Celdas que no son respuesta ni comentario: se tratan como vacías.
+      texto_vacio: [".", "..", "...", "-", "--", "_", "*", "x", "n/a", "na", "nd", "s/n", "sn", "no", "ninguno", "ninguna", "nada"]
+
+  MARKETING:
+    descripcion: "Una fila por inscripción individual"
+    granularidad: "inscripción (persona)"
+    campos:
+      programa:
+        sinonimos:
+          - {texto: "nombre del programa", prioridad: 1}
+      # FU-L3: código del programa y fecha de la inscripción, para que cada inscripción sume 1 al programa y mes de SU fila
+      pos:
+        sinonimos:
+          - {texto: "numeroproyecto", prioridad: 1}
+          - {texto: "numero proyecto", prioridad: 1}
+          - {texto: "pos", prioridad: 1}
+      fecha_inscripcion:
+        sinonimos:
+          - {texto: "marca temporal", prioridad: 1}
+          - {texto: "fecha de inscripcion", prioridad: 1}
+      ci:
+        sinonimos:
+          - {texto: "ci", prioridad: 1}
+      genero:
+        sinonimos:
+          - {texto: "genero", prioridad: 1}
+          - {texto: "genero l", prioridad: 2, nota: "columna derivada del mismo dato"}
+    no_mapear:
+      - "nombres"
+      - "paterno"
+      - "materno"
+      - "celular"
+      - "correo electronico"
+      - "direccion"
+      - "nit"
+      - "razon social"
+      - "asesor"
+      - "pos-ci incritos"
+    nulos_aceptables:
+      - "rango edad"
+      - "nivel academico l"
+      - "universidad"
+
+  EGRESOS:
+    descripcion: "Egresos por programa y resumen mensual de ejecución (incluye meta 2025 por tipo de ingreso)"
+    granularidad: "programa (egresos) o mes x tipo de ingreso (resumen)"
+    campos:
+      monto_egreso:
+        sinonimos:
+          - {texto: "egreso real", prioridad: 1}
+      monto_ejecutado:
+        sinonimos:
+          - {patron: '^ejecutado \d{4}$', prioridad: 1}
+      monto_meta:
+        sinonimos:
+          - {patron: '^meta \d{4}$', prioridad: 1}
+      programa:
+        sinonimos:
+          - {texto: "nombre del programa", prioridad: 1}
+      pos:
+        sinonimos:
+          - {texto: "nro pos", prioridad: 1}
+    no_mapear:
+      - "ingreso"
+      - "rentabilidad"
+      - "comentarios"
+      - "tipo de cambio"
+      - "egreso anterior"
+
+  RENTABILIDAD:
+    descripcion: "Ejecutado frente a meta por categoría y mes, con EBITDA"
+    granularidad: "mes x categoría"
+    campos:
+      monto_meta:
+        sinonimos:
+          - {patron: '^meta( por categoria)? \d{4}', prioridad: 1, nota: "incluye 'meta 2025 2do semestre'"}
+      monto_ejecutado:
+        sinonimos:
+          - {patron: '^ejecutado \d{4}$', prioridad: 1}
+          - {patron: '^ejec\. \d{4}$', prioridad: 2}
+    no_mapear:
+      - "ebitda meta 2024"
+      - "ebitda ejecutado 2024"
+      - "ebitda meta 2025"
+      - "ebitda ejecutado 2025"
+      - "proyeccion maestrias"
+      - "categoria"
+      - "mes"
+      - "mes numerico"
+    nulos_aceptables:
+      - "ebitda meta 2024"
+      - "ebitda ejecutado 2024"
+
+  TECHOS:
+    descripcion: "Techos de convenio por programa e institución"
+    granularidad: "convenio (programa x institución)"
+    campos:
+      pos:
+        sinonimos:
+          - {texto: "pos", prioridad: 1}
+      programa:
+        sinonimos:
+          - {texto: "programa", prioridad: 1}
+    no_mapear:
+      - "coord."
+      - "asistente"
+      - "asesor comercial"
+      - "institucion"
+      - "insitucin"
+      - "n inscr."
+      - "estado de pago"
+      - "tipo de certificado"
+      - "estado entrega de certificados"
+      - "id_institucion"
+    nulos_aceptables:
+      - "id_institucion"
+      - "fecha conclusion"
+
+  PLANIFICACION:
+    descripcion: "Planificación mensual por programa (leads, inscritos y reservas) y catálogo de programas notificados"
+    granularidad: "programa x mes"
+    campos:
+      pos:
+        sinonimos:
+          - {texto: "pos", prioridad: 1}
+          - {texto: "pos - ibp", prioridad: 1}
+      programa:
+        sinonimos:
+          - {texto: "programa", prioridad: 1}
+          - {texto: "nombre del programa", prioridad: 1}
+      # FU-L3 (DA6): leads e inscritos de captación de CUALQUIER hoja programa x mes. Un tipo de fuente nuevo con
+      # estos campos se lee igual (captacion_canonica.py une los sinónimos de todos los tipos). Los sinónimos
+      # se escriben normalizados: sin acentos, sin «°».
+      leads_captacion:
+        sinonimos:
+          - {texto: "leads", prioridad: 1}
+          - {texto: "interesados", prioridad: 1}
+          - {texto: "total interesados", prioridad: 1}
+          - {texto: "prospectos", prioridad: 1}
+      inscritos_captacion:
+        sinonimos:
+          - {texto: "n inscritos", prioridad: 1}
+          - {texto: "n de inscritos", prioridad: 1}
+          - {texto: "inscritos", prioridad: 2}
+          - {texto: "total inscritos", prioridad: 2}
+      reservas:
+        sinonimos:
+          - {texto: "reservas", prioridad: 1}
+          - {texto: "total reservas", prioridad: 2}
+      anio_periodo:
+        sinonimos:
+          - {texto: "ano", prioridad: 1}
+          - {texto: "anio", prioridad: 1}
+          - {texto: "gestion", prioridad: 1}
+          - {texto: "ano ibp", prioridad: 2}
+          - {texto: "anio ibp", prioridad: 2}
+      mes_periodo:
+        sinonimos:
+          - {texto: "mes", prioridad: 1}
+          - {texto: "nombre mes", prioridad: 2}
+          - {texto: "mes ibp", prioridad: 2}
+      fecha_periodo:
+        sinonimos:
+          - {texto: "fecha", prioridad: 1}
+    no_mapear:
+      - "costo programa"
+      - "punto de equilibrio"
+      - "estado"
+      - "comentarios"
+      - "comentario daf"
+      - "p/ejecutado"
+      - "p/asignado"
+      - "tc (cliente externo)"
+    nulos_aceptables:
+      - "comentarios"
+      - "comentario daf"
+      - "comentario digital / video solicitado"
+      - "comentario admisiones"
+
+# Captación (FU-L3, decisión DA6 de Lean, 2026-11-20): leads e inscritos de captación por programa y mes, KPI-06.
+# Los campos leads_captacion / inscritos_captacion / reservas y el período salen de los sinónimos de cualquier tipo
+# de fuente (ver tipos_fuente.*.campos); aquí solo van las reglas de uso, no nombres de columna.
+captacion:
+  # Una fila cuenta para el KPI-06 solo con ambos datos y 0 <= inscritos <= leads (migración 014). Las reservas
+  # se guardan en fact_planificacion_programa.reservas_fuente y no entran en el KPI.
+  # Deduplicación: el mismo programa (POS) y mes en varias hojas se cuenta una sola vez. Gana la hoja de menor
+  # prioridad; las hojas de detalle mensual (un único mes dominante) van antes que las tablas por programa con el
+  # mes en cada fila, y las visibles antes que las ocultas rescatadas (FU-L1b). Las ocultas ignoradas no llegan aquí.
+  prioridad_origen:
+    detalle_mensual_visible: 1
+    detalle_mensual_oculta: 2
+    por_programa_visible: 3
+    por_programa_oculta: 4
+  prioridad_sin_metadatos: 3
+  motivos_sin_dato:
+    sin_leads: "Sin leads en esta gestión: la fuente de captación trae interesados e inscritos de un mismo programa y mes desde {desde}."
+    sin_ninguna: "No hay interesados e inscritos de un mismo programa y mes en ninguna fuente cargada."
+
+# Campos que identifican la fila pero no el tipo de fuente (aparecen en casi todas las fuentes).
+# El tipo de una hoja se sugiere solo con los campos específicos (FU-L1, pipeline/lector_hojas.py).
+campos_identidad: [ci, pos, programa, fecha_inicio, anio_periodo, mes_periodo, fecha_periodo, fecha_inscripcion]   # fecha_inicio (FU-L2) y el período (FU-L3) aparecen en muchas fuentes
+
+# Una hoja cuyo contenido es de otro tipo que su libro (p. ej. una hoja de planificación con leads
+# e inscritos dentro de un libro de actas) toma su propio tipo si trae al menos este número de campos
+# específicos de ese tipo y ninguno específico del tipo del libro.
+tipo_por_hoja:
+  min_campos_especificos: 2
+
+# Filas que no son datos (FU-L1). Se miden sobre la hoja tal como la lee la ingesta.
+filas:
+  filas_busqueda_cabecera: 40
+  # Celdas que el formato arrastrado deja llenas sin dato (casillas de verificación, ceros de fórmula, errores).
+  # Una fila cuyas celdas son solo estos valores (o solo un número de orden) es una fila fantasma.
+  valores_plantilla: ["true", "false", "verdadero", "falso", "0", "0.0", "-", "--", "n/a", "#n/a", "#value!", "#ref!", "#div/0!", "#name?", "#null!", "#num!"]
+  # Cabeceras (normalizadas) de columnas de número de orden: su valor solo no hace de una fila un dato.
+  columnas_ordinales: ["n", "no", "nro", "nro.", "n.", "#", "numero", "item"]
+  # Subtotal: la primera o segunda celda útil es un rótulo corto de total.
+  patron_subtotal: '^(sub ?)?total(es)?\b|^gran total\b'
+  max_largo_subtotal: 40
+  proporcion_casi_vacia: 0.10     # fila casi vacía: 1 a max(1, ceil(0.10 * columnas)) celdas llenas
+
+# Reglas de hoja genéricas. Se aplican por ESTADO y FORMA; el nombre es solo una señal más.
+# Se evalúan en orden (estado, forma, nombre) y gana la primera que aplica.
+# 'debil: true' = la regla solo ignora la hoja si otra hoja del mismo libro se usa: nunca deja un
+# libro sin datos (un CSV o un libro de una sola hoja «Hoja 1» se usa, con aviso).
+# El resultado sale en la vista previa (FU-L8) para que el usuario lo confirme.
+# FU-L1 reemplazó la regla 'resumen_de_formulas' de FU-L0: con sus condiciones ignoraba hojas mensuales
+# de datos con fórmulas (4 hojas de planificación 2026) y la tabla de ejecutado frente a meta.
+reglas_hoja:
+  ignorar_por_estado:
+    - {id: oculta, estados: [hidden, veryHidden], motivo: "hoja oculta"}
+  ignorar_por_forma:
+    - {id: sin_filas_de_datos, max_filas_datos: 0, motivo: "solo cabecera o vacía"}
+    - {id: una_sola_fila, max_filas_datos: 1, debil: true, motivo: "una sola fila de datos: no es una tabla"}
+    - {id: casi_vacia, min_proporcion_casi_vacias: 0.8, debil: true, motivo: "resumen o panel: casi todas las filas traen una o dos celdas"}
+    - {id: cabecera_dispersa, min_proporcion_cabeceras_vacias: 0.5, max_densidad: 0.3, debil: true, motivo: "resumen o panel: la mitad de las columnas no tiene cabecera y la hoja está casi vacía"}
+    - {id: resumen_montos_texto, max_filas_datos: 49, min_proporcion_montos_texto: 0.3, debil: true, motivo: "resumen de totales con montos escritos como texto ('Bs…')"}
+    - {id: texto_sin_valores, max_filas_datos: 199, max_proporcion_celdas_con_digito: 0.10, debil: true, motivo: "notas o criterios en texto, sin valores medibles"}
+    - {id: cabecera_repetida_o_pivote, min_proporcion_duplicadas: 0.5, debil: true, motivo: "copia o tabla pivote con filas repetidas"}
+  ignorar_por_nombre_senal:
+    - {id: borrador, patron: "borrador|boor", motivo: "borrador"}
+    - {id: copia, patron: "^copia de ", motivo: "copia antigua"}
+    - {id: hoja_numerada, patron: '^hoja \d+$', motivo: "hoja auxiliar sin nombre"}
+    - {id: tabla_dinamica, patron: "^tabla din", motivo: "tabla dinámica"}
+    - {id: dashboard, patron: "^dashboard", motivo: "panel de gráficos"}
+    - {id: centralizado, patron: "^centralizado", motivo: "consolidado de otras hojas"}
+  usar_por_defecto: "cabecera detectada y filas_datos >= 1 y no cae en ninguna regla anterior"
+  # FU-L1b (decisión de Lean, 2026-11-20): una hoja OCULTA se rescata como usada cuando:
+  #  - por contenido es de un tipo de `tipos` (hoja mensual de detalle con período dominante, o informe de metas),
+  #  - no cae en ninguna regla de forma ni de nombre (borrador, copia, tabla dinámica, dashboard, centralizado…), y
+  #  - su período (año-mes) o su entidad (informe de metas) no lo cubre ninguna hoja visible usada del mismo libro
+  #    (deduplicación por período con prioridad a la hoja visible de detalle, DA6).
+  # Si el período ya está cubierto, la oculta se ignora como duplicada. Las demás ocultas siguen ignoradas.
+  rescate_ocultas:
+    tipos: [PLANIFICACION]
+    columnas_anio: ["ano", "anio", "gestion"]
+    columnas_mes: ["mes"]
+    columnas_fecha: ["fecha"]   # si no hay año y mes: período de una fecha AAAA-MM-DD
+    meses: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+    min_proporcion_periodo_dominante: 0.8   # hoja mensual: al menos el 80 % de sus filas con año y mes son del mismo mes
+    informe_metas:
+      filas_busqueda: 45
+      patron_gestion: 'gestion (20\d{2})'      # rótulo de bloque anual
+      patron_columna_meta: '^meta\b'           # columna de meta en la misma fila que la columna 'mes'
+      columna_mes: "mes"
+    motivo_rescate: "oculta rescatada: período sin hoja visible"
+    motivo_rescate_informe: "oculta rescatada: informe de metas sin hoja visible equivalente"
+    motivo_duplicada: "oculta: período ya cubierto por una hoja visible"
+  # Hojas que el plan saca del descarte: se usan aunque una regla débil o de nombre las ignore.
+  # Con las reglas de FU-L1 ninguna de las dos cae en una regla (se usan por contenido); quedan como red.
+  # 'aplica_a_ocultas: true' haría que una excepción rescate también una hoja oculta.
+  excepciones_usar:
+    - {hoja_patron: "^dip\\. exp doc\\. x modulo$", motivo: "evaluación por módulo (DA, FU-L5)"}
+    - {hoja_patron: "^ibp$", motivo: "única fuente de leads e inscritos 2026 junto con planificación (DA6)"}
+  nota: "Las reglas por nombre son señales. El perfil (scripts/auditoria_fuentes) mide estado y forma; FU-L1 (pipeline/lector_hojas.py) aplica estas reglas."
+
+# Cabeceras de extracción por encabezado y roles de entidades (M5: sin listas fijas en código).
+extraccion:
+  claves_ci: ["CEDULA DE IDENTIDAD", "CI", "C.I.", "DOC_IDENTIDAD/CI", "CI_ESTUDIANTE", "IDNUMBER", "ID NUMBER"]
+  claves_nombre_completo: ["NOMBRE COMPLETO", "NOMBRES Y APELLIDOS", "APELLIDOS Y NOMBRES", "ESTUDIANTE", "ALUMNO"]
+  claves_nota: ["GRADE/100.00", "GRADE/100", "NOTA FINAL", "NOTA_FINAL", "CALIFICACION FINAL", "CALIF_FINAL", "FINALGRADE", "FINAL_GRADE", "PROMEDIO FINAL", "PROMEDIO", "NOTA", "CALIFICACION", "PUNTAJE"]
+  claves_fecha_financiera: ["FECHA ULTIMA FACTURA", "FECHA DE PAGO", "FECHA PAGO", "FECHA DE VENCIMIENTO", "FECHA VENCIMIENTO", "FECHA DE LA PRIMERA FACTURA", "FECHA INICIO DIPLOMADO"]
+  claves_fecha_academica: ["FECHA", "FECHA EVALUACION", "FECHA DE EVALUACION", "FECHA ASENTAMIENTO", "FECHA DE CIERRE", "FECHA FIN", "MARCA TEMPORAL", "FECHA DE ENVIO", "FINALIZADO", "COMPLETADO", "COMENZADO EL"]
+  claves_mes: ["MES INICIO", "MES INICO", "MES"]
+  claves_anio: ["ANO INICIO", "ANO INCIO", "ANO", "GESTION"]
+  clave_descarga_moodle: "LAST DOWNLOADED FROM THIS COURSE"
+  financieros:
+    ci: ["CI", "CEDULA DE IDENTIDAD", "DOC_IDENTIDAD/CI", "CI_ESTUDIANTE"]
+    monto_deuda: ["DEUDA TOTAL", "MONTO_DEUDA", "SALDO DEUDOR", "SALDO", "DEUDA"]
+    monto_pagado: ["TOTAL PAGADO HASTA LA FECHA", "TOTAL PAGADO", "MONTO PAGADO", "MONTO_PAGADO", "PAGADO"]
+    cuotas_impagas: ["TOTAL CUOTAS EN MORA", "CUOTAS EN MORA", "CUOTAS IMPAGAS", "CUOTAS_IMPAGAS"]
+    nombre_completo: ["NOMBRE COMPLETO", "ESTUDIANTE"]
+    nombres: ["NOMBRES"]
+    paterno: ["PATERNO"]
+    materno: ["MATERNO"]
+    programa: ["NOMBRE DEL PROGRAMA", "PROGRAMA"]
+  no_estudiante:
+    - "ASESOR"
+    - "DOCENTE"
+    - "PROFESOR"
+    - "TUTOR"
+    - "EXPERTO"
+    - "COORDINADOR"
+    - "RESPONSABLE"
+    - "RESIDENCIA"
+    - "SEDE"
+    - "CIUDAD"
+    - "ESCUELA"
+    - "PROGRAMA"
+    - "MODULO"
+    - "CELULAR"
+    - "TELEFONO"
+    - "FACTURA"
+    - "CORREO"
+    - "E-MAIL"
+    - "EMAIL"
+    - "ESTADO"
+    - "OBSERVACION"
+    - "CARTERA"
+    - "SITUACION"
+    - "RAZON SOCIAL"
+  palabras_no_estudiante: ["NIT"]
+  atributos_estudiante: ["CARRERA", "NIVEL ACADEMICO", "UNIVERSIDA", "INSTITUTO", "INSTITUCION", "GRADO ACADEMICO", "PROFESION", "OCUPACION", "CARGO", "DIRECCION"]
+  roles:
+    codigo_programa: ["POS", "NUMEROPROYECTO", "NUMERO PROYECTO", "NRO PROYECTO", "N POS", "NRO POS", "NUMERO POS", "CODIGO POS", "COD POS", "CODIGO PROGRAMA", "COD PROGRAMA"]
+    nombre_programa: ["NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA", "PROGRAMA POS", "DIPLOMADO", "MAESTRIA"]
+    modulo: ["MODULO", "NOMBRE MODULO", "NOMBRE DEL MODULO", "CURSO", "COURSE", "ASIGNATURA", "MATERIA", "COD MODULO", "CODIGO MODULO"]
+    docente: ["DOCENTE", "PROFESOR", "TUTOR", "FACILITADOR", "NOMBRE DOCENTE", "NOMBRE DEL DOCENTE", "EXPERTO", "NOMBRE DEL EXPERTO"]
+    estudiante: ["ESTUDIANTE", "ALUMNO", "POSTULANTE", "PARTICIPANTE", "USER LMS", "NOMBRE", "NOMBRES Y APELLIDOS", "NOMBRE COMPLETO", "APELLIDOS Y NOMBRES", "NOMBRE COMPLETO DEL USUARIO", "NOMBRE DEL ESTUDIANTE", "NOMBRE DEL PARTICIPANTE"]
+    partes_nombre: ["NOMBRES", "PATERNO", "MATERNO", "APELLIDO PATERNO", "APELLIDO MATERNO"]
+    ci: ["CI", "C I", "IDNUMBER", "CARNET", "DOCUMENTO", "DOC IDENTIDAD CI", "CI ESTUDIANTE", "CEDULA DE IDENTIDAD"]
+    concepto: ["CONCEPTO", "ITEM", "DESCRIPCION", "GLOSA", "RUBRO"]
+    monto: ["DEUDA TOTAL", "MONTO", "IMPORTE", "TOTAL", "DEUDA", "SALDO", "MONTO_DEUDA", "MONTO DEUDA"]
+    monto_pagado: ["TOTAL PAGADO HASTA LA FECHA", "TOTAL PAGADO", "PAGADO", "MONTO_PAGADO", "MONTO PAGADO", "ABONO"]
+    cuotas_impagas: ["TOTAL CUOTAS EN MORA", "CUOTAS EN MORA", "CUOTAS_IMPAGAS", "CUOTAS IMPAGAS", "CUOTAS VENCIDAS", "CUOTAS_VENCIDAS", "MORA", "CUOTAS_MORA", "CUOTA"]

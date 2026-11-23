@@ -35,6 +35,11 @@ from models.dim_meta import DimMeta
 from models.log_inconsistencia import LogInconsistencia
 from models.staging_entidad import StagingEntidadNoResuelta, generar_id_homonimo
 from models.catalogos import CatInstitucion
+from services.catalog_service import modulos_locales_por_oferta, programa_por_oferta
+from services.programa_normalizador import (
+    candidato_modulo, clave_nombre, codigo_dimension, codigo_modulo, es_invalido,
+    normalizar_campos_modulo, partes_pos,
+)
 from core.esquema_opcional import valores_si_existen
 from pipeline.config import NOTA_APROBACION
 try:
@@ -273,7 +278,8 @@ class DWLoaderService:
         self.db = db
         # Memoria de una consolidación (una instancia por petición): con 100 mil filas, las mismas búsquedas
         # de módulo, tiempo y docente se repetían decenas de miles de veces contra la base
-        self._modulo_por_pos: Dict[str, int] = {}
+        self._modulo_por_pos: Dict[tuple, int] = {}
+        self._catalogos_por_pos: Dict[str, tuple] = {}
         self._tiempos: set = set()
         self._docente_por_modulo: Dict[int, Optional[int]] = {}
         self._est_nombres: Optional[list] = None  # [(id_estudiante, nombre)] cargado una vez por instancia
@@ -551,32 +557,6 @@ class DWLoaderService:
                 .first()
             )
             return fila.campo_canonico if fila else None
-        except Exception:
-            return None
-        finally:
-            if cerrar:
-                session.close()
-
-    def _programa_por_pos(self, pos_code: str, db_catalog=None) -> Optional[str]:
-        """CAT-L4: autocompleta el programa desde cat_programa (catalog_db) por código POS."""
-        if not pos_code:
-            return None
-        base = re.sub(r"-M\d+$", "", pos_code.strip().upper())
-        session = db_catalog
-        cerrar = False
-        if session is None and os.getenv("TESTING") != "true" and os.getenv("APP_ENV") != "test":
-            try:
-                from core.database import CatalogSessionLocal
-                session = CatalogSessionLocal()
-                cerrar = True
-            except Exception:
-                session = None
-        if session is None:
-            return None
-        try:
-            from models.catalogos import CatPrograma
-            fila = session.query(CatPrograma).filter(func.upper(CatPrograma.pos_code) == base).first()
-            return fila.nombre_programa[:200] if (fila and fila.nombre_programa) else None
         except Exception:
             return None
         finally:
@@ -948,6 +928,9 @@ class DWLoaderService:
     ) -> Optional[int]:
         if not nombre_modulo and not pos_code:
             return None
+        if any(es_invalido(valor) for valor in (nombre_modulo, programa, pos_code)):
+            self._registrar_aviso_modulo(doc_id, nombre_modulo or pos_code or programa, "CODIGO_O_TITULO_INVALIDO")
+            return None
         nombre_limpio = (nombre_modulo or "").strip()
         if nombre_limpio and not any(c.isalnum() for c in nombre_limpio):
             nombre_modulo = pos_code or None
@@ -963,30 +946,47 @@ class DWLoaderService:
             if m_pos:
                 pos_code = nombre_modulo = f"POS-{m_pos.group(1)}"
 
-        if pos_code and pos_code.strip().upper() == "MOD-GEN":
-            pos_code = None
+        pos_code = codigo_dimension(pos_code)
 
         if pos_code:
             clave_pos = pos_code.strip()
-            if clave_pos in self._modulo_por_pos:
-                return self._modulo_por_pos[clave_pos]
-            mod = self.db.query(DimModulo).filter(DimModulo.pos_code == clave_pos).order_by(DimModulo.id_modulo).first()
+            clave = (clave_pos, clave_nombre(nombre_modulo), clave_nombre(programa))
+            if clave in self._modulo_por_pos:
+                return self._modulo_por_pos[clave]
+            pos_base, nro = partes_pos(clave_pos)
+            fk_local = None
+            nombre_final, familia = (nombre_modulo or '').strip(), programa
+            q = self.db.query(DimModulo)
+            if pos_base:
+                if pos_base not in self._catalogos_por_pos:
+                    self._catalogos_por_pos[pos_base] = (programa_por_oferta(pos_base), modulos_locales_por_oferta(self.db, pos_base))
+                catalogo, modulos = self._catalogos_por_pos[pos_base]
+                nombre_final, familia, _ = normalizar_campos_modulo(nombre_final, programa, clave_pos, catalogo)
+                fk_local, motivo = candidato_modulo(nombre_final, familia, clave_pos, modulos)
+                if motivo in ('AMBIGUO', 'NUMEROS_CONTRADICTORIOS'):
+                    self._registrar_aviso_modulo(doc_id, nombre_final or clave_pos, motivo)
+                    return None
+            if fk_local and nro is None:
+                # Un POS sin sufijo puede contener varios módulos y la oferta completa.
+                numero = next(n for n, _, id_ in modulos if id_ == fk_local)
+                codigo_con_modulo = codigo_modulo(pos_base, numero)
+                q = q.filter(DimModulo.pos_code.in_((clave_pos, codigo_con_modulo)), DimModulo.id_cat_modulo == fk_local)
+            else:
+                q = q.filter(DimModulo.pos_code == clave_pos)
+            mod = q.order_by(DimModulo.id_modulo).first()
             if mod:
-                self._modulo_por_pos[clave_pos] = mod.id_modulo
+                self._modulo_por_pos[clave] = mod.id_modulo
                 return mod.id_modulo
-            if nombre_modulo and re.match(r"^POS-\d+", clave_pos, flags=re.I):
+            if nombre_final and pos_base:
                 # El código POS es autoritativo: sin él, el fuzzy fusionaba 'POS-X · Módulo 1' con 'Módulo 2'
-                prog_resuelto = programa or self._programa_por_pos(clave_pos)
                 nuevo_mod = DimModulo(
-                    nombre_modulo=nombre_modulo.strip(),
+                    nombre_modulo=nombre_final, programa=familia, pos_code=clave_pos, id_cat_modulo=fk_local,
                     nombre_institucion=institucion or "GiraGroup Posgrado",
                     id_institucion=self._resolver_id_institucion(institucion),
-                    pos_code=clave_pos,
-                    programa=prog_resuelto,
                 )
                 self.db.add(nuevo_mod)
                 self.db.flush()
-                self._modulo_por_pos[clave_pos] = nuevo_mod.id_modulo
+                self._modulo_por_pos[clave] = nuevo_mod.id_modulo
                 self._registrar_nombre_modulo(nuevo_mod.id_modulo, nuevo_mod.nombre_modulo)
                 return nuevo_mod.id_modulo
 

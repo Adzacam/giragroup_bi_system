@@ -69,11 +69,21 @@ export default function BatchHistory({ onInspect, onLogs, onNewBatch, loadingLog
         await dataopsApi.deleteFailedBatch(src.id_lote);
         setSelectedIds((prev) => prev.filter((id) => id !== src.id_lote));
         if (rows.length === 1 && page > 1) setPage(page - 1);
+      } else if (action === 'reset') {
+        if (!await confirmar({ title: `Reiniciar lote #${src.id_lote}`, description: 'Se eliminará este lote y sus archivos cargados en staging para que puedas volver a subir los archivos correctos.', confirmText: 'Reiniciar lote' })) return;
+        await dataopsApi.reiniciarLote(src.id_lote);
+        if (localStorage.getItem('last_active_batch_id') === String(src.id_lote)) {
+          onNewBatch?.();
+        }
+        setSelectedIds((prev) => prev.filter((id) => id !== src.id_lote));
+        if (rows.length === 1 && page > 1) setPage(page - 1);
       } else {
         await dataopsApi.retryBatchReading(src.id_lote);
         avisarTareaIniciada();
       }
-      sileoToast.success({ title: action === 'delete' ? 'Lote eliminado' : 'Lectura reanudada', description: action === 'delete' ? 'El historial se ha actualizado.' : 'Puedes seguir el avance desde las notificaciones.' });
+      const msgTitle = action === 'delete' ? 'Lote eliminado' : action === 'reset' ? 'Lote reiniciado' : 'Lectura reanudada';
+      const msgDesc = action === 'retry' ? 'Puedes seguir el avance desde las notificaciones.' : 'El historial se ha actualizado.';
+      sileoToast.success({ title: msgTitle, description: msgDesc });
       await refetch();
     } catch (err) {
       sileoToast.error({ title: 'No se pudo completar la acción', description: mensajeError(err, 'Inténtalo de nuevo.') });
@@ -237,6 +247,17 @@ export default function BatchHistory({ onInspect, onLogs, onNewBatch, loadingLog
                       {src.puede_eliminar && <Button variant="ghost" disabled={locked} isLoading={busy?.id === src.id_lote && busy?.action === 'delete'} onClick={() => mutate(src, 'delete')}>Eliminar</Button>}
                     </>}
                     {!['CONSOLIDADO', 'ERROR'].includes(src.status) && src.id_documento && <Button variant="ghost" disabled={locked} isLoading={inspecting} onClick={() => onInspect(src)}>Inspeccionar</Button>}
+                    {src.status !== 'CONSOLIDADO' && !src.puede_eliminar && (
+                      <Button
+                        variant="ghost"
+                        className="dataops-btn-danger"
+                        disabled={locked}
+                        isLoading={busy?.id === src.id_lote && busy?.action === 'reset'}
+                        onClick={() => mutate(src, 'reset')}
+                      >
+                        Reiniciar
+                      </Button>
+                    )}
                     {src.id_documento && <Button variant="ghost" isLoading={loadingLogs === src.id_documento} disabled={!!loadingLogs || locked} onClick={() => onLogs(src)}>Bitácora</Button>}
                   </div></td>
                 </tr>

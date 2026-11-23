@@ -297,7 +297,7 @@ export default function LoginHeroPane() {
           </h3>
 
           <p className="v2-hero-card-desc">
-            “Trazabilidad auditable desde la ingesta documental hasta el tablero directivo y Power BI según tu rol RBAC.”
+            “Trazabilidad auditable desde la ingesta documental hasta el tablero directivo y la analítica predictiva según tu rol RBAC.”
           </p>
         </article>
       </div>

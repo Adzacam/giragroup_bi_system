@@ -13,7 +13,7 @@ import { useDraftState, useLoteFlow } from './context/LoteFlowContext';
 import useRevision from './hooks/useRevision';
 import useRevisionAcciones from './hooks/useRevisionAcciones';
 import { dataopsApi } from '../../api/dataopsApi';
-import { sileoToast } from '../../services/sileoToast';
+import { confirmar, sileoToast } from '../../services/sileoToast';
 import AnimatedNumberV2 from '../../v2/motion/AnimatedNumberV2';
 import { mensajeError } from '../../utils/mensajeError';
 import { textoMotivo } from '../../constants/motivosBandeja';
@@ -41,6 +41,7 @@ function RevisionBandeja({ batchId }) {
   const [input, setInput] = useState(filters.search || '');
   const [exporting, setExporting] = useState(false);
   const [retryingPrep, setRetryingPrep] = useState(false);
+  const [cancelingTask, setCancelingTask] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [activeActionIdx, setActiveActionIdx] = useState(0);
   const exportLock = useRef(false);
@@ -55,7 +56,7 @@ function RevisionBandeja({ batchId }) {
     status: lecturaData.status,
     autoCount: lecturaData.resumen_ejecutivo?.aceptados_automaticamente,
   } : undefined);
-  const { data: task } = useQuery({
+  const { data: task, refetch: refetchTask } = useQuery({
     queryKey: [...DATAOPS_QUERY_KEY, 'consolidacion-task', String(batchId)],
     queryFn: () => dataopsApi.getBatchTask(batchId, 'CONSOLIDACION'),
     enabled: !!batchId,
@@ -180,6 +181,23 @@ function RevisionBandeja({ batchId }) {
     return result;
   });
 
+  const activeTask = preparing ? prepTask : task;
+  const cancelActiveTask = async () => {
+    const tid = activeTask?.id;
+    if (!tid || cancelingTask) return;
+    const label = preparing ? 'preparación de casos' : 'consolidación';
+    if (!await confirmar({ title: `Cancelar ${label}`, description: 'Se detendrá la tarea en curso para este lote.', confirmText: 'Cancelar tarea' })) return;
+    setCancelingTask(true);
+    try {
+      await dataopsApi.cancelarTarea(tid);
+      sileoToast.info({ title: 'Tarea cancelada', description: 'El proceso se detuvo. Puedes reintentar o reiniciar el lote.' });
+      await queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY });
+      await Promise.all([refetchTask(), refetchPrepTask()]);
+    } catch (err) {
+      sileoToast.error({ title: 'No se pudo cancelar la tarea', description: mensajeError(err) });
+    } finally { setCancelingTask(false); }
+  };
+
   const total = filters.vista === 'GRUPOS' ? data?.total_casos : data?.total;
   const showMasterDetail = ['PENDIENTES', 'RESUELTOS'].includes(filters.vista);
 
@@ -207,7 +225,7 @@ function RevisionBandeja({ batchId }) {
       </div>
       <IntegridadLote key={batchId} batchId={batchId} />
       {actions.pending.map(op => <div key={op.id} className="dataops-banner-info" role="status" style={{ marginBottom: 12 }}><span>{op.title}: se enviará en {op.seconds} s.</span><Button variant="ghost" onClick={() => actions.cancel(op.id)}>Deshacer</Button></div>)}
-      {processing && <ProgresoTarea titulo={preparing ? 'Preparando casos de revisión' : 'Consolidando el lote'} tarea={preparing ? prepTask : task} nota={preparing ? 'Preparando casos… se habilita al terminar.' : 'El proceso continúa en segundo plano.'} />}
+      {processing && <ProgresoTarea titulo={preparing ? 'Preparando casos de revisión' : 'Consolidando el lote'} tarea={preparing ? prepTask : task} nota={preparing ? 'Preparando casos… se habilita al terminar.' : 'El proceso continúa en segundo plano.'} onCancel={activeTask?.id ? cancelActiveTask : undefined} canceling={cancelingTask} cancelLabel="Cancelar tarea" />}
       {!readOnly && summary?.status === 'success' && !processing && (prepTask === null || prepTask?.estado === 'FALLIDA') && (
         <div className="dataops-banner-info" role={prepTask?.estado === 'FALLIDA' ? 'alert' : 'status'} style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <span>{prepTask?.estado === 'FALLIDA' ? `La preparación de casos falló${prepTask?.mensaje_error ? `: ${prepTask.mensaje_error}` : '.'}` : 'Este lote aún no tiene la bandeja preparada.'}</span>

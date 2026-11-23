@@ -1,8 +1,9 @@
 import React from 'react';
-import { Calendar, RefreshCw, ShieldCheck } from 'lucide-react';
+import { Calendar, RefreshCw, ShieldCheck, XCircle } from 'lucide-react';
+import Button from '../../../components/shared/Button';
 import { UMBRAL_INDICE_REGISTRO } from '../../../constants/dataopsConfig';
 
-export default function IngestRulesPanel({ isProcessing, uploadProgress, uploadStageText }) {
+export default function IngestRulesPanel({ isProcessing, uploadProgress, uploadStageText, onCancelUpload }) {
   return (
     <div className="floating-artifact" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div>
@@ -51,6 +52,13 @@ export default function IngestRulesPanel({ isProcessing, uploadProgress, uploadS
           <p style={{ fontSize: '11px', color: 'var(--color-slate-gray)', margin: '6px 0 0 0', lineHeight: 1.3 }}>
             {uploadStageText || (uploadProgress < 100 ? `Cargando lote: ${uploadProgress}%` : 'Ejecutando pipeline y diagnósticos estructurales...')}
           </p>
+          {onCancelUpload && (
+            <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'flex-end' }}>
+              <Button variant="ghost" className="dataops-btn-danger" onClick={onCancelUpload} style={{ padding: '5px 10px', fontSize: '11.5px' }}>
+                <XCircle size={13} /> Cancelar
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

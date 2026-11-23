@@ -97,20 +97,20 @@ def generar_grafico_3_1():
     sumas = cm_abs.sum(axis=1)[:, np.newaxis]
     cm_norm = np.divide(cm_abs.astype(float), sumas, out=np.zeros(cm_abs.shape), where=sumas > 0)
     
-    fig, ax = plt.subplots(figsize=(6.5, 5.2), dpi=300)
-    fig.subplots_adjust(left=0.20, right=0.92, top=0.92, bottom=0.18)
+    fig, ax = plt.subplots(figsize=(7.2, 5.6), dpi=300)
+    fig.subplots_adjust(left=0.22, right=0.88, top=0.92, bottom=0.22)
     
     im = ax.imshow(cm_norm, cmap="Blues", interpolation="nearest", vmin=0, vmax=1)
     cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-    cbar.ax.set_ylabel("Proporción normalizada (Recall)", rotation=-90, va="bottom", fontsize=9)
+    cbar.set_label("Proporción normalizada (Recall)", rotation=270, labelpad=16, fontsize=9, fontweight="bold")
     cbar.ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda y, _: fmt_decimal(y, 1)))
     
     ax.set_xticks(range(len(clases)))
     ax.set_yticks(range(len(clases)))
-    ax.set_xticklabels(clases, fontsize=8.5, rotation=15)
+    ax.set_xticklabels(clases, fontsize=8.5, rotation=20, ha="right", rotation_mode="anchor")
     ax.set_yticklabels(clases, fontsize=8.5)
-    ax.set_xlabel("Clase predicha (Inferencia BETO NLP)")
-    ax.set_ylabel("Clase real (Gold Standard)")
+    ax.set_xlabel("Clase predicha (Inferencia BETO NLP)", labelpad=10, fontsize=9.2, fontweight="bold")
+    ax.set_ylabel("Clase real (Gold Standard)", labelpad=10, fontsize=9.2, fontweight="bold")
     
     for i in range(len(clases)):
         for j in range(len(clases)):
@@ -1111,9 +1111,9 @@ def generar_grafico_rendimiento_locust_newman():
     aserciones_newman = data_newman["run_stats"]["assertions"]["total"]  # 24
     fallos_newman = data_newman["run_stats"]["assertions"]["failed"]  # 0
     
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(ANCHO_16CM, 4.4), dpi=300,
-                                   gridspec_kw={'width_ratios': [1.3, 1.0]})
-    fig.subplots_adjust(top=0.88, bottom=0.18, left=0.24, right=0.96, wspace=0.35)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.8, 5.2), dpi=300,
+                                   gridspec_kw={'width_ratios': [1.35, 1.0]})
+    fig.subplots_adjust(top=0.82, bottom=0.18, left=0.26, right=0.96, wspace=0.42)
     
     # Subgráfico 1: Latencia por Endpoint en Locust (p50 y p95)
     endpoints = [
@@ -1147,11 +1147,11 @@ def generar_grafico_rendimiento_locust_newman():
              edgecolor='#111111', hatch='///', linewidth=1.0)
     
     ax1.set_yticks(y)
-    ax1.set_yticklabels(endpoints, fontsize=8)
+    ax1.set_yticklabels(endpoints, fontsize=8.2)
     ax1.invert_yaxis()
-    ax1.set_xlabel('Tiempo de Respuesta (Milisegundos)', fontsize=8.8, fontweight='bold')
+    ax1.set_xlabel('Tiempo de Respuesta (Milisegundos)', fontsize=8.8, fontweight='bold', labelpad=8)
     ax1.set_title('Prueba de Carga (Locust, 50 usuarios)\n1.121 requests · 41,27 RPS · 0 fallos',
-                  fontsize=9.2, weight='bold', pad=10)
+                  fontsize=9.2, weight='bold', pad=12)
     ax1.set_xlim(0, max(p95_vals) * 1.3)
     ax1.xaxis.set_major_formatter(formatter_coma)
     ax1.legend(loc='lower right', fontsize=7.5, edgecolor='#333333')
@@ -1176,10 +1176,10 @@ def generar_grafico_rendimiento_locust_newman():
     
     ax2.set_xticks(x2)
     ax2.set_xticklabels(categorias_newman, fontsize=8)
-    ax2.set_ylabel('Total Registrado / Porcentaje', fontsize=8.8, fontweight='bold')
+    ax2.set_ylabel('Total Registrado / Porcentaje', fontsize=8.8, fontweight='bold', labelpad=8)
     ax2.set_title('Pruebas de Contrato (Newman)\n11/11 endpoints · 24/24 aserciones OK',
-                  fontsize=9.2, weight='bold', pad=10)
-    ax2.set_ylim(0, 120)
+                  fontsize=9.2, weight='bold', pad=12)
+    ax2.set_ylim(0, 125)
     ax2.grid(axis='y', linestyle=':', color='#AAAAAA', alpha=0.5)
     
     ax2.text(0, items_newman + 3, f"{items_newman}\n(0 fallos)", ha='center', fontsize=7.8, weight='bold')
@@ -1187,7 +1187,7 @@ def generar_grafico_rendimiento_locust_newman():
     ax2.text(2, 100 + 3, "100,00 %\n(Éxito)", ha='center', fontsize=7.8, weight='bold')
     
     fig.suptitle('Evaluación de Carga Concurrente (Locust) y Contratos de Integración (Newman)',
-                 fontsize=10.5, weight='bold', y=0.98)
+                 fontsize=10.5, weight='bold', y=0.96)
     
     guardar_figura(fig, "grafico_rendimiento_locust_newman.png")
 

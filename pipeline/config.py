@@ -52,6 +52,7 @@ BETO_FLAGS_POR_DEFECTO = {
     "BETO_CASCADA_FINAL": True,     # opción 1: BETO como última etapa de la cascada, solo para residuales
     "BETO_ACUERDO_QC": True,        # opción 2: acuerdo regla–BETO como control de calidad
     "BETO_SUGERENCIA_HITL": True,   # opción 3: candidatos ordenados por score combinado en la bandeja HITL
+    "BETO_RESCATE_ACADEMICO": False,  # CF-L4: programas y módulos residuales contra el catálogo
     "BETO_VENTANA": False,          # ventana deslizante para textos de más de 128 tokens
 }
 BETO_MAX_LENGTH_TOKENS = 128        # el mismo recorte que el índice (indice_confianza.MAX_LENGTH_TOKENS); no subir a 512

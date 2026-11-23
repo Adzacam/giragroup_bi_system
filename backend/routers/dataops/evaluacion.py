@@ -236,12 +236,14 @@ def _evaluar_documentos_lote(
     lineas_hechas = 0
     tareas_dataops.avanzar(tarea_id, 0, sum(len([l for l in (s_reg.texto_plano or "").splitlines() if l.strip()])
                                             for s_reg in stg_records), forzar=True)
-    # Flags BETO_CASCADA_FINAL / BETO_ACUERDO_QC (services/beto_integracion.py); apagados: camino original
+    # La lectura usa la misma cascada de personas y de residuales académicos que Consolidar.
     cliente_beto, contadores_beto = None, beto_integracion.Contadores()
     if beto_integracion.necesita_refinar():
         cliente_beto = beto_integracion.ClienteBeto(contadores=contadores_beto)
 
     for stg in stg_records:
+        if tarea_id and tareas_dataops.esta_cancelada(tarea_id):
+            raise RuntimeError("Lectura cancelada por el usuario.")
         orig_doc = doc_map.get(stg.id_documento)
         doc_fuente = (orig_doc.tipo_fuente if orig_doc and orig_doc.tipo_fuente else "ACTA").upper()
         doc_escala = orig_doc.tipo_escala if orig_doc else "CENTESIMAL_100"
@@ -273,6 +275,8 @@ def _evaluar_documentos_lote(
 
         for line_idx, line in enumerate(lines):
             lineas_hechas += 1
+            if tarea_id and lineas_hechas % 250 == 0 and tareas_dataops.esta_cancelada(tarea_id):
+                raise RuntimeError("Lectura cancelada por el usuario.")
             tareas_dataops.avanzar(tarea_id, lineas_hechas)
             r_beto = refinadas[line_idx] if refinadas is not None else None
             if r_beto is not None:
@@ -288,6 +292,7 @@ def _evaluar_documentos_lote(
                     apariciones_lote=max(1, len(lines)),
                 )
             total_entidades += len(ents)
+            ambiguedad_academica = beto_integracion.ambiguedad_academica(ents)
             indice_num = int(round(score * 100))
             suma_indices += indice_num
 
@@ -363,6 +368,9 @@ def _evaluar_documentos_lote(
                 if r_beto is not None and r_beto.degradada_por_acuerdo:
                     motivo_codigo = MOTIVO_DESACUERDO_REGLA_BETO
                     motivo_decision = "Las reglas encontraron una persona que BETO no reconoce en ese tramo; la confianza bajó un escalón."
+                elif ambiguedad_academica:
+                    motivo_codigo = "VALOR_FUERA_DE_CATALOGO"
+                    motivo_decision = "La propuesta de BETO para programa o módulo requiere verificar la oferta en el catálogo."
                 elif indice_num < UMBRAL_INDICE_REGISTRO:
                     motivo_codigo = "BAJA_CONFIANZA"
                     motivo_decision = f"Índice del registro ({indice_num}) inferior al umbral de pase directo ({UMBRAL_INDICE_REGISTRO})."
@@ -531,7 +539,7 @@ def _evaluar_documentos_lote(
                 try:
                     new_hitl = StagingEntidadNoResuelta(
                         id_documento=stg.id_documento,
-                        tipo_entidad="ESTUDIANTE" if ent_est else ("MODULO" if ent_mod else ("CONCEPTO_FINANCIERO" if ent_con else "CALIFICACION")),
+                        tipo_entidad="MODULO" if ambiguedad_academica else ("ESTUDIANTE" if ent_est else ("MODULO" if ent_mod else ("CONCEPTO_FINANCIERO" if ent_con else "CALIFICACION"))),
                         texto_original=line,
                         ci_temporal=ci_val,
                         mejor_candidato=(
@@ -558,6 +566,7 @@ def _evaluar_documentos_lote(
                             "tipo_fuente": doc_fuente,
                             "tipo_escala": doc_escala,
                             "motivo_llano": motivo_decision,
+                            **({"motivo_rescate_beto": ambiguedad_academica} if ambiguedad_academica else {}),
                         },
                         registro_origen_id=stg.id,
                         estado_resolucion="PENDIENTE",
@@ -580,6 +589,8 @@ def _evaluar_documentos_lote(
                 **{k: previo[k] for k in CLAVES_PAYLOAD_INGESTA if k in previo},
                 "tipo_fuente": doc_fuente,
                 "tipo_escala": doc_escala,
+                "configuracion_beto": cliente_beto.configuracion if cliente_beto is not None else None,
+                "rescate_academico": beto_integracion.activo("BETO_RESCATE_ACADEMICO"),
                 "tuplas": tuplas_bloque_payload,
             }
 
@@ -719,6 +730,9 @@ def _evaluar_lote_en_segundo_plano(doc_ids: List[int], id_lote: Optional[int], t
             tareas_dataops.terminar(tarea_id, {})
             return
         res = _evaluar_documentos_lote(db_bg, docs, persistir_staging=True, tarea_id=tarea_id)
+        if tarea_id and tareas_dataops.esta_cancelada(tarea_id):
+            db_bg.rollback()
+            return
         # Tras persistir sólo se agregan casos sin resolver, que no cambian la lectura: el mismo resultado sirve
         # como lectura del lote con su huella nueva
         ids = sorted(d.id_documento for d in docs)
@@ -775,7 +789,7 @@ def _huella_evaluacion(db: Session, doc_ids: List[int]) -> Tuple:
     stg = db.query(
         func.count(StagingRegistroCrudo.id), func.max(StagingRegistroCrudo.id)
     ).filter(StagingRegistroCrudo.id_documento.in_(doc_ids)).one()
-    return ("v2",) + tuple(stg)
+    return ("v3", beto_integracion.configuracion_modelo(), beto_integracion.activo("BETO_RESCATE_ACADEMICO"), *stg)
 
 
 def _superponer_resoluciones(db: Session, base: Dict[str, Any], doc_ids: List[int]) -> Dict[str, Any]:
@@ -849,6 +863,7 @@ def _reconstruir_evaluacion_desde_bd(db: Session, docs: List[DimOrigenDocumental
         return None
 
     doc_map = {d.id_documento: d for d in docs}
+    rescate_academico = beto_integracion.activo("BETO_RESCATE_ACADEMICO")
     detalles: List[Dict[str, Any]] = []
     auto_count = audit_count = inc_count = total_entidades = suma_indices = 0
 
@@ -857,6 +872,10 @@ def _reconstruir_evaluacion_desde_bd(db: Session, docs: List[DimOrigenDocumental
         tuplas = payload.get("tuplas") or []
         if not tuplas:
             continue
+        if bool(payload.get('rescate_academico')) != rescate_academico:
+            return None
+        if rescate_academico and payload.get('configuracion_beto') != beto_integracion.configuracion_modelo():
+            return None
         orig_doc = doc_map.get(stg.id_documento)
         doc_fuente = (payload.get("tipo_fuente") or (orig_doc.tipo_fuente if orig_doc else "ACTA") or "ACTA").upper()
         doc_escala = payload.get("tipo_escala") or (orig_doc.tipo_escala if orig_doc else None)

@@ -35,6 +35,40 @@ def conteos():
         return {t: s.execute(text(f"SELECT count(*) FROM {t}")).scalar() for t in TABLAS}
 
 
+def esperar_tarea(cli, id_lote, tipo):
+    """Espera el mismo estado terminal que consulta la interfaz de DataOps."""
+    fin = time.monotonic() + 3600
+    while time.monotonic() < fin:
+        respuesta = cli.get(f"{BASE}/lote/{id_lote}/tarea", params={"tipo": tipo})
+        respuesta.raise_for_status()
+        tarea = respuesta.json() or {}
+        estado = tarea.get("estado")
+        if estado == "COMPLETADA":
+            return tarea
+        if estado and estado != "EN_CURSO":
+            raise RuntimeError(f"La tarea {tipo} terminó en {estado}")
+        time.sleep(2)
+    raise TimeoutError(f"Tiempo agotado esperando {tipo}")
+
+
+def tiempos_bd(id_lote):
+    from core.database import SessionLocal
+    with SessionLocal() as db:
+        tareas = db.execute(text("""
+            SELECT tipo, total, iniciado_en, terminado_en,
+                   EXTRACT(EPOCH FROM (terminado_en - iniciado_en)) AS duracion
+            FROM dataops_tarea WHERE id_lote = :lote
+            AND tipo IN ('LECTURA_BETO', 'PREPARACION_REVISION', 'CONSOLIDACION')
+            AND estado = 'COMPLETADA' ORDER BY id
+        """), {"lote": id_lote}).mappings().all()
+    if [t["tipo"] for t in tareas] != ["LECTURA_BETO", "PREPARACION_REVISION", "CONSOLIDACION"]:
+        raise RuntimeError("Secuencia inesperada de tareas completadas")
+    for anterior, posterior in zip(tareas, tareas[1:]):
+        if anterior["terminado_en"] > posterior["iniciado_en"]:
+            raise RuntimeError("Lectura, preparación o consolidación se solaparon")
+    return tareas
+
+
 def main(salida):
     t = {}
     info = [i for i in ciclo.construir_slices() if "slice" in i]
@@ -60,29 +94,52 @@ def main(salida):
         print("La carga no creó un lote:", json.dumps(resumen_carga, ensure_ascii=False, default=str)[:500])
         return 1
 
-    # espera a que termine la lectura de BETO (corre en segundo plano)
-    t0 = time.perf_counter()
-    estado = None
-    while time.perf_counter() - t0 < 1800:
-        tarea = cli.get(f"{BASE}/lote/{id_lote}/tarea", params={"tipo": "LECTURA_BETO"}).json()
-        estado = (tarea or {}).get("estado")
-        if estado != "EN_CURSO":  # sin tarea (lectura ya guardada), COMPLETADA o FALLIDA
-            break
-        time.sleep(2)
-    t["espera_lectura_beto_s"] = round(time.perf_counter() - t0, 2)
-
-    with __import__("core.database", fromlist=["SessionLocal"]).SessionLocal() as ses:
-        fila = ses.execute(text("SELECT total, EXTRACT(EPOCH FROM (terminado_en - iniciado_en)) FROM dataops_tarea "
-                                "WHERE id_lote = :l AND tipo = 'LECTURA_BETO' ORDER BY id DESC LIMIT 1"), {"l": id_lote}).first()
-    if fila and fila[1]:
-        t["lectura_beto_s"] = round(float(fila[1]), 2)
-        t["lineas_leidas_beto"] = int(fila[0])
-        t["lineas_por_s_beto"] = round(int(fila[0]) / float(fila[1]), 2)
-        t["carga_s"] = round(t["carga_y_lectura_s"] + t["espera_lectura_beto_s"] - t["lectura_beto_s"], 2)
-
-    t0 = time.perf_counter()
-    rc = cli.post(f"{BASE}/confirm-dw-insert", json={"id_lote": id_lote, "en_segundo_plano": False})
-    t["consolidacion_s"] = round(time.perf_counter() - t0, 2)
+    espera_prep = 0.0
+    if os.environ.get("FLUJO_ESPERAR_PREPARACION") == "1":
+        t0 = time.perf_counter()
+        esperar_tarea(cli, id_lote, "LECTURA_BETO")
+        t["espera_lectura_beto_s"] = round(time.perf_counter() - t0, 2)
+        t0 = time.perf_counter()
+        esperar_tarea(cli, id_lote, "PREPARACION_REVISION")
+        espera_prep = round(time.perf_counter() - t0, 2)
+        t["espera_preparacion_revision_s"] = espera_prep
+        t0 = time.perf_counter()
+        rc = cli.post(f"{BASE}/confirm-dw-insert", json={"id_lote": id_lote, "en_segundo_plano": True})
+        rc.raise_for_status()
+        if rc.json().get("status") != "accepted":
+            raise RuntimeError("La API no aceptó la consolidación del lote")
+        tarea = esperar_tarea(cli, id_lote, "CONSOLIDACION")
+        t["consolidacion_s"] = round(time.perf_counter() - t0, 2)
+        lectura, preparacion, consolidacion = tiempos_bd(id_lote)
+        t["lectura_beto_s"] = round(float(lectura["duracion"]), 2)
+        t["preparacion_revision_s"] = round(float(preparacion["duracion"]), 2)
+        t["consolidacion_tarea_s"] = round(float(consolidacion["duracion"]), 2)
+        t["lineas_leidas_beto"] = int(lectura["total"])
+        t["lineas_por_s_beto"] = round(int(lectura["total"]) / float(lectura["duracion"]), 2)
+        # TestClient participa en la tarea de fondo antes de retornar del POST de carga.
+        t["carga_s"] = round(t["carga_y_lectura_s"] + t["espera_lectura_beto_s"] + espera_prep
+                              - t["lectura_beto_s"] - t["preparacion_revision_s"], 2)
+        rj = tarea.get("resultado") or {}
+    else:
+        t0 = time.perf_counter()
+        while time.perf_counter() - t0 < 1800:
+            tarea = cli.get(f"{BASE}/lote/{id_lote}/tarea", params={"tipo": "LECTURA_BETO"}).json()
+            if (tarea or {}).get("estado") != "EN_CURSO":
+                break
+            time.sleep(2)
+        t["espera_lectura_beto_s"] = round(time.perf_counter() - t0, 2)
+        with __import__("core.database", fromlist=["SessionLocal"]).SessionLocal() as ses:
+            fila = ses.execute(text("SELECT total, EXTRACT(EPOCH FROM (terminado_en - iniciado_en)) FROM dataops_tarea "
+                                    "WHERE id_lote = :l AND tipo = 'LECTURA_BETO' ORDER BY id DESC LIMIT 1"), {"l": id_lote}).first()
+        if fila and fila[1]:
+            t["lectura_beto_s"] = round(float(fila[1]), 2)
+            t["lineas_leidas_beto"] = int(fila[0])
+            t["lineas_por_s_beto"] = round(int(fila[0]) / float(fila[1]), 2)
+            t["carga_s"] = round(t["carga_y_lectura_s"] + t["espera_lectura_beto_s"] - t["lectura_beto_s"], 2)
+        t0 = time.perf_counter()
+        rc = cli.post(f"{BASE}/confirm-dw-insert", json={"id_lote": id_lote, "en_segundo_plano": False})
+        t["consolidacion_s"] = round(time.perf_counter() - t0, 2)
+        rj = rc.json() if rc.headers.get("content-type", "").startswith("application/json") else {}
     import huella_dw  # huella del resultado antes de la revisión simulada (que resuelve casos de la bandeja)
     huella_dw.main(str(salida) + ".huella.json")
 
@@ -95,17 +152,16 @@ def main(salida):
     t["revision_humana_simulada_s"] = revision["resumen"]["tiempo_humano_simulado_s"]
 
     despues = conteos()
-    maquina = t["carga_y_lectura_s"] + t["espera_lectura_beto_s"] + t["revision_maquina_s"] + t["consolidacion_s"]
+    maquina = t["carga_y_lectura_s"] + t["espera_lectura_beto_s"] + espera_prep + t["revision_maquina_s"] + t["consolidacion_s"]
     total = {"tiempo_maquina_s": round(maquina, 2), "tiempo_humano_simulado_s": t["revision_humana_simulada_s"],
              "total_estimado_s": round(maquina + t["revision_humana_simulada_s"], 1),
              "total_estimado_min": round((maquina + t["revision_humana_simulada_s"]) / 60, 2),
              "meta_rnf03_min": 15, "referencia_tesis_min": 9}
     with __import__("core.database", fromlist=["SessionLocal"]).SessionLocal() as ses:
         fila_beto = ses.execute(text("SELECT resultado FROM dataops_tarea WHERE id_lote = :l AND tipo = 'LECTURA_BETO' ORDER BY id DESC LIMIT 1"), {"l": id_lote}).scalar()
-    rj = rc.json() if rc.headers.get("content-type", "").startswith("application/json") else {}
     out = {"lectura_beto_contadores": ((fila_beto or {}) if isinstance(fila_beto, dict) else json.loads(fila_beto or "{}")).get("beto"),
            "consolidacion_beto_contadores": rj.get("beto"), "carga": resumen_carga, "etapas_s": t, "total": total, "consolidacion_http": rc.status_code,
-           "consolidacion": {k: v for k, v in (rc.json() if rc.headers.get("content-type", "").startswith("application/json") else {}).items()
+           "consolidacion": {k: v for k, v in rj.items()
                              if not isinstance(v, (list, dict))},
            "revision": revision["resumen"], "revision_eventos": revision["eventos"], "dw_antes": antes, "dw_despues": despues}
     Path(salida).write_text(json.dumps(out, ensure_ascii=False, indent=1, default=str), encoding="utf-8")

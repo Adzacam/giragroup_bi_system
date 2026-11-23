@@ -1,0 +1,22 @@
+{
+  "version": "beto-v3",
+  "checkpoint_origen": "output/cf/recuperacion/beto_e3",
+  "ruta_artefacto": "output/cf/beto-v3",
+  "evidencia_calidad": "docs/mediciones/cf_l3_finetuning_recuperacion.json",
+  "modo_inferencia": "INT8 dinámico en CPU con BETO_INT8=1",
+  "estado": "versionado y validado localmente para ensayo aislado",
+  "tokenizer_model_max_length": 128,
+  "etiquetas_iob2": 9,
+  "capas_lineales_int8_verificadas": 73,
+  "prueba_humo": [
+    "Carga con BetoNEREngine y dos entradas sintéticas",
+    "Codificación de entrada larga truncada a 128 tokens"
+  ],
+  "sha256": {
+    "config.json": "d3b0d29dfb5cc6a9d8fb1c74c6a4733e29585a9b30c1fbd26934a86c0d02fa3e",
+    "model.safetensors": "49d2e50208ed796a21f1de25e776280ada999b56c9c0e7cf2510ea7aa144110e",
+    "tokenizer_config.json": "683aac967941e7756d608c27073e49369cde679bfe25dd679244cdc47ca1c481",
+    "tokenizer.json": "29f908924ecfc985bb4ddf8b856fd94407f48792b11e069d56d40e8b55ebfb61",
+    "training_info.json": "d1fdaae6a13888e8d4c74e99e454472f7862c76696723bb77d645692a80acd32"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "clases": [
+    "O",
+    "MODULO",
+    "PER_DOCENTE",
+    "PER_ESTUDIANTE",
+    "PROGRAMA"
+  ],
+  "matriz": [
+    [
+      2796,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      450,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      191,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      867,
+      2
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      3485
+    ]
+  ],
+  "por_clase": {
+    "O": {
+      "tp": 2796,
+      "fp": 0,
+      "fn": 0,
+      "soporte": 2796
+    },
+    "MODULO": {
+      "tp": 450,
+      "fp": 0,
+      "fn": 0,
+      "soporte": 450
+    },
+    "PER_DOCENTE": {
+      "tp": 191,
+      "fp": 0,
+      "fn": 0,
+      "soporte": 191
+    },
+    "PER_ESTUDIANTE": {
+      "tp": 867,
+      "fp": 0,
+      "fn": 2,
+      "soporte": 869
+    },
+    "PROGRAMA": {
+      "tp": 3485,
+      "fp": 2,
+      "fn": 0,
+      "soporte": 3485
+    }
+  },
+  "n_tokens": 7791,
+  "n_secuencias": 180,
+  "nivel": "token (B-/I- colapsados al tipo; incluye O)",
+  "conjunto": "test_gold_real.jsonl",
+  "origen": "pipeline\\semantic\\beto_local\\predicciones_test_gold.json"
+}
