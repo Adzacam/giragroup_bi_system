@@ -17,7 +17,7 @@ from services.dataops_evaluation_service import calcular_indice_entidad_con_bono
 from datetime import datetime
 from services.sugerencia_hitl import es_sugerencia_un_clic
 from core.security import get_current_user, require_roles
-from core.database import get_db
+from core.database import get_db, get_catalog_db
 from sqlalchemy import text
 from ._comun import BetoInferRequest, COMPUERTA_LECTURA_MODELO_PCT, TOPE_INDICE_BONIFICADO, UMBRAL_INDICE_REGISTRO, UMBRAL_INDICE_REGISTRO_DEC
 from .extraccion import _docentes_con_contexto, extract_entities_from_line
@@ -469,6 +469,7 @@ def get_master_catalogs(
     uso: str = Query('todos', pattern='^(todos|en_uso|sin_uso)$'),
     grupo: str = Query('todos', pattern='^(todos|propia|convenio)$'),
     db: Session = Depends(get_db),
+    db_catalog: Session = Depends(get_catalog_db),
 ):
     from services.catalogo_dataops import consultar
     return consultar(
@@ -480,6 +481,7 @@ def get_master_catalogs(
         sin_programa=sin_programa,
         uso=uso,
         grupo=grupo,
+        db_catalog=db_catalog,
     )
 
 

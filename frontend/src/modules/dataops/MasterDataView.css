@@ -150,10 +150,15 @@
   .cat-table-region tbody td {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
-    padding: 6px 4px;
+    padding: 8px 4px;
     border-bottom: 1px solid #f1f5f9;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    text-align: right;
+    min-width: 0;
   }
 
   .cat-table-region tbody td:last-child {
@@ -185,6 +190,23 @@ dialog.cat-native-dialog {
 
 dialog.cat-native-dialog:modal {
   overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  dialog.cat-native-dialog[open] {
+    animation: catDialogIn 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes catDialogIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 }
 
 dialog.cat-native-dialog::backdrop {

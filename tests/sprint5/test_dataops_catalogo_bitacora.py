@@ -60,8 +60,9 @@ def cliente(datos, role='ADMIN'):
 def test_catalogo_solo_referencia_paginado_y_busqueda_global(datos):
     with cliente(datos) as c:
         ruta = '/api/v1/dataops/catalogs'
-        paginas = [c.get(ruta, params={'page': p}).json() for p in (1, 2, 3)]
-        assert [len(p['data']) for p in paginas] == [5, 5, 2]
+        paginas = [c.get(ruta, params={'page': p}).json() for p in (1, 2)]
+        assert [len(p['data']) for p in paginas] == [12, 0]
+        assert all(p['pagination']['page_size'] == 20 for p in paginas)
         assert all(p['pagination']['total_items'] == 12 for p in paginas)
         assert c.get(ruta, params={'search': 'POS-12'}).json()['data'][0]['id'] == 12
         assert 'Persona Privada' not in json.dumps(paginas) and 'Docente Privado' not in json.dumps(paginas)
@@ -84,9 +85,9 @@ def test_identificadores_mal_clasificados_no_se_publican_completos(datos):
 
 def test_instituciones_provienen_del_catalogo_sin_ejemplos(datos):
     with cliente(datos) as c:
-        r = c.get('/api/v1/dataops/catalogs', params={'tipo': 'instituciones', 'page': 2}).json()
-    assert r['pagination']['total_items'] == 7 and len(r['data']) == 2
-    assert {fila['id'] for fila in r['data']} == {6, 7}
+        r = c.get('/api/v1/dataops/catalogs', params={'tipo': 'instituciones', 'page': 1}).json()
+    assert r['pagination']['total_items'] == 7 and len(r['data']) == 7
+    assert {fila['id'] for fila in r['data']} == {1, 2, 3, 4, 5, 6, 7}
     assert all('estado' not in f and 'tipo' not in f for f in r['data'])
 
 
