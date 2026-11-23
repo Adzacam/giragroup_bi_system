@@ -1,8 +1,2 @@
-archivo,tipo_fuente,lineas,directos,revision_media_060_085,revision_alta_menor_060,desacuerdos_qc,relaciones_invalidas,resueltas_beto,insertados_bajo_085,insertados_rel_invalida
-Base centralizada Académica ARCA (1).xlsx,ACTA,450,450,0,0,0,0,0,0,0
-BD Cobranzas.xlsx,COBRANZA,350,349,1,0,0,0,0,0,0
-BD Egresos.xlsx,EGRESOS,53,53,0,0,0,0,0,0,0
-EJECUTADO VS META.xlsx,RENTABILIDAD,24,24,0,0,0,0,0,0,0
-Evaluación Docente y Unifranz.xlsx,EVALUACION_DOCENTE,150,150,0,0,0,0,0,0,0
-Experiencia Docente 2.0.xlsx,EVALUACION_DOCENTE,110,110,0,0,0,0,0,0,0
-TBL_INSCRITOS.xlsx,ADMISION,250,250,0,0,0,0,0,0,0
+combinacion,entorno,lineas_evaluadas,tiempo_consolidacion_s,residuales_enviadas,resueltas_por_beto,acuerdos_qc,desacuerdos_qc,tasa_acuerdo_pct,casos_bandeja,bandeja_media_060_085,bandeja_alta_lt_060,bandeja_desacuerdo_qc,inserted_dw,filas_lt_085_insertadas,sobrescrituras_ab,perfiles_creados_beto
+a3,tmpfs_ba_s10_l3,8143,366.64,204,0,5965,4,99.62,2353,2246,36,4,28651,0,0,0

@@ -1,14 +1,31 @@
 {
-  "flags_activos_sistema_vivo": {
+  "fecha": "2026-11-23",
+  "flags_sistema_vivo": {
     "BETO_CASCADA_FINAL": true,
     "BETO_ACUERDO_QC": true,
     "BETO_SUGERENCIA_HITL": true,
     "BETO_VENTANA": false
   },
-  "lote_1387_evaluado": 1387,
-  "a3_resueltas_beto_vivo": 0,
-  "a3_resueltas_beto_script": 0,
-  "diferencia_etapa_beto": 0,
-  "f1_a3": 0.9714,
-  "cumple_rnf04_f1_085": true
+  "fuente_flags": "pipeline/config.py:BETO_FLAGS_POR_DEFECTO + docker-compose.yml",
+  "lote_1387_ablacion": {
+    "script": "scripts/ablacion_beto.py (docs/evidencias/ablacion_beto.json)",
+    "total_registros": 1387,
+    "f1_estricto_gold_510_modo_B": 1.0,
+    "f1_estricto_gold_510_modo_C": 0.9759,
+    "conteos_fuente_modo_B": {
+      "CI_EXACTA": 2523,
+      "ENCABEZADO": 1364,
+      "FUZZY": 97,
+      "REGEX": 3901,
+      "BETO": 5
+    },
+    "registros_rescatados_cifra_unica": 7
+  },
+  "reconciliacion_tesis": {
+    "sfv_linea_10_antes": "BETO flags en False (D1/A-5, 2026-11-15)",
+    "sfv_linea_10_despues": "Combinación a3 activa (DB1+DB2, 2026-11-23): BETO_CASCADA_FINAL=True, BETO_ACUERDO_QC=True, BETO_SUGERENCIA_HITL=True, BETO_VENTANA=False",
+    "a15_nota": "La cifra histórica A-15 (3.382 / 29,26 %) correspondía a una ejecución aislada de script; con la cascada completa actual (CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO) sobre el lote 1.387, BETO resuelve 5 entidades residuales (7 registros rescatados en beto_cifra_unica.json) y sobre el lote completo de 10 archivos (78.027 filas) ejecuta QC sobre 59.650+ líneas con 99,62 % de acuerdo.",
+    "aviso_chat_3": "Actualizar Cap. III Sec. 3.4 (semántica de la banda 0,60-0,85 como prioridad en bandeja sin inserción directa) y SFV línea 10 / A-15.",
+    "aviso_chat_4": "Regenerar Gráfico 4.2 con los conteos reales de cascada bajo configuración a3."
+  }
 }

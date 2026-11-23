@@ -1,7 +1,7 @@
-codigo_regla,fallos_detectados,insertados_con_fallo
-ESTUDIANTE_PROGRAMA_PERIODO,0,0
-MODULO_EN_PROGRAMA,0,0
-DOCENTE_MODULO_BRIDGE,0,0
-PAGO_INSCRIPCION_PROGRAMA,0,0
-RESPUESTA_ESCALA_PREGUNTA,0,0
-FECHA_GESTION_VALIDA,0,0
+codigo_regla,nombre_regla,activa_en_catalogo,casos_relacion_incoherente_tmpfs,inserciones_con_relacion_invalida,test_unitario_estado
+ESTUDIANTE_PROGRAMA_PERIODO,Estudiante ↔ Programa / Módulo,true,0,0,PASSED
+MODULO_EN_PROGRAMA,Módulo ↔ Programa,true,0,0,PASSED
+DOCENTE_MODULO_BRIDGE,Docente ↔ Módulo,true,0,0,PASSED
+PAGO_INSCRIPCION_PROGRAMA,Pago ↔ Inscripción,true,0,0,PASSED
+RESPUESTA_ESCALA_PREGUNTA,Respuesta ↔ Escala,true,0,0,PASSED
+FECHA_GESTION_VALIDA,Fecha ↔ Gestión,true,0,0,PASSED

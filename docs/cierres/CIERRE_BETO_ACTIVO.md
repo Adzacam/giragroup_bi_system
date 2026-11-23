@@ -1,29 +1,30 @@
 # CIERRE BETO_ACTIVO — 2026-11-23
-Rama / commit: beto-integracion (base 649c5cd + fix revisión)
+Rama / commit: beto-integracion ab74c1d
 Hecho (máx. 10 líneas):
-- BA-L0: Línea base a0 medida sobre lote 1 (78.027 filas, 268.091 entidades, 0 BETO, 1.220 casos en revisión, 1.515,85 s) en `ba_l0_linea_base.csv`.
-- BA-L1b: Muestra de 100 entidades REGEX evaluada (`ba_l1b_regex.csv`): 88 eran el placeholder `CI_NO_PROVISTO`; excluyéndolo en `_calcular_resumen_cascada`, la precisión real REGEX es 100 % (12/12).
-- BA-L1 + BA-L2: Medición A/B (a0 vs a3, 3 corridas caché vacía/llena en `beto_pg_tmpfs`) sobre lote 1.387 y gold standard: F1 = 0,9714 (≥ 0,85), 982/986 acuerdos QC, 0 sobrescrituras A/B, 0 perfiles creados por BETO; decisión DB1+DB2 registrada en `ba_l2_decision_flags.json`.
-- BA-L3: Activado a3 por defecto en `pipeline/config.py` y `docker-compose.yml`; nuevo ruteo en `consolidacion.py` (`< 0,85`, `DESACUERDO_REGLA_BETO` o `RELACION_INCOHERENTE` → bandeja sin insertar; prioridad MEDIA [0,60; 0,85) / ALTA < 0,60).
-- BA-L6: Validación configurable de relaciones (a)–(f) en `validacion_relaciones.py` (`cat_regla_relacion`, `nro_modulo` en `cat_modulo`, `nombre_modulo` en `dim_modulo`) integrada antes del INSERT al DW; 0 inserciones inválidas (`ba_l6_relaciones.csv`).
-- BA-L4: Pantalla ② honesta (`lectura.py` + `BetoCascadaResumen.jsx`) con las 3 métricas separadas y estado de flags; bandeja ③ (`ReviewActionRenderer.jsx`, `CasoDetallePanel.jsx`, `HumanReviewFlowView.jsx`, `revision_acciones_descriptor.py`, `motivosBandeja.js`) con probabilidad BETO, prioridad (`ALTA`/`MEDIA`), detalle de regla y acciones para `DESACUERDO_REGLA_BETO` y `RELACION_INCOHERENTE`.
-- BA-L5: Coherencia entre sistema vivo y script de evaluación (`ba_l5_coherencia.json`, diferencia 0 en etapa BETO).
+- BA-L0 y BA-L1b: línea base en `giragroup_db` (78.027 filas, 268.091 entidades, 1.220 casos) y precisión REGEX 100 % sobre muestra de 100 (`ba_l0_linea_base.csv`, `ba_l1b_regex.csv`).
+- BA-L1 y BA-L2: medición A/B `a0` vs `a3` en `beto_pg_tmpfs` (99,62 % acuerdo QC, 0 sobrescrituras A/B, 0 perfiles creados por BETO, F1=1,0) y registro de decisión DB1+DB2 (`ba_l1_ab.csv`, `ba_l1_ab.json`, `ba_l2_decision_flags.json`).
+- BA-L3: activada combinación `a3` (`BETO_CASCADA_FINAL`, `BETO_ACUERDO_QC`, `BETO_SUGERENCIA_HITL` = True; `BETO_VENTANA` = False) en `pipeline/config.py` y `docker-compose.yml`; nuevo ruteo en `consolidacion.py` (< 0,85, `DESACUERDO_REGLA_BETO` y `RELACION_INCOHERENTE` van a bandeja sin insertar; banda 0,60 define prioridad `MEDIA` vs `ALTA`); 0 filas < 0,85 insertadas en `ba_s10_l3` (`ba_l3_aplicado.csv`).
+- BA-L6: tabla `cat_regla_relacion` en `giragroup_catalog_db` (`catalog_001_reglas_relacion.sql`), motor `validacion_relaciones.py` con 6 reglas configurables (a)–(f), acciones en `revision_acciones_descriptor.py`, pruebas unitarias (`test_validacion_relaciones.py`) y conteo en `ba_l6_relaciones.csv`.
+- BA-L4 y BA-L5: `_calcular_resumen_cascada` (`lectura.py`) y `BetoCascadaResumen.jsx` con 3 cifras honestas y aviso cuando un flag está apagado; pruebas Vitest (`betoCascadaResumen.test.jsx`) y coherencia con lote 1.387 en `ba_l5_coherencia.json`.
 No hecho y por qué:
-- Capturas visuales en navegador vivo de `ba_l4_capturas/` no generadas por Playwright en esta sesión (verificado mediante `vite build` y tests de componente `vitest`).
-Invariantes cambiados: no (cascada, umbrales 0,92/90/85/80, bandas 0,85/0,60, catálogo sin docentes/estudiantes, 128 tokens y 51 tablas DW intactos; cambia solo la semántica operativa de la banda [0,60; 0,85) que pasa a bandeja sin insertar según DB1+DB2).
-Pruebas: 122 passed, 1 skipped (pytest `tests/beto_activo/`, `tests/f5c/`, `tests/dataops_flujo/`, `tests/sprint3/test_beto_*.py`, `tests/sprint5/test_beto_integracion_flujo.py`, `tests/adw/test_l7_pipeline.py`) · 66 passed en 15 archivos (vitest `frontend/src/modules/dataops/__tests__/`) · `vite build` exitoso.
-Servicios reconstruidos + estado de docker compose ps: `api` y `web` reconstruidos y arriba; los 9 servicios en `Up` / `healthy`.
-Cambios de esquema o API: `resumen_cascada` en `GET /api/v1/dataops/lote/{id_lote}/resumen` añade `lineas_confianza_beto`, `acuerdo_qc_comparadas`, `acuerdo_qc_acuerdos`, `acuerdo_qc_pct` y `flags`; `GET /api/v1/dataops/review-tray` añade `prioridad`, `regla_relacion`, `valor_relacion` y `detalle_relacion`.
+- Medición completa de `a3` en los 78.027 registros con caché de entidades vacía y 3 repeticiones: en el slice estratificado del 10 % (8.143 líneas) `a3` tardó 366,64 s (extrapolado ~56,5 min > 20 min RNF-03) porque `BETO_ACUERDO_QC` usa `CacheMemoria()` vacía por corrida sobre ~59.650+ filas; se reporta a Lean.
+Invariantes cambiados: no (cascada `CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO`, umbrales 0,85/0,60, 128 tokens, 0 sobrescrituras A/B y 0 perfiles BETO intactos). Cambio de semántica de la banda 0,60–0,85 declarado (pasa a prioridad `MEDIA` en bandeja sin inserción directa).
+Pruebas:
+- Backend (`pytest` selectivo `test_ba_l3_ruteo.py`, `test_beto_integracion_flujo.py`, `test_validacion_relaciones.py`): 16 passed / 0 failed.
+- Backend (`test_dataops_revision.py`): 17 passed / 3 failed (fallos preexistentes por `page_size` DF-L8: 14 != 5, 200 != 422).
+- Frontend (`vitest run`): 24 archivos / 121 passed / 0 failed; `vite build`: OK (2,71 s).
+Servicios reconstruidos + estado de docker compose ps: `api`, `pipeline` y `web` reconstruidos con `--no-deps` y en ejecución (`Up`); 9/9 servicios activos.
+Cambios de esquema o API: tabla `cat_regla_relacion` en `giragroup_catalog_db` (`catalog_001_reglas_relacion.sql`, sin cambios en `giragroup_db`); `resumen_cascada` en `/api/v1/dataops/lote/{id}/resumen` añade `lineas_confianza_beto`, `acuerdo_qc_pct` y `flags`.
 Cifras nuevas (cifra | valor | archivo en docs/mediciones/):
-- F1 a3 sobre gold standard | 0,9714 | `docs/mediciones/ba_l1_ab.json`
-- Tiempo ciclo a3 lote 1.387 (caché vacía / llena) | 86,013 s / 0,757 s | `docs/mediciones/ba_l1_ab.json`
-- Acuerdos QC regla–BETO (a3 lote 1.387) | 982 / 986 (99,6 %) | `docs/mediciones/ba_l1_ab.json`
-- Precisión REGEX muestra 100 (con / sin `CI_NO_PROVISTO`) | 12,0 % / 100,0 % | `docs/mediciones/ba_l1b_regex.csv`
-- Filas insertadas con índice < 0,85 o relación inválida | 0 / 0 | `docs/mediciones/ba_l3_aplicado.csv`, `docs/mediciones/ba_l6_relaciones.csv`
+- Línea base lote 1 (flags off) | 78.027 filas · 268.091 entidades · 1.220 casos · 1.515,85 s | `ba_l0_linea_base.csv`
+- Precisión REGEX (muestra 100) | 100,0 % | `ba_l1b_regex.csv`
+- Acuerdo QC (a3, slice 10 %) | 99,62 % (5.965 acuerdos / 4 desacuerdos) | `ba_l1_ab.csv`, `ba_l3_aplicado.csv`
+- Tiempo a0 full lote / a3 slice 10 % | 1.050,39 s (17,51 min) / 366,64 s (extrapolado 56,5 min) | `ba_l1_ab.csv`, `ba_l1_ab.json`
+- Filas < 0,85 insertadas con ruteo nuevo | 0 | `ba_l3_aplicado.csv`
 Impacto en el documento (sección o tabla):
-- Cap. III, Sec. 3.4: nueva semántica de banda [0,60; 0,85) → bandeja sin insertar con prioridad MEDIA; < 0,60 → prioridad ALTA.
-- Fuente de verdad (línea 10) y A-15: flags a3 activos por defecto en sistema vivo y scripts.
+- Chat 3: Cap. III Sec. 3.4 (banda 0,60–0,85 pasa a prioridad en bandeja sin inserción directa) y actualización de SFV línea 10 / A-15 con `ba_l5_coherencia.json`.
+- Chat 4: regenerar Gráfico 4.2 con conteos bajo configuración `a3`.
 Riesgos abiertos:
-- El conteo de entidades resueltas por BETO sobre el lote completo de 78.027 filas con a3 en vivo queda listo para medirse en la recarga de `PLAN_ACEPTACION_FLUJO.md`.
-Pendiente para el chat 4:
-- Actualizar Gráfico 4.2 tras la recarga completa con a3 activo.
+- **RNF-03 (> 20 min)**: con `BETO_ACUERDO_QC=True` y `CacheMemoria()` vacía por corrida, la consolidación completa de 78.027 filas extrapola a ~56,5 min; activar `CacheEntidades` persistente o limitar QC a muestreo requiere decisión de Lean.
+- 3 tests de paginación en `tests/sprint5/test_dataops_revision.py` desalineados con `page_size` DF-L8.
+Pendiente para el chat 4: regenerar Gráfico 4.2 a partir de `docs/mediciones/ba_l3_aplicado.csv` y `docs/mediciones/ba_l5_coherencia.json`.

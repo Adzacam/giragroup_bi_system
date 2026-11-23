@@ -1,33 +1,64 @@
 {
-  "lote_1387_total": 1387,
-  "combinaciones": {
-    "a0": {
-      "f1_gold": 0.9714,
-      "tiempo_cache_vacia_media_s": 6.474,
-      "tiempo_cache_vacia_de_s": 10.19,
-      "tiempo_cache_llena_media_s": 0.48,
-      "tiempo_cache_llena_de_s": 0.034,
-      "resueltas_beto": 0,
-      "desacuerdos_qc": 0,
+  "fecha": "2026-11-23",
+  "entorno": "beto_pg_tmpfs (copia aislada de snapshot_dw_20261110_1201 + migraciones 016-028)",
+  "comparacion": "a3 (BETO_CASCADA_FINAL + BETO_ACUERDO_QC + BETO_SUGERENCIA_HITL) vs a0 (todo apagado)",
+  "resultados": [
+    {
+      "combinacion": "a0",
+      "alcance": "full_lote",
+      "lineas_evaluadas": 78027,
+      "tiempo_consolidacion_s": 1050.39,
+      "tiempo_min": 17.51,
+      "residuales_enviadas": 0,
+      "resueltas_por_beto": 0,
       "acuerdos_qc": 0,
-      "comparadas_qc": 0,
-      "casos_revision": 1,
+      "desacuerdos_qc": 0,
+      "tasa_acuerdo": null,
+      "casos_bandeja": 1115,
+      "inserted_dw": 476808,
+      "f1_gold_510": 1.0,
       "sobrescrituras_ab": 0,
       "perfiles_creados_beto": 0
     },
-    "a3": {
-      "f1_gold": 0.9714,
-      "tiempo_cache_vacia_media_s": 86.013,
-      "tiempo_cache_vacia_de_s": 5.386,
-      "tiempo_cache_llena_media_s": 0.757,
-      "tiempo_cache_llena_de_s": 0.009,
-      "resueltas_beto": 0,
+    {
+      "combinacion": "a0",
+      "alcance": "slice_10pct",
+      "lineas_evaluadas": 8143,
+      "tiempo_consolidacion_s": 73.69,
+      "residuales_enviadas": 0,
+      "resueltas_por_beto": 0,
+      "acuerdos_qc": 0,
       "desacuerdos_qc": 0,
-      "acuerdos_qc": 982,
-      "comparadas_qc": 986,
-      "casos_revision": 1,
+      "tasa_acuerdo": null,
+      "casos_bandeja": 2351,
+      "inserted_dw": 28659,
+      "f1_gold_510": 1.0,
+      "sobrescrituras_ab": 0,
+      "perfiles_creados_beto": 0
+    },
+    {
+      "combinacion": "a3",
+      "alcance": "slice_10pct",
+      "lineas_evaluadas": 8143,
+      "tiempo_consolidacion_s": 353.67,
+      "tiempo_extrapolado_full_min": 56.49,
+      "residuales_enviadas": 204,
+      "resueltas_por_beto": 0,
+      "acuerdos_qc": 5965,
+      "desacuerdos_qc": 4,
+      "tasa_acuerdo": 0.9962,
+      "casos_bandeja": 2353,
+      "inserted_dw": 28651,
+      "f1_gold_510": 1.0,
       "sobrescrituras_ab": 0,
       "perfiles_creados_beto": 0
     }
+  ],
+  "invariantes": {
+    "sobrescrituras_ab": 0,
+    "perfiles_creados_beto": 0,
+    "f1_cumple_rnf04": true,
+    "bandeja_crecimiento_factor": 1.0009,
+    "rnf03_alerta": "En el lote completo (78.027 líneas) con caché de entidades en memoria vacía (CacheMemoria), a3 extrapola a ~56.5 min (> 20 min RNF-03) debido a BETO_ACUERDO_QC sobre 59.650+ filas; se reporta a Lean."
   }
 }
