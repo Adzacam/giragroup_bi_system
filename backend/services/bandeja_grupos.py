@@ -28,6 +28,8 @@ MOTIVOS_CATALOGO = {
     "VALOR_FUERA_DE_CATALOGO": "Valor fuera de catálogo o vocabulario",
     "PUNTUACION_FUERA_DE_ESCALA": "Puntuación fuera de escala",
     "ESCALA_NO_INFERIBLE": "Escala de evaluación no inferible",
+    "DESACUERDO_REGLA_BETO": "Las reglas y BETO no coinciden en la persona",
+    "RELACION_INCOHERENTE": "Relación incoherente entre entidades y catálogo",
 }
 
 EXPLICACION_MOTIVOS = {
@@ -50,6 +52,8 @@ EXPLICACION_MOTIVOS = {
     "POS_NO_EN_DIM_MODULO": ("Resolución de programa/módulo contra catálogo", "Similitud ≥ 80 % con dim_modulo"),
     "FECHA_INSCRIPCION_INVALIDA": ("Validación de fecha de inscripción", "Fecha válida dentro del rango académico"),
     "FILA_SIN_IDENTIDAD": ("Cascada de identidad (CI → Encabezado → Fuzzy → Regex → BETO)", "Al menos estudiante o CI identificable"),
+    "DESACUERDO_REGLA_BETO": ("Control de calidad regla vs BETO (QC)", "La regla encontró una persona donde BETO etiquetó O"),
+    "RELACION_INCOHERENTE": ("Validación de relaciones antes de insertar al DW", "Coherencia entre estudiante, programa, módulo, docente, pago y fecha"),
 }
 
 

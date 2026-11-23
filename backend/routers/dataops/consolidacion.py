@@ -32,6 +32,11 @@ from .revision import _bloquear_documentos_editables, resolve_review_item
 from .extraccion import EXCLUIR_CELDA_BETO, _docentes_con_contexto, extract_entities_from_line
 from models.log_inconsistencia import LogInconsistencia
 from pipeline.config import MOTIVO_DESACUERDO_REGLA_BETO
+from services.validacion_relaciones import (
+    MOTIVO_RELACION_INCOHERENTE,
+    cargar_contexto_relaciones,
+    validar_registro,
+)
 from .evaluacion import _asegurar_lote_editable, _resolver_documentos_lote
 
 
@@ -165,6 +170,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
     docentes = _docentes_con_contexto(db)
     modulos = db.query(DimModulo).all()
+    ctx_relaciones = cargar_contexto_relaciones(dw_db=db)
 
     inserted_academico = 0
     inserted_financiero = 0
@@ -373,21 +379,18 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     tipo_fuente=doc_fuente,
                 )
             banda = BANDA_CONSOLIDADO if resueltas_regla[k_fila] else banda_de(indice)
-            is_approved = banda != BANDA_STAGING
-            # Lecturas dudosas del extractor (CI con '?', escala ambigua) no se descartan: quedan en revisión
-            en_revision = banda == BANDA_REVISION or req_rev
             if indice is not None:
                 score = indice
-            if r_beto is not None and r_beto.acuerdo == beto_integracion.DESACUERDO and is_approved:
-                # Opción 2: las reglas ven una persona que BETO no ve. La confianza baja un escalón y el hecho queda en revisión
+            desacuerdo_beto = bool(r_beto is not None and r_beto.acuerdo == beto_integracion.DESACUERDO)
+            if desacuerdo_beto:
+                # Opción 2 (BA-L3): las reglas ven una persona que BETO no ve. La confianza baja un escalón y va a bandeja sin insertar
                 score = beto_integracion.bajar_un_escalon(score)
-                en_revision = True
                 if not solo_revision:
                     db.add(LogInconsistencia(
                         id_documento=stg.id_documento, fila_origen=(stg.fila_inicio or 0) + k_fila, campo_afectado="persona",
                         valor_recibido=str(next((e.get("token") for e in ents if e.get("label") in ("ESTUDIANTE", "DOCENTE") and e.get("acuerdo_beto") == beto_integracion.DESACUERDO), ""))[:2000],
                         valor_esperado="BETO: sin entidad persona en ese tramo", tipo_regla=MOTIVO_DESACUERDO_REGLA_BETO, severidad="BAJA",
-                        estado_resolucion="PENDIENTE", descripcion="La regla resolvió una persona que BETO etiqueta como O; confianza bajada un escalón y hecho en revisión"))
+                        estado_resolucion="PENDIENTE", descripcion="La regla resolvió una persona que BETO etiqueta como O; confianza bajada un escalón y enviada a revisión sin insertar"))
 
             ci_tok = next((e["token"] for e in ents if "CI" in e.get("label", "")), None)
             if ci_tok == "No provisto":
@@ -434,8 +437,26 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     elif k_up in ("CONCEPTO", "CONCEPTO_FINANCIERO"):
                         concepto_str = v_ch.strip()
 
+            fecha_linea = fecha_de_fila(campos_linea, categoria_ruteo) if campos_linea else None
+            pos_rel_m = re.search(r"(POS-\d{3,5})", str(nombre_prog or nombre_mod or ""), re.IGNORECASE)
+            reg_para_validar = {
+                "categoria": categoria_ruteo,
+                "resoluciones": {
+                    "estudiante": {"valor_extraido": nombre_est, "fk_resolucion": {"ci": ci_clean, "nombre_resuelto": nombre_est}},
+                    "docente": {"valor_extraido": nombre_doc},
+                    "modulo": {"valor_extraido": nombre_mod},
+                    "programa": {"valor_extraido": nombre_prog, "metadata": {"pos_canonico": pos_rel_m.group(1).upper() if pos_rel_m else None}},
+                    "fecha": fecha_linea,
+                    "gestion": campos_linea.get("GESTION") if campos_linea else None,
+                },
+            }
+            fallos_rel = validar_registro(reg_para_validar, ctx_relaciones)
+            relacion_invalida = len(fallos_rel) > 0
+            # BA-L3 + BA-L6: solo pasa directo al DW si índice >= 0.85, sin req_rev, sin desacuerdo BETO y relaciones válidas.
+            # Todo lo que quede por debajo de 0.85 va a la bandeja de revisión sin insertarse (0.60-0.85 -> prioridad MEDIA, <0.60 -> ALTA).
+            en_revision = False
+            is_approved = (banda == BANDA_CONSOLIDADO) and (not req_rev) and (not desacuerdo_beto) and (not relacion_invalida)
             if is_approved:
-                fecha_linea = fecha_de_fila(campos_linea, categoria_ruteo) if campos_linea else None
                 reg_dict = {
                     **({"beto_texto": beto_integracion.texto_para_beto(line)} if sugeridor is not None else {}),
                     "categoria": categoria_ruteo,
@@ -591,10 +612,23 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
             else:
                 sent_hitl += 1
                 motivo_canonico = "BAJA_CONFIANZA_IA"
-                if ci_tok and "?" in ci_tok:
+                falla_rel = fallos_rel[0] if relacion_invalida else None
+                if desacuerdo_beto:
+                    motivo_canonico = MOTIVO_DESACUERDO_REGLA_BETO
+                elif falla_rel is not None:
+                    motivo_canonico = MOTIVO_RELACION_INCOHERENTE
+                elif ci_tok and "?" in ci_tok:
                     motivo_canonico = "CI_DUDOSA"
                 elif grade_ent and grade_ent.get("canonicalId") in ("ESCALA_AMBIGUA", "NOTA_FUERA_ESCALA"):
                     motivo_canonico = grade_ent.get("canonicalId")
+                elif indice is None or (score is not None and score <= 0.0):
+                    motivo_canonico = "SIN_LECTURA"
+
+                prioridad_bandeja = (
+                    "MEDIA"
+                    if (banda == BANDA_REVISION or (score is not None and score >= 0.60))
+                    else "ALTA"
+                )
 
                 exists_unres = (line in ruido_visto_stg) or (line[:250] in ruido_visto_stg)
                 if not exists_unres:
@@ -605,7 +639,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                         texto_original=line[:250],
                         ci_temporal=ci_clean,
                         mejor_candidato=nombre_est or nombre_mod,
-                        score_fuzzy=round(score * 100, 2),
+                        score_fuzzy=round((score or 0.0) * 100, 2),
                         fk_estado="C",
                         nivel_confianza=score,
                         resuelto=False,
@@ -616,8 +650,10 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                             "ci_enmascarado": enmascarar_ci(ci_clean),
                             "entities": ents,
                             "score": score,
+                            "prioridad": prioridad_bandeja,
                             "tipo_fuente": doc_fuente,
                             "tipo_escala": doc_escala,
+                            **({"regla_relacion": falla_rel.regla, "valor_relacion": falla_rel.valor, "detalle_relacion": falla_rel.detalle} if falla_rel is not None else {}),
                             **({"sugerencias": sugeridor(nombre_est, None, beto_integracion.texto_para_beto(line))}
                                if (sugeridor is not None and nombre_est) else {}),
                         },
@@ -640,7 +676,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     if not solo_revision:
         cache_consultas.invalidar()  # el DW cambió: alertas, CMI y forecast se recalculan
     inserted_total = inserted_academico + inserted_financiero
-    doc_ids_lote = [d.id_documento for d in docs] if docs else []
+    doc_ids_lote = sorted(doc_ids_stg)
     casos_bandeja_lote = (
         db.query(StagingEntidadNoResuelta)
         .filter(

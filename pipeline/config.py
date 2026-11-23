@@ -46,12 +46,12 @@ UMBRAL_CONFIANZA_MEDIO = 0.60    # Requiere revisión / flag activo
 UMBRAL_CONFIANZA_BAJO = 0.40     # Descarte o staging no resuelto
 
 # ─── Integración de BETO en el paso ③ (opciones 1–3 y ventana) ───────────────────────────────────────────────────
-# Todos los flags nacen APAGADOS: con los cuatro apagados el flujo es idéntico al anterior (huella del DW). Cada flag puede
-# activarse con la variable de entorno del mismo nombre ("1", "true", "si", "on"); ver services/beto_integracion.py:activo().
+# Combinación a3 activa por defecto (DB1+DB2, Lean 2026-11-23): CASCADA_FINAL + ACUERDO_QC + SUGERENCIA_HITL.
+# Cada flag puede sobreescribirse con la variable de entorno del mismo nombre ("1", "true", "si", "on" / "0", "false").
 BETO_FLAGS_POR_DEFECTO = {
-    "BETO_CASCADA_FINAL": False,    # opción 1: BETO como última etapa de la cascada, solo para residuales
-    "BETO_ACUERDO_QC": False,       # opción 2: acuerdo regla–BETO como control de calidad
-    "BETO_SUGERENCIA_HITL": False,  # opción 3: candidatos ordenados por score combinado en la bandeja HITL
+    "BETO_CASCADA_FINAL": True,     # opción 1: BETO como última etapa de la cascada, solo para residuales
+    "BETO_ACUERDO_QC": True,        # opción 2: acuerdo regla–BETO como control de calidad
+    "BETO_SUGERENCIA_HITL": True,   # opción 3: candidatos ordenados por score combinado en la bandeja HITL
     "BETO_VENTANA": False,          # ventana deslizante para textos de más de 128 tokens
 }
 BETO_MAX_LENGTH_TOKENS = 128        # el mismo recorte que el índice (indice_confianza.MAX_LENGTH_TOKENS); no subir a 512

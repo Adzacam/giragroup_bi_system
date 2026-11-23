@@ -1,0 +1,30 @@
+{
+  "decision": "DB1+DB2",
+  "fecha": "2026-11-23",
+  "aprobado_por": "Lean",
+  "reemplaza": "docs/mediciones/f1_decision_flags.json (D1/A-5, 2026-11-15)",
+  "combinacion_elegida": "a3",
+  "flags": {
+    "BETO_CASCADA_FINAL": true,
+    "BETO_ACUERDO_QC": true,
+    "BETO_SUGERENCIA_HITL": true,
+    "BETO_VENTANA": false
+  },
+  "ruteo": {
+    "umbral_pase_directo": 0.85,
+    "umbral_prioridad_banda": 0.60,
+    "banda_060_085": "bandeja sin insertar (prioridad MEDIA, con sugerencia BETO)",
+    "banda_menor_060_o_sin_indice": "bandeja sin insertar (prioridad ALTA)",
+    "motivos_nuevos": ["DESACUERDO_REGLA_BETO", "RELACION_INCOHERENTE"]
+  },
+  "respaldo_ba_l1": {
+    "archivo": "docs/mediciones/ba_l1_ab.json",
+    "f1_gold_a3": 0.9714,
+    "tiempo_cache_vacia_media_s": 86.013,
+    "tiempo_cache_llena_media_s": 0.757,
+    "acuerdos_qc": 982,
+    "comparadas_qc": 986,
+    "sobrescrituras_ab": 0,
+    "perfiles_creados_beto": 0
+  }
+}

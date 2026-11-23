@@ -1,0 +1,33 @@
+{
+  "lote_1387_total": 1387,
+  "combinaciones": {
+    "a0": {
+      "f1_gold": 0.9714,
+      "tiempo_cache_vacia_media_s": 6.474,
+      "tiempo_cache_vacia_de_s": 10.19,
+      "tiempo_cache_llena_media_s": 0.48,
+      "tiempo_cache_llena_de_s": 0.034,
+      "resueltas_beto": 0,
+      "desacuerdos_qc": 0,
+      "acuerdos_qc": 0,
+      "comparadas_qc": 0,
+      "casos_revision": 1,
+      "sobrescrituras_ab": 0,
+      "perfiles_creados_beto": 0
+    },
+    "a3": {
+      "f1_gold": 0.9714,
+      "tiempo_cache_vacia_media_s": 86.013,
+      "tiempo_cache_vacia_de_s": 5.386,
+      "tiempo_cache_llena_media_s": 0.757,
+      "tiempo_cache_llena_de_s": 0.009,
+      "resueltas_beto": 0,
+      "desacuerdos_qc": 0,
+      "acuerdos_qc": 982,
+      "comparadas_qc": 986,
+      "casos_revision": 1,
+      "sobrescrituras_ab": 0,
+      "perfiles_creados_beto": 0
+    }
+  }
+}

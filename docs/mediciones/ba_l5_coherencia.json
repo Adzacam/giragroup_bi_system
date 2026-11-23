@@ -1,0 +1,14 @@
+{
+  "flags_activos_sistema_vivo": {
+    "BETO_CASCADA_FINAL": true,
+    "BETO_ACUERDO_QC": true,
+    "BETO_SUGERENCIA_HITL": true,
+    "BETO_VENTANA": false
+  },
+  "lote_1387_evaluado": 1387,
+  "a3_resueltas_beto_vivo": 0,
+  "a3_resueltas_beto_script": 0,
+  "diferencia_etapa_beto": 0,
+  "f1_a3": 0.9714,
+  "cumple_rnf04_f1_085": true
+}

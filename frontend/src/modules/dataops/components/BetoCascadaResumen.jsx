@@ -6,6 +6,11 @@ const fmt = value => typeof value === 'number' ? value.toLocaleString('es-BO') :
 
 export default function BetoCascadaResumen({ cascada }) {
   if (!cascada) return null;
+  const flags = cascada.flags || {};
+  const cascadaActiva = flags.BETO_CASCADA_FINAL ?? (Number(cascada.beto_aceptadas ?? cascada.BETO ?? 0) > 0 || Number(cascada.beto_leidas ?? 0) > 0);
+  const qcActivo = flags.BETO_ACUERDO_QC ?? (cascada.acuerdo_qc_pct != null);
+  const lineasConfianza = cascada.lineas_confianza_beto;
+  const betoResueltas = cascada.beto_aceptadas ?? cascada.BETO ?? 0;
   const etapas = cascada.etapas || [
     { etapa: 'CI_EXACTA', cantidad: cascada.CI_EXACTA ?? 0, porcentaje: 0 },
     { etapa: 'ENCABEZADO', cantidad: cascada.ENCABEZADO ?? 0, porcentaje: 0 },
@@ -19,9 +24,33 @@ export default function BetoCascadaResumen({ cascada }) {
         <h3 className="serif-heading" style={{ fontSize: 16, margin: 0, color: 'var(--color-ink-black)' }}>Cascada de resolución por etapa</h3>
         <span style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>
           Total entidades evaluadas: <strong style={{ color: 'var(--color-ink-black)' }}>{fmt(cascada.total_entidades)}</strong>
-          {' · '}Leído por BETO: <strong style={{ color: 'var(--color-ink-black)' }}>{fmt(cascada.beto_leidas ?? 0)}</strong>
-          {' · '}Aceptado por BETO: <strong style={{ color: 'var(--color-ink-black)' }}>{fmt(cascada.beto_aceptadas ?? cascada.BETO ?? 0)}</strong>
         </span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 10, marginBottom: 14 }} aria-label="Participación real de BETO">
+        <div style={{ padding: 12, borderRadius: 12, background: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', fontSize: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-slate-gray)', marginBottom: 4 }}>1. Índice de confianza</div>
+          <p style={{ margin: 0, color: 'var(--color-ink-black)' }}>
+            BETO calculó la confianza de <strong>{fmt(lineasConfianza)}</strong> líneas que las reglas no resolvieron
+          </p>
+        </div>
+        <div style={{ padding: 12, borderRadius: 12, background: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', fontSize: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-slate-gray)', marginBottom: 4 }}>2. Cascada final (residuales)</div>
+          <p style={{ margin: 0, color: 'var(--color-ink-black)' }}>
+            {cascadaActiva
+              ? <>BETO resolvió <strong>{fmt(betoResueltas)}</strong> entidades residuales</>
+              : <em>Esta etapa está desactivada por configuración</em>}
+          </p>
+        </div>
+        <div style={{ padding: 12, borderRadius: 12, background: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', fontSize: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-slate-gray)', marginBottom: 4 }}>3. Control de calidad (QC)</div>
+          <p style={{ margin: 0, color: 'var(--color-ink-black)' }}>
+            {qcActivo
+              ? (cascada.acuerdo_qc_pct != null
+                  ? <>BETO coincidió con las reglas en <strong>{cascada.acuerdo_qc_pct} %</strong></>
+                  : <span>Sin comparaciones registradas en este lote</span>)
+              : <em>Esta etapa está desactivada por configuración</em>}
+          </p>
+        </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12 }}>
         {etapas.map((et) => {

@@ -78,11 +78,22 @@ def get_lote_integridad(id_lote: str, page: int = Query(1, ge=1),
 _ETAPAS_CASCADA = ("CI_EXACTA", "ENCABEZADO", "FUZZY", "REGEX", "BETO")
 
 
+_FUENTES_SOLO_REGLA = frozenset({"EGRESOS", "TECHOS", "RENTABILIDAD"})
+
+
 def _calcular_resumen_cascada(detalles: list) -> dict:
     """Cuenta entidades resueltas por cada etapa de la cascada (CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO)."""
+    from services.beto_integracion import activo
+
     conteos = {etapa: 0 for etapa in _ETAPAS_CASCADA}
     beto_leidas = 0
+    lineas_confianza_beto = 0
+    acuerdo_comparadas = 0
+    acuerdo_ok = 0
     for reg in detalles or []:
+        tf = str(reg.get("tipo_fuente") or "").upper()
+        if tf and tf not in _FUENTES_SOLO_REGLA:
+            lineas_confianza_beto += 1
         lectura = reg.get("lectura") or {}
         entidades = lectura.get("entidades") or reg.get("entidades") or []
         beto_ents = lectura.get("beto_ents") or reg.get("beto_ents") or []
@@ -90,16 +101,34 @@ def _calcular_resumen_cascada(detalles: list) -> dict:
         for ent in entidades:
             if not isinstance(ent, dict):
                 continue
+            if ent.get("canonicalId") == "CI_NO_PROVISTO" or ent.get("token") == "No provisto":
+                continue
+            ac = ent.get("acuerdo_beto")
+            if ac in ("ACUERDO", "DESACUERDO", "TIPO_DISTINTO"):
+                acuerdo_comparadas += 1
+                if ac == "ACUERDO":
+                    acuerdo_ok += 1
             origen = str(ent.get("origen_confianza") or ent.get("fuente_resolucion") or "").upper()
             if origen == "REGLA_ENCABEZADO":
                 origen = "ENCABEZADO"
             if origen in conteos:
                 conteos[origen] += 1
     total = sum(conteos.values())
+    flags = {
+        "BETO_CASCADA_FINAL": activo("BETO_CASCADA_FINAL"),
+        "BETO_ACUERDO_QC": activo("BETO_ACUERDO_QC"),
+        "BETO_SUGERENCIA_HITL": activo("BETO_SUGERENCIA_HITL"),
+        "BETO_VENTANA": activo("BETO_VENTANA"),
+    }
     return {
         **conteos,
         "beto_leidas": beto_leidas,
         "beto_aceptadas": conteos["BETO"],
+        "lineas_confianza_beto": lineas_confianza_beto,
+        "acuerdo_qc_comparadas": acuerdo_comparadas,
+        "acuerdo_qc_acuerdos": acuerdo_ok,
+        "acuerdo_qc_pct": round(acuerdo_ok * 100.0 / acuerdo_comparadas, 1) if acuerdo_comparadas else None,
+        "flags": flags,
         "total_entidades": total,
         "etapas": [
             {

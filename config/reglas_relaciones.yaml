@@ -1,0 +1,68 @@
+# Reglas configurables de validación de relaciones antes de insertar al DW (BA-L6).
+# No hardcodear estos parámetros en Python: el validador backend/services/validacion_relaciones.py
+# carga este catálogo al iniciar (con recarga opcional en pruebas).
+
+version: 1
+motivo_defecto: RELACION_INCOHERENTE
+
+reglas:
+  ESTUDIANTE_PROGRAMA_MODULO:
+    habilitada: true
+    codigo: ESTUDIANTE_PROGRAMA_MODULO
+    etiqueta: "Estudiante ↔ programa o módulo"
+    descripcion: "El POS o módulo existe en el catálogo y la fecha de la fila cae dentro del período del programa."
+    fuentes_aplicables: ["ACTA", "ADMISION", "COBRANZA", "EVALUACION_DOCENTE"]
+    motivo: RELACION_INCOHERENTE
+    tolerancia_dias_periodo: 365
+    acciones: ["VINCULAR_ENTIDAD", "CORREGIR_FECHA", "MARCAR_SIN_DATO", "DESCARTAR"]
+
+  MODULO_PROGRAMA:
+    habilitada: true
+    codigo: MODULO_PROGRAMA
+    etiqueta: "Módulo ↔ programa"
+    descripcion: "El número de módulo existe para ese POS en el catálogo."
+    fuentes_aplicables: ["ACTA", "EVALUACION_DOCENTE", "PLANIFICACION"]
+    motivo: RELACION_INCOHERENTE
+    acciones: ["VINCULAR_ENTIDAD", "MARCAR_SIN_DATO", "DESCARTAR"]
+
+  DOCENTE_MODULO:
+    habilitada: true
+    codigo: DOCENTE_MODULO
+    etiqueta: "Docente ↔ módulo"
+    descripcion: "El docente está en bridge_modulo_docente para ese módulo o se marca DOCENTE_SIN_VINCULAR."
+    fuentes_aplicables: ["ACTA", "EVALUACION_DOCENTE"]
+    motivo: RELACION_INCOHERENTE
+    marcar_sin_vincular_si_bridge_vacio: true
+    codigo_marca_sin_vincular: DOCENTE_SIN_VINCULAR
+    acciones: ["VINCULAR_ENTIDAD", "MARCAR_SIN_DATO", "DESCARTAR"]
+
+  PAGO_INSCRIPCION:
+    habilitada: true
+    codigo: PAGO_INSCRIPCION
+    etiqueta: "Pago ↔ inscripción"
+    descripcion: "La persona de una fila financiera está inscrita en ese programa."
+    fuentes_aplicables: ["COBRANZA"]
+    motivo: RELACION_INCOHERENTE
+    acciones: ["VINCULAR_ENTIDAD", "MARCAR_SIN_DATO", "DESCARTAR"]
+
+  RESPUESTA_ESCALA:
+    habilitada: true
+    codigo: RESPUESTA_ESCALA
+    etiqueta: "Respuesta ↔ escala"
+    descripcion: "La puntuación cabe en la escala de la pregunta (1 ≤ puntuación ≤ escala_max)."
+    fuentes_aplicables: ["EVALUACION_DOCENTE"]
+    motivo: RELACION_INCOHERENTE
+    escalas_permitidas: [5, 10]
+    valor_minimo: 1.0
+    acciones: ["CORREGIR_PUNTUACION", "MARCAR_SIN_DATO", "DESCARTAR"]
+
+  FECHA_GESTION:
+    habilitada: true
+    codigo: FECHA_GESTION
+    etiqueta: "Fecha ↔ gestión"
+    descripcion: "La fecha cae en una gestión válida (no años corruptos como 0205, 2580 o 3035)."
+    fuentes_aplicables: ["ACTA", "COBRANZA", "ADMISION", "EVALUACION_DOCENTE", "EGRESOS", "TECHOS", "RENTABILIDAD", "PLANIFICACION"]
+    motivo: RELACION_INCOHERENTE
+    gestion_min: 2010
+    gestion_max: 2030
+    acciones: ["CORREGIR_FECHA", "MARCAR_SIN_DATO", "DESCARTAR"]
