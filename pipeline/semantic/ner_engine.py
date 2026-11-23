@@ -256,42 +256,69 @@ class BetoNEREngine:
     def extraer_lote(
         self,
         textos: List[str],
-        batch_size: int = DEFAULT_BATCH_SIZE,
+        batch_size: Optional[int] = None,
         ventana: bool = False,
         stride: int = 32,
         max_length: int = 128,
     ) -> List[ResultadoInferenciaNER]:
         """
         Procesa un lote de oraciones aprovechando procesamiento optimizado en pipeline.
+        Ordena los textos únicos por longitud para minimizar padding en CPU y usa torch.inference_mode().
         Registra automáticamente telemetría de rendimiento (latencia, tokens/s, entidades).
         """
         if not textos:
             return []
 
+        if batch_size is None:
+            if self.device_id < 0:
+                default_cpu_bs = "64" if os.getenv("BETO_INT8", "0") == "1" else "32"
+                batch_size = int(os.getenv("BETO_BATCH_SIZE", default_cpu_bs))
+            else:
+                batch_size = DEFAULT_BATCH_SIZE
+
         t_inicio = time.perf_counter()
+        por_texto: Dict[str, Any] = {}
+        unicos_validos = list(dict.fromkeys(str(t).strip() for t in textos if t and str(t).strip()))
+        t_por_oracion = 0.0
+
+        if self._nlp_pipeline is not None and unicos_validos:
+            ordenados = sorted(unicos_validos, key=len)
+            t_lote = time.perf_counter()
+            try:
+                if torch is not None:
+                    with torch.inference_mode():
+                        for i in range(0, len(ordenados), batch_size):
+                            chunk = ordenados[i : i + batch_size]
+                            salida = (
+                                self._predicciones_con_ventana(chunk, max_length, stride)
+                                if ventana
+                                else self._nlp_pipeline(chunk, batch_size=len(chunk))
+                            )
+                            for txt, preds in zip(chunk, salida):
+                                por_texto[txt] = preds
+                else:
+                    for i in range(0, len(ordenados), batch_size):
+                        chunk = ordenados[i : i + batch_size]
+                        salida = (
+                            self._predicciones_con_ventana(chunk, max_length, stride)
+                            if ventana
+                            else self._nlp_pipeline(chunk, batch_size=len(chunk))
+                        )
+                        for txt, preds in zip(chunk, salida):
+                            por_texto[txt] = preds
+            except Exception as err:
+                logger.error(f"Error durante inferencia BETO por lote: {err}")
+            t_por_oracion = (time.perf_counter() - t_lote) / len(unicos_validos)
+
         resultados: List[ResultadoInferenciaNER] = []
-        for i in range(0, len(textos), batch_size):
-            chunk = textos[i : i + batch_size]
-            validos = [str(t).strip() for t in chunk if t and str(t).strip()]
-            # Un solo forward por bloque: con lotes el costo baja a ~17 ms/oración (frente a ~53 ms sueltas)
-            por_texto: Dict[str, Any] = {}
-            if self._nlp_pipeline is not None and validos:
-                t_lote = time.perf_counter()
-                try:
-                    salida = self._predicciones_con_ventana(validos, max_length, stride) if ventana else self._nlp_pipeline(validos, batch_size=len(validos))
-                    por_texto = dict(zip(validos, salida))
-                except Exception as err:
-                    logger.error(f"Error durante inferencia BETO por lote: {err}")
-                t_por_oracion = (time.perf_counter() - t_lote) / len(validos)
-            for t in chunk:
-                if not t or not str(t).strip():
-                    resultados.append(self.extraer_entidades(t))
-                    continue
-                limpio = str(t).strip()
-                # El tiempo de cada oración incluye su parte proporcional del forward compartido
-                resultados.append(self._construir_resultado(
-                    limpio, por_texto.get(limpio), time.perf_counter() - (t_por_oracion if por_texto else 0.0)
-                ))
+        for t in textos:
+            if not t or not str(t).strip():
+                resultados.append(self.extraer_entidades(t))
+                continue
+            limpio = str(t).strip()
+            resultados.append(self._construir_resultado(
+                limpio, por_texto.get(limpio), time.perf_counter() - (t_por_oracion if por_texto else 0.0)
+            ))
 
         t_total_ms = (time.perf_counter() - t_inicio) * 1000.0
         try:

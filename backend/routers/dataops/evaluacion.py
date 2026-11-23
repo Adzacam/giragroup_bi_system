@@ -524,7 +524,7 @@ def _evaluar_documentos_lote(
                 "motivo": motivo_codigo,
                 "motivo_llano": motivo_decision,
                 "estado_resolucion": estado_res_row,
-                **({"beto_ents": beto_ents_pub} if beto_ents_pub else {}),
+                **({"beto_ents": beto_ents_pub} if (r_beto is not None and r_beto.beto_ents is not None) else {}),
             })
 
             if persistir_staging and estado_reg != "AUTOMATICO" and not exists_hitl:

@@ -247,6 +247,8 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     # Flags BETO_CASCADA_FINAL / BETO_ACUERDO_QC (services/beto_integracion.py); apagados: camino original
     contadores_beto = beto_integracion.Contadores()
     cliente_beto = beto_integracion.ClienteBeto(contadores=contadores_beto) if beto_integracion.necesita_refinar() else None
+    if cliente_beto is not None:
+        beto_integracion.precargar_desde_staging(cliente_beto, stg_records)
     sugeridor = None
     if beto_integracion.activo("BETO_SUGERENCIA_HITL"):   # opción 3: candidatos ordenados en la bandeja; solo ordena
         sugeridor = beto_integracion.hacer_sugeridor(cliente_beto or beto_integracion.ClienteBeto(contadores=contadores_beto), estudiantes)
@@ -344,6 +346,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         logs_descarte_stg = []
         stg_descarte_stg = []
         unres_stg = []
+        pendientes_sug = []
         ruido_visto_stg = ruido_visto_por_doc.setdefault((stg.id_documento, stg.id), set())
         for k_fila, (line, indice, campos_linea) in enumerate(zip(lines, indices_linea, campos_por_linea)):
             lineas_hechas += 1
@@ -689,13 +692,21 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                             "tipo_fuente": doc_fuente,
                             "tipo_escala": doc_escala,
                             **({"regla_relacion": falla_rel.regla, "valor_relacion": falla_rel.valor, "detalle_relacion": falla_rel.detalle} if falla_rel is not None else {}),
-                            **({"sugerencias": sugeridor(nombre_est, None, beto_integracion.texto_para_beto(line))}
-                               if (sugeridor is not None and nombre_est) else {}),
                         },
                         registro_origen_id=stg.id,
                         estado_resolucion="PENDIENTE",
                     )
+                    if sugeridor is not None and nombre_est:
+                        pendientes_sug.append((stg_unresolved, nombre_est, beto_integracion.texto_para_beto(line)))
                     unres_stg.append(stg_unresolved)
+
+        if pendientes_sug:
+            if cliente_beto is not None:
+                cliente_beto.entidades([t for _, _, t in pendientes_sug if t])
+            for stg_u, nom_u, txt_u in pendientes_sug:
+                sugs = sugeridor(nom_u, None, txt_u)
+                if sugs:
+                    stg_u.payload_json = {**(stg_u.payload_json or {}), "sugerencias": sugs}
 
         if logs_descarte_stg:
             db.add_all(logs_descarte_stg)

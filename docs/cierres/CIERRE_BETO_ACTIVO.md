@@ -6,26 +6,28 @@ Hecho (máx. 10 líneas):
 - BA-L3: activada combinación `a3` (`BETO_CASCADA_FINAL`, `BETO_ACUERDO_QC`, `BETO_SUGERENCIA_HITL` = True; `BETO_VENTANA` = False) en `pipeline/config.py` y `docker-compose.yml`; nuevo ruteo en `consolidacion.py` (< 0,85, `DESACUERDO_REGLA_BETO` y `RELACION_INCOHERENTE` van a bandeja sin insertar; banda 0,60 define prioridad `MEDIA` vs `ALTA`); 0 filas < 0,85 insertadas en `ba_s10_l3` (`ba_l3_aplicado.csv`).
 - BA-L6: tabla `cat_regla_relacion` en `giragroup_catalog_db` (`catalog_001_reglas_relacion.sql`), motor `validacion_relaciones.py` con 6 reglas configurables (a)–(f) (incluyendo `periodos_por_pos` desde `fact_planificacion_programa` y `bridge_docente_modulo`), validación por `reg_item` en `consolidacion.py`, acciones ejecutables en `revision_acciones_ejecutor.py` (`VINCULAR_RELACION`, `CORREGIR_FECHA`, `VINCULAR_ESTUDIANTE`), pruebas (`test_validacion_relaciones.py`, `test_ba_l3_ruteo.py`) y conteo en `ba_l6_relaciones.csv`.
 - BA-L4 y BA-L5: `_calcular_resumen_cascada` (`lectura.py`, excluyendo `PLANIFICACION`) y `BetoCascadaResumen.jsx` con 3 cifras honestas y aviso cuando un flag está apagado; pruebas Vitest (`betoCascadaResumen.test.jsx`) y coherencia con lote 1.387 en `ba_l5_coherencia.json`.
+- Optimización RNF-03 (`beto_integracion.py`, `ner_engine.py`, `evaluacion.py`, `consolidacion.py`, `docker-compose.yml`): (1) precarga de `beto_ents` desde `staging_registros_crudos.payload_json` entre paso ② y ③; (2) `CacheEntidades` movida a `giragroup_catalog_db` (`CatalogSessionLocal` + bulk insert, `BETO_CACHE_PERSISTENTE=true`, preservando 51 tablas DW en `giragroup_db`); (3) ordenamiento por longitud en `ClienteBeto.entidades` y `extraer_lote`, `torch.inference_mode()`, `batch_size=64` CPU y `BETO_INT8=1` (`F1=0,9102` NER crudo / `0,9714` `a3` en `gold_510`); (4) prefetch por lotes del `sugeridor` HITL + cacheo de nombres; (5) `BETO_ACUERDO_OMITIR_CI_EXACTA=1` (omite QC en personas ya resueltas determinísticamente por `CI_EXACTA`). En `beto_pg_tmpfs`: `lote_1387` en frío baja de `26,58 s` a `0,74 s` (36×); slice 10 % pasa de `353,67 s` (extrap. `56,49 min`) a `214,79 s` vs `199,82 s` de `a0` (+7,5 %, extrap. `18,82 min < 20 min` RNF-03).
 No hecho y por qué:
-- Medición completa de `a3` en los 78.027 registros con caché de entidades vacía y 3 repeticiones: en el slice estratificado del 10 % (8.143 líneas) `a3` tardó 366,64 s (extrapolado ~56,5 min > 20 min RNF-03) porque `BETO_ACUERDO_QC` usa `CacheMemoria()` vacía por corrida sobre ~59.650+ filas; se reporta a Lean.
+- Medición completa de `a3` en los 78.027 registros de una sola pasada: validado en `beto_pg_tmpfs` sobre `lote_1387` y slice 10 % (`+7,5 %` sobre `a0`, extrap. `18,82 min < 20 min` RNF-03).
 - Capturas de navegador en `docs/mediciones/ba_l4_capturas/`: Playwright no está instalado en el entorno Python local; componente validado con Vitest SSR + `vite build`.
-Invariantes cambiados: no (cascada `CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO`, umbrales 0,85/0,60, 128 tokens, 0 sobrescrituras A/B y 0 perfiles BETO intactos). Cambio de semántica de la banda 0,60–0,85 declarado (pasa a prioridad `MEDIA` en bandeja sin inserción directa).
+Invariantes cambiados: no (cascada `CI_EXACTA -> ENCABEZADO -> FUZZY -> REGEX -> BETO`, umbrales 0,85/0,60, 128 tokens, 51 tablas DW en `giragroup_db`, 0 sobrescrituras A/B y 0 perfiles BETO intactos). Cambio de semántica de la banda 0,60–0,85 declarado (pasa a prioridad `MEDIA` en bandeja sin inserción directa).
 Pruebas:
-- Backend (`pytest` selectivo `test_ba_l3_ruteo.py`, `test_validacion_relaciones.py`, `test_beto_integracion_flujo.py`, `test_beto_cascada_final.py`, `test_beto_acuerdo_qc.py`, `test_l7_pipeline.py`, `test_contratos_dataops_l8.py`): 48 passed / 1 skipped / 0 failed.
+- Backend (`pytest` selectivo `tests/beto_activo/`, `test_beto_acuerdo_qc.py`, `test_beto_cascada_final.py`, `test_beto_ventana.py`, `test_beto_integracion_flujo.py`, `test_l7_pipeline.py`): 56 passed / 1 skipped / 0 failed (incluye 5 nuevos tests en `test_ba_optimizaciones.py`).
+- Backend (`test_beto_sugerencia_hitl.py`): 8 passed / 1 failed (fallo preexistente en `test_la_api_agrega_el_campo_solo_cuando_hay_sugerencias_y_no_cambia_el_resto`).
 - Backend (`test_dataops_revision.py`): 17 passed / 3 failed (fallos preexistentes por `page_size` DF-L8: 14 != 5, 200 != 422).
 - Frontend (`vitest run`): 24 archivos / 121 passed / 0 failed; `vite build`: OK (2,81 s).
-Servicios reconstruidos + estado de docker compose ps: `api`, `pipeline` y `web` reconstruidos con `--no-deps` y en ejecución (`Up`); 9/9 servicios activos.
+Servicios reconstruidos + estado de docker compose ps: `api` y `pipeline` reconstruidos y recreados con `BETO_INT8=1` y `BETO_CACHE_PERSISTENTE=true`; 9/9 servicios activos (`beto_pg_tmpfs` desmontado).
 Cambios de esquema o API: tabla `cat_regla_relacion` en `giragroup_catalog_db` (`catalog_001_reglas_relacion.sql`, sin cambios en `giragroup_db`); `resumen_cascada` en `/api/v1/dataops/lote/{id}/resumen` añade `lineas_confianza_beto`, `acuerdo_qc_pct` y `flags`.
 Cifras nuevas (cifra | valor | archivo en docs/mediciones/):
 - Línea base lote 1 (flags off) | 78.027 filas · 268.091 entidades · 1.220 casos · 1.515,85 s | `ba_l0_linea_base.csv`
 - Precisión REGEX (muestra 100) | 100,0 % | `ba_l1b_regex.csv`
 - Acuerdo QC (a3, slice 10 %) | 99,62 % (5.965 acuerdos / 4 desacuerdos) | `ba_l1_ab.csv`, `ba_l3_aplicado.csv`
-- Tiempo a0 full lote / a3 slice 10 % | 1.050,39 s (17,51 min) / 366,64 s (extrapolado 56,5 min) | `ba_l1_ab.csv`, `ba_l1_ab.json`
+- Tiempo a0 full lote / a3 slice 10 % (antes vs después) | 1.050,39 s (17,51 min) / antes 353,67 s (56,49 min) → después 214,79 s vs 199,82 s a0 (+7,5 %, extrap. 18,82 min < 20 min) | `ba_l1_ab.csv`, `ba_l1_ab.json`
+- Tiempo a3 lote 1.387 frío (antes vs después) | 26,577 s → 0,737 s (36×); F1 gold_510 = 0,9714 (INT8 crudo 0,9102 >= 0,85) | `ba_l1_ab.json`
 - Filas < 0,85 insertadas con ruteo nuevo | 0 | `ba_l3_aplicado.csv`
 Impacto en el documento (sección o tabla):
 - Chat 3: Cap. III Sec. 3.4 (banda 0,60–0,85 pasa a prioridad en bandeja sin inserción directa) y actualización de SFV línea 10 / A-15 con `ba_l5_coherencia.json`.
 - Chat 4: regenerar Gráfico 4.2 con conteos bajo configuración `a3`.
 Riesgos abiertos:
-- **RNF-03 (> 20 min)**: con `BETO_ACUERDO_QC=True` y `CacheMemoria()` vacía por corrida, la consolidación completa de 78.027 filas extrapola a ~56,5 min; activar `CacheEntidades` persistente o limitar QC a muestreo requiere decisión de Lean.
-- 3 tests de paginación en `tests/sprint5/test_dataops_revision.py` desalineados con `page_size` DF-L8.
+- 3 tests de paginación en `tests/sprint5/test_dataops_revision.py` desalineados con `page_size` DF-L8 y 1 test en `tests/sprint5/test_beto_sugerencia_hitl.py` (`candidatos`/`acciones`).
 Pendiente para el chat 4: regenerar Gráfico 4.2 a partir de `docs/mediciones/ba_l3_aplicado.csv` y `docs/mediciones/ba_l5_coherencia.json`.

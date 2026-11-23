@@ -78,6 +78,7 @@ services:
       BETO_ACUERDO_QC: ${BETO_ACUERDO_QC:-true}
       BETO_SUGERENCIA_HITL: ${BETO_SUGERENCIA_HITL:-true}
       BETO_VENTANA: ${BETO_VENTANA:-false}
+      BETO_CACHE_PERSISTENTE: ${BETO_CACHE_PERSISTENTE:-true}
     # RNF-03: varios workers para atender concurrencia (un solo proceso con --reload saturaba con 50 usuarios).
     # API_RELOAD=1 vuelve al modo desarrollo con recarga automática.
     command: >
@@ -163,6 +164,8 @@ services:
       TORCH_NUM_THREADS: ${TORCH_NUM_THREADS:-4}
       # Procesos del servidor (cada uno carga el modelo, ~0,6 GiB): medido 1 proceso 20,8 líneas/s, 2 procesos 31,8, 3 procesos no mejora
       BETO_WORKERS: ${BETO_WORKERS:-2}
+      # Cuantización dinámica INT8 en CPU (RNF-03): ~1.7x más rápido manteniendo F1 >= 0.85 (RNF-04)
+      BETO_INT8: ${BETO_INT8:-1}
     depends_on:
       db:
         condition: service_healthy

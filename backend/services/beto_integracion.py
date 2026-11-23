@@ -147,9 +147,18 @@ class CacheMemoria:
 
 
 class CacheEntidades:
-    """cache_beto_entidades (se crea en el primer uso, sin migración). Si la base no responde, el cliente sigue sin caché."""
+    """cache_beto_entidades en giragroup_catalog_db (CATALOG_DATABASE_URL, sin tocar las 51 tablas DW de giragroup_db)."""
     LOTE_SQL = 2000
     _tabla_lista = False
+
+    def __init__(self, session_factory: Optional[Callable[[], Any]] = None):
+        self._session_factory = session_factory
+
+    def _nueva_sesion(self):
+        if self._session_factory is not None:
+            return self._session_factory()
+        from core.database import CatalogSessionLocal
+        return CatalogSessionLocal()
 
     def _asegurar(self, db) -> None:
         if not CacheEntidades._tabla_lista:
@@ -160,9 +169,10 @@ class CacheEntidades:
 
     def leer(self, hashes: Sequence[str], configuracion: str) -> Dict[str, List[EntidadBeto]]:
         from sqlalchemy import bindparam, text
-        from core.database import SessionLocal
+        if not hashes:
+            return {}
         out: Dict[str, List[EntidadBeto]] = {}
-        db = SessionLocal()
+        db = self._nueva_sesion()
         try:
             self._asegurar(db)
             q = text("SELECT hash_texto, entidades FROM public.cache_beto_entidades WHERE configuracion = :c AND hash_texto IN :h").bindparams(
@@ -176,15 +186,18 @@ class CacheEntidades:
 
     def guardar(self, nuevos: Dict[str, List[EntidadBeto]], configuracion: str) -> None:
         from sqlalchemy import text
-        from core.database import SessionLocal
         if not nuevos:
             return
-        db = SessionLocal()
+        db = self._nueva_sesion()
         try:
             self._asegurar(db)
-            for h, ents in nuevos.items():
-                db.execute(text("INSERT INTO public.cache_beto_entidades (hash_texto, configuracion, entidades) VALUES (:h, :c, :e) "
-                                "ON CONFLICT DO NOTHING"), {"h": h, "c": configuracion, "e": json.dumps([e.a_dict() for e in ents])})
+            stmt = text(
+                "INSERT INTO public.cache_beto_entidades (hash_texto, configuracion, entidades) "
+                "VALUES (:h, :c, :e) ON CONFLICT DO NOTHING"
+            )
+            filas = [{"h": h, "c": configuracion, "e": json.dumps([e.a_dict() for e in ents])} for h, ents in nuevos.items()]
+            for i in range(0, len(filas), self.LOTE_SQL):
+                db.execute(stmt, filas[i:i + self.LOTE_SQL])
             db.commit()
         finally:
             db.close()
@@ -213,8 +226,13 @@ class ClienteBeto:
 
     def __init__(self, cache=None, post: Optional[Callable[[List[str]], List[List[EntidadBeto]]]] = None,
                  configuracion: Optional[str] = None, contadores: Optional[Contadores] = None):
-        # DD7: usar caché en memoria por defecto para no crear la tabla #52 en giragroup_db
-        self.cache = cache if cache is not None else CacheMemoria()
+        # DD7: usar caché en memoria por defecto, o CacheEntidades en giragroup_catalog_db si BETO_CACHE_PERSISTENTE está activo
+        if cache is not None:
+            self.cache = cache
+        elif activo("BETO_CACHE_PERSISTENTE"):
+            self.cache = CacheEntidades()
+        else:
+            self.cache = CacheMemoria()
         self.post = post or _post_infer_batch
         self.configuracion = configuracion or configuracion_modelo()
         self.contadores = contadores or Contadores()
@@ -232,7 +250,9 @@ class ClienteBeto:
         faltan = [t for t in distintos if resultado[t] is None]
         self.contadores.textos_en_cache += len(distintos) - len(faltan)
         if faltan:
-            lotes = [faltan[i:i + cfg.BETO_LOTE_TEXTOS] for i in range(0, len(faltan), cfg.BETO_LOTE_TEXTOS)]
+            # Ordenar por longitud minimiza el padding por lote (hasta 128 tokens) en el servidor BETO
+            faltan_ord = sorted(faltan, key=len)
+            lotes = [faltan_ord[i:i + cfg.BETO_LOTE_TEXTOS] for i in range(0, len(faltan_ord), cfg.BETO_LOTE_TEXTOS)]
             t0 = time.perf_counter()
             with ThreadPoolExecutor(max_workers=min(cfg.BETO_PETICIONES_SIMULTANEAS, len(lotes))) as pool:
                 respuestas = list(pool.map(self._pedir, lotes))
@@ -292,8 +312,45 @@ def persona_sin_resolver(ents: Sequence[Dict[str, Any]], etiqueta: str) -> bool:
     return e is not None and bool(e.get("es_nuevo_perfil"))   # docente: solo si había candidato y no se resolvió
 
 
-def persona_resuelta_por_reglas(e: Optional[Dict[str, Any]]) -> bool:
-    return bool(e) and bool(e.get("matchedCanonical")) and (e.get("fuente_resolucion") in ("CI_EXACTA", "ENCABEZADO", "FUZZY"))
+def precargar_desde_staging(cliente: ClienteBeto, stg_records: Iterable[Any]) -> int:
+    """Precarga en la caché del cliente las entidades `beto_ents` guardadas en `staging_registros_crudos.payload_json` durante el paso ②."""
+    precargados: Dict[str, List[EntidadBeto]] = {}
+    for s_reg in stg_records:
+        p_json = getattr(s_reg, "payload_json", None)
+        if not isinstance(p_json, dict):
+            continue
+        for tupla in p_json.get("tuplas") or ():
+            if not isinstance(tupla, dict) or "beto_ents" not in tupla:
+                continue
+            raw_line = tupla.get("raw_line")
+            if not raw_line:
+                continue
+            texto_b = texto_para_beto(raw_line)
+            if not texto_b:
+                continue
+            h_b = hash_texto(texto_b)
+            if h_b not in precargados:
+                try:
+                    precargados[h_b] = [EntidadBeto.de_dict(e) for e in (tupla.get("beto_ents") or ())]
+                except Exception:
+                    continue
+    if precargados:
+        try:
+            cliente.cache.guardar(precargados, cliente.configuracion)
+        except Exception as e:
+            logger.warning("No se pudo precargar beto_ents desde staging (%s).", e)
+            return 0
+    return len(precargados)
+
+
+def persona_resuelta_por_reglas(e: Optional[Dict[str, Any]], incluir_ci_exacta: bool = True) -> bool:
+    fuentes = ("CI_EXACTA", "ENCABEZADO", "FUZZY") if incluir_ci_exacta else ("ENCABEZADO", "FUZZY")
+    return bool(e) and bool(e.get("matchedCanonical")) and (e.get("fuente_resolucion") in fuentes)
+
+
+def _omitir_ci_exacta_en_acuerdo() -> bool:
+    crudo = os.getenv("BETO_ACUERDO_OMITIR_CI_EXACTA", "1")
+    return crudo.strip().lower() in ("1", "true", "si", "sí", "yes", "on")
 
 
 def _celda_del_tramo(texto: str, start: int) -> str:
@@ -384,6 +441,7 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
     línea (None para las omitidas). La opción 1 repite la extracción solo de las residuales, con el nombre propuesto por BETO.
     """
     cascada, acuerdo = activo("BETO_CASCADA_FINAL"), activo("BETO_ACUERDO_QC")
+    incluir_ci_acuerdo = not _omitir_ci_exacta_en_acuerdo()
     base: List[Optional[ResultadoLinea]] = []
     for linea in lineas:
         if omitir and omitir(linea):
@@ -398,7 +456,10 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
             continue
         con_persona = tipo_fuente in cfg.BETO_TIPOS_FUENTE_CON_PERSONA
         residual = cascada and con_persona and (persona_sin_resolver(r.ents, "ESTUDIANTE") or persona_sin_resolver(r.ents, "DOCENTE"))
-        comparable = acuerdo and (persona_resuelta_por_reglas(entidad(r.ents, "ESTUDIANTE")) or persona_resuelta_por_reglas(entidad(r.ents, "DOCENTE")))
+        comparable = acuerdo and (
+            persona_resuelta_por_reglas(entidad(r.ents, "ESTUDIANTE"), incluir_ci_exacta=incluir_ci_acuerdo)
+            or persona_resuelta_por_reglas(entidad(r.ents, "DOCENTE"), incluir_ci_exacta=incluir_ci_acuerdo)
+        )
         if residual or comparable:
             necesita[i] = texto_para_beto(lineas[i])
             contadores.residuales_enviadas += int(bool(residual))
@@ -414,7 +475,7 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
         if cascada and tipo_fuente in cfg.BETO_TIPOS_FUENTE_CON_PERSONA:
             _aplicar_cascada(r, linea, texto, ents_beto, extraer, contadores, excluir_celda)
         if acuerdo:
-            _aplicar_acuerdo(r, texto, ents_beto, contadores, _clave_metrica(archivo, tipo_fuente))
+            _aplicar_acuerdo(r, texto, ents_beto, contadores, _clave_metrica(archivo, tipo_fuente), incluir_ci_exacta=incluir_ci_acuerdo)
     return base
 
 
@@ -444,11 +505,12 @@ def persona_resuelta_por_beto(e: Optional[Dict[str, Any]]) -> bool:
     return bool(e) and bool(e.get("matchedCanonical")) and e.get("fuente_resolucion") == "BETO"
 
 
-def _aplicar_acuerdo(r: ResultadoLinea, texto: str, ents_beto, contadores: Contadores, clave: str) -> None:
+def _aplicar_acuerdo(r: ResultadoLinea, texto: str, ents_beto, contadores: Contadores, clave: str,
+                     incluir_ci_exacta: bool = True) -> None:
     veredictos = []
     for etiqueta in ("ESTUDIANTE", "DOCENTE"):
         e = entidad(r.ents, etiqueta)
-        if persona_resuelta_por_reglas(e):
+        if persona_resuelta_por_reglas(e, incluir_ci_exacta=incluir_ci_exacta):
             veredictos.append(comparar_con_beto(e.get("token"), texto, ents_beto))
     if not veredictos:
         return
@@ -534,8 +596,40 @@ def hacer_sugeridor(cliente: ClienteBeto, personas: Sequence[Any], tipo: str = "
     Función (nombre_leido, candidatos|None, texto_para_beto) → sugerencias ordenadas con ambos componentes. Si no se dan candidatos se buscan
     por similitud en `personas`. La lectura de BETO viene de la caché o de /infer-batch; si falla se ordena solo por similitud.
     """
+    from rapidfuzz import fuzz, process
+    from services.dataops_evaluation_service import enmascarar_ci
+
+    corte_def = cfg.BETO_SUGERENCIA_CORTE_SIMILITUD
+    nombres_cache = [getattr(p, "nombre_completo", None) or "" for p in personas]
+    meta_cache = [
+        {
+            "id": getattr(p, "id_estudiante", None) or getattr(p, "id_docente", None),
+            "nombre": nombres_cache[idx],
+            "ci_enmascarado": enmascarar_ci(ci) if (ci := (getattr(p, "ci_numero", None) or getattr(p, "ci", None))) else None,
+            "programa": getattr(p, "programa_origen", None),
+        }
+        for idx, p in enumerate(personas)
+    ]
+    sim_cache: Dict[str, List[Dict[str, Any]]] = {}
+
+    def _cands_rapidos(nombre: str) -> List[Dict[str, Any]]:
+        if not nombre or not nombres_cache:
+            return []
+        hit = sim_cache.get(nombre)
+        if hit is not None:
+            return hit
+        encontrados = [
+            meta_cache[i]
+            for _, _, i in process.extract(
+                nombre, nombres_cache, scorer=fuzz.token_sort_ratio,
+                score_cutoff=corte_def, limit=cfg.BETO_SUGERENCIAS_MAXIMAS * 3,
+            )
+        ]
+        sim_cache[nombre] = encontrados
+        return encontrados
+
     def sugerir(nombre: str, candidatos: Optional[Sequence[Dict[str, Any]]] = None, texto: Optional[str] = None) -> List[Dict[str, Any]]:
-        cands = list(candidatos) if candidatos else candidatos_por_similitud(nombre, personas)
+        cands = list(candidatos) if candidatos else _cands_rapidos(nombre)
         if not cands:
             return []
         ents = cliente.entidades([texto]).get(texto) if texto else None
