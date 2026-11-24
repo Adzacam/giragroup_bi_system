@@ -1,0 +1,27 @@
+{
+  "tarea": "F6-3b",
+  "beto_acuerdo_qc_solo_fuzzy": true,
+  "beto_rescate_academico": true,
+  "beto_sugerencia_corte_similitud": 80.0,
+  "desacuerdos_regla_beto_log": 3,
+  "sugerencias_en_motivos_no_identidad": 0,
+  "beto_totales": {
+    "lineas_totales": 37462,
+    "residuales_enviadas": 2309,
+    "residuales_academicas_enviadas": 11812,
+    "lineas_academicas_rescatadas": 0,
+    "lineas_academicas_ambiguas": 0,
+    "resueltas_por_beto": 35,
+    "a_hitl": 2274,
+    "tiempo_beto_s": 141.112,
+    "peticiones": 109,
+    "textos_inferidos": 10757,
+    "textos_en_cache": 1586,
+    "comparadas_acuerdo": 210,
+    "acuerdos": 207,
+    "desacuerdos": 3,
+    "no_evaluables": 1,
+    "tipo_distinto": 0,
+    "tasa_acuerdo": 1.657
+  }
+}

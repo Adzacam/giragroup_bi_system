@@ -10,7 +10,7 @@ RESUELTA = "ESTUDIANTE: Maria Lopez Quispe | MODULO: Gestion de Datos | NOTA: 85
 
 @pytest.fixture(autouse=True)
 def solo_cascada(monkeypatch):
-    for f in ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_SUGERENCIA_HITL", "BETO_VENTANA"):
+    for f in ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_SUGERENCIA_HITL", "BETO_RESCATE_ACADEMICO", "BETO_VENTANA"):
         monkeypatch.setenv(f, "0")
     monkeypatch.setenv("BETO_CASCADA_FINAL", "1")
 
@@ -28,14 +28,15 @@ def refinar(lineas, servicio, tipo_fuente="ACTA", omitir=None):
 
 
 def test_flags_a3_por_defecto_y_apagado_explicito(monkeypatch):
-    for f in ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_SUGERENCIA_HITL", "BETO_VENTANA"):
+    for f in ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_SUGERENCIA_HITL", "BETO_RESCATE_ACADEMICO", "BETO_VENTANA"):
         monkeypatch.delenv(f, raising=False)
     assert bi.activo("BETO_CASCADA_FINAL") is True
     assert bi.activo("BETO_ACUERDO_QC") is True
     assert bi.activo("BETO_SUGERENCIA_HITL") is True
+    assert bi.activo("BETO_RESCATE_ACADEMICO") is True
     assert bi.activo("BETO_VENTANA") is False
     assert bi.necesita_refinar() is True
-    for f in ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_SUGERENCIA_HITL", "BETO_VENTANA"):
+    for f in ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_SUGERENCIA_HITL", "BETO_RESCATE_ACADEMICO", "BETO_VENTANA"):
         monkeypatch.setenv(f, "0")
         assert bi.activo(f) is False
     assert bi.necesita_refinar() is False

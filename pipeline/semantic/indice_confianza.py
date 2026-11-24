@@ -16,6 +16,7 @@ Bandas (umbrales formales del sistema):
     <  0.60          -> stg_entidad_no_resuelta
 """
 
+import re
 from typing import List, Optional
 
 UMBRAL_CONSOLIDADO = 0.85
@@ -31,11 +32,65 @@ BANDA_STAGING = "STAGING"
 _MODELO = None
 _TOKENIZER = None
 
+_RE_SOLO_NUM_O_FECHA = re.compile(
+    r"^[\s$€Bs.,:%/\-+0-9]+$",
+    re.IGNORECASE,
+)
+_RE_TIENE_PALABRA = re.compile(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}")
+_RE_ENC_PRIORITARIO = re.compile(
+    r"\b(ESTUDIANTE|ALUMNO|NOMBRE|APELLIDO|PATERNO|MATERNO|DOCENTE|PROFESOR|FACILITADOR|TUTOR|"
+    r"PROGRAMA|DIPLOMADO|MAESTR|MODULO|MÓDULO|MATERIA|CURSO|CONCEPTO|OBSERVACI|INSTITUC|CATEGORIA|POS)\b",
+    re.IGNORECASE,
+)
+_RE_ENC_ID_O_NUM = re.compile(
+    r"^(N°|Nº|NRO|NO\.?|ID|ITEM|FILA|CORRELATIVO|COD(?:IGO)?|CUOTA|MES|ANO|AÑO|GESTION|GESTIÓN|"
+    r"NOTA|CALIF|MONTO|SALDO|DEUDA|PAGADO|IMPORTE|TOTAL|SUBTOTAL|HORAS|HRS|TELEFONO|CELULAR|WHATSAPP|EDAD)$",
+    re.IGNORECASE,
+)
+
+
+def _es_celda_textual_relevante(celda: str) -> bool:
+    """True si la celda aporta texto semántico (no es puramente numérica, fecha ni ID corto)."""
+    hdr, sep, val = celda.partition(":")
+    cuerpo = val.strip() if sep else celda.strip()
+    if not cuerpo or _RE_SOLO_NUM_O_FECHA.match(cuerpo):
+        return False
+    if not _RE_TIENE_PALABRA.search(cuerpo):
+        return False
+    if sep and _RE_ENC_ID_O_NUM.match(hdr.strip()) and len(cuerpo.split()) <= 1:
+        return False
+    return True
+
 
 def texto_para_indice(linea: str) -> str:
-    """Primeras 8 celdas 'COL: valor' de la línea, igual que el texto evaluado por el script del lote."""
+    """
+    F6-3c: Selecciona hasta MAX_CELDAS_TEXTO (8) celdas textuales relevantes filtrando columnas
+    puramente numéricas/IDs/fechas antes de truncar a MAX_LENGTH_TOKENS (128). Prioriza celdas
+    con encabezados de identidad/entidad y luego otras celdas textuales; solo recurre a celdas
+    numéricas si no hay suficientes textuales.
+    """
     celdas = [c.strip() for c in (linea or "").split("|") if c.strip()]
-    return " | ".join(celdas[:MAX_CELDAS_TEXTO])
+    if len(celdas) <= MAX_CELDAS_TEXTO:
+        textuales = [c for c in celdas if _es_celda_textual_relevante(c)]
+        return " | ".join(textuales if textuales else celdas)
+
+    prioritarias: List[str] = []
+    otras_textuales: List[str] = []
+    respaldo: List[str] = []
+    for c in celdas:
+        if _es_celda_textual_relevante(c):
+            hdr = c.split(":", 1)[0].strip() if ":" in c else ""
+            if hdr and _RE_ENC_PRIORITARIO.search(hdr):
+                prioritarias.append(c)
+            else:
+                otras_textuales.append(c)
+        else:
+            respaldo.append(c)
+
+    seleccionadas = (prioritarias + otras_textuales)[:MAX_CELDAS_TEXTO]
+    if not seleccionadas:
+        seleccionadas = respaldo[:MAX_CELDAS_TEXTO]
+    return " | ".join(seleccionadas)
 
 
 def clasificar_banda(indice: Optional[float]) -> str:

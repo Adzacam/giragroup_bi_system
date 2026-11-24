@@ -29,7 +29,7 @@ TIMEOUT_SEG = 300
 PETICIONES_SIMULTANEAS = max(1, int(os.getenv("BETO_PETICIONES_SIMULTANEAS", "2")))
 
 
-MODELO = os.getenv("BETO_MODELO_VERSION", "beto-v2")  # cambiarlo invalida la caché de índices
+MODELO = os.getenv("BETO_MODELO_VERSION", "beto-v2-f6")  # F6-3c: versionado para no reutilizar scores cacheados previos al filtrado de celdas
 LOTE_CACHE_SQL = 5000
 
 

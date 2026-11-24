@@ -1,0 +1,8 @@
+{
+  "tarea": "F6-2c",
+  "despues_homonimia_score_100": 18,
+  "umbrales_invariantes": {
+    "homonimia_pct": 90.0,
+    "persona_directa": 0.92
+  }
+}

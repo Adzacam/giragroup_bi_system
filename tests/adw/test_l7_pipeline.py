@@ -70,13 +70,13 @@ def test_cache_beto_no_es_migracion_y_los_flags_a3_activos(monkeypatch):
         "BETO_CASCADA_FINAL": True,
         "BETO_ACUERDO_QC": True,
         "BETO_SUGERENCIA_HITL": True,
-        "BETO_RESCATE_ACADEMICO": False,
+        "BETO_RESCATE_ACADEMICO": True,
         "BETO_VENTANA": False,
     }
     monkeypatch.delenv("BETO_RESCATE_ACADEMICO", raising=False)
-    assert not beto_integracion.activo("BETO_RESCATE_ACADEMICO")
-    monkeypatch.setenv("BETO_RESCATE_ACADEMICO", "1")
     assert beto_integracion.activo("BETO_RESCATE_ACADEMICO")
+    monkeypatch.setenv("BETO_RESCATE_ACADEMICO", "0")
+    assert not beto_integracion.activo("BETO_RESCATE_ACADEMICO")
     assert "migración 015" not in (beto_integracion.__doc__ or "").replace("No existe una «migración 015»", "")
 
 

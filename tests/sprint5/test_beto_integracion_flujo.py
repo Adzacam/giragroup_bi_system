@@ -14,7 +14,7 @@ from routers import dataops
 from services import beto_integracion as bi, cache_consultas, cache_lectura
 from tests.dataops_parches import parchear
 
-FLAGS = ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_SUGERENCIA_HITL", "BETO_VENTANA")
+FLAGS = ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_SUGERENCIA_HITL", "BETO_RESCATE_ACADEMICO", "BETO_VENTANA")
 
 
 def _ingestar(db, tmp_path, filas):
@@ -76,7 +76,7 @@ ACTA = [{'POS - ACTAS': 'POS-9876', 'NOMBRE COMPLETO': 'ANA TORREZ SALINAS', 'ME
 
 
 def test_con_los_flags_apagados_no_hay_rastro_de_beto(entorno, monkeypatch, tmp_path):
-    for f in ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_SUGERENCIA_HITL", "BETO_VENTANA"):
+    for f in FLAGS:
         monkeypatch.setenv(f, "0")
     llamadas = _servicio(monkeypatch, [])
     lote, docs = _ingestar(entorno, tmp_path, ACTA)
@@ -124,7 +124,7 @@ def test_servicio_caido_con_el_flag_encendido_deja_el_resultado_de_siempre(entor
     lectura = dataops._evaluar_documentos_lote(entorno, docs)
     assert lectura['autoCount'] == 2 and lectura['beto']['desacuerdos'] == 0
     res = dataops._consolidar(dataops.ConfirmDwInsertRequest(id_lote=lote.id_lote), entorno, None)
-    assert res['inserted_revision'] == 0 and entorno.query(FactRendimientoAcademico).count() == 2
+    assert res['inserted_revision'] == 0 and entorno.query(FactRendimientoAcademico).count() == 4
 
 
 def test_cascada_final_rescata_a_un_residual_en_la_lectura_y_la_consolidacion(entorno, monkeypatch, tmp_path):

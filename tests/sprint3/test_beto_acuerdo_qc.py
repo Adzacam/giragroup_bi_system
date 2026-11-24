@@ -10,7 +10,7 @@ RESUELTA = "ESTUDIANTE: Maria Lopez Quispe | MODULO: Gestion de Datos | NOTA: 85
 
 @pytest.fixture(autouse=True)
 def solo_acuerdo(monkeypatch):
-    for f in ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_SUGERENCIA_HITL", "BETO_VENTANA"):
+    for f in ("BETO_CASCADA_FINAL", "BETO_ACUERDO_QC", "BETO_SUGERENCIA_HITL", "BETO_RESCATE_ACADEMICO", "BETO_VENTANA"):
         monkeypatch.setenv(f, "0")
     monkeypatch.setenv("BETO_ACUERDO_QC", "1")
 

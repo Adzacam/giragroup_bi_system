@@ -50,9 +50,9 @@ UMBRAL_CONFIANZA_BAJO = 0.40     # Descarte o staging no resuelto
 # Cada flag puede sobreescribirse con la variable de entorno del mismo nombre ("1", "true", "si", "on" / "0", "false").
 BETO_FLAGS_POR_DEFECTO = {
     "BETO_CASCADA_FINAL": True,     # opción 1: BETO como última etapa de la cascada, solo para residuales
-    "BETO_ACUERDO_QC": True,        # opción 2: acuerdo regla–BETO como control de calidad
+    "BETO_ACUERDO_QC": True,        # opción 2: acuerdo regla–BETO como control de calidad (F6-3b: solo sobre FUZZY)
     "BETO_SUGERENCIA_HITL": True,   # opción 3: candidatos ordenados por score combinado en la bandeja HITL
-    "BETO_RESCATE_ACADEMICO": False,  # CF-L4: programas y módulos residuales contra el catálogo
+    "BETO_RESCATE_ACADEMICO": True, # F6-3b (D-F6-2): programas y módulos residuales contra el catálogo
     "BETO_VENTANA": False,          # ventana deslizante para textos de más de 128 tokens
 }
 BETO_MAX_LENGTH_TOKENS = 128        # el mismo recorte que el índice (indice_confianza.MAX_LENGTH_TOKENS); no subir a 512
@@ -70,7 +70,13 @@ MOTIVO_DESACUERDO_REGLA_BETO = "DESACUERDO_REGLA_BETO"
 BETO_PESO_SIMILITUD = 0.5
 BETO_PESO_PROBABILIDAD = 0.5
 BETO_SUGERENCIAS_MAXIMAS = 5
-BETO_SUGERENCIA_CORTE_SIMILITUD = 70.0   # token_sort_ratio mínimo para listar un candidato (no es un umbral de decisión)
+BETO_SUGERENCIA_CORTE_SIMILITUD = 80.0   # F6-3b (D-F6-3): token_sort_ratio mínimo para listar un candidato (no es un umbral de decisión)
+MOTIVOS_SUGERENCIA_HITL = frozenset({
+    "ENTIDAD_NUEVA",
+    "HOMONIMIA",
+    "POS_NO_EN_DIM_MODULO",
+    "BAJA_CONFIANZA_IA",
+})
 
 # Umbrales de activación de revisión humana y calidad (GIRA-27: corte estricto en 0.85)
 UMBRAL_REVISION_BETO = 0.85      # Inferencia BETO < 0.85 activa requiere_revision (Nivel MEDIA o BAJA)

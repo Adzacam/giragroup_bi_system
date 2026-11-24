@@ -441,6 +441,52 @@ PALABRAS_CLAVE_CATEGORIA = {
 }
 
 
+def extraer_encabezado_hoja(
+    df_hoja: Optional[pd.DataFrame],
+    nombre_archivo: str = "",
+    nombre_hoja: str = "",
+    fila_cabecera: Optional[int] = None,
+    max_filas: int = 5,
+    max_palabras: int = 90,
+) -> str:
+    """
+    F6-1 (Nivel 1): Construye el texto compacto de contexto de hoja a partir de:
+      nombre_archivo + nombre_hoja + filas 0..(fila_cabecera-1) (máx. `max_filas` filas).
+    Se recorta a `max_palabras` palabras para garantizar <= 128 tokens en BETO
+    (invariante de la tesis) y se invoca como máximo una vez por hoja.
+    """
+    partes: List[str] = []
+    if nombre_archivo:
+        partes.append(f"ARCHIVO: {Path(str(nombre_archivo)).stem}")
+    if nombre_hoja:
+        partes.append(f"HOJA: {str(nombre_hoja).strip()}")
+
+    if df_hoja is not None and not df_hoja.empty:
+        limite = int(fila_cabecera) if (fila_cabecera is not None and fila_cabecera > 0) else 0
+        limite = min(limite, len(df_hoja))
+        filas_capturadas = 0
+        for idx in range(limite):
+            if filas_capturadas >= max_filas:
+                break
+            celdas = [
+                str(v).strip()
+                for v in df_hoja.iloc[idx].values
+                if pd.notna(v) and str(v).strip() != ""
+            ]
+            if not celdas:
+                continue
+            # Evitar duplicados exactos de celdas combinadas en una misma fila
+            unicas = list(dict.fromkeys(celdas))
+            partes.append(" ".join(unicas))
+            filas_capturadas += 1
+
+    texto = " | ".join(p for p in partes if p).strip()
+    palabras = texto.split()
+    if len(palabras) > max_palabras:
+        texto = " ".join(palabras[:max_palabras])
+    return texto
+
+
 def a_texto_plano(bloque: pd.DataFrame) -> str:
     """
     Serializa un bloque tabular (DataFrame) a texto plano legible.

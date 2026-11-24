@@ -107,7 +107,7 @@ def test_finanzas_sin_contexto_no_se_envia(catalogo):
 
 
 def test_flag_apagado_no_ejecuta_rescate(catalogo, monkeypatch):
-    monkeypatch.delenv('BETO_RESCATE_ACADEMICO')
+    monkeypatch.setenv('BETO_RESCATE_ACADEMICO', '0')
     assert bi.activo('BETO_RESCATE_ACADEMICO') is False
     assert bi.necesita_refinar() is False
     linea = 'POS: POS-5000 | CONTENIDO: Control Financiero'

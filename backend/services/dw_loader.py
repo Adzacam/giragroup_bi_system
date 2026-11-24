@@ -357,9 +357,13 @@ class DWLoaderService:
                 out.append((e, ratio))
         return out
 
-    def _extra_sugerencias(self, nombre, candidatos) -> Dict[str, Any]:
-        """kwargs de StagingEntidadNoResuelta con los candidatos ordenados (vacío si la opción 3 está apagada o falla)."""
+    def _extra_sugerencias(self, nombre, candidatos, motivo: Optional[str] = "HOMONIMIA") -> Dict[str, Any]:
+        """kwargs de StagingEntidadNoResuelta con los candidatos ordenados (vacío si la opción 3 está apagada,
+        el motivo no es de identidad/catálogo o falla)."""
         if self.sugeridor is None:
+            return {}
+        from pipeline.config import MOTIVOS_SUGERENCIA_HITL
+        if motivo is not None and motivo not in MOTIVOS_SUGERENCIA_HITL:
             return {}
         try:
             lista = [{"id": e.id_estudiante, "nombre": e.nombre_completo, "similitud_nombre": ratio,
@@ -623,8 +627,25 @@ class DWLoaderService:
             ).order_by(DimEstudiante.id_estudiante).first()
 
             if est:
+                # F6-2b: Auto-hidratación de placeholders ("Estudiante <CI>" / "Estudiante CI ...") antes de CI_NOMBRE_DISCORDANTE
+                es_placeholder_est = bool(re.match(r"^\s*estudiante\s+(?:ci\s*[:#-]?\s*)?\d", est.nombre_completo or "", re.I))
+                es_placeholder_nuevo = bool(re.match(r"^\s*estudiante\s+(?:ci\s*[:#-]?\s*)?\d", nombre or "", re.I))
+                if nombre and est.nombre_completo and es_placeholder_est and not es_placeholder_nuevo:
+                    nombre_previo = est.nombre_completo
+                    est.nombre_completo = nombre.strip()
+                    if not self.solo_revision:
+                        self.db.add(LogInconsistencia(
+                            id_documento=doc_id,
+                            campo_afectado="nombre_completo",
+                            valor_recibido=nombre.strip()[:2000],
+                            valor_esperado=nombre_previo,
+                            tipo_regla="PLACEHOLDER_HIDRATADO",
+                            severidad="BAJA",
+                            estado_resolucion="REGISTRADO",
+                            descripcion=f"CI {ci_clean}: placeholder '{nombre_previo}' auto-hidratado con nombre real",
+                        ))
                 # Mismo CI con nombre guardado incompleto (solo nombres de pila): misma persona, se completa
-                if nombre and est.nombre_completo and _es_nombre_incompleto(est.nombre_completo, nombre):
+                elif nombre and est.nombre_completo and _es_nombre_incompleto(est.nombre_completo, nombre):
                     est.nombre_completo = nombre.strip()
                 # Regla CI_NOMBRE_DISCORDANTE: si el nombre no coincide léxicamente (WRatio < 70) -> HITL
                 elif not forzar_resolucion_humana and nombre and est.nombre_completo:
@@ -688,8 +709,16 @@ class DWLoaderService:
         if nombre:
             nombre_clean = nombre.strip()
             candidatos_validos = self._candidatos_estudiante_fuzzy(nombre_clean)
+            # F6-2c: Deduplicar por id_estudiante distinto manteniendo umbral >= 90% intacto
+            vistos_ids = set()
+            candidatos_unicos = []
+            for est_c, sc_c in candidatos_validos:
+                if est_c.id_estudiante not in vistos_ids:
+                    vistos_ids.add(est_c.id_estudiante)
+                    candidatos_unicos.append((est_c, sc_c))
+            candidatos_validos = candidatos_unicos
 
-            # 2a. Si hay 2 o más candidatos >= 90% -> Conflicto de Homonimia detectado -> Derivación forzada a HITL
+            # 2a. Colisión real: >= 2 id_estudiante distintos >= 90% -> Conflicto de Homonimia -> HITL
             if len(candidatos_validos) >= 2 and not forzar_resolucion_humana:
                 ganador = self._desempatar_homonimos(candidatos_validos, ci, programa, modulo, fecha)
                 if ganador is not None:  # desempatado por CI parcial / programa / módulo / mes: un solo candidato
@@ -711,9 +740,12 @@ class DWLoaderService:
                 self._registrar_staging_si_nuevo(stg)
                 return None, "C"
 
-            # 2b. Si hay al menos un candidato >= 90%:
+            # 2b. Si hay 1 único id_estudiante candidato >= 90%:
+            # F6-2c: si el candidato único alcanza el umbral de persona >= 92% (o 100%), resolver directo (no es homonimia)
             if len(candidatos_validos) >= 1:
-                est_encontrado = candidatos_validos[0][0]
+                est_encontrado, mejor_score = candidatos_validos[0]
+                if mejor_score >= 92.0:
+                    return est_encontrado.id_estudiante, "B"
                 if programa and not forzar_resolucion_humana:
                     hecho_otro_prog = self.db.query(FactRendimientoAcademico).join(
                         DimModulo, FactRendimientoAcademico.id_modulo == DimModulo.id_modulo

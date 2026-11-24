@@ -246,7 +246,11 @@ class ClienteBeto:
         self.configuracion = configuracion or configuracion_modelo()
         self.contadores = contadores or Contadores()
 
-    def entidades(self, textos: Iterable[str]) -> Dict[str, Optional[List[EntidadBeto]]]:
+    def entidades(
+        self,
+        textos: Iterable[str],
+        on_latido: Optional[Callable[[int, int], None]] = None,
+    ) -> Dict[str, Optional[List[EntidadBeto]]]:
         """{texto: entidades}. None si el servicio falló para ese texto (no se cachea y el llamador no cambia nada)."""
         distintos = list(dict.fromkeys(t for t in textos if t))
         hashes = {t: hash_texto(t) for t in distintos}
@@ -263,8 +267,12 @@ class ClienteBeto:
             faltan_ord = sorted(faltan, key=len)
             lotes = [faltan_ord[i:i + cfg.BETO_LOTE_TEXTOS] for i in range(0, len(faltan_ord), cfg.BETO_LOTE_TEXTOS)]
             t0 = time.perf_counter()
+            respuestas = []
             with ThreadPoolExecutor(max_workers=min(cfg.BETO_PETICIONES_SIMULTANEAS, len(lotes))) as pool:
-                respuestas = list(pool.map(self._pedir, lotes))
+                for idx_lote, ents_lote in enumerate(pool.map(self._pedir, lotes), start=1):
+                    respuestas.append(ents_lote)
+                    if on_latido is not None:
+                        on_latido(idx_lote, len(lotes))
             self.contadores.tiempo_beto_s += time.perf_counter() - t0
             nuevos: Dict[str, List[EntidadBeto]] = {}
             for lote, ents_lote in zip(lotes, respuestas):
@@ -375,13 +383,34 @@ def precargar_desde_staging(cliente: ClienteBeto, stg_records: Iterable[Any]) ->
     return len(precargados)
 
 
-def persona_resuelta_por_reglas(e: Optional[Dict[str, Any]], incluir_ci_exacta: bool = True) -> bool:
-    fuentes = ("CI_EXACTA", "ENCABEZADO", "FUZZY") if incluir_ci_exacta else ("ENCABEZADO", "FUZZY")
-    return bool(e) and bool(e.get("matchedCanonical")) and (e.get("fuente_resolucion") in fuentes)
+def persona_resuelta_por_reglas(
+    e: Optional[Dict[str, Any]],
+    incluir_ci_exacta: bool = True,
+    permitir_sin_padron: bool = False,
+    solo_fuzzy: bool = False,
+) -> bool:
+    if solo_fuzzy:
+        fuentes = ("FUZZY",)
+    else:
+        fuentes = ("CI_EXACTA", "ENCABEZADO", "FUZZY") if incluir_ci_exacta else ("ENCABEZADO", "FUZZY")
+    if not e or e.get("es_anonima") or e.get("canonicalId") == "EVALUACION_ANONIMA":
+        return False
+    fuente = str(e.get("fuente_resolucion") or e.get("origen_confianza") or "").upper()
+    if fuente not in fuentes:
+        return False
+    if e.get("matchedCanonical"):
+        return True
+    return bool((not solo_fuzzy) and permitir_sin_padron and e.get("token") and fuente == "ENCABEZADO")
 
 
 def _omitir_ci_exacta_en_acuerdo() -> bool:
     crudo = os.getenv("BETO_ACUERDO_OMITIR_CI_EXACTA", "1")
+    return crudo.strip().lower() in ("1", "true", "si", "sí", "yes", "on")
+
+
+def _acuerdo_solo_fuzzy() -> bool:
+    """F6-3b (D-F6-2): acota BETO_ACUERDO_QC exclusivamente a resoluciones FUZZY (nunca veta ENCABEZADO limpio ni CI_EXACTA)."""
+    crudo = os.getenv("BETO_ACUERDO_SOLO_FUZZY", "1")
     return crudo.strip().lower() in ("1", "true", "si", "sí", "yes", "on")
 
 
@@ -466,7 +495,9 @@ def _clave_metrica(archivo: Optional[str], tipo_fuente: Optional[str]) -> str:
 def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, float, bool]], *, tipo_fuente: str,
                    cliente: ClienteBeto, contadores: Contadores, archivo: Optional[str] = None,
                    omitir: Optional[Callable[[str], bool]] = None,
-                   excluir_celda=None) -> List[Optional[ResultadoLinea]]:
+                   excluir_celda=None,
+                   sin_padron: bool = False,
+                   on_progreso: Optional[Callable[[int], None]] = None) -> List[Optional[ResultadoLinea]]:
     """
     Extracción de las líneas de un bloque con las opciones 1 y 2. `extraer(linea, est_beto=None, doc_beto=None)` es la extracción
     por reglas (extract_entities_from_line); `omitir(linea)` marca las filas que no se evalúan (ruido). Devuelve un ResultadoLinea por
@@ -476,8 +507,11 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
     rescate_academico = activo("BETO_RESCATE_ACADEMICO") and tipo_fuente not in (
         "PLANIFICACION", "ERROR", "RECHAZADO", "DUPLICADO", "SIN_RECONOCER")
     incluir_ci_acuerdo = not _omitir_ci_exacta_en_acuerdo()
+    solo_fuzzy_acuerdo = _acuerdo_solo_fuzzy()
     base: List[Optional[ResultadoLinea]] = []
-    for linea in lineas:
+    for idx_l, linea in enumerate(lineas):
+        if on_progreso is not None and idx_l > 0 and idx_l % 250 == 0:
+            on_progreso(idx_l // 2)
         if omitir and omitir(linea):
             base.append(None)
             continue
@@ -492,8 +526,18 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
         con_persona = tipo_fuente in cfg.BETO_TIPOS_FUENTE_CON_PERSONA
         residual = cascada and con_persona and (persona_sin_resolver(r.ents, "ESTUDIANTE") or persona_sin_resolver(r.ents, "DOCENTE"))
         comparable = acuerdo and (
-            persona_resuelta_por_reglas(entidad(r.ents, "ESTUDIANTE"), incluir_ci_exacta=incluir_ci_acuerdo)
-            or persona_resuelta_por_reglas(entidad(r.ents, "DOCENTE"), incluir_ci_exacta=incluir_ci_acuerdo)
+            persona_resuelta_por_reglas(
+                entidad(r.ents, "ESTUDIANTE"),
+                incluir_ci_exacta=incluir_ci_acuerdo,
+                permitir_sin_padron=sin_padron,
+                solo_fuzzy=solo_fuzzy_acuerdo,
+            )
+            or persona_resuelta_por_reglas(
+                entidad(r.ents, "DOCENTE"),
+                incluir_ci_exacta=incluir_ci_acuerdo,
+                permitir_sin_padron=sin_padron,
+                solo_fuzzy=solo_fuzzy_acuerdo,
+            )
         )
         if rescate_academico and (tipos := _residuales_academicas(lineas[i], r.ents, tipo_fuente)):
             academicas[i] = tipos
@@ -501,7 +545,16 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
         if residual or comparable or i in academicas:
             necesita[i] = texto_para_beto(lineas[i])
             contadores.residuales_enviadas += int(bool(residual))
-    leidas = cliente.entidades(necesita.values()) if necesita else {}
+    leidas = (
+        cliente.entidades(
+            necesita.values(),
+            on_latido=(
+                lambda done, total: on_progreso(int((len(lineas) * 0.5) + (len(lineas) * 0.4 * done / max(1, total))))
+            ) if on_progreso is not None else None,
+        )
+        if necesita
+        else {}
+    )
 
     for i, texto in necesita.items():
         r, linea = base[i], lineas[i]
@@ -524,7 +577,12 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
             extraer_persona = partial(extraer, academico_beto=propuestas) if propuestas else extraer
             _aplicar_cascada(r, linea, texto, ents_beto, extraer_persona, contadores, excluir_celda)
         if acuerdo:
-            _aplicar_acuerdo(r, texto, ents_beto, contadores, _clave_metrica(archivo, tipo_fuente), incluir_ci_exacta=incluir_ci_acuerdo)
+            _aplicar_acuerdo(
+                r, texto, ents_beto, contadores, _clave_metrica(archivo, tipo_fuente),
+                incluir_ci_exacta=incluir_ci_acuerdo,
+                permitir_sin_padron=sin_padron,
+                solo_fuzzy=solo_fuzzy_acuerdo,
+            )
     return base
 
 
@@ -555,11 +613,12 @@ def persona_resuelta_por_beto(e: Optional[Dict[str, Any]]) -> bool:
 
 
 def _aplicar_acuerdo(r: ResultadoLinea, texto: str, ents_beto, contadores: Contadores, clave: str,
-                     incluir_ci_exacta: bool = True) -> None:
+                     incluir_ci_exacta: bool = True, permitir_sin_padron: bool = False,
+                     solo_fuzzy: bool = False) -> None:
     veredictos = []
     for etiqueta in ("ESTUDIANTE", "DOCENTE"):
         e = entidad(r.ents, etiqueta)
-        if persona_resuelta_por_reglas(e, incluir_ci_exacta=incluir_ci_exacta):
+        if persona_resuelta_por_reglas(e, incluir_ci_exacta=incluir_ci_exacta, permitir_sin_padron=permitir_sin_padron, solo_fuzzy=solo_fuzzy):
             veredictos.append(comparar_con_beto(e.get("token"), texto, ents_beto))
     if not veredictos:
         return
@@ -586,6 +645,117 @@ def _aplicar_acuerdo(r: ResultadoLinea, texto: str, ents_beto, contadores: Conta
         r.degradada_por_acuerdo = nuevo != r.score
         r.score = nuevo
         r.req_rev = True
+
+
+# ── F6-1: Extractor de Contexto de Hoja (Nivel 1, máx. 1 inferencia BETO por hoja) ───────────────────────────
+_MESES_HOJA: Dict[str, int] = {
+    "enero": 1, "ene": 1, "febrero": 2, "feb": 2, "marzo": 3, "mar": 3,
+    "abril": 4, "abr": 4, "mayo": 5, "may": 5, "junio": 6, "jun": 6,
+    "julio": 7, "jul": 7, "agosto": 8, "ago": 8, "septiembre": 9, "setiembre": 9, "sep": 9, "sept": 9,
+    "octubre": 10, "oct": 10, "noviembre": 11, "nov": 11, "diciembre": 12, "dic": 12,
+}
+_RE_GESTION_HOJA = re.compile(r"\b(20(?:1[89]|2[0-9]|3[0-5]))\b")
+_RE_MES_HOJA = re.compile(
+    r"\b(" + "|".join(sorted(_MESES_HOJA.keys(), key=len, reverse=True)) + r")\b",
+    re.IGNORECASE,
+)
+_RE_FECHA_ISO_HOJA = re.compile(r"\b(20\d{2})[-/](0?[1-9]|1[0-2])[-/](0?[1-9]|[12]\d|3[01])\b")
+_RE_FECHA_DMY_HOJA = re.compile(r"\b(0?[1-9]|[12]\d|3[01])[-/](0?[1-9]|1[0-2])[-/](20\d{2})\b")
+
+
+def extraer_contexto_hoja(
+    nombre_archivo: str = "",
+    nombre_hoja: str = "",
+    texto_pre_tabla: str = "",
+    cliente: Optional[ClienteBeto] = None,
+) -> Dict[str, Any]:
+    """
+    F6-1 (Nivel 1): Ejecuta a lo sumo 1 inferencia BETO + regex de fecha/gestión sobre
+    `nombre_archivo + nombre_hoja + filas pre-tabla` (<= 128 tokens) para construir el
+    diccionario mínimo `contexto_hoja` (`programa`, `modulo`, `docente`, `gestion`, `mes`, `fecha`).
+    No devuelve ni persiste el texto crudo de cabecera.
+    """
+    partes = []
+    if texto_pre_tabla:
+        partes.append(str(texto_pre_tabla).strip())
+    else:
+        if nombre_archivo:
+            stem = os.path.splitext(os.path.basename(str(nombre_archivo)))[0]
+            partes.append(f"ARCHIVO: {stem}")
+        if nombre_hoja:
+            partes.append(f"HOJA: {str(nombre_hoja).strip()}")
+    texto = " | ".join(p for p in partes if p).strip()
+    palabras = texto.split()
+    if len(palabras) > 90:
+        texto = " ".join(palabras[:90])
+    if not texto:
+        return {}
+
+    ctx: Dict[str, Any] = {}
+
+    # 1) Regex de fecha, gestión y mes (determinista y < 1 ms)
+    m_iso = _RE_FECHA_ISO_HOJA.search(texto)
+    m_dmy = _RE_FECHA_DMY_HOJA.search(texto) if not m_iso else None
+    if m_iso:
+        anio, mes, dia = int(m_iso.group(1)), int(m_iso.group(2)), int(m_iso.group(3))
+        ctx["gestion"] = anio
+        ctx["mes"] = mes
+        ctx["fecha"] = f"{anio:04d}-{mes:02d}-{dia:02d}"
+    elif m_dmy:
+        dia, mes, anio = int(m_dmy.group(1)), int(m_dmy.group(2)), int(m_dmy.group(3))
+        ctx["gestion"] = anio
+        ctx["mes"] = mes
+        ctx["fecha"] = f"{anio:04d}-{mes:02d}-{dia:02d}"
+    else:
+        # Priorizar fecha/gestión en nombre_hoja antes que en nombre_archivo
+        texto_tiempo = f"{nombre_hoja} | {texto}"
+        gestiones = [int(g) for g in _RE_GESTION_HOJA.findall(texto_tiempo)]
+        if gestiones:
+            # Si la hoja menciona un rango (ej. "COBRANZAS 2024 2025"), tomar la gestión más reciente
+            ctx["gestion"] = max(gestiones)
+        m_mes = _RE_MES_HOJA.search(texto_tiempo)
+        if m_mes:
+            mes_norm = m_mes.group(1).lower()
+            if mes_norm in _MESES_HOJA:
+                ctx["mes"] = _MESES_HOJA[mes_norm]
+        if ctx.get("gestion") and ctx.get("mes"):
+            ctx["fecha"] = f"{ctx['gestion']:04d}-{ctx['mes']:02d}-01"
+
+    # 2) Una sola inferencia BETO (<= 128 tokens) para programa / modulo / docente
+    if cliente is not None:
+        ents_map = cliente.entidades([texto])
+        ents_beto = ents_map.get(texto) or []
+        for tipo_ent, clave_ctx in (("PROGRAMA", "programa"), ("MODULO", "modulo"), ("DOCENTE", "docente")):
+            prop = mejor_propuesta(ents_beto, tipo_ent, texto)
+            if prop and prop.score >= cfg.UMBRAL_CONFIANZA_MEDIO:
+                val = prop.texto.strip()
+                if val:
+                    ctx[clave_ctx] = val
+
+    return ctx
+
+
+def aplicar_herencia_hoja(
+    valores_fila: Dict[str, Any],
+    contexto_hoja: Optional[Dict[str, Any]],
+) -> Tuple[Dict[str, Any], bool]:
+    """
+    F6-1: Hereda campos de `contexto_hoja` (`programa`, `modulo`, `docente`, `gestion`, `mes`, `fecha`)
+    únicamente cuando faltan en `valores_fila`. Nunca sobrescribe valores explícitos de la fila.
+    Retorna `(valores_actualizados, heredado_de_hoja)`.
+    """
+    salida = dict(valores_fila)
+    if not contexto_hoja:
+        return salida, False
+    heredado = False
+    for clave in ("programa", "modulo", "docente", "gestion", "mes", "fecha"):
+        actual = salida.get(clave)
+        vacio_actual = actual is None or (isinstance(actual, str) and actual.strip() == "")
+        val_ctx = contexto_hoja.get(clave)
+        if vacio_actual and val_ctx not in (None, ""):
+            salida[clave] = val_ctx
+            heredado = True
+    return salida, heredado
 
 
 # ── opción 3: sugerencias ordenadas ───────────────────────────────────────────────────────────────────────────

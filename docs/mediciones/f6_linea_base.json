@@ -1,0 +1,222 @@
+{
+  "fase": "F6-0",
+  "timestamp": "2026-11-24T11:54:26.677031",
+  "contenedor_tmpfs": "beto_pg_tmpfs",
+  "tmpfs_config": {
+    "/var/lib/postgresql/data": "rw,size=3g"
+  },
+  "snapshot_origen_solo_lectura": "snapshot_dw_20261110_1201",
+  "invariantes": {
+    "tablas_public_bi": 50,
+    "vistas_bi": 9,
+    "kpis_ref": 22
+  },
+  "stg_entidad_no_resuelta_por_motivo": [
+    {
+      "motivo": "CI_NOMBRE_DISCORDANTE",
+      "estado_resolucion": "RESUELTO_VARIANTE",
+      "total": 19953
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "estado_resolucion": "DESCARTADO_REGLA",
+      "total": 1400
+    },
+    {
+      "motivo": "CI_NOMBRE_DISCORDANTE",
+      "estado_resolucion": "PENDIENTE",
+      "total": 756
+    },
+    {
+      "motivo": "HOMONIMIA",
+      "estado_resolucion": "DESCARTADO_REGLA",
+      "total": 570
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "estado_resolucion": "PENDIENTE",
+      "total": 288
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "estado_resolucion": "RESUELTO_REGLAS",
+      "total": 156
+    },
+    {
+      "motivo": "CI_DUDOSA",
+      "estado_resolucion": "DESCARTADO",
+      "total": 3
+    },
+    {
+      "motivo": "CI_DUDOSA",
+      "estado_resolucion": "RESUELTO_HUMANO",
+      "total": 1
+    }
+  ],
+  "stg_entidad_no_resuelta_por_motivo_archivo": [
+    {
+      "motivo": "CI_NOMBRE_DISCORDANTE",
+      "archivo": "TBL_INSCRITOS.xlsx",
+      "estado_resolucion": "RESUELTO_VARIANTE",
+      "total": 19001
+    },
+    {
+      "motivo": "CI_NOMBRE_DISCORDANTE",
+      "archivo": "Base centralizada Académica ARCA (1).xlsx",
+      "estado_resolucion": "RESUELTO_VARIANTE",
+      "total": 894
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "archivo": "Experiencia Docente 2.0.xlsx",
+      "estado_resolucion": "DESCARTADO_REGLA",
+      "total": 805
+    },
+    {
+      "motivo": "CI_NOMBRE_DISCORDANTE",
+      "archivo": "Base centralizada Académica ARCA (1).xlsx",
+      "estado_resolucion": "PENDIENTE",
+      "total": 749
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "archivo": "Evaluación Docente y Unifranz.xlsx",
+      "estado_resolucion": "DESCARTADO_REGLA",
+      "total": 541
+    },
+    {
+      "motivo": "HOMONIMIA",
+      "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+      "estado_resolucion": "DESCARTADO_REGLA",
+      "total": 535
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+      "estado_resolucion": "PENDIENTE",
+      "total": 262
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "archivo": "Base centralizada Académica ARCA (1).xlsx",
+      "estado_resolucion": "RESUELTO_REGLAS",
+      "total": 101
+    },
+    {
+      "motivo": "CI_NOMBRE_DISCORDANTE",
+      "archivo": "BD Cobranzas.xlsx",
+      "estado_resolucion": "RESUELTO_VARIANTE",
+      "total": 58
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR_S).xlsx",
+      "estado_resolucion": "DESCARTADO_REGLA",
+      "total": 53
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "archivo": "BD Egresos.xlsx",
+      "estado_resolucion": "RESUELTO_REGLAS",
+      "total": 51
+    },
+    {
+      "motivo": "HOMONIMIA",
+      "archivo": "Base centralizada Académica ARCA (1).xlsx",
+      "estado_resolucion": "DESCARTADO_REGLA",
+      "total": 34
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "archivo": "EJECUTADO VS META.xlsx",
+      "estado_resolucion": "PENDIENTE",
+      "total": 9
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "archivo": "BD Egresos.xlsx",
+      "estado_resolucion": "PENDIENTE",
+      "total": 9
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "archivo": "Base centralizada Académica ARCA (1).xlsx",
+      "estado_resolucion": "PENDIENTE",
+      "total": 8
+    },
+    {
+      "motivo": "CI_NOMBRE_DISCORDANTE",
+      "archivo": "TBL_INSCRITOS.xlsx",
+      "estado_resolucion": "PENDIENTE",
+      "total": 4
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "archivo": "BD Techos.xlsx",
+      "estado_resolucion": "RESUELTO_REGLAS",
+      "total": 4
+    },
+    {
+      "motivo": "CI_NOMBRE_DISCORDANTE",
+      "archivo": "BD Cobranzas.xlsx",
+      "estado_resolucion": "PENDIENTE",
+      "total": 3
+    },
+    {
+      "motivo": "CI_DUDOSA",
+      "archivo": "Base centralizada Académica ARCA (1).xlsx",
+      "estado_resolucion": "DESCARTADO",
+      "total": 2
+    },
+    {
+      "motivo": "BAJA_CONFIANZA_IA",
+      "archivo": "BD Cobranzas.xlsx",
+      "estado_resolucion": "DESCARTADO_REGLA",
+      "total": 1
+    },
+    {
+      "motivo": "HOMONIMIA",
+      "archivo": "TBL_INSCRITOS.xlsx",
+      "estado_resolucion": "DESCARTADO_REGLA",
+      "total": 1
+    },
+    {
+      "motivo": "CI_DUDOSA",
+      "archivo": "BD Cobranzas.xlsx",
+      "estado_resolucion": "RESUELTO_HUMANO",
+      "total": 1
+    },
+    {
+      "motivo": "CI_DUDOSA",
+      "archivo": "BD Cobranzas.xlsx",
+      "estado_resolucion": "DESCARTADO",
+      "total": 1
+    }
+  ],
+  "fact_requiere_revision": {
+    "fact_costo_programa": {
+      "total": 1371,
+      "requiere_revision_true": 71
+    },
+    "fact_evaluacion_docente": {
+      "total": 14234,
+      "requiere_revision_true": 0
+    },
+    "fact_rendimiento_academico": {
+      "total": 22618,
+      "requiere_revision_true": 559
+    },
+    "fact_situacion_financiera": {
+      "total": 10483,
+      "requiere_revision_true": 3
+    },
+    "fact_techo_convenio": {
+      "total": 206,
+      "requiere_revision_true": 124
+    }
+  },
+  "dim_estudiante_placeholders": {
+    "total_dim_estudiante": 14078,
+    "placeholders_estudiante_ci": 23
+  }
+}

@@ -37,6 +37,7 @@ try:
         a_texto_plano,
         clasificar_categoria,
         es_encuesta_likert,
+        extraer_encabezado_hoja,
     )
 except ImportError:
     try:
@@ -47,6 +48,7 @@ except ImportError:
             a_texto_plano,
             clasificar_categoria,
             es_encuesta_likert,
+            extraer_encabezado_hoja,
         )
     except ImportError:
         def es_encuesta_likert(df): return False
@@ -55,6 +57,7 @@ except ImportError:
         def detectar_bloques(df): return []
         def a_texto_plano(b): return ""
         def clasificar_categoria(b, *args): return "academico"
+        def extraer_encabezado_hoja(*args, **kwargs): return ""
 
 # FU-L1: lector con metadatos y clasificación genérica de hojas (estado y forma, no nombre)
 try:
@@ -973,6 +976,17 @@ class IngestionService:
             filas_fantasma_cortadas = 0
             subtotales_cortados = 0
             meta_por_hoja = {n: h.meta for n, h in libro.items()} if libro else {}
+            contexto_por_hoja: Dict[str, Dict[str, Any]] = {}
+            cliente_beto_hoja = None
+            try:
+                from services import beto_integracion as _beto_ing
+            except ImportError:
+                try:
+                    from backend.services import beto_integracion as _beto_ing
+                except ImportError:
+                    _beto_ing = None
+            if _beto_ing is not None and _beto_ing.necesita_refinar():
+                cliente_beto_hoja = _beto_ing.ClienteBeto()
 
             for nombre_hoja, df_hoja in hojas.items():
                 total_filas_raw += len(df_hoja)
@@ -986,6 +1000,18 @@ class IngestionService:
                     transparentes = set(hoja_leida.meta.filas_descartadas) or None
                     filas_fantasma_cortadas += hoja_leida.meta.filas_fantasma
                     subtotales_cortados += hoja_leida.meta.filas_subtotal
+                # F6-1: Extraer contexto de hoja UNA sola vez por hoja (<= 1 inferencia BETO + regex, sin persistir texto crudo)
+                if _beto_ing is not None and nombre_hoja not in contexto_por_hoja:
+                    fila_cab = hoja_leida.meta.fila_cabecera if (hoja_leida is not None and hoja_leida.meta is not None) else None
+                    txt_pre = extraer_encabezado_hoja(df_hoja, safe_filename, nombre_hoja, fila_cabecera=fila_cab)
+                    ctx_h = _beto_ing.extraer_contexto_hoja(
+                        nombre_archivo=safe_filename,
+                        nombre_hoja=nombre_hoja,
+                        texto_pre_tabla=txt_pre,
+                        cliente=cliente_beto_hoja,
+                    )
+                    if ctx_h:
+                        contexto_por_hoja[nombre_hoja] = ctx_h
                 # FU-L5: una hoja de encuesta (respuestas tipo Likert) no es un libro de calificaciones aunque comparta cabeceras de Moodle
                 # («Nombre completo del usuario», «Dirección de correo»): el adaptador tomaba la fila de grupos como cabecera
                 if es_reporte_moodle(df_hoja, safe_filename) and not _bloque_es_encuesta(df_hoja):
@@ -1161,6 +1187,8 @@ class IngestionService:
                         "rango_fechas": asym_info.get("rango_fechas", periodo_final),
                         "fechas_reconocidas": asym_info.get("fechas_reconocidas", [])
                     }
+                    if nombre_hoja in contexto_por_hoja:
+                        payload_data["contexto_hoja"] = contexto_por_hoja[nombre_hoja]
                     if categoria == "planificacion":
                         payload_data["prioridad_captacion"] = cls._prioridad_captacion(libro, nombre_hoja)
                     staging_entry = StagingRegistroCrudo(

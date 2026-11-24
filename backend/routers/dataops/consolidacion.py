@@ -24,15 +24,15 @@ from services import acta_canonica, beto_integracion, cache_consultas, metas_can
 from services.cobranza_canonica import registros_cobranza
 from services.captacion_canonica import leer_identidad as leer_identidad_captacion
 from services import encuesta_canonica
-from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, fila_resuelta_por_regla, metricas_captacion, MOTIVOS_A_BANDEJA, motivo_fila_sin_entidad, normalizar_encabezado, registro_planificacion, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
-from datetime import datetime
+from services.extraccion_por_encabezado import campos_por_encabezado, factores_escala_por_programa, fecha_de_fila, fila_resuelta_por_regla, indexar_modulos_arca, metricas_captacion, MOTIVOS_A_BANDEJA, motivo_fila_sin_entidad, normalizar_encabezado, parsear_fecha, registro_planificacion, registros_academicos, registros_asignacion_docente, registros_costo_programa, registros_evaluacion, registros_rentabilidad, registros_techo_convenio
+from datetime import date, datetime
 from services.dataops_evaluation_service import enmascarar_ci, strip_accents
 from core.security import require_roles
 from ._comun import ConfirmDwInsertRequest, UMBRAL_INDICE_REGISTRO_DEC, categoria_ruteo as resolver_categoria_ruteo
 from .revision import _bloquear_documentos_editables, resolve_review_item
 from .extraccion import EXCLUIR_CELDA_BETO, _docentes_con_contexto, extract_entities_from_line
 from models.log_inconsistencia import LogInconsistencia
-from pipeline.config import MOTIVO_DESACUERDO_REGLA_BETO
+from pipeline.config import MOTIVO_DESACUERDO_REGLA_BETO, MOTIVOS_SUGERENCIA_HITL
 from services.validacion_relaciones import (
     MOTIVO_RELACION_INCOHERENTE,
     cargar_contexto_relaciones,
@@ -169,6 +169,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     stg_records = query.order_by(StagingRegistroCrudo.id.asc()).all()  # orden fijo: el resultado no depende del orden físico de la tabla
 
     estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
+    sin_padron_inicial = len(estudiantes) == 0
     docentes = _docentes_con_contexto(db)
     modulos = db.query(DimModulo).all()
     ctx_relaciones = cargar_contexto_relaciones(dw_db=db)
@@ -202,16 +203,34 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         )
 
     # Escala de notas por programa en cada archivo: un acta mezcla programas sobre 20 y sobre 100
+    # F6-3a: También indexar en memoria la pestaña MODULOS (docentes, asignaciones y fechas) por documento para cruzar con ACTAS DE NOTAS
     filas_por_doc: Dict[Any, List[Dict[str, str]]] = {}
+    filas_modulos_por_doc: Dict[Any, List[Dict[str, str]]] = {}
     for s_reg in stg_records:
         for l in (s_reg.texto_plano or "").splitlines():
             campos_l = campos_por_encabezado([c.strip() for c in l.split("|")])
             if acta_canonica.tiene_notas_modulo(campos_l):   # FU-L4: columnas de nota por sinónimos del catálogo, no por la palabra MODULO
                 filas_por_doc.setdefault(s_reg.id_documento, []).append(campos_l)
+            if campos_l:
+                filas_modulos_por_doc.setdefault(s_reg.id_documento, []).append(campos_l)
     factores_por_doc = {
         d: factores_escala_por_programa(filas, (origenes_map.get(d).tipo_escala if origenes_map.get(d) else None))
         for d, filas in filas_por_doc.items()
     }
+    indice_modulos_por_doc = {
+        d: indexar_modulos_arca(filas)
+        for d, filas in filas_modulos_por_doc.items()
+    }
+    filas_modulos_por_doc = {}
+    fecha_respaldo_por_doc: Dict[Any, Optional[date]] = {}
+    for d_id, orig_d in origenes_map.items():
+        idx_m = indice_modulos_por_doc.get(d_id) or {}
+        f_resp = idx_m.get("fecha_max_doc")
+        if f_resp is None and orig_d and orig_d.periodo:
+            anios_p = [int(a) for a in re.findall(r"\b(20(?:1[89]|2[0-9]|3[0-5]))\b", str(orig_d.periodo))]
+            if anios_p:
+                f_resp = date(max(anios_p), 12, 31)
+        fecha_respaldo_por_doc[d_id] = f_resp
     # FU-L6 (DA4): la granularidad de una meta (MENSUAL / ANUAL) sale de la forma de TODA la hoja, no de un bloque de líneas
     # ni de una fila: se perfila una vez por (documento, hoja) con las filas de todos sus bloques.
     filas_metas_por_hoja: Dict[Any, List[Dict[str, str]]] = {}
@@ -231,8 +250,9 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     lineas_hechas = 0
     tareas_dataops.avanzar(tarea_id, 0, total_lineas, forzar=True)
 
-    def _al_indexar(n):
-        pass  # el avance real se reporta por bloque en el ciclo principal
+    def _al_indexar(_n):
+        if tarea_id:
+            tareas_dataops.avanzar(tarea_id, lineas_hechas)
 
     # Precargar una sola vez por documento los registros ya existentes en stg_entidad_no_resuelta
     ruido_visto_por_doc: Dict[Any, set] = {}
@@ -254,8 +274,22 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
     if beto_integracion.activo("BETO_SUGERENCIA_HITL"):   # opción 3: candidatos ordenados en la bandeja; solo ordena
         sugeridor = beto_integracion.hacer_sugeridor(cliente_beto or beto_integracion.ClienteBeto(contadores=contadores_beto), estudiantes)
         dw.sugeridor = sugeridor
+    # F6-1: contexto mínimo por (id_documento, hoja) en memoria (máx. 1 inferencia BETO/hoja si no vino de ingesta)
+    contexto_por_hoja: Dict[Any, Dict[str, Any]] = {}
     for stg in stg_records:
         orig_doc = origenes_map.get(stg.id_documento) if stg.id_documento else None
+        clave_hoja_ctx = (stg.id_documento, stg.hoja or "")
+        if clave_hoja_ctx not in contexto_por_hoja:
+            p_ctx = stg.payload_json.get("contexto_hoja") if isinstance(stg.payload_json, dict) else None
+            if isinstance(p_ctx, dict) and p_ctx:
+                contexto_por_hoja[clave_hoja_ctx] = p_ctx
+            else:
+                contexto_por_hoja[clave_hoja_ctx] = beto_integracion.extraer_contexto_hoja(
+                    nombre_archivo=orig_doc.nombre_archivo if orig_doc else "",
+                    nombre_hoja=stg.hoja or "",
+                    cliente=cliente_beto,
+                )
+        ctx_hoja_actual = contexto_por_hoja.get(clave_hoja_ctx) or {}
         doc_fuente = (orig_doc.tipo_fuente if (orig_doc and orig_doc.tipo_fuente) else "ACTA").upper().strip()
         # D-A4: una hoja Likert queda en staging como 'evaluacion_docente' aunque el libro esté como ACTA (el contenido del
         # bloque manda sobre el tipo del documento, ingestion_service). La consolidación respeta la categoría de la hoja.
@@ -335,17 +369,27 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         campos_por_linea = [campos_por_encabezado([c.strip() for c in l.split("|")]) for l in lines]
         # FU-L5: una encuesta se lee con el perfil de sus columnas (escala, familia de etiquetas, pares), no fila por fila
         perfil_encuesta = encuesta_canonica.perfilar(campos_por_linea) if categoria_ruteo == "evaluacion_docente" else None
-        resueltas_regla = [fila_resuelta_por_regla(c, categoria_ruteo) for c in campos_por_linea]
+        resueltas_regla = [fila_resuelta_por_regla(c, categoria_ruteo, perfil_encuesta=perfil_encuesta) for c in campos_por_linea]
         indices_linea = indices_cascada(lines, resueltas_regla, obtener_indices, al_avanzar=_al_indexar)
         refinadas = None
-        if cliente_beto is not None:
+        # F6-2a: encuestas Likert perfiladas por encuesta_canonica.perfilar se resuelven por regla sin BETO
+        if cliente_beto is not None and not (categoria_ruteo == "evaluacion_docente" and perfil_encuesta is not None):
+            lineas_base_cons = lineas_hechas
+
+            def _latido_cons(avance_local: int, _base=lineas_base_cons) -> None:
+                if tarea_id and tareas_dataops.esta_cancelada(tarea_id):
+                    raise RuntimeError("Consolidación cancelada por el usuario.")
+                tareas_dataops.avanzar(tarea_id, _base + max(0, avance_local))
+
             refinadas = beto_integracion.refinar_lineas(
                 lines,
                 lambda l, **kw: extract_entities_from_line(l, estudiantes, docentes, modulos, tipo_escala=doc_escala, tipo_fuente=doc_fuente, **kw),
                 tipo_fuente=doc_fuente, cliente=cliente_beto, contadores=contadores_beto,
                 archivo=orig_doc.nombre_archivo if orig_doc else None,
                 omitir=lambda l: bool(_motivo_sin_entidad(campos_por_encabezado([c.strip() for c in l.split("|")]), categoria_ruteo, perfil_encuesta)),
-                excluir_celda=EXCLUIR_CELDA_BETO)
+                excluir_celda=EXCLUIR_CELDA_BETO,
+                sin_padron=sin_padron_inicial,
+                on_progreso=_latido_cons if tarea_id else None)
         logs_descarte_stg = []
         stg_descarte_stg = []
         unres_stg = []
@@ -386,8 +430,29 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     tipo_escala=doc_escala,
                     tipo_fuente=doc_fuente,
                 )
-            banda = BANDA_CONSOLIDADO if resueltas_regla[k_fila] else banda_de(indice)
-            if indice is not None:
+            ent_est_linea = next((e for e in ents if e.get("label") in ("ESTUDIANTE", "ALUMNO")), None)
+            ent_ci_linea = next((e for e in ents if "CI" in e.get("label", "")), None)
+            ci_valida_linea = bool(
+                ent_ci_linea
+                and ent_ci_linea.get("token") not in (None, "", "No provisto")
+                and ent_ci_linea.get("canonicalId") != "CI_DUDOSA"
+                and "?" not in str(ent_ci_linea.get("token"))
+            )
+            fuente_est_linea = str(
+                (ent_est_linea.get("fuente_resolucion") or ent_est_linea.get("origen_confianza") or "")
+                if ent_est_linea else ""
+            ).upper()
+            resuelta_ci_exacta = bool(
+                not req_rev
+                and score >= UMBRAL_INDICE_REGISTRO_DEC
+                and ent_est_linea is not None
+                and (
+                    fuente_est_linea == "CI_EXACTA"
+                    or (fuente_est_linea == "ENCABEZADO" and ci_valida_linea)
+                )
+            )
+            banda = BANDA_CONSOLIDADO if (resueltas_regla[k_fila] or resuelta_ci_exacta) else banda_de(indice)
+            if indice is not None and not resuelta_ci_exacta:
                 score = indice
             desacuerdo_beto = bool(r_beto is not None and r_beto.acuerdo == beto_integracion.DESACUERDO)
             if desacuerdo_beto:
@@ -459,6 +524,25 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                         concepto_str = v_ch.strip()
 
             fecha_linea = fecha_de_fila(campos_linea, categoria_ruteo) if campos_linea else None
+            gestion_linea = next((campos_linea[k] for k in ("GESTION", "ANO", "ANIO", "ANO INICIO", "ANIO INICIO") if campos_linea and campos_linea.get(k)), None)
+            # F6-1: Heredar contexto_hoja solo como respaldo donde falte en la fila (sin sobrescribir jamás valores explícitos)
+            valores_heredados, heredado_de_hoja = beto_integracion.aplicar_herencia_hoja(
+                {
+                    "programa": nombre_prog,
+                    "modulo": nombre_mod,
+                    "docente": nombre_doc,
+                    "fecha": fecha_linea,
+                    "gestion": gestion_linea,
+                },
+                ctx_hoja_actual,
+            )
+            if heredado_de_hoja:
+                nombre_prog = valores_heredados.get("programa")
+                nombre_mod = valores_heredados.get("modulo")
+                nombre_doc = valores_heredados.get("docente")
+                gestion_linea = valores_heredados.get("gestion")
+                if fecha_linea is None and valores_heredados.get("fecha") is not None:
+                    fecha_linea = parsear_fecha(valores_heredados.get("fecha"))
             reg_para_validar = {
                 "categoria": categoria_ruteo,
                 "resoluciones": {
@@ -467,7 +551,11 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     "modulo": {"valor_extraido": nombre_mod},
                     "programa": {"valor_extraido": nombre_prog, "metadata": {"pos_canonico": pos_programa or pos_modulo}},
                     "fecha": fecha_linea or ((campos_linea.get("FECHA") or campos_linea.get("FECHA INICIO") or campos_linea.get("FECHA_INICIO")) if campos_linea else None),
-                    "gestion": next((campos_linea[k] for k in ("GESTION", "ANO", "ANIO", "ANO INICIO", "ANIO INICIO") if campos_linea and campos_linea.get(k)), None),
+                    "gestion": gestion_linea,
+                    "inscripcion_en_fuente": bool(campos_linea and any(
+                        str(campos_linea.get(k) or "").strip()
+                        for k in ("TIPO DE INSCRIPCION", "TIPO DE INSCRIPCIÓN", "ESTADO ACADEMICO", "ESTADO ACADÉMICO", "ESTADO ARCA", "VALIDADOR POS")
+                    )),
                 },
             }
             fallos_rel = validar_registro(reg_para_validar, ctx_relaciones)
@@ -511,6 +599,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                         "concepto": concepto_str,
                         "nivel_confianza_ia": score,
                         "fecha": fecha_linea,
+                        **({"heredado_de_hoja": True} if heredado_de_hoja else {}),
                     },
                     "calidad": {"requiere_revision": en_revision},
                 }
@@ -526,7 +615,12 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                             "resoluciones": {**reg_dict["resoluciones"], **reg_asig},
                             "calidad": {"requiere_revision": en_revision},
                         })
-                    for reg_aca in registros_academicos(campos_linea, factores_escala):
+                    for reg_aca in registros_academicos(
+                        campos_linea,
+                        factores_escala,
+                        indice_modulos=indice_modulos_por_doc.get(stg.id_documento),
+                        fecha_respaldo_archivo=fecha_respaldo_por_doc.get(stg.id_documento) or parsear_fecha(ctx_hoja_actual.get("fecha")),
+                    ):
                         revision_fila = reg_aca.pop("requiere_revision")
                         registros_linea.append({
                             **reg_dict,
@@ -560,11 +654,16 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     # FU-L2: fila de cobranza leída por campos canónicos del catálogo (sin nombres de columna en el
                     # código): un hecho de situación en la fecha de inicio y un pago por mes, cada uno con su clave
                     registros_linea = []
+                    tiene_inscripcion_fuente = any(
+                        str(campos_linea.get(k) or "").strip()
+                        for k in ("TIPO DE INSCRIPCION", "TIPO DE INSCRIPCIÓN", "ESTADO ACADEMICO", "ESTADO ACADÉMICO", "ESTADO ARCA", "VALIDADOR POS")
+                    )
                     for reg_cob in lectura_cob[0]:
                         revision_fila = reg_cob.pop("_revision_fila")
                         registros_linea.append({
                             **reg_dict,
                             "resoluciones": {**reg_dict["resoluciones"], **reg_cob, "estado_cartera": None,
+                                             "inscripcion_en_fuente": tiene_inscripcion_fuente,
                                              "_revision_fila": revision_fila},
                             "calidad": {"requiere_revision": en_revision or revision_fila},
                         })
@@ -716,7 +815,8 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                         registro_origen_id=stg.id,
                         estado_resolucion="PENDIENTE",
                     )
-                    if sugeridor is not None and nombre_est:
+                    # F6-3b: mostrar BETO_SUGERENCIA_HITL solo en motivos de identidad/catálogo (nunca en errores de nota/monto)
+                    if sugeridor is not None and nombre_est and motivo_canonico in MOTIVOS_SUGERENCIA_HITL:
                         pendientes_sug.append((stg_unresolved, nombre_est, beto_integracion.texto_para_beto(line)))
                     unres_stg.append(stg_unresolved)
 

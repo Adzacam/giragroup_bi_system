@@ -11,7 +11,7 @@ import re
 import unicodedata
 from datetime import date, datetime
 from functools import lru_cache
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 MESES = {
     "ENERO": 1, "FEBRERO": 2, "MARZO": 3, "ABRIL": 4, "MAYO": 5, "JUNIO": 6, "JULIO": 7,
@@ -298,8 +298,81 @@ def coherencia_estado_notas(estado_academico: Optional[str], notas: Dict[int, fl
     return f"APROBADO_CON_MODULO_REPROBADO: {detalle} (< {NOTA_MINIMA_MODULO:g})"
 
 
+_ESTADOS_ACADEMICOS_CERRADOS_RESPALDO = frozenset({"APROBADO", "REPROBADO"})
+_ESTADOS_ARCA_CERRADOS_RESPALDO = frozenset({"TITULADO"})
+
+
+def _es_estado_cerrado_valido(estados: Dict[str, Any], revision_estado: bool, anomalas: Sequence[Any]) -> bool:
+    """D-F6-1: combinación de estado válida y cerrada (Titulado / Aprobado / Reprobado) sin anomalías ni error de estado."""
+    if revision_estado or anomalas:
+        return False
+    est_aca = normalizar_encabezado(estados.get("estado_academico") or "")
+    est_arca = normalizar_encabezado(estados.get("estado_arca") or "")
+    return est_arca in _ESTADOS_ARCA_CERRADOS_RESPALDO or est_aca in _ESTADOS_ACADEMICOS_CERRADOS_RESPALDO
+
+
+def indexar_modulos_arca(filas_campos: List[Dict[str, str]]) -> Dict[str, Any]:
+    """
+    F6-3a: Indexa en memoria la pestaña MODULOS de ARCA (docentes, asignaciones y fechas por POS/módulo)
+    para cruzar con ACTAS DE NOTAS al consolidar y resolver `fecha is None` antes de marcar `requiere_revision`.
+    """
+    por_pos_modulo: Dict[tuple, Dict[str, Any]] = {}
+    por_pos: Dict[str, Dict[str, Any]] = {}
+    fecha_max_doc: Optional[date] = None
+
+    for campos in filas_campos:
+        if not campos:
+            continue
+        asigs = registros_asignacion_docente(campos)
+        if asigs:
+            for a in asigs:
+                pos = (a.get("programa") or {}).get("valor_extraido")
+                nro = a.get("nro_modulo")
+                doc = (a.get("docente") or {}).get("valor_extraido")
+                f = a.get("fecha_fin") or a.get("fecha_inicio") or a.get("fecha") or fecha_de_fila(campos, "academico")
+                if not pos:
+                    continue
+                if f is not None and (fecha_max_doc is None or f > fecha_max_doc):
+                    fecha_max_doc = f
+                if nro is not None:
+                    prev_m = por_pos_modulo.get((pos, int(nro)), {})
+                    por_pos_modulo[(pos, int(nro))] = {
+                        "docente": doc or prev_m.get("docente"),
+                        "fecha": f or prev_m.get("fecha"),
+                    }
+                prev_p = por_pos.get(pos, {})
+                f_prev = prev_p.get("fecha")
+                f_best = f if (f is not None and (f_prev is None or f > f_prev)) else f_prev
+                por_pos[pos] = {
+                    "docente": doc or prev_p.get("docente"),
+                    "fecha": f_best,
+                }
+        else:
+            # También aprovechar filas de catálogo/IBP o fechas explícitas por POS si no trajeron docente
+            pos = _pos_de_valores(campos) or _pos(campos)
+            if not pos:
+                continue
+            f = parsear_fecha(_primero(campos, _CLAVES_FECHA_FIN)) or parsear_fecha(_primero(campos, _CLAVES_FECHA_INICIO)) or fecha_de_fila(campos, "academico")
+            if f is None:
+                continue
+            if fecha_max_doc is None or f > fecha_max_doc:
+                fecha_max_doc = f
+            prev_p = por_pos.get(pos, {})
+            f_prev = prev_p.get("fecha")
+            if f_prev is None or f > f_prev:
+                por_pos[pos] = {**prev_p, "fecha": f}
+
+    return {
+        "por_pos_modulo": por_pos_modulo,
+        "por_pos": por_pos,
+        "fecha_max_doc": fecha_max_doc,
+    }
+
+
 def registros_academicos(campos: Dict[str, str],
-                         factores_escala: Optional[Dict[Optional[str], float]] = None) -> List[Dict[str, Any]]:
+                         factores_escala: Optional[Dict[Optional[str], float]] = None,
+                         indice_modulos: Optional[Dict[str, Any]] = None,
+                         fecha_respaldo_archivo: Optional[date] = None) -> List[Dict[str, Any]]:
     """
     Resoluciones académicas de una fila. Acta (una columna de nota por módulo, reconocida por sinónimos del catálogo): un
     registro por módulo con valor, del programa POS de la fila. Otras fuentes: un registro con la columna de nota final.
@@ -308,6 +381,9 @@ def registros_academicos(campos: Dict[str, str],
     INASISTENCIA, EXIMIDO, SIN_NOTA o None). Una celda con texto del vocabulario aporta su resultado sin nota; un 0 con estado
     Deserción o Abandono es INASISTENCIA; un número fuera de 0-100 o un texto fuera del catálogo dejan la nota en None y la fila
     a revisión (`avisos_acta` lleva el aviso sin publicar el valor). Cada registro trae 'requiere_revision' si falta nota o fecha.
+    F6-3a (D-F6-1): cruza `indice_modulos` (pestaña MODULOS -> ACTAS DE NOTAS) para resolver fecha y docente faltantes;
+    si sigue sin fecha y la combinación de estado es válida y cerrada (Titulado / Aprobado / Reprobado) sin anomalías,
+    aplica `fecha_respaldo_archivo` trazable con `requiere_revision = False` y aviso informativo.
     """
     from services import acta_canonica as ac
 
@@ -320,6 +396,9 @@ def registros_academicos(campos: Dict[str, str],
     revision_estado = estados.pop("estado_revision")
     avisos_estado = estados.pop("avisos_estado")
     desercion = ac.es_desercion(estados.get("estado_academico"), estados.get("estado_tutoria"))
+    por_pm = (indice_modulos or {}).get("por_pos_modulo") or {}
+    por_p = (indice_modulos or {}).get("por_pos") or {}
+    estado_cerrado_ok = _es_estado_cerrado_valido(estados, revision_estado, [])
 
     celdas = {n: ac.leer_celda(v) for n, v in ac.columnas_modulo(campos).items()}
     celdas = {n: c for n, c in celdas.items() if c.clase != "VACIA"}
@@ -349,6 +428,7 @@ def registros_academicos(campos: Dict[str, str],
         if motivo_notas:
             estados["estado_motivo"] = "; ".join(m for m in (estados.get("estado_motivo"), motivo_notas) if m)
             revision_estado = True
+        estado_cerrado_ok = _es_estado_cerrado_valido(estados, revision_estado, anomalas)
         registros = []
         for n in sorted(celdas):
             celda = celdas[n]
@@ -360,7 +440,20 @@ def registros_academicos(campos: Dict[str, str],
             else:
                 nota, resultado = None, celda.resultado
             codigo = f"{pos}-M{n:02d}" if pos else None
-            registros.append({
+            info_pm = por_pm.get((pos, n)) if pos else None
+            info_p = por_p.get(pos) if pos else None
+            fecha_reg = fecha
+            doc_reg = None
+            if info_pm:
+                fecha_reg = fecha_reg or info_pm.get("fecha")
+                doc_reg = info_pm.get("docente")
+            if info_p:
+                fecha_reg = fecha_reg or info_p.get("fecha")
+                doc_reg = doc_reg or info_p.get("docente")
+            if fecha_reg is None and estado_cerrado_ok and fecha_respaldo_archivo is not None:
+                fecha_reg = fecha_respaldo_archivo
+                avisos.append(("FECHA_RESPALDO_ARCA", "fecha", f"corte {fecha_respaldo_archivo.isoformat()}"))
+            reg_item: Dict[str, Any] = {
                 "estudiante": estudiante,
                 "modulo": {"valor_extraido": f"{pos or 'POS-SIN-CODIGO'} · Módulo {n}"},
                 "programa": {"valor_extraido": pos, "metadata": {"pos_canonico": codigo}} if pos else None,
@@ -368,11 +461,14 @@ def registros_academicos(campos: Dict[str, str],
                 "resultado": resultado,
                 "nota_ya_normalizada": True,
                 "sin_nota_por_acta": nota is None and resultado is not None,   # nota nula esperada: el acta trae un resultado sin número
-                "fecha": fecha,
+                "fecha": fecha_reg,
                 **estados,
                 "avisos_acta": avisos,
-                "requiere_revision": fecha is None or bool(anomalas) or revision_estado,
-            })
+                "requiere_revision": fecha_reg is None or bool(anomalas) or revision_estado,
+            }
+            if doc_reg:
+                reg_item["docente"] = {"valor_extraido": doc_reg}
+            registros.append(reg_item)
         registros[0]["avisos_acta"] = registros[0]["avisos_acta"] + avisos_anomalas + avisos_estado
         return registros
 
@@ -385,7 +481,15 @@ def registros_academicos(campos: Dict[str, str],
         else:
             nota = nota_100   # fuera de 0-100: el cargador la deja en NULL y la fila queda en revisión
     modulo = campos.get("MODULO") or campos.get("CURSO") or campos.get("MATERIA") or campos.get("COURSE")
-    return [{
+    info_p = por_p.get(pos) if pos else None
+    fecha_reg = fecha or (info_p.get("fecha") if info_p else None)
+    doc_reg = info_p.get("docente") if info_p else None
+    avisos_uno = list(avisos_anomalas) + list(avisos_estado)
+    estado_cerrado_ok = _es_estado_cerrado_valido(estados, revision_estado, anomalas)
+    if fecha_reg is None and estado_cerrado_ok and fecha_respaldo_archivo is not None:
+        fecha_reg = fecha_respaldo_archivo
+        avisos_uno.append(("FECHA_RESPALDO_ARCA", "fecha", f"corte {fecha_respaldo_archivo.isoformat()}"))
+    reg_unico: Dict[str, Any] = {
         "estudiante": estudiante,
         "modulo": {"valor_extraido": modulo} if modulo else None,
         "programa": {"valor_extraido": pos} if pos else None,
@@ -394,12 +498,15 @@ def registros_academicos(campos: Dict[str, str],
         "nota_ya_normalizada": True,
         # acta con estado de origen (Aprobado/Titulado...) pero sin nota: límite de la fuente, no un error de lectura
         "sin_nota_por_acta": nota is None and bool(estados.get("estado_academico") or estados.get("estado_arca")),
-        "fecha": fecha,
+        "fecha": fecha_reg,
         **estados,
-        "avisos_acta": list(avisos_anomalas) + list(avisos_estado),
-        "requiere_revision": (nota is None and not (estados.get("estado_academico") or estados.get("estado_arca"))) or fecha is None
+        "avisos_acta": avisos_uno,
+        "requiere_revision": (nota is None and not (estados.get("estado_academico") or estados.get("estado_arca"))) or fecha_reg is None
                              or revision_estado or bool(anomalas),
-    }]
+    }
+    if doc_reg:
+        reg_unico["docente"] = {"valor_extraido": doc_reg}
+    return [reg_unico]
 
 
 def categoria_rentabilidad(valor: Optional[str]) -> Optional[str]:
@@ -757,7 +864,7 @@ _CLAVES_IDENTIDAD_ENCUESTA = (
     "MATERIA", "DOCENTE", "PROFESOR", "FACILITADOR", "TUTOR", "GRUPO", "SEDE", "CIUDAD", "N°", "Nº", "NRO",
     "ID", "RESPUESTA", "INSTITUCION",
 ) + _CLAVES_CI + _CLAVES_FECHA_ACADEMICA
-_RE_ANONIMO = re.compile(r"ANONIM|SIN NOMBRE|^PERSONA \d+$")
+_RE_ANONIMO = re.compile(r"ANONIM|SIN NOMBRE|^PERSONA \d+$|^\d+$")
 _RE_POS_VALOR = re.compile(r"POS[\s-]?(\d{3,5})")
 _RE_NRO_MODULO = re.compile(r"(\d{1,2})")
 
@@ -875,8 +982,8 @@ def registros_evaluacion(campos: Dict[str, str], perfil: Optional[Any] = None) -
     return registros
 
 
-def fila_resuelta_por_regla(campos: Dict[str, str], categoria: str) -> bool:
-    """D-A8a / D-T1: una fila que una regla estructural (categoría + mes, costos por programa o convenio)
+def fila_resuelta_por_regla(campos: Dict[str, str], categoria: str, perfil_encuesta: Optional[Any] = None) -> bool:
+    """D-A8a / D-T1: una fila que una regla estructural (categoría + mes, costos por programa, convenio o encuesta Likert válida)
     ya convierte en hecho en cualquier categoría donde el pipeline aplica esa regla.
     No necesita persona ni índice BETO: BETO solo ve lo que las reglas no resolvieron (cascada)."""
     if not campos:
@@ -889,6 +996,10 @@ def fila_resuelta_por_regla(campos: Dict[str, str], categoria: str) -> bool:
         )
     if categoria in ("marketing", "admision"):
         return bool(registros_techo_convenio(campos))
+    if categoria == "evaluacion_docente":
+        # F6-2a: filas Likert validadas por encuesta_canonica.perfilar se resuelven por regla sin BETO
+        regs = registros_evaluacion(campos, perfil_encuesta)
+        return bool(regs)
     return False
 
 
