@@ -1,0 +1,147 @@
+{
+  "f9_completo.json": {
+    "keys": [
+      "modo",
+      "db_name",
+      "recortar_filas",
+      "timestamp",
+      "tiempo_total_seg",
+      "rnf03_cumplido_15m",
+      "rnf03_aceptable_20m",
+      "por_libro",
+      "conteos",
+      "bandeja_pendientes_no_ruido",
+      "stg_por_motivo_archivo",
+      "beto_totales",
+      "auditoria"
+    ],
+    "tiempo_total_seg": 655.91,
+    "rnf03_cumplido_15m": true,
+    "bandeja_pendiente": null
+  },
+  "f9_aporte_10archivos.json": {
+    "keys": [
+      "etiqueta",
+      "modelo_indice",
+      "timestamp",
+      "referencia_f3_modo_b_bandeja",
+      "modos"
+    ],
+    "modo_b_seg": null,
+    "resumen": null
+  },
+  "f9_kpi10_check.json": {
+    "fact_situacion_financiera": {
+      "total": 27190,
+      "con_confianza": 27190,
+      "sin_confianza": 0,
+      "promedio_confianza": 0.9836
+    },
+    "ref_kpi_10": {
+      "codigo": "KPI-10",
+      "perspectiva": "PROCESOS_INTERNOS",
+      "nombre": "Confianza media de extracción",
+      "descripcion": "Confianza promedio de la extracción automática de calificaciones (reglas por encabezado y modelo BETO).",
+      "unidad": "PCT",
+      "sentido": "MAX",
+      "meta": "85.00",
+      "umbral_verde": "85.00",
+      "umbral_ambar": "75.00",
+      "peso": "1.00",
+      "orden": 15,
+      "activo": true,
+      "actualizado_en": "2026-11-05 16:56:47.174459+00:00",
+      "actualizado_por": null
+    },
+    "scorecard_kpi_10_2025": {
+      "perspectiva": "PROCESOS_INTERNOS",
+      "codigo": "KPI-10",
+      "nombre": "Confianza media de extracción",
+      "descripcion": "Confianza promedio de la extracción automática de calificaciones (reglas por encabezado y modelo BETO).",
+      "unidad": "PCT",
+      "sentido": "MAX",
+      "valor": 99.99,
+      "valor_anterior": 99.98,
+      "delta": 0.01,
+      "meta": 85.0,
+      "umbral_verde": 85.0,
+      "umbral_ambar": 75.0,
+      "peso": 1.0,
+      "semaforo": "VERDE",
+      "puntaje": 100.0,
+      "tendencia": "MEJORA",
+      "motivo_sin_dato": null
+    }
+  },
+  "f9_invariantes.json": {
+    "tablas_dw": 51,
+    "tablas_public": 49,
+    "tablas_bi": 2,
+    "vistas_bi": 10,
+    "kpis_cmi": 23
+  },
+  "f11_carga_limpia.json": {
+    "id_lote": 1,
+    "tiempo_total_seg": 2070.0,
+    "tiempo_beto_seg": 1592.61,
+    "tiempo_consolidacion_seg": 385.08,
+    "tiempo_forecast_seg": 0.46,
+    "consolidacion": {
+      "inserted_dw": 490549,
+      "inserted_revision": 14365,
+      "sent_hitl": 1573
+    },
+    "forecast_n_obs": 43
+  },
+  "f11_backup_verificacion.json": {
+    "fecha": "2026-11-25 16:56:38",
+    "archivos": {
+      "snapshot_pre_defensa.sql": {
+        "size_bytes": 338103719,
+        "size_mb": 322.44,
+        "sha256": "c940c74f1b24d3516c3e51648b2066abfd88e133978df57316b13c199ef51682"
+      },
+      "snapshot_pre_defensa.dump": {
+        "size_bytes": 68166322,
+        "size_mb": 65.01,
+        "sha256": "3b84f53abb2bd351a5cd52e84101fe98e1ea113950c950877c88358c685d297f"
+      }
+    },
+    "prueba_restauracion_tmpfs": {
+      "contenedor": "beto_pg_tmpfs",
+      "bd_temporal": "f11_restore_test",
+      "pg_restore_returncode": 0,
+      "tiempo_restauracion_s": 9.99,
+      "stderr_tail": [],
+      "conteos_restaurados": {
+        "fact_rendimiento_academico": 23773,
+        "fact_situacion_financiera": 27150,
+        "fact_evaluacion_docente": 409645,
+        "fact_forecast": 32,
+        "ref_kpi": 23,
+        "tablas_public": 49,
+        "vistas_bi": 10
+      }
+    },
+    "snapshot_dw_20261110_1201_intacto": true
+  },
+  "f11_invariantes.json": {
+    "tablas_dw": 51,
+    "vistas_bi": 10,
+    "kpis_cmi": 23
+  },
+  "f11_beto_check.json_health": {
+    "status": "online",
+    "engine": "BETO_PYTORCH_REAL",
+    "model": "/app/pipeline/semantic/beto_local",
+    "base_model": "dccuchile/bert-base-spanish-wwm-cased"
+  },
+  "textos_verificados": {
+    "f10_p0_idempotencia_test.txt": true,
+    "f10_pruebas_back.txt": true,
+    "f11_pruebas_front.txt": true,
+    "f12_grupos_api_test.txt": true,
+    "f12_gobernanza_batch_test.txt": true,
+    "f12_pruebas_back.txt": true
+  }
+}

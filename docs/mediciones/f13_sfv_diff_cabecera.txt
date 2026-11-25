@@ -1,0 +1,45 @@
+﻿diff --git a/docs/fuente_verdad_tesis.md b/docs/fuente_verdad_tesis.md
+index 9158ec2..2cdebb0 100644
+--- a/docs/fuente_verdad_tesis.md
++++ b/docs/fuente_verdad_tesis.md
+@@ -1,13 +1,13 @@
+ # ÚNICA FUENTE DE VERDAD (SFV) — PROYECTO DE GRADO GIRAGROUP BI
+ 
+-**Estado:** **CONGELADO** — 21 de noviembre de 2026 (recongelado tras `FU-L9` + `ADW-L9`, migraciones `022`..`028`)  
++**Estado:** **CONGELADO** — 25 de noviembre de 2026 (recongelado tras F9–F12)  
+ **Título del Proyecto:** *Sistema de Inteligencia de Negocios basado en BETO y Cuadro de Mando Integral para mitigar la fragmentación informacional en GiraGroup S.R.L.*  
+ **Autor:** Lean (Adriano Daza)  
+-**Rama / Commit base:** `beto-integracion` (`F5C/F5V`)  
++**Rama / Commit base:** `main` (`13b6173`)  
+ **Lote congelado (10 archivos en `uploads/data/`, SHA-256):** `aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60`  
+ **Modelo BETO vigente (SHA-256):** `9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92`  
+ **Huella de `f3_base` (SHA-256):** `8afad01159f63bfd84f75d9f5ba32736024a4902d894b23def555fe880745c94` (`docs/mediciones/f5c_base.json.huella.json`). Coincide en 2 de 2 corridas de `f3_base` (`docs/mediciones/f5c_base.json`) y en 6 de 6 corridas de B-7 (`docs/mediciones/f5c_b7_corridas.json`).  
+-**Flags de integración BETO:** `BETO_CASCADA_FINAL=False`, `BETO_ACUERDO_QC=False`, `BETO_SUGERENCIA_HITL=False`, `BETO_VENTANA=False`  
++**Flags de integración BETO:** `BETO_CASCADA_FINAL=True`, `BETO_ACUERDO_QC=True` (acotado a `FUZZY`), `BETO_SUGERENCIA_HITL=True` (corte `80,0`), `BETO_RESCATE_ACADEMICO=True` (acotado a hojas sin columna estructurada), `BETO_VENTANA=False` (`pipeline/config.py:52-56`)  
+ **Snapshot histórico (10-nov-2026):** `snapshot_dw_20261110_1201` (`docs/evidencias/snapshot_dw_20261110_1201.dump`, SHA-256 `14D45F5A128F44543927911DC0AD453F681D524AC05037203F5C0C2787E3A2EB`)  
+ **Acceso a las bases:** Las credenciales y cadenas de conexión se leen únicamente desde variables de entorno (`DATABASE_URL` / `docker-compose.yml`). Ninguna medición altera la DW viva ni el archivo `.dump` del snapshot.
+ 
+@@ -21,6 +21,9 @@
+    - **Base `f3_base` (ciclo mensual 2026-03 sobre recortes `output/backups/f0_lote/slices/`):** Fuente exclusiva de las métricas operativas del ciclo vigente (tiempos de RNF-03, KLM, bandeja HITL del ciclo, staging, `log_inconsistencias`, KPI-10, KPI-11, KPI-18 y cuadre de cobranzas).
+    - **Base `f5v_completo` (`docs/mediciones/f5v_completo.json`):** Carga completa de los 10 libros del lote en clon tmpfs con el código final; fuente exclusiva de `fact_planificacion_programa`, `dim_meta` de planificación y `KPI-23` (`docs/mediciones/f5v_kpi23_serie.json`).
+    - **Base `lote 1.387` (`docs/mediciones/f5c_lote_1387_r1.json`):** Fuente exclusiva de la evaluación controlada de 1.387 registros ejecutada con el modelo BETO vigente (2 corridas idénticas).
++   - **Base `f9_completo` (`docs/mediciones/f9_completo.json`, `f9_aporte_10archivos.json`, `f9_kpi10_check.json`):** Medición final de rendimiento RNF-03 en carga histórica fría de los 10 libros (clon `beto_pg_tmpfs`) y ablación Modo A vs. Modo B tras la optimización de `fila_resuelta_por_regla` (F9).
++   - **Base `f11_lote1_predefensa` (`docs/mediciones/f11_carga_limpia.json`, `f11_backup_verificacion.json`, `f11_beto_check.json`):** Carga limpia pre-defensa del Lote #1 (10 libros de `uploads/data/`) sobre `giragroup_db`, pronósticos Holt-Winters / OLS y snapshot semilla reproducible (`backups/snapshot_pre_defensa.dump`).
++   - **Base `f12_bandeja_lote1` (`docs/mediciones/f12_grupos_api_test.txt`, `f12_gobernanza_batch_test.txt`):** Medición de la bandeja HITL agrupada por bandas `patron`, prioridad, selección múltiple y guardrail `HTTP 422` sobre el Lote #1.
+    - **Regla de no mezcla:** Dentro de una misma tabla **nunca se mezclan bases**. El título de cada tabla declara explícitamente la única base a la que pertenecen sus filas.
+ 3. **Regla de modelo único (Decisión 4, 16-nov-2026):** La tesis describe únicamente el modelo BETO vigente (`9ff7fb9d…5f92`). No se citan versiones anteriores ni se realizan comparaciones entre versiones del modelo.
+ 4. **Estándar numérico:** Se emplea de forma uniforme el estándar oficial de Bolivia: **coma (`,`) como separador decimal y punto (`.`) como separador de miles**. Toda cifra cuantitativa está trazada a un archivo y ruta JSON en `docs/mediciones/` y verificada por `scripts/verificar_sfv.py`. Los valores sin respaldo medible o externos al código se declaran como **N/D**, **RETIRADA** o **Dato de Lean**.
+@@ -86,7 +89,7 @@
+ 
+ *Condiciones de la medición de tiempos:* 3 corridas limpias por condición (**n = 3**) sobre la copia tmpfs `dw_vacio` con la caché BETO vacía o llena, plan de energía «Alto rendimiento», equipo en corriente alterna y sin procesos ajenos pesados (`docs/mediciones/f3v_estado_maquina.json`, `docs/mediciones/f5c_b7_corridas.json`). Las cifras con `W = 10 s` son un escenario de sensibilidad, no la condición medida.
+ 
+-*Veredicto RNF-03 (< 15 min; aceptable < 20 min):* Solo máquina cumple con caché llena (`757,46 ± 15,39 s` = 12,62 min < 15 min), pero supera el umbral con caché vacía (`1.430,98 ± 365,09 s` = 23,85 min). Al sumar la intervención humana KLM (`474,0 s` con `W = 2,5 s`, impulsada por `67` casos manuales tras C-2/C-3), la caché llena da `1.231,46 s` (20,52 min) y la caché vacía `1.904,98 s` (31,75 min); ambas superan el umbral de 15/20 min (`docs/mediciones/f5c_b7_corridas.json` → `resumen`, `cumple_rnf03_15min = false`).
++*Veredicto RNF-03 (< 15 min; aceptable < 20 min):* En `f3_base` (`docs/mediciones/f5c_b7_corridas.json`), solo máquina cumple con caché llena (`757,46 ± 15,39 s` = 12,62 min < 15 min), pero supera el umbral con caché vacía (`1.430,98 ± 365,09 s` = 23,85 min). Al sumar la intervención humana KLM (`474,0 s` con `W = 2,5 s`, impulsada por `67` casos manuales tras C-2/C-3), la caché llena da `1.231,46 s` (20,52 min) y la caché vacía `1.904,98 s` (31,75 min). **Actualización F9 (`docs/mediciones/f9_completo.json`):** tras optimizar `fila_resuelta_por_regla`, la carga histórica completa en caché fría (10 libros) baja a **`655,91 s` (`10,93 min` < `15 min`, `rnf03_cumplido_15m = true`)** (ver Tabla K.1).
+ 
+ ---
+ 
+@@ -382,3 +385,43 @@ Todos los ítems de la Sección J (`J1-01`..`J1-22` y `J2-01`..`J2-15`) quedaron
+ | J2-13 | Trazabilidad automática SFV | RESUELTO | 0 / 0 / 0 | `docs/mediciones/f5c_sfv_verificacion.txt` |
+ | J2-14 | Encuesta Likert de usabilidad | DATO_DE_LEAN | Evaluación humana externa | N/D (Dato de Lean) |
+ | J2-15 | Línea base manual de consolidación | DATO_DE_LEAN | Referencia externa J0-6 | N/D (Dato de Lean) |
++

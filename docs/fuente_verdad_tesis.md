@@ -1,13 +1,13 @@
 # ÚNICA FUENTE DE VERDAD (SFV) — PROYECTO DE GRADO GIRAGROUP BI
 
-**Estado:** **CONGELADO** — 21 de noviembre de 2026 (recongelado tras `FU-L9` + `ADW-L9`, migraciones `022`..`028`)  
+**Estado:** **CONGELADO** — 25 de noviembre de 2026 (recongelado tras F9–F12)  
 **Título del Proyecto:** *Sistema de Inteligencia de Negocios basado en BETO y Cuadro de Mando Integral para mitigar la fragmentación informacional en GiraGroup S.R.L.*  
 **Autor:** Lean (Adriano Daza)  
-**Rama / Commit base:** `beto-integracion` (`F5C/F5V`)  
+**Rama / Commit base:** `main` (`13b6173`)  
 **Lote congelado (10 archivos en `uploads/data/`, SHA-256):** `aafde8adc246af13c4eeb9ffbf766eda4348cfb6e855860d0bf00bcd24cbdb60`  
 **Modelo BETO vigente (SHA-256):** `9ff7fb9d914aca9eaa0618d9603d869a30808d9218369aef7b12dd92362b5f92`  
 **Huella de `f3_base` (SHA-256):** `8afad01159f63bfd84f75d9f5ba32736024a4902d894b23def555fe880745c94` (`docs/mediciones/f5c_base.json.huella.json`). Coincide en 2 de 2 corridas de `f3_base` (`docs/mediciones/f5c_base.json`) y en 6 de 6 corridas de B-7 (`docs/mediciones/f5c_b7_corridas.json`).  
-**Flags de integración BETO:** `BETO_CASCADA_FINAL=False`, `BETO_ACUERDO_QC=False`, `BETO_SUGERENCIA_HITL=False`, `BETO_VENTANA=False`  
+**Flags de integración BETO:** `BETO_CASCADA_FINAL=True`, `BETO_ACUERDO_QC=True` (acotado a `FUZZY`), `BETO_SUGERENCIA_HITL=True` (corte `80,0`), `BETO_RESCATE_ACADEMICO=True` (acotado a hojas sin columna estructurada), `BETO_VENTANA=False` (`pipeline/config.py:52-56`)  
 **Snapshot histórico (10-nov-2026):** `snapshot_dw_20261110_1201` (`docs/evidencias/snapshot_dw_20261110_1201.dump`, SHA-256 `14D45F5A128F44543927911DC0AD453F681D524AC05037203F5C0C2787E3A2EB`)  
 **Acceso a las bases:** Las credenciales y cadenas de conexión se leen únicamente desde variables de entorno (`DATABASE_URL` / `docker-compose.yml`). Ninguna medición altera la DW viva ni el archivo `.dump` del snapshot.
 
@@ -21,6 +21,9 @@
    - **Base `f3_base` (ciclo mensual 2026-03 sobre recortes `output/backups/f0_lote/slices/`):** Fuente exclusiva de las métricas operativas del ciclo vigente (tiempos de RNF-03, KLM, bandeja HITL del ciclo, staging, `log_inconsistencias`, KPI-10, KPI-11, KPI-18 y cuadre de cobranzas).
    - **Base `f5v_completo` (`docs/mediciones/f5v_completo.json`):** Carga completa de los 10 libros del lote en clon tmpfs con el código final; fuente exclusiva de `fact_planificacion_programa`, `dim_meta` de planificación y `KPI-23` (`docs/mediciones/f5v_kpi23_serie.json`).
    - **Base `lote 1.387` (`docs/mediciones/f5c_lote_1387_r1.json`):** Fuente exclusiva de la evaluación controlada de 1.387 registros ejecutada con el modelo BETO vigente (2 corridas idénticas).
+   - **Base `f9_completo` (`docs/mediciones/f9_completo.json`, `f9_aporte_10archivos.json`, `f9_kpi10_check.json`):** Medición final de rendimiento RNF-03 en carga histórica fría de los 10 libros (clon `beto_pg_tmpfs`) y ablación Modo A vs. Modo B tras la optimización de `fila_resuelta_por_regla` (F9).
+   - **Base `f11_lote1_predefensa` (`docs/mediciones/f11_carga_limpia.json`, `f11_backup_verificacion.json`, `f11_beto_check.json`):** Carga limpia pre-defensa del Lote #1 (10 libros de `uploads/data/`) sobre `giragroup_db`, pronósticos Holt-Winters / OLS y snapshot semilla reproducible (`backups/snapshot_pre_defensa.dump`).
+   - **Base `f12_bandeja_lote1` (`docs/mediciones/f12_grupos_api_test.txt`, `f12_gobernanza_batch_test.txt`):** Medición de la bandeja HITL agrupada por bandas `patron`, prioridad, selección múltiple y guardrail `HTTP 422` sobre el Lote #1.
    - **Regla de no mezcla:** Dentro de una misma tabla **nunca se mezclan bases**. El título de cada tabla declara explícitamente la única base a la que pertenecen sus filas.
 3. **Regla de modelo único (Decisión 4, 16-nov-2026):** La tesis describe únicamente el modelo BETO vigente (`9ff7fb9d…5f92`). No se citan versiones anteriores ni se realizan comparaciones entre versiones del modelo.
 4. **Estándar numérico:** Se emplea de forma uniforme el estándar oficial de Bolivia: **coma (`,`) como separador decimal y punto (`.`) como separador de miles**. Toda cifra cuantitativa está trazada a un archivo y ruta JSON en `docs/mediciones/` y verificada por `scripts/verificar_sfv.py`. Los valores sin respaldo medible o externos al código se declaran como **N/D**, **RETIRADA** o **Dato de Lean**.
@@ -86,7 +89,7 @@
 
 *Condiciones de la medición de tiempos:* 3 corridas limpias por condición (**n = 3**) sobre la copia tmpfs `dw_vacio` con la caché BETO vacía o llena, plan de energía «Alto rendimiento», equipo en corriente alterna y sin procesos ajenos pesados (`docs/mediciones/f3v_estado_maquina.json`, `docs/mediciones/f5c_b7_corridas.json`). Las cifras con `W = 10 s` son un escenario de sensibilidad, no la condición medida.
 
-*Veredicto RNF-03 (< 15 min; aceptable < 20 min):* Solo máquina cumple con caché llena (`757,46 ± 15,39 s` = 12,62 min < 15 min), pero supera el umbral con caché vacía (`1.430,98 ± 365,09 s` = 23,85 min). Al sumar la intervención humana KLM (`474,0 s` con `W = 2,5 s`, impulsada por `67` casos manuales tras C-2/C-3), la caché llena da `1.231,46 s` (20,52 min) y la caché vacía `1.904,98 s` (31,75 min); ambas superan el umbral de 15/20 min (`docs/mediciones/f5c_b7_corridas.json` → `resumen`, `cumple_rnf03_15min = false`).
+*Veredicto RNF-03 (< 15 min; aceptable < 20 min):* En `f3_base` (`docs/mediciones/f5c_b7_corridas.json`), solo máquina cumple con caché llena (`757,46 ± 15,39 s` = 12,62 min < 15 min), pero supera el umbral con caché vacía (`1.430,98 ± 365,09 s` = 23,85 min). Al sumar la intervención humana KLM (`474,0 s` con `W = 2,5 s`, impulsada por `67` casos manuales tras C-2/C-3), la caché llena da `1.231,46 s` (20,52 min) y la caché vacía `1.904,98 s` (31,75 min). **Actualización F9 (`docs/mediciones/f9_completo.json`):** tras optimizar `fila_resuelta_por_regla`, la carga histórica completa en caché fría (10 libros) baja a **`655,91 s` (`10,93 min` < `15 min`, `rnf03_cumplido_15m = true`)** (ver Tabla K.1).
 
 ---
 
@@ -382,3 +385,43 @@ Todos los ítems de la Sección J (`J1-01`..`J1-22` y `J2-01`..`J2-15`) quedaron
 | J2-13 | Trazabilidad automática SFV | RESUELTO | 0 / 0 / 0 | `docs/mediciones/f5c_sfv_verificacion.txt` |
 | J2-14 | Encuesta Likert de usabilidad | DATO_DE_LEAN | Evaluación humana externa | N/D (Dato de Lean) |
 | J2-15 | Línea base manual de consolidación | DATO_DE_LEAN | Referencia externa J0-6 | N/D (Dato de Lean) |
+
+---
+
+## K. SINCRONIZACIÓN F9–F12 (RENDIMIENTO RNF-03, IDEMPOTENCIA, SEMILLA PRE-DEFENSA Y BANDEJA HITL)
+
+### Tabla K.1: Rendimiento RNF-03 y Ablación — Base: `f9_completo` (`f9_completo.json`, `f9_aporte_10archivos.json`, `f9_kpi10_check.json`)
+
+| ID | Métrica | Valor | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) |
+|---|---|---|---|---|
+| K-01 | Carga histórica completa en caché fría (10 libros) | **`655,91 s`** (`10,93 min` < `15 min`; `rnf03_cumplido_15m = true`) | 655,91 s (10,93 min) | `docs/mediciones/f9_completo.json` → `tiempo_total_seg`, `rnf03_cumplido_15m` |
+| K-02 | Lote de 10 archivos en Modo B | **`119,82 s`** (`2,00 min`) con **`141`** casos en bandeja | 119,82 s / 141 | `docs/mediciones/f9_aporte_10archivos.json` → `modos.B.tiempo_total_seg`; `docs/cierres/CIERRE_F9_RNF03_INDICE.md` |
+| K-03 | `KPI-10` en scorecard (gestión 2025) | **`99,99`** (`VERDE`, `puntaje: 100,0`) | 99,99 | `docs/mediciones/f9_kpi10_check.json` → `scorecard_kpi_10_2025.valor` |
+| K-04 | Cobertura de confianza en `fact_situacion_financiera` | **`27.190 / 27.190`** poblados (`0` `NULL`; media `0,9836`) | 27.190 / 0,9836 | `docs/mediciones/f9_kpi10_check.json` → `fact_situacion_financiera` |
+| K-05 | Suite `pytest` en F9 | **`121 passed, 1 skipped, 0 failed`** | 121 passed | `docs/mediciones/f9_pruebas.txt` |
+
+### Tabla K.2: Idempotencia Paso 2 ↔ Paso 3 y UX DataOps — Base: `f10` (`f10_p0_idempotencia_test.txt`, `f10_pruebas_back.txt`, `f10_pruebas_front.txt`)
+
+| ID | Métrica | Valor | `valor_docx` | Fuente (`docs/mediciones/` / archivo) |
+|---|---|---|---|---|
+| K-06 | Duplicación en `stg_entidad_no_resuelta` al navegar Paso 2 ↔ Paso 3 | **`0`** duplicados (`2` pruebas P0 en verde) | 0 | `docs/mediciones/f10_p0_idempotencia_test.txt` |
+| K-07 | Pruebas F10 (`pytest` / `vitest`) | **`119 passed`** backend · **`25/25`** archivos frontend | 119 / 25 | `docs/mediciones/f10_pruebas_back.txt`; `docs/mediciones/f10_pruebas_front.txt` |
+
+### Tabla K.3: Carga Limpia Lote #1 y Semilla Pre-Defensa — Base: `f11_lote1_predefensa` (`f11_carga_limpia.json`, `f11_backup_verificacion.json`, `f11_beto_check.json`)
+
+| ID | Métrica | Valor | `valor_docx` | Fuente (`docs/mediciones/` y ruta JSON) |
+|---|---|---|---|---|
+| K-08 | Motor BETO activo en inferencia | `BETO_PYTORCH_REAL` (`dccuchile/bert-base-spanish-wwm-cased`, `/app/pipeline/semantic/beto_local`) | BETO_PYTORCH_REAL | `docs/mediciones/f11_beto_check.json` → `health` |
+| K-09 | Hechos insertados en DW (Lote #1 limpio, 10 libros) | **`490.549`** (`14.365` en revisión, **`1.573`** staging HITL) | 490.549 / 1.573 | `docs/mediciones/f11_carga_limpia.json` → `consolidacion` |
+| K-10 | Conteos restaurados en `fact_*` y `bi.ref_kpi` | `fact_rendimiento_academico` **`23.773`** · `fact_situacion_financiera` **`27.150`** · `fact_evaluacion_docente` **`409.645`** · `fact_forecast` **`32`** (`n_observaciones = 43`) · `bi.ref_kpi` **`23`** · vistas `bi` **`10`** | 23.773 / 27.150 / 409.645 / 32 / 23 / 10 | `docs/mediciones/f11_backup_verificacion.json` → `prueba_restauracion_tmpfs.conteos_restaurados`; `docs/mediciones/f11_carga_limpia.json` → `forecast.ALUMNOS_GLOBAL.n_observaciones` |
+| K-11 | Snapshot semilla pre-defensa (`backups/snapshot_pre_defensa.dump` / `.sql`) | **`65,01 MB`** (`.dump`) / **`322,44 MB`** (`.sql`); restauración en `beto_pg_tmpfs` en **`9,99 s`** (`pg_restore_returncode = 0`) | 65,01 MB / 9,99 s | `docs/mediciones/f11_backup_verificacion.json` → `archivos`, `prueba_restauracion_tmpfs` |
+| K-12 | Interfaz oficial en rutas raíz (`/`) sin selector de versión heredada | **`25`** archivos / **`129`** tests Vitest en verde + `vite build` limpio | 25 / 129 | `docs/mediciones/f11_pruebas_front.txt` |
+
+### Tabla K.4: Bandeja HITL Agrupada, Prioridad y Guardrail `HTTP 422` — Base: `f12_bandeja_lote1` (`f12_grupos_api_test.txt`, `f12_gobernanza_batch_test.txt`, `f12_pruebas_back.txt`, `f12_pruebas_front.txt`)
+
+| ID | Métrica | Valor | `valor_docx` | Fuente (`docs/mediciones/` / archivo) |
+|---|---|---|---|---|
+| K-13 | Reducción de grupos en bandeja HITL (Lote #1) | De `839` grupos (`168` págs.) a **`126` grupos (`26` págs.)** sobre **`1.578`** casos (`1.573` staging + `5` hechos) | 126 grupos (26 págs.) / 1.578 | `docs/mediciones/f12_grupos_api_test.txt` |
+| K-14 | Bandas de `CI_NOMBRE_DISCORDANTE` y paginación sin truncamiento | `parcial` **`609`** (`31` págs.) · `muy_distinto` **`121`** · `casi_igual` **`12`**; **8 reglas** activas en resumen | 609 / 121 / 12 | `docs/mediciones/f12_grupos_api_test.txt` |
+| K-15 | Filtro por `prioridad` y guardrail `HTTP 422` | **`251`** casos `ALTA`; rechazo `HTTP 422` en `/batch-resolve` y `/approve-group` para `CI_NOMBRE_DISCORDANTE < 30`; `justificacion` en auditoría | 251 ALTA / HTTP 422 | `docs/mediciones/f12_gobernanza_batch_test.txt` |
+| K-16 | Pruebas F12 (`pytest` / `vitest`) | **`17 passed`** (`0 failed`) backend · **`25/25`** (`129 passed`) frontend | 17 / 129 | `docs/mediciones/f12_pruebas_back.txt`; `docs/mediciones/f12_pruebas_front.txt` |
