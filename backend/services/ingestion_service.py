@@ -644,7 +644,7 @@ class IngestionService:
         """
         Valida las reglas de seguridad de ingesta (#18):
         - Formato estrictamente en {.xlsx, .csv} (rechaza .xls, .xml y otros).
-        - Tamaño máximo: 50 MB.
+        - Tamaño máximo: 100 MB.
         - Magic bytes correspondientes al formato declarado.
         Retorna None si es válido, o string con el motivo de rechazo si falla.
         """
@@ -652,11 +652,11 @@ class IngestionService:
         if ext not in FORMATOS_PERMITIDOS:
             return f"Extensión '{ext or 'sin extensión'}' no permitida. Solo se aceptan .xlsx y .csv."
 
-        max_bytes = 50 * 1024 * 1024
+        max_bytes = 100 * 1024 * 1024
         if len(file_bytes) == 0:
             return "El archivo está vacío (0 bytes)."
         if len(file_bytes) > max_bytes:
-            return f"El archivo supera el límite máximo permitido de 50 MB ({len(file_bytes) / (1024 * 1024):.1f} MB)."
+            return f"El archivo supera el límite máximo permitido de 100 MB ({len(file_bytes) / (1024 * 1024):.1f} MB)."
 
         if ext == ".xlsx":
             if not file_bytes.startswith(b"PK\x03\x04"):

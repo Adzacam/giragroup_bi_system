@@ -75,7 +75,7 @@ def test_rechaza_formatos_invalidos(nombre, contenido):
 
 
 def test_limites_de_tamano_y_cantidad(ingesta_aislada):
-    assert IngestionService.validar_seguridad_archivo('grande.csv', b'a' * (50 * 1024 * 1024 + 1))
+    assert IngestionService.validar_seguridad_archivo('grande.csv', b'a' * (100 * 1024 * 1024 + 1))
     with pytest.raises(HTTPException) as exc:
         subir(ingesta_aislada, [csv_archivo()] * 31)
     assert exc.value.status_code == 400

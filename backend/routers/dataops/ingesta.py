@@ -320,7 +320,7 @@ def upload_batch(
 ):
     """
     Sube y procesa un lote de 1 a 30 archivos simultáneos (#15, #16, #17, #18):
-    - Máximo 30 archivos por lote, máximo 50 MB por archivo.
+    - Máximo 30 archivos por lote, máximo 100 MB por archivo.
     - Solo permite .xlsx, .csv (rechaza .xls, .xml y otros).
     - Valida firma binaria (magic bytes), sanitiza nombres y verifica hash_sha256 duplicado.
     - Crea entidad `Lote` en PostgreSQL y vincula cada `dim_origen_documental.id_lote`.
@@ -438,7 +438,7 @@ def upload_batch(
             ))
             continue
 
-        # 1. Validación de seguridad (#18: extensión, tamaño <= 50MB, magic bytes)
+        # 1. Validación de seguridad (#18: extensión, tamaño <= 100MB, magic bytes)
         err_sec = IngestionService.validar_seguridad_archivo(raw_name, content)
         if err_sec:
             errores.append({"filename": safe_name, "error": err_sec})
