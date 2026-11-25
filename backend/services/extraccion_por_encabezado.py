@@ -1042,6 +1042,9 @@ def fila_resuelta_por_regla(campos: Dict[str, str], categoria: str, perfil_encue
         # F6-2a: filas Likert validadas por encuesta_canonica.perfilar se resuelven por regla sin BETO
         regs = registros_evaluacion(campos, perfil_encuesta)
         return bool(regs)
+    if categoria == "academico":
+        # F10-1 (#5888): filas de la hoja MODULOS (asignación docente-módulo sin estudiante)
+        return bool(registros_asignacion_docente(campos))
     return False
 
 

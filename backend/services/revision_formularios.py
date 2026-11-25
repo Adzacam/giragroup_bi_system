@@ -361,9 +361,12 @@ def construir_motivo_detalle(
         return f"La fila no tiene datos legibles (sin lectura de BETO){prog_txt}."
 
     if mot == "BAJA_CONFIANZA_IA":
+        es_banda_baja = conf is not None and float(conf) < 0.60
+        banda_txt = "en la banda baja (< 0,60)" if es_banda_baja else "en la banda de revisión [0,60; 0,85)"
         if cat == "evaluacion_docente":
-            return f"Índice probabilístico BETO ({conf_txt}) en [0,60; 0,85) en respuestas Likert{prog_txt}."
-        return f"Índice probabilístico BETO ({conf_txt}) en la banda de revisión [0,60; 0,85){prog_txt}."
+            rango_txt = "< 0,60" if es_banda_baja else "[0,60; 0,85)"
+            return f"Índice probabilístico BETO ({conf_txt}) {rango_txt} en respuestas Likert{prog_txt}."
+        return f"Índice probabilístico BETO ({conf_txt}) {banda_txt}{prog_txt}."
 
     if mot == "HOMONIMIA":
         if cat == "evaluacion_docente":

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Eye, RotateCcw } from 'lucide-react';
 import BatchFlowLayout from './components/BatchFlowLayout';
 import PipelineTelemetryDrawer from './components/PipelineTelemetryDrawer';
@@ -21,8 +22,11 @@ import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano'
 import { inspectFileHeaders, validateFileSecurityClient, isAcademicSourceType, toCanonicalSourceCode } from '../../utils/fileTypeDetector';
 import { MAX_ARCHIVOS_POR_LOTE, getTipoFuenteLabel } from '../../constants/dataopsConfig';
 import { getSelectedQueueFiles, isAllQueueSelected, validateQueueSelection } from './utils/cargaHistorialHelpers';
+import { toDataopsPath } from '../../v2/utils/v2Routes';
 
 export default function IngestView() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [queuedFiles, setQueuedFiles] = useState([]);
   const [selectedQueueUids, setSelectedQueueUids] = useState([]);
   const [expandedDetailKey, setExpandedDetailKey] = useState(null);
@@ -241,10 +245,12 @@ export default function IngestView() {
       setUploadStageText(`Transfiriendo ${filesToSend.length} archivo(s) al servidor...`);
       sileoToast.info({ title: 'Cargando archivos', description: `Se enviarán ${filesToSend.length} archivo(s) para procesar.` });
       const payload = filesToSend.map((it) => ({ file: it.file, sourceType: it.sourceType, tipoEscala: isAcademicSourceType(it.sourceType) ? it.tipoEscala : null }));
+      let transferredNotified = false;
       const uploadRes = await dataopsApi.uploadBatch(payload, (pct) => {
         setUploadProgress(pct);
         if (pct < 100) setUploadStageText(`Subiendo archivos al servidor: ${pct}% completado...`);
-        else {
+        else if (!transferredNotified) {
+          transferredNotified = true;
           setUploadStageText('Archivos transferidos. El servidor está procesando el lote (normalización, fechas y pre-etiquetado)...');
           avisarTareaIniciada();
           sileoToast.info({ title: 'Archivos transferidos al servidor', description: 'La ingesta sigue en el servidor. Puedes cambiar de página: te avisaremos al terminar.' });
@@ -267,10 +273,12 @@ export default function IngestView() {
       setSelectedQueueUids((prev) => prev.filter((uid) => !processedUids.has(uid)));
       if (fallidos.length) sileoToast.warning({ title: `${fallidos.length} archivo(s) sin procesar`, description: fallidos.map(r => `${r.nombre_archivo}: ${r.mensaje || 'Revisa el archivo.'}`).join('\n') });
       if (loteId && exitosos > 0) {
+        setIsProcessing(false);
+        setUploadStageText('');
         localStorage.setItem('last_active_batch_id', String(loteId));
         setActiveBatchId(Number(loteId));
         await loadBatchInspection(Number(loteId));
-        sileoToast.success({ title: `Lote #${loteId} procesado exitosamente`, description: `${exitosos} archivo(s) cargados. Ya puedes revisar su contenido.` });
+        sileoToast.success({ title: `Lote #${loteId} procesado exitosamente`, description: `${exitosos} archivo(s) cargados. Ya puedes ir a Lectura de BETO.` });
       }
     } catch (err) {
       if (err?.name === 'CanceledError' || err?.code === 'ERR_CANCELED' || controller.signal.aborted) {
@@ -335,6 +343,15 @@ export default function IngestView() {
                 </Button>
               )}
               <Button variant="ghost" disabled={isProcessing || isCheckingFiles || isLoadingBatchData || isResettingBatch} onClick={handleNewBatch}>Limpiar vista</Button>
+              {activeBatchId && (
+                <Button
+                  variant="ghost"
+                  className="btn-pill-gold"
+                  onClick={() => navigate(toDataopsPath(`/lote/${activeBatchId}/beto`, location.pathname))}
+                >
+                  Ir a Lectura de BETO
+                </Button>
+              )}
             </div>
           ) : null}
         </div>

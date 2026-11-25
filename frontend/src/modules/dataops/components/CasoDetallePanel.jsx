@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import Button from '../../../components/shared/Button';
 import { useRevealCampo } from '../hooks/useRevealCi';
 import { maskTexto, textoMotivo } from '../../../constants/motivosBandeja';
+import EntityHighlightText from './EntityHighlightText';
 import ReviewActionRenderer from './ReviewActionRenderer';
 import { dataopsApi } from '../../../api/dataopsApi';
 import { sileoToast } from '../../../services/sileoToast';
@@ -131,10 +132,60 @@ export default function CasoDetallePanel({
         )}
       </div>
 
+      {(() => {
+        const area = String(item.area || 'academica').toLowerCase();
+        const chipsPorArea = [];
+        if (item.programa) chipsPorArea.push(`Programa: ${item.programa}`);
+        if (area === 'financiera' || area === 'financiero') {
+          if (item.monto_deuda != null) chipsPorArea.push(`Deuda: ${item.monto_deuda}`);
+          if (item.cuotas_impagas != null) chipsPorArea.push(`Cuotas impagas: ${item.cuotas_impagas}`);
+          if (item.codigo_pos) chipsPorArea.push(`POS: ${item.codigo_pos}`);
+        } else if (area === 'evaluacion_docente') {
+          if (item.docente) chipsPorArea.push(`Docente: ${item.docente}`);
+          if (item.modulo_detectado || item.numero_modulo != null) chipsPorArea.push(`Módulo: ${item.modulo_detectado || item.numero_modulo}`);
+        } else if (area === 'comercial' || area === 'marketing' || area === 'admision') {
+          if (item.codigo_pos) chipsPorArea.push(`POS: ${item.codigo_pos}`);
+          if (item.modulo_detectado) chipsPorArea.push(`Programa/Módulo: ${item.modulo_detectado}`);
+        } else {
+          if (item.modulo_detectado || item.numero_modulo != null) chipsPorArea.push(`Módulo: ${item.modulo_detectado || item.numero_modulo}`);
+          if (item.nota_final != null) chipsPorArea.push(`Nota: ${item.nota_final}`);
+          if (item.docente) chipsPorArea.push(`Docente: ${item.docente}`);
+        }
+        const guia = item.motivo === 'DESACUERDO_REGLA_BETO'
+          ? 'Recomendación: confirma si el nombre leído es una persona real (si es cuenta institucional o ruido, usa Descartar).'
+          : (item.motivo === 'BAJA_CONFIANZA' || item.motivo === 'BAJA_CONFIANZA_IA')
+            ? 'Recomendación: verifica los campos clave del área y confirma o corrige la entidad antes de consolidar.'
+            : item.motivo === 'SIN_LECTURA'
+              ? 'Recomendación: la fila no tiene estructura legible; completa los datos faltantes o descártala.'
+              : item.sugerencia
+                ? `Candidato sugerido: ${item.sugerencia}`
+                : null;
+        if (!chipsPorArea.length && !guia) return null;
+        return (
+          <div style={{ fontSize: 12, padding: '10px 12px', borderRadius: 10, background: 'var(--dataops-warning-bg)', color: 'var(--dataops-warning-text)', marginBottom: 10, lineHeight: 1.45 }}>
+            {chipsPorArea.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: guia ? 6 : 0 }}>
+                {chipsPorArea.map((chip) => (
+                  <span key={chip} style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: 'var(--color-pure-white)', color: 'var(--color-ink-black)', border: '1px solid var(--color-border)' }}>
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            )}
+            {guia && <div>{guia}</div>}
+          </div>
+        );
+      })()}
+
       {item.que_vio && (
-        <div style={{ fontSize: 12, padding: 10, borderRadius: 8, background: 'var(--color-mist-gray)', color: 'var(--color-slate-gray)', marginBottom: 12, wordBreak: 'break-word' }}>
-          {item.que_vio}
-        </div>
+        <details style={{ marginBottom: 12 }}>
+          <summary style={{ cursor: 'pointer', fontSize: 12, color: 'var(--dataops-info-text)', fontWeight: 600 }}>
+            Ver línea original y entidades IOB2
+          </summary>
+          <div style={{ fontSize: 12, padding: 10, marginTop: 6, borderRadius: 8, background: 'var(--color-mist-gray)', color: 'var(--color-ink-black)', wordBreak: 'break-word' }}>
+            <EntityHighlightText text={item.que_vio} betoEnts={item.beto_ents || []} entidades={item.entidades || []} />
+          </div>
+        </details>
       )}
 
       <ReviewActionRenderer

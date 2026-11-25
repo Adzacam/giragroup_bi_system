@@ -161,7 +161,8 @@ describe('W-10 — Flujo de 3 pasos', () => {
     expect(html).toContain('data-step="2"');
     expect(html).toContain('Resultados');
     expect(html).toContain('Texto preparado');
-    expect(html).toContain('Leyendo… 45 %');
+    expect(html).toContain('Leyendo registros con BETO…');
+    expect(html).toContain('45.0 %');
     expect(html).toContain('Volver a carga de archivos');
     expect(dataopsApi.startBatchReading).not.toHaveBeenCalled();
   });

@@ -214,5 +214,26 @@
     "n_secuencias": 180,
     "nivel": "token (B-/I- colapsados al tipo; incluye O)",
     "conjunto": "gold_510"
-  }
+  },
+  "perfil_activo_f9": {
+    "tiempo_completo_seg": 655.91,
+    "tiempo_completo_min": 10.93,
+    "rnf03_limite_min": 15,
+    "tasa_acuerdo_completo": 0.9952,
+    "fuentes": ["docs/mediciones/f9_completo.json", "docs/mediciones/f7_completo.json"]
+  },
+  "ablacion_f9": [
+    {
+      "modo": "Modo A (solo reglas)",
+      "tiempo_s": 89.87,
+      "bandeja_pendientes": 405,
+      "tasa_acuerdo": null
+    },
+    {
+      "modo": "Modo B (cascada + BETO)",
+      "tiempo_s": 119.82,
+      "bandeja_pendientes": 141,
+      "tasa_acuerdo": 1.0
+    }
+  ]
 }

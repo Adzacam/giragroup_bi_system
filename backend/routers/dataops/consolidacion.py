@@ -188,9 +188,10 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         o.id_documento: o
         for o in db.query(DimOrigenDocumental).filter(DimOrigenDocumental.id_documento.in_(doc_ids_stg)).all()
     } if doc_ids_stg else {}
-    if not solo_revision and doc_ids_stg:
+    if doc_ids_stg:
         dw.casos_existentes_fase_a = Counter(
-            db.query(
+            (d_id, mot, " ".join((txt or "").split())[:250])
+            for d_id, mot, txt in db.query(
                 StagingEntidadNoResuelta.id_documento,
                 StagingEntidadNoResuelta.motivo,
                 StagingEntidadNoResuelta.texto_original,
@@ -256,13 +257,16 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
 
     # Precargar una sola vez por documento los registros ya existentes en stg_entidad_no_resuelta
     ruido_visto_por_doc: Dict[Any, set] = {}
+    ruido_visto_por_doc_global: Dict[Any, set] = {}
     if doc_ids_stg:
         for d_id, reg_id, txt in db.query(
             StagingEntidadNoResuelta.id_documento,
             StagingEntidadNoResuelta.registro_origen_id,
             StagingEntidadNoResuelta.texto_original,
         ).filter(StagingEntidadNoResuelta.id_documento.in_(doc_ids_stg)).all():
-            ruido_visto_por_doc.setdefault((d_id, reg_id), set()).add(txt)
+            txt_norm = " ".join((txt or "").split())[:250]
+            ruido_visto_por_doc.setdefault((d_id, reg_id), set()).add(txt_norm)
+            ruido_visto_por_doc_global.setdefault(d_id, set()).add(txt_norm)
 
     ocurrencias = ContadorOcurrencias()
     # Aplica el mismo rescate residual que Evaluar antes de la validación de relaciones.
@@ -398,6 +402,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
         unres_stg = []
         pendientes_sug = []
         ruido_visto_stg = ruido_visto_por_doc.setdefault((stg.id_documento, stg.id), set())
+        ruido_visto_doc_g = ruido_visto_por_doc_global.setdefault(stg.id_documento, set())
         for k_fila, (line, indice, campos_linea) in enumerate(zip(lines, indices_linea, campos_por_linea)):
             lineas_hechas += 1
             if lineas_hechas % 250 == 0:
@@ -721,9 +726,11 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                         sent_hitl += 1
                         falla_rel_item = fallos_item[0]
                         if not solo_revision:
-                            exists_item = (line in ruido_visto_stg) or (line[:250] in ruido_visto_stg)
+                            txt_norm_item = " ".join((line or "").split())[:250]
+                            exists_item = (txt_norm_item in ruido_visto_stg) or (txt_norm_item in ruido_visto_doc_g)
                             if not exists_item:
-                                ruido_visto_stg.add(line[:250])
+                                ruido_visto_stg.add(txt_norm_item)
+                                ruido_visto_doc_g.add(txt_norm_item)
                                 db.add(StagingEntidadNoResuelta(
                                     id_documento=stg.id_documento,
                                     tipo_entidad="CONCEPTO_FINANCIERO" if doc_fuente == "COBRANZA" else "ESTUDIANTE",
@@ -789,9 +796,11 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     else "ALTA"
                 )
 
-                exists_unres = (line in ruido_visto_stg) or (line[:250] in ruido_visto_stg)
+                txt_norm_unres = " ".join((line or "").split())[:250]
+                exists_unres = (txt_norm_unres in ruido_visto_stg) or (txt_norm_unres in ruido_visto_doc_g)
                 if not exists_unres:
-                    ruido_visto_stg.add(line[:250])
+                    ruido_visto_stg.add(txt_norm_unres)
+                    ruido_visto_doc_g.add(txt_norm_unres)
                     stg_unresolved = StagingEntidadNoResuelta(
                         id_documento=stg.id_documento,
                         tipo_entidad="MODULO" if ambiguedad_academica else ("CONCEPTO_FINANCIERO" if doc_fuente == "COBRANZA" else "ESTUDIANTE"),

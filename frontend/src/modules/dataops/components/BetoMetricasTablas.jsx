@@ -21,7 +21,7 @@ export function fmtInt(val) {
   return val.toLocaleString('es-BO');
 }
 
-export default function BetoMetricasTablas({ porClase, matriz5x5, tokensEstAProg, ficha, epocas, curvaData, curvaOptions }) {
+export default function BetoMetricasTablas({ porClase, matriz5x5, tokensEstAProg, ficha, epocas, curvaData, curvaOptions, ablacionF9 = [] }) {
   return (
     <>
       <div className="floating-artifact" style={{ padding: 16, marginBottom: 16 }}>
@@ -130,6 +130,30 @@ export default function BetoMetricasTablas({ porClase, matriz5x5, tokensEstAProg
           </table>
         </div>
       </div>
+
+      {ablacionF9.length > 0 && (
+        <div className="floating-artifact" style={{ padding: 16, marginTop: 16 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>Estudio de ablación (Modo A vs. Modo B · lote 10 archivos, F9)</h3>
+          <div style={{ overflowX: 'auto' }} tabIndex={0} role="region" aria-label="Estudio de ablación Modo A vs Modo B">
+            <table className="dataops-table" style={{ width: '100%', textAlign: 'left', fontSize: 12 }}>
+              <thead>
+                <tr><th>Configuración</th><th>Tiempo lote (s)</th><th>Casos pendientes HITL</th><th>Tasa de acuerdo</th></tr>
+              </thead>
+              <tbody>
+                {ablacionF9.map((row) => (
+                  <tr key={row.modo}>
+                    <td><strong>{row.modo}</strong></td>
+                    <td>{fmtNum(row.tiempo_s, 2)} s</td>
+                    <td>{fmtInt(row.bandeja_pendientes)}</td>
+                    <td>{row.tasa_acuerdo != null ? fmtPct(row.tasa_acuerdo) : 'N/A (sin BETO)'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p style={NOTA}>Fuente: docs/mediciones/f9_aporte_10archivos.json. El Modo B (cascada + BETO) reduce la bandeja de 405 a 141 casos pendientes (-65,2 %) manteniendo 100 % de acuerdo.</p>
+        </div>
+      )}
     </>
   );
 }

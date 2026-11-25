@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Loader2, XCircle } from 'lucide-react';
-import AnimatedNumberV2 from '../../../v2/motion/AnimatedNumberV2';
 import AnimatedProgressBarV2 from '../../../v2/motion/AnimatedProgressBarV2';
 import Button from '../../../components/shared/Button';
 
@@ -19,10 +18,27 @@ export const fmtDuracion = (seg) => {
  * Con `tarea` null (aún sin dato del servidor) muestra una barra indeterminada con el tiempo local.
  */
 export default function ProgresoTarea({ titulo, tarea, segundosLocal = 0, nota, onCancel, canceling = false, cancelLabel = 'Cancelar' }) {
-  const pct = tarea?.porcentaje ?? 0;
   const total = tarea?.total || 0;
+  const pct = tarea?.porcentaje != null
+    ? Math.min(100, Number(tarea.porcentaje))
+    : (total > 0 ? Math.min(100, ((tarea?.procesados || 0) / total) * 100) : 0);
   const indeterminado = !tarea || !total;
   const transcurrido = tarea?.transcurrido_seg ?? segundosLocal;
+  const emaRef = useRef(null);
+  const [restanteSuave, setRestanteSuave] = useState(tarea?.restante_seg ?? null);
+
+  useEffect(() => {
+    const raw = tarea?.restante_seg;
+    if (raw == null || !Number.isFinite(Number(raw))) {
+      emaRef.current = null;
+      setRestanteSuave(null);
+      return;
+    }
+    const val = Number(raw);
+    emaRef.current = emaRef.current == null ? val : emaRef.current * 0.75 + val * 0.25;
+    setRestanteSuave(Math.round(emaRef.current));
+  }, [tarea?.restante_seg, tarea?.procesados]);
+
   return (
     <div role="status" aria-live="polite" style={{
       border: '1px solid var(--dataops-gold-border)', background: 'var(--dataops-gold-bg)',
@@ -33,7 +49,7 @@ export default function ProgresoTarea({ titulo, tarea, segundosLocal = 0, nota, 
         <span>{titulo}</span>
         {!indeterminado && (
           <span style={{ marginLeft: 'auto', fontVariantNumeric: 'tabular-nums' }}>
-            <AnimatedNumberV2 value={`${pct.toFixed(1)} %`} />
+            {pct.toFixed(1)} %
           </span>
         )}
         {onCancel && (
@@ -71,7 +87,7 @@ export default function ProgresoTarea({ titulo, tarea, segundosLocal = 0, nota, 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontSize: '12.5px', color: 'var(--color-slate-gray)', fontVariantNumeric: 'tabular-nums' }}>
         {total > 0 && <span>{(tarea.procesados || 0).toLocaleString('es-BO')} de {total.toLocaleString('es-BO')} registros</span>}
         <span>Transcurrido: {fmtDuracion(transcurrido)}</span>
-        {tarea?.restante_seg != null && <span>Restante estimado: ~{fmtDuracion(tarea.restante_seg)}</span>}
+        {restanteSuave != null && <span>Restante estimado: ~{fmtDuracion(restanteSuave)}</span>}
       </div>
       {nota && <div style={{ fontSize: '12px', color: 'var(--color-slate-gray)', marginTop: '6px' }}>{nota}</div>}
       <style>{`@keyframes progreso-indet{0%{margin-left:-35%}100%{margin-left:100%}}@keyframes spin{to{transform:rotate(360deg)}}`}</style>

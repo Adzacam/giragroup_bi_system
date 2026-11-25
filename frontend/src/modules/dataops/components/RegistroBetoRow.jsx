@@ -95,17 +95,29 @@ export default function RegistroBetoRow({ record }) {
       <td style={{ verticalAlign: 'top', fontVariantNumeric: 'tabular-nums' }}>{record.indice_registro == null ? 'Sin dato' : `${fmt(record.indice_registro)} %`}</td>
       <td style={{ overflowWrap: 'anywhere', verticalAlign: 'top' }}>
         <strong style={{ color: record.estado === 'AUTOMATICO' ? 'var(--dataops-success-text)' : 'var(--dataops-warning-text)' }}>{ESTADOS[record.estado] || 'Sin dato'}</strong>
-        <div style={{ marginTop: 8, fontSize: 12, color: 'var(--color-slate-gray)' }}>
-          <EntityHighlightText
-            text={record.raw_text || record.lectura?.texto || ''}
-            betoEnts={record.lectura?.beto_ents || []}
-            entidades={record.lectura?.entidades || []}
-          />
-        </div>
-        <details style={{ marginTop: 10 }}>
-          <summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>Ver explicación y datos identificados</summary>
-          <p style={{ marginTop: 10 }}>{record.decision?.motivo_llano || 'Sin observaciones adicionales.'}</p>
-          <p style={{ marginTop: 10, fontSize: 12, color: 'var(--color-slate-gray)' }}>{record.raw_text || record.lectura?.texto || 'Sin texto disponible'}</p>
+        <p style={{ fontSize: 12, color: 'var(--color-slate-gray)', marginTop: 4 }}>{record.decision?.motivo_llano || 'Sin observaciones adicionales.'}</p>
+        {(record.lectura?.entidades || []).length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+            {(record.lectura?.entidades || []).slice(0, 4).map((e, idx) => {
+              const info = ORIGEN_INFO[e.origen_confianza || e.fuente_resolucion || 'REGLA_ENCABEZADO'] || ORIGEN_INFO.REGLA_ENCABEZADO;
+              const conf = e.confianza ?? e.betoConfidence;
+              return (
+                <span key={idx} style={{ fontSize: 10.5, padding: '2px 7px', borderRadius: 999, background: info.bg, color: info.color }}>
+                  {modeloEtiqueta(e)}: {e.token ?? 'Sin dato'}{conf != null ? ` (${Math.round(Number(conf) * 100)}%)` : ''}
+                </span>
+              );
+            })}
+          </div>
+        )}
+        <details style={{ marginTop: 8 }}>
+          <summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)', fontSize: 12 }}>Ver línea original y desglose de entidades</summary>
+          <div style={{ marginTop: 8, fontSize: 12, color: 'var(--color-slate-gray)' }}>
+            <EntityHighlightText
+              text={rawText}
+              betoEnts={record.lectura?.beto_ents || []}
+              entidades={record.lectura?.entidades || []}
+            />
+          </div>
           <dl style={{ marginTop: 10 }}>{(record.lectura?.entidades || []).map((entity, index) => {
             const origen = entity.origen_confianza || entity.fuente_resolucion || 'REGLA_ENCABEZADO';
             const info = ORIGEN_INFO[origen] || ORIGEN_INFO.REGLA_ENCABEZADO;

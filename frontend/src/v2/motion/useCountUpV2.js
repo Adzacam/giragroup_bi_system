@@ -165,20 +165,24 @@ export function formatParsedMetric(currentValue, parsed) {
   return `${parsed.prefix}${signPrefix}${formattedNumber}${parsed.suffix}`;
 }
 
+const _ANIMATED_KEYS = new Map();
+
 /**
  * Hook de conteo progresivo 0 -> N en 900ms.
  * - Enteros pequeños (<= 60): cuentan paso a paso (1, 2, 3... -> N).
  * - Cifras grandes o con decimales: interpolación suave a 60fps.
  * - En `prefers-reduced-motion: reduce`, SSR o tests síncronos devuelve el valor final exacto.
+ * - Con `animateOnceKey` no repite 0 -> N al cambiar de pestaña o re-renderizar.
  */
-export function useCountUpV2(target, { duration = MOTION_DURATION_MS, enabled = true, active = true } = {}) {
+export function useCountUpV2(target, { duration = MOTION_DURATION_MS, enabled = true, active = true, animateOnceKey = null } = {}) {
   const parsed = useMemo(() => parseFormattedMetric(target), [target]);
   const finalDisplay = useMemo(() => {
     if (target === null || target === undefined) return '—';
     return typeof target === 'number' ? String(target) : String(target);
   }, [target]);
 
-  const shouldSkipAnimation = !enabled || !parsed.isNumeric || parsed.value === 0 || prefersReducedMotion() || typeof requestAnimationFrame === 'undefined';
+  const yaAnimado = Boolean(animateOnceKey && _ANIMATED_KEYS.get(animateOnceKey) === finalDisplay);
+  const shouldSkipAnimation = !enabled || yaAnimado || !parsed.isNumeric || parsed.value === 0 || prefersReducedMotion() || typeof requestAnimationFrame === 'undefined';
 
   const [display, setDisplay] = useState(() => (shouldSkipAnimation ? finalDisplay : formatParsedMetric(0, parsed)));
   const rafRef = useRef(null);
@@ -207,6 +211,10 @@ export function useCountUpV2(target, { duration = MOTION_DURATION_MS, enabled = 
       const elapsed = now - startTime;
       const t = Math.min(1, elapsed / duration);
       if (t >= 1) {
+        if (animateOnceKey) {
+          if (_ANIMATED_KEYS.size >= 500) _ANIMATED_KEYS.clear();
+          _ANIMATED_KEYS.set(animateOnceKey, finalDisplay);
+        }
         setDisplay(finalDisplay);
         rafRef.current = null;
         return;

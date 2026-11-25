@@ -12,6 +12,7 @@ export default function AnimatedNumberV2({
   enabled = true,
   active = true,
   triggerOnView = true,
+  animateOnceKey = null,
   as: Tag = 'span',
   className = '',
   style = {},
@@ -20,7 +21,7 @@ export default function AnimatedNumberV2({
   const elRef = useRef(null);
   const inView = useInViewOnceV2(elRef, { enabled: triggerOnView });
   const isActive = active && (triggerOnView ? inView : true);
-  const display = useCountUpV2(value, { duration, enabled, active: isActive });
+  const display = useCountUpV2(value, { duration, enabled, active: isActive, animateOnceKey });
 
   return (
     <Tag

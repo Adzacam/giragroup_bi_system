@@ -382,12 +382,17 @@ class DWLoaderService:
             self._est_por_codigo.setdefault(est.codigo_estudiante, id_e)
 
     def _registrar_staging_si_nuevo(self, stg: StagingEntidadNoResuelta) -> bool:
-        """Evita duplicar en Fase B los casos ya creados por Fase A (misma clave doc/motivo/texto)."""
-        if self.casos_existentes_fase_a:
-            clave = (stg.id_documento, stg.motivo, stg.texto_original)
-            if self.casos_existentes_fase_a.get(clave, 0) > 0:
-                self.casos_existentes_fase_a[clave] -= 1
-                return False
+        """Evita duplicar casos ya creados por Fase A o por una llamada previa en la misma consolidación."""
+        texto_norm = " ".join((stg.texto_original or "").split())[:250]
+        clave = (stg.id_documento, stg.motivo, texto_norm)
+        if not hasattr(self, "_stg_vistos_lote"):
+            self._stg_vistos_lote = set()
+        if self.casos_existentes_fase_a and self.casos_existentes_fase_a.get(clave, 0) > 0:
+            self._stg_vistos_lote.add(clave)
+            return False
+        if clave in self._stg_vistos_lote:
+            return False
+        self._stg_vistos_lote.add(clave)
         self.db.add(stg)
         self.db.flush()
         return True

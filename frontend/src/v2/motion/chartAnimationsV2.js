@@ -8,7 +8,9 @@ export const progressiveLineClipPlugin = {
   id: 'progressiveLineClip',
   beforeInit(chart) {
     const enabled = chart.options?.plugins?.progressiveLineClip?.enabled;
-    if (enabled && chart.options?.animation !== false && !prefersReducedMotion()) {
+    if (chart.$v2InitialAnimDone) {
+      chart.$v2ClipProgress = 1;
+    } else if (enabled && chart.options?.animation !== false && !prefersReducedMotion()) {
       chart.$v2ClipProgress = 0;
     }
   },
@@ -59,20 +61,24 @@ export function getSequentialAnimationConfig({ duration = MOTION_DURATION_MS, st
         return 0;
       },
       onProgress(anim) {
-        if (anim?.chart && anim.numSteps > 0) {
+        if (anim?.chart && !anim.chart.$v2InitialAnimDone && anim.numSteps > 0) {
           anim.chart.$v2ClipProgress = Math.min(1, anim.currentStep / anim.numSteps);
         }
       },
       onComplete(anim) {
         if (anim?.chart) {
+          anim.chart.$v2InitialAnimDone = true;
           anim.chart.$v2ClipProgress = 1;
         }
       },
     },
+    transitions: {
+      active: { animation: { duration: 0 } },
+    },
     animations: {
       y: {
         from(ctx) {
-          if (ctx.type === 'data' && ctx.mode === 'default' && ctx.chart?.scales?.y) {
+          if (ctx.type === 'data' && ctx.mode === 'default' && !ctx.chart?.$v2InitialAnimDone && ctx.chart?.scales?.y) {
             return ctx.chart.scales.y.getPixelForValue(0);
           }
           return undefined;

@@ -166,6 +166,51 @@ def _cerrar_transaccion_lectura(db: Session) -> None:
         db.expire_on_commit = previo
 
 
+def _construir_padron_temporal_lote(stg_records: List[StagingRegistroCrudo]) -> List[Any]:
+    """Construye un padrón en memoria intra-lote cuando dim_estudiante está vacía (primera inserción)."""
+    from types import SimpleNamespace
+    por_ci: Dict[str, Any] = {}
+    idx = 1
+    for stg in stg_records:
+        for line in (stg.texto_plano or "").splitlines():
+            if "|" not in line:
+                continue
+            ci_val = None
+            nombre_val = None
+            nombres_p = {}
+            for ch in line.split("|"):
+                if ":" not in ch:
+                    continue
+                k, v = ch.split(":", 1)
+                k_up = k.strip().upper()
+                v_clean = v.strip()
+                if not v_clean:
+                    continue
+                if k_up in ("CI", "C.I.", "IDNUMBER", "CARNET", "DOCUMENTO", "DOC_IDENTIDAD/CI", "CI_ESTUDIANTE", "CEDULA DE IDENTIDAD"):
+                    ci_val = v_clean
+                elif k_up in ("NOMBRE COMPLETO", "NOMBRES Y APELLIDOS", "APELLIDOS Y NOMBRES", "ESTUDIANTE", "ALUMNO", "NOMBRE_COMPLETO", "NOMBRES_Y_APELLIDOS"):
+                    nombre_val = v_clean
+                elif k_up in ("NOMBRES", "PATERNO", "APELLIDO PATERNO", "MATERNO", "APELLIDO MATERNO"):
+                    nombres_p[k_up] = v_clean
+            if not nombre_val and nombres_p.get("NOMBRES"):
+                partes = [nombres_p.get("NOMBRES", ""), nombres_p.get("PATERNO") or nombres_p.get("APELLIDO PATERNO") or "", nombres_p.get("MATERNO") or nombres_p.get("APELLIDO MATERNO") or ""]
+                nombre_val = " ".join(p for p in partes if p).strip()
+            if ci_val and nombre_val and len(re.sub(r"[^0-9]", "", ci_val)) >= 5:
+                ci_key = re.sub(r"[^A-Z0-9]", "", ci_val.upper())
+                if ci_key not in por_ci:
+                    digits = re.sub(r"[^0-9]", "", ci_val)
+                    por_ci[ci_key] = SimpleNamespace(
+                        id_estudiante=-idx,
+                        ci=ci_val,
+                        ci_numero=digits,
+                        nombre_completo=nombre_val,
+                        codigo_estudiante=f"TMP-{idx}",
+                        deprecado=False,
+                    )
+                    idx += 1
+    return list(por_ci.values())
+
+
 def _evaluar_documentos_lote(
     db: Session,
     docs: List[DimOrigenDocumental],
@@ -194,6 +239,7 @@ def _evaluar_documentos_lote(
         }
 
     estudiantes = db.query(DimEstudiante).filter(DimEstudiante.deprecado == False).all()
+    sin_padron_db = len(estudiantes) == 0
     docentes = _docentes_con_contexto(db)
     modulos = db.query(DimModulo).all()
 
@@ -209,6 +255,8 @@ def _evaluar_documentos_lote(
         .order_by(StagingRegistroCrudo.id.asc())
         .all()
     )
+    if sin_padron_db and stg_records:
+        estudiantes = _construir_padron_temporal_lote(stg_records)
 
     # Precargar entidades no resueltas existentes en lote para evitar N+1 queries dentro del bucle de líneas
     hitl_records = (
@@ -219,6 +267,13 @@ def _evaluar_documentos_lote(
     _cerrar_transaccion_lectura(db)  # lo que sigue es cálculo en memoria (minutos en lotes grandes)
 
     hitl_map: Dict[Tuple[int, str], StagingEntidadNoResuelta] = {}
+    hitl_existentes_map: Dict[Tuple[Any, str], StagingEntidadNoResuelta] = {}
+    for h in hitl_records:
+        if h.texto_original:
+            txt_norm_h = " ".join(h.texto_original.split())[:250]
+            if h.registro_origen_id:
+                hitl_existentes_map[(h.registro_origen_id, txt_norm_h)] = h
+            hitl_existentes_map[("doc", h.id_documento, txt_norm_h)] = h
     if not aplicar_resoluciones:
         hitl_records = []  # lectura base: las resoluciones se superponen al leer (_superponer_resoluciones)
     for h in hitl_records:
@@ -264,6 +319,13 @@ def _evaluar_documentos_lote(
 
         refinadas = None
         if cliente_beto is not None:
+            lineas_base_bloque = lineas_hechas
+
+            def _latido_eval(avance_local: int, _base=lineas_base_bloque) -> None:
+                if tarea_id and tareas_dataops.esta_cancelada(tarea_id):
+                    raise RuntimeError("Lectura cancelada por el usuario.")
+                tareas_dataops.avanzar(tarea_id, _base + max(0, avance_local))
+
             refinadas = beto_integracion.refinar_lineas(
                 lines,
                 lambda l, **kw: extract_entities_from_line(
@@ -271,7 +333,9 @@ def _evaluar_documentos_lote(
                     apariciones_lote=max(1, len(lines)), **kw),
                 tipo_fuente=doc_fuente, cliente=cliente_beto, contadores=contadores_beto,
                 archivo=orig_doc.nombre_archivo if orig_doc else None,
-                omitir=lambda l: fila_sin_entidad(l, doc_fuente), excluir_celda=EXCLUIR_CELDA_BETO)
+                omitir=lambda l: fila_sin_entidad(l, doc_fuente), excluir_celda=EXCLUIR_CELDA_BETO,
+                sin_padron=sin_padron_db,
+                on_progreso=_latido_eval if tarea_id else None)
 
         for line_idx, line in enumerate(lines):
             lineas_hechas += 1
@@ -320,7 +384,18 @@ def _evaluar_documentos_lote(
             escala_ambigua = bool(ent_cal and ent_cal.get("canonicalId") == "ESCALA_AMBIGUA")
 
             # Búsqueda instantánea O(1) en memoria precargada en lugar de query N+1
+            txt_norm_line = " ".join(line.split())[:250]
             exists_hitl = hitl_map.get((stg.id, line)) or hitl_map.get((stg.id, line[:250]))
+            exists_hitl_persist = (
+                exists_hitl
+                or hitl_existentes_map.get((stg.id, txt_norm_line))
+                or hitl_existentes_map.get(("doc", stg.id_documento, txt_norm_line))
+            )
+            from services.extraccion_por_encabezado import campos_por_encabezado, fila_resuelta_por_regla
+            from ._comun import categoria_ruteo as resolver_categoria_ruteo
+            campos_eval = campos_por_encabezado([c.strip() for c in line.split("|")])
+            cat_eval = resolver_categoria_ruteo(doc_fuente, getattr(stg, "categoria", None))
+            resuelta_regla_eval = fila_resuelta_por_regla(campos_eval, cat_eval)
 
             # Determinar partición tripartita mutuamente excluyente (#1, #2):
             # 1) INCONSISTENCIA DURA (regla determinista fallida)
@@ -361,7 +436,7 @@ def _evaluar_documentos_lote(
                 motivo_codigo = "NOTA_FUERA_ESCALA"
                 motivo_decision = f"La calificación excede el rango permitido por la escala {doc_escala}."
                 inc_count += 1
-            elif req_rev or indice_num < UMBRAL_INDICE_REGISTRO:
+            elif (req_rev or indice_num < UMBRAL_INDICE_REGISTRO) and not resuelta_regla_eval:
                 categoria_particion = "REVISION"
                 estado_reg = "REVISION"
                 estado_res_row = "PENDIENTE"
@@ -535,12 +610,12 @@ def _evaluar_documentos_lote(
                 **({"beto_ents": beto_ents_pub} if (r_beto is not None and r_beto.beto_ents is not None) else {}),
             })
 
-            if persistir_staging and estado_reg != "AUTOMATICO" and not exists_hitl:
+            if persistir_staging and estado_reg != "AUTOMATICO" and not exists_hitl_persist:
                 try:
                     new_hitl = StagingEntidadNoResuelta(
                         id_documento=stg.id_documento,
                         tipo_entidad="MODULO" if ambiguedad_academica else ("ESTUDIANTE" if ent_est else ("MODULO" if ent_mod else ("CONCEPTO_FINANCIERO" if ent_con else "CALIFICACION"))),
-                        texto_original=line,
+                        texto_original=line[:250],
                         ci_temporal=ci_val,
                         mejor_candidato=(
                             ent_est.get("matchedCanonical")
@@ -572,6 +647,8 @@ def _evaluar_documentos_lote(
                         estado_resolucion="PENDIENTE",
                     )
                     db.add(new_hitl)
+                    hitl_existentes_map[(stg.id, txt_norm_line)] = new_hitl
+                    hitl_existentes_map[("doc", stg.id_documento, txt_norm_line)] = new_hitl
                 except Exception as ex_stg:
                     logger.warning("No se pudo persistir en stg_entidad_no_resuelta: %s", ex_stg)
 

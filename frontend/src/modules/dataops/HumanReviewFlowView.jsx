@@ -36,8 +36,15 @@ export { CasoDetallePanel as CasoRevision };
 function RevisionBandeja({ batchId }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { contexto, lectura, readOnly } = useLoteFlow();
+  const vistaParam = searchParams.get('vista');
   const [filters, setFilters] = useDraftState('rev.filters.v4', INITIAL);
+  useEffect(() => {
+    if (vistaParam && ['GRUPOS', 'PENDIENTES', 'RESUELTOS', 'AVISOS'].includes(vistaParam) && filters.vista !== vistaParam) {
+      setFilters(prev => ({ ...prev, vista: vistaParam, page: 1 }));
+    }
+  }, [vistaParam]);
   const [input, setInput] = useState(filters.search || '');
   const [exporting, setExporting] = useState(false);
   const [retryingPrep, setRetryingPrep] = useState(false);
@@ -218,9 +225,9 @@ function RevisionBandeja({ batchId }) {
         <h2 className="serif-heading" style={{ fontSize: 22 }}>Revisión y consolidación</h2>
         <p style={{ fontSize: 13, color: 'var(--color-slate-gray)', margin: '10px 0' }}>Cada caso ofrece acciones propias según su motivo. Usa ↑/↓ para recorrer casos, A para la acción principal y D para descartar.</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, margin: '16px 0' }}>
-          <span>Filas de texto: <strong><AnimatedNumberV2 value={fmt(contexto?.total_registros)} /></strong></span>
-          <span>Casos en la selección: <strong>{isFetching ? 'Consultando…' : <AnimatedNumberV2 value={fmt(total)} />}</strong></span>
-          <span>Aceptación directa en la lectura: <strong><AnimatedNumberV2 value={fmt(summary?.autoCount)} /></strong></span>
+          <span>Filas de texto: <strong><AnimatedNumberV2 value={fmt(contexto?.total_registros)} animateOnceKey={`rev-${batchId}-filas`} /></strong></span>
+          <span>Casos en la selección: <strong>{isFetching ? 'Consultando…' : <AnimatedNumberV2 value={fmt(total)} animateOnceKey={`rev-${batchId}-casos`} />}</strong></span>
+          <span>Aceptación directa en la lectura: <strong><AnimatedNumberV2 value={fmt(summary?.autoCount)} animateOnceKey={`rev-${batchId}-auto`} /></strong></span>
         </div>
         {!readOnly && <Button disabled={busy || summary?.status !== 'success'} isLoading={actions.sending || processing} loadingText="Procesando…" onClick={consolidate}>Consolidar lote</Button>}
         {!readOnly && summary?.status !== 'success' && <p style={{ marginTop: 10 }}>Primero consulta o inicia la lectura de BETO en el paso ②.</p>}

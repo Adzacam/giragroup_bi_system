@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Cpu } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from 'chart.js';
@@ -41,14 +41,12 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
     return () => { document.body.style.overflow = prevOverflow; window.removeEventListener('keydown', onKey); };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
-  const { ficha_modelo: ficha, epocas, gold_510_modo_c: modoC, desglose_por_clase: porClase, matriz_confusion_5x5: matriz5x5 } = betoMetricas;
+  const { ficha_modelo: ficha, epocas, gold_510_modo_c: modoC, desglose_por_clase: porClase, matriz_confusion_5x5: matriz5x5, ablacion_f9: ablacionF9, perfil_activo_f9: perfilF9 } = betoMetricas;
   const idxEst = matriz5x5.clases.indexOf('PER_ESTUDIANTE');
   const idxProg = matriz5x5.clases.indexOf('PROGRAMA');
   const tokensEstAProg = idxEst >= 0 && idxProg >= 0 ? matriz5x5.matriz[idxEst]?.[idxProg] ?? 0 : 0;
-  const curvaData = buildCurvaEpocas(epocas, ficha.best_epoch);
-  const curvaOptions = withChartAnimationsV2({
+  const curvaData = useMemo(() => buildCurvaEpocas(epocas, ficha.best_epoch), [epocas, ficha.best_epoch]);
+  const curvaOptions = useMemo(() => withChartAnimationsV2({
     responsive: true,
     maintainAspectRatio: false,
     interaction: { mode: 'index', intersect: false },
@@ -57,11 +55,13 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
       y: { position: 'left', title: { display: true, text: 'F1 validación' }, min: 0.99, max: 1 },
       y1: { position: 'right', title: { display: true, text: 'Error' }, grid: { drawOnChartArea: false }, min: 0 },
     },
-  });
+  }), []);
+
+  if (!isOpen) return null;
 
   const modalContent = (
     <div className="modal-backdrop show" style={{ zIndex: 2000, padding: 16 }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <section className="modal-panel" role="dialog" aria-modal="true" aria-label="Métricas del Modelo BETO" style={{ maxWidth: 880, width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: 24 }}>
+      <section className="modal-panel" role="dialog" aria-modal="true" aria-label="Métricas del Modelo BETO" style={{ maxWidth: 880, width: '100%', maxHeight: '90vh', overflowY: 'auto', overscrollBehavior: 'contain', padding: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 18 }}>
           <div>
             <h2 className="serif-heading" style={{ fontSize: 20, display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
@@ -85,6 +85,12 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
             {ficha.etiquetas_iob2.map((tag) => <span key={tag} className="chip-cat" style={{ fontSize: 11 }}>{tag}</span>)}
           </div>
+          <div style={{ marginTop: 12, padding: 10, borderRadius: 10, background: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', fontSize: 12 }}>
+            <strong>Perfil activo en producción (F9 · RNF-03):</strong>{' '}
+            <span>
+              Carga histórica fría de 10 libros en <strong>{fmtNum(perfilF9?.tiempo_completo_min ?? 10.93, 2)} min</strong> (&lt; {perfilF9?.rnf03_limite_min ?? 15} min RNF-03), tasa de acuerdo regla–BETO de <strong>{fmtPct(perfilF9?.tasa_acuerdo_completo ?? 0.9952)}</strong> y cuantización INT8 en CPU (F1 estricto <strong>89,63 %</strong> · F1 relajado <strong>95,18 %</strong> en gold_510 Modo C).
+            </span>
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 }}>
@@ -104,7 +110,7 @@ export default function BetoMetricasModal({ isOpen, onClose }) {
           Qué significa: la precisión indica cuántos datos que BETO marcó eran correctos; el recall, cuántos de los datos reales logró encontrar. El criterio estricto exige el mismo recorte exacto del dato; el relajado acepta coincidencias parciales.
         </p>
 
-        <BetoMetricasTablas porClase={porClase} matriz5x5={matriz5x5} tokensEstAProg={tokensEstAProg} ficha={ficha} epocas={epocas} curvaData={curvaData} curvaOptions={curvaOptions} />
+        <BetoMetricasTablas porClase={porClase} matriz5x5={matriz5x5} tokensEstAProg={tokensEstAProg} ficha={ficha} epocas={epocas} curvaData={curvaData} curvaOptions={curvaOptions} ablacionF9={ablacionF9} />
       </section>
     </div>
   );

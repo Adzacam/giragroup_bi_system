@@ -51,8 +51,10 @@ def _faltantes_fin(h: FactSituacionFinanciera) -> List[str]:
 
 def _por_que(confianza: Optional[float], faltantes: List[str]) -> str:
     partes = []
-    if confianza is not None and float(confianza) < 0.85:
-        partes.append(f"Índice del registro {float(confianza):.2f} en la banda de revisión (0,60–0,85).")
+    if confianza is not None and float(confianza) < 0.60:
+        partes.append(f"Índice del registro {float(confianza):.2f} en la banda baja (< 0,60).")
+    elif confianza is not None and float(confianza) < 0.85:
+        partes.append(f"Índice del registro {float(confianza):.2f} en la banda de revisión [0,60; 0,85).")
     if faltantes:
         partes.append(f"Falta: {', '.join(faltantes)}.")
     return " ".join(partes) or "Marcado para revisión en la carga."

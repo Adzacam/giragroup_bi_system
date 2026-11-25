@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { ArrowRight, BarChart3 } from 'lucide-react';
 import BatchFlowLayout from './components/BatchFlowLayout';
@@ -49,10 +50,25 @@ function LecturaBeto({ batchId }) {
   const [filters, setFilters] = useDraftState('beto.filters.v3', INITIAL);
   const [input, setInput] = useState(filters.search || '');
   const [starting, setStarting] = useState(false);
+  const [consolidating, setConsolidating] = useState(false);
   const [cancelingTask, setCancelingTask] = useState(false);
   const [metricasOpen, setMetricasOpen] = useState(false);
   const startLock = useRef(false);
-  const { data, error, isFetching, refetch } = useLecturaBeto(batchId, filters, !!contexto);
+  const { data, error, isFetching, refetch } = useLecturaBeto(batchId, filters, !!contexto || !!batchId);
+  const { data: consTask } = useQuery({
+    queryKey: [...DATAOPS_QUERY_KEY, 'consolidacion-task', String(batchId || '')],
+    queryFn: () => dataopsApi.getBatchTask(batchId, 'CONSOLIDACION'),
+    enabled: !!batchId,
+    refetchInterval: q => q.state.data?.estado === 'EN_CURSO' ? 2000 : false,
+  });
+  const consPrevRef = useRef(null);
+  useEffect(() => {
+    if (consPrevRef.current === 'EN_CURSO' && consTask?.estado === 'COMPLETADA') {
+      queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY });
+      sileoToast.success({ title: `Lote #${batchId} consolidado`, description: 'Ya puedes abrir Paso 3 para revisar los casos pendientes.' });
+    }
+    consPrevRef.current = consTask?.estado;
+  }, [consTask?.estado, batchId]);
   const processing = data?.status === 'processing';
   const ready = data?.status === 'success';
   const summary = data?.resumen_ejecutivo;
@@ -100,20 +116,29 @@ function LecturaBeto({ batchId }) {
     const result = await refetch();
     if (!result.error) sileoToast.success({ title: 'Lectura actualizada', description: 'Se consultaron los resultados guardados.' });
   };
-  const pctLectura = data?.tarea?.total
-    ? Math.min(100, Math.round(((data.tarea.procesados || 0) / data.tarea.total) * 100))
-    : (data?.tarea?.porcentaje ?? 0);
+  const consolidarDesdePaso2 = async () => {
+    if (consolidating || readOnly || !batchId) return;
+    setConsolidating(true);
+    try {
+      await dataopsApi.confirmDwInsert({ id_lote: Number(batchId), solo_revision: false, en_segundo_plano: true });
+      avisarTareaIniciada();
+      sileoToast.info({ title: 'Consolidación iniciada', description: 'Insertando registros al DW y preparando casos pendientes.' });
+      await queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY });
+    } catch (err) {
+      sileoToast.error({ title: 'No se pudo iniciar la consolidación', description: mensajeError(err) });
+    } finally { setConsolidating(false); }
+  };
 
   return (
     <BatchFlowLayout currentStep={2} showReadOnlyContent selectedDocId={filters.docId} onSelectDocId={value => setFilter('docId', value)}>
       <div className="floating-artifact" style={{ padding: 24, marginBottom: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           <div><h2 className="serif-heading" style={{ fontSize: 20 }}>Lectura de BETO</h2><p style={{ color: 'var(--color-slate-gray)', fontSize: 13, marginTop: 6 }}>BETO identifica los datos de cada fila. Consultar esta página no inicia otro análisis.</p></div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <Button variant="ghost" type="button" onClick={() => setMetricasOpen(true)} title="Métricas del Modelo BETO">
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', minHeight: 38, flexShrink: 0, alignItems: 'center' }}>
+            <Button variant="ghost" type="button" onClick={() => setMetricasOpen(true)} title="Métricas del Modelo BETO" style={{ flexShrink: 0 }}>
               <BarChart3 size={15} /> Métricas del Modelo BETO
             </Button>
-            {!!batchId && activeTab === 'resultados' && <Button variant="ghost" isLoading={isFetching} loadingText="Consultando…" disabled={!contexto} onClick={refresh}>Actualizar</Button>}
+            {!!batchId && activeTab === 'resultados' && <Button variant="ghost" isLoading={isFetching} loadingText="Consultando…" disabled={!contexto} onClick={refresh} style={{ minWidth: 112, flexShrink: 0 }}>Actualizar</Button>}
           </div>
         </div>
         <div role="tablist" aria-label="Vistas de lectura" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 14 }}>
@@ -149,7 +174,7 @@ function LecturaBeto({ batchId }) {
         : activeTab === 'texto' ? <TextoPreparadoTab batchId={batchId} selectedDocId={filters.docId} context={contexto} />
         : error ? <div className="floating-artifact" role="alert" style={{ padding: 24 }}>No se pudo consultar la lectura. Puedes reintentarlo con Actualizar.</div>
         : !data ? <BetoSkeleton />
-        : processing ? <ProgresoTarea titulo={`Leyendo… ${pctLectura} %`} tarea={data.tarea} nota="El proceso sigue en segundo plano. Puedes cambiar de página." onCancel={data?.tarea?.id ? cancelReading : undefined} canceling={cancelingTask} cancelLabel="Cancelar lectura" />
+        : processing ? <ProgresoTarea titulo="Leyendo registros con BETO…" tarea={data.tarea} nota="El proceso sigue en segundo plano. Puedes cambiar de página." onCancel={data?.tarea?.id ? cancelReading : undefined} canceling={cancelingTask} cancelLabel="Cancelar lectura" />
         : !ready ? <div className="floating-artifact" style={{ padding: 24 }}>
           <h3 className="serif-heading" style={{ marginBottom: 10 }}>{data.tarea?.estado === 'ERROR' ? 'La lectura se interrumpió' : 'No hay una lectura guardada disponible'}</h3>
           <p style={{ color: 'var(--color-slate-gray)', marginBottom: 16 }}>{readOnly ? 'Este lote está cerrado. Puedes consultar su resumen en Revisión.' : 'Inicia el análisis para obtener los resultados. Recibirás un aviso al terminar.'}</p>
@@ -157,7 +182,7 @@ function LecturaBeto({ batchId }) {
         </div> : <>
           <p style={{ fontSize: 12, color: 'var(--color-slate-gray)', marginBottom: 10 }}>{filters.docId ? 'Resumen del archivo seleccionado.' : 'Resumen del lote.'} Los filtros se aplican a la lista de resultados.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 16, marginBottom: 20 }}>
-            {[['Analizados', summary?.total_procesados], ['Aceptación directa', summary?.aceptados_automaticamente], ['En revisión', summary?.por_revisar, 'Banda 60–85 % de lectura; el paso ③ agrupa también casos por identidad o catálogo.'], ['Con incidencias', summary?.con_incidencias]].map(([label, value, nota]) => <div className="floating-artifact" key={label} style={{ padding: 18 }}><p style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>{label}</p><p style={{ fontSize: 25, marginTop: 6 }}>{isFetching ? 'Consultando…' : <AnimatedNumberV2 value={fmt(value)} />}</p>{nota && <p style={{ fontSize: 11, color: 'var(--color-slate-gray)', marginTop: 6, lineHeight: 1.4 }}>{nota}</p>}</div>)}
+            {[['Analizados', summary?.total_procesados], ['Aceptación directa', summary?.aceptados_automaticamente], ['En revisión', summary?.por_revisar, 'Banda 60–85 % de lectura; el paso ③ agrupa también casos por identidad o catálogo.'], ['Con incidencias', summary?.con_incidencias]].map(([label, value, nota]) => <div className="floating-artifact" key={label} style={{ padding: 18 }}><p style={{ fontSize: 12, color: 'var(--color-slate-gray)' }}>{label}</p><p style={{ fontSize: 25, marginTop: 6 }}>{isFetching ? 'Consultando…' : <AnimatedNumberV2 value={fmt(value)} animateOnceKey={`beto-${batchId}-${label}`} />}</p>{nota && <p style={{ fontSize: 11, color: 'var(--color-slate-gray)', marginTop: 6, lineHeight: 1.4 }}>{nota}</p>}</div>)}
           </div>
           <BetoCascadaResumen cascada={data?.resumen_cascada} />
           <div className="floating-artifact" style={{ padding: 20, marginBottom: 20, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
@@ -172,9 +197,21 @@ function LecturaBeto({ batchId }) {
             <Paginacion pagina={filters.page} totalPaginas={pagination?.total_pages || 1} total={pagination?.total_items || 0} filasPorPagina={FILAS_BETO} disabled={isFetching} onChange={value => setFilters(prev => ({ ...prev, page: value }))} />
           </div>
         </>}
+      {consTask?.estado === 'EN_CURSO' && <div style={{ marginTop: 16 }}><ProgresoTarea titulo="Consolidando lote al DW…" tarea={consTask} nota="Insertando hechos y preparando bandeja HITL." /></div>}
+      {consTask?.estado === 'COMPLETADA' && (
+        <div className="dataops-banner-info" role="status" style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <span>Consolidación completada para el lote #{batchId}.</span>
+          <Button variant="ghost" className="btn-pill-gold" onClick={() => navigate(toDataopsPath(`/lote/${batchId}/revision?vista=PENDIENTES`, location.pathname))}>Ir a Revisión <ArrowRight size={15} /></Button>
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginTop: 20 }}>
         <Button variant="ghost" onClick={() => navigate(toDataopsPath('/ingesta', location.pathname))}>Volver a carga de archivos</Button>
-        {!!batchId && <Button variant="ghost" className="btn-pill-gold" onClick={() => navigate(toDataopsPath(`/lote/${batchId}/revision`, location.pathname))}>Ir a Revisión <ArrowRight size={15} /></Button>}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {!!batchId && ready && !readOnly && consTask?.estado !== 'EN_CURSO' && (
+            <Button variant="ghost" onClick={consolidarDesdePaso2} isLoading={consolidating} loadingText="Consolidando…">Consolidar / Insertar al DW</Button>
+          )}
+          {!!batchId && <Button variant="ghost" className="btn-pill-gold" onClick={() => navigate(toDataopsPath(`/lote/${batchId}/revision?vista=PENDIENTES`, location.pathname))}>Ir a Revisión <ArrowRight size={15} /></Button>}
+        </div>
       </div>
       <BetoMetricasModal isOpen={metricasOpen} onClose={() => setMetricasOpen(false)} />
     </BatchFlowLayout>

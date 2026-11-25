@@ -11,6 +11,10 @@ export default function useLecturaBeto(batchId, filters, enabled) {
     }),
     enabled: !!batchId && enabled,
     placeholderData: previous => previous,
-    refetchInterval: query => query.state.data?.status === 'processing' ? 2000 : false,
+    refetchInterval: query => {
+      const st = query.state.data?.status;
+      const tEstado = query.state.data?.tarea?.estado;
+      return (st === 'processing' || tEstado === 'EN_CURSO') ? 2000 : false;
+    },
   });
 }
