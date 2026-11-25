@@ -272,6 +272,8 @@ def batch_resolve_review_items(
     resolved_count = 0
     for item_id in unicos:
         datos = payload.model_dump(exclude_none=True)
+        datos.pop('item_ids', None)
+        datos.pop('justificacion', None)
         datos['accion'] = accion
         datos['aprobacion_en_bloque'] = True
         if accion == "DESCARTAR" and not str(datos.get('motivo_descarte') or '').strip():

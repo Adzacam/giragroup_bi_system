@@ -99,7 +99,9 @@ def test_consultar_filtra_patron_y_ordena_por_prioridad(db_mem):
     assert all(it["prioridad"] == "ALTA" for it in solo_alta["items"])
 
 
-def test_guardrail_422_para_discordante_menor_30_y_descarte_con_justificacion(db_mem):
+def test_guardrail_422_para_discordante_menor_30_y_descarte_con_justificacion(db_mem, monkeypatch):
+    from services.dw_loader import DWLoaderService
+    monkeypatch.setattr(DWLoaderService, "cargar_registro", lambda self, reg: {"status": "loaded", "id_estudiante": 1})
     _seed(db_mem)
     with pytest.raises(HTTPException) as exc:
         _validar_guardrail_discordancia(db_mem, ["1"])
@@ -112,6 +114,15 @@ def test_guardrail_422_para_discordante_menor_30_y_descarte_con_justificacion(db
             db=db_mem, current_user=admin,
         )
     assert exc2.value.status_code == 422
+
+    # Caso 2 (CI_NOMBRE_DISCORDANTE score=45) sí permite aprobar en lote sin error de item_ids/justificacion
+    res_ok = batch_resolve_review_items(
+        BatchResolveRequest(item_ids=["2"], accion="APROBAR", justificacion="Confirmado F12"),
+        db=db_mem, current_user=admin,
+    )
+    assert res_ok["status"] == "success"
+    assert res_ok["accion"] == "APROBAR"
+    assert res_ok["resolved_count"] == 1
 
     # Caso 4 (BAJA_CONFIANZA_IA) sí permite descartar en lote con justificación
     res = batch_resolve_review_items(
