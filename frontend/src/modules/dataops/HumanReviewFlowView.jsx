@@ -334,7 +334,7 @@ function RevisionBandeja({ batchId }) {
                       maxLength={200}
                       style={{ flex: '1 1 180px', minWidth: 160 }}
                     />
-                    <Button variant="primary" disabled={busy || !selectedIds.length} isLoading={actions.sending} onClick={() => runBatch('APROBAR')}>
+                    <Button variant="dark" disabled={busy || !selectedIds.length} isLoading={actions.sending} onClick={() => runBatch('APROBAR')}>
                       Confirmar seleccionados ({selectedIds.length})
                     </Button>
                     <Button variant="ghost" disabled={busy || !selectedIds.length} isLoading={actions.sending} onClick={() => runBatch('DESCARTAR')}>

@@ -48,9 +48,8 @@ def _asegurar_no_consolidado(db: Session, id_documento: Optional[int]) -> None:
         return
     doc = db.query(DimOrigenDocumental).filter_by(id_documento=id_documento).first()
     if doc and doc.id_lote:
-        lote = db.query(Lote).filter_by(id_lote=doc.id_lote).first()
-        if lote and lote.estado == "CONSOLIDADO":
-            raise HTTPException(409, "El lote ya está consolidado; no se puede modificar ni reabrir el caso.")
+        from routers.dataops.evaluacion import _asegurar_lote_editable
+        _asegurar_lote_editable(db, doc.id_lote)
 
 
 def _registrar_auditoria(

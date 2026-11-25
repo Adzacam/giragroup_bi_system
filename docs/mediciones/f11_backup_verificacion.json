@@ -1,22 +1,22 @@
 {
-  "fecha": "2026-11-25 15:02:12",
+  "fecha": "2026-11-25 16:56:38",
   "archivos": {
     "snapshot_pre_defensa.sql": {
-      "size_bytes": 337620474,
-      "size_mb": 321.98,
-      "sha256": "db9d99270bc8bd4c89350fd77b7851f4b3f962d5b43a9b70f516ce1db4f695a5"
+      "size_bytes": 338103719,
+      "size_mb": 322.44,
+      "sha256": "c940c74f1b24d3516c3e51648b2066abfd88e133978df57316b13c199ef51682"
     },
     "snapshot_pre_defensa.dump": {
-      "size_bytes": 68408133,
-      "size_mb": 65.24,
-      "sha256": "420a3d9e9cda8fba5743a64b49f35bef65e04c0bda18caa43d8153713a9e8500"
+      "size_bytes": 68166322,
+      "size_mb": 65.01,
+      "sha256": "3b84f53abb2bd351a5cd52e84101fe98e1ea113950c950877c88358c685d297f"
     }
   },
   "prueba_restauracion_tmpfs": {
     "contenedor": "beto_pg_tmpfs",
     "bd_temporal": "f11_restore_test",
     "pg_restore_returncode": 0,
-    "tiempo_restauracion_s": 9.36,
+    "tiempo_restauracion_s": 9.99,
     "stderr_tail": [],
     "conteos_restaurados": {
       "fact_rendimiento_academico": 23773,
