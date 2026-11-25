@@ -77,11 +77,11 @@ describe('W-9 — Rutas DataOps, KPIs animados y Métricas del modelo BETO', () 
     };
   });
 
-  it('toDataopsPath preserva el prefijo /v2 cuando la ruta actual está en /v2/*', () => {
-    expect(toDataopsPath('/ingesta', '/v2/dataops/lote/18/beto')).toBe('/v2/dataops/ingesta');
-    expect(toDataopsPath('/lote/18/revision', '/v2/dataops/lote/18/beto')).toBe('/v2/dataops/lote/18/revision');
-    expect(toDataopsPath('/dataops/lote/18/texto', '/v2/dataops/ingesta')).toBe('/v2/dataops/lote/18/texto');
-    expect(toDataopsPath('ingesta', '/v2')).toBe('/v2/dataops/ingesta');
+  it('toDataopsPath normaliza a rutas oficiales sin /v2', () => {
+    expect(toDataopsPath('/ingesta', '/v2/dataops/lote/18/beto')).toBe('/dataops/ingesta');
+    expect(toDataopsPath('/lote/18/revision', '/v2/dataops/lote/18/beto')).toBe('/dataops/lote/18/revision');
+    expect(toDataopsPath('/dataops/lote/18/texto', '/v2/dataops/ingesta')).toBe('/dataops/lote/18/texto');
+    expect(toDataopsPath('ingesta', '/v2')).toBe('/dataops/ingesta');
 
     expect(toDataopsPath('/ingesta', '/dataops/lote/18/beto')).toBe('/dataops/ingesta');
     expect(toDataopsPath('/lote/18/revision', '/dataops/lote/18/beto')).toBe('/dataops/lote/18/revision');

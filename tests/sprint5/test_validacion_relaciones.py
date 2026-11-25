@@ -92,6 +92,17 @@ def test_regla_d_pago_inscripcion_programa():
     bad = {"categoria": "financiero", "resoluciones": {"programa": {"valor_extraido": "POS-5252"}, "estudiante": {"valor_extraido": "Juan Nadie"}}}
     f = validar_registro(bad, ctx)
     assert len(f) == 1 and f[0].regla == "PAGO_INSCRIPCION_PROGRAMA"
+    assert "Juan Nadie" not in f[0].valor and "••••" in f[0].valor
+
+    ok_fuente = {
+        "categoria": "financiero",
+        "resoluciones": {
+            "programa": {"valor_extraido": "POS-5252"},
+            "estudiante": {"valor_extraido": "Susana Vargas"},
+            "inscripcion_en_fuente": True,
+        },
+    }
+    assert validar_registro(ok_fuente, ctx) == []
 
 
 def test_regla_e_respuesta_escala():

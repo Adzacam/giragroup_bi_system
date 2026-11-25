@@ -51,16 +51,16 @@ describe('V2 como vista principal y prevención de 401 en login', () => {
     spy.mockRestore();
   });
 
-  it('App.jsx, LoginPage.jsx y client.js dirigen a /v2/* por defecto', () => {
+  it('App.jsx, LoginPage.jsx y client.js dirigen a rutas raíz oficiales /* por defecto', () => {
     const appSrc = fs.readFileSync(path.resolve(__dirname, '../../App.jsx'), 'utf8');
-    expect(appSrc).toContain("V2_ROLE_REDIRECTS[role] || '/v2/dashboard'");
-    expect(appSrc).toContain("isExplicitV1 ? '/login' : '/v2/login'");
+    expect(appSrc).toContain("V2_ROLE_REDIRECTS[role] || '/dashboard'");
+    expect(appSrc).toContain('<Navigate to="/login" replace />');
 
     const loginSrc = fs.readFileSync(path.resolve(__dirname, '../../modules/auth/LoginPage.jsx'), 'utf8');
-    expect(loginSrc).toContain("V2_ROLE_REDIRECTS[userData?.role] || '/v2/dashboard'");
+    expect(loginSrc).toContain("V2_ROLE_REDIRECTS[userData?.role] || '/dashboard'");
 
     const clientSrc = fs.readFileSync(path.resolve(__dirname, '../../api/client.js'), 'utf8');
-    expect(clientSrc).toContain("window.location.pathname === '/v2/login'");
-    expect(clientSrc).toContain("window.location.href = '/v2/login'");
+    expect(clientSrc).toContain("window.location.pathname === '/login'");
+    expect(clientSrc).toContain("window.location.href = '/login'");
   });
 });

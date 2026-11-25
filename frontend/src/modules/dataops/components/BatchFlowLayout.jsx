@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle2, FileSpreadsheet, Layers, PlusCircle } from 'lucide-react';
 import GlosarioFlotante from '../../../components/shared/GlosarioFlotante';
@@ -31,6 +31,14 @@ export default function BatchFlowLayout({
   // Contexto del lote en React Query: se comparte entre pasos (sin recargas al retroceder) y se invalida al mutar
   const { data: batchContext = null, isPending, error, refetch } = useLoteContext(targetId);
   const readOnly = batchContext?.estado_flujo === 'CONSOLIDADO';
+
+  useEffect(() => {
+    if (!isPending && !error && targetId && !batchContext && currentStep >= 2) {
+      clearLoteFlowSession(targetId);
+      try { localStorage.removeItem('last_active_batch_id'); } catch { /* sin storage */ }
+      navigate(toDataopsPath('/ingesta', location.pathname), { replace: true });
+    }
+  }, [isPending, error, targetId, batchContext, currentStep, navigate, location.pathname]);
 
   // Flujo cerrado: se limpia el lote activo para que Ingesta arranque en blanco con archivos nuevos
   const handleNuevoLote = () => {

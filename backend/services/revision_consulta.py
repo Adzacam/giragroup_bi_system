@@ -216,6 +216,7 @@ def caso_guardado(ent, doc, db=None, rol_usuario=None):
         else 'academica'
     )
     motivo = ent.motivo or 'REVISION_GENERAL'
+    tiene_datos_legibles = bool(raw and (':' in str(raw) or '|' in str(raw)) and len(str(raw).strip()) >= 8)
     if motivo in ('BAJA_CONFIANZA', 'BAJA_CONFIANZA_IA') and (ent.nivel_confianza is None or float(ent.nivel_confianza) <= 0.0):
         motivo = 'SIN_LECTURA'
     cat_ruteo = categoria_ruteo(doc.tipo_fuente if doc else None, p.get('categoria'))
@@ -249,8 +250,9 @@ def caso_guardado(ent, doc, db=None, rol_usuario=None):
     docente_present = bool(p.get('docente') or extra_raw.get('docente'))
     por_que = (
         'Fila de presupuesto: verifica su clasificación antes de aprobar.' if manual
-        else ('La fila no tiene datos legibles (sin lectura de BETO).' if motivo == 'SIN_LECTURA'
-              else texto_publico(p.get('motivo_llano') or motivo_det or ''))
+        else ('La fila no tiene datos legibles (sin lectura de BETO).' if (motivo == 'SIN_LECTURA' and not tiene_datos_legibles)
+              else ('Lectura 0 de BETO con campos parciales detectados; completa los datos faltantes o descarta.' if motivo == 'SIN_LECTURA'
+                    else texto_publico(p.get('motivo_llano') or motivo_det or '')))
     )
     publico = {
         'id': ent.id_staging, 'db_id': ent.id_staging, 'id_documento': ent.id_documento,
@@ -264,6 +266,14 @@ def caso_guardado(ent, doc, db=None, rol_usuario=None):
         'sugerencia': '••••' if ent.mejor_candidato else None,
         'ci': enmascarar_ci(ci) if ci else None, 'ci_enmascarado': enmascarar_ci(ci) if ci else None,
         'que_vio': raw_protegido, 'contexto_raw': raw_protegido,
+        'beto_ents': [
+            {
+                **b,
+                'texto': '••••' if str(b.get('tipo', '')).upper() in ('ESTUDIANTE', 'DOCENTE', 'PER_ESTUDIANTE', 'PER_DOCENTE') else b.get('texto'),
+            }
+            for b in (p.get('beto_ents') or [])
+            if isinstance(b, dict)
+        ],
         'por_que_detuvo': por_que,
         'indice_registro': score, 'similitud': score,
         'ner_confidence': float(ent.nivel_confianza) if ent.nivel_confianza is not None else None,

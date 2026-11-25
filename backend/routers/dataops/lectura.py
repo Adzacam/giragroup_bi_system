@@ -588,9 +588,9 @@ def _extraer_campo_de_linea(line_txt: str, campo: str) -> Optional[str]:
     if campo == "nombre":
         for parte in re.split(r"\||;|,(?=\s*[^,:|;]{1,45}:)", line_txt):
             rotulo, sep, valor = parte.partition(":")
-            if sep and _sensible(rotulo) == "privado" and valor.strip():
+            if sep and valor.strip():
                 r_low = rotulo.lower()
-                if any(k in r_low for k in ("nombre", "estudiante", "alumno", "participante", "docente", "razon")):
+                if (_sensible(rotulo) == "privado" or "nombre" in r_low) and any(k in r_low for k in ("nombre", "estudiante", "alumno", "participante", "docente", "razon")):
                     return valor.strip()
         cols = _columnas(line_txt)
         if cols and ":" not in line_txt and re.fullmatch(r"[A-Za-zÁÉÍÓÚÑÜáéíóúñü]+(?:\s+[A-Za-zÁÉÍÓÚÑÜáéíóúñü]+)+", cols[0]):

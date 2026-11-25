@@ -16,7 +16,7 @@ from sqlalchemy import text
 from core.database import SessionLocal
 
 INTERVALO_SEG = 1.0      # como mucho una escritura de avance por segundo y tarea
-SIN_LATIDO_SEG = 180     # EN_CURSO sin avance en 3 min: la API se reinició y la tarea no terminará
+SIN_LATIDO_SEG = 300     # EN_CURSO sin avance en 5 min: la API se reinició y la tarea no terminará
 MENSAJE_ERROR_PUBLICO = "El proceso se interrumpió. Revisa el lote antes de reintentarlo."
 
 _ultima_escritura: Dict[int, float] = {}

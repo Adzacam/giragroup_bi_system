@@ -30,7 +30,7 @@ export default function BetoCascadaResumen({ cascada }) {
         <div style={{ padding: 12, borderRadius: 12, background: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', fontSize: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-slate-gray)', marginBottom: 4 }}>1. Índice de confianza</div>
           <p style={{ margin: 0, color: 'var(--color-ink-black)' }}>
-            BETO calculó la confianza de <strong>{fmt(lineasConfianza)}</strong> líneas que las reglas no resolvieron
+            BETO calculó la confianza de <strong>{fmt(lineasConfianza)}</strong> líneas del lote
           </p>
         </div>
         <div style={{ padding: 12, borderRadius: 12, background: 'var(--color-mist-gray)', border: '1px solid var(--color-border)', fontSize: 12 }}>

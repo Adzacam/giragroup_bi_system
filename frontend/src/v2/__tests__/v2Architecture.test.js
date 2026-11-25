@@ -33,21 +33,22 @@ function walkFiles(dir) {
 }
 
 describe('Loop 1: Aislamiento de rutas /v2/* y 5 roles RBAC', () => {
-  it('convierte rutas bidireccionalmente entre V1 y V2', () => {
-    expect(toV2Path('/dashboard')).toBe('/v2/dashboard');
-    expect(toV2Path('/v2/dashboard')).toBe('/v2/dashboard');
-    expect(toV2Path('/')).toBe('/v2');
+  it('normaliza rutas oficiales y heredadas /v2/*', () => {
+    expect(toV2Path('/dashboard')).toBe('/dashboard');
+    expect(toV2Path('/v2/dashboard')).toBe('/dashboard');
+    expect(toV2Path('/')).toBe('/');
     expect(toV1Path('/v2/dataops/ingesta')).toBe('/dataops/ingesta');
     expect(toV1Path('/v2')).toBe('/');
     expect(isV2Pathname('/v2/dashboard')).toBe(true);
     expect(isV2Pathname('/dashboard')).toBe(false);
   });
 
-  it('define redirección /v2/* para los 5 roles RBAC', () => {
+  it('define redirección raíz para los 5 roles RBAC', () => {
     const roles = ['ADMIN', 'AUDITOR_CALIDAD', 'DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'ANALISTA_MARKETING'];
     for (const r of roles) {
       expect(V2_ROLE_REDIRECTS[r]).toBeTruthy();
-      expect(V2_ROLE_REDIRECTS[r].startsWith('/v2/')).toBe(true);
+      expect(V2_ROLE_REDIRECTS[r].startsWith('/')).toBe(true);
+      expect(V2_ROLE_REDIRECTS[r].startsWith('/v2/')).toBe(false);
     }
   });
 });

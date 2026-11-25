@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { dataopsApi } from '../../../api/dataopsApi';
+import { clearLoteFlowSession } from '../context/LoteFlowContext';
 
 export const loteContextKey = (idLote) => ['dataops', 'lote-context', String(idLote)];
 
@@ -9,14 +10,29 @@ const ESCALA_LABEL = {
   CENTESIMAL_100: 'Sobre 100',
 };
 
-/** Carga el contexto del lote (con fallback a 'latest' en 404 y a /sources si el contexto no viene). */
+/** Carga el contexto del lote (con fallback a 'latest' en 404 y limpieza si no existe). */
 export async function fetchLoteContext(batchId) {
   let res;
   try {
     res = await dataopsApi.getLoteContext(batchId);
   } catch (errApi) {
-    if (errApi.response?.status === 404 && batchId !== 'latest') {
-      res = await dataopsApi.getLoteContext('latest');
+    if (errApi.response?.status === 404) {
+      if (batchId !== 'latest') {
+        try {
+          res = await dataopsApi.getLoteContext('latest');
+        } catch (errLatest) {
+          if (errLatest.response?.status === 404) {
+            clearLoteFlowSession(batchId);
+            try { localStorage.removeItem('last_active_batch_id'); } catch { /* sin storage */ }
+            return null;
+          }
+          throw errLatest;
+        }
+      } else {
+        clearLoteFlowSession(batchId);
+        try { localStorage.removeItem('last_active_batch_id'); } catch { /* sin storage */ }
+        return null;
+      }
     } else {
       throw errApi;
     }

@@ -26,7 +26,7 @@ client.interceptors.response.use(
         window.location &&
         (window.location.pathname === '/login' || window.location.pathname === '/v2/login');
       if (typeof window !== 'undefined' && window.location && !isLoginPath) {
-        window.location.href = '/v2/login';
+        window.location.href = '/login';
       }
     }
     return Promise.reject(error);

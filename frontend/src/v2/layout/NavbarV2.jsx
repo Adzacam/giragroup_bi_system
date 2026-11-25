@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
-import { Sun, Moon, Settings, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Sun, Moon, Settings } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import NotificationBell from '../../components/notifications/NotificationBell';
 import UserProfileDropdown from '../../components/layout/UserProfileDropdown';
 import GiraAnimatedLogoButton from '../components/GiraAnimatedLogoButton';
-import { toV1Path, toV2Path } from '../utils/v2Routes';
 
 export default function NavbarV2({
   isSidebarOpen = false,
@@ -16,7 +14,6 @@ export default function NavbarV2({
   isNavigating = false,
 }) {
   const { theme, toggleTheme } = useTheme();
-  const location = useLocation();
   const scrollBarRef = useRef(null);
 
   useEffect(() => {
@@ -70,8 +67,8 @@ export default function NavbarV2({
         <button
           type="button"
           className="v2-topbar-brand"
-          onClick={() => navigateV2?.(toV2Path('/dashboard'))}
-          onMouseEnter={() => prefetchOnIntent?.('/v2/dashboard')}
+          onClick={() => navigateV2?.('/dashboard')}
+          onMouseEnter={() => prefetchOnIntent?.('/dashboard')}
           title="Ir al Cuadro de Mando Integral"
         >
           <span className="v2-topbar-brand-title">
@@ -97,27 +94,13 @@ export default function NavbarV2({
 
         <button
           type="button"
-          onClick={() => navigateV2?.(toV2Path('/ajustes'))}
-          onMouseEnter={() => prefetchOnIntent?.('/v2/ajustes')}
+          onClick={() => navigateV2?.('/ajustes')}
+          onMouseEnter={() => prefetchOnIntent?.('/ajustes')}
           className="v2-pill-icon-btn v2-topbar-settings-btn"
           title="Ajustes del Sistema"
           aria-label="Ajustes del Sistema"
         >
           <Settings size={15} />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            const v1Target = `${toV1Path(location.pathname)}${location.search || ''}`;
-            window.open(v1Target, '_blank', 'noopener,noreferrer');
-          }}
-          className="v2-v1-switch-btn"
-          title="Abrir Versión 1 original en nueva pestaña"
-        >
-          <Sparkles size={11} />
-          <span>V1</span>
-          <ArrowUpRight size={11} />
         </button>
 
         <UserProfileDropdown />

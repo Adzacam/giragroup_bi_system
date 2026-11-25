@@ -110,9 +110,7 @@ export default function LoginPage() {
       localStorage.setItem('gira_last_login_date', todayStr);
 
       const searchParams = new URLSearchParams(location.search || '');
-      const forceV1 = searchParams.get('ui') === 'v1';
-      const v2Target = V2_ROLE_REDIRECTS[userData?.role] || '/v2/dashboard';
-      const targetDashboard = forceV1 ? toV1Path(v2Target) : v2Target;
+      const targetDashboard = V2_ROLE_REDIRECTS[userData?.role] || '/dashboard';
 
       const prefersReduced =
         typeof window !== 'undefined' &&

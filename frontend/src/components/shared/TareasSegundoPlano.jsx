@@ -34,10 +34,14 @@ function ProgresoAviso({ inicial }) {
 /** Un aviso persistente de Sileo por tarea; la campana lee los avisos guardados por el servidor. */
 export default function TareasSegundoPlano({ role }) {
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
   const location = useLocation();
   const pathnameRef = useRef(location.pathname);
   pathnameRef.current = location.pathname;
   const { refreshNotifications } = useNotifications();
+  const refreshRef = useRef(refreshNotifications);
+  refreshRef.current = refreshNotifications;
   const conocidas = useRef({});
   const avisos = useRef({});
   const { isAuthenticated, token } = useAuth();
@@ -92,7 +96,7 @@ export default function TareasSegundoPlano({ role }) {
                 description: ok ? 'Los resultados están disponibles en el lote y en la campana.' : 'Revisa el historial para reintentarlo.',
                 button: {
                   title: 'Ver lote',
-                  onClick: () => navigate(
+                  onClick: () => navigateRef.current(
                     toDataopsPath(
                       ok && t.id_lote ? `/lote/${t.id_lote}/${DESTINO[t.tipo] || 'revision'}` : '/ingesta',
                       pathnameRef.current
@@ -109,7 +113,7 @@ export default function TareasSegundoPlano({ role }) {
         }
         if (termino) {
           queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY });
-          refreshNotifications();
+          refreshRef.current();
         }
       } catch { /* Se conserva el aviso y se reintenta la conexión. */ }
       finally {
@@ -127,6 +131,6 @@ export default function TareasSegundoPlano({ role }) {
       avisos.current = {};
       conocidas.current = {};
     };
-  }, [habilitado, role, navigate, refreshNotifications]);
+  }, [habilitado, role]);
   return null;
 }

@@ -18,7 +18,7 @@ def _sensible(clave):
         return 'correo'
     if re.fullmatch(r'(?:direccion(?: de domicilio)?|domicilio|fecha(?: de)? nacimiento|fecha nacimiento|nacimiento|fecha nac)', clave):
         return 'privado'
-    if re.fullmatch(r'(?:nombre(?:s)?(?: completo(?:s)?| y apellidos?)?|apellidos?(?: paterno| materno)?|paterno|materno|asesor|razon social|estudiante|docente|participante|alumno|estudiante cliente)', clave):
+    if re.fullmatch(r'(?:nombre(?:s)?(?: completo(?:s)?(?: del usuario)?| del usuario| y apellidos?)?|apellidos?(?: paterno| materno)?|paterno|materno|asesor|razon social|estudiante|docente|participante|alumno|estudiante cliente)', clave):
         return 'privado'
     return None
 

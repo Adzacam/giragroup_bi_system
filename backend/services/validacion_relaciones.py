@@ -195,6 +195,16 @@ def cargar_contexto_relaciones(dw_db=None, catalog_url: Optional[str] = None) ->
                 p = _extraer_pos(prog) or _norm(prog)
                 if p and est_nom:
                     ctx.inscripciones_est_pos.add((_norm(est_nom), p))
+            for (est_nom, pos_m) in dw_db.execute(text("""
+                SELECT DISTINCT e.nombre_completo, m.pos_code
+                  FROM public.fact_rendimiento_academico f
+                  JOIN public.dim_estudiante e ON e.id_estudiante = f.id_estudiante
+                  JOIN public.dim_modulo m ON m.id_modulo = f.id_modulo
+                 WHERE e.deprecado = FALSE AND e.nombre_completo IS NOT NULL AND m.pos_code IS NOT NULL
+            """)):
+                p = _extraer_pos(pos_m) or _norm(pos_m)
+                if p and est_nom:
+                    ctx.inscripciones_est_pos.add((_norm(est_nom), p))
         except Exception as exc:
             logger.warning("No se pudo cargar contexto DW de relaciones: %s", exc)
 
@@ -276,10 +286,13 @@ def validar_registro(reg_item: Dict[str, Any], ctx: ContextoRelaciones) -> List[
     # (d) Pago <-> Inscripción
     if (r := ctx.reglas.get("PAGO_INSCRIPCION_PROGRAMA")) and r.activa:
         cats = [c.lower() for c in r.parametros.get("categorias", ["financiero"])]
-        if categoria in cats and est_nom and pos_code and ctx.inscripciones_est_pos:
+        inscripcion_en_fila = bool(
+            res.get("inscripcion_en_fuente") or res.get("estado_academico") or res.get("tipo_inscripcion")
+        )
+        if categoria in cats and est_nom and pos_code and ctx.inscripciones_est_pos and not inscripcion_en_fila:
             if (_norm(est_nom), pos_code) not in ctx.inscripciones_est_pos:
                 fallos.append(FalloRelacion(
-                    regla=r.codigo_regla, nombre_regla=r.nombre_regla, valor=f"{est_nom} · {pos_code}",
+                    regla=r.codigo_regla, nombre_regla=r.nombre_regla, valor=f"•••• · {pos_code}",
                     detalle=f"El estudiante no tiene inscripción registrada en {pos_code} para el pago.",
                     acciones=r.acciones_sugeridas,
                 ))

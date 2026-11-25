@@ -133,7 +133,7 @@ export default function AjustesSistema() {
       } catch (e) {}
       localStorage.clear();
       sessionStorage.clear();
-      window.location.href = '/v2/login';
+      window.location.href = '/login';
     }
   };
 

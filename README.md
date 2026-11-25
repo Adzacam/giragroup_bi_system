@@ -155,6 +155,20 @@ Dentro de Docker los servicios se conectan por el nombre del contenedor y el pue
 python scripts/reset_dw.py --confirm
 ```
 
+### Instalación con semilla / Restauración rápida
+
+Si cuentas con el respaldo pre-defensa (`backups/snapshot_pre_defensa.dump`, excluido de git por privacidad), puedes restaurar el Data Warehouse completo (490k+ hechos, 23 KPIs CMI y proyecciones Holt-Winters / OLS) en ~10 segundos sin esperar la ingesta completa. El script lee `POSTGRES_USER` y `POSTGRES_DB` desde `.env`:
+
+```powershell
+.\restaurar_semilla.bat
+```
+
+O directamente en PowerShell:
+
+```powershell
+.\scripts\restaurar_semilla.ps1
+```
+
 **Borrar todo**, incluidos usuarios y esquema (se recrean al volver a levantar):
 
 ```bash

@@ -48,7 +48,7 @@ const CentroReportes      = lazy(() => import('./modules/reports/CentroReportes'
 
 import { ThemeProvider } from './context/ThemeContext';
 import { UiVersionProvider } from './v2/context/UiVersionContext';
-import { V2_ROLE_REDIRECTS } from './v2/utils/v2Routes';
+import { V2_ROLE_REDIRECTS, toV1Path } from './v2/utils/v2Routes';
 import MainLayoutV2 from './v2/layout/MainLayoutV2';
 
 import { queryClient } from './api/queryClient';
@@ -131,31 +131,31 @@ function LoadingFallback() {
 /* ─── Protected Route ─── */
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
-  const location = useLocation();
   if (!isAuthenticated) {
-    const isExplicitV1 = location.pathname !== '/' && !location.pathname.startsWith('/v2');
-    return <Navigate to={isExplicitV1 ? '/login' : '/v2/login'} replace />;
+    return <Navigate to="/login" replace />;
   }
   return children;
 }
 
 /* ─── Role-based route guard ─── */
-function RoleRoute({ allowedRoles, fallbackPath = '/v2/dashboard', children }) {
+function RoleRoute({ allowedRoles, fallbackPath = '/dashboard', children }) {
   const { role } = useAuth();
   if (!allowedRoles.includes(role)) return <Navigate to={fallbackPath} replace />;
   return children;
 }
 
-/* ─── Default dashboard redirect by role (V2 principal) ─── */
+/* ─── Default dashboard redirect by role (UI oficial en raíz) ─── */
 function DashboardRedirect() {
   const { role } = useAuth();
-  return <Navigate to={V2_ROLE_REDIRECTS[role] || '/v2/dashboard'} replace />;
+  return <Navigate to={V2_ROLE_REDIRECTS[role] || '/dashboard'} replace />;
 }
 
-/* ─── Default V2 dashboard redirect by role ─── */
-function DashboardRedirectV2() {
-  const { role } = useAuth();
-  return <Navigate to={V2_ROLE_REDIRECTS[role] || '/v2/dashboard'} replace />;
+/* ─── Retrocompatibilidad /v2/* -> /* ─── */
+function V2LegacyRedirect() {
+  const location = useLocation();
+  const stripped = toV1Path(location.pathname);
+  const target = !stripped || stripped === '/' ? '/dashboard' : stripped;
+  return <Navigate to={`${target}${location.search || ''}${location.hash || ''}`} replace />;
 }
 
 /* ─── Main Layout (navbar + top loading bar + sidebar + content) ─── */
@@ -379,13 +379,13 @@ function App() {
               <Routes>
                 {/* Public */}
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/v2/login" element={<LoginPage />} />
+                <Route path="/v2/login" element={<Navigate to="/login" replace />} />
 
 
-                {/* Protected shell */}
+                {/* Protected shell (Interfaz oficial) */}
                 <Route path="/" element={
                   <ProtectedRoute>
-                    <MainLayout />
+                    <MainLayoutV2 />
                   </ProtectedRoute>
                 }>
                   {/* Default redirect */}
@@ -546,156 +546,9 @@ function App() {
                 } />
               </Route>
 
-              {/* ─── Versión 2 (V2) Parallel Route Tree (/v2/*) ─── */}
-              <Route path="/v2" element={
-                <ProtectedRoute>
-                  <MainLayoutV2 />
-                </ProtectedRoute>
-              }>
-                <Route index element={<DashboardRedirectV2 />} />
-                <Route path="dashboard" element={<CuadroMandoIntegral />} />
-                <Route path="cmi" element={<CuadroMandoIntegral />} />
-                <Route path="reportes" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ADMIN', 'DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD', 'ANALISTA_MARKETING']}>
-                    <CentroReportes />
-                  </RoleRoute>
-                } />
-                <Route path="notificaciones" element={<NotificationsPage />} />
-                <Route path="ajustes" element={<AjustesSistema />} />
-
-                {/* DataOps V2 */}
-                <Route path="dataops/ingesta" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                    <IngestView />
-                  </RoleRoute>
-                } />
-                <Route element={<LoteFlowRoute />}>
-                  <Route path="dataops/texto" element={<TextoRedirect prefix="/v2" />} />
-                  <Route path="dataops/lote/:id/texto" element={<TextoRedirect prefix="/v2" />} />
-                  <Route path="dataops/beto" element={
-                    <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                      <BetoReadingFlowView />
-                    </RoleRoute>
-                  } />
-                  <Route path="dataops/lote/:id/beto" element={
-                    <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                      <BetoReadingFlowView />
-                    </RoleRoute>
-                  } />
-                  <Route path="dataops/revision" element={
-                    <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                      <HumanReviewFlowView />
-                    </RoleRoute>
-                  } />
-                  <Route path="dataops/lote/:id/revision" element={
-                    <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                      <HumanReviewFlowView />
-                    </RoleRoute>
-                  } />
-                </Route>
-                <Route path="dataops/datos-maestros" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['AUDITOR_CALIDAD', 'ADMIN']}>
-                    <MasterDataView />
-                  </RoleRoute>
-                } />
-                <Route path="dataops/beto-ner" element={<Navigate to="/v2/dataops/beto" replace />} />
-                <Route path="dataops/hitl" element={<Navigate to="/v2/dataops/revision" replace />} />
-                <Route path="dataops/auditoria-humana" element={<Navigate to="/v2/dataops/revision" replace />} />
-                <Route path="dataops/nlp-lab" element={<Navigate to="/v2/dataops/beto" replace />} />
-                <Route path="dataops/fuentes" element={<Navigate to="/v2/dataops/ingesta" replace />} />
-                <Route path="dataops/procesamiento" element={<Navigate to="/v2/dataops/ingesta" replace />} />
-                <Route path="dataops/entidades" element={<Navigate to="/v2/dataops/revision" replace />} />
-                <Route path="dataops/inconsistencias" element={<Navigate to="/v2/dataops/revision" replace />} />
-                <Route path="dataops/telemetria" element={<Navigate to="/v2/dataops/beto" replace />} />
-
-                {/* Academic V2 */}
-                <Route path="alertas-tempranas" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD', 'ADMIN']}>
-                    <RendimientoAlertas />
-                  </RoleRoute>
-                } />
-                <Route path="academico/alertas" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD', 'ADMIN']}>
-                    <RendimientoAlertas />
-                  </RoleRoute>
-                } />
-                <Route path="academico/rendimiento" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ANALISTA_FINANCIERO', 'AUDITOR_CALIDAD', 'ADMIN']}>
-                    <RendimientoAlertas />
-                  </RoleRoute>
-                } />
-                <Route path="academico/docente" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN']}>
-                    <DesempenoDocente />
-                  </RoleRoute>
-                } />
-                <Route path="academico/docentes" element={<Navigate to="/v2/academico/docente" replace />} />
-                <Route path="academico/catalogo" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN', 'ANALISTA_MARKETING']}>
-                    <CatalogoCurricular />
-                  </RoleRoute>
-                } />
-                <Route path="academico/programas" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN', 'ANALISTA_MARKETING']}>
-                    <CatalogoCurricular />
-                  </RoleRoute>
-                } />
-                <Route path="academico/proyeccion" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['DIRECTOR_ACADEMICO', 'ADMIN', 'ANALISTA_MARKETING']}>
-                    <ProyeccionAlumnos />
-                  </RoleRoute>
-                } />
-
-                {/* Finance V2 */}
-                <Route path="financiero/recaudacion" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ANALISTA_FINANCIERO', 'ADMIN']}>
-                    <RecaudacionCobranzas />
-                  </RoleRoute>
-                } />
-                <Route path="financiero/cartera" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ANALISTA_FINANCIERO', 'ADMIN']}>
-                    <CarteraMora />
-                  </RoleRoute>
-                } />
-                <Route path="financiero/metas" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ANALISTA_FINANCIERO', 'ADMIN']}>
-                    <MetasGestion />
-                  </RoleRoute>
-                } />
-                <Route path="financiero/proyeccion" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ANALISTA_FINANCIERO', 'ADMIN']}>
-                    <ProyeccionFinanciera />
-                  </RoleRoute>
-                } />
-
-                {/* Admin & Auditoría V2 */}
-                <Route path="admin/usuarios" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ADMIN']}>
-                    <GestionUsuarios />
-                  </RoleRoute>
-                } />
-                <Route path="admin/catalogos" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ADMIN']}>
-                    <CatalogosMaestros />
-                  </RoleRoute>
-                } />
-                <Route path="admin/auditoria" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ADMIN', 'AUDITOR_CALIDAD']}>
-                    <AuditoriaSistema />
-                  </RoleRoute>
-                } />
-                <Route path="admin/human-review" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ADMIN', 'AUDITOR_CALIDAD']}>
-                    <HumanReviewFlowView />
-                  </RoleRoute>
-                } />
-                <Route path="admin/revision" element={
-                  <RoleRoute fallbackPath="/v2/dashboard" allowedRoles={['ADMIN', 'AUDITOR_CALIDAD']}>
-                    <HumanReviewFlowView />
-                  </RoleRoute>
-                } />
-                <Route path="*" element={<Navigate to="/v2" replace />} />
-              </Route>
+              {/* ─── Retrocompatibilidad /v2/* -> rutas raíz oficiales /* ─── */}
+              <Route path="/v2" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/v2/*" element={<V2LegacyRedirect />} />
 
               {/* Catch-all */}
               <Route path="*" element={<Navigate to="/" replace />} />

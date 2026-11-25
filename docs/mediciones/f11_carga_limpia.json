@@ -1,0 +1,519 @@
+{
+  "id_lote": 1,
+  "tiempo_total_seg": 2070.0,
+  "tiempo_beto_seg": 1592.61,
+  "tiempo_consolidacion_seg": 385.08,
+  "tiempo_forecast_seg": 0.46,
+  "archivos": [
+    {
+      "archivo": "TBL_INSCRITOS.xlsx",
+      "tipo_fuente": "MARKETING",
+      "id_documento": 1,
+      "total_registros": null
+    },
+    {
+      "archivo": "BD Cobranzas.xlsx",
+      "tipo_fuente": "COBRANZA",
+      "id_documento": 2,
+      "total_registros": null
+    },
+    {
+      "archivo": "BD Techos.xlsx",
+      "tipo_fuente": "TECHOS",
+      "id_documento": 3,
+      "total_registros": null
+    },
+    {
+      "archivo": "EJECUTADO VS META.xlsx",
+      "tipo_fuente": "RENTABILIDAD",
+      "id_documento": 4,
+      "total_registros": null
+    },
+    {
+      "archivo": "BD Egresos.xlsx",
+      "tipo_fuente": "EGRESOS",
+      "id_documento": 5,
+      "total_registros": null
+    },
+    {
+      "archivo": "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx",
+      "tipo_fuente": "PLANIFICACION",
+      "id_documento": 6,
+      "total_registros": null
+    },
+    {
+      "archivo": "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx",
+      "tipo_fuente": "EVALUACION_DOCENTE",
+      "id_documento": 7,
+      "total_registros": null
+    },
+    {
+      "archivo": "Evaluación Docente y Unifranz.xlsx",
+      "tipo_fuente": "EVALUACION_DOCENTE",
+      "id_documento": 8,
+      "total_registros": null
+    },
+    {
+      "archivo": "Experiencia Docente 2.0.xlsx",
+      "tipo_fuente": "ACTA",
+      "id_documento": 9,
+      "total_registros": null
+    },
+    {
+      "archivo": "Base centralizada Académica ARCA (1).xlsx",
+      "tipo_fuente": "ACTA",
+      "id_documento": 10,
+      "total_registros": null
+    }
+  ],
+  "consolidacion": {
+    "inserted_dw": 490549,
+    "inserted_revision": 14365,
+    "sent_hitl": 1573
+  },
+  "forecast": {
+    "ALUMNOS_GLOBAL": {
+      "caso_uso": "ALUMNOS_GLOBAL",
+      "metodo": "HoltWinters",
+      "horizonte_meses": 6,
+      "n_observaciones": 43,
+      "periodos": [
+        "2026-06",
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10",
+        "2026-11"
+      ],
+      "forecast": [
+        389.02,
+        418.69,
+        476.65,
+        438.38,
+        410.25,
+        404.1
+      ],
+      "ic_lower": [
+        272.61,
+        302.27,
+        360.23,
+        321.97,
+        293.84,
+        287.69
+      ],
+      "ic_upper": [
+        505.44,
+        535.1,
+        593.06,
+        554.8,
+        526.67,
+        520.52
+      ],
+      "ic80_lower": [
+        289.07,
+        309.69,
+        378.15,
+        337.82,
+        311.56,
+        305.03
+      ],
+      "ic80_upper": [
+        486.7,
+        512.16,
+        579.71,
+        534.38,
+        506.57,
+        507.78
+      ],
+      "ic95_lower": [
+        233.94,
+        254.44,
+        323.87,
+        294.08,
+        251.2,
+        253.27
+      ],
+      "ic95_upper": [
+        535.23,
+        566.93,
+        635.03,
+        592.13,
+        562.17,
+        559.49
+      ],
+      "metodo_intervalo": "simulacion_param_aditivo_n1000",
+      "rmse": 59.4,
+      "aic": 385.24,
+      "parametros": {
+        "alpha": 0.0,
+        "beta": 0.0,
+        "gamma": 0.0,
+        "phi": 0.8957
+      }
+    },
+    "ALUMNOS_DIPLOMADO": {
+      "caso_uso": "ALUMNOS_DIPLOMADO",
+      "metodo": "HoltWinters",
+      "horizonte_meses": 6,
+      "n_observaciones": 37,
+      "periodos": [
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10",
+        "2026-11",
+        "2026-12"
+      ],
+      "forecast": [
+        30.05,
+        30.75,
+        14.16,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ic_lower": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ic_upper": [
+        128.81,
+        129.5,
+        112.92,
+        87.37,
+        88.61,
+        73.53
+      ],
+      "ic80_lower": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ic80_upper": [
+        115.25,
+        137.81,
+        154.05,
+        156.54,
+        185.18,
+        193.78
+      ],
+      "ic95_lower": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ic95_upper": [
+        157.58,
+        226.77,
+        245.06,
+        259.05,
+        280.67,
+        296.99
+      ],
+      "metodo_intervalo": "simulacion_param_aditivo_n1000",
+      "rmse": 50.39,
+      "aic": 347.58,
+      "parametros": {
+        "alpha": 1.0,
+        "beta": 0.0,
+        "gamma": 0.0,
+        "phi": 0.9154
+      }
+    },
+    "ALUMNOS_CURSO": {
+      "caso_uso": "ALUMNOS_CURSO",
+      "metodo": "HoltWinters",
+      "horizonte_meses": 6,
+      "n_observaciones": 31,
+      "periodos": [
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10",
+        "2026-11",
+        "2026-12"
+      ],
+      "forecast": [
+        0.0,
+        3.38,
+        5.09,
+        38.67,
+        11.56,
+        0.0
+      ],
+      "ic_lower": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ic_upper": [
+        2.28,
+        60.51,
+        62.21,
+        95.8,
+        68.68,
+        52.81
+      ],
+      "ic80_lower": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ic80_upper": [
+        1.59,
+        74.3,
+        97.76,
+        149.92,
+        140.95,
+        140.77
+      ],
+      "ic95_lower": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "ic95_upper": [
+        29.63,
+        133.24,
+        158.05,
+        217.83,
+        204.21,
+        209.14
+      ],
+      "metodo_intervalo": "simulacion_param_aditivo_n1000",
+      "rmse": 29.15,
+      "aic": 243.08,
+      "parametros": {
+        "alpha": 1.0,
+        "beta": 0.0,
+        "gamma": 0.0,
+        "phi": 0.8
+      }
+    },
+    "ALUMNOS_EXPERTO": {
+      "caso_uso": "ALUMNOS_EXPERTO",
+      "metodo": "HoltWinters",
+      "horizonte_meses": 6,
+      "n_observaciones": 31,
+      "periodos": [
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10",
+        "2026-11",
+        "2026-12"
+      ],
+      "forecast": [
+        63.92,
+        84.98,
+        52.47,
+        72.62,
+        110.91,
+        77.6
+      ],
+      "ic_lower": [
+        18.34,
+        39.4,
+        6.9,
+        27.05,
+        65.33,
+        32.02
+      ],
+      "ic_upper": [
+        109.5,
+        130.56,
+        98.05,
+        118.2,
+        156.49,
+        123.18
+      ],
+      "ic80_lower": [
+        17.84,
+        34.73,
+        7.07,
+        26.26,
+        65.41,
+        31.93
+      ],
+      "ic80_upper": [
+        108.95,
+        128.07,
+        99.99,
+        116.88,
+        155.31,
+        125.4
+      ],
+      "ic95_lower": [
+        0.0,
+        9.27,
+        0.0,
+        6.1,
+        37.58,
+        8.06
+      ],
+      "ic95_upper": [
+        131.32,
+        153.33,
+        125.49,
+        143.5,
+        180.94,
+        149.23
+      ],
+      "metodo_intervalo": "simulacion_param_aditivo_n1000",
+      "rmse": 23.25,
+      "aic": 229.08,
+      "parametros": {
+        "alpha": 0.0,
+        "beta": 0.0,
+        "gamma": 0.0,
+        "phi": 0.8
+      }
+    },
+    "META_MENSUAL_PROGRAMAS": {
+      "caso_uso": "META_MENSUAL_PROGRAMAS",
+      "metodo": "HoltWinters",
+      "horizonte_meses": 6,
+      "n_observaciones": 48,
+      "periodos": [
+        "2027-01",
+        "2027-02",
+        "2027-03",
+        "2027-04",
+        "2027-05",
+        "2027-06"
+      ],
+      "forecast": [
+        1570695.99,
+        1523307.28,
+        1580484.44,
+        1672201.57,
+        1248422.08,
+        1722073.0
+      ],
+      "ic_lower": [
+        1167910.93,
+        1120522.22,
+        1177699.38,
+        1269416.51,
+        845637.03,
+        1319287.94
+      ],
+      "ic_upper": [
+        1973481.05,
+        1926092.34,
+        1983269.49,
+        2074986.62,
+        1651207.14,
+        2124858.05
+      ],
+      "ic80_lower": [
+        1237160.29,
+        1150635.37,
+        1247225.88,
+        1336378.02,
+        917422.83,
+        1387601.52
+      ],
+      "ic80_upper": [
+        1896663.15,
+        1837449.82,
+        1919752.55,
+        1994921.01,
+        1575247.2,
+        2058096.54
+      ],
+      "ic95_lower": [
+        1053184.76,
+        966038.98,
+        1064375.88,
+        1196109.97,
+        727706.84,
+        1203194.92
+      ],
+      "ic95_upper": [
+        2058602.28,
+        2003346.67,
+        2117713.94,
+        2186886.34,
+        1780540.27,
+        2258103.42
+      ],
+      "metodo_intervalo": "simulacion_param_aditivo_n1000",
+      "rmse": 205502.58,
+      "aic": 1208.39,
+      "parametros": {
+        "alpha": 0.0793,
+        "beta": 0.0,
+        "gamma": 0.0,
+        "phi": 0.995
+      }
+    },
+    "META_ANUAL": {
+      "caso_uso": "META_ANUAL",
+      "metodo": "OLS",
+      "tipo_estimacion": "Proyección indicativa de tendencia lineal anual",
+      "horizonte_anios": 2,
+      "n_observaciones": 3,
+      "anios_historicos": [
+        2023,
+        2024,
+        2025
+      ],
+      "valores_historicos": [
+        9321214.83,
+        10961730.41,
+        14041718.15
+      ],
+      "periodos": [
+        "2026",
+        "2027"
+      ],
+      "forecast": [
+        16162057.78,
+        18522309.44
+      ],
+      "ic_lower": null,
+      "ic_upper": null,
+      "pendiente_anual_bs": 2360251.66,
+      "cagr_historico_pct": 22.85,
+      "nota_metodologica": "Estimación de tendencia lineal indicativa sobre N=3 puntos. No se calculan intervalos de confianza al 95% debido a la reducida muestra longitudinal histórica (dof=1). Ver Cap. 4 del informe técnico."
+    }
+  },
+  "conteos": {
+    "fact_rendimiento_academico": 23773,
+    "fact_situacion_financiera": 27150,
+    "fact_evaluacion_docente": 409645,
+    "fact_marketing": 9199,
+    "fact_rentabilidad": 95,
+    "fact_costo_programa": 1371,
+    "fact_techo_convenio": 204,
+    "fact_planificacion_programa": 2411,
+    "fact_forecast": 32,
+    "dim_estudiante": 15332,
+    "dim_docente": 603,
+    "dim_modulo": 3937,
+    "dim_tiempo": 2230,
+    "dim_origen_documental": 10,
+    "lote": 1,
+    "stg_entidad_no_resuelta": 1642
+  }
+}

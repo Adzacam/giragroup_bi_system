@@ -22,11 +22,32 @@ function resolveStyle(tipo) {
 export default function EntityHighlightText({ text = '', betoEnts = [], entidades = [] }) {
   if (!text) return <span style={{ color: 'var(--color-slate-gray)' }}>Sin texto disponible</span>;
 
-  const spans = Array.isArray(betoEnts) && betoEnts.length > 0
-    ? [...betoEnts]
-        .filter((e) => typeof e.start === 'number' && typeof e.end === 'number' && e.end > e.start && e.end <= text.length)
-        .sort((a, b) => a.start - b.start)
-    : [];
+  const spans = React.useMemo(() => {
+    if (!Array.isArray(betoEnts) || betoEnts.length === 0) return [];
+    const textLow = text.toLowerCase();
+    const resolved = [];
+    betoEnts.forEach((e) => {
+      if (!e || typeof e !== 'object') return;
+      const sliceOk =
+        typeof e.start === 'number' &&
+        typeof e.end === 'number' &&
+        e.end > e.start &&
+        e.end <= text.length &&
+        (!e.texto || e.texto === '••••' || text.slice(e.start, e.end).toLowerCase() === String(e.texto).toLowerCase());
+      if (sliceOk) {
+        resolved.push(e);
+        return;
+      }
+      const needle = String(e.texto || '').trim();
+      if (needle && needle !== '••••' && needle.length >= 2) {
+        const idx = textLow.indexOf(needle.toLowerCase());
+        if (idx >= 0) {
+          resolved.push({ ...e, start: idx, end: idx + needle.length });
+        }
+      }
+    });
+    return resolved.sort((a, b) => a.start - b.start);
+  }, [text, betoEnts]);
 
   if (spans.length > 0) {
     const parts = [];

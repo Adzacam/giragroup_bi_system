@@ -1,0 +1,32 @@
+{
+  "fecha": "2026-11-25 15:02:12",
+  "archivos": {
+    "snapshot_pre_defensa.sql": {
+      "size_bytes": 337620474,
+      "size_mb": 321.98,
+      "sha256": "db9d99270bc8bd4c89350fd77b7851f4b3f962d5b43a9b70f516ce1db4f695a5"
+    },
+    "snapshot_pre_defensa.dump": {
+      "size_bytes": 68408133,
+      "size_mb": 65.24,
+      "sha256": "420a3d9e9cda8fba5743a64b49f35bef65e04c0bda18caa43d8153713a9e8500"
+    }
+  },
+  "prueba_restauracion_tmpfs": {
+    "contenedor": "beto_pg_tmpfs",
+    "bd_temporal": "f11_restore_test",
+    "pg_restore_returncode": 0,
+    "tiempo_restauracion_s": 9.36,
+    "stderr_tail": [],
+    "conteos_restaurados": {
+      "fact_rendimiento_academico": 23773,
+      "fact_situacion_financiera": 27150,
+      "fact_evaluacion_docente": 409645,
+      "fact_forecast": 32,
+      "ref_kpi": 23,
+      "tablas_public": 49,
+      "vistas_bi": 10
+    }
+  },
+  "snapshot_dw_20261110_1201_intacto": true
+}
