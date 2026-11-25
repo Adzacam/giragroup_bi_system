@@ -1,0 +1,7 @@
+# F12-1b — Verificación de Prioridad y Guardrail HTTP 422
+1. Orden y filtro por prioridad (GET /api/v1/dataops/review-tray?id_lote=1&prioridad=ALTA&page=1&page_size=5):
+   Status: 200 OK · total: 251 · prioridades: ['ALTA', 'ALTA', 'ALTA', 'ALTA', 'ALTA']
+2. Guardrail HTTP 422 en /review-tray/batch-resolve y /review-tray/approve-group:
+   Rechaza con HTTP 422 cualquier lote que incluya CI_NOMBRE_DISCORDANTE con score_fuzzy < 30.
+3. Descarte en bloque (accion='DESCARTAR') y justificacion:
+   Registrados en log_pipeline_ingesta (etapa='HITL_BATCH_RESOLVE') con metadata_json.justificacion.

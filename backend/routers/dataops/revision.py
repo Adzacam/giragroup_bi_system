@@ -49,6 +49,8 @@ def get_review_tray(
     motivo: Optional[str] = Query(None), estado: Optional[str] = Query(None),
     page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=50),
     search: Optional[str] = Query(None, max_length=200), area: Optional[str] = Query(None),
+    prioridad: Optional[str] = Query(None, pattern="^(ALTA|MEDIA|BAJA|TODAS|ALL)$"),
+    patron: Optional[str] = Query(None, pattern="^(casi_igual|parcial|muy_distinto|TODOS|ALL)$"),
     vista: str = Query("PENDIENTES", pattern="^(PENDIENTES|RESUELTOS)$"),
     grupo: Optional[str] = Query(None, max_length=80),
     rol: Optional[str] = Query(None),
@@ -57,9 +59,13 @@ def get_review_tray(
     from services import revision_consulta as revision
     valor = lambda v, tipo, defecto=None: v if isinstance(v, tipo) else defecto
     docs = revision.documentos(db, valor(id_lote, (str, int)), valor(doc_id, int))
-    return revision.consultar(db, docs, valor(page, int, 1), valor(page_size, int, 20),
+    return revision.consultar(
+        db, docs, valor(page, int, 1), valor(page_size, int, 20),
         valor(search, str, ''), valor(area, str), valor(motivo, str), valor(estado, str),
-        valor(vista, str, 'PENDIENTES'), valor(grupo, str), rol_usuario=valor(rol, str) or "AUDITOR_CALIDAD")
+        valor(vista, str, 'PENDIENTES'), valor(grupo, str),
+        rol_usuario=valor(rol, str) or "AUDITOR_CALIDAD",
+        prioridad=valor(prioridad, str), patron=valor(patron, str),
+    )
 
 
 @router.get("/review-tray/avisos")
@@ -188,6 +194,31 @@ def approve_review_group(
     return res
 
 
+def _validar_guardrail_discordancia(db: Session, item_ids) -> None:
+    """Guardrail real HTTP 422: prohíbe resolver en bloque CI_NOMBRE_DISCORDANTE con score_fuzzy < 30."""
+    stg_ids = []
+    for raw_id in item_ids:
+        clean = str(raw_id).replace("REV-", "").strip()
+        if clean.isdigit():
+            stg_ids.append(int(clean))
+    if not stg_ids:
+        return
+    bloqueados = (
+        db.query(StagingEntidadNoResuelta.id_staging)
+        .filter(
+            StagingEntidadNoResuelta.id_staging.in_(stg_ids),
+            StagingEntidadNoResuelta.motivo == "CI_NOMBRE_DISCORDANTE",
+            StagingEntidadNoResuelta.score_fuzzy < 30,
+        )
+        .all()
+    )
+    if bloqueados:
+        raise HTTPException(
+            status_code=422,
+            detail="Los casos CI_NOMBRE_DISCORDANTE con similitud < 30 requieren revisión individual obligatoria (no se permiten acciones en bloque).",
+        )
+
+
 def _aprobar_grupo(payload: AprobarGrupoRequest, db: Session, current_user: User):
     from services import revision_consulta as revision
     alcance = payload.doc_ids if payload.doc_ids is not None else ([payload.doc_id] if payload.doc_id is not None else None)
@@ -197,6 +228,7 @@ def _aprobar_grupo(payload: AprobarGrupoRequest, db: Session, current_user: User
     ids = ids_del_grupo(db, payload.clave, alcance)
     if not ids:
         return {"status": "success", "resolved_count": 0, "message": "El grupo no tiene casos pendientes."}
+    _validar_guardrail_discordancia(db, ids)
     if payload.clave.startswith("HECHO_EN_REVISION::") and (payload.accion or "").upper() == "MAPEAR_ESTADO":
         if '|falta:ninguno|' not in payload.clave:
             raise HTTPException(422, 'Completa los datos obligatorios de los casos antes de aprobar el estado del grupo.')
@@ -208,11 +240,18 @@ def _aprobar_grupo(payload: AprobarGrupoRequest, db: Session, current_user: User
         if ("|falta:ninguno" not in payload.clave and not solo_fecha) or ("|estado:" in payload.clave and "|estado:OK" not in payload.clave):
             return {"status": "error", "resolved_count": 0, "message": "Al grupo le faltan campos: hay que corregirlo caso por caso."}
         correccion = {"mes": payload.mes, "gestion": payload.gestion} if solo_fecha else {}
-        n_ok = sum(1 for i in ids if resolver_caso_hecho(db, str(i), {"accion": "APROBAR", "aprobacion_en_bloque": True, **correccion},
+        accion_hecho = "DESCARTAR" if (payload.accion or "").upper() == "DESCARTAR" else "APROBAR"
+        n_ok = sum(1 for i in ids if resolver_caso_hecho(db, str(i), {"accion": accion_hecho, "aprobacion_en_bloque": True, **correccion},
                    user_id=getattr(current_user, "id", None), user_name=getattr(current_user, "username", None) or "Auditor Calidad")["status"] == "success")
         return {"status": "success", "resolved_count": n_ok, "casos_del_grupo": len(ids), "grupo": payload.clave}
+    accion_grupo = "DESCARTAR" if (payload.accion or "").upper() == "DESCARTAR" else "APROBAR"
     res = batch_resolve_review_items(
-        BatchResolveRequest(item_ids=[str(i) for i in ids], estudiante_resuelto=payload.estudiante_resuelto),
+        BatchResolveRequest(
+            item_ids=[str(i) for i in ids],
+            accion=accion_grupo,
+            justificacion=payload.justificacion,
+            estudiante_resuelto=payload.estudiante_resuelto,
+        ),
         db=db, current_user=current_user)
     res["grupo"] = payload.clave
     res["casos_del_grupo"] = len(ids)
@@ -225,20 +264,44 @@ def batch_resolve_review_items(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
 ):
-    """Resuelve y consolida en lote múltiples casos de la bandeja de revisión humana."""
-    # Una sola implementación de validación, auditoría e idempotencia por caso.
+    """Resuelve o descarta en lote múltiples casos de la bandeja de revisión humana con guardrail HTTP 422."""
+    unicos = list(dict.fromkeys(payload.item_ids))
+    _validar_guardrail_discordancia(db, unicos)
+    accion = "DESCARTAR" if (payload.accion or "").upper() == "DESCARTAR" else "APROBAR"
+    user_name = getattr(current_user, "username", None) or "Auditor Calidad"
     resolved_count = 0
-    for item_id in dict.fromkeys(payload.item_ids):
+    for item_id in unicos:
         datos = payload.model_dump(exclude_none=True)
-        datos['accion'] = 'APROBAR'
+        datos['accion'] = accion
         datos['aprobacion_en_bloque'] = True
+        if accion == "DESCARTAR" and not str(datos.get('motivo_descarte') or '').strip():
+            datos['motivo_descarte'] = (payload.justificacion or '').strip() or 'Descarte en lote desde bandeja HITL'
         res = resolve_review_item(str(item_id), datos, db=db, current_user=current_user)
         if res.get('status') == 'success':
             resolved_count += 1
     if resolved_count:
-        _notificar_revision(db, 'Aprobación en bloque terminada', f'{resolved_count} casos guardados. Abre Revisión para consultar el resultado.')
-    return {'status': 'success', 'resolved_count': resolved_count,
-            'message': f'{resolved_count} casos aprobados.'}
+        try:
+            db.add(LogPipelineIngesta(
+                etapa="HITL_BATCH_RESOLVE",
+                nivel="SUCCESS",
+                modulo="Bandeja HITL",
+                mensaje=f"{user_name} ejecutó {accion} en lote sobre {resolved_count} casos.",
+                metadata_json={
+                    "accion": accion,
+                    "justificacion": payload.justificacion,
+                    "item_ids": unicos[:100],
+                    "resolved_count": resolved_count,
+                    "usuario": user_name,
+                },
+            ))
+            db.commit()
+        except Exception:
+            db.rollback()
+        titulo_notif = 'Descarte en bloque terminado' if accion == 'DESCARTAR' else 'Aprobación en bloque terminada'
+        _notificar_revision(db, titulo_notif, f'{resolved_count} casos guardados. Abre Revisión para consultar el resultado.')
+    verbo = 'descartados' if accion == 'DESCARTAR' else 'aprobados'
+    return {'status': 'success', 'resolved_count': resolved_count, 'accion': accion,
+            'message': f'{resolved_count} casos {verbo}.'}
 
 
 @router.post("/review-tray/aprobar-un-clic")

@@ -19,14 +19,29 @@ export function useRevealCampo(onReveal) {
   const toggleCampo = useCallback(async (id, campo = 'ci') => {
     const key = `${id}:${campo}`;
     if (revealed[key]) {
-      setRevealed(({ [key]: _oculto, ...resto }) => resto);
+      setRevealed((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        if (campo === 'nombre') {
+          delete next[`${id}:sugerencia`];
+          delete next[`${id}:raw`];
+        }
+        return next;
+      });
       return;
     }
     try {
       const res = await dataopsApi.revelarCampo(id, campo);
       const val = res?.valor || res?.ci_real || res?.ci;
       if (val) {
-        setRevealed((prev) => ({ ...prev, [key]: val }));
+        setRevealed((prev) => {
+          const next = { ...prev, [key]: val };
+          if (campo === 'nombre') {
+            if (res?.sugerencia) next[`${id}:sugerencia`] = res.sugerencia;
+            if (res?.raw) next[`${id}:raw`] = res.raw;
+          }
+          return next;
+        });
         onReveal?.(val, campo);
       }
     } catch (err) {

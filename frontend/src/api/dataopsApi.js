@@ -293,9 +293,19 @@ export const dataopsApi = {
    * Paso ④: Obtiene los casos derivados a la bandeja de revisión humana (#12, #17)
    */
   getReviewTray: async (idLote, options = {}) => (await client.get(`${BASE_URL}/review-tray`, {
-    params: { id_lote: idLote, doc_id: options.docId || undefined, page: options.page || 1,
-      page_size: options.pageSize || 20, search: options.search || undefined, area: options.area,
-      vista: options.vista === 'RESUELTOS' ? 'RESUELTOS' : 'PENDIENTES', grupo: options.grupo || undefined },
+    params: {
+      id_lote: idLote,
+      doc_id: options.docId || undefined,
+      page: options.page || 1,
+      page_size: options.pageSize || 20,
+      search: options.search || undefined,
+      area: options.area,
+      prioridad: options.prioridad && options.prioridad !== 'TODAS' ? options.prioridad : undefined,
+      patron: options.patron && options.patron !== 'TODOS' ? options.patron : undefined,
+      motivo: options.motivo && options.motivo !== 'TODOS' ? options.motivo : undefined,
+      vista: options.vista === 'RESUELTOS' ? 'RESUELTOS' : 'PENDIENTES',
+      grupo: options.grupo || undefined,
+    },
   })).data,
 
   getReviewTrayAvisos: async (idLote, docId = null, estado = 'PENDIENTE') => (await client.get(`${BASE_URL}/review-tray/avisos`, {
@@ -375,10 +385,10 @@ export const dataopsApi = {
   /**
    * Resuelve un grupo: accion APROBAR (por defecto), MAPEAR_ESTADO (con canonico opcional) o CORREGIR_FECHA (mes y gestion).
    */
-  aprobarGrupo: async ({ clave, accion = null, canonico = null, mes = null, gestion = null, docIds = null, estudianteResuelto = null }) => mutar(async () => {
+  aprobarGrupo: async ({ clave, accion = null, justificacion = null, canonico = null, mes = null, gestion = null, docIds = null, estudianteResuelto = null }) => mutar(async () => {
     const res = await client.post(
       `${BASE_URL}/review-tray/approve-group`,
-      { clave, accion, canonico, mes, gestion, doc_ids: docIds, estudiante_resuelto: estudianteResuelto },
+      { clave, accion, justificacion, canonico, mes, gestion, doc_ids: docIds, estudiante_resuelto: estudianteResuelto },
       { timeout: LECTURA_LOTE_TIMEOUT_MS }
     );
     return res.data;

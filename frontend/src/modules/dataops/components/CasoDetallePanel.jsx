@@ -32,6 +32,8 @@ export default function CasoDetallePanel({
 
   const ciRev = getValor(item.id, 'ci');
   const nomRev = getValor(item.id, 'nombre');
+  const sugRev = getValor(item.id, 'sugerencia');
+  const rawRev = getValor(item.id, 'raw');
   const mailRev = getValor(item.id, 'correo');
   const hasCi = Boolean(item.ci_enmascarado && !['Sin dato', 'No provisto', 'No especificado'].includes(item.ci_enmascarado));
   const hasCorreo = Boolean(
@@ -158,7 +160,7 @@ export default function CasoDetallePanel({
             : item.motivo === 'SIN_LECTURA'
               ? 'Recomendación: la fila no tiene estructura legible; completa los datos faltantes o descártala.'
               : item.sugerencia
-                ? `Candidato sugerido: ${item.sugerencia}`
+                ? `Candidato sugerido: ${sugRev || item.sugerencia}`
                 : null;
         if (!chipsPorArea.length && !guia) return null;
         return (
@@ -183,7 +185,7 @@ export default function CasoDetallePanel({
             Ver línea original y entidades IOB2
           </summary>
           <div style={{ fontSize: 12, padding: 10, marginTop: 6, borderRadius: 8, background: 'var(--color-mist-gray)', color: 'var(--color-ink-black)', wordBreak: 'break-word' }}>
-            <EntityHighlightText text={item.que_vio} betoEnts={item.beto_ents || []} entidades={item.entidades || []} />
+            <EntityHighlightText text={rawRev || item.que_vio} betoEnts={item.beto_ents || []} entidades={item.entidades || []} />
           </div>
         </details>
       )}
@@ -196,6 +198,7 @@ export default function CasoDetallePanel({
         onReopen={isResuelto && !readOnly ? handleReopen : null}
         activeActionIdx={activeActionIdx}
         onSelectActionIdx={onSelectActionIdx}
+        revealed={{ ci: ciRev, nombre: nomRev, sugerencia: sugRev }}
       />
     </div>
   );

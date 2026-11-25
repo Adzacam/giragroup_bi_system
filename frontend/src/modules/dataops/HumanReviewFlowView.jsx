@@ -21,7 +21,13 @@ import { avisarTareaIniciada } from '../../components/shared/TareasSegundoPlano'
 import { queryClient, DATAOPS_QUERY_KEY } from '../../api/queryClient';
 import { toDataopsPath } from '../../v2/utils/v2Routes';
 
-const INITIAL = { docId: null, vista: 'GRUPOS', search: '', area: 'TODAS', page: 1, grupo: null };
+const INITIAL = { docId: null, vista: 'GRUPOS', search: '', area: 'TODAS', prioridad: 'TODAS', patron: 'TODOS', motivo: 'TODOS', page: 1, grupo: null };
+const PRIORIDADES = [
+  ['TODAS', 'Todas'],
+  ['ALTA', 'Alta'],
+  ['MEDIA', 'Media'],
+  ['BAJA', 'Baja'],
+];
 const AREAS = {
   academica: 'Académica',
   evaluacion_docente: 'Evaluación docente',
@@ -50,9 +56,15 @@ function RevisionBandeja({ batchId }) {
   const [retryingPrep, setRetryingPrep] = useState(false);
   const [cancelingTask, setCancelingTask] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [justificacionBatch, setJustificacionBatch] = useState('');
   const [activeActionIdx, setActiveActionIdx] = useState(0);
   const exportLock = useRef(false);
   const actions = useRevisionAcciones();
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [batchId, filters.vista, filters.page, filters.docId, filters.area, filters.prioridad, filters.patron, filters.motivo, filters.grupo, filters.search]);
   const { data, error, isFetching, refetch } = useRevision(batchId, filters, !!contexto && filters.vista !== 'AVISOS');
   const { data: lecturaData } = useQuery({
     queryKey: [...DATAOPS_QUERY_KEY, 'beto-reading-summary', String(batchId || ''), filters.docId || ''],
@@ -252,46 +264,128 @@ function RevisionBandeja({ batchId }) {
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'end' }}>
             <label style={{ flex: '1 1 240px', fontSize: 12 }}>Buscar en la selección<input className="dataops-input" aria-label="Buscar casos" value={input} onChange={e => setInput(e.target.value)} maxLength={200} disabled={actions.busy} placeholder="Nombre, módulo, archivo o motivo" /></label>
             {filters.vista !== 'GRUPOS' && <label style={{ fontSize: 12 }}>Área<select aria-label="Área de revisión" className="dataops-select" value={filters.area} disabled={actions.busy} onChange={e => setFilter('area', e.target.value)}><option value="TODAS">Todas</option>{Object.entries(AREAS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>}
+            {filters.vista !== 'GRUPOS' && <label style={{ fontSize: 12 }}>Prioridad<select aria-label="Prioridad de revisión" className="dataops-select" value={filters.prioridad || 'TODAS'} disabled={actions.busy} onChange={e => setFilter('prioridad', e.target.value)}>{PRIORIDADES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>}
             <Button variant="ghost" disabled={actions.busy} onClick={() => { setFilters(INITIAL); setInput(''); }}>Limpiar filtros</Button>
             <Button variant="ghost" isLoading={isFetching} loadingText="Consultando…" disabled={actions.busy} onClick={refresh}>Actualizar</Button>
             <Button variant="ghost" isLoading={exporting} loadingText="Exportando…" disabled={!data || actions.busy || isFetching || filters.vista === 'GRUPOS'} onClick={exportCsv}>Exportar incidencias</Button>
           </div>
         )}
-        {filters.grupo && <p style={{ marginTop: 12 }}>Mostrando los casos del grupo seleccionado. <Button variant="ghost" disabled={actions.busy} onClick={() => setFilter('grupo', null)}>Ver todos los casos</Button></p>}
-        {!readOnly && filters.vista === 'PENDIENTES' && !filters.grupo && !filters.search && filters.area === 'TODAS' && <Button variant="ghost" style={{ marginTop: 14 }} disabled={busy || isFetching || !data?.un_clic_total} isLoading={actions.sending} onClick={() => actions.schedule(`Aprobar ${data.un_clic_total} casos con datos completos o coincidencia de nombre`, () => dataopsApi.aprobarCasosUnClic(batchId, filters.docId))}>Aprobar casos verificados ({fmt(data?.un_clic_total)})</Button>}
+        {(filters.grupo || (filters.patron && filters.patron !== 'TODOS') || (filters.motivo && filters.motivo !== 'TODOS')) && (
+          <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', fontSize: 12 }}>
+            {filters.grupo && <Button variant="ghost" disabled={actions.busy} onClick={() => setFilter('grupo', null)}>Quitar filtro de grupo</Button>}
+            {filters.patron && filters.patron !== 'TODOS' && <Button variant="ghost" disabled={actions.busy} onClick={() => setFilter('patron', 'TODOS')}>Banda: {filters.patron} ✕</Button>}
+            {filters.motivo && filters.motivo !== 'TODOS' && <Button variant="ghost" disabled={actions.busy} onClick={() => setFilter('motivo', 'TODOS')}>Regla: {textoMotivo(filters.motivo)} ✕</Button>}
+          </div>
+        )}
       </div>
       <div aria-busy={isFetching} className="floating-artifact" style={{ padding: 20 }}>
         {filters.vista === 'AVISOS' ? (
           <AvisosTab batchId={batchId} docId={filters.docId} readOnly={readOnly} />
         ) : error ? <p role="alert">No se pudo consultar la bandeja. Pulsa Actualizar para reintentarlo.</p>
           : isFetching && !data ? <p role="status">Consultando casos…</p>
-          : filters.vista === 'GRUPOS' ? <GruposBandeja data={data} readOnly={readOnly} busy={busy} onVerIndividual={clave => { setInput(''); setFilters(prev => ({ ...prev, vista: 'PENDIENTES', grupo: clave, page: 1, search: '', area: 'TODAS' })); }} onResolver={(group, extra = {}) => actions.schedule(`Resolver grupo de ${group.n} casos`, () => dataopsApi.aprobarGrupo({ clave: group.clave, accion: group.accion_grupo, docIds: data.doc_ids, ...extra }))} />
-          : !items.length ? <p role="status">No hay casos para esta selección.</p>
+          : filters.vista === 'GRUPOS' ? (
+            <GruposBandeja
+              data={data}
+              readOnly={readOnly}
+              busy={busy}
+              onSelectPatron={patron => { setInput(''); setFilters(prev => ({ ...prev, vista: 'PENDIENTES', patron, motivo: 'TODOS', grupo: null, page: 1 })); }}
+              onSelectMotivo={motivo => { setInput(''); setFilters(prev => ({ ...prev, vista: 'PENDIENTES', motivo, patron: 'TODOS', grupo: null, page: 1 })); }}
+              onVerIndividual={clave => { setInput(''); setFilters(prev => ({ ...prev, vista: 'PENDIENTES', grupo: clave, page: 1, search: '', area: 'TODAS', patron: 'TODOS', motivo: 'TODOS' })); }}
+              onResolver={(group, extra = {}) => actions.schedule(`Resolver grupo de ${group.n} casos`, () => dataopsApi.aprobarGrupo({ clave: group.clave, accion: group.accion_grupo, docIds: data.doc_ids, ...extra }))}
+            />
+          ) : !items.length ? <p role="status">No hay casos para esta selección.</p>
           : showMasterDetail && (
+            <>
+              {!readOnly && filters.vista === 'PENDIENTES' && (() => {
+                const esBandaCritica = filters.patron === 'muy_distinto';
+                const esBloqueado = it => it.motivo === 'CI_NOMBRE_DISCORDANTE' && (it.patron_codigo === 'muy_distinto' || (it.similitud != null && Number(it.similitud) < 30));
+                const seleccionables = items.filter(it => !esBloqueado(it)).map(it => String(it.id));
+                const todosMarcados = seleccionables.length > 0 && seleccionables.every(id => selectedIds.includes(id));
+                if (esBandaCritica) {
+                  return (
+                    <div role="note" style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 10, background: 'var(--dataops-warning-bg)', color: 'var(--dataops-warning-text)', fontSize: 12 }}>
+                      Similitud &lt; 30 %: revisión individual obligatoria (no se permiten acciones en bloque).
+                    </div>
+                  );
+                }
+                const runBatch = (accion) => {
+                  if (!selectedIds.length) return;
+                  const etiqueta = accion === 'DESCARTAR' ? 'Descartar' : 'Confirmar';
+                  actions.schedule(`${etiqueta} ${selectedIds.length} casos seleccionados`, () =>
+                    dataopsApi.batchResolveReviewItems({
+                      item_ids: selectedIds,
+                      accion,
+                      justificacion: justificacionBatch.trim() || undefined,
+                    })
+                  );
+                };
+                return (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 12, padding: '10px 12px', borderRadius: 10, background: 'var(--color-mist-gray)', border: '1px solid var(--color-border)' }}>
+                    <Button variant="ghost" disabled={busy || !seleccionables.length} onClick={() => setSelectedIds(todosMarcados ? [] : seleccionables)}>
+                      {todosMarcados ? 'Deseleccionar página' : `Seleccionar página (${seleccionables.length})`}
+                    </Button>
+                    <input
+                      type="text"
+                      className="dataops-input"
+                      aria-label="Justificación de acción en lote"
+                      placeholder="Justificación (opcional)"
+                      value={justificacionBatch}
+                      onChange={e => setJustificacionBatch(e.target.value)}
+                      maxLength={200}
+                      style={{ flex: '1 1 180px', minWidth: 160 }}
+                    />
+                    <Button variant="primary" disabled={busy || !selectedIds.length} isLoading={actions.sending} onClick={() => runBatch('APROBAR')}>
+                      Confirmar seleccionados ({selectedIds.length})
+                    </Button>
+                    <Button variant="ghost" disabled={busy || !selectedIds.length} isLoading={actions.sending} onClick={() => runBatch('DESCARTAR')}>
+                      Descartar seleccionados ({selectedIds.length})
+                    </Button>
+                  </div>
+                );
+              })()}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, alignItems: 'start' }}>
               <div role="listbox" aria-label="Lista de casos" style={{ display: 'grid', gap: 8, maxHeight: 560, overflowY: 'auto' }}>
                 {items.map(it => {
                   const active = String(it.id) === String(selectedItem?.id);
+                  const bloqueado = it.motivo === 'CI_NOMBRE_DISCORDANTE' && (it.patron_codigo === 'muy_distinto' || (it.similitud != null && Number(it.similitud) < 30));
+                  const checked = selectedIds.includes(String(it.id));
                   return (
-                    <button key={it.id} type="button" role="option" aria-selected={active} onClick={() => { setSelectedId(it.id); setActiveActionIdx(0); }} style={{ textAlign: 'left', padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: `1px solid ${active ? 'var(--color-gira-gold)' : 'var(--color-border)'}`, background: active ? 'var(--dataops-info-bg)' : 'var(--color-pure-white)', color: 'var(--color-ink-black)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, fontSize: 12, fontWeight: 700 }}>
-                        <span>{textoMotivo(it.motivo, it.motivo_label)}</span>
-                        <span style={{ display: 'flex', gap: 6, alignItems: 'center', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-slate-gray)' }}>
-                          {it.prioridad && (
-                            <span style={{ fontFamily: 'inherit', fontSize: 10, padding: '1px 6px', borderRadius: 999, background: it.prioridad === 'ALTA' ? 'var(--dataops-warning-bg)' : 'var(--dataops-info-bg)', color: it.prioridad === 'ALTA' ? 'var(--dataops-warning-text)' : 'var(--dataops-info-text)' }}>
-                              {it.prioridad}
-                            </span>
-                          )}
-                          #{it.id}
-                        </span>
-                      </div>
-                      <p style={{ fontSize: 11.5, color: 'var(--color-slate-gray)', marginTop: 4 }}>{it.archivo_origen || 'Sin archivo'} · {it.ci_enmascarado || 'Sin CI'}</p>
-                    </button>
+                    <div key={it.id} style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
+                      {!readOnly && filters.vista === 'PENDIENTES' && (
+                        <label style={{ display: 'flex', alignItems: 'center', paddingLeft: 4 }} title={bloqueado ? 'Similitud < 30 %: requiere revisión individual' : 'Seleccionar caso'}>
+                          <input
+                            type="checkbox"
+                            aria-label={`Seleccionar caso ${it.id}`}
+                            disabled={busy || bloqueado}
+                            checked={checked}
+                            onChange={e => {
+                              const sid = String(it.id);
+                              setSelectedIds(prev => e.target.checked ? [...prev, sid] : prev.filter(x => x !== sid));
+                            }}
+                          />
+                        </label>
+                      )}
+                      <button type="button" role="option" aria-selected={active} onClick={() => { setSelectedId(it.id); setActiveActionIdx(0); }} style={{ flex: 1, textAlign: 'left', padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: `1px solid ${active ? 'var(--color-gira-gold)' : 'var(--color-border)'}`, background: active ? 'var(--dataops-info-bg)' : 'var(--color-pure-white)', color: 'var(--color-ink-black)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, fontSize: 12, fontWeight: 700 }}>
+                          <span>{textoMotivo(it.motivo, it.motivo_label)}</span>
+                          <span style={{ display: 'flex', gap: 6, alignItems: 'center', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-slate-gray)' }}>
+                            {it.prioridad && (
+                              <span style={{ fontFamily: 'inherit', fontSize: 10, padding: '1px 6px', borderRadius: 999, background: it.prioridad === 'ALTA' ? 'var(--dataops-warning-bg)' : 'var(--dataops-info-bg)', color: it.prioridad === 'ALTA' ? 'var(--dataops-warning-text)' : 'var(--dataops-info-text)' }}>
+                                {it.prioridad}
+                              </span>
+                            )}
+                            #{it.id}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: 11.5, color: 'var(--color-slate-gray)', marginTop: 4 }}>{it.archivo_origen || 'Sin archivo'} · {it.ci_enmascarado || 'Sin CI'}</p>
+                      </button>
+                    </div>
                   );
                 })}
               </div>
               <CasoDetallePanel item={selectedItem} readOnly={readOnly} isResuelto={filters.vista === 'RESUELTOS'} busy={busy} schedule={actions.schedule} activeActionIdx={activeActionIdx} onSelectActionIdx={setActiveActionIdx} />
             </div>
+            </>
           )}
         {filters.vista !== 'AVISOS' && <Paginacion pagina={filters.page} totalPaginas={data?.pagination?.total_pages || 1} total={data?.pagination?.total_items || 0} filasPorPagina={filters.vista === 'GRUPOS' ? 5 : 20} disabled={isFetching || actions.busy} onChange={page => setFilters(prev => ({ ...prev, page }))} />}
       </div>

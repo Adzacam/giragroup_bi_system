@@ -119,27 +119,44 @@ def valor_normalizado(motivo: Optional[str], texto: Optional[str]) -> str:
     return re.sub(r"\d+", "#", _sin_acentos(base).lower())[:120]
 
 
-def clave_grupo(motivo: Optional[str], texto: Optional[str]) -> str:
-    return f"{(motivo or '').upper()}::{valor_normalizado(motivo, texto)}"
+def clave_grupo(
+    motivo: Optional[str],
+    texto: Optional[str],
+    score_fuzzy: Optional[float] = None,
+    id_documento: Optional[int] = None,
+) -> str:
+    m_up = (motivo or "").upper()
+    if m_up == "CI_NOMBRE_DISCORDANTE" and (score_fuzzy is not None or id_documento is not None):
+        codigo, _ = banda_discordancia(score_fuzzy)
+        if id_documento is not None:
+            return f"CI_NOMBRE_DISCORDANTE::doc{id_documento}::{codigo}"
+        return f"CI_NOMBRE_DISCORDANTE::{codigo}"
+    return f"{m_up}::{valor_normalizado(motivo, texto)}"
 
 
-# ADW-L8: 748 discordancias de nombre de una sola fuente (ARCA) tenían 720 CI distintas, así que agrupar por CI no
-# agrupaba nada. El patrón de triage es qué tan distinto es el nombre; la aprobación sigue siendo por CI (nunca se
-# aprueba de una vez a personas distintas).
+# ADW-L8 / F12: 748 discordancias de nombre de una sola fuente (ARCA) tenían 720 CI distintas, así que agrupar por CI no
+# agrupaba nada. El patrón de triage es la banda de similitud (casi_igual >= 60, parcial 30-59, muy_distinto < 30).
 PATRONES_DISCORDANCIA = (
-    (30, "Nombre muy distinto (similitud < 30): probable CI mal digitada o persona distinta"),
-    (60, "Nombre parcialmente distinto (30 a 59): variante, orden o apellidos incompletos"),
-    (101, "Nombre casi igual (60 o más): diferencia menor de escritura"),
+    (30, "muy_distinto", "Nombre muy distinto (similitud < 30)"),
+    (60, "parcial", "Nombre parcialmente distinto (30 a 59)"),
+    (101, "casi_igual", "Nombre casi igual (60 o más)"),
 )
+
+
+def banda_discordancia(score_fuzzy) -> tuple[str, str]:
+    if score_fuzzy is None:
+        return ("casi_igual", "Nombre casi igual (60 o más)")
+    val = float(score_fuzzy)
+    for tope, codigo, etiqueta in PATRONES_DISCORDANCIA:
+        if val < tope:
+            return (codigo, etiqueta)
+    return (PATRONES_DISCORDANCIA[-1][1], PATRONES_DISCORDANCIA[-1][2])
 
 
 def patron_discordancia(score_fuzzy) -> str:
     if score_fuzzy is None:
         return "Sin similitud calculada"
-    for tope, etiqueta in PATRONES_DISCORDANCIA:
-        if float(score_fuzzy) < tope:
-            return etiqueta
-    return PATRONES_DISCORDANCIA[-1][1]
+    return banda_discordancia(score_fuzzy)[1]
 
 
 def grupos_pendientes(db: Session, doc_ids: Optional[List[int]] = None, limite: int = 500) -> Dict[str, Any]:
@@ -150,6 +167,7 @@ def grupos_pendientes(db: Session, doc_ids: Optional[List[int]] = None, limite: 
         StagingEntidadNoResuelta.texto_original,
         StagingEntidadNoResuelta.score_fuzzy,
         StagingEntidadNoResuelta.nivel_confianza,
+        StagingEntidadNoResuelta.id_documento,
     ).filter(
         StagingEntidadNoResuelta.resuelto == False  # noqa: E712
     )
@@ -158,8 +176,9 @@ def grupos_pendientes(db: Session, doc_ids: Optional[List[int]] = None, limite: 
     grupos: Dict[str, Dict[str, Any]] = {}
     n_casos = 0
     patrones: Dict[str, Dict[str, Any]] = {}
+    reglas_resumen: Dict[str, Dict[str, Any]] = {}
     descartadas_vacias = 0
-    for id_stg, motivo, texto, score, conf in q.order_by(StagingEntidadNoResuelta.id_staging).yield_per(200):
+    for id_stg, motivo, texto, score, conf, id_doc in q.order_by(StagingEntidadNoResuelta.id_staging).yield_per(200):
         m_up = (motivo or "").upper()
         if m_up in MOTIVOS_INFORMATIVOS:
             continue
@@ -167,7 +186,7 @@ def grupos_pendientes(db: Session, doc_ids: Optional[List[int]] = None, limite: 
             descartadas_vacias += 1
             continue
         n_casos += 1
-        k = clave_grupo(motivo, texto)
+        k = clave_grupo(motivo, texto, score_fuzzy=score, id_documento=id_doc)
         g = grupos.setdefault(k, {
             "clave": k,
             "motivo": motivo,
@@ -175,28 +194,44 @@ def grupos_pendientes(db: Session, doc_ids: Optional[List[int]] = None, limite: 
             "n": 0,
             "ejemplo": texto_publico(texto or "")[:160],
             "ids": [],
+            "id_documento": id_doc,
             "explicacion": explicacion_motivo(motivo, texto, score_fuzzy=score, nivel_confianza=conf),
         })
         g["n"] += 1
         if m_up == "CI_NOMBRE_DISCORDANTE":
-            etiqueta = patron_discordancia(score)
+            codigo_pat, etiqueta = banda_discordancia(score)
             g.setdefault("patron", etiqueta)
-            pat = patrones.setdefault(etiqueta, {"motivo": "CI_NOMBRE_DISCORDANTE", "patron": etiqueta, "n": 0, "grupos": set()})
+            g.setdefault("patron_codigo", codigo_pat)
+            pat = patrones.setdefault(codigo_pat, {
+                "codigo": codigo_pat,
+                "motivo": "CI_NOMBRE_DISCORDANTE",
+                "patron": etiqueta,
+                "n": 0,
+                "grupos": set(),
+            })
             pat["n"] += 1
             pat["grupos"].add(k)
+        reg = reglas_resumen.setdefault(m_up, {"motivo": m_up, "n": 0, "grupos": set()})
+        reg["n"] += 1
+        reg["grupos"].add(k)
         if len(g["ids"]) < 50:
             g["ids"].append(id_stg)
     for k, g in _grupos_hechos(db, doc_ids).items():
         n_casos += g["n"]
         g.setdefault("explicacion", explicacion_motivo("HECHO_EN_REVISION", g.get("ejemplo")))
         grupos[k] = g
+        reg = reglas_resumen.setdefault("HECHO_EN_REVISION", {"motivo": "HECHO_EN_REVISION", "n": 0, "grupos": set()})
+        reg["n"] += g["n"]
+        reg["grupos"].add(k)
     ordenados = sorted(grupos.values(), key=lambda g: -g["n"])
     lista_patrones = sorted(({**p, "grupos": len(p["grupos"])} for p in patrones.values()), key=lambda p: -p["n"])
+    lista_reglas = sorted(({**r, "grupos": len(r["grupos"])} for r in reglas_resumen.values()), key=lambda r: -r["n"])
     return {
         "total_casos": n_casos,
         "total_grupos": len(ordenados),
         "grupos": ordenados[:limite],
         "patrones": lista_patrones,
+        "reglas_resumen": lista_reglas,
         "descartadas_vacias": descartadas_vacias,
     }
 
@@ -276,13 +311,15 @@ def ids_del_grupo(db: Session, clave: str, doc_ids: Optional[List[int]] = None) 
         StagingEntidadNoResuelta.motivo,
         StagingEntidadNoResuelta.texto_original,
         StagingEntidadNoResuelta.nivel_confianza,
+        StagingEntidadNoResuelta.score_fuzzy,
+        StagingEntidadNoResuelta.id_documento,
     ).filter(
         StagingEntidadNoResuelta.resuelto == False, StagingEntidadNoResuelta.motivo == motivo)  # noqa: E712
     if doc_ids is not None:
         q = q.filter(StagingEntidadNoResuelta.id_documento.in_(list(doc_ids)))
     return [
-        i for i, m, t, conf in q.order_by(StagingEntidadNoResuelta.id_staging).all()
-        if not es_fila_vacia_sin_confianza(t, conf) and clave_grupo(m, t) == clave
+        i for i, m, t, conf, score, id_doc in q.order_by(StagingEntidadNoResuelta.id_staging).all()
+        if not es_fila_vacia_sin_confianza(t, conf) and clave_grupo(m, t, score_fuzzy=score, id_documento=id_doc) == clave
     ]
 
 

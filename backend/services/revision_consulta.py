@@ -12,6 +12,7 @@ from routers.dataops._comun import categoria_ruteo
 from services.bandeja_grupos import (
     MOTIVOS_CATALOGO,
     MOTIVOS_INFORMATIVOS,
+    banda_discordancia,
     clave_grupo,
     es_fila_vacia_sin_confianza,
     explicacion_motivo,
@@ -288,6 +289,8 @@ def caso_guardado(ent, doc, db=None, rol_usuario=None):
         'mes': p.get('mes'), 'gestion': p.get('gestion'), 'area': area, 'categoria_ruteo': cat_ruteo,
         'en_calidad': bool(p.get('en_calidad')), 'manual_presupuesto': manual,
         'prioridad': p.get('prioridad') or ('MEDIA' if (ent.nivel_confianza is not None and float(ent.nivel_confianza) >= 0.60) else 'ALTA'),
+        'patron_codigo': banda_discordancia(score)[0] if motivo == 'CI_NOMBRE_DISCORDANTE' else None,
+        'patron_label': banda_discordancia(score)[1] if motivo == 'CI_NOMBRE_DISCORDANTE' else None,
         'regla_relacion': p.get('regla_relacion'),
         'valor_relacion': p.get('valor_relacion'),
         'detalle_relacion': p.get('detalle_relacion'),
@@ -332,7 +335,9 @@ def iterar_casos(db, docs, resueltos=False, rol_usuario=None):
                 continue
             if es_fila_vacia_sin_confianza(ent.texto_original, ent.nivel_confianza):
                 continue
-        yield caso_guardado(ent, mapa.get(ent.id_documento), db=db, rol_usuario=rol_usuario), clave_grupo(ent.motivo, ent.texto_original)
+        yield caso_guardado(ent, mapa.get(ent.id_documento), db=db, rol_usuario=rol_usuario), clave_grupo(
+            ent.motivo, ent.texto_original, score_fuzzy=ent.score_fuzzy, id_documento=ent.id_documento
+        )
     if not resueltos:
         offset = 0
         while True:
@@ -351,29 +356,39 @@ def iterar_casos(db, docs, resueltos=False, rol_usuario=None):
             offset += len(bloque)
 
 
-def coincide(caso, search='', area=None, motivo=None, estado=None):
+_PRIO_RANK = {'ALTA': 0, 'MEDIA': 1, 'BAJA': 2}
+
+
+def coincide(caso, search='', area=None, motivo=None, estado=None, prioridad=None, patron=None):
     if area and area not in ('TODAS', 'ALL') and caso.get('area') != area and not (area == 'calidad' and caso.get('en_calidad')):
         return False
     if motivo and motivo not in ('ALL', 'TODOS') and caso.get('motivo') != motivo:
         return False
     if estado and estado not in ('ALL', 'TODOS') and caso.get('estado_resolucion') != estado:
         return False
+    if prioridad and prioridad not in ('TODAS', 'ALL') and (caso.get('prioridad') or '').upper() != prioridad.upper():
+        return False
+    if patron and patron not in ('TODOS', 'ALL'):
+        if caso.get('motivo') != 'CI_NOMBRE_DISCORDANTE' or caso.get('patron_codigo') != patron:
+            return False
     texto = ' '.join(str(caso.get(k) or '') for k in ('estudiante', 'sugerencia', 'modulo_detectado', 'archivo_origen', 'que_vio', 'motivo', 'motivo_label'))
     return not search or strip_accents(search).lower() in strip_accents(texto).lower()
 
 
-def consultar(db, docs, page=1, page_size=20, search='', area=None, motivo=None, estado=None, vista='PENDIENTES', grupo=None, rol_usuario=None):
-    seleccion, total, un_clic = [], 0, 0
+def consultar(db, docs, page=1, page_size=20, search='', area=None, motivo=None, estado=None, vista='PENDIENTES', grupo=None, rol_usuario=None, prioridad=None, patron=None):
+    coincidentes, un_clic = [], 0
     ids_grupo = set(str(i) for i in ids_del_grupo(db, clave_interna(db, grupo, [d.id_documento for d in docs]), [d.id_documento for d in docs])) if grupo else None
     for caso, clave in iterar_casos(db, docs, vista == 'RESUELTOS', rol_usuario=rol_usuario):
         if ids_grupo is not None and str(caso['id']) not in ids_grupo:
             continue
-        if not coincide(caso, search, area, motivo, estado):
+        if not coincide(caso, search, area, motivo, estado, prioridad=prioridad, patron=patron):
             continue
-        if (page - 1) * page_size <= total < page * page_size:
-            seleccion.append(caso)
-        total += 1
+        coincidentes.append(caso)
         un_clic += bool(caso.get('un_clic'))
+    if vista != 'RESUELTOS':
+        coincidentes.sort(key=lambda c: (_PRIO_RANK.get(str(c.get('prioridad') or '').upper(), 3), str(c.get('id'))))
+    total = len(coincidentes)
+    seleccion = coincidentes[(page - 1) * page_size:page * page_size]
     pag = {'page': page, 'page_size': page_size, 'total_items': total, 'total_pages': max(1, math.ceil(total / page_size))}
     return {'status': 'success', 'total': total, 'pendientes': total if vista != 'RESUELTOS' else None,
             'un_clic_total': un_clic, 'pagination': pag, 'data': seleccion, 'items': seleccion,
@@ -417,8 +432,8 @@ def _origen_grupo(db, g, mapa_docs):
     return archivo, area
 
 
-def _titulo_grupo(titulo, archivo, area):
-    partes = [p for p in (archivo, area) if p]
+def _titulo_grupo(titulo, archivo, area, patron=None):
+    partes = [p for p in (archivo, patron or area) if p]
     return f"{titulo} · {' · '.join(partes)}" if partes else titulo
 
 
@@ -430,32 +445,45 @@ def grupos_publicos(db, docs, page=1, search=''):
     grupos = []
     for g in base['grupos']:
         archivo, area = _origen_grupo(db, g, mapa_docs)
-        titulo = _titulo_grupo(motivo_publico(g.get('motivo')), archivo, area)
+        if not archivo and g.get('id_documento') in mapa_docs:
+            archivo = re.sub(r'\.[A-Za-z0-9]{2,5}$', '', mapa_docs[g['id_documento']].nombre_archivo or '') or None
+        patron_txt = g.get('patron')
+        titulo = _titulo_grupo(motivo_publico(g.get('motivo')), archivo, area, patron=patron_txt)
         ejemplo = proteger_ci(texto_publico(g.get('ejemplo') or ''))
         if search and strip_accents(search).lower() not in strip_accents(titulo + ' ' + ejemplo).lower():
             continue
         accion = g.get('accion_grupo') or 'MANUAL'
         if accion == 'MAPEAR_ESTADO' and '|falta:ninguno|' not in g['clave']:
             accion = 'MANUAL'
+        clave_hash = token_grupo(g['clave'])
         item = {
-            'clave': token_grupo(g['clave']),
+            'clave': clave_hash,
+            'hash_corto': clave_hash.replace('grupo-', '')[:6],
             'motivo': g['motivo'],
             'titulo': titulo,
+            'etiqueta_legible': titulo,
             'archivo_origen': archivo,
             'ejemplo': ejemplo,
             'n': g['n'],
             'accion_grupo': accion,
             'explicacion': proteger_ci(g.get('explicacion') or explicacion_motivo(g.get('motivo'), ejemplo)),
         }
-        if g.get('patron'):
-            item['patron'] = g['patron']
+        if patron_txt:
+            item['patron'] = patron_txt
+        if g.get('patron_codigo'):
+            item['patron_codigo'] = g['patron_codigo']
         grupos.append(item)
+    reglas = [
+        {**r, 'etiqueta': motivo_publico(r['motivo'])}
+        for r in base.get('reglas_resumen', [])
+    ]
     return {
         'total_casos': sum(g['n'] for g in grupos),
         'total_grupos': len(grupos),
         'doc_ids': ids,
         'grupos': grupos[(page - 1) * 5:page * 5],
         'patrones': base.get('patrones', []),
+        'reglas_resumen': reglas,
         'descartadas_vacias': base.get('descartadas_vacias', 0),
         'pagination': {'page': page, 'page_size': 5, 'total_items': len(grupos), 'total_pages': max(1, math.ceil(len(grupos) / 5))},
     }

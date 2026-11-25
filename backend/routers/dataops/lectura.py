@@ -601,7 +601,7 @@ def _extraer_campo_de_linea(line_txt: str, campo: str) -> Optional[str]:
 @router.get("/registro/{registro_id}/revelar-ci")
 def revelar_ci_registro(
     registro_id: str,
-    campo: str = Query("ci", pattern="^(ci|nombre|correo)$"),
+    campo: str = Query("ci", pattern="^(ci|nombre|correo|sugerencia|raw)$"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["ADMIN", "AUDITOR_CALIDAD"])),
 ):
@@ -647,7 +647,12 @@ def revelar_ci_registro(
                 if campo == "ci":
                     val_real = ent.ci_temporal or p.get("ci_real") or p.get("ci")
                 elif campo == "nombre":
-                    val_real = p.get("nombre_real") or p.get("nombre") or ent.mejor_candidato
+                    from services.sugerencia_hitl import nombre_extraido
+                    val_real = p.get("estudiante") or p.get("nombre_real") or p.get("nombre") or nombre_extraido(ent.texto_original, p.get("raw_line")) or ent.mejor_candidato
+                elif campo == "sugerencia":
+                    val_real = ent.mejor_candidato
+                elif campo == "raw":
+                    val_real = p.get("raw_line") or ent.texto_original
                 elif campo == "correo":
                     val_real = p.get("correo_real") or p.get("correo")
                 if not val_real:
@@ -694,6 +699,13 @@ def revelar_ci_registro(
         resp["ci"] = val_real
         resp["ci_real"] = val_real
         resp["ci_enmascarado"] = val_enmascarado
+    elif campo == "nombre" and "ent" in locals() and ent is not None:
+        p_ent = ent.payload_json if isinstance(ent.payload_json, dict) else {}
+        if ent.mejor_candidato:
+            resp["sugerencia"] = ent.mejor_candidato
+        raw_ent = p_ent.get("raw_line") or ent.texto_original
+        if raw_ent:
+            resp["raw"] = raw_ent
     return resp
 
 

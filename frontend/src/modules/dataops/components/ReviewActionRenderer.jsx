@@ -14,6 +14,7 @@ export default function ReviewActionRenderer({
   onReopen = null,
   activeActionIdx = 0,
   onSelectActionIdx = null,
+  revealed = {},
 }) {
   const acciones = Array.isArray(item?.acciones) && item.acciones.length > 0
     ? item.acciones
@@ -79,10 +80,10 @@ export default function ReviewActionRenderer({
 
       {accion?.widget === 'IdentityCompare' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, padding: 12, borderRadius: 10, background: 'var(--color-mist-gray)', marginBottom: 12 }}>
-          <div><span style={{ fontSize: 11, color: 'var(--color-slate-gray)' }}>Nombre en fuente</span><p style={{ fontWeight: 600 }}>{item?.estudiante || 'Sin dato'}</p></div>
-          <div><span style={{ fontSize: 11, color: 'var(--color-slate-gray)' }}>Padrón (CI {item?.ci_enmascarado || 'Sin CI'})</span><p style={{ fontWeight: 600 }}>{item?.sugerencia || '••••'}</p></div>
+          <div><span style={{ fontSize: 11, color: 'var(--color-slate-gray)' }}>Nombre en fuente</span><p style={{ fontWeight: 600 }}>{revealed?.nombre || item?.estudiante || 'Sin dato'}</p></div>
+          <div><span style={{ fontSize: 11, color: 'var(--color-slate-gray)' }}>Padrón (CI {revealed?.ci || item?.ci_enmascarado || 'Sin CI'})</span><p style={{ fontWeight: 600 }}>{revealed?.sugerencia || item?.sugerencia || '••••'}</p></div>
           {item?.similitud_nombre_completo != null && (
-            <div><span style={{ fontSize: 11, color: 'var(--color-slate-gray)' }}>Similitud</span><p style={{ fontWeight: 700 }}>{Math.round(Number(item.similitud_nombre_completo) * 100)} %</p></div>
+            <div><span style={{ fontSize: 11, color: 'var(--color-slate-gray)' }}>Similitud</span><p style={{ fontWeight: 700 }}>{Number(item.similitud_nombre_completo) <= 1 ? Math.round(Number(item.similitud_nombre_completo) * 100) : Math.round(Number(item.similitud_nombre_completo) * 10) / 10} %</p></div>
           )}
         </div>
       )}

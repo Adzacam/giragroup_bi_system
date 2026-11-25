@@ -1,0 +1,4 @@
+# F12-3 — Pruebas Frontend (Vitest + Vite Build)
+- Command: `cd frontend && npx vitest run && npm run build`
+- Vitest: Test Files 25 passed (25), Tests 129 passed (129), Duration 1.92s
+- Vite Build: 2075 modules transformed, built in 2.63s (0 errors)

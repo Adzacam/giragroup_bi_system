@@ -1,0 +1,4 @@
+# F12-3 — Pruebas Backend (pytest)
+- Command: `.\.venv\Scripts\python.exe -m pytest tests/sprint5/test_ba_l3_ruteo.py tests/sprint5/test_beto_sugerencia_hitl.py tests/sprint5/test_f12_revision_grupos.py -q`
+- Result: `17 passed, 6 warnings in 18.00s` (0 failed)
+- Rebuild: `docker compose up -d --build --no-deps api web` -> `9/9` servicios Up.

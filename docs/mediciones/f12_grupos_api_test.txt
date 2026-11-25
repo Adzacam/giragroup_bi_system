@@ -1,0 +1,28 @@
+# F12-1a — Verificación API de Grupos y Banda `patron` (Lote #1)
+Endpoint: GET /api/v1/dataops/review-tray/grupos?id_lote=1
+Status: 200 OK
+total_casos: 1578 (1573 staging + 5 hechos)
+total_grupos: 126 (antes: 839)
+total_pages: 26 (antes: 168)
+
+Títulos legibles (muestra sin hash):
+- La cédula coincide pero el nombre es distinto · Base centralizada Académica ARCA (1) · Nombre parcialmente distinto (30 a 59)
+- Lectura con baja confianza · Base centralizada Académica ARCA (1)
+
+Patrones CI_NOMBRE_DISCORDANTE:
+- parcial (30-59): 609 casos (1 grupo)
+- muy_distinto (< 30): 121 casos (1 grupo)
+- casi_igual (>= 60): 12 casos (1 grupo)
+
+Reglas resumen (todas las reglas activas):
+- CI_NOMBRE_DISCORDANTE: 742
+- BAJA_CONFIANZA_IA: 665
+- HOMONIMIA: 62
+- SIN_LECTURA: 59
+- RELACION_INCOHERENTE: 41
+- HECHO_EN_REVISION: 5
+- DESACUERDO_REGLA_BETO: 3
+- FILA_SIN_IDENTIDAD: 1
+
+Paginación sin truncamiento (GET /api/v1/dataops/review-tray?id_lote=1&patron=parcial&page=1&page_size=20):
+Status: 200 OK · total: 609 · total_pages: 31

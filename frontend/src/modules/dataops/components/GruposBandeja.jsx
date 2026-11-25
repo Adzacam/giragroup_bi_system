@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Button from '../../../components/shared/Button';
 import { maskTexto, textoMotivo } from '../../../constants/motivosBandeja';
 
-export default function GruposBandeja({ data, readOnly, busy, onVerIndividual, onResolver }) {
+export default function GruposBandeja({ data, readOnly, busy, onVerIndividual, onResolver, onSelectPatron, onSelectMotivo }) {
   const [dialog, setDialog] = useState(null);
   const [mes, setMes] = useState('');
   const [gestion, setGestion] = useState('');
@@ -10,31 +10,75 @@ export default function GruposBandeja({ data, readOnly, busy, onVerIndividual, o
   const open = group => { setMes(''); setGestion(''); setCanonico(''); setDialog(group); };
   return <>
     {data?.patrones?.length > 0 && (
-      <section aria-label="Patrones detectados en la bandeja" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+      <section aria-label="Bandas de similitud en CI con nombre distinto" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         {data.patrones.map((pat) => (
-          <div key={pat.patron} style={{ padding: '6px 12px', borderRadius: 999, background: 'var(--dataops-warning-bg)', color: 'var(--dataops-warning-text)', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <button
+            key={pat.codigo || pat.patron}
+            type="button"
+            onClick={() => onSelectPatron?.(pat.codigo || pat.patron)}
+            title="Filtrar casos pendientes de esta banda"
+            style={{
+              padding: '6px 12px',
+              borderRadius: 999,
+              border: '1px solid var(--dataops-warning-text)',
+              background: 'var(--dataops-warning-bg)',
+              color: 'var(--dataops-warning-text)',
+              fontSize: 12,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              cursor: 'pointer',
+            }}
+          >
             <strong>{pat.n.toLocaleString('es-BO')}</strong>
             <span>{pat.patron}</span>
             <span style={{ opacity: 0.8 }}>({pat.grupos} grupos)</span>
-          </div>
+          </button>
+        ))}
+      </section>
+    )}
+    {data?.reglas_resumen?.length > 0 && (
+      <section aria-label="Resumen por regla de validación" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+        {data.reglas_resumen.map((reg) => (
+          <button
+            key={reg.motivo}
+            type="button"
+            onClick={() => onSelectMotivo?.(reg.motivo)}
+            title="Ver casos pendientes de esta regla"
+            style={{
+              padding: '4px 10px',
+              borderRadius: 999,
+              border: '1px solid var(--color-border)',
+              background: 'var(--dataops-info-bg)',
+              color: 'var(--dataops-info-text)',
+              fontSize: 11.5,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              cursor: 'pointer',
+            }}
+          >
+            <strong>{reg.n.toLocaleString('es-BO')}</strong>
+            <span>{textoMotivo(reg.motivo, reg.etiqueta)}</span>
+          </button>
         ))}
       </section>
     )}
     {!data?.grupos?.length ? <p role="status">No hay grupos para esta selección.</p> : <div tabIndex={0} role="region" aria-label="Grupos de revisión humana" style={{ overflowX: 'auto' }}><table className="dataops-table" style={{ width: '100%' }}>
       <thead><tr><th scope="col">Motivo</th><th scope="col">Casos</th><th scope="col">Revisión</th></tr></thead>
       <tbody>{data.grupos.map(group => {
-        const codigoCorto = group.clave ? `#${String(group.clave).replace(/^grupo-/, '').slice(0, 6)}` : null;
-        const diferenciador = [group.archivo_origen, codigoCorto].filter(Boolean).join(' · ');
+        const codigoCorto = group.hash_corto || (group.clave ? String(group.clave).replace(/^grupo-/, '').slice(0, 6) : null);
+        const tituloPrincipal = group.etiqueta_legible || textoMotivo(group.motivo, group.titulo);
         return (
       <tr key={group.clave}>
         <td>
           <details>
-            <summary style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>
-              <span>{textoMotivo(group.motivo, group.titulo)}</span>
+            <summary title={codigoCorto ? `Ref. interna: #${codigoCorto}` : undefined} style={{ cursor: 'pointer', color: 'var(--dataops-info-text)' }}>
+              <span>{tituloPrincipal}</span>
               {group.patron && <span style={{ marginLeft: 8, fontSize: 11, padding: '2px 8px', borderRadius: 999, background: 'var(--dataops-warning-bg)', color: 'var(--dataops-warning-text)' }}>{group.patron}</span>}
-              {diferenciador && (
+              {group.archivo_origen && (
                 <span style={{ display: 'block', fontSize: 11, color: 'var(--color-slate-gray)', marginTop: 2, fontWeight: 400, overflowWrap: 'anywhere' }}>
-                  {diferenciador}
+                  {group.archivo_origen}
                 </span>
               )}
             </summary>

@@ -51,7 +51,8 @@ class ConfirmDwInsertRequest(BaseModel):
 
 class BatchResolveRequest(BaseModel):
     item_ids: List[str]
-    accion: Optional[str] = "CREAR_O_VINCULAR"
+    accion: Optional[str] = "APROBAR"
+    justificacion: Optional[str] = None
     ci_corregida: Optional[str] = None
     estudiante_resuelto: Optional[str] = None
     email: Optional[str] = None
@@ -68,7 +69,8 @@ class AprobarGrupoRequest(BaseModel):
     doc_id: Optional[int] = None
     doc_ids: Optional[List[int]] = None  # alcance: solo los casos de estos documentos (p. ej. los del ciclo)
     estudiante_resuelto: Optional[str] = None
-    accion: Optional[str] = None  # APROBAR (por defecto) o MAPEAR_ESTADO (grupos con estado fuera de catálogo / combinación no admitida)
+    accion: Optional[str] = None  # APROBAR (por defecto), DESCARTAR o MAPEAR_ESTADO
+    justificacion: Optional[str] = None
     canonico: Optional[str] = None  # estado canónico al que se reescribe el valor fuera de catálogo (MAPEAR_ESTADO)
     mes: Optional[int] = Field(None, ge=1, le=12)
     gestion: Optional[int] = Field(None, ge=2000, le=2100)
