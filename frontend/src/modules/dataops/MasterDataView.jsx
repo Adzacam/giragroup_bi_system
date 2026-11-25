@@ -83,6 +83,7 @@ export default function MasterDataView() {
         uso,
         grupo,
       }),
+    retry: 1,
     placeholderData: previous => previous,
   });
 
@@ -360,8 +361,11 @@ export default function MasterDataView() {
 
       <div className="floating-artifact v2-parent-child-panel" style={{ padding: 20 }} aria-busy={isFetching}>
         {error ? (
-          <p role="alert">No se pudo consultar el catálogo. Pulsa Actualizar para reintentarlo.</p>
-        ) : isFetching || !data ? (
+          <div role="alert" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+            <p style={{ margin: 0 }}>No se pudo consultar el catálogo. Verifica la conexión con la API e inténtalo de nuevo.</p>
+            <button type="button" className="btn-secondary" onClick={() => refetch()}>Reintentar</button>
+          </div>
+        ) : isFetching && !data ? (
           <p role="status">Consultando registros…</p>
         ) : (
           <div className="cat-table-region" tabIndex={0} role="region" aria-label={tipo === 'modulos' ? 'Tabla de módulos' : 'Tabla de instituciones'}>

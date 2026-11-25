@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Paginacion from '../../components/shared/Paginacion';
 import Button from '../../components/shared/Button';
 import usePaginacion from '../../hooks/usePaginacion';
@@ -21,6 +21,25 @@ export default function GestionUsuarios() {
   const [successMsg, setSuccessMsg] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const createInputRef = useRef(null);
+  const prevFocusRef = useRef(null);
+
+  useEffect(() => {
+    if (!isModalOpen) return undefined;
+    prevFocusRef.current = document.activeElement;
+    const timer = setTimeout(() => createInputRef.current?.focus(), 0);
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setIsModalOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('keydown', onKeyDown);
+      if (prevFocusRef.current && typeof prevFocusRef.current.focus === 'function') {
+        prevFocusRef.current.focus();
+      }
+    };
+  }, [isModalOpen]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -216,6 +235,7 @@ export default function GestionUsuarios() {
                           backgroundColor: 'var(--color-mist-gray)',
                           borderRadius: '4px',
                           color: 'var(--color-slate-gray)',
+                          whiteSpace: 'nowrap',
                         }}
                       >
                         (Tu sesión)
@@ -333,6 +353,9 @@ export default function GestionUsuarios() {
           }}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="crear-usuario-titulo"
             className="floating-artifact"
             style={{
               width: '100%',
@@ -345,12 +368,13 @@ export default function GestionUsuarios() {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 className="serif-heading" style={{ fontSize: '22px', margin: 0 }}>
+              <h3 id="crear-usuario-titulo" className="serif-heading" style={{ fontSize: '22px', margin: 0 }}>
                 Crear Nuevo Usuario
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
                 type="button"
+                aria-label="Cerrar diálogo"
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-slate-gray)' }}
               >
                 <X size={20} />
@@ -363,6 +387,7 @@ export default function GestionUsuarios() {
                   Nombre de usuario
                 </label>
                 <input
+                  ref={createInputRef}
                   type="text"
                   required
                   value={formData.username}

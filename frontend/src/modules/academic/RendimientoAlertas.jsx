@@ -367,8 +367,8 @@ export default function RendimientoAlertas() {
       key: 'alerta_critica',
       data: tarjetas.alerta_critica || {},
       badgeText: 'ALERTA CRÍTICA',
-      accentColor: '#991B1B',
-      bgTint: 'rgba(153, 27, 27, 0.10)',
+      accentColor: 'var(--color-alert-red-text, var(--color-alert-red))',
+      bgTint: 'rgba(217, 56, 58, 0.14)',
       icon: ShieldAlert,
     },
   ];

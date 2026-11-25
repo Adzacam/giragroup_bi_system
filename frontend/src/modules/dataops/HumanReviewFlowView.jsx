@@ -204,7 +204,10 @@ function RevisionBandeja({ batchId }) {
   if (!batchId) {
     return (
       <BatchFlowLayout currentStep={3}>
-        <p className="floating-artifact" style={{ padding: 24 }}>Selecciona un lote desde el historial de carga.</p>
+        <div className="floating-artifact" style={{ padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          <p style={{ margin: 0 }}>Selecciona un lote desde el historial de carga.</p>
+          <a href="/v2/dataops/ingesta" className="btn-secondary">Ir al historial de carga</a>
+        </div>
       </BatchFlowLayout>
     );
   }

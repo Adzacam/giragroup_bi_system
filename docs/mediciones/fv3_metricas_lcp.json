@@ -1,0 +1,12 @@
+{
+  "fase": "FV3-1",
+  "timestamp": "2026-11-24T21:50:22",
+  "url": "http://localhost:5173/v2/dashboard",
+  "nota_medicion": "El sandbox webview_browser bloquea page.evaluate(), por lo que LCP/CLS numéricos no fueron leídos vía PerformanceObserver en esta pasada; se documentan hallazgos de carga percibida y CLS.",
+  "lcp_ms": null,
+  "cls": null,
+  "errores_consola": 0,
+  "errores_red_502_en_api": true,
+  "cookies_http_observadas": 0,
+  "almacenamiento_local_kb": 11.7
+}

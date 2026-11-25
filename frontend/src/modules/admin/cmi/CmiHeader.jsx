@@ -61,7 +61,7 @@ export default function CmiHeader({
             aria-haspopup="menu"
             className="btn-academic cmi-export-btn"
           >
-            <Download size={14} className={`cmi-icon-gold ${isExporting ? 'animate-bounce' : ''}`} aria-hidden="true" />
+            <Download size={14} className={isExporting ? 'animate-bounce' : ''} aria-hidden="true" />
             <span>{isExporting ? 'Exportando...' : 'Exportar CMI'}</span>
           </button>
 

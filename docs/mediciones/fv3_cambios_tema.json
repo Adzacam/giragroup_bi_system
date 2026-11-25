@@ -1,0 +1,26 @@
+{
+  "fase": "FV3-2",
+  "timestamp": "2026-11-24T21:54:00",
+  "cambios": [
+    {
+      "archivo": "frontend/index.html",
+      "ajuste": "Añadido <meta name=\"color-scheme\" content=\"light dark\" /> para evitar FOUC y alinear controles nativos."
+    },
+    {
+      "archivo": "frontend/src/v2/styles/v2-tokens.css",
+      "ajuste": "Declarado color-scheme: light explícito, ajustado --color-slate-gray a #5C606B (WCAG AA >= 4.5:1), añadido --color-alert-red-text (#B91C1C) y regla global :focus-visible con 2px solid var(--color-gira-gold)."
+    },
+    {
+      "archivo": "frontend/src/modules/admin/cmi/CmiHeader.jsx",
+      "ajuste": "Eliminada clase cmi-icon-gold en el icono Download de Exportar CMI para evitar icono dorado sobre fondo dorado en modo oscuro."
+    },
+    {
+      "archivo": "frontend/src/components/layout/UserProfileDropdown.jsx",
+      "ajuste": "Ampliado ancho del popover a min(330px, calc(100vw - 24px)), flex-wrap en badges (2FA Verificado) y botón Cerrar Sesión con tokens adaptativos en lugar de #fee2e2."
+    },
+    {
+      "archivo": "frontend/src/modules/academic/RendimientoAlertas.jsx",
+      "ajuste": "Actualizado badge ALERTA CRÍTICA a var(--color-alert-red-text, var(--color-alert-red)) para contraste AA en modo oscuro."
+    }
+  ]
+}

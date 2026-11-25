@@ -1,0 +1,11 @@
+{
+  "fase": "FV3-3",
+  "timestamp": "2026-11-24T21:54:00",
+  "cambios_ux_lcp": [
+    "frontend/src/modules/admin/GestionUsuarios.jsx: diálogo Crear Nuevo Usuario con role=\"dialog\", aria-modal=\"true\", aria-labelledby, cierre con Escape, foco inicial y restauración de foco; white-space: nowrap en badge (Tu sesión).",
+    "frontend/src/modules/dataops/MasterDataView.jsx: retry: 1 en useQuery y botón accionable Reintentar cuando falla la consulta de catálogos.",
+    "frontend/src/modules/dataops/HumanReviewFlowView.jsx: enlace directo al historial de carga desde el estado vacío sin lote.",
+    "frontend/src/v2/styles/v2-layout.css: padding-bottom: 112px en @media (max-width: 960px) para evitar solapamiento con la barra inferior."
+  ],
+  "errores_consola": 0
+}

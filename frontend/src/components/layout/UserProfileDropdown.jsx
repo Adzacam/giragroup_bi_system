@@ -122,7 +122,7 @@ export default function UserProfileDropdown() {
               position: 'absolute',
               right: 0,
               top: 'calc(100% + 14px)',
-              width: '290px',
+              width: 'min(330px, calc(100vw - 24px))',
               backgroundColor: 'var(--color-paper-white)',
               borderRadius: '20px',
               boxShadow: 'var(--shadow-modal)',
@@ -161,7 +161,7 @@ export default function UserProfileDropdown() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
                 <span
                   style={{
                     fontSize: '10px',
@@ -259,16 +259,16 @@ export default function UserProfileDropdown() {
                   gap: '8px',
                   padding: '10px 14px',
                   borderRadius: '12px',
-                  background: '#fee2e2',
-                  border: '1px solid #fca5a5',
-                  color: 'var(--color-alert-red)',
+                  background: 'rgba(217, 56, 58, 0.12)',
+                  border: '1px solid var(--color-alert-red)',
+                  color: 'var(--color-alert-red-text, var(--color-alert-red))',
                   fontSize: '13px',
                   fontWeight: 600,
                   cursor: 'pointer',
-                  transition: 'all 0.15s',
+                  transition: 'background-color 0.15s',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fecaca')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#fee2e2')}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(217, 56, 58, 0.22)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(217, 56, 58, 0.12)')}
               >
                 <LogOut size={15} />
                 <span>Cerrar Sesión</span>
