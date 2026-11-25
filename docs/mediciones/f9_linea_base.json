@@ -1,0 +1,9 @@
+{
+  "rama_base": "main",
+  "commit_base": "281feb7",
+  "tmpfs_disponible": true,
+  "f8_tiempo_total_seg": 1459.49,
+  "f8_bandeja_pendientes_no_ruido": 1901,
+  "f8_tbl_inscritos_s": 541.51,
+  "f8_bd_cobranzas_s": 353.7
+}

@@ -982,10 +982,34 @@ def registros_evaluacion(campos: Dict[str, str], perfil: Optional[Any] = None) -
     return registros
 
 
+def _tiene_identidad_ci_valida(campos: Dict[str, str]) -> bool:
+    """True si la fila tiene CI boliviana válida (PATRON_CI_BOLIVIA, sin '?' ni 'TEMP-') y nombre real no vacío."""
+    from pipeline.config import PATRON_CI_BOLIVIA
+    ci_raw = _primero(campos, _CLAVES_CI)
+    if ci_raw and "?" in str(ci_raw):
+        return False
+    est = estudiante_de_fila(campos)
+    if not est:
+        return False
+    fk = est.get("fk_resolucion") or {}
+    ci = fk.get("ci")
+    if not ci or "?" in str(ci) or str(ci).upper().startswith("TEMP-"):
+        return False
+    ci_num = fk.get("ci_numero")
+    ci_comp = fk.get("ci_complemento")
+    ci_eval = f"{ci_num}-{ci_comp}" if ci_num and ci_comp else (ci_num or str(ci))
+    ci_eval = re.sub(r"[.\s]+", "", ci_eval)
+    if not PATRON_CI_BOLIVIA.match(ci_eval):
+        return False
+    nombre = str(est.get("valor_extraido") or "").strip()
+    if not nombre or nombre == str(ci).strip() or not re.search(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]", nombre):
+        return False
+    return True
+
+
 def fila_resuelta_por_regla(campos: Dict[str, str], categoria: str, perfil_encuesta: Optional[Any] = None) -> bool:
-    """D-A8a / D-T1: una fila que una regla estructural (categoría + mes, costos por programa, convenio o encuesta Likert válida)
-    ya convierte en hecho en cualquier categoría donde el pipeline aplica esa regla.
-    No necesita persona ni índice BETO: BETO solo ve lo que las reglas no resolvieron (cascada)."""
+    """D-A8a / D-T1 / D-F9-1: una fila que una regla estructural ya convierte en hecho en cualquier categoría
+    donde el pipeline aplica esa regla. BETO solo ve lo que las reglas no resolvieron (cascada)."""
     if not campos:
         return False
     if categoria == "rentabilidad":
@@ -995,7 +1019,25 @@ def fila_resuelta_por_regla(campos: Dict[str, str], categoria: str, perfil_encue
             or registros_techo_convenio(campos)
         )
     if categoria in ("marketing", "admision"):
-        return bool(registros_techo_convenio(campos))
+        if registros_techo_convenio(campos):
+            return True
+        if not _tiene_identidad_ci_valida(campos):
+            return False
+        tiene_prog = bool(
+            _pos(campos)
+            or _primero(campos, ("NUMEROPROYECTO", "NUMERO PROYECTO", "NOMBRE DEL PROGRAMA", "NOMBRE PROGRAMA", "PROGRAMA", "CURSO"))
+        )
+        return tiene_prog
+    if categoria == "financiero":
+        if not _tiene_identidad_ci_valida(campos):
+            return False
+        from services.cobranza_canonica import registros_cobranza
+        if registros_cobranza(campos):
+            return True
+        for k_fin in ("MONTO DEUDA", "MONTO_DEUDA", "DEUDA", "MONTO PAGADO", "MONTO_PAGADO", "PAGADO", "CUOTAS IMPAGAS", "CUOTAS_IMPAGAS", "CUOTAS EN MORA"):
+            if campos.get(k_fin) and _a_float(campos.get(k_fin)) is not None:
+                return True
+        return False
     if categoria == "evaluacion_docente":
         # F6-2a: filas Likert validadas por encuesta_canonica.perfilar se resuelven por regla sin BETO
         regs = registros_evaluacion(campos, perfil_encuesta)

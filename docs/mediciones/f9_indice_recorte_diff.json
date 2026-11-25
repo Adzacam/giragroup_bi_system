@@ -1,0 +1,39 @@
+{
+  "f8_tiempo_total_seg": 1459.49,
+  "f9_tiempo_total_seg": 655.91,
+  "delta_total_seg": -803.58,
+  "rnf03_cumplido_15m": true,
+  "rnf03_aceptable_20m": true,
+  "tbl_inscritos": {
+    "f8_s": 541.51,
+    "f9_s": 50.92,
+    "fact_marketing_f8": 9208,
+    "fact_marketing_f9": 9208
+  },
+  "bd_cobranzas": {
+    "f8_s": 353.7,
+    "f9_s": 30.82,
+    "fact_fin_f8": 27190,
+    "fact_fin_f9": 27190
+  },
+  "diferencias_conteos": {
+    "fact_rendimiento_academico": 0,
+    "fact_situacion_financiera": 0,
+    "fact_evaluacion_docente": 0,
+    "fact_marketing": 0,
+    "fact_rentabilidad": 0,
+    "fact_costo_programa": 0,
+    "fact_techo_convenio": 0,
+    "fact_planificacion_programa": 0,
+    "dim_estudiante": 0,
+    "dim_docente": 0,
+    "dim_modulo": 0,
+    "dim_tiempo": 0,
+    "dim_origen_documental": 0,
+    "bridge_modulo_docente": 0,
+    "stg_entidad_no_resuelta": 0,
+    "log_inconsistencias": 0
+  },
+  "bandeja_f8": 1901,
+  "bandeja_f9": 1901
+}

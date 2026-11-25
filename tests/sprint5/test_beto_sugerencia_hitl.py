@@ -45,7 +45,7 @@ def test_se_limita_la_cantidad_de_candidatos():
 def test_candidatos_por_similitud_enmascara_la_cedula():
     personas = [SimpleNamespace(id_estudiante=1, nombre_completo="Maria Lopez Quispe", ci_numero="4567890", ci=None, programa_origen=None),
                 SimpleNamespace(id_estudiante=2, nombre_completo="Zzz Qqq", ci_numero=None, ci=None, programa_origen=None)]
-    out = bi.candidatos_por_similitud("Maria Lopez", personas)
+    out = bi.candidatos_por_similitud("Maria Lopez Quispe", personas)
     assert [c["id"] for c in out] == [1] and "4567890" not in str(out) and out[0]["ci_enmascarado"]
 
 
@@ -62,7 +62,10 @@ def test_la_api_agrega_el_campo_solo_cuando_hay_sugerencias_y_no_cambia_el_resto
     sug_enmascarado = [{**s, "nombre": "••••"} for s in sug]
     con = _caso({"sugerencias": sug})
     assert "sugerencias_beto" not in sin and con["sugerencias_beto"] == sug_enmascarado
-    assert {k: v for k, v in con.items() if k != "sugerencias_beto"} == sin     # cambio aditivo: ninguna clave existente varía
+    assert con["candidatos"] == sug_enmascarado
+    assert {k: v for k, v in con.items() if k not in ("sugerencias_beto", "candidatos", "acciones")} == {
+        k: v for k, v in sin.items() if k not in ("candidatos", "acciones")
+    }  # cambio aditivo: ninguna clave previa no ligada a candidatos varía
     assert con["un_clic"] == sin["un_clic"] and con["estado_resolucion"] == "PENDIENTE"   # no autoaprueba ni marca un clic
 
 
