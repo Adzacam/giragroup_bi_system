@@ -139,6 +139,7 @@ export default function UserProfileDropdown() {
                   style={{
                     width: '42px',
                     height: '42px',
+                    flexShrink: 0,
                     borderRadius: '50%',
                     background: 'var(--color-ink-black)',
                     color: 'var(--color-paper-white)',

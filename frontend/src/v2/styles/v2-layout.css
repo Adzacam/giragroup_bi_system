@@ -864,10 +864,16 @@
   overflow: hidden;
 }
 
-/* ─── Mobile Bottom Nav en Pastilla Larga (<= 960px) ─── */
+/* ─── Mobile Bottom Nav en Pastilla Larga (<= 768px) ─── */
 .v2-mobile-bottom-wrap {
   view-transition-name: v2-shell-bottombar;
   display: none;
+}
+
+@media (min-width: 769px) {
+  .v2-mobile-bottom-wrap {
+    display: none !important;
+  }
 }
 
 .v2-sidebar-backdrop {

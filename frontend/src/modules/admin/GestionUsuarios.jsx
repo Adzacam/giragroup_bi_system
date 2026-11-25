@@ -279,17 +279,17 @@ export default function GestionUsuarios() {
                       {u.is_active !== false ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
-                  <td style={{ textAlign: 'right' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                       <button
                         onClick={() => setIsProfileModalOpen(true)}
                         className="btn-pill-ghost"
                         style={{
-                          padding: '6px 12px',
+                          padding: '4px 10px',
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '6px',
-                          fontSize: '12px',
+                          gap: '5px',
+                          fontSize: '11.5px',
                           color: 'var(--color-ink-black)',
                         }}
                         title="Ver Perfil y Gestión de Credenciales"
@@ -303,15 +303,15 @@ export default function GestionUsuarios() {
                         onClick={() => handleDeleteUser(u)}
                         className="btn-pill-ghost"
                         style={{
-                          padding: '6px 10px',
-                          color: isSelf ? '#9ca3af' : 'var(--color-alert-red)',
-                          borderColor: isSelf ? '#e5e7eb' : '#fee2e2',
+                          padding: '4px 8px',
+                          color: isSelf ? 'var(--color-slate-gray)' : 'var(--color-alert-red)',
+                          borderColor: isSelf ? 'var(--color-border)' : 'var(--color-alert-red)',
                           cursor: 'pointer',
                         }}
                         title={isSelf ? 'No puedes auto-eliminar tu propia cuenta' : 'Revocar usuario'}
                         type="button"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={13} />
                       </button>
                     </div>
                   </td>

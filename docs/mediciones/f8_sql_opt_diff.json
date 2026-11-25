@@ -1,0 +1,142 @@
+{
+  "f7_total_s": 1617.7,
+  "f8_total_s": 1459.49,
+  "delta_total_s": -158.21,
+  "diferencias_conteos": {
+    "fact_rendimiento_academico": {
+      "f7": 23907,
+      "f8": 23907,
+      "delta": 0
+    },
+    "fact_situacion_financiera": {
+      "f7": 27190,
+      "f8": 27190,
+      "delta": 0
+    },
+    "fact_evaluacion_docente": {
+      "f7": 409695,
+      "f8": 409695,
+      "delta": 0
+    },
+    "fact_marketing": {
+      "f7": 9208,
+      "f8": 9208,
+      "delta": 0
+    },
+    "fact_rentabilidad": {
+      "f7": 95,
+      "f8": 95,
+      "delta": 0
+    },
+    "fact_costo_programa": {
+      "f7": 1371,
+      "f8": 1371,
+      "delta": 0
+    },
+    "fact_techo_convenio": {
+      "f7": 204,
+      "f8": 204,
+      "delta": 0
+    },
+    "fact_planificacion_programa": {
+      "f7": 2411,
+      "f8": 2411,
+      "delta": 0
+    },
+    "dim_estudiante": {
+      "f7": 15391,
+      "f8": 15391,
+      "delta": 0
+    },
+    "dim_docente": {
+      "f7": 639,
+      "f8": 639,
+      "delta": 0
+    },
+    "dim_modulo": {
+      "f7": 3961,
+      "f8": 3961,
+      "delta": 0
+    },
+    "dim_tiempo": {
+      "f7": 2230,
+      "f8": 2230,
+      "delta": 0
+    },
+    "dim_origen_documental": {
+      "f7": 10,
+      "f8": 10,
+      "delta": 0
+    },
+    "bridge_modulo_docente": {
+      "f7": 1447,
+      "f8": 1447,
+      "delta": 0
+    },
+    "stg_entidad_no_resuelta": {
+      "f7": 1970,
+      "f8": 1970,
+      "delta": 0
+    },
+    "log_inconsistencias": {
+      "f7": 1515,
+      "f8": 1515,
+      "delta": 0
+    }
+  },
+  "bandeja_f7": 1901,
+  "bandeja_f8": 1901,
+  "por_libro_s": {
+    "TBL_INSCRITOS.xlsx": {
+      "f7_s": 562.43,
+      "f8_s": 541.51,
+      "delta_s": -20.92
+    },
+    "BD Cobranzas.xlsx": {
+      "f7_s": 341.32,
+      "f8_s": 353.7,
+      "delta_s": 12.38
+    },
+    "BD Techos.xlsx": {
+      "f7_s": 26.23,
+      "f8_s": 26.57,
+      "delta_s": 0.34
+    },
+    "EJECUTADO VS META.xlsx": {
+      "f7_s": 1.14,
+      "f8_s": 1.1,
+      "delta_s": -0.04
+    },
+    "BD Egresos.xlsx": {
+      "f7_s": 159.13,
+      "f8_s": 158.23,
+      "delta_s": -0.9
+    },
+    "PLANIFICACION Y EJECUCION ACADÉMICA (INICIOS Y OKR`S).xlsx": {
+      "f7_s": 17.93,
+      "f8_s": 19.18,
+      "delta_s": 1.25
+    },
+    "[BBDD] ANTIGUO RESPUESTAS EVALUACIÓN DOCENTE - EXP. UNIFRANZ POSTGRADO.xlsx": {
+      "f7_s": 93.33,
+      "f8_s": 84.56,
+      "delta_s": -8.77
+    },
+    "Evaluación Docente y Unifranz.xlsx": {
+      "f7_s": 22.66,
+      "f8_s": 19.42,
+      "delta_s": -3.24
+    },
+    "Experiencia Docente 2.0.xlsx": {
+      "f7_s": 76.33,
+      "f8_s": 65.34,
+      "delta_s": -10.99
+    },
+    "Base centralizada Académica ARCA (1).xlsx": {
+      "f7_s": 317.15,
+      "f8_s": 189.83,
+      "delta_s": -127.32
+    }
+  },
+  "nota_cuello_botella": "f8_perfil_sql.json demuestra que en carga fría (cache_indice_beto vacía), TBL_INSCRITOS y BD Cobranzas invierten ~85% del tiempo en inferencia CPU BETO (POST /indice); la optimización SQL de dim_estudiante y fact_marketing redujo ARCA en -127.32 s y el total en -158.21 s manteniendo 0 diferencias en conteos."
+}

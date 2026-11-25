@@ -285,6 +285,11 @@ class DWLoaderService:
         self._est_nombres: Optional[list] = None  # [(id_estudiante, nombre)] cargado una vez por instancia
         self._est_solo_nombres: Optional[list] = None
         self._est_fuzzy_cache: Dict[Tuple[str, int], list] = {}
+        self._est_index_loaded: bool = False
+        self._est_meta: Dict[int, Dict[str, Any]] = {}
+        self._est_por_ci: Dict[str, int] = {}
+        self._est_por_ci_num: Dict[str, int] = {}
+        self._est_por_codigo: Dict[str, int] = {}
         self._mod_por_nombre: Optional[Dict[str, int]] = None  # nombre normalizado (minúsculas) -> id_modulo, una carga por instancia
         self._mod_nombre_id: Dict[str, int] = {}  # nombre exacto -> id_modulo (para el fuzzy)
         self._memo_modulo_nombre: Dict[str, Optional[int]] = {}
@@ -296,6 +301,7 @@ class DWLoaderService:
         self._eval_previas_reescritas: set = set()  # claves de cargas anteriores que esta consolidación reescribió
         self._aca_pendientes: Dict[Tuple[int, int], Dict[str, Any]] = {}
         self._fin_pendientes: Dict[Tuple[int, int, int], Dict[str, Any]] = {}
+        self._mkt_pendientes: Dict[Tuple[int, Optional[int], Optional[int]], Dict[str, Any]] = {}
         self._avisos_cobranza: Dict[Tuple[Any, str, str], Tuple[int, List[str]]] = {}  # FU-L2, registro agregado
         self._avisos_acta: Dict[Tuple[Any, str, str], Tuple[int, List[str]]] = {}  # FU-L4, registro agregado
         self._avisos_encuesta: Dict[Tuple[Any, str, str, str], Tuple[int, List[str]]] = {}  # FU-L5, por documento, hoja, pregunta y motivo
@@ -318,6 +324,62 @@ class DWLoaderService:
         self.solo_revision: bool = False
         self._programas_vistos_est: Dict[int, set] = {}
         self.casos_existentes_fase_a: Optional[Dict[Tuple[Any, Optional[str], Optional[str]], int]] = None
+
+    def _cargar_indice_estudiantes(self) -> None:
+        """Precarga dim_estudiante en memoria (una consulta por instancia) para evitar SELECT por fila en CI_EXACTA."""
+        if self._est_index_loaded:
+            return
+        self._est_meta = {}
+        self._est_por_ci = {}
+        self._est_por_ci_num = {}
+        self._est_por_codigo = {}
+        filas = self.db.query(
+            DimEstudiante.id_estudiante,
+            DimEstudiante.ci,
+            DimEstudiante.ci_numero,
+            DimEstudiante.ci_complemento,
+            DimEstudiante.codigo_estudiante,
+            DimEstudiante.nombre_completo,
+            DimEstudiante.programa_origen,
+        ).filter(DimEstudiante.deprecado == False).order_by(DimEstudiante.id_estudiante).all()
+        for id_e, ci_v, ci_n, ci_c, cod, nom, prog in filas:
+            self._est_meta[id_e] = {
+                "id_estudiante": id_e,
+                "ci": ci_v,
+                "ci_numero": ci_n,
+                "ci_complemento": ci_c,
+                "codigo_estudiante": cod,
+                "nombre_completo": nom,
+                "programa_origen": prog,
+            }
+            if ci_v:
+                self._est_por_ci.setdefault(ci_v, id_e)
+            if ci_n:
+                self._est_por_ci_num.setdefault(ci_n, id_e)
+            if cod:
+                self._est_por_codigo.setdefault(cod, id_e)
+        self._est_index_loaded = True
+
+    def _registrar_est_en_indice(self, est: DimEstudiante) -> None:
+        """Sincroniza el índice en memoria tras insertar un estudiante nuevo."""
+        if not self._est_index_loaded or est.id_estudiante is None:
+            return
+        id_e = est.id_estudiante
+        self._est_meta[id_e] = {
+            "id_estudiante": id_e,
+            "ci": est.ci,
+            "ci_numero": est.ci_numero,
+            "ci_complemento": est.ci_complemento,
+            "codigo_estudiante": est.codigo_estudiante,
+            "nombre_completo": est.nombre_completo,
+            "programa_origen": est.programa_origen,
+        }
+        if est.ci:
+            self._est_por_ci.setdefault(est.ci, id_e)
+        if est.ci_numero:
+            self._est_por_ci_num.setdefault(est.ci_numero, id_e)
+        if est.codigo_estudiante:
+            self._est_por_codigo.setdefault(est.codigo_estudiante, id_e)
 
     def _registrar_staging_si_nuevo(self, stg: StagingEntidadNoResuelta) -> bool:
         """Evita duplicar en Fase B los casos ya creados por Fase A (misma clave doc/motivo/texto)."""
@@ -608,31 +670,59 @@ class DWLoaderService:
 
         if ci and not es_sintetico:
             ci_clean = ci.strip()
-            if ci_num:
-                ci_cond = (
-                    (DimEstudiante.ci_numero == ci_num)
-                    | (DimEstudiante.ci == ci_clean)
-                    | (DimEstudiante.codigo_estudiante == ci_clean)
-                    | (DimEstudiante.codigo_estudiante == ci_num)
-                )
+            usar_indice_est = (
+                self.diferir_eval
+                and getattr(getattr(self.db.get_bind(), "dialect", None), "name", "") == "postgresql"
+            )
+            if usar_indice_est:
+                self._cargar_indice_estudiantes()
+                cands_id = [
+                    cid for cid in (
+                        self._est_por_ci_num.get(ci_num) if ci_num else None,
+                        self._est_por_ci.get(ci_clean),
+                        self._est_por_codigo.get(ci_clean),
+                        self._est_por_codigo.get(ci_num) if ci_num else None,
+                    )
+                    if cid is not None
+                ]
+                est_d = self._est_meta[min(cands_id)] if cands_id else None
             else:
-                ci_cond = (
-                    (DimEstudiante.ci == ci_clean)
-                    | (DimEstudiante.codigo_estudiante == ci_clean)
-                )
+                if ci_num:
+                    ci_cond = (
+                        (DimEstudiante.ci_numero == ci_num)
+                        | (DimEstudiante.ci == ci_clean)
+                        | (DimEstudiante.codigo_estudiante == ci_clean)
+                        | (DimEstudiante.codigo_estudiante == ci_num)
+                    )
+                else:
+                    ci_cond = (
+                        (DimEstudiante.ci == ci_clean)
+                        | (DimEstudiante.codigo_estudiante == ci_clean)
+                    )
+                orm_est_directo = self.db.query(DimEstudiante).filter(
+                    DimEstudiante.deprecado == False,
+                    ci_cond
+                ).order_by(DimEstudiante.id_estudiante).first()
+                est_d = {
+                    "id_estudiante": orm_est_directo.id_estudiante,
+                    "ci": getattr(orm_est_directo, "ci", None),
+                    "ci_numero": getattr(orm_est_directo, "ci_numero", None),
+                    "ci_complemento": getattr(orm_est_directo, "ci_complemento", None),
+                    "nombre_completo": orm_est_directo.nombre_completo,
+                    "programa_origen": getattr(orm_est_directo, "programa_origen", None),
+                    "_orm": orm_est_directo,
+                } if orm_est_directo is not None else None
 
-            est = self.db.query(DimEstudiante).filter(
-                DimEstudiante.deprecado == False,
-                ci_cond
-            ).order_by(DimEstudiante.id_estudiante).first()
-
-            if est:
+            if est_d is not None:
+                id_est_found = est_d["id_estudiante"]
+                nombre_actual = est_d["nombre_completo"]
+                updates: Dict[str, Any] = {}
                 # F6-2b: Auto-hidratación de placeholders ("Estudiante <CI>" / "Estudiante CI ...") antes de CI_NOMBRE_DISCORDANTE
-                es_placeholder_est = bool(re.match(r"^\s*estudiante\s+(?:ci\s*[:#-]?\s*)?\d", est.nombre_completo or "", re.I))
+                es_placeholder_est = bool(re.match(r"^\s*estudiante\s+(?:ci\s*[:#-]?\s*)?\d", nombre_actual or "", re.I))
                 es_placeholder_nuevo = bool(re.match(r"^\s*estudiante\s+(?:ci\s*[:#-]?\s*)?\d", nombre or "", re.I))
-                if nombre and est.nombre_completo and es_placeholder_est and not es_placeholder_nuevo:
-                    nombre_previo = est.nombre_completo
-                    est.nombre_completo = nombre.strip()
+                if nombre and nombre_actual and es_placeholder_est and not es_placeholder_nuevo:
+                    nombre_previo = nombre_actual
+                    updates["nombre_completo"] = nombre.strip()
                     if not self.solo_revision:
                         self.db.add(LogInconsistencia(
                             id_documento=doc_id,
@@ -645,27 +735,27 @@ class DWLoaderService:
                             descripcion=f"CI {ci_clean}: placeholder '{nombre_previo}' auto-hidratado con nombre real",
                         ))
                 # Mismo CI con nombre guardado incompleto (solo nombres de pila): misma persona, se completa
-                elif nombre and est.nombre_completo and _es_nombre_incompleto(est.nombre_completo, nombre):
-                    est.nombre_completo = nombre.strip()
+                elif nombre and nombre_actual and _es_nombre_incompleto(nombre_actual, nombre):
+                    updates["nombre_completo"] = nombre.strip()
                 # Regla CI_NOMBRE_DISCORDANTE: si el nombre no coincide léxicamente (WRatio < 70) -> HITL
-                elif not forzar_resolucion_humana and nombre and est.nombre_completo:
-                    match_ratio = _fuzzy_best_match(nombre.strip(), [est.nombre_completo])[1] or 0.0
-                    if match_ratio < 70.0 and _es_variante_de_nombre(est.nombre_completo, nombre):
+                elif not forzar_resolucion_humana and nombre and nombre_actual:
+                    match_ratio = _fuzzy_best_match(nombre.strip(), [nombre_actual])[1] or 0.0
+                    if match_ratio < 70.0 and _es_variante_de_nombre(nombre_actual, nombre):
                         # CI exacta y apellido coincidente: variante de escritura, no un conflicto; queda en el log
                         if not self.solo_revision:
                             self.db.add(LogInconsistencia(
                                 id_documento=doc_id, campo_afectado="nombre_completo", valor_recibido=nombre.strip()[:2000],
-                                valor_esperado=est.nombre_completo, tipo_regla="CI_NOMBRE_VARIANTE", severidad="BAJA",
+                                valor_esperado=nombre_actual, tipo_regla="CI_NOMBRE_VARIANTE", severidad="BAJA",
                                 estado_resolucion="REGISTRADO", descripcion=f"CI {ci_clean}: nombre resuelto automáticamente (variante)"))
-                        if re.match(r"^\s*estudiante\s+ci\b", est.nombre_completo or "", re.I):
-                            est.nombre_completo = nombre.strip()  # el nombre guardado era un marcador
+                        if re.match(r"^\s*estudiante\s+ci\b", nombre_actual or "", re.I):
+                            updates["nombre_completo"] = nombre.strip()  # el nombre guardado era un marcador
                     elif match_ratio < 70.0:
                         stg = StagingEntidadNoResuelta(
                             id_documento=doc_id,
                             tipo_entidad="ESTUDIANTE",
-                            texto_original=f"CI: {ci_clean} | Nombre: {nombre.strip()} (Discordante con: {est.nombre_completo})",
+                            texto_original=f"CI: {ci_clean} | Nombre: {nombre.strip()} (Discordante con: {nombre_actual})",
                             ci_temporal=ci_clean,
-                            mejor_candidato=est.nombre_completo,
+                            mejor_candidato=nombre_actual,
                             score_fuzzy=match_ratio,
                             fk_estado="C",
                             motivo="CI_NOMBRE_DISCORDANTE",
@@ -675,16 +765,31 @@ class DWLoaderService:
                         self._registrar_staging_si_nuevo(stg)
                         return None, "C"
 
-                if not est.ci:
-                    est.ci = ci_clean
-                if ci_num and not est.ci_numero:
-                    est.ci_numero = ci_num
-                if ci_comp and not est.ci_complemento:
-                    est.ci_complemento = ci_comp
-                if programa and not est.programa_origen:
-                    est.programa_origen = programa
-                self.db.flush()
-                return est.id_estudiante, "A"
+                if not est_d["ci"]:
+                    updates["ci"] = ci_clean
+                if ci_num and not est_d["ci_numero"]:
+                    updates["ci_numero"] = ci_num
+                if ci_comp and not est_d["ci_complemento"]:
+                    updates["ci_complemento"] = ci_comp
+                if programa and not est_d["programa_origen"]:
+                    updates["programa_origen"] = programa
+
+                if updates:
+                    orm_est = est_d.get("_orm") or self.db.query(DimEstudiante).filter(DimEstudiante.id_estudiante == id_est_found).first()
+                    if orm_est is not None:
+                        for k_upd, v_upd in updates.items():
+                            setattr(orm_est, k_upd, v_upd)
+                        self.db.flush()
+                    est_d.update(updates)
+                    if "ci" in updates and updates["ci"]:
+                        self._est_por_ci.setdefault(updates["ci"], id_est_found)
+                    if "ci_numero" in updates and updates["ci_numero"]:
+                        self._est_por_ci_num.setdefault(updates["ci_numero"], id_est_found)
+                    if "nombre_completo" in updates and self._est_nombres is not None:
+                        self._est_nombres.append((id_est_found, updates["nombre_completo"]))
+                elif not usar_indice_est:
+                    self.db.flush()
+                return id_est_found, "A"
 
             # Si no existe pero hay CI y nombre, se crea el estudiante
             id_inst = self._resolver_id_institucion(institucion)
@@ -701,6 +806,7 @@ class DWLoaderService:
             )
             self.db.add(nuevo_est)
             self.db.flush()
+            self._registrar_est_en_indice(nuevo_est)
             if self._est_nombres is not None:
                 self._est_nombres.append((nuevo_est.id_estudiante, nuevo_est.nombre_completo))
             return nuevo_est.id_estudiante, "A"
@@ -813,6 +919,7 @@ class DWLoaderService:
             )
             self.db.add(nuevo_est)
             self.db.flush()
+            self._registrar_est_en_indice(nuevo_est)
             if self._est_nombres is not None:
                 self._est_nombres.append((nuevo_est.id_estudiante, nuevo_est.nombre_completo))
             return nuevo_est.id_estudiante, "B"
@@ -1115,7 +1222,7 @@ class DWLoaderService:
         self.registrar_avisos_acta()      # FU-L4: avisos de calidad de actas, agregados
         self.registrar_avisos_encuesta()  # FU-L5: avisos de calidad de encuestas, agregados
         self.registrar_avisos_modulo()    # CAT-L1: módulos inválidos o fuera de catálogo
-        if not (self._eval_pendientes or self._aca_pendientes or self._fin_pendientes or self._cfo_pendientes):
+        if not (self._eval_pendientes or self._aca_pendientes or self._fin_pendientes or self._mkt_pendientes or self._cfo_pendientes):
             return 0
         from psycopg2.extras import execute_values
         self.db.flush()
@@ -1179,6 +1286,64 @@ class DWLoaderService:
 
         total_enviadas += self._insertar_eval(cur, pagina)
 
+        if self._mkt_pendientes:
+            doc_ids_mkt = sorted({k[2] for k in self._mkt_pendientes if k[2] is not None})
+            tiene_none_doc = any(k[2] is None for k in self._mkt_pendientes)
+            existentes_mkt: Dict[Tuple[Any, Any, Any], int] = {}
+            if doc_ids_mkt:
+                cur.execute(
+                    "SELECT id_hecho_mkt, id_modulo, id_tiempo, id_documento FROM fact_marketing WHERE id_documento = ANY(%s)",
+                    (doc_ids_mkt,),
+                )
+                for row in cur.fetchall():
+                    existentes_mkt[(row[1], row[2], row[3])] = row[0]
+            if tiene_none_doc:
+                cur.execute(
+                    "SELECT id_hecho_mkt, id_modulo, id_tiempo, id_documento FROM fact_marketing WHERE id_documento IS NULL"
+                )
+                for row in cur.fetchall():
+                    existentes_mkt[(row[1], row[2], row[3])] = row[0]
+
+            mkt_updates = []
+            mkt_inserts = []
+            for (id_m, id_t, d_id), acc in self._mkt_pendientes.items():
+                id_hecho_ex = existentes_mkt.get((id_m, id_t, d_id))
+                if id_hecho_ex is not None:
+                    mkt_updates.append((
+                        id_hecho_ex, acc["leads"], acc["reservas"], acc["inscritos"],
+                        acc["leads_captacion"], acc["inscritos_captacion"],
+                    ))
+                else:
+                    mkt_inserts.append((
+                        id_m, id_t, acc["leads"], acc["reservas"], acc["inscritos"],
+                        acc["leads_captacion"], acc["inscritos_captacion"], acc["costo_programa"], d_id,
+                    ))
+            self._mkt_pendientes = {}
+            if mkt_updates:
+                sql_mkt_upd = (
+                    "UPDATE fact_marketing AS f SET "
+                    "leads = COALESCE(f.leads, 0) + v.leads, "
+                    "reservas = COALESCE(f.reservas, 0) + v.reservas, "
+                    "inscritos = COALESCE(f.inscritos, 0) + v.inscritos, "
+                    "leads_captacion = CASE WHEN v.lc IS NOT NULL THEN COALESCE(f.leads_captacion, 0) + v.lc ELSE f.leads_captacion END, "
+                    "inscritos_captacion = CASE WHEN v.ic IS NOT NULL THEN COALESCE(f.inscritos_captacion, 0) + v.ic ELSE f.inscritos_captacion END "
+                    "FROM (VALUES %s) AS v(id_hecho, leads, reservas, inscritos, lc, ic) "
+                    "WHERE f.id_hecho_mkt = v.id_hecho"
+                )
+                for i in range(0, len(mkt_updates), pagina):
+                    execute_values(cur, sql_mkt_upd, mkt_updates[i:i + pagina], page_size=pagina)
+                    self._latir()
+            if mkt_inserts:
+                sql_mkt_ins = (
+                    "INSERT INTO fact_marketing "
+                    "(id_modulo, id_tiempo, leads, reservas, inscritos, leads_captacion, inscritos_captacion, costo_programa, id_documento) "
+                    "VALUES %s"
+                )
+                for i in range(0, len(mkt_inserts), pagina):
+                    execute_values(cur, sql_mkt_ins, mkt_inserts[i:i + pagina], page_size=pagina)
+                    self._latir()
+            total_enviadas += len(mkt_updates) + len(mkt_inserts)
+
         cur.close()
         return total_enviadas
 
@@ -1187,7 +1352,8 @@ class DWLoaderService:
         for attr in (
             "_modulo_por_pos", "_tiempos", "_docente_por_modulo", "_est_fuzzy_cache",
             "_mod_nombre_id", "_memo_modulo_nombre", "_eval_pendientes", "_eval_previas_reescritas",
-            "_aca_pendientes", "_fin_pendientes", "_cfo_pendientes", "_cache_base_programa",
+            "_aca_pendientes", "_fin_pendientes", "_mkt_pendientes", "_cfo_pendientes", "_cache_base_programa",
+            "_est_meta", "_est_por_ci", "_est_por_ci_num", "_est_por_codigo",
             "_cache_docente_programa", "_cache_tiempo_programa", "_cache_estudiante",
             "_cache_modulo_docente",
         ):
@@ -1989,13 +2155,24 @@ class DWLoaderService:
                         return {"tipo": "admision", "status": "skipped", "motivo": "Fila de origen ya cargada"}
                     # FU-L3: la fila lleva su documento: borrar el documento retira sus inscripciones (antes quedaban y,
                     # al volver a subir el libro, se sumaban otra vez: ×2)
-                    mkt = self.db.query(FactMarketing).filter_by(id_modulo=id_mod_adm, id_tiempo=id_tiempo, id_documento=doc_id).first()
-                    if mkt:
-                        mkt.inscritos = (mkt.inscritos or 0) + 1
+                    if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
+                        clave_mkt = (id_mod_adm, id_tiempo, doc_id)
+                        acc = self._mkt_pendientes.get(clave_mkt)
+                        if acc is None:
+                            self._mkt_pendientes[clave_mkt] = {
+                                "leads": 0, "reservas": 0, "inscritos": 1,
+                                "leads_captacion": None, "inscritos_captacion": None, "costo_programa": 0.0,
+                            }
+                        else:
+                            acc["inscritos"] += 1
                     else:
-                        self.db.add(FactMarketing(id_modulo=id_mod_adm, id_tiempo=id_tiempo, leads=0, reservas=0, inscritos=1,
-                                                  costo_programa=0.0, id_documento=doc_id))
-                    self.db.flush()
+                        mkt = self.db.query(FactMarketing).filter_by(id_modulo=id_mod_adm, id_tiempo=id_tiempo, id_documento=doc_id).first()
+                        if mkt:
+                            mkt.inscritos = (mkt.inscritos or 0) + 1
+                        else:
+                            self.db.add(FactMarketing(id_modulo=id_mod_adm, id_tiempo=id_tiempo, leads=0, reservas=0, inscritos=1,
+                                                      costo_programa=0.0, id_documento=doc_id))
+                        self.db.flush()
             if not id_est:
                 return {
                     "tipo": "admision",
@@ -2325,6 +2502,34 @@ class DWLoaderService:
                          and resoluciones.get("inscritos") is not None
                          and 0 <= inscritos <= leads and leads > 0)
             costo_prog = float(resoluciones.get("costo_programa") or 0.0)
+
+            if self.diferir_eval and self.db.get_bind().dialect.name == "postgresql":
+                clave_mkt = (id_mod_mkt, id_tiempo, doc_id)
+                acc = self._mkt_pendientes.get(clave_mkt)
+                if acc is None:
+                    acc = {
+                        "leads": leads,
+                        "reservas": reservas,
+                        "inscritos": inscritos,
+                        "leads_captacion": leads if captacion else None,
+                        "inscritos_captacion": inscritos if captacion else None,
+                        "costo_programa": costo_prog,
+                    }
+                    self._mkt_pendientes[clave_mkt] = acc
+                else:
+                    acc["leads"] += leads
+                    acc["reservas"] += reservas
+                    acc["inscritos"] += inscritos
+                    if captacion:
+                        acc["leads_captacion"] = (acc["leads_captacion"] or 0) + leads
+                        acc["inscritos_captacion"] = (acc["inscritos_captacion"] or 0) + inscritos
+                return {
+                    "tipo": "marketing",
+                    "status": "loaded",
+                    "id_hecho": None,
+                    "leads": acc["leads"],
+                    "inscritos": acc["inscritos"],
+                }
 
             existente_mkt = self.db.query(FactMarketing).filter(
                 FactMarketing.id_modulo == id_mod_mkt,
