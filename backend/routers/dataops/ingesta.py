@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import re
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, UploadFile, status
 from typing import Any, Dict, List, Optional
 from schemas.dataops_schemas import BatchUploadItem, BatchUploadResponse, FileUploadResponse, PipelineResult, SourceListResponse
@@ -297,6 +298,7 @@ def upload_file(
         "id_lote": nuevo_lote.id_lote,
         "nombre_archivo": safe_name,
         "tipo_fuente": resultado.get("tipo_fuente"),
+        "fuera_de_alcance_cmi": int(resultado.get("fuera_de_alcance_cmi", 0)),
         "tipo_escala": resultado.get("tipo_escala"),
         "registros_detectados": resultado["kpis"]["total_registros_procesados"],
         "pipeline_result": resultado,
@@ -807,11 +809,32 @@ _SINONIMOS_PREVIEW = {
 _CAMPOS_CANONICOS_DISPONIBLES = sorted(list(_SINONIMOS_PREVIEW.keys()) + ["correo_institucional", "celular", "institucion", "categoria_financiera", "monto_meta", "monto_ejecutado", "ignorar"])
 
 
+_RE_PREGUNTA_ENCUESTA = re.compile(r"^\s*\d+\s*[\.\)\-]\s+\S")
+
+
+def _es_pregunta_encuesta(nombre_col: str, norm: str) -> bool:
+    crudo = (nombre_col or "").strip()
+    if not crudo:
+        return True
+    if "¿" in crudo or "?" in crudo or _RE_PREGUNTA_ENCUESTA.match(crudo):
+        return True
+    if len(norm) > 45 or len(norm.split()) > 5:
+        return True
+    return False
+
+
 def _inferir_campo_canonico(nombre_col: str) -> str:
     from services.extraccion_por_encabezado import normalizar_encabezado
     norm = normalizar_encabezado(nombre_col)
+    if not norm:
+        return ""
     for campo, sinonimos in _SINONIMOS_PREVIEW.items():
-        if norm in sinonimos or any(s in norm for s in sinonimos if len(s) >= 5):
+        if norm in sinonimos:
+            return campo
+    if _es_pregunta_encuesta(nombre_col, norm):
+        return ""
+    for campo, sinonimos in _SINONIMOS_PREVIEW.items():
+        if any(s in norm for s in sinonimos if len(s) >= 5):
             return campo
     return ""
 

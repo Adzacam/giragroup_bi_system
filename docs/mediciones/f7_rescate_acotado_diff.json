@@ -1,0 +1,18 @@
+{
+  "tarea": "F7-1b",
+  "f6_residuales_academicas_enviadas": 11812,
+  "f7_residuales_academicas_enviadas": 1186,
+  "reduccion_residuales_academicas": 10626,
+  "f6_textos_inferidos_beto": 10757,
+  "f7_textos_inferidos_beto": 3123,
+  "f6_tiempo_beto_s": 141.112,
+  "f7_tiempo_beto_s": 82.801,
+  "f6_tasa_acuerdo_bug": 1.657,
+  "f7_tasa_acuerdo_corregida": 0.9952,
+  "f6_tiempo_completo_seg": 1309.05,
+  "f7_tiempo_completo_seg": 1617.7,
+  "f7_10archivos_modo_b_seg": 174.23,
+  "f7_10archivos_modo_b_bandeja": 141,
+  "f7_completo_bandeja": 1901,
+  "f7_fuera_de_alcance_cmi_real": 0
+}

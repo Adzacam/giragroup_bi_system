@@ -70,6 +70,7 @@ class FileUploadResponse(BaseModel):
     tipo_fuente: Optional[str] = None
     tipo_escala: Optional[str] = None
     registros_detectados: int
+    fuera_de_alcance_cmi: int = 0
     pipeline_result: Optional[PipelineResult] = None
 
 class BatchUploadItem(BaseModel):
@@ -79,6 +80,7 @@ class BatchUploadItem(BaseModel):
     tipo_fuente: Optional[str] = None
     tipo_escala: Optional[str] = None
     registros_detectados: int = 0
+    fuera_de_alcance_cmi: int = 0
     status: str
     mensaje: Optional[str] = None
     pipeline_result: Optional[PipelineResult] = None

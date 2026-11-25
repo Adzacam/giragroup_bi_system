@@ -38,6 +38,8 @@ try:
         clasificar_categoria,
         es_encuesta_likert,
         extraer_encabezado_hoja,
+        evaluar_compuerta_dominio_cmi,
+        MOTIVO_FUERA_DE_ALCANCE_CMI,
     )
 except ImportError:
     try:
@@ -49,8 +51,11 @@ except ImportError:
             clasificar_categoria,
             es_encuesta_likert,
             extraer_encabezado_hoja,
+            evaluar_compuerta_dominio_cmi,
+            MOTIVO_FUERA_DE_ALCANCE_CMI,
         )
     except ImportError:
+        MOTIVO_FUERA_DE_ALCANCE_CMI = "FUERA_DE_ALCANCE_CMI"
         def es_encuesta_likert(df): return False
         def leer_archivo(ruta): return {}
         def segmentar_archivo(df): return []
@@ -58,6 +63,8 @@ except ImportError:
         def a_texto_plano(b): return ""
         def clasificar_categoria(b, *args): return "academico"
         def extraer_encabezado_hoja(*args, **kwargs): return ""
+        def evaluar_compuerta_dominio_cmi(*args, **kwargs):
+            return {"en_alcance": True, "motivo": None, "senales_encabezado": 2, "score_categoria": 1.0, "categoria_sugerida": "academico"}
 
 # FU-L1: lector con metadatos y clasificación genérica de hojas (estado y forma, no nombre)
 try:
@@ -1103,6 +1110,7 @@ class IngestionService:
             # ── ETAPA 6: Carga a Staging ──────────────────────────
             t0 = time.perf_counter()
             bloques_insertados = 0
+            fuera_de_alcance_cmi = 0
             categoria_por_fuente = (
                 "financiero" if final_tipo_fuente == "COBRANZA"
                 else "rentabilidad" if final_tipo_fuente in ("EGRESOS", "TECHOS", "RENTABILIDAD")
@@ -1170,14 +1178,9 @@ class IngestionService:
             else:
                 cls._registrar_hojas_no_usadas(db, doc_id, libro, set(hojas_lectura), logs_generados)
                 for nombre_hoja, b in bloques_validos:
-                    # Una hoja de encuesta (preguntas + respuestas Likert) es evaluación docente aunque el libro se haya
-                    # clasificado como ACTA o COBRANZA: el contenido del bloque manda sobre el tipo del documento.
-                    # FU-L1: lo mismo con una hoja cuyas cabeceras son de otro tipo del catálogo (p. ej. planificación con
-                    # leads e inscritos dentro de un libro de actas): toma la categoría de su tipo, no la del libro.
-                    tipo_hoja = tipo_de_hoja_distinto(meta_por_hoja[nombre_hoja], final_tipo_fuente) if nombre_hoja in meta_por_hoja else None
-                    categoria = ("evaluacion_docente" if (es_encuesta_likert(b) or _bloque_es_encuesta(b))
-                                 else CATEGORIA_POR_TIPO.get(tipo_hoja) if tipo_hoja
-                                 else categoria_por_fuente or clasificar_categoria(b, safe_filename, nombre_hoja))
+                    # F7-3 (D-F7-2): Compuerta de dominio CMI — exigir >= 2 señales de dominio o score_categoria >= 0.30.
+                    # Si no alcanza el umbral: aislar en staging (es_ruido=True), registrar en log_inconsistencias y no pasar a BETO/HITL/fact_*.
+                    compuerta = evaluar_compuerta_dominio_cmi(b)
                     texto = cls.serializar_bloque_con_encabezados(b)
                     n_b_filas = max(1, len(b) - 1) if len(b) > 1 else len(b)
                     payload_data = {
@@ -1187,6 +1190,50 @@ class IngestionService:
                         "rango_fechas": asym_info.get("rango_fechas", periodo_final),
                         "fechas_reconocidas": asym_info.get("fechas_reconocidas", [])
                     }
+                    if not compuerta["en_alcance"]:
+                        fuera_de_alcance_cmi += 1
+                        hoja_pub = enmascarar_texto(nombre_hoja)
+                        db.add(LogInconsistencia(
+                            id_documento=doc_id,
+                            fila_origen=b.attrs.get("fila_inicio", 0),
+                            campo_afectado="hoja",
+                            valor_recibido=hoja_pub[:500],
+                            tipo_regla=MOTIVO_FUERA_DE_ALCANCE_CMI,
+                            **valores_si_existen(db, "log_inconsistencias", regla_origen=MOTIVO_FUERA_DE_ALCANCE_CMI),
+                            severidad="BAJA",
+                            estado_resolucion="REGISTRADO",
+                            descripcion=(
+                                f"Hoja/bloque '{hoja_pub}' fuera de alcance CMI "
+                                f"(señales={compuerta['senales_encabezado']}, score={compuerta['score_categoria']}); "
+                                "aislado en staging sin pasar a BETO, HITL ni fact_*"
+                            ),
+                        ))
+                        payload_data["motivo_descarte"] = MOTIVO_FUERA_DE_ALCANCE_CMI
+                        payload_data["compuerta_dominio"] = compuerta
+                        db.add(StagingRegistroCrudo(
+                            id_documento=doc_id,
+                            hoja=nombre_hoja,
+                            bloque_id=b.attrs.get("indice", bloques_insertados),
+                            categoria="fuera_de_alcance_cmi",
+                            texto_plano=texto,
+                            n_filas=n_b_filas,
+                            fila_inicio=b.attrs.get("fila_inicio", 0),
+                            fila_fin=b.attrs.get("fila_fin", len(b) - 1),
+                            es_ruido=True,
+                            estado_resolucion="DESCARTADO",
+                            payload_json=payload_data,
+                        ))
+                        bloques_insertados += 1
+                        continue
+
+                    # Una hoja de encuesta (preguntas + respuestas Likert) es evaluación docente aunque el libro se haya
+                    # clasificado como ACTA o COBRANZA: el contenido del bloque manda sobre el tipo del documento.
+                    # FU-L1: lo mismo con una hoja cuyas cabeceras son de otro tipo del catálogo (p. ej. planificación con
+                    # leads e inscritos dentro de un libro de actas): toma la categoría de su tipo, no la del libro.
+                    tipo_hoja = tipo_de_hoja_distinto(meta_por_hoja[nombre_hoja], final_tipo_fuente) if nombre_hoja in meta_por_hoja else None
+                    categoria = ("evaluacion_docente" if (es_encuesta_likert(b) or _bloque_es_encuesta(b))
+                                 else CATEGORIA_POR_TIPO.get(tipo_hoja) if tipo_hoja
+                                 else categoria_por_fuente or clasificar_categoria(b, safe_filename, nombre_hoja))
                     if nombre_hoja in contexto_por_hoja:
                         payload_data["contexto_hoja"] = contexto_por_hoja[nombre_hoja]
                     if categoria == "planificacion":
@@ -1235,6 +1282,7 @@ class IngestionService:
                 "total_fuentes": db.query(DimOrigenDocumental).count(),
                 "sha256": sha256_short,
                 "hash_sha256": sha256_full,
+                "fuera_de_alcance_cmi": fuera_de_alcance_cmi,
             }
 
             logs_output = [
@@ -1260,6 +1308,7 @@ class IngestionService:
                 "periodo": periodo_final,
                 "stages": stages_info,
                 "kpis": kpis,
+                "fuera_de_alcance_cmi": fuera_de_alcance_cmi,
                 "normalization_matrix": matriz_normalizacion,
                 "hojas": hojas_resumen,  # FU-L1: usada / ignorada + motivo por hoja (vista previa FU-L8)
                 "logs": logs_output,

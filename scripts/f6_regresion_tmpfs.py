@@ -52,6 +52,26 @@ LIBROS = [
 ]
 
 
+def agregar_beto_totales(lista_beto: list[dict]) -> dict:
+    """F7-1a: Agrega contadores de BETO entre libros y recalcula tasa_acuerdo = acuerdos / comparadas_acuerdo."""
+    totales = Counter()
+    for beto_info in lista_beto:
+        if not isinstance(beto_info, dict):
+            continue
+        for k_b, v_b in beto_info.items():
+            if k_b == "tasa_acuerdo":
+                continue
+            if isinstance(v_b, (int, float)):
+                totales[k_b] += v_b
+    salida = dict(totales)
+    if "tiempo_beto_s" in salida:
+        salida["tiempo_beto_s"] = round(float(salida["tiempo_beto_s"]), 3)
+    comp = salida.get("comparadas_acuerdo", 0)
+    ac = salida.get("acuerdos", 0)
+    salida["tasa_acuerdo"] = round(ac / comp, 4) if comp else None
+    return salida
+
+
 def _num(v):
     return float(v) if isinstance(v, Decimal) else v
 
@@ -164,7 +184,7 @@ def correr_lote(db_name: str, modo: str, recortar_filas: int | None = None) -> d
     db = Session()
     t0 = time.perf_counter()
     por_libro = []
-    beto_totales = Counter()
+    beto_por_libro = []
     try:
         user = db.query(User).first()
         for idx, (nombre, tf) in enumerate(LIBROS, 1):
@@ -194,14 +214,14 @@ def correr_lote(db_name: str, modo: str, recortar_filas: int | None = None) -> d
             )
             dt_lib = round(time.perf_counter() - t_lib, 2)
             beto_info = res_cons.get("beto") or {}
-            for k_b, v_b in beto_info.items():
-                if isinstance(v_b, (int, float)):
-                    beto_totales[k_b] += v_b
+            if beto_info:
+                beto_por_libro.append(beto_info)
             por_libro.append({
                 "archivo": nombre,
                 "tipo_fuente": tf,
                 "id_documento": doc_id,
                 "tiempo_s": dt_lib,
+                "fuera_de_alcance_cmi": int(res_ing.get("fuera_de_alcance_cmi", 0)),
                 "inserted_dw": res_cons.get("inserted_dw"),
                 "inserted_revision": res_cons.get("inserted_revision"),
                 "descartados_ruido": res_cons.get("descartados_ruido"),
@@ -317,6 +337,11 @@ def correr_lote(db_name: str, modo: str, recortar_filas: int | None = None) -> d
         WHERE payload_json ? 'contexto_hoja'
     """) or 0)
 
+    bloques_fuera_alcance = int(_sql_one(db_name, """
+        SELECT count(*) FROM public.log_inconsistencias
+        WHERE tipo_regla = 'FUERA_DE_ALCANCE_CMI'
+    """) or 0)
+
     bloques_con_texto_crudo = int(_sql_one(db_name, """
         SELECT count(*) FROM public.staging_registros_crudos
         WHERE payload_json ? 'contexto_hoja_texto'
@@ -334,7 +359,7 @@ def correr_lote(db_name: str, modo: str, recortar_filas: int | None = None) -> d
         "conteos": conteos,
         "bandeja_pendientes_no_ruido": pendientes_tot,
         "stg_por_motivo_archivo": stg_motivos,
-        "beto_totales": dict(beto_totales),
+        "beto_totales": agregar_beto_totales(beto_por_libro),
         "auditoria": {
             "arca_total_hechos": arca_tot,
             "arca_hechos_en_revision": arca_rev,
@@ -349,6 +374,7 @@ def correr_lote(db_name: str, modo: str, recortar_filas: int | None = None) -> d
             "sugerencias_en_motivos_no_identidad": sug_motivos_invalidos,
             "bloques_con_contexto_hoja": bloques_con_ctx,
             "bloques_con_contexto_hoja_texto_crudo": bloques_con_texto_crudo,
+            "fuera_de_alcance_cmi_total": bloques_fuera_alcance,
         },
     }
 

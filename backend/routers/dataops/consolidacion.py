@@ -381,6 +381,7 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                     raise RuntimeError("Consolidación cancelada por el usuario.")
                 tareas_dataops.avanzar(tarea_id, _base + max(0, avance_local))
 
+            tiene_col_prog, tiene_col_mod = beto_integracion.hoja_tiene_columnas_academicas(campos_por_linea)
             refinadas = beto_integracion.refinar_lineas(
                 lines,
                 lambda l, **kw: extract_entities_from_line(l, estudiantes, docentes, modulos, tipo_escala=doc_escala, tipo_fuente=doc_fuente, **kw),
@@ -389,6 +390,8 @@ def _consolidar(payload: ConfirmDwInsertRequest, db: Session, current_user: Opti
                 omitir=lambda l: bool(_motivo_sin_entidad(campos_por_encabezado([c.strip() for c in l.split("|")]), categoria_ruteo, perfil_encuesta)),
                 excluir_celda=EXCLUIR_CELDA_BETO,
                 sin_padron=sin_padron_inicial,
+                permitir_rescate_programa=not tiene_col_prog,
+                permitir_rescate_modulo=not tiene_col_mod,
                 on_progreso=_latido_cons if tarea_id else None)
         logs_descarte_stg = []
         stg_descarte_stg = []

@@ -1,0 +1,13 @@
+{
+  "fase": "F7-0",
+  "timestamp": "2026-11-24T20:45:06.720980",
+  "beto_pg_tmpfs": "",
+  "snapshot_solo_lectura": "snapshot_dw_20261110_1201",
+  "script_agregacion_f6": "scripts/f6_regresion_tmpfs.py",
+  "f6_tiempo_completo_seg": 1309.05,
+  "f6_residuales_academicas_enviadas": 11812,
+  "f6_acuerdos": 207,
+  "f6_comparadas_acuerdo": 210,
+  "f6_tasa_acuerdo_reportada_bug": 1.657,
+  "f6_tasa_acuerdo_correcta": 0.9857
+}

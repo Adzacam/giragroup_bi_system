@@ -373,6 +373,71 @@ def ejecutar_inferencia_beto(texto: str) -> Dict[str, Any]:
     }
 
 
+def calcular_embeddings_lote(textos: List[str], max_length: int = 128) -> List[List[float]]:
+    """
+    F7-2a: Mean pooling respetando `attention_mask` sobre la última capa oculta de `beto_local`
+    (768 dim, normalizado L2, reutilizando el modelo ya cargado en memoria, límite <= 128 tokens).
+    Excluye tokens [PAD] mediante la máscara de atención.
+    """
+    if not textos:
+        return []
+    limite = max(8, min(int(max_length), 128))
+    engine, tokenizer = get_engine_and_tokenizer()
+    if (
+        engine is not None
+        and getattr(engine, "_nlp_pipeline", None) is not None
+        and getattr(engine._nlp_pipeline, "model", None) is not None
+        and tokenizer is not None
+    ):
+        import torch
+        import torch.nn.functional as F
+
+        pt_model = engine._nlp_pipeline.model
+        device = next(pt_model.parameters()).device
+        encoded = tokenizer(
+            [str(t or "").strip() for t in textos],
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=limite,
+        )
+        en_disp = {k: v.to(device) for k, v in encoded.items()}
+        with torch.inference_mode():
+            base_bert = getattr(pt_model, "bert", None)
+            if base_bert is not None:
+                out = base_bert(
+                    input_ids=en_disp["input_ids"],
+                    attention_mask=en_disp["attention_mask"],
+                )
+                hidden = out.last_hidden_state  # [B, L, 768]
+            else:
+                out = pt_model(
+                    input_ids=en_disp["input_ids"],
+                    attention_mask=en_disp["attention_mask"],
+                    output_hidden_states=True,
+                )
+                hidden = out.hidden_states[-1]  # [B, L, 768]
+
+            # Mean pooling respetando attention_mask (excluye padding)
+            mask = en_disp["attention_mask"].unsqueeze(-1).to(hidden.dtype)  # [B, L, 1]
+            summed = (hidden * mask).sum(dim=1)
+            counts = mask.sum(dim=1).clamp(min=1e-9)
+            pooled = summed / counts
+            normed = F.normalize(pooled, p=2, dim=-1)
+        return normed.detach().cpu().tolist()
+
+    # Respaldo ligero solo si PyTorch/modelo no está cargado (pruebas sin pesos)
+    import math
+    salida = []
+    for t in textos:
+        det = _compute_deterministic_embeddings_768([], str(t or ""))
+        vec = (det.get("mean_vector_preview") or [0.0] * 32) * 24
+        vec = vec[:768]
+        nrm = math.sqrt(sum(x * x for x in vec)) or 1.0
+        salida.append([x / nrm for x in vec])
+    return salida
+
+
 # Definir aplicación FastAPI si está instalada (para uvicorn pipeline.semantic.inference_server:app)
 try:
     from fastapi import FastAPI
@@ -459,6 +524,24 @@ try:
         from pipeline.semantic.indice_confianza import calcular_indices
         return {"indices": calcular_indices(req.textos)}
 
+    class EmbedRequest(BaseModel):
+        textos: List[str] = Field(..., min_length=1, max_length=128)
+        max_length: int = Field(128, ge=8, le=128)
+
+    @app.post("/embed")
+    def embed(req: EmbedRequest):
+        """F7-2a: Mean pooling L2-normalizado (768 dim) respetando attention_mask para lotes cortos de encabezados."""
+        t0 = time.perf_counter()
+        vectores = calcular_embeddings_lote(req.textos, max_length=req.max_length)
+        lat_ms = round((time.perf_counter() - t0) * 1000.0, 2)
+        return {
+            "status": "success",
+            "dimensions": len(vectores[0]) if vectores else 768,
+            "n_textos": len(vectores),
+            "latency_ms": lat_ms,
+            "embeddings": vectores,
+        }
+
 except ImportError:
     app = None
 
@@ -487,7 +570,19 @@ class _InferenceHTTPHandler(BaseHTTPRequestHandler):
             self._send_json(404, {"error": "Not found"})
 
     def do_POST(self):
-        if self.path.startswith("/indice"):
+        if self.path.startswith("/embed"):
+            length = int(self.headers.get("Content-Length", "0"))
+            data = json.loads(self.rfile.read(length).decode("utf-8") or "{}") if length > 0 else {}
+            t0 = time.perf_counter()
+            vectores = calcular_embeddings_lote(data.get("textos") or [], max_length=int(data.get("max_length", 128)))
+            self._send_json(200, {
+                "status": "success",
+                "dimensions": len(vectores[0]) if vectores else 768,
+                "n_textos": len(vectores),
+                "latency_ms": round((time.perf_counter() - t0) * 1000.0, 2),
+                "embeddings": vectores,
+            })
+        elif self.path.startswith("/indice"):
             from pipeline.semantic.indice_confianza import calcular_indices
             length = int(self.headers.get("Content-Length", "0"))
             data = json.loads(self.rfile.read(length).decode("utf-8") or "{}") if length > 0 else {}

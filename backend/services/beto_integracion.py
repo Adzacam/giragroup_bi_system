@@ -334,12 +334,54 @@ def academico_sin_resolver(ents: Sequence[Dict[str, Any]], tipo: str) -> bool:
     return previa is None or not previa.get("matchedCanonical")
 
 
-def _residuales_academicas(linea: str, ents: Sequence[Dict[str, Any]], tipo_fuente: str) -> list[str]:
+_RE_COL_PROGRAMA_ESTRUCTURADA = re.compile(
+    r"^(?:POS(?:\s*[-–]\s*\w+)?|N°?\s*POS|PROGRAMA|NOMBRE\s+(?:DEL\s+)?PROGRAMA|CURSO|COURSE|"
+    r"DIPLOMADO|MAESTRIA|MAESTRÍA|OFERTA|PROYECTO\s*\(POS\)|COD(?:IGO)?\s*PROGRAMA|PROGRAMA\s*[-–]?\s*POS)$",
+    re.IGNORECASE,
+)
+_RE_COL_MODULO_ESTRUCTURADA = re.compile(
+    r"^(?:M[ÓO]DULO(?:\s*\d{1,2})?|N(?:RO|°|º)?\s*M[ÓO]DULO|MATERIA|ASIGNATURA|COD(?:IGO)?[_\s]*M[ÓO]DULO|"
+    r"POS\s*[-–]\s*M[ÓO]DULO|NOMBRE\s+(?:DEL\s+)?M[ÓO]DULO)$",
+    re.IGNORECASE,
+)
+
+
+def hoja_tiene_columnas_academicas(campos_por_linea: Sequence[Dict[str, str]]) -> Tuple[bool, bool]:
+    """
+    F7-1b: Detecta si la hoja/bloque ya posee columnas estructuradas de PROGRAMA y/o MÓDULO
+    inspeccionando los encabezados presentes en las primeras filas. Permite acotar
+    `BETO_RESCATE_ACADEMICO` solo a hojas sin columna estructurada.
+    """
+    tiene_prog = False
+    tiene_mod = False
+    revisadas = 0
+    for campos in campos_por_linea:
+        if not campos:
+            continue
+        for hdr in campos.keys():
+            h = str(hdr or "").strip()
+            if not tiene_prog and _RE_COL_PROGRAMA_ESTRUCTURADA.match(h):
+                tiene_prog = True
+            if not tiene_mod and _RE_COL_MODULO_ESTRUCTURADA.match(h):
+                tiene_mod = True
+        revisadas += 1
+        if (tiene_prog and tiene_mod) or revisadas >= 10:
+            break
+    return tiene_prog, tiene_mod
+
+
+def _residuales_academicas(
+    linea: str,
+    ents: Sequence[Dict[str, Any]],
+    tipo_fuente: str,
+    permitir_programa: bool = True,
+    permitir_modulo: bool = True,
+) -> list[str]:
     tiene_modulo = bool(entidad(ents, "MÓDULO") or _CONTEXTO_MODULO.search(linea))
     tiene_oferta = bool(entidad(ents, "PROGRAMA") or _CONTEXTO_OFERTA.search(linea))
     campos = {
-        "PROGRAMA": tiene_oferta or tiene_modulo or tipo_fuente in _FUENTES_CON_OFERTAS,
-        "MODULO": tiene_modulo or (tiene_oferta and tipo_fuente in _FUENTES_CON_MODULOS),
+        "PROGRAMA": permitir_programa and (tiene_oferta or tiene_modulo or tipo_fuente in _FUENTES_CON_OFERTAS),
+        "MODULO": permitir_modulo and (tiene_modulo or (tiene_oferta and tipo_fuente in _FUENTES_CON_MODULOS)),
     }
     return [tipo for tipo, esperado in campos.items() if esperado and academico_sin_resolver(ents, tipo)]
 
@@ -497,6 +539,8 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
                    omitir: Optional[Callable[[str], bool]] = None,
                    excluir_celda=None,
                    sin_padron: bool = False,
+                   permitir_rescate_programa: bool = True,
+                   permitir_rescate_modulo: bool = True,
                    on_progreso: Optional[Callable[[int], None]] = None) -> List[Optional[ResultadoLinea]]:
     """
     Extracción de las líneas de un bloque con las opciones 1 y 2. `extraer(linea, est_beto=None, doc_beto=None)` es la extracción
@@ -539,7 +583,13 @@ def refinar_lineas(lineas: Sequence[str], extraer: Callable[..., Tuple[list, flo
                 solo_fuzzy=solo_fuzzy_acuerdo,
             )
         )
-        if rescate_academico and (tipos := _residuales_academicas(lineas[i], r.ents, tipo_fuente)):
+        if rescate_academico and (permitir_rescate_programa or permitir_rescate_modulo) and (
+            tipos := _residuales_academicas(
+                lineas[i], r.ents, tipo_fuente,
+                permitir_programa=permitir_rescate_programa,
+                permitir_modulo=permitir_rescate_modulo,
+            )
+        ):
             academicas[i] = tipos
             contadores.residuales_academicas_enviadas += 1
         if residual or comparable or i in academicas:

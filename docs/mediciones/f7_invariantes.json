@@ -1,0 +1,10 @@
+{
+  "fase": "F7-4a",
+  "timestamp": "2026-11-24T20:50:27.445254",
+  "dw_viva_solo_lectura": {
+    "tablas_public_bi": 51,
+    "vistas_bi": 10,
+    "kpis_ref": 23
+  },
+  "invariantes_cumplidos": true
+}

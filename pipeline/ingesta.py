@@ -441,6 +441,101 @@ PALABRAS_CLAVE_CATEGORIA = {
 }
 
 
+MOTIVO_FUERA_DE_ALCANCE_CMI = "FUERA_DE_ALCANCE_CMI"
+
+_TOKENS_DOMINIO_CMI: tuple[str, ...] = (
+    # Académico
+    "ci", "cedula", "dni", "idnumber", "carnet", "alumno", "estudiante", "postulante",
+    "nombres y apellidos", "apellidos y nombres", "nombre completo", "paterno", "materno",
+    "modulo", "modulos", "materia", "asignatura", "curso", "course", "programa", "pos",
+    "diplomado", "maestria", "nota", "notas", "calificacion", "finalgrade", "promedio",
+    "aprobado", "reprobado", "asistencia", "acta", "estado academico", "estado arca",
+    "estado tutoria", "docente", "profesor", "facilitador", "instructor", "tutor",
+    # Financiero / Cobranzas
+    "monto", "saldo", "deuda", "pagado", "importe", "cobranza", "cartera", "abono",
+    "deposito", "arancel", "recibo", "cuota", "cuotas", "mora", "vencimiento", "factura",
+    "concepto", "inversion", "pago docente",
+    # Rentabilidad / Egresos / Techos
+    "egreso", "egresos", "gasto", "gastos", "partida", "costo", "costos", "techo", "techos",
+    "presupuesto", "presupuestado", "rentabilidad", "margen", "ebitda", "ejecutado", "meta",
+    "categoria", "categoria financiera", "convenio", "institucion", "empresa",
+    # Evaluación docente
+    "evaluacion docente", "encuesta", "satisfaccion", "likert", "nps", "pregunta", "criterio",
+    "califique", "desempeno",
+    # Marketing / Admisión
+    "lead", "leads", "campana", "medio de contacto", "canal", "asesor comercial",
+    "preinscrito", "preinscripcion", "prospecto", "matricula", "inscrito", "inscritos",
+    "tipo de inscripcion", "marca temporal", "reservas de plaza",
+    # Planificación / OKRs
+    "planificacion", "okr", "inicio", "inicios", "convocatoria", "sede", "modalidad",
+    "escuela", "hrs modulo", "horas", "punto equilibrio", "ibp",
+)
+
+
+def evaluar_compuerta_dominio_cmi(
+    df_bloque: Optional[pd.DataFrame],
+    cabeceras: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    """
+    F7-3 (D-F7-2): Compuerta de dominio CMI en ingesta.
+    Exige al menos 2 señales de dominio (>= 2 encabezados reconocidos de alguna de las 6 categorías
+    del DW o score_categoria >= 0.30, o encuesta Likert válida). Si no alcanza el umbral, devuelve
+    `en_alcance=False` y `motivo='FUERA_DE_ALCANCE_CMI'`.
+    """
+    if df_bloque is None or df_bloque.empty:
+        return {
+            "en_alcance": False,
+            "motivo": MOTIVO_FUERA_DE_ALCANCE_CMI,
+            "senales_encabezado": 0,
+            "score_categoria": 0.0,
+            "categoria_sugerida": "generico",
+        }
+
+    if es_encuesta_likert(df_bloque):
+        return {
+            "en_alcance": True,
+            "motivo": None,
+            "senales_encabezado": 3,
+            "score_categoria": 0.95,
+            "categoria_sugerida": "evaluacion_docente",
+        }
+
+    # Extraer encabezados del bloque (fila 0 + cabeceras explícitas si se pasaron)
+    hdrs: List[str] = []
+    if cabeceras:
+        hdrs.extend(str(c).strip() for c in cabeceras if c is not None and str(c).strip())
+    else:
+        for v in df_bloque.iloc[0].values:
+            if pd.notna(v) and str(v).strip():
+                hdrs.append(str(v).strip())
+        for col in df_bloque.columns:
+            c_s = str(col).strip()
+            if c_s and not c_s.lower().startswith(("unnamed", "col_")) and not c_s.isdigit():
+                hdrs.append(c_s)
+
+    senales_reconocidas = 0
+    vistos: set[str] = set()
+    for h in hdrs:
+        hn = _strip_accents(h)
+        if not hn or hn in vistos:
+            continue
+        vistos.add(hn)
+        if _contiene_tokens(hn, _TOKENS_DOMINIO_CMI):
+            senales_reconocidas += 1
+
+    diag = clasificar_contenido_agnostico(df_bloque, cabeceras=hdrs or None)
+    score_cat = float(diag.get("confidence") or 0.0)
+    en_alcance = (senales_reconocidas >= 2) or (score_cat >= 0.30)
+
+    return {
+        "en_alcance": en_alcance,
+        "motivo": None if en_alcance else MOTIVO_FUERA_DE_ALCANCE_CMI,
+        "senales_encabezado": senales_reconocidas,
+        "score_categoria": round(score_cat, 4),
+        "categoria_sugerida": diag.get("categoria") or "generico",
+    }
+
+
 def extraer_encabezado_hoja(
     df_hoja: Optional[pd.DataFrame],
     nombre_archivo: str = "",

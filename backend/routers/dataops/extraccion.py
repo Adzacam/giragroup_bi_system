@@ -9,7 +9,7 @@ import re
 import threading
 from collections import defaultdict
 from functools import lru_cache
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 from models.dim_docente import DimDocente
 from services.dataops_evaluation_service import NON_PERSON_WORDS, fuzzy_score, strip_accents
 from services.extraccion_por_encabezado import es_encabezado_metadato_pos
@@ -95,6 +95,35 @@ def _ratio(a: str, b: str) -> float:
 def _similitud_cache(clave: str, canonicas: Tuple[str, ...]) -> float:
     h = _norm_enc(clave)
     return max((_ratio(h, c) for c in canonicas), default=0.0) if h else 0.0
+
+
+def resolver_encabezados_beto_esquema(
+    encabezados_con_muestra: Dict[str, Sequence[Any]],
+    canonicas_por_rol: Optional[Dict[str, Iterable[str]]] = None,
+    mapeador: Optional[Any] = None,
+) -> Dict[str, Dict[str, Any]]:
+    """
+    F7-2b: Respaldo semántico BETO (`/embed` + perfil de columna + margen top1-top2 >= 0.05)
+    únicamente para encabezados que obtuvieron < 85.0 por RapidFuzz contra el catálogo canónico.
+    Nunca sobrescribe matches RapidFuzz >= 85.0.
+    """
+    from services.mapeo_semantico_encabezados import obtener_mapeador_semantico
+
+    roles_ref = canonicas_por_rol or {
+        "estudiante": _ENC_ESTUDIANTE,
+        "docente": _ENC_DOCENTE,
+        "programa": _ENC_NOMBRE_PROGRAMA + _ENC_CODIGO_PROGRAMA,
+        "modulo": _ENC_MODULO,
+        "ci_estudiante": _ENC_CI,
+        "monto": _ENC_MONTO + _ENC_MONTO_PAGADO,
+    }
+    todas_canonicas = tuple(c for vals in roles_ref.values() for c in vals)
+    scores_rf = {
+        h: (similitud_encabezado(h, todas_canonicas) if todas_canonicas else 0.0)
+        for h in encabezados_con_muestra.keys()
+    }
+    mapper = mapeador or obtener_mapeador_semantico()
+    return mapper.resolver_lote(encabezados_con_muestra, scores_rapidfuzz=scores_rf)
 
 
 def similitud_encabezado(clave: str, canonicas: Iterable[str]) -> float:
@@ -625,22 +654,48 @@ def extract_entities_from_line(
             "es_nuevo_perfil": False,
         })
     elif est_token:
-        # Perfil nuevo: lo leyó una regla (encabezado o patrón), no BETO
-        conf_est = _medida(est_origen, similitud=est_sim, validez=_validez_nombre_persona(est_token))
-        entities.append({
-            "token": est_token,
-            "label": "ESTUDIANTE",
-            "tag": "B-ESTUDIANTE",
-            "conllTag": "PER",
-            **conf_est,
-            "catalogTable": "Catálogo de Estudiantes",
-            "matchedCanonical": None,
-            "canonicalId": "NO_CATALOGADO",
-            "ci": None,
-            "fuzzScore": 0.0,
-            "algorithm": "Sin coincidencia en catálogo (Perfil Nuevo)",
-            "es_nuevo_perfil": True,
-        })
+        from services.extraccion_por_encabezado import _RE_ANONIMO, normalizar_encabezado
+        es_anonima_eval = (
+            str(tipo_fuente or "").upper() == "EVALUACION_DOCENTE"
+            and (
+                bool(_RE_ANONIMO.search(normalizar_encabezado(est_token)))
+                or bool(re.fullmatch(r"\d+", est_token.strip()))
+            )
+        )
+        if es_anonima_eval:
+            conf_est = _medida(est_origen or ORIGEN_ENCABEZADO, similitud=est_sim, validez=1.0)
+            entities.append({
+                "token": est_token,
+                "label": "ESTUDIANTE",
+                "tag": "B-ESTUDIANTE",
+                "conllTag": "PER",
+                **conf_est,
+                "catalogTable": "Evaluación Anónima",
+                "matchedCanonical": None,
+                "canonicalId": "EVALUACION_ANONIMA",
+                "ci": None,
+                "fuzzScore": 100.0,
+                "algorithm": "Evaluación docente anónima (sin perfil)",
+                "es_nuevo_perfil": False,
+                "es_anonima": True,
+            })
+        else:
+            # Perfil nuevo: lo leyó una regla (encabezado o patrón), no BETO
+            conf_est = _medida(est_origen, similitud=est_sim, validez=_validez_nombre_persona(est_token))
+            entities.append({
+                "token": est_token,
+                "label": "ESTUDIANTE",
+                "tag": "B-ESTUDIANTE",
+                "conllTag": "PER",
+                **conf_est,
+                "catalogTable": "Catálogo de Estudiantes",
+                "matchedCanonical": None,
+                "canonicalId": "NO_CATALOGADO",
+                "ci": None,
+                "fuzzScore": 0.0,
+                "algorithm": "Sin coincidencia en catálogo (Perfil Nuevo)",
+                "es_nuevo_perfil": True,
+            })
 
     # 2. DOCUMENTO / CI
     ci_match, ci_sim = None, None
