@@ -602,6 +602,26 @@ def resolver_entidad_legacy(
         or payload.get("texto_editado")
         or p_json.get("estudiante")
     )
+    if not est_resuelto and (
+        getattr(ent, "motivo", None) == "RELACION_INCOHERENTE"
+        or payload.get("aprobacion_en_bloque")
+    ):
+        for e in (p_json.get("entities") or []):
+            if isinstance(e, dict) and str(e.get("label") or "").upper() in ("ESTUDIANTE", "ALUMNO"):
+                cand_e = str(e.get("matchedCanonical") or e.get("token") or "").strip()
+                if cand_e and "|" not in cand_e and len(cand_e) <= 200 and "•" not in cand_e:
+                    est_resuelto = cand_e
+                    break
+        if not est_resuelto:
+            cand_m = str(getattr(ent, "mejor_candidato", None) or "").strip()
+            if cand_m and "|" not in cand_m and len(cand_m) <= 200 and "•" not in cand_m:
+                est_resuelto = cand_m
+        if not est_resuelto and "|" in str(ent.texto_original or ""):
+            from services.extraccion_por_encabezado import estudiante_de_fila as _estudiante_de_fila
+            est_fila = _estudiante_de_fila(campos_por_encabezado([c.strip() for c in str(p_json.get("raw_line") or ent.texto_original).split("|")]))
+            cand_f = str((est_fila or {}).get("valor_extraido") or "").strip()
+            if cand_f and "|" not in cand_f and len(cand_f) <= 200 and "•" not in cand_f:
+                est_resuelto = cand_f
 
     otra_persona = str(payload.get("confirmar_identidad") or "").strip().lower().startswith("no")
     ci_raw = ci_corregida if otra_persona else (ci_corregida or ent.ci_temporal or p_json.get("ci_real"))

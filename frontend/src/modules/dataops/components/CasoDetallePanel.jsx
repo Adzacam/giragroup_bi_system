@@ -40,7 +40,7 @@ export default function CasoDetallePanel({
     item.tiene_correo ||
     (item.correo_enmascarado && !['Sin dato', 'No provisto', 'No especificado'].includes(item.correo_enmascarado))
   );
-  const hasNombre = item.tiene_nombre !== false;
+  const hasNombre = item.tiene_nombre !== false || Boolean(item.docente && String(item.docente).includes('•'));
 
   const reveal = async (campo) => {
     if (revealLock.current) return;
@@ -143,7 +143,7 @@ export default function CasoDetallePanel({
           if (item.cuotas_impagas != null) chipsPorArea.push(`Cuotas impagas: ${item.cuotas_impagas}`);
           if (item.codigo_pos) chipsPorArea.push(`POS: ${item.codigo_pos}`);
         } else if (area === 'evaluacion_docente') {
-          if (item.docente) chipsPorArea.push(`Docente: ${item.docente}`);
+          if (item.docente) chipsPorArea.push(`Docente: ${nomRev || item.docente}`);
           if (item.modulo_detectado || item.numero_modulo != null) chipsPorArea.push(`Módulo: ${item.modulo_detectado || item.numero_modulo}`);
         } else if (area === 'comercial' || area === 'marketing' || area === 'admision') {
           if (item.codigo_pos) chipsPorArea.push(`POS: ${item.codigo_pos}`);
@@ -151,7 +151,7 @@ export default function CasoDetallePanel({
         } else {
           if (item.modulo_detectado || item.numero_modulo != null) chipsPorArea.push(`Módulo: ${item.modulo_detectado || item.numero_modulo}`);
           if (item.nota_final != null) chipsPorArea.push(`Nota: ${item.nota_final}`);
-          if (item.docente) chipsPorArea.push(`Docente: ${item.docente}`);
+          if (item.docente) chipsPorArea.push(`Docente: ${nomRev || item.docente}`);
         }
         const guia = item.motivo === 'DESACUERDO_REGLA_BETO'
           ? 'Recomendación: confirma si el nombre leído es una persona real (si es cuenta institucional o ruido, usa Descartar).'

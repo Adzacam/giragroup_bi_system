@@ -171,12 +171,28 @@ function RevisionBandeja({ batchId }) {
     return () => clearTimeout(timer);
   }, [input, filters.search, setFilters]);
 
-  useEffect(() => { if (error) sileoToast.error({ title: 'No se pudo consultar la revisión', description: mensajeError(error) }); }, [error]);
+  useEffect(() => {
+    if (!error) return;
+    if (filters.grupo && (error?.response?.status === 409 || /El grupo cambi/i.test(mensajeError(error)))) {
+      setFilters(prev => ({ ...prev, grupo: null, page: 1 }));
+      queryClient.invalidateQueries({ queryKey: DATAOPS_QUERY_KEY });
+      return;
+    }
+    sileoToast.error({ title: 'No se pudo consultar la revisión', description: mensajeError(error) });
+  }, [error, filters.grupo, setFilters]);
+
+  // Mantener sincronizado el contador del stepper/header sin requerir F5
+  useEffect(() => {
+    if (!batchId) return;
+    queryClient.invalidateQueries({ queryKey: [...DATAOPS_QUERY_KEY, 'lote-context', String(batchId)] });
+  }, [batchId, data?.total_casos, data?.pagination?.total_items]);
+
   useEffect(() => {
     if (data?.pagination && filters.page > data.pagination.total_pages) setFilters(prev => ({ ...prev, page: data.pagination.total_pages }));
   }, [data, filters.page, setFilters]);
 
   const refresh = async () => {
+    if (batchId) queryClient.invalidateQueries({ queryKey: [...DATAOPS_QUERY_KEY, 'lote-context', String(batchId)] });
     const result = await refetch();
     if (!result.error) sileoToast.success({ title: 'Bandeja actualizada', description: 'Se consultaron los casos guardados.' });
   };

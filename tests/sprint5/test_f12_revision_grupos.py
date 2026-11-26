@@ -132,3 +132,49 @@ def test_guardrail_422_para_discordante_menor_30_y_descarte_con_justificacion(db
     assert res["status"] == "success"
     assert res["accion"] == "DESCARTAR"
     assert res["resolved_count"] == 1
+
+
+def test_batch_resolve_relacion_incoherente_linea_completa_toma_candidato(db_mem, monkeypatch):
+    from services.dw_loader import DWLoaderService
+    capturado = {}
+
+    def _fake_cargar(self, reg):
+        capturado["reg"] = reg
+        return {"status": "loaded", "id_estudiante": 99}
+
+    monkeypatch.setattr(DWLoaderService, "cargar_registro", _fake_cargar)
+    _seed(db_mem)
+    linea_larga = (
+        "N°: 1 | POS - ACTAS: 5381 | MES INICIO: 12 | AÑO INICIO: 2024 | "
+        "APELLIDO PATERNO: ABREGO | APELLIDO MATERNO: ANDRADE | NOMBRES: ROMEO GUNNAR | "
+        "MÓDULO 1: 88 | MÓDULO 2: 91 | ESTADO ACADEMICO: Aprobado | ESTADO ARCA: Titulado | "
+        "OBSERVACION: Fila de prueba con mas de doscientos caracteres totales"
+    )
+    assert len(linea_larga) > 200
+    db_mem.add(StagingEntidadNoResuelta(
+        id_staging=50,
+        id_documento=1,
+        tipo_entidad="ESTUDIANTE",
+        texto_original=linea_larga[:250],
+        ci_temporal="3792463",
+        mejor_candidato="Romeo Gunnar Abrego Andrade",
+        motivo="RELACION_INCOHERENTE",
+        nivel_confianza=0.95,
+        resuelto=False,
+        payload_json={
+            "raw_line": linea_larga,
+            "ci_real": "3792463",
+            "entities": [{"label": "ESTUDIANTE", "token": "ROMEO GUNNAR ABREGO ANDRADE", "matchedCanonical": "Romeo Gunnar Abrego Andrade"}],
+        },
+    ))
+    db_mem.commit()
+
+    admin = SimpleNamespace(id=1, username="admin_general", role="ADMIN")
+    res = batch_resolve_review_items(
+        BatchResolveRequest(item_ids=["50"], accion="APROBAR", justificacion="Confirmado en lote"),
+        db=db_mem,
+        current_user=admin,
+    )
+    assert res["status"] == "success"
+    assert res["resolved_count"] == 1
+    assert capturado["reg"]["resoluciones"]["estudiante"]["fk_resolucion"]["nombre_resuelto"] == "Romeo Gunnar Abrego Andrade"
